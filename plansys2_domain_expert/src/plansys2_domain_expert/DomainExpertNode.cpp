@@ -28,32 +28,34 @@ DomainExpertNode::DomainExpertNode()
   declare_parameter("model_file", "");
 
   get_types_service_ = create_service<plansys2_msgs::srv::GetDomainTypes>(
-    "~/get_domain_types", std::bind(&DomainExpertNode::get_domain_types_service_callback,
+    "/domain_expert/get_domain_types",
+    std::bind(&DomainExpertNode::get_domain_types_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
   get_domain_actions_service_ = create_service<plansys2_msgs::srv::GetDomainActions>(
-    "~/get_domain_actions", std::bind(&DomainExpertNode::get_domain_actions_service_callback,
+    "/domain_expert/get_domain_actions",
+    std::bind(&DomainExpertNode::get_domain_actions_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
   get_domain_action_details_service_ =
     create_service<plansys2_msgs::srv::GetDomainActionDetails>(
-    "~/get_domain_action_details", std::bind(
+    "/domain_expert/get_domain_action_details", std::bind(
       &DomainExpertNode::get_domain_action_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
   get_domain_predicates_service_ = create_service<plansys2_msgs::srv::GetDomainPredicates>(
-    "~/get_domain_predicates", std::bind(
+    "/domain_expert/get_domain_predicates", std::bind(
       &DomainExpertNode::get_domain_predicates_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
   get_domain_predicate_details_service_ =
     create_service<plansys2_msgs::srv::GetDomainPredicateDetails>(
-    "~/get_domain_predicate_details", std::bind(
+    "/domain_expert/get_domain_predicate_details", std::bind(
       &DomainExpertNode::get_domain_predicate_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
   get_domain_service_ = create_service<plansys2_msgs::srv::GetDomain>(
-    "~/get_domain", std::bind(&DomainExpertNode::get_domain_service_callback,
+    "/domain_expert/get_domain", std::bind(&DomainExpertNode::get_domain_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
 }
