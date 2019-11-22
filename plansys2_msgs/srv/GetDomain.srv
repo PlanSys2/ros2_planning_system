@@ -1,0 +1,5 @@
+std_msgs/Empty request
+---
+bool success
+string domain
+string error_info

@@ -1,0 +1,2 @@
+ament_add_gtest(domain_expert_test domain_expert_test.cpp)
+target_link_libraries(domain_expert_test ${PROJECT_NAME})

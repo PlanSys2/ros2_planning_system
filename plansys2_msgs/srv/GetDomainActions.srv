@@ -1,0 +1,5 @@
+std_msgs/Empty request
+---
+bool success
+string[] actions
+string error_info
