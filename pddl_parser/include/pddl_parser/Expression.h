@@ -22,11 +22,11 @@ public:
 		stream << info();
 	}
 
-	virtual void parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {}
+	virtual void parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {}
 	virtual void addParams( int m, unsigned n ) {}
 };
 
-Expression * createExpression( Filereader & f, TokenStruct< std::string > & ts, Domain & d );
+Expression * createExpression( Stringreader & f, TokenStruct< std::string > & ts, Domain & d );
 
 class CompositeExpression : public Expression {
 
@@ -45,7 +45,7 @@ public:
 		delete right;
 	}
 
-	void parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+	void parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 		f.next();
 		left = createExpression( f, ts, d );
 		right = createExpression( f, ts, d );

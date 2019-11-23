@@ -27,7 +27,7 @@ void Derived::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< s
 	s << "\n)\n";
 }
 
-void Derived::parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void Derived::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	f.assert_token( "(" );
 	name = f.getToken( d.preds );

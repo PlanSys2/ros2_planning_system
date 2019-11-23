@@ -42,16 +42,16 @@ public:
 		else return 0;
 	}
 
-	Expression * parseDuration( Filereader & f, TokenStruct< std::string > & ts, Domain & d );
+	Expression * parseDuration( Stringreader & f, TokenStruct< std::string > & ts, Domain & d );
 
 	void printCondition( std::ostream & s, const TokenStruct< std::string > & ts, const Domain & d,
 	                     const std::string & t, And * a ) const;
 
 	void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override;
 
-	void parseCondition( Filereader & f, TokenStruct< std::string > & ts, Domain & d, And * a );
+	void parseCondition( Stringreader & f, TokenStruct< std::string > & ts, Domain & d, And * a );
 
-	void parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d );
+	void parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d );
 
 	GroundVec preconsStart();
 

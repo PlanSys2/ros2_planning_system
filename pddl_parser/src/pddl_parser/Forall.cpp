@@ -23,7 +23,7 @@ void Forall::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << ")";
 }
 
-void Forall::parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void Forall::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	f.assert_token( "(" );
 

@@ -10,7 +10,7 @@ void Not::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::
 	s << " )";
 }
 
-void Not::parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void Not::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	f.assert_token( "(" );
 

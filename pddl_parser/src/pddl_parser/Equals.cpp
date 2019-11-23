@@ -11,7 +11,7 @@ void Equals::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << " )";
 }
 
-void Equals::parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void Equals::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	params.resize( 2 );
 

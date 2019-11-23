@@ -40,7 +40,7 @@ void FunctionModifier::PDDLPrint( std::ostream & s, unsigned indent, const Token
 	s << " )";
 }
 
-void FunctionModifier::parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void FunctionModifier::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 
 	f.assert_token( "(" );

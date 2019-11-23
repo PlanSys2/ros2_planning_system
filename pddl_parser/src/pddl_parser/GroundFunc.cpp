@@ -20,7 +20,7 @@ void GroundFunc<int>::PDDLPrint( std::ostream & s, unsigned indent, const TokenS
 }
 
 template <>
-void GroundFunc<double>::parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void GroundFunc<double>::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	TypeGround::parse( f, ts, d );
 	
 	f.next();
@@ -33,7 +33,7 @@ void GroundFunc<double>::parse( Filereader & f, TokenStruct< std::string > & ts,
 }
 
 template <>
-void GroundFunc<int>::parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void GroundFunc<int>::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	TypeGround::parse( f, ts, d );
 	
 	f.next();

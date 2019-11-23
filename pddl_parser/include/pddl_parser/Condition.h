@@ -2,7 +2,7 @@
 #pragma once
 
 #include "pddl_parser/Basic.h"
-#include "pddl_parser/Filereader.h"
+#include "pddl_parser/Stringreader.h"
 #include "pddl_parser/Type.h"
 
 namespace parser { namespace pddl {
@@ -17,7 +17,7 @@ public:
 
 	virtual void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const = 0;
 
-	virtual void parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) = 0;
+	virtual void parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) = 0;
 
 	virtual void addParams( int m, unsigned n ) = 0;
 

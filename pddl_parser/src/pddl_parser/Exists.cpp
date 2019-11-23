@@ -22,7 +22,7 @@ void Exists::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << ")";
 }
 
-void Exists::parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void Exists::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	f.assert_token( "(" );
 

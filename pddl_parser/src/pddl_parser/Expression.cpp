@@ -35,7 +35,7 @@ double FunctionExpression::evaluate( Instance & ins, const StringVec & par ) {
 	return 1;
 }
 
-Expression * createExpression( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+Expression * createExpression( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 
 	if ( f.getChar() == '(' ) {

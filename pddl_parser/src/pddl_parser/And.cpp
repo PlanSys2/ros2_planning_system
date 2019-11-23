@@ -14,7 +14,7 @@ void And::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::
 	s << ")";
 }
 
-void And::parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void And::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	for ( f.next(); f.getChar() != ')'; f.next() ) {
 		f.assert_token( "(" );
 		Condition * condition = d.createCondition( f );

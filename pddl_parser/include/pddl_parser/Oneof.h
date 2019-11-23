@@ -30,7 +30,7 @@ public:
 
 	void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override;
 
-	void parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d );
+	void parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d );
 
 	void add( Condition * cond ) {
 		conds.push_back( cond );

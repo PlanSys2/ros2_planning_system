@@ -17,7 +17,7 @@ void Ground::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << " )";
 }
 
-void Ground::parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void Ground::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	params.resize( lifted->params.size() );
 	for ( unsigned i = 0; i < lifted->params.size(); ++i, f.next() ) {

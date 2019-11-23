@@ -28,7 +28,7 @@ public:
 	}
 
 	void parse( const std::string &s) {
-		Filereader f( s );
+		Stringreader f( s );
 		name = f.parseName( "PROBLEM" );
 
 		if ( DOMAIN_DEBUG ) std::cout << name << "\n";
@@ -51,13 +51,13 @@ public:
 
 	
 
-	void parseDomain( Filereader & f ) {
+	void parseDomain( Stringreader & f ) {
 		f.next();
 		f.assert_token( d.name );
 		f.assert_token( ")" );
 	}
 
-	void parseObjects( Filereader & f ) {
+	void parseObjects( Stringreader & f ) {
 		TokenStruct< std::string > ts = f.parseTypedList( true, d.types );
 
 		for ( unsigned i = 0; i < ts.size(); ++i ) {
@@ -77,7 +77,7 @@ public:
 	}
 
 
-	virtual void parseGround( Filereader & f, GroundVec & v ) {
+	virtual void parseGround( Stringreader & f, GroundVec & v ) {
 		TypeGround * c = 0;
 		if ( f.getChar() == '=') {
 			f.assert_token( "=" );
@@ -95,7 +95,7 @@ public:
 		v.push_back( c );
 	}
 
-	void parseInit( Filereader & f ) {
+	void parseInit( Stringreader & f ) {
 		for ( f.next(); f.getChar() != ')'; f.next() ) {
 			f.assert_token( "(" );
 			parseGround( f, init );
@@ -106,7 +106,7 @@ public:
 			std::cout << "  " << init[i];
 	}
 
-	virtual void parseGoal( Filereader & f ) {
+	virtual void parseGoal( Stringreader & f ) {
 		f.next();
 		f.assert_token( "(" );
 
@@ -129,7 +129,7 @@ public:
 	}
 
 	// for the moment only parse total-cost/total-time
-	void parseMetric( Filereader & f ) {
+	void parseMetric( Stringreader & f ) {
 		if ( !d.temp && !d.costs ) {
 			std::cerr << "METRIC only defined for temporal actions or actions with costs!\n";
 			std::exit( 1 );

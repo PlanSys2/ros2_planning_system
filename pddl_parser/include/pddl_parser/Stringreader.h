@@ -1,13 +1,16 @@
 
 #pragma once
 
-#include <fstream>
+#include <sstream>
 #include <stdexcept>
+#include <vector>
 
 #include "pddl_parser/TokenStruct.h"
 #include "pddl_parser/Type.h"
 
 namespace parser { namespace pddl {
+
+
 
 class Domain;
 
@@ -26,23 +29,41 @@ public:
 	UnexpectedEOF() : std::runtime_error("Unexpected EOF found") {}
 };
 
-class Filereader {
+class Stringreader {
 
 public:
 
-	std::string s;      // current line of file
-	std::ifstream f;    // file input stream
+	std::vector<std::string> lines;
+	int current_line;      // current line of file
+	std::string s;
 	unsigned r, c;      // current row and column of file
   
-	Filereader( const std::string & file ) : f( file.c_str() ), r( 1 ), c( 0 ) {
-		if (!f) throw std::runtime_error(std::string("Failed to open file '") + file + "'");
-		std::getline( f, s );
+	Stringreader( const std::string & domain ) : r( 1 ), c( 0 ), current_line( 0 ) {
+		
+		lines = getLines(domain);
+	
+		s = lines[current_line++];
+		std::transform(s.begin(), s.end(),s.begin(), ::toupper);
 		next();
 	}
 
-	~Filereader() {
-		f.close();
+	~Stringreader() {
 	}
+
+	std::vector<std::string> getLines(const std::string & text)
+	{
+  	std::vector<std::string> ret;
+  	size_t start = 0, end = 0;
+
+  	while (end != std::string::npos) {
+  	  end = text.find("\n", start);
+  	  ret.push_back(text.substr(start, (end == std::string::npos) ? std::string::npos : end - start));
+  	  start = ((end > (std::string::npos - 1)) ? std::string::npos : end + 1);
+  	}
+
+  	return ret;
+	}
+
 
 	// characters to be ignored
 	bool ignore( char c ) {
@@ -74,13 +95,14 @@ public:
 	void next() {
 		for ( ; c < s.size() && ignore( s[c] ); ++c );
 		while ( c == s.size() || s[c] == ';' ) {
+
+
 			++r;
 			c = 0;
-			if ( f.eof() ) {
-				printLine();
-				throw UnexpectedEOF();
-			}
-			std::getline( f, s );
+
+			s = lines[current_line++];
+			std::transform(s.begin(), s.end(),s.begin(), ::toupper);
+
 			for ( ; c < s.size() && ignore( s[c] ); ++c );
 		}
 	}

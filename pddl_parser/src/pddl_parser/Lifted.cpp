@@ -14,7 +14,7 @@ void Lifted::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << " )";
 }
 
-void Lifted::parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void Lifted::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	TokenStruct< std::string > lstruct = f.parseTypedList( true, d.types );
 	params = d.convertTypes( lstruct.types );
 }

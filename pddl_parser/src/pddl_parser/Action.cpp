@@ -25,7 +25,7 @@ void Action::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << ")\n";
 }
 
-void Action::parseConditions( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void Action::parseConditions( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	f.assert_token( ":" );
 	std::string s = f.getToken();
@@ -55,7 +55,7 @@ void Action::parseConditions( Filereader & f, TokenStruct< std::string > & ts, D
 	f.assert_token( ")" );
 }
 
-void Action::parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void Action::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	f.assert_token( ":PARAMETERS" );
 	f.assert_token( "(" );

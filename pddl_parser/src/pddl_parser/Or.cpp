@@ -22,7 +22,7 @@ void Or::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::s
 	s << ")";
 }
 
-void Or::parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void Or::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	f.assert_token( "(" );
 	if ( f.getChar() != ')' ) {

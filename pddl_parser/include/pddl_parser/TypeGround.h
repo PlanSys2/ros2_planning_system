@@ -22,7 +22,7 @@ public:
 
 	void insert( Domain & d, const StringVec & v );
 
-	void parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d );
+	void parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d );
 
 };
 

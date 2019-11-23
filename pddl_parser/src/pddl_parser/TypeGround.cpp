@@ -27,7 +27,7 @@ void TypeGround::insert( Domain & d, const StringVec & v ) {
 	}
 }
 
-void TypeGround::parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void TypeGround::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	params.resize( lifted->params.size() );
 	for ( unsigned i = 0; i < lifted->params.size(); ++i, f.next() ) {

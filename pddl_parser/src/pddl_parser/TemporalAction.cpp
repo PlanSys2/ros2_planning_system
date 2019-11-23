@@ -3,7 +3,7 @@
 
 namespace parser { namespace pddl {
 
-Expression * TemporalAction::parseDuration( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+Expression * TemporalAction::parseDuration( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	return createExpression( f, ts, d );
 }
 
@@ -46,7 +46,7 @@ void TemporalAction::PDDLPrint( std::ostream & s, unsigned indent, const TokenSt
 	s << ")\n";
 }
 
-void TemporalAction::parseCondition( Filereader & f, TokenStruct< std::string > & ts, Domain & d, And * a ) {
+void TemporalAction::parseCondition( Stringreader & f, TokenStruct< std::string > & ts, Domain & d, And * a ) {
 	f.next();
 	f.assert_token( "(" );
 	Condition * c = d.createCondition( f );
@@ -54,7 +54,7 @@ void TemporalAction::parseCondition( Filereader & f, TokenStruct< std::string > 
 	a->conds.push_back( c );
 }
 
-void TemporalAction::parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d ) {
+void TemporalAction::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	f.assert_token( ":PARAMETERS" );
 	f.assert_token( "(" );

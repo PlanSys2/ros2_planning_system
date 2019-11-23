@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(pddl_parser)
 
+set(CMAKE_BUILD_TYPE DEBUG)
+
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 

@@ -72,7 +72,7 @@ public:
 	}
 
 	virtual void parse( const std::string & s ) {
-		Filereader f( s );
+		Stringreader f( s );
 		name = f.parseName( "DOMAIN" );
 
 		if ( DOMAIN_DEBUG ) std::cout << name << "\n";
@@ -91,7 +91,7 @@ public:
 	}
 
 	//! Returns a boolean indicating whether the block was correctly parsed
-	virtual bool parseBlock(const std::string& t, Filereader& f) {
+	virtual bool parseBlock(const std::string& t, Stringreader& f) {
 		if ( t == "REQUIREMENTS" ) parseRequirements( f );
 		else if ( t == "TYPES" ) parseTypes( f );
 		else if ( t == "CONSTANTS" ) parseConstants( f );
@@ -107,7 +107,7 @@ public:
 	}
 
 
-	void parseRequirements( Filereader & f ) {
+	void parseRequirements( Stringreader & f ) {
 		for ( f.next(); f.getChar() != ')'; f.next() ) {
 			f.assert_token( ":" );
 			std::string s = f.getToken();
@@ -167,7 +167,7 @@ public:
 		return out;
 	}
 
-	void parseTypes( Filereader & f ) {
+	void parseTypes( Stringreader & f ) {
 		if ( !typed ) {
 			std::cout << "Requirement :TYPING needed to define types\n";
 			exit( 1 );
@@ -202,7 +202,7 @@ public:
 			std::cout << "  " << types[i];
 	}
 
-	void parseConstants( Filereader & f ) {
+	void parseConstants( Stringreader & f ) {
 		if ( typed && !types.size() ) {
 			std::cout << "Types needed before defining constants\n";
 			exit( 1 );
@@ -224,7 +224,7 @@ public:
 		}
 	}
 
-	void parsePredicates( Filereader & f ) {
+	void parsePredicates( Stringreader & f ) {
 		if ( typed && !types.size() ) {
 			std::cout << "Types needed before defining predicates\n";
 			exit(1);
@@ -252,7 +252,7 @@ public:
 		++f.c;
 	}
 
-	void parseFunctions( Filereader & f ) {
+	void parseFunctions( Stringreader & f ) {
 		if ( typed && !types.size() ) {
 			std::cout << "Types needed before defining functions\n";
 			exit(1);
@@ -269,7 +269,7 @@ public:
 		++f.c;
 	}
 
-	virtual void parseAction( Filereader & f ) {
+	virtual void parseAction( Stringreader & f ) {
 		if ( !preds.size() ) {
 			std::cout << "Predicates needed before defining actions\n";
 			exit(1);
@@ -283,7 +283,7 @@ public:
 		actions.insert( a );
 	}
 
-	void parseDerived( Filereader & f ) {
+	void parseDerived( Stringreader & f ) {
 		if ( !preds.size() ) {
 			std::cout << "Predicates needed before defining derived predicates\n";
 			exit(1);
@@ -297,7 +297,7 @@ public:
 		derived.insert( d );
 	}
 
-	void parseDurativeAction( Filereader & f ) {
+	void parseDurativeAction( Stringreader & f ) {
 		if ( !preds.size() ) {
 			std::cout << "Predicates needed before defining actions\n";
 			exit(1);
@@ -572,7 +572,7 @@ public:
 
 	virtual std::ostream& print_addtional_blocks(std::ostream& os) const { return os; }
 
-	virtual Condition * createCondition( Filereader & f ) {
+	virtual Condition * createCondition( Stringreader & f ) {
 		std::string s = f.getToken();
 
 		if ( s == "=" ) return new Equals;
