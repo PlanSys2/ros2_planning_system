@@ -97,12 +97,12 @@ DomainExpertClient::getPredicates()
   return ret;
 }
 
-std::optional<std::vector<std::string>>
-DomainExpertClient::getPredicateParams(const std::string & predicate)
+std::optional<plansys2::Predicate>
+DomainExpertClient::getPredicate(const std::string & predicate)
 {
-  std::vector<std::string> ret;
+  plansys2::Predicate ret;
   bool found = false;
-
+  /*
   while (!get_predicate_details_client_->wait_for_service(std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return {};
@@ -132,7 +132,8 @@ DomainExpertClient::getPredicateParams(const std::string & predicate)
       "error calling /domain_expert/get_domain_predicate_details: %s",
       future_result.get()->error_info.c_str());
     return {};
-  }
+  }*/
+  return {};
 }
 
 std::vector<std::string>
@@ -164,12 +165,12 @@ DomainExpertClient::getActions()
   return ret;
 }
 
-std::optional<std::vector<std::string>>
-DomainExpertClient::getActionParams(const std::string & action)
+std::optional<plansys2::Action>
+DomainExpertClient::getAction(const std::string & action)
 {
   std::vector<std::string> ret;
   bool found = false;
-
+  /*
   while (!get_action_details_client_->wait_for_service(std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return {};
@@ -198,7 +199,20 @@ DomainExpertClient::getActionParams(const std::string & action)
       "error calling /domain_expert/get_domain_action_details: %s",
       future_result.get()->error_info.c_str());
     return {};
-  }
+  }*/
+  return {};
+}
+
+std::vector<std::string>
+DomainExpertClient::getDurativeActions()
+{
+  return std::vector<std::string>();
+}
+
+std::optional<plansys2::DurativeAction>
+DomainExpertClient::getDurativeAction(const std::string & action)
+{
+  return {};
 }
 
 }  // namespace plansys2

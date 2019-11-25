@@ -14,6 +14,18 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetDomainPredicateDetails.srv"
   "srv/GetDomainActions.srv"
   "srv/GetDomainActionDetails.srv"
+  "srv/GetProblem.srv"
+  "srv/GetProblemInstances.srv"
+  "srv/GetProblemInstanceDetails.srv"
+  "srv/GetProblemPredicates.srv"
+  "srv/GetProblemPredicateDetails.srv"
+  "srv/GetProblemGoal.srv"
+  "srv/AddProblemGoal.srv"
+  "srv/AddProblemInstance.srv"
+  "srv/AddProblemPredicate.srv"
+  "srv/RemoveProblemGoal.srv"
+  "srv/RemoveProblemInstance.srv"
+  "srv/RemoveProblemPredicate.srv"
   DEPENDENCIES builtin_interfaces std_msgs
 )
 

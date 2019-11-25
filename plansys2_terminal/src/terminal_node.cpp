@@ -66,7 +66,7 @@ public:
 
   void process_predicate(const std::vector<std::string> & command)
   {
-    if (command.size() == 3) {
+    /*if (command.size() == 3) {
       auto predicates_params = domain_client_->getPredicateParams(command[2]);
       if (predicates_params.has_value()) {
         std::cout << "Parameters: " << predicates_params.value().size() << std::endl;
@@ -78,12 +78,12 @@ public:
       }
     } else {
       std::cout << "\tUsage: \n\t\tget predicate [predicate_name]" << std::endl;
-    }
+    }*/
   }
 
   void process_action(const std::vector<std::string> & command)
   {
-    if (command.size() == 3) {
+    /*if (command.size() == 3) {
       auto action_params = domain_client_->getActionParams(command[2]);
       if (action_params.has_value()) {
         std::cout << "Parameters: " << action_params.value().size() << std::endl;
@@ -95,7 +95,7 @@ public:
       }
     } else {
       std::cout << "\tUsage: \n\t\tget action [action_name]" << std::endl;
-    }
+    }*/
   }
 
   void process_get(const std::vector<std::string> & command)

@@ -1,0 +1,5 @@
+string predicate
+---
+bool success
+string[] argument_params
+string error_info

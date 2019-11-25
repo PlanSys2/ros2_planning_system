@@ -23,8 +23,12 @@
 TEST(domain_expert, get_types)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
 
-  plansys2::DomainExpert domain_expert(pkgpath + "/pddl/domain_simple.pddl");
+  plansys2::DomainExpert domain_expert(domain_str);
 
   std::vector<std::string> types = domain_expert.getTypes();
   std::vector<std::string> test_types {"PERSON", "MESSAGE", "ROBOT", "ROOM"};
@@ -36,8 +40,12 @@ TEST(domain_expert, get_types)
 TEST(domain_expert, get_predicates)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
 
-  plansys2::DomainExpert domain_expert(pkgpath + "/pddl/domain_simple.pddl");
+  plansys2::DomainExpert domain_expert(domain_str);
 
   std::vector<std::string> predicates = domain_expert.getPredicates();
   std::vector<std::string> predicates_types {"ROBOT_TALK", "ROBOT_NEAR_PERSON", "ROBOT_AT",
@@ -49,31 +57,45 @@ TEST(domain_expert, get_predicates)
 TEST(domain_expert, get_predicate_params)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
 
-  plansys2::DomainExpert domain_expert(pkgpath + "/pddl/domain_simple.pddl");
+  plansys2::DomainExpert domain_expert(domain_str);
 
-  auto params_1 = domain_expert.getPredicateParams("robot_talk");
+  auto params_1 = domain_expert.getPredicate("robot_talk");
   ASSERT_TRUE(params_1.has_value());
-  ASSERT_EQ(params_1.value().size(), 3);
-  ASSERT_EQ(params_1.value()[0], "ROBOT");
-  ASSERT_EQ(params_1.value()[1], "MESSAGE");
-  ASSERT_EQ(params_1.value()[2], "PERSON");
+  ASSERT_EQ(params_1.value().name, "ROBOT_TALK");
+  ASSERT_EQ(params_1.value().parameters.size(), 3);
+  ASSERT_EQ(params_1.value().parameters[0].name, "?ROBOT0");
+  ASSERT_EQ(params_1.value().parameters[0].type, "ROBOT");
+  ASSERT_EQ(params_1.value().parameters[1].name, "?MESSAGE1");
+  ASSERT_EQ(params_1.value().parameters[1].type, "MESSAGE");
+  ASSERT_EQ(params_1.value().parameters[2].name, "?PERSON2");
+  ASSERT_EQ(params_1.value().parameters[2].type, "PERSON");
 
-  auto params_2 = domain_expert.getPredicateParams("robot_talkERROR");
+  auto params_2 = domain_expert.getPredicate("robot_talkERROR");
   ASSERT_FALSE(params_2.has_value());
 
-  auto params_3 = domain_expert.getPredicateParams("person_at");
+  auto params_3 = domain_expert.getPredicate("person_at");
   ASSERT_TRUE(params_3.has_value());
-  ASSERT_EQ(params_3.value().size(), 2);
-  ASSERT_EQ(params_3.value()[0], "PERSON");
-  ASSERT_EQ(params_3.value()[1], "ROOM");
+  ASSERT_EQ(params_3.value().parameters.size(), 2);
+  ASSERT_EQ(params_3.value().parameters[0].name, "?PERSON0");
+  ASSERT_EQ(params_3.value().parameters[0].type, "PERSON");
+  ASSERT_EQ(params_3.value().parameters[1].name, "?ROOM1");
+  ASSERT_EQ(params_3.value().parameters[1].type, "ROOM");
 }
 
 TEST(domain_expert, get_actions)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
 
-  plansys2::DomainExpert domain_expert(pkgpath + "/pddl/domain_simple.pddl");
+  plansys2::DomainExpert domain_expert(domain_str);
 
   auto actions = domain_expert.getActions();
   ASSERT_EQ(actions.size(), 3);
@@ -86,10 +108,15 @@ TEST(domain_expert, get_actions)
 TEST(domain_expert, get_action_params)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
 
-  plansys2::DomainExpert domain_expert(pkgpath + "/pddl/domain_simple.pddl");
+  plansys2::DomainExpert domain_expert(domain_str);
 
-  auto no_params = domain_expert.getActionParams("NOEXIST");
+  domain_expert.getAction("move");
+  /*auto no_params = domain_expert.getActionParams("NOEXIST");
   ASSERT_FALSE(no_params.has_value());
 
   auto move_params = domain_expert.getActionParams("move");
@@ -105,7 +132,7 @@ TEST(domain_expert, get_action_params)
   ASSERT_EQ(talk_params.value()[0], "ROBOT");
   ASSERT_EQ(talk_params.value()[1], "PERSON");
   ASSERT_EQ(talk_params.value()[2], "PERSON");
-  ASSERT_EQ(talk_params.value()[3], "MESSAGE");
+  ASSERT_EQ(talk_params.value()[3], "MESSAGE");*/
 }
 
 int main(int argc, char ** argv)

@@ -1,0 +1,4 @@
+string instance
+---
+bool success
+string error_info

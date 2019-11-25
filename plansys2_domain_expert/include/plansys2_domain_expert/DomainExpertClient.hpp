@@ -40,9 +40,11 @@ public:
 
   std::vector<std::string> getTypes();
   std::vector<std::string> getPredicates();
-  std::optional<std::vector<std::string>> getPredicateParams(const std::string & predicate);
+  std::optional<plansys2::Predicate> getPredicate(const std::string & predicate);
   std::vector<std::string> getActions();
-  std::optional<std::vector<std::string>> getActionParams(const std::string & action);
+  std::optional<plansys2::Action> getAction(const std::string & action);
+  std::vector<std::string> getDurativeActions();
+  std::optional<plansys2::DurativeAction> getDurativeAction(const std::string & action);
 
 private:
   rclcpp::Node::SharedPtr node_;

@@ -23,8 +23,8 @@
 namespace plansys2
 {
 
-DomainExpert::DomainExpert(const std::string & domain_file)
-: domain_(domain_file)
+DomainExpert::DomainExpert(const std::string & domain)
+: domain_(domain)
 {
 }
 
@@ -50,22 +50,27 @@ DomainExpert::getPredicates()
   return ret;
 }
 
-std::optional<std::vector<std::string>>
-DomainExpert::getPredicateParams(const std::string & predicate)
+std::optional<plansys2::Predicate>
+DomainExpert::getPredicate(const std::string & predicate)
 {
   std::string predicate_search = predicate;
   std::transform(predicate_search.begin(), predicate_search.end(),
     predicate_search.begin(), ::toupper);
 
-  std::vector<std::string> ret;
+  plansys2::Predicate ret;
   bool found = false;
   unsigned i = 0;
 
   while (i < domain_.preds.size() && !found) {
     if (domain_.preds[i]->name == predicate_search) {
       found = true;
+      ret.name = predicate_search;
       for (unsigned j = 0; j < domain_.preds[i]->params.size(); j++) {
-        ret.push_back(domain_.types[domain_.preds[i]->params[j]]->getName());
+        plansys2::Param param;
+        param.name = "?" + domain_.types[domain_.preds[i]->params[j]]->getName() +
+          std::to_string(j);
+        param.type = domain_.types[domain_.preds[i]->params[j]]->name;
+        ret.parameters.push_back(param);
       }
     }
     i++;
@@ -83,27 +88,48 @@ DomainExpert::getActions()
 {
   std::vector<std::string> ret;
   for (unsigned i = 0; i < domain_.actions.size(); i++) {
-    ret.push_back(domain_.actions[i]->name);
+    parser::pddl::Action * action_obj = dynamic_cast<parser::pddl::Action *>(domain_.actions[i]);
+    if (action_obj != nullptr) {
+      ret.push_back(domain_.actions[i]->name);
+    }
   }
   return ret;
 }
 
-std::optional<std::vector<std::string>>
-DomainExpert::getActionParams(const std::string & action)
+std::optional<plansys2::Action>
+DomainExpert::getAction(const std::string & action)
 {
   std::string action_search = action;
   std::transform(action_search.begin(), action_search.end(),
     action_search.begin(), ::toupper);
 
-  std::vector<std::string> ret;
+  plansys2::Action ret;
   bool found = false;
   unsigned i = 0;
 
   while (i < domain_.actions.size() && !found) {
-    if (domain_.actions[i]->name == action_search) {
+    parser::pddl::Action * action_obj = dynamic_cast<parser::pddl::Action *>(domain_.actions[i]);
+
+    if (action_obj != nullptr && action_obj->name == action_search) {
       found = true;
-      for (unsigned j = 0; j < domain_.actions[i]->params.size(); j++) {
-        ret.push_back(domain_.types[domain_.actions[i]->params[j]]->getName());
+      ret.name = action;
+
+      // Parameters
+      for (unsigned j = 0; j < action_obj->params.size(); j++) {
+        Param param;
+        param.name = "?" + domain_.types[action_obj->params[i]]->getName() + std::to_string(j);
+        param.name = domain_.types[action_obj->params[i]]->name;
+        ret.parameters.push_back(param);
+      }
+
+      // Preconditions
+      if (action_obj->pre) {
+        std::stringstream pre_stream;
+        action_obj->pre->PDDLPrint(pre_stream, 0,
+          parser::pddl::TokenStruct<std::string>(), domain_);
+
+        std::cout << pre_stream.str() << std::endl;
+        // ret.preconditions.fromString(pre_stream.str());
       }
     }
     i++;
@@ -116,4 +142,64 @@ DomainExpert::getActionParams(const std::string & action)
   }
 }
 
+std::vector<std::string>
+DomainExpert::getDurativeActions()
+{
+  std::vector<std::string> ret;
+  for (unsigned i = 0; i < domain_.actions.size(); i++) {
+    parser::pddl::TemporalAction * action_obj =
+      dynamic_cast<parser::pddl::TemporalAction *>(domain_.actions[i]);
+    if (action_obj != nullptr) {
+      ret.push_back(domain_.actions[i]->name);
+    }
+  }
+  return ret;
+}
+
+std::optional<plansys2::DurativeAction>
+DomainExpert::getDurativeAction(const std::string & action)
+{
+  std::string action_search = action;
+  std::transform(action_search.begin(), action_search.end(),
+    action_search.begin(), ::toupper);
+
+  plansys2::DurativeAction ret;
+  bool found = false;
+  unsigned i = 0;
+
+  while (i < domain_.actions.size() && !found) {
+    parser::pddl::TemporalAction * action_obj =
+      dynamic_cast<parser::pddl::TemporalAction *>(domain_.actions[i]);
+
+    if (action_obj != nullptr && action_obj->name == action_search) {
+      found = true;
+      ret.name = action;
+
+      // Parameters
+      for (unsigned j = 0; j < action_obj->params.size(); j++) {
+        Param param;
+        param.name = "?" + domain_.types[action_obj->params[i]]->getName() + std::to_string(j);
+        param.name = domain_.types[action_obj->params[i]]->name;
+        ret.parameters.push_back(param);
+      }
+
+      // Preconditions
+      if (action_obj->pre) {
+        std::stringstream pre_stream;
+        action_obj->pre->PDDLPrint(pre_stream, 0,
+          parser::pddl::TokenStruct<std::string>(), domain_);
+
+        std::cout << pre_stream.str() << std::endl;
+        ret.at_end_requirements.fromString(pre_stream.str());
+      }
+    }
+    i++;
+  }
+
+  if (found) {
+    return ret;
+  } else {
+    return {};
+  }
+}
 }  // namespace plansys2
