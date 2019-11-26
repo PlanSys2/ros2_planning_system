@@ -88,8 +88,9 @@ DomainExpert::getActions()
 {
   std::vector<std::string> ret;
   for (unsigned i = 0; i < domain_.actions.size(); i++) {
+    bool is_action = dynamic_cast<parser::pddl::TemporalAction *>(domain_.actions[i]) == nullptr;
     parser::pddl::Action * action_obj = dynamic_cast<parser::pddl::Action *>(domain_.actions[i]);
-    if (action_obj != nullptr) {
+    if (is_action) {
       ret.push_back(domain_.actions[i]->name);
     }
   }
@@ -108,17 +109,18 @@ DomainExpert::getAction(const std::string & action)
   unsigned i = 0;
 
   while (i < domain_.actions.size() && !found) {
+    bool is_action = dynamic_cast<parser::pddl::TemporalAction *>(domain_.actions[i]) == nullptr;
     parser::pddl::Action * action_obj = dynamic_cast<parser::pddl::Action *>(domain_.actions[i]);
 
-    if (action_obj != nullptr && action_obj->name == action_search) {
+    if (is_action && action_obj->name == action_search) {
       found = true;
       ret.name = action;
 
       // Parameters
       for (unsigned j = 0; j < action_obj->params.size(); j++) {
         Param param;
-        param.name = "?" + domain_.types[action_obj->params[i]]->getName() + std::to_string(j);
-        param.name = domain_.types[action_obj->params[i]]->name;
+        param.name = "?" + std::to_string(j);
+        param.type = domain_.types[action_obj->params[j]]->name;
         ret.parameters.push_back(param);
       }
 
@@ -128,8 +130,16 @@ DomainExpert::getAction(const std::string & action)
         action_obj->pre->PDDLPrint(pre_stream, 0,
           parser::pddl::TokenStruct<std::string>(), domain_);
 
-        std::cout << pre_stream.str() << std::endl;
-        // ret.preconditions.fromString(pre_stream.str());
+        ret.preconditions.fromString(pre_stream.str());
+      }
+
+      // Effects
+      if (action_obj->eff) {
+        std::stringstream effects_stream;
+        action_obj->eff->PDDLPrint(effects_stream, 0,
+          parser::pddl::TokenStruct<std::string>(), domain_);
+
+        ret.effects.fromString(effects_stream.str());
       }
     }
     i++;
@@ -147,9 +157,11 @@ DomainExpert::getDurativeActions()
 {
   std::vector<std::string> ret;
   for (unsigned i = 0; i < domain_.actions.size(); i++) {
+    bool is_durative_action =
+      dynamic_cast<parser::pddl::TemporalAction *>(domain_.actions[i]) != nullptr;
     parser::pddl::TemporalAction * action_obj =
       dynamic_cast<parser::pddl::TemporalAction *>(domain_.actions[i]);
-    if (action_obj != nullptr) {
+    if (is_durative_action) {
       ret.push_back(domain_.actions[i]->name);
     }
   }
@@ -168,29 +180,66 @@ DomainExpert::getDurativeAction(const std::string & action)
   unsigned i = 0;
 
   while (i < domain_.actions.size() && !found) {
+    bool is_durative_action =
+      dynamic_cast<parser::pddl::TemporalAction *>(domain_.actions[i]) != nullptr;
     parser::pddl::TemporalAction * action_obj =
       dynamic_cast<parser::pddl::TemporalAction *>(domain_.actions[i]);
 
-    if (action_obj != nullptr && action_obj->name == action_search) {
+    if (is_durative_action && action_obj->name == action_search) {
       found = true;
       ret.name = action;
 
       // Parameters
       for (unsigned j = 0; j < action_obj->params.size(); j++) {
         Param param;
-        param.name = "?" + domain_.types[action_obj->params[i]]->getName() + std::to_string(j);
-        param.name = domain_.types[action_obj->params[i]]->name;
+        param.name = "?" + std::to_string(j);
+        param.type = domain_.types[action_obj->params[j]]->name;
         ret.parameters.push_back(param);
       }
 
-      // Preconditions
+      // Preconditions AtStart
       if (action_obj->pre) {
         std::stringstream pre_stream;
         action_obj->pre->PDDLPrint(pre_stream, 0,
           parser::pddl::TokenStruct<std::string>(), domain_);
 
-        std::cout << pre_stream.str() << std::endl;
+        ret.at_start_requirements.fromString(pre_stream.str());
+      }
+
+      // Preconditions OverAll
+      if (action_obj->pre_o) {
+        std::stringstream pre_stream;
+        action_obj->pre_o->PDDLPrint(pre_stream, 0,
+          parser::pddl::TokenStruct<std::string>(), domain_);
+
+        ret.over_all_requirements.fromString(pre_stream.str());
+      }
+
+      // Preconditions AtEnd
+      if (action_obj->pre_e) {
+        std::stringstream pre_stream;
+        action_obj->pre_e->PDDLPrint(pre_stream, 0,
+          parser::pddl::TokenStruct<std::string>(), domain_);
+
         ret.at_end_requirements.fromString(pre_stream.str());
+      }
+
+      // Effects AtStart
+      if (action_obj->eff) {
+        std::stringstream effects_stream;
+        action_obj->eff->PDDLPrint(effects_stream, 0,
+          parser::pddl::TokenStruct<std::string>(), domain_);
+
+        ret.at_start_effects.fromString(effects_stream.str());
+      }
+
+      // Effects AtEnd
+      if (action_obj->eff_e) {
+        std::stringstream effects_stream;
+        action_obj->eff_e->PDDLPrint(effects_stream, 0,
+          parser::pddl::TokenStruct<std::string>(), domain_);
+
+        ret.at_end_effects.fromString(effects_stream.str());
       }
     }
     i++;

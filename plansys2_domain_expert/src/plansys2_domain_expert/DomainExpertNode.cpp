@@ -137,7 +137,14 @@ DomainExpertNode::get_domain_actions_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = true;
-    response->actions = domain_expert_->getActions();
+    for (const auto & action : domain_expert_->getActions()) {
+      response->actions.push_back(action);
+      response->type.push_back("action");
+    }
+    for (const auto & action : domain_expert_->getDurativeActions()) {
+      response->actions.push_back(action);
+      response->type.push_back("durative-action");
+    }
   }
 }
 
@@ -150,17 +157,45 @@ DomainExpertNode::get_domain_action_details_service_callback(
   if (domain_expert_ == nullptr) {
     response->success = false;
     response->error_info = "Requesting service in non-active state";
+
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto params = domain_expert_->getAction(request->action);
-    /*if (params.has_value()) {
+    auto action = domain_expert_->getAction(request->action);
+    auto durative_action = domain_expert_->getDurativeAction(request->action);
+
+    if (action.has_value()) {
+      response->name = request->action;
+      response->type = "action";
+
+      for (const auto & param :  action.value().parameters) {
+        response->param_names.push_back(param.name);
+        response->param_types.push_back(param.type);
+      }
+      response->at_start_requirements = action.value().preconditions.toString();
+      response->at_start_effects = action.value().effects.toString();
+
       response->success = true;
-      response->argument_params = params.value();
+    } else if (durative_action.has_value()) {
+      response->name = request->action;
+      response->type = "durative-action";
+
+      for (const auto & param :  durative_action.value().parameters) {
+        response->param_names.push_back(param.name);
+        response->param_types.push_back(param.type);
+      }
+
+      response->at_start_requirements = durative_action.value().at_start_requirements.toString();
+      response->over_all_requirements = durative_action.value().over_all_requirements.toString();
+      response->at_end_requirements = durative_action.value().at_end_requirements.toString();
+      response->at_start_effects = durative_action.value().at_start_effects.toString();
+      response->at_end_effects = durative_action.value().at_end_effects.toString();
+
+      response->success = true;
     } else {
       RCLCPP_WARN(get_logger(), "Requesting a non-existing action [%s]", request->action.c_str());
       response->success = false;
       response->error_info = "Action not found";
-    }*/
+    }
   }
 }
 
@@ -191,16 +226,22 @@ DomainExpertNode::get_domain_predicate_details_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    /*auto params = domain_expert_->getPredicateParams(request->predicate);
+    auto params = domain_expert_->getPredicate(request->predicate);
     if (params.has_value()) {
+      response->name = request->predicate;
+
+      for (const auto & param :  params.value().parameters) {
+        response->param_names.push_back(param.name);
+        response->param_types.push_back(param.type);
+      }
+
       response->success = true;
-      response->argument_params = params.value();
     } else {
       RCLCPP_WARN(get_logger(), "Requesting a non-existing predicate [%s]",
         request->predicate.c_str());
       response->success = false;
       response->error_info = "Predicate not found";
-    }*/
+    }
   }
 }
 

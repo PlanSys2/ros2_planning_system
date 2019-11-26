@@ -57,6 +57,16 @@ room
     )
 )
 
+(:action move_person
+    :parameters (?p - person ?r1 ?r2 - room)
+    :precondition (and 
+        (person_at ?p ?r1)
+    )
+    :effect (and
+        (person_at ?p ?r2)
+        (not(person_at ?p ?r1))
+    )
+)
 
 
 );; end Domain ;;;;;;;;;;;;;;;;;;;;;;;;

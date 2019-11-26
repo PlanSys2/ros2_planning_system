@@ -66,36 +66,59 @@ public:
 
   void process_predicate(const std::vector<std::string> & command)
   {
-    /*if (command.size() == 3) {
-      auto predicates_params = domain_client_->getPredicateParams(command[2]);
-      if (predicates_params.has_value()) {
-        std::cout << "Parameters: " << predicates_params.value().size() << std::endl;
-        for (const auto & param : predicates_params.value()) {
-          std::cout << "\t" << param << std::endl;
+    if (command.size() == 3) {
+      auto predicates = domain_client_->getPredicate(command[2]);
+      if (predicates.has_value()) {
+        std::cout << "Parameters: " << predicates.value().parameters.size() << std::endl;
+        for (size_t i = 0; i < predicates.value().parameters.size(); i++) {
+          std::cout << "\t" << predicates.value().parameters[i].type << " - " <<
+            predicates.value().parameters[i].name << std::endl;
         }
       } else {
         std::cout << "Error when looking for params of " << command[2] << std::endl;
       }
     } else {
       std::cout << "\tUsage: \n\t\tget predicate [predicate_name]" << std::endl;
-    }*/
+    }
   }
 
   void process_action(const std::vector<std::string> & command)
   {
-    /*if (command.size() == 3) {
-      auto action_params = domain_client_->getActionParams(command[2]);
-      if (action_params.has_value()) {
-        std::cout << "Parameters: " << action_params.value().size() << std::endl;
-        for (const auto & param : action_params.value()) {
-          std::cout << "\t" << param << std::endl;
+    if (command.size() == 3) {
+      auto action = domain_client_->getAction(command[2]);
+      auto durative_action = domain_client_->getDurativeAction(command[2]);
+      if (action.has_value()) {
+        std::cout << "Type: action" << std::endl;
+        std::cout << "Parameters: " << action.value().parameters.size() << std::endl;
+        for (size_t i = 0; i < action.value().parameters.size(); i++) {
+          std::cout << "\t" << action.value().parameters[i].type << " - " <<
+            action.value().parameters[i].name << std::endl;
         }
+        std::cout << "Preconditions: " << action.value().preconditions.toString() << std::endl;
+        std::cout << "Effects: " << action.value().effects.toString() << std::endl;
+      } else if (durative_action.has_value()) {
+        std::cout << "Type: durative-action" << std::endl;
+        std::cout << "Parameters: " << durative_action.value().parameters.size() << std::endl;
+        for (size_t i = 0; i < durative_action.value().parameters.size(); i++) {
+          std::cout << "\t" << durative_action.value().parameters[i].name << " - " <<
+            durative_action.value().parameters[i].type << std::endl;
+        }
+        std::cout << "AtStart requirements: " <<
+          durative_action.value().at_start_requirements.toString() << std::endl;
+        std::cout << "OverAll requirements: " <<
+          durative_action.value().over_all_requirements.toString() << std::endl;
+        std::cout << "AtEnd requirements: " <<
+          durative_action.value().at_end_requirements.toString() << std::endl;
+        std::cout << "AtStart effect: " <<
+          durative_action.value().at_start_effects.toString() << std::endl;
+        std::cout << "AtEnd effect: " <<
+          durative_action.value().at_end_effects.toString() << std::endl;
       } else {
         std::cout << "Error when looking for params of " << command[2] << std::endl;
       }
     } else {
       std::cout << "\tUsage: \n\t\tget action [action_name]" << std::endl;
-    }*/
+    }
   }
 
   void process_get(const std::vector<std::string> & command)
@@ -117,10 +140,14 @@ public:
         }
       } else if (command[1] == "actions") {
         auto actions = domain_client_->getActions();
+        auto durative_actions = domain_client_->getDurativeActions();
 
         std::cout << "Actions: " << actions.size() << std::endl;
         for (const auto & action : actions) {
-          std::cout << "\t" << action << std::endl;
+          std::cout << "\t" << action << " (action)" << std::endl;
+        }
+        for (const auto & durative_action : durative_actions) {
+          std::cout << "\t" << durative_action << " (durative action)" << std::endl;
         }
       } else if (command[1] == "predicate") {
         process_predicate(command);

@@ -98,10 +98,14 @@ TEST(domain_expert, get_actions)
   plansys2::DomainExpert domain_expert(domain_str);
 
   auto actions = domain_expert.getActions();
-  ASSERT_EQ(actions.size(), 3);
-  ASSERT_EQ(actions[0], "MOVE");
-  ASSERT_EQ(actions[1], "TALK");
-  ASSERT_EQ(actions[2], "APPROACH");
+  ASSERT_EQ(actions.size(), 1);
+  ASSERT_EQ(actions[0], "MOVE_PERSON");
+
+  auto durative_actions = domain_expert.getDurativeActions();
+  ASSERT_EQ(durative_actions.size(), 3);
+  ASSERT_EQ(durative_actions[0], "MOVE");
+  ASSERT_EQ(durative_actions[1], "TALK");
+  ASSERT_EQ(durative_actions[2], "APPROACH");
 }
 
 
@@ -116,23 +120,30 @@ TEST(domain_expert, get_action_params)
   plansys2::DomainExpert domain_expert(domain_str);
 
   domain_expert.getAction("move");
-  /*auto no_params = domain_expert.getActionParams("NOEXIST");
-  ASSERT_FALSE(no_params.has_value());
+  auto no_action = domain_expert.getAction("NOEXIST");
+  ASSERT_FALSE(no_action.has_value());
 
-  auto move_params = domain_expert.getActionParams("move");
-  ASSERT_TRUE(move_params.has_value());
-  ASSERT_EQ(move_params.value().size(), 3);
-  ASSERT_EQ(move_params.value()[0], "ROBOT");
-  ASSERT_EQ(move_params.value()[1], "ROOM");
-  ASSERT_EQ(move_params.value()[2], "ROOM");
+  auto move_action = domain_expert.getDurativeAction("move");
+  ASSERT_TRUE(move_action.has_value());
+  ASSERT_EQ(move_action.value().name, "move");
+  ASSERT_EQ(move_action.value().parameters.size(), 3);
+  ASSERT_EQ(move_action.value().parameters[0].name, "?0");
+  ASSERT_EQ(move_action.value().parameters[0].type, "ROBOT");
+  ASSERT_EQ(move_action.value().parameters[1].name, "?1");
+  ASSERT_EQ(move_action.value().parameters[1].type, "ROOM");
+  ASSERT_EQ(move_action.value().parameters[2].name, "?2");
+  ASSERT_EQ(move_action.value().parameters[2].type, "ROOM");
 
-  auto talk_params = domain_expert.getActionParams("talk");
-  ASSERT_TRUE(talk_params.has_value());
-  ASSERT_EQ(talk_params.value().size(), 4);
-  ASSERT_EQ(talk_params.value()[0], "ROBOT");
-  ASSERT_EQ(talk_params.value()[1], "PERSON");
-  ASSERT_EQ(talk_params.value()[2], "PERSON");
-  ASSERT_EQ(talk_params.value()[3], "MESSAGE");*/
+  ASSERT_FALSE(move_action.value().at_start_requirements.empty_);
+  ASSERT_TRUE(move_action.value().over_all_requirements.empty_);
+  ASSERT_TRUE(move_action.value().at_end_requirements.empty_);
+
+  ASSERT_EQ(move_action.value().at_start_requirements.toString(),
+    "(AND ( ROBOT_AT ?0 ?1 ))");
+  ASSERT_EQ(move_action.value().at_start_effects.toString(),
+    "(AND (NOT ( ROBOT_AT ?0 ?1 )))");
+  ASSERT_EQ(move_action.value().at_end_effects.toString(),
+    "(AND ( ROBOT_AT ?0 ?2 ))");
 }
 
 int main(int argc, char ** argv)

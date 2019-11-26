@@ -102,7 +102,7 @@ DomainExpertClient::getPredicate(const std::string & predicate)
 {
   plansys2::Predicate ret;
   bool found = false;
-  /*
+
   while (!get_predicate_details_client_->wait_for_service(std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return {};
@@ -125,14 +125,25 @@ DomainExpertClient::getPredicate(const std::string & predicate)
   }
 
   if (future_result.get()->success) {
-    return future_result.get()->argument_params;
+    plansys2::Predicate ret;
+    ret.name = future_result.get()->name;
+
+    for (size_t i = 0; i < future_result.get()->param_names.size(); i++) {
+      plansys2::Param param;
+      param.name = future_result.get()->param_names[i];
+      param.type = future_result.get()->param_types[i];
+      ret.parameters.push_back(param);
+    }
+
+    return ret;
+
   } else {
     RCLCPP_ERROR(
       node_->get_logger(),
       "error calling /domain_expert/get_domain_predicate_details: %s",
       future_result.get()->error_info.c_str());
     return {};
-  }*/
+  }
   return {};
 }
 
@@ -160,7 +171,11 @@ DomainExpertClient::getActions()
     return ret;
   }
 
-  ret = future_result.get()->actions;
+  for (size_t i = 0; i < future_result.get()->actions.size(); i++) {
+    if (future_result.get()->type[i] == "action") {
+      ret.push_back(future_result.get()->actions[i]);
+    }
+  }
 
   return ret;
 }
@@ -168,9 +183,9 @@ DomainExpertClient::getActions()
 std::optional<plansys2::Action>
 DomainExpertClient::getAction(const std::string & action)
 {
-  std::vector<std::string> ret;
+  plansys2::Action ret;
   bool found = false;
-  /*
+
   while (!get_action_details_client_->wait_for_service(std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return {};
@@ -193,25 +208,121 @@ DomainExpertClient::getAction(const std::string & action)
   }
 
   if (future_result.get()->success) {
-    return future_result.get()->argument_params;
+    if (future_result.get()->type == "action") {
+      plansys2::Action ret;
+      ret.name = future_result.get()->name;
+
+      for (size_t i = 0; i < future_result.get()->param_names.size(); i++) {
+        plansys2::Param param;
+        param.name = future_result.get()->param_names[i];
+        param.type = future_result.get()->param_types[i];
+        ret.parameters.push_back(param);
+      }
+
+      ret.preconditions.fromString(future_result.get()->at_start_requirements);
+
+      ret.effects.fromString(future_result.get()->at_start_effects);
+
+      return ret;
+    } else {
+      return {};
+    }
   } else {
     RCLCPP_ERROR(node_->get_logger(),
       "error calling /domain_expert/get_domain_action_details: %s",
       future_result.get()->error_info.c_str());
     return {};
-  }*/
+  }
   return {};
 }
 
 std::vector<std::string>
 DomainExpertClient::getDurativeActions()
 {
-  return std::vector<std::string>();
+  std::vector<std::string> ret;
+
+  while (!get_actions_client_->wait_for_service(std::chrono::seconds(1))) {
+    if (!rclcpp::ok()) {
+      return ret;
+    }
+    RCLCPP_ERROR(
+      node_->get_logger(),
+      "/domain_expert/get_domain_actions service client: waiting for service to appear...");
+  }
+
+  auto request = std::make_shared<plansys2_msgs::srv::GetDomainActions::Request>();
+
+  auto future_result = get_actions_client_->async_send_request(request);
+
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
+    rclcpp::executor::FutureReturnCode::SUCCESS)
+  {
+    return ret;
+  }
+
+  for (size_t i = 0; i < future_result.get()->actions.size(); i++) {
+    if (future_result.get()->type[i] == "durative-action") {
+      ret.push_back(future_result.get()->actions[i]);
+    }
+  }
+
+  return ret;
 }
 
 std::optional<plansys2::DurativeAction>
 DomainExpertClient::getDurativeAction(const std::string & action)
 {
+  plansys2::DurativeAction ret;
+  bool found = false;
+
+  while (!get_action_details_client_->wait_for_service(std::chrono::seconds(1))) {
+    if (!rclcpp::ok()) {
+      return {};
+    }
+    RCLCPP_ERROR(
+      node_->get_logger(),
+      "/domain_expert/get_domain_action_details client: waiting for service to appear...");
+  }
+
+  auto request = std::make_shared<plansys2_msgs::srv::GetDomainActionDetails::Request>();
+
+  request->action = action;
+
+  auto future_result = get_action_details_client_->async_send_request(request);
+
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
+    rclcpp::executor::FutureReturnCode::SUCCESS)
+  {
+    return ret;
+  }
+
+  if (future_result.get()->success) {
+    if (future_result.get()->type == "durative-action") {
+      ret.name = future_result.get()->name;
+
+      for (size_t i = 0; i < future_result.get()->param_names.size(); i++) {
+        plansys2::Param param;
+        param.name = future_result.get()->param_names[i];
+        param.type = future_result.get()->param_types[i];
+        ret.parameters.push_back(param);
+      }
+
+      ret.at_start_requirements.fromString(future_result.get()->at_start_requirements);
+      ret.over_all_requirements.fromString(future_result.get()->over_all_requirements);
+      ret.at_end_requirements.fromString(future_result.get()->at_end_requirements);
+      ret.at_start_effects.fromString(future_result.get()->at_start_effects);
+      ret.at_end_effects.fromString(future_result.get()->at_end_effects);
+
+      return ret;
+    } else {
+      return {};
+    }
+  } else {
+    RCLCPP_ERROR(node_->get_logger(),
+      "error calling /domain_expert/get_domain_action_details: %s",
+      future_result.get()->error_info.c_str());
+    return {};
+  }
   return {};
 }
 

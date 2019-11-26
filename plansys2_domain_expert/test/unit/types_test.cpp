@@ -99,7 +99,7 @@ TEST(domain_types, predicate_tree_to_string)
   pn_and->ops.push_back(pn_or);
 
   plansys2::PredicateTree tree;
-  tree.root = pn_and;
+  tree.root_ = pn_and;
 
   ASSERT_EQ(tree.toString(), std::string("(AND (robot_at r2d2 bedroom)(NOT ") +
     std::string("(robot_at r2d2 kitchen))(OR (person_at paco bedroom)(person_at paco kitchen)))"));
@@ -114,6 +114,12 @@ TEST(domain_types, predicate_tree_from_string)
   tree.fromString(expresion);
 
   ASSERT_EQ(tree.toString(), expresion);
+
+  std::string expresion2 = std::string("(AND ( PERSON_AT ?0 ?2 )(NOT ( PERSON_AT ?0 ?1 )))");
+  plansys2::PredicateTree tree2;
+  tree2.fromString(expresion2);
+
+  ASSERT_EQ(tree2.toString(), expresion2);
 }
 
 int main(int argc, char ** argv)

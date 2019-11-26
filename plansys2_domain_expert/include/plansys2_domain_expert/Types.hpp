@@ -159,17 +159,31 @@ public:
 class PredicateTree
 {
 public:
+  PredicateTree()
+  : empty_(false) {}
+
   std::string toString()
   {
-    return root->toString();
+    if (!empty_) {
+      return root_->toString();
+    } else {
+      return "";
+    }
   }
 
   void fromString(const std::string & expr)
   {
-    root = get_tree_node(expr);
+    if (expr == "") {
+      root_ = nullptr;
+    } else {
+      root_ = get_tree_node(expr);
+    }
+
+    empty_ = root_ == nullptr;
   }
 
-  TreeNode * root;
+  TreeNode * root_;
+  bool empty_;
 };
 
 struct Action
@@ -187,7 +201,8 @@ struct DurativeAction
   PredicateTree at_start_requirements;
   PredicateTree over_all_requirements;
   PredicateTree at_end_requirements;
-  PredicateTree efects;
+  PredicateTree at_start_effects;
+  PredicateTree at_end_effects;
 };
 
 }  // namespace plansys2
