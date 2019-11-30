@@ -269,11 +269,15 @@ TEST(problem_expert, get_probem)
   ASSERT_TRUE(problem_expert.addPredicate(predicate_3));
   ASSERT_TRUE(problem_expert.addPredicate(predicate_4));
 
+  plansys2::Goal goal;
+  goal.fromString("(AND (robot_at r2d2 bedroom)(person_at paco kitchen))");
+  ASSERT_TRUE(problem_expert.setGoal(goal));
+
   ASSERT_EQ(problem_expert.getProblem(), std::string("( DEFINE ( PROBLEM  )\n( :DOMAIN SIMPLE ") +
     std::string(")\n( :OBJECTS\n\tpaco - PERSON\n\tr2d2 - ROBOT\n\tbedroom kitchen - ROOM\n)\n") +
     std::string("( :INIT\n\t( ROBOT_AT r2d2 bedroom )\n\t( ROBOT_AT r2d2 kitchen )\n\t( ") +
     std::string("PERSON_AT paco bedroom )\n\t( PERSON_AT paco kitchen )\n)\n( :GOAL\n\t( ") +
-    std::string("AND\n\t)\n)\n)\n"));
+    std::string("AND\n\t\t( ROBOT_AT r2d2 bedroom )\n\t\t( PERSON_AT paco kitchen )\n\t)\n)\n)\n"));
 }
 
 int main(int argc, char ** argv)

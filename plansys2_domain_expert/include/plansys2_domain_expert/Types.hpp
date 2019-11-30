@@ -63,6 +63,7 @@ public:
   virtual ~TreeNode() {}
 
   virtual std::string toString() = 0;
+  virtual void getPredicates(std::vector<Predicate> & predicates) = 0;
   NodeType type_;
 };
 
@@ -77,6 +78,11 @@ public:
   std::string toString()
   {
     return predicate_.toString();
+  }
+
+  void getPredicates(std::vector<Predicate> & predicates)
+  {
+    predicates.push_back(predicate_);
   }
 
   Predicate predicate_;
@@ -104,6 +110,14 @@ public:
     return ret;
   }
 
+
+  void getPredicates(std::vector<Predicate> & predicates)
+  {
+    for (auto op : ops) {
+      op->getPredicates(predicates);
+    }
+  }
+
   std::vector<std::shared_ptr<TreeNode>> ops;
 };
 
@@ -129,6 +143,13 @@ public:
     return ret;
   }
 
+  void getPredicates(std::vector<Predicate> & predicates)
+  {
+    for (auto op : ops) {
+      op->getPredicates(predicates);
+    }
+  }
+
   std::vector<std::shared_ptr<TreeNode>> ops;
 };
 
@@ -152,6 +173,10 @@ public:
     return ret;
   }
 
+  void getPredicates(std::vector<Predicate> & predicates)
+  {
+    op->getPredicates(predicates);
+  }
   std::shared_ptr<TreeNode> op;
 };
 
@@ -191,6 +216,13 @@ public:
       root_ = nullptr;
     } else {
       root_ = get_tree_node(expr);
+    }
+  }
+
+  void getPredicates(std::vector<Predicate> & predicates)
+  {
+    if (root_ != nullptr) {
+      root_->getPredicates(predicates);
     }
   }
 

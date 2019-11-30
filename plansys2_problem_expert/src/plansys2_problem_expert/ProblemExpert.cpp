@@ -294,6 +294,22 @@ ProblemExpert::getProblem()
     problem.addInit(predicate.name, v);
   }
 
+  std::vector<Predicate> predicates;
+  goal_.getPredicates(predicates);
+
+  for (auto predicate : predicates) {
+    StringVec v;
+
+    for (size_t i = 0; i < predicate.parameters.size(); i++) {
+      v.push_back(predicate.parameters[i].name);
+    }
+
+    std::transform(predicate.name.begin(), predicate.name.end(), predicate.name.begin(), ::toupper);
+
+    problem.addGoal(predicate.name, v);
+  }
+
+
   std::ostringstream stream;
   stream << problem;
   return stream.str();
