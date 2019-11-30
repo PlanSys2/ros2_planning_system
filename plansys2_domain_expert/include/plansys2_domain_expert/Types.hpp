@@ -18,6 +18,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace plansys2
 {
@@ -27,6 +28,8 @@ struct Param
   std::string name;
   std::string type;
 };
+
+bool operator==(const Param & op1, const Param & op2);
 
 class Predicate
 {
@@ -43,6 +46,8 @@ public:
 
     return ret;
   }
+
+  friend bool operator==(const Predicate & op1, const Predicate & op2);
 
   std::string name;
   std::vector<Param> parameters;
@@ -61,7 +66,7 @@ public:
   NodeType type_;
 };
 
-TreeNode * get_tree_node(const std::string & expr);
+std::shared_ptr<TreeNode> get_tree_node(const std::string & expr);
 
 class PredicateNode : public TreeNode
 {
@@ -85,9 +90,6 @@ public:
 
   ~AndNode() override
   {
-    for (auto op : ops) {
-      if (op != nullptr) {delete op;}
-    }
   }
 
   std::string toString()
@@ -102,7 +104,7 @@ public:
     return ret;
   }
 
-  std::vector<TreeNode *> ops;
+  std::vector<std::shared_ptr<TreeNode>> ops;
 };
 
 class OrNode : public TreeNode
@@ -113,10 +115,8 @@ public:
 
   ~OrNode() override
   {
-    for (auto op : ops) {
-      if (op != nullptr) {delete op;}
-    }
   }
+
   std::string toString()
   {
     std::string ret;
@@ -129,7 +129,7 @@ public:
     return ret;
   }
 
-  std::vector<TreeNode *> ops;
+  std::vector<std::shared_ptr<TreeNode>> ops;
 };
 
 class NotNode : public TreeNode
@@ -140,7 +140,6 @@ public:
 
   ~NotNode() override
   {
-    if (op != nullptr) {delete op;}
   }
 
   std::string toString()
@@ -153,18 +152,33 @@ public:
     return ret;
   }
 
-  TreeNode * op;
+  std::shared_ptr<TreeNode> op;
 };
 
 class PredicateTree
 {
 public:
   PredicateTree()
-  : empty_(false) {}
+  : root_(nullptr) {}
 
-  std::string toString()
+  ~PredicateTree()
   {
-    if (!empty_) {
+  }
+
+  void clear()
+  {
+    root_ = nullptr;
+  }
+
+  PredicateTree & operator=(const PredicateTree & other)
+  {
+    root_ = other.root_;
+    return *this;
+  }
+
+  std::string toString() const
+  {
+    if (root_ != nullptr) {
       return root_->toString();
     } else {
       return "";
@@ -178,12 +192,14 @@ public:
     } else {
       root_ = get_tree_node(expr);
     }
-
-    empty_ = root_ == nullptr;
   }
 
-  TreeNode * root_;
-  bool empty_;
+  bool empty()
+  {
+    return root_ == nullptr || root_->toString() == "(AND )";
+  }
+
+  std::shared_ptr<TreeNode> root_;
 };
 
 struct Action

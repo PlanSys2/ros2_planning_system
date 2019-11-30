@@ -14,11 +14,48 @@
 
 #include <string>
 #include <vector>
+#include <regex>
+#include <iostream>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpert.hpp"
+
+
+std::string getReducedString(const std::string & expr)  // Same function in Types.cpp
+{
+  std::regex nts_chars("[\n\t]*", std::regex_constants::ECMAScript);
+  std::string ret = std::regex_replace(expr, nts_chars, "");
+  std::regex open_paren("\\( ", std::regex_constants::ECMAScript);
+  ret = std::regex_replace(ret, open_paren, "(");
+  std::regex close_paren(" \\)", std::regex_constants::ECMAScript);
+  ret = std::regex_replace(ret, close_paren, ")");
+  return ret;
+}
+
+TEST(domain_expert, functions)
+{
+  std::string my_string("(AND)");
+  ASSERT_EQ(getReducedString(my_string), "(AND)");
+
+  my_string = "( AND)";
+  ASSERT_EQ(getReducedString(my_string), "(AND)");
+
+  my_string = "( \tAND)";
+  ASSERT_EQ(getReducedString(my_string), "(AND)");
+
+  my_string = "( \tAND\t)";
+  ASSERT_EQ(getReducedString(my_string), "(AND)");
+
+  my_string = "( AND\n)";
+  ASSERT_EQ(getReducedString(my_string), "(AND)");
+  my_string = "( AND\n\t)";
+  ASSERT_EQ(getReducedString(my_string), "(AND)");
+  my_string = "( ( AND\n\t ) )";
+  ASSERT_EQ(getReducedString(my_string), "((AND))");
+}
+
 
 TEST(domain_expert, get_types)
 {
@@ -124,6 +161,9 @@ TEST(domain_expert, get_action_params)
   ASSERT_FALSE(no_action.has_value());
 
   auto move_action = domain_expert.getDurativeAction("move");
+  auto at_start = move_action.value().at_start_requirements;
+  ASSERT_EQ(at_start.toString(), "(AND (ROBOT_AT ?0 ?1))");
+
   ASSERT_TRUE(move_action.has_value());
   ASSERT_EQ(move_action.value().name, "move");
   ASSERT_EQ(move_action.value().parameters.size(), 3);
@@ -134,16 +174,16 @@ TEST(domain_expert, get_action_params)
   ASSERT_EQ(move_action.value().parameters[2].name, "?2");
   ASSERT_EQ(move_action.value().parameters[2].type, "ROOM");
 
-  ASSERT_FALSE(move_action.value().at_start_requirements.empty_);
-  ASSERT_TRUE(move_action.value().over_all_requirements.empty_);
-  ASSERT_TRUE(move_action.value().at_end_requirements.empty_);
+  ASSERT_FALSE(at_start.empty());
+  ASSERT_TRUE(move_action.value().over_all_requirements.empty());
+  ASSERT_TRUE(move_action.value().at_end_requirements.empty());
 
   ASSERT_EQ(move_action.value().at_start_requirements.toString(),
-    "(AND ( ROBOT_AT ?0 ?1 ))");
+    "(AND (ROBOT_AT ?0 ?1))");
   ASSERT_EQ(move_action.value().at_start_effects.toString(),
-    "(AND (NOT ( ROBOT_AT ?0 ?1 )))");
+    "(AND (NOT (ROBOT_AT ?0 ?1)))");
   ASSERT_EQ(move_action.value().at_end_effects.toString(),
-    "(AND ( ROBOT_AT ?0 ?2 ))");
+    "(AND (ROBOT_AT ?0 ?2))");
 }
 
 int main(int argc, char ** argv)

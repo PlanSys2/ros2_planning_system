@@ -18,6 +18,9 @@
 #include <string>
 #include <vector>
 
+#include "plansys2_domain_expert/Types.hpp"
+#include "plansys2_problem_expert/Types.hpp"
+
 namespace plansys2
 {
 
@@ -26,19 +29,18 @@ class ProblemExpertInterface
 public:
   ProblemExpertInterface() {}
 
-  virtual std::vector<std::string> getInstances() = 0;
-  virtual bool addInstance(const std::string & name, const std::string & type) = 0;
+  virtual const std::vector<Instance> & getInstances() const = 0;
+  virtual bool addInstance(const Instance & instance) = 0;
   virtual bool removeInstance(const std::string & name) = 0;
-  virtual std::optional<std::string> getInstanceType(const std::string & name) = 0;
+  virtual std::optional<Instance> getInstance(const std::string & name) = 0;
 
-  virtual std::vector<std::string> getPredicates() = 0;
-  virtual bool addPredicate(const std::string & predicate, const std::vector<std::string> & arguments) = 0;
-  virtual bool removePredicate(const std::string & predicate, const std::vector<std::string> & arguments) = 0;
-  virtual std::optional<std::vector<std::string>> getPredicateArguments(const std::string & predicate) = 0;
+  virtual const std::vector<Predicate> & getPredicates() const = 0;
+  virtual bool addPredicate(const Predicate & predicate) = 0;
+  virtual bool removePredicate(const Predicate & predicate) = 0;
 
-  virtual std::vector<std::string> getGoal() = 0;
-  virtual bool addGoal(const std::string & goal, const std::vector<std::string> & arguments) = 0;
-  virtual bool removeGoal(const std::string & goal, const std::vector<std::string> & arguments) = 0;
+  virtual const Goal & getGoal() const = 0;
+  virtual bool setGoal(const Goal & goal)  = 0;
+  bool clearGoal();
 
   virtual std::string getProblem() = 0;
 };

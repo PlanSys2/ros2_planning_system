@@ -14,6 +14,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/Types.hpp"
@@ -22,11 +23,11 @@ TEST(domain_types, basic_types)
 {
   plansys2::Param param_1;
   param_1.name = "r2d2";
-  param_1.type = "robot";
+  param_1.type = "ROBOT";
 
   plansys2::Param param_2;
   param_2.name = "bedroom";
-  param_2.type = "room";
+  param_2.type = "ROOM";
 
   plansys2::Predicate predicate_1;
   predicate_1.name = "robot_at";
@@ -40,19 +41,19 @@ TEST(domain_types, predicate_tree_to_string)
 {
   plansys2::Param param_1;
   param_1.name = "r2d2";
-  param_1.type = "robot";
+  param_1.type = "ROBOT";
 
   plansys2::Param param_2;
   param_2.name = "bedroom";
-  param_2.type = "room";
+  param_2.type = "ROOM";
 
   plansys2::Param param_3;
   param_3.name = "kitchen";
-  param_3.type = "room";
+  param_3.type = "ROOM";
 
   plansys2::Param param_4;
   param_4.name = "paco";
-  param_4.type = "person";
+  param_4.type = "PERSON";
 
   plansys2::Predicate predicate_1;
   predicate_1.name = "robot_at";
@@ -74,26 +75,26 @@ TEST(domain_types, predicate_tree_to_string)
   predicate_4.parameters.push_back(param_4);
   predicate_4.parameters.push_back(param_3);
 
-  plansys2::PredicateNode * pn_1 = new plansys2::PredicateNode();
+  std::shared_ptr<plansys2::PredicateNode> pn_1 = std::make_shared<plansys2::PredicateNode>();
   pn_1->predicate_ = predicate_1;
 
-  plansys2::PredicateNode * pn_2 = new plansys2::PredicateNode();
+  std::shared_ptr<plansys2::PredicateNode> pn_2 = std::make_shared<plansys2::PredicateNode>();
   pn_2->predicate_ = predicate_2;
 
-  plansys2::PredicateNode * pn_3 = new plansys2::PredicateNode();
+  std::shared_ptr<plansys2::PredicateNode> pn_3 = std::make_shared<plansys2::PredicateNode>();
   pn_3->predicate_ = predicate_3;
 
-  plansys2::PredicateNode * pn_4 = new plansys2::PredicateNode();
+  std::shared_ptr<plansys2::PredicateNode> pn_4 = std::make_shared<plansys2::PredicateNode>();
   pn_4->predicate_ = predicate_4;
 
-  plansys2::NotNode * pn_not = new plansys2::NotNode();
+  std::shared_ptr<plansys2::NotNode> pn_not = std::make_shared<plansys2::NotNode>();
   pn_not->op = pn_2;
 
-  plansys2::OrNode * pn_or = new plansys2::OrNode();
+  std::shared_ptr<plansys2::OrNode> pn_or = std::make_shared<plansys2::OrNode>();
   pn_or->ops.push_back(pn_3);
   pn_or->ops.push_back(pn_4);
 
-  plansys2::AndNode * pn_and = new plansys2::AndNode();
+  std::shared_ptr<plansys2::AndNode> pn_and = std::make_shared<plansys2::AndNode>();
   pn_and->ops.push_back(pn_1);
   pn_and->ops.push_back(pn_not);
   pn_and->ops.push_back(pn_or);
@@ -115,7 +116,7 @@ TEST(domain_types, predicate_tree_from_string)
 
   ASSERT_EQ(tree.toString(), expresion);
 
-  std::string expresion2 = std::string("(AND ( PERSON_AT ?0 ?2 )(NOT ( PERSON_AT ?0 ?1 )))");
+  std::string expresion2 = std::string("(AND (PERSON_AT ?0 ?2)(NOT (PERSON_AT ?0 ?1)))");
   plansys2::PredicateTree tree2;
   tree2.fromString(expresion2);
 

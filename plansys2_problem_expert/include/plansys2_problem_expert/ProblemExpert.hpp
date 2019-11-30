@@ -18,66 +18,57 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "pddl_parser/Instance.h"
 
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
 
+#include "plansys2_domain_expert/Types.hpp"
+#include "plansys2_problem_expert/Types.hpp"
+
 namespace plansys2
 {
-
-struct Instance
-{
-  std::string name;
-  std::string type;
-};
-
-struct Predicate
-{
-  std::string predicate;
-  std::vector<std::string> arguments;
-};
-
-struct Goal
-{
-  std::string goal;
-  std::vector<std::string> arguments;
-};
 
 class ProblemExpert : public ProblemExpertInterface
 {
 public:
-  ProblemExpert();
+  explicit ProblemExpert(std::shared_ptr<DomainExpert> & domain_expert);
 
-  std::vector<std::string> getInstances();
-  bool addInstance(const std::string & name, const std::string & type);
+  const std::vector<Instance> & getInstances() const;
+  bool addInstance(const Instance & instance);
   bool removeInstance(const std::string & name);
-  std::optional<std::string> getInstanceType(const std::string & name);
+  std::optional<Instance> getInstance(const std::string & name);
 
-  std::vector<std::string> getPredicates();
-  bool addPredicate(const std::string & predicate, const std::vector<std::string> & arguments);
-  bool removePredicate(const std::string & predicate, const std::vector<std::string> & arguments);
-  std::optional<std::vector<std::string>> getPredicateArguments(const std::string & predicate);
+  const std::vector<Predicate> & getPredicates() const;
+  bool addPredicate(const Predicate & predicate);
+  bool removePredicate(const Predicate & predicate);
 
-  std::vector<std::string> getGoal();
-  bool addGoal(const std::string & goal, const std::vector<std::string> & arguments);
-  bool removeGoal(const std::string & goal, const std::vector<std::string> & arguments);
+  const Goal & getGoal() const;
+  bool setGoal(const Goal & goal);
+  bool clearGoal();
 
   std::string getProblem();
 
-  bool validType(const std::string & type);
   bool existInstance(const std::string & name);
-  bool existPredicate(const std::string & predicate, const std::vector<std::string> & arguments);
-  bool validPredicate(const std::string & predicate);
-  
+  bool existPredicate(const Predicate & predicate);
+  bool existGoal(const Goal & goal);
+  bool isValidType(const std::string & type);
+  bool isValidPredicate(const Predicate & predicate);
+  bool isValidGoal(const Goal & goal);
+
 private:
+  bool checkPredicateTreeTypes(
+    std::shared_ptr<TreeNode> node,
+    std::shared_ptr<DomainExpert> & domain_expert_);
+
   // parser::pddl::Problem problem_;
   std::vector<Instance> instances_;
   std::vector<Predicate> predicates_;
-  std::vector<Goal> goals_;
+  Goal goal_;
 
-  plansys2::DomainExpert domain_expert_;
+  std::shared_ptr<DomainExpert> domain_expert_;
 };
 
 }  // namespace plansys2

@@ -18,75 +18,65 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-
+#include <memory>
 
 namespace plansys2
 {
 
-ProblemExpert::ProblemExpert()
+ProblemExpert::ProblemExpert(std::shared_ptr<DomainExpert> & domain_expert)
+: domain_expert_(domain_expert)
 {
 }
 
-bool 
-ProblemExpert::addInstance(std::string name, std::string type)
+bool
+ProblemExpert::addInstance(const Instance & instance)
 {
-  if (!validType(type))
-  {
-    std::cerr << "Trying to add an instance [" << name << " of unknown type " << type << std::endl; 
+  if (!isValidType(instance.type)) {
     return false;
-  } else if (existInstance(name)) {
-    std::cerr << "Trying to add an existing instance [" << name << " of type " << type << std::endl; 
+  } else if (existInstance(instance.name)) {
     return false;
   } else {
-    instances_.push_back(Instance{name, type});
+    instances_.push_back(instance);
     return true;
   }
 }
 
-std::vector<std::string>
-ProblemExpert::getInstances()
+const std::vector<Instance> &
+ProblemExpert::getInstances() const
 {
-  std::vector<std::string> ret;
-
-  for (const auto & instance : instances_)
-  {
-    ret.push_back(instance.name);
-  }
-
-  return ret;
+  return instances_;
 }
-
 
 bool
 ProblemExpert::removeInstance(const std::string & name)
 {
-  found = false;
+  bool found = false;
   int i = 0;
 
-  while (!found && i < instances_.size())
-  {
-    if (instances_[i] == name)
-    {
+  while (!found && i < instances_.size()) {
+    if (instances_[i].name == name) {
       found = true;
       instances_.erase(instances_.begin() + i);
     }
+    i++;
   }
-  
+
   return found;
 }
 
-std::optional<std::string>
-ProblemExpert::getInstanceType(const std::string & instance_name)
+std::optional<Instance>
+ProblemExpert::getInstance(const std::string & instance_name)
 {
-  std::string ret;
+  Instance ret;
 
   bool found = false;
   int i = 0;
   while (i < instances_.size() && !found) {
     if (instances_[i].name == instance_name) {
       found = true;
-      ret = instances_[i].type;
+      ret = instances_[i];
     }
+    i++;
   }
 
   if (found) {
@@ -96,98 +86,73 @@ ProblemExpert::getInstanceType(const std::string & instance_name)
   }
 }
 
-std::vector<std::string>
-ProblemExpert::getPredicates()
+const std::vector<Predicate> &
+ProblemExpert::getPredicates() const
 {
-  std::vector<std::string> ret;
-
-  for (auto const & predicate : predicates_)
-  {
-    ret.push_back(predicate.predicate);
-  }
-
-  return ret;
+  return predicates_;
 }
 
 bool
-ProblemExpert::addPredicate(const std::string & predicate, const std::vector<std::string> & arguments)
+ProblemExpert::addPredicate(const Predicate & predicate)
 {
-  if (!existPredicate(predicate, arguments) && validPredicate(predicate))
-  {
-    auto param_types = getPredicateArguments(predicate);
-    if (!param_types.has_value()) {
-      std::cerr << "Predicate to add does not exists [" << predicate << "]" << std::endl;
-      return false;
-    } else if (!param_types.value().size() != arguments.size()) {
-      std::cerr << "Predicates params number [" << param_types.value().size() <<
-        "]does not fit with args number [" << arguments.size() << "]" << std::endl;
+  if (!existPredicate(predicate)) {
+    if (isValidPredicate(predicate)) {
+      predicates_.push_back(predicate);
+      return true;
+    } else {
       return false;
     }
-
-    for (int i = 0; i < arguments.size(); i++)
-    {
-      auto instance_type = getInstanceType(arguments[i]);
-      if (!instance_type.has_value()) {
-        std::cerr << "Instance does not exists [" << arguments[i] <<
-          "] adding predicate" << std::endl;
-        return false;
-      } else if (instance_type.value() != param_types.value()[i]) {
-        std::cerr << "Instance [" << arguments[i] << "] type [" << instance_type.value() <<
-          "] does not fit with predicate param [" << param_types.value()[i] << "]" << std::endl;
-        return false;
-      }
-    }
-
-    predicates_.push_back(Predicate{predicate, arguments});
-    return true;
   } else {
-    std::cerr << "Trying to add an existing predicate [" << name << " with args " << type << std::endl; 
     return false;
   }
 }
 
-void
-ProblemExpert::removePredicate(const std::string & predicate, const std::vector<std::string> & arguments)
+bool
+ProblemExpert::removePredicate(const Predicate & predicate)
 {
+  bool found = false;
+  int i = 0;
 
+  while (!found && i < predicates_.size()) {
+    if (predicates_[i] == predicate) {
+      found = true;
+      predicates_.erase(predicates_.begin() + i);
+    }
+    i++;
+  }
+
+  return found;
 }
 
-std::optional<std::vector<std::string>>
-ProblemExpert::getPredicateArguments(const std::string & predicate)
+const Goal &
+ProblemExpert::getGoal() const
 {
-  return {};
-}
-
-std::vector<std::string>
-ProblemExpert::getGoal()
-{
-  std::vector<std::string> ret;
-
-  return ret;
+  return goal_;
 }
 
 bool
-ProblemExpert::addGoal(const std::string & goal, const std::vector<std::string> & arguments)
+ProblemExpert::setGoal(const Goal & goal)
 {
+  if (isValidGoal(goal)) {
+    goal_.clear();
+    goal_ = goal;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool
+ProblemExpert::clearGoal()
+{
+  goal_.clear();
   return true;
 }
 
 bool
-ProblemExpert::removeGoal(const std::string & goal, const std::vector<std::string> & arguments)
+ProblemExpert::isValidType(const std::string & type)
 {
-  return true;
-}
-
-std::string::addGoal
-ProblemExpert::getProblem()
-{
-  return "";
-}
-
-bool
-ProblemExpert::validType(const std::string & type)
-{
-  auto valid_types = domain_expert_.getTypes();
+  auto valid_types = domain_expert_->getTypes();
   auto it = std::find(valid_types.begin(), valid_types.end(), type);
 
   return it != valid_types.end();
@@ -203,34 +168,115 @@ ProblemExpert::existInstance(const std::string & name)
     if (instances_[i].name == name) {
       found = true;
     }
+    i++;
   }
 
   return found;
 }
 
 bool
-ProblemExpert::existPredicate(const std::string & predicate, const std::vector<std::string> & arguments)
+ProblemExpert::existPredicate(const Predicate & predicate)
 {
   bool found = false;
   int i = 0;
 
   while (!found && i < predicates_.size()) {
-    if (predicates_[i].predicate == predicate && arguments == predicates_[i].arguments) {
+    if (predicates_[i].name == predicate.name &&
+      predicates_[i].parameters == predicate.parameters)
+    {
       found = true;
     }
+    i++;
   }
 
   return found;
 }
 
 bool
-ProblemExpert::validPredicate(const std::string & predicate)
+ProblemExpert::isValidPredicate(const Predicate & predicate)
 {
-  auto valid_predicates = domain_expert_.getPredicates();
-  auto it = std::find(valid_predicates.begin(), valid_predicates.end(), predicate);
+  bool valid = false;
 
-  return it != valid_predicates.end();
+  const auto & model_predicate = domain_expert_->getPredicate(predicate.name);
+  if (model_predicate.has_value()) {
+    if (model_predicate.value().parameters.size() == predicate.parameters.size()) {
+      bool same_types = true;
+      int i = 0;
+      while (same_types && i < predicate.parameters.size()) {
+        auto arg_type = getInstance(predicate.parameters[i].name);
+
+        if (!arg_type.has_value()) {
+          same_types = false;
+        } else if (arg_type.value().type != model_predicate.value().parameters[i].type) {
+          same_types = false;
+        }
+        i++;
+      }
+      valid = same_types;
+    }
+  }
+
+  return valid;
 }
 
+bool
+ProblemExpert::isValidGoal(const Goal & goal)
+{
+  return checkPredicateTreeTypes(goal.root_, domain_expert_);
+}
+
+bool
+ProblemExpert::checkPredicateTreeTypes(
+  std::shared_ptr<TreeNode> node,
+  std::shared_ptr<DomainExpert> & domain_expert_)
+{
+  switch (node->type_) {
+    case AND: {
+        std::shared_ptr<plansys2::AndNode> pn_and =
+          std::dynamic_pointer_cast<plansys2::AndNode>(node);
+        bool ret = true;
+
+        for (const auto & op : pn_and->ops) {
+          ret = ret && checkPredicateTreeTypes(op, domain_expert_);
+        }
+        return ret;
+      }
+
+    case OR: {
+        std::shared_ptr<plansys2::OrNode> pn_or =
+          std::dynamic_pointer_cast<plansys2::OrNode>(node);
+        bool ret = true;
+
+        for (const auto & op : pn_or->ops) {
+          ret = ret || checkPredicateTreeTypes(op, domain_expert_);
+        }
+        return ret;
+      }
+
+    case NOT: {
+        std::shared_ptr<plansys2::NotNode> pn_not =
+          std::dynamic_pointer_cast<NotNode>(node);
+
+        return checkPredicateTreeTypes(pn_not->op, domain_expert_);
+      }
+
+    case PREDICATE: {
+        std::shared_ptr<plansys2::PredicateNode> pred =
+          std::dynamic_pointer_cast<PredicateNode>(node);
+
+        return isValidPredicate(pred->predicate_);
+      }
+
+    default:
+      std::cerr << "checkPredicateTreeTypes: Error parsing expresion [" <<
+        node->toString() << "]" << std::endl;
+  }
+}
+
+std::string
+ProblemExpert::getProblem()
+{
+  return "";
+}
 
 }  // namespace plansys2

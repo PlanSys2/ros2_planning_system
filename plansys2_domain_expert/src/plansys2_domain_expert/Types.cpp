@@ -18,17 +18,29 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace plansys2
 {
+
+bool operator==(const Param & op1, const Param & op2)
+{
+  return op1.type == op2.type && op1.name == op2.name;
+}
+
+bool operator==(const Predicate & op1, const Predicate & op2)
+{
+  return op1.name == op2.name && op1.parameters == op2.parameters;
+}
+
 std::string getReducedString(const std::string & expr)
 {
-  std::regex nts_chars("[\n\t]+", std::regex_constants::ECMAScript);
+  std::regex nts_chars("[\n\t]*", std::regex_constants::ECMAScript);
   std::string ret = std::regex_replace(expr, nts_chars, "");
-  /*std::regex open_paren("\( ", std::regex_constants::ECMAScript);
+  std::regex open_paren("\\( ", std::regex_constants::ECMAScript);
   ret = std::regex_replace(ret, open_paren, "(");
-  std::regex close_paren(" \)", std::regex_constants::ECMAScript);
-  ret = std::regex_replace(ret, close_paren, ")");*/
+  std::regex close_paren(" \\)", std::regex_constants::ECMAScript);
+  ret = std::regex_replace(ret, close_paren, ")");
   return ret;
 }
 
@@ -113,18 +125,17 @@ std::vector<plansys2::Param> getPredicateParams(const std::string & expr)
   return ret;
 }
 
-TreeNode * get_tree_node(const std::string & expr)
+std::shared_ptr<TreeNode> get_tree_node(const std::string & expr)
 {
   std::string wexpr = getReducedString(expr);
   NodeType type = getType(wexpr);
 
-  if (wexpr == "( AND)") {
+  if (wexpr == "(AND)") {
     return nullptr;
   }
-
   switch (type) {
     case AND: {
-        plansys2::AndNode * pn_and = new plansys2::AndNode();
+        std::shared_ptr<plansys2::AndNode> pn_and = std::make_shared<plansys2::AndNode>();
 
         std::vector<std::string> subexprs = getSubExpr(wexpr);
 
@@ -136,7 +147,7 @@ TreeNode * get_tree_node(const std::string & expr)
       }
 
     case OR: {
-        plansys2::OrNode * pn_or = new plansys2::OrNode();
+        std::shared_ptr<plansys2::OrNode> pn_or = std::make_shared<plansys2::OrNode>();
 
         std::vector<std::string> subexprs = getSubExpr(wexpr);
 
@@ -148,7 +159,7 @@ TreeNode * get_tree_node(const std::string & expr)
       }
 
     case NOT: {
-        plansys2::NotNode * pn_not = new plansys2::NotNode();
+        std::shared_ptr<plansys2::NotNode> pn_not = std::make_shared<plansys2::NotNode>();
 
         std::vector<std::string> subexprs = getSubExpr(wexpr);
         pn_not->op = get_tree_node(subexprs[0]);
@@ -157,7 +168,8 @@ TreeNode * get_tree_node(const std::string & expr)
       }
 
     case PREDICATE: {
-        plansys2::PredicateNode * pred = new plansys2::PredicateNode;
+        std::shared_ptr<plansys2::PredicateNode> pred =
+          std::make_shared<plansys2::PredicateNode>();
 
         pred->predicate_.name = getPredicateName(wexpr);
         pred->predicate_.parameters = getPredicateParams(wexpr);

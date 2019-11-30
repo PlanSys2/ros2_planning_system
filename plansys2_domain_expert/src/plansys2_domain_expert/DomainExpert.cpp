@@ -199,11 +199,12 @@ DomainExpert::getDurativeAction(const std::string & action)
 
       // Preconditions AtStart
       if (action_obj->pre) {
-        std::stringstream pre_stream;
-        action_obj->pre->PDDLPrint(pre_stream, 0,
-          parser::pddl::TokenStruct<std::string>(), domain_);
-
-        ret.at_start_requirements.fromString(pre_stream.str());
+        {
+          std::stringstream pre_stream;
+          action_obj->pre->PDDLPrint(pre_stream, 0,
+            parser::pddl::TokenStruct<std::string>(), domain_);
+          ret.at_start_requirements.fromString(pre_stream.str());
+        }
       }
 
       // Preconditions OverAll
