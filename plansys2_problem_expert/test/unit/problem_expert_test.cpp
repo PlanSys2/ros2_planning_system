@@ -212,6 +212,70 @@ TEST(problem_expert, addget_goals)
   ASSERT_EQ(problem_expert.getGoal().toString(), "");
 }
 
+TEST(problem_expert, get_probem)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  plansys2::Param param_1;
+  param_1.name = "r2d2";
+  param_1.type = "ROBOT";
+
+  plansys2::Param param_2;
+  param_2.name = "bedroom";
+  param_2.type = "ROOM";
+
+  plansys2::Param param_3;
+  param_3.name = "kitchen";
+  param_3.type = "ROOM";
+
+  plansys2::Param param_4;
+  param_4.name = "paco";
+  param_4.type = "PERSON";
+
+  plansys2::Predicate predicate_1;
+  predicate_1.name = "robot_at";
+  predicate_1.parameters.push_back(param_1);
+  predicate_1.parameters.push_back(param_2);
+
+  plansys2::Predicate predicate_2;
+  predicate_2.name = "robot_at";
+  predicate_2.parameters.push_back(param_1);
+  predicate_2.parameters.push_back(param_3);
+
+  plansys2::Predicate predicate_3;
+  predicate_3.name = "person_at";
+  predicate_3.parameters.push_back(param_4);
+  predicate_3.parameters.push_back(param_2);
+
+  plansys2::Predicate predicate_4;
+  predicate_4.name = "person_at";
+  predicate_4.parameters.push_back(param_4);
+  predicate_4.parameters.push_back(param_3);
+
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"paco", "PERSON"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"r2d2", "ROBOT"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"bedroom", "ROOM"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"kitchen", "ROOM"}));
+
+  ASSERT_TRUE(problem_expert.addPredicate(predicate_1));
+  ASSERT_TRUE(problem_expert.addPredicate(predicate_2));
+  ASSERT_TRUE(problem_expert.addPredicate(predicate_3));
+  ASSERT_TRUE(problem_expert.addPredicate(predicate_4));
+
+  ASSERT_EQ(problem_expert.getProblem(), std::string("( DEFINE ( PROBLEM  )\n( :DOMAIN SIMPLE ") +
+    std::string(")\n( :OBJECTS\n\tpaco - PERSON\n\tr2d2 - ROBOT\n\tbedroom kitchen - ROOM\n)\n") +
+    std::string("( :INIT\n\t( ROBOT_AT r2d2 bedroom )\n\t( ROBOT_AT r2d2 kitchen )\n\t( ") +
+    std::string("PERSON_AT paco bedroom )\n\t( PERSON_AT paco kitchen )\n)\n( :GOAL\n\t( ") +
+    std::string("AND\n\t)\n)\n)\n"));
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

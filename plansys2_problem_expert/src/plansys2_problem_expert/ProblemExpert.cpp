@@ -276,7 +276,27 @@ ProblemExpert::checkPredicateTreeTypes(
 std::string
 ProblemExpert::getProblem()
 {
-  return "";
+  parser::pddl::Instance problem(domain_expert_->getDomain());
+
+  for (const Instance & instance : instances_) {
+    problem.addObject(instance.name, instance.type);
+  }
+
+  for (Predicate predicate : predicates_) {
+    StringVec v;
+
+    for (size_t i = 0; i < predicate.parameters.size(); i++) {
+      v.push_back(predicate.parameters[i].name);
+    }
+
+    std::transform(predicate.name.begin(), predicate.name.end(), predicate.name.begin(), ::toupper);
+
+    problem.addInit(predicate.name, v);
+  }
+
+  std::ostringstream stream;
+  stream << problem;
+  return stream.str();
 }
 
 }  // namespace plansys2

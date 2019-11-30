@@ -40,7 +40,7 @@ public:
 
   virtual const Goal & getGoal() const = 0;
   virtual bool setGoal(const Goal & goal)  = 0;
-  bool clearGoal();
+  virtual bool clearGoal() = 0;
 
   virtual std::string getProblem() = 0;
 };
