@@ -8,7 +8,7 @@
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
  
-  <license>BSD</license>
+  <license>Apache License, Version 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

@@ -67,6 +67,7 @@ using CallbackReturnT =
 CallbackReturnT
 DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
 {
+  RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
   std::string model_file = get_parameter("model_file").get_value<std::string>();
 
   std::ifstream domain_ifs(model_file);
@@ -76,36 +77,51 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
 
   domain_expert_ = std::make_shared<DomainExpert>(domain_str);
 
+  RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
 }
 
 CallbackReturnT
 DomainExpertNode::on_activate(const rclcpp_lifecycle::State & state)
 {
+  RCLCPP_INFO(get_logger(), "[%s] Activating...", get_name());
+  RCLCPP_INFO(get_logger(), "[%s] Activated", get_name());
+
   return CallbackReturnT::SUCCESS;
 }
 
 CallbackReturnT
 DomainExpertNode::on_deactivate(const rclcpp_lifecycle::State & state)
 {
+  RCLCPP_INFO(get_logger(), "[%s] Deactivating...", get_name());
+  RCLCPP_INFO(get_logger(), "[%s] Deactivated", get_name());
+
   return CallbackReturnT::SUCCESS;
 }
 
 CallbackReturnT
 DomainExpertNode::on_cleanup(const rclcpp_lifecycle::State & state)
 {
+  RCLCPP_INFO(get_logger(), "[%s] Cleaning up...", get_name());
+  RCLCPP_INFO(get_logger(), "[%s] Cleaned up", get_name());
+
   return CallbackReturnT::SUCCESS;
 }
 
 CallbackReturnT
 DomainExpertNode::on_shutdown(const rclcpp_lifecycle::State & state)
 {
+  RCLCPP_INFO(get_logger(), "[%s] Shutting down...", get_name());
+  RCLCPP_INFO(get_logger(), "[%s] Shutted down", get_name());
+
   return CallbackReturnT::SUCCESS;
 }
 
 CallbackReturnT
 DomainExpertNode::on_error(const rclcpp_lifecycle::State & state)
 {
+  RCLCPP_ERROR(get_logger(), "[%s] Error transition", get_name());
+
   return CallbackReturnT::SUCCESS;
 }
 

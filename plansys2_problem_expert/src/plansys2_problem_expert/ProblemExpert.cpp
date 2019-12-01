@@ -41,8 +41,8 @@ ProblemExpert::addInstance(const Instance & instance)
   }
 }
 
-const std::vector<Instance> &
-ProblemExpert::getInstances() const
+std::vector<Instance>
+ProblemExpert::getInstances()
 {
   return instances_;
 }
@@ -86,8 +86,8 @@ ProblemExpert::getInstance(const std::string & instance_name)
   }
 }
 
-const std::vector<Predicate> &
-ProblemExpert::getPredicates() const
+std::vector<Predicate>
+ProblemExpert::getPredicates()
 {
   return predicates_;
 }
@@ -124,8 +124,8 @@ ProblemExpert::removePredicate(const Predicate & predicate)
   return found;
 }
 
-const Goal &
-ProblemExpert::getGoal() const
+Goal
+ProblemExpert::getGoal()
 {
   return goal_;
 }

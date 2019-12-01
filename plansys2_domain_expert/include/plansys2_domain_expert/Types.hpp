@@ -34,7 +34,7 @@ bool operator==(const Param & op1, const Param & op2);
 class Predicate
 {
 public:
-  std::string toString()
+  std::string toString() const
   {
     std::string ret;
     ret = "(" + name;
@@ -45,6 +45,27 @@ public:
     ret += ")";
 
     return ret;
+  }
+
+  void fromString(const std::string & predicate)
+  {
+    std::vector<std::string> tokens;
+    size_t start = 0, end = 0;
+
+    while (end != std::string::npos) {
+      end = predicate.find(" ", start);
+      tokens.push_back(predicate.substr(start,
+        (end == std::string::npos) ? std::string::npos : end - start));
+      start = ((end > (std::string::npos - 1)) ? std::string::npos : end + 1);
+    }
+
+    tokens[0].erase(0, 1);
+    name = tokens[0];
+
+    for (size_t i = 0; i < tokens.size(); i++) {
+      parameters[i].name = tokens[i];
+      parameters[i].type = "";
+    }
   }
 
   friend bool operator==(const Predicate & op1, const Predicate & op2);

@@ -19,37 +19,73 @@
 #include <string>
 #include <vector>
 
-#include "pddl_parser/Instance.h"
-
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
+
+#include "plansys2_msgs/srv/add_problem_goal.hpp"
+#include "plansys2_msgs/srv/add_problem_instance.hpp"
+#include "plansys2_msgs/srv/add_problem_predicate.hpp"
+#include "plansys2_msgs/srv/get_problem_goal.hpp"
+#include "plansys2_msgs/srv/get_problem_instance_details.hpp"
+#include "plansys2_msgs/srv/get_problem_instances.hpp"
+#include "plansys2_msgs/srv/get_problem_predicate_details.hpp"
+#include "plansys2_msgs/srv/get_problem_predicates.hpp"
+#include "plansys2_msgs/srv/get_problem.hpp"
+#include "plansys2_msgs/srv/remove_problem_goal.hpp"
+#include "plansys2_msgs/srv/remove_problem_instance.hpp"
+#include "plansys2_msgs/srv/remove_problem_predicate.hpp"
+
+#include "rclcpp/rclcpp.hpp"
 
 namespace plansys2
 {
 
-struct Instance
-{
-  std::string name;
-  std::string type;
-};
-
-class ProblemExpert : public ProblemExpertInterface
+class ProblemExpertClient : public ProblemExpertInterface
 {
 public:
-  ProblemExpert();
+  explicit ProblemExpertClient(rclcpp::Node::SharedPtr provided_node);
 
-  void addInstance(std::string name, std::string type);
-  std::vector<std::string> getInstances();
-  std::optional<std::string> getInstanceType(const std::string & instance_name);
+  std::vector<Instance> getInstances();
+  bool addInstance(const Instance & instance);
+  bool removeInstance(const std::string & name) = 0;
+  std::optional<Instance> getInstance(const std::string & name);
 
-  /*std::optional<std::vector<std::string>> getPredicateParams(const std::string & predicate);
-  std::vector<std::string> getActions();
-  std::optional<std::vector<std::string>> getActionParams(const std::string & action);*/
+  std::vector<Predicate> getPredicates();
+  bool addPredicate(const Predicate & predicate);
+  bool removePredicate(const Predicate & predicate);
 
-  // const parser::pddl::Problem & getProblem() {return problem_;}
+  Goal getGoal();
+  bool setGoal(const Goal & goal);
+  bool clearGoal();
+
+  std::string getProblem();
 
 private:
-  // parser::pddl::Problem problem_;
-  std::vector<Instance> instances_;
+  rclcpp::Client<plansys2_msgs::srv::AddProblemGoal>::SharedPtr
+    add_problem_goal_client_;
+  rclcpp::Client<plansys2_msgs::srv::AddProblemInstance>::SharedPtr
+    add_problem_instance_client_;
+  rclcpp::Client<plansys2_msgs::srv::AddProblemPredicate>::SharedPtr
+    add_problem_predicate_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblemGoal>::SharedPtr
+    get_problem_goal_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblemInstanceDetails>::SharedPtr
+    get_problem_instance_details_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblemInstances>::SharedPtr
+    get_problem_instances_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblemPredicateDetails>::SharedPtr
+    get_problem_predicate_details_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblemPredicates>::SharedPtr
+    get_problem_predicates_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblem>::SharedPtr
+    get_problem_client_;
+  rclcpp::Client<plansys2_msgs::srv::RemoveProblemGoal>::SharedPtr
+    remove_problem_goal_client_;
+  rclcpp::Client<plansys2_msgs::srv::RemoveProblemInstance>::SharedPtr
+    remove_problem_instance_client_;
+  rclcpp::Client<plansys2_msgs::srv::RemoveProblemPredicate>::SharedPtr
+    remove_problem_predicate_client_;
+
+  rclcpp::Node::SharedPtr node_;
 };
 
 }  // namespace plansys2

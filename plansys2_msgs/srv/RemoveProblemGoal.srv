@@ -1,5 +1,4 @@
-string goal
-string[] arguments
+std_msgs/Empty request
 ---
 bool success
 string error_info

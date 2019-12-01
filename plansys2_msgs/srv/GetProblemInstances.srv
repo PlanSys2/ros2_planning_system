@@ -2,4 +2,5 @@ std_msgs/Empty request
 ---
 bool success
 string[] instances
+string[] types
 string error_info

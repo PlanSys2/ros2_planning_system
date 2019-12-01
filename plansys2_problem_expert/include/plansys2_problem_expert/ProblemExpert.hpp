@@ -36,16 +36,16 @@ class ProblemExpert : public ProblemExpertInterface
 public:
   explicit ProblemExpert(std::shared_ptr<DomainExpert> & domain_expert);
 
-  const std::vector<Instance> & getInstances() const;
+  std::vector<Instance> getInstances();
   bool addInstance(const Instance & instance);
   bool removeInstance(const std::string & name);
   std::optional<Instance> getInstance(const std::string & name);
 
-  const std::vector<Predicate> & getPredicates() const;
+  std::vector<Predicate> getPredicates();
   bool addPredicate(const Predicate & predicate);
   bool removePredicate(const Predicate & predicate);
 
-  const Goal & getGoal() const;
+  Goal getGoal();
   bool setGoal(const Goal & goal);
   bool clearGoal();
 

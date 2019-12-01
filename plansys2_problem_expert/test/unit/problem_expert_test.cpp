@@ -137,10 +137,11 @@ TEST(problem_expert, addget_predicates)
   ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"bedroom", "ROOM"}));
   ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"kitchen", "ROOM"}));
 
-  const std::vector<plansys2::Predicate> & predicates = problem_expert.getPredicates();
+  std::vector<plansys2::Predicate> predicates = problem_expert.getPredicates();
   ASSERT_TRUE(predicates.empty());
 
   ASSERT_TRUE(problem_expert.addPredicate(predicate_1));
+  predicates = problem_expert.getPredicates();
   ASSERT_FALSE(predicates.empty());
   ASSERT_FALSE(problem_expert.addPredicate(predicate_1));
   ASSERT_TRUE(problem_expert.addPredicate(predicate_2));
@@ -149,11 +150,13 @@ TEST(problem_expert, addget_predicates)
   ASSERT_FALSE(problem_expert.addPredicate(predicate_5));
   ASSERT_FALSE(problem_expert.addPredicate(predicate_6));
 
+  predicates = problem_expert.getPredicates();
   ASSERT_EQ(predicates.size(), 4);
 
   ASSERT_FALSE(problem_expert.removePredicate(predicate_5));
   ASSERT_TRUE(problem_expert.removePredicate(predicate_4));
 
+  predicates = problem_expert.getPredicates();
   ASSERT_EQ(predicates.size(), 3);
 }
 

@@ -25,16 +25,17 @@ include_directories(include)
 
 set(PROBLEM_EXPERT_SOURCES
   src/plansys2_problem_expert/ProblemExpert.cpp
+  src/plansys2_problem_expert/ProblemExpertClient.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${PROBLEM_EXPERT_SOURCES})
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 
-#add_executable(problem_expert_node
-#  src/problem_expert_node.cpp
-#  src/plansys2_problem_expert/DomainExpertNode.cpp)
-#ament_target_dependencies(problem_expert_node ${dependencies})
-#target_link_libraries(problem_expert_node ${PROJECT_NAME})
+add_executable(problem_expert_node
+  src/problem_expert_node.cpp
+  src/plansys2_problem_expert/ProblemExpertNode.cpp)
+ament_target_dependencies(problem_expert_node ${dependencies})
+target_link_libraries(problem_expert_node ${PROJECT_NAME})
 
 install(DIRECTORY include/
   DESTINATION include/
@@ -44,7 +45,7 @@ install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 install(TARGETS
   ${PROJECT_NAME}
-#  problem_expert_node
+  problem_expert_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}

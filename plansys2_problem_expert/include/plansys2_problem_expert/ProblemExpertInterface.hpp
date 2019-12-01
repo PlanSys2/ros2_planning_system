@@ -29,17 +29,17 @@ class ProblemExpertInterface
 public:
   ProblemExpertInterface() {}
 
-  virtual const std::vector<Instance> & getInstances() const = 0;
+  virtual std::vector<Instance> getInstances() = 0;
   virtual bool addInstance(const Instance & instance) = 0;
   virtual bool removeInstance(const std::string & name) = 0;
   virtual std::optional<Instance> getInstance(const std::string & name) = 0;
 
-  virtual const std::vector<Predicate> & getPredicates() const = 0;
+  virtual std::vector<Predicate> getPredicates() = 0;
   virtual bool addPredicate(const Predicate & predicate) = 0;
   virtual bool removePredicate(const Predicate & predicate) = 0;
 
-  virtual const Goal & getGoal() const = 0;
-  virtual bool setGoal(const Goal & goal)  = 0;
+  virtual Goal getGoal() = 0;
+  virtual bool setGoal(const Goal & goal) = 0;
   virtual bool clearGoal() = 0;
 
   virtual std::string getProblem() = 0;

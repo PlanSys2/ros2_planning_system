@@ -1,5 +1,4 @@
 string goal
-string[] arguments
 ---
 bool success
 string error_info
