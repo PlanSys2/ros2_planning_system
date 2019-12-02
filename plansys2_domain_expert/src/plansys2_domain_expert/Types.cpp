@@ -117,6 +117,7 @@ std::vector<plansys2::Param> getPredicateParams(const std::string & expr)
     plansys2::Param param;
     param.name = wstring.substr(start,
         (end == std::string::npos) ? std::string::npos : end - start);
+
     ret.push_back(param);
 
     start = ((end > (std::string::npos - 1)) ? std::string::npos : end + 1);

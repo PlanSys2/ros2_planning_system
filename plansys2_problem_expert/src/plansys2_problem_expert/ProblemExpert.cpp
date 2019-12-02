@@ -60,6 +60,7 @@ ProblemExpert::removeInstance(const std::string & name)
     }
     i++;
   }
+  // (fmrico)ToDo: We should remove all predicates and goals containing the removed instance
 
   return found;
 }

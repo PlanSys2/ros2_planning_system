@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <iostream>
 
 namespace plansys2
 {
@@ -62,9 +63,10 @@ public:
     tokens[0].erase(0, 1);
     name = tokens[0];
 
-    for (size_t i = 0; i < tokens.size(); i++) {
-      parameters[i].name = tokens[i];
-      parameters[i].type = "";
+    tokens.back().pop_back();
+
+    for (size_t i = 1; i < tokens.size(); i++) {
+      parameters.push_back(Param{tokens[i], ""});
     }
   }
 

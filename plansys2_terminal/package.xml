@@ -17,6 +17,7 @@
   <depend>ament_index_cpp</depend>
   <depend>plansys2_msgs</depend>
   <depend>plansys2_domain_expert</depend>
+  <depend>plansys2_problem_expert</depend>
  
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>

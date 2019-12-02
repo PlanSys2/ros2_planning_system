@@ -10,6 +10,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_domain_expert REQUIRED)
+find_package(plansys2_problem_expert REQUIRED)
 
 set(dependencies
     rclcpp
@@ -17,6 +18,7 @@ set(dependencies
     ament_index_cpp
     plansys2_msgs
     plansys2_domain_expert
+    plansys2_problem_expert
 )
 
 add_executable(${PROJECT_NAME}

@@ -79,7 +79,7 @@ ProblemExpertNode::ProblemExpertNode()
     std::placeholders::_3));
 
   remove_problem_goal_service_ = create_service<plansys2_msgs::srv::RemoveProblemGoal>(
-    "~/remove_problem", std::bind(&ProblemExpertNode::remove_problem_goal_service_callback,
+    "~/remove_problem_goal", std::bind(&ProblemExpertNode::remove_problem_goal_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
 
@@ -175,9 +175,18 @@ ProblemExpertNode::add_problem_goal_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    plansys2::Goal goal;
-    goal.fromString(request->goal);
-    response->success = problem_expert_->setGoal(goal);
+    if (request->goal != "(AND )") {
+      plansys2::Goal goal;
+      goal.fromString(request->goal);
+      response->success = problem_expert_->setGoal(goal);
+
+      if (!response->success) {
+        response->error_info = "Goal not valid";
+      }
+    } else {
+      response->success = false;
+      response->error_info = "Malformed expression";
+    }
   }
 }
 
@@ -197,6 +206,10 @@ ProblemExpertNode::add_problem_instance_service_callback(
     instance.type = request->type;
 
     response->success = problem_expert_->addInstance(instance);
+
+    if (!response->success) {
+      response->error_info = "Instance not valid";
+    }
   }
 }
 
@@ -221,6 +234,10 @@ ProblemExpertNode::add_problem_predicate_service_callback(
     }
 
     response->success = problem_expert_->addPredicate(predicate);
+
+    if (!response->success) {
+      response->error_info = "Predicate not valid";
+    }
   }
 }
 
