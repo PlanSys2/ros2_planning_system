@@ -42,7 +42,7 @@ public:
   std::vector<std::string> getDurativeActions();
   std::optional<plansys2::DurativeAction> getDurativeAction(const std::string & action);
 
-  parser::pddl::Domain & getDomain() {return domain_;}
+  std::string getDomain();
 
 private:
   parser::pddl::Domain domain_;

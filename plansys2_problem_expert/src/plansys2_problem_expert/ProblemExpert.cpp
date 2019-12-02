@@ -277,7 +277,8 @@ ProblemExpert::checkPredicateTreeTypes(
 std::string
 ProblemExpert::getProblem()
 {
-  parser::pddl::Instance problem(domain_expert_->getDomain());
+  parser::pddl::Domain domain(domain_expert_->getDomain());
+  parser::pddl::Instance problem(domain);
 
   for (const Instance & instance : instances_) {
     problem.addObject(instance.name, instance.type);

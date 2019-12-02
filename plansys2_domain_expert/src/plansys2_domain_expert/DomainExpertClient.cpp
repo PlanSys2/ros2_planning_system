@@ -26,6 +26,8 @@ namespace plansys2
 DomainExpertClient::DomainExpertClient(rclcpp::Node::SharedPtr provided_node)
 : node_(provided_node)
 {
+  get_domain_client_ = node_->create_client<plansys2_msgs::srv::GetDomain>(
+    "/domain_expert/get_domain");
   get_types_client_ = node_->create_client<plansys2_msgs::srv::GetDomainTypes>(
     "/domain_expert/get_domain_types");
   get_predicates_client_ = node_->create_client<plansys2_msgs::srv::GetDomainPredicates>(
@@ -326,4 +328,32 @@ DomainExpertClient::getDurativeAction(const std::string & action)
   return {};
 }
 
+std::string
+DomainExpertClient::getDomain()
+{
+  std::string ret;
+
+  while (!get_types_client_->wait_for_service(std::chrono::seconds(1))) {
+    if (!rclcpp::ok()) {
+      return ret;
+    }
+    RCLCPP_ERROR(
+      node_->get_logger(),
+      "/domain_expert/get_domain service client: waiting for service to appear...");
+  }
+
+  auto request = std::make_shared<plansys2_msgs::srv::GetDomain::Request>();
+
+  auto future_result = get_domain_client_->async_send_request(request);
+
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
+    rclcpp::executor::FutureReturnCode::SUCCESS)
+  {
+    return ret;
+  }
+
+  ret = future_result.get()->domain;
+
+  return ret;
+}
 }  // namespace plansys2

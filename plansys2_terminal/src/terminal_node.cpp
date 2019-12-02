@@ -193,6 +193,9 @@ public:
       } else if (command[0] == "goal") {
         auto goal = problem_client_->getGoal();
         std::cout << "Goal: " << goal.toString() << std::endl;
+      } else if (command[0] == "problem") {
+        auto problem = problem_client_->getProblem();
+        std::cout << "Problem: " << problem << std::endl;
       }
     } else {
       std::cout << "\tUsage: \n\t\tget current [instances|predicates]..." <<
@@ -209,9 +212,11 @@ public:
       } else if (command[0] == "current") {
         pop_front(command);
         process_get_current(command);
+      } else if (command[0] == "domain") {
+        std::cout << "domain: \n" << domain_client_->getDomain() << std::endl;
       } else {
         std::cerr << " get ---> " << command[0] << std::endl;
-        std::cout << "\tUsage: \n\t\tget [available|current]..." <<
+        std::cout << "\tUsage: \n\t\tget [available|current|domain]..." <<
           std::endl;
       }
     } else {

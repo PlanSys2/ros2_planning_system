@@ -22,6 +22,7 @@
 
 #include "plansys2_domain_expert/DomainExpertInterface.hpp"
 
+#include "plansys2_msgs/srv/get_domain.hpp"
 #include "plansys2_msgs/srv/get_domain_types.hpp"
 #include "plansys2_msgs/srv/get_domain_predicates.hpp"
 #include "plansys2_msgs/srv/get_domain_actions.hpp"
@@ -46,9 +47,12 @@ public:
   std::vector<std::string> getDurativeActions();
   std::optional<plansys2::DurativeAction> getDurativeAction(const std::string & action);
 
+  std::string getDomain();
+
 private:
   rclcpp::Node::SharedPtr node_;
 
+  rclcpp::Client<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainTypes>::SharedPtr get_types_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainPredicates>::SharedPtr get_predicates_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_actions_client_;

@@ -28,72 +28,80 @@ ProblemExpertNode::ProblemExpertNode()
   declare_parameter("model_file", "");
 
   add_problem_goal_service_ = create_service<plansys2_msgs::srv::AddProblemGoal>(
-    "~/add_problem_goal", std::bind(&ProblemExpertNode::add_problem_goal_service_callback,
+    "/problem_expert/add_problem_goal",
+    std::bind(&ProblemExpertNode::add_problem_goal_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
 
   add_problem_instance_service_ = create_service<plansys2_msgs::srv::AddProblemInstance>(
-    "~/add_problem_instance", std::bind(&ProblemExpertNode::add_problem_instance_service_callback,
+    "/problem_expert/add_problem_instance",
+    std::bind(&ProblemExpertNode::add_problem_instance_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
 
   add_problem_predicate_service_ = create_service<plansys2_msgs::srv::AddProblemPredicate>(
-    "~/add_problem_predicate", std::bind(&ProblemExpertNode::add_problem_predicate_service_callback,
+    "/problem_expert/add_problem_predicate",
+    std::bind(&ProblemExpertNode::add_problem_predicate_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
 
   get_problem_goal_service_ = create_service<plansys2_msgs::srv::GetProblemGoal>(
-    "~/get_problem_goal", std::bind(&ProblemExpertNode::get_problem_goal_service_callback,
+    "/problem_expert/get_problem_goal",
+    std::bind(&ProblemExpertNode::get_problem_goal_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
 
   get_problem_instance_details_service_ =
     create_service<plansys2_msgs::srv::GetProblemInstanceDetails>(
-    "~/get_problem_instance_details",
+    "/problem_expert/get_problem_instance_details",
     std::bind(&ProblemExpertNode::get_problem_instance_details_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
 
   get_problem_instances_service_ = create_service<plansys2_msgs::srv::GetProblemInstances>(
-    "~/get_problem_instances",
+    "/problem_expert/get_problem_instances",
     std::bind(&ProblemExpertNode::get_problem_instances_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
 
   get_problem_predicate_details_service_ =
     create_service<plansys2_msgs::srv::GetProblemPredicateDetails>(
-    "~/get_problem_predicate_details", std::bind(
+    "/problem_expert/get_problem_predicate_details", std::bind(
       &ProblemExpertNode::get_problem_predicate_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
 
   get_problem_predicates_service_ = create_service<plansys2_msgs::srv::GetProblemPredicates>(
-    "~/get_problem_predicates",
+    "/problem_expert/get_problem_predicates",
     std::bind(&ProblemExpertNode::get_problem_predicates_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
 
   get_problem_service_ = create_service<plansys2_msgs::srv::GetProblem>(
-    "~/get_problem", std::bind(&ProblemExpertNode::get_problem_service_callback,
+    "/problem_expert/get_problem", std::bind(&ProblemExpertNode::get_problem_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
 
   remove_problem_goal_service_ = create_service<plansys2_msgs::srv::RemoveProblemGoal>(
-    "~/remove_problem_goal", std::bind(&ProblemExpertNode::remove_problem_goal_service_callback,
+    "/problem_expert/remove_problem_goal",
+    std::bind(&ProblemExpertNode::remove_problem_goal_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
 
   remove_problem_instance_service_ = create_service<plansys2_msgs::srv::RemoveProblemInstance>(
-    "~/remove_problem_instance",
+    "/problem_expert/remove_problem_instance",
     std::bind(&ProblemExpertNode::remove_problem_instance_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
 
   remove_problem_predicate_service_ = create_service<plansys2_msgs::srv::RemoveProblemPredicate>(
-    "~/remove_problem_predicate",
+    "/problem_expert/remove_problem_predicate",
     std::bind(&ProblemExpertNode::remove_problem_predicate_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
+
+  update_pub_ = create_publisher<std_msgs::msg::Empty>("/problem_expert/update_notify",
+      rclcpp::QoS(100));
 }
 
 
@@ -116,7 +124,6 @@ ProblemExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
 
   problem_expert_ = std::make_shared<ProblemExpert>(domain_expert);
-
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
 }
@@ -125,6 +132,7 @@ CallbackReturnT
 ProblemExpertNode::on_activate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Activating...", get_name());
+  update_pub_->on_activate();
   RCLCPP_INFO(get_logger(), "[%s] Activated", get_name());
   return CallbackReturnT::SUCCESS;
 }
@@ -133,6 +141,7 @@ CallbackReturnT
 ProblemExpertNode::on_deactivate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Deactivating...", get_name());
+  update_pub_->on_deactivate();
   RCLCPP_INFO(get_logger(), "[%s] Deactivated", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -180,7 +189,9 @@ ProblemExpertNode::add_problem_goal_service_callback(
       goal.fromString(request->goal);
       response->success = problem_expert_->setGoal(goal);
 
-      if (!response->success) {
+      if (response->success) {
+        update_pub_->publish(std_msgs::msg::Empty());
+      } else {
         response->error_info = "Goal not valid";
       }
     } else {
@@ -207,7 +218,9 @@ ProblemExpertNode::add_problem_instance_service_callback(
 
     response->success = problem_expert_->addInstance(instance);
 
-    if (!response->success) {
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+    } else {
       response->error_info = "Instance not valid";
     }
   }
@@ -235,7 +248,9 @@ ProblemExpertNode::add_problem_predicate_service_callback(
 
     response->success = problem_expert_->addPredicate(predicate);
 
-    if (!response->success) {
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+    } else {
       response->error_info = "Predicate not valid";
     }
   }
@@ -383,6 +398,12 @@ ProblemExpertNode::remove_problem_goal_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = problem_expert_->clearGoal();
+
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+    } else {
+      response->error_info = "Error clearing goal";
+    }
   }
 }
 
@@ -398,6 +419,12 @@ ProblemExpertNode::remove_problem_instance_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = problem_expert_->removeInstance(request->instance);
+
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+    } else {
+      response->error_info = "Error removing instance";
+    }
   }
 }
 
@@ -422,6 +449,12 @@ ProblemExpertNode::remove_problem_predicate_service_callback(
     }
 
     response->success = problem_expert_->removePredicate(predicate);
+
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+    } else {
+      response->error_info = "Error removing predicate";
+    }
   }
 }
 

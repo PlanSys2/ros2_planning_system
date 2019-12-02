@@ -252,4 +252,13 @@ DomainExpert::getDurativeAction(const std::string & action)
     return {};
   }
 }
+
+std::string
+DomainExpert::getDomain()
+{
+  std::ostringstream stream;
+  stream << domain_;
+  return stream.str();
+}
+
 }  // namespace plansys2

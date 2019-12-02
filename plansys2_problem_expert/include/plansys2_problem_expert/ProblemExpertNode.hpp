@@ -20,6 +20,7 @@
 #include "plansys2_problem_expert/ProblemExpert.hpp"
 
 #include "std_msgs/msg/string.hpp"
+#include "std_msgs/msg/empty.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
@@ -143,6 +144,8 @@ private:
     remove_problem_instance_service_;
   rclcpp::Service<plansys2_msgs::srv::RemoveProblemPredicate>::SharedPtr
     remove_problem_predicate_service_;
+
+  rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Empty>::SharedPtr update_pub_;
 };
 
 }  // namespace plansys2
