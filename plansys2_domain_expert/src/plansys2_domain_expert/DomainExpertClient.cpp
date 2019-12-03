@@ -123,7 +123,7 @@ DomainExpertClient::getPredicate(const std::string & predicate)
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
     rclcpp::executor::FutureReturnCode::SUCCESS)
   {
-    return ret;
+    return {};
   }
 
   if (future_result.get()->success) {
@@ -206,7 +206,7 @@ DomainExpertClient::getAction(const std::string & action)
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
     rclcpp::executor::FutureReturnCode::SUCCESS)
   {
-    return ret;
+    return {};
   }
 
   if (future_result.get()->success) {
@@ -295,7 +295,7 @@ DomainExpertClient::getDurativeAction(const std::string & action)
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
     rclcpp::executor::FutureReturnCode::SUCCESS)
   {
-    return ret;
+    return {};
   }
 
   if (future_result.get()->success) {
@@ -333,7 +333,7 @@ DomainExpertClient::getDomain()
 {
   std::string ret;
 
-  while (!get_types_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!get_domain_client_->wait_for_service(std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return ret;
     }

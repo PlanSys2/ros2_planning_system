@@ -276,7 +276,8 @@ TEST(problem_expert, get_probem)
   goal.fromString("(AND (robot_at r2d2 bedroom)(person_at paco kitchen))");
   ASSERT_TRUE(problem_expert.setGoal(goal));
 
-  ASSERT_EQ(problem_expert.getProblem(), std::string("( DEFINE ( PROBLEM  )\n( :DOMAIN SIMPLE ") +
+  ASSERT_EQ(problem_expert.getProblem(),
+    std::string("( DEFINE ( PROBLEM problem_1 )\n( :DOMAIN SIMPLE ") +
     std::string(")\n( :OBJECTS\n\tpaco - PERSON\n\tr2d2 - ROBOT\n\tbedroom kitchen - ROOM\n)\n") +
     std::string("( :INIT\n\t( ROBOT_AT r2d2 bedroom )\n\t( ROBOT_AT r2d2 kitchen )\n\t( ") +
     std::string("PERSON_AT paco bedroom )\n\t( PERSON_AT paco kitchen )\n)\n( :GOAL\n\t( ") +

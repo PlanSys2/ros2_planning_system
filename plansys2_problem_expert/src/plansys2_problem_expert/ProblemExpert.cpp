@@ -280,6 +280,8 @@ ProblemExpert::getProblem()
   parser::pddl::Domain domain(domain_expert_->getDomain());
   parser::pddl::Instance problem(domain);
 
+  problem.name = "problem_1";
+
   for (const Instance & instance : instances_) {
     problem.addObject(instance.name, instance.type);
   }

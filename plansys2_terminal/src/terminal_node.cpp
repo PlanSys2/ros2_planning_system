@@ -18,8 +18,10 @@
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp/executors/multi_threaded_executor.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_planner/PlannerClient.hpp"
 
 std::vector<std::string> tokenize(const std::string & text)
 {
@@ -52,6 +54,7 @@ public:
     std::shared_ptr<rclcpp::Node> terminal_node = shared_from_this();
     domain_client_ = std::make_shared<plansys2::DomainExpertClient>(terminal_node);
     problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(terminal_node);
+    planner_client_ = std::make_shared<plansys2::PlannerClient>(terminal_node);
 
     std::string line;
     bool success = true;
@@ -214,13 +217,26 @@ public:
         process_get_current(command);
       } else if (command[0] == "domain") {
         std::cout << "domain: \n" << domain_client_->getDomain() << std::endl;
+      } else if (command[0] == "plan") {
+        auto plan = planner_client_->getPlan(domain_client_->getDomain(),
+            problem_client_->getProblem());
+
+        if (plan.has_value()) {
+          std::cout << "plan: " << std::endl;
+          for (const auto & action : plan.value()) {
+            std::cout << action.time << "\t" << action.action << "\t" <<
+              action.duration << std::endl;
+          }
+        } else {
+          std::cout << "No se ha encontrado plan" << std::endl;
+        }
       } else {
         std::cerr << " get ---> " << command[0] << std::endl;
         std::cout << "\tUsage: \n\t\tget [available|current|domain]..." <<
           std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tget [available|current]..." <<
+      std::cout << "\tUsage: \n\t\tget [available|current|domain|plan]..." <<
         std::endl;
     }
   }
@@ -382,6 +398,7 @@ public:
 private:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
+  std::shared_ptr<plansys2::PlannerClient> planner_client_;
 };
 
 int main(int argc, char ** argv)
