@@ -57,6 +57,13 @@ def generate_launch_description():
             'launch',
             'planner_launch.py')),
         launch_arguments={}.items())
+    
+    executor_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(
+            get_package_share_directory('plansys2_executor'),
+            'launch',
+            'executor_launch.py')),
+        launch_arguments={}.items())
 
     lifecycle_manager_cmd = Node(
         package='plansys2_lifecycle_manager',
@@ -76,6 +83,7 @@ def generate_launch_description():
     ld.add_action(domain_expert_cmd)
     ld.add_action(problem_expert_cmd)
     ld.add_action(planner_cmd)
+    ld.add_action(executor_cmd)
     ld.add_action(lifecycle_manager_cmd)
 
     return ld

@@ -27,6 +27,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/RemoveProblemInstance.srv"
   "srv/RemoveProblemPredicate.srv"
   "srv/GetPlan.srv"
+  "action/ExecutePlan.action"
   DEPENDENCIES builtin_interfaces std_msgs
 )
 

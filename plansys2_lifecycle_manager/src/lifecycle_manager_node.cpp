@@ -203,6 +203,22 @@ callee_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & m
       std::cerr << "Waiting for inactive state for planner" << std::endl;
     }
   }
+
+  // configure planner
+  {
+    if (!manager_nodes["executor"]->change_state(
+        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE))
+    {
+      return;
+    }
+
+    while (manager_nodes["executor"]->get_state() !=
+      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE)
+    {
+      std::cerr << "Waiting for inactive state for planner" << std::endl;
+    }
+  }  
+  
   // activate
   {
     if (!rclcpp::ok()) {
@@ -218,12 +234,28 @@ callee_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & m
     {
       return;
     }
+    if (!manager_nodes["planner"]->change_state(
+        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
+    {
+      return;
+    }    
+    if (!manager_nodes["executor"]->change_state(
+        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
+    {
+      return;
+    }    
     if (!manager_nodes["domain_expert"]->get_state()) {
       return;
     }
     if (!manager_nodes["problem_expert"]->get_state()) {
       return;
     }
+    if (!manager_nodes["planner"]->get_state()) {
+      return;
+    }
+    if (!manager_nodes["executor"]->get_state()) {
+      return;
+    }  
   }
 }
 
@@ -240,6 +272,8 @@ int main(int argc, char ** argv)
     "problem_expert_lc_mngr", "problem_expert");
   manager_nodes["planner"] = std::make_shared<LifecycleServiceClient>(
     "planner_lc_mngr", "planner");
+  manager_nodes["executor"] = std::make_shared<LifecycleServiceClient>(
+    "executor_lc_mngr", "executor");
 
   rclcpp::executors::SingleThreadedExecutor exe;
   for (auto & manager_node : manager_nodes) {

@@ -22,6 +22,7 @@
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
+#include "plansys2_executor/ExecutorClient.hpp"
 
 std::vector<std::string> tokenize(const std::string & text)
 {
@@ -55,7 +56,8 @@ public:
     domain_client_ = std::make_shared<plansys2::DomainExpertClient>(terminal_node);
     problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(terminal_node);
     planner_client_ = std::make_shared<plansys2::PlannerClient>(terminal_node);
-
+    executor_client_ = std::make_shared<plansys2::ExecutorClient>(terminal_node);
+    
     std::string line;
     bool success = true;
 
@@ -373,6 +375,30 @@ public:
         std::endl;
     }
   }
+
+  void execute_plan()
+  {
+    executor_client_->executePlan();
+
+    rclcpp::Rate loop_rate(5);
+    while (rclcpp::ok() && !executor_client_->getResult().has_value()) {
+      auto feedback = executor_client_->getFeedBack();
+
+      std::cout << "[" << feedback.seq_action << "/" << feedback.total_actions << "]" <<
+        "{" << feedback.current_action << "} [" << feedback.progress_current_action << "\%]" <<
+        std::endl;
+
+      rclcpp::spin_some(this->get_node_base_interface());  
+      loop_rate.sleep();
+    }
+
+    if (executor_client_->getResult().value().success) {
+      std::cout << "Successful finished " << std::endl;
+    } else {
+      std::cout << "Finished with error: " << executor_client_->getResult().value().error_info << std::endl;
+    }
+  }
+
   void process_command(std::string & command)
   {
     std::vector<std::string> tokens = tokenize(command);
@@ -390,7 +416,10 @@ public:
     } else if (tokens[0] == "remove") {
       pop_front(tokens);
       process_remove(tokens);
-    } else {
+    } else if (tokens[0] == "run") {
+      execute_plan();
+      process_remove(tokens);
+  } else {
       std::cout << "Command not found" << std::endl;
     }
   }
@@ -399,6 +428,7 @@ private:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   std::shared_ptr<plansys2::PlannerClient> planner_client_;
+  std::shared_ptr<plansys2::ExecutorClient> executor_client_;
 };
 
 int main(int argc, char ** argv)
