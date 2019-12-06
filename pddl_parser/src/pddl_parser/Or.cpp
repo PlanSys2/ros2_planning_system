@@ -5,7 +5,7 @@ namespace parser { namespace pddl {
 
 void Or::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
 	tabindent( s, indent );
-	s << "( OR\n";
+	s << "( or\n";
 	if ( first ) first->PDDLPrint( s, indent + 1, ts, d );
 	else {
 		tabindent( s, indent + 1 );

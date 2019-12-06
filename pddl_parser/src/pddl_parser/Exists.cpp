@@ -5,7 +5,7 @@ namespace parser { namespace pddl {
 
 void Exists::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
 	tabindent( s, indent );
-	s << "( EXISTS\n";
+	s << "( exists\n";
 
 	TokenStruct< std::string > fstruct( ts );
 

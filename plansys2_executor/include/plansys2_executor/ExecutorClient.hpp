@@ -32,10 +32,9 @@ public:
   using ExecutePlan = plansys2_msgs::action::ExecutePlan;
   using GoalHandleExecutePlan = rclcpp_action::ClientGoalHandle<ExecutePlan>;
 
-
   explicit ExecutorClient(rclcpp::Node::SharedPtr provided_node);
 
-  void executePlan();
+  bool executePlan();
 
   ExecutePlan::Feedback getFeedBack() {return feedback_;}
   std::optional<ExecutePlan::Result> getResult();
@@ -48,7 +47,6 @@ private:
   
   rclcpp::Node::SharedPtr node_;
 
-  void goal_response_callback(std::shared_future<GoalHandleExecutePlan::SharedPtr> future);
   void feedback_callback(GoalHandleExecutePlan::SharedPtr,
     const std::shared_ptr<const ExecutePlan::Feedback> feedback);
   void result_callback(const GoalHandleExecutePlan::WrappedResult & result);

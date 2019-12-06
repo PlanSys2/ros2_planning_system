@@ -16,7 +16,7 @@ public:
 		: Type( t ) {}
 	
 	std::string getName() const {
-		std::string out = "EITHER";
+		std::string out = "either";
 		for ( unsigned i = 0; i < subtypes.size(); ++i )
 			out += "_" + subtypes[i]->getName();
 		return out;

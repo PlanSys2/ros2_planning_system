@@ -15,7 +15,7 @@ void Function::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain 
 	if ( f.getChar() == '-' ) {
 		f.assert_token( "-" );
 		std::string s = f.getToken();
-		if ( s != "NUMBER" ) {
+		if ( s != "number" ) {
 			f.c -= s.size();
 			returnType = d.types.index( f.getToken( d.types ) );
 		}

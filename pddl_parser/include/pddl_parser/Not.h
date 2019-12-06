@@ -27,7 +27,7 @@ public:
 	}
 
 	void print( std::ostream & s ) const {
-		s << "NOT ";
+		s << "not ";
 		if ( cond ) cond->print( s );
 	}
 

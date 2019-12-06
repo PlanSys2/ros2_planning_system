@@ -46,9 +46,9 @@ std::string getReducedString(const std::string & expr)
 
 NodeType getType(const std::string & expr)
 {
-  if (std::regex_search(expr, std::regex("AND"))) {return AND;}
-  if (std::regex_search(expr, std::regex("OR"))) {return OR;}
-  if (std::regex_search(expr, std::regex("NOT"))) {return NOT;}
+  if (std::regex_search(expr, std::regex("and"))) {return AND;}
+  if (std::regex_search(expr, std::regex("or"))) {return OR;}
+  if (std::regex_search(expr, std::regex("not"))) {return NOT;}
 
   return PREDICATE;
 }
@@ -131,7 +131,7 @@ std::shared_ptr<TreeNode> get_tree_node(const std::string & expr)
   std::string wexpr = getReducedString(expr);
   NodeType type = getType(wexpr);
 
-  if (wexpr == "(AND)") {
+  if (wexpr == "(and)") {
     return nullptr;
   }
   switch (type) {

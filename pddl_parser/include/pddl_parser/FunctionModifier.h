@@ -47,11 +47,11 @@ class Decrease : public FunctionModifier {
 
 public:
 
-	Decrease( int val = 1 ) : FunctionModifier( "DECREASE", val ) { }
+	Decrease( int val = 1 ) : FunctionModifier( "decrease", val ) { }
 
-	Decrease( Function * f, const IntVec & p = IntVec() ) : FunctionModifier( "DECREASE", f, p ) { }
+	Decrease( Function * f, const IntVec & p = IntVec() ) : FunctionModifier( "decrease", f, p ) { }
 
-	Decrease( const FunctionModifier * i, Domain & d ) : FunctionModifier( "DECREASE", i, d ) { }
+	Decrease( const FunctionModifier * i, Domain & d ) : FunctionModifier( "decrease", i, d ) { }
 
 	Condition * copy( Domain & d ) {
 		return new Decrease( this, d );
@@ -62,11 +62,11 @@ class Increase : public FunctionModifier {
 
 public:
 
-	Increase( int val = 1 ) : FunctionModifier( "INCREASE", val ) { }
+	Increase( int val = 1 ) : FunctionModifier( "increase", val ) { }
 
-	Increase( Function * f, const IntVec & p = IntVec() ) : FunctionModifier( "INCREASE", f, p ) { }
+	Increase( Function * f, const IntVec & p = IntVec() ) : FunctionModifier( "increase", f, p ) { }
 
-	Increase( const FunctionModifier * i, Domain & d ) : FunctionModifier( "INCREASE", i, d ) { }
+	Increase( const FunctionModifier * i, Domain & d ) : FunctionModifier( "increase", i, d ) { }
 
 	Condition * copy( Domain & d ) {
 		return new Increase( this, d );

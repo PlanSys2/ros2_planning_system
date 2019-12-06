@@ -9,7 +9,7 @@ Derived::Derived( const Derived * z, Domain & d )
 }
 
 void Derived::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
-	s << "( :DERIVED ( " << name;
+	s << "( :derived ( " << name;
 
 	TokenStruct< std::string > dstruct( ts );
 

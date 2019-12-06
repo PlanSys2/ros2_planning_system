@@ -249,7 +249,7 @@ ProblemExpert::checkPredicateTreeTypes(
         bool ret = true;
 
         for (const auto & op : pn_or->ops) {
-          ret = ret || checkPredicateTreeTypes(op, domain_expert_);
+          ret = ret && checkPredicateTreeTypes(op, domain_expert_);
         }
         return ret;
       }
@@ -293,7 +293,7 @@ ProblemExpert::getProblem()
       v.push_back(predicate.parameters[i].name);
     }
 
-    std::transform(predicate.name.begin(), predicate.name.end(), predicate.name.begin(), ::toupper);
+    std::transform(predicate.name.begin(), predicate.name.end(), predicate.name.begin(), ::tolower);
 
     problem.addInit(predicate.name, v);
   }
@@ -308,7 +308,7 @@ ProblemExpert::getProblem()
       v.push_back(predicate.parameters[i].name);
     }
 
-    std::transform(predicate.name.begin(), predicate.name.end(), predicate.name.begin(), ::toupper);
+    std::transform(predicate.name.begin(), predicate.name.end(), predicate.name.begin(), ::tolower);
 
     problem.addGoal(predicate.name, v);
   }

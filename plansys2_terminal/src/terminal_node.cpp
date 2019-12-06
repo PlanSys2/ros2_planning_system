@@ -18,11 +18,12 @@
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
-#include "rclcpp/executors/multi_threaded_executor.hpp"
+
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
+#include "plansys2_executor/ActionExecutor.hpp"
 
 std::vector<std::string> tokenize(const std::string & text)
 {
@@ -75,7 +76,7 @@ public:
     std::cout << "Finishing..." << std::endl;
   }
 
-  void process_get_available_predicate(std::vector<std::string> & command)
+  void process_get_mode_predicate(std::vector<std::string> & command)
   {
     if (command.size() == 1) {
       auto predicates = domain_client_->getPredicate(command[0]);
@@ -89,11 +90,11 @@ public:
         std::cout << "Error when looking for params of " << command[0] << std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tget available predicate [predicate_name]" << std::endl;
+      std::cout << "\tUsage: \n\t\tget mode predicate [predicate_name]" << std::endl;
     }
   }
 
-  void process_get_available_action(std::vector<std::string> & command)
+  void process_get_mode_action(std::vector<std::string> & command)
   {
     if (command.size() == 1) {
       auto action = domain_client_->getAction(command[0]);
@@ -128,11 +129,11 @@ public:
         std::cout << "Error when looking for params of " << command[0] << std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tget available action [action_name]" << std::endl;
+      std::cout << "\tUsage: \n\t\tget mode action [action_name]" << std::endl;
     }
   }
 
-  void process_get_available(std::vector<std::string> & command)
+  void process_get_mode(std::vector<std::string> & command)
   {
     if (command.size() > 0) {
       if (command[0] == "types") {
@@ -162,23 +163,23 @@ public:
         }
       } else if (command[0] == "predicate") {
         pop_front(command);
-        process_get_available_predicate(command);
+        process_get_mode_predicate(command);
       } else if (command[0] == "action") {
         pop_front(command);
-        process_get_available_action(command);
+        process_get_mode_action(command);
       } else {
-        std::cerr << " available ---> " << command[0] << std::endl;
+        std::cerr << " mode ---> " << command[0] << std::endl;
         std::cout <<
-          "\tUsage: \n\t\tget available [types|predicates|actions|predicate|action]..." <<
+          "\tUsage: \n\t\tget mode [types|predicates|actions|predicate|action]..." <<
           std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tget available [types|predicates|actions|predicate|action]..." <<
+      std::cout << "\tUsage: \n\t\tget mode [types|predicates|actions|predicate|action]..." <<
         std::endl;
     }
   }
 
-  void process_get_current(std::vector<std::string> & command)
+  void process_get_problem(std::vector<std::string> & command)
   {
     if (command.size() > 0) {
       if (command[0] == "instances") {
@@ -203,7 +204,7 @@ public:
         std::cout << "Problem: " << problem << std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tget current [instances|predicates]..." <<
+      std::cout << "\tUsage: \n\t\tget problem [instances|predicates]..." <<
         std::endl;
     }
   }
@@ -211,12 +212,12 @@ public:
   void process_get(std::vector<std::string> & command)
   {
     if (command.size() > 0) {
-      if (command[0] == "available") {
+      if (command[0] == "mode") {
         pop_front(command);
-        process_get_available(command);
-      } else if (command[0] == "current") {
+        process_get_mode(command);
+      } else if (command[0] == "problem") {
         pop_front(command);
-        process_get_current(command);
+        process_get_problem(command);
       } else if (command[0] == "domain") {
         std::cout << "domain: \n" << domain_client_->getDomain() << std::endl;
       } else if (command[0] == "plan") {
@@ -234,11 +235,11 @@ public:
         }
       } else {
         std::cerr << " get ---> " << command[0] << std::endl;
-        std::cout << "\tUsage: \n\t\tget [available|current|domain]..." <<
+        std::cout << "\tUsage: \n\t\tget [mode|problem|domain]..." <<
           std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tget [available|current|domain|plan]..." <<
+      std::cout << "\tUsage: \n\t\tget [mode|problem|domain|plan]..." <<
         std::endl;
     }
   }
@@ -378,26 +379,45 @@ public:
 
   void execute_plan()
   {
-    executor_client_->executePlan();
+    if (executor_client_->executePlan())
+    {
+      rclcpp::Rate loop_rate(5);
+      while (rclcpp::ok() && !executor_client_->getResult().has_value()) {
+        auto feedback = executor_client_->getFeedBack();
 
-    rclcpp::Rate loop_rate(5);
-    while (rclcpp::ok() && !executor_client_->getResult().has_value()) {
-      auto feedback = executor_client_->getFeedBack();
+        std::cout << "[" << feedback.seq_action << "/" << feedback.total_actions << "]" <<
+          "{" << feedback.current_action << "} [" << feedback.progress_current_action << "\%]" <<
+          std::endl;
 
-      std::cout << "[" << feedback.seq_action << "/" << feedback.total_actions << "]" <<
-        "{" << feedback.current_action << "} [" << feedback.progress_current_action << "\%]" <<
-        std::endl;
+        rclcpp::spin_some(this->get_node_base_interface());  
+        loop_rate.sleep();
+      }
 
-      rclcpp::spin_some(this->get_node_base_interface());  
-      loop_rate.sleep();
-    }
-
-    if (executor_client_->getResult().value().success) {
-      std::cout << "Successful finished " << std::endl;
+      if (executor_client_->getResult().value().success) {
+        std::cout << "Successful finished " << std::endl;
+      } else {
+        std::cout << "Finished with error: " << executor_client_->getResult().value().error_info << std::endl;
+      }
     } else {
-      std::cout << "Finished with error: " << executor_client_->getResult().value().error_info << std::endl;
+      std::cout << "Rejected execution. is there any plan?" << std::endl;
     }
   }
+
+
+  void process_run(std::vector<std::string> & command)
+  {
+    if (command.size() == 0) {
+      execute_plan();
+    } else {
+      std::string action(command[0]);
+      for (int i = 1; i < command.size(); i++) {
+        action += " " + command[i];
+      }
+
+      auto action_executor = std::make_shared<plansys2::ActionExecutor>(action);
+    }
+  }
+
 
   void process_command(std::string & command)
   {
@@ -417,8 +437,8 @@ public:
       pop_front(tokens);
       process_remove(tokens);
     } else if (tokens[0] == "run") {
-      execute_plan();
-      process_remove(tokens);
+      pop_front(tokens);
+      process_run(tokens);
   } else {
       std::cout << "Command not found" << std::endl;
     }

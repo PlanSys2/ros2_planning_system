@@ -36,7 +36,7 @@ ExecutorClient::ExecutorClient(rclcpp::Node::SharedPtr provided_node)
       "execute_plan");
 }
 
-void
+bool
 ExecutorClient::executePlan()
 {
   using namespace std::placeholders;
@@ -57,7 +57,7 @@ ExecutorClient::executePlan()
 
   if (!this->execute_plan_client_ptr_->wait_for_action_server(std::chrono::seconds(10))) {
     RCLCPP_ERROR(node_->get_logger(), "Action server not available after waiting");
-    return;
+    return false;
   }
 
   auto goal_msg = ExecutePlan::Goal();
@@ -66,27 +66,28 @@ ExecutorClient::executePlan()
 
   auto send_goal_options = rclcpp_action::Client<ExecutePlan>::SendGoalOptions();
 
-  send_goal_options.goal_response_callback =
-    std::bind(&ExecutorClient::goal_response_callback, this, _1);
-  
   send_goal_options.feedback_callback =
     std::bind(&ExecutorClient::feedback_callback, this, _1, _2);
+
   send_goal_options.result_callback =
     std::bind(&ExecutorClient::result_callback, this, _1);
   auto goal_handle_future = this->execute_plan_client_ptr_->async_send_goal(
     goal_msg, send_goal_options);
-}
 
-void
-ExecutorClient::goal_response_callback(
-  std::shared_future<GoalHandleExecutePlan::SharedPtr> future)
-{
-  auto goal_handle = future.get();
-  if (!goal_handle) {
-    RCLCPP_ERROR(node_->get_logger(), "Goal was rejected by server");
-  } else {
-    RCLCPP_INFO(node_->get_logger(), "Goal accepted by server, waiting for result");
+  if (rclcpp::spin_until_future_complete(node_, goal_handle_future) !=
+    rclcpp::executor::FutureReturnCode::SUCCESS)
+  {
+    RCLCPP_ERROR(node_->get_logger(), "send_goal failed");
+    return false;
   }
+
+  auto goal_handle = goal_handle_future.get();
+  if (!goal_handle) {
+    RCLCPP_ERROR(node_->get_logger(), "Plan execution was rejected by the action server");
+    return false;
+  }
+
+  return true;
 }
 
 void

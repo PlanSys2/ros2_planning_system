@@ -33,29 +33,29 @@ TEST(problem_expert, addget_instances)
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"Paco", "PERSON"}));
-  ASSERT_FALSE(problem_expert.addInstance(plansys2::Instance{"Paco", "PERSON"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"Paco", "person"}));
+  ASSERT_FALSE(problem_expert.addInstance(plansys2::Instance{"Paco", "person"}));
   ASSERT_FALSE(problem_expert.addInstance(plansys2::Instance{"Paco", "SCIENTIFIC"}));
 
-  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"r2d2", "ROBOT"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"r2d2", "robot"}));
 
   ASSERT_EQ(problem_expert.getInstances().size(), 2);
   ASSERT_EQ(problem_expert.getInstances()[0].name, "Paco");
-  ASSERT_EQ(problem_expert.getInstances()[0].type, "PERSON");
+  ASSERT_EQ(problem_expert.getInstances()[0].type, "person");
   ASSERT_EQ(problem_expert.getInstances()[1].name, "r2d2");
-  ASSERT_EQ(problem_expert.getInstances()[1].type, "ROBOT");
+  ASSERT_EQ(problem_expert.getInstances()[1].type, "robot");
 
   ASSERT_TRUE(problem_expert.removeInstance("Paco"));
   ASSERT_EQ(problem_expert.getInstances().size(), 1);
   ASSERT_EQ(problem_expert.getInstances()[0].name, "r2d2");
-  ASSERT_EQ(problem_expert.getInstances()[0].type, "ROBOT");
+  ASSERT_EQ(problem_expert.getInstances()[0].type, "robot");
 
   auto paco_instance = problem_expert.getInstance("Paco");
   ASSERT_FALSE(paco_instance.has_value());
   auto r2d2_instance = problem_expert.getInstance("r2d2");
   ASSERT_TRUE(r2d2_instance.has_value());
   ASSERT_EQ(r2d2_instance.value().name, "r2d2");
-  ASSERT_EQ(r2d2_instance.value().type, "ROBOT");
+  ASSERT_EQ(r2d2_instance.value().type, "robot");
 }
 
 TEST(problem_expert, addget_predicates)
@@ -71,19 +71,19 @@ TEST(problem_expert, addget_predicates)
 
   plansys2::Param param_1;
   param_1.name = "r2d2";
-  param_1.type = "ROBOT";
+  param_1.type = "robot";
 
   plansys2::Param param_2;
   param_2.name = "bedroom";
-  param_2.type = "ROOM";
+  param_2.type = "room";
 
   plansys2::Param param_3;
   param_3.name = "kitchen";
-  param_3.type = "ROOM";
+  param_3.type = "room";
 
   plansys2::Param param_4;
   param_4.name = "paco";
-  param_4.type = "PERSON";
+  param_4.type = "person";
 
   plansys2::Predicate predicate_1;
   predicate_1.name = "robot_at";
@@ -93,9 +93,9 @@ TEST(problem_expert, addget_predicates)
   ASSERT_EQ(predicate_1.name, "robot_at");
   ASSERT_EQ(predicate_1.parameters.size(), 2);
   ASSERT_EQ(predicate_1.parameters[0].name, "r2d2");
-  ASSERT_EQ(predicate_1.parameters[0].type, "ROBOT");
+  ASSERT_EQ(predicate_1.parameters[0].type, "robot");
   ASSERT_EQ(predicate_1.parameters[1].name, "bedroom");
-  ASSERT_EQ(predicate_1.parameters[1].type, "ROOM");
+  ASSERT_EQ(predicate_1.parameters[1].type, "room");
 
   plansys2::Predicate predicate_2;
   predicate_2.name = "robot_at";
@@ -115,9 +115,9 @@ TEST(problem_expert, addget_predicates)
   ASSERT_EQ(predicate_4.name, "person_at");
   ASSERT_EQ(predicate_4.parameters.size(), 2);
   ASSERT_EQ(predicate_4.parameters[0].name, "paco");
-  ASSERT_EQ(predicate_4.parameters[0].type, "PERSON");
+  ASSERT_EQ(predicate_4.parameters[0].type, "person");
   ASSERT_EQ(predicate_4.parameters[1].name, "kitchen");
-  ASSERT_EQ(predicate_4.parameters[1].type, "ROOM");
+  ASSERT_EQ(predicate_4.parameters[1].type, "room");
 
 
   plansys2::Predicate predicate_5;
@@ -132,10 +132,10 @@ TEST(problem_expert, addget_predicates)
   predicate_6.parameters.push_back(param_3);
   predicate_6.parameters.push_back(param_4);
 
-  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"paco", "PERSON"}));
-  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"r2d2", "ROBOT"}));
-  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"bedroom", "ROOM"}));
-  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"kitchen", "ROOM"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"paco", "person"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"r2d2", "robot"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"bedroom", "room"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"kitchen", "room"}));
 
   std::vector<plansys2::Predicate> predicates = problem_expert.getPredicates();
   ASSERT_TRUE(predicates.empty());
@@ -173,41 +173,41 @@ TEST(problem_expert, addget_goals)
 
   plansys2::Param param_1;
   param_1.name = "r2d2";
-  param_1.type = "ROBOT";
+  param_1.type = "robot";
 
   plansys2::Param param_2;
   param_2.name = "bedroom";
-  param_2.type = "ROOM";
+  param_2.type = "room";
 
   plansys2::Param param_3;
   param_3.name = "kitchen";
-  param_3.type = "ROOM";
+  param_3.type = "room";
 
   plansys2::Param param_4;
   param_4.name = "paco";
-  param_4.type = "PERSON";
+  param_4.type = "person";
 
-  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"paco", "PERSON"}));
-  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"r2d2", "ROBOT"}));
-  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"bedroom", "ROOM"}));
-  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"kitchen", "ROOM"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"paco", "person"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"r2d2", "robot"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"bedroom", "room"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"kitchen", "room"}));
 
   plansys2::Goal goal;
-  goal.fromString("(AND (robot_at r2d2 bedroom)(person_at paco kitchen))");
-  ASSERT_EQ(goal.toString(), "(AND (robot_at r2d2 bedroom)(person_at paco kitchen))");
+  goal.fromString("(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
+  ASSERT_EQ(goal.toString(), "(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
 
   plansys2::Goal goal2;
-  goal2.fromString("(AND (robot_at r2d2 bedroom)(NOT(person_at paco kitchen)))");
-  ASSERT_EQ(goal2.toString(), "(AND (robot_at r2d2 bedroom)(NOT (person_at paco kitchen)))");
+  goal2.fromString("(and (robot_at r2d2 bedroom)(not(person_at paco kitchen)))");
+  ASSERT_EQ(goal2.toString(), "(and (robot_at r2d2 bedroom)(not (person_at paco kitchen)))");
 
   ASSERT_TRUE(problem_expert.setGoal(goal));
   ASSERT_TRUE(problem_expert.setGoal(goal2));
 
   ASSERT_EQ(problem_expert.getGoal().toString(),
-    "(AND (robot_at r2d2 bedroom)(NOT (person_at paco kitchen)))");
+    "(and (robot_at r2d2 bedroom)(not (person_at paco kitchen)))");
 
   const plansys2::Goal & goal3 = problem_expert.getGoal();
-  ASSERT_EQ(goal3.toString(), "(AND (robot_at r2d2 bedroom)(NOT (person_at paco kitchen)))");
+  ASSERT_EQ(goal3.toString(), "(and (robot_at r2d2 bedroom)(not (person_at paco kitchen)))");
 
   ASSERT_TRUE(problem_expert.clearGoal());
   ASSERT_TRUE(problem_expert.clearGoal());
@@ -228,19 +228,19 @@ TEST(problem_expert, get_probem)
 
   plansys2::Param param_1;
   param_1.name = "r2d2";
-  param_1.type = "ROBOT";
+  param_1.type = "robot";
 
   plansys2::Param param_2;
   param_2.name = "bedroom";
-  param_2.type = "ROOM";
+  param_2.type = "room";
 
   plansys2::Param param_3;
   param_3.name = "kitchen";
-  param_3.type = "ROOM";
+  param_3.type = "room";
 
   plansys2::Param param_4;
   param_4.name = "paco";
-  param_4.type = "PERSON";
+  param_4.type = "person";
 
   plansys2::Predicate predicate_1;
   predicate_1.name = "robot_at";
@@ -262,10 +262,10 @@ TEST(problem_expert, get_probem)
   predicate_4.parameters.push_back(param_4);
   predicate_4.parameters.push_back(param_3);
 
-  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"paco", "PERSON"}));
-  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"r2d2", "ROBOT"}));
-  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"bedroom", "ROOM"}));
-  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"kitchen", "ROOM"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"paco", "person"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"r2d2", "robot"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"bedroom", "room"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"kitchen", "room"}));
 
   ASSERT_TRUE(problem_expert.addPredicate(predicate_1));
   ASSERT_TRUE(problem_expert.addPredicate(predicate_2));
@@ -273,15 +273,15 @@ TEST(problem_expert, get_probem)
   ASSERT_TRUE(problem_expert.addPredicate(predicate_4));
 
   plansys2::Goal goal;
-  goal.fromString("(AND (robot_at r2d2 bedroom)(person_at paco kitchen))");
+  goal.fromString("(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
   ASSERT_TRUE(problem_expert.setGoal(goal));
 
   ASSERT_EQ(problem_expert.getProblem(),
-    std::string("( DEFINE ( PROBLEM problem_1 )\n( :DOMAIN SIMPLE ") +
-    std::string(")\n( :OBJECTS\n\tpaco - PERSON\n\tr2d2 - ROBOT\n\tbedroom kitchen - ROOM\n)\n") +
-    std::string("( :INIT\n\t( ROBOT_AT r2d2 bedroom )\n\t( ROBOT_AT r2d2 kitchen )\n\t( ") +
-    std::string("PERSON_AT paco bedroom )\n\t( PERSON_AT paco kitchen )\n)\n( :GOAL\n\t( ") +
-    std::string("AND\n\t\t( ROBOT_AT r2d2 bedroom )\n\t\t( PERSON_AT paco kitchen )\n\t)\n)\n)\n"));
+    std::string("( define ( problem problem_1 )\n( :domain simple ") +
+    std::string(")\n( :objects\n\tpaco - person\n\tr2d2 - robot\n\tbedroom kitchen - room\n)\n") +
+    std::string("( :init\n\t( robot_at r2d2 bedroom )\n\t( robot_at r2d2 kitchen )\n\t( ") +
+    std::string("person_at paco bedroom )\n\t( person_at paco kitchen )\n)\n( :goal\n\t( ") +
+    std::string("and\n\t\t( robot_at r2d2 bedroom )\n\t\t( person_at paco kitchen )\n\t)\n)\n)\n"));
 }
 
 int main(int argc, char ** argv)

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "plansys2_executor/ExecutorNode.hpp"
+#include "plansys2_executor/ActionExecutor.hpp"
 
 #include <string>
 #include <memory>
@@ -20,6 +21,7 @@
 #include <fstream>
 
 #include "lifecycle_msgs/msg/state.hpp"
+#include "plansys2_msgs/action/execute_action.hpp"
 
 namespace plansys2
 {
@@ -40,7 +42,6 @@ ExecutorNode::ExecutorNode()
     std::bind(&ExecutorNode::handle_goal, this, _1, _2),
     std::bind(&ExecutorNode::handle_cancel, this, _1),
     std::bind(&ExecutorNode::handle_accepted, this, _1));
-
 }
 
 
@@ -51,6 +52,12 @@ CallbackReturnT
 ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
+
+  auto aux_node = std::make_shared<rclcpp::Node>("executor_helper");
+  domain_client_ = std::make_shared<plansys2::DomainExpertClient>(aux_node);
+  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(aux_node);
+  planner_client_ = std::make_shared<plansys2::PlannerClient>(aux_node);
+  
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
 }
@@ -104,7 +111,22 @@ ExecutorNode::handle_goal(const rclcpp_action::GoalUUID & uuid,
 {
   RCLCPP_INFO(this->get_logger(), "Received goal request with order");
   
-  return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+  auto domain = domain_client_->getDomain();
+  auto problem = problem_client_->getProblem();
+  
+  current_plan_ = planner_client_->getPlan(domain, problem);
+
+  if (current_plan_.has_value()) {
+    std::cout << "plan: " << std::endl;
+    for (const auto & action : current_plan_.value()) {
+      std::cout << action.time << "\t" << action.action << "\t" <<
+        action.duration << std::endl;
+    }
+    return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+  } else {
+    std::cout << "No se ha encontrado plan" << std::endl;
+    return rclcpp_action::GoalResponse::REJECT;
+  }
 }
 
 rclcpp_action::CancelResponse
@@ -119,44 +141,67 @@ ExecutorNode::handle_cancel(
 void
 ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 {
-  RCLCPP_INFO(this->get_logger(), "Executing goal");
-  
-  rclcpp::Rate loop_rate(1);
-  const auto goal = goal_handle->get_goal();
+  rclcpp::Rate loop_rate(10);
   auto feedback = std::make_shared<ExecutePlan::Feedback>();
-  
-  auto & seq_action = feedback->seq_action;
-  auto & total_action = feedback->total_actions;
-  auto & current_action = feedback->current_action;
-  auto & progress_current_action = feedback->progress_current_action;
-
   auto result = std::make_shared<ExecutePlan::Result>();
 
-  total_action = 10;
-  for (int i = 0; i < total_action && rclcpp::ok(); i++) {
-    
-    if (goal_handle->is_canceling()) {
+  feedback->seq_action = 0;
+  feedback->total_actions = current_plan_.value().size();
+  for (const auto & action : current_plan_.value()) {  
+    feedback->seq_action++;
+    feedback->current_action = action.action;
+
+    auto action_executor = std::make_shared<ActionExecutor>(action.action);
+
+    while (rclcpp::ok() && !action_executor->finished()) {
+      if (goal_handle->is_canceling()) {
+        result->success = false;
+        result->error_info = "execution cancelled";
+        goal_handle->canceled(result);
+        RCLCPP_INFO(this->get_logger(), "Goal Canceled");
+        return;
+      }
+      
+      action_executor->update();
+
+      feedback->progress_current_action = action_executor->getProgress();
+      goal_handle->publish_feedback(feedback);
+
+      loop_rate.sleep();
+    }
+
+    auto status = action_executor->getStatus();
+    if (status == ActionExecutor::AT_START_ERROR) {
       result->success = false;
-      result->error_info = "execution cancelled";
-      goal_handle->canceled(result);
-      RCLCPP_INFO(this->get_logger(), "Goal Canceled");
+      result->error_info = "Initial requirements of " + action.action + " not meet";
+      goal_handle->succeed(result);
+      return;
+    } else if (status == ActionExecutor::OVER_ALL_ERROR) {
+      result->success = false;
+      result->error_info = "Over all requirements of " + action.action + " not meet";
+      goal_handle->succeed(result);
+      return;
+    } else if (status == ActionExecutor::AT_END_ERROR) {
+      result->success = false;
+      result->error_info = "Over all requirements of " + action.action + " not meet";
+      goal_handle->succeed(result);
       return;
     }
 
-    seq_action = i;
-    current_action = "action number " + std::to_string(i);
-    progress_current_action =
-      100.0f * static_cast<float>(seq_action) / static_cast<float>(total_action);
-    
-    goal_handle->publish_feedback(feedback);
-    loop_rate.sleep();
+    apply_effects(action);
   }
 
   if (rclcpp::ok()) {
     result->success = true;
     goal_handle->succeed(result);
-    RCLCPP_INFO(this->get_logger(), "Goal Succeeded");
+    RCLCPP_INFO(this->get_logger(), "Plan Succeeded");
   }
+}
+
+void
+ExecutorNode::apply_effects(const PlanItem & action)
+{
+
 }
 
 void

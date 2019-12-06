@@ -17,30 +17,30 @@ void TemporalAction::printCondition( std::ostream & s, const TokenStruct< std::s
 }
 
 void TemporalAction::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
-	s << "( :DURATIVE-ACTION " << name << "\n";
+	s << "( :durative-action " << name << "\n";
 
-	s << "  :PARAMETERS ";
+	s << "  :parameters ";
 
 	TokenStruct< std::string > astruct;
 
 	printParams( 0, s, astruct, d );
 
-	s << "  :DURATION ( = ?DURATION ";
+	s << "  :duration ( = ?duration ";
 	if ( durationExpr ) durationExpr->PDDLPrint( s, 0, astruct, d );
 	else s << "1";
 	s << " )\n";
 
-	s << "  :CONDITION\n";
-	s << "\t( AND\n";
-	printCondition( s, astruct, d, "AT START", (And *)pre );
-	printCondition( s, astruct, d, "OVER ALL", pre_o );
-	printCondition( s, astruct, d, "AT END", pre_e );
+	s << "  :condition\n";
+	s << "\t( and\n";
+	printCondition( s, astruct, d, "at start", (And *)pre );
+	printCondition( s, astruct, d, "over all", pre_o );
+	printCondition( s, astruct, d, "at end", pre_e );
 	s << "\t)\n";
 
-	s << "  :EFFECT\n";
-	s << "\t( AND\n";
-	printCondition( s, astruct, d, "AT START", (And *)eff );
-	printCondition( s, astruct, d, "AT END", eff_e );
+	s << "  :effect\n";
+	s << "\t( and\n";
+	printCondition( s, astruct, d, "at start", (And *)eff );
+	printCondition( s, astruct, d, "at end", eff_e );
 	s << "\t)\n";
 
 	s << ")\n";
@@ -56,17 +56,17 @@ void TemporalAction::parseCondition( Stringreader & f, TokenStruct< std::string 
 
 void TemporalAction::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
-	f.assert_token( ":PARAMETERS" );
+	f.assert_token( ":parameters" );
 	f.assert_token( "(" );
 
 	TokenStruct< std::string > astruct = f.parseTypedList( true, d.types );
 	params = d.convertTypes( astruct.types );
 
 	f.next();
-	f.assert_token( ":DURATION" );
+	f.assert_token( ":duration" );
 	f.assert_token( "(" );
 	f.assert_token( "=" );
-	f.assert_token( "?DURATION" );
+	f.assert_token( "?duration" );
 	durationExpr = parseDuration( f, astruct, d );
 	f.next();
 	f.assert_token( ")" );
@@ -74,7 +74,7 @@ void TemporalAction::parse( Stringreader & f, TokenStruct< std::string > & ts, D
 	f.next();
 	f.assert_token( ":" );
 	std::string s = f.getToken();
-	if ( s == "CONDITION" ) {
+	if ( s == "condition" ) {
 		pre = new And;
 		pre_o = new And;
 		pre_e = new And;
@@ -82,18 +82,18 @@ void TemporalAction::parse( Stringreader & f, TokenStruct< std::string > & ts, D
 		f.assert_token( "(" );
 		if ( f.getChar() != ')' ) {
 			s = f.getToken();
-			if ( s == "AND" ) {
+			if ( s == "and" ) {
 				for ( f.next(); f.getChar() != ')'; f.next() ) {
 					f.assert_token( "(" );
 					s = f.getToken();
 					f.next();
 					std::string t = f.getToken();
 
-					if ( s == "AT" && t == "START" )
+					if ( s == "at" && t == "start" )
 						parseCondition( f, astruct, d, (And *)pre );
-					else if ( s == "OVER" && t == "ALL" )
+					else if ( s == "over" && t == "all" )
 						parseCondition( f, astruct, d, pre_o );
-					else if ( s == "AT" && t == "END" )
+					else if ( s == "at" && t == "end" )
 						parseCondition( f, astruct, d, pre_e );
 					else f.tokenExit( s + " " + t );
 
@@ -106,11 +106,11 @@ void TemporalAction::parse( Stringreader & f, TokenStruct< std::string > & ts, D
 				f.next();
 				std::string t = f.getToken();
 
-				if ( s == "AT" && t == "START" )
+				if ( s == "at" && t == "start" )
 					parseCondition( f, astruct, d, (And *)pre );
-				else if ( s == "OVER" && t == "ALL" )
+				else if ( s == "over" && t == "all" )
 					parseCondition( f, astruct, d, pre_o );
-				else if ( s == "AT" && t == "END" )
+				else if ( s == "at" && t == "end" )
 					parseCondition( f, astruct, d, pre_e );
 				else f.tokenExit( s + " " + t );
 
@@ -124,7 +124,7 @@ void TemporalAction::parse( Stringreader & f, TokenStruct< std::string > & ts, D
 		f.assert_token( ":" );
 		s = f.getToken();
 	}
-	if ( s != "EFFECT" ) f.tokenExit( s );
+	if ( s != "effect" ) f.tokenExit( s );
 
 	f.next();
 	f.assert_token( "(" );
@@ -133,16 +133,16 @@ void TemporalAction::parse( Stringreader & f, TokenStruct< std::string > & ts, D
 		eff_e = new And;
 
 		s = f.getToken();
-		if ( s == "AND" ) {
+		if ( s == "and" ) {
 			for ( f.next(); f.getChar() != ')'; f.next() ) {
 				f.assert_token( "(" );
 				s = f.getToken();
 				f.next();
 				std::string t = f.getToken();
 
-				if ( s == "AT" && t == "START" )
+				if ( s == "at" && t == "start" )
 					parseCondition( f, astruct, d, (And *)eff );
-				else if ( s == "AT" && t == "END" )
+				else if ( s == "at" && t == "end" )
 					parseCondition( f, astruct, d, eff_e );
 				else f.tokenExit( s + " " + t );
 
@@ -155,9 +155,9 @@ void TemporalAction::parse( Stringreader & f, TokenStruct< std::string > & ts, D
 			f.next();
 			std::string t = f.getToken();
 
-			if ( s == "AT" && t == "START" )
+			if ( s == "at" && t == "start" )
 				parseCondition( f, astruct, d, (And *)eff );
-			else if ( s == "AT" && t == "END" )
+			else if ( s == "at" && t == "end" )
 				parseCondition( f, astruct, d, eff_e );
 			else f.tokenExit( s + " " + t );
 

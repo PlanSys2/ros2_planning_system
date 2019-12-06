@@ -204,7 +204,7 @@ callee_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & m
     }
   }
 
-  // configure planner
+  // configure executor
   {
     if (!manager_nodes["executor"]->change_state(
         lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE))

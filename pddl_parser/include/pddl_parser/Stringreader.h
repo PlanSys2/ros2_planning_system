@@ -43,7 +43,7 @@ public:
 		lines = getLines(domain);
 	
 		s = lines[current_line++];
-		std::transform(s.begin(), s.end(),s.begin(), ::toupper);
+		std::transform(s.begin(), s.end(),s.begin(), ::tolower);
 		next();
 	}
 
@@ -101,21 +101,22 @@ public:
 			c = 0;
 
 			s = lines[current_line++];
-			std::transform(s.begin(), s.end(),s.begin(), ::toupper);
+			std::transform(s.begin(), s.end(),s.begin(), ::tolower);
 
 			for ( ; c < s.size() && ignore( s[c] ); ++c );
 		}
 	}
 
-	// get token converted to uppercase
+	// get token converted to lowercase
 	std::string getToken() {
 		std::ostringstream os;
 		while ( c < s.size() && !ignore( s[c] ) && !paren( s[c] ) && s[c] != ',' )
-			os << ( 97 <= s[c] && s[c] <= 122 ? (char)( s[c++] - 32 ) : s[c++] );
+			os << ( 65 <= s[c] && s[c] <= 90 ? (char)( s[c++] + 32 ) : s[c++] );
+		
 		return os.str();
 	}
 
-	// get token converted to uppercase
+	// get token converted to lowercase
 	// check that the token exists
 	template < typename T >
 	std::string getToken( const TokenStruct< T > & ts ) {
@@ -130,7 +131,8 @@ public:
 		unsigned b = 0;
 		for ( unsigned k = 0; c + k < s.size() && k < t.size(); ++k )
 			b += s[c + k] == t[k] || 
-			     ( 97 <= s[c + k] && s[c + k] <= 122 && s[c + k] == t[k] + 32 );
+			     ( 65 <= s[c + k] && s[c + k] <= 90 && s[c + k] == t[k] - 32 );
+
 		if ( b < t.size() ) {
 			printLine();
 			throw ExpectedToken(t);
@@ -142,7 +144,7 @@ public:
 	// parse the name of a domain or instance
 	std::string parseName( const std::string & u ) {
 		std::string out;
-		std::string t[5] = { "(", "DEFINE", "(", u, ")" };
+		std::string t[5] = { "(", "define", "(", u, ")" };
 		for ( unsigned i = 0; i < 5; ++i ) {
 			assert_token( t[i] );
 			if ( i == 3 ) {
@@ -164,12 +166,12 @@ public:
 				assert_token( "-" );
 
 				std::string t;
-				// check if the type is "EITHER"
+				// check if the type is "either"
 				if ( getChar() == '(' ) {
 					assert_token( "(" );
-					assert_token( "EITHER" );
+					assert_token( "either" );
 
-					t = "( EITHER";
+					t = "( either";
 					for ( ; getChar() != ')'; next() ) {
 						if ( check ) t += " " + getToken( ts );
 						else t += " " + getToken();
@@ -185,13 +187,13 @@ public:
 			}
 			else if ( getChar() == '(' ) {
 				assert_token( "(" );
-				assert_token( ":PRIVATE" );
+				assert_token( ":private" );
 				getToken();
 				out.append( parseTypedList( check, ts ) );
 			}
 			else out.insert( getToken() );
 		}
-		if ( k < out.size() ) out.types.insert( out.types.end(), out.size() - k, check ? "OBJECT" : "" );
+		if ( k < out.size() ) out.types.insert( out.types.end(), out.size() - k, check ? "object" : "" );
 		++c;
 
 		return out;

@@ -60,8 +60,8 @@ Expression * createExpression( Stringreader & f, TokenStruct< std::string > & ts
 			return new FunctionExpression( c );
 		}
 	}
-	else if ( f.getChar() == '?' ) {  // just support DURATION if starts with ?
-		f.assert_token( "?DURATION" );
+	else if ( f.getChar() == '?' ) {  // just support duration if starts with ?
+		f.assert_token( "?duration" );
 		return new DurationExpression();
 	}
 	else {

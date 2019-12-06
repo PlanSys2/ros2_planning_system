@@ -4,20 +4,20 @@
 namespace parser { namespace pddl {
 
 void Action::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
-	s << "( :ACTION " << name << "\n";
+	s << "( :action " << name << "\n";
 
-	s << "  :PARAMETERS ";
+	s << "  :parameters ";
 
 	TokenStruct< std::string > astruct;
 
 	printParams( 0, s, astruct, d );
 
-	s << "  :PRECONDITION\n";
+	s << "  :precondition\n";
 	if ( pre ) pre->PDDLPrint( s, 1, astruct, d );
 	else s << "\t()";
 	s << "\n";
 
-	s << "  :EFFECT\n";
+	s << "  :effect\n";
 	if ( eff ) eff->PDDLPrint( s, 1, astruct, d );
 	else s << "\t()";
 	s << "\n";
@@ -29,7 +29,7 @@ void Action::parseConditions( Stringreader & f, TokenStruct< std::string > & ts,
 	f.next();
 	f.assert_token( ":" );
 	std::string s = f.getToken();
-	if ( s == "PRECONDITION" ) {
+	if ( s == "precondition" ) {
 		f.next();
 		f.assert_token( "(" );
 		if ( f.getChar() != ')' ) {
@@ -42,7 +42,7 @@ void Action::parseConditions( Stringreader & f, TokenStruct< std::string > & ts,
 		f.assert_token( ":" );
 		s = f.getToken();
 	}
-	if ( s != "EFFECT" ) f.tokenExit( s );
+	if ( s != "effect" ) f.tokenExit( s );
 
 	f.next();
 	f.assert_token( "(" );
@@ -57,7 +57,7 @@ void Action::parseConditions( Stringreader & f, TokenStruct< std::string > & ts,
 
 void Action::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
-	f.assert_token( ":PARAMETERS" );
+	f.assert_token( ":parameters" );
 	f.assert_token( "(" );
 
 	TokenStruct< std::string > astruct = f.parseTypedList( true, d.types );

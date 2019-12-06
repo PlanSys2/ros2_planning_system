@@ -31,7 +31,7 @@ void FunctionModifier::PDDLPrint( std::ostream & s, unsigned indent, const Token
 		modifiedGround->PDDLPrint( s, 0, ts, d );
 	}
 	else {
-		s << "( TOTAL-COST )";
+		s << "( total-cost )";
 	}
 
 	s << " ";
@@ -46,7 +46,7 @@ void FunctionModifier::parse( Stringreader & f, TokenStruct< std::string > & ts,
 	f.assert_token( "(" );
 
 	std::string increasedFunction = f.getToken();
-	if ( increasedFunction == "TOTAL-COST" ) {
+	if ( increasedFunction == "total-cost" ) {
  		f.next();
 		f.assert_token( ")" );
 	}

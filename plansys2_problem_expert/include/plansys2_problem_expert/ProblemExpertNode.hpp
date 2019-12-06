@@ -35,6 +35,7 @@
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
 #include "plansys2_msgs/srv/remove_problem_instance.hpp"
 #include "plansys2_msgs/srv/remove_problem_predicate.hpp"
+#include "plansys2_msgs/srv/exist_problem_predicate.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -116,6 +117,11 @@ public:
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::RemoveProblemPredicate::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::RemoveProblemPredicate::Response> response);
+ 
+  void exist_problem_predicate_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::ExistProblemPredicate::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::ExistProblemPredicate::Response> response);
 
 private:
   std::shared_ptr<ProblemExpert> problem_expert_;
@@ -144,6 +150,8 @@ private:
     remove_problem_instance_service_;
   rclcpp::Service<plansys2_msgs::srv::RemoveProblemPredicate>::SharedPtr
     remove_problem_predicate_service_;
+  rclcpp::Service<plansys2_msgs::srv::ExistProblemPredicate>::SharedPtr
+    exist_problem_predicate_service_;
 
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Empty>::SharedPtr update_pub_;
 };

@@ -33,6 +33,7 @@
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
 #include "plansys2_msgs/srv/remove_problem_instance.hpp"
 #include "plansys2_msgs/srv/remove_problem_predicate.hpp"
+#include "plansys2_msgs/srv/exist_problem_predicate.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -52,6 +53,7 @@ public:
   std::vector<Predicate> getPredicates();
   bool addPredicate(const Predicate & predicate);
   bool removePredicate(const Predicate & predicate);
+  bool existPredicate(const Predicate & predicate);
 
   Goal getGoal();
   bool setGoal(const Goal & goal);
@@ -84,7 +86,8 @@ private:
     remove_problem_instance_client_;
   rclcpp::Client<plansys2_msgs::srv::RemoveProblemPredicate>::SharedPtr
     remove_problem_predicate_client_;
-
+  rclcpp::Client<plansys2_msgs::srv::ExistProblemPredicate>::SharedPtr
+    exist_problem_predicate_client_;
   rclcpp::Node::SharedPtr node_;
 };
 

@@ -29,7 +29,7 @@ public:
 
 	void parse( const std::string &s) {
 		Stringreader f( s );
-		name = f.parseName( "PROBLEM" );
+		name = f.parseName( "problem" );
 
 		if ( DOMAIN_DEBUG ) std::cout << name << "\n";
     
@@ -40,11 +40,11 @@ public:
 
 			if ( DOMAIN_DEBUG ) std::cout << t << "\n";
 
-			if ( t == "DOMAIN" ) parseDomain( f );
-			else if ( t == "OBJECTS" ) parseObjects( f );
-			else if ( t == "INIT" ) parseInit( f );
-			else if ( t == "GOAL" ) parseGoal( f );
-			else if ( t == "METRIC" ) parseMetric( f );
+			if ( t == "domain" ) parseDomain( f );
+			else if ( t == "objects" ) parseObjects( f );
+			else if ( t == "init" ) parseInit( f );
+			else if ( t == "goal" ) parseGoal( f );
+			else if ( t == "metric" ) parseMetric( f );
 			else f.tokenExit( t );
 		}
 	}
@@ -111,7 +111,7 @@ public:
 		f.assert_token( "(" );
 
 		std::string s = f.getToken();
-		if ( s == "AND" ) {
+		if ( s == "and" ) {
 			for ( f.next(); f.getChar() != ')'; f.next() ) {
 				f.assert_token( "(" );
 				parseGround( f, goal );
@@ -131,17 +131,17 @@ public:
 	// for the moment only parse total-cost/total-time
 	void parseMetric( Stringreader & f ) {
 		if ( !d.temp && !d.costs ) {
-			std::cerr << "METRIC only defined for temporal actions or actions with costs!\n";
+			std::cerr << "metric only defined for temporal actions or actions with costs!\n";
 			std::exit( 1 );
 		}
 
 		metric = true;
 
 		f.next();
-		f.assert_token( "MINIMIZE" );
+		f.assert_token( "minimize" );
 		f.assert_token( "(" );
-		if ( d.temp ) f.assert_token( "TOTAL-TIME" );
-		else f.assert_token( "TOTAL-COST" );
+		if ( d.temp ) f.assert_token( "total-time" );
+		else f.assert_token( "total-cost" );
 		f.assert_token( ")" );
 		f.assert_token( ")" );
 	}
@@ -193,10 +193,10 @@ public:
 	
 	friend std::ostream& operator<<(std::ostream &os, const Instance& o) { return o.print(os); }
 	virtual std::ostream& print(std::ostream& stream) const {
-		stream << "( DEFINE ( PROBLEM " << name << " )\n";
-		stream << "( :DOMAIN " << d.name << " )\n";
+		stream << "( define ( problem " << name << " )\n";
+		stream << "( :domain " << d.name << " )\n";
 
-		stream << "( :OBJECTS\n";
+		stream << "( :objects\n";
 		for ( unsigned i = 0; i < d.types.size(); ++i )
 			if ( d.types[i]->objects.size() ) {
 				stream << "\t";
@@ -207,15 +207,15 @@ public:
 			}
 		stream << ")\n";
 
-		stream << "( :INIT\n";
+		stream << "( :init\n";
 		for ( unsigned i = 0; i < init.size(); ++i ) {
 			( (TypeGround*)init[i])->PDDLPrint( stream, 1, TokenStruct< std::string >(), d );
 			stream << "\n";
 		}
 		stream << ")\n";
 
-		stream << "( :GOAL\n";
-		stream << "\t( AND\n";
+		stream << "( :goal\n";
+		stream << "\t( and\n";
 		for ( unsigned i = 0; i < goal.size(); ++i ) {
 			( (TypeGround*)goal[i])->PDDLPrint( stream, 2, TokenStruct< std::string >(), d );
 			stream << "\n";
@@ -224,9 +224,9 @@ public:
 		stream << ")\n";
 
 		if ( metric ) {
-			stream << "( :METRIC MINIMIZE ( TOTAL-";
-			if ( d.temp ) stream << "TIME";
-			else stream << "COST";
+			stream << "( :metric minimize ( total-";
+			if ( d.temp ) stream << "time";
+			else stream << "cost";
 			stream << " ) )\n";
 		}
 

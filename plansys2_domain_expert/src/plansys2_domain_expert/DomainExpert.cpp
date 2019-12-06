@@ -55,7 +55,7 @@ DomainExpert::getPredicate(const std::string & predicate)
 {
   std::string predicate_search = predicate;
   std::transform(predicate_search.begin(), predicate_search.end(),
-    predicate_search.begin(), ::toupper);
+    predicate_search.begin(), ::tolower);
 
   plansys2::Predicate ret;
   bool found = false;
@@ -102,7 +102,7 @@ DomainExpert::getAction(const std::string & action)
 {
   std::string action_search = action;
   std::transform(action_search.begin(), action_search.end(),
-    action_search.begin(), ::toupper);
+    action_search.begin(), ::tolower);
 
   plansys2::Action ret;
   bool found = false;
@@ -173,7 +173,7 @@ DomainExpert::getDurativeAction(const std::string & action)
 {
   std::string action_search = action;
   std::transform(action_search.begin(), action_search.end(),
-    action_search.begin(), ::toupper);
+    action_search.begin(), ::tolower);
 
   plansys2::DurativeAction ret;
   bool found = false;

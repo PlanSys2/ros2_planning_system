@@ -54,7 +54,9 @@ ProblemExpertClient::ProblemExpertClient(rclcpp::Node::SharedPtr provided_node)
   remove_problem_predicate_client_ =
     node_->create_client<plansys2_msgs::srv::RemoveProblemPredicate>(
     "/problem_expert/remove_problem_predicate");
-}
+  exist_problem_predicate_client_ =
+    node_->create_client<plansys2_msgs::srv::ExistProblemPredicate>(
+    "/problem_expert/exist_problem_predicate");}
 
 std::vector<Instance>
 ProblemExpertClient::getInstances()
@@ -315,6 +317,37 @@ ProblemExpertClient::removePredicate(const Predicate & predicate)
       future_result.get()->error_info.c_str());
     return false;
   }
+}
+
+bool
+ProblemExpertClient::existPredicate(const Predicate & predicate)
+{
+  while (!exist_problem_predicate_client_->wait_for_service(std::chrono::seconds(1))) {
+    if (!rclcpp::ok()) {
+      return false;
+    }
+    RCLCPP_ERROR(
+      node_->get_logger(),
+      "/problem_expert/exist_problem_predicate service client: waiting for service to appear...");
+  }
+
+  auto request = std::make_shared<plansys2_msgs::srv::ExistProblemPredicate::Request>();
+  request->predicate = predicate.name;
+
+  for (const auto & parameter : predicate.parameters) {
+    request->arguments.push_back(parameter.name);
+  }
+
+  auto future_result = exist_problem_predicate_client_->async_send_request(request);
+
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
+    rclcpp::executor::FutureReturnCode::SUCCESS)
+  {
+    return false;
+  }
+
+  std::cerr <<" Final" <<std::endl;
+  return future_result.get()->exist;
 }
 
 Goal

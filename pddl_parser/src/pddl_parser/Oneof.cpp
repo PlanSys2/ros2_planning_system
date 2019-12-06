@@ -5,7 +5,7 @@ namespace parser { namespace pddl {
 
 void Oneof::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
 	tabindent( s, indent );
-	s << "( ONEOF\n";
+	s << "( oneof\n";
 	for ( unsigned i = 0; i < conds.size(); ++i ) {
 		conds[i]->PDDLPrint( s, indent + 1, ts, d );
 		s << "\n";

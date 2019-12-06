@@ -5,7 +5,7 @@ namespace parser { namespace pddl {
 
 void When::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
 	tabindent( s, indent );
-	s << "( WHEN\n";
+	s << "( when\n";
 	if ( pars ) pars->PDDLPrint( s, indent + 1, ts, d );
 	else {
 		tabindent( s, indent + 1 );

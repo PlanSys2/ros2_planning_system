@@ -100,6 +100,12 @@ ProblemExpertNode::ProblemExpertNode()
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
 
+  exist_problem_predicate_service_ = create_service<plansys2_msgs::srv::ExistProblemPredicate>(
+    "/problem_expert/exist_problem_predicate",
+    std::bind(&ProblemExpertNode::exist_problem_predicate_service_callback,
+    this, std::placeholders::_1, std::placeholders::_2,
+    std::placeholders::_3));
+
   update_pub_ = create_publisher<std_msgs::msg::Empty>("/problem_expert/update_notify",
       rclcpp::QoS(100));
 }
@@ -184,7 +190,7 @@ ProblemExpertNode::add_problem_goal_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    if (request->goal != "(AND )") {
+    if (request->goal != "(and )") {
       plansys2::Goal goal;
       goal.fromString(request->goal);
       response->success = problem_expert_->setGoal(goal);
@@ -458,4 +464,26 @@ ProblemExpertNode::remove_problem_predicate_service_callback(
   }
 }
 
+void
+ProblemExpertNode::exist_problem_predicate_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::ExistProblemPredicate::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::ExistProblemPredicate::Response> response)
+{
+  if (problem_expert_ == nullptr) {
+    response->exist = false;
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    plansys2::Predicate predicate;
+    predicate.name = request->predicate;
+
+    for (const auto & param_name : request->arguments) {
+      plansys2::Param param;
+      param.name = param_name;
+      predicate.parameters.push_back(param);
+    }
+
+    response->exist = problem_expert_->existPredicate(predicate);
+  }
+}
 }  // namespace plansys2

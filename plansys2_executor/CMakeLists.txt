@@ -13,6 +13,7 @@ find_package(pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_domain_expert REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
+find_package(plansys2_planner REQUIRED)
 
 set(dependencies
     rclcpp
@@ -23,12 +24,14 @@ set(dependencies
     plansys2_msgs
     plansys2_domain_expert
     plansys2_problem_expert
+    plansys2_planner                                  
 )
 
 include_directories(include)
 
 set(EXECUTOR_SOURCES
   src/plansys2_executor/ExecutorClient.cpp
+  src/plansys2_executor/ActionExecutor.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${EXECUTOR_SOURCES})
@@ -38,7 +41,7 @@ add_executable(executor_node
   src/executor_node.cpp
   src/plansys2_executor/ExecutorNode.cpp)
 ament_target_dependencies(executor_node ${dependencies})
-target_link_libraries(executor_node)
+target_link_libraries(executor_node ${PROJECT_NAME})
 
 install(DIRECTORY include/
   DESTINATION include/

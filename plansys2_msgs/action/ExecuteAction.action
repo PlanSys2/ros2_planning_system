@@ -1,0 +1,7 @@
+string action
+string[] arguments
+---
+bool success
+string error_info
+---
+float32 progress

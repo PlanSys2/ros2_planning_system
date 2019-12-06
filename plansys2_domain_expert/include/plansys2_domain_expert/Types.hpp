@@ -32,6 +32,8 @@ struct Param
 
 bool operator==(const Param & op1, const Param & op2);
 
+std::string getReducedString(const std::string & expr);
+
 class Predicate
 {
 public:
@@ -124,7 +126,7 @@ public:
   std::string toString()
   {
     std::string ret;
-    ret = "(AND ";
+    ret = "(and ";
     for (auto op : ops) {
       ret += op->toString();
     }
@@ -157,7 +159,7 @@ public:
   std::string toString()
   {
     std::string ret;
-    ret = "(OR ";
+    ret = "(or ";
     for (auto op : ops) {
       ret += op->toString();
     }
@@ -189,7 +191,7 @@ public:
   std::string toString()
   {
     std::string ret;
-    ret = "(NOT ";
+    ret = "(not ";
     ret += op->toString();
     ret += ")";
 
@@ -251,7 +253,7 @@ public:
 
   bool empty()
   {
-    return root_ == nullptr || root_->toString() == "(AND )";
+    return root_ == nullptr || root_->toString() == "(and )";
   }
 
   std::shared_ptr<TreeNode> root_;

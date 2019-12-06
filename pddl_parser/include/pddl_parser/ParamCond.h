@@ -7,7 +7,7 @@
 namespace parser { namespace pddl {
 
 
-// This is necessary for ADL
+// This is necessary for adl
 using ::operator<<;
 
 class ParamCond : public Condition {

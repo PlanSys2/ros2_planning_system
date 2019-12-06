@@ -5,7 +5,7 @@ namespace parser { namespace pddl {
 
 void Not::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
 	tabindent( s, indent );
-	s << "( NOT ";
+	s << "( not ";
 	if ( cond ) cond->PDDLPrint( s, 0, ts, d );
 	s << " )";
 }

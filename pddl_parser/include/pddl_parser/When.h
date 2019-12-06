@@ -26,7 +26,7 @@ public:
 	}
 
 	void print( std::ostream & s ) const {
-		s << "WHEN:\n";
+		s << "when:\n";
 		if ( pars ) pars->print( s );
 		if ( cond ) cond->print( s );
 	}

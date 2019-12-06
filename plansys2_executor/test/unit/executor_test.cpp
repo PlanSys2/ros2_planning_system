@@ -19,14 +19,36 @@
 #include <fstream>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
+#include "plansys2_executor/ActionExecutor.hpp"
 
 #include "gtest/gtest.h"
 
-TEST(problem_expert, dummy_test)
+class ActionExecutorTest : public plansys2::ActionExecutor
 {
-  ASSERT_EQ(1, 1);
-}
+public:
+  std::string test_get_name(const std::string & action_expr)
+  {
+    return get_name(action_expr);
+  }
 
+  std::vector<std::string> test_get_params(const std::string & action_expr)
+  {
+    return get_params(action_expr);
+  }
+};
+
+TEST(problem_expert, util_test)
+{
+  ActionExecutorTest action_executor;
+  std::string action_1("(move r2d2 bedroom kitchen)");
+
+  ASSERT_EQ(action_executor.test_get_name(action_1), "move");
+  auto params_1 = action_executor.test_get_params(action_1);
+  ASSERT_EQ(params_1.size(), 3);
+  ASSERT_EQ(params_1[0], "r2d2");
+  ASSERT_EQ(params_1[1], "bedroom");
+  ASSERT_EQ(params_1[2], "kitchen");
+}
 
 int main(int argc, char ** argv)
 {

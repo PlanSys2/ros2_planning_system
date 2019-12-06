@@ -23,11 +23,11 @@ TEST(domain_types, basic_types)
 {
   plansys2::Param param_1;
   param_1.name = "r2d2";
-  param_1.type = "ROBOT";
+  param_1.type = "robot";
 
   plansys2::Param param_2;
   param_2.name = "bedroom";
-  param_2.type = "ROOM";
+  param_2.type = "room";
 
   plansys2::Predicate predicate_1;
   predicate_1.name = "robot_at";
@@ -41,19 +41,19 @@ TEST(domain_types, predicate_tree_to_string)
 {
   plansys2::Param param_1;
   param_1.name = "r2d2";
-  param_1.type = "ROBOT";
+  param_1.type = "robot";
 
   plansys2::Param param_2;
   param_2.name = "bedroom";
-  param_2.type = "ROOM";
+  param_2.type = "room";
 
   plansys2::Param param_3;
   param_3.name = "kitchen";
-  param_3.type = "ROOM";
+  param_3.type = "room";
 
   plansys2::Param param_4;
   param_4.name = "paco";
-  param_4.type = "PERSON";
+  param_4.type = "person";
 
   plansys2::Predicate predicate_1;
   predicate_1.name = "robot_at";
@@ -102,21 +102,21 @@ TEST(domain_types, predicate_tree_to_string)
   plansys2::PredicateTree tree;
   tree.root_ = pn_and;
 
-  ASSERT_EQ(tree.toString(), std::string("(AND (robot_at r2d2 bedroom)(NOT ") +
-    std::string("(robot_at r2d2 kitchen))(OR (person_at paco bedroom)(person_at paco kitchen)))"));
+  ASSERT_EQ(tree.toString(), std::string("(and (robot_at r2d2 bedroom)(not ") +
+    std::string("(robot_at r2d2 kitchen))(or (person_at paco bedroom)(person_at paco kitchen)))"));
 }
 
 TEST(domain_types, predicate_tree_from_string)
 {
-  std::string expresion = std::string("(AND (robot_at r2d2 bedroom)(NOT ") +
-    std::string("(robot_at r2d2 kitchen))(OR (person_at paco bedroom)(person_at paco kitchen)))");
+  std::string expresion = std::string("(and (robot_at r2d2 bedroom)(not ") +
+    std::string("(robot_at r2d2 kitchen))(or (person_at paco bedroom)(person_at paco kitchen)))");
 
   plansys2::PredicateTree tree;
   tree.fromString(expresion);
 
   ASSERT_EQ(tree.toString(), expresion);
 
-  std::string expresion2 = std::string("(AND (PERSON_AT ?0 ?2)(NOT (PERSON_AT ?0 ?1)))");
+  std::string expresion2 = std::string("(and (person_at ?0 ?2)(not (person_at ?0 ?1)))");
   plansys2::PredicateTree tree2;
   tree2.fromString(expresion2);
 

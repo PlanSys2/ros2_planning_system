@@ -5,7 +5,7 @@ namespace parser { namespace pddl {
 
 void Forall::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
 	tabindent( s, indent );
-	s << "( FORALL\n";
+	s << "( forall\n";
 
 	TokenStruct< std::string > fstruct( ts );
 

@@ -28,7 +28,7 @@ public:
 	std::string name;                   // name of domain
 
 	bool equality;                      // whether domain supports equality
-	bool strips, adl, condeffects;      // whether domain is STRIPS, ADL and/or has conditional effects
+	bool strips, adl, condeffects;      // whether domain is strips, adl and/or has conditional effects
 	bool typed, cons, costs;            // whether domain is typed, has constants, has costs
 	bool temp, nondet, neg, disj;       // whether domain is temporal, is non-deterministic, has negative precons, has disjunctive preconditions
 	bool universal;                     // whether domain has universal precons
@@ -48,7 +48,7 @@ public:
 		, nondet( false ), neg( false ), disj( false ), universal( false )
 		, fluents( false ), derivedpred( false )
 	{
-		types.insert( new Type( "OBJECT" ) ); // Type 0 is always "OBJECT", whether the domain is typed or not
+		types.insert( new Type( "object" ) ); // Type 0 is always "object", whether the domain is typed or not
 	}
 
 	Domain( const std::string & s ) : Domain()
@@ -73,7 +73,7 @@ public:
 
 	virtual void parse( const std::string & s ) {
 		Stringreader f( s );
-		name = f.parseName( "DOMAIN" );
+		name = f.parseName( "domain" );
 
 		if ( DOMAIN_DEBUG ) std::cout << name << "\n";
 
@@ -92,15 +92,15 @@ public:
 
 	//! Returns a boolean indicating whether the block was correctly parsed
 	virtual bool parseBlock(const std::string& t, Stringreader& f) {
-		if ( t == "REQUIREMENTS" ) parseRequirements( f );
-		else if ( t == "TYPES" ) parseTypes( f );
-		else if ( t == "CONSTANTS" ) parseConstants( f );
-		else if ( t == "PREDICATES" ) parsePredicates( f );
-		else if ( t == "FUNCTIONS" ) parseFunctions( f );
-		else if ( t == "ACTION" ) parseAction( f );
-		else if ( t == "DURATIVE-ACTION" ) parseDurativeAction( f );
-		else if ( t == "DERIVED" ) parseDerived( f );
-//		else if ( t == "AXIOM" ) parseAxiom( f );
+		if ( t == "requirements" ) parseRequirements( f );
+		else if ( t == "types" ) parseTypes( f );
+		else if ( t == "constants" ) parseConstants( f );
+		else if ( t == "predicates" ) parsePredicates( f );
+		else if ( t == "functions" ) parseFunctions( f );
+		else if ( t == "action" ) parseAction( f );
+		else if ( t == "durative-action" ) parseDurativeAction( f );
+		else if ( t == "derived" ) parseDerived( f );
+//		else if ( t == "axiom" ) parseAxiom( f );
 		else return false; // Unknown block type
 
 		return true;
@@ -124,19 +124,19 @@ public:
 
 	//! Returns a boolean indicating whether the requirement was correctly parsed
 	virtual bool parseRequirement( const std::string& s ) {
-		if ( s == "STRIPS" ) strips = true;
-		else if ( s == "ADL" ) adl = true;
-		else if ( s == "NEGATIVE-PRECONDITIONS" ) neg = true;
-		else if ( s == "CONDITIONAL-EFFECTS" ) condeffects = true;
-		else if ( s == "TYPING" ) typed = true;
-		else if ( s == "ACTION-COSTS" ) costs = true;
-		else if ( s == "EQUALITY" ) equality = true;
-		else if ( s == "DURATIVE-ACTIONS" ) temp = true;
-		else if ( s == "NON-DETERMINISTIC" ) nondet = true;
-		else if ( s == "UNIVERSAL-PRECONDITIONS" ) universal = true;
-		else if ( s == "FLUENTS" ) fluents = true;
-		else if ( s == "DISJUNCTIVE-PRECONDITIONS" ) disj = true;
-		else if ( s == "DERIVED-PREDICATES" ) derivedpred = true;
+		if ( s == "strips" ) strips = true;
+		else if ( s == "adl" ) adl = true;
+		else if ( s == "negative-preconditions" ) neg = true;
+		else if ( s == "conditional-effects" ) condeffects = true;
+		else if ( s == "typing" ) typed = true;
+		else if ( s == "action-cost" ) costs = true;
+		else if ( s == "equality" ) equality = true;
+		else if ( s == "durative-actions" ) temp = true;
+		else if ( s == "non-deterministic" ) nondet = true;
+		else if ( s == "universal-preconditions" ) universal = true;
+		else if ( s == "fluents" ) fluents = true;
+		else if ( s == "disjuntive-preconditions" ) disj = true;
+		else if ( s == "derived-predicates" ) derivedpred = true;
 		else return false; // Unknown requirement
 
 		return true;
@@ -169,7 +169,7 @@ public:
 
 	void parseTypes( Stringreader & f ) {
 		if ( !typed ) {
-			std::cout << "Requirement :TYPING needed to define types\n";
+			std::cout << "Requirement :typing needed to define types\n";
 			exit( 1 );
 		}
 
@@ -179,11 +179,11 @@ public:
 		// Parse the typed list
 		TokenStruct< std::string > ts = f.parseTypedList( false );
 
-		// bit of a hack to avoid OBJECT being the supertype
-		if ( ts.index( "OBJECT" ) >= 0 ) {
-			types[0]->name = "SUPERTYPE";
+		// bit of a hack to avoid object being the supertype
+		if ( ts.index( "object" ) >= 0 ) {
+			types[0]->name = "supertype";
 			types.tokenMap.clear();
-			types.tokenMap["SUPERTYPE"] = 0;
+			types.tokenMap["supertype"] = 0;
 		}
 
 		// Relate subtypes and supertypes
@@ -193,7 +193,7 @@ public:
 			else getType( ts[i] );
 		}
 
-		// By default, the supertype of a type is "OBJECT"
+		// By default, the supertype of a type is "object"
 		for ( unsigned i = 1; i < types.size(); ++i )
 			if ( types[i]->supertype == 0 )
 				types[0]->insertSubtype( types[i] );
@@ -234,7 +234,7 @@ public:
 			f.assert_token( "(" );
 			if ( f.getChar() == ':' ) {
 				// Needed to support MA-PDDL
-				f.assert_token( ":PRIVATE" );
+				f.assert_token( ":private" );
 				f.parseTypedList( true, types, "(" );
 
 				// CURRENT HACK: TOTALLY IGNORE PRIVATE !!!
@@ -336,8 +336,8 @@ public:
 		types = otherTypes;
 	}
 
-	// Create a type with a given supertype (default is "OBJECT")
-	void createType( const std::string & name, const std::string & parent = "OBJECT" ) {
+	// Create a type with a given supertype (default is "object")
+	void createType( const std::string & name, const std::string & parent = "object" ) {
 		Type * type = new Type( name );
 		types.insert( type );
 		types.get( parent )->insertSubtype( type );
@@ -398,7 +398,7 @@ public:
 		else a->add( ground( pred, params ) );
 	}
 
-	// Add an "OR" precondition to the action with name "act"
+	// Add an "or" precondition to the action with name "act"
 	void addOrPre( const std::string & act, const std::string & pred1, const std::string & pred2,
 				   const IntVec & params1 = IntVec(), const IntVec & params2 = IntVec() ) {
 		Or * o = new Or;
@@ -499,18 +499,18 @@ public:
 	//! Prints a PDDL representation of the object to the given stream.
 	friend std::ostream& operator<<(std::ostream &os, const Domain& o) { return o.print(os); }
 	virtual std::ostream& print(std::ostream& os) const {
-		os << "( DEFINE ( DOMAIN " << name << " )\n";
+		os << "( define ( domain " << name << " )\n";
 		print_requirements(os);
 
 		if ( typed ) {
-			os << "( :TYPES\n";
+			os << "( :types\n";
 			for ( unsigned i = 1; i < types.size(); ++i )
 				types[i]->PDDLPrint( os );
 			os << ")\n";
 		}
 
 		if ( cons ) {
-			os << "( :CONSTANTS\n";
+			os << "( :constants\n";
 			for ( unsigned i = 0; i < types.size(); ++i )
 				if ( types[i]->constants.size() ) {
 					os << "\t";
@@ -523,7 +523,7 @@ public:
 			os << ")\n";
 		}
 
-		os << "( :PREDICATES\n";
+		os << "( :predicates\n";
 		for ( unsigned i = 0; i < preds.size(); ++i ) {
 			preds[i]->PDDLPrint( os, 1, TokenStruct< std::string >(), *this );
 			os << "\n";
@@ -531,7 +531,7 @@ public:
 		os << ")\n";
 
 		if ( funcs.size() ) {
-			os << "( :FUNCTIONS\n";
+			os << "( :functions\n";
 			for ( unsigned i = 0; i < funcs.size(); ++i ) {
 				funcs[i]->PDDLPrint( os, 1, TokenStruct< std::string >(), *this );
 				os << "\n";
@@ -552,20 +552,20 @@ public:
 	}
 
 	virtual std::ostream& print_requirements(std::ostream& os) const {
-		os << "( :REQUIREMENTS";
-		if ( equality ) os << " :EQUALITY";
-		if ( strips ) os << " :STRIPS";
-		if ( costs ) os << " :ACTION-COSTS";
-		if ( adl ) os << " :ADL";
-		if ( neg ) os << " :NEGATIVE-PRECONDITIONS";
-		if ( condeffects ) os << " :CONDITIONAL-EFFECTS";
-		if ( typed ) os << " :TYPING";
-		if ( temp ) os << " :DURATIVE-ACTIONS";
-		if ( nondet ) os << " :NON-DETERMINISTIC";
-		if ( universal ) os << " :UNIVERSAL-PRECONDITIONS";
-		if ( fluents ) os << " :FLUENTS";
-		if ( disj ) os << " :DISJUNCTIVE-PRECONDITIONS";
-		if ( derivedpred ) os << " :DERIVED-PREDICATES";
+		os << "( :requirements";
+		if ( equality ) os << " :equality";
+		if ( strips ) os << " :strips";
+		if ( costs ) os << " :action-cost";
+		if ( adl ) os << " :adl";
+		if ( neg ) os << " :negative-preconditions";
+		if ( condeffects ) os << " :conditional-effects";
+		if ( typed ) os << " :typing";
+		if ( temp ) os << " :durative-actions";
+		if ( nondet ) os << " :non-deterministic";
+		if ( universal ) os << " :universal-preconditions";
+		if ( fluents ) os << " :fluents";
+		if ( disj ) os << " :disjuntive-preconditions";
+		if ( derivedpred ) os << " :derived-predicates";
 		os << " )\n";
 		return os;
 	}
@@ -576,15 +576,15 @@ public:
 		std::string s = f.getToken();
 
 		if ( s == "=" ) return new Equals;
-		if ( s == "AND" ) return new And;
-		if ( s == "EXISTS" ) return new Exists;
-		if ( s == "FORALL" ) return new Forall;
-		if ( s == "INCREASE" ) return new Increase;
-		if ( s == "DECREASE" ) return new Decrease;
-		if ( s == "NOT" ) return new Not;
-		if ( s == "ONEOF" ) return new Oneof;
-		if ( s == "OR" ) return new Or;
-		if ( s == "WHEN" ) return new When;
+		if ( s == "and" ) return new And;
+		if ( s == "exists" ) return new Exists;
+		if ( s == "forall" ) return new Forall;
+		if ( s == "increase" ) return new Increase;
+		if ( s == "decrease" ) return new Decrease;
+		if ( s == "not" ) return new Not;
+		if ( s == "oneof" ) return new Oneof;
+		if ( s == "or" ) return new Or;
+		if ( s == "when" ) return new When;
 		if ( s == ">=" || s == ">" || s == "<=" || s == "<" ) return new CompositeExpression( s );
 
 		int i = preds.index( s );

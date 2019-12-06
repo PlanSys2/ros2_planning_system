@@ -19,6 +19,7 @@
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_planner/PlannerClient.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
@@ -50,19 +51,24 @@ public:
   CallbackReturnT on_error(const rclcpp_lifecycle::State & state);
 
 private:
-  rclcpp_action::Server<ExecutePlan>::SharedPtr execute_plan_action_server_;
-
   rclcpp::Node::SharedPtr node_;
 
+  std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
+  std::shared_ptr<plansys2::PlannerClient> planner_client_;
+
+  rclcpp_action::Server<ExecutePlan>::SharedPtr execute_plan_action_server_;
   rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID & uuid,
     std::shared_ptr<const ExecutePlan::Goal> goal);
-
   rclcpp_action::CancelResponse handle_cancel(
     const std::shared_ptr<GoalHandleExecutePlan> goal_handle);
   
   void execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle);
-
+  void apply_effects(const PlanItem & action);
+  
   void handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_handle);
+
+  std::optional<Plan> current_plan_;
 };
 
 }  // namespace plansys2
