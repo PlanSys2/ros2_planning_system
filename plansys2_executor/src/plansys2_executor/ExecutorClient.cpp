@@ -33,19 +33,19 @@ ExecutorClient::ExecutorClient(rclcpp::Node::SharedPtr provided_node)
     node_->get_node_graph_interface(),
     node_->get_node_logging_interface(),
     node_->get_node_waitables_interface(),
-      "execute_plan");
+    "execute_plan");
 }
 
 bool
 ExecutorClient::executePlan()
 {
   using namespace std::placeholders;
-  
+
   feedback_.seq_action = 0;
   feedback_.total_actions = 0;
   feedback_.current_action = "";
   feedback_.progress_current_action = 0.0f;
-  
+
   result_.success = false;
   result_.error_info = "";
 
@@ -91,7 +91,8 @@ ExecutorClient::executePlan()
 }
 
 void
-ExecutorClient::feedback_callback(GoalHandleExecutePlan::SharedPtr,
+ExecutorClient::feedback_callback(
+  GoalHandleExecutePlan::SharedPtr,
   const std::shared_ptr<const ExecutePlan::Feedback> feedback)
 {
   feedback_ = *feedback;
@@ -102,7 +103,7 @@ ExecutorClient::result_callback(const GoalHandleExecutePlan::WrappedResult & res
 {
   finished_ = true;
   result_ = *result.result;
- 
+
   switch (result.code) {
     case rclcpp_action::ResultCode::SUCCEEDED:
       break;

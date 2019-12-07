@@ -13,12 +13,13 @@
 // limitations under the License.
 
 #include "plansys2_executor/ExecutorNode.hpp"
-#include "plansys2_executor/ActionExecutor.hpp"
 
 #include <string>
 #include <memory>
 #include <iostream>
 #include <fstream>
+
+#include "plansys2_executor/ActionExecutor.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "plansys2_msgs/action/execute_action.hpp"
@@ -57,7 +58,7 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   domain_client_ = std::make_shared<plansys2::DomainExpertClient>(aux_node);
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(aux_node);
   planner_client_ = std::make_shared<plansys2::PlannerClient>(aux_node);
-  
+
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
 }
@@ -106,14 +107,15 @@ ExecutorNode::on_error(const rclcpp_lifecycle::State & state)
 }
 
 rclcpp_action::GoalResponse
-ExecutorNode::handle_goal(const rclcpp_action::GoalUUID & uuid,
+ExecutorNode::handle_goal(
+  const rclcpp_action::GoalUUID & uuid,
   std::shared_ptr<const ExecutePlan::Goal> goal)
 {
   RCLCPP_INFO(this->get_logger(), "Received goal request with order");
-  
+
   auto domain = domain_client_->getDomain();
   auto problem = problem_client_->getProblem();
-  
+
   current_plan_ = planner_client_->getPlan(domain, problem);
 
   if (current_plan_.has_value()) {
@@ -137,7 +139,7 @@ ExecutorNode::handle_cancel(
 
   return rclcpp_action::CancelResponse::ACCEPT;
 }
-  
+
 void
 ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 {
@@ -147,7 +149,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   feedback->seq_action = 0;
   feedback->total_actions = current_plan_.value().size();
-  for (const auto & action : current_plan_.value()) {  
+  for (const auto & action : current_plan_.value()) {
     feedback->seq_action++;
     feedback->current_action = action.action;
 
@@ -161,7 +163,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
         RCLCPP_INFO(this->get_logger(), "Goal Canceled");
         return;
       }
-      
+
       action_executor->update();
 
       feedback->progress_current_action = action_executor->getProgress();
@@ -171,24 +173,32 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     }
 
     auto status = action_executor->getStatus();
-    if (status == ActionExecutor::AT_START_ERROR) {
+    if (status == ActionExecutor::AT_START_REQ_ERROR) {
       result->success = false;
       result->error_info = "Initial requirements of " + action.action + " not meet";
       goal_handle->succeed(result);
       return;
-    } else if (status == ActionExecutor::OVER_ALL_ERROR) {
+    } else if (status == ActionExecutor::OVER_ALL_REQ_ERROR) {
       result->success = false;
       result->error_info = "Over all requirements of " + action.action + " not meet";
       goal_handle->succeed(result);
       return;
-    } else if (status == ActionExecutor::AT_END_ERROR) {
+    } else if (status == ActionExecutor::AT_END_REQ_ERROR) {
       result->success = false;
       result->error_info = "Over all requirements of " + action.action + " not meet";
+      goal_handle->succeed(result);
+      return;
+    } else if (status == ActionExecutor::AT_START_EF_ERROR) {
+      result->success = false;
+      result->error_info = "At start effects of " + action.action + " could not be applied";
+      goal_handle->succeed(result);
+      return;
+    } else if (status == ActionExecutor::AT_END_EF_ERROR) {
+      result->success = false;
+      result->error_info = "At end effects of " + action.action + " could not be applied";
       goal_handle->succeed(result);
       return;
     }
-
-    apply_effects(action);
   }
 
   if (rclcpp::ok()) {
@@ -196,12 +206,6 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     goal_handle->succeed(result);
     RCLCPP_INFO(this->get_logger(), "Plan Succeeded");
   }
-}
-
-void
-ExecutorNode::apply_effects(const PlanItem & action)
-{
-
 }
 
 void

@@ -117,7 +117,7 @@ public:
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::RemoveProblemPredicate::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::RemoveProblemPredicate::Response> response);
- 
+
   void exist_problem_predicate_service_callback(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::ExistProblemPredicate::Request> request,

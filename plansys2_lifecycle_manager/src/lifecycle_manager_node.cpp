@@ -217,8 +217,8 @@ callee_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & m
     {
       std::cerr << "Waiting for inactive state for planner" << std::endl;
     }
-  }  
-  
+  }
+
   // activate
   {
     if (!rclcpp::ok()) {
@@ -238,12 +238,12 @@ callee_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & m
         lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
     {
       return;
-    }    
+    }
     if (!manager_nodes["executor"]->change_state(
         lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
     {
       return;
-    }    
+    }
     if (!manager_nodes["domain_expert"]->get_state()) {
       return;
     }
@@ -255,7 +255,7 @@ callee_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & m
     }
     if (!manager_nodes["executor"]->get_state()) {
       return;
-    }  
+    }
   }
 }
 

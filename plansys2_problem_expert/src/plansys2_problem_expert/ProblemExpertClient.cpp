@@ -56,7 +56,8 @@ ProblemExpertClient::ProblemExpertClient(rclcpp::Node::SharedPtr provided_node)
     "/problem_expert/remove_problem_predicate");
   exist_problem_predicate_client_ =
     node_->create_client<plansys2_msgs::srv::ExistProblemPredicate>(
-    "/problem_expert/exist_problem_predicate");}
+    "/problem_expert/exist_problem_predicate");
+}
 
 std::vector<Instance>
 ProblemExpertClient::getInstances()
@@ -346,7 +347,6 @@ ProblemExpertClient::existPredicate(const Predicate & predicate)
     return false;
   }
 
-  std::cerr <<" Final" <<std::endl;
   return future_result.get()->exist;
 }
 

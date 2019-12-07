@@ -57,7 +57,7 @@ def generate_launch_description():
             'launch',
             'planner_launch.py')),
         launch_arguments={}.items())
-    
+
     executor_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
             get_package_share_directory('plansys2_executor'),

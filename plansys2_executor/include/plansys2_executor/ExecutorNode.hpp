@@ -58,14 +58,16 @@ private:
   std::shared_ptr<plansys2::PlannerClient> planner_client_;
 
   rclcpp_action::Server<ExecutePlan>::SharedPtr execute_plan_action_server_;
-  rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID & uuid,
+
+  rclcpp_action::GoalResponse handle_goal(
+    const rclcpp_action::GoalUUID & uuid,
     std::shared_ptr<const ExecutePlan::Goal> goal);
+
   rclcpp_action::CancelResponse handle_cancel(
     const std::shared_ptr<GoalHandleExecutePlan> goal_handle);
-  
+
   void execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle);
-  void apply_effects(const PlanItem & action);
-  
+
   void handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_handle);
 
   std::optional<Plan> current_plan_;

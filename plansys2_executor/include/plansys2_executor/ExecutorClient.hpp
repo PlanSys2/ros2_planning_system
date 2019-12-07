@@ -17,6 +17,7 @@
 
 #include <optional>
 #include <string>
+#include <memory>
 
 #include "plansys2_msgs/action/execute_plan.hpp"
 
@@ -38,17 +39,20 @@ public:
 
   ExecutePlan::Feedback getFeedBack() {return feedback_;}
   std::optional<ExecutePlan::Result> getResult();
+
 private:
   rclcpp_action::Client<ExecutePlan>::SharedPtr execute_plan_client_ptr_;
-  
+
   ExecutePlan::Feedback feedback_;
   ExecutePlan::Result result_;
   bool finished_;
-  
+
   rclcpp::Node::SharedPtr node_;
 
-  void feedback_callback(GoalHandleExecutePlan::SharedPtr,
+  void feedback_callback(
+    GoalHandleExecutePlan::SharedPtr,
     const std::shared_ptr<const ExecutePlan::Feedback> feedback);
+
   void result_callback(const GoalHandleExecutePlan::WrappedResult & result);
 };
 

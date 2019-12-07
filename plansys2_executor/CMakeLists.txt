@@ -24,7 +24,7 @@ set(dependencies
     plansys2_msgs
     plansys2_domain_expert
     plansys2_problem_expert
-    plansys2_planner                                  
+    plansys2_planner
 )
 
 include_directories(include)
