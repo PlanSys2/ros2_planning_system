@@ -85,6 +85,9 @@ ActionExecutorClient::execute(
   result_ = std::make_shared<ExecuteAction::Result>();
 
   feedback_->progress = 0.0;
+
+  onActivate();
+
   while (rclcpp::ok() && !goal_handle->is_canceling() && !isFinished()) {
     actionStep();
 
@@ -97,12 +100,13 @@ ActionExecutorClient::execute(
     result_->success = false;
     result_->error_info = "Charging action cancelled";
     goal_handle->canceled(result_);
-
   } else {
     result_->success = true;
     result_->error_info = "";
     goal_handle->succeed(result_);
   }
+
+  onFinish();
 }
 
 
