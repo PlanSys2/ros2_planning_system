@@ -36,7 +36,7 @@ room
     )
 )
 
-(:durative-action ask_charge
+(:durative-action askcharge
     :parameters (?r - robot ?r1 ?r2 - room)
     :duration ( = ?duration 5)
     :condition (and

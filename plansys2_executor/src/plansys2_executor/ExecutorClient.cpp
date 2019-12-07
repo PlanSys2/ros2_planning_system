@@ -62,8 +62,6 @@ ExecutorClient::executePlan()
 
   auto goal_msg = ExecutePlan::Goal();
 
-  RCLCPP_INFO(node_->get_logger(), "Sending goal");
-
   auto send_goal_options = rclcpp_action::Client<ExecutePlan>::SendGoalOptions();
 
   send_goal_options.feedback_callback =

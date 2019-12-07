@@ -111,12 +111,21 @@ ExecutorNode::handle_goal(
   const rclcpp_action::GoalUUID & uuid,
   std::shared_ptr<const ExecutePlan::Goal> goal)
 {
+  auto start = now();
   RCLCPP_INFO(this->get_logger(), "Received goal request with order");
 
   auto domain = domain_client_->getDomain();
   auto problem = problem_client_->getProblem();
 
+  auto domain_problem_ts = now();
   current_plan_ = planner_client_->getPlan(domain, problem);
+  auto plan_ts = now();
+
+  RCLCPP_INFO(get_logger(), "Getting domain and problem = %lf secs",
+    (domain_problem_ts - start).seconds());
+
+  RCLCPP_INFO(get_logger(), "Getting plan = %lf secs",
+    (plan_ts - domain_problem_ts).seconds());
 
   if (current_plan_.has_value()) {
     std::cout << "plan: " << std::endl;

@@ -261,6 +261,15 @@ public:
     if (command.size() > 0) {
       plansys2::Predicate predicate;
       predicate.name = command[0];
+
+      if (predicate.name.front() != '(') {
+        std::cout << "\tUsage: \n\t\tset predicate (predicate)" <<
+          std::endl;
+        return;
+      }
+
+      predicate.name.erase(0, 1);  // Remove first )
+
       pop_front(command);
       while (!command.empty()) {
         plansys2::Param param {command[0], ""};
@@ -268,11 +277,20 @@ public:
         pop_front(command);
       }
 
+      if (predicate.parameters.back().name.back() != ')') {
+        std::cout << "\tUsage: \n\t\tset predicate (predicate)" <<
+          std::endl;
+        return;
+      }
+
+      predicate.parameters.back().name.pop_back();  // Remove last (
+
+
       if (!problem_client_->addPredicate(predicate)) {
         std::cerr << "Could not add the predicate [" << predicate.toString() << "]" << std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tset predicate [name] [instance1] [instance2] ...[instaceN]" <<
+      std::cout << "\tUsage: \n\t\tset predicate [predicate]" <<
         std::endl;
     }
   }
@@ -340,12 +358,29 @@ public:
     if (command.size() > 0) {
       plansys2::Predicate predicate;
       predicate.name = command[0];
+
+      if (predicate.name.front() != '(') {
+        std::cout << "\tUsage: \n\t\tremove predicate (predicate)" <<
+          std::endl;
+      }
+
+      predicate.name.erase(0, 1);  // Remove first )
+
       pop_front(command);
       while (!command.empty()) {
         plansys2::Param param {command[0], ""};
         predicate.parameters.push_back(param);
         pop_front(command);
       }
+
+
+      if (predicate.parameters.back().name.back() != ')') {
+        std::cout << "\tUsage: \n\t\tremove predicate (predicate)" <<
+          std::endl;
+        return;
+      }
+
+      predicate.parameters.back().name.pop_back();  // Remove last (
 
       if (!problem_client_->removePredicate(predicate)) {
         std::cerr << "Could not remove the predicate [" << predicate.toString() << "]" << std::endl;
@@ -384,13 +419,16 @@ public:
       while (rclcpp::ok() && !executor_client_->getResult().has_value()) {
         auto feedback = executor_client_->getFeedBack();
 
+        std::cout << "\r\e[K" << std::flush;
         std::cout << "[" << feedback.seq_action << "/" << feedback.total_actions << "]" <<
           "{" << feedback.current_action << "} [" << feedback.progress_current_action << "%]" <<
-          std::endl;
+          std::flush;
 
         rclcpp::spin_some(this->get_node_base_interface());
         loop_rate.sleep();
       }
+
+      std::cout << std::endl;
 
       if (executor_client_->getResult().value().success) {
         std::cout << "Successful finished " << std::endl;
@@ -427,6 +465,8 @@ public:
 
       if (action_executor->getStatus() != plansys2::ActionExecutor::SUCCEDED) {
         std::cout << "Error while executing action" << std::endl;
+      } else {
+        std::cout << "Action succeded" << std::endl;
       }
     }
   }

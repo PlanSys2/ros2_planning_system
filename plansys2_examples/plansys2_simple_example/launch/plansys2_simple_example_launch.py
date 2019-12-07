@@ -39,14 +39,26 @@ def generate_launch_description():
         launch_arguments={'model_file': example_dir + "/pddl/simple_example.pddl"}.items())
 
     # Specify the actions
-    executor_cmd = Node(
+    move_cmd = Node(
         package='plansys2_simple_example',
         node_executable='move_action_node',
         node_name='move_action_node',
         output='screen',
         parameters=[])
 
-    # Create the launch description and populate
+    charge_cmd = Node(
+        package='plansys2_simple_example',
+        node_executable='charge_action_node',
+        node_name='charge_action_node',
+        output='screen',
+        parameters=[])
+
+    ask_charge_cmd = Node(
+        package='plansys2_simple_example',
+        node_executable='ask_charge_action_node',
+        node_name='ask_charge_action_node',
+        output='screen',
+        parameters=[])   # Create the launch description and populate
     ld = LaunchDescription()
 
     # Set environment variables
@@ -54,6 +66,9 @@ def generate_launch_description():
 
     # Declare the launch options
     ld.add_action(plansys2_cmd)
-    ld.add_action(executor_cmd)
+
+    ld.add_action(move_cmd)
+    ld.add_action(charge_cmd)
+    ld.add_action(ask_charge_cmd)
 
     return ld

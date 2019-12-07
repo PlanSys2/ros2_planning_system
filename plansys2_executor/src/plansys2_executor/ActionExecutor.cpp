@@ -116,7 +116,7 @@ ActionExecutor::executeAction()
     RCLCPP_ERROR(spin_node_->get_logger(), "Action client not initialized");
   }
 
-  if (!this->execute_action_client_ptr_->wait_for_action_server(std::chrono::seconds(10))) {
+  if (!this->execute_action_client_ptr_->wait_for_action_server(std::chrono::seconds(1))) {
     RCLCPP_ERROR(spin_node_->get_logger(), "Action server not available after waiting");
     return false;
   }
@@ -191,23 +191,25 @@ ActionExecutor::result_callback(const GoalHandleExecuteAction::WrappedResult & r
 
   if (result.result->success) {
     RCLCPP_INFO(spin_node_->get_logger(), "Result action received: Success");
-  } else {
-    RCLCPP_INFO(spin_node_->get_logger(), "Result action received: Fail [%s]",
-      result.result->error_info.c_str());
-  }
 
-  if (!check(current_action_.at_end_requirements)) {
-    status_ = AT_END_REQ_ERROR;
-    finished_ = true;
-    RCLCPP_ERROR(spin_node_->get_logger(), "Action client execution error testing at_end reqs");
-  } else if (apply(current_action_.at_end_effects)) {
-    status_ = SUCCEDED;
-    finished_ = true;
+    if (!check(current_action_.at_end_requirements)) {
+      status_ = AT_END_REQ_ERROR;
+      finished_ = true;
+      RCLCPP_ERROR(spin_node_->get_logger(), "Action client execution error testing at_end reqs");
+    } else if (apply(current_action_.at_end_effects)) {
+      status_ = SUCCEDED;
+      finished_ = true;
+    } else {
+      status_ = AT_END_EF_ERROR;
+      finished_ = true;
+      RCLCPP_ERROR(spin_node_->get_logger(),
+        "Action client execution error applying at_end effects");
+    }
   } else {
-    status_ = AT_END_EF_ERROR;
     finished_ = true;
-    RCLCPP_ERROR(spin_node_->get_logger(),
-      "Action client execution error applying at_end effects");
+    status_ = EXECUTION_ERROR;
+    RCLCPP_WARN(spin_node_->get_logger(), "Result action received: Fail [%s]",
+      result.result->error_info.c_str());
   }
 }
 

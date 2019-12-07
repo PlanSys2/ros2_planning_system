@@ -16,90 +16,34 @@
 
 #include "plansys2_msgs/action/execute_action.hpp"
 
+#include "plansys2_executor/ActionExecutorClient.hpp"
+
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 
-class MoveAction : public rclcpp::Node
+class MoveAction : public plansys2::ActionExecutorClient
 {
 public:
-  using ExecuteAction = plansys2_msgs::action::ExecuteAction;
-  using GoalHandleExecuteAction = rclcpp_action::ServerGoalHandle<ExecuteAction>;
-
   MoveAction()
-  : rclcpp::Node("move")
+  : plansys2::ActionExecutorClient("move")
   {
-    using namespace std::placeholders;
-
-    this->execute_move_action_server_ = rclcpp_action::create_server<ExecuteAction>(
-      this->get_node_base_interface(),
-      this->get_node_clock_interface(),
-      this->get_node_logging_interface(),
-      this->get_node_waitables_interface(),
-      "move",
-      std::bind(&MoveAction::handle_goal, this, _1, _2),
-      std::bind(&MoveAction::handle_cancel, this, _1),
-      std::bind(&MoveAction::handle_accepted, this, _1));
+    getFeedback()->progress = 0.0;
   }
 
 private:
-  rclcpp_action::Server<ExecuteAction>::SharedPtr execute_move_action_server_;
-
-  rclcpp_action::GoalResponse handle_goal(
-    const rclcpp_action::GoalUUID & uuid,
-    std::shared_ptr<const ExecuteAction::Goal> goal)
+  void actionStep()
   {
-    RCLCPP_INFO(this->get_logger(), "Received [%s] action request", goal->action.c_str());
-
-    for (size_t i = 0; i < goal->arguments.size(); i++) {
-      RCLCPP_INFO(this->get_logger(), " Argument %zu: [%s]", i, goal->arguments[i].c_str());
+    if (getFeedback()->progress < 100.0) {
+      getFeedback()->progress += 5.0;
     }
 
-    return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+    std::cout << "\r\e[K" << std::flush;
+    std::cout << "Moving ... [" << getFeedback()->progress << "%]  " << std::flush;
   }
 
-  rclcpp_action::CancelResponse handle_cancel(
-    const std::shared_ptr<GoalHandleExecuteAction> goal_handle)
+  bool isFinished()
   {
-    RCLCPP_INFO(this->get_logger(), "Received request to cancel move action");
-
-    return rclcpp_action::CancelResponse::ACCEPT;
-  }
-
-  void handle_accepted(const std::shared_ptr<GoalHandleExecuteAction> goal_handle)
-  {
-    using namespace std::placeholders;
-    std::thread{std::bind(&MoveAction::execute, this, _1), goal_handle}.detach();
-  }
-
-  void execute(const std::shared_ptr<GoalHandleExecuteAction> goal_handle)
-  {
-    rclcpp::Rate loop_rate(5);
-    auto feedback = std::make_shared<ExecuteAction::Feedback>();
-    auto result = std::make_shared<ExecuteAction::Result>();
-
-    feedback->progress = 0.0;
-    while (rclcpp::ok() && !goal_handle->is_canceling() && feedback->progress < 100) {
-      std::cerr << " " << feedback->progress << "%" << std::endl;
-
-      std::cout << "\r\e[K" << std::flush;
-      std::cout << "Moving ... [" << feedback->progress << "%]  " << std::flush;
-
-      feedback->progress += 0.5;
-      goal_handle->publish_feedback(feedback);
-
-      loop_rate.sleep();
-    }
-
-    if (goal_handle->is_canceling()) {
-      result->success = false;
-      result->error_info = "Charging action cancelled";
-      goal_handle->canceled(result);
-
-    } else {
-      result->success = true;
-      result->error_info = "";
-      goal_handle->succeed(result);
-    }
+    return getFeedback()->progress >= 100.0;
   }
 };
 

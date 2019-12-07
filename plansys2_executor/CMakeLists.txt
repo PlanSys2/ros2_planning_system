@@ -32,7 +32,9 @@ include_directories(include)
 set(EXECUTOR_SOURCES
   src/plansys2_executor/ExecutorClient.cpp
   src/plansys2_executor/ActionExecutor.cpp
+  src/plansys2_executor/ActionExecutorClient.cpp
 )
+
 
 add_library(${PROJECT_NAME} SHARED ${EXECUTOR_SOURCES})
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
