@@ -313,7 +313,7 @@ executors:
       CACHE_NONCE: "Debug"
       OVERLAY_MIXINS: "debug ccache coverage-gcc"
       UNDERLAY_MIXINS: "release ccache"
-  release_exec:
+  docker:
     docker:
       - image: IntelligentRoboticsLabs/ros2_planning_system:master.release
     working_directory: /opt/overlay_ws
@@ -331,7 +331,7 @@ jobs:
       - setup_dependencies
       - build_source
   release_build:
-    executor: release_exec
+    executor: docker
     <<: *debug_build
   debug_test:
     executor: debug_exec
@@ -340,7 +340,7 @@ jobs:
       - restore_build
       - test_build
   release_test: &release_test
-    executor: release_exec
+    executor: docker
     parallelism: 1
     steps:
       - restore_build
