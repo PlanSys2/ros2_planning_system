@@ -1,5 +1,8 @@
 ![PlanSys2 Logo](/plansys2_docs/plansys2_logo.png)
 
+[![Build Status](https://travis-ci.com/IntelligentRoboticsLabs/ros2_planning_system.svg?branch=master)](https://travis-ci.com/IntelligentRoboticsLabs/ros2_planning_system)
+
+
 ROS2 Planning System (**plansys2** in short) is a project whose objective is to provide Robotics developers with a reliable, simple, and efficient PDDL-based planning system. It is implemented in ROS2, applying the latest concepts developed in this currently de-facto standard in Robotics.
 
 This project is the result of several years of experience in the development of robotic behaviors using [ROSPlan](https://github.com/KCL-Planning/ROSPlan). ROSPlan has greatly inspired this project. In addition to the migration to ROS2, we contribute to key aspects: ease of use, efficiency, and new tools, such as our terminal.
