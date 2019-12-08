@@ -32,7 +32,7 @@ plansys2_ws/src$ colcon build --symlink-install
 
 # Working with Plansys2 and Terminal
 
-Check out this (PDDL domain example](plansys2_examples/plansys2_simple_example/pddl/simple_example.pddl). This is a small example of a tiny domain. It defines the types, predicates, and three actions for making a robot moving taking into account the battery level. It is a very basic example, but it is useful to illustrate this example.
+Check out this [PDDL domain example](plansys2_examples/plansys2_simple_example/pddl/simple_example.pddl). This is a small example of a tiny domain. It defines the types, predicates, and three actions for making a robot moving taking into account the battery level. It is a very basic example, but it is useful to illustrate this example.
 
 Open a terminal and launch plansys2. We will use a launcher that includes the main planning system launcher, the specific action nodes for this example, and selects the domain:
 
