@@ -17,16 +17,14 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
+from launch.actions import IncludeLaunchDescription, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
     # Get the launch directory
     example_dir = get_package_share_directory('plansys2_simple_example')
-    launch_dir = os.path.join(example_dir, 'launch')
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
         'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
@@ -36,7 +34,7 @@ def generate_launch_description():
             get_package_share_directory('plansys2_bringup'),
             'launch',
             'plansys2_bringup_launch.py')),
-        launch_arguments={'model_file': example_dir + "/pddl/simple_example.pddl"}.items())
+        launch_arguments={'model_file': example_dir + '/pddl/simple_example.pddl'}.items())
 
     # Specify the actions
     move_cmd = Node(

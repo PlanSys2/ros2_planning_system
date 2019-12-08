@@ -10,4 +10,7 @@ install:
 matrix:
   include:
     - env: JOB_TYPE=dashing
-      script: .ros2ci/travis.bash $JOB_TYPE
+      script: 
+        - cp dependency_repos.repos .ros2ci/additional_repos.repos
+        - .ros2ci/travis.bash $JOB_TYPE
+

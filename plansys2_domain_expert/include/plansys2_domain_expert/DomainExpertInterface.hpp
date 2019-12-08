@@ -30,13 +30,13 @@ public:
 
   virtual std::vector<std::string> getTypes() = 0;
   virtual std::vector<std::string> getPredicates() = 0;
-  virtual std::optional<plansys2::Predicate> getPredicate(const std::string & predicate)
-  = 0;
+  virtual std::optional<plansys2::Predicate> getPredicate(const std::string & predicate) = 0;
   virtual std::vector<std::string> getActions() = 0;
   virtual std::optional<plansys2::Action> getAction(const std::string & action) = 0;
 
   virtual std::vector<std::string> getDurativeActions() = 0;
-  virtual std::optional<plansys2::DurativeAction> getDurativeAction(const std::string & action) = 0;
+  virtual std::optional<plansys2::DurativeAction> getDurativeAction(const std::string & action) =
+  0;
 
   virtual std::string getDomain() = 0;
 };

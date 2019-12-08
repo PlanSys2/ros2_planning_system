@@ -46,8 +46,8 @@ protected:
   virtual void actionStep() = 0;
   virtual bool isFinished() = 0;
 
-  virtual void onActivate() {};
-  virtual void onFinish() {};
+  virtual void onActivate() {}
+  virtual void onFinish() {}
 
   std::shared_ptr<ExecuteAction::Feedback> getFeedback() {return feedback_;}
   const std::vector<std::string> & getArguments() const {return arguments_;}
