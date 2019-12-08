@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
@@ -22,9 +20,6 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    # Get the launch directory
-    executor_dir = get_package_share_directory('plansys2_executor')
-
     stdout_linebuf_envvar = SetEnvironmentVariable(
         'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
 

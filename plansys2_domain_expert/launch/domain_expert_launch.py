@@ -23,9 +23,6 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    # Get the launch directory
-    domain_expert_dir = get_package_share_directory('plansys2_domain_expert')
-
     # Create the launch configuration variables
     model_file = LaunchConfiguration('model_file')
 

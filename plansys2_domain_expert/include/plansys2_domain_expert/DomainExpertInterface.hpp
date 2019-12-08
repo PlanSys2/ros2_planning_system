@@ -36,7 +36,7 @@ public:
 
   virtual std::vector<std::string> getDurativeActions() = 0;
   virtual std::optional<plansys2::DurativeAction> getDurativeAction(const std::string & action) =
-  0;
+    0;
 
   virtual std::string getDomain() = 0;
 };
