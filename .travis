@@ -1,0 +1,42 @@
+sudo: required
+cache:
+  - apt
+
+# Build all valid Ubuntu/ROS combinations available on Travis VMs.
+language: generic
+matrix:
+  include:
+  - name: "Melodic Morenia"
+    dist: bionic
+
+before_install:
+  - sudo apt update && sudo apt install curl gnupg2 lsb-release
+  - curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+  - sudo sh -c 'echo "deb [arch=amd64,arm64] http://packages.ros.org/ros2/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.
+  - sudo apt update
+  - sudo apt install ros-eloquent-desktop
+  - sudo apt install coinor-*
+  - source /opt/ros/eloquent/setup.bash
+
+# Create a catkin workspace with the package under integration.
+install:
+  - mkdir -p ~/ros2_planning/src
+  - cd ~/ros2_planning
+  - colcon build --symlink-install
+  - source install/setup.bash
+  - cd ~/ros2_planning/src
+  - ln -s $CI_SOURCE_PATH .
+  - git clone https://github.com/LCAS/popf.git
+
+before_script:
+  - cd ~/ros2_planning
+  - cd ~/catkin_ws
+#  - rosdep install -y --from-paths src --ignore-src --rosdistro eloquent
+
+script:
+  - source /opt/ros/eloquent/setup.bash
+  - cd ~/ros2_planning
+  - colcon build --symlink-install
+  - source install/setup.bash
+  - colcon test && colcon test-result
+  
