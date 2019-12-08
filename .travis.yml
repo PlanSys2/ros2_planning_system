@@ -11,8 +11,3 @@ matrix:
   include:
     - env: JOB_TYPE=dashing
       script: .ros2ci/travis.bash $JOB_TYPE
-    - env: JOB_TYPE=nightly
-      script:
-      # Optional: Add custom repositories for a specific job type
-      - cp dependency_repos.repos .ros2ci/additional_repos.repos
-      - .ros2ci/travis.bash $JOB_TYPE
