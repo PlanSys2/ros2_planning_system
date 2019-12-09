@@ -27,21 +27,68 @@
 namespace plansys2
 {
 
+/// DomainExpert is in charge of managing the internal structure of a domain.
 class DomainExpert : public DomainExpertInterface
 {
 public:
+  /// Create a new DomainExpert with the content of a domain.
+  /**
+   * \param[in] node_name The content of a PDDL domain.
+   */
   explicit DomainExpert(const std::string & domain);
 
+  /// Get the types existing in the domain.
+  /**
+   * \return The vector containing the names of the types.
+   */
   std::vector<std::string> getTypes();
+
+  /// Get the predicates existing in the domain.
+  /**
+   * \return The vector containing the name of the predicates.
+   */
   std::vector<std::string> getPredicates();
+
+  /// Get the details of a predicate existing in the domain.
+  /**
+   * \param[in] predicate The name of the predicate.
+   * \return A Predicate object containing the predicate name andt its parameters (name and type).
+   *    If the predicate does not exist, the value returned has not value.
+   */
   std::optional<plansys2::Predicate> getPredicate(const std::string & predicate);
 
+  /// Get the regular actions existing in the domain.
+  /**
+   * \return The vector containing the names of the actions.
+   */
   std::vector<std::string> getActions();
+
+  /// Get the details of an regular action existing in the domain.
+  /**
+   * \param[in] action The name of the action.
+   * \return An Action object containing the action name, parameters, requirements and effects.
+   *    If the action does not exist, the value returned has not value.
+   */
   std::optional<plansys2::Action> getAction(const std::string & action);
 
+  /// Get the temporal actions existing in the domain.
+  /**
+   * \return The vector containing the names of the actions.
+   */
   std::vector<std::string> getDurativeActions();
+
+  /// Get the details of an durative action existing in the domain.
+  /**
+   * \param[in] action The name of the action.
+   * \return A Durative Action object containing the action name, parameters, requirements and
+   *    effects. If the action does not exist, the value returned has not value.
+   */
   std::optional<plansys2::DurativeAction> getDurativeAction(const std::string & action);
 
+  /// Get the current domain, ready to be saved to file, or to initialize another domain.
+  /**
+   * \return A string containing the domain.
+   */
   std::string getDomain();
 
 private:
