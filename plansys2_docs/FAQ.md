@@ -1,6 +1,6 @@
 # FAQ
 
-## 1 How to debug errors in PDDL?
+## 1. How to debug errors in PDDL?
 
 Working with PDDL is difficult. If the PDDL domain is not well designed, or predicates or instances are missing, it is impossible to generate a plan. Plansys2 will notify you, but it is difficult to debug and solve the problem.
 

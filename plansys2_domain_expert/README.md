@@ -10,10 +10,10 @@ The Domain Expert does not change while active, accessing its functionality thro
 
 ## Services:
 
-- `/domain_expert/get_domain_types` [[`plansys2_msgs::srv::GetDomainTypes`](../plansys_msgs/srv/GetDomainTypes.srv)]
-- `/domain_expert/get_domain_actions` [[`plansys2_msgs::srv::GetDomainActions`](../plansys_msgs/srv/GetDomainActions.srv)]
-- `/domain_expert/get_domain_action_details` [[`plansys2_msgs::srv::GetDomainActionDetails `](../plansys_msgs/srv/GetDomainActionDetails.srv)]
-- `/domain_expert/get_domain_predicates` [[`plansys2_msgs::srv::GetDomainPredicates`](../plansys_msgs/srv/GetDomainPredicates.srv)]
-- `/domain_expert/get_domain_predicate_details` [[`plansys2_msgs::srv::GetDomainPredicateDetails `](../plansys_msgs/srv/GetDomainPredicateDetails.srv)]
-- `/domain_expert/get_domain` [[`plansys2_msgs::srv:: GetDomain `](../plansys_msgs/srv/GetDomain.srv)]
+- `/domain_expert/get_domain_types` [[`plansys2_msgs::srv::GetDomainTypes`](../plansys2_msgs/srv/GetDomainTypes.srv)]
+- `/domain_expert/get_domain_actions` [[`plansys2_msgs::srv::GetDomainActions`](../plansys2_msgs/srv/GetDomainActions.srv)]
+- `/domain_expert/get_domain_action_details` [[`plansys2_msgs::srv::GetDomainActionDetails `](../plansys2_msgs/srv/GetDomainActionDetails.srv)]
+- `/domain_expert/get_domain_predicates` [[`plansys2_msgs::srv::GetDomainPredicates`](../plansys2_msgs/srv/GetDomainPredicates.srv)]
+- `/domain_expert/get_domain_predicate_details` [[`plansys2_msgs::srv::GetDomainPredicateDetails `](../plansys2_msgs/srv/GetDomainPredicateDetails.srv)]
+- `/domain_expert/get_domain` [[`plansys2_msgs::srv:: GetDomain `](../plansys2_msgs/srv/GetDomain.srv)]
 
