@@ -149,6 +149,7 @@ The Plansys2 terminal has many functionalities: Adding/removing instances and pr
 
 - PDDL basics [1](https://arxiv.org/pdf/1106.4561.pdf), [2](http://www.cs.toronto.edu/~sheila/2542/w09/A1/introtopddl2.pdf) and [3](http://www.cs.toronto.edu/~sheila/384/w11/Assignments/A3/veloso-PDDL_by_Example.pdf)
 - [Developers Guide](plansys2_docs/developer_guide.md)
+- Tutorials (coming soon!)
 - [FAQ](plansys2_docs/FAQ.md)
 
 <img src="/plansys2_docs/plansys2_logo_v2.png" alt="drawing" width="200" align="right"/>
