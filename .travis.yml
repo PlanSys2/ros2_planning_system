@@ -2,7 +2,7 @@ services:
   - docker
 
 install:
-  - git clone --quiet --depth 1 https://github.com/mikaelarguedas/ros2ci.git .ros2ci
+  - git clone --quiet --depth 1 https://github.com/IntelligentRoboticsLabs/ros2ci.git .ros2ci
   # optional: add custom repos or rosinstall file to the workspace for all jobs
   # these will be compiled in an underlay workspace
   # - cp my_additional_repos.repos .ros2ci/additional_repos.repos
