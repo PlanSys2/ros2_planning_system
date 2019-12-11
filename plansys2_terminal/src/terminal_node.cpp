@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <stdio.h>
+#include <readline/readline.h>
+
+#include <readline/history.h>
+
 #include <vector>
 #include <list>
 #include <string>
@@ -63,14 +68,21 @@ public:
     bool success = true;
 
     std::cout << "ROS2 Planning System console. Type \"quit\" to finish" << std::endl;
-    std::cout << "> ";
-    while (std::getline(std::cin, line)) {
-      if (line == "quit") {
-        break;
+
+    bool finish = false;
+    while (!finish) {
+      char * line = readline("> ");
+
+      if (line == NULL || (strcmp(line, "quit") == 0)) {
+        finish = true;
       }
 
-      process_command(line);
-      std::cout << "> ";
+      std::string line_str(line);
+      free(line);
+
+      if (!finish) {
+        process_command(line_str);
+      }
     }
 
     std::cout << "Finishing..." << std::endl;

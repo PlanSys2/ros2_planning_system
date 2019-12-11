@@ -28,7 +28,7 @@ set(dependencies
 add_executable(${PROJECT_NAME}
   src/terminal_node.cpp)
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
-
+target_link_libraries(${PROJECT_NAME} readline)
 
 install(TARGETS
   ${PROJECT_NAME}
