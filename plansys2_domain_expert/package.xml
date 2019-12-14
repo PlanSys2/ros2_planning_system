@@ -4,7 +4,7 @@
   <name>plansys2_domain_expert</name>
   <version>0.0.1</version>
   
-  <description>ToDo</description>
+  <description>This package contains the Domain Expert module for the ROS2 Planning System</description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
  

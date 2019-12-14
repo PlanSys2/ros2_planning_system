@@ -4,7 +4,7 @@
   <name>plansys2_msgs</name>
   <version>0.0.1</version>
   
-  <description>ToDo</description>
+  <description>Messages and service files for the ROS2 Planning System</description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
  

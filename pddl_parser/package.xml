@@ -4,11 +4,23 @@
   <name>pddl_parser</name>
   <version>0.0.1</version>
   
-  <description>This package contains a library for parsing PDDL domains and problems. This package contains many source files from universal-pddl-parser from https://github.com/aig-upf/universal-pddl-parser</description>
+  <description>This package contains a library for parsing PDDL domains and problems.
+  
+    This package derives from the work of Anders Jonsson, contained in https://github.com/wisdompoet/universal-pddl-parser.git
+    with many modifications by Francisco Martin:
+      * ROS2 packaging
+      * Source code structure refactor
+      * CMakeLists.txt for cmake compilation
+      * Reading from String instead of files
+      * Licensing
+  </description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
  
   <license>Apache License, Version 2.0</license>
+
+  <author>Anders Jonsson</author>
+  <author>Francisco Martin</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

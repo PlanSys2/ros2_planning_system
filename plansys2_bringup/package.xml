@@ -4,7 +4,7 @@
   <name>plansys2_bringup</name>
   <version>0.0.1</version>
   
-  <description>ToDo</description>
+  <description>Bringup scripts and configurations for the ROS2 Planning System</description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
  

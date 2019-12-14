@@ -4,7 +4,7 @@
   <name>plansys2_lifecycle_manager</name>
   <version>0.0.1</version>
   
-  <description>ToDo</description>
+  <description>A controller/manager for the lifecycle nodes of the ROS2 Planning System</description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
  
