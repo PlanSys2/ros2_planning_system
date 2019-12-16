@@ -80,7 +80,7 @@ public:
     getFeedback()->progress = 0.0;
 
     navigation_action_client_ =
-      rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(this,
+      rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(shared_from_this(),
         "NavigateToPose");
 
     bool is_action_server_ready = false;
