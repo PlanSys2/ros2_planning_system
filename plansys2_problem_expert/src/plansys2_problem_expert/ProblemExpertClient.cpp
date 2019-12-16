@@ -64,7 +64,7 @@ ProblemExpertClient::getInstances()
 {
   std::vector<Instance> ret;
 
-  while (!get_problem_instances_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!get_problem_instances_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return ret;
     }
@@ -102,7 +102,7 @@ ProblemExpertClient::getInstances()
 bool
 ProblemExpertClient::addInstance(const Instance & instance)
 {
-  while (!add_problem_instance_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!add_problem_instance_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
     }
@@ -136,7 +136,7 @@ ProblemExpertClient::addInstance(const Instance & instance)
 bool
 ProblemExpertClient::removeInstance(const std::string & name)
 {
-  while (!remove_problem_instance_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!remove_problem_instance_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
     }
@@ -172,7 +172,7 @@ ProblemExpertClient::getInstance(const std::string & name)
   plansys2::Instance ret;
   bool found = false;
 
-  while (!get_problem_instance_details_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!get_problem_instance_details_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return {};
     }
@@ -212,7 +212,7 @@ ProblemExpertClient::getPredicates()
 {
   std::vector<Predicate> ret;
 
-  while (!get_problem_predicates_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!get_problem_predicates_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return ret;
     }
@@ -249,7 +249,7 @@ ProblemExpertClient::getPredicates()
 bool
 ProblemExpertClient::addPredicate(const Predicate & predicate)
 {
-  while (!add_problem_predicate_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!add_problem_predicate_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
     }
@@ -286,7 +286,7 @@ ProblemExpertClient::addPredicate(const Predicate & predicate)
 bool
 ProblemExpertClient::removePredicate(const Predicate & predicate)
 {
-  while (!remove_problem_predicate_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!remove_problem_predicate_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
     }
@@ -323,7 +323,7 @@ ProblemExpertClient::removePredicate(const Predicate & predicate)
 bool
 ProblemExpertClient::existPredicate(const Predicate & predicate)
 {
-  while (!exist_problem_predicate_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!exist_problem_predicate_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
     }
@@ -355,7 +355,7 @@ ProblemExpertClient::getGoal()
 {
   Goal ret;
 
-  while (!get_problem_goal_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!get_problem_goal_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return ret;
     }
@@ -388,7 +388,7 @@ ProblemExpertClient::getGoal()
 bool
 ProblemExpertClient::setGoal(const Goal & goal)
 {
-  while (!add_problem_goal_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!add_problem_goal_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
     }
@@ -422,7 +422,7 @@ ProblemExpertClient::setGoal(const Goal & goal)
 bool
 ProblemExpertClient::clearGoal()
 {
-  while (!remove_problem_goal_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!remove_problem_goal_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
     }
@@ -456,7 +456,7 @@ std::string
 ProblemExpertClient::getProblem()
 {
   std::string ret;
-  while (!get_problem_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!get_problem_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return ret;
     }

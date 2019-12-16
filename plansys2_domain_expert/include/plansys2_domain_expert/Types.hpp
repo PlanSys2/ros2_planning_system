@@ -54,6 +54,17 @@ std::string getReducedString(const std::string & expr);
 class Predicate
 {
 public:
+  /// Make a Predicate
+  Predicate() {}
+
+  /// Make a Predicate from string
+  /**
+    * \param[in] predicate A string containing a predicate
+    */
+  explicit Predicate(const std::string & predicate)
+  {
+    fromString(predicate);
+  }
   /// Generates a string containing the predicate
   /**
    * The resulting string does not contains the type of each parameter; only the name.
@@ -77,8 +88,8 @@ public:
   /**
    * The resulting string does not contains the type of each parameter; only the name.
    *
-   * \return A text representing the predicate (name name_param1 name_par2 ... name_parN)
-  */
+   * \param[in] predicate A string containing a predicate
+   */
   void fromString(const std::string & predicate)
   {
     std::vector<std::string> tokens;
@@ -306,6 +317,12 @@ public:
   /// Generates a PredicateTree
   PredicateTree()
   : root_(nullptr) {}
+
+  explicit PredicateTree(const std::string & predicate)
+  : PredicateTree()
+  {
+    fromString(predicate);
+  }
 
   ~PredicateTree()
   {
