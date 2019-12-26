@@ -66,7 +66,7 @@ def generate_launch_description():
     ld.add_action(plansys2_cmd)
 
     ld.add_action(move_cmd)
-    #ld.add_action(charge_cmd)
+    ld.add_action(charge_cmd)
     ld.add_action(ask_charge_cmd)
 
     return ld

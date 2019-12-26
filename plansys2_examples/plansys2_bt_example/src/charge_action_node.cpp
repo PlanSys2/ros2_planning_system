@@ -29,85 +29,83 @@
 
 class SayHello : public BT::ActionNodeBase
 {
-  public:
-    SayHello(const std::string& name) :
-      BT::ActionNodeBase(name, {})
-    {
-    }
+public:
+  explicit SayHello(const std::string & name)
+  : BT::ActionNodeBase(name, {})
+  {
+  }
 
-    // You must override the virtual function tick()
-    BT::NodeStatus tick() override
-    {
-      std::cout << "Hello!! I am a robot, and I would like to be charged. Please, plug me." << std::endl;
-      return BT::NodeStatus::SUCCESS;
-    }
+  // You must override the virtual function tick()
+  BT::NodeStatus tick() override
+  {
+    std::cout << "Hello!! I would like to be charged. Please, plug me." << std::endl;
+    return BT::NodeStatus::SUCCESS;
+  }
 
-    void halt() override
-    {
-    }
+  void halt() override
+  {
+  }
 };
 
 class ChargeRobot : public BT::ActionNodeBase
 {
-  public:
-    ChargeRobot(const std::string& name) :
-      BT::ActionNodeBase(name, {}),
-      charge_level_(0.0)
-    {
-    }
+public:
+  explicit ChargeRobot(const std::string & name)
+  : BT::ActionNodeBase(name, {}), charge_level_(0.0)
+  {
+  }
 
-    void reset()
-    {
-      charge_level_ = 0.0;
-    }
-    
-    float get_level()
-    {
-      return charge_level_;
-    }
+  void reset()
+  {
+    charge_level_ = 0.0;
+  }
 
-    // You must override the virtual function tick()
-    BT::NodeStatus tick() override
-    {
-      charge_level_ += 5.0;
+  float get_level()
+  {
+    return charge_level_;
+  }
 
-      if (charge_level_ >= 100.0) {
-         std::cout << "Robot completelly charged [" << charge_level_ << "]" << std::endl;
-         return BT::NodeStatus::SUCCESS;
-      } else {
-        std::cout << "Charging robot [" << charge_level_ << "]" << std::endl;
-        return BT::NodeStatus::RUNNING;
-      }
-    }
-    
-    void halt() override
-    {
-    }
+  // You must override the virtual function tick()
+  BT::NodeStatus tick() override
+  {
+    charge_level_ += 5.0;
 
-  private:
-    float charge_level_;
+    if (charge_level_ >= 100.0) {
+      std::cout << "Robot completelly charged [" << charge_level_ << "]" << std::endl;
+      return BT::NodeStatus::SUCCESS;
+    } else {
+      std::cout << "Charging robot [" << charge_level_ << "]" << std::endl;
+      return BT::NodeStatus::RUNNING;
+    }
+  }
+
+  void halt() override
+  {
+  }
+
+private:
+  float charge_level_;
 };
 
 class SayGoodbye : public BT::ActionNodeBase
 {
-  public:
-    SayGoodbye(const std::string& name) :
-      BT::ActionNodeBase(name, {})
-    {
-    }
+public:
+  explicit SayGoodbye(const std::string & name)
+  : BT::ActionNodeBase(name, {})
+  {
+  }
 
-    // You must override the virtual function tick()
-    BT::NodeStatus tick() override
-    {
-      std::cout << "Thanks for charging me :) I will remember you when the Robot Uprising." << std::endl;
-      return BT::NodeStatus::SUCCESS;
-    }
+  // You must override the virtual function tick()
+  BT::NodeStatus tick() override
+  {
+    std::cout << "Thanks :) I will remember you when the Robot Uprising." << std::endl;
+    return BT::NodeStatus::SUCCESS;
+  }
 
-    void halt() override
-    {
-    }
+  void halt() override
+  {
+  }
 };
-
 
 
 class Charge : public plansys2::ActionExecutorClient
@@ -127,14 +125,13 @@ public:
   }
 
 private:
-
   void onActivate()
   {
-    for( auto & node: tree_.nodes ) {
-        if( auto action_charge_robot = dynamic_cast<ChargeRobot*>( node.get() )) {
-          charge_robot_node_ = action_charge_robot;
-          action_charge_robot->reset();
-        }
+    for (auto & node : tree_.nodes) {
+      if (auto action_charge_robot = dynamic_cast<ChargeRobot *>(node.get())) {
+        charge_robot_node_ = action_charge_robot;
+        action_charge_robot->reset();
+      }
     }
 
     finished_ = false;
@@ -156,7 +153,7 @@ private:
   BT::Tree tree_;
   bool finished_;
 
-  ChargeRobot* charge_robot_node_;
+  ChargeRobot * charge_robot_node_;
 };
 
 int main(int argc, char ** argv)
