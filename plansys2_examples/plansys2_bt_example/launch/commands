@@ -1,0 +1,38 @@
+set instance leia robot
+set instance entrance room
+set instance kitchen room
+set instance bedroom room
+set instance dinning room
+set instance bathroom room
+set instance chargingroom room
+
+set predicate (connected entrance dinning)
+set predicate (connected dinning entrance)
+
+set predicate (connected dinning kitchen)
+set predicate (connected kitchen dinning)
+
+set predicate (connected dinning bedroom)
+set predicate (connected bedroom dinning)
+
+set predicate (connected bathroom bedroom)
+set predicate (connected bedroom bathroom)
+
+set predicate (connected chargingroom kitchen)
+set predicate (connected kitchen chargingroom)
+
+set predicate (charging_point_at chargingroom)
+set predicate (battery_low leia)
+set predicate (robot_at leia entrance)
+
+
+set goal (and(robot_at leia bathroom))
+get plan
+
+run (move leia entrance dinning)
+run (askcharge leia entrance)
+
+run (move leia bedroom kitchen)
+
+remove predicate battery_full leia
+set predicate battery_low leia
