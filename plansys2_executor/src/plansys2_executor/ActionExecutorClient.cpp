@@ -27,7 +27,7 @@ using GoalHandleExecuteAction = rclcpp_action::ClientGoalHandle<ExecuteAction>;
 ActionExecutorClient::ActionExecutorClient(
   const std::string & action,
   float rate)
-: rclcpp::Node(action), rate_(rate), name_(action)
+: rclcpp::Node(action), name_(action)
 {
   using namespace std::placeholders;
 
@@ -43,6 +43,8 @@ ActionExecutorClient::ActionExecutorClient(
 
   feedback_ = std::make_shared<ExecuteAction::Feedback>();
   result_ = std::make_shared<ExecuteAction::Result>();
+
+  set_rate(rate);
 }
 
 rclcpp_action::GoalResponse
@@ -93,7 +95,7 @@ ActionExecutorClient::execute(
 
     goal_handle->publish_feedback(feedback_);
 
-    rate_.sleep();
+    rate_->sleep();
   }
 
   if (goal_handle->is_canceling()) {

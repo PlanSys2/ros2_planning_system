@@ -42,6 +42,8 @@ public:
     const std::string & action,
     float rate = 5);
 
+  void set_rate(float rate) {rate_ = std::make_shared<rclcpp::Rate>(rate);}
+
 protected:
   virtual void actionStep() = 0;
   virtual bool isFinished() = 0;
@@ -58,7 +60,7 @@ private:
   std::shared_ptr<ExecuteAction::Result> result_;
   std::vector<std::string> arguments_;
 
-  rclcpp::Rate rate_;
+  rclcpp::Rate::SharedPtr rate_;
   std::string name_;
 
   rclcpp_action::Server<ExecuteAction>::SharedPtr execute_action_server_;
