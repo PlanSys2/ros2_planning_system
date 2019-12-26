@@ -1,0 +1,9 @@
+ <root main_tree_to_execute = "MainTree" >
+     <BehaviorTree ID="MainTree">
+        <Sequence name="root_sequence">
+            <SayHello       name="action_hello"/>
+            <ChargeRobot    name="charge_robot"/>
+            <SayGoodbye     name="action_goodbye"/>
+        </Sequence>
+     </BehaviorTree>
+ </root>
