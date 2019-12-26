@@ -24,7 +24,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     # Get the launch directory
-    example_dir = get_package_share_directory('patrol_navigation_example')
+    example_dir = get_package_share_directory('plansys2_patrol_navigation_example')
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
         'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
@@ -49,14 +49,14 @@ def generate_launch_description():
 
     # Specify the actions
     move_cmd = Node(
-        package='patrol_navigation_example',
+        package='plansys2_patrol_navigation_example',
         node_executable='move_action_node',
         node_name='move_action_node',
         output='screen',
         parameters=[])
 
     patrol_cmd = Node(
-        package='patrol_navigation_example',
+        package='plansys2_patrol_navigation_example',
         node_executable='patrol_action_node',
         node_name='patrol_action_node',
         output='screen',
