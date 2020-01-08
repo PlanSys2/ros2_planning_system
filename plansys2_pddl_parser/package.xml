@@ -1,30 +1,33 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>plansys2_executor</name>
+  <name>plansys2_pddl_parser</name>
   <version>0.0.1</version>
   
-  <description>This package contains the Executor module for the ROS2 Planning System</description>
+  <description>This package contains a library for parsing PDDL domains and problems.
+  
+    This package derives from the work of Anders Jonsson, contained in https://github.com/wisdompoet/universal-pddl-parser.git
+    with many modifications by Francisco Martin:
+      * ROS2 packaging
+      * Source code structure refactor
+      * CMakeLists.txt for cmake compilation
+      * Reading from String instead of files
+      * Licensing
+  </description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
  
   <license>Apache License, Version 2.0</license>
 
+  <author>Anders Jonsson</author>
+  <author>Francisco Martin</author>
+
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-  <depend>rclcpp_lifecycle</depend>
-  <depend>rclcpp_action</depend>
-  <depend>ament_index_cpp</depend>
-  <depend>plansys2_pddl_parser</depend>
-  <depend>plansys2_msgs</depend>
-  <depend>plansys2_domain_expert</depend>
-  <depend>plansys2_problem_expert</depend>
-  <depend>plansys2_planner</depend>
 
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_cmake_gtest</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

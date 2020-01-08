@@ -20,7 +20,7 @@
 #include <vector>
 #include <memory>
 
-#include "pddl_parser/Instance.h"
+#include "plansys2_pddl_parser/Instance.h"
 
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
