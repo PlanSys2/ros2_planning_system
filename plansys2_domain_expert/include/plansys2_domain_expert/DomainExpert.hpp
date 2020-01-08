@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-#include "pddl_parser/Domain.h"
+#include "plansys2_pddl_parser/Domain.h"
 
 #include "plansys2_domain_expert/DomainExpertInterface.hpp"
 #include "plansys2_domain_expert/Types.hpp"

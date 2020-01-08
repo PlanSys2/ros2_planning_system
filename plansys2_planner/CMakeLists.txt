@@ -8,7 +8,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(ament_index_cpp REQUIRED)
-find_package(pddl_parser REQUIRED)
+find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_domain_expert REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
@@ -16,7 +16,7 @@ find_package(plansys2_problem_expert REQUIRED)
 set(dependencies
     rclcpp
     rclcpp_lifecycle
-    pddl_parser
+    plansys2_pddl_parser
     ament_index_cpp
     plansys2_msgs
     plansys2_domain_expert
