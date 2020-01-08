@@ -2,8 +2,8 @@
 Changelog for package plansys2_patrol_navigation_example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2020-01-08)
+------------------
 * Package description
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Merge pull request `#15 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/15>`_ from IntelligentRoboticsLabs/example_rename

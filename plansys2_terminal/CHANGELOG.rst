@@ -2,8 +2,8 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2020-01-08)
+------------------
 * Packages.xml description
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Improved stdin read
