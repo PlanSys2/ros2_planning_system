@@ -81,7 +81,8 @@ ExecutorClient::executePlan()
 
   auto goal_handle = goal_handle_future.get();
   if (!goal_handle) {
-    RCLCPP_ERROR(node_->get_logger(), "Plan execution was rejected by the action server");
+    RCLCPP_ERROR(
+      node_->get_logger(), "ExecutorClient: Plan execution was rejected by the action server");
     return false;
   }
 

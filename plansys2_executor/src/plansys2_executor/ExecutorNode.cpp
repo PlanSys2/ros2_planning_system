@@ -135,7 +135,7 @@ ExecutorNode::handle_goal(
     }
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   } else {
-    std::cout << "No se ha encontrado plan" << std::endl;
+    RCLCPP_ERROR(get_logger(), "Executor problem [Plan not found]");
     return rclcpp_action::GoalResponse::REJECT;
   }
 }
