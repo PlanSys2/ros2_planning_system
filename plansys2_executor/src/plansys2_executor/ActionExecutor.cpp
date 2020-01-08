@@ -146,7 +146,9 @@ ActionExecutor::executeAction()
 
   auto goal_handle = goal_handle_future.get();
   if (!goal_handle) {
-    RCLCPP_ERROR(spin_node_->get_logger(), "ActionExecutor: Plan execution was rejected by the action server");
+    RCLCPP_ERROR(
+      spin_node_->get_logger(),
+      "ActionExecutor: Plan execution was rejected by the action server");
     return false;
   }
 
