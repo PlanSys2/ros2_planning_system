@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>plansys2_executor</name>
-  <version>0.0.3</version>
+  <version>0.0.2</version>
   
   <description>This package contains the Executor module for the ROS2 Planning System</description>
 
@@ -13,8 +13,8 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-  <depend>rclcpp_lifecycle</depend>
   <depend>rclcpp_action</depend>
+  <depend>rclcpp_lifecycle</depend>
   <depend>ament_index_cpp</depend>
   <depend>plansys2_pddl_parser</depend>
   <depend>plansys2_msgs</depend>
