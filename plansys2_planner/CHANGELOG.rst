@@ -2,8 +2,8 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.4 (2020-01-09)
+------------------
 * Adding missing action dependencies
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Contributors: Francisco Martin Rico
