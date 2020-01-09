@@ -2,6 +2,12 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add readline dependency
+  Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
+* Contributors: Francisco Martin Rico
+
 0.0.2 (2020-01-08)
 ------------------
 * Packages.xml description

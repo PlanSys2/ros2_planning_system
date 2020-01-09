@@ -2,6 +2,9 @@
 Changelog for package plansys2_simple_example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.2 (2020-01-08)
 ------------------
 * Package description
