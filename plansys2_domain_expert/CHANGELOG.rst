@@ -2,6 +2,12 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adding missing action dependencies
+  Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
+* Contributors: Francisco Martin Rico
+
 0.0.3 (2020-01-09)
 ------------------
 
