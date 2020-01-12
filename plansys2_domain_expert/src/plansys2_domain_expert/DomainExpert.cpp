@@ -28,6 +28,12 @@ DomainExpert::DomainExpert(const std::string & domain)
 {
 }
 
+void
+DomainExpert::extendDomain(const std::string & domain)
+{
+  domain_.parse(domain);
+}
+
 std::vector<std::string>
 DomainExpert::getTypes()
 {

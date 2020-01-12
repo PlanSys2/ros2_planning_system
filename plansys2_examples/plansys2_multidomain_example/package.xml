@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>plansys2_domain_expert</name>
+  <name>plansys2_multidomain_example</name>
   <version>0.0.4</version>
   
-  <description>This package contains the Domain Expert module for the ROS2 Planning System</description>
+  <description>A simple example of ROS2 Planning System</description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
  
@@ -14,11 +14,9 @@
 
   <depend>rclcpp</depend>
   <depend>rclcpp_action</depend>
-  <depend>rclcpp_lifecycle</depend>
-  <depend>ament_index_cpp</depend>
-  <depend>plansys2_pddl_parser</depend>
   <depend>plansys2_msgs</depend>
- 
+  <depend>plansys2_executor</depend>
+
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>
