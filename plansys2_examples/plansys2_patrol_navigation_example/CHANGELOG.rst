@@ -2,6 +2,9 @@
 Changelog for package plansys2_patrol_navigation_example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.4 (2020-01-09)
 ------------------
 
