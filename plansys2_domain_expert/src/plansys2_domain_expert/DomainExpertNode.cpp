@@ -16,8 +16,28 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 #include "lifecycle_msgs/msg/state.hpp"
+
+std::vector<std::string> tokenize(const std::string & string, const std::string & delim)
+{
+  std::string::size_type lastPos = 0, pos = string.find_first_of(delim, lastPos);
+  std::vector<std::string> tokens;
+
+  while (lastPos != std::string::npos) {
+    if (pos != lastPos) {
+      tokens.push_back(string.substr(lastPos, pos - lastPos));
+    }
+    lastPos = pos;
+    if (lastPos == std::string::npos || lastPos + 1 == string.length()) {
+      break;
+    }
+    pos = string.find_first_of(delim, ++lastPos);
+  }
+
+  return tokens;
+}
 
 namespace plansys2
 {
@@ -70,12 +90,22 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
   std::string model_file = get_parameter("model_file").get_value<std::string>();
 
-  std::ifstream domain_ifs(model_file);
+  auto model_files = tokenize(model_file, ":");
+
+  std::ifstream domain_ifs(model_files[0]);
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
 
   domain_expert_ = std::make_shared<DomainExpert>(domain_str);
+
+  for (size_t i = 1; i < model_files.size(); i++) {
+    std::ifstream domain_ifs(model_files[i]);
+    std::string domain_str((
+        std::istreambuf_iterator<char>(domain_ifs)),
+      std::istreambuf_iterator<char>());
+    domain_expert_->extendDomain(domain_str);
+  }
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;

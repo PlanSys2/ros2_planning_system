@@ -16,6 +16,7 @@
 #include <vector>
 #include <regex>
 #include <iostream>
+#include <memory>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
@@ -209,7 +210,8 @@ TEST(domain_expert, multidomain_get_types)
   ASSERT_EQ(types, test_types);
 
   std::vector<std::string> predicates = domain_expert->getPredicates();
-  std::vector<std::string> test_predicates {"robot_talk", "robot_near_person", "robot_at", "person_at", "robot_at", "object_at_robot", "object_at_room"};
+  std::vector<std::string> test_predicates {"robot_talk", "robot_near_person",
+    "robot_at", "person_at", "robot_at", "object_at_robot", "object_at_room"};
 
   ASSERT_EQ(predicates, test_predicates);
 
@@ -219,7 +221,8 @@ TEST(domain_expert, multidomain_get_types)
   ASSERT_EQ(actions, test_actions);
 
   std::vector<std::string> dactions = domain_expert->getDurativeActions();
-  std::vector<std::string> test_dactions {"move", "talk", "approach", "pick_object", "place_object"};
+  std::vector<std::string> test_dactions {"move", "talk", "approach", "pick_object",
+    "place_object"};
 
   ASSERT_EQ(dactions, test_dactions);
 }
