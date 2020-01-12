@@ -2,8 +2,8 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2020-01-12)
+------------------
 * Add multi domain
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Contributors: Francisco Martin Rico
