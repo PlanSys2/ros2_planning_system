@@ -188,9 +188,12 @@ public:
 
 		// Relate subtypes and supertypes
 		for ( unsigned i = 0; i < ts.size(); ++i ) {
-			if ( ts.types[i].size() )
-				getType( ts.types[i] )->insertSubtype( getType( ts[i] ) );
-			else getType( ts[i] );
+			if (std::find(types.types.begin(), types.types.end(), ts.types[i]) == types.types.end()) {
+		
+				if ( ts.types[i].size() )
+					getType( ts.types[i] )->insertSubtype( getType( ts[i] ) );
+				else getType( ts[i] );
+			}
 		}
 
 		// By default, the supertype of a type is "object"
