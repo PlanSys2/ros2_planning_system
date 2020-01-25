@@ -16,6 +16,7 @@
 #include <vector>
 #include <regex>
 #include <iostream>
+#include <memory>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
@@ -184,6 +185,46 @@ TEST(domain_expert, get_action_params)
     "(and (not (robot_at ?0 ?1)))");
   ASSERT_EQ(move_action.value().at_end_effects.toString(),
     "(and (robot_at ?0 ?2))");
+}
+
+TEST(domain_expert, multidomain_get_types)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
+
+  std::ifstream domain_ext_ifs(pkgpath + "/pddl/domain_simple_ext.pddl");
+  std::string domain_ext_str((
+      std::istreambuf_iterator<char>(domain_ext_ifs)),
+    std::istreambuf_iterator<char>());
+
+  domain_expert->extendDomain(domain_ext_str);
+
+  std::vector<std::string> types = domain_expert->getTypes();
+  std::vector<std::string> test_types {"person", "message", "robot", "room", "pickable_object"};
+
+  ASSERT_EQ(types, test_types);
+
+  std::vector<std::string> predicates = domain_expert->getPredicates();
+  std::vector<std::string> test_predicates {"robot_talk", "robot_near_person",
+    "robot_at", "person_at", "robot_at", "object_at_robot", "object_at_room"};
+
+  ASSERT_EQ(predicates, test_predicates);
+
+  std::vector<std::string> actions = domain_expert->getActions();
+  std::vector<std::string> test_actions {"move_person"};
+
+  ASSERT_EQ(actions, test_actions);
+
+  std::vector<std::string> dactions = domain_expert->getDurativeActions();
+  std::vector<std::string> test_dactions {"move", "talk", "approach", "pick_object",
+    "place_object"};
+
+  ASSERT_EQ(dactions, test_dactions);
 }
 
 int main(int argc, char ** argv)

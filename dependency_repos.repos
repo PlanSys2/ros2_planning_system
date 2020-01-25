@@ -1,5 +1,0 @@
-repositories:
-  popf:
-    type: git
-    url: https://github.com/LCAS/popf.git
-    version: master

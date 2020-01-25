@@ -37,6 +37,12 @@ public:
    */
   explicit DomainExpert(const std::string & domain);
 
+  /// Extend the content of aDomainExpert with the content of another domain.
+  /**
+   * \param[in] node_name The content of a PDDL domain.
+   */
+  void extendDomain(const std::string & domain);
+
   /// Get the types existing in the domain.
   /**
    * \return The vector containing the names of the types.
