@@ -79,7 +79,7 @@ public:
    *    effects. If the action does not exist, the value returned has not value.
    */
   virtual std::optional<plansys2::DurativeAction> getDurativeAction(const std::string & action) =
-    0;
+  0;
 
   /// Get the current domain, ready to be saved to file, or to initialize another domain.
   /**
