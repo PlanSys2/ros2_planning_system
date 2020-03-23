@@ -34,8 +34,6 @@ def generate_launch_description():
 
     declare_model_file_cmd = DeclareLaunchArgument(
         'model_file',
-        default_value='src/ros2_planning_system/'
-        'plansys2_domain_expert/test/pddl/domain_simple.pddl',
         description='PDDL Model file')
 
     declare_namespace_cmd = DeclareLaunchArgument(
