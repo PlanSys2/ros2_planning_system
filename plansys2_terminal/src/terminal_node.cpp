@@ -48,6 +48,88 @@ void pop_front(std::vector<std::string> & tokens)
   tokens.erase(tokens.begin(), tokens.begin() + 1);
 }
 
+
+char * completion_generator(const char * text, int state)
+{
+  // This function is called with state=0 the first time; subsequent calls are
+  // with a nonzero state. state=0 can be used to perform one-time
+  // initialization for this completion session.
+  static std::vector<std::string> matches;
+  static size_t match_index = 0;
+
+  std::vector<std::string> vocabulary{"get", "set", "remove", "run"};
+  std::vector<std::string> vocabulary_set{"instance", "predicate", "goal"};
+  std::vector<std::string> vocabulary_get{"model", "problem", "domain", "plan"};
+  std::vector<std::string> vocabulary_remove{"instance", "predicate", "goal"};
+  std::vector<std::string> vocabulary_get_problem{"instances", "predicates", "goal"};
+  std::vector<std::string> vocabulary_get_model{"types", "predicates", "actions", "predicate",
+    "action"};
+
+  if (state == 0) {
+    // During initialization, compute the actual matches for 'text' and keep
+    // them in a static vector.
+    matches.clear();
+    match_index = 0;
+
+    // Collect a vector of matches: vocabulary words that begin with text.
+    std::string textstr = std::string(text);
+
+    auto current_text = tokenize(rl_line_buffer);
+    std::vector<std::string> * current_vocabulary = nullptr;
+
+    if (current_text.size() == 1) {
+      current_vocabulary = &vocabulary;
+    } else {
+      if (current_text.size() == 2) {
+        if (current_text[0] == "set") {
+          current_vocabulary = &vocabulary_set;
+        } else if (current_text[0] == "get") {
+          current_vocabulary = &vocabulary_get;
+        } else if (current_text[0] == "remove") {
+          current_vocabulary = &vocabulary_remove;
+        }
+      } else if (current_text.size() == 3) {
+        if (current_text[0] == "get" && current_text[1] == "problem") {
+          current_vocabulary = &vocabulary_get_problem;
+        } else if (current_text[0] == "get" && current_text[1] == "model") {
+          current_vocabulary = &vocabulary_get_model;
+        }
+      }
+    }
+
+    if (current_vocabulary == nullptr) {
+      return nullptr;
+    }
+
+    for (auto word : *current_vocabulary) {
+      if (word.size() >= textstr.size() &&
+        word.compare(0, textstr.size(), textstr) == 0)
+      {
+        matches.push_back(word);
+      }
+    }
+  }
+
+  if (match_index >= matches.size()) {
+    // We return nullptr to notify the caller no more matches are available.
+    return nullptr;
+  } else {
+    // Return a malloc'd char* for the match. The caller frees it.
+    return strdup(matches[match_index++].c_str());
+  }
+}
+
+char ** completer(const char * text, int start, int end)
+{
+  // Don't do filename completion even if our generator finds no matches.
+  rl_attempted_completion_over = 1;
+
+  // Note: returning nullptr here will make readline use the default filename
+  // completer.
+
+  return rl_completion_matches(text, completion_generator);
+}
+
 class Terminal : public rclcpp::Node
 {
 public:
@@ -69,12 +151,18 @@ public:
 
     std::cout << "ROS2 Planning System console. Type \"quit\" to finish" << std::endl;
 
+    rl_attempted_completion_function = completer;
+
     bool finish = false;
     while (!finish) {
       char * line = readline("> ");
 
       if (line == NULL || (strcmp(line, "quit") == 0)) {
         finish = true;
+      }
+
+      if (strlen(line) > 0) {
+        add_history(line);
       }
 
       std::string line_str(line);
@@ -88,7 +176,7 @@ public:
     std::cout << "Finishing..." << std::endl;
   }
 
-  void process_get_mode_predicate(std::vector<std::string> & command)
+  void process_get_model_predicate(std::vector<std::string> & command)
   {
     if (command.size() == 1) {
       auto predicates = domain_client_->getPredicate(command[0]);
@@ -102,7 +190,7 @@ public:
         std::cout << "Error when looking for params of " << command[0] << std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tget mode predicate [predicate_name]" << std::endl;
+      std::cout << "\tUsage: \n\t\tget model predicate [predicate_name]" << std::endl;
     }
   }
 
@@ -141,11 +229,11 @@ public:
         std::cout << "Error when looking for params of " << command[0] << std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tget mode action [action_name]" << std::endl;
+      std::cout << "\tUsage: \n\t\tget model action [action_name]" << std::endl;
     }
   }
 
-  void process_get_mode(std::vector<std::string> & command)
+  void process_get_model(std::vector<std::string> & command)
   {
     if (command.size() > 0) {
       if (command[0] == "types") {
@@ -175,18 +263,17 @@ public:
         }
       } else if (command[0] == "predicate") {
         pop_front(command);
-        process_get_mode_predicate(command);
+        process_get_model_predicate(command);
       } else if (command[0] == "action") {
         pop_front(command);
         process_get_mode_action(command);
       } else {
-        std::cerr << " mode ---> " << command[0] << std::endl;
         std::cout <<
-          "\tUsage: \n\t\tget mode [types|predicates|actions|predicate|action]..." <<
+          "\tUsage: \n\t\tget model [types|predicates|actions|predicate|action]..." <<
           std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tget mode [types|predicates|actions|predicate|action]..." <<
+      std::cout << "\tUsage: \n\t\tget model [types|predicates|actions|predicate|action]..." <<
         std::endl;
     }
   }
@@ -211,12 +298,9 @@ public:
       } else if (command[0] == "goal") {
         auto goal = problem_client_->getGoal();
         std::cout << "Goal: " << goal.toString() << std::endl;
-      } else if (command[0] == "problem") {
-        auto problem = problem_client_->getProblem();
-        std::cout << "Problem: " << problem << std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tget problem [instances|predicates]..." <<
+      std::cout << "\tUsage: \n\t\tget problem [instances|predicates|goal]..." <<
         std::endl;
     }
   }
@@ -226,7 +310,7 @@ public:
     if (command.size() > 0) {
       if (command[0] == "model") {
         pop_front(command);
-        process_get_mode(command);
+        process_get_model(command);
       } else if (command[0] == "problem") {
         pop_front(command);
         process_get_problem(command);
@@ -247,7 +331,7 @@ public:
         }
       } else {
         std::cerr << " get ---> " << command[0] << std::endl;
-        std::cout << "\tUsage: \n\t\tget [model|problem|domain]..." <<
+        std::cout << "\tUsage: \n\t\tget [model|problem|domain|plan]..." <<
           std::endl;
       }
     } else {
