@@ -2,6 +2,9 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.4 (2020-01-09)
 ------------------
 * Adding missing action dependencies

@@ -2,6 +2,12 @@
 Changelog for package plansys2_lifecycle_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Run in separate namespaces. Monolothic node
+  Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
+* Contributors: Francisco Martin Rico, Francisco Martín Rico
+
 0.0.4 (2020-01-09)
 ------------------
 
