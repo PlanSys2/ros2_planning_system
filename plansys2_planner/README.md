@@ -8,7 +8,7 @@ The main class is [`plansys2::PlannerNode`](include/include/plansys2_planner/Pla
 
 The class responsible for creating plans is [`plansys2::Planner`](include/include/planner/Planner.hpp), which is independent of ROS2.
 
-Before calling popf for calculating the plan, the domain is stored in `/tmp/domain.pddl`, and the problem in `/tmp/problem.pddl`. The plan generated is stored in `/tmp/plan` before parsing it.
+Before calling popf for calculating the plan, the domain is stored in `/tmp/${namespace}/domain.pddl`, and the problem in `/tmp/${namespace}/problem.pddl`. The plan generated is stored in `/tmp/${namespace}/plan` before parsing it.
 
 The calling clients must provide the content of a domain and a problem. They can use a Domain Expert Client or a Problem Expert Client to get it:
 

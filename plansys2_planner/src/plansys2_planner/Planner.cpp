@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include <string>
 #include <iostream>
 #include <cstdio>
@@ -30,21 +33,31 @@ Planner::Planner()
 }
 
 std::optional<Plan>
-Planner::getPlan(std::string domain, std::string problem)
+Planner::getPlan(
+  const std::string & domain, const std::string & problem,
+  const std::string & node_namespace)
 {
+  if (node_namespace != "") {
+    //  This doesn't work as cxx flags must apper at end of link options, and I didn't
+    //  find a way
+    // std::experimental::filesystem::create_directories("/tmp/" + node_namespace);
+    mkdir(("/tmp/" + node_namespace).c_str(), ACCESSPERMS);
+  }
+
   Plan ret;
-  std::ofstream domain_out("/tmp/domain.pddl");
+  std::ofstream domain_out("/tmp/" + node_namespace + "/domain.pddl");
   domain_out << domain;
   domain_out.close();
 
-  std::ofstream problem_out("/tmp/problem.pddl");
+  std::ofstream problem_out("/tmp/" + node_namespace + "/problem.pddl");
   problem_out << problem;
   problem_out.close();
 
-  system("ros2 run popf popf /tmp/domain.pddl /tmp/problem.pddl > /tmp/plan");
+  system(("ros2 run popf popf /tmp/" + node_namespace + "/domain.pddl /tmp/" +
+    node_namespace + "/problem.pddl > /tmp/" + node_namespace + "/plan").c_str());
 
   std::string line;
-  std::ifstream plan_file("/tmp/plan");
+  std::ifstream plan_file("/tmp/" + node_namespace + "/plan");
   bool solution = false;
 
   if (plan_file.is_open()) {

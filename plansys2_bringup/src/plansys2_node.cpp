@@ -20,6 +20,11 @@
 
 #include "rclcpp/rclcpp.hpp"
 
+#include "plansys2_domain_expert/DomainExpertNode.hpp"
+#include "plansys2_problem_expert/ProblemExpertNode.hpp"
+#include "plansys2_planner/PlannerNode.hpp"
+#include "plansys2_executor/ExecutorNode.hpp"
+
 #include "plansys2_lifecycle_manager/lifecycle_manager.hpp"
 
 int main(int argc, char ** argv)
@@ -27,6 +32,18 @@ int main(int argc, char ** argv)
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
   rclcpp::init(argc, argv);
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
+
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto executor_node = std::make_shared<plansys2::ExecutorNode>();
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(planner_node->get_node_base_interface());
+  exe.add_node(executor_node->get_node_base_interface());
 
   std::map<std::string, std::shared_ptr<plansys2::LifecycleServiceClient>> manager_nodes;
   manager_nodes["domain_expert"] = std::make_shared<plansys2::LifecycleServiceClient>(
@@ -38,7 +55,6 @@ int main(int argc, char ** argv)
   manager_nodes["executor"] = std::make_shared<plansys2::LifecycleServiceClient>(
     "executor_lc_mngr", "executor");
 
-  rclcpp::executors::SingleThreadedExecutor exe;
   for (auto & manager_node : manager_nodes) {
     manager_node.second->init();
     exe.add_node(manager_node.second);
@@ -47,6 +63,8 @@ int main(int argc, char ** argv)
   std::shared_future<void> script = std::async(std::launch::async,
       std::bind(plansys2::startup_script, manager_nodes));
   exe.spin_until_future_complete(script);
+
+  exe.spin();
 
   rclcpp::shutdown();
 
