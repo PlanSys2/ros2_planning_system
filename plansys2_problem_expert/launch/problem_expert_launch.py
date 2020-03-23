@@ -21,6 +21,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
     # Create the launch configuration variables
     model_file = LaunchConfiguration('model_file')
+    namespace = LaunchConfiguration('namespace')
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
         'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
@@ -31,11 +32,17 @@ def generate_launch_description():
         'plansys2_domain_expert/test/pddl/domain_simple.pddl',
         description='PDDL Model file')
 
+    declare_namespace_cmd = DeclareLaunchArgument(
+        'namespace',
+        default_value='',
+        description='Namespace')
+
     # Specify the actions
     domain_expert_cmd = Node(
         package='plansys2_problem_expert',
         node_executable='problem_expert_node',
         node_name='problem_expert',
+        node_namespace=namespace,
         output='screen',
         parameters=[{'model_file': model_file}])
 
@@ -45,6 +52,7 @@ def generate_launch_description():
     # Set environment variables
     ld.add_action(stdout_linebuf_envvar)
     ld.add_action(declare_model_file_cmd)
+    ld.add_action(declare_namespace_cmd)
 
     # Declare the launch options
     ld.add_action(domain_expert_cmd)

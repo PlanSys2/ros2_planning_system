@@ -1,6 +1,6 @@
 # Working with Plansys2 and Terminal
 
-Check out this [PDDL domain example](plansys2_examples/plansys2_simple_example/pddl/simple_example.pddl). This is a small example of a tiny domain. It defines the types, predicates, and three actions for making a robot moving taking into account the battery level. It is a very basic example, but it is useful to illustrate this example.
+Check out this [PDDL domain example](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/plansys2_simple_example/pddl/simple_example.pddl). This is a small example of a tiny domain. It defines the types, predicates, and three actions for making a robot moving taking into account the battery level. It is a very basic example, but it is useful to illustrate this example.
 
 Open a terminal and launch plansys2. We will use a launcher that includes the main planning system launcher, the specific action nodes for this example, and selects the domain:
 
@@ -8,10 +8,25 @@ Open a terminal and launch plansys2. We will use a launcher that includes the ma
 ros2 launch plansys2_simple_example plansys2_simple_example_launch.py
 ```
 
+or 
+
+```
+ros2 launch plansys2_simple_example plansys2_simple_example_launch.py namespace:=my_namespace
+```
+
+if you want to launch it in `my_namespace` namespace.
+
+
 Open other terminal and launch the plansys2 terminal:
 
 ```
 ros2 run plansys2_terminal plansys2_terminal
+```
+
+or, if you used a namespace
+
+```
+ros2 run plansys2_terminal plansys2_terminal --ros-args -r __ns:=/my_namespace
 ```
 
 The plansys2 terminal lets us operate directly against the planning system. It is a useful tool, useful to monitorize and developing your application. Usually, many of the next operations should be done inside your nodes. Plansys2 terminal is functional, but there is still too much to improve.

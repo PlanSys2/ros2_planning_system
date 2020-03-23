@@ -19,32 +19,39 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
+
+    # Create the launch configuration variables
+    model_file = LaunchConfiguration('model_file')
+    namespace = LaunchConfiguration('namespace')
+
     stdout_linebuf_envvar = SetEnvironmentVariable(
         'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
-    namespace = LaunchConfiguration('namespace')
+
+    declare_model_file_cmd = DeclareLaunchArgument(
+        'model_file',
+        description='PDDL Model file')
 
     declare_namespace_cmd = DeclareLaunchArgument(
         'namespace',
         default_value='',
         description='Namespace')
 
-    # Specify the actions
-    planner_cmd = Node(
-        package='plansys2_planner',
-        node_executable='planner_node',
-        node_name='planner',
-        node_namespace=namespace,
+    plansys2_node_cmd = Node(
+        package='plansys2_bringup',
+        node_executable='plansys2_node',
         output='screen',
-        parameters=[])
+        node_namespace=namespace,
+        parameters=[{'model_file': model_file}])
 
     # Create the launch description and populate
     ld = LaunchDescription()
 
     # Set environment variables
     ld.add_action(stdout_linebuf_envvar)
+    ld.add_action(declare_model_file_cmd)
     ld.add_action(declare_namespace_cmd)
 
     # Declare the launch options
-    ld.add_action(planner_cmd)
+    ld.add_action(plansys2_node_cmd)
 
     return ld

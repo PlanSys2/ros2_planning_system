@@ -26,11 +26,13 @@ namespace plansys2
 PlannerClient::PlannerClient(rclcpp::Node::SharedPtr provided_node)
 : node_(provided_node)
 {
-  get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("/planner/get_plan");
+  get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("planner/get_plan");
 }
 
 std::optional<Plan>
-PlannerClient::getPlan(std::string domain, std::string problem)
+PlannerClient::getPlan(
+  const std::string & domain, const std::string & problem,
+  const std::string & node_namespace)
 {
   Plan ret;
 
@@ -38,9 +40,10 @@ PlannerClient::getPlan(std::string domain, std::string problem)
     if (!rclcpp::ok()) {
       return {};
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/planner/get_plan service client: waiting for service to appear...");
+      get_plan_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetPlan::Request>();
@@ -65,9 +68,10 @@ PlannerClient::getPlan(std::string domain, std::string problem)
     }
     return ret;
   } else {
-    RCLCPP_ERROR(
-      node_->get_logger(), "error calling /planner/get_plan: %s",
-      future_result.get()->error_info.c_str());
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      get_plan_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
     return {};
   }
 }
