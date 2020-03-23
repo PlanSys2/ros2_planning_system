@@ -27,6 +27,7 @@ set(DOMAIN_EXPERT_SOURCES
   src/plansys2_domain_expert/DomainExpert.cpp
   src/plansys2_domain_expert/DomainExpertClient.cpp
   src/plansys2_domain_expert/Types.cpp
+  src/plansys2_domain_expert/DomainExpertNode.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${DOMAIN_EXPERT_SOURCES})
@@ -34,7 +35,7 @@ ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 
 add_executable(domain_expert_node
   src/domain_expert_node.cpp
-  src/plansys2_domain_expert/DomainExpertNode.cpp)
+)
 ament_target_dependencies(domain_expert_node ${dependencies})
 target_link_libraries(domain_expert_node ${PROJECT_NAME})
 

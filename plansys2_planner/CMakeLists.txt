@@ -30,6 +30,7 @@ include_directories(include)
 set(PLANNER_SOURCES
   src/plansys2_planner/Planner.cpp
   src/plansys2_planner/PlannerClient.cpp
+  src/plansys2_planner/PlannerNode.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${PLANNER_SOURCES})
@@ -37,7 +38,7 @@ ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 
 add_executable(planner_node
   src/planner_node.cpp
-  src/plansys2_planner/PlannerNode.cpp)
+)
 ament_target_dependencies(planner_node ${dependencies})
 target_link_libraries(planner_node ${PROJECT_NAME})
 

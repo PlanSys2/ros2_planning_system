@@ -27,18 +27,18 @@ DomainExpertClient::DomainExpertClient(rclcpp::Node::SharedPtr provided_node)
 : node_(provided_node)
 {
   get_domain_client_ = node_->create_client<plansys2_msgs::srv::GetDomain>(
-    "/domain_expert/get_domain");
+    "domain_expert/get_domain");
   get_types_client_ = node_->create_client<plansys2_msgs::srv::GetDomainTypes>(
-    "/domain_expert/get_domain_types");
+    "domain_expert/get_domain_types");
   get_predicates_client_ = node_->create_client<plansys2_msgs::srv::GetDomainPredicates>(
-    "/domain_expert/get_domain_predicates");
+    "domain_expert/get_domain_predicates");
   get_actions_client_ = node_->create_client<plansys2_msgs::srv::GetDomainActions>(
-    "/domain_expert/get_domain_actions");
+    "domain_expert/get_domain_actions");
   get_predicate_details_client_ =
     node_->create_client<plansys2_msgs::srv::GetDomainPredicateDetails>(
-    "/domain_expert/get_domain_predicate_details");
+    "domain_expert/get_domain_predicate_details");
   get_action_details_client_ = node_->create_client<plansys2_msgs::srv::GetDomainActionDetails>(
-    "/domain_expert/get_domain_action_details");
+    "domain_expert/get_domain_action_details");
 }
 
 std::vector<std::string>
@@ -50,9 +50,10 @@ DomainExpertClient::getTypes()
     if (!rclcpp::ok()) {
       return ret;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/domain_expert/get_domain_types service client: waiting for service to appear...");
+      get_types_client_->get_service_name() <<
+        " service client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetDomainTypes::Request>();
@@ -79,9 +80,10 @@ DomainExpertClient::getPredicates()
     if (!rclcpp::ok()) {
       return ret;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/domain_expert/get_domain_predicates service client: waiting for service to appear...");
+      get_predicates_client_->get_service_name() <<
+        " service client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetDomainPredicates::Request>();
@@ -109,9 +111,10 @@ DomainExpertClient::getPredicate(const std::string & predicate)
     if (!rclcpp::ok()) {
       return {};
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/domain_expert/get_domain_predicate_details client: waiting for service to appear...");
+      get_predicate_details_client_->get_service_name() <<
+        " service client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetDomainPredicateDetails::Request>();
@@ -140,10 +143,10 @@ DomainExpertClient::getPredicate(const std::string & predicate)
     return ret;
 
   } else {
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "error calling /domain_expert/get_domain_predicate_details: %s",
-      future_result.get()->error_info.c_str());
+      get_predicate_details_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
     return {};
   }
   return {};
@@ -158,9 +161,10 @@ DomainExpertClient::getActions()
     if (!rclcpp::ok()) {
       return ret;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/domain_expert/get_domain_actions service client: waiting for service to appear...");
+      get_actions_client_->get_service_name() <<
+        " service client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetDomainActions::Request>();
@@ -192,9 +196,10 @@ DomainExpertClient::getAction(const std::string & action)
     if (!rclcpp::ok()) {
       return {};
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/domain_expert/get_domain_action_details client: waiting for service to appear...");
+      get_action_details_client_->get_service_name() <<
+        " service client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetDomainActionDetails::Request>();
@@ -230,9 +235,10 @@ DomainExpertClient::getAction(const std::string & action)
       return {};
     }
   } else {
-    RCLCPP_ERROR(node_->get_logger(),
-      "error calling /domain_expert/get_domain_action_details: %s",
-      future_result.get()->error_info.c_str());
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      get_action_details_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
     return {};
   }
   return {};
@@ -247,9 +253,10 @@ DomainExpertClient::getDurativeActions()
     if (!rclcpp::ok()) {
       return ret;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/domain_expert/get_domain_actions service client: waiting for service to appear...");
+      get_actions_client_->get_service_name() <<
+        " service client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetDomainActions::Request>();
@@ -281,9 +288,10 @@ DomainExpertClient::getDurativeAction(const std::string & action)
     if (!rclcpp::ok()) {
       return {};
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/domain_expert/get_domain_action_details client: waiting for service to appear...");
+      get_action_details_client_->get_service_name() <<
+        " service client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetDomainActionDetails::Request>();
@@ -320,9 +328,10 @@ DomainExpertClient::getDurativeAction(const std::string & action)
       return {};
     }
   } else {
-    RCLCPP_ERROR(node_->get_logger(),
-      "error calling /domain_expert/get_domain_action_details: %s",
-      future_result.get()->error_info.c_str());
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      get_action_details_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
     return {};
   }
   return {};
@@ -337,9 +346,10 @@ DomainExpertClient::getDomain()
     if (!rclcpp::ok()) {
       return ret;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/domain_expert/get_domain service client: waiting for service to appear...");
+      get_domain_client_->get_service_name() <<
+        " service client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetDomain::Request>();

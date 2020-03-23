@@ -13,19 +13,27 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.actions import SetEnvironmentVariable
+from launch.actions import SetEnvironmentVariable, DeclareLaunchArgument
 from launch_ros.actions import Node
+from launch.substitutions import LaunchConfiguration
 
 
 def generate_launch_description():
     stdout_linebuf_envvar = SetEnvironmentVariable(
         'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
+    namespace = LaunchConfiguration('namespace')
+
+    declare_namespace_cmd = DeclareLaunchArgument(
+        'namespace',
+        default_value='',
+        description='Namespace')
 
     # Specify the actions
     planner_cmd = Node(
         package='plansys2_planner',
         node_executable='planner_node',
         node_name='planner',
+        node_namespace=namespace,
         output='screen',
         parameters=[])
 
@@ -34,6 +42,7 @@ def generate_launch_description():
 
     # Set environment variables
     ld.add_action(stdout_linebuf_envvar)
+    ld.add_action(declare_namespace_cmd)
 
     # Declare the launch options
     ld.add_action(planner_cmd)

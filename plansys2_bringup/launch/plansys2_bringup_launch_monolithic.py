@@ -27,6 +27,7 @@ def generate_launch_description():
 
     # Create the launch configuration variables
     model_file = LaunchConfiguration('model_file')
+    namespace = LaunchConfiguration('namespace')
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
         'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
@@ -36,41 +37,18 @@ def generate_launch_description():
         default_value='src/ros2_planning_system/'
         'plansys2_domain_expert/test/pddl/domain_simple.pddl',
         description='PDDL Model file')
+    
+    declare_namespace_cmd = DeclareLaunchArgument(
+        'namespace',
+        default_value='',
+        description='Namespace')
 
-    domain_expert_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(
-            get_package_share_directory('plansys2_domain_expert'),
-            'launch',
-            'domain_expert_launch.py')),
-        launch_arguments={'model_file': model_file}.items())
-
-    problem_expert_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(
-            get_package_share_directory('plansys2_problem_expert'),
-            'launch',
-            'problem_expert_launch.py')),
-        launch_arguments={'model_file': model_file}.items())
-
-    planner_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(
-            get_package_share_directory('plansys2_planner'),
-            'launch',
-            'planner_launch.py')),
-        launch_arguments={}.items())
-
-    executor_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(
-            get_package_share_directory('plansys2_executor'),
-            'launch',
-            'executor_launch.py')),
-        launch_arguments={}.items())
-
-    lifecycle_manager_cmd = Node(
-        package='plansys2_lifecycle_manager',
-        node_executable='plansys2_lifecycle_manager',
-        node_name='domain_expert_node',
+    plansys2_node_cmd = Node(
+        package='plansys2_bringup',
+        node_executable='plansys2_node',
         output='screen',
-        parameters=[])
+        node_namespace=namespace,
+        parameters=[{'model_file': model_file}])
 
     # Create the launch description and populate
     ld = LaunchDescription()
@@ -78,12 +56,9 @@ def generate_launch_description():
     # Set environment variables
     ld.add_action(stdout_linebuf_envvar)
     ld.add_action(declare_model_file_cmd)
+    ld.add_action(declare_namespace_cmd)
 
     # Declare the launch options
-    ld.add_action(domain_expert_cmd)
-    ld.add_action(problem_expert_cmd)
-    ld.add_action(planner_cmd)
-    ld.add_action(executor_cmd)
-    ld.add_action(lifecycle_manager_cmd)
+    ld.add_action(plansys2_node_cmd)
 
     return ld

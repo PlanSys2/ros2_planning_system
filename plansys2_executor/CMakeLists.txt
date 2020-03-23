@@ -33,6 +33,7 @@ set(EXECUTOR_SOURCES
   src/plansys2_executor/ExecutorClient.cpp
   src/plansys2_executor/ActionExecutor.cpp
   src/plansys2_executor/ActionExecutorClient.cpp
+  src/plansys2_executor/ExecutorNode.cpp
 )
 
 
@@ -41,7 +42,7 @@ ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 
 add_executable(executor_node
   src/executor_node.cpp
-  src/plansys2_executor/ExecutorNode.cpp)
+)
 ament_target_dependencies(executor_node ${dependencies})
 target_link_libraries(executor_node ${PROJECT_NAME})
 

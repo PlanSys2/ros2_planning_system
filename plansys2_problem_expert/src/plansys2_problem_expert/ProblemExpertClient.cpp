@@ -27,36 +27,36 @@ ProblemExpertClient::ProblemExpertClient(rclcpp::Node::SharedPtr provided_node)
 : node_(provided_node)
 {
   add_problem_goal_client_ = node_->create_client<plansys2_msgs::srv::AddProblemGoal>(
-    "/problem_expert/add_problem_goal");
+    "problem_expert/add_problem_goal");
   add_problem_instance_client_ = node_->create_client<plansys2_msgs::srv::AddProblemInstance>(
-    "/problem_expert/add_problem_instance");
+    "problem_expert/add_problem_instance");
   add_problem_predicate_client_ = node_->create_client<plansys2_msgs::srv::AddProblemPredicate>(
-    "/problem_expert/add_problem_predicate");
+    "problem_expert/add_problem_predicate");
   get_problem_goal_client_ = node_->create_client<plansys2_msgs::srv::GetProblemGoal>(
-    "/problem_expert/get_problem_goal");
+    "problem_expert/get_problem_goal");
   get_problem_instance_details_client_ =
     node_->create_client<plansys2_msgs::srv::GetProblemInstanceDetails>(
-    "/problem_expert/get_problem_instance");
+    "problem_expert/get_problem_instance");
   get_problem_instances_client_ = node_->create_client<plansys2_msgs::srv::GetProblemInstances>(
-    "/problem_expert/get_problem_instances");
+    "problem_expert/get_problem_instances");
   get_problem_predicate_details_client_ =
     node_->create_client<plansys2_msgs::srv::GetProblemPredicateDetails>(
-    "/problem_expert/get_problem_predicate");
+    "problem_expert/get_problem_predicate");
   get_problem_predicates_client_ = node_->create_client<plansys2_msgs::srv::GetProblemPredicates>(
-    "/problem_expert/get_problem_predicates");
+    "problem_expert/get_problem_predicates");
   get_problem_client_ = node_->create_client<plansys2_msgs::srv::GetProblem>(
-    "/problem_expert/get_problem");
+    "problem_expert/get_problem");
   remove_problem_goal_client_ = node_->create_client<plansys2_msgs::srv::RemoveProblemGoal>(
-    "/problem_expert/remove_problem_goal");
+    "problem_expert/remove_problem_goal");
   remove_problem_instance_client_ =
     node_->create_client<plansys2_msgs::srv::RemoveProblemInstance>(
-    "/problem_expert/remove_problem_instance");
+    "problem_expert/remove_problem_instance");
   remove_problem_predicate_client_ =
     node_->create_client<plansys2_msgs::srv::RemoveProblemPredicate>(
-    "/problem_expert/remove_problem_predicate");
+    "problem_expert/remove_problem_predicate");
   exist_problem_predicate_client_ =
     node_->create_client<plansys2_msgs::srv::ExistProblemPredicate>(
-    "/problem_expert/exist_problem_predicate");
+    "problem_expert/exist_problem_predicate");
 }
 
 std::vector<Instance>
@@ -68,9 +68,10 @@ ProblemExpertClient::getInstances()
     if (!rclcpp::ok()) {
       return ret;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/problem_expert/get_problem_instances service client: waiting for service to appear...");
+      get_problem_instances_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetProblemInstances::Request>();
@@ -91,9 +92,11 @@ ProblemExpertClient::getInstances()
       ret.push_back(instance);
     }
   } else {
-    RCLCPP_ERROR(
-      node_->get_logger(), "error calling /problem_expert/get_problem_instances: %s",
-      future_result.get()->error_info.c_str());
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      node_->get_namespace() <<
+        get_problem_instances_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
   }
 
   return ret;
@@ -106,9 +109,10 @@ ProblemExpertClient::addInstance(const Instance & instance)
     if (!rclcpp::ok()) {
       return false;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/problem_expert/add_problem_instance service client: waiting for service to appear...");
+      add_problem_instance_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::AddProblemInstance::Request>();
@@ -126,9 +130,10 @@ ProblemExpertClient::addInstance(const Instance & instance)
   if (future_result.get()->success) {
     return true;
   } else {
-    RCLCPP_ERROR(
-      node_->get_logger(), "error calling /problem_expert/add_problem_instance: %s",
-      future_result.get()->error_info.c_str());
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      add_problem_instance_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
     return false;
   }
 }
@@ -140,9 +145,10 @@ ProblemExpertClient::removeInstance(const std::string & name)
     if (!rclcpp::ok()) {
       return false;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/problem_expert/remove_problem_instance service client: waiting for service to appear...");
+      remove_problem_instance_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::RemoveProblemInstance::Request>();
@@ -159,9 +165,10 @@ ProblemExpertClient::removeInstance(const std::string & name)
   if (future_result.get()->success) {
     return true;
   } else {
-    RCLCPP_ERROR(
-      node_->get_logger(), "error calling /problem_expert/remove_problem_instance: %s",
-      future_result.get()->error_info.c_str());
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      remove_problem_instance_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
     return false;
   }
 }
@@ -176,9 +183,10 @@ ProblemExpertClient::getInstance(const std::string & name)
     if (!rclcpp::ok()) {
       return {};
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/problem_expert/get_problem_instance_details client: waiting for service to appear...");
+      get_problem_instance_details_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetProblemInstanceDetails::Request>();
@@ -199,10 +207,10 @@ ProblemExpertClient::getInstance(const std::string & name)
 
     return ret;
   } else {
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "error calling /problem_expert/get_problem_instance_details: %s",
-      future_result.get()->error_info.c_str());
+      get_problem_instance_details_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
     return {};
   }
 }
@@ -216,9 +224,10 @@ ProblemExpertClient::getPredicates()
     if (!rclcpp::ok()) {
       return ret;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/problem_expert/get_problem_predicates service client: waiting for service to appear...");
+      get_problem_predicates_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetProblemPredicates::Request>();
@@ -238,9 +247,10 @@ ProblemExpertClient::getPredicates()
       ret.push_back(predicate);
     }
   } else {
-    RCLCPP_ERROR(
-      node_->get_logger(), "error calling /problem_expert/get_problem_predicates: %s",
-      future_result.get()->error_info.c_str());
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      get_problem_predicates_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
   }
 
   return ret;
@@ -253,9 +263,10 @@ ProblemExpertClient::addPredicate(const Predicate & predicate)
     if (!rclcpp::ok()) {
       return false;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/problem_expert/add_problem_predicate service client: waiting for service to appear...");
+      add_problem_predicate_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::AddProblemPredicate::Request>();
@@ -276,9 +287,10 @@ ProblemExpertClient::addPredicate(const Predicate & predicate)
   if (future_result.get()->success) {
     return true;
   } else {
-    RCLCPP_ERROR(
-      node_->get_logger(), "error calling /problem_expert/add_problem_predicate: %s",
-      future_result.get()->error_info.c_str());
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      add_problem_predicate_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
     return false;
   }
 }
@@ -290,9 +302,10 @@ ProblemExpertClient::removePredicate(const Predicate & predicate)
     if (!rclcpp::ok()) {
       return false;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/problem_expert/remove_problem_predicate service client: waiting for service to appear...");
+      remove_problem_predicate_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::RemoveProblemPredicate::Request>();
@@ -313,9 +326,10 @@ ProblemExpertClient::removePredicate(const Predicate & predicate)
   if (future_result.get()->success) {
     return true;
   } else {
-    RCLCPP_ERROR(
-      node_->get_logger(), "error calling /problem_expert/remove_problem_predicate: %s",
-      future_result.get()->error_info.c_str());
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      remove_problem_predicate_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
     return false;
   }
 }
@@ -327,9 +341,10 @@ ProblemExpertClient::existPredicate(const Predicate & predicate)
     if (!rclcpp::ok()) {
       return false;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/problem_expert/exist_problem_predicate service client: waiting for service to appear...");
+      exist_problem_predicate_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::ExistProblemPredicate::Request>();
@@ -359,9 +374,10 @@ ProblemExpertClient::getGoal()
     if (!rclcpp::ok()) {
       return ret;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/problem_expert/get_problem_goal service client: waiting for service to appear...");
+      get_problem_goal_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetProblemGoal::Request>();
@@ -377,9 +393,10 @@ ProblemExpertClient::getGoal()
   if (future_result.get()->success) {
     ret.fromString(future_result.get()->goal);
   } else {
-    RCLCPP_ERROR(
-      node_->get_logger(), "error calling /problem_expert/get_problem_goal: %s",
-      future_result.get()->error_info.c_str());
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      get_problem_goal_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
   }
 
   return ret;
@@ -392,9 +409,10 @@ ProblemExpertClient::setGoal(const Goal & goal)
     if (!rclcpp::ok()) {
       return false;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/problem_expert/add_problem_goal service client: waiting for service to appear...");
+      add_problem_goal_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::AddProblemGoal::Request>();
@@ -411,9 +429,10 @@ ProblemExpertClient::setGoal(const Goal & goal)
   if (future_result.get()->success) {
     return true;
   } else {
-    RCLCPP_ERROR(
-      node_->get_logger(), "error calling /problem_expert/add_problem_goal: %s",
-      future_result.get()->error_info.c_str());
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      add_problem_goal_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
     return false;
   }
 }
@@ -426,9 +445,10 @@ ProblemExpertClient::clearGoal()
     if (!rclcpp::ok()) {
       return false;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/problem_expert/remove_problem_goal service client: waiting for service to appear...");
+      remove_problem_goal_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::RemoveProblemGoal::Request>();
@@ -444,9 +464,10 @@ ProblemExpertClient::clearGoal()
   if (future_result.get()->success) {
     return true;
   } else {
-    RCLCPP_ERROR(
-      node_->get_logger(), "error calling /problem_expert/remove_problem_goal: %s",
-      future_result.get()->error_info.c_str());
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      remove_problem_goal_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
     return false;
   }
 }
@@ -460,9 +481,10 @@ ProblemExpertClient::getProblem()
     if (!rclcpp::ok()) {
       return ret;
     }
-    RCLCPP_ERROR(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      "/problem_expert/get_problem service client: waiting for service to appear...");
+      get_problem_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetProblem::Request>();
@@ -478,9 +500,10 @@ ProblemExpertClient::getProblem()
   if (future_result.get()->success) {
     ret = future_result.get()->problem;
   } else {
-    RCLCPP_ERROR(
-      node_->get_logger(), "error calling /problem_expert/get_problem: %s",
-      future_result.get()->error_info.c_str());
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      get_problem_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
   }
 
   return ret;

@@ -28,7 +28,7 @@ PlannerNode::PlannerNode()
 : rclcpp_lifecycle::LifecycleNode("planner")
 {
   get_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
-    "/planner/get_plan",
+    "planner/get_plan",
     std::bind(&PlannerNode::get_plan_service_callback,
     this, std::placeholders::_1, std::placeholders::_2,
     std::placeholders::_3));
@@ -99,7 +99,7 @@ PlannerNode::get_plan_service_callback(
   const std::shared_ptr<plansys2_msgs::srv::GetPlan::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response)
 {
-  auto plan = planner_->getPlan(request->domain, request->problem);
+  auto plan = planner_->getPlan(request->domain, request->problem, get_namespace());
   response->success = plan.has_value();
 
   if (response->success) {

@@ -28,7 +28,9 @@ class Planner : public PlannerInterface
 public:
   Planner();
 
-  std::optional<Plan> getPlan(std::string domain, std::string problem);
+  std::optional<Plan> getPlan(
+    const std::string & domain, const std::string & problem,
+    const std::string & node_namespace = "");
 };
 
 }  // namespace plansys2
