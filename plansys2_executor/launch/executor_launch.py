@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.actions import SetEnvironmentVariable, DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
