@@ -2,8 +2,8 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2020-03-23)
+------------------
 * Run in separate namespaces. Monolothic node
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Add multi domain

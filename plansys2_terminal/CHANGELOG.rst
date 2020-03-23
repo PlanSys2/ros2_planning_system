@@ -2,8 +2,8 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2020-03-23)
+------------------
 * Terminal completion functionality
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Add multi domain
