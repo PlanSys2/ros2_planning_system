@@ -8,11 +8,27 @@ Open a terminal and launch plansys2. We will use a launcher that includes the ma
 ros2 launch plansys2_simple_example plansys2_simple_example_launch.py
 ```
 
+or 
+
+```
+ros2 launch plansys2_simple_example plansys2_simple_example_launch.py namespace:=my_namespace
+```
+
+if you want to launch it in `my_namespace` namespace.
+
+
 Open other terminal and launch the plansys2 terminal:
 
 ```
 ros2 run plansys2_terminal plansys2_terminal
 ```
+
+or, if you used a namespace
+
+```
+ros2 run plansys2_terminal plansys2_terminal --ros-args -r __ns:=/my_namespace
+```
+
 
 The plansys2 terminal lets us operate directly against the planning system. It is a useful tool, useful to monitorize and developing your application. Usually, many of the next operations should be done inside your nodes. Plansys2 terminal is functional, but there is still too much to improve.
 

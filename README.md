@@ -27,6 +27,8 @@ The **Terminal** is a plansys2 util for operating with the above components.
 
 To make an application using plansys2, you must provide a PDDL model, the implementation of the actions in this model, and an application in charge of setting the starting instances and predicates. It can set goals and call to the executor to achieve these goals. Actions are easy to develop using the `ActionExecutorClient` class. 
 
+Another exciting feature of Plansys2 is the possibility of having several instances of Plansys2 running independently at the same time, in different namespaces. Each instance of Plansys2 can run different PDDL models. This feature lets you have independent or hierarchical planning in the same application.
+
 # Requirements and compilation
 
 This project was initially developed for ROS2 Eloquent. In addition to official packages, plansys2 requires popf, a PDDL plan solver, developed by Marc Hanheide, to which we have contributed to its migration to a ROS2 package.
