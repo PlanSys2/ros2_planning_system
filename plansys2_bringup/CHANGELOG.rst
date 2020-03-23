@@ -2,13 +2,16 @@
 Changelog for package plansys2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.0.5 (2020-03-23)
+0.0.6 (2020-03-23)
 ------------------
 * Make mandatory to specify model
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Run in separate namespaces. Monolothic node
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Contributors: Francisco Martin Rico, Francisco Martín Rico
+
+0.0.5 (2020-01-12)
+------------------
 
 0.0.4 (2020-01-09)
 ------------------

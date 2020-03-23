@@ -2,7 +2,7 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.0.5 (2020-03-23)
+0.0.6 (2020-03-23)
 ------------------
 * Run in separate namespaces. Monolothic node
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
@@ -13,6 +13,9 @@ Changelog for package plansys2_domain_expert
 * Avoid inserting duplicate types
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Contributors: Francisco Martin Rico, Francisco Martín Rico
+
+0.0.5 (2020-01-12)
+------------------
 
 0.0.4 (2020-01-09)
 ------------------
