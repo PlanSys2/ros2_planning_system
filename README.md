@@ -43,6 +43,7 @@ Next, only compile:
 
 ```
 plansys2_ws/src$ colcon build --symlink-install
+plansys2_ws/src$ git clone http://github.com/fmrico/cascade_lifecycle.git
 ```
 
 # Example
