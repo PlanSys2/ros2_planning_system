@@ -27,12 +27,13 @@
 #include "plansys2_domain_expert/Types.hpp"
 
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_cascade_lifecycle/rclcpp_cascade_lifecycle.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 
 namespace plansys2
 {
 
-class ActionExecutorClient : public rclcpp::Node
+class ActionExecutorClient : public rclcpp_cascade_lifecycle::CascadeLifecycleNode
 {
 public:
   using ExecuteAction = plansys2_msgs::action::ExecuteAction;
@@ -47,9 +48,6 @@ public:
 protected:
   virtual void actionStep() = 0;
   virtual bool isFinished() = 0;
-
-  virtual void onActivate() {}
-  virtual void onFinish() {}
 
   std::shared_ptr<ExecuteAction::Feedback> getFeedback() {return feedback_;}
   const std::vector<std::string> & getArguments() const {return arguments_;}
