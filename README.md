@@ -36,11 +36,8 @@ This project was initially developed for ROS2 Eloquent. In addition to official 
 Before compiling, include popf in your workspace:
 
 ```
-plansys2_ws/src$ sudo apt-get install flex bison coinor-*
-plansys2_ws/src$ git clone https://github.com/LCAS/popf.git
+plansys2_ws/src$ sudo apt-get install ros-eloquent-popf
 ```
-
-Note: The previous URL may change, since Marc has generously decided to transfer ownership of this project, with the aim of revitalizing its development by including it in plansys2
 
 Next, only compile:
 
