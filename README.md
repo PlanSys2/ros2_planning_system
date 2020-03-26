@@ -33,7 +33,7 @@ Another exciting feature of Plansys2 is the possibility of having several instan
 
 This project was initially developed for ROS2 Eloquent. In addition to official packages, plansys2 requires popf, a PDDL plan solver, developed by Marc Hanheide, to which we have contributed to its migration to a ROS2 package.
 
-Before compiling, include popf in your workspace:
+Before compiling, install popf and include cascade_lifecycle in your workspace (or install from deb packages when available):
 
 ```
 plansys2_ws/src$ sudo apt-get install ros-eloquent-popf
