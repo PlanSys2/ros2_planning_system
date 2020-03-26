@@ -193,7 +193,7 @@ public:
     // remove trailing spaces
     while (command[command.size() - 1] == ' ') {
       command.pop_back();
-    }  
+    }
   }
 
   void process_get_model_predicate(std::vector<std::string> & command)
