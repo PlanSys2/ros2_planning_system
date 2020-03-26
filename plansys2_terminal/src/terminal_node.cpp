@@ -184,12 +184,12 @@ public:
     while ((pos = command.find("  ")) != command.npos) {
       command.erase(pos, 1);
     }
-    
+
     // remove fron spaces
     while (*command.begin() == ' ') {
       command.erase(0, 1);
     }
-    
+
     // remove trailing spaces
     while (command[command.size() - 1] == ' ') {
       command.pop_back();
