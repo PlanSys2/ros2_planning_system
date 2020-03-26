@@ -169,11 +169,31 @@ public:
       free(line);
 
       if (!finish) {
+        clean_command(line_str);
         process_command(line_str);
       }
     }
 
     std::cout << "Finishing..." << std::endl;
+  }
+
+  void clean_command(std::string & command)
+  {
+    // remove continous spaces
+    size_t pos;
+    while ((pos = command.find("  ")) != command.npos) {
+      command.erase(pos, 1);
+    }
+    
+    // remove fron spaces
+    while (*command.begin() == ' ') {
+      command.erase(0, 1);
+    }
+    
+    // remove trailing spaces
+    while (command[command.size() - 1] == ' ') {
+      command.pop_back();
+    }  
   }
 
   void process_get_model_predicate(std::vector<std::string> & command)
