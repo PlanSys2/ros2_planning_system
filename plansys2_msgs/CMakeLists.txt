@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 3.5)
 project(plansys2_msgs)
+
+cmake_minimum_required(VERSION 3.5)
 
 find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)

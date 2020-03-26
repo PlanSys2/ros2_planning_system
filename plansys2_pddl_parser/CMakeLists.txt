@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 3.5)
 project(plansys2_pddl_parser)
+
+cmake_minimum_required(VERSION 3.5)
 
 set(CMAKE_BUILD_TYPE DEBUG)
 
