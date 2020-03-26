@@ -2,6 +2,12 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix warning in last cmake versions
+  Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
+* Contributors: Francisco Martin Rico
+
 0.0.6 (2020-03-23)
 ------------------
 * Run in separate namespaces. Monolothic node
