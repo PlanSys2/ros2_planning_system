@@ -11,6 +11,6 @@ matrix:
   include:
     - env: JOB_TYPE=eloquent
       script: 
- #       - cp dependency_repos.repos .ros2ci/additional_repos.repos
+        - cp dependency_repos.repos .ros2ci/additional_repos.repos
         - .ros2ci/travis.bash $JOB_TYPE
 
