@@ -2,8 +2,8 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.7 (2020-03-26)
+------------------
 * Fix warning in last cmake versions
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Fix spaces in command line
