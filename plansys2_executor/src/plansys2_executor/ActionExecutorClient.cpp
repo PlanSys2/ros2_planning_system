@@ -16,6 +16,9 @@
 #include <memory>
 #include <vector>
 
+#include "lifecycle_msgs/msg/transition.hpp"
+#include "lifecycle_msgs/msg/state.hpp"
+
 #include "plansys2_executor/ActionExecutorClient.hpp"
 
 namespace plansys2
@@ -27,7 +30,7 @@ using GoalHandleExecuteAction = rclcpp_action::ClientGoalHandle<ExecuteAction>;
 ActionExecutorClient::ActionExecutorClient(
   const std::string & action,
   float rate)
-: rclcpp::Node(action), name_(action)
+: CascadeLifecycleNode(action), name_(action)
 {
   using namespace std::placeholders;
 
@@ -45,6 +48,8 @@ ActionExecutorClient::ActionExecutorClient(
   result_ = std::make_shared<ExecuteAction::Result>();
 
   set_rate(rate);
+
+  trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 }
 
 rclcpp_action::GoalResponse
@@ -88,7 +93,18 @@ ActionExecutorClient::execute(
 
   feedback_->progress = 0.0;
 
-  onActivate();
+  while (get_current_state().id() != lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE) {
+    rate_->sleep();
+    RCLCPP_WARN_STREAM(get_logger(), "Action [" << get_name() << "] was not inactive at" <<
+      "the initial of its execution");
+  }
+
+  trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  while (get_current_state().id() != lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE) {
+    rate_->sleep();
+    RCLCPP_WARN_STREAM(get_logger(), "Action [" << get_name() << "] waiting for activation");
+  }
 
   while (rclcpp::ok() && !goal_handle->is_canceling() && !isFinished()) {
     actionStep();
@@ -108,7 +124,12 @@ ActionExecutorClient::execute(
     goal_handle->succeed(result_);
   }
 
-  onFinish();
+  trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+
+  while (get_current_state().id() != lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE) {
+    rate_->sleep();
+    RCLCPP_WARN_STREAM(get_logger(), "Action [" << get_name() << "] waiting for deactivation");
+  }
 }
 
 
