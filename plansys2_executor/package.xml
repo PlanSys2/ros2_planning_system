@@ -23,6 +23,7 @@
   <depend>plansys2_domain_expert</depend>
   <depend>plansys2_problem_expert</depend>
   <depend>plansys2_planner</depend>
+  <depend>behaviortree_cpp_v3</depend>
 
   <exec_depend>popf</exec_depend>
 

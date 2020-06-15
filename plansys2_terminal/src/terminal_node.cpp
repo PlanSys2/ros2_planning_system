@@ -163,14 +163,14 @@ public:
 
       if (strlen(line) > 0) {
         add_history(line);
-      }
 
-      std::string line_str(line);
-      free(line);
+        std::string line_str(line);
+        free(line);
 
-      if (!finish) {
-        clean_command(line_str);
-        process_command(line_str);
+        if (!finish) {
+          clean_command(line_str);
+          process_command(line_str);
+        }
       }
     }
 

@@ -91,6 +91,7 @@ ActionExecutorClient::execute(
   feedback_ = std::make_shared<ExecuteAction::Feedback>();
   result_ = std::make_shared<ExecuteAction::Result>();
 
+  atStart();
   feedback_->progress = 0.0;
 
   while (get_current_state().id() != lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE) {

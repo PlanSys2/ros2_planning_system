@@ -46,12 +46,15 @@ public:
   void set_rate(float rate) {rate_ = std::make_shared<rclcpp::Rate>(rate);}
 
 protected:
+  virtual void atStart() {}
   virtual void actionStep() = 0;
   virtual bool isFinished() = 0;
 
   std::shared_ptr<ExecuteAction::Feedback> getFeedback() {return feedback_;}
   const std::vector<std::string> & getArguments() const {return arguments_;}
   const std::string getName() const {return name_;}
+
+  virtual void execute(const std::shared_ptr<GoalHandleExecuteAction> goal_handle);
 
 private:
   std::shared_ptr<ExecuteAction::Feedback> feedback_;
@@ -71,8 +74,6 @@ private:
     const std::shared_ptr<GoalHandleExecuteAction> goal_handle);
 
   void handle_accepted(const std::shared_ptr<GoalHandleExecuteAction> goal_handle);
-
-  void execute(const std::shared_ptr<GoalHandleExecuteAction> goal_handle);
 };
 
 }  // namespace plansys2

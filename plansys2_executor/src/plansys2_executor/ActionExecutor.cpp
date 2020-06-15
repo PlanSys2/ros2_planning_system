@@ -192,7 +192,7 @@ ActionExecutor::result_callback(const GoalHandleExecuteAction::WrappedResult & r
   }
 
   if (result.result->success) {
-    RCLCPP_INFO(spin_node_->get_logger(), "Result action received: Success");
+    RCLCPP_DEBUG(spin_node_->get_logger(), "Result action received: Success");
 
     if (!check(current_action_.at_end_requirements)) {
       status_ = AT_END_REQ_ERROR;
