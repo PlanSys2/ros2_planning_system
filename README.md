@@ -49,7 +49,7 @@ plansys2_ws$ colcon build --symlink-install
 
 # Example
 
-In this [example](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/patrol_navigation_example), the robot make plans to patrol some waypoints:
+In this [example](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/tree/master/plansys2_patrol_navigation_example), the robot make plans to patrol some waypoints:
 
 [![Patrolling example](https://img.youtube.com/vi/fAEGySqefwo/0.jpg)](https://www.youtube.com/watch?v=fAEGySqefwo)
 
