@@ -111,7 +111,6 @@ ActionExecutorClient::execute(
     actionStep();
 
     goal_handle->publish_feedback(feedback_);
-
     rate_->sleep();
   }
 
@@ -120,6 +119,8 @@ ActionExecutorClient::execute(
     result_->error_info = "Charging action cancelled";
     goal_handle->canceled(result_);
   } else {
+    atSuccess();
+
     result_->success = true;
     result_->error_info = "";
     goal_handle->succeed(result_);

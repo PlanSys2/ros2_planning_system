@@ -116,7 +116,7 @@ ActionExecutor::executeAction()
     RCLCPP_ERROR(spin_node_->get_logger(), "Action client not initialized");
   }
 
-  if (!this->execute_action_client_ptr_->wait_for_action_server(std::chrono::seconds(1))) {
+  if (!this->execute_action_client_ptr_->wait_for_action_server(std::chrono::seconds(10))) {
     RCLCPP_ERROR(spin_node_->get_logger(), "Action server not available after waiting");
     return false;
   }

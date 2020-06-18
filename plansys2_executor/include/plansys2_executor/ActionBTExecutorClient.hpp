@@ -35,10 +35,15 @@ public:
     const std::string & bt_xml_file,
     float rate = 5);
 
+  BT::Blackboard::Ptr getBlackBoard() {return blackboard_;}
+
 protected:
-  void atStart();
-  void actionStep();
+  virtual void atStart();
+  virtual void atSuccess() {}
+  virtual void actionStep();
   bool isFinished();
+
+  BT::Blackboard::Ptr getBackboard() {return blackboard_;}
 
   BT::BehaviorTreeFactory factory_;
 

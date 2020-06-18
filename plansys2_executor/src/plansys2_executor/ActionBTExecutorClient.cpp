@@ -30,6 +30,7 @@ ActionBTExecutorClient::ActionBTExecutorClient(
   bt_xml_file_(bt_xml_file),
   factory_()
 {
+  blackboard_ = BT::Blackboard::create();
 }
 
 void
@@ -54,8 +55,6 @@ ActionBTExecutorClient::atStart()
   RCLCPP_DEBUG(get_logger(), "Behavior Tree file: '%s'", bt_xml_file_.c_str());
   RCLCPP_DEBUG(get_logger(), "Behavior Tree XML: %s", xml_string.c_str());
 
-  blackboard_ = BT::Blackboard::create();
-
   // Create the Behavior Tree from the XML input
   tree_ = factory_.createTreeFromText(xml_string, blackboard_);
 }
@@ -63,10 +62,19 @@ ActionBTExecutorClient::atStart()
 void
 ActionBTExecutorClient::actionStep()
 {
-  finished_ = tree_.root_node->executeTick() == BT::NodeStatus::SUCCESS;
+  auto result = tree_.root_node->executeTick();
 
-  if (finished_) {
-    getFeedback()->progress = 100.0;
+  switch (result) {
+    case BT::NodeStatus::SUCCESS:
+      getFeedback()->progress = 100.0;
+      finished_ = true;
+      break;
+    case BT::NodeStatus::RUNNING:
+      finished_ = false;
+      break;
+    case BT::NodeStatus::FAILURE:
+      finished_ = true;
+      break;
   }
 }
 

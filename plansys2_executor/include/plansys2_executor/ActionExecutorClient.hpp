@@ -47,6 +47,8 @@ public:
 
 protected:
   virtual void atStart() {}
+  virtual void atSuccess() {}
+
   virtual void actionStep() = 0;
   virtual bool isFinished() = 0;
 
