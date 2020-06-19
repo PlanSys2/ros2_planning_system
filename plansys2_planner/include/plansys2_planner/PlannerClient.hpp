@@ -15,7 +15,8 @@
 #ifndef PLANSYS2_PLANNER__PLANNERCLIENT_HPP_
 #define PLANSYS2_PLANNER__PLANNERCLIENT_HPP_
 
-#include <optional>
+#include <boost/optional.hpp>
+
 #include <string>
 #include <vector>
 
@@ -33,7 +34,7 @@ class PlannerClient : public PlannerInterface
 public:
   explicit PlannerClient(rclcpp::Node::SharedPtr provided_node);
 
-  std::optional<Plan> getPlan(
+  boost::optional<Plan> getPlan(
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace = "");
 

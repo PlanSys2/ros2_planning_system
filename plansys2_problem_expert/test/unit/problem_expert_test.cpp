@@ -51,9 +51,9 @@ TEST(problem_expert, addget_instances)
   ASSERT_EQ(problem_expert.getInstances()[0].type, "robot");
 
   auto paco_instance = problem_expert.getInstance("Paco");
-  ASSERT_FALSE(paco_instance.has_value());
+  ASSERT_FALSE(paco_instance);
   auto r2d2_instance = problem_expert.getInstance("r2d2");
-  ASSERT_TRUE(r2d2_instance.has_value());
+  ASSERT_TRUE(r2d2_instance);
   ASSERT_EQ(r2d2_instance.value().name, "r2d2");
   ASSERT_EQ(r2d2_instance.value().type, "robot");
 }

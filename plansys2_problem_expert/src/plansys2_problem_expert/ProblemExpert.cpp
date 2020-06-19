@@ -65,7 +65,7 @@ ProblemExpert::removeInstance(const std::string & name)
   return found;
 }
 
-std::optional<Instance>
+boost::optional<Instance>
 ProblemExpert::getInstance(const std::string & instance_name)
 {
   Instance ret;
@@ -199,14 +199,14 @@ ProblemExpert::isValidPredicate(const Predicate & predicate)
   bool valid = false;
 
   const auto & model_predicate = domain_expert_->getPredicate(predicate.name);
-  if (model_predicate.has_value()) {
+  if (model_predicate) {
     if (model_predicate.value().parameters.size() == predicate.parameters.size()) {
       bool same_types = true;
       int i = 0;
       while (same_types && i < predicate.parameters.size()) {
         auto arg_type = getInstance(predicate.parameters[i].name);
 
-        if (!arg_type.has_value()) {
+        if (!arg_type) {
           same_types = false;
         } else if (arg_type.value().type != model_predicate.value().parameters[i].type) {
           same_types = false;

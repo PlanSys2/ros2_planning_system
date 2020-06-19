@@ -39,7 +39,7 @@ public:
   std::vector<Instance> getInstances();
   bool addInstance(const Instance & instance);
   bool removeInstance(const std::string & name);
-  std::optional<Instance> getInstance(const std::string & name);
+  boost::optional<Instance> getInstance(const std::string & name);
 
   std::vector<Predicate> getPredicates();
   bool addPredicate(const Predicate & predicate);

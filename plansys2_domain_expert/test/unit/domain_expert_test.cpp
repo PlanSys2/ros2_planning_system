@@ -103,7 +103,7 @@ TEST(domain_expert, get_predicate_params)
   plansys2::DomainExpert domain_expert(domain_str);
 
   auto params_1 = domain_expert.getPredicate("robot_talk");
-  ASSERT_TRUE(params_1.has_value());
+  ASSERT_TRUE(params_1);
   ASSERT_EQ(params_1.value().name, "robot_talk");
   ASSERT_EQ(params_1.value().parameters.size(), 3);
   ASSERT_EQ(params_1.value().parameters[0].name, "?robot0");
@@ -114,10 +114,10 @@ TEST(domain_expert, get_predicate_params)
   ASSERT_EQ(params_1.value().parameters[2].type, "person");
 
   auto params_2 = domain_expert.getPredicate("ROBOT_TALK");
-  ASSERT_TRUE(params_2.has_value());
+  ASSERT_TRUE(params_2);
 
   auto params_3 = domain_expert.getPredicate("person_at");
-  ASSERT_TRUE(params_3.has_value());
+  ASSERT_TRUE(params_3);
   ASSERT_EQ(params_3.value().parameters.size(), 2);
   ASSERT_EQ(params_3.value().parameters[0].name, "?person0");
   ASSERT_EQ(params_3.value().parameters[0].type, "person");
@@ -159,13 +159,13 @@ TEST(domain_expert, get_action_params)
 
   domain_expert.getAction("move");
   auto no_action = domain_expert.getAction("noexist");
-  ASSERT_FALSE(no_action.has_value());
+  ASSERT_FALSE(no_action);
 
   auto move_action = domain_expert.getDurativeAction("move");
   auto at_start = move_action.value().at_start_requirements;
   ASSERT_EQ(at_start.toString(), "(and (robot_at ?0 ?1))");
 
-  ASSERT_TRUE(move_action.has_value());
+  ASSERT_TRUE(move_action);
   ASSERT_EQ(move_action.value().name, "move");
   ASSERT_EQ(move_action.value().parameters.size(), 3);
   ASSERT_EQ(move_action.value().parameters[0].name, "?0");

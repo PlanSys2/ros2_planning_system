@@ -127,7 +127,7 @@ ExecutorNode::handle_goal(
   RCLCPP_INFO(get_logger(), "Getting plan = %lf secs",
     (plan_ts - domain_problem_ts).seconds());
 
-  if (current_plan_.has_value()) {
+  if (current_plan_) {
     std::cout << "plan: " << std::endl;
     for (const auto & action : current_plan_.value()) {
       std::cout << action.time << "\t" << action.action << "\t" <<

@@ -56,7 +56,7 @@ DomainExpert::getPredicates()
   return ret;
 }
 
-std::optional<plansys2::Predicate>
+boost::optional<plansys2::Predicate>
 DomainExpert::getPredicate(const std::string & predicate)
 {
   std::string predicate_search = predicate;
@@ -103,7 +103,7 @@ DomainExpert::getActions()
   return ret;
 }
 
-std::optional<plansys2::Action>
+boost::optional<plansys2::Action>
 DomainExpert::getAction(const std::string & action)
 {
   std::string action_search = action;
@@ -174,7 +174,7 @@ DomainExpert::getDurativeActions()
   return ret;
 }
 
-std::optional<plansys2::DurativeAction>
+boost::optional<plansys2::DurativeAction>
 DomainExpert::getDurativeAction(const std::string & action)
 {
   std::string action_search = action;

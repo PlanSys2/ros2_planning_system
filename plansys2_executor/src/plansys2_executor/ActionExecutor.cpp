@@ -265,7 +265,7 @@ ActionExecutor::update_current_action(const std::string & action_expr)
   auto action = domain_client_->getAction(current_action_.name);
   auto durative_action = domain_client_->getDurativeAction(current_action_.name);
 
-  if (action.has_value()) {
+  if (action) {
     auto at_start_req = action.value().preconditions.toString();
     auto at_end_eff = action.value().effects.toString();
 
@@ -290,7 +290,7 @@ ActionExecutor::update_current_action(const std::string & action_expr)
     return true;
   }
 
-  if (durative_action.has_value()) {
+  if (durative_action) {
     auto at_start_req = durative_action.value().at_start_requirements.toString();
     auto over_all_req = durative_action.value().over_all_requirements.toString();
     auto at_end_req = durative_action.value().at_end_requirements.toString();

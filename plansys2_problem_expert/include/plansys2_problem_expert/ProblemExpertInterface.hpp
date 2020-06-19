@@ -32,7 +32,7 @@ public:
   virtual std::vector<Instance> getInstances() = 0;
   virtual bool addInstance(const Instance & instance) = 0;
   virtual bool removeInstance(const std::string & name) = 0;
-  virtual std::optional<Instance> getInstance(const std::string & name) = 0;
+  virtual boost::optional<Instance> getInstance(const std::string & name) = 0;
 
   virtual std::vector<Predicate> getPredicates() = 0;
   virtual bool addPredicate(const Predicate & predicate) = 0;

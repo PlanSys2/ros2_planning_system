@@ -39,7 +39,7 @@ TEST(problem_expert, generate_plan_good)
   auto planner = std::make_shared<plansys2::Planner>();
   auto plan = planner->getPlan(domain_str, problem_str);
 
-  ASSERT_TRUE(plan.has_value());
+  ASSERT_TRUE(plan);
   ASSERT_EQ(plan.value().size(), 3);
   ASSERT_EQ(plan.value()[0].action, "(move leia kitchen bedroom)");
   ASSERT_EQ(plan.value()[1].action, "(approach leia bedroom jack)");
@@ -62,7 +62,7 @@ TEST(problem_expert, generate_plan_unsolvable)
   auto planner = std::make_shared<plansys2::Planner>();
   auto plan = planner->getPlan(domain_str, problem_str);
 
-  ASSERT_FALSE(plan.has_value());
+  ASSERT_FALSE(plan);
 }
 
 TEST(problem_expert, generate_plan_error)
@@ -81,7 +81,7 @@ TEST(problem_expert, generate_plan_error)
   auto planner = std::make_shared<plansys2::Planner>();
   auto plan = planner->getPlan(domain_str, problem_str);
 
-  ASSERT_FALSE(plan.has_value());
+  ASSERT_FALSE(plan);
 }
 
 
