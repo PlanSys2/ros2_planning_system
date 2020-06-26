@@ -303,7 +303,6 @@ TEST(executor_client, bt_client_b)
     rate.sleep();
   }
 
-  ASSERT_EQ(bt_exc->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
   ASSERT_EQ(bt_exc->executions_, 1);
   ASSERT_EQ(bt_exc->final_value_, 6);
 
@@ -329,7 +328,6 @@ TEST(executor_client, bt_client_b)
     rate.sleep();
   }
 
-  ASSERT_EQ(bt_exc->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
   ASSERT_EQ(bt_exc->executions_, 2);
   ASSERT_EQ(bt_exc->final_value_, 6);
 }
