@@ -2,8 +2,8 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.8 (2020-06-26)
+------------------
 * Boost:optional
 * Add BT support
 * Contributors: Francisco Martin Rico, Francisco Martín Rico

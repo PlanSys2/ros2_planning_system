@@ -2,8 +2,8 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.8 (2020-06-26)
+------------------
 * Boost:optional
 * Contributors: Francisco Martin Rico, Francisco Martín Rico
 
