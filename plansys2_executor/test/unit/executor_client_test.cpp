@@ -287,8 +287,6 @@ TEST(executor_client, bt_client)
 //   auto send_goal_options = rclcpp_action::Client<ExecuteAction>::SendGoalOptions();
 //   auto future_goal_handle = action_client->async_send_goal(goal_msg, send_goal_options);
 //
-//   ASSERT_EQ(bt_exc->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
-//
 //   ASSERT_EQ(bt_exc->executions_, 0);
 //   ASSERT_EQ(bt_exc->final_value_, 0);
 //
