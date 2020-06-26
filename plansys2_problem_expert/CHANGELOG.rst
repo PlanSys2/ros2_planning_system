@@ -2,6 +2,11 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Boost:optional
+* Contributors: Francisco Martin Rico, Francisco Martín Rico
+
 0.0.7 (2020-03-26)
 ------------------
 * Fix warning in last cmake versions

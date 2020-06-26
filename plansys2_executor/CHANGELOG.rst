@@ -2,6 +2,13 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Boost:optional
+* Support for BT actions
+* Add BT support
+* Contributors: Francisco Martin Rico, Francisco Martín Rico
+
 0.0.7 (2020-03-26)
 ------------------
 * ActionExecutorClient is cascade_lifecycle

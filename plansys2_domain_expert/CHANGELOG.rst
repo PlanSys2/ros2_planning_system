@@ -2,6 +2,12 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Boost:optional
+* Support for BT actions
+* Contributors: Francisco Martin Rico, Francisco Martín Rico
+
 0.0.7 (2020-03-26)
 ------------------
 * Fix warning in last cmake versions
