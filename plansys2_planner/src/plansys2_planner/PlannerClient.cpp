@@ -29,7 +29,7 @@ PlannerClient::PlannerClient(rclcpp::Node::SharedPtr provided_node)
   get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("planner/get_plan");
 }
 
-std::optional<Plan>
+boost::optional<Plan>
 PlannerClient::getPlan(
   const std::string & domain, const std::string & problem,
   const std::string & node_namespace)

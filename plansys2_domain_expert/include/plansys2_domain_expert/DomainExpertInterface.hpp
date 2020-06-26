@@ -15,6 +15,8 @@
 #ifndef PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTINTERFACE_HPP_
 #define PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTINTERFACE_HPP_
 
+#include <boost/optional.hpp>
+
 #include <string>
 #include <vector>
 
@@ -50,7 +52,7 @@ public:
    * \return A Predicate object containing the predicate name andt its parameters (name and type).
    *    If the predicate does not exist, the value returned has not value.
    */
-  virtual std::optional<plansys2::Predicate> getPredicate(const std::string & predicate) = 0;
+  virtual boost::optional<plansys2::Predicate> getPredicate(const std::string & predicate) = 0;
 
   /// Get the regular actions existing in the domain.
   /**
@@ -64,7 +66,7 @@ public:
    * \return An Action object containing the action name, parameters, requirements and effects.
    *    If the action does not exist, the value returned has not value.
    */
-  virtual std::optional<plansys2::Action> getAction(const std::string & action) = 0;
+  virtual boost::optional<plansys2::Action> getAction(const std::string & action) = 0;
 
   /// Get the temporal actions existing in the domain.
   /**
@@ -78,7 +80,7 @@ public:
    * \return A Durative Action object containing the action name, parameters, requirements and
    *    effects. If the action does not exist, the value returned has not value.
    */
-  virtual std::optional<plansys2::DurativeAction> getDurativeAction(const std::string & action) =
+  virtual boost::optional<plansys2::DurativeAction> getDurativeAction(const std::string & action) =
   0;
 
   /// Get the current domain, ready to be saved to file, or to initialize another domain.

@@ -173,7 +173,7 @@ ProblemExpertClient::removeInstance(const std::string & name)
   }
 }
 
-std::optional<plansys2::Instance>
+boost::optional<plansys2::Instance>
 ProblemExpertClient::getInstance(const std::string & name)
 {
   plansys2::Instance ret;

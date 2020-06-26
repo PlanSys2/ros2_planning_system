@@ -91,6 +91,7 @@ ActionExecutorClient::execute(
   feedback_ = std::make_shared<ExecuteAction::Feedback>();
   result_ = std::make_shared<ExecuteAction::Result>();
 
+  atStart();
   feedback_->progress = 0.0;
 
   while (get_current_state().id() != lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE) {
@@ -110,7 +111,6 @@ ActionExecutorClient::execute(
     actionStep();
 
     goal_handle->publish_feedback(feedback_);
-
     rate_->sleep();
   }
 
@@ -119,6 +119,8 @@ ActionExecutorClient::execute(
     result_->error_info = "Charging action cancelled";
     goal_handle->canceled(result_);
   } else {
+    atSuccess();
+
     result_->success = true;
     result_->error_info = "";
     goal_handle->succeed(result_);

@@ -15,6 +15,8 @@
 #ifndef PLANSYS2_PLANNER__PLANNER_HPP_
 #define PLANSYS2_PLANNER__PLANNER_HPP_
 
+#include <boost/optional.hpp>
+
 #include <memory>
 #include <string>
 
@@ -28,7 +30,7 @@ class Planner : public PlannerInterface
 public:
   Planner();
 
-  std::optional<Plan> getPlan(
+  boost::optional<Plan> getPlan(
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace = "");
 };

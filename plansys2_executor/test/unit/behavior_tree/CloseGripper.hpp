@@ -12,28 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_PLANNER__PLANNERINTERFACE_HPP_
-#define PLANSYS2_PLANNER__PLANNERINTERFACE_HPP_
-
-#include <boost/optional.hpp>
+#ifndef UNIT__BEHAVIOR_TREE__CLOSEGRIPPER_HPP_
+#define UNIT__BEHAVIOR_TREE__CLOSEGRIPPER_HPP_
 
 #include <string>
 
-#include "plansys2_planner/Types.hpp"
+#include "behaviortree_cpp_v3/behavior_tree.h"
+#include "behaviortree_cpp_v3/bt_factory.h"
 
-namespace plansys2
+namespace plansys2_bt_tests
 {
 
-class PlannerInterface
+class CloseGripper : public BT::ActionNodeBase
 {
 public:
-  PlannerInterface() {}
+  explicit CloseGripper(const std::string & xml_tag_name);
 
-  virtual boost::optional<Plan> getPlan(
-    const std::string & domain, const std::string & problem,
-    const std::string & node_namespace) = 0;
+  void halt();
+  BT::NodeStatus tick();
+
+private:
+  int counter_;
 };
 
-}  // namespace plansys2
+}  // namespace plansys2_bt_tests
 
-#endif  // PLANSYS2_PLANNER__PLANNERINTERFACE_HPP_
+#endif  // UNIT__BEHAVIOR_TREE__CLOSEGRIPPER_HPP_

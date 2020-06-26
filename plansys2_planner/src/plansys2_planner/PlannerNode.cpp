@@ -100,9 +100,9 @@ PlannerNode::get_plan_service_callback(
   const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response)
 {
   auto plan = planner_->getPlan(request->domain, request->problem, get_namespace());
-  response->success = plan.has_value();
 
-  if (response->success) {
+  if (plan) {
+    response->success = true;
     for (size_t i = 0; i < plan.value().size(); i++) {
       response->times.push_back(plan.value()[i].time);
       response->actions.push_back(plan.value()[i].action);

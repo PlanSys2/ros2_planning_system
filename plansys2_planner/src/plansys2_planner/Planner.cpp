@@ -32,7 +32,7 @@ Planner::Planner()
 {
 }
 
-std::optional<Plan>
+boost::optional<Plan>
 Planner::getPlan(
   const std::string & domain, const std::string & problem,
   const std::string & node_namespace)

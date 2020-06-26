@@ -209,7 +209,7 @@ DomainExpertNode::get_domain_action_details_service_callback(
     auto action = domain_expert_->getAction(request->action);
     auto durative_action = domain_expert_->getDurativeAction(request->action);
 
-    if (action.has_value()) {
+    if (action) {
       response->name = request->action;
       response->type = "action";
 
@@ -221,7 +221,7 @@ DomainExpertNode::get_domain_action_details_service_callback(
       response->at_start_effects = action.value().effects.toString();
 
       response->success = true;
-    } else if (durative_action.has_value()) {
+    } else if (durative_action) {
       response->name = request->action;
       response->type = "durative-action";
 
@@ -273,7 +273,7 @@ DomainExpertNode::get_domain_predicate_details_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     auto params = domain_expert_->getPredicate(request->predicate);
-    if (params.has_value()) {
+    if (params) {
       response->name = request->predicate;
 
       for (const auto & param :  params.value().parameters) {

@@ -116,7 +116,7 @@ ActionExecutor::executeAction()
     RCLCPP_ERROR(spin_node_->get_logger(), "Action client not initialized");
   }
 
-  if (!this->execute_action_client_ptr_->wait_for_action_server(std::chrono::seconds(1))) {
+  if (!this->execute_action_client_ptr_->wait_for_action_server(std::chrono::seconds(10))) {
     RCLCPP_ERROR(spin_node_->get_logger(), "Action server not available after waiting");
     return false;
   }
@@ -192,7 +192,7 @@ ActionExecutor::result_callback(const GoalHandleExecuteAction::WrappedResult & r
   }
 
   if (result.result->success) {
-    RCLCPP_INFO(spin_node_->get_logger(), "Result action received: Success");
+    RCLCPP_DEBUG(spin_node_->get_logger(), "Result action received: Success");
 
     if (!check(current_action_.at_end_requirements)) {
       status_ = AT_END_REQ_ERROR;
@@ -265,7 +265,7 @@ ActionExecutor::update_current_action(const std::string & action_expr)
   auto action = domain_client_->getAction(current_action_.name);
   auto durative_action = domain_client_->getDurativeAction(current_action_.name);
 
-  if (action.has_value()) {
+  if (action) {
     auto at_start_req = action.value().preconditions.toString();
     auto at_end_eff = action.value().effects.toString();
 
@@ -290,7 +290,7 @@ ActionExecutor::update_current_action(const std::string & action_expr)
     return true;
   }
 
-  if (durative_action.has_value()) {
+  if (durative_action) {
     auto at_start_req = durative_action.value().at_start_requirements.toString();
     auto over_all_req = durative_action.value().over_all_requirements.toString();
     auto at_end_req = durative_action.value().at_end_requirements.toString();

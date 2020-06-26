@@ -321,7 +321,7 @@ ProblemExpertNode::get_problem_instance_details_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     auto instance = problem_expert_->getInstance(request->instance);
-    if (instance.has_value()) {
+    if (instance) {
       response->success = true;
       response->type = instance.value().type;
     } else {

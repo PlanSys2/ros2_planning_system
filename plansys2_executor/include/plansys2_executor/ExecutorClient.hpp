@@ -15,7 +15,8 @@
 #ifndef PLANSYS2_EXECUTOR__EXECUTORCLIENT_HPP_
 #define PLANSYS2_EXECUTOR__EXECUTORCLIENT_HPP_
 
-#include <optional>
+#include <boost/optional.hpp>
+
 #include <string>
 #include <memory>
 
@@ -38,7 +39,7 @@ public:
   bool executePlan();
 
   ExecutePlan::Feedback getFeedBack() {return feedback_;}
-  std::optional<ExecutePlan::Result> getResult();
+  boost::optional<ExecutePlan::Result> getResult();
 
 private:
   rclcpp_action::Client<ExecutePlan>::SharedPtr execute_plan_client_ptr_;

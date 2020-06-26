@@ -12,28 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_PLANNER__PLANNERINTERFACE_HPP_
-#define PLANSYS2_PLANNER__PLANNERINTERFACE_HPP_
-
-#include <boost/optional.hpp>
-
 #include <string>
+#include <iostream>
 
-#include "plansys2_planner/Types.hpp"
+#include "OpenGripper.hpp"
 
-namespace plansys2
+#include "behaviortree_cpp_v3/behavior_tree.h"
+#include "behaviortree_cpp_v3/bt_factory.h"
+
+namespace plansys2_bt_tests
 {
 
-class PlannerInterface
+OpenGripper::OpenGripper(const std::string & xml_tag_name)
+: BT::ActionNodeBase(xml_tag_name, {}), counter_(0)
 {
-public:
-  PlannerInterface() {}
+}
 
-  virtual boost::optional<Plan> getPlan(
-    const std::string & domain, const std::string & problem,
-    const std::string & node_namespace) = 0;
-};
+void
+OpenGripper::halt()
+{
+  std::cout << "OpenGripper halt" << std::endl;
+}
 
-}  // namespace plansys2
+BT::NodeStatus
+OpenGripper::tick()
+{
+  std::cout << "OpenGripper tick " << counter_ << std::endl;
 
-#endif  // PLANSYS2_PLANNER__PLANNERINTERFACE_HPP_
+  if (counter_++ < 5) {
+    return BT::NodeStatus::RUNNING;
+  } else {
+    counter_ = 0;
+    return BT::NodeStatus::SUCCESS;
+  }
+}
+
+}  // namespace plansys2_bt_tests

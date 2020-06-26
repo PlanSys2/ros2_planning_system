@@ -163,14 +163,14 @@ public:
 
       if (strlen(line) > 0) {
         add_history(line);
-      }
 
-      std::string line_str(line);
-      free(line);
+        std::string line_str(line);
+        free(line);
 
-      if (!finish) {
-        clean_command(line_str);
-        process_command(line_str);
+        if (!finish) {
+          clean_command(line_str);
+          process_command(line_str);
+        }
       }
     }
 
@@ -200,7 +200,7 @@ public:
   {
     if (command.size() == 1) {
       auto predicates = domain_client_->getPredicate(command[0]);
-      if (predicates.has_value()) {
+      if (predicates) {
         std::cout << "Parameters: " << predicates.value().parameters.size() << std::endl;
         for (size_t i = 0; i < predicates.value().parameters.size(); i++) {
           std::cout << "\t" << predicates.value().parameters[i].type << " - " <<
@@ -219,7 +219,7 @@ public:
     if (command.size() == 1) {
       auto action = domain_client_->getAction(command[0]);
       auto durative_action = domain_client_->getDurativeAction(command[0]);
-      if (action.has_value()) {
+      if (action) {
         std::cout << "Type: action" << std::endl;
         std::cout << "Parameters: " << action.value().parameters.size() << std::endl;
         for (size_t i = 0; i < action.value().parameters.size(); i++) {
@@ -228,7 +228,7 @@ public:
         }
         std::cout << "Preconditions: " << action.value().preconditions.toString() << std::endl;
         std::cout << "Effects: " << action.value().effects.toString() << std::endl;
-      } else if (durative_action.has_value()) {
+      } else if (durative_action) {
         std::cout << "Type: durative-action" << std::endl;
         std::cout << "Parameters: " << durative_action.value().parameters.size() << std::endl;
         for (size_t i = 0; i < durative_action.value().parameters.size(); i++) {
@@ -340,7 +340,7 @@ public:
         auto plan = planner_client_->getPlan(domain_client_->getDomain(),
             problem_client_->getProblem());
 
-        if (plan.has_value()) {
+        if (plan) {
           std::cout << "plan: " << std::endl;
           for (const auto & action : plan.value()) {
             std::cout << action.time << "\t" << action.action << "\t" <<
@@ -532,7 +532,7 @@ public:
   {
     if (executor_client_->executePlan()) {
       rclcpp::Rate loop_rate(5);
-      while (rclcpp::ok() && !executor_client_->getResult().has_value()) {
+      while (rclcpp::ok() && !executor_client_->getResult()) {
         auto feedback = executor_client_->getFeedBack();
 
         std::cout << "\r\e[K" << std::flush;
