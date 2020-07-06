@@ -2,6 +2,11 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix Boost dependency
+* Contributors: Francisco Martin Rico
+
 0.0.8 (2020-06-26)
 ------------------
 * Boost:optional

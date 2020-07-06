@@ -2,6 +2,9 @@
 Changelog for package plansys2_lifecycle_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.8 (2020-06-26)
 ------------------
 * Boost:optional
