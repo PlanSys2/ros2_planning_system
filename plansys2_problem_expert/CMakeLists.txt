@@ -13,6 +13,8 @@ find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_domain_expert REQUIRED)
 
+find_package(Boost 1.65.1 REQUIRED)
+
 set(dependencies
     rclcpp
     rclcpp_action
