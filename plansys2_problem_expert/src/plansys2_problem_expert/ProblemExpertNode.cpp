@@ -49,40 +49,46 @@ ProblemExpertNode::ProblemExpertNode()
 
   add_problem_goal_service_ = create_service<plansys2_msgs::srv::AddProblemGoal>(
     "problem_expert/add_problem_goal",
-    std::bind(&ProblemExpertNode::add_problem_goal_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    std::bind(
+      &ProblemExpertNode::add_problem_goal_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 
   add_problem_instance_service_ = create_service<plansys2_msgs::srv::AddProblemInstance>(
     "problem_expert/add_problem_instance",
-    std::bind(&ProblemExpertNode::add_problem_instance_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    std::bind(
+      &ProblemExpertNode::add_problem_instance_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 
   add_problem_predicate_service_ = create_service<plansys2_msgs::srv::AddProblemPredicate>(
     "problem_expert/add_problem_predicate",
-    std::bind(&ProblemExpertNode::add_problem_predicate_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    std::bind(
+      &ProblemExpertNode::add_problem_predicate_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 
   get_problem_goal_service_ = create_service<plansys2_msgs::srv::GetProblemGoal>(
     "problem_expert/get_problem_goal",
-    std::bind(&ProblemExpertNode::get_problem_goal_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    std::bind(
+      &ProblemExpertNode::get_problem_goal_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 
   get_problem_instance_details_service_ =
     create_service<plansys2_msgs::srv::GetProblemInstanceDetails>(
     "problem_expert/get_problem_instance_details",
-    std::bind(&ProblemExpertNode::get_problem_instance_details_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    std::bind(
+      &ProblemExpertNode::get_problem_instance_details_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 
   get_problem_instances_service_ = create_service<plansys2_msgs::srv::GetProblemInstances>(
     "problem_expert/get_problem_instances",
-    std::bind(&ProblemExpertNode::get_problem_instances_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    std::bind(
+      &ProblemExpertNode::get_problem_instances_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 
   get_problem_predicate_details_service_ =
     create_service<plansys2_msgs::srv::GetProblemPredicateDetails>(
@@ -93,41 +99,48 @@ ProblemExpertNode::ProblemExpertNode()
 
   get_problem_predicates_service_ = create_service<plansys2_msgs::srv::GetProblemPredicates>(
     "problem_expert/get_problem_predicates",
-    std::bind(&ProblemExpertNode::get_problem_predicates_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    std::bind(
+      &ProblemExpertNode::get_problem_predicates_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 
   get_problem_service_ = create_service<plansys2_msgs::srv::GetProblem>(
-    "problem_expert/get_problem", std::bind(&ProblemExpertNode::get_problem_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    "problem_expert/get_problem", std::bind(
+      &ProblemExpertNode::get_problem_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 
   remove_problem_goal_service_ = create_service<plansys2_msgs::srv::RemoveProblemGoal>(
     "problem_expert/remove_problem_goal",
-    std::bind(&ProblemExpertNode::remove_problem_goal_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    std::bind(
+      &ProblemExpertNode::remove_problem_goal_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 
   remove_problem_instance_service_ = create_service<plansys2_msgs::srv::RemoveProblemInstance>(
     "problem_expert/remove_problem_instance",
-    std::bind(&ProblemExpertNode::remove_problem_instance_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    std::bind(
+      &ProblemExpertNode::remove_problem_instance_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 
   remove_problem_predicate_service_ = create_service<plansys2_msgs::srv::RemoveProblemPredicate>(
     "problem_expert/remove_problem_predicate",
-    std::bind(&ProblemExpertNode::remove_problem_predicate_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    std::bind(
+      &ProblemExpertNode::remove_problem_predicate_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 
   exist_problem_predicate_service_ = create_service<plansys2_msgs::srv::ExistProblemPredicate>(
     "problem_expert/exist_problem_predicate",
-    std::bind(&ProblemExpertNode::exist_problem_predicate_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    std::bind(
+      &ProblemExpertNode::exist_problem_predicate_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 
-  update_pub_ = create_publisher<std_msgs::msg::Empty>("problem_expert/update_notify",
-      rclcpp::QoS(100));
+  update_pub_ = create_publisher<std_msgs::msg::Empty>(
+    "problem_expert/update_notify",
+    rclcpp::QoS(100));
 }
 
 

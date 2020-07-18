@@ -337,8 +337,9 @@ public:
       } else if (command[0] == "domain") {
         std::cout << "domain: \n" << domain_client_->getDomain() << std::endl;
       } else if (command[0] == "plan") {
-        auto plan = planner_client_->getPlan(domain_client_->getDomain(),
-            problem_client_->getProblem());
+        auto plan = planner_client_->getPlan(
+          domain_client_->getDomain(),
+          problem_client_->getProblem());
 
         if (plan) {
           std::cout << "plan: " << std::endl;

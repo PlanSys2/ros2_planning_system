@@ -102,7 +102,8 @@ TEST(domain_types, predicate_tree_to_string)
   plansys2::PredicateTree tree;
   tree.root_ = pn_and;
 
-  ASSERT_EQ(tree.toString(), std::string("(and (robot_at r2d2 bedroom)(not ") +
+  ASSERT_EQ(
+    tree.toString(), std::string("(and (robot_at r2d2 bedroom)(not ") +
     std::string("(robot_at r2d2 kitchen))(or (person_at paco bedroom)(person_at paco kitchen)))"));
 }
 

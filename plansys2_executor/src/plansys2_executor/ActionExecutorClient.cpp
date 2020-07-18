@@ -96,8 +96,9 @@ ActionExecutorClient::execute(
 
   while (get_current_state().id() != lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE) {
     rate_->sleep();
-    RCLCPP_WARN_STREAM(get_logger(), "Action [" << get_name() << "] was not inactive at" <<
-      "the initial of its execution");
+    RCLCPP_WARN_STREAM(
+      get_logger(), "Action [" << get_name() << "] was not inactive at" <<
+        "the initial of its execution");
   }
 
   trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);

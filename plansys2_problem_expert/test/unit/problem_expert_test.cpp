@@ -203,7 +203,8 @@ TEST(problem_expert, addget_goals)
   ASSERT_TRUE(problem_expert.setGoal(goal));
   ASSERT_TRUE(problem_expert.setGoal(goal2));
 
-  ASSERT_EQ(problem_expert.getGoal().toString(),
+  ASSERT_EQ(
+    problem_expert.getGoal().toString(),
     "(and (robot_at r2d2 bedroom)(not (person_at paco kitchen)))");
 
   const plansys2::Goal & goal3 = problem_expert.getGoal();
@@ -276,7 +277,8 @@ TEST(problem_expert, get_probem)
   goal.fromString("(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
   ASSERT_TRUE(problem_expert.setGoal(goal));
 
-  ASSERT_EQ(problem_expert.getProblem(),
+  ASSERT_EQ(
+    problem_expert.getProblem(),
     std::string("( define ( problem problem_1 )\n( :domain simple ") +
     std::string(")\n( :objects\n\tpaco - person\n\tr2d2 - robot\n\tbedroom kitchen - room\n)\n") +
     std::string("( :init\n\t( robot_at r2d2 bedroom )\n\t( robot_at r2d2 kitchen )\n\t( ") +

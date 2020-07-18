@@ -90,7 +90,8 @@ ActionExecutor::executeAction()
   if (!apply(current_action_.at_start_effects)) {
     status_ = AT_START_EF_ERROR;
     finished_ = true;
-    RCLCPP_ERROR(spin_node_->get_logger(),
+    RCLCPP_ERROR(
+      spin_node_->get_logger(),
       "Action client execution error applying at_start effects");
     return false;
   }
@@ -98,7 +99,8 @@ ActionExecutor::executeAction()
   if (!check(current_action_.over_all_requirements)) {
     status_ = OVER_ALL_REQ_ERROR;
     finished_ = true;
-    RCLCPP_ERROR(spin_node_->get_logger(),
+    RCLCPP_ERROR(
+      spin_node_->get_logger(),
       "Action client execution error testing over_all reqs");
     return false;
   }
@@ -204,13 +206,15 @@ ActionExecutor::result_callback(const GoalHandleExecuteAction::WrappedResult & r
     } else {
       status_ = AT_END_EF_ERROR;
       finished_ = true;
-      RCLCPP_ERROR(spin_node_->get_logger(),
+      RCLCPP_ERROR(
+        spin_node_->get_logger(),
         "Action client execution error applying at_end effects");
     }
   } else {
     finished_ = true;
     status_ = EXECUTION_ERROR;
-    RCLCPP_WARN(spin_node_->get_logger(), "Result action received: Fail [%s]",
+    RCLCPP_WARN(
+      spin_node_->get_logger(), "Result action received: Fail [%s]",
       result.result->error_info.c_str());
   }
 }
@@ -327,7 +331,8 @@ ActionExecutor::update_current_action(const std::string & action_expr)
     return true;
   }
 
-  RCLCPP_ERROR(spin_node_->get_logger(), "Action [%s] not found",
+  RCLCPP_ERROR(
+    spin_node_->get_logger(), "Action [%s] not found",
     current_action_.name.c_str());
   return false;
 }
@@ -380,6 +385,8 @@ ActionExecutor::check(const std::shared_ptr<TreeNode> node) const
       std::cerr << "checkPredicateTreeTypes: Error parsing expresion [" <<
         node->toString() << "]" << std::endl;
   }
+
+  return false;
 }
 
 
@@ -437,6 +444,8 @@ ActionExecutor::apply(const std::shared_ptr<TreeNode> node, bool negate) const
       std::cerr << "checkPredicateTreeTypes: Error parsing expresion [" <<
         node->toString() << "]" << std::endl;
   }
+
+  return false;
 }
 
 }  // namespace plansys2

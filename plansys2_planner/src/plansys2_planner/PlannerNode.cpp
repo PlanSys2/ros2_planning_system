@@ -29,9 +29,10 @@ PlannerNode::PlannerNode()
 {
   get_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
     "planner/get_plan",
-    std::bind(&PlannerNode::get_plan_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    std::bind(
+      &PlannerNode::get_plan_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 
   planner_ = std::make_shared<Planner>();
 }

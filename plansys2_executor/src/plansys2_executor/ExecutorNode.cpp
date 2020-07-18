@@ -121,10 +121,12 @@ ExecutorNode::handle_goal(
   current_plan_ = planner_client_->getPlan(domain, problem);
   auto plan_ts = now();
 
-  RCLCPP_INFO(get_logger(), "Getting domain and problem = %lf secs",
+  RCLCPP_INFO(
+    get_logger(), "Getting domain and problem = %lf secs",
     (domain_problem_ts - start).seconds());
 
-  RCLCPP_INFO(get_logger(), "Getting plan = %lf secs",
+  RCLCPP_INFO(
+    get_logger(), "Getting plan = %lf secs",
     (plan_ts - domain_problem_ts).seconds());
 
   if (current_plan_) {

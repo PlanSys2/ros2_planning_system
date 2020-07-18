@@ -272,6 +272,8 @@ ProblemExpert::checkPredicateTreeTypes(
       std::cerr << "checkPredicateTreeTypes: Error parsing expresion [" <<
         node->toString() << "]" << std::endl;
   }
+
+  return false;
 }
 
 std::string

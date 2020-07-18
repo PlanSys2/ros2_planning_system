@@ -44,10 +44,12 @@ Move::on_tick()
   setOutput("goal_reached", 0);
 }
 
-void
+BT::NodeStatus
 Move::on_success()
 {
   setOutput("goal_reached", result_.result->sequence[0]);
+
+  return BT::NodeStatus::SUCCESS;
 }
 
 

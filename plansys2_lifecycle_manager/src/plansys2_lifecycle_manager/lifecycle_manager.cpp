@@ -42,7 +42,8 @@ LifecycleServiceClient::init()
   std::string get_state_service_name = managed_node_ + "/get_state";
   std::string change_state_service_name = managed_node_ + "/change_state";
   RCLCPP_INFO(get_logger(), "Creating client for service [%s]", get_state_service_name.c_str());
-  RCLCPP_INFO(get_logger(), "Creating client for service [%s]",
+  RCLCPP_INFO(
+    get_logger(), "Creating client for service [%s]",
     change_state_service_name.c_str());
   client_get_state_ = this->create_client<lifecycle_msgs::srv::GetState>(get_state_service_name);
   client_change_state_ = this->create_client<lifecycle_msgs::srv::ChangeState>(
@@ -74,7 +75,8 @@ LifecycleServiceClient::get_state(std::chrono::seconds time_out)
   }
   // We have an succesful answer. So let's print the current state.
   if (future_result.get()) {
-    RCLCPP_INFO(get_logger(), "Node %s has current state %s.",
+    RCLCPP_INFO(
+      get_logger(), "Node %s has current state %s.",
       get_name(), future_result.get()->current_state.label.c_str());
     return future_result.get()->current_state.id;
   } else {

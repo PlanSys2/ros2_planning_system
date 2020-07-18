@@ -26,24 +26,25 @@ namespace plansys2
 {
 
 template<class ActionT>
-class BtActionNode : public BT::CoroActionNode
+class BtActionNode : public BT::ActionNodeBase
 {
 public:
   BtActionNode(
     const std::string & xml_tag_name,
     const std::string & action_name,
     const BT::NodeConfiguration & conf)
-  : BT::CoroActionNode(xml_tag_name, conf), action_name_(action_name)
+  : BT::ActionNodeBase(xml_tag_name, conf), action_name_(action_name)
   {
-    node_ = std::make_shared<rclcpp::Node>(xml_tag_name + "_node");
+    node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node");
 
     // Initialize the input and output messages
     goal_ = typename ActionT::Goal();
     result_ = typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult();
 
-    // Get the required items from the blackboard
-    server_timeout_ = std::chrono::milliseconds(10);
-
+    std::string remapped_action_name;
+    if (getInput("server_name", remapped_action_name)) {
+      action_name_ = remapped_action_name;
+    }
     createActionClient(action_name_);
 
     // Give the derive class a chance to do any initialization
@@ -72,6 +73,7 @@ public:
   static BT::PortsList providedBasicPorts(BT::PortsList addition)
   {
     BT::PortsList basic = {
+      BT::InputPort<std::string>("server_name", "Action server name"),
       BT::InputPort<std::chrono::milliseconds>("server_timeout")
     };
     basic.insert(addition.begin(), addition.end());
@@ -85,7 +87,7 @@ public:
   }
 
   // Derived classes can override any of the following methods to hook into the
-  // processing for the action: on_tick, on_server_timeout, and on_success
+  // processing for the action: on_tick, on_wait_for_result, and on_success
 
   // Could do dynamic checks, such as getting updates to values on the blackboard
   virtual void on_tick()
@@ -94,69 +96,76 @@ public:
 
   // There can be many loop iterations per tick. Any opportunity to do something after
   // a timeout waiting for a result that hasn't been received yet
-  virtual void on_server_timeout()
+  virtual void on_wait_for_result()
   {
   }
 
   // Called upon successful completion of the action. A derived class can override this
-  // method to put a value on the blackboard, for example
-  virtual void on_success()
+  // method to put a value on the blackboard, for example.
+  virtual BT::NodeStatus on_success()
   {
+    return BT::NodeStatus::SUCCESS;
+  }
+
+  // Called when a the action is aborted. By default, the node will return FAILURE.
+  // The user may override it to return another value, instead.
+  virtual BT::NodeStatus on_aborted()
+  {
+    return BT::NodeStatus::FAILURE;
+  }
+
+  // Called when a the action is cancelled. By default, the node will return SUCCESS.
+  // The user may override it to return another value, instead.
+  virtual BT::NodeStatus on_cancelled()
+  {
+    return BT::NodeStatus::SUCCESS;
   }
 
   // The main override required by a BT action
   BT::NodeStatus tick() override
   {
-    on_tick();
+    // first step to be done only at the beginning of the Action
+    if (status() == BT::NodeStatus::IDLE) {
+      // setting the status to RUNNING to notify the BT Loggers (if any)
+      setStatus(BT::NodeStatus::RUNNING);
 
-new_goal_received:
-    auto future_goal_handle = action_client_->async_send_goal(goal_);
-    if (rclcpp::spin_until_future_complete(node_, future_goal_handle) !=
-      rclcpp::executor::FutureReturnCode::SUCCESS)
-    {
-      throw std::runtime_error("send_goal failed");
+      // user defined callback
+      on_tick();
+
+      on_new_goal_received();
     }
 
-    goal_handle_ = future_goal_handle.get();
-    if (!goal_handle_) {
-      throw std::runtime_error("Goal was rejected by the action server");
-    }
+    // The following code corresponds to the "RUNNING" loop
+    if (rclcpp::ok() && !goal_result_available_) {
+      // user defined callback. May modify the value of "goal_updated_"
+      on_wait_for_result();
 
-    auto future_result = action_client_->async_get_result(goal_handle_);
-    rclcpp::executor::FutureReturnCode rc;
-    do {
-      rc = rclcpp::spin_until_future_complete(node_, future_result, server_timeout_);
-      if (rc == rclcpp::executor::FutureReturnCode::TIMEOUT) {
-        on_server_timeout();
-
-        // We can handle a new goal if we're still executing
-        auto status = goal_handle_->get_status();
-        if (goal_updated_ && (status == action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
-          status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED ))
-        {
-          goal_updated_ = false;
-          goto new_goal_received;
-        }
-
-        // Yield to any other CoroActionNodes (coroutines)
-        setStatusRunningAndYield();
+      auto goal_status = goal_handle_->get_status();
+      if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
+        goal_status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED))
+      {
+        goal_updated_ = false;
+        on_new_goal_received();
       }
-    } while (rc != rclcpp::executor::FutureReturnCode::SUCCESS);
 
-    result_ = future_result.get();
+      rclcpp::spin_some(node_);
+
+      // check if, after invoking spin_some(), we finally received the result
+      if (!goal_result_available_) {
+        // Yield this Action, returning RUNNING
+        return BT::NodeStatus::RUNNING;
+      }
+    }
+
     switch (result_.code) {
       case rclcpp_action::ResultCode::SUCCEEDED:
-        on_success();
-        setStatus(BT::NodeStatus::IDLE);
-        return BT::NodeStatus::SUCCESS;
+        return on_success();
 
       case rclcpp_action::ResultCode::ABORTED:
-        setStatus(BT::NodeStatus::IDLE);
-        return BT::NodeStatus::FAILURE;
+        return on_aborted();
 
       case rclcpp_action::ResultCode::CANCELED:
-        setStatus(BT::NodeStatus::IDLE);
-        return BT::NodeStatus::SUCCESS;
+        return on_cancelled();
 
       default:
         throw std::logic_error("BtActionNode::Tick: invalid status value");
@@ -170,15 +179,15 @@ new_goal_received:
     if (should_cancel_goal()) {
       auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
       if (rclcpp::spin_until_future_complete(node_, future_cancel) !=
-        rclcpp::executor::FutureReturnCode::SUCCESS)
+        rclcpp::FutureReturnCode::SUCCESS)
       {
-        RCLCPP_ERROR(node_->get_logger(),
+        RCLCPP_ERROR(
+          node_->get_logger(),
           "Failed to cancel action server for %s", action_name_.c_str());
       }
     }
 
     setStatus(BT::NodeStatus::IDLE);
-    CoroActionNode::halt();
   }
 
 protected:
@@ -193,31 +202,62 @@ protected:
     auto status = goal_handle_->get_status();
 
     // Check if the goal is still executing
-    if (status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
-      status == action_msgs::msg::GoalStatus::STATUS_EXECUTING)
-    {
-      return true;
-    }
-
-    return false;
+    return status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
+           status == action_msgs::msg::GoalStatus::STATUS_EXECUTING;
   }
 
-  const std::string action_name_;
+
+  void on_new_goal_received()
+  {
+    goal_result_available_ = false;
+    auto send_goal_options = typename rclcpp_action::Client<ActionT>::SendGoalOptions();
+    send_goal_options.result_callback =
+      [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult & result) {
+        // TODO(#1652): a work around until rcl_action interface is updated
+        // if goal ids are not matched, the older goal call this callback so ignore the result
+        // if matched, it must be processed (including aborted)
+        if (this->goal_handle_->get_goal_id() == result.goal_id) {
+          goal_result_available_ = true;
+          result_ = result;
+        }
+      };
+
+    auto future_goal_handle = action_client_->async_send_goal(goal_, send_goal_options);
+
+    if (rclcpp::spin_until_future_complete(node_, future_goal_handle) !=
+      rclcpp::FutureReturnCode::SUCCESS)
+    {
+      throw std::runtime_error("send_goal failed");
+    }
+
+    goal_handle_ = future_goal_handle.get();
+    if (!goal_handle_) {
+      throw std::runtime_error("Goal was rejected by the action server");
+    }
+  }
+
+  void increment_recovery_count()
+  {
+    int recovery_count = 0;
+    config().blackboard->get<int>("number_recoveries", recovery_count);  // NOLINT
+    recovery_count += 1;
+    config().blackboard->set<int>("number_recoveries", recovery_count);  // NOLINT
+  }
+
+  std::string action_name_;
   typename std::shared_ptr<rclcpp_action::Client<ActionT>> action_client_;
 
   // All ROS2 actions have a goal and a result
   typename ActionT::Goal goal_;
   bool goal_updated_{false};
+  bool goal_result_available_{false};
   typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr goal_handle_;
   typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult result_;
 
   // The node that will be used for any ROS operations
   rclcpp::Node::SharedPtr node_;
-
-  // The timeout value while to use in the tick loop while waiting for
-  // a result from the server
-  std::chrono::milliseconds server_timeout_;
 };
+
 
 }  // namespace plansys2
 

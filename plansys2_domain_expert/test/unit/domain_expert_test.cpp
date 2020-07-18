@@ -179,11 +179,14 @@ TEST(domain_expert, get_action_params)
   ASSERT_TRUE(move_action.value().over_all_requirements.empty());
   ASSERT_TRUE(move_action.value().at_end_requirements.empty());
 
-  ASSERT_EQ(move_action.value().at_start_requirements.toString(),
+  ASSERT_EQ(
+    move_action.value().at_start_requirements.toString(),
     "(and (robot_at ?0 ?1))");
-  ASSERT_EQ(move_action.value().at_start_effects.toString(),
+  ASSERT_EQ(
+    move_action.value().at_start_effects.toString(),
     "(and (not (robot_at ?0 ?1)))");
-  ASSERT_EQ(move_action.value().at_end_effects.toString(),
+  ASSERT_EQ(
+    move_action.value().at_end_effects.toString(),
     "(and (robot_at ?0 ?2))");
 }
 

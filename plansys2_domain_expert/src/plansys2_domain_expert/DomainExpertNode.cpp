@@ -49,14 +49,16 @@ DomainExpertNode::DomainExpertNode()
 
   get_types_service_ = create_service<plansys2_msgs::srv::GetDomainTypes>(
     "domain_expert/get_domain_types",
-    std::bind(&DomainExpertNode::get_domain_types_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    std::bind(
+      &DomainExpertNode::get_domain_types_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
   get_domain_actions_service_ = create_service<plansys2_msgs::srv::GetDomainActions>(
     "domain_expert/get_domain_actions",
-    std::bind(&DomainExpertNode::get_domain_actions_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    std::bind(
+      &DomainExpertNode::get_domain_actions_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
   get_domain_action_details_service_ =
     create_service<plansys2_msgs::srv::GetDomainActionDetails>(
     "domain_expert/get_domain_action_details", std::bind(
@@ -75,9 +77,10 @@ DomainExpertNode::DomainExpertNode()
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
   get_domain_service_ = create_service<plansys2_msgs::srv::GetDomain>(
-    "domain_expert/get_domain", std::bind(&DomainExpertNode::get_domain_service_callback,
-    this, std::placeholders::_1, std::placeholders::_2,
-    std::placeholders::_3));
+    "domain_expert/get_domain", std::bind(
+      &DomainExpertNode::get_domain_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 }
 
 
@@ -283,7 +286,8 @@ DomainExpertNode::get_domain_predicate_details_service_callback(
 
       response->success = true;
     } else {
-      RCLCPP_WARN(get_logger(), "Requesting a non-existing predicate [%s]",
+      RCLCPP_WARN(
+        get_logger(), "Requesting a non-existing predicate [%s]",
         request->predicate.c_str());
       response->success = false;
       response->error_info = "Predicate not found";

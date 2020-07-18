@@ -120,7 +120,8 @@ ExecutorClient::result_callback(const GoalHandleExecutePlan::WrappedResult & res
   if (result.result->success) {
     RCLCPP_INFO(node_->get_logger(), "Result received: Success");
   } else {
-    RCLCPP_INFO(node_->get_logger(), "Result received: Fail [%s]",
+    RCLCPP_INFO(
+      node_->get_logger(), "Result received: Fail [%s]",
       result.result->error_info.c_str());
   }
 }

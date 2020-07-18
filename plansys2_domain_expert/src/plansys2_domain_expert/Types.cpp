@@ -115,8 +115,9 @@ std::vector<plansys2::Param> getPredicateParams(const std::string & expr)
     end = wstring.find(" ", start);
 
     plansys2::Param param;
-    param.name = wstring.substr(start,
-        (end == std::string::npos) ? std::string::npos : end - start);
+    param.name = wstring.substr(
+      start,
+      (end == std::string::npos) ? std::string::npos : end - start);
 
     ret.push_back(param);
 
@@ -181,6 +182,8 @@ std::shared_ptr<TreeNode> get_tree_node(const std::string & expr)
     default:
       std::cerr << "get_tree_node: Error parsing expresion [" << wexpr << "]" << std::endl;
   }
+
+  return nullptr;
 }
 
 }  // namespace plansys2

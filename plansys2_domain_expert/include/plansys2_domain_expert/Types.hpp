@@ -98,8 +98,10 @@ public:
 
     while (end != std::string::npos) {
       end = predicate.find(" ", start);
-      tokens.push_back(predicate.substr(start,
-        (end == std::string::npos) ? std::string::npos : end - start));
+      tokens.push_back(
+        predicate.substr(
+          start,
+          (end == std::string::npos) ? std::string::npos : end - start));
       start = ((end > (std::string::npos - 1)) ? std::string::npos : end + 1);
     }
 
