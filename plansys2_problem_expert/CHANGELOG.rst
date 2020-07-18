@@ -2,8 +2,8 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.8 (2020-07-18)
+------------------
 * Foxy initial version
 * Merge pull request `#22 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/22>`_ from IntelligentRoboticsLabs/bt_actions_support
   Add BT support
