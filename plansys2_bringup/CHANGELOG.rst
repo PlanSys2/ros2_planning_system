@@ -2,6 +2,14 @@
 Changelog for package plansys2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Foxy initial version
+* Merge pull request `#22 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/22>`_ from IntelligentRoboticsLabs/bt_actions_support
+  Add BT support
+* Boos:optional
+* Contributors: Francisco Martin Rico, Francisco Martín Rico
+
 0.0.7 (2020-03-26)
 ------------------
 * Fix warning in last cmake versions
