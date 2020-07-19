@@ -2,21 +2,18 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.0.8 (2020-07-18)
-------------------
-* Foxy initial version
-* Add BT support
-* Contributors: Francisco Martin Rico, Francisco Martín Rico
+Forthcoming
+-----------
 
 0.0.9 (2020-07-19)
 ------------------
 * Foxy initial version
-* 0.0.8
-* Foxy initial version
-* Foxy initial version
-* Merge pull request `#22 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/22>`_ from IntelligentRoboticsLabs/bt_actions_support
-  Add BT support
-* Boos:optional
+* Boost:optional
+* Contributors: Francisco Martin Rico, Francisco Martín Rico
+
+
+0.0.8 (2020-07-18)
+------------------
 * Add BT support
 * Contributors: Francisco Martin Rico, Francisco Martín Rico
 

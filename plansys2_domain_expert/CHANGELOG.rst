@@ -2,21 +2,16 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.0.8 (2020-07-18)
-------------------
-* Foxy initial version
-* Support for BT actions
-* Contributors: Francisco Martin Rico, Francisco Martín Rico
-
 0.0.9 (2020-07-19)
 ------------------
 * Foxy initial version
-* 0.0.8
+* Boost:optional
+* Support for BT actions
+* Contributors: Francisco Martin Rico, Francisco Martín Rico
+
+0.0.8 (2020-07-18)
+------------------
 * Foxy initial version
-* Foxy initial version
-* Merge pull request `#22 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/22>`_ from IntelligentRoboticsLabs/bt_actions_support
-  Add BT support
-* Boos:optional
 * Support for BT actions
 * Contributors: Francisco Martin Rico, Francisco Martín Rico
 
