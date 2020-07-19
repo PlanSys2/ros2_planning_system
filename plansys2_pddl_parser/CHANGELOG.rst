@@ -5,8 +5,8 @@ Changelog for package plansys2_pddl_parser
 0.0.8 (2020-07-18)
 ------------------
 
-Forthcoming
------------
+0.0.9 (2020-07-19)
+------------------
 * 0.0.8
 * Foxy initial version
 * Contributors: Francisco Martin Rico
