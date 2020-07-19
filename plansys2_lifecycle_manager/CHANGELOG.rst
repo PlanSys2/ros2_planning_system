@@ -7,7 +7,7 @@ Forthcoming
 * Foxy initial version
 * Contributors: Francisco Martin Rico, Francisco Martín Rico
 
-0.0.9 (2020-07-19)
+1.0.0 (2020-07-19)
 ------------------
 * Boost:optional
 * Contributors: Francisco Martin Rico, Francisco Martín Rico
