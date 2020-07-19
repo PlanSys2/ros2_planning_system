@@ -11,7 +11,6 @@ Changelog for package plansys2_domain_expert
 
 0.0.8 (2020-07-18)
 ------------------
-* Foxy initial version
 * Support for BT actions
 * Contributors: Francisco Martin Rico, Francisco Martín Rico
 
