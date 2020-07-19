@@ -2,8 +2,8 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.10 (2020-07-19)
+-------------------
 * Upgrade to behavior_tree_v3 3.5.1
 * Contributors: Francisco Martin Rico
 
