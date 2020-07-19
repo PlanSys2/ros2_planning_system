@@ -2,8 +2,8 @@
 Changelog for package plansys2_lifecycle_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.1 (2020-07-19)
+------------------
 * Foxy initial version
 * Contributors: Francisco Martin Rico, Francisco Martín Rico
 
