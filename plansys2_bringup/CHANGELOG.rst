@@ -5,7 +5,17 @@ Changelog for package plansys2_bringup
 0.0.8 (2020-07-18)
 ------------------
 * Foxy initial version
-* Boost:optional
+* Contributors: Francisco Martin Rico, Francisco Martín Rico
+
+Forthcoming
+-----------
+* Foxy initial version
+* 0.0.8
+* Foxy initial version
+* Foxy initial version
+* Merge pull request `#22 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/22>`_ from IntelligentRoboticsLabs/bt_actions_support
+  Add BT support
+* Boos:optional
 * Contributors: Francisco Martin Rico, Francisco Martín Rico
 
 0.0.7 (2020-03-26)
