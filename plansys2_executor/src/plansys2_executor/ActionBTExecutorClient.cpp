@@ -19,6 +19,8 @@
 #include <streambuf>
 #include <string>
 
+#include "behaviortree_cpp_v3/basic_types.h"
+
 namespace plansys2
 {
 
@@ -62,7 +64,7 @@ ActionBTExecutorClient::atStart()
 void
 ActionBTExecutorClient::actionStep()
 {
-  auto result = tree_.root_node->executeTick();
+  auto result = tree_.rootNode()->executeTick();
 
   switch (result) {
     case BT::NodeStatus::SUCCESS:
