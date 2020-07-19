@@ -2,6 +2,9 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.9 (2020-07-06)
 ------------------
 * Fix Boost dependency
