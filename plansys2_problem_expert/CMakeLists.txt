@@ -33,6 +33,7 @@ set(PROBLEM_EXPERT_SOURCES
 
 add_library(${PROJECT_NAME} SHARED ${PROBLEM_EXPERT_SOURCES})
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
+target_include_directories(${PROJECT_NAME} PUBLIC ${Boost_INCLUDE_DIRS})
 
 add_executable(problem_expert_node
   src/problem_expert_node.cpp
