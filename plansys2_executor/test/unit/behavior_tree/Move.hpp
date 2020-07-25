@@ -35,7 +35,8 @@ public:
     const BT::NodeConfiguration & config = {});
 
   void on_tick() override;
-  void on_success() override;
+
+  BT::NodeStatus on_success() override;
 
   static BT::PortsList providedPorts()
   {
