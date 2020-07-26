@@ -2,6 +2,11 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add dependencies for tests
+* Contributors: Francisco Martin Rico
+
 0.0.11 (2020-07-25)
 -------------------
 * Changes in BTActionNode
