@@ -2,8 +2,8 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.12 (2020-07-26)
+-------------------
 * Add dependencies for tests
 * Contributors: Francisco Martin Rico
 
