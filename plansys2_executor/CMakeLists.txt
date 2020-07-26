@@ -76,6 +76,13 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   find_package(test_msgs REQUIRED)
   find_package(geometry_msgs REQUIRED)
+
+  set(dependencies
+    ${dependencies}
+    test_msgs
+    geometry_msgs
+  )
+
   add_subdirectory(test)
 endif()
 
