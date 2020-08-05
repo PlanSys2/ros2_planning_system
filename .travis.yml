@@ -9,7 +9,7 @@ install:
 
 matrix:
   include:
-    - env: JOB_TYPE=eloquent
+    - env: JOB_TYPE=foxy
       script: 
         - cp dependency_repos.repos .ros2ci/additional_repos.repos
         - .ros2ci/travis.bash $JOB_TYPE
