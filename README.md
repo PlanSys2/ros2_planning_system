@@ -53,6 +53,10 @@ In this [example](https://github.com/IntelligentRoboticsLabs/ros2_planning_syste
 
 [![Patrolling example](https://img.youtube.com/vi/fAEGySqefwo/0.jpg)](https://www.youtube.com/watch?v=fAEGySqefwo)
 
+# ROS Planning System in ROSDevDay2020
+
+[![Plansys2 Talk in youtube](https://img.youtube.com/vi/nLp4uzN5NMs/0.jpg)](https://www.youtube.com/watch?v=nLp4uzN5NMs&t=12364s)
+
 # Further readings
 
 - PDDL basics [1](https://arxiv.org/pdf/1106.4561.pdf), [2](http://www.cs.toronto.edu/~sheila/2542/w09/A1/introtopddl2.pdf) and [3](http://www.cs.toronto.edu/~sheila/384/w11/Assignments/A3/veloso-PDDL_by_Example.pdf)
