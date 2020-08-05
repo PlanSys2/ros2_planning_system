@@ -2,8 +2,8 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.13 (2020-08-05)
+-------------------
 * Add Threads to cmake. RELEASE build type
 * Contributors: Francisco Martin Rico
 
