@@ -2,6 +2,11 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add Threads to cmake. RELEASE build type
+* Contributors: Francisco Martin Rico
+
 0.0.12 (2020-07-26)
 -------------------
 
