@@ -2,8 +2,8 @@
 Changelog for package plansys2_lifecycle_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.14 (2020-08-07)
+-------------------
 * Merge pull request `#26 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/26>`_ from mjcarroll/reduce_deps
   [Eloquent] Reduce unnecessary dependencies
 * Remove CMAKE_BUILD_TYPE
