@@ -2,8 +2,6 @@ project(plansys2_executor)
 
 cmake_minimum_required(VERSION 3.5)
 
-set(CMAKE_BUILD_TYPE RELEASE)
-
 find_package(Threads REQUIRED)
 
 find_package(ament_cmake REQUIRED)
@@ -76,12 +74,6 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   find_package(test_msgs REQUIRED)
   find_package(geometry_msgs REQUIRED)
-
-  set(dependencies
-    ${dependencies}
-    test_msgs
-    geometry_msgs
-  )
 
   add_subdirectory(test)
 endif()
