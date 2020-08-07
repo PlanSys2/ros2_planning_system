@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <iostream>
+#ifndef UNIT__BEHAVIOR_TREE__CLOSEGRIPPER_HPP_
+#define UNIT__BEHAVIOR_TREE__CLOSEGRIPPER_HPP_
 
-#include "OpenGripper.hpp"
+#include <string>
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
@@ -23,28 +23,25 @@
 namespace plansys2_bt_tests
 {
 
-OpenGripper::OpenGripper(const std::string & xml_tag_name)
-: BT::ActionNodeBase(xml_tag_name, {}), counter_(0)
+class CloseGripper : public BT::ActionNodeBase
 {
-}
+public:
+  explicit CloseGripper(
+    const std::string & xml_tag_name,
+    const BT::NodeConfiguration & conf);
 
-void
-OpenGripper::halt()
-{
-  std::cout << "OpenGripper halt" << std::endl;
-}
+  void halt();
+  BT::NodeStatus tick();
 
-BT::NodeStatus
-OpenGripper::tick()
-{
-  std::cout << "OpenGripper tick " << counter_ << std::endl;
-
-  if (counter_++ < 5) {
-    return BT::NodeStatus::RUNNING;
-  } else {
-    counter_ = 0;
-    return BT::NodeStatus::SUCCESS;
+  static BT::PortsList providedPorts()
+  {
+    return BT::PortsList({});
   }
-}
+
+private:
+  int counter_;
+};
 
 }  // namespace plansys2_bt_tests
+
+#endif  // UNIT__BEHAVIOR_TREE__CLOSEGRIPPER_HPP_

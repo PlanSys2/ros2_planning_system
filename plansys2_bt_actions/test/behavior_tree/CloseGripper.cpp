@@ -23,8 +23,10 @@
 namespace plansys2_bt_tests
 {
 
-CloseGripper::CloseGripper(const std::string & xml_tag_name)
-: BT::ActionNodeBase(xml_tag_name, {}), counter_(0)
+CloseGripper::CloseGripper(
+  const std::string & xml_tag_name,
+  const BT::NodeConfiguration & conf)
+: BT::ActionNodeBase(xml_tag_name, conf), counter_(0)
 {
 }
 
@@ -48,3 +50,9 @@ CloseGripper::tick()
 }
 
 }  // namespace plansys2_bt_tests
+
+#include "behaviortree_cpp_v3/bt_factory.h"
+BT_REGISTER_NODES(factory)
+{
+  factory.registerNodeType<plansys2_bt_tests::CloseGripper>("CloseGripper");
+}

@@ -27,8 +27,9 @@ namespace plansys2_bt_tests
 
 Move::Move(
   const std::string & xml_tag_name,
-  const BT::NodeConfiguration & config)
-: BtActionNode(xml_tag_name, "fibonacci", config)
+  const std::string & action_name,
+  const BT::NodeConfiguration & conf)
+: plansys2::BtActionNode<test_msgs::action::Fibonacci>(xml_tag_name, action_name, conf)
 {
 }
 
@@ -54,3 +55,17 @@ Move::on_success()
 
 
 }  // namespace plansys2_bt_tests
+
+#include "behaviortree_cpp_v3/bt_factory.h"
+BT_REGISTER_NODES(factory)
+{
+  BT::NodeBuilder builder =
+    [](const std::string & name, const BT::NodeConfiguration & config)
+    {
+      return std::make_unique<plansys2_bt_tests::Move>(
+        name, "move", config);
+    };
+
+  factory.registerBuilder<plansys2_bt_tests::Move>(
+    "Move", builder);
+}
