@@ -45,8 +45,7 @@ int main(int argc, char ** argv)
   RCLCPP_INFO_STREAM(node->get_logger(), "bt_xml_file: [" << bt_xml_file << "]");
 
   auto plugin_lib_names_ = node->get_parameter("plugins").as_string_array();
-  for (auto plugin : plugin_lib_names_)
-  {
+  for (auto plugin : plugin_lib_names_) {
     RCLCPP_INFO_STREAM(node->get_logger(), "plugin: [" << plugin << "]");
   }
 

@@ -39,10 +39,11 @@ public:
   const std::string & getActionName() const {return action_;}
   const std::string & getBTFile() const {return bt_xml_file_;}
 
+  bool isFinished();
+
 protected:
   virtual void atStart();
   virtual void actionStep();
-  bool isFinished();
 
   BT::BehaviorTreeFactory factory_;
 

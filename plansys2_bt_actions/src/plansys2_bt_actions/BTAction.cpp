@@ -39,7 +39,7 @@ BTAction::BTAction(
     factory.registerFromPlugin(loader.getOSName(plugin));
   }
 
-  auto blackboard =  BT::Blackboard::create();
+  auto blackboard = BT::Blackboard::create();
   blackboard->set("node", this);
   tree_ = factory.createTreeFromFile(bt_xml_file_, blackboard);
 }
