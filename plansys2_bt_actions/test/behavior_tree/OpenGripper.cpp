@@ -15,42 +15,43 @@
 #include <string>
 #include <iostream>
 
-#include "Move.hpp"
-
-#include "geometry_msgs/msg/pose2_d.hpp"
+#include "OpenGripper.hpp"
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
 
 namespace plansys2_bt_tests
 {
 
-Move::Move(
+OpenGripper::OpenGripper(
   const std::string & xml_tag_name,
-  const BT::NodeConfiguration & config)
-: BtActionNode(xml_tag_name, "fibonacci", config)
+  const BT::NodeConfiguration & conf)
+: BT::ActionNodeBase(xml_tag_name, conf), counter_(0)
 {
 }
 
 void
-Move::on_tick()
+OpenGripper::halt()
 {
-  geometry_msgs::msg::Pose2D goal;
-  getInput<geometry_msgs::msg::Pose2D>("goal", goal);
-
-  int order_to = static_cast<int>(goal.x);
-  goal_.order = order_to;
-
-  setOutput("goal_reached", 0);
+  std::cout << "OpenGripper halt" << std::endl;
 }
 
 BT::NodeStatus
-Move::on_success()
+OpenGripper::tick()
 {
-  setOutput("goal_reached", result_.result->sequence[0]);
+  std::cout << "OpenGripper tick " << counter_ << std::endl;
 
-  return BT::NodeStatus::SUCCESS;
+  if (counter_++ < 5) {
+    return BT::NodeStatus::RUNNING;
+  } else {
+    counter_ = 0;
+    return BT::NodeStatus::SUCCESS;
+  }
 }
 
-
 }  // namespace plansys2_bt_tests
+
+#include "behaviortree_cpp_v3/bt_factory.h"
+BT_REGISTER_NODES(factory)
+{
+  factory.registerNodeType<plansys2_bt_tests::OpenGripper>("OpenGripper");
+}

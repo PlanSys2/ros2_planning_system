@@ -2,8 +2,6 @@ project(plansys2_executor)
 
 cmake_minimum_required(VERSION 3.5)
 
-set(CMAKE_BUILD_TYPE RELEASE)
-
 find_package(Threads REQUIRED)
 
 find_package(ament_cmake REQUIRED)
@@ -18,7 +16,6 @@ find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_domain_expert REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
 find_package(plansys2_planner REQUIRED)
-find_package(behaviortree_cpp_v3 REQUIRED)
 
 find_package(Boost 1.65.1 REQUIRED)
 
@@ -34,7 +31,6 @@ set(dependencies
     plansys2_domain_expert
     plansys2_problem_expert
     plansys2_planner
-    behaviortree_cpp_v3
 )
 
 include_directories(include)
@@ -42,7 +38,6 @@ include_directories(include)
 set(EXECUTOR_SOURCES
   src/plansys2_executor/ExecutorClient.cpp
   src/plansys2_executor/ActionExecutor.cpp
-  src/plansys2_executor/ActionBTExecutorClient.cpp
   src/plansys2_executor/ActionExecutorClient.cpp
   src/plansys2_executor/ExecutorNode.cpp
 )

@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>plansys2_executor</name>
+  <name>plansys2_bt_actions</name>
   <version>1.0.1</version>
   
-  <description>This package contains the Executor module for the ROS2 Planning System</description>
+  <description>This package contains the Problem Expert module for the ROS2 Planning System</description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
  
@@ -15,22 +15,14 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_action</depend>
   <depend>rclcpp_lifecycle</depend>
-  <depend>lifecycle_msgs</depend>
-  <depend>rclcpp_cascade_lifecycle</depend>
-  <depend>ament_index_cpp</depend>
-  <depend>plansys2_pddl_parser</depend>
-  <depend>plansys2_msgs</depend>
-  <depend>plansys2_domain_expert</depend>
-  <depend>plansys2_problem_expert</depend>
-  <depend>plansys2_planner</depend>
-
-  <exec_depend>popf</exec_depend>
+  <depend>plansys2_executor</depend>
+  <depend>behaviortree_cpp_v3</depend>
+  <depend>test_msgs</depend>
 
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>
-  <test_depend>test_msgs</test_depend>
-  <test_depend>geometry_msgs</test_depend>
+  <test_depend>plansys2_msgs</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -12,43 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef UNIT__BEHAVIOR_TREE__MOVE_HPP_
-#define UNIT__BEHAVIOR_TREE__MOVE_HPP_
+#ifndef BEHAVIOR_TREE__CLOSEGRIPPER_HPP_
+#define BEHAVIOR_TREE__CLOSEGRIPPER_HPP_
 
 #include <string>
 
-#include "geometry_msgs/msg/pose2_d.hpp"
-#include "test_msgs/action/fibonacci.hpp"
-
-#include "plansys2_executor/BTActionNode.hpp"
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
 namespace plansys2_bt_tests
 {
 
-class Move : public plansys2::BtActionNode<test_msgs::action::Fibonacci>
+class CloseGripper : public BT::ActionNodeBase
 {
 public:
-  explicit Move(
+  explicit CloseGripper(
     const std::string & xml_tag_name,
-    const BT::NodeConfiguration & config = {});
+    const BT::NodeConfiguration & conf);
 
-  void on_tick() override;
-  BT::NodeStatus on_success() override;
+  void halt();
+  BT::NodeStatus tick();
 
   static BT::PortsList providedPorts()
   {
-    return {
-      BT::InputPort<geometry_msgs::msg::Pose2D>("goal"),
-      BT::OutputPort<int>("goal_reached"),
-    };
+    return BT::PortsList({});
   }
 
 private:
-  int goal_reached_;
+  int counter_;
 };
 
 }  // namespace plansys2_bt_tests
 
-#endif  // UNIT__BEHAVIOR_TREE__MOVE_HPP_
+#endif  // BEHAVIOR_TREE__CLOSEGRIPPER_HPP_
