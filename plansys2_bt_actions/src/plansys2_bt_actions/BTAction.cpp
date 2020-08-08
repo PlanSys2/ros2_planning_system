@@ -29,24 +29,33 @@ BTAction::BTAction(
   const std::string & bt_xml_file,
   const std::vector<std::string> & plugin_list,
   float rate)
-: ActionExecutorClient(action, rate), action_(action), bt_xml_file_(bt_xml_file), finished_(false)
+: ActionExecutorClient(action, rate),
+  action_(action),
+  bt_xml_file_(bt_xml_file),
+  plugin_list_(plugin_list),
+  finished_(false)
 {
   BT::BehaviorTreeFactory factory;
   BT::SharedLibrary loader;
 
-  for (auto plugin : plugin_list)
-  {
+  for (auto plugin : plugin_list_) {
     factory.registerFromPlugin(loader.getOSName(plugin));
   }
 
-  auto blackboard = BT::Blackboard::create();
-  blackboard->set("node", this);
-  tree_ = factory.createTreeFromFile(bt_xml_file_, blackboard);
+  blackboard_ = BT::Blackboard::create();
+  blackboard_->set("node", rclcpp::Node::make_shared(get_name()));
+  tree_ = factory.createTreeFromFile(bt_xml_file_, blackboard_);
 }
 
 void
 BTAction::atStart()
 {
+  for (int i = 0; i < getArguments().size(); i++) {
+    std::string argname = "arg" + std::to_string(i);
+    blackboard_->set(argname, getArguments()[i]);
+  }
+
+
   finished_ = false;
 }
 

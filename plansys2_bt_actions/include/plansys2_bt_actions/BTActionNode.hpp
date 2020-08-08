@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_EXECUTOR__BTACTIONNODE_HPP_
-#define PLANSYS2_EXECUTOR__BTACTIONNODE_HPP_
+#ifndef PLANSYS2_BT_ACTIONS__BTACTIONNODE_HPP_
+#define PLANSYS2_BT_ACTIONS__BTACTIONNODE_HPP_
 
 #include <memory>
 #include <string>
@@ -45,7 +45,6 @@ public:
     if (getInput("server_name", remapped_action_name)) {
       action_name_ = remapped_action_name;
     }
-    createActionClient(action_name_);
 
     // Give the derive class a chance to do any initialization
     RCLCPP_INFO(node_->get_logger(), "\"%s\" BtActionNode initialized", xml_tag_name.c_str());
@@ -64,8 +63,10 @@ public:
     action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name);
 
     // Make sure the server is actually there before continuing
-    RCLCPP_INFO(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
-    action_client_->wait_for_action_server();
+    if (!action_client_->action_server_is_ready()) {
+      RCLCPP_INFO(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
+      action_client_->wait_for_action_server();
+    }
   }
 
   // Any subclass of BtActionNode that accepts parameters must provide a providedPorts method
@@ -126,6 +127,8 @@ public:
   {
     // first step to be done only at the beginning of the Action
     if (status() == BT::NodeStatus::IDLE) {
+      createActionClient(action_name_);
+
       // setting the status to RUNNING to notify the BT Loggers (if any)
       setStatus(BT::NodeStatus::RUNNING);
 
@@ -261,4 +264,4 @@ protected:
 
 }  // namespace plansys2
 
-#endif  // PLANSYS2_EXECUTOR__BTACTIONNODE_HPP_
+#endif  // PLANSYS2_BT_ACTIONS__BTACTIONNODE_HPP_

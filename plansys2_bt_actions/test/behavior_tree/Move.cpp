@@ -14,13 +14,14 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
+#include <memory>
 
 #include "Move.hpp"
 
 #include "geometry_msgs/msg/pose2_d.hpp"
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
 
 namespace plansys2_bt_tests
 {
@@ -31,15 +32,49 @@ Move::Move(
   const BT::NodeConfiguration & conf)
 : plansys2::BtActionNode<test_msgs::action::Fibonacci>(xml_tag_name, action_name, conf)
 {
+  rclcpp::Node::SharedPtr node;
+  config().blackboard->get("node", node);
+
+  node->declare_parameter("waypoints");
+  node->declare_parameter("waypoint_coords");
+
+  if (node->has_parameter("waypoints")) {
+    std::vector<std::string> wp_names;
+
+    node->get_parameter_or("waypoints", wp_names, {});
+
+    for (auto & wp : wp_names) {
+      node->declare_parameter("waypoint_coords." + wp);
+
+      std::vector<double> coords;
+      if (node->get_parameter_or("waypoint_coords." + wp, coords, {})) {
+        geometry_msgs::msg::Pose2D pose;
+        pose.x = coords[0];
+        pose.y = coords[1];
+        pose.theta = coords[2];
+
+        waypoints_[wp] = pose;
+      } else {
+        std::cerr << "No coordinate configured for waypoint [" << wp << "]" << std::endl;
+      }
+    }
+  }
 }
 
 void
 Move::on_tick()
 {
-  geometry_msgs::msg::Pose2D goal;
-  getInput<geometry_msgs::msg::Pose2D>("goal", goal);
+  std::string goal;
+  getInput<std::string>("goal", goal);
 
-  int order_to = static_cast<int>(goal.x);
+  geometry_msgs::msg::Pose2D pose2nav;
+  if (waypoints_.find(goal) != waypoints_.end()) {
+    pose2nav = waypoints_[goal];
+  } else {
+    std::cerr << "No coordinate for waypoint [" << goal << "]" << std::endl;
+  }
+
+  int order_to = 10;
   goal_.order = order_to;
 
   setOutput("goal_reached", 0);

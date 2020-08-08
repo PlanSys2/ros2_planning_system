@@ -48,7 +48,8 @@ class MoveServer : public rclcpp::Node
   using GoalHandleFibonacci = rclcpp_action::ServerGoalHandle<Fibonacci>;
 
 public:
-  MoveServer() : Node("move_server") {}
+  MoveServer()
+  : Node("move_server") {}
 
   void start_server()
   {
@@ -75,7 +76,7 @@ private:
   {
     return rclcpp_action::CancelResponse::ACCEPT;
   }
-  
+
   void handle_accepted(const std::shared_ptr<GoalHandleFibonacci> goal_handle)
   {
     std::thread{std::bind(&MoveServer::execute, this, _1), goal_handle}.detach();
@@ -85,7 +86,7 @@ private:
   {
     auto feedback = std::make_shared<Fibonacci::Feedback>();
     auto result = std::make_shared<Fibonacci::Result>();
-    
+
     result->sequence.push_back(4);
     goal_handle->succeed(result);
   }
@@ -98,9 +99,9 @@ TEST(bt_actions, load_plugins)
   move_server_node->start_server();
 
   bool finish = false;
-  std::thread t([&](){
-    while (!finish) rclcpp::spin_some(move_server_node);
-  });
+  std::thread t([&]() {
+      while (!finish) {rclcpp::spin_some(move_server_node);}
+    });
 
   BT::BehaviorTreeFactory factory;
   BT::SharedLibrary loader;
@@ -114,7 +115,7 @@ TEST(bt_actions, load_plugins)
 
   std::cerr << "[" << xml_file << "]" << std::endl;
 
-  auto blackboard =  BT::Blackboard::create();
+  auto blackboard = BT::Blackboard::create();
   blackboard->set("node", node);
   BT::Tree tree = factory.createTreeFromFile(xml_file, blackboard);
 
@@ -136,20 +137,19 @@ class ActionClient : public rclcpp::Node
   using GoalHandleExecuteAction = rclcpp_action::ClientGoalHandle<ExecuteAction>;
 
 public:
-  ActionClient() : Node("action_client") {}
+  ActionClient()
+  : Node("action_client") {}
 
   void call_server(const std::string & action_name, const std::vector<std::string> & args)
   {
     client_ptr_ = rclcpp_action::create_client<ExecuteAction>(
       shared_from_this(), action_name);
-    
+
     auto goal_msg = ExecuteAction::Goal();
     goal_msg.action = action_name;
     goal_msg.arguments = args;
 
     action_future_ = client_ptr_->async_send_goal(goal_msg);
-
-    std::cerr << "call_server end" << std::endl;
   }
 
   std::shared_future<GoalHandleExecuteAction::SharedPtr> action_future_;
@@ -161,12 +161,14 @@ TEST(bt_actions, bt_action)
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
   std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
 
-  std::vector<std::string> plugins = {"plansys2_close_gripper_bt_node", "plansys2_open_gripper_bt_node"};
+  std::vector<std::string> plugins = {
+    "plansys2_close_gripper_bt_node", "plansys2_open_gripper_bt_node"};
   auto bt_action = std::make_shared<plansys2::BTAction>(
     "assemble",
     xml_file,
-    plugins);
-  
+    plugins,
+    10);
+
   auto action_client = std::make_shared<ActionClient>();
 
   rclcpp::executors::MultiThreadedExecutor exe;
@@ -175,6 +177,7 @@ TEST(bt_actions, bt_action)
 
   bool finished = false;
   bool first_time = true;
+
   while (rclcpp::ok && !finished) {
     exe.spin_some();
 
@@ -184,8 +187,61 @@ TEST(bt_actions, bt_action)
     }
     finished = bt_action->isFinished();
   }
+
+  auto start = action_client->now();
+  while ( (action_client->now() - start).seconds() < 2) {
+    exe.spin_some();
+  }
 }
 
+TEST(bt_actions, bt_action_arg)
+{
+  auto move_server_node = std::make_shared<MoveServer>();
+  move_server_node->start_server();
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {rclcpp::spin_some(move_server_node);}
+    });
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
+  std::string xml_file = pkgpath + "/test/behavior_tree/transport.xml";
+
+  std::vector<std::string> plugins = {
+    "plansys2_close_gripper_bt_node",
+    "plansys2_open_gripper_bt_node",
+    "plansys2_move_bt_node"};
+  auto bt_action = std::make_shared<plansys2::BTAction>(
+    "transport",
+    xml_file,
+    plugins);
+
+  auto action_client = std::make_shared<ActionClient>();
+
+  rclcpp::executors::MultiThreadedExecutor exe;
+  exe.add_node(bt_action->get_node_base_interface());
+  exe.add_node(action_client);
+
+  bool first_time = true;
+  while (rclcpp::ok && !finish) {
+    exe.spin_some();
+
+    if (first_time) {
+      action_client->call_server("transport", {"r2d2", "bedroom", "kitchen"});
+      first_time = false;
+    }
+    finish = bt_action->isFinished();
+  }
+
+  t.join();
+
+  auto start = action_client->now();
+  while ( (action_client->now() - start).seconds() < 2) {
+    exe.spin_some();
+  }
+
+  std::cerr << "Finishing" << std::endl;
+}
 
 int main(int argc, char ** argv)
 {

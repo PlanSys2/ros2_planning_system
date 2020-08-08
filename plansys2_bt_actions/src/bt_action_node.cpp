@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <memory>
+#include <string>
 
 #include "plansys2_bt_actions/BTAction.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -23,15 +24,14 @@ int main(int argc, char ** argv)
 
   auto node = rclcpp::Node::make_shared("default");
 
-  if (std::string(node->get_name()) == "default")
-  {
+  if (std::string(node->get_name()) == "default") {
     RCLCPP_ERROR(node->get_logger(), "Node name must be set externally");
     rclcpp::shutdown();
     return 1;
   }
 
   RCLCPP_INFO_STREAM(node->get_logger(), "Node name: [" << node->get_name() << "]");
-  
+
   node->declare_parameter("action_name");
   node->declare_parameter("bt_xml_file");
   node->declare_parameter("plugins");

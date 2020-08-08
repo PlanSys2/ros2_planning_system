@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef UNIT__BEHAVIOR_TREE__CLOSEGRIPPER_HPP_
-#define UNIT__BEHAVIOR_TREE__CLOSEGRIPPER_HPP_
+#ifndef BEHAVIOR_TREE__CLOSEGRIPPER_HPP_
+#define BEHAVIOR_TREE__CLOSEGRIPPER_HPP_
 
 #include <string>
 
@@ -44,4 +44,4 @@ private:
 
 }  // namespace plansys2_bt_tests
 
-#endif  // UNIT__BEHAVIOR_TREE__CLOSEGRIPPER_HPP_
+#endif  // BEHAVIOR_TREE__CLOSEGRIPPER_HPP_

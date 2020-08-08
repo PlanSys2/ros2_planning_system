@@ -2,8 +2,6 @@ project(plansys2_bt_actions)
 
 cmake_minimum_required(VERSION 3.5)
 
-set(CMAKE_BUILD_TYPE RELEASE)
-
 find_package(Threads REQUIRED)
 
 find_package(ament_cmake REQUIRED)
@@ -43,7 +41,6 @@ install(DIRECTORY include/
 )
 
 install(TARGETS
-  # ${PROJECT_NAME}
   bt_action_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -62,7 +59,6 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_include_directories(include)
-# ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(${dependencies})
 
 ament_package()

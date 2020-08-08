@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef UNIT__BEHAVIOR_TREE__MOVE_HPP_
-#define UNIT__BEHAVIOR_TREE__MOVE_HPP_
+#ifndef BEHAVIOR_TREE__MOVE_HPP_
+#define BEHAVIOR_TREE__MOVE_HPP_
 
 #include <string>
+#include <map>
 
 #include "geometry_msgs/msg/pose2_d.hpp"
 #include "test_msgs/action/fibonacci.hpp"
@@ -41,15 +42,16 @@ public:
   static BT::PortsList providedPorts()
   {
     return {
-      BT::InputPort<geometry_msgs::msg::Pose2D>("goal"),
+      BT::InputPort<std::string>("goal"),
       BT::OutputPort<int>("goal_reached"),
     };
   }
 
 private:
   int goal_reached_;
+  std::map<std::string, geometry_msgs::msg::Pose2D> waypoints_;
 };
 
 }  // namespace plansys2_bt_tests
 
-#endif  // UNIT__BEHAVIOR_TREE__MOVE_HPP_
+#endif  // BEHAVIOR_TREE__MOVE_HPP_

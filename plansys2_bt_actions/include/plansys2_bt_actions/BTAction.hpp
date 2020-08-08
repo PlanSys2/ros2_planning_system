@@ -16,6 +16,7 @@
 #define PLANSYS2_BT_ACTIONS__BTACTION_HPP_
 
 #include <string>
+#include <vector>
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
@@ -49,13 +50,14 @@ protected:
 
 private:
   BT::Tree tree_;
-
+  BT::Blackboard::Ptr blackboard_;
   std::string action_;
   std::string bt_xml_file_;
+  std::vector<std::string> plugin_list_;
 
   bool finished_;
 };
 
 }  // namespace plansys2
 
-#endif  // PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERT_HPP_
+#endif  // PLANSYS2_BT_ACTIONS__BTACTION_HPP_

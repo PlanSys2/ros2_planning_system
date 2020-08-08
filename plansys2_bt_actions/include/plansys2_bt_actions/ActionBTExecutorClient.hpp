@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_EXECUTOR__ACTIONBTEXECUTORCLIENT_HPP_
-#define PLANSYS2_EXECUTOR__ACTIONBTEXECUTORCLIENT_HPP_
+#ifndef PLANSYS2_BT_ACTIONS__ACTIONBTEXECUTORCLIENT_HPP_
+#define PLANSYS2_BT_ACTIONS__ACTIONBTEXECUTORCLIENT_HPP_
 
 #include <string>
 
@@ -58,4 +58,4 @@ private:
 
 }  // namespace plansys2
 
-#endif  // PLANSYS2_EXECUTOR__ACTIONBTEXECUTORCLIENT_HPP_
+#endif  // PLANSYS2_BT_ACTIONS__ACTIONBTEXECUTORCLIENT_HPP_
