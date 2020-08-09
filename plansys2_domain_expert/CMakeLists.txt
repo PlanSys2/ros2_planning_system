@@ -2,8 +2,6 @@ project(plansys2_domain_expert)
 
 cmake_minimum_required(VERSION 3.5)
 
-set(CMAKE_BUILD_TYPE RELEASE)
-
 find_package(Threads REQUIRED)
 
 find_package(ament_cmake REQUIRED)
