@@ -12,6 +12,8 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <build_depend>libboost-program-options-dev</build_depend>
+
   <depend>rclcpp</depend>
   <depend>plansys2_domain_expert</depend>
   <depend>plansys2_problem_expert</depend>
