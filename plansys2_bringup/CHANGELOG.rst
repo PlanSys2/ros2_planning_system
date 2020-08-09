@@ -2,8 +2,8 @@
 Changelog for package plansys2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.15 (2020-08-09)
+-------------------
 * Add Boost build dependency
 * Contributors: Francisco Martin Rico
 
