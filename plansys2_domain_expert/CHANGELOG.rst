@@ -2,6 +2,11 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove BUILD_TYPE specification
+* Contributors: Francisco Martin Rico
+
 0.0.14 (2020-08-07)
 -------------------
 
