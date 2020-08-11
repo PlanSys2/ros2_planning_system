@@ -2,8 +2,8 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.17 (2020-08-11)
+-------------------
 * Adjust calls to BT API
 * Contributors: Francisco Martin Rico
 
