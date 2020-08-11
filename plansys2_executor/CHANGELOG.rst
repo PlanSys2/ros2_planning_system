@@ -2,6 +2,11 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adjust calls to BT API
+* Contributors: Francisco Martin Rico
+
 0.0.16 (2020-08-11)
 -------------------
 * Merge pull request `#28 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/28>`_ from mjcarroll/remove_boost_optional
