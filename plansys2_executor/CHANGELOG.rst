@@ -2,6 +2,13 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#28 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/28>`_ from mjcarroll/remove_boost_optional
+  [eloquent] Remove boost::optional
+* Remove boost::optional and fix build
+* Contributors: Francisco Martín Rico, Michael Carroll
+
 0.0.15 (2020-08-09)
 -------------------
 
