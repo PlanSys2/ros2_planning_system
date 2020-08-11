@@ -64,7 +64,7 @@ ActionBTExecutorClient::atStart()
 void
 ActionBTExecutorClient::actionStep()
 {
-  auto result = tree_.rootNode()->executeTick();
+  auto result = tree_.root_node->executeTick();
 
   switch (result) {
     case BT::NodeStatus::SUCCESS:
