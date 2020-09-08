@@ -12,28 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_PLANNER__PLANNERINTERFACE_HPP_
-#define PLANSYS2_PLANNER__PLANNERINTERFACE_HPP_
+#ifndef PLANSYS2_POPF_PLAN_SOLVER__POPF_PLAN_SOLVER_HPP_
+#define PLANSYS2_POPF_PLAN_SOLVER__POPF_PLAN_SOLVER_HPP_
 
 #include <boost/optional.hpp>
 
+#include <memory>
 #include <string>
 
-#include "plansys2_core/Types.hpp"
+#include "plansys2_core/PlanSolverBase.hpp"
 
 namespace plansys2
 {
 
-class PlannerInterface
+class POPFPlanSolver : public PlanSolverBase
 {
 public:
-  PlannerInterface() {}
+  POPFPlanSolver();
 
-  virtual boost::optional<Plan> getPlan(
+  void configure(rclcpp_lifecycle::LifecycleNode::SharedPtr &, const std::string &) {}
+
+  boost::optional<Plan> getPlan(
     const std::string & domain, const std::string & problem,
-    const std::string & node_namespace) = 0;
+    const std::string & node_namespace = "");
 };
 
 }  // namespace plansys2
 
-#endif  // PLANSYS2_PLANNER__PLANNERINTERFACE_HPP_
+#endif  // PLANSYS2_POPF_PLAN_SOLVER__POPF_PLAN_SOLVER_HPP_

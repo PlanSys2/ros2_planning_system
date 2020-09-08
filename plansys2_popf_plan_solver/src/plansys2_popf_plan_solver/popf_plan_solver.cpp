@@ -21,19 +21,21 @@
 #include <cstdlib>
 #include <fstream>
 
-#include "plansys2_planner/Planner.hpp"
+#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
-#define SIZE (10 * 1024)
+#include "pluginlib/class_list_macros.hpp"
+
+PLUGINLIB_EXPORT_CLASS(plansys2::POPFPlanSolver, plansys2::PlanSolverBase);
 
 namespace plansys2
 {
 
-Planner::Planner()
+POPFPlanSolver::POPFPlanSolver()
 {
 }
 
 boost::optional<Plan>
-Planner::getPlan(
+POPFPlanSolver::getPlan(
   const std::string & domain, const std::string & problem,
   const std::string & node_namespace)
 {

@@ -22,6 +22,7 @@ def generate_launch_description():
     # Create the launch configuration variables
     model_file = LaunchConfiguration('model_file')
     namespace = LaunchConfiguration('namespace')
+    params_file = LaunchConfiguration('params_file')
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
         'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
@@ -44,7 +45,8 @@ def generate_launch_description():
         node_name='domain_expert',
         node_namespace=namespace,
         output='screen',
-        parameters=[{'model_file': model_file}])
+        parameters=[
+          {'model_file': model_file}, params_file])
 
     # Create the launch description and populate
     ld = LaunchDescription()
