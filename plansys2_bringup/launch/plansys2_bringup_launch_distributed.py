@@ -24,10 +24,12 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    bringup_dir = get_package_share_directory('plansys2_bringup')
 
     # Create the launch configuration variables
     model_file = LaunchConfiguration('model_file')
     namespace = LaunchConfiguration('namespace')
+    params_file = LaunchConfiguration('params_file')
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
         'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
@@ -41,6 +43,11 @@ def generate_launch_description():
         default_value='',
         description='Namespace')
 
+    declare_params_file_cmd = DeclareLaunchArgument(
+        'params_file',
+        default_value=os.path.join(bringup_dir, 'params', 'plansys2_params.yaml'),
+        description='Full path to the ROS2 parameters file to use for all launched nodes')
+
     domain_expert_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
             get_package_share_directory('plansys2_domain_expert'),
@@ -48,8 +55,9 @@ def generate_launch_description():
             'domain_expert_launch.py')),
         launch_arguments={
           'model_file': model_file,
-          'namespace': namespace
-          }.items())
+          'namespace': namespace,
+          'params_file': params_file
+        }.items())
 
     problem_expert_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
@@ -58,7 +66,8 @@ def generate_launch_description():
             'problem_expert_launch.py')),
         launch_arguments={
           'model_file': model_file,
-          'namespace': namespace
+          'namespace': namespace,
+          'params_file': params_file
         }.items())
 
     planner_cmd = IncludeLaunchDescription(
@@ -67,7 +76,8 @@ def generate_launch_description():
             'launch',
             'planner_launch.py')),
         launch_arguments={
-          'namespace': namespace
+          'namespace': namespace,
+          'params_file': params_file
         }.items())
 
     executor_cmd = IncludeLaunchDescription(
@@ -76,7 +86,8 @@ def generate_launch_description():
             'launch',
             'executor_launch.py')),
         launch_arguments={
-          'namespace': namespace
+          'namespace': namespace,
+          'params_file': params_file
         }.items())
 
     lifecycle_manager_cmd = Node(
@@ -94,6 +105,7 @@ def generate_launch_description():
     ld.add_action(stdout_linebuf_envvar)
     ld.add_action(declare_model_file_cmd)
     ld.add_action(declare_namespace_cmd)
+    ld.add_action(declare_params_file_cmd)
 
     # Declare the launch options
     ld.add_action(domain_expert_cmd)
