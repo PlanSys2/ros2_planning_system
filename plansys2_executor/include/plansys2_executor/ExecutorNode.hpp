@@ -52,6 +52,7 @@ public:
 
 private:
   rclcpp::Node::SharedPtr node_;
+  rclcpp::Node::SharedPtr aux_node_;
 
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
@@ -71,6 +72,7 @@ private:
   void handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_handle);
 
   boost::optional<Plan> current_plan_;
+
 };
 
 }  // namespace plansys2

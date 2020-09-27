@@ -19,8 +19,7 @@
 #include <memory>
 #include <vector>
 
-#include "std_msgs/msg/empty.hpp"
-#include "plansys2_msgs/action/execute_action.hpp"
+#include "plansys2_msgs/msg/action_execution.hpp"
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
@@ -36,46 +35,44 @@ namespace plansys2
 class ActionExecutorClient : public rclcpp_cascade_lifecycle::CascadeLifecycleNode
 {
 public:
-  using ExecuteAction = plansys2_msgs::action::ExecuteAction;
-  using GoalHandleExecuteAction = rclcpp_action::ServerGoalHandle<ExecuteAction>;
+  using Ptr = std::shared_ptr<ActionExecutorClient>;
+  static Ptr make_shared(const std::string & node_name, const std::chrono::nanoseconds & rate) {
+    return std::make_shared<ActionExecutorClient>(node_name, rate);
+  }
 
   ActionExecutorClient(
-    const std::string & action,
-    float rate = 5);
-
-  void set_rate(float rate) {rate_ = std::make_shared<rclcpp::Rate>(rate);}
+    const std::string & node_name,
+    const std::chrono::nanoseconds & rate);
 
 protected:
-  virtual void atStart() {}
-  virtual void atSuccess() {}
+  virtual void do_work() {};
 
-  virtual void actionStep() = 0;
-  virtual bool isFinished() = 0;
+  const std::vector<std::string> & get_arguments() const {return current_arguments_;}
+  const std::string get_action_name() const {return action_managed_;}
 
-  std::shared_ptr<ExecuteAction::Feedback> getFeedback() {return feedback_;}
-  const std::vector<std::string> & getArguments() const {return arguments_;}
-  const std::string getName() const {return name_;}
+  using CallbackReturnT =
+    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
-  virtual void execute(const std::shared_ptr<GoalHandleExecuteAction> goal_handle);
+  virtual CallbackReturnT on_configure(const rclcpp_lifecycle::State & state);
+  virtual CallbackReturnT on_activate(const rclcpp_lifecycle::State & state);
+  virtual CallbackReturnT on_deactivate(const rclcpp_lifecycle::State & state);
+  void action_hub_callback(const plansys2_msgs::msg::ActionExecution::SharedPtr msg);
 
-private:
-  std::shared_ptr<ExecuteAction::Feedback> feedback_;
-  std::shared_ptr<ExecuteAction::Result> result_;
-  std::vector<std::string> arguments_;
+  bool should_execute(const std::string & action, const std::vector<std::string> & args);
+  void send_response(const plansys2_msgs::msg::ActionExecution::SharedPtr msg);
+  void send_feedback(float completion, const std::string & status = "");
+  void finish(bool success, float completion, const std::string & status = "");
 
-  rclcpp::Rate::SharedPtr rate_;
-  std::string name_;
+  std::chrono::nanoseconds rate_;
+  std::string action_managed_;
+  bool commited_;
 
-  rclcpp_action::Server<ExecuteAction>::SharedPtr execute_action_server_;
+  std::vector<std::string> current_arguments_;
+  std::vector<std::string> specialized_arguments_;
 
-  rclcpp_action::GoalResponse handle_goal(
-    const rclcpp_action::GoalUUID & uuid,
-    std::shared_ptr<const ExecuteAction::Goal> goal);
-
-  rclcpp_action::CancelResponse handle_cancel(
-    const std::shared_ptr<GoalHandleExecuteAction> goal_handle);
-
-  void handle_accepted(const std::shared_ptr<GoalHandleExecuteAction> goal_handle);
+  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecution>::SharedPtr action_hub_pub_;
+  rclcpp::Subscription<plansys2_msgs::msg::ActionExecution>::SharedPtr action_hub_sub_;
+  rclcpp::TimerBase::SharedPtr timer_;
 };
 
 }  // namespace plansys2

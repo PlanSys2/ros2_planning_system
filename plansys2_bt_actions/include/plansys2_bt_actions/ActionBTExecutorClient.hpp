@@ -31,7 +31,7 @@ class ActionBTExecutorClient : public plansys2::ActionExecutorClient
 {
 public:
   ActionBTExecutorClient(
-    const std::string & action,
+    const std::string & node_name,
     const std::string & bt_xml_file,
     float rate = 5);
 

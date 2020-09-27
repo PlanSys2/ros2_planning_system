@@ -12,17 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plansys2_executor/ExecutorNode.hpp"
 
 #include <string>
 #include <memory>
 #include <iostream>
 #include <fstream>
 
+#include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/BTBuilder.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "plansys2_msgs/action/execute_action.hpp"
+
+#include "behaviortree_cpp_v3/behavior_tree.h"
+#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp_v3/utils/shared_library.h"
+#include "behaviortree_cpp_v3/blackboard.h"
+
+#include "plansys2_executor/behavior_tree/execute_action_node.hpp"
+#include "plansys2_executor/behavior_tree/wait_action_node.hpp"
 
 namespace plansys2
 {
@@ -54,10 +63,10 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
 
-  auto aux_node = std::make_shared<rclcpp::Node>("executor_helper");
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>(aux_node);
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(aux_node);
-  planner_client_ = std::make_shared<plansys2::PlannerClient>(aux_node);
+  aux_node_ = std::make_shared<rclcpp::Node>("executor_helper");
+  domain_client_ = std::make_shared<plansys2::DomainExpertClient>(aux_node_);
+  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(aux_node_);
+  planner_client_ = std::make_shared<plansys2::PlannerClient>(aux_node_);
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
@@ -151,6 +160,8 @@ ExecutorNode::handle_cancel(
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
+
+
 void
 ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 {
@@ -160,56 +171,31 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   feedback->seq_action = 0;
   feedback->total_actions = current_plan_.value().size();
-  for (const auto & action : current_plan_.value()) {
-    feedback->seq_action++;
-    feedback->current_action = action.action;
 
-    auto action_executor = std::make_shared<ActionExecutor>(action.action);
+  BTBuilder bt_builder(aux_node_);
+    
+  auto blackboard = BT::Blackboard::create();
+  
+  auto action_map = std::make_shared<std::map<std::string, ActionExecutor::Ptr>>();
+  blackboard->set("action_map", action_map);
+  blackboard->set("node", shared_from_this());
+  
+  BT::BehaviorTreeFactory factory;
+  factory.registerNodeType<ExecuteAction>("ExecuteAction");
+  factory.registerNodeType<WaitAction>("WaitAction");
+  
+  auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
+  
+  auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
+    
+  auto start = now();
+  auto status = BT::NodeStatus::RUNNING;
+  while (status == BT::NodeStatus::RUNNING || status == BT::NodeStatus::FAILURE) {
+    status = tree.tickRoot();
+  }
 
-    while (rclcpp::ok() && !action_executor->finished()) {
-      if (goal_handle->is_canceling()) {
-        result->success = false;
-        result->error_info = "execution cancelled";
-        goal_handle->canceled(result);
-        RCLCPP_INFO(this->get_logger(), "Goal Canceled");
-        return;
-      }
-
-      action_executor->update();
-
-      feedback->progress_current_action = action_executor->getProgress();
-      goal_handle->publish_feedback(feedback);
-
-      loop_rate.sleep();
-    }
-
-    auto status = action_executor->getStatus();
-    if (status == ActionExecutor::AT_START_REQ_ERROR) {
-      result->success = false;
-      result->error_info = "Initial requirements of " + action.action + " not meet";
-      goal_handle->succeed(result);
-      return;
-    } else if (status == ActionExecutor::OVER_ALL_REQ_ERROR) {
-      result->success = false;
-      result->error_info = "Over all requirements of " + action.action + " not meet";
-      goal_handle->succeed(result);
-      return;
-    } else if (status == ActionExecutor::AT_END_REQ_ERROR) {
-      result->success = false;
-      result->error_info = "Over all requirements of " + action.action + " not meet";
-      goal_handle->succeed(result);
-      return;
-    } else if (status == ActionExecutor::AT_START_EF_ERROR) {
-      result->success = false;
-      result->error_info = "At start effects of " + action.action + " could not be applied";
-      goal_handle->succeed(result);
-      return;
-    } else if (status == ActionExecutor::AT_END_EF_ERROR) {
-      result->success = false;
-      result->error_info = "At end effects of " + action.action + " could not be applied";
-      goal_handle->succeed(result);
-      return;
-    }
+  if (status == BT::NodeStatus::FAILURE) {
+    RCLCPP_ERROR(get_logger(), "Executor BT finished with FAILURE state");
   }
 
   if (rclcpp::ok()) {
