@@ -72,7 +72,6 @@ private:
   void handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_handle);
 
   boost::optional<Plan> current_plan_;
-
 };
 
 }  // namespace plansys2

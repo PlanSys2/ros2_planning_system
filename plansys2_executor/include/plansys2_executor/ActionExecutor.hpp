@@ -67,7 +67,7 @@ protected:
   std::string action_;
   std::string action_name_;
   std::vector<std::string>  action_params_;
-  
+
   std::string feedback_;
   float completion_;
 

@@ -94,13 +94,6 @@ protected:
 
   std::vector<ExecutionLevel::Ptr> levels_;
 
-  std::vector<std::string> get_params(const std::string & action_expr);
-
-  std::string get_name(const std::string & action_expr);
-
-  std::shared_ptr<DurativeAction>
-  get_action_from_string(const std::string & action_expr);
-
   void print_levels(std::vector<ExecutionLevel::Ptr> & levels);
   bool level_satisfied(ExecutionLevel::Ptr level);
   void check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr down_level);
@@ -116,6 +109,7 @@ protected:
   std::vector<ExecutionLevel::Ptr> get_plan_actions(const Plan & plan);
   std::string t(int level);
 
+  std::string execution_block(const std::string & action, int plan_time, int l);
   // bool is_predecessor(const PlanItem & op1, const PlanItem & op2);
   // void add_child(GraphNode & parent, GraphNode & new_child);
 

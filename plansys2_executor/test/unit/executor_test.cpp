@@ -546,6 +546,7 @@ TEST(problem_expert, action_executor)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
+  std::map<std::string, plansys2::DurativeAction> durative_actions_map;
   plansys2::BTBuilder exec_tree(test_node);
   auto tree_str = exec_tree.get_tree(plan.value());
 

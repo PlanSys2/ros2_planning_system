@@ -21,6 +21,7 @@
 #include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
+#include "plansys2_executor/Utils.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "plansys2_msgs/action/execute_action.hpp"
@@ -172,14 +173,22 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   feedback->seq_action = 0;
   feedback->total_actions = current_plan_.value().size();
 
+  std::shared_ptr<std::map<std::string, DurativeAction>> durative_actions_map;
+  for (const auto & action: current_plan_.value()) {
+    (*durative_actions_map)[action.action] = *get_action_from_string(action.action, domain_client_);
+  }
+
   BTBuilder bt_builder(aux_node_);
-    
+
   auto blackboard = BT::Blackboard::create();
   
   auto action_map = std::make_shared<std::map<std::string, ActionExecutor::Ptr>>();
   blackboard->set("action_map", action_map);
+  blackboard->set("action_info_map", durative_actions_map);
   blackboard->set("node", shared_from_this());
-  
+  blackboard->set("domain_client", domain_client_);
+  blackboard->set("problem_client", problem_client_);
+ 
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<ExecuteAction>("ExecuteAction");
   factory.registerNodeType<WaitAction>("WaitAction");

@@ -21,13 +21,15 @@
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_domain_expert/Types.hpp"
+#include "plansys2_executor/Utils.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 
 namespace plansys2
 {
 
-BTBuilder::BTBuilder(rclcpp::Node::SharedPtr node)
+BTBuilder::BTBuilder(
+  rclcpp::Node::SharedPtr node)
 {
   domain_client_ = std::make_shared<plansys2::DomainExpertClient>(node);
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(node);
@@ -169,11 +171,12 @@ BTBuilder::get_flow_tree(ActionUnit::Ptr root_flow, std::set<ActionUnit::Ptr> & 
           ret = ret + t(l + 1) + "<WaitAction action=\"" + action->action + + ":" + std::to_string(action->time) + "\"/>\n";
         //}
       }
-
-      ret = ret + t(l + 1) + "<ExecuteAction action=\"" + root_flow->action + ":" + std::to_string(root_flow->time) + "\"/>\n" +
+      // ret = ret + t(l + 1) + execution_block("<ExecuteAction action=\"" + root_flow->action + ":" + std::to_string(root_flow->time) + "\"/>\n" +
+ 
+      ret = ret + execution_block(root_flow->action, root_flow->time, l + 1) +
         t(l) + "</Sequence>\n";
     } else {
-      ret = t(l) + "<ExecuteAction action=\"" + root_flow->action + ":" + std::to_string(root_flow->time) + "\"/>\n";
+      ret = execution_block(root_flow->action, root_flow->time, l);
     }
 
   }
@@ -189,7 +192,7 @@ BTBuilder::get_flow_tree(ActionUnit::Ptr root_flow, std::set<ActionUnit::Ptr> & 
       }
     }
 
-    ret = ret + t(l + 1) + "<ExecuteAction action=\"" + root_flow->action + ":" + std::to_string(root_flow->time) + "\"/>\n" +
+    ret = ret + execution_block(root_flow->action, root_flow->time, l + 1) +
       get_flow_tree(*succ(root_flow).begin(), used_actions, l + 1) +
       t(l) + "</Sequence>\n";
   }
@@ -206,7 +209,7 @@ BTBuilder::get_flow_tree(ActionUnit::Ptr root_flow, std::set<ActionUnit::Ptr> & 
     }
 
     ret= ret +
-      t(l + 1) + "<ExecuteAction action=\"" + root_flow->action + ":" + std::to_string(root_flow->time) + "\"/>\n" +
+      execution_block(root_flow->action, root_flow->time, l + 1) +
       t(l + 1) + "<Parallel threshold=\"" + std::to_string(succ(root_flow).size()) + "\">\n";
 
     for (auto & action : succ(root_flow)) {
@@ -215,6 +218,25 @@ BTBuilder::get_flow_tree(ActionUnit::Ptr root_flow, std::set<ActionUnit::Ptr> & 
     ret = ret + t(l + 1) + "</Parallel>\n";
     ret = ret + t(l) + "</Sequence>\n";
   }  
+
+  return ret;
+}
+
+std::string
+BTBuilder::execution_block(const std::string & action, int plan_time, int l)
+{
+  std::string ret;
+
+  ret = ret + t(l) + "<Sequence name=\"" + action + ":" + std::to_string(plan_time) + "\">\n";
+  ret = ret + t(l + 1) + "</WaitAtStartReq action=\"" + action+ "\">\n";
+  ret = ret + t(l + 1) + "</ApplyAtStartEff action=\"" + action+ "\">\n";
+  ret = ret + t(l + 1) + "<parallel threshold action=\"1\">\n";
+  ret = ret + t(l + 2) + "</CheckOverAllReq action=\"" + action+ "\">\n";
+  ret = ret + t(l + 2) + "<ExecuteAction action=\"" + action + ":" + std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l + 1) + "</Parallel>\n";
+  ret = ret + t(l + 1) + "</CheckAtEndReq action=\"" + action+ "\">\n";
+  ret = ret + t(l + 1) + "</ApplyAtEndEff action=\"" + action+ "\">\n";
+  ret = ret + t(l) + "</Sequence>\n";
 
   return ret;
 }
@@ -311,8 +333,7 @@ BTBuilder::get_plan_actions(const Plan & plan)
     action_unit->action = item.action;
     action_unit->time = current_level->time;
 
-    auto dur_action = get_action_from_string(item.action);
-  
+    auto dur_action = get_action_from_string(item.action, domain_client_);
     std::vector<plansys2::Predicate> at_start_requirements;
     dur_action->at_start_requirements.getPredicates(at_start_requirements, true);
     
@@ -353,127 +374,6 @@ BTBuilder::get_plan_actions(const Plan & plan)
   }
 
   return ret;
-}
-
-
-std::vector<std::string>
-BTBuilder::get_params(const std::string & action_expr)
-{
-  std::vector<std::string> ret;
-
-  std::string working_action_expr = getReducedString(action_expr);
-  working_action_expr.erase(0, 1);  // remove initial (
-  working_action_expr.pop_back();  // remove last )
-
-  size_t delim = working_action_expr.find(" ");
-
-  working_action_expr = working_action_expr.substr(delim + 1);
-
-  size_t start = 0, end = 0;
-  while (end != std::string::npos) {
-    end = working_action_expr.find(" ", start);
-    auto param = working_action_expr.substr(
-      start, (end == std::string::npos) ? std::string::npos : end - start);
-    ret.push_back(param);
-    start = ((end > (std::string::npos - 1)) ? std::string::npos : end + 1);
-  }
-
-  return ret;
-}
-
-std::string
-BTBuilder::get_name(const std::string & action_expr)
-{
-  std::string working_action_expr = getReducedString(action_expr);
-  working_action_expr.erase(0, 1);  // remove initial (
-  working_action_expr.pop_back();  // remove last )
-
-  size_t delim = working_action_expr.find(" ");
-
-  return working_action_expr.substr(0, delim);
-}
-
-std::shared_ptr<DurativeAction>
-BTBuilder::get_action_from_string(const std::string & action_expr)
-{
-  auto action_output = std::make_shared<DurativeAction>();
-
-  action_output->name = get_name(action_expr);
-
-  action_output->parameters.clear();
-  for (const auto & param : get_params(action_expr)) {
-    action_output->parameters.push_back(Param{param, ""});
-  }
-
-  auto action = domain_client_->getAction(action_output->name);
-  auto durative_action = domain_client_->getDurativeAction(action_output->name);
-
-  if (action) {
-    auto at_start_req = action.value().preconditions.toString();
-    auto at_end_eff = action.value().effects.toString();
-
-
-    for (size_t i = 0; i < action_output->parameters.size(); i++) {
-      std::string pattern = "?" + std::to_string(i);
-      int pos;
-      while ((pos = at_start_req.find(pattern)) != std::string::npos) {
-        at_start_req.replace(pos, pattern.length(), action_output->parameters[i].name);
-      }
-      while ((pos = at_end_eff.find(pattern)) != std::string::npos) {
-        at_end_eff.replace(pos, pattern.length(), action_output->parameters[i].name);
-      }
-    }
-
-    action_output->at_start_requirements.fromString(at_start_req);
-    action_output->over_all_requirements.fromString("");
-    action_output->at_end_requirements.fromString("");
-    action_output->at_start_effects.fromString("");
-    action_output->at_end_effects.fromString(at_end_eff);
-
-    return action_output;
-  }
-
-  if (durative_action) {
-    auto at_start_req = durative_action.value().at_start_requirements.toString();
-    auto over_all_req = durative_action.value().over_all_requirements.toString();
-    auto at_end_req = durative_action.value().at_end_requirements.toString();
-    auto at_start_eff = durative_action.value().at_start_effects.toString();
-    auto at_end_eff = durative_action.value().at_end_effects.toString();
-
-
-    for (size_t i = 0; i < action_output->parameters.size(); i++) {
-      std::string pattern = "?" + std::to_string(i);
-      int pos;
-      while ((pos = at_start_req.find(pattern)) != std::string::npos) {
-        at_start_req.replace(pos, pattern.length(), action_output->parameters[i].name);
-      }
-      while ((pos = over_all_req.find(pattern)) != std::string::npos) {
-        over_all_req.replace(pos, pattern.length(), action_output->parameters[i].name);
-      }
-      while ((pos = at_end_req.find(pattern)) != std::string::npos) {
-        at_end_req.replace(pos, pattern.length(), action_output->parameters[i].name);
-      }
-      while ((pos = at_start_eff.find(pattern)) != std::string::npos) {
-        at_start_eff.replace(pos, pattern.length(), action_output->parameters[i].name);
-      }
-      while ((pos = at_end_eff.find(pattern)) != std::string::npos) {
-        at_end_eff.replace(pos, pattern.length(), action_output->parameters[i].name);
-      }
-    }
-
-    action_output->at_start_requirements.fromString(at_start_req);
-    action_output->over_all_requirements.fromString(over_all_req);
-    action_output->at_end_requirements.fromString(at_end_req);
-    action_output->at_start_effects.fromString(at_start_eff);
-    action_output->at_end_effects.fromString(at_end_eff);
-
-    return action_output;
-  }
-
-  RCLCPP_ERROR(
-    rclcpp::get_logger("rclcpp"), "Action [%s] not found",
-    action_output->name.c_str());
-  return nullptr;
 }
 
 bool operator<(const ActionUnit::Ptr & op1, const ActionUnit::Ptr & op2)

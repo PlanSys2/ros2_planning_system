@@ -37,25 +37,10 @@ class BTBuilderTest : public plansys2::BTBuilder
 {
 public:
  
-  explicit BTBuilderTest(rclcpp::Node::SharedPtr node)
+  explicit BTBuilderTest(
+    rclcpp::Node::SharedPtr node)
   : BTBuilder(node)
   {
-  }
-
-  std::vector<std::string> get_params(const std::string & action_expr)
-  {
-    return BTBuilder::get_params(action_expr);
-  }
-
-  std::string get_name(const std::string & action_expr)
-  {
-    return BTBuilder::get_name(action_expr);
-  }
-
-  std::shared_ptr<plansys2::DurativeAction>
-  get_action_from_string(const std::string & action_expr)
-  {
-    return BTBuilder::get_action_from_string(action_expr);
   }
 };
 
@@ -180,6 +165,7 @@ TEST(executiotest_noden_tree, bt_builder_factory)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
+  std::map<std::string, plansys2::DurativeAction> durative_actions_map;
   BTBuilderTest exec_tree(test_node);
   auto tree_str = exec_tree.get_tree(plan.value());
 
@@ -310,11 +296,16 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
+  std::map<std::string, plansys2::DurativeAction> durative_actions_map;
   BTBuilderTest exec_tree(test_node);
   
+
+  // ASSERT_NE(durative_actions_map.find(
+  //   "(move robot1 assembly_zone wheels_zone)"),
+  //   durative_actions_map.end());
+
   auto tree_str = exec_tree.get_tree(plan.value());
 
-  std::cout << tree_str << std::endl; 
   finish = true;
   t.join();
 }
