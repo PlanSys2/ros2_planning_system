@@ -47,8 +47,7 @@ public:
   }
 
 private:
-  std::shared_ptr<std::map<std::string, ActionExecutor::Ptr>> action_map_;
-  std::shared_ptr<std::map<std::string, DurativeAction>> durative_actions_map_;
+  std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 };
 }

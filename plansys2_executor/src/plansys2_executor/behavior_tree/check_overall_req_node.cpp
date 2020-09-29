@@ -23,12 +23,8 @@ CheckOverAllReq::CheckOverAllReq(
 : ActionNodeBase(xml_tag_name, conf)
 {
   action_map_ =
-    config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutor::Ptr>>>(
+    config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
       "action_map");
-
-  durative_actions_map_ =
-    config().blackboard->get<std::shared_ptr<std::map<std::string, DurativeAction>>>(
-      "action_info_map");
 
   problem_client_ =
     config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
@@ -40,10 +36,10 @@ CheckOverAllReq::tick()
 {
   std::string action;
   getInput("action", action);
-  
-  size_t delim = action.find(":");
-  auto action_expr = action.substr(0, delim);
-  auto reqs = (*durative_actions_map_)[action_expr].over_all_requirements;
+
+  std::cerr << "CheckOverAllReq tick " << action << std::endl;
+
+  auto reqs = (*action_map_)[action].durative_action_info->over_all_requirements;
 
   if (!check(reqs.root_, problem_client_)) {
     return BT::NodeStatus::FAILURE;

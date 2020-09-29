@@ -23,7 +23,7 @@ ExecuteAction::ExecuteAction(
 : ActionNodeBase(xml_tag_name, conf)
 {
   action_map_ =
-    config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutor::Ptr>>>(
+    config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
       "action_map");
   node_ = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 }
@@ -33,18 +33,17 @@ ExecuteAction::tick()
 {
   std::string action;
   getInput("action", action);
-  
-  if (action_map_->find(action) == action_map_->end()) {
-    size_t delim = action.find(":");
-    if (delim != std::string::npos) {
-      auto action_expr = action.substr(0, delim);
-      (*action_map_)[action] = ActionExecutor::make_shared(action_expr, node_);
-    } else {
-      RCLCPP_ERROR(node_->get_logger(), "Bad action id (no :) [%s]", action.c_str());
-    }
+
+  std::cerr << "ExecuteAction tick " << action << std::endl;
+ 
+  size_t delim = action.find(":");
+  auto action_expr = action.substr(0, delim);
+
+  if ((*action_map_)[action].action_executor == nullptr) {
+    (*action_map_)[action].action_executor = ActionExecutor::make_shared(action_expr, node_);
   }
 
-  return (*action_map_)[action]->tick(node_->now());
+  return (*action_map_)[action].action_executor->tick(node_->now());
 }
 
 }

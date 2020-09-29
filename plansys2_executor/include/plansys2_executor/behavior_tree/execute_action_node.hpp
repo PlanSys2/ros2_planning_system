@@ -47,7 +47,7 @@ class ExecuteAction : public BT::ActionNodeBase
     });
   }
 private:
-  std::shared_ptr<std::map<std::string, ActionExecutor::Ptr>> action_map_;
+  std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
 };
 }

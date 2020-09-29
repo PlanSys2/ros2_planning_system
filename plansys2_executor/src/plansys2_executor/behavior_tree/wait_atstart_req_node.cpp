@@ -23,12 +23,8 @@ WaitAtStartReq::WaitAtStartReq(
 : ActionNodeBase(xml_tag_name, conf)
 {
   action_map_ =
-    config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutor::Ptr>>>(
+    config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
       "action_map");
-
-  durative_actions_map_ =
-    config().blackboard->get<std::shared_ptr<std::map<std::string, DurativeAction>>>(
-      "action_info_map");
 
   problem_client_ =
     config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
@@ -40,11 +36,16 @@ WaitAtStartReq::tick()
 {
   std::string action;
   getInput("action", action);
-  
-  size_t delim = action.find(":");
-  auto action_expr = action.substr(0, delim);
 
-  auto reqs = (*durative_actions_map_)[action_expr].at_start_requirements;
+  std::cerr << "WaitAtStartReq tick " << action << std::endl;
+
+  if ((*action_map_)[action].action_executor != nullptr && 
+    (*action_map_)[action].action_executor->is_finished())
+  {
+    return BT::NodeStatus::SUCCESS;
+  }
+
+  auto reqs = (*action_map_)[action].durative_action_info->at_start_requirements;
 
   if (!check(reqs.root_, problem_client_)) {
     return BT::NodeStatus::RUNNING;

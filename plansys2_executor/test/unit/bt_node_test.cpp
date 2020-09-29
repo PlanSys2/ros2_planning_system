@@ -68,8 +68,8 @@ TEST(problem_expert, wait_overall_req_test)
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory2.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory2.pddl"});
 
   rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
 
@@ -104,11 +104,14 @@ TEST(problem_expert, wait_overall_req_test)
     }
   }
 
-  auto durative_actions_map = std::make_shared<std::map<std::string, plansys2::DurativeAction>>();
-  plansys2::DurativeAction dur_act_1 = 
-    *plansys2::get_action_from_string("(move robot1 wheels_zone assembly_zone)", domain_client);
+  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
+  (*action_map)["(move robot1 wheels_zone assembly_zone):5"] = plansys2::ActionExecutionInfo();
+  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info =
+    plansys2::get_action_from_string("(move robot1 wheels_zone assembly_zone)", domain_client);
 
-  (*durative_actions_map)["(move robot1 wheels_zone assembly_zone)"] = dur_act_1;
+  ASSERT_NE(
+    (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info,
+    nullptr);
 
   std::string bt_xml_tree = R"(
     <root main_tree_to_execute = "MainTree" >
@@ -122,10 +125,8 @@ TEST(problem_expert, wait_overall_req_test)
  
   auto blackboard = BT::Blackboard::create();
   
-  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutor::Ptr>>();
   blackboard->set("action_map", action_map);
   blackboard->set("node", test_lc_node);
-  blackboard->set("action_info_map", durative_actions_map);
   blackboard->set("problem_client", problem_client);
   
   BT::BehaviorTreeFactory factory;
@@ -178,8 +179,8 @@ TEST(problem_expert, wait_atstart_req_test)
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory2.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory2.pddl"});
 
   rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
 
@@ -214,11 +215,14 @@ TEST(problem_expert, wait_atstart_req_test)
     }
   }
 
-  auto durative_actions_map = std::make_shared<std::map<std::string, plansys2::DurativeAction>>();
-  plansys2::DurativeAction dur_act_1 = 
-    *plansys2::get_action_from_string("(move robot1 wheels_zone assembly_zone)", domain_client);
+  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
+  (*action_map)["(move robot1 wheels_zone assembly_zone):5"] = plansys2::ActionExecutionInfo();
+  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info =
+    plansys2::get_action_from_string("(move robot1 wheels_zone assembly_zone)", domain_client);
 
-  (*durative_actions_map)["(move robot1 wheels_zone assembly_zone)"] = dur_act_1;
+  ASSERT_NE(
+    (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info,
+    nullptr);
 
   std::string bt_xml_tree = R"(
     <root main_tree_to_execute = "MainTree" >
@@ -232,10 +236,8 @@ TEST(problem_expert, wait_atstart_req_test)
  
   auto blackboard = BT::Blackboard::create();
   
-  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutor::Ptr>>();
   blackboard->set("action_map", action_map);
   blackboard->set("node", test_lc_node);
-  blackboard->set("action_info_map", durative_actions_map);
   blackboard->set("problem_client", problem_client);
   
   BT::BehaviorTreeFactory factory;
@@ -291,8 +293,8 @@ TEST(problem_expert, wait_atend_req_test)
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory2.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory2.pddl"});
 
   rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
 
@@ -327,11 +329,14 @@ TEST(problem_expert, wait_atend_req_test)
     }
   }
 
-  auto durative_actions_map = std::make_shared<std::map<std::string, plansys2::DurativeAction>>();
-  plansys2::DurativeAction dur_act_1 = 
-    *plansys2::get_action_from_string("(move robot1 wheels_zone assembly_zone)", domain_client);
+  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
+  (*action_map)["(move robot1 wheels_zone assembly_zone):5"] = plansys2::ActionExecutionInfo();
+  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info =
+    plansys2::get_action_from_string("(move robot1 wheels_zone assembly_zone)", domain_client);
 
-  (*durative_actions_map)["(move robot1 wheels_zone assembly_zone)"] = dur_act_1;
+  ASSERT_NE(
+    (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info,
+    nullptr);
 
   std::string bt_xml_tree = R"(
     <root main_tree_to_execute = "MainTree" >
@@ -345,10 +350,8 @@ TEST(problem_expert, wait_atend_req_test)
  
   auto blackboard = BT::Blackboard::create();
   
-  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutor::Ptr>>();
   blackboard->set("action_map", action_map);
   blackboard->set("node", test_lc_node);
-  blackboard->set("action_info_map", durative_actions_map);
   blackboard->set("problem_client", problem_client);
   
   BT::BehaviorTreeFactory factory;
@@ -401,8 +404,8 @@ TEST(problem_expert, at_start_effect_test)
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory2.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory2.pddl"});
 
   rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
 
@@ -437,11 +440,14 @@ TEST(problem_expert, at_start_effect_test)
     }
   }
 
-  auto durative_actions_map = std::make_shared<std::map<std::string, plansys2::DurativeAction>>();
-  plansys2::DurativeAction dur_act_1 = 
-    *plansys2::get_action_from_string("(move robot1 wheels_zone assembly_zone)", domain_client);
+  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
+  (*action_map)["(move robot1 wheels_zone assembly_zone):5"] = plansys2::ActionExecutionInfo();
+  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info =
+    plansys2::get_action_from_string("(move robot1 wheels_zone assembly_zone)", domain_client);
 
-  (*durative_actions_map)["(move robot1 wheels_zone assembly_zone)"] = dur_act_1;
+  ASSERT_NE(
+    (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info,
+    nullptr);
 
   std::string bt_xml_tree = R"(
     <root main_tree_to_execute = "MainTree" >
@@ -455,10 +461,8 @@ TEST(problem_expert, at_start_effect_test)
  
   auto blackboard = BT::Blackboard::create();
   
-  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutor::Ptr>>();
   blackboard->set("action_map", action_map);
   blackboard->set("node", test_lc_node);
-  blackboard->set("action_info_map", durative_actions_map);
   blackboard->set("problem_client", problem_client);
   
   BT::BehaviorTreeFactory factory;
@@ -514,8 +518,8 @@ TEST(problem_expert, at_end_effect_test)
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory2.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory2.pddl"});
 
   rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
 
@@ -550,11 +554,14 @@ TEST(problem_expert, at_end_effect_test)
     }
   }
 
-  auto durative_actions_map = std::make_shared<std::map<std::string, plansys2::DurativeAction>>();
-  plansys2::DurativeAction dur_act_1 = 
-    *plansys2::get_action_from_string("(move robot1 wheels_zone assembly_zone)", domain_client);
+  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
+  (*action_map)["(move robot1 wheels_zone assembly_zone):5"] = plansys2::ActionExecutionInfo();
+  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info =
+    plansys2::get_action_from_string("(move robot1 wheels_zone assembly_zone)", domain_client);
 
-  (*durative_actions_map)["(move robot1 wheels_zone assembly_zone)"] = dur_act_1;
+  ASSERT_NE(
+    (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info,
+    nullptr);
 
   std::string bt_xml_tree = R"(
     <root main_tree_to_execute = "MainTree" >
@@ -568,10 +575,8 @@ TEST(problem_expert, at_end_effect_test)
  
   auto blackboard = BT::Blackboard::create();
   
-  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutor::Ptr>>();
   blackboard->set("action_map", action_map);
   blackboard->set("node", test_lc_node);
-  blackboard->set("action_info_map", durative_actions_map);
   blackboard->set("problem_client", problem_client);
   
   BT::BehaviorTreeFactory factory;

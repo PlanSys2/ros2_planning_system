@@ -59,6 +59,8 @@ ActionExecutor::action_hub_callback(const plansys2_msgs::msg::ActionExecution::S
           confirm_performer(msg->node_id);
           state_ = RUNNING;
           waiting_timer_ = nullptr;
+          start_execution_ = node_->now();
+          state_time_ = node_->now();
         } else {
           reject_performer(msg->node_id);
         }
@@ -86,6 +88,8 @@ ActionExecutor::action_hub_callback(const plansys2_msgs::msg::ActionExecution::S
   
         feedback_ = msg->status;
         completion_ = 1.0;
+
+        state_time_ = node_->now();
   
         action_hub_pub_->on_deactivate();
         action_hub_pub_ = nullptr;

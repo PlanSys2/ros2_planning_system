@@ -23,12 +23,8 @@ ApplyAtStartEffect::ApplyAtStartEffect(
 : ActionNodeBase(xml_tag_name, conf)
 {
   action_map_ =
-    config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutor::Ptr>>>(
+    config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
       "action_map");
-
-  durative_actions_map_ =
-    config().blackboard->get<std::shared_ptr<std::map<std::string, DurativeAction>>>(
-      "action_info_map");
 
   problem_client_ =
     config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
@@ -41,11 +37,15 @@ ApplyAtStartEffect::tick()
   std::string action;
   getInput("action", action);
   
-  size_t delim = action.find(":");
-  auto action_expr = action.substr(0, delim);
-  auto effect = (*durative_actions_map_)[action_expr].at_start_effects;
+  std::cerr << "ApplyAtStartEffect tick " << action << std::endl;
 
-  apply(effect.root_, problem_client_);
+
+  auto effect = (*action_map_)[action].durative_action_info->at_start_effects;
+
+  if (!(*action_map_)[action].at_start_effects_applied) {
+    (*action_map_)[action].at_start_effects_applied = true;
+    apply(effect.root_, problem_client_);
+  }
 
   return BT::NodeStatus::SUCCESS;
 }

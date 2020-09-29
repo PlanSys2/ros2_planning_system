@@ -22,8 +22,9 @@
   :duration ( = ?duration 5 )
   :condition
 	( and
-		( at start ( robot_available ?robot0 ) )
+		( over all ( robot_available ?robot0 ) )
 		( at start ( robot_at ?robot0 ?zone1 ) )
+		( at end ( robot_available ?robot0 ) )
 	)
   :effect
 	( and

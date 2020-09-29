@@ -23,7 +23,7 @@ WaitAction::WaitAction(
 : ActionNodeBase(xml_tag_name, conf)
 {
   action_map_ =
-    config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutor::Ptr>>>(
+    config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
       "action_map");
 }
 
@@ -33,11 +33,14 @@ WaitAction::tick()
   std::string action;
   getInput("action", action);
 
-  if (action_map_->find(action) == action_map_->end()) {
+  std::cerr << "WaitAction tick " << action << std::endl;
+
+
+  if ((*action_map_)[action].action_executor == nullptr) {
     return BT::NodeStatus::RUNNING;
   }
 
-  if (!(*action_map_)[action]->is_finished()) {
+  if (!(*action_map_)[action].action_executor->is_finished()) {
     return BT::NodeStatus::RUNNING;
   }
 

@@ -1,9 +1,6 @@
 std_msgs/Empty request
 ---
 bool success
-string error_info
+plansys2_msgs/ActionExecutionInfo[] action_execution_status
 ---
-int32 seq_action
-int32 total_actions
-string current_action
-float32 progress_current_action
+plansys2_msgs/ActionExecutionInfo[] action_execution_status

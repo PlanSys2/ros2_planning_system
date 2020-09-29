@@ -228,14 +228,14 @@ BTBuilder::execution_block(const std::string & action, int plan_time, int l)
   std::string ret;
 
   ret = ret + t(l) + "<Sequence name=\"" + action + ":" + std::to_string(plan_time) + "\">\n";
-  ret = ret + t(l + 1) + "</WaitAtStartReq action=\"" + action+ "\">\n";
-  ret = ret + t(l + 1) + "</ApplyAtStartEff action=\"" + action+ "\">\n";
-  ret = ret + t(l + 1) + "<parallel threshold action=\"1\">\n";
-  ret = ret + t(l + 2) + "</CheckOverAllReq action=\"" + action+ "\">\n";
+  ret = ret + t(l + 1) + "<WaitAtStartReq action=\"" + action + ":" + std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l + 1) + "<ApplyAtStartEffect action=\"" + action + ":" + std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l + 1) + "<Parallel threshold=\"2\">\n";
+  ret = ret + t(l + 2) + "<CheckOverAllReq action=\"" + action + ":" + std::to_string(plan_time) + "\"/>\n";
   ret = ret + t(l + 2) + "<ExecuteAction action=\"" + action + ":" + std::to_string(plan_time) + "\"/>\n";
   ret = ret + t(l + 1) + "</Parallel>\n";
-  ret = ret + t(l + 1) + "</CheckAtEndReq action=\"" + action+ "\">\n";
-  ret = ret + t(l + 1) + "</ApplyAtEndEff action=\"" + action+ "\">\n";
+  ret = ret + t(l + 1) + "<CheckAtEndReq action=\"" + action + ":" + std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l + 1) + "<ApplyAtEndEffect action=\"" + action + ":" + std::to_string(plan_time) + "\"/>\n";
   ret = ret + t(l) + "</Sequence>\n";
 
   return ret;
