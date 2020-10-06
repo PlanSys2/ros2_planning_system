@@ -1,6 +1,6 @@
 # Planner
 
-The Planner module is responsible for creating plans. By default, it uses [popf](https://github.com/fmrico/popf), that is is a PDDL solver.
+The Planner module is responsible for creating plans. By default, it uses [popf](https://github.com/fmrico/popf), that is a PDDL solver.
 
 This module is very simple, as its only task is calling the popf binary and parsing the result.
 
