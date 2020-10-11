@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
+#include <map>
+#include <memory>
+
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 
 namespace plansys2
@@ -24,7 +28,7 @@ ExecuteAction::ExecuteAction(
 {
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
-      "action_map");
+    "action_map");
   node_ = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 }
 
@@ -34,8 +38,6 @@ ExecuteAction::tick()
   std::string action;
   getInput("action", action);
 
-  std::cerr << "ExecuteAction tick " << action << std::endl;
- 
   size_t delim = action.find(":");
   auto action_expr = action.substr(0, delim);
 
@@ -46,4 +48,4 @@ ExecuteAction::tick()
   return (*action_map_)[action].action_executor->tick(node_->now());
 }
 
-}
+}  // namespace plansys2

@@ -36,7 +36,8 @@ class ActionExecutorClient : public rclcpp_cascade_lifecycle::CascadeLifecycleNo
 {
 public:
   using Ptr = std::shared_ptr<ActionExecutorClient>;
-  static Ptr make_shared(const std::string & node_name, const std::chrono::nanoseconds & rate) {
+  static Ptr make_shared(const std::string & node_name, const std::chrono::nanoseconds & rate)
+  {
     return std::make_shared<ActionExecutorClient>(node_name, rate);
   }
 
@@ -45,7 +46,7 @@ public:
     const std::chrono::nanoseconds & rate);
 
 protected:
-  virtual void do_work() {};
+  virtual void do_work() {}
 
   const std::vector<std::string> & get_arguments() const {return current_arguments_;}
   const std::string get_action_name() const {return action_managed_;}
@@ -70,7 +71,8 @@ protected:
   std::vector<std::string> current_arguments_;
   std::vector<std::string> specialized_arguments_;
 
-  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecution>::SharedPtr action_hub_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecution>::SharedPtr
+    action_hub_pub_;
   rclcpp::Subscription<plansys2_msgs::msg::ActionExecution>::SharedPtr action_hub_sub_;
   rclcpp::TimerBase::SharedPtr timer_;
 };

@@ -16,6 +16,9 @@
 #define PLANSYS2_EXECUTOR__EXECUTORNODE_HPP_
 
 #include <memory>
+#include <vector>
+#include <string>
+#include <map>
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
@@ -78,8 +81,8 @@ private:
   std::vector<plansys2_msgs::msg::ActionExecutionInfo> get_feedback_info(
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map);
 
- void print_execution_info(
-  std::shared_ptr<std::map<std::string, ActionExecutionInfo>> exec_info);
+  void print_execution_info(
+    std::shared_ptr<std::map<std::string, ActionExecutionInfo>> exec_info);
 };
 
 }  // namespace plansys2

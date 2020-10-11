@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_EXECUTOR__BEHAVIOR_TREE__WAIT_OVERALL_REQ_NODE_HPP_
-#define PLANSYS2_EXECUTOR__BEHAVIOR_TREE__WAIT_OVERALL_REQ_NODE_HPP_
+#ifndef PLANSYS2_EXECUTOR__BEHAVIOR_TREE__CHECK_OVERALL_REQ_NODE_HPP_
+#define PLANSYS2_EXECUTOR__BEHAVIOR_TREE__CHECK_OVERALL_REQ_NODE_HPP_
 
 #include <map>
 #include <string>
+#include <memory>
 
 #include "behaviortree_cpp_v3/action_node.h"
 
@@ -41,15 +42,17 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return BT::PortsList({
-      BT::InputPort<std::string>("action", "Action whose over all reqs maust stop"),
-    });
+    return BT::PortsList(
+      {
+        BT::InputPort<std::string>("action", "Action whose over all reqs maust stop"),
+      });
   }
 
 private:
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 };
-}
 
-#endif  // PLANSYS2_EXECUTOR__BEHAVIOR_TREE__WAIT_ATSTART_REQ_NODE_HPP_
+}  // namespace plansys2
+
+#endif  // PLANSYS2_EXECUTOR__BEHAVIOR_TREE__CHECK_OVERALL_REQ_NODE_HPP_

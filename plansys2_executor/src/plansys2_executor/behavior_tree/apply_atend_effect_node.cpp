@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
+#include <map>
+#include <memory>
+
 #include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
 
 namespace plansys2
@@ -24,11 +28,11 @@ ApplyAtEndEffect::ApplyAtEndEffect(
 {
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
-      "action_map");
+    "action_map");
 
   problem_client_ =
     config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
-      "problem_client");
+    "problem_client");
 }
 
 BT::NodeStatus
@@ -36,8 +40,6 @@ ApplyAtEndEffect::tick()
 {
   std::string action;
   getInput("action", action);
-
-  std::cerr << "ApplyAtEndEffect tick " << action << std::endl;
 
   auto effect = (*action_map_)[action].durative_action_info->at_end_effects;
 

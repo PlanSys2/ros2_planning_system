@@ -16,6 +16,9 @@
 #define PLANSYS2_EXECUTOR__UTILS_HPP_
 
 #include <memory>
+#include <string>
+#include <map>
+#include <vector>
 
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"

@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
+#include <map>
+#include <memory>
+
 #include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
 
 namespace plansys2
@@ -24,11 +28,11 @@ WaitAtStartReq::WaitAtStartReq(
 {
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
-      "action_map");
+    "action_map");
 
   problem_client_ =
     config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
-      "problem_client");
+    "problem_client");
 }
 
 BT::NodeStatus
@@ -37,9 +41,7 @@ WaitAtStartReq::tick()
   std::string action;
   getInput("action", action);
 
-  std::cerr << "WaitAtStartReq tick " << action << std::endl;
-
-  if ((*action_map_)[action].action_executor != nullptr && 
+  if ((*action_map_)[action].action_executor != nullptr &&
     (*action_map_)[action].action_executor->is_finished())
   {
     return BT::NodeStatus::SUCCESS;
@@ -48,6 +50,7 @@ WaitAtStartReq::tick()
   auto reqs = (*action_map_)[action].durative_action_info->at_start_requirements;
 
   if (!check(reqs.root_, problem_client_)) {
+    // ToDo (fmrico): We should add here a timeout
     return BT::NodeStatus::RUNNING;
   } else {
     return BT::NodeStatus::SUCCESS;

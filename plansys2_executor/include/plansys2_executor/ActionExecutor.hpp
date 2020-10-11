@@ -17,6 +17,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 #include "plansys2_msgs/msg/action_execution.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
@@ -43,11 +44,15 @@ public:
   };
 
   using Ptr = std::shared_ptr<ActionExecutor>;
-  static Ptr make_shared(const std::string & action, rclcpp_lifecycle::LifecycleNode::SharedPtr node) {
+  static Ptr make_shared(
+    const std::string & action,
+    rclcpp_lifecycle::LifecycleNode::SharedPtr node)
+  {
     return std::make_shared<ActionExecutor>(action, node);
   }
 
-  explicit ActionExecutor(const std::string & action, rclcpp_lifecycle::LifecycleNode::SharedPtr node);
+  explicit ActionExecutor(
+    const std::string & action, rclcpp_lifecycle::LifecycleNode::SharedPtr node);
 
   BT::NodeStatus tick(const rclcpp::Time & now);
   BT::NodeStatus get_status();
@@ -70,17 +75,18 @@ protected:
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
 
   Status state_;
-  rclcpp::Time state_time_;  
+  rclcpp::Time state_time_;
   rclcpp::Time start_execution_;
-  
+
   std::string action_;
   std::string action_name_;
-  std::vector<std::string>  action_params_;
+  std::vector<std::string> action_params_;
 
   std::string feedback_;
   float completion_;
 
-  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecution>::SharedPtr action_hub_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecution>::SharedPtr
+    action_hub_pub_;
   rclcpp::Subscription<plansys2_msgs::msg::ActionExecution>::SharedPtr action_hub_sub_;
 
   void action_hub_callback(const plansys2_msgs::msg::ActionExecution::SharedPtr msg);
@@ -100,7 +106,8 @@ struct ActionExecutionInfo
   std::shared_ptr<ActionExecutor> action_executor = {nullptr};
   bool at_start_effects_applied = {false};
   bool at_end_effects_applied = {false};
-  std::shared_ptr<DurativeAction> durative_action_info  = {nullptr};
+  std::shared_ptr<DurativeAction> durative_action_info = {nullptr};
+  std::string execution_error_info;
 };
 
 }  // namespace plansys2

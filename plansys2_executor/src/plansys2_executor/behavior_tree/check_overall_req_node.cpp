@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
+#include <map>
+#include <memory>
+
 #include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
 
 namespace plansys2
@@ -24,11 +28,11 @@ CheckOverAllReq::CheckOverAllReq(
 {
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
-      "action_map");
+    "action_map");
 
   problem_client_ =
     config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
-      "problem_client");
+    "problem_client");
 }
 
 BT::NodeStatus
@@ -37,11 +41,10 @@ CheckOverAllReq::tick()
   std::string action;
   getInput("action", action);
 
-  std::cerr << "CheckOverAllReq tick " << action << std::endl;
-
   auto reqs = (*action_map_)[action].durative_action_info->over_all_requirements;
 
   if (!check(reqs.root_, problem_client_)) {
+    (*action_map_)[action].execution_error_info = "Error checking over all requirements";
     return BT::NodeStatus::FAILURE;
   } else {
     return BT::NodeStatus::SUCCESS;

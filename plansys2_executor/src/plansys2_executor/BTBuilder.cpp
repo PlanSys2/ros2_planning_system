@@ -15,6 +15,8 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <set>
+#include <algorithm>
 
 #include "plansys2_executor/BTBuilder.hpp"
 
@@ -40,7 +42,7 @@ BTBuilder::get_tree(const Plan & current_plan)
 {
   auto levels = get_plan_actions(current_plan);
 
-  for (int i = 1; i < levels.size(); i++) {  
+  for (int i = 1; i < levels.size(); i++) {
     int level_comp = i - 1;
     while (level_comp >= 0 && !level_satisfied(levels[i])) {
       check_connections(levels[level_comp], levels[i]);
@@ -53,7 +55,7 @@ BTBuilder::get_tree(const Plan & current_plan)
       for (auto & req : action_unit->reqs) {
         if (!req->satisfied) {
           req->satisfied = problem_client_->existPredicate(Predicate(req->requirement));
-        } 
+        }
       }
     }
   }
@@ -69,10 +71,9 @@ BTBuilder::get_tree(const Plan & current_plan)
 
   std::string bt_plan;
 
-  if (root_counters > 1)
-  {
-    bt_plan = std::string("<root main_tree_to_execute=\"MainTree\">\n") + 
-      t(1) + "<BehaviorTree ID=\"MainTree\">\n" + 
+  if (root_counters > 1) {
+    bt_plan = std::string("<root main_tree_to_execute=\"MainTree\">\n") +
+      t(1) + "<BehaviorTree ID=\"MainTree\">\n" +
       t(2) + "<Parallel threshold=\"" + std::to_string(root_counters) + "\">\n";
 
     for (auto & level : levels) {
@@ -87,7 +88,7 @@ BTBuilder::get_tree(const Plan & current_plan)
     bt_plan = bt_plan + t(2) + "</Parallel>\n" +
       t(1) + "</BehaviorTree>\n</root>\n";
   } else {
-    bt_plan = std::string("<root main_tree_to_execute=\"MainTree\">\n") + 
+    bt_plan = std::string("<root main_tree_to_execute=\"MainTree\">\n") +
       t(1) + "<BehaviorTree ID=\"MainTree\">\n";
 
     for (auto & level : levels) {
@@ -154,41 +155,40 @@ BTBuilder::t(int level)
 }
 
 std::string
-BTBuilder::get_flow_tree(ActionUnit::Ptr root_flow, std::set<ActionUnit::Ptr> & used_actions, int level)
+BTBuilder::get_flow_tree(
+  ActionUnit::Ptr root_flow,
+  std::set<ActionUnit::Ptr> & used_actions, int level)
 {
   std::string ret;
   int l = level;
 
   used_actions.insert(root_flow);
-  
-  if (out_cardinality(root_flow) == 0) {
 
+  if (out_cardinality(root_flow) == 0) {
     if (in_cardinality(root_flow) > 1) {
-      ret = t(l) + "<Sequence name=\"" + root_flow->action + ":" + std::to_string(root_flow->time) + "\">\n";
-      
+      ret = t(l) + "<Sequence name=\"" + root_flow->action + ":" +
+        std::to_string(root_flow->time) + "\">\n";
+
       for (auto & action : pred(root_flow)) {
-        // if (used_actions.find(action) == used_actions.end()) {
-          ret = ret + t(l + 1) + "<WaitAction action=\"" + action->action + + ":" + std::to_string(action->time) + "\"/>\n";
-        //}
+        ret = ret + t(l + 1) + "<WaitAction action=\"" + action->action + ":" +
+          std::to_string(action->time) + "\"/>\n";
       }
-      // ret = ret + t(l + 1) + execution_block("<ExecuteAction action=\"" + root_flow->action + ":" + std::to_string(root_flow->time) + "\"/>\n" +
- 
+
       ret = ret + execution_block(root_flow->action, root_flow->time, l + 1) +
         t(l) + "</Sequence>\n";
     } else {
       ret = execution_block(root_flow->action, root_flow->time, l);
     }
-
   }
 
   if (out_cardinality(root_flow) == 1) {
-    ret = t(l) + "<Sequence name=\"" + root_flow->action + ":" + std::to_string(root_flow->time) + "\">\n";
+    ret = t(l) + "<Sequence name=\"" + root_flow->action + ":" +
+      std::to_string(root_flow->time) + "\">\n";
 
-    if (in_cardinality(root_flow) > 1) {      
+    if (in_cardinality(root_flow) > 1) {
       for (auto & action : pred(root_flow)) {
-        // if (used_actions.find(action) == used_actions.end()) {
-          ret = ret + t(l + 1) + "<WaitAction action=\"" + action->action + + ":" + std::to_string(action->time) + "\"/>\n";
-        //}
+        ret = ret + t(l + 1) + "<WaitAction action=\"" + action->action + ":" +
+          std::to_string(action->time) + "\"/>\n";
       }
     }
 
@@ -198,17 +198,17 @@ BTBuilder::get_flow_tree(ActionUnit::Ptr root_flow, std::set<ActionUnit::Ptr> & 
   }
 
   if (out_cardinality(root_flow) > 1) {
-    ret = t(l) + "<Sequence name=\"" + root_flow->action + ":" + std::to_string(root_flow->time) + "\">\n";
-    
-    if (in_cardinality(root_flow) > 1) {      
+    ret = t(l) + "<Sequence name=\"" + root_flow->action + ":" +
+      std::to_string(root_flow->time) + "\">\n";
+
+    if (in_cardinality(root_flow) > 1) {
       for (auto & action : pred(root_flow)) {
-        // if (used_actions.find(action) == used_actions.end()) {
-          ret = ret + t(l + 1) + "<WaitAction action=\"" + action->action + + ":" + std::to_string(action->time) + "\"/>\n";
-        // }      
+        ret = ret + t(l + 1) + "<WaitAction action=\"" + action->action + ":" +
+          std::to_string(action->time) + "\"/>\n";
       }
     }
 
-    ret= ret +
+    ret = ret +
       execution_block(root_flow->action, root_flow->time, l + 1) +
       t(l + 1) + "<Parallel threshold=\"" + std::to_string(succ(root_flow).size()) + "\">\n";
 
@@ -217,7 +217,7 @@ BTBuilder::get_flow_tree(ActionUnit::Ptr root_flow, std::set<ActionUnit::Ptr> & 
     }
     ret = ret + t(l + 1) + "</Parallel>\n";
     ret = ret + t(l) + "</Sequence>\n";
-  }  
+  }
 
   return ret;
 }
@@ -227,15 +227,22 @@ BTBuilder::execution_block(const std::string & action, int plan_time, int l)
 {
   std::string ret;
 
-  ret = ret + t(l) + "<Sequence name=\"" + action + ":" + std::to_string(plan_time) + "\">\n";
-  ret = ret + t(l + 1) + "<WaitAtStartReq action=\"" + action + ":" + std::to_string(plan_time) + "\"/>\n";
-  ret = ret + t(l + 1) + "<ApplyAtStartEffect action=\"" + action + ":" + std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l) + "<Sequence name=\"" + action + ":" +
+    std::to_string(plan_time) + "\">\n";
+  ret = ret + t(l + 1) + "<WaitAtStartReq action=\"" + action + ":" +
+    std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l + 1) + "<ApplyAtStartEffect action=\"" + action + ":" +
+    std::to_string(plan_time) + "\"/>\n";
   ret = ret + t(l + 1) + "<Parallel threshold=\"2\">\n";
-  ret = ret + t(l + 2) + "<CheckOverAllReq action=\"" + action + ":" + std::to_string(plan_time) + "\"/>\n";
-  ret = ret + t(l + 2) + "<ExecuteAction action=\"" + action + ":" + std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l + 2) + "<CheckOverAllReq action=\"" + action + ":" +
+    std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l + 2) + "<ExecuteAction action=\"" + action + ":" +
+    std::to_string(plan_time) + "\"/>\n";
   ret = ret + t(l + 1) + "</Parallel>\n";
-  ret = ret + t(l + 1) + "<CheckAtEndReq action=\"" + action + ":" + std::to_string(plan_time) + "\"/>\n";
-  ret = ret + t(l + 1) + "<ApplyAtEndEffect action=\"" + action + ":" + std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l + 1) + "<CheckAtEndReq action=\"" + action + ":" +
+    std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l + 1) + "<ApplyAtEndEffect action=\"" + action + ":" +
+    std::to_string(plan_time) + "\"/>\n";
   ret = ret + t(l) + "</Sequence>\n";
 
   return ret;
@@ -283,28 +290,28 @@ BTBuilder::print_levels(std::vector<ExecutionLevel::Ptr> & levels)
     std::cout << "====== Level " << counter_level++ << " [" << level->time << "]" << std::endl;
 
     for (const auto & action_unit : level->action_units) {
-      std::cout << "\t" << action_unit->action << "\tin_cardinality: " << in_cardinality(action_unit) << std::endl;
+      std::cout << "\t" << action_unit->action << "\tin_cardinality: " <<
+        in_cardinality(action_unit) << std::endl;
       std::cout << "\t\tReqs: " << std::endl;
 
       for (const auto & req : action_unit->reqs) {
-        std::cout << "\t\t\t" << req->requirement << (req->satisfied? "Satisfied" : "Not satisfied") << std::endl;
+        std::cout << "\t\t\t" << req->requirement <<
+        (req->satisfied ? "Satisfied" : "Not satisfied") << std::endl;
 
-          for (auto & action : req->effect_connections) {
-             std::cout << "\t\t\t\t" << action->action->action << std::endl;
-          }
+        for (auto & action : req->effect_connections) {
+          std::cout << "\t\t\t\t" << action->action->action << std::endl;
+        }
       }
       std::cout << "\t\tEffects: " << std::endl;
 
       for (const auto & effect : action_unit->effects) {
         std::cout << "\t\t\t" << effect->effect << std::endl;
-        
+
         for (auto & req : effect->requirement_connections) {
-             std::cout << "\t\t\t\t" << req->action->action << std::endl;
-          }
-      
+          std::cout << "\t\t\t\t" << req->action->action << std::endl;
+        }
       }
     }
-
   }
 }
 
@@ -315,9 +322,9 @@ BTBuilder::get_plan_actions(const Plan & plan)
 
   auto current_level = ExecutionLevel::make_shared();
   ret.push_back(current_level);
-  
+
   int last_time = 0;
-  for (auto & item : plan) {  
+  for (auto & item : plan) {
     int time = static_cast<int>(item.time);
     if (time > last_time) {
       last_time = time;
@@ -336,7 +343,7 @@ BTBuilder::get_plan_actions(const Plan & plan)
     auto dur_action = get_action_from_string(item.action, domain_client_);
     std::vector<plansys2::Predicate> at_start_requirements;
     dur_action->at_start_requirements.getPredicates(at_start_requirements, true);
-    
+
     std::vector<plansys2::Predicate> over_all_requirements;
     dur_action->over_all_requirements.getPredicates(over_all_requirements, true);
     std::vector<plansys2::Predicate> at_end_requirements;
@@ -344,18 +351,26 @@ BTBuilder::get_plan_actions(const Plan & plan)
 
     std::vector<plansys2::Predicate> requirements;
 
-    std::copy(at_start_requirements.begin(), at_start_requirements.end(), std::back_inserter(requirements));
-    std::copy(over_all_requirements.begin(), over_all_requirements.end(), std::back_inserter(requirements));
-    std::copy(at_end_requirements.begin(), at_end_requirements.end(), std::back_inserter(requirements));
+    std::copy(
+      at_start_requirements.begin(),
+      at_start_requirements.end(),
+      std::back_inserter(requirements));
+    std::copy(
+      over_all_requirements.begin(),
+      over_all_requirements.end(),
+      std::back_inserter(requirements));
+    std::copy(
+      at_end_requirements.begin(),
+      at_end_requirements.end(),
+      std::back_inserter(requirements));
 
     for (const auto & p : requirements) {
       auto req = RequirementConnection::make_shared();
       action_unit->reqs.push_back(req);
       req->requirement = p.toString();
       req->action = action_unit;
-      // req->satisfied = problem_client_->existPredicate(Predicate(req->requirement));
     }
-    
+
     std::vector<plansys2::Predicate> at_start_effects;
     dur_action->at_start_effects.getPredicates(at_start_effects, true);
     std::vector<plansys2::Predicate> at_end_effects;
@@ -383,6 +398,5 @@ bool operator<(const ActionUnit::Ptr & op1, const ActionUnit::Ptr & op2)
 
   return op1_str < op2_str;
 }
-
 
 }  // namespace plansys2

@@ -18,6 +18,7 @@
 #include <iostream>
 #include <memory>
 #include <thread>
+#include <map>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
@@ -36,7 +37,6 @@
 class BTBuilderTest : public plansys2::BTBuilder
 {
 public:
- 
   explicit BTBuilderTest(
     rclcpp::Node::SharedPtr node)
   : BTBuilder(node)
@@ -74,7 +74,7 @@ TEST(executiotest_noden_tree, bt_builder_factory)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  
+
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
   {
@@ -88,7 +88,7 @@ TEST(executiotest_noden_tree, bt_builder_factory)
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  
+
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
@@ -122,46 +122,49 @@ TEST(executiotest_noden_tree, bt_builder_factory)
 
   std::vector<std::string> predicates = {
     "(robot_at robot1 assembly_zone)",
-	  "(robot_at robot2 assembly_zone)",
-	  "(robot_at robot3 assembly_zone)",
-	  "(is_assembly_zone assembly_zone)",
-	  "(robot_available robot1)",
-	  "(robot_available robot2)",
-	  "(robot_available robot3)",
-	  "(piece_at wheel_1 wheels_zone)",
-	  "(piece_at body_car_1 body_car_zone)",
-	  "(piece_at steering_wheel_1 steering_wheels_zone)",
-	  "(piece_is_wheel wheel_1)",
-	  "(piece_is_body_car body_car_1)",
-	  "(piece_is_steering_wheel steering_wheel_1)",
-	  "(piece_at wheel_2 wheels_zone)",
-	  "(piece_at body_car_2 body_car_zone)",
-	  "(piece_at steering_wheel_2 steering_wheels_zone)",
-	  "(piece_is_wheel wheel_2)",
-	  "(piece_is_body_car body_car_2)",
-	  "(piece_is_steering_wheel steering_wheel_2)",
-	  "(piece_at wheel_3 wheels_zone)",
-	  "(piece_at body_car_3 body_car_zone)",
-	  "(piece_at steering_wheel_3 steering_wheels_zone)",
-	  "(piece_is_wheel wheel_3)",
-	  "(piece_is_body_car body_car_3)",
-	  "(piece_is_steering_wheel steering_wheel_3)",
-	  "(piece_not_used wheel_1)",
-	  "(piece_not_used wheel_2)",
-	  "(piece_not_used wheel_3)",
-	  "(piece_not_used body_car_1)",
-	  "(piece_not_used body_car_2)",
-	  "(piece_not_used body_car_3)",
-	  "(piece_not_used steering_wheel_1)",
-	  "(piece_not_used steering_wheel_2)",
-	  "(piece_not_used steering_wheel_3)"};
+    "(robot_at robot2 assembly_zone)",
+    "(robot_at robot3 assembly_zone)",
+    "(is_assembly_zone assembly_zone)",
+    "(robot_available robot1)",
+    "(robot_available robot2)",
+    "(robot_available robot3)",
+    "(piece_at wheel_1 wheels_zone)",
+    "(piece_at body_car_1 body_car_zone)",
+    "(piece_at steering_wheel_1 steering_wheels_zone)",
+    "(piece_is_wheel wheel_1)",
+    "(piece_is_body_car body_car_1)",
+    "(piece_is_steering_wheel steering_wheel_1)",
+    "(piece_at wheel_2 wheels_zone)",
+    "(piece_at body_car_2 body_car_zone)",
+    "(piece_at steering_wheel_2 steering_wheels_zone)",
+    "(piece_is_wheel wheel_2)",
+    "(piece_is_body_car body_car_2)",
+    "(piece_is_steering_wheel steering_wheel_2)",
+    "(piece_at wheel_3 wheels_zone)",
+    "(piece_at body_car_3 body_car_zone)",
+    "(piece_at steering_wheel_3 steering_wheels_zone)",
+    "(piece_is_wheel wheel_3)",
+    "(piece_is_body_car body_car_3)",
+    "(piece_is_steering_wheel steering_wheel_3)",
+    "(piece_not_used wheel_1)",
+    "(piece_not_used wheel_2)",
+    "(piece_not_used wheel_3)",
+    "(piece_not_used body_car_1)",
+    "(piece_not_used body_car_2)",
+    "(piece_not_used body_car_3)",
+    "(piece_not_used steering_wheel_1)",
+    "(piece_not_used steering_wheel_2)",
+    "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
     ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
-  
-  ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and(car_assembled car_1)(car_assembled car_2)(car_assembled car_3))")));
- 
+
+  ASSERT_TRUE(
+    problem_client->setGoal(
+      plansys2::Goal(
+        "(and(car_assembled car_1)(car_assembled car_2)(car_assembled car_3))")));
+
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
@@ -204,7 +207,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  
+
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
   {
@@ -218,7 +221,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  
+
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
@@ -254,51 +257,54 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
     "(robot_at robot1 wheels_zone)",
     "(robot_at robot2 body_car_zone)",
     "(robot_at robot3 steering_wheels_zone)",
-	  "(is_assembly_zone assembly_zone)",
-	  "(robot_available robot1)",
-	  "(robot_available robot2)",
-	  "(robot_available robot3)",
-	  "(piece_at wheel_1 wheels_zone)",
-	  "(piece_at body_car_1 body_car_zone)",
-	  "(piece_at steering_wheel_1 steering_wheels_zone)",
-	  "(piece_is_wheel wheel_1)",
-	  "(piece_is_body_car body_car_1)",
-	  "(piece_is_steering_wheel steering_wheel_1)",
-	  "(piece_at wheel_2 wheels_zone)",
-	  "(piece_at body_car_2 body_car_zone)",
-	  "(piece_at steering_wheel_2 steering_wheels_zone)",
-	  "(piece_is_wheel wheel_2)",
-	  "(piece_is_body_car body_car_2)",
-	  "(piece_is_steering_wheel steering_wheel_2)",
-	  "(piece_at wheel_3 wheels_zone)",
-	  "(piece_at body_car_3 body_car_zone)",
-	  "(piece_at steering_wheel_3 steering_wheels_zone)",
-	  "(piece_is_wheel wheel_3)",
-	  "(piece_is_body_car body_car_3)",
-	  "(piece_is_steering_wheel steering_wheel_3)",
-	  "(piece_not_used wheel_1)",
-	  "(piece_not_used wheel_2)",
-	  "(piece_not_used wheel_3)",
-	  "(piece_not_used body_car_1)",
-	  "(piece_not_used body_car_2)",
-	  "(piece_not_used body_car_3)",
-	  "(piece_not_used steering_wheel_1)",
-	  "(piece_not_used steering_wheel_2)",
-	  "(piece_not_used steering_wheel_3)"};
+    "(is_assembly_zone assembly_zone)",
+    "(robot_available robot1)",
+    "(robot_available robot2)",
+    "(robot_available robot3)",
+    "(piece_at wheel_1 wheels_zone)",
+    "(piece_at body_car_1 body_car_zone)",
+    "(piece_at steering_wheel_1 steering_wheels_zone)",
+    "(piece_is_wheel wheel_1)",
+    "(piece_is_body_car body_car_1)",
+    "(piece_is_steering_wheel steering_wheel_1)",
+    "(piece_at wheel_2 wheels_zone)",
+    "(piece_at body_car_2 body_car_zone)",
+    "(piece_at steering_wheel_2 steering_wheels_zone)",
+    "(piece_is_wheel wheel_2)",
+    "(piece_is_body_car body_car_2)",
+    "(piece_is_steering_wheel steering_wheel_2)",
+    "(piece_at wheel_3 wheels_zone)",
+    "(piece_at body_car_3 body_car_zone)",
+    "(piece_at steering_wheel_3 steering_wheels_zone)",
+    "(piece_is_wheel wheel_3)",
+    "(piece_is_body_car body_car_3)",
+    "(piece_is_steering_wheel steering_wheel_3)",
+    "(piece_not_used wheel_1)",
+    "(piece_not_used wheel_2)",
+    "(piece_not_used wheel_3)",
+    "(piece_not_used body_car_1)",
+    "(piece_not_used body_car_2)",
+    "(piece_not_used body_car_3)",
+    "(piece_not_used steering_wheel_1)",
+    "(piece_not_used steering_wheel_2)",
+    "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
     ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
-  
-  ASSERT_TRUE(problem_client->setGoal(plansys2::Goal(
-    "(and(car_assembled car_1)(piece_at body_car_2 assembly_zone)(piece_at body_car_3 assembly_zone))")));
- 
+
+  ASSERT_TRUE(
+    problem_client->setGoal(
+      plansys2::Goal(
+        std::string("(and(car_assembled car_1)(piece_at body_car_2 assembly_zone)") +
+        std::string("(piece_at body_car_3 assembly_zone))"))));
+
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
   std::map<std::string, plansys2::DurativeAction> durative_actions_map;
   BTBuilderTest exec_tree(test_node);
-  
+
 
   // ASSERT_NE(durative_actions_map.find(
   //   "(move robot1 assembly_zone wheels_zone)"),
@@ -309,8 +315,6 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
   finish = true;
   t.join();
 }
-
-
 
 int main(int argc, char ** argv)
 {

@@ -32,8 +32,8 @@ namespace plansys2
 
 class ExecuteAction : public BT::ActionNodeBase
 {
-  public:
-    ExecuteAction(
+public:
+  ExecuteAction(
     const std::string & xml_tag_name,
     const BT::NodeConfiguration & conf);
 
@@ -42,14 +42,17 @@ class ExecuteAction : public BT::ActionNodeBase
 
   static BT::PortsList providedPorts()
   {
-    return BT::PortsList({
-      BT::InputPort<std::string>("action", "Action to be executed"),
-    });
+    return BT::PortsList(
+      {
+        BT::InputPort<std::string>("action", "Action to be executed"),
+      });
   }
+
 private:
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
 };
-}
+
+}  // namespace plansys2
 
 #endif  // PLANSYS2_EXECUTOR__BEHAVIOR_TREE__EXECUTE_ACTION_NODE_HPP_

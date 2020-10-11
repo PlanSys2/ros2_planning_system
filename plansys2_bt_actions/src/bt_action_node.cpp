@@ -18,6 +18,9 @@
 #include "plansys2_bt_actions/BTAction.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+
+using namespace std::chrono_literals;
+
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
@@ -52,8 +55,12 @@ int main(int argc, char ** argv)
   auto action_node = std::make_shared<plansys2::BTAction>(
     action_name,
     bt_xml_file,
-    plugin_lib_names_
+    plugin_lib_names_,
+    200ms
   );
+
+  action_node->set_parameter(rclcpp::Parameter("action", action_name));
+  action_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
   rclcpp::spin(action_node->get_node_base_interface());
 

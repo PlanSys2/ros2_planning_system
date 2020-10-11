@@ -17,6 +17,8 @@
 
 #include <map>
 #include <string>
+#include <memory>
+
 
 #include "behaviortree_cpp_v3/action_node.h"
 
@@ -39,14 +41,16 @@ public:
 
   static BT::PortsList providedPorts()
   {
-    return BT::PortsList({
-      BT::InputPort<std::string>("action", "Action to be executed"),
-    });
+    return BT::PortsList(
+      {
+        BT::InputPort<std::string>("action", "Action to be executed"),
+      });
   }
 
 private:
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
 };
-}
+
+}  // namespace plansys2
 
 #endif  // PLANSYS2_EXECUTOR__BEHAVIOR_TREE__WAIT_ACTION_NODE_HPP_

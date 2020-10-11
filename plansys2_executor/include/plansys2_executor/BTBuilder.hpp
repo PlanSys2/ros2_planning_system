@@ -19,6 +19,7 @@
 #include <memory>
 #include <vector>
 #include <set>
+#include <list>
 
 #include "std_msgs/msg/empty.hpp"
 #include "plansys2_msgs/action/execute_action.hpp"
@@ -54,7 +55,7 @@ struct RequirementConnection
 {
   using Ptr = std::shared_ptr<RequirementConnection>;
   static Ptr make_shared() {return std::make_shared<RequirementConnection>();}
-  
+
   std::string requirement;
   ActionUnit::Ptr action;
   bool satisfied;
@@ -71,7 +72,8 @@ struct EffectConnection
   std::list<RequirementConnection::Ptr> requirement_connections;
 };
 
-struct ExecutionLevel {
+struct ExecutionLevel
+{
   using Ptr = std::shared_ptr<ExecutionLevel>;
   static Ptr make_shared() {return std::make_shared<ExecutionLevel>();}
 
@@ -82,12 +84,11 @@ struct ExecutionLevel {
 class BTBuilder
 {
 public:
- 
   explicit BTBuilder(rclcpp::Node::SharedPtr node);
   // void print(std::shared_ptr<GraphNode> current = root_) const;
 
   std::string get_tree(const Plan & current_plan);
- 
+
 protected:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
@@ -98,11 +99,12 @@ protected:
   bool level_satisfied(ExecutionLevel::Ptr level);
   void check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr down_level);
 
-  std::string get_flow_tree(ActionUnit::Ptr root_flow, std::set<ActionUnit::Ptr> & used_actions, int level = 0);
+  std::string get_flow_tree(
+    ActionUnit::Ptr root_flow, std::set<ActionUnit::Ptr> & used_actions, int level = 0);
 
   std::set<ActionUnit::Ptr> pred(ActionUnit::Ptr action_unit);
   std::set<ActionUnit::Ptr> succ(ActionUnit::Ptr action_unit);
-  
+
   int in_cardinality(ActionUnit::Ptr action_unit);
   int out_cardinality(ActionUnit::Ptr action_unit);
 

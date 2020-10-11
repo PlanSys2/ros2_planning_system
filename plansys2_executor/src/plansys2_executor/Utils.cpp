@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "plansys2_executor/Utils.hpp"
 
 namespace plansys2
@@ -32,7 +36,7 @@ bool check(
         bool ret = true;
 
         for (const auto & op : pn_and->ops) {
-          ret = ret && check(op,problem_client);
+          ret = ret && check(op, problem_client);
         }
         return ret;
       }

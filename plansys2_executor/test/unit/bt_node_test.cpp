@@ -19,6 +19,7 @@
 #include <memory>
 #include <thread>
 #include <fstream>
+#include <map>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
@@ -84,7 +85,7 @@ TEST(problem_expert, wait_overall_req_test)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  
+
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
@@ -95,7 +96,7 @@ TEST(problem_expert, wait_overall_req_test)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  
+
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
@@ -113,7 +114,8 @@ TEST(problem_expert, wait_overall_req_test)
     (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info,
     nullptr);
 
-  std::string bt_xml_tree = R"(
+  std::string bt_xml_tree =
+    R"(
     <root main_tree_to_execute = "MainTree" >
       <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
@@ -122,17 +124,17 @@ TEST(problem_expert, wait_overall_req_test)
       </BehaviorTree>
     </root>
   )";
- 
+
   auto blackboard = BT::Blackboard::create();
-  
+
   blackboard->set("action_map", action_map);
   blackboard->set("node", test_lc_node);
   blackboard->set("problem_client", problem_client);
-  
+
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::CheckOverAllReq>("CheckOverAllReq");
-  
+
 
   ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
 
@@ -162,7 +164,7 @@ TEST(problem_expert, wait_overall_req_test)
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
-  
+
   finish = true;
   t.join();
 }
@@ -195,7 +197,7 @@ TEST(problem_expert, wait_atstart_req_test)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  
+
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
@@ -206,7 +208,7 @@ TEST(problem_expert, wait_atstart_req_test)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  
+
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
@@ -224,7 +226,8 @@ TEST(problem_expert, wait_atstart_req_test)
     (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info,
     nullptr);
 
-  std::string bt_xml_tree = R"(
+  std::string bt_xml_tree =
+    R"(
     <root main_tree_to_execute = "MainTree" >
       <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
@@ -233,17 +236,17 @@ TEST(problem_expert, wait_atstart_req_test)
       </BehaviorTree>
     </root>
   )";
- 
+
   auto blackboard = BT::Blackboard::create();
-  
+
   blackboard->set("action_map", action_map);
   blackboard->set("node", test_lc_node);
   blackboard->set("problem_client", problem_client);
-  
+
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::WaitAtStartReq>("WaitAtStartReq");
-  
+
 
   ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
 
@@ -272,11 +275,10 @@ TEST(problem_expert, wait_atstart_req_test)
 
     status = tree.tickRoot();
     ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
-
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
-  
+
   finish = true;
   t.join();
 }
@@ -309,7 +311,7 @@ TEST(problem_expert, wait_atend_req_test)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  
+
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
@@ -320,7 +322,7 @@ TEST(problem_expert, wait_atend_req_test)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  
+
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
@@ -338,7 +340,8 @@ TEST(problem_expert, wait_atend_req_test)
     (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info,
     nullptr);
 
-  std::string bt_xml_tree = R"(
+  std::string bt_xml_tree =
+    R"(
     <root main_tree_to_execute = "MainTree" >
       <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
@@ -347,17 +350,17 @@ TEST(problem_expert, wait_atend_req_test)
       </BehaviorTree>
     </root>
   )";
- 
+
   auto blackboard = BT::Blackboard::create();
-  
+
   blackboard->set("action_map", action_map);
   blackboard->set("node", test_lc_node);
   blackboard->set("problem_client", problem_client);
-  
+
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::CheckAtEndReq>("CheckAtEndReq");
-  
+
 
   ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
 
@@ -369,7 +372,7 @@ TEST(problem_expert, wait_atend_req_test)
     "(robot_at robot1 wheels_zone)"};
 
   try {
-   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
+    auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
     auto status = BT::NodeStatus::RUNNING;
     status = tree.tickRoot();
@@ -387,7 +390,7 @@ TEST(problem_expert, wait_atend_req_test)
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
-  
+
   finish = true;
   t.join();
 }
@@ -420,7 +423,7 @@ TEST(problem_expert, at_start_effect_test)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  
+
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
@@ -431,7 +434,7 @@ TEST(problem_expert, at_start_effect_test)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  
+
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
@@ -449,7 +452,8 @@ TEST(problem_expert, at_start_effect_test)
     (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info,
     nullptr);
 
-  std::string bt_xml_tree = R"(
+  std::string bt_xml_tree =
+    R"(
     <root main_tree_to_execute = "MainTree" >
       <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
@@ -458,17 +462,17 @@ TEST(problem_expert, at_start_effect_test)
       </BehaviorTree>
     </root>
   )";
- 
+
   auto blackboard = BT::Blackboard::create();
-  
+
   blackboard->set("action_map", action_map);
   blackboard->set("node", test_lc_node);
   blackboard->set("problem_client", problem_client);
-  
+
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtStartEffect>("ApplyAtStartEffect");
-  
+
 
   ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
 
@@ -482,7 +486,7 @@ TEST(problem_expert, at_start_effect_test)
 
     for (const auto & pred : predicates) {
       ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
-    }  
+    }
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
     auto status = BT::NodeStatus::RUNNING;
@@ -496,12 +500,13 @@ TEST(problem_expert, at_start_effect_test)
         rate.sleep();
       }
     }
-    ASSERT_FALSE(problem_client->existPredicate(
-      plansys2::Predicate{"(robot_at robot1 wheels_zone)"}));
+    ASSERT_FALSE(
+      problem_client->existPredicate(
+        plansys2::Predicate{"(robot_at robot1 wheels_zone)"}));
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
-  
+
   finish = true;
   t.join();
 }
@@ -534,7 +539,7 @@ TEST(problem_expert, at_end_effect_test)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  
+
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
@@ -545,7 +550,7 @@ TEST(problem_expert, at_end_effect_test)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  
+
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
@@ -563,7 +568,8 @@ TEST(problem_expert, at_end_effect_test)
     (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info,
     nullptr);
 
-  std::string bt_xml_tree = R"(
+  std::string bt_xml_tree =
+    R"(
     <root main_tree_to_execute = "MainTree" >
       <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
@@ -572,17 +578,17 @@ TEST(problem_expert, at_end_effect_test)
       </BehaviorTree>
     </root>
   )";
- 
+
   auto blackboard = BT::Blackboard::create();
-  
+
   blackboard->set("action_map", action_map);
   blackboard->set("node", test_lc_node);
   blackboard->set("problem_client", problem_client);
-  
+
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtEndEffect>("ApplyAtEndEffect");
-  
+
 
   ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
 
@@ -595,7 +601,7 @@ TEST(problem_expert, at_end_effect_test)
 
     for (const auto & pred : predicates) {
       ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
-    }  
+    }
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
     auto status = BT::NodeStatus::RUNNING;
@@ -610,13 +616,13 @@ TEST(problem_expert, at_end_effect_test)
       }
     }
 
-    ASSERT_TRUE(problem_client->existPredicate(
-      plansys2::Predicate{"(robot_at robot1 assembly_zone)"}));
-    
+    ASSERT_TRUE(
+      problem_client->existPredicate(
+        plansys2::Predicate{"(robot_at robot1 assembly_zone)"}));
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
-  
+
   finish = true;
   t.join();
 }

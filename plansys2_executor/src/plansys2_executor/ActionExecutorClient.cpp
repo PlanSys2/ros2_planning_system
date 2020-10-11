@@ -80,7 +80,7 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
   switch (msg->type) {
     case plansys2_msgs::msg::ActionExecution::REQUEST:
       if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE &&
-        !commited_ && should_execute(msg->action, msg->arguments)) 
+        !commited_ && should_execute(msg->action, msg->arguments))
       {
         commited_ = true;
         send_response(msg);
@@ -88,7 +88,7 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
       break;
     case plansys2_msgs::msg::ActionExecution::CONFIRM:
       if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE &&
-        commited_ && msg->node_id == get_name()) 
+        commited_ && msg->node_id == get_name())
       {
         current_arguments_ = msg->arguments;
         trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
@@ -177,7 +177,6 @@ ActionExecutorClient::finish(bool success, float completion, const std::string &
   msg_resp.success = success;
 
   action_hub_pub_->publish(msg_resp);
-
 }
 
 }  // namespace plansys2

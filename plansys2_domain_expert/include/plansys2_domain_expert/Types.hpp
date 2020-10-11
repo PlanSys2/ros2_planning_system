@@ -21,7 +21,7 @@
 #include <vector>
 #include <memory>
 #include <iostream>
-#include <locale> 
+#include <locale>
 
 namespace plansys2
 {
