@@ -240,7 +240,7 @@ TEST(problem_expert, action_executor_client)
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
   blackboard->set("action_map", action_map);
-  
+
   blackboard->set("node", test_node);
 
   BT::BehaviorTreeFactory factory;
@@ -397,7 +397,6 @@ TEST(problem_expert, action_executor)
   t.join();
 }
 
-/*
 TEST(problem_expert, executor_client)
 {
   auto test_node = rclcpp::Node::make_shared("executor_client_test");
@@ -525,12 +524,12 @@ TEST(problem_expert, executor_client)
 
   ASSERT_TRUE(plan);
 
-  //bool success = executor_client->executePlan();
-  //ASSERT_TRUE(success);
+  // bool success = executor_client->executePlan();
+  // ASSERT_TRUE(success);
 
   finish = true;
   t.join();
-}*/
+}
 
 int main(int argc, char ** argv)
 {
