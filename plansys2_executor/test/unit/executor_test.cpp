@@ -167,6 +167,7 @@ public:
 };
 
 
+/*
 TEST(problem_expert, action_executor_client)
 {
   auto test_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
@@ -529,7 +530,7 @@ TEST(problem_expert, executor_client)
 
   finish = true;
   t.join();
-}
+}*/
 
 int main(int argc, char ** argv)
 {
