@@ -238,8 +238,9 @@ TEST(problem_expert, action_executor_client)
 
   auto blackboard = BT::Blackboard::create();
 
-  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutor::Ptr>>();
+  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
   blackboard->set("action_map", action_map);
+  
   blackboard->set("node", test_node);
 
   BT::BehaviorTreeFactory factory;
