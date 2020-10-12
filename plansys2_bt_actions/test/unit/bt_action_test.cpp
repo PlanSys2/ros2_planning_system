@@ -41,6 +41,7 @@
 #include "gtest/gtest.h"
 
 using namespace std::placeholders;
+using namespace std::chrono_literals;
 
 class MoveServer : public rclcpp::Node
 {
@@ -113,8 +114,6 @@ TEST(bt_actions, load_plugins)
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
   std::string xml_file = pkgpath + "/test/behavior_tree/transport.xml";
 
-  std::cerr << "[" << xml_file << "]" << std::endl;
-
   auto blackboard = BT::Blackboard::create();
   blackboard->set("node", node);
   BT::Tree tree = factory.createTreeFromFile(xml_file, blackboard);
@@ -131,31 +130,6 @@ TEST(bt_actions, load_plugins)
   t.join();
 }
 
-class ActionClient : public rclcpp::Node
-{
-  using ExecuteAction = plansys2_msgs::action::ExecuteAction;
-  using GoalHandleExecuteAction = rclcpp_action::ClientGoalHandle<ExecuteAction>;
-
-public:
-  ActionClient()
-  : Node("action_client") {}
-
-  void call_server(const std::string & action_name, const std::vector<std::string> & args)
-  {
-    client_ptr_ = rclcpp_action::create_client<ExecuteAction>(
-      shared_from_this(), action_name);
-
-    auto goal_msg = ExecuteAction::Goal();
-    goal_msg.action = action_name;
-    goal_msg.arguments = args;
-
-    action_future_ = client_ptr_->async_send_goal(goal_msg);
-  }
-
-  std::shared_future<GoalHandleExecuteAction::SharedPtr> action_future_;
-  rclcpp_action::Client<plansys2_msgs::action::ExecuteAction>::SharedPtr client_ptr_;
-};
-
 TEST(bt_actions, bt_action)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
@@ -167,80 +141,30 @@ TEST(bt_actions, bt_action)
     "assemble",
     xml_file,
     plugins,
-    10);
+    100ms);
 
-  auto action_client = std::make_shared<ActionClient>();
+  auto lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
+  auto action_client = plansys2::ActionExecutor::make_shared("(assemble r2d2 z p1 p2 p3)", lc_node);
+
+  bt_action->set_parameter(rclcpp::Parameter("action", "assemble"));
+  bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
   rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(bt_action->get_node_base_interface());
-  exe.add_node(action_client);
+  exe.add_node(lc_node->get_node_base_interface());
 
   bool finished = false;
-  bool first_time = true;
-
   while (rclcpp::ok && !finished) {
     exe.spin_some();
 
-    if (first_time) {
-      action_client->call_server("assemble", {});
-      first_time = false;
-    }
-    finished = bt_action->isFinished();
+    action_client->tick(lc_node->now());
+    finished = action_client->get_status() == BT::NodeStatus::SUCCESS;
   }
 
-  auto start = action_client->now();
-  while ( (action_client->now() - start).seconds() < 2) {
+  auto start = lc_node->now();
+  while ( (lc_node->now() - start).seconds() < 2) {
     exe.spin_some();
   }
-}
-
-TEST(bt_actions, bt_action_arg)
-{
-  auto move_server_node = std::make_shared<MoveServer>();
-  move_server_node->start_server();
-
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {rclcpp::spin_some(move_server_node);}
-    });
-
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
-  std::string xml_file = pkgpath + "/test/behavior_tree/transport.xml";
-
-  std::vector<std::string> plugins = {
-    "plansys2_close_gripper_bt_node",
-    "plansys2_open_gripper_bt_node",
-    "plansys2_move_bt_node"};
-  auto bt_action = std::make_shared<plansys2::BTAction>(
-    "transport",
-    xml_file,
-    plugins);
-
-  auto action_client = std::make_shared<ActionClient>();
-
-  rclcpp::executors::MultiThreadedExecutor exe;
-  exe.add_node(bt_action->get_node_base_interface());
-  exe.add_node(action_client);
-
-  bool first_time = true;
-  while (rclcpp::ok && !finish) {
-    exe.spin_some();
-
-    if (first_time) {
-      action_client->call_server("transport", {"r2d2", "bedroom", "kitchen"});
-      first_time = false;
-    }
-    finish = bt_action->isFinished();
-  }
-
-  t.join();
-
-  auto start = action_client->now();
-  while ( (action_client->now() - start).seconds() < 2) {
-    exe.spin_some();
-  }
-
-  std::cerr << "Finishing" << std::endl;
 }
 
 int main(int argc, char ** argv)

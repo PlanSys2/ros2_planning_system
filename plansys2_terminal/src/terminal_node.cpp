@@ -30,6 +30,8 @@
 #include "plansys2_executor/ExecutorClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 
+#include "plansys2_msgs/msg/action_execution_info.hpp"
+
 std::vector<std::string> tokenize(const std::string & text)
 {
   std::vector<std::string> ret;
@@ -537,9 +539,36 @@ public:
         auto feedback = executor_client_->getFeedBack();
 
         std::cout << "\r\e[K" << std::flush;
-        std::cout << "[" << feedback.seq_action << "/" << feedback.total_actions << "]" <<
-          "{" << feedback.current_action << "} [" << feedback.progress_current_action << "%]" <<
-          std::flush;
+        for (const auto & action_status : feedback.action_execution_status) {
+          if (action_status.status == plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED ||
+            action_status.status == plansys2_msgs::msg::ActionExecutionInfo::SUCCEDED)
+          {
+            continue;
+          }
+          std::cout << "[(" << action_status.action;
+
+          for (const auto & param : action_status.arguments) {
+            std::cout << " " << param;
+          }
+          std::cout << ") ";
+
+          switch (action_status.status) {
+            case plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED:
+              std::cout << "waiting]";
+              break;
+            case plansys2_msgs::msg::ActionExecutionInfo::EXECUTING:
+              std::cout << action_status.completion * 100.0 << "%]";
+              break;
+            case plansys2_msgs::msg::ActionExecutionInfo::FAILED:
+              std::cout << "FAILED]";
+              break;
+            case plansys2_msgs::msg::ActionExecutionInfo::SUCCEDED:
+              std::cout << "succeded]";
+              break;
+          }
+        }
+
+        std::cout << std::flush;
 
         rclcpp::spin_some(this->get_node_base_interface());
         loop_rate.sleep();
@@ -550,8 +579,7 @@ public:
       if (executor_client_->getResult().value().success) {
         std::cout << "Successful finished " << std::endl;
       } else {
-        std::cout << "Finished with error: " << executor_client_->getResult().value().error_info <<
-          std::endl;
+        std::cout << "Finished with error: " << std::endl;
       }
     } else {
       std::cout << "Rejected execution. is there any plan?" << std::endl;
@@ -563,31 +591,8 @@ public:
   {
     if (command.size() == 0) {
       execute_plan();
-    } else {
-      std::string action(command[0]);
-      for (int i = 1; i < command.size(); i++) {
-        action += " " + command[i];
-      }
-
-      auto action_executor = std::make_shared<plansys2::ActionExecutor>(action);
-
-      rclcpp::Rate loop_rate(5);
-      while (rclcpp::ok() && !action_executor->finished()) {
-        action_executor->update();
-        std::cout << "\r\e[K" << std::flush;
-        std::cout << action << "... [" << action_executor->getProgress() << "%]  " << std::flush;
-        loop_rate.sleep();
-      }
-      std::cout << std::endl;
-
-      if (action_executor->getStatus() != plansys2::ActionExecutor::SUCCEDED) {
-        std::cout << "Error while executing action" << std::endl;
-      } else {
-        std::cout << "Action succeded" << std::endl;
-      }
     }
   }
-
 
   void process_command(std::string & command)
   {

@@ -21,6 +21,7 @@
 #include <vector>
 #include <memory>
 #include <iostream>
+#include <locale>
 
 namespace plansys2
 {
@@ -150,7 +151,7 @@ public:
   /**
    * \param[out] predicates Predicates in the node (and its childs in cascade)
    */
-  virtual void getPredicates(std::vector<Predicate> & predicates) = 0;
+  virtual void getPredicates(std::vector<Predicate> & predicates, bool only_positives) = 0;
   NodeType type_;
 };
 
@@ -184,7 +185,7 @@ public:
   /**
    * \param[out] predicates The vector of predicates with this node's predicate
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
     predicates.push_back(predicate_);
   }
@@ -224,10 +225,10 @@ public:
   /**
    * \param[out] predicates The vector of predicates with the child's ones
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
     for (auto op : ops) {
-      op->getPredicates(predicates);
+      op->getPredicates(predicates, only_positives);
     }
   }
 
@@ -266,10 +267,10 @@ public:
   /**
    * \param[out] predicates The vector of predicates with the child's ones
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
     for (auto op : ops) {
-      op->getPredicates(predicates);
+      op->getPredicates(predicates, only_positives);
     }
   }
 
@@ -306,9 +307,11 @@ public:
   /**
    * \param[out] predicates The vector of predicates with the child's ones
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
-    op->getPredicates(predicates);
+    if (!only_positives) {
+      op->getPredicates(predicates, only_positives);
+    }
   }
   std::shared_ptr<TreeNode> op;
 };
@@ -382,10 +385,10 @@ public:
   /**
    * \param[out] predicates The vector of predicates contained in the PredicateTree.
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
     if (root_ != nullptr) {
-      root_->getPredicates(predicates);
+      root_->getPredicates(predicates, only_positives);
     }
   }
 
