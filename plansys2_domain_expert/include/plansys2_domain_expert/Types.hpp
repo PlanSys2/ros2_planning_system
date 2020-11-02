@@ -17,6 +17,7 @@
 
 #include <boost/optional.hpp>
 
+#include <regex>
 #include <string>
 #include <vector>
 #include <memory>
@@ -68,7 +69,7 @@ public:
   }
   /// Generates a string containing the predicate
   /**
-   * The resulting string does not contains the type of each parameter; only the name.
+   * The resulting string does not contain the type of each parameter; only the name.
    *
    * \return A text representing the predicate (name name_param1 name_par2 ... name_parN)
   */
@@ -87,7 +88,7 @@ public:
 
   /// Generates a Predicate from a string containing the predicate
   /**
-   * The resulting string does not contains the type of each parameter; only the name.
+   * The resulting string does not contain the type of each parameter; only the name.
    *
    * \param[in] predicate A string containing a predicate
    */
@@ -399,6 +400,80 @@ public:
   }
 
   std::shared_ptr<TreeNode> root_;
+};
+
+/// A PDDL Function
+/**
+ * This class contains the name, value, and parameters of a function
+ */
+class Function
+{
+public:
+  /// Make a Function
+  Function() {}
+
+  /// Make a Function from string
+  /**
+    * \param[in] function A string containing a function
+    */
+  explicit Function(const std::string & function)
+  {
+    fromString(function);
+  }
+
+  /// Generates a string containing the function
+  /**
+   * The resulting function does not contain the type of each parameter; only the name.
+   *
+   * \return A text representing the function (= (name name_param1 name_par2 ... name_parN) value)
+  */
+  std::string toString() const
+  {
+    std::string ret;
+    ret = "(= (" + name;
+    for (const auto & param : parameters) {
+      ret += " " + param.name;
+    }
+
+    ret += ") " + std::to_string(value) + ")";
+
+    return ret;
+  }
+
+  /// Generates a Function from a string containing the function
+  /**
+   * The input string does not contain the type of each parameter; only the name.
+   *
+   * \param[in] function A string containing a function
+   */
+  void fromString(const std::string & function)
+  {
+    std::regex name_regexp("[a-zA-Z][a-zA-Z0-9_\\-]*");
+    std::regex number_regexp("[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)");
+
+    std::smatch match;
+    std::string temp = function;
+
+    if (std::regex_search(temp, match, name_regexp)) {
+      name = match.str(0);
+      temp = match.suffix().str();
+    }
+
+    while (std::regex_search(temp, match, name_regexp)) {
+      parameters.push_back(plansys2::Param{match.str(0), ""});
+      temp = match.suffix().str();
+    }
+
+    if (std::regex_search(temp, match, number_regexp)) {
+      value = std::stod(match.str(0));
+    }
+  }
+
+  friend bool operator==(const Function & op1, const Function & op2);
+
+  std::string name;
+  std::vector<Param> parameters;
+  double value;
 };
 
 /// The Action struct contains all the information of a regular action

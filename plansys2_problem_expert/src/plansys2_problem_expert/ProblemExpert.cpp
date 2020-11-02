@@ -125,6 +125,44 @@ ProblemExpert::removePredicate(const Predicate & predicate)
   return found;
 }
 
+std::vector<Function>
+ProblemExpert::getFunctions()
+{
+  return functions_;
+}
+
+bool
+ProblemExpert::addFunction(const Function & function)
+{
+  if (!existFunction(function)) {
+    if (isValidFunction(function)) {
+      functions_.push_back(function);
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+bool
+ProblemExpert::removeFunction(const Function & function)
+{
+  bool found = false;
+  int i = 0;
+
+  while (!found && i < functions_.size()) {
+    if (functions_[i] == function) {
+      found = true;
+      functions_.erase(functions_.begin() + i);
+    }
+    i++;
+  }
+
+  return found;
+}
+
 Goal
 ProblemExpert::getGoal()
 {
@@ -194,6 +232,24 @@ ProblemExpert::existPredicate(const Predicate & predicate)
 }
 
 bool
+ProblemExpert::existFunction(const Function & function)
+{
+  bool found = false;
+  int i = 0;
+
+  while (!found && i < functions_.size()) {
+    if (functions_[i].name == function.name &&
+      functions_[i].parameters == function.parameters)
+    {
+      found = true;
+    }
+    i++;
+  }
+
+  return found;
+}
+
+bool
 ProblemExpert::isValidPredicate(const Predicate & predicate)
 {
   bool valid = false;
@@ -209,6 +265,33 @@ ProblemExpert::isValidPredicate(const Predicate & predicate)
         if (!arg_type) {
           same_types = false;
         } else if (arg_type.value().type != model_predicate.value().parameters[i].type) {
+          same_types = false;
+        }
+        i++;
+      }
+      valid = same_types;
+    }
+  }
+
+  return valid;
+}
+
+bool
+ProblemExpert::isValidFunction(const Function & function)
+{
+  bool valid = false;
+
+  const auto & model_function = domain_expert_->getFunction(function.name);
+  if (model_function) {
+    if (model_function.value().parameters.size() == function.parameters.size()) {
+      bool same_types = true;
+      int i = 0;
+      while (same_types && i < function.parameters.size()) {
+        auto arg_type = getInstance(function.parameters[i].name);
+
+        if (!arg_type) {
+          same_types = false;
+        } else if (arg_type.value().type != model_function.value().parameters[i].type) {
           same_types = false;
         }
         i++;
@@ -298,6 +381,18 @@ ProblemExpert::getProblem()
     std::transform(predicate.name.begin(), predicate.name.end(), predicate.name.begin(), ::tolower);
 
     problem.addInit(predicate.name, v);
+  }
+
+  for (Function function: functions_) {
+    StringVec v;
+
+    for (size_t i = 0; i < function.parameters.size(); i++) {
+      v.push_back(function.parameters[i].name);
+    }
+
+    std::transform(function.name.begin(), function.name.end(), function.name.begin(), ::tolower);
+
+    problem.addInit(function.name, function.value, v);
   }
 
   std::vector<Predicate> predicates;

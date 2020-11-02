@@ -45,6 +45,10 @@ public:
   bool addPredicate(const Predicate & predicate);
   bool removePredicate(const Predicate & predicate);
 
+  std::vector<Function> getFunctions();
+  bool addFunction(const Function & function);
+  bool removeFunction(const Function & function);
+
   Goal getGoal();
   bool setGoal(const Goal & goal);
   bool clearGoal();
@@ -53,9 +57,11 @@ public:
 
   bool existInstance(const std::string & name);
   bool existPredicate(const Predicate & predicate);
+  bool existFunction(const Function & function);
   bool existGoal(const Goal & goal);
   bool isValidType(const std::string & type);
   bool isValidPredicate(const Predicate & predicate);
+  bool isValidFunction(const Function & function);
   bool isValidGoal(const Goal & goal);
 
 private:
@@ -66,6 +72,7 @@ private:
   // parser::pddl::Problem problem_;
   std::vector<Instance> instances_;
   std::vector<Predicate> predicates_;
+  std::vector<Function> functions_;
   Goal goal_;
 
   std::shared_ptr<DomainExpert> domain_expert_;

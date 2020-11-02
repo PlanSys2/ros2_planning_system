@@ -1,0 +1,6 @@
+string function
+---
+bool success
+string[] argument_params
+float64 value
+string error_info

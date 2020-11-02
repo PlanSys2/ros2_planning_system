@@ -26,16 +26,21 @@
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
 #include "plansys2_msgs/srv/add_problem_instance.hpp"
 #include "plansys2_msgs/srv/add_problem_predicate.hpp"
+#include "plansys2_msgs/srv/add_problem_function.hpp"
 #include "plansys2_msgs/srv/get_problem_goal.hpp"
 #include "plansys2_msgs/srv/get_problem_instance_details.hpp"
 #include "plansys2_msgs/srv/get_problem_instances.hpp"
 #include "plansys2_msgs/srv/get_problem_predicate_details.hpp"
 #include "plansys2_msgs/srv/get_problem_predicates.hpp"
+#include "plansys2_msgs/srv/get_problem_function_details.hpp"
+#include "plansys2_msgs/srv/get_problem_functions.hpp"
 #include "plansys2_msgs/srv/get_problem.hpp"
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
 #include "plansys2_msgs/srv/remove_problem_instance.hpp"
 #include "plansys2_msgs/srv/remove_problem_predicate.hpp"
+#include "plansys2_msgs/srv/remove_problem_function.hpp"
 #include "plansys2_msgs/srv/exist_problem_predicate.hpp"
+#include "plansys2_msgs/srv/exist_problem_function.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -73,6 +78,11 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::AddProblemPredicate::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::AddProblemPredicate::Response> response);
 
+  void add_problem_function_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::AddProblemFunction::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::AddProblemFunction::Response> response);
+
   void get_problem_goal_service_callback(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::GetProblemGoal::Request> request,
@@ -98,6 +108,16 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::GetProblemPredicates::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::GetProblemPredicates::Response> response);
 
+  void get_problem_function_details_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::GetProblemFunctionDetails::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::GetProblemFunctionDetails::Response> response);
+
+  void get_problem_functions_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::GetProblemFunctions::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::GetProblemFunctions::Response> response);
+
   void get_problem_service_callback(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::GetProblem::Request> request,
@@ -118,10 +138,20 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::RemoveProblemPredicate::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::RemoveProblemPredicate::Response> response);
 
+  void remove_problem_function_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::RemoveProblemFunction::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::RemoveProblemFunction::Response> response);
+
   void exist_problem_predicate_service_callback(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::ExistProblemPredicate::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::ExistProblemPredicate::Response> response);
+
+  void exist_problem_function_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::ExistProblemFunction::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::ExistProblemFunction::Response> response);
 
 private:
   std::shared_ptr<ProblemExpert> problem_expert_;
@@ -132,6 +162,8 @@ private:
     add_problem_instance_service_;
   rclcpp::Service<plansys2_msgs::srv::AddProblemPredicate>::SharedPtr
     add_problem_predicate_service_;
+  rclcpp::Service<plansys2_msgs::srv::AddProblemFunction>::SharedPtr
+    add_problem_function_service_;
   rclcpp::Service<plansys2_msgs::srv::GetProblemGoal>::SharedPtr
     get_problem_goal_service_;
   rclcpp::Service<plansys2_msgs::srv::GetProblemInstanceDetails>::SharedPtr
@@ -142,6 +174,10 @@ private:
     get_problem_predicate_details_service_;
   rclcpp::Service<plansys2_msgs::srv::GetProblemPredicates>::SharedPtr
     get_problem_predicates_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetProblemFunctionDetails>::SharedPtr
+    get_problem_function_details_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetProblemFunctions>::SharedPtr
+    get_problem_functions_service_;
   rclcpp::Service<plansys2_msgs::srv::GetProblem>::SharedPtr
     get_problem_service_;
   rclcpp::Service<plansys2_msgs::srv::RemoveProblemGoal>::SharedPtr
@@ -150,8 +186,12 @@ private:
     remove_problem_instance_service_;
   rclcpp::Service<plansys2_msgs::srv::RemoveProblemPredicate>::SharedPtr
     remove_problem_predicate_service_;
+  rclcpp::Service<plansys2_msgs::srv::RemoveProblemFunction>::SharedPtr
+    remove_problem_function_service_;
   rclcpp::Service<plansys2_msgs::srv::ExistProblemPredicate>::SharedPtr
     exist_problem_predicate_service_;
+  rclcpp::Service<plansys2_msgs::srv::ExistProblemFunction>::SharedPtr
+    exist_problem_function_service_;
 
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Empty>::SharedPtr update_pub_;
 };
