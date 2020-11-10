@@ -43,6 +43,21 @@ public:
 	void addParams( int m, unsigned n ) {}
 };
 
+class Assign : public FunctionModifier {
+
+public:
+
+    Assign( int val = 1 ) : FunctionModifier( "assign", val ) { }
+
+    Assign( Function * f, const IntVec & p = IntVec() ) : FunctionModifier( "assign", f, p ) { }
+
+    Assign( const FunctionModifier * i, Domain & d ) : FunctionModifier( "assign", i, d ) { }
+
+    Condition * copy( Domain & d ) {
+        return new Assign( this, d );
+    }
+};
+
 class Decrease : public FunctionModifier {
 
 public:
