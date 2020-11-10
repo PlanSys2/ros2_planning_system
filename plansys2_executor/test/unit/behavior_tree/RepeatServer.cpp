@@ -52,7 +52,7 @@ RepeaterServer::handle_goal(
     current_goal_ = *goal;
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   } else {
-    rclcpp_action::GoalResponse::REJECT;
+    return rclcpp_action::GoalResponse::REJECT;
   }
 }
 
