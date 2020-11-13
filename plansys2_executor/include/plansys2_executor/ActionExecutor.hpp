@@ -48,7 +48,7 @@ public:
     AT_END_EF_ERROR,
     STARTING,
     EXECUTING,
-    SUCCEDED
+    SUCCEEDED
   };
 
   explicit ActionExecutor(const std::string & action);

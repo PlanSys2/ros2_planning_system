@@ -179,13 +179,13 @@ public:
 
   void clean_command(std::string & command)
   {
-    // remove continous spaces
+    // remove continuous spaces
     size_t pos;
     while ((pos = command.find("  ")) != command.npos) {
       command.erase(pos, 1);
     }
 
-    // remove fron spaces
+    // remove from spaces
     while (*command.begin() == ' ') {
       command.erase(0, 1);
     }
@@ -580,10 +580,10 @@ public:
       }
       std::cout << std::endl;
 
-      if (action_executor->getStatus() != plansys2::ActionExecutor::SUCCEDED) {
+      if (action_executor->getStatus() != plansys2::ActionExecutor::SUCCEEDED) {
         std::cout << "Error while executing action" << std::endl;
       } else {
-        std::cout << "Action succeded" << std::endl;
+        std::cout << "Action succeeded" << std::endl;
       }
     }
   }
