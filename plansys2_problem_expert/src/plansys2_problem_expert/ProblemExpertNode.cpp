@@ -738,11 +738,7 @@ ProblemExpertNode::update_problem_function_service_callback(
 
     function.value = request->value;
 
-    response->success = true;
-    if (problem_expert_->existFunction(function)) {
-      response->success &= problem_expert_->removeFunction(function);
-    }
-    response->success &= problem_expert_->addFunction(function);
+    response->success = problem_expert_->updateFunction(function);
 
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());

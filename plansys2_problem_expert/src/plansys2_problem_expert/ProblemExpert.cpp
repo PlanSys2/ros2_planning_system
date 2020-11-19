@@ -163,6 +163,22 @@ ProblemExpert::removeFunction(const Function & function)
   return found;
 }
 
+bool
+ProblemExpert::updateFunction(const Function & function)
+{
+  if (existFunction(function)) {
+    if (isValidFunction(function)) {
+      removeFunction(function);
+      functions_.push_back(function);
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
 Goal
 ProblemExpert::getGoal()
 {
