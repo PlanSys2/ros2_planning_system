@@ -56,6 +56,20 @@ public:
    */
   std::vector<std::string> getPredicates();
 
+  /// Get the functions existing in the domain.
+  /**
+   * \return The vector containing the name of the functions.
+   */
+  std::vector<std::string> getFunctions();
+
+  /// Get the details of a function existing in the domain.
+  /**
+   * \param[in] function The name of the function.
+   * \return A Fuction object containing the predicate name and its parameters (name and type).
+   *    If the function does not exist, the value returned has not value.
+   */
+  boost::optional<plansys2::Function> getFunction(const std::string & function);
+
   /// Get the details of a predicate existing in the domain.
   /**
    * \param[in] predicate The name of the predicate.

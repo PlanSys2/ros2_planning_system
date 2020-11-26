@@ -58,7 +58,7 @@ char * completion_generator(const char * text, int state)
   static size_t match_index = 0;
 
   std::vector<std::string> vocabulary{"get", "set", "remove", "run"};
-  std::vector<std::string> vocabulary_set{"instance", "predicate", "goal"};
+  std::vector<std::string> vocabulary_set{"instance", "predicate", "assignment", "goal"};
   std::vector<std::string> vocabulary_get{"model", "problem", "domain", "plan"};
   std::vector<std::string> vocabulary_remove{"instance", "predicate", "goal"};
   std::vector<std::string> vocabulary_get_problem{"instances", "predicates", "goal"};
@@ -373,6 +373,30 @@ public:
     }
   }
 
+  void process_set_assignment(std::vector<std::string> & command) {
+    if (command.size() > 0) {
+      plansys2::Assignment assignment;
+
+      std::string total_expr;
+      for (const auto & token : command) {
+        total_expr += " " + token;
+      }
+      assignment.fromString(total_expr);
+
+      if (!problem_client_->addAssignment(assignment)) {
+        std::cerr <<
+          "Could not add the assignment [" <<
+          assignment.toString() << "]" << std::endl;
+      } else {
+        std::cout << "done" << std::endl;
+      }
+    } else {
+      std::cout << "\tUsage: \n\t\tset assignment [assignment]" <<
+        std::endl;
+    }
+  }
+
+
   void process_set_predicate(std::vector<std::string> & command)
   {
     if (command.size() > 0) {
@@ -445,15 +469,18 @@ public:
       } else if (command[0] == "predicate") {
         pop_front(command);
         process_set_predicate(command);
+      } else if (command[0] == "assignment") {
+        pop_front(command);
+        process_set_assignment(command);
       } else if (command[0] == "goal") {
         pop_front(command);
         process_set_goal(command);
       } else {
-        std::cout << "\tUsage: \n\t\tset [instance|predicate|goal]..." <<
+        std::cout << "\tUsage: \n\t\tset [instance|predicate|assignment|goal]..." <<
           std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tset [instance|predicate|goal]..." <<
+      std::cout << "\tUsage: \n\t\tset [instance|predicate|assignment|goal]..." <<
         std::endl;
     }
   }

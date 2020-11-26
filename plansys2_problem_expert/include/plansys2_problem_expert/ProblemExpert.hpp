@@ -45,6 +45,9 @@ public:
   bool addPredicate(const Predicate & predicate);
   bool removePredicate(const Predicate & predicate);
 
+  bool addAssignment(const Assignment & assignment);
+  bool removeAssignment(const Assignment & assignment);
+
   Goal getGoal();
   bool setGoal(const Goal & goal);
   bool clearGoal();
@@ -53,19 +56,26 @@ public:
 
   bool existInstance(const std::string & name);
   bool existPredicate(const Predicate & predicate);
+  bool existAssignment(const Assignment & assignment);
   bool existGoal(const Goal & goal);
   bool isValidType(const std::string & type);
   bool isValidPredicate(const Predicate & predicate);
+  bool isValidAssignment(const Assignment & assignment);
   bool isValidGoal(const Goal & goal);
+  bool updateAssignment(const Assignment & assignment);
 
 private:
   bool checkPredicateTreeTypes(
     std::shared_ptr<TreeNode> node,
     std::shared_ptr<DomainExpert> & domain_expert_);
 
+  bool removeAssignmentsReferencing(const std::string & name);
+  bool removePredicatesReferencing(const std::string & name);
+
   // parser::pddl::Problem problem_;
   std::vector<Instance> instances_;
   std::vector<Predicate> predicates_;
+  std::vector<Assignment> assignments_;
   Goal goal_;
 
   std::shared_ptr<DomainExpert> domain_expert_;
