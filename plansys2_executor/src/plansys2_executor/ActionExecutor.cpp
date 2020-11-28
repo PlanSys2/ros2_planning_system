@@ -201,7 +201,7 @@ ActionExecutor::result_callback(const GoalHandleExecuteAction::WrappedResult & r
       finished_ = true;
       RCLCPP_ERROR(spin_node_->get_logger(), "Action client execution error testing at_end reqs");
     } else if (apply(current_action_.at_end_effects)) {
-      status_ = SUCCEDED;
+      status_ = SUCCEEDED;
       finished_ = true;
     } else {
       status_ = AT_END_EF_ERROR;

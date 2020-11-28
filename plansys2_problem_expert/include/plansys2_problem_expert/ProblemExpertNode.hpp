@@ -24,6 +24,7 @@
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
+#include "plansys2_msgs/srv/add_problem_assignment.hpp"
 #include "plansys2_msgs/srv/add_problem_instance.hpp"
 #include "plansys2_msgs/srv/add_problem_predicate.hpp"
 #include "plansys2_msgs/srv/get_problem_goal.hpp"
@@ -62,6 +63,11 @@ public:
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::AddProblemGoal::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::AddProblemGoal::Response> response);
+
+  void add_problem_assignment_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::AddProblemAssignment::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::AddProblemAssignment::Response> response);
 
   void add_problem_instance_service_callback(
     const std::shared_ptr<rmw_request_id_t> request_header,
@@ -128,6 +134,8 @@ private:
 
   rclcpp::Service<plansys2_msgs::srv::AddProblemGoal>::SharedPtr
     add_problem_goal_service_;
+  rclcpp::Service<plansys2_msgs::srv::AddProblemAssignment>::SharedPtr
+    add_problem_assignment_service_;
   rclcpp::Service<plansys2_msgs::srv::AddProblemInstance>::SharedPtr
     add_problem_instance_service_;
   rclcpp::Service<plansys2_msgs::srv::AddProblemPredicate>::SharedPtr

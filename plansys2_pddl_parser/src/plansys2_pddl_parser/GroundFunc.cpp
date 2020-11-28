@@ -8,7 +8,7 @@ void GroundFunc<double>::PDDLPrint( std::ostream & s, unsigned indent, const Tok
 	tabindent( s, indent );
 	s << "( = ";
 	TypeGround::PDDLPrint( s, 0, ts, d );
-	s << " " << ( int )value << " )";
+	s << " " << ( double )value << " )";
 }
 
 template <>

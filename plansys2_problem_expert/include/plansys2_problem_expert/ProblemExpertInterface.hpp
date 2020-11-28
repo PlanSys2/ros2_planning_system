@@ -39,6 +39,8 @@ public:
   virtual bool removePredicate(const Predicate & predicate) = 0;
   virtual bool existPredicate(const Predicate & predicate) = 0;
 
+  virtual bool addAssignment(const Assignment & assignment) = 0;
+
   virtual Goal getGoal() = 0;
   virtual bool setGoal(const Goal & goal) = 0;
   virtual bool clearGoal() = 0;

@@ -54,6 +54,13 @@ ProblemExpertNode::ProblemExpertNode()
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
 
+  add_problem_assignment_service_ = create_service<plansys2_msgs::srv::AddProblemAssignment>(
+    "problem_expert/add_problem_assignment",
+    std::bind(
+      &ProblemExpertNode::add_problem_assignment_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+
   add_problem_instance_service_ = create_service<plansys2_msgs::srv::AddProblemInstance>(
     "problem_expert/add_problem_instance",
     std::bind(
@@ -247,6 +254,47 @@ ProblemExpertNode::add_problem_goal_service_callback(
     } else {
       response->success = false;
       response->error_info = "Malformed expression";
+    }
+  }
+}
+
+void
+ProblemExpertNode::add_problem_assignment_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::AddProblemAssignment::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::AddProblemAssignment::Response> response) {
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    plansys2::Assignment assignment;
+
+    assignment.name = request->assignment;
+
+    for (std::string param_name : request->arguments) {
+      plansys2::Param p;
+      p.name = param_name;
+      p.type ="";
+      assignment.parameters.push_back(p);
+    }
+    assignment.value = request->value;
+
+    response->success = problem_expert_->addAssignment(assignment);
+
+    /** Debug start */
+    std::cout << "assignment.name : '" << assignment.name << "'" << std::endl;
+
+    for (std::string param_name : request->arguments) {
+      std::cout << "param_name : '" << param_name << "'" << std::endl;
+    }
+    std::cout << "assignment.value: '" << assignment.value << "'" << std::endl;
+    /** Debug end */
+
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+    } else {
+      response->error_info = "Invalid function assignment";
     }
   }
 }

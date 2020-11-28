@@ -22,6 +22,7 @@
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
+#include "plansys2_msgs/srv/add_problem_assignment.hpp"
 #include "plansys2_msgs/srv/add_problem_instance.hpp"
 #include "plansys2_msgs/srv/add_problem_predicate.hpp"
 #include "plansys2_msgs/srv/get_problem_goal.hpp"
@@ -55,6 +56,8 @@ public:
   bool removePredicate(const Predicate & predicate);
   bool existPredicate(const Predicate & predicate);
 
+  bool addAssignment(const Assignment & assignment);
+
   Goal getGoal();
   bool setGoal(const Goal & goal);
   bool clearGoal();
@@ -64,6 +67,8 @@ public:
 private:
   rclcpp::Client<plansys2_msgs::srv::AddProblemGoal>::SharedPtr
     add_problem_goal_client_;
+  rclcpp::Client<plansys2_msgs::srv::AddProblemAssignment>::SharedPtr
+    add_problem_assignment_client_;
   rclcpp::Client<plansys2_msgs::srv::AddProblemInstance>::SharedPtr
     add_problem_instance_client_;
   rclcpp::Client<plansys2_msgs::srv::AddProblemPredicate>::SharedPtr
