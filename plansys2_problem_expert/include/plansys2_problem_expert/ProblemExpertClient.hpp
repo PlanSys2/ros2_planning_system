@@ -39,6 +39,7 @@
 #include "plansys2_msgs/srv/remove_problem_function.hpp"
 #include "plansys2_msgs/srv/exist_problem_predicate.hpp"
 #include "plansys2_msgs/srv/exist_problem_function.hpp"
+#include "plansys2_msgs/srv/update_problem_function.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -64,6 +65,7 @@ public:
   bool addFunction(const Function & function);
   bool removeFunction(const Function & function);
   bool existFunction(const Function & function);
+  bool updateFunction(const Function & function);
 
   Goal getGoal();
   bool setGoal(const Goal & goal);
@@ -108,6 +110,8 @@ private:
     exist_problem_predicate_client_;
   rclcpp::Client<plansys2_msgs::srv::ExistProblemFunction>::SharedPtr
     exist_problem_function_client_;
+  rclcpp::Client<plansys2_msgs::srv::UpdateProblemFunction>::SharedPtr
+    update_problem_function_client_;
   rclcpp::Node::SharedPtr node_;
 };
 

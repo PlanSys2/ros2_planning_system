@@ -35,6 +35,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/RemoveProblemFunction.srv"
   "srv/ExistProblemPredicate.srv"
   "srv/ExistProblemFunction.srv"
+  "srv/UpdateProblemFunction.srv"
   "srv/GetPlan.srv"
   "action/ExecutePlan.action"
   "action/ExecuteAction.action" 

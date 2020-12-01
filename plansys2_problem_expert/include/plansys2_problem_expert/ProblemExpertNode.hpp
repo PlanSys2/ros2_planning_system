@@ -41,6 +41,7 @@
 #include "plansys2_msgs/srv/remove_problem_function.hpp"
 #include "plansys2_msgs/srv/exist_problem_predicate.hpp"
 #include "plansys2_msgs/srv/exist_problem_function.hpp"
+#include "plansys2_msgs/srv/update_problem_function.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -153,6 +154,11 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::ExistProblemFunction::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::ExistProblemFunction::Response> response);
 
+  void update_problem_function_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::UpdateProblemFunction::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::UpdateProblemFunction::Response> response);
+
 private:
   std::shared_ptr<ProblemExpert> problem_expert_;
 
@@ -192,6 +198,8 @@ private:
     exist_problem_predicate_service_;
   rclcpp::Service<plansys2_msgs::srv::ExistProblemFunction>::SharedPtr
     exist_problem_function_service_;
+  rclcpp::Service<plansys2_msgs::srv::UpdateProblemFunction>::SharedPtr
+    update_problem_function_service_;
 
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Empty>::SharedPtr update_pub_;
 };

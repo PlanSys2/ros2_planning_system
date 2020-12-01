@@ -43,6 +43,7 @@ public:
   virtual bool addFunction(const Function & function) = 0;
   virtual bool removeFunction(const Function & function) = 0;
   virtual bool existFunction(const Function & function) = 0;
+  virtual bool updateFunction(const Function & function) = 0;
 
   virtual Goal getGoal() = 0;
   virtual bool setGoal(const Goal & goal) = 0;

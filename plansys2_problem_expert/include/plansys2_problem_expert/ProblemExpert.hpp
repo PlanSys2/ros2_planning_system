@@ -48,6 +48,7 @@ public:
   std::vector<Function> getFunctions();
   bool addFunction(const Function & function);
   bool removeFunction(const Function & function);
+  bool updateFunction(const Function & function);
 
   Goal getGoal();
   bool setGoal(const Goal & goal);
