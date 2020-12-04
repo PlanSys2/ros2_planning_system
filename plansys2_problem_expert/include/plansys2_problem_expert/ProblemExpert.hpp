@@ -44,11 +44,13 @@ public:
   std::vector<Predicate> getPredicates();
   bool addPredicate(const Predicate & predicate);
   bool removePredicate(const Predicate & predicate);
+  boost::optional<Predicate> getPredicate(const std::string & name);
 
   std::vector<Function> getFunctions();
   bool addFunction(const Function & function);
   bool removeFunction(const Function & function);
   bool updateFunction(const Function & function);
+  boost::optional<Function> getFunction(const std::string & name);
 
   Goal getGoal();
   bool setGoal(const Goal & goal);

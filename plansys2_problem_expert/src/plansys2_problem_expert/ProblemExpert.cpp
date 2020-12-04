@@ -125,6 +125,28 @@ ProblemExpert::removePredicate(const Predicate & predicate)
   return found;
 }
 
+boost::optional<Predicate>
+ProblemExpert::getPredicate(const std::string & predicate_name)
+{
+  Predicate ret;
+
+  bool found = false;
+  int i = 0;
+  while (i < predicates_.size() && !found) {
+    if (predicates_[i].name == predicate_name) {
+      found = true;
+      ret = predicates_[i];
+    }
+    i++;
+  }
+
+  if (found) {
+    return ret;
+  } else {
+    return {};
+  }
+}
+
 std::vector<Function>
 ProblemExpert::getFunctions()
 {
@@ -176,6 +198,28 @@ ProblemExpert::updateFunction(const Function & function)
     }
   } else {
     return false;
+  }
+}
+
+boost::optional<Function>
+ProblemExpert::getFunction(const std::string & function_name)
+{
+  Function ret;
+
+  bool found = false;
+  int i = 0;
+  while (i < functions_.size() && !found) {
+    if (functions_[i].name == function_name) {
+      found = true;
+      ret = functions_[i];
+    }
+    i++;
+  }
+
+  if (found) {
+    return ret;
+  } else {
+    return {};
   }
 }
 

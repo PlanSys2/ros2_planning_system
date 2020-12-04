@@ -60,12 +60,14 @@ public:
   bool addPredicate(const Predicate & predicate);
   bool removePredicate(const Predicate & predicate);
   bool existPredicate(const Predicate & predicate);
+  boost::optional<Predicate> getPredicate(const std::string & name);
 
   std::vector<Function> getFunctions();
   bool addFunction(const Function & function);
   bool removeFunction(const Function & function);
   bool existFunction(const Function & function);
   bool updateFunction(const Function & function);
+  boost::optional<Function> getFunction(const std::string & name);
 
   Goal getGoal();
   bool setGoal(const Goal & goal);

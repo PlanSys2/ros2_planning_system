@@ -84,7 +84,7 @@ ProblemExpertNode::ProblemExpertNode()
 
   get_problem_instance_details_service_ =
     create_service<plansys2_msgs::srv::GetProblemInstanceDetails>(
-    "problem_expert/get_problem_instance_details",
+    "problem_expert/get_problem_instance",
     std::bind(
       &ProblemExpertNode::get_problem_instance_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
@@ -99,7 +99,7 @@ ProblemExpertNode::ProblemExpertNode()
 
   get_problem_predicate_details_service_ =
     create_service<plansys2_msgs::srv::GetProblemPredicateDetails>(
-    "problem_expert/get_problem_predicate_details", std::bind(
+    "problem_expert/get_problem_predicate", std::bind(
       &ProblemExpertNode::get_problem_predicate_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
@@ -113,7 +113,7 @@ ProblemExpertNode::ProblemExpertNode()
 
   get_problem_function_details_service_ =
     create_service<plansys2_msgs::srv::GetProblemFunctionDetails>(
-    "problem_expert/get_problem_function_details", std::bind(
+    "problem_expert/get_problem_function", std::bind(
       &ProblemExpertNode::get_problem_function_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
