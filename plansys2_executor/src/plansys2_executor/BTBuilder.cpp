@@ -74,7 +74,8 @@ BTBuilder::get_tree(const Plan & current_plan)
   if (root_counters > 1) {
     bt_plan = std::string("<root main_tree_to_execute=\"MainTree\">\n") +
       t(1) + "<BehaviorTree ID=\"MainTree\">\n" +
-      t(2) + "<Parallel threshold=\"" + std::to_string(root_counters) + "\">\n";
+      t(2) + "<Parallel success_threshold=\"" + std::to_string(root_counters) +
+        "\" failure_threshold=\"1\">\n";
 
     for (auto & level : levels) {
       for (auto & action_unit : level->action_units) {
@@ -210,7 +211,8 @@ BTBuilder::get_flow_tree(
 
     ret = ret +
       execution_block(root_flow->action, root_flow->time, l + 1) +
-      t(l + 1) + "<Parallel threshold=\"" + std::to_string(succ(root_flow).size()) + "\">\n";
+      t(l + 1) + "<Parallel success_threshold=\"" + std::to_string(succ(root_flow).size()) +
+        "\"  failure_threshold=\"1\">\n";
 
     for (auto & action : succ(root_flow)) {
       ret = ret + get_flow_tree(action, used_actions, l + 2);
@@ -233,7 +235,7 @@ BTBuilder::execution_block(const std::string & action, int plan_time, int l)
     std::to_string(plan_time) + "\"/>\n";
   ret = ret + t(l + 1) + "<ApplyAtStartEffect action=\"" + action + ":" +
     std::to_string(plan_time) + "\"/>\n";
-  ret = ret + t(l + 1) + "<Parallel threshold=\"2\">\n";
+  ret = ret + t(l + 1) + "<Parallel success_threshold=\"2\" failure_threshold=\"1\">\n";
   ret = ret + t(l + 2) + "<CheckOverAllReq action=\"" + action + ":" +
     std::to_string(plan_time) + "\"/>\n";
   ret = ret + t(l + 2) + "<ExecuteAction action=\"" + action + ":" +

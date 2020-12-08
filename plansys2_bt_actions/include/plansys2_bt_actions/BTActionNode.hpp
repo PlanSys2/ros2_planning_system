@@ -25,6 +25,8 @@
 namespace plansys2
 {
 
+using namespace std::chrono_literals;  // NOLINT
+
 template<class ActionT>
 class BtActionNode : public BT::ActionNodeBase
 {
@@ -37,6 +39,11 @@ public:
   {
     node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node");
 
+    // Get the required items from the blackboard
+    server_timeout_ = 1s;
+    //  config().blackboard->template get<std::chrono::milliseconds>("server_timeout");
+    // getInput<std::chrono::milliseconds>("server_timeout", server_timeout_);
+
     // Initialize the input and output messages
     goal_ = typename ActionT::Goal();
     result_ = typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult();
@@ -45,6 +52,7 @@ public:
     if (getInput("server_name", remapped_action_name)) {
       action_name_ = remapped_action_name;
     }
+    createActionClient(action_name_);
 
     // Give the derive class a chance to do any initialization
     RCLCPP_INFO(node_->get_logger(), "\"%s\" BtActionNode initialized", xml_tag_name.c_str());
@@ -63,10 +71,8 @@ public:
     action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name);
 
     // Make sure the server is actually there before continuing
-    if (!action_client_->action_server_is_ready()) {
-      RCLCPP_INFO(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
-      action_client_->wait_for_action_server();
-    }
+    RCLCPP_INFO(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
+    action_client_->wait_for_action_server();
   }
 
   // Any subclass of BtActionNode that accepts parameters must provide a providedPorts method
@@ -181,7 +187,7 @@ public:
   {
     if (should_cancel_goal()) {
       auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
-      if (rclcpp::spin_until_future_complete(node_, future_cancel) !=
+      if (rclcpp::spin_until_future_complete(node_, future_cancel, server_timeout_) !=
         rclcpp::FutureReturnCode::SUCCESS)
       {
         RCLCPP_ERROR(
@@ -227,7 +233,7 @@ protected:
 
     auto future_goal_handle = action_client_->async_send_goal(goal_, send_goal_options);
 
-    if (rclcpp::spin_until_future_complete(node_, future_goal_handle) !=
+    if (rclcpp::spin_until_future_complete(node_, future_goal_handle, server_timeout_) !=
       rclcpp::FutureReturnCode::SUCCESS)
     {
       throw std::runtime_error("send_goal failed");
@@ -259,6 +265,10 @@ protected:
 
   // The node that will be used for any ROS operations
   rclcpp::Node::SharedPtr node_;
+
+  // The timeout value while waiting for response from a server when a
+  // new action goal is sent or canceled
+  std::chrono::milliseconds server_timeout_;
 };
 
 
