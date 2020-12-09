@@ -330,14 +330,15 @@ ProblemExpert::isValidAssignment(const Assignment & assignment)
           same_types = false;
         } else if (arg_type.value().type != model_function.value().parameters[i].type) {
           bool isSubtype = false;
-          for (std::string subType: model_function.value().parameters[i].subTypes) {
+          for (std::string subType : model_function.value().parameters[i].subTypes) {
             if (arg_type.value().type == subType) {
               isSubtype = true;
               break;
             }
           }
-          if(!isSubtype)
+          if (!isSubtype) {
             same_types = false;
+          }
         }
         i++;
       }
@@ -365,14 +366,15 @@ ProblemExpert::isValidPredicate(const Predicate & predicate)
           same_types = false;
         } else if (arg_type.value().type != model_predicate.value().parameters[i].type) {
           bool isSubtype = false;
-          for (std::string subType: model_predicate.value().parameters[i].subTypes) {
+          for (std::string subType : model_predicate.value().parameters[i].subTypes) {
             if (arg_type.value().type == subType) {
               isSubtype = true;
               break;
             }
           }
-          if(!isSubtype)
+          if (!isSubtype) {
             same_types = false;
+          }
         }
         i++;
       }
