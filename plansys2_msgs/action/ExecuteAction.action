@@ -1,7 +1,6 @@
 string action
 string[] arguments
 ---
-bool success
-string error_info
+plansys2_msgs/ActionExecutionInfo action_execution_status
 ---
-float32 progress
+plansys2_msgs/ActionExecutionInfo action_execution_status

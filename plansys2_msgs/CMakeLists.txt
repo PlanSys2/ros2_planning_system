@@ -10,6 +10,8 @@ find_package(action_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/FunctionAssignment.msg"
+  "msg/ActionExecution.msg"
+  "msg/ActionExecutionInfo.msg"
   "srv/GetDomain.srv"
   "srv/GetDomainTypes.srv"
   "srv/GetDomainPredicates.srv"

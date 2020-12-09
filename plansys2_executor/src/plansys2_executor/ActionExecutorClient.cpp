@@ -24,116 +24,159 @@
 namespace plansys2
 {
 
-using ExecuteAction = plansys2_msgs::action::ExecuteAction;
-using GoalHandleExecuteAction = rclcpp_action::ClientGoalHandle<ExecuteAction>;
-
 ActionExecutorClient::ActionExecutorClient(
-  const std::string & action,
-  float rate)
-: CascadeLifecycleNode(action), name_(action)
+  const std::string & node_name,
+  const std::chrono::nanoseconds & rate)
+: CascadeLifecycleNode(node_name),
+  rate_(rate),
+  commited_(false)
 {
-  using namespace std::placeholders;
-
-  this->execute_action_server_ = rclcpp_action::create_server<ExecuteAction>(
-    this->get_node_base_interface(),
-    this->get_node_clock_interface(),
-    this->get_node_logging_interface(),
-    this->get_node_waitables_interface(),
-    action,
-    std::bind(&ActionExecutorClient::handle_goal, this, _1, _2),
-    std::bind(&ActionExecutorClient::handle_cancel, this, _1),
-    std::bind(&ActionExecutorClient::handle_accepted, this, _1));
-
-  feedback_ = std::make_shared<ExecuteAction::Feedback>();
-  result_ = std::make_shared<ExecuteAction::Result>();
-
-  set_rate(rate);
-
-  trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  declare_parameter("action");
+  declare_parameter("specialized_arguments");
 }
 
-rclcpp_action::GoalResponse
-ActionExecutorClient::handle_goal(
-  const rclcpp_action::GoalUUID & uuid,
-  std::shared_ptr<const ExecuteAction::Goal> goal)
+using CallbackReturnT =
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+using std::placeholders::_1;
+
+CallbackReturnT
+ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
 {
-  RCLCPP_INFO(this->get_logger(), "Received [%s] action request", goal->action.c_str());
+  action_managed_ = get_parameter("action").get_value<std::string>();
+  get_parameter_or<std::vector<std::string>>(
+    "specialized_arguments", specialized_arguments_, std::vector<std::string>({}));
 
-  for (size_t i = 0; i < goal->arguments.size(); i++) {
-    RCLCPP_INFO(this->get_logger(), " Argument %zu: [%s]", i, goal->arguments[i].c_str());
-  }
+  action_hub_pub_ = create_publisher<plansys2_msgs::msg::ActionExecution>(
+    "/actions_hub", rclcpp::QoS(100).reliable());
+  action_hub_sub_ = create_subscription<plansys2_msgs::msg::ActionExecution>(
+    "/actions_hub", rclcpp::QoS(100).reliable(),
+    std::bind(&ActionExecutorClient::action_hub_callback, this, _1));
 
-  arguments_ = goal->arguments;
+  action_hub_pub_->on_activate();
 
-  return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+  return CallbackReturnT::SUCCESS;
 }
 
-rclcpp_action::CancelResponse
-ActionExecutorClient::handle_cancel(
-  const std::shared_ptr<GoalHandleExecuteAction> goal_handle)
+CallbackReturnT
+ActionExecutorClient::on_activate(const rclcpp_lifecycle::State & state)
 {
-  RCLCPP_INFO(this->get_logger(), "Received request to cancel move action");
+  timer_ = create_wall_timer(
+    rate_, std::bind(&ActionExecutorClient::do_work, this));
 
-  return rclcpp_action::CancelResponse::ACCEPT;
+  return CallbackReturnT::SUCCESS;
 }
 
-void
-ActionExecutorClient::handle_accepted(const std::shared_ptr<GoalHandleExecuteAction> goal_handle)
+CallbackReturnT
+ActionExecutorClient::on_deactivate(const rclcpp_lifecycle::State & state)
 {
-  using namespace std::placeholders;
-  std::thread{std::bind(&ActionExecutorClient::execute, this, _1), goal_handle}.detach();
+  timer_ = nullptr;
+
+  return CallbackReturnT::SUCCESS;
 }
 
 void
-ActionExecutorClient::execute(
-  const std::shared_ptr<GoalHandleExecuteAction> goal_handle)
+ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecution::SharedPtr msg)
 {
-  feedback_ = std::make_shared<ExecuteAction::Feedback>();
-  result_ = std::make_shared<ExecuteAction::Result>();
+  switch (msg->type) {
+    case plansys2_msgs::msg::ActionExecution::REQUEST:
+      if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE &&
+        !commited_ && should_execute(msg->action, msg->arguments))
+      {
+        commited_ = true;
+        send_response(msg);
+      }
+      break;
+    case plansys2_msgs::msg::ActionExecution::CONFIRM:
+      if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE &&
+        commited_ && msg->node_id == get_name())
+      {
+        current_arguments_ = msg->arguments;
+        trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+        commited_ = false;
+      }
+      break;
+    case plansys2_msgs::msg::ActionExecution::REJECT:
+      if (msg->node_id == get_name()) {
+        commited_ = false;
+      }
+      break;
+    case plansys2_msgs::msg::ActionExecution::RESPONSE:
+    case plansys2_msgs::msg::ActionExecution::FEEDBACK:
+    case plansys2_msgs::msg::ActionExecution::FINISH:
+      break;
+    default:
+      RCLCPP_ERROR(
+        get_logger(), "Msg %d type not recognized in %s executor performer",
+        msg->type, get_name());
+      break;
+  }
+}
 
-  atStart();
-  feedback_->progress = 0.0;
-
-  while (get_current_state().id() != lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE) {
-    rate_->sleep();
-    RCLCPP_WARN_STREAM(
-      get_logger(), "Action [" << get_name() << "] was not inactive at" <<
-        "the initial of its execution");
+bool
+ActionExecutorClient::should_execute(
+  const std::string & action, const std::vector<std::string> & args)
+{
+  if (action != action_managed_) {
+    return false;
   }
 
-  trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  if (!specialized_arguments_.empty()) {
+    if (specialized_arguments_.size() != args.size()) {
+      RCLCPP_WARN(
+        get_logger(), "current and specialized arguments lenght doesn't match %zu %zu",
+        args.size(), specialized_arguments_.size());
+    }
 
-  while (get_current_state().id() != lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE) {
-    rate_->sleep();
-    RCLCPP_WARN_STREAM(get_logger(), "Action [" << get_name() << "] waiting for activation");
+    for (int i = 0; i < specialized_arguments_.size() && i < args.size(); i++) {
+      if (specialized_arguments_[i] != "" && specialized_arguments_[i] != args[i]) {
+        return false;
+      }
+    }
   }
 
-  while (rclcpp::ok() && !goal_handle->is_canceling() && !isFinished()) {
-    actionStep();
+  return true;
+}
 
-    goal_handle->publish_feedback(feedback_);
-    rate_->sleep();
-  }
+void
+ActionExecutorClient::send_response(
+  const plansys2_msgs::msg::ActionExecution::SharedPtr msg)
+{
+  plansys2_msgs::msg::ActionExecution msg_resp(*msg);
+  msg_resp.type = plansys2_msgs::msg::ActionExecution::RESPONSE;
+  msg_resp.node_id = get_name();
 
-  if (goal_handle->is_canceling()) {
-    result_->success = false;
-    result_->error_info = "Charging action cancelled";
-    goal_handle->canceled(result_);
-  } else {
-    atSuccess();
+  action_hub_pub_->publish(msg_resp);
+}
 
-    result_->success = true;
-    result_->error_info = "";
-    goal_handle->succeed(result_);
-  }
+void
+ActionExecutorClient::send_feedback(float completion, const std::string & status)
+{
+  plansys2_msgs::msg::ActionExecution msg_resp;
+  msg_resp.type = plansys2_msgs::msg::ActionExecution::FEEDBACK;
+  msg_resp.node_id = get_name();
+  msg_resp.action = action_managed_;
+  msg_resp.arguments = current_arguments_;
+  msg_resp.completion = completion;
+  msg_resp.status = status;
 
+  action_hub_pub_->publish(msg_resp);
+}
+
+void
+ActionExecutorClient::finish(bool success, float completion, const std::string & status)
+{
   trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
 
-  while (get_current_state().id() != lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE) {
-    rate_->sleep();
-    RCLCPP_WARN_STREAM(get_logger(), "Action [" << get_name() << "] waiting for deactivation");
-  }
-}
+  plansys2_msgs::msg::ActionExecution msg_resp;
+  msg_resp.type = plansys2_msgs::msg::ActionExecution::FINISH;
+  msg_resp.node_id = get_name();
+  msg_resp.action = action_managed_;
+  msg_resp.arguments = current_arguments_;
+  msg_resp.completion = completion;
+  msg_resp.status = status;
+  msg_resp.success = success;
 
+  action_hub_pub_->publish(msg_resp);
+}
 
 }  // namespace plansys2

@@ -19,7 +19,7 @@
 
 #include <string>
 
-#include "plansys2_planner/Types.hpp"
+#include "plansys2_core/Types.hpp"
 
 namespace plansys2
 {

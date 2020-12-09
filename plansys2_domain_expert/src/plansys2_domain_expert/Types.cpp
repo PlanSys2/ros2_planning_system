@@ -59,9 +59,9 @@ std::string getReducedString(const std::string & expr)
 
 NodeType getType(const std::string & expr)
 {
-  if (std::regex_search(expr, std::regex("\\(and"))) {return AND;}
-  if (std::regex_search(expr, std::regex("\\(or"))) {return OR;}
-  if (std::regex_search(expr, std::regex("\\(not"))) {return NOT;}
+  if (std::regex_search(expr, std::regex("\\(and[ ]*\\(", std::regex::ECMAScript))) {return AND;}
+  if (std::regex_search(expr, std::regex("\\(or[ ]*\\(", std::regex::ECMAScript))) {return OR;}
+  if (std::regex_search(expr, std::regex("\\(not[ ]*\\(", std::regex::ECMAScript))) {return NOT;}
 
   return PREDICATE;
 }

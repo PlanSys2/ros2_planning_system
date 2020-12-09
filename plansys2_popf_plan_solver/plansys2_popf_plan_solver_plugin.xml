@@ -1,0 +1,7 @@
+<class_libraries>
+  <library path="plansys2_popf_plan_solver">
+    <class type="plansys2::POPFPlanSolver" base_class_type="plansys2::PlanSolverBase">
+      <description></description>
+    </class>
+  </library>
+</class_libraries>

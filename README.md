@@ -36,7 +36,7 @@ This project was initially developed for ROS2 Eloquent. In addition to official 
 Before compiling, install popf and include cascade_lifecycle in your workspace (or install from deb packages when available):
 
 ```
-plansys2_ws/src$ sudo apt-get install ros-eloquent-popf
+plansys2_ws/src$ sudo apt-get install ros-foxy-popf
 plansys2_ws/src$ git clone http://github.com/fmrico/cascade_lifecycle.git
 ```
 
@@ -52,6 +52,10 @@ plansys2_ws$ colcon build --symlink-install
 In this [example](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/tree/master/plansys2_patrol_navigation_example), the robot make plans to patrol some waypoints:
 
 [![Patrolling example](https://img.youtube.com/vi/fAEGySqefwo/0.jpg)](https://www.youtube.com/watch?v=fAEGySqefwo)
+
+# ROS Planning System in ROSDevDay2020
+
+[![Plansys2 Talk in youtube](https://img.youtube.com/vi/nLp4uzN5NMs/0.jpg)](https://www.youtube.com/watch?v=nLp4uzN5NMs&t=12364s)
 
 # Further readings
 

@@ -2,7 +2,7 @@ project(plansys2_problem_expert)
 
 cmake_minimum_required(VERSION 3.5)
 
-set(CMAKE_BUILD_TYPE DEBUG)
+find_package(Threads REQUIRED)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -33,6 +33,7 @@ set(PROBLEM_EXPERT_SOURCES
 
 add_library(${PROJECT_NAME} SHARED ${PROBLEM_EXPERT_SOURCES})
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
+target_include_directories(${PROJECT_NAME} PUBLIC ${Boost_INCLUDE_DIRS})
 
 add_executable(problem_expert_node
   src/problem_expert_node.cpp
