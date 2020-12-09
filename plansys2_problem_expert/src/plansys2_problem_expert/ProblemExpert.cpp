@@ -443,7 +443,7 @@ ProblemExpert::getProblem()
     problem.addInit(predicate.name, v);
   }
 
-  for (Function function: functions_) {
+  for (Function function : functions_) {
     StringVec v;
 
     for (size_t i = 0; i < function.parameters.size(); i++) {

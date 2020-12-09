@@ -318,7 +318,8 @@ public:
         process_get_model_action(command);
       } else {
         std::cout <<
-          "\tUsage: \n\t\tget model [types|predicates|functions|actions|predicate|function|action]..." <<
+          "\tUsage: \n\t\tget model [types|predicates|functions|actions|predicate|function|action]..."  // NOLINT(whitespace/line_length)
+                  <<
           std::endl;
       }
     } else {
@@ -459,7 +460,7 @@ public:
       std::smatch match;
       std::string temp;
 
-      for (const auto &token : command) {
+      for (const auto & token : command) {
         temp += token + " ";
       }
 
@@ -595,7 +596,7 @@ public:
       std::smatch match;
       std::string temp;
 
-      for (const auto &token : command) {
+      for (const auto & token : command) {
         temp += token + " ";
       }
 
