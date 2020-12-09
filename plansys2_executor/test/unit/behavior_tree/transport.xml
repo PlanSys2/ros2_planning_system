@@ -1,9 +1,0 @@
-<root main_tree_to_execute = "MainTree" >
-    <BehaviorTree ID="MainTree">
-       <Sequence name="root_sequence">
-           <Move           name="move" goal="${goal}"  goal_reached="${goal_reached}"/>
-           <OpenGripper    name="open_gripper"/>
-           <CloseGripper   name="close_gripper"/>
-       </Sequence>
-    </BehaviorTree>
-</root>

@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
+from ament_index_python.packages import get_package_share_directory
+
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable
 from launch.substitutions import LaunchConfiguration
@@ -19,6 +23,10 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    # Get the launch directory
+    bringup_dir = get_package_share_directory('plansys2_bringup')
+    config_dir = os.path.join(bringup_dir, 'params')
+    config_file = os.path.join(config_dir, 'plansys2_params.yaml')
 
     # Create the launch configuration variables
     model_file = LaunchConfiguration('model_file')
@@ -41,7 +49,10 @@ def generate_launch_description():
         executable='plansys2_node',
         output='screen',
         node_namespace=namespace,
-        parameters=[{'model_file': model_file}])
+        parameters=[
+          {'model_file': model_file},
+          config_file
+        ])
 
     # Create the launch description and populate
     ld = LaunchDescription()

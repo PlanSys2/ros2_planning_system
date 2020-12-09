@@ -36,7 +36,7 @@ This project was initially developed for ROS2 Eloquent. In addition to official 
 Before compiling, install popf and include cascade_lifecycle in your workspace (or install from deb packages when available):
 
 ```
-plansys2_ws/src$ sudo apt-get install ros-eloquent-popf
+plansys2_ws/src$ sudo apt-get install ros-foxy-popf
 plansys2_ws/src$ git clone http://github.com/fmrico/cascade_lifecycle.git
 ```
 

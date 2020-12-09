@@ -36,7 +36,7 @@ PlannerClient::getPlan(
 {
   Plan ret;
 
-  while (!get_plan_client_->wait_for_service(std::chrono::seconds(5))) {
+  while (!get_plan_client_->wait_for_service(std::chrono::seconds(30))) {
     if (!rclcpp::ok()) {
       return {};
     }
@@ -52,7 +52,7 @@ PlannerClient::getPlan(
 
   auto future_result = get_plan_client_->async_send_request(request);
 
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(5)) !=
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(30)) !=
     rclcpp::executor::FutureReturnCode::SUCCESS)
   {
     return {};

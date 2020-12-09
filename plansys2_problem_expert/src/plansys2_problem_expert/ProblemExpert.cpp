@@ -97,7 +97,8 @@ ProblemExpert::getPredicates()
 }
 
 bool
-ProblemExpert::addAssignment(const Assignment & assignment) {
+ProblemExpert::addAssignment(const Assignment & assignment)
+{
   if (!existAssignment(assignment)) {
     if (isValidAssignment(assignment)) {
       assignments_.push_back(assignment);
@@ -143,7 +144,8 @@ ProblemExpert::removePredicate(const Predicate & predicate)
 }
 
 bool
-ProblemExpert::removeAssignment(const Assignment & assignment) {
+ProblemExpert::removeAssignment(const Assignment & assignment)
+{
   bool found = false;
   int i = 0;
 
@@ -161,7 +163,8 @@ ProblemExpert::removeAssignment(const Assignment & assignment) {
 
 
 bool
-ProblemExpert::removeAssignmentsReferencing(const std::string & name) {
+ProblemExpert::removeAssignmentsReferencing(const std::string & name)
+{
   int i = 0;
 
   while (i < assignments_.size()) {
@@ -182,7 +185,8 @@ ProblemExpert::removeAssignmentsReferencing(const std::string & name) {
 
 
 bool
-ProblemExpert::removePredicatesReferencing(const std::string & name) {
+ProblemExpert::removePredicatesReferencing(const std::string & name)
+{
   int i = 0;
 
   while (i < predicates_.size()) {
@@ -252,13 +256,15 @@ ProblemExpert::existInstance(const std::string & name)
 }
 
 bool
-ProblemExpert::existAssignment(const Assignment & assignment) {
+ProblemExpert::existAssignment(const Assignment & assignment)
+{
   bool found = false;
   int i = 0;
 
   while (!found && i < assignments_.size()) {
     if (assignments_[i].name == assignment.name &&
-      assignments_[i].parameters == assignment.parameters) {
+      assignments_[i].parameters == assignment.parameters)
+    {
       found = true;
     }
     i++;
@@ -269,13 +275,15 @@ ProblemExpert::existAssignment(const Assignment & assignment) {
 
 
 bool
-ProblemExpert::updateAssignment(const Assignment & assignment) {
+ProblemExpert::updateAssignment(const Assignment & assignment)
+{
   bool found = false;
   int i = 0;
 
   while (!found && i < assignments_.size()) {
     if (assignments_[i].name == assignment.name &&
-      assignments_[i].parameters == assignment.parameters) {
+      assignments_[i].parameters == assignment.parameters)
+    {
       assignments_[i].value = assignment.value;  /** update only the value */
       found = true;
     }
@@ -305,10 +313,12 @@ ProblemExpert::existPredicate(const Predicate & predicate)
 
 
 bool
-ProblemExpert::isValidAssignment(const Assignment & assignment) {
+ProblemExpert::isValidAssignment(const Assignment & assignment)
+{
   bool valid = false;
 
-  const boost::optional<plansys2::Function> & model_function = domain_expert_->getFunction(assignment.name);
+  const boost::optional<plansys2::Function> & model_function = domain_expert_->getFunction(
+    assignment.name);
   if (model_function) {
     if (model_function.value().parameters.size() == assignment.parameters.size()) {
       bool same_types = true;
@@ -456,11 +466,13 @@ ProblemExpert::getProblem()
   for (Assignment assignment : assignments_) {
     StringVec v;
 
-    for (size_t i = 0; i< assignment.parameters.size(); i++) {
+    for (size_t i = 0; i < assignment.parameters.size(); i++) {
       v.push_back(assignment.parameters[i].name);
     }
 
-    std::transform(assignment.name.begin(), assignment.name.end(), assignment.name.begin(), ::tolower);
+    std::transform(
+      assignment.name.begin(), assignment.name.end(),
+      assignment.name.begin(), ::tolower);
 
     problem.addInit(assignment.name, assignment.value, v);
   }

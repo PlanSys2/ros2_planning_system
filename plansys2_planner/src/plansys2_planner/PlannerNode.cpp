@@ -25,7 +25,10 @@ namespace plansys2
 {
 
 PlannerNode::PlannerNode()
-: rclcpp_lifecycle::LifecycleNode("planner")
+: rclcpp_lifecycle::LifecycleNode("planner"),
+  lp_loader_("plansys2_core", "plansys2::PlanSolverBase"),
+  default_ids_{"POPF"},
+  default_types_{"plansys2::POPFPlanSolver"}
 {
   get_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
     "planner/get_plan",
@@ -34,7 +37,7 @@ PlannerNode::PlannerNode()
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
 
-  planner_ = std::make_shared<Planner>();
+  declare_parameter("plan_solver_plugins", default_ids_);
 }
 
 
@@ -44,7 +47,37 @@ using CallbackReturnT =
 CallbackReturnT
 PlannerNode::on_configure(const rclcpp_lifecycle::State & state)
 {
+  auto node = shared_from_this();
+
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
+
+  get_parameter("plan_solver_plugins", solver_ids_);
+  if (solver_ids_ == default_ids_) {
+    for (size_t i = 0; i < default_ids_.size(); ++i) {
+      plansys2::declare_parameter_if_not_declared(
+        node, default_ids_[i] + ".plugin",
+        rclcpp::ParameterValue(default_types_[i]));
+    }
+  }
+  solver_types_.resize(solver_ids_.size());
+
+  for (size_t i = 0; i != solver_types_.size(); i++) {
+    try {
+      solver_types_[i] = plansys2::get_plugin_type_param(node, solver_ids_[i]);
+      plansys2::PlanSolverBase::Ptr solver =
+        lp_loader_.createUniqueInstance(solver_types_[i]);
+
+      solver->configure(node, solver_ids_[i]);
+
+      RCLCPP_INFO(
+        get_logger(), "Created solver : %s of type %s",
+        solver_ids_[i].c_str(), solver_types_[i].c_str());
+      solvers_.insert({solver_ids_[i], solver});
+    } catch (const pluginlib::PluginlibException & ex) {
+      RCLCPP_FATAL(get_logger(), "Failed to create solver. Exception: %s", ex.what());
+      exit(-1);
+    }
+  }
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
@@ -100,7 +133,9 @@ PlannerNode::get_plan_service_callback(
   const std::shared_ptr<plansys2_msgs::srv::GetPlan::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response)
 {
-  auto plan = planner_->getPlan(request->domain, request->problem, get_namespace());
+  auto plan = solvers_.begin()->second->getPlan(
+    request->domain, request->problem, get_namespace());
+  // auto plan = planner_->getPlan(request->domain, request->problem, get_namespace());
 
   if (plan) {
     response->success = true;

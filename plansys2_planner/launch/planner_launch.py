@@ -22,6 +22,7 @@ def generate_launch_description():
     stdout_linebuf_envvar = SetEnvironmentVariable(
         'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
     namespace = LaunchConfiguration('namespace')
+    params_file = LaunchConfiguration('params_file')
 
     declare_namespace_cmd = DeclareLaunchArgument(
         'namespace',
@@ -35,7 +36,7 @@ def generate_launch_description():
         node_name='planner',
         namespace=namespace,
         output='screen',
-        parameters=[])
+        parameters=[params_file])
 
     # Create the launch description and populate
     ld = LaunchDescription()

@@ -21,6 +21,7 @@
 #include <vector>
 #include <memory>
 #include <iostream>
+#include <locale>
 
 namespace plansys2
 {
@@ -48,22 +49,24 @@ bool operator==(const Param & op1, const Param & op2);
  */
 std::string getReducedString(const std::string & expr);
 
-/** 
+/**
  * @brief A PDDL Function Assignment
  * This class contains the name and parameters of an assignment
  */
-class Assignment {
- public:
-  /** 
+class Assignment
+{
+public:
+  /**
    * @brief Make a Assignment
-   */ 
+   */
   Assignment() {}
 
   /**
    * @brief   Make a Assignment from string
    * @param[in] assignment A string containing an assignment
    */
-  explicit Assignment(const std::string & assignment) {
+  explicit Assignment(const std::string & assignment)
+  {
     fromString(assignment);
   }
 
@@ -73,7 +76,8 @@ class Assignment {
    *
    * @return A text representing the assignment (= (name name_param1 name_par2 ... name_parN) value)
   */
-  std::string toString() const {
+  std::string toString() const
+  {
     std::string ret;
     ret = "(= (" + name;
     for (const auto & param : parameters) {
@@ -86,7 +90,7 @@ class Assignment {
 
   /**
    * @brief Check for the identical name and paramters.
-   * 
+   *
    * @param other the assignment to compare
    * @return true if the name and the parameters of the assignments are the same. Even if the value differs.
    * @return false in other cases
@@ -96,7 +100,7 @@ class Assignment {
   /**
    * @brief split a "lisp -like" expression.
    *    Remove the spaces and the first bracket at both ends when ballanded.
-   * 
+   *
    * @param[in] expression a bracketed e
    * @return a vector with the first level elements in the expression
    */
@@ -109,7 +113,8 @@ class Assignment {
    *
    * \param[in] assignment A string containing a assignment
    */
-  void fromString(const std::string & assignment) {
+  void fromString(const std::string & assignment)
+  {
     std::vector<std::string> subexprs = splitExpr(assignment);
 
     // subexprs[0] should be "=";
@@ -131,15 +136,16 @@ class Assignment {
 };
 
 
-class Function {
- public:
- /**
-  * @brief Construct a new Function object
-  * 
-  */
+class Function
+{
+public:
+  /**
+   * @brief Construct a new Function object
+   *
+   */
   Function() {}  // TODO(Fabrice) : Is this usefull ?
 
- public:
+public:
   std::string name;
   std::vector<Param> parameters;
 };
@@ -246,7 +252,7 @@ public:
   /**
    * \param[out] predicates Predicates in the node (and its childs in cascade)
    */
-  virtual void getPredicates(std::vector<Predicate> & predicates) = 0;
+  virtual void getPredicates(std::vector<Predicate> & predicates, bool only_positives) = 0;
   NodeType type_;
 };
 
@@ -280,7 +286,7 @@ public:
   /**
    * \param[out] predicates The vector of predicates with this node's predicate
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
     predicates.push_back(predicate_);
   }
@@ -320,10 +326,10 @@ public:
   /**
    * \param[out] predicates The vector of predicates with the child's ones
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
     for (auto op : ops) {
-      op->getPredicates(predicates);
+      op->getPredicates(predicates, only_positives);
     }
   }
 
@@ -362,10 +368,10 @@ public:
   /**
    * \param[out] predicates The vector of predicates with the child's ones
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
     for (auto op : ops) {
-      op->getPredicates(predicates);
+      op->getPredicates(predicates, only_positives);
     }
   }
 
@@ -402,9 +408,11 @@ public:
   /**
    * \param[out] predicates The vector of predicates with the child's ones
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
-    op->getPredicates(predicates);
+    if (!only_positives) {
+      op->getPredicates(predicates, only_positives);
+    }
   }
   std::shared_ptr<TreeNode> op;
 };
@@ -478,10 +486,10 @@ public:
   /**
    * \param[out] predicates The vector of predicates contained in the PredicateTree.
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
     if (root_ != nullptr) {
-      root_->getPredicates(predicates);
+      root_->getPredicates(predicates, only_positives);
     }
   }
 
