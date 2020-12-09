@@ -36,6 +36,12 @@ public:
 		return name;
 	}
 
+	virtual void getSubTypesNames( std::vector<std::string> & typesNames) const {
+		for (Type subtype : subtypes ) {
+			typesNames.push_back(subtype.name);
+		}
+	}
+
 	void insertSubtype( Type * t ) {
 		subtypes.push_back( t );
 		t->supertype = this;

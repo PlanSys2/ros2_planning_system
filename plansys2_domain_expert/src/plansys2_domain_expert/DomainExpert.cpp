@@ -91,6 +91,7 @@ boost::optional<plansys2::Function> DomainExpert::getFunction(const std::string 
         plansys2::Param param;
         param.name = "?" + domain_.types[domain_.funcs[i]->params[j]]->getName() + std::to_string(j);
         param.type =       domain_.types[domain_.funcs[i]->params[j]]->getName();
+        domain_.types[domain_.funcs[i]->params[j]]->getSubTypesNames(param.subTypes);
         ret.parameters.push_back(param);
       }
     }
