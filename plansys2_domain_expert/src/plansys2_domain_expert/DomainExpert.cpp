@@ -48,7 +48,8 @@ DomainExpert::getTypes()
 
 
 std::vector<std::string>
-DomainExpert::getFunctions() {
+DomainExpert::getFunctions()
+{
   std::vector<std::string> ret;
   for (unsigned i = 0; i < domain_.funcs.size(); i++) {
     ret.push_back(domain_.funcs[i]->name);
@@ -68,13 +69,14 @@ DomainExpert::getPredicates()
 
 /**
  * @brief Search a function in the Domain and return it.
- * 
+ *
  * @param function name of the function
- * @return boost::optional<plansys2::Function> 
- *  The parameters name is the type name, prefixed by '?' 
+ * @return boost::optional<plansys2::Function>
+ *  The parameters name is the type name, prefixed by '?'
  *  and suffixed by the parameter index (starting at 0).
  */
-boost::optional<plansys2::Function> DomainExpert::getFunction(const std::string & function) {
+boost::optional<plansys2::Function> DomainExpert::getFunction(const std::string & function)
+{
   std::string function_search = function;
   std::transform(
     function_search.begin(), function_search.end(),
@@ -89,8 +91,9 @@ boost::optional<plansys2::Function> DomainExpert::getFunction(const std::string 
       ret.name = function_search;
       for (unsigned j = 0; j < domain_.funcs[i]->params.size(); j++) {
         plansys2::Param param;
-        param.name = "?" + domain_.types[domain_.funcs[i]->params[j]]->getName() + std::to_string(j);
-        param.type =       domain_.types[domain_.funcs[i]->params[j]]->getName();
+        param.name = "?" + domain_.types[domain_.funcs[i]->params[j]]->getName() +
+          std::to_string(j);
+        param.type = domain_.types[domain_.funcs[i]->params[j]]->getName();
         ret.parameters.push_back(param);
       }
     }

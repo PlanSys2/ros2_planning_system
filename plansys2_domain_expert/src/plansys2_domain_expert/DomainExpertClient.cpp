@@ -101,55 +101,6 @@ DomainExpertClient::getPredicates()
   return ret;
 }
 
-// boost::optional<std::vector<plansys2::Assignment>>
-// DomainExpertClient::getFunction(const std::string & function) {
-//   std::vector<plansys2::Assignment> ret;
-//   bool found = false;
-
-//   while (!get_function_details_client_->wait_for_service(std::chrono::seconds(1))) {
-//     if (!rclcpp::ok()) {
-//       return {};
-//     }
-//     RCLCPP_ERROR_STREAM(
-//       node_->get_logger(),
-//       get_function_details_client_->get_service_name() <<
-//         " service client: waiting for service to appear...");
-//   }
-
-//   auto request = std::make_shared<plansys2_msgs::srv::GetProblemFunctionDetails::Request>();
-
-//   request->function = function;
-
-//   auto future_result = get_function_details_client_->async_send_request(request);
-
-//   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-//     rclcpp::executor::FutureReturnCode::SUCCESS) {
-//     return {};
-//   }
-
-//   if (future_result.get()->success) {
-    
-//     ret.name = future_result.get()->name;
-
-//     for (size_t i = 0; i < future_result.get()->param_names.size(); i++) {
-//       plansys2::Param param;
-//       param.name = future_result.get()->param_names[i];
-//       param.type = future_result.get()->param_types[i];
-//       ret.parameters.push_back(param);
-//     }
-
-//     return ret;
-
-//   } else {
-//     RCLCPP_ERROR_STREAM(
-//       node_->get_logger(),
-//       get_predicate_details_client_->get_service_name() << ": " <<
-//         future_result.get()->error_info);
-//     return {};
-//   }
-//   return {};
-// }
-
 boost::optional<plansys2::Predicate>
 DomainExpertClient::getPredicate(const std::string & predicate)
 {

@@ -31,7 +31,7 @@ ProblemExpertClient::ProblemExpertClient(rclcpp::Node::SharedPtr provided_node)
   add_problem_instance_client_ = node_->create_client<plansys2_msgs::srv::AddProblemInstance>(
     "problem_expert/add_problem_instance");
   add_problem_assignment_client_ = node_->create_client<plansys2_msgs::srv::AddProblemAssignment>(
-      "problem_expert/add_problem_assignment");
+    "problem_expert/add_problem_assignment");
   add_problem_predicate_client_ = node_->create_client<plansys2_msgs::srv::AddProblemPredicate>(
     "problem_expert/add_problem_predicate");
   get_problem_goal_client_ = node_->create_client<plansys2_msgs::srv::GetProblemGoal>(
@@ -105,7 +105,8 @@ ProblemExpertClient::getInstances()
 }
 
 bool
-ProblemExpertClient::addAssignment(const Assignment & assignment) {
+ProblemExpertClient::addAssignment(const Assignment & assignment)
+{
   while (!add_problem_assignment_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
@@ -133,7 +134,8 @@ ProblemExpertClient::addAssignment(const Assignment & assignment) {
   if (rclcpp::spin_until_future_complete(
       node_,
       future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS) {
+    rclcpp::executor::FutureReturnCode::SUCCESS)
+  {
     return false;
   }
 

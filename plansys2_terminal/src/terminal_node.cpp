@@ -375,7 +375,8 @@ public:
     }
   }
 
-  void process_set_assignment(std::vector<std::string> & command) {
+  void process_set_assignment(std::vector<std::string> & command)
+  {
     if (command.size() > 0) {
       plansys2::Assignment assignment;
 
