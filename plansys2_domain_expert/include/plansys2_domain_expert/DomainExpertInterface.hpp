@@ -49,10 +49,24 @@ public:
   /// Get the details of a predicate existing in the domain.
   /**
    * \param[in] predicate The name of the predicate.
-   * \return A Predicate object containing the predicate name andt its parameters (name and type).
+   * \return A Predicate object containing the predicate name and its parameters (name and type).
    *    If the predicate does not exist, the value returned has not value.
    */
   virtual boost::optional<plansys2::Predicate> getPredicate(const std::string & predicate) = 0;
+
+  /// Get the functions existing in the domain.
+  /**
+   * \return The vector containing the name of the functions.
+   */
+  virtual std::vector<std::string> getFunctions() = 0;
+
+  /// Get the details of a function existing in the domain.
+  /**
+   * \param[in] function The name of the function.
+   * \return A Function object containing the function name and its parameters (name and type).
+   *    If the function does not exist, the value returned has not value.
+   */
+  virtual boost::optional<plansys2::Function> getFunction(const std::string & function) = 0;
 
   /// Get the regular actions existing in the domain.
   /**

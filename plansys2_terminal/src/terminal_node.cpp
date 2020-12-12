@@ -17,6 +17,7 @@
 
 #include <readline/history.h>
 
+#include <regex>
 #include <vector>
 #include <list>
 #include <string>
@@ -60,12 +61,12 @@ char * completion_generator(const char * text, int state)
   static size_t match_index = 0;
 
   std::vector<std::string> vocabulary{"get", "set", "remove", "run"};
-  std::vector<std::string> vocabulary_set{"instance", "predicate", "goal"};
+  std::vector<std::string> vocabulary_set{"instance", "predicate", "function", "goal"};
   std::vector<std::string> vocabulary_get{"model", "problem", "domain", "plan"};
-  std::vector<std::string> vocabulary_remove{"instance", "predicate", "goal"};
-  std::vector<std::string> vocabulary_get_problem{"instances", "predicates", "goal"};
-  std::vector<std::string> vocabulary_get_model{"types", "predicates", "actions", "predicate",
-    "action"};
+  std::vector<std::string> vocabulary_remove{"instance", "predicate", "function", "goal"};
+  std::vector<std::string> vocabulary_get_problem{"instances", "predicates", "functions", "goal"};
+  std::vector<std::string> vocabulary_get_model{"types", "predicates", "functions", "actions",
+    "predicate", "function", "action"};
 
   if (state == 0) {
     // During initialization, compute the actual matches for 'text' and keep
@@ -181,13 +182,13 @@ public:
 
   void clean_command(std::string & command)
   {
-    // remove continous spaces
+    // remove continuous spaces
     size_t pos;
     while ((pos = command.find("  ")) != command.npos) {
       command.erase(pos, 1);
     }
 
-    // remove fron spaces
+    // remove from spaces
     while (*command.begin() == ' ') {
       command.erase(0, 1);
     }
@@ -216,7 +217,25 @@ public:
     }
   }
 
-  void process_get_mode_action(std::vector<std::string> & command)
+  void process_get_model_function(std::vector<std::string> & command)
+  {
+    if (command.size() == 1) {
+      auto functions = domain_client_->getFunction(command[0]);
+      if (functions) {
+        std::cout << "Parameters: " << functions.value().parameters.size() << std::endl;
+        for (size_t i = 0; i < functions.value().parameters.size(); i++) {
+          std::cout << "\t" << functions.value().parameters[i].type << " - " <<
+            functions.value().parameters[i].name << std::endl;
+        }
+      } else {
+        std::cout << "Error when looking for params of " << command[0] << std::endl;
+      }
+    } else {
+      std::cout << "\tUsage: \n\t\tget model function [function_name]" << std::endl;
+    }
+  }
+
+  void process_get_model_action(std::vector<std::string> & command)
   {
     if (command.size() == 1) {
       auto action = domain_client_->getAction(command[0]);
@@ -272,6 +291,13 @@ public:
         for (const auto & predicate : predicates) {
           std::cout << "\t" << predicate << std::endl;
         }
+      } else if (command[0] == "functions") {
+        auto functions = domain_client_->getFunctions();
+
+        std::cout << "Functions: " << functions.size() << std::endl;
+        for (const auto & function : functions) {
+          std::cout << "\t" << function << std::endl;
+        }
       } else if (command[0] == "actions") {
         auto actions = domain_client_->getActions();
         auto durative_actions = domain_client_->getDurativeActions();
@@ -286,12 +312,16 @@ public:
       } else if (command[0] == "predicate") {
         pop_front(command);
         process_get_model_predicate(command);
+      } else if (command[0] == "function") {
+        pop_front(command);
+        process_get_model_function(command);
       } else if (command[0] == "action") {
         pop_front(command);
-        process_get_mode_action(command);
+        process_get_model_action(command);
       } else {
         std::cout <<
-          "\tUsage: \n\t\tget model [types|predicates|actions|predicate|action]..." <<
+          "\tUsage: \n\t\tget model [types|predicates|functions|actions|predicate|function|action]..."  // NOLINT(whitespace/line_length)
+                  <<
           std::endl;
       }
     } else {
@@ -317,12 +347,19 @@ public:
         for (const auto & predicate : predicates) {
           std::cout << predicate.toString() << std::endl;
         }
+      } else if (command[0] == "functions") {
+        auto functions = problem_client_->getFunctions();
+
+        std::cout << "Functions: " << functions.size() << std::endl;
+        for (const auto & function : functions) {
+          std::cout << function.toString() << std::endl;
+        }
       } else if (command[0] == "goal") {
         auto goal = problem_client_->getGoal();
         std::cout << "Goal: " << goal.toString() << std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tget problem [instances|predicates|goal]..." <<
+      std::cout << "\tUsage: \n\t\tget problem [instances|predicates|functions|goal]..." <<
         std::endl;
     }
   }
@@ -414,6 +451,27 @@ public:
     }
   }
 
+  void process_set_function(std::vector<std::string> & command)
+  {
+    if (command.size() > 0) {
+      plansys2::Function function;
+
+      std::string total_expr;
+      for (const auto & token : command) {
+        total_expr += " " + token;
+      }
+
+      function.fromString(total_expr);
+
+      if (!problem_client_->addFunction(function)) {
+        std::cerr << "Could not add the function [" << function.toString() << "]" << std::endl;
+      }
+    } else {
+      std::cout << "\tUsage: \n\t\tset function [function]" <<
+        std::endl;
+    }
+  }
+
   void process_set_goal(std::vector<std::string> & command)
   {
     if (command.size() > 0) {
@@ -447,15 +505,18 @@ public:
       } else if (command[0] == "predicate") {
         pop_front(command);
         process_set_predicate(command);
+      } else if (command[0] == "function") {
+        pop_front(command);
+        process_set_function(command);
       } else if (command[0] == "goal") {
         pop_front(command);
         process_set_goal(command);
       } else {
-        std::cout << "\tUsage: \n\t\tset [instance|predicate|goal]..." <<
+        std::cout << "\tUsage: \n\t\tset [instance|predicate|function|goal]..." <<
           std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tset [instance|predicate|goal]..." <<
+      std::cout << "\tUsage: \n\t\tset [instance|predicate|function|goal]..." <<
         std::endl;
     }
   }
@@ -510,6 +571,39 @@ public:
     }
   }
 
+  void process_remove_function(std::vector<std::string> & command)
+  {
+    if (command.size() > 0) {
+      plansys2::Function function;
+
+      std::regex name_regexp("[a-zA-Z][a-zA-Z0-9_\\-]*");
+
+      std::smatch match;
+      std::string temp;
+
+      for (const auto & token : command) {
+        temp += token + " ";
+      }
+
+      if (std::regex_search(temp, match, name_regexp)) {
+        function.name = match.str(0);
+        temp = match.suffix().str();
+      }
+
+      while (std::regex_search(temp, match, name_regexp)) {
+        function.parameters.push_back(plansys2::Param{match.str(0), ""});
+        temp = match.suffix().str();
+      }
+
+      if (!problem_client_->removeFunction(function)) {
+        std::cerr << "Could not remove the function [" << function.toString() << "]" << std::endl;
+      }
+    } else {
+      std::cout << "\tUsage: \n\t\remove function [name] [instance1] [instance2] ...[instaceN]" <<
+        std::endl;
+    }
+  }
+
   void process_remove(std::vector<std::string> & command)
   {
     if (command.size() > 0) {
@@ -519,14 +613,17 @@ public:
       } else if (command[0] == "predicate") {
         pop_front(command);
         process_remove_predicate(command);
+      } else if (command[0] == "function") {
+        pop_front(command);
+        process_remove_function(command);
       } else if (command[0] == "goal") {
         problem_client_->clearGoal();
       } else {
-        std::cout << "\tUsage: \n\t\tremove [instance|predicate|goal]..." <<
+        std::cout << "\tUsage: \n\t\tremove [instance|predicate|function|goal]..." <<
           std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tremove [instance|predicate|goal]..." <<
+      std::cout << "\tUsage: \n\t\tremove [instance|predicate|function|goal]..." <<
         std::endl;
     }
   }

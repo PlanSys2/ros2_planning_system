@@ -60,7 +60,10 @@ ProblemExpert::removeInstance(const std::string & name)
     }
     i++;
   }
-  // (fmrico)ToDo: We should remove all predicates and goals containing the removed instance
+
+  // (fmrico)ToDo: We should remove all goals containing the removed instance
+  removeFunctionsReferencing(name);
+  removePredicatesReferencing(name);
 
   return found;
 }
@@ -123,6 +126,146 @@ ProblemExpert::removePredicate(const Predicate & predicate)
   }
 
   return found;
+}
+
+boost::optional<Predicate>
+ProblemExpert::getPredicate(const std::string & predicate_name)
+{
+  Predicate ret;
+
+  bool found = false;
+  int i = 0;
+  while (i < predicates_.size() && !found) {
+    if (predicates_[i].name == predicate_name) {
+      found = true;
+      ret = predicates_[i];
+    }
+    i++;
+  }
+
+  if (found) {
+    return ret;
+  } else {
+    return {};
+  }
+}
+
+std::vector<Function>
+ProblemExpert::getFunctions()
+{
+  return functions_;
+}
+
+bool
+ProblemExpert::addFunction(const Function & function)
+{
+  if (!existFunction(function)) {
+    if (isValidFunction(function)) {
+      functions_.push_back(function);
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return updateFunction(function);
+  }
+}
+
+bool
+ProblemExpert::removeFunction(const Function & function)
+{
+  bool found = false;
+  int i = 0;
+
+  while (!found && i < functions_.size()) {
+    if (functions_[i] == function) {
+      found = true;
+      functions_.erase(functions_.begin() + i);
+    }
+    i++;
+  }
+
+  return found;
+}
+
+bool
+ProblemExpert::updateFunction(const Function & function)
+{
+  if (existFunction(function)) {
+    if (isValidFunction(function)) {
+      removeFunction(function);
+      functions_.push_back(function);
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+boost::optional<Function>
+ProblemExpert::getFunction(const std::string & function_name)
+{
+  Function ret;
+
+  bool found = false;
+  int i = 0;
+  while (i < functions_.size() && !found) {
+    if (functions_[i].name == function_name) {
+      found = true;
+      ret = functions_[i];
+    }
+    i++;
+  }
+
+  if (found) {
+    return ret;
+  } else {
+    return {};
+  }
+}
+
+bool
+ProblemExpert::removeFunctionsReferencing(const std::string & name)
+{
+  int i = 0;
+
+  while (i < functions_.size()) {
+    bool found = false;
+    for (Param parameter : functions_[i].parameters) {
+      if (parameter.name == name) {
+        functions_.erase(functions_.begin() + i);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      i++;
+    }
+  }
+  return false;
+}
+
+bool
+ProblemExpert::removePredicatesReferencing(const std::string & name)
+{
+  int i = 0;
+
+  while (i < predicates_.size()) {
+    bool found = false;
+    for (Param parameter : predicates_[i].parameters) {
+      if (parameter.name == name) {
+        predicates_.erase(predicates_.begin() + i);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      i++;
+    }
+  }
+  return false;
 }
 
 Goal
@@ -194,6 +337,24 @@ ProblemExpert::existPredicate(const Predicate & predicate)
 }
 
 bool
+ProblemExpert::existFunction(const Function & function)
+{
+  bool found = false;
+  int i = 0;
+
+  while (!found && i < functions_.size()) {
+    if (functions_[i].name == function.name &&
+      functions_[i].parameters == function.parameters)
+    {
+      found = true;
+    }
+    i++;
+  }
+
+  return found;
+}
+
+bool
 ProblemExpert::isValidPredicate(const Predicate & predicate)
 {
   bool valid = false;
@@ -209,6 +370,33 @@ ProblemExpert::isValidPredicate(const Predicate & predicate)
         if (!arg_type) {
           same_types = false;
         } else if (arg_type.value().type != model_predicate.value().parameters[i].type) {
+          same_types = false;
+        }
+        i++;
+      }
+      valid = same_types;
+    }
+  }
+
+  return valid;
+}
+
+bool
+ProblemExpert::isValidFunction(const Function & function)
+{
+  bool valid = false;
+
+  const auto & model_function = domain_expert_->getFunction(function.name);
+  if (model_function) {
+    if (model_function.value().parameters.size() == function.parameters.size()) {
+      bool same_types = true;
+      int i = 0;
+      while (same_types && i < function.parameters.size()) {
+        auto arg_type = getInstance(function.parameters[i].name);
+
+        if (!arg_type) {
+          same_types = false;
+        } else if (arg_type.value().type != model_function.value().parameters[i].type) {
           same_types = false;
         }
         i++;
@@ -300,6 +488,18 @@ ProblemExpert::getProblem()
     problem.addInit(predicate.name, v);
   }
 
+  for (Function function : functions_) {
+    StringVec v;
+
+    for (size_t i = 0; i < function.parameters.size(); i++) {
+      v.push_back(function.parameters[i].name);
+    }
+
+    std::transform(function.name.begin(), function.name.end(), function.name.begin(), ::tolower);
+
+    problem.addInit(function.name, function.value, v);
+  }
+
   std::vector<Predicate> predicates;
   goal_.getPredicates(predicates);
 
@@ -314,7 +514,6 @@ ProblemExpert::getProblem()
 
     problem.addGoal(predicate.name, v);
   }
-
 
   std::ostringstream stream;
   stream << problem;

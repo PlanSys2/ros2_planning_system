@@ -38,6 +38,14 @@ public:
   virtual bool addPredicate(const Predicate & predicate) = 0;
   virtual bool removePredicate(const Predicate & predicate) = 0;
   virtual bool existPredicate(const Predicate & predicate) = 0;
+  virtual boost::optional<Predicate> getPredicate(const std::string & name) = 0;
+
+  virtual std::vector<Function> getFunctions() = 0;
+  virtual bool addFunction(const Function & function) = 0;
+  virtual bool removeFunction(const Function & function) = 0;
+  virtual bool existFunction(const Function & function) = 0;
+  virtual bool updateFunction(const Function & function) = 0;
+  virtual boost::optional<Function> getFunction(const std::string & name) = 0;
 
   virtual Goal getGoal() = 0;
   virtual bool setGoal(const Goal & goal) = 0;

@@ -33,6 +33,11 @@ bool operator==(const Predicate & op1, const Predicate & op2)
   return op1.name == op2.name && op1.parameters == op2.parameters;
 }
 
+bool operator==(const Function & op1, const Function & op2)
+{
+  return op1.name == op2.name && op1.parameters == op2.parameters;
+}
+
 std::string getReducedString(const std::string & expr)
 {
   std::regex nts_chars("[\n\t]*", std::regex_constants::ECMAScript);
