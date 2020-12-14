@@ -1,4 +1,5 @@
 ![PlanSys2 Logo](/plansys2_docs/plansys2_logo.png)
+
 [![GitHub Action
 Status](https://github.com/IntelligentRoboticsLabs/ros2_planning_system/workflows/POPF/master.svg)](https://github.com/IntelligentRoboticsLabs/ros2_planning_system)
 
