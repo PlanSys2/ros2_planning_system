@@ -1,0 +1,28 @@
+name: POPF
+
+on:
+  pull_request:
+  push:
+    branches:
+      - ros2
+      
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+      fail-fast: false
+    steps:
+      - name: Install popf deps
+        run: sudo apt-get install libfl-dev
+      - name: Setup ROS 2
+        uses: ros-tooling/setup-ros@0.1.1
+        with:
+          required-ros-distributions: foxy
+      - name: build and test
+        uses: ros-tooling/action-ros-ci@0.1.0
+        with:
+          package-name: popf
+          target-ros2-distro: foxy
+          vcs-repo-file-url: ""
