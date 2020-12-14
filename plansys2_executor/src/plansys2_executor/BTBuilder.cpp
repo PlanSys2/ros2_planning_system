@@ -42,8 +42,8 @@ BTBuilder::get_tree(const Plan & current_plan)
 {
   auto levels = get_plan_actions(current_plan);
 
-  for (int i = 1; i < levels.size(); i++) {
-    int level_comp = i - 1;
+  for (size_t i = 1; i < levels.size(); i++) {
+    int level_comp = static_cast<int>(i) - 1;
     while (level_comp >= 0 && !level_satisfied(levels[i])) {
       check_connections(levels[level_comp], levels[i]);
       level_comp--;
