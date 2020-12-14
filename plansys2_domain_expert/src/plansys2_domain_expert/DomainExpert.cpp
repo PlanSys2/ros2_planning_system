@@ -135,6 +135,50 @@ DomainExpert::getFunction(const std::string & function)
 }
 
 std::vector<std::string>
+DomainExpert::getFunctions()
+{
+  std::vector<std::string> ret;
+  for (unsigned i = 0; i < domain_.funcs.size(); i++) {
+    ret.push_back(domain_.funcs[i]->name);
+  }
+  return ret;
+}
+
+boost::optional<plansys2::Function>
+DomainExpert::getFunction(const std::string & function)
+{
+  std::string function_search = function;
+  std::transform(
+    function_search.begin(), function_search.end(),
+    function_search.begin(), ::tolower);
+
+  plansys2::Function ret;
+  bool found = false;
+  unsigned i = 0;
+
+  while (i < domain_.funcs.size() && !found) {
+    if (domain_.funcs[i]->name == function_search) {
+      found = true;
+      ret.name = function_search;
+      for (unsigned j = 0; j < domain_.funcs[i]->params.size(); j++) {
+        plansys2::Param param;
+        param.name = "?" + domain_.types[domain_.funcs[i]->params[j]]->getName() +
+          std::to_string(j);
+        param.type = domain_.types[domain_.funcs[i]->params[j]]->name;
+        ret.parameters.push_back(param);
+      }
+    }
+    i++;
+  }
+
+  if (found) {
+    return ret;
+  } else {
+    return {};
+  }
+}
+
+std::vector<std::string>
 DomainExpert::getActions()
 {
   std::vector<std::string> ret;
