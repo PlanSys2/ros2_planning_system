@@ -319,7 +319,7 @@ std::shared_ptr<parser::pddl::tree::DurativeAction> get_action_from_string(
 
     for (size_t i = 0; i < action_output->parameters.size(); i++) {
       std::string pattern = "?" + std::to_string(i);
-      int pos;
+      size_t pos;
       while ((pos = at_start_req.find(pattern)) != std::string::npos) {
         at_start_req.replace(pos, pattern.length(), action_output->parameters[i].name);
       }
@@ -352,7 +352,7 @@ std::shared_ptr<parser::pddl::tree::DurativeAction> get_action_from_string(
 
     for (size_t i = 0; i < action_output->parameters.size(); i++) {
       std::string pattern = "?" + std::to_string(i);
-      int pos;
+      size_t pos;
       while ((pos = at_start_req.find(pattern)) != std::string::npos) {
         at_start_req.replace(pos, pattern.length(), action_output->parameters[i].name);
       }

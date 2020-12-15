@@ -18,6 +18,7 @@
   <depend>ament_index_cpp</depend>
   <depend>plansys2_core</depend>
   <depend>plansys2_pddl_parser</depend>
+  <depend>plansys2_popf_plan_solver</depend>
   <depend>plansys2_msgs</depend>
   <depend>plansys2_domain_expert</depend>
   <depend>plansys2_problem_expert</depend>
