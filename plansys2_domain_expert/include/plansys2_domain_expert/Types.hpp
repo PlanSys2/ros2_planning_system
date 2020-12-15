@@ -22,6 +22,7 @@
 #include <vector>
 #include <memory>
 #include <iostream>
+#include <locale>
 
 namespace plansys2
 {
@@ -47,7 +48,6 @@ bool operator==(const Param & op1, const Param & op2);
  * \return The expression reduced
  */
 std::string getReducedString(const std::string & expr);
-
 
 /// A PDDL Predicate
 /**
@@ -127,7 +127,7 @@ typedef enum {AND, OR, NOT, PREDICATE, UNKNOWN} NodeType;
 
 /// The base class for nodes in a tree of PDDL Nodes.
 /**
- * This class is created to analize and to evaluate loginal PDDL expression
+ * This class is created to analyze and to evaluate logical PDDL expression
  */
 class TreeNode
 {
@@ -147,11 +147,11 @@ public:
   virtual std::string toString() = 0;
 
 
-  /// This method will be recursivelly called to recollect the predicates in the tree
+  /// This method will be recursively called to recollect the predicates in the tree
   /**
    * \param[out] predicates Predicates in the node (and its childs in cascade)
    */
-  virtual void getPredicates(std::vector<Predicate> & predicates) = 0;
+  virtual void getPredicates(std::vector<Predicate> & predicates, bool only_positives) = 0;
   NodeType type_;
 };
 
@@ -159,7 +159,7 @@ public:
 /**
  * This function extracts recursivelly the logic expressions and predicates from the expression.
  *
- * \param[in] expr A expression containg predicates and logic operators
+ * \param[in] expr A expression containing predicates and logic operators
  * \return A smart pointer to the node created
 */
 std::shared_ptr<TreeNode> get_tree_node(const std::string & expr);
@@ -185,7 +185,7 @@ public:
   /**
    * \param[out] predicates The vector of predicates with this node's predicate
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
     predicates.push_back(predicate_);
   }
@@ -225,10 +225,10 @@ public:
   /**
    * \param[out] predicates The vector of predicates with the child's ones
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
     for (auto op : ops) {
-      op->getPredicates(predicates);
+      op->getPredicates(predicates, only_positives);
     }
   }
 
@@ -267,10 +267,10 @@ public:
   /**
    * \param[out] predicates The vector of predicates with the child's ones
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
     for (auto op : ops) {
-      op->getPredicates(predicates);
+      op->getPredicates(predicates, only_positives);
     }
   }
 
@@ -307,9 +307,11 @@ public:
   /**
    * \param[out] predicates The vector of predicates with the child's ones
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
-    op->getPredicates(predicates);
+    if (!only_positives) {
+      op->getPredicates(predicates, only_positives);
+    }
   }
   std::shared_ptr<TreeNode> op;
 };
@@ -383,10 +385,10 @@ public:
   /**
    * \param[out] predicates The vector of predicates contained in the PredicateTree.
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
     if (root_ != nullptr) {
-      root_->getPredicates(predicates);
+      root_->getPredicates(predicates, only_positives);
     }
   }
 

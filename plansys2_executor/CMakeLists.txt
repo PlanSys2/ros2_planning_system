@@ -2,7 +2,9 @@ project(plansys2_executor)
 
 cmake_minimum_required(VERSION 3.5)
 
-set(CMAKE_BUILD_TYPE DEBUG)
+set(CMAKE_BUILD_TYPE Debug)
+
+find_package(Threads REQUIRED)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -40,9 +42,17 @@ include_directories(include)
 set(EXECUTOR_SOURCES
   src/plansys2_executor/ExecutorClient.cpp
   src/plansys2_executor/ActionExecutor.cpp
-  src/plansys2_executor/ActionBTExecutorClient.cpp
   src/plansys2_executor/ActionExecutorClient.cpp
   src/plansys2_executor/ExecutorNode.cpp
+  src/plansys2_executor/BTBuilder.cpp
+  src/plansys2_executor/Utils.cpp
+  src/plansys2_executor/behavior_tree/execute_action_node.cpp
+  src/plansys2_executor/behavior_tree/wait_action_node.cpp
+  src/plansys2_executor/behavior_tree/wait_atstart_req_node.cpp
+  src/plansys2_executor/behavior_tree/check_overall_req_node.cpp
+  src/plansys2_executor/behavior_tree/check_atend_req_node.cpp
+  src/plansys2_executor/behavior_tree/apply_atstart_effect_node.cpp
+  src/plansys2_executor/behavior_tree/apply_atend_effect_node.cpp
 )
 
 

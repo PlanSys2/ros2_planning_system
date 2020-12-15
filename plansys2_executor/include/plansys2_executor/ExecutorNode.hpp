@@ -16,15 +16,20 @@
 #define PLANSYS2_EXECUTOR__EXECUTORNODE_HPP_
 
 #include <memory>
+#include <vector>
+#include <string>
+#include <map>
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
+#include "plansys2_executor/ActionExecutor.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 
 #include "plansys2_msgs/action/execute_plan.hpp"
+#include "plansys2_msgs/msg/action_execution_info.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
@@ -52,6 +57,7 @@ public:
 
 private:
   rclcpp::Node::SharedPtr node_;
+  rclcpp::Node::SharedPtr aux_node_;
 
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
@@ -71,6 +77,12 @@ private:
   void handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_handle);
 
   boost::optional<Plan> current_plan_;
+
+  std::vector<plansys2_msgs::msg::ActionExecutionInfo> get_feedback_info(
+    std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map);
+
+  void print_execution_info(
+    std::shared_ptr<std::map<std::string, ActionExecutionInfo>> exec_info);
 };
 
 }  // namespace plansys2

@@ -1,7 +1,8 @@
 ![PlanSys2 Logo](/plansys2_docs/plansys2_logo.png)
 
-[![Build Status](https://travis-ci.com/IntelligentRoboticsLabs/ros2_planning_system.svg?branch=master)](https://travis-ci.com/IntelligentRoboticsLabs/ros2_planning_system)
-
+[![GitHub Action
+Status](https://github.com/IntelligentRoboticsLabs/ros2_planning_system/workflows/master/master.svg)](https://github.com/IntelligentRoboticsLabs/ros2_planning_system)
+[![codecov](https://codecov.io/gh/IntelligentRoboticsLabs/ros2_planning_system/master/graph/badge.svg)](https://codecov.io/gh/IntelligentRoboticsLabs/ros2_planning_system)
 
 ROS2 Planning System (**plansys2** in short) is a project whose objective is to provide Robotics developers with a reliable, simple, and efficient PDDL-based planning system. It is implemented in ROS2, applying the latest concepts developed in this currently de-facto standard in Robotics.
 
@@ -36,7 +37,7 @@ This project was initially developed for ROS2 Eloquent. In addition to official 
 Before compiling, install popf and include cascade_lifecycle in your workspace (or install from deb packages when available):
 
 ```
-plansys2_ws/src$ sudo apt-get install ros-eloquent-popf
+plansys2_ws/src$ sudo apt-get install ros-foxy-popf
 plansys2_ws/src$ git clone http://github.com/fmrico/cascade_lifecycle.git
 ```
 
@@ -52,6 +53,10 @@ plansys2_ws$ colcon build --symlink-install
 In this [example](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/tree/master/plansys2_patrol_navigation_example), the robot make plans to patrol some waypoints:
 
 [![Patrolling example](https://img.youtube.com/vi/fAEGySqefwo/0.jpg)](https://www.youtube.com/watch?v=fAEGySqefwo)
+
+# ROS Planning System in ROSDevDay2020
+
+[![Plansys2 Talk in youtube](https://img.youtube.com/vi/nLp4uzN5NMs/0.jpg)](https://www.youtube.com/watch?v=nLp4uzN5NMs&t=12364s)
 
 # Further readings
 

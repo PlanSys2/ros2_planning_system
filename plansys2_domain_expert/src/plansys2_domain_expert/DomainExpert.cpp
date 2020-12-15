@@ -76,7 +76,7 @@ DomainExpert::getPredicate(const std::string & predicate)
         plansys2::Param param;
         param.name = "?" + domain_.types[domain_.preds[i]->params[j]]->getName() +
           std::to_string(j);
-        param.type = domain_.types[domain_.preds[i]->params[j]]->name;
+        param.type = domain_.types[domain_.preds[i]->params[j]]->getName();
         ret.parameters.push_back(param);
       }
     }
@@ -120,7 +120,7 @@ DomainExpert::getFunction(const std::string & function)
         plansys2::Param param;
         param.name = "?" + domain_.types[domain_.funcs[i]->params[j]]->getName() +
           std::to_string(j);
-        param.type = domain_.types[domain_.funcs[i]->params[j]]->name;
+        param.type = domain_.types[domain_.funcs[i]->params[j]]->getName();
         ret.parameters.push_back(param);
       }
     }

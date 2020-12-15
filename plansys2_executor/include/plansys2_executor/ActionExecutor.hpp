@@ -19,15 +19,14 @@
 #include <memory>
 #include <vector>
 
-#include "std_msgs/msg/empty.hpp"
-#include "plansys2_msgs/action/execute_action.hpp"
+#include "plansys2_msgs/msg/action_execution.hpp"
+#include "plansys2_msgs/msg/action_execution_info.hpp"
+#include "behaviortree_cpp_v3/behavior_tree.h"
 
-#include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_domain_expert/Types.hpp"
 
 #include "rclcpp/rclcpp.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 namespace plansys2
 {
@@ -35,67 +34,80 @@ namespace plansys2
 class ActionExecutor
 {
 public:
-  using ExecuteAction = plansys2_msgs::action::ExecuteAction;
-  using GoalHandleExecuteAction = rclcpp_action::ClientGoalHandle<ExecuteAction>;
-
   enum Status
   {
-    EXECUTION_ERROR,
-    AT_START_REQ_ERROR,
-    OVER_ALL_REQ_ERROR,
-    AT_END_REQ_ERROR,
-    AT_START_EF_ERROR,
-    AT_END_EF_ERROR,
-    STARTING,
-    EXECUTING,
-    SUCCEDED
+    IDLE,
+    DEALING,
+    RUNNING,
+    SUCCESS,
+    FAILURE
   };
 
-  explicit ActionExecutor(const std::string & action);
-  ActionExecutor();
+  using Ptr = std::shared_ptr<ActionExecutor>;
+  static Ptr make_shared(
+    const std::string & action,
+    rclcpp_lifecycle::LifecycleNode::SharedPtr node)
+  {
+    return std::make_shared<ActionExecutor>(action, node);
+  }
 
-  void update();
+  explicit ActionExecutor(
+    const std::string & action, rclcpp_lifecycle::LifecycleNode::SharedPtr node);
 
-  bool finished() {return finished_;}
-  float getProgress() {return feedback_.progress;}
-  Status getStatus() {return status_;}
+  BT::NodeStatus tick(const rclcpp::Time & now);
+  BT::NodeStatus get_status();
+  bool is_finished();
+
+  // Methods for debug
+  Status get_internal_status() const {return state_;}
+  void set_internal_status(Status state) {state_ = state;}
+  std::string get_action_name() const {return action_name_;}
+  std::vector<std::string> get_action_params() const {return action_params_;}
+  plansys2_msgs::msg::ActionExecution last_msg;
+
+  rclcpp::Time get_start_time() const {return start_execution_;}
+  rclcpp::Time get_status_time() const {return state_time_;}
+
+  std::string get_feedback() const {return feedback_;}
+  float get_completion() const {return completion_;}
 
 protected:
-  std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
+  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
 
-  rclcpp_action::Client<ExecuteAction>::SharedPtr execute_action_client_ptr_;
-  rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr update_problem_sub_;
+  Status state_;
+  rclcpp::Time state_time_;
+  rclcpp::Time start_execution_;
 
-  ExecuteAction::Feedback feedback_;
-  ExecuteAction::Result result_;
-  bool finished_;
-  Status status_;
+  std::string action_;
+  std::string action_name_;
+  std::vector<std::string> action_params_;
 
-  DurativeAction current_action_;
+  std::string feedback_;
+  float completion_;
 
-  rclcpp::Node::SharedPtr spin_node_;
-  rclcpp::Node::SharedPtr aux_node_;
+  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecution>::SharedPtr
+    action_hub_pub_;
+  rclcpp::Subscription<plansys2_msgs::msg::ActionExecution>::SharedPtr action_hub_sub_;
 
-  void update_callback(const std_msgs::msg::Empty::SharedPtr msg);
-
-  void feedback_callback(
-    GoalHandleExecuteAction::SharedPtr,
-    const std::shared_ptr<const ExecuteAction::Feedback> feedback);
-
-  void result_callback(const GoalHandleExecuteAction::WrappedResult & result);
-
-  bool update_current_action(const std::string & action_expr);
-
-  bool executeAction();
-
-  bool check(const PredicateTree & predicate_tree) {return check(predicate_tree.root_);}
-  bool check(const std::shared_ptr<TreeNode> node) const;
-  bool apply(const PredicateTree & predicate_tree) {return apply(predicate_tree.root_);}
-  bool apply(const std::shared_ptr<TreeNode> node, bool negate = false) const;
+  void action_hub_callback(const plansys2_msgs::msg::ActionExecution::SharedPtr msg);
+  void request_for_performers();
+  void confirm_performer(const std::string & node_id);
+  void reject_performer(const std::string & node_id);
 
   std::string get_name(const std::string & action_expr);
   std::vector<std::string> get_params(const std::string & action_expr);
+
+  void wait_timeout();
+  rclcpp::TimerBase::SharedPtr waiting_timer_;
+};
+
+struct ActionExecutionInfo
+{
+  std::shared_ptr<ActionExecutor> action_executor = {nullptr};
+  bool at_start_effects_applied = {false};
+  bool at_end_effects_applied = {false};
+  std::shared_ptr<DurativeAction> durative_action_info = {nullptr};
+  std::string execution_error_info;
 };
 
 }  // namespace plansys2

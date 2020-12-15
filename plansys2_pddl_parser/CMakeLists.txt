@@ -2,7 +2,7 @@ project(plansys2_pddl_parser)
 
 cmake_minimum_required(VERSION 3.5)
 
-set(CMAKE_BUILD_TYPE DEBUG)
+find_package(Threads REQUIRED)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)

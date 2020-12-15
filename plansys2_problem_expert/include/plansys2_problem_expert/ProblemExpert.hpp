@@ -72,6 +72,9 @@ private:
     std::shared_ptr<TreeNode> node,
     std::shared_ptr<DomainExpert> & domain_expert_);
 
+  bool removeFunctionsReferencing(const std::string & name);
+  bool removePredicatesReferencing(const std::string & name);
+
   // parser::pddl::Problem problem_;
   std::vector<Instance> instances_;
   std::vector<Predicate> predicates_;

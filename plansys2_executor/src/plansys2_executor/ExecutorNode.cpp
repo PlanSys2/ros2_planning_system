@@ -12,17 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plansys2_executor/ExecutorNode.hpp"
 
 #include <string>
 #include <memory>
 #include <iostream>
 #include <fstream>
+#include <map>
+#include <vector>
 
+#include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/BTBuilder.hpp"
+#include "plansys2_executor/Utils.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "plansys2_msgs/action/execute_action.hpp"
+
+#include "behaviortree_cpp_v3/behavior_tree.h"
+#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp_v3/utils/shared_library.h"
+#include "behaviortree_cpp_v3/blackboard.h"
+
+#include "plansys2_executor/behavior_tree/execute_action_node.hpp"
+#include "plansys2_executor/behavior_tree/wait_action_node.hpp"
+#include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
+#include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
+#include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
+#include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
+#include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
 
 namespace plansys2
 {
@@ -34,7 +51,7 @@ ExecutorNode::ExecutorNode()
 {
   using namespace std::placeholders;
 
-  this->execute_plan_action_server_ = rclcpp_action::create_server<ExecutePlan>(
+  execute_plan_action_server_ = rclcpp_action::create_server<ExecutePlan>(
     this->get_node_base_interface(),
     this->get_node_clock_interface(),
     this->get_node_logging_interface(),
@@ -43,6 +60,10 @@ ExecutorNode::ExecutorNode()
     std::bind(&ExecutorNode::handle_goal, this, _1, _2),
     std::bind(&ExecutorNode::handle_cancel, this, _1),
     std::bind(&ExecutorNode::handle_accepted, this, _1));
+
+  // if (rmw_set_log_severity(rmw_log_severity_t::RMW_LOG_SEVERITY_DEBUG) != RMW_RET_OK) {
+  //   RCLCPP_WARN(get_logger(), "Error to set verbosity");
+  // }
 }
 
 
@@ -54,10 +75,10 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
 
-  auto aux_node = std::make_shared<rclcpp::Node>("executor_helper");
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>(aux_node);
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(aux_node);
-  planner_client_ = std::make_shared<plansys2::PlannerClient>(aux_node);
+  aux_node_ = std::make_shared<rclcpp::Node>("executor_helper");
+  domain_client_ = std::make_shared<plansys2::DomainExpertClient>(aux_node_);
+  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(aux_node_);
+  planner_client_ = std::make_shared<plansys2::PlannerClient>(aux_node_);
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
@@ -68,6 +89,7 @@ ExecutorNode::on_activate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Activating...", get_name());
   RCLCPP_INFO(get_logger(), "[%s] Activated", get_name());
+
   return CallbackReturnT::SUCCESS;
 }
 
@@ -118,6 +140,7 @@ ExecutorNode::handle_goal(
   auto problem = problem_client_->getProblem();
 
   auto domain_problem_ts = now();
+
   current_plan_ = planner_client_->getPlan(domain, problem);
   auto plan_ts = now();
 
@@ -140,6 +163,8 @@ ExecutorNode::handle_goal(
     RCLCPP_ERROR(get_logger(), "Executor problem [Plan not found]");
     return rclcpp_action::GoalResponse::REJECT;
   }
+
+  return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
 rclcpp_action::CancelResponse
@@ -154,66 +179,75 @@ ExecutorNode::handle_cancel(
 void
 ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 {
-  rclcpp::Rate loop_rate(10);
   auto feedback = std::make_shared<ExecutePlan::Feedback>();
   auto result = std::make_shared<ExecutePlan::Result>();
 
-  feedback->seq_action = 0;
-  feedback->total_actions = current_plan_.value().size();
+  auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
   for (const auto & action : current_plan_.value()) {
-    feedback->seq_action++;
-    feedback->current_action = action.action;
+    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time));
 
-    auto action_executor = std::make_shared<ActionExecutor>(action.action);
+    (*action_map)[index] = ActionExecutionInfo();
+    (*action_map)[index].durative_action_info =
+      get_action_from_string(action.action, domain_client_);
+  }
 
-    while (rclcpp::ok() && !action_executor->finished()) {
-      if (goal_handle->is_canceling()) {
-        result->success = false;
-        result->error_info = "execution cancelled";
-        goal_handle->canceled(result);
-        RCLCPP_INFO(this->get_logger(), "Goal Canceled");
-        return;
-      }
+  BTBuilder bt_builder(aux_node_);
+  auto blackboard = BT::Blackboard::create();
 
-      action_executor->update();
 
-      feedback->progress_current_action = action_executor->getProgress();
-      goal_handle->publish_feedback(feedback);
+  blackboard->set("action_map", action_map);
+  blackboard->set("node", shared_from_this());
+  blackboard->set("domain_client", domain_client_);
+  blackboard->set("problem_client", problem_client_);
 
-      loop_rate.sleep();
+  BT::BehaviorTreeFactory factory;
+  factory.registerNodeType<ExecuteAction>("ExecuteAction");
+  factory.registerNodeType<WaitAction>("WaitAction");
+  factory.registerNodeType<CheckOverAllReq>("CheckOverAllReq");
+  factory.registerNodeType<WaitAtStartReq>("WaitAtStartReq");
+  factory.registerNodeType<CheckAtEndReq>("CheckAtEndReq");
+  factory.registerNodeType<ApplyAtStartEffect>("ApplyAtStartEffect");
+  factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
+
+  auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
+
+  auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
+
+  rclcpp::Rate rate(10);
+  auto start = now();
+  auto status = BT::NodeStatus::RUNNING;
+  while (status == BT::NodeStatus::RUNNING) {
+    try {
+      status = tree.tickRoot();
+    } catch (std::exception & e) {
+      std::cerr << e.what() << std::endl;
+      status == BT::NodeStatus::FAILURE;
     }
 
-    auto status = action_executor->getStatus();
-    if (status == ActionExecutor::AT_START_REQ_ERROR) {
+    feedback->action_execution_status = get_feedback_info(action_map);
+    goal_handle->publish_feedback(feedback);
+
+    rate.sleep();
+  }
+
+  if (status == BT::NodeStatus::FAILURE) {
+    RCLCPP_ERROR(get_logger(), "Executor BT finished with FAILURE state");
+  }
+
+  result->action_execution_status = get_feedback_info(action_map);
+  result->success = true;
+
+  size_t i = 0;
+  while (i < result->action_execution_status.size() && result->success) {
+    if (result->action_execution_status[i].status !=
+      plansys2_msgs::msg::ActionExecutionInfo::SUCCEDED)
+    {
       result->success = false;
-      result->error_info = "Initial requirements of " + action.action + " not meet";
-      goal_handle->succeed(result);
-      return;
-    } else if (status == ActionExecutor::OVER_ALL_REQ_ERROR) {
-      result->success = false;
-      result->error_info = "Over all requirements of " + action.action + " not meet";
-      goal_handle->succeed(result);
-      return;
-    } else if (status == ActionExecutor::AT_END_REQ_ERROR) {
-      result->success = false;
-      result->error_info = "Over all requirements of " + action.action + " not meet";
-      goal_handle->succeed(result);
-      return;
-    } else if (status == ActionExecutor::AT_START_EF_ERROR) {
-      result->success = false;
-      result->error_info = "At start effects of " + action.action + " could not be applied";
-      goal_handle->succeed(result);
-      return;
-    } else if (status == ActionExecutor::AT_END_EF_ERROR) {
-      result->success = false;
-      result->error_info = "At end effects of " + action.action + " could not be applied";
-      goal_handle->succeed(result);
-      return;
     }
+    i++;
   }
 
   if (rclcpp::ok()) {
-    result->success = true;
     goal_handle->succeed(result);
     RCLCPP_INFO(this->get_logger(), "Plan Succeeded");
   }
@@ -224,6 +258,98 @@ ExecutorNode::handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_
 {
   using namespace std::placeholders;
   std::thread{std::bind(&ExecutorNode::execute, this, _1), goal_handle}.detach();
+}
+
+std::vector<plansys2_msgs::msg::ActionExecutionInfo>
+ExecutorNode::get_feedback_info(
+  std::shared_ptr<std::map<std::string,
+  ActionExecutionInfo>> action_map)
+{
+  std::vector<plansys2_msgs::msg::ActionExecutionInfo> ret;
+
+  for (const auto & action : *action_map) {
+    plansys2_msgs::msg::ActionExecutionInfo info;
+
+    if (action.second.action_executor == nullptr) {
+      info.status = plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED;
+      info.message_status = action.second.execution_error_info;
+      continue;
+    }
+
+    switch (action.second.action_executor->get_internal_status()) {
+      case ActionExecutor::IDLE:
+      case ActionExecutor::DEALING:
+        info.status = plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED;
+        break;
+      case ActionExecutor::RUNNING:
+        info.status = plansys2_msgs::msg::ActionExecutionInfo::EXECUTING;
+        break;
+      case ActionExecutor::SUCCESS:
+        info.status = plansys2_msgs::msg::ActionExecutionInfo::SUCCEDED;
+        break;
+      case ActionExecutor::FAILURE:
+        info.status = plansys2_msgs::msg::ActionExecutionInfo::FAILED;
+        break;
+    }
+
+    info.start_stamp = action.second.action_executor->get_start_time();
+    info.status_stamp = action.second.action_executor->get_status_time();
+    info.action = action.second.action_executor->get_action_name();
+    info.arguments = action.second.action_executor->get_action_params();
+    info.completion = action.second.action_executor->get_completion();
+    info.message_status = action.second.action_executor->get_feedback();
+
+    ret.push_back(info);
+  }
+
+  return ret;
+}
+
+void
+ExecutorNode::print_execution_info(
+  std::shared_ptr<std::map<std::string, ActionExecutionInfo>> exec_info)
+{
+  fprintf(stderr, "Execution info =====================\n");
+
+  for (const auto & action_info : *exec_info) {
+    fprintf(stderr, "[%s]", action_info.first.c_str());
+    if (action_info.second.action_executor == nullptr) {
+      fprintf(stderr, "\tNOT EXECUTED\n");
+    } else {
+      switch (action_info.second.action_executor->get_internal_status()) {
+        case ActionExecutor::IDLE:
+          fprintf(stderr, "\tIDLE\n");
+          break;
+        case ActionExecutor::DEALING:
+          fprintf(stderr, "\tDEALING\n");
+          break;
+        case ActionExecutor::RUNNING:
+          fprintf(stderr, "\tRUNNING\n");
+          break;
+        case ActionExecutor::SUCCESS:
+          fprintf(stderr, "\tSUCCESS\n");
+          break;
+        case ActionExecutor::FAILURE:
+          fprintf(stderr, "\tFAILURE\n");
+          break;
+      }
+    }
+    if (action_info.second.durative_action_info == nullptr) {
+      fprintf(stderr, "\tWith no duration info\n");
+    }
+
+    if (action_info.second.at_start_effects_applied) {
+      fprintf(stderr, "\tAt start effects applied\n");
+    } else {
+      fprintf(stderr, "\tAt start effects NOT applied\n");
+    }
+
+    if (action_info.second.at_end_effects_applied) {
+      fprintf(stderr, "\tAt end effects applied\n");
+    } else {
+      fprintf(stderr, "\tAt end effects NOT applied\n");
+    }
+  }
 }
 
 }  // namespace plansys2

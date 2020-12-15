@@ -60,7 +60,10 @@ ProblemExpert::removeInstance(const std::string & name)
     }
     i++;
   }
-  // (fmrico)ToDo: We should remove all predicates and goals containing the removed instance
+
+  // (fmrico)ToDo: We should remove all goals containing the removed instance
+  removeFunctionsReferencing(name);
+  removePredicatesReferencing(name);
 
   return found;
 }
@@ -164,7 +167,7 @@ ProblemExpert::addFunction(const Function & function)
       return false;
     }
   } else {
-    return false;
+    return updateFunction(function);
   }
 }
 
@@ -221,6 +224,48 @@ ProblemExpert::getFunction(const std::string & function_name)
   } else {
     return {};
   }
+}
+
+bool
+ProblemExpert::removeFunctionsReferencing(const std::string & name)
+{
+  int i = 0;
+
+  while (i < functions_.size()) {
+    bool found = false;
+    for (Param parameter : functions_[i].parameters) {
+      if (parameter.name == name) {
+        functions_.erase(functions_.begin() + i);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      i++;
+    }
+  }
+  return false;
+}
+
+bool
+ProblemExpert::removePredicatesReferencing(const std::string & name)
+{
+  int i = 0;
+
+  while (i < predicates_.size()) {
+    bool found = false;
+    for (Param parameter : predicates_[i].parameters) {
+      if (parameter.name == name) {
+        predicates_.erase(predicates_.begin() + i);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      i++;
+    }
+  }
+  return false;
 }
 
 Goal
@@ -469,7 +514,6 @@ ProblemExpert::getProblem()
 
     problem.addGoal(predicate.name, v);
   }
-
 
   std::ostringstream stream;
   stream << problem;
