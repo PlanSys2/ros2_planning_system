@@ -17,7 +17,11 @@ public:
 	Task( const ParamCond * c )
 		: ParamCond( c ) {}
 
-    void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override {}
+	void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override {}
+
+	std::shared_ptr<tree::TreeNode> PDDLTree( const Domain & d ) const override {
+		throw UnsupportedConstruct("Task");
+	}
 
 	void parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {}
 

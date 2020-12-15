@@ -15,6 +15,7 @@
 #ifndef PLANSYS2_EXECUTOR__UTILS_HPP_
 #define PLANSYS2_EXECUTOR__UTILS_HPP_
 
+#include <tuple>
 #include <memory>
 #include <string>
 #include <map>
@@ -22,21 +23,21 @@
 
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_domain_expert/Types.hpp"
+#include "plansys2_pddl_parser/Tree.h"
 
 namespace plansys2
 {
 
 bool check(
-  const std::shared_ptr<plansys2::TreeNode> node,
+  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
 
-bool apply(
-  const std::shared_ptr<plansys2::TreeNode> node,
+std::tuple<bool, bool, double> apply(
+  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
   bool negate = false);
 
-std::shared_ptr<DurativeAction> get_action_from_string(
+std::shared_ptr<parser::pddl::tree::DurativeAction> get_action_from_string(
   const std::string & action_expr,
   std::shared_ptr<plansys2::DomainExpertClient> domain_client);
 

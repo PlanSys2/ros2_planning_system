@@ -25,6 +25,17 @@ void Action::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << ")\n";
 }
 
+std::shared_ptr<tree::TreeNode> Action::PDDLTree( const Domain & d ) const {
+    std::shared_ptr<tree::ActionNode> tree = std::make_shared<tree::ActionNode>();
+    if ( pre ) {
+        tree->pre.push_back( pre->PDDLTree( d ) );
+    }
+    if ( eff ) {
+        tree->eff.push_back( eff->PDDLTree( d ) );
+    }
+    return tree;
+}
+
 void Action::parseConditions( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	f.assert_token( ":" );

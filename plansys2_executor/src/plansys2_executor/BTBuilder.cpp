@@ -22,8 +22,9 @@
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_domain_expert/Types.hpp"
 #include "plansys2_executor/Utils.hpp"
+
+#include "plansys2_pddl_parser/Tree.h"
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -54,7 +55,7 @@ BTBuilder::get_tree(const Plan & current_plan)
     for (auto & action_unit : level->action_units) {
       for (auto & req : action_unit->reqs) {
         if (!req->satisfied) {
-          req->satisfied = problem_client_->existPredicate(Predicate(req->requirement));
+          req->satisfied = problem_client_->existPredicate(parser::pddl::tree::Predicate(req->requirement));
         }
       }
     }
@@ -343,15 +344,15 @@ BTBuilder::get_plan_actions(const Plan & plan)
     action_unit->time = current_level->time;
 
     auto dur_action = get_action_from_string(item.action, domain_client_);
-    std::vector<plansys2::Predicate> at_start_requirements;
+    std::vector<parser::pddl::tree::Predicate> at_start_requirements;
     dur_action->at_start_requirements.getPredicates(at_start_requirements, true);
 
-    std::vector<plansys2::Predicate> over_all_requirements;
+    std::vector<parser::pddl::tree::Predicate> over_all_requirements;
     dur_action->over_all_requirements.getPredicates(over_all_requirements, true);
-    std::vector<plansys2::Predicate> at_end_requirements;
+    std::vector<parser::pddl::tree::Predicate> at_end_requirements;
     dur_action->at_end_requirements.getPredicates(at_end_requirements, true);
 
-    std::vector<plansys2::Predicate> requirements;
+    std::vector<parser::pddl::tree::Predicate> requirements;
 
     std::copy(
       at_start_requirements.begin(),
@@ -373,12 +374,12 @@ BTBuilder::get_plan_actions(const Plan & plan)
       req->action = action_unit;
     }
 
-    std::vector<plansys2::Predicate> at_start_effects;
+    std::vector<parser::pddl::tree::Predicate> at_start_effects;
     dur_action->at_start_effects.getPredicates(at_start_effects, true);
-    std::vector<plansys2::Predicate> at_end_effects;
+    std::vector<parser::pddl::tree::Predicate> at_end_effects;
     dur_action->at_end_effects.getPredicates(at_end_effects, true);
 
-    std::vector<plansys2::Predicate> effects;
+    std::vector<parser::pddl::tree::Predicate> effects;
     std::copy(at_start_effects.begin(), at_start_effects.end(), std::back_inserter(effects));
     std::copy(at_end_effects.begin(), at_end_effects.end(), std::back_inserter(effects));
 

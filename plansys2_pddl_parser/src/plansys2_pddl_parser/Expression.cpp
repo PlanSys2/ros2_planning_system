@@ -9,10 +9,23 @@ void FunctionExpression::PDDLPrint( std::ostream & s, unsigned indent, const Tok
 	s << "( " << fun->name;
 	IntVec v( c->params.size() );
 	for ( unsigned i = 0; i < v.size(); ++i ) {
-		if ( ts.size() && fun->params[i] >= 0 ) s << " " << ts[fun->params[i]];
+		if ( ts.size() && fun->params[i] >= 0 && (unsigned)fun->params[i] < ts.size() ) s << " " << ts[fun->params[i]];
+		else if (fun->params[i] >= 0 && (unsigned)fun->params[i] >= ts.size()) s << " ?" << fun->params[i];
 		else s << " " << d.types[c->params[i]]->object( fun->params[i] ).first;
 	}
 	s << " )";
+}
+
+std::shared_ptr<tree::TreeNode> FunctionExpression::PDDLTree( const Domain & d ) const {
+    std::shared_ptr<tree::FunctionNode> tree = std::make_shared<tree::FunctionNode>();
+    tree->function_.name = fun->name;
+    for ( unsigned i = 0; i < fun->params.size(); ++i ) {
+        tree::Param param;
+        param.name = "?" + std::to_string(fun->params[i]);
+        param.type = d.types[fun->params[i]]->name;
+        tree->function_.parameters.push_back(param);
+    }
+    return tree;
 }
 
 double FunctionExpression::evaluate( Instance & ins, const StringVec & par ) {

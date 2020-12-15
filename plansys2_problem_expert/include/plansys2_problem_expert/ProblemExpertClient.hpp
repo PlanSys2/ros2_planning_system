@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
+#include "plansys2_pddl_parser/Tree.h"
 
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
 #include "plansys2_msgs/srv/add_problem_instance.hpp"
@@ -51,26 +52,26 @@ class ProblemExpertClient : public ProblemExpertInterface
 public:
   explicit ProblemExpertClient(rclcpp::Node::SharedPtr provided_node);
 
-  std::vector<Instance> getInstances();
-  bool addInstance(const Instance & instance);
+  std::vector<parser::pddl::tree::Instance> getInstances();
+  bool addInstance(const parser::pddl::tree::Instance & instance);
   bool removeInstance(const std::string & name);
-  boost::optional<Instance> getInstance(const std::string & name);
+  boost::optional<parser::pddl::tree::Instance> getInstance(const std::string & name);
 
-  std::vector<Predicate> getPredicates();
-  bool addPredicate(const Predicate & predicate);
-  bool removePredicate(const Predicate & predicate);
-  bool existPredicate(const Predicate & predicate);
-  boost::optional<Predicate> getPredicate(const std::string & name);
+  std::vector<parser::pddl::tree::Predicate> getPredicates();
+  bool addPredicate(const parser::pddl::tree::Predicate & predicate);
+  bool removePredicate(const parser::pddl::tree::Predicate & predicate);
+  bool existPredicate(const parser::pddl::tree::Predicate & predicate);
+  boost::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & name);
 
-  std::vector<Function> getFunctions();
-  bool addFunction(const Function & function);
-  bool removeFunction(const Function & function);
-  bool existFunction(const Function & function);
-  bool updateFunction(const Function & function);
-  boost::optional<Function> getFunction(const std::string & name);
+  std::vector<parser::pddl::tree::Function> getFunctions();
+  bool addFunction(const parser::pddl::tree::Function & function);
+  bool removeFunction(const parser::pddl::tree::Function & function);
+  bool existFunction(const parser::pddl::tree::Function & function);
+  bool updateFunction(const parser::pddl::tree::Function & function);
+  boost::optional<parser::pddl::tree::Function> getFunction(const std::string & name);
 
-  Goal getGoal();
-  bool setGoal(const Goal & goal);
+  parser::pddl::tree::Goal getGoal();
+  bool setGoal(const parser::pddl::tree::Goal & goal);
   bool clearGoal();
 
   std::string getProblem();

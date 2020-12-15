@@ -8,6 +8,10 @@ void Function::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< 
 	if ( returnType >= 0 ) s << " - " << d.types[returnType]->name;
 }
 
+std::shared_ptr<tree::TreeNode> Function::PDDLTree( const Domain & d ) const {
+    throw UnsupportedConstruct("Function");
+}
+
 void Function::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	Lifted::parse( f, ts, d );
 	

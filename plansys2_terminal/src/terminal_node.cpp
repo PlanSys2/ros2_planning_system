@@ -403,7 +403,7 @@ public:
   void process_set_instance(std::vector<std::string> & command)
   {
     if (command.size() == 2) {
-      if (!problem_client_->addInstance(plansys2::Instance{command[0], command[1]})) {
+      if (!problem_client_->addInstance(parser::pddl::tree::Instance{command[0], command[1]})) {
         std::cerr << "Could not add the instance [" << command[0] << "]" << std::endl;
       }
     } else {
@@ -415,7 +415,7 @@ public:
   void process_set_predicate(std::vector<std::string> & command)
   {
     if (command.size() > 0) {
-      plansys2::Predicate predicate;
+      parser::pddl::tree::Predicate predicate;
       predicate.name = command[0];
 
       if (predicate.name.front() != '(') {
@@ -428,7 +428,7 @@ public:
 
       pop_front(command);
       while (!command.empty()) {
-        plansys2::Param param {command[0], ""};
+        parser::pddl::tree::Param param {command[0], ""};
         predicate.parameters.push_back(param);
         pop_front(command);
       }
@@ -454,7 +454,7 @@ public:
   void process_set_function(std::vector<std::string> & command)
   {
     if (command.size() > 0) {
-      plansys2::Function function;
+      parser::pddl::tree::Function function;
 
       std::string total_expr;
       for (const auto & token : command) {
@@ -475,14 +475,14 @@ public:
   void process_set_goal(std::vector<std::string> & command)
   {
     if (command.size() > 0) {
-      plansys2::Goal goal;
+      parser::pddl::tree::Goal goal;
 
       std::string total_expr;
       for (const auto & token : command) {
         total_expr += " " + token;
       }
 
-      goal.fromString(total_expr);
+      goal.fromString(total_expr, "");
 
       if (goal.root_ != nullptr) {
         if (!problem_client_->setGoal(goal)) {
@@ -536,7 +536,7 @@ public:
   void process_remove_predicate(std::vector<std::string> & command)
   {
     if (command.size() > 0) {
-      plansys2::Predicate predicate;
+      parser::pddl::tree::Predicate predicate;
       predicate.name = command[0];
 
       if (predicate.name.front() != '(') {
@@ -548,7 +548,7 @@ public:
 
       pop_front(command);
       while (!command.empty()) {
-        plansys2::Param param {command[0], ""};
+        parser::pddl::tree::Param param {command[0], ""};
         predicate.parameters.push_back(param);
         pop_front(command);
       }
@@ -574,7 +574,7 @@ public:
   void process_remove_function(std::vector<std::string> & command)
   {
     if (command.size() > 0) {
-      plansys2::Function function;
+      parser::pddl::tree::Function function;
 
       std::regex name_regexp("[a-zA-Z][a-zA-Z0-9_\\-]*");
 
@@ -591,7 +591,7 @@ public:
       }
 
       while (std::regex_search(temp, match, name_regexp)) {
-        function.parameters.push_back(plansys2::Param{match.str(0), ""});
+        function.parameters.push_back(parser::pddl::tree::Param{match.str(0), ""});
         temp = match.suffix().str();
       }
 

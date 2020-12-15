@@ -157,18 +157,19 @@ TEST(executiotest_noden_tree, bt_builder_factory)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
   }
 
   ASSERT_TRUE(
     problem_client->setGoal(
-      plansys2::Goal(
-        "(and(car_assembled car_1)(car_assembled car_2)(car_assembled car_3))")));
+      parser::pddl::tree::Goal(
+        "(and (car_assembled car_1) (car_assembled car_2) (car_assembled car_3))",
+        "(and (predicate) (predicate) (predicate))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  std::map<std::string, plansys2::DurativeAction> durative_actions_map;
+  std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
   BTBuilderTest exec_tree(test_node);
   auto tree_str = exec_tree.get_tree(plan.value());
 
@@ -290,19 +291,21 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
   }
 
   ASSERT_TRUE(
     problem_client->setGoal(
-      plansys2::Goal(
-        std::string("(and(car_assembled car_1)(piece_at body_car_2 assembly_zone)") +
-        std::string("(piece_at body_car_3 assembly_zone))"))));
+      parser::pddl::tree::Goal(
+        std::string("(and (car_assembled car_1) (piece_at body_car_2 assembly_zone)") +
+        std::string("(piece_at body_car_3 assembly_zone))"),
+        std::string("(and (predicate) (predicate) (predicate))"))
+        ));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  std::map<std::string, plansys2::DurativeAction> durative_actions_map;
+  std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
   BTBuilderTest exec_tree(test_node);
 
 

@@ -11,6 +11,10 @@ void TypeGround::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct
 	s << " )";
 }
 
+std::shared_ptr<tree::TreeNode> TypeGround::PDDLTree( const Domain & d ) const {
+    throw UnsupportedConstruct("TypeGround");
+}
+
 void TypeGround::insert( Domain & d, const StringVec & v ) {
 	params.resize( lifted->params.size() );
 	for ( unsigned i = 0; i < lifted->params.size(); ++i ) {

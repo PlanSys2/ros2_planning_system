@@ -234,6 +234,9 @@ DomainExpertNode::get_domain_action_details_service_callback(
       response->at_start_requirements = action.value().preconditions.toString();
       response->at_start_effects = action.value().effects.toString();
 
+      response->at_start_requirements_construct = action.value().preconditions.construct();
+      response->at_start_effects_construct = action.value().effects.construct();
+
       response->success = true;
     } else if (durative_action) {
       response->name = request->action;
@@ -249,6 +252,15 @@ DomainExpertNode::get_domain_action_details_service_callback(
       response->at_end_requirements = durative_action.value().at_end_requirements.toString();
       response->at_start_effects = durative_action.value().at_start_effects.toString();
       response->at_end_effects = durative_action.value().at_end_effects.toString();
+
+      response->at_start_requirements_construct =
+        durative_action.value().at_start_requirements.construct();
+      response->over_all_requirements_construct =
+        durative_action.value().over_all_requirements.construct();
+      response->at_end_requirements_construct =
+        durative_action.value().at_end_requirements.construct();
+      response->at_start_effects_construct = durative_action.value().at_start_effects.construct();
+      response->at_end_effects_construct = durative_action.value().at_end_effects.construct();
 
       response->success = true;
     } else {
