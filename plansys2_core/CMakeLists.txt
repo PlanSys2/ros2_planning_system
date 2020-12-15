@@ -7,10 +7,12 @@ find_package(Threads REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
+find_package(pluginlib REQUIRED)
 
 set(dependencies
-    rclcpp
-    rclcpp_lifecycle
+  rclcpp
+  rclcpp_lifecycle
+  pluginlib
 )
 
 include_directories(include)
