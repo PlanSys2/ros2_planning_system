@@ -30,7 +30,7 @@ jobs:
           vcs-repo-file-url: ""
           colcon-mixin-name: coverage-gcc
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
-      - uses: codecov/codecov-action@v1.0.17
+      - uses: codecov/codecov-action@v1.0.15
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ros_ws/lcov/total_coverage.info
