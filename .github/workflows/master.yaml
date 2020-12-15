@@ -25,8 +25,8 @@ jobs:
       - name: build and test
         uses: ros-tooling/action-ros-ci@0.1.0
         with:
-          # package-name: plansys2_bringup plansys2_bt_actions plansys2_core plansys2_domain_expert plansys2_executor plansys2_lifecycle_manager plansys2_msgs plansys2_pddl_parser plansys2_planner plansys2_popf_plan_solver plansys2_problem_expert plansys2_terminal
-          package-name: plansys2_msgs 
+          # package-name: plansys2_bringup plansys2_bt_actions º plansys2_domain_expert plansys2_executor plansys2_lifecycle_manager plansys2_msgs plansys2_pddl_parser plansys2_planner plansys2_popf_plan_solver plansys2_problem_expert plansys2_terminal
+          package-name: plansys2_msgs plansys2_domain_expert
           target-ros2-distro: foxy
           vcs-repo-file-url: ""
           colcon-mixin-name: coverage-gcc
