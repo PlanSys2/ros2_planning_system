@@ -1,8 +1,2 @@
 fixes:
   - "ros_ws/src/ros2_planning_system/::"
-
-ignore:
-  - "ros_ws/*/**/test/*"  # ignore package test directories, e.g. nav2_dwb_controller/costmap_queue/tests
-  - "ros_ws/*/test/**/*" # ignore package  test directories, e.g. nav2_costmap_2d/tests
-  - "ros_ws/**/test_*.*" # ignore files starting with test_ e.g.  nav2_map_server/test/test_constants.cpp
-  - "ros_ws/**/*_tests.*" # ignore files ending with _tests e.g. nav2_voxel_grid/test/voxel_grid_tests.cp
