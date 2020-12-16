@@ -23,6 +23,10 @@
 #include "gtest/gtest.h"
 #include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
+#include "pluginlib/class_loader.hpp"
+#include "pluginlib/class_list_macros.hpp"
+#include "plansys2_core/PlanSolverBase.hpp"
+
 TEST(popf_plan_solver, generate_plan_good)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver");
@@ -48,6 +52,23 @@ TEST(popf_plan_solver, generate_plan_good)
   ASSERT_EQ(plan.value()[1].action, "(approach leia bedroom jack)");
   ASSERT_EQ(plan.value()[2].action, "(talk leia jack jack m1)");
 }
+
+
+TEST(popf_plan_solver, load_popf_plugin)
+{
+  try {
+    pluginlib::ClassLoader<plansys2::PlanSolverBase> lp_loader(
+      "plansys2_core", "plansys2::PlanSolverBase");
+    plansys2::PlanSolverBase::Ptr plugin =
+      lp_loader.createUniqueInstance("plansys2/POPFPlanSolver");
+    ASSERT_TRUE(true);
+  } catch (std::exception & e) {
+    std::cerr << e.what() << std::endl;
+    ASSERT_TRUE(false);
+  }
+}
+
+
 /*
 TEST(popf_plan_solver, generate_plan_unsolvable)
 {

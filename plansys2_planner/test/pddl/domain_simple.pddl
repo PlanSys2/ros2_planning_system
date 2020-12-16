@@ -35,7 +35,7 @@ room
 )
 
 (:durative-action talk
-    :parameters (?r - robot ?from ?p - person ?m - message)
+    :parameters (?r - robot ?p - person ?m - message)
     :duration ( = ?duration 5)
     :condition (and
         (over all(robot_near_person ?r ?p))
