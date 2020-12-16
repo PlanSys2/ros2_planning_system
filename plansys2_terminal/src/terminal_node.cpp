@@ -638,7 +638,7 @@ public:
         std::cout << "\r\e[K" << std::flush;
         for (const auto & action_status : feedback.action_execution_status) {
           if (action_status.status == plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED ||
-            action_status.status == plansys2_msgs::msg::ActionExecutionInfo::SUCCEDED)
+            action_status.status == plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED)
           {
             continue;
           }
@@ -659,8 +659,8 @@ public:
             case plansys2_msgs::msg::ActionExecutionInfo::FAILED:
               std::cout << "FAILED]";
               break;
-            case plansys2_msgs::msg::ActionExecutionInfo::SUCCEDED:
-              std::cout << "succeded]";
+            case plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED:
+              std::cout << "succeeded]";
               break;
           }
         }

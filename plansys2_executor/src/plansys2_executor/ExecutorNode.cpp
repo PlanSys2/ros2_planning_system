@@ -194,7 +194,6 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   BTBuilder bt_builder(aux_node_);
   auto blackboard = BT::Blackboard::create();
 
-
   blackboard->set("action_map", action_map);
   blackboard->set("node", shared_from_this());
   blackboard->set("domain_client", domain_client_);
@@ -240,7 +239,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   size_t i = 0;
   while (i < result->action_execution_status.size() && result->success) {
     if (result->action_execution_status[i].status !=
-      plansys2_msgs::msg::ActionExecutionInfo::SUCCEDED)
+      plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED)
     {
       result->success = false;
     }
@@ -285,7 +284,7 @@ ExecutorNode::get_feedback_info(
         info.status = plansys2_msgs::msg::ActionExecutionInfo::EXECUTING;
         break;
       case ActionExecutor::SUCCESS:
-        info.status = plansys2_msgs::msg::ActionExecutionInfo::SUCCEDED;
+        info.status = plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED;
         break;
       case ActionExecutor::FAILURE:
         info.status = plansys2_msgs::msg::ActionExecutionInfo::FAILED;
