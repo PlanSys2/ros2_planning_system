@@ -75,7 +75,7 @@ BTBuilder::get_tree(const Plan & current_plan)
     bt_plan = std::string("<root main_tree_to_execute=\"MainTree\">\n") +
       t(1) + "<BehaviorTree ID=\"MainTree\">\n" +
       t(2) + "<Parallel success_threshold=\"" + std::to_string(root_counters) +
-        "\" failure_threshold=\"1\">\n";
+      "\" failure_threshold=\"1\">\n";
 
     for (auto & level : levels) {
       for (auto & action_unit : level->action_units) {
@@ -212,7 +212,7 @@ BTBuilder::get_flow_tree(
     ret = ret +
       execution_block(root_flow->action, root_flow->time, l + 1) +
       t(l + 1) + "<Parallel success_threshold=\"" + std::to_string(succ(root_flow).size()) +
-        "\"  failure_threshold=\"1\">\n";
+      "\"  failure_threshold=\"1\">\n";
 
     for (auto & action : succ(root_flow)) {
       ret = ret + get_flow_tree(action, used_actions, l + 2);

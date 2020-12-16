@@ -33,6 +33,20 @@ bool operator==(const Predicate & op1, const Predicate & op2)
   return op1.name == op2.name && op1.parameters == op2.parameters;
 }
 
+bool operator==(const Assignment & op1, const Assignment & op2)
+{
+  return op1.name == op2.name &&
+         op1.parameters == op2.parameters &&
+         op1.value == op2.value;
+}
+
+
+bool Assignment::hasSameNamesAndParameters(const Assignment & other)
+{
+  return this->name == other.name &&
+         this->parameters == other.parameters;
+}
+
 std::string getReducedString(const std::string & expr)
 {
   std::regex nts_chars("[\n\t]*", std::regex_constants::ECMAScript);
@@ -86,6 +100,59 @@ std::vector<std::string> getSubExpr(const std::string & expr)
     it++;
   }
 
+  return ret;
+}
+
+std::vector<std::string> plansys2::Assignment::splitExpr(const std::string & input)
+{
+  std::vector<std::string> ret;
+  unsigned int it = 0;
+  unsigned int start = 0;
+  unsigned int balance = 0;
+  std::string expression = input;
+
+  while (expression.back() == ' ') {expression.pop_back();}
+  while (expression.front() == ' ') {expression.erase(0, 1);}
+
+  // Remove first ( and last ) if presents
+  if ((expression.front() == '(') && (expression.back() == ')')) {
+    expression.pop_back();
+    expression.erase(0, 1);
+  }
+  while ((it < expression.size()) && (balance >= 0)) {
+    switch (expression[it]) {
+      case ' ':
+        if (balance == 0) {
+          if (start != it) {
+            ret.push_back(expression.substr(start, it - start));
+          }
+          start = it + 1;
+        }
+        break;
+      case '(':
+        if ((balance == 0) && (start != it)) {
+          ret.push_back(expression.substr(start, it - start));
+          start = it;
+        }
+        balance++;
+        break;
+      case ')':
+        balance--;
+        if ((balance == 0) && (start != it)) {
+          ret.push_back(expression.substr(start, it - start + 1));
+          start = it + 1;
+        }
+        break;
+      default:
+        break;
+    }
+    it++;
+  }
+
+  while (expression[start] == ' ') {start++;}
+  if (start != it && (start != expression.size())) {
+    ret.push_back(expression.substr(start, it - start + 1));
+  }
   return ret;
 }
 

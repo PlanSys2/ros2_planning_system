@@ -60,7 +60,10 @@ ProblemExpert::removeInstance(const std::string & name)
     }
     i++;
   }
-  // (fmrico)ToDo: We should remove all predicates and goals containing the removed instance
+
+  // (fmrico)ToDo: We should remove all goals containing the removed instance
+  removeAssignmentsReferencing(name);
+  removePredicatesReferencing(name);
 
   return found;
 }
@@ -94,6 +97,21 @@ ProblemExpert::getPredicates()
 }
 
 bool
+ProblemExpert::addAssignment(const Assignment & assignment)
+{
+  if (!existAssignment(assignment)) {
+    if (isValidAssignment(assignment)) {
+      assignments_.push_back(assignment);
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return updateAssignment(assignment);
+  }
+}
+
+bool
 ProblemExpert::addPredicate(const Predicate & predicate)
 {
   if (!existPredicate(predicate)) {
@@ -123,6 +141,68 @@ ProblemExpert::removePredicate(const Predicate & predicate)
   }
 
   return found;
+}
+
+bool
+ProblemExpert::removeAssignment(const Assignment & assignment)
+{
+  bool found = false;
+  int i = 0;
+
+  while (!found && i < assignments_.size()) {
+    Assignment assignment = assignments_[i];
+    if (assignments_[i].hasSameNamesAndParameters(assignment)) {
+      found = true;
+      assignments_.erase(assignments_.begin() + i);
+    }
+    i++;
+  }
+
+  return found;
+}
+
+
+bool
+ProblemExpert::removeAssignmentsReferencing(const std::string & name)
+{
+  int i = 0;
+
+  while (i < assignments_.size()) {
+    bool found = false;
+    for (Param parameter : assignments_[i].parameters) {
+      if (parameter.name == name) {
+        assignments_.erase(assignments_.begin() + i);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      i++;
+    }
+  }
+  return false;
+}
+
+
+bool
+ProblemExpert::removePredicatesReferencing(const std::string & name)
+{
+  int i = 0;
+
+  while (i < predicates_.size()) {
+    bool found = false;
+    for (Param parameter : predicates_[i].parameters) {
+      if (parameter.name == name) {
+        predicates_.erase(predicates_.begin() + i);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      i++;
+    }
+  }
+  return false;
 }
 
 Goal
@@ -176,6 +256,44 @@ ProblemExpert::existInstance(const std::string & name)
 }
 
 bool
+ProblemExpert::existAssignment(const Assignment & assignment)
+{
+  bool found = false;
+  int i = 0;
+
+  while (!found && i < assignments_.size()) {
+    if (assignments_[i].name == assignment.name &&
+      assignments_[i].parameters == assignment.parameters)
+    {
+      found = true;
+    }
+    i++;
+  }
+
+  return found;
+}
+
+
+bool
+ProblemExpert::updateAssignment(const Assignment & assignment)
+{
+  bool found = false;
+  int i = 0;
+
+  while (!found && i < assignments_.size()) {
+    if (assignments_[i].name == assignment.name &&
+      assignments_[i].parameters == assignment.parameters)
+    {
+      assignments_[i].value = assignment.value;  /** update only the value */
+      found = true;
+    }
+    i++;
+  }
+
+  return found;
+}
+
+bool
 ProblemExpert::existPredicate(const Predicate & predicate)
 {
   bool found = false;
@@ -191,6 +309,35 @@ ProblemExpert::existPredicate(const Predicate & predicate)
   }
 
   return found;
+}
+
+
+bool
+ProblemExpert::isValidAssignment(const Assignment & assignment)
+{
+  bool valid = false;
+
+  const boost::optional<plansys2::Function> & model_function = domain_expert_->getFunction(
+    assignment.name);
+  if (model_function) {
+    if (model_function.value().parameters.size() == assignment.parameters.size()) {
+      bool same_types = true;
+      int i = 0;
+      while (same_types && i < assignment.parameters.size()) {
+        auto arg_type = getInstance(assignment.parameters[i].name);
+
+        if (!arg_type) {
+          same_types = false;
+        } else if (arg_type.value().type != model_function.value().parameters[i].type) {
+          same_types = false;
+        }
+        i++;
+      }
+      valid = same_types;
+    }
+  }
+
+  return valid;
 }
 
 bool
@@ -298,6 +445,20 @@ ProblemExpert::getProblem()
     std::transform(predicate.name.begin(), predicate.name.end(), predicate.name.begin(), ::tolower);
 
     problem.addInit(predicate.name, v);
+  }
+
+  for (Assignment assignment : assignments_) {
+    StringVec v;
+
+    for (size_t i = 0; i < assignment.parameters.size(); i++) {
+      v.push_back(assignment.parameters[i].name);
+    }
+
+    std::transform(
+      assignment.name.begin(), assignment.name.end(),
+      assignment.name.begin(), ::tolower);
+
+    problem.addInit(assignment.name, assignment.value, v);
   }
 
   std::vector<Predicate> predicates;

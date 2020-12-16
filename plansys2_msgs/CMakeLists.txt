@@ -9,6 +9,7 @@ find_package(std_msgs REQUIRED)
 find_package(action_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/FunctionAssignment.msg"
   "msg/ActionExecution.msg"
   "msg/ActionExecutionInfo.msg"
   "srv/GetDomain.srv"
@@ -22,8 +23,10 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetProblemInstanceDetails.srv"
   "srv/GetProblemPredicates.srv"
   "srv/GetProblemPredicateDetails.srv"
+  "srv/GetProblemFunctionDetails.srv"
   "srv/GetProblemGoal.srv"
   "srv/AddProblemGoal.srv"
+  "srv/AddProblemAssignment.srv"
   "srv/AddProblemInstance.srv"
   "srv/AddProblemPredicate.srv"
   "srv/RemoveProblemGoal.srv"
