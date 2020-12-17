@@ -55,7 +55,8 @@ BTBuilder::get_tree(const Plan & current_plan)
     for (auto & action_unit : level->action_units) {
       for (auto & req : action_unit->reqs) {
         if (!req->satisfied) {
-          req->satisfied = problem_client_->existPredicate(parser::pddl::tree::Predicate(req->requirement));
+          req->satisfied =
+            problem_client_->existPredicate(parser::pddl::tree::Predicate(req->requirement));
         }
       }
     }

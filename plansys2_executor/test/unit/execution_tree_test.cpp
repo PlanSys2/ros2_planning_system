@@ -102,7 +102,10 @@ TEST(executiotest_noden_tree, bt_builder_factory)
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot3", "robot"}));
 
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"steering_wheels_zone", "zone"}));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::tree::Instance{"steering_wheels_zone",
+        "zone"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_zone", "zone"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"assembly_zone", "zone"}));
 
@@ -112,9 +115,18 @@ TEST(executiotest_noden_tree, bt_builder_factory)
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_1", "piece"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_2", "piece"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"steering_wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"steering_wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"steering_wheel_3", "piece"}));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::tree::Instance{"steering_wheel_1",
+        "piece"}));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::tree::Instance{"steering_wheel_2",
+        "piece"}));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::tree::Instance{"steering_wheel_3",
+        "piece"}));
 
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_1", "car"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_2", "car"}));
@@ -236,7 +248,10 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot3", "robot"}));
 
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"steering_wheels_zone", "zone"}));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::tree::Instance{"steering_wheels_zone",
+        "zone"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_zone", "zone"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"assembly_zone", "zone"}));
 
@@ -246,9 +261,18 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_1", "piece"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_2", "piece"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"steering_wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"steering_wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"steering_wheel_3", "piece"}));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::tree::Instance{"steering_wheel_1",
+        "piece"}));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::tree::Instance{"steering_wheel_2",
+        "piece"}));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::tree::Instance{"steering_wheel_3",
+        "piece"}));
 
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_1", "car"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_2", "car"}));
@@ -300,7 +324,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
         std::string("(and (car_assembled car_1) (piece_at body_car_2 assembly_zone)") +
         std::string("(piece_at body_car_3 assembly_zone))"),
         std::string("(and (predicate) (predicate) (predicate))"))
-        ));
+  ));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
@@ -374,7 +398,10 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"r2d2", "robot"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp_control", "waypoint"}));
   for (unsigned i = 1; i <= 4; i++) {
-    ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp" + std::to_string(i), "waypoint"}));
+    ASSERT_TRUE(
+      problem_client->addInstance(
+        parser::pddl::tree::Instance{"wp" + std::to_string(i),
+          "waypoint"}));
   }
 
   std::vector<std::string> predicates = {

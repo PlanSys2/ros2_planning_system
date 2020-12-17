@@ -143,7 +143,7 @@ TEST(problem_expert, wait_overall_req_test)
     "(robot_at r2d2 wp1)",
     "(charger_at wp3)",
     "(connected wp1 wp2)"};
-    
+
   std::vector<std::string> functions = {
     "(= (speed r2d2) 3)",
     "(= (max_range r2d2) 75)",
@@ -161,7 +161,7 @@ TEST(problem_expert, wait_overall_req_test)
     for (const auto & pred : predicates) {
       ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
     }
-    
+
     for (const auto & func : functions) {
       ASSERT_TRUE(problem_client->addFunction(parser::pddl::tree::Function(func)));
     }
@@ -265,7 +265,7 @@ TEST(problem_expert, wait_atstart_req_test)
     "(robot_at r2d2 wp1)",
     "(charger_at wp3)",
     "(connected wp1 wp2)"};
-    
+
   std::vector<std::string> functions = {
     "(= (speed r2d2) 3)",
     "(= (max_range r2d2) 75)",
@@ -287,7 +287,7 @@ TEST(problem_expert, wait_atstart_req_test)
     for (const auto & pred : predicates) {
       ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
     }
-    
+
     for (const auto & func : functions) {
       ASSERT_TRUE(problem_client->addFunction(parser::pddl::tree::Function(func)));
     }
@@ -388,7 +388,7 @@ TEST(problem_expert, wait_atend_req_test)
     "(robot_at r2d2 wp1)",
     "(charger_at wp3)",
     "(connected wp1 wp2)"};
-    
+
   std::vector<std::string> functions = {
     "(= (speed r2d2) 3)",
     "(= (max_range r2d2) 75)",
@@ -515,18 +515,18 @@ TEST(problem_expert, at_start_effect_test)
     for (const auto & pred : predicates) {
       ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
     }
-    
+
     std::vector<std::string> functions = {
       "(= (speed r2d2) 3)",
       "(= (max_range r2d2) 75)",
       "(= (state_of_charge r2d2) 99)",
       "(= (distance wp1 wp2) 15)",
       "(= (distance wp2 wp1) 15)"};
-    
+
     for (const auto & func : functions) {
       ASSERT_TRUE(problem_client->addFunction(parser::pddl::tree::Function(func)));
     }
-    
+
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
     auto status = BT::NodeStatus::RUNNING;
@@ -642,18 +642,18 @@ TEST(problem_expert, at_end_effect_test)
     for (const auto & pred : predicates) {
       ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
     }
-    
+
     std::vector<std::string> functions = {
       "(= (speed r2d2) 3)",
       "(= (max_range r2d2) 75)",
       "(= (state_of_charge r2d2) 99)",
       "(= (distance wp1 wp2) 15)",
       "(= (distance wp2 wp1) 15)"};
-    
+
     for (const auto & func : functions) {
       ASSERT_TRUE(problem_client->addFunction(parser::pddl::tree::Function(func)));
     }
-    
+
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
     auto status = BT::NodeStatus::RUNNING;
