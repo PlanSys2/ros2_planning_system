@@ -23,10 +23,6 @@
 
 #include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
-#include "pluginlib/class_list_macros.hpp"
-
-PLUGINLIB_EXPORT_CLASS(plansys2::POPFPlanSolver, plansys2::PlanSolverBase);
-
 namespace plansys2
 {
 
@@ -98,3 +94,6 @@ POPFPlanSolver::getPlan(
 }
 
 }  // namespace plansys2
+
+#include "pluginlib/class_list_macros.hpp"
+PLUGINLIB_EXPORT_CLASS(plansys2::POPFPlanSolver, plansys2::PlanSolverBase);

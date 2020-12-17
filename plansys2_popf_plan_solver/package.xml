@@ -26,6 +26,6 @@
 
   <export>
     <build_type>ament_cmake</build_type>
-    <plansys2_planner plugin="${prefix}/local_planner_plugin.xml" />
+    <plansys2_core plugin="${prefix}/plansys2_popf_plan_solver_plugin.xml" />
   </export>
 </package>
