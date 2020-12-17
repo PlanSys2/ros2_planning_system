@@ -24,7 +24,7 @@ std::shared_ptr<tree::TreeNode> Ground::PDDLTree( const Domain & d ) const {
         for ( unsigned i = 0; i < params.size(); ++i ) {
             tree::Param param;
             param.name = "?" + std::to_string(params[i]);
-            param.type = d.types[params[i]]->name;
+            param.type = d.types[lifted->params[i]]->name;
             tree->function_.parameters.push_back(param);
         }
         return tree;
@@ -35,7 +35,7 @@ std::shared_ptr<tree::TreeNode> Ground::PDDLTree( const Domain & d ) const {
         for ( unsigned i = 0; i < params.size(); ++i ) {
             tree::Param param;
             param.name = "?" + std::to_string(params[i]);
-            param.type = d.types[params[i]]->name;
+            param.type = d.types[lifted->params[i]]->name;
             tree->predicate_.parameters.push_back(param);
         }
         return tree;
