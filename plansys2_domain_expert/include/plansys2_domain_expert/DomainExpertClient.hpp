@@ -28,6 +28,7 @@
 #include "plansys2_msgs/srv/get_domain_predicates.hpp"
 #include "plansys2_msgs/srv/get_domain_functions.hpp"
 #include "plansys2_msgs/srv/get_domain_actions.hpp"
+#include "plansys2_msgs/srv/get_problem_function_details.hpp"
 #include "plansys2_msgs/srv/get_domain_predicate_details.hpp"
 #include "plansys2_msgs/srv/get_domain_function_details.hpp"
 #include "plansys2_msgs/srv/get_domain_action_details.hpp"

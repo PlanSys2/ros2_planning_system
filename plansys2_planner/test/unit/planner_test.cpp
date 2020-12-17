@@ -21,13 +21,116 @@
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
 #include "gtest/gtest.h"
+#include "plansys2_domain_expert/DomainExpertNode.hpp"
+#include "plansys2_domain_expert/DomainExpertClient.hpp"
+#include "plansys2_problem_expert/ProblemExpertNode.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_planner/PlannerNode.hpp"
+#include "plansys2_planner/PlannerClient.hpp"
 
-TEST(problem_expert, generate_plan_good)
+#include "pluginlib/class_loader.hpp"
+#include "pluginlib/class_list_macros.hpp"
+#include "plansys2_core/PlanSolverBase.hpp"
+
+#include "rclcpp/rclcpp.hpp"
+
+TEST(planner_expert, load_popf_plugin)
 {
+  try {
+    pluginlib::ClassLoader<plansys2::PlanSolverBase> lp_loader(
+      "plansys2_core", "plansys2::PlanSolverBase");
+    plansys2::PlanSolverBase::Ptr plugin =
+      lp_loader.createUniqueInstance("plansys2/POPFPlanSolver");
+    ASSERT_TRUE(true);
+  } catch (std::exception & e) {
+    std::cerr << e.what() << std::endl;
+    ASSERT_TRUE(false);
+  }
+}
+
+TEST(planner_expert, generate_plan_good)
+{
+  auto test_node = rclcpp::Node::make_shared("test_node");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
+  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_planner");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(planner_node->get_node_base_interface());
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  ASSERT_TRUE(problem_client->addInstance({"leia", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"francisco", "person"}));
+  ASSERT_TRUE(problem_client->addInstance({"message1", "message"}));
+
+  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"corridor", "room"}));
+
+  std::vector<std::string> predicates = {
+    "(robot_at leia kitchen)",
+    "(person_at francisco bedroom)"};
+
+  for (const auto & pred : predicates) {
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
+  }
+
+  ASSERT_TRUE(
+    problem_client->setGoal(
+      plansys2::Goal(
+        "(and(robot_talk leia message1 francisco))")));
+
+  auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
+  ASSERT_TRUE(plan);
+
+  finish = true;
+  t.join();
 }
 
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
+  rclcpp::init(argc, argv);
   return RUN_ALL_TESTS();
 }
