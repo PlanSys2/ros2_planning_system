@@ -58,6 +58,130 @@ TEST(problem_expert, addget_instances)
   ASSERT_EQ(r2d2_instance.value().type, "robot");
 }
 
+TEST(problem_expert, add_assignments)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"bedroom", "room"}));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"kitchen", "room_with_teleporter"}));
+
+  plansys2::Param param_1;
+  param_1.name = "bedroom";
+  param_1.type = "room";
+
+  plansys2::Param param_2;
+  param_2.name = "kitchen";
+  param_2.type = "room_with_teleporter";
+
+  plansys2::Assignment assignment_1;
+  assignment_1.name = "room_distance";
+  assignment_1.parameters.push_back(param_1);
+  assignment_1.parameters.push_back(param_2);
+  assignment_1.value = 1.23;
+
+  ASSERT_EQ(assignment_1.name, "room_distance");
+  ASSERT_EQ(assignment_1.parameters.size(), 2);
+  ASSERT_EQ(assignment_1.parameters[0].name, "bedroom");
+  ASSERT_EQ(assignment_1.parameters[0].type, "room");
+  ASSERT_EQ(assignment_1.parameters[1].name, "kitchen");
+  ASSERT_EQ(assignment_1.parameters[1].type, "room_with_teleporter");
+  ASSERT_EQ(assignment_1.value, 1.23);
+
+  ASSERT_TRUE(problem_expert.addAssignment(assignment_1));
+
+  ASSERT_EQ(
+    problem_expert.getProblem(),
+    "( define ( problem problem_1 )\n"
+    "( :domain simple )\n"
+    "( :objects\n"
+    "\tbedroom - room\n"
+    "\tkitchen - room_with_teleporter\n"
+    ")\n"
+    "( :init\n"
+    "\t( = ( room_distance bedroom kitchen ) 1.23 )\n"
+    ")\n"
+    "( :goal\n"
+    "\t( and\n"
+    "\t)\n"
+    ")\n"
+    ")\n");
+
+  plansys2::Assignment assignment_2;
+  assignment_2.name = "room_distance";
+  assignment_2.parameters.push_back(param_2);
+  assignment_2.parameters.push_back(param_1);
+  assignment_2.value = 2.34;
+
+  ASSERT_EQ(assignment_2.name, "room_distance");
+  ASSERT_EQ(assignment_2.parameters.size(), 2);
+  ASSERT_EQ(assignment_2.parameters[0].name, "kitchen");
+  ASSERT_EQ(assignment_2.parameters[0].type, "room_with_teleporter");
+  ASSERT_EQ(assignment_2.parameters[1].name, "bedroom");
+  ASSERT_EQ(assignment_2.parameters[1].type, "room");
+  ASSERT_EQ(assignment_2.value, 2.34);
+
+  ASSERT_TRUE(problem_expert.addAssignment(assignment_2));
+
+  ASSERT_EQ(
+    problem_expert.getProblem(),
+    "( define ( problem problem_1 )\n"
+    "( :domain simple )\n"
+    "( :objects\n"
+    "\tbedroom - room\n"
+    "\tkitchen - room_with_teleporter\n"
+    ")\n"
+    "( :init\n"
+    "\t( = ( room_distance bedroom kitchen ) 1.23 )\n"
+    "\t( = ( room_distance kitchen bedroom ) 2.34 )\n"
+    ")\n"
+    "( :goal\n"
+    "\t( and\n"
+    "\t)\n"
+    ")\n"
+    ")\n");
+
+  assignment_2.value = 3.45;
+
+  ASSERT_TRUE(problem_expert.addAssignment(assignment_2));
+
+  ASSERT_EQ(
+    problem_expert.getProblem(),
+    "( define ( problem problem_1 )\n"
+    "( :domain simple )\n"
+    "( :objects\n"
+    "\tbedroom - room\n"
+    "\tkitchen - room_with_teleporter\n"
+    ")\n"
+    "( :init\n"
+    "\t( = ( room_distance bedroom kitchen ) 1.23 )\n"
+    "\t( = ( room_distance kitchen bedroom ) 3.45 )\n"
+    ")\n"
+    "( :goal\n"
+    "\t( and\n"
+    "\t)\n"
+    ")\n"
+    ")\n");
+
+  plansys2::Assignment assignment_3;
+  assignment_3.name = "room_temperature";
+  assignment_3.parameters.push_back(param_1);
+  assignment_3.parameters.push_back(param_2);
+  assignment_3.value = 2.34;
+
+  ASSERT_FALSE(problem_expert.addAssignment(assignment_3));
+
+  ASSERT_TRUE(problem_expert.removeAssignment(assignment_3));
+
+  ASSERT_TRUE(problem_expert.removeInstance("kitchen"));
+}
+
 TEST(problem_expert, addget_predicates)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
@@ -158,6 +282,35 @@ TEST(problem_expert, addget_predicates)
 
   predicates = problem_expert.getPredicates();
   ASSERT_EQ(predicates.size(), 3);
+
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance{"bathroom", "room_with_teleporter"}));
+  plansys2::Param param_5;
+  param_5.name = "bathroom";
+  param_5.type = "room_with_teleporter";
+
+  plansys2::Predicate predicate_7;
+  predicate_7.name = "is_teleporter_enabled";
+  predicate_7.parameters.push_back(param_5);
+
+  ASSERT_EQ(predicate_7.name, "is_teleporter_enabled");
+  ASSERT_EQ(predicate_7.parameters.size(), 1);
+  ASSERT_EQ(predicate_7.parameters[0].name, "bathroom");
+  ASSERT_EQ(predicate_7.parameters[0].type, "room_with_teleporter");
+
+  ASSERT_TRUE(problem_expert.addPredicate(predicate_7));
+
+  plansys2::Predicate predicate_8;
+  predicate_8.name = "is_teleporter_destination";
+  predicate_8.parameters.push_back(param_5);
+
+  ASSERT_EQ(predicate_8.name, "is_teleporter_destination");
+  ASSERT_EQ(predicate_8.parameters.size(), 1);
+  ASSERT_EQ(predicate_8.parameters[0].name, "bathroom");
+  ASSERT_EQ(predicate_8.parameters[0].type, "room_with_teleporter");
+
+  ASSERT_TRUE(problem_expert.addPredicate(predicate_8));
+
+  ASSERT_TRUE(problem_expert.removeInstance("bathroom"));
 }
 
 TEST(problem_expert, addget_goals)

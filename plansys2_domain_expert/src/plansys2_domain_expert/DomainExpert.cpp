@@ -94,6 +94,7 @@ boost::optional<plansys2::Function> DomainExpert::getFunction(const std::string 
         param.name = "?" + domain_.types[domain_.funcs[i]->params[j]]->getName() +
           std::to_string(j);
         param.type = domain_.types[domain_.funcs[i]->params[j]]->getName();
+        domain_.types[domain_.funcs[i]->params[j]]->getSubTypesNames(param.subTypes);
         ret.parameters.push_back(param);
       }
     }
@@ -129,6 +130,7 @@ DomainExpert::getPredicate(const std::string & predicate)
         param.name = "?" + domain_.types[domain_.preds[i]->params[j]]->getName() +
           std::to_string(j);
         param.type = domain_.types[domain_.preds[i]->params[j]]->name;
+        domain_.types[domain_.preds[i]->params[j]]->getSubTypesNames(param.subTypes);
         ret.parameters.push_back(param);
       }
     }
@@ -181,6 +183,7 @@ DomainExpert::getAction(const std::string & action)
         Param param;
         param.name = "?" + std::to_string(j);
         param.type = domain_.types[action_obj->params[j]]->name;
+        domain_.types[action_obj->params[j]]->getSubTypesNames(param.subTypes);
         ret.parameters.push_back(param);
       }
 
@@ -257,6 +260,7 @@ DomainExpert::getDurativeAction(const std::string & action)
         Param param;
         param.name = "?" + std::to_string(j);
         param.type = domain_.types[action_obj->params[j]]->name;
+        domain_.types[action_obj->params[j]]->getSubTypesNames(param.subTypes);
         ret.parameters.push_back(param);
       }
 

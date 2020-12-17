@@ -31,6 +31,7 @@ struct Param
 {
   std::string name;
   std::string type;
+  std::vector<std::string> subTypes;
 };
 
 /// Test if two parameters are equals

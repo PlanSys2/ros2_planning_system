@@ -3,10 +3,11 @@
 
 ;; Types ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (:types
-person
-message
-robot
-room
+person  - object 
+message - object
+robot   - object
+room    - object
+teleporter_room - room
 );; end Types ;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Predicates ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -20,7 +21,7 @@ room
 );; end Predicates ;;;;;;;;;;;;;;;;;;;;
 ;; Functions ;;;;;;;;;;;;;;;;;;;;;;;;;
 (:functions
-
+    (teleportation_time ?from - teleporter_room ?to - room)
 );; end Functions ;;;;;;;;;;;;;;;;;;;;
 ;; Actions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (:durative-action move

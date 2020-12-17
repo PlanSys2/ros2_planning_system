@@ -69,7 +69,7 @@ TEST(domain_expert, get_types)
   plansys2::DomainExpert domain_expert(domain_str);
 
   std::vector<std::string> types = domain_expert.getTypes();
-  std::vector<std::string> test_types {"person", "message", "robot", "room"};
+  std::vector<std::string> test_types {"person", "message", "robot", "room", "teleporter_room"};
 
   ASSERT_EQ(types, test_types);
 }
@@ -208,7 +208,8 @@ TEST(domain_expert, multidomain_get_types)
   domain_expert->extendDomain(domain_ext_str);
 
   std::vector<std::string> types = domain_expert->getTypes();
-  std::vector<std::string> test_types {"person", "message", "robot", "room", "pickable_object"};
+  std::vector<std::string> test_types {"person", "message", "robot", "room", "teleporter_room",
+    "pickable_object"};
 
   ASSERT_EQ(types, test_types);
 
@@ -228,6 +229,85 @@ TEST(domain_expert, multidomain_get_types)
     "place_object"};
 
   ASSERT_EQ(dactions, test_dactions);
+}
+
+TEST(domain_expert, sub_types)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  plansys2::DomainExpert domain_expert(domain_str);
+
+  // Parameter subtypes with a durative-action
+  boost::optional<plansys2::DurativeAction> durative_action =
+    domain_expert.getDurativeAction("move");
+  if (durative_action.has_value()) {
+    if (durative_action.value().parameters.size() == 3) {
+      ASSERT_EQ(durative_action.value().parameters[1].type, "room");
+
+      std::vector<std::string> subtypes {"teleporter_room"};
+      ASSERT_EQ(durative_action.value().parameters[1].subTypes, subtypes);
+    } else {
+      FAIL() << "The `move` durative-action is expected to have 2 parameters";
+    }
+  } else {
+    FAIL() << "No `move` durative-action found in the domain";
+  }
+
+  // Parameter subtypes with a predicate
+  boost::optional<plansys2::Predicate> predicate =
+    domain_expert.getPredicate("robot_at");
+  if (predicate.has_value()) {
+    if (predicate.value().parameters.size() == 2) {
+      ASSERT_EQ(predicate.value().parameters[1].type, "room");
+
+      std::vector<std::string> subtypes {"teleporter_room"};
+      ASSERT_EQ(predicate.value().parameters[1].subTypes, subtypes);
+    } else {
+      FAIL() << "The `robot_at` predicate is expected to have 3 parameters";
+    }
+  } else {
+    FAIL() << "No `robot_at` predicate found in the domain";
+  }
+
+  // Parameter subtypes with as action
+  boost::optional<plansys2::Action> action =
+    domain_expert.getAction("move_person");
+  if (action.has_value()) {
+    if (action.value().parameters.size() == 3) {
+      ASSERT_EQ(action.value().parameters[1].type, "room");
+
+      std::vector<std::string> subtypes {"teleporter_room"};
+      ASSERT_EQ(action.value().parameters[1].subTypes, subtypes);
+    } else {
+      FAIL() << "The `move_person` action is expected to have 3 parameters";
+    }
+  } else {
+    FAIL() << "No `move_person` action found in the domain";
+  }
+
+  // Parameter subtypes with as function
+  boost::optional<plansys2::Function> function =
+    domain_expert.getFunction("teleportation_time");
+  if (function.has_value()) {
+    if (function.value().parameters.size() == 2) {
+      ASSERT_EQ(function.value().parameters[0].type, "teleporter_room");
+      ASSERT_EQ(function.value().parameters[1].type, "room");
+
+      std::vector<std::string> emptySubtypes {};
+      ASSERT_EQ(function.value().parameters[0].subTypes, emptySubtypes);
+
+      std::vector<std::string> subtypes {"teleporter_room"};
+      ASSERT_EQ(function.value().parameters[1].subTypes, subtypes);
+    } else {
+      FAIL() << "The `teleportation_time` function is expected to have 2 parameters";
+    }
+  } else {
+    FAIL() << "No `teleportation_time` function found in the domain";
+  }
 }
 
 int main(int argc, char ** argv)
