@@ -450,25 +450,16 @@ ProblemExpertNode::get_problem_predicate_details_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto predicates = problem_expert_->getPredicates();
+    auto params = problem_expert_->getPredicate(request->predicate);
+    if (params) {
+      response->name = params.value().name;
 
-    bool found = false;
-    int i = 0;
-
-    while (!found && i < predicates.size()) {
-      if (predicates[i].name == request->predicate) {
-        found = true;
-      } else {
-        i++;
+      for (const auto & param :  params.value().parameters) {
+        response->param_names.push_back(param.name);
+        response->param_types.push_back(param.type);
       }
-    }
 
-    if (found) {
       response->success = true;
-
-      for (size_t j = 0; j < predicates[i].parameters.size(); j++) {
-        response->argument_params.push_back(predicates[i].parameters[j].name);
-      }
     } else {
       response->success = false;
       response->error_info = "Predicate not found";
@@ -506,27 +497,18 @@ ProblemExpertNode::get_problem_function_details_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto functions = problem_expert_->getFunctions();
+    auto params = problem_expert_->getFunction(request->function);
+    if (params) {
+      response->name = params.value().name;
 
-    bool found = false;
-    int i = 0;
-
-    while (!found && i < functions.size()) {
-      if (functions[i].name == request->function) {
-        found = true;
-      } else {
-        i++;
+      for (const auto & param : params.value().parameters) {
+        response->param_names.push_back(param.name);
+        response->param_types.push_back(param.type);
       }
-    }
 
-    if (found) {
+      response->value = params.value().value;
+
       response->success = true;
-
-      for (size_t j = 0; j < functions[i].parameters.size(); j++) {
-        response->argument_params.push_back(functions[i].parameters[j].name);
-      }
-
-      response->value = functions[i].value;
     } else {
       response->success = false;
       response->error_info = "Function not found";

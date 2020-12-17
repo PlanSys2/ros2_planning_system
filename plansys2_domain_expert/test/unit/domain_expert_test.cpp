@@ -22,39 +22,29 @@
 
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpert.hpp"
+#include "plansys2_pddl_parser/Tree.h"
 
-
-std::string getReducedString(const std::string & expr)  // Same function in Types.cpp
-{
-  std::regex nts_chars("[\n\t]*", std::regex_constants::ECMAScript);
-  std::string ret = std::regex_replace(expr, nts_chars, "");
-  std::regex open_paren("\\( ", std::regex_constants::ECMAScript);
-  ret = std::regex_replace(ret, open_paren, "(");
-  std::regex close_paren(" \\)", std::regex_constants::ECMAScript);
-  ret = std::regex_replace(ret, close_paren, ")");
-  return ret;
-}
 
 TEST(domain_expert, functions)
 {
   std::string my_string("(and)");
-  ASSERT_EQ(getReducedString(my_string), "(and)");
+  ASSERT_EQ(parser::pddl::tree::getReducedString(my_string), "(and)");
 
   my_string = "( and)";
-  ASSERT_EQ(getReducedString(my_string), "(and)");
+  ASSERT_EQ(parser::pddl::tree::getReducedString(my_string), "(and)");
 
   my_string = "( \tand)";
-  ASSERT_EQ(getReducedString(my_string), "(and)");
+  ASSERT_EQ(parser::pddl::tree::getReducedString(my_string), "(and)");
 
   my_string = "( \tand\t)";
-  ASSERT_EQ(getReducedString(my_string), "(and)");
+  ASSERT_EQ(parser::pddl::tree::getReducedString(my_string), "(and)");
 
   my_string = "( and\n)";
-  ASSERT_EQ(getReducedString(my_string), "(and)");
+  ASSERT_EQ(parser::pddl::tree::getReducedString(my_string), "(and)");
   my_string = "( and\n\t)";
-  ASSERT_EQ(getReducedString(my_string), "(and)");
+  ASSERT_EQ(parser::pddl::tree::getReducedString(my_string), "(and)");
   my_string = "( ( and\n\t ) )";
-  ASSERT_EQ(getReducedString(my_string), "((and))");
+  ASSERT_EQ(parser::pddl::tree::getReducedString(my_string), "((and))");
 }
 
 
@@ -123,6 +113,52 @@ TEST(domain_expert, get_predicate_params)
   ASSERT_EQ(params_3.value().parameters[0].type, "person");
   ASSERT_EQ(params_3.value().parameters[1].name, "?room1");
   ASSERT_EQ(params_3.value().parameters[1].type, "room");
+}
+
+TEST(domain_expert, get_functions)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_charging.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  plansys2::DomainExpert domain_expert(domain_str);
+
+  std::vector<std::string> functions = domain_expert.getFunctions();
+  std::vector<std::string> functions_types {"speed", "max_range", "state_of_charge",
+    "distance"};
+
+  ASSERT_EQ(functions, functions_types);
+}
+
+TEST(domain_expert, get_function_params)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_charging.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  plansys2::DomainExpert domain_expert(domain_str);
+
+  auto params_1 = domain_expert.getFunction("speed");
+  ASSERT_TRUE(params_1);
+  ASSERT_EQ(params_1.value().name, "speed");
+  ASSERT_EQ(params_1.value().parameters.size(), 1);
+  ASSERT_EQ(params_1.value().parameters[0].name, "?robot0");
+  ASSERT_EQ(params_1.value().parameters[0].type, "robot");
+
+  auto params_2 = domain_expert.getFunction("SPEED");
+  ASSERT_TRUE(params_2);
+
+  auto params_3 = domain_expert.getFunction("distance");
+  ASSERT_TRUE(params_3);
+  ASSERT_EQ(params_3.value().parameters.size(), 2);
+  ASSERT_EQ(params_3.value().parameters[0].name, "?waypoint0");
+  ASSERT_EQ(params_3.value().parameters[0].type, "waypoint");
+  ASSERT_EQ(params_3.value().parameters[1].name, "?waypoint1");
+  ASSERT_EQ(params_3.value().parameters[1].type, "waypoint");
 }
 
 TEST(domain_expert, get_actions)

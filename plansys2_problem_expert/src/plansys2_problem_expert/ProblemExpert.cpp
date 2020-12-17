@@ -129,16 +129,19 @@ ProblemExpert::removePredicate(const parser::pddl::tree::Predicate & predicate)
 }
 
 boost::optional<parser::pddl::tree::Predicate>
-ProblemExpert::getPredicate(const std::string & predicate_name)
+ProblemExpert::getPredicate(const std::string & expr)
 {
   parser::pddl::tree::Predicate ret;
+  parser::pddl::tree::Predicate pred(expr);
 
   bool found = false;
   int i = 0;
   while (i < predicates_.size() && !found) {
-    if (predicates_[i].name == predicate_name) {
-      found = true;
-      ret = predicates_[i];
+    if (predicates_[i].name == pred.name) {
+      if (predicates_[i].parameters == pred.parameters) {
+        found = true;
+        ret = predicates_[i];
+      }
     }
     i++;
   }
@@ -205,16 +208,19 @@ ProblemExpert::updateFunction(const parser::pddl::tree::Function & function)
 }
 
 boost::optional<parser::pddl::tree::Function>
-ProblemExpert::getFunction(const std::string & function_name)
+ProblemExpert::getFunction(const std::string & expr)
 {
   parser::pddl::tree::Function ret;
+  parser::pddl::tree::Function func(expr);
 
   bool found = false;
   int i = 0;
   while (i < functions_.size() && !found) {
-    if (functions_[i].name == function_name) {
-      found = true;
-      ret = functions_[i];
+    if (functions_[i].name == func.name) {
+      if (functions_[i].parameters == func.parameters) {
+        found = true;
+        ret = functions_[i];
+      }
     }
     i++;
   }

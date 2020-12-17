@@ -61,14 +61,14 @@ public:
   bool addPredicate(const parser::pddl::tree::Predicate & predicate);
   bool removePredicate(const parser::pddl::tree::Predicate & predicate);
   bool existPredicate(const parser::pddl::tree::Predicate & predicate);
-  boost::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & name);
+  boost::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & expr);
 
   std::vector<parser::pddl::tree::Function> getFunctions();
   bool addFunction(const parser::pddl::tree::Function & function);
   bool removeFunction(const parser::pddl::tree::Function & function);
   bool existFunction(const parser::pddl::tree::Function & function);
   bool updateFunction(const parser::pddl::tree::Function & function);
-  boost::optional<parser::pddl::tree::Function> getFunction(const std::string & name);
+  boost::optional<parser::pddl::tree::Function> getFunction(const std::string & expr);
 
   parser::pddl::tree::Goal getGoal();
   bool setGoal(const parser::pddl::tree::Goal & goal);

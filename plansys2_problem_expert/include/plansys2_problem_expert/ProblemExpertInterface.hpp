@@ -37,14 +37,14 @@ public:
   virtual bool addPredicate(const parser::pddl::tree::Predicate & predicate) = 0;
   virtual bool removePredicate(const parser::pddl::tree::Predicate & predicate) = 0;
   virtual bool existPredicate(const parser::pddl::tree::Predicate & predicate) = 0;
-  virtual boost::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & name) = 0;
+  virtual boost::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & expr) = 0;
 
   virtual std::vector<parser::pddl::tree::Function> getFunctions() = 0;
   virtual bool addFunction(const parser::pddl::tree::Function & function) = 0;
   virtual bool removeFunction(const parser::pddl::tree::Function & function) = 0;
   virtual bool existFunction(const parser::pddl::tree::Function & function) = 0;
   virtual bool updateFunction(const parser::pddl::tree::Function & function) = 0;
-  virtual boost::optional<parser::pddl::tree::Function> getFunction(const std::string & name) = 0;
+  virtual boost::optional<parser::pddl::tree::Function> getFunction(const std::string & expr) = 0;
 
   virtual parser::pddl::tree::Goal getGoal() = 0;
   virtual bool setGoal(const parser::pddl::tree::Goal & goal) = 0;

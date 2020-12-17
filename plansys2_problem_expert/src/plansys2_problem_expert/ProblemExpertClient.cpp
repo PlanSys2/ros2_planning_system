@@ -382,7 +382,7 @@ ProblemExpertClient::existPredicate(const parser::pddl::tree::Predicate & predic
 }
 
 boost::optional<parser::pddl::tree::Predicate>
-ProblemExpertClient::getPredicate(const std::string & name)
+ProblemExpertClient::getPredicate(const std::string & expr)
 {
   parser::pddl::tree::Predicate ret;
 
@@ -398,7 +398,7 @@ ProblemExpertClient::getPredicate(const std::string & name)
 
   auto request = std::make_shared<plansys2_msgs::srv::GetProblemPredicateDetails::Request>();
 
-  request->predicate = name;
+  request->predicate = expr;
 
   auto future_result = get_problem_predicate_details_client_->async_send_request(request);
 
@@ -409,10 +409,13 @@ ProblemExpertClient::getPredicate(const std::string & name)
   }
 
   if (future_result.get()->success) {
-    ret.name = name;
+    ret.name = future_result.get()->name;
 
-    for (auto const & param : future_result.get()->argument_params) {
-      ret.parameters.push_back(parser::pddl::tree::Param{param, ""});
+    for (size_t i = 0; i < future_result.get()->param_names.size(); ++i) {
+      parser::pddl::tree::Param param;
+      param.name = future_result.get()->param_names[i];
+      param.type = future_result.get()->param_types[i];
+      ret.parameters.push_back(param);
     }
 
     return ret;
@@ -618,7 +621,7 @@ bool ProblemExpertClient::updateFunction(const parser::pddl::tree::Function & fu
 }
 
 boost::optional<parser::pddl::tree::Function>
-ProblemExpertClient::getFunction(const std::string & name)
+ProblemExpertClient::getFunction(const std::string & expr)
 {
   parser::pddl::tree::Function ret;
 
@@ -634,7 +637,7 @@ ProblemExpertClient::getFunction(const std::string & name)
 
   auto request = std::make_shared<plansys2_msgs::srv::GetProblemFunctionDetails::Request>();
 
-  request->function = name;
+  request->function = expr;
 
   auto future_result = get_problem_function_details_client_->async_send_request(request);
 
@@ -645,12 +648,16 @@ ProblemExpertClient::getFunction(const std::string & name)
   }
 
   if (future_result.get()->success) {
-    ret.name = name;
-    ret.value = future_result.get()->value;
+    ret.name = future_result.get()->name;
 
-    for (auto const & param : future_result.get()->argument_params) {
-      ret.parameters.push_back(parser::pddl::tree::Param{param, ""});
+    for (size_t i = 0; i < future_result.get()->param_names.size(); ++i) {
+      parser::pddl::tree::Param param;
+      param.name = future_result.get()->param_names[i];
+      param.type = future_result.get()->param_types[i];
+      ret.parameters.push_back(param);
     }
+
+    ret.value = future_result.get()->value;
 
     return ret;
   } else {

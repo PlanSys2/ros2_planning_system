@@ -154,11 +154,113 @@ TEST(problem_expert, addget_predicates)
   predicates = problem_expert.getPredicates();
   ASSERT_EQ(predicates.size(), 4);
 
+  auto pred_2 = problem_expert.getPredicate("(robot_at r2d2 kitchen)");
+  ASSERT_TRUE(pred_2);
+  ASSERT_EQ(pred_2.value().name, "robot_at");
+  ASSERT_EQ(pred_2.value().parameters.size(), 2);
+  ASSERT_EQ(pred_2.value().parameters[0].name, "r2d2");
+  ASSERT_EQ(pred_2.value().parameters[0].type, "robot");
+  ASSERT_EQ(pred_2.value().parameters[1].name, "kitchen");
+  ASSERT_EQ(pred_2.value().parameters[1].type, "room");
+
   ASSERT_FALSE(problem_expert.removePredicate(predicate_5));
   ASSERT_TRUE(problem_expert.removePredicate(predicate_4));
 
   predicates = problem_expert.getPredicates();
   ASSERT_EQ(predicates.size(), 3);
+}
+
+TEST(problem_expert, addget_functions)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_charging.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  parser::pddl::tree::Param param_1;
+  param_1.name = "r2d2";
+  param_1.type = "robot";
+
+  parser::pddl::tree::Param param_2;
+  param_2.name = "wp1";
+  param_2.type = "waypoint";
+
+  parser::pddl::tree::Param param_3;
+  param_3.name = "wp2";
+  param_3.type = "waypoint";
+
+  parser::pddl::tree::Function function_1;
+  function_1.name = "speed";
+  function_1.parameters.push_back(param_1);
+  function_1.value = 3;
+
+  ASSERT_EQ(function_1.name, "speed");
+  ASSERT_EQ(function_1.parameters.size(), 1);
+  ASSERT_EQ(function_1.parameters[0].name, "r2d2");
+  ASSERT_EQ(function_1.parameters[0].type, "robot");
+  ASSERT_EQ(function_1.value, 3);
+
+  parser::pddl::tree::Function function_2;
+  function_2.name = "distance";
+  function_2.parameters.push_back(param_2);
+  function_2.parameters.push_back(param_3);
+  function_2.value = 15;
+
+  ASSERT_EQ(function_2.name, "distance");
+  ASSERT_EQ(function_2.parameters.size(), 2);
+  ASSERT_EQ(function_2.parameters[0].name, "wp1");
+  ASSERT_EQ(function_2.parameters[0].type, "waypoint");
+  ASSERT_EQ(function_2.parameters[1].name, "wp2");
+  ASSERT_EQ(function_2.parameters[1].type, "waypoint");
+  ASSERT_EQ(function_2.value, 15);
+
+  parser::pddl::tree::Function function_3;
+  function_3.name = "speed";
+  function_3.parameters.push_back(param_1);
+  function_3.parameters.push_back(param_2);
+
+  parser::pddl::tree::Function function_4;
+  function_4.name = "distance";
+  function_4.parameters.push_back(param_1);
+  function_4.parameters.push_back(param_2);
+
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::tree::Instance{"r2d2", "robot"}));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::tree::Instance{"wp1", "waypoint"}));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::tree::Instance{"wp2", "waypoint"}));
+
+  std::vector<parser::pddl::tree::Function> functions = problem_expert.getFunctions();
+  ASSERT_TRUE(functions.empty());
+
+  ASSERT_TRUE(problem_expert.addFunction(function_1));
+  functions = problem_expert.getFunctions();
+  ASSERT_FALSE(functions.empty());
+  ASSERT_FALSE(problem_expert.addFunction(function_1));
+  ASSERT_TRUE(problem_expert.addFunction(function_2));
+  ASSERT_FALSE(problem_expert.addFunction(function_3));
+  ASSERT_FALSE(problem_expert.addFunction(function_4));
+
+  functions = problem_expert.getFunctions();
+  ASSERT_EQ(functions.size(), 2);
+
+  auto func_2 = problem_expert.getFunction("(distance wp1 wp2)");
+  ASSERT_TRUE(func_2);
+  ASSERT_EQ(func_2.value().name, "distance");
+  ASSERT_EQ(func_2.value().parameters.size(), 2);
+  ASSERT_EQ(func_2.value().parameters[0].name, "wp1");
+  ASSERT_EQ(func_2.value().parameters[0].type, "waypoint");
+  ASSERT_EQ(func_2.value().parameters[1].name, "wp2");
+  ASSERT_EQ(func_2.value().parameters[1].type, "waypoint");
+  ASSERT_EQ(func_2.value().value, 15);
+
+  ASSERT_FALSE(problem_expert.removeFunction(function_3));
+  ASSERT_TRUE(problem_expert.removeFunction(function_2));
+
+  functions = problem_expert.getFunctions();
+  ASSERT_EQ(functions.size(), 1);
 }
 
 TEST(problem_expert, addget_goals)
