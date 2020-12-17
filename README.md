@@ -12,8 +12,6 @@ We hope that this software helps to include planning in more Robotics projects, 
 
 We want to invite you to contribute to this Open Source project !!
 
-
-
 # Design
 
 ![plansys2_overview](plansys2_docs/plansys2_arch.png)
