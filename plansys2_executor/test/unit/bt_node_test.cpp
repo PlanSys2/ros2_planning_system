@@ -373,7 +373,7 @@ TEST(problem_expert, wait_atend_req_test)
 
   try {
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
-    
+
     auto status = BT::NodeStatus::RUNNING;
     status = tree.tickRoot();
     ASSERT_EQ(status, BT::NodeStatus::FAILURE);
