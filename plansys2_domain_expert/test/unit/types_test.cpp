@@ -124,6 +124,14 @@ TEST(domain_types, predicate_tree_from_string)
   ASSERT_EQ(tree2.toString(), expresion2);
 }
 
+TEST(domain_types, split_expression)
+{
+  std::vector<std::string> expected {"a", "(b c)"};
+  std::vector<std::string> splitted = plansys2::Assignment::splitExpr("(a (b c))");
+
+  ASSERT_EQ(splitted, expected);
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
