@@ -6,4 +6,3 @@ Plansys2 is composed by next modules:
 - [Problem Expert Module](../plansys2_problem_expert/README.md)
 - [Planner](../plansys2_planner/README.md)
 - [Executor](../plansys2_executor/README.md)
-
