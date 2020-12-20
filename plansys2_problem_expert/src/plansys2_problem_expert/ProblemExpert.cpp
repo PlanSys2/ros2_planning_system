@@ -122,7 +122,7 @@ ProblemExpert::addPredicate(const Predicate & predicate)
       return false;
     }
   } else {
-    return false;
+    return true;
   }
 }
 
@@ -132,6 +132,9 @@ ProblemExpert::removePredicate(const Predicate & predicate)
   bool found = false;
   int i = 0;
 
+  if (!isValidPredicate(predicate)) {  // if predicate is not valid, error
+    return false;
+  }
   while (!found && i < predicates_.size()) {
     if (predicates_[i] == predicate) {
       found = true;
@@ -140,7 +143,7 @@ ProblemExpert::removePredicate(const Predicate & predicate)
     i++;
   }
 
-  return found;
+  return true;
 }
 
 bool
@@ -149,6 +152,9 @@ ProblemExpert::removeAssignment(const Assignment & assignment)
   bool found = false;
   int i = 0;
 
+  if (!isValidAssignment(assignment)) {  // if predicate is not valid, error
+    return false;
+  }
   while (!found && i < assignments_.size()) {
     Assignment assignment = assignments_[i];
     if (assignments_[i].hasSameNamesAndParameters(assignment)) {
@@ -158,7 +164,7 @@ ProblemExpert::removeAssignment(const Assignment & assignment)
     i++;
   }
 
-  return found;
+  return true;
 }
 
 
