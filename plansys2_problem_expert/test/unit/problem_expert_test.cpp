@@ -177,7 +177,7 @@ TEST(problem_expert, add_assignments)
 
   ASSERT_FALSE(problem_expert.addAssignment(assignment_3));
 
-  ASSERT_TRUE(problem_expert.removeAssignment(assignment_3));
+  ASSERT_FALSE(problem_expert.removeAssignment(assignment_3));
 
   ASSERT_TRUE(problem_expert.removeInstance("kitchen"));
 }
