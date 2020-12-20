@@ -8,6 +8,6 @@ The main class is [`plansys2::PlannerNode`](include/include/plansys2_planner/Pla
 
 Plan solvers are specified in the `plan_solver_plugins` parameter. In case of more than one specified, the first one will be used. If this paremeter is not specified, POPF will be used by default.
 
-## Services:
+## Services
 
 - `/planner/get_plan` [[`plansys2_msgs::srv::GetPlan`](../plansys2_msgs/srv/GetPlan.srv)]
