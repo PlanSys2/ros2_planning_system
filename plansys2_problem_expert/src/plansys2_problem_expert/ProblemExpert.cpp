@@ -152,6 +152,8 @@ ProblemExpert::removeAssignment(const Assignment & assignment)
   bool found = false;
   int i = 0;
 
+  if (!isValidAssignment(assignment)) // if predicate is not valid, error
+    return false;
   while (!found && i < assignments_.size()) {
     Assignment assignment = assignments_[i];
     if (assignments_[i].hasSameNamesAndParameters(assignment)) {
@@ -161,7 +163,7 @@ ProblemExpert::removeAssignment(const Assignment & assignment)
     i++;
   }
 
-  return found;
+  return true; // if predicate is valid, not an error to try and remove non-existent value
 }
 
 
@@ -269,6 +271,7 @@ ProblemExpert::existAssignment(const Assignment & assignment)
       assignments_[i].parameters == assignment.parameters)
     {
       found = true;
+      break; // breaking here speeds up this method
     }
     i++;
   }
@@ -289,6 +292,7 @@ ProblemExpert::updateAssignment(const Assignment & assignment)
     {
       assignments_[i].value = assignment.value;  /** update only the value */
       found = true;
+      break; // breaking here speeds up this method
     }
     i++;
   }
