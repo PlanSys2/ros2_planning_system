@@ -267,7 +267,7 @@ TEST(problem_expert, addget_predicates)
   ASSERT_TRUE(problem_expert.addPredicate(predicate_1));
   predicates = problem_expert.getPredicates();
   ASSERT_FALSE(predicates.empty());
-  ASSERT_FALSE(problem_expert.addPredicate(predicate_1));
+  ASSERT_TRUE(problem_expert.addPredicate(predicate_1));
   ASSERT_TRUE(problem_expert.addPredicate(predicate_2));
   ASSERT_TRUE(problem_expert.addPredicate(predicate_3));
   ASSERT_TRUE(problem_expert.addPredicate(predicate_4));
@@ -278,6 +278,7 @@ TEST(problem_expert, addget_predicates)
   ASSERT_EQ(predicates.size(), 4);
 
   ASSERT_FALSE(problem_expert.removePredicate(predicate_5));
+  ASSERT_TRUE(problem_expert.removePredicate(predicate_4));
   ASSERT_TRUE(problem_expert.removePredicate(predicate_4));
 
   predicates = problem_expert.getPredicates();

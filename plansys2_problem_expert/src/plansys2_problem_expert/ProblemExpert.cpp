@@ -122,7 +122,7 @@ ProblemExpert::addPredicate(const Predicate & predicate)
       return false;
     }
   } else {
-    return true; // nothing wrong with adding a predicate twice, but don't want to add it twice to the vector
+    return true;
   }
 }
 
@@ -132,8 +132,9 @@ ProblemExpert::removePredicate(const Predicate & predicate)
   bool found = false;
   int i = 0;
 
-  if (!isValidPredicate(predicate)) // if predicate is not valid, error
+  if (!isValidPredicate(predicate)) {  // if predicate is not valid, error
     return false;
+  }
   while (!found && i < predicates_.size()) {
     if (predicates_[i] == predicate) {
       found = true;
@@ -142,7 +143,7 @@ ProblemExpert::removePredicate(const Predicate & predicate)
     i++;
   }
 
-  return true; // if predicate is valid, not an error to try and remove non-existent value
+  return true;
 }
 
 bool
@@ -250,7 +251,6 @@ ProblemExpert::existInstance(const std::string & name)
   while (!found && i < instances_.size()) {
     if (instances_[i].name == name) {
       found = true;
-      break; // breaking here speeds up this method
     }
     i++;
   }
@@ -307,7 +307,6 @@ ProblemExpert::existPredicate(const Predicate & predicate)
       predicates_[i].parameters == predicate.parameters)
     {
       found = true;
-      break; // returning here speeds up this method
     }
     i++;
   }
