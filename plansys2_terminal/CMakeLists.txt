@@ -1,6 +1,7 @@
 project(plansys2_terminal)
-
 cmake_minimum_required(VERSION 3.5)
+
+set(CMAKE_BUILD_TYPE Debug)
 
 find_package(Threads REQUIRED)
 
@@ -27,12 +28,19 @@ set(dependencies
     plansys2_executor
 )
 
+include_directories(include)
+
+add_library(terminal SHARED
+  src/plansys2_terminal/Terminal.cpp)
+ament_target_dependencies(terminal ${dependencies})
+
 add_executable(${PROJECT_NAME}
   src/terminal_node.cpp)
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
-target_link_libraries(${PROJECT_NAME} readline)
+target_link_libraries(${PROJECT_NAME} terminal readline)
 
 install(TARGETS
+  terminal
   ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -44,10 +52,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
+  add_subdirectory(test)
 endif()
-
-ament_export_include_directories(include)
-ament_export_libraries(${PROJECT_NAME})
-ament_export_dependencies(${dependencies})
 
 ament_package()

@@ -1,4 +1,5 @@
 # Contribution Guidelines
+
 As an open-source project, we welcome and encourage the community to submit patches directly to the ROS2 Planning System (Plansys2). In our collaborative open source environment, standards and methods for submitting changes help reduce the chaos that can result from an active development community.
 
 This document explains how to participate in project conversations, log and track bugs and enhancement requests, and submit patches to the project so your patch will be accepted quickly in the codebase.
@@ -10,7 +11,7 @@ Contributions should be made under the predominant license of that package. Enti
 
 A license tells you what rights you have as a developer, as provided by the copyright holder. It is important that the contributor fully understands the licensing rights and agrees to them. Sometimes the copyright holder isn’t the contributor, such as when the contributor is doing work on behalf of a company.
 
-# Developer Certification of Origin (DCO)
+## Developer Certification of Origin (DCO)
 
 To make a good faith effort to ensure licensing criteria are met, ROS2 Planning System requires the Developer Certificate of Origin (DCO) process to be followed.
 
@@ -18,7 +19,7 @@ The DCO is an attestation attached to every contribution made by every developer
 
 When a developer submits a patch, it is a commitment that the contributor has the right to submit the patch per the license. The DCO agreement is shown below and at [http://developercertificate.org/](http://developercertificate.org/).
 
-```
+``` txt
 Developer's Certificate of Origin 1.1
 
 By making a contribution to this project, I certify that:
@@ -47,10 +48,11 @@ By making a contribution to this project, I certify that:
     involved.
 ```
 
-# DCO Sign-Off Methods
+## DCO Sign-Off Methods
+
 The DCO requires that a sign-off message, in the following format, appears on each commit in the pull request:
 
-```
+``` txt
 Signed-off-by: Sofforus Jones <sjones@gmail.com>
 ```
 

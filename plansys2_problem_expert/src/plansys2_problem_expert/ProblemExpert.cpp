@@ -107,7 +107,7 @@ ProblemExpert::addPredicate(const parser::pddl::tree::Predicate & predicate)
       return false;
     }
   } else {
-    return false;
+    return true;
   }
 }
 
@@ -117,6 +117,9 @@ ProblemExpert::removePredicate(const parser::pddl::tree::Predicate & predicate)
   bool found = false;
   int i = 0;
 
+  if (!isValidPredicate(predicate)) {  // if predicate is not valid, error
+    return false;
+  }
   while (!found && i < predicates_.size()) {
     if (predicates_[i] == predicate) {
       found = true;
@@ -125,7 +128,7 @@ ProblemExpert::removePredicate(const parser::pddl::tree::Predicate & predicate)
     i++;
   }
 
-  return found;
+  return true;
 }
 
 boost::optional<parser::pddl::tree::Predicate>
@@ -180,6 +183,9 @@ ProblemExpert::removeFunction(const parser::pddl::tree::Function & function)
   bool found = false;
   int i = 0;
 
+  if (!isValidFunction(function)) {  // if function is not valid, error
+    return false;
+  }
   while (!found && i < functions_.size()) {
     if (functions_[i] == function) {
       found = true;
@@ -188,7 +194,7 @@ ProblemExpert::removeFunction(const parser::pddl::tree::Function & function)
     i++;
   }
 
-  return found;
+  return true;
 }
 
 bool
@@ -376,7 +382,16 @@ ProblemExpert::isValidPredicate(const parser::pddl::tree::Predicate & predicate)
         if (!arg_type) {
           same_types = false;
         } else if (arg_type.value().type != model_predicate.value().parameters[i].type) {
-          same_types = false;
+          bool isSubtype = false;
+          for (std::string subType : model_predicate.value().parameters[i].subTypes) {
+            if (arg_type.value().type == subType) {
+              isSubtype = true;
+              break;
+            }
+          }
+          if (!isSubtype) {
+            same_types = false;
+          }
         }
         i++;
       }
@@ -403,7 +418,16 @@ ProblemExpert::isValidFunction(const parser::pddl::tree::Function & function)
         if (!arg_type) {
           same_types = false;
         } else if (arg_type.value().type != model_function.value().parameters[i].type) {
-          same_types = false;
+          bool isSubtype = false;
+          for (std::string subType : model_function.value().parameters[i].subTypes) {
+            if (arg_type.value().type == subType) {
+              isSubtype = true;
+              break;
+            }
+          }
+          if (!isSubtype) {
+            same_types = false;
+          }
         }
         i++;
       }
@@ -534,7 +558,9 @@ ProblemExpert::getProblem()
       v.push_back(function.parameters[i].name);
     }
 
-    std::transform(function.name.begin(), function.name.end(), function.name.begin(), ::tolower);
+    std::transform(
+      function.name.begin(), function.name.end(),
+      function.name.begin(), ::tolower);
 
     problem.addInit(function.name, function.value, v);
   }

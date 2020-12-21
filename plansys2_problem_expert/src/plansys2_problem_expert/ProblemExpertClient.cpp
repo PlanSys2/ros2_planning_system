@@ -482,7 +482,8 @@ ProblemExpertClient::addFunction(const parser::pddl::tree::Function & function)
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::AddProblemFunction::Request>();
+  auto request =
+    std::make_shared<plansys2_msgs::srv::AddProblemFunction::Request>();
   request->function = function.name;
 
   for (const auto & parameter : function.parameters) {
@@ -491,9 +492,13 @@ ProblemExpertClient::addFunction(const parser::pddl::tree::Function & function)
 
   request->value = function.value;
 
-  auto future_result = add_problem_function_client_->async_send_request(request);
+  auto future_result =
+    add_problem_function_client_->async_send_request(request);
 
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
+  if (rclcpp::spin_until_future_complete(
+      node_,
+      future_result,
+      std::chrono::seconds(1)) !=
     rclcpp::executor::FutureReturnCode::SUCCESS)
   {
     return false;

@@ -76,7 +76,8 @@ DomainExpert::getPredicate(const std::string & predicate)
         parser::pddl::tree::Param param;
         param.name = "?" + domain_.types[domain_.preds[i]->params[j]]->getName() +
           std::to_string(j);
-        param.type = domain_.types[domain_.preds[i]->params[j]]->getName();
+        param.type = domain_.types[domain_.preds[i]->params[j]]->name;
+        domain_.types[domain_.preds[i]->params[j]]->getSubTypesNames(param.subTypes);
         ret.parameters.push_back(param);
       }
     }
@@ -120,7 +121,8 @@ DomainExpert::getFunction(const std::string & function)
         parser::pddl::tree::Param param;
         param.name = "?" + domain_.types[domain_.funcs[i]->params[j]]->getName() +
           std::to_string(j);
-        param.type = domain_.types[domain_.funcs[i]->params[j]]->getName();
+        param.type = domain_.types[domain_.funcs[i]->params[j]]->name;
+        domain_.types[domain_.funcs[i]->params[j]]->getSubTypesNames(param.subTypes);
         ret.parameters.push_back(param);
       }
     }
@@ -173,6 +175,7 @@ DomainExpert::getAction(const std::string & action)
         parser::pddl::tree::Param param;
         param.name = "?" + std::to_string(j);
         param.type = domain_.types[action_obj->params[j]]->name;
+        domain_.types[action_obj->params[j]]->getSubTypesNames(param.subTypes);
         ret.parameters.push_back(param);
       }
 
@@ -239,6 +242,7 @@ DomainExpert::getDurativeAction(const std::string & action)
         parser::pddl::tree::Param param;
         param.name = "?" + std::to_string(j);
         param.type = domain_.types[action_obj->params[j]]->name;
+        domain_.types[action_obj->params[j]]->getSubTypesNames(param.subTypes);
         ret.parameters.push_back(param);
       }
 
