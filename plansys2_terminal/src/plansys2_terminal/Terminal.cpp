@@ -21,6 +21,7 @@
 #include <list>
 #include <string>
 #include <memory>
+#include <sstream>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -62,6 +63,7 @@ void pop_front(std::vector<std::string> & tokens)
   }
 }
 
+// LCOV_EXCL_START
 char * completion_generator(const char * text, int state)
 {
   // This function is called with state=0 the first time; subsequent calls are
@@ -187,13 +189,17 @@ Terminal::run_console()
 
       if (!finish) {
         clean_command(line_str);
-        process_command(line_str);
+
+        std::ostringstream os;
+        process_command(line_str, os);
+        std::cout << os.str();
       }
     }
   }
 
   std::cout << "Finishing..." << std::endl;
 }
+// LCOV_EXCL_STOP
 
 void
 Terminal::clean_command(std::string & command)
@@ -216,190 +222,190 @@ Terminal::clean_command(std::string & command)
 }
 
 void
-Terminal::process_get_model_predicate(std::vector<std::string> & command)
+Terminal::process_get_model_predicate(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 1) {
     auto predicates = domain_client_->getPredicate(command[0]);
     if (predicates) {
-      std::cout << "Parameters: " << predicates.value().parameters.size() << std::endl;
+      os << "Parameters: " << predicates.value().parameters.size() << std::endl;
       for (size_t i = 0; i < predicates.value().parameters.size(); i++) {
-        std::cout << "\t" << predicates.value().parameters[i].type << " - " <<
+        os << "\t" << predicates.value().parameters[i].type << " - " <<
           predicates.value().parameters[i].name << std::endl;
       }
     } else {
-      std::cout << "Error when looking for params of " << command[0] << std::endl;
+      os << "Error when looking for params of " << command[0] << std::endl;
     }
   } else {
-    std::cout << "\tUsage: \n\t\tget model predicate [predicate_name]" << std::endl;
+    os << "\tUsage: \n\t\tget model predicate [predicate_name]" << std::endl;
   }
 }
 
 void
-Terminal::process_get_mode_action(std::vector<std::string> & command)
+Terminal::process_get_model_action(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 1) {
     auto action = domain_client_->getAction(command[0]);
     auto durative_action = domain_client_->getDurativeAction(command[0]);
     if (action) {
-      std::cout << "Type: action" << std::endl;
-      std::cout << "Parameters: " << action.value().parameters.size() << std::endl;
+      os << "Type: action" << std::endl;
+      os << "Parameters: " << action.value().parameters.size() << std::endl;
       for (size_t i = 0; i < action.value().parameters.size(); i++) {
-        std::cout << "\t" << action.value().parameters[i].type << " - " <<
+        os << "\t" << action.value().parameters[i].type << " - " <<
           action.value().parameters[i].name << std::endl;
       }
-      std::cout << "Preconditions: " << action.value().preconditions.toString() << std::endl;
-      std::cout << "Effects: " << action.value().effects.toString() << std::endl;
+      os << "Preconditions: " << action.value().preconditions.toString() << std::endl;
+      os << "Effects: " << action.value().effects.toString() << std::endl;
     } else if (durative_action) {
-      std::cout << "Type: durative-action" << std::endl;
-      std::cout << "Parameters: " << durative_action.value().parameters.size() << std::endl;
+      os << "Type: durative-action" << std::endl;
+      os << "Parameters: " << durative_action.value().parameters.size() << std::endl;
       for (size_t i = 0; i < durative_action.value().parameters.size(); i++) {
-        std::cout << "\t" << durative_action.value().parameters[i].name << " - " <<
+        os << "\t" << durative_action.value().parameters[i].name << " - " <<
           durative_action.value().parameters[i].type << std::endl;
       }
-      std::cout << "AtStart requirements: " <<
+      os << "AtStart requirements: " <<
         durative_action.value().at_start_requirements.toString() << std::endl;
-      std::cout << "OverAll requirements: " <<
+      os << "OverAll requirements: " <<
         durative_action.value().over_all_requirements.toString() << std::endl;
-      std::cout << "AtEnd requirements: " <<
+      os << "AtEnd requirements: " <<
         durative_action.value().at_end_requirements.toString() << std::endl;
-      std::cout << "AtStart effect: " <<
+      os << "AtStart effect: " <<
         durative_action.value().at_start_effects.toString() << std::endl;
-      std::cout << "AtEnd effect: " <<
+      os << "AtEnd effect: " <<
         durative_action.value().at_end_effects.toString() << std::endl;
     } else {
-      std::cout << "Error when looking for params of " << command[0] << std::endl;
+      os << "Error when looking for params of " << command[0] << std::endl;
     }
   } else {
-    std::cout << "\tUsage: \n\t\tget model action [action_name]" << std::endl;
+    os << "\tUsage: \n\t\tget model action [action_name]" << std::endl;
   }
 }
 
 void
-Terminal::process_get_model(std::vector<std::string> & command)
+Terminal::process_get_model(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
     if (command[0] == "types") {
       auto types = domain_client_->getTypes();
 
-      std::cout << "Types: " << types.size() << std::endl;
+      os << "Types: " << types.size() << std::endl;
       for (const auto & type : types) {
-        std::cout << "\t" << type << std::endl;
+        os << "\t" << type << std::endl;
       }
     } else if (command[0] == "predicates") {
       auto predicates = domain_client_->getPredicates();
 
-      std::cout << "Predicates: " << predicates.size() << std::endl;
+      os << "Predicates: " << predicates.size() << std::endl;
       for (const auto & predicate : predicates) {
-        std::cout << "\t" << predicate << std::endl;
+        os << "\t" << predicate << std::endl;
       }
     } else if (command[0] == "actions") {
       auto actions = domain_client_->getActions();
       auto durative_actions = domain_client_->getDurativeActions();
 
-      std::cout << "Actions: " << actions.size() << std::endl;
+      os << "Actions: " << actions.size() << std::endl;
       for (const auto & action : actions) {
-        std::cout << "\t" << action << " (action)" << std::endl;
+        os << "\t" << action << " (action)" << std::endl;
       }
       for (const auto & durative_action : durative_actions) {
-        std::cout << "\t" << durative_action << " (durative action)" << std::endl;
+        os << "\t" << durative_action << " (durative action)" << std::endl;
       }
     } else if (command[0] == "predicate") {
       pop_front(command);
-      process_get_model_predicate(command);
+      process_get_model_predicate(command, os);
     } else if (command[0] == "action") {
       pop_front(command);
-      process_get_mode_action(command);
+      process_get_model_action(command, os);
     } else {
-      std::cout <<
+      os <<
         "\tUsage: \n\t\tget model [types|predicates|actions|predicate|action]..." <<
         std::endl;
     }
   } else {
-    std::cout << "\tUsage: \n\t\tget model [types|predicates|actions|predicate|action]..." <<
+    os << "\tUsage: \n\t\tget model [types|predicates|actions|predicate|action]..." <<
       std::endl;
   }
 }
 
 void
-Terminal::process_get_problem(std::vector<std::string> & command)
+Terminal::process_get_problem(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
     if (command[0] == "instances") {
       auto instances = problem_client_->getInstances();
 
-      std::cout << "Instances: " << instances.size() << std::endl;
+      os << "Instances: " << instances.size() << std::endl;
       for (const auto & instance : instances) {
-        std::cout << "\t" << instance.name << "\t" << instance.type << std::endl;
+        os << "\t" << instance.name << "\t" << instance.type << std::endl;
       }
     } else if (command[0] == "predicates") {
       auto predicates = problem_client_->getPredicates();
 
-      std::cout << "Predicates: " << predicates.size() << std::endl;
+      os << "Predicates: " << predicates.size() << std::endl;
       for (const auto & predicate : predicates) {
-        std::cout << predicate.toString() << std::endl;
+        os << predicate.toString() << std::endl;
       }
     } else if (command[0] == "goal") {
       auto goal = problem_client_->getGoal();
-      std::cout << "Goal: " << goal.toString() << std::endl;
+      os << "Goal: " << goal.toString() << std::endl;
     }
   } else {
-    std::cout << "\tUsage: \n\t\tget problem [instances|predicates|goal]..." <<
+    os << "\tUsage: \n\t\tget problem [instances|predicates|goal]..." <<
       std::endl;
   }
 }
 
 void
-Terminal::process_get(std::vector<std::string> & command)
+Terminal::process_get(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
     if (command[0] == "model") {
       pop_front(command);
-      process_get_model(command);
+      process_get_model(command, os);
     } else if (command[0] == "problem") {
       pop_front(command);
-      process_get_problem(command);
+      process_get_problem(command, os);
     } else if (command[0] == "domain") {
-      std::cout << "domain: \n" << domain_client_->getDomain() << std::endl;
+      os << "domain: \n" << domain_client_->getDomain() << std::endl;
     } else if (command[0] == "plan") {
       auto plan = planner_client_->getPlan(
         domain_client_->getDomain(),
         problem_client_->getProblem());
 
       if (plan) {
-        std::cout << "plan: " << std::endl;
+        os << "plan: " << std::endl;
         for (const auto & action : plan.value()) {
-          std::cout << action.time << "\t" << action.action << "\t" <<
+          os << action.time << "\t" << action.action << "\t" <<
             action.duration << std::endl;
         }
       } else {
-        std::cout << "No se ha encontrado plan" << std::endl;
+        os << "No se ha encontrado plan" << std::endl;
       }
     } else {
-      std::cerr << " get ---> " << command[0] << std::endl;
-      std::cout << "\tUsage: \n\t\tget [model|problem|domain|plan]..." <<
+      os << " get ---> " << command[0] << std::endl;
+      os << "\tUsage: \n\t\tget [model|problem|domain|plan]..." <<
         std::endl;
     }
   } else {
-    std::cout << "\tUsage: \n\t\tget [model|problem|domain|plan]..." <<
+    os << "\tUsage: \n\t\tget [model|problem|domain|plan]..." <<
       std::endl;
   }
 }
 
 void
-Terminal::process_set_instance(std::vector<std::string> & command)
+Terminal::process_set_instance(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 2) {
     if (!problem_client_->addInstance(plansys2::Instance{command[0], command[1]})) {
-      std::cerr << "Could not add the instance [" << command[0] << "]" << std::endl;
+      os << "Could not add the instance [" << command[0] << "]" << std::endl;
     }
   } else {
-    std::cout << "\tUsage: \n\t\tset instance [name] [type]" <<
+    os << "\tUsage: \n\t\tset instance [name] [type]" <<
       std::endl;
   }
 }
 
 void
-Terminal::process_set_assignment(std::vector<std::string> & command)
+Terminal::process_set_assignment(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
     plansys2::Assignment assignment;
@@ -411,28 +417,28 @@ Terminal::process_set_assignment(std::vector<std::string> & command)
     assignment.fromString(total_expr);
 
     if (!problem_client_->addAssignment(assignment)) {
-      std::cerr <<
+      os <<
         "Could not add the assignment [" <<
         assignment.toString() << "]" << std::endl;
     } else {
-      std::cout << "done" << std::endl;
+      os << "done" << std::endl;
     }
   } else {
-    std::cout << "\tUsage: \n\t\tset assignment [assignment]" <<
+    os << "\tUsage: \n\t\tset assignment [assignment]" <<
       std::endl;
   }
 }
 
 
 void
-Terminal::process_set_predicate(std::vector<std::string> & command)
+Terminal::process_set_predicate(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
     plansys2::Predicate predicate;
     predicate.name = command[0];
 
     if (predicate.name.front() != '(') {
-      std::cout << "\tUsage: \n\t\tset predicate (predicate)" <<
+      os << "\tUsage: \n\t\tset predicate (predicate)" <<
         std::endl;
       return;
     }
@@ -447,7 +453,7 @@ Terminal::process_set_predicate(std::vector<std::string> & command)
     }
 
     if (predicate.parameters.back().name.back() != ')') {
-      std::cout << "\tUsage: \n\t\tset predicate (predicate)" <<
+      os << "\tUsage: \n\t\tset predicate (predicate)" <<
         std::endl;
       return;
     }
@@ -455,16 +461,16 @@ Terminal::process_set_predicate(std::vector<std::string> & command)
     predicate.parameters.back().name.pop_back();  // Remove last (
 
     if (!problem_client_->addPredicate(predicate)) {
-      std::cerr << "Could not add the predicate [" << predicate.toString() << "]" << std::endl;
+      os << "Could not add the predicate [" << predicate.toString() << "]" << std::endl;
     }
   } else {
-    std::cout << "\tUsage: \n\t\tset predicate [predicate]" <<
+    os << "\tUsage: \n\t\tset predicate [predicate]" <<
       std::endl;
   }
 }
 
 void
-Terminal::process_set_goal(std::vector<std::string> & command)
+Terminal::process_set_goal(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
     plansys2::Goal goal;
@@ -478,65 +484,65 @@ Terminal::process_set_goal(std::vector<std::string> & command)
 
     if (goal.root_ != nullptr) {
       if (!problem_client_->setGoal(goal)) {
-        std::cerr << "Could not set the goal [" << goal.toString() << "]" << std::endl;
+        os << "Could not set the goal [" << goal.toString() << "]" << std::endl;
       }
     } else {
-      std::cout << "\tUsage: \n\t\tset goal [goal]" <<
+      os << "\tUsage: \n\t\tset goal [goal]" <<
         std::endl;
     }
   } else {
-    std::cerr << "Not valid goal" << std::endl;
+    os << "Not valid goal" << std::endl;
   }
 }
 
 void
-Terminal::process_set(std::vector<std::string> & command)
+Terminal::process_set(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
     if (command[0] == "instance") {
       pop_front(command);
-      process_set_instance(command);
+      process_set_instance(command, os);
     } else if (command[0] == "predicate") {
       pop_front(command);
-      process_set_predicate(command);
+      process_set_predicate(command, os);
     } else if (command[0] == "assignment") {
       pop_front(command);
-      process_set_assignment(command);
+      process_set_assignment(command, os);
     } else if (command[0] == "goal") {
       pop_front(command);
-      process_set_goal(command);
+      process_set_goal(command, os);
     } else {
-      std::cout << "\tUsage: \n\t\tset [instance|predicate|assignment|goal]..." <<
+      os << "\tUsage: \n\t\tset [instance|predicate|assignment|goal]..." <<
         std::endl;
     }
   } else {
-    std::cout << "\tUsage: \n\t\tset [instance|predicate|assignment|goal]..." <<
+    os << "\tUsage: \n\t\tset [instance|predicate|assignment|goal]..." <<
       std::endl;
   }
 }
 
 void
-Terminal::process_remove_instance(std::vector<std::string> & command)
+Terminal::process_remove_instance(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 1) {
     if (!problem_client_->removeInstance(command[0])) {
-      std::cerr << "Could not remove the instance [" << command[0] << "]" << std::endl;
+      os << "Could not remove the instance [" << command[0] << "]" << std::endl;
     }
   } else {
-    std::cout << "\tUsage: \n\t\tremove instance [name]" <<
+    os << "\tUsage: \n\t\tremove instance [name]" <<
       std::endl;
   }
 }
 
 void
-Terminal::process_remove_predicate(std::vector<std::string> & command)
+Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
     plansys2::Predicate predicate;
     predicate.name = command[0];
 
     if (predicate.name.front() != '(') {
-      std::cout << "\tUsage: \n\t\tremove predicate (predicate)" <<
+      os << "\tUsage: \n\t\tremove predicate (predicate)" <<
         std::endl;
     }
 
@@ -550,7 +556,7 @@ Terminal::process_remove_predicate(std::vector<std::string> & command)
     }
 
     if (predicate.parameters.back().name.back() != ')') {
-      std::cout << "\tUsage: \n\t\tremove predicate (predicate)" <<
+      os << "\tUsage: \n\t\tremove predicate (predicate)" <<
         std::endl;
       return;
     }
@@ -558,32 +564,32 @@ Terminal::process_remove_predicate(std::vector<std::string> & command)
     predicate.parameters.back().name.pop_back();  // Remove last (
 
     if (!problem_client_->removePredicate(predicate)) {
-      std::cerr << "Could not remove the predicate [" << predicate.toString() << "]" << std::endl;
+      os << "Could not remove the predicate [" << predicate.toString() << "]" << std::endl;
     }
   } else {
-    std::cout << "\tUsage: \n\t\remove predicate [name] [instance1] [instance2] ...[instaceN]" <<
+    os << "\tUsage: \n\t\remove predicate [name] [instance1] [instance2] ...[instaceN]" <<
       std::endl;
   }
 }
 
 void
-Terminal::process_remove(std::vector<std::string> & command)
+Terminal::process_remove(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
     if (command[0] == "instance") {
       pop_front(command);
-      process_remove_instance(command);
+      process_remove_instance(command, os);
     } else if (command[0] == "predicate") {
       pop_front(command);
-      process_remove_predicate(command);
-    } else if (command[0] == "goal") {
+      process_remove_predicate(command, os);
+    } else if (command[0] == "goal", os) {
       problem_client_->clearGoal();
     } else {
-      std::cout << "\tUsage: \n\t\tremove [instance|predicate|goal]..." <<
+      os << "\tUsage: \n\t\tremove [instance|predicate|goal]..." <<
         std::endl;
     }
   } else {
-    std::cout << "\tUsage: \n\t\tremove [instance|predicate|goal]..." <<
+    os << "\tUsage: \n\t\tremove [instance|predicate|goal]..." <<
       std::endl;
   }
 }
@@ -646,7 +652,7 @@ Terminal::execute_plan()
 
 
 void
-Terminal::process_run(std::vector<std::string> & command)
+Terminal::process_run(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 0) {
     execute_plan();
@@ -654,7 +660,7 @@ Terminal::process_run(std::vector<std::string> & command)
 }
 
 void
-Terminal::process_command(std::string & command)
+Terminal::process_command(std::string & command, std::ostringstream & os)
 {
   std::vector<std::string> tokens = tokenize(command);
 
@@ -664,18 +670,18 @@ Terminal::process_command(std::string & command)
 
   if (tokens[0] == "get") {
     pop_front(tokens);
-    process_get(tokens);
+    process_get(tokens, os);
   } else if (tokens[0] == "set") {
     pop_front(tokens);
-    process_set(tokens);
+    process_set(tokens, os);
   } else if (tokens[0] == "remove") {
     pop_front(tokens);
-    process_remove(tokens);
+    process_remove(tokens, os);
   } else if (tokens[0] == "run") {
     pop_front(tokens);
-    process_run(tokens);
+    process_run(tokens, os);
   } else {
-    std::cout << "Command not found" << std::endl;
+    os << "Command not found" << std::endl;
   }
 }
 

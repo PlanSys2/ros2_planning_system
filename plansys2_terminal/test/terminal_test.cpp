@@ -15,6 +15,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <sstream>
+#include <map>
 
 #include "rclcpp/rclcpp.hpp"
 #include "ament_index_cpp/get_package_share_directory.hpp"
@@ -66,93 +68,120 @@ class TerminalTest : public plansys2_terminal::Terminal
 public:
   void init()
   {
+    method_executed_["init"] = true;
     Terminal::init();
   }
 
   void clean_command(std::string & command)
   {
+    method_executed_["clean_command"] = true;
     Terminal::clean_command(command);
   }
 
-  void process_get_model_predicate(std::vector<std::string> & command)
+  void process_get_model_predicate(std::vector<std::string> & command, std::ostringstream & os)
   {
-    Terminal::process_get_model_predicate(command);
+    method_executed_["process_get_model_predicate"] = true;
+    Terminal::process_get_model_predicate(command, os);
   }
 
-  void process_get_mode_action(std::vector<std::string> & command)
+  void process_get_model_action(std::vector<std::string> & command, std::ostringstream & os)
   {
-    Terminal::process_get_mode_action(command);
+    method_executed_["process_get_model_action"] = true;
+    Terminal::process_get_model_action(command, os);
   }
 
-  void process_get_model(std::vector<std::string> & command)
+  void process_get_model(std::vector<std::string> & command, std::ostringstream & os)
   {
-    Terminal::process_get_model(command);
+    method_executed_["process_get_model"] = true;
+    Terminal::process_get_model(command, os);
   }
 
-  void process_get_problem(std::vector<std::string> & command)
+  void process_get_problem(std::vector<std::string> & command, std::ostringstream & os)
   {
-    Terminal::process_get_problem(command);
+    method_executed_["process_get_problem"] = true;
+    Terminal::process_get_problem(command, os);
   }
 
-  void process_get(std::vector<std::string> & command)
+  void process_get(std::vector<std::string> & command, std::ostringstream & os)
   {
-    Terminal::process_get(command);
+    method_executed_["process_get"] = true;
+    Terminal::process_get(command, os);
   }
 
-  void process_set_instance(std::vector<std::string> & command)
+  void process_set_instance(std::vector<std::string> & command, std::ostringstream & os)
   {
-    Terminal::process_set_instance(command);
+    method_executed_["process_set_instance"] = true;
+    Terminal::process_set_instance(command, os);
   }
 
-  void process_set_assignment(std::vector<std::string> & command)
+  void process_set_assignment(std::vector<std::string> & command, std::ostringstream & os)
   {
-    Terminal::process_set_assignment(command);
+    method_executed_["process_set_assignment"] = true;
+    Terminal::process_set_assignment(command, os);
   }
 
-  void process_set_predicate(std::vector<std::string> & command)
+  void process_set_predicate(std::vector<std::string> & command, std::ostringstream & os)
   {
-    Terminal::process_set_predicate(command);
+    method_executed_["process_set_predicate"] = true;
+    Terminal::process_set_predicate(command, os);
   }
 
-  void process_set_goal(std::vector<std::string> & command)
+  void process_set_goal(std::vector<std::string> & command, std::ostringstream & os)
   {
-    Terminal::process_set_goal(command);
+    method_executed_["process_set_goal"] = true;
+    Terminal::process_set_goal(command, os);
   }
 
-  void process_set(std::vector<std::string> & command)
+  void process_set(std::vector<std::string> & command, std::ostringstream & os)
   {
-    Terminal::process_set(command);
+    method_executed_["process_set"] = true;
+    Terminal::process_set(command, os);
   }
 
-  void process_remove_instance(std::vector<std::string> & command)
+  void process_remove_instance(std::vector<std::string> & command, std::ostringstream & os)
   {
-    Terminal::process_remove_instance(command);
+    method_executed_["process_remove_instance"] = true;
+    Terminal::process_remove_instance(command, os);
   }
 
-  void process_remove_predicate(std::vector<std::string> & command)
+  void process_remove_predicate(std::vector<std::string> & command, std::ostringstream & os)
   {
-    Terminal::process_remove_predicate(command);
+    method_executed_["process_remove_predicate"] = true;
+    Terminal::process_remove_predicate(command, os);
   }
 
-  void process_remove(std::vector<std::string> & command)
+  void process_remove(std::vector<std::string> & command, std::ostringstream & os)
   {
-    Terminal::process_remove(command);
+    method_executed_["process_remove"] = true;
+    Terminal::process_remove(command, os);
   }
 
   void execute_plan()
   {
+    method_executed_["execute_plan"] = true;
     Terminal::execute_plan();
   }
 
-  void process_run(std::vector<std::string> & command)
+  void process_run(std::vector<std::string> & command, std::ostringstream & os)
   {
-    Terminal::process_run(command);
+    method_executed_["process_run"] = true;
+    Terminal::process_run(command, os);
   }
 
-  void process_command(std::string & command)
+  void process_command(std::string & command, std::ostringstream & os)
   {
-    Terminal::process_command(command);
+    method_executed_["process_command"] = true;
+    Terminal::process_command(command, os);
   }
+
+  void reset_executions()
+  {
+    for (auto it = method_executed_.begin(); it != method_executed_.end(); ++it) {
+      it->second = false;
+    }
+  }
+
+  std::map<std::string, bool> method_executed_;
 };
 
 TEST(terminal_test, load_popf_plugin)
@@ -216,21 +245,231 @@ TEST(terminal_test, load_popf_plugin)
   terminal_node->clean_command(command_1);
   ASSERT_EQ(command_1, "hey how do you test");
 
-  std::string command_2("set instance leia robot");
-  terminal_node->process_command(command_2);
+  {
+    std::ostringstream os;
+    std::string command("set instance leia robot");
+    terminal_node->process_command(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_command"]);
+    ASSERT_TRUE(terminal_node->method_executed_["process_set_instance"]);
+    ASSERT_TRUE(os.str().empty());
 
-  std::vector<std::string> command_3 = {"r2d2", "robot"};
-  terminal_node->process_set_instance(command_3);
+    // auto ins_1 = problem_client->getInstance("leia");
+    // ASSERT_TRUE(ins_1.has_value());
+    // ASSERT_EQ(ins_1.value().name, "leia");
+    // ASSERT_EQ(ins_1.value().type, "robot");
 
-  // auto ins_1 = problem_client->getInstance("leia");
-  // ASSERT_TRUE(ins_1.has_value());
-  // ASSERT_EQ(ins_1.value().name, "leia");
-  // ASSERT_EQ(ins_1.value().type, "robot");
+    terminal_node->reset_executions();
+  }
 
-  // auto ins_2 = problem_client->getInstance("r2d2");
-  // ASSERT_TRUE(ins_2.has_value());
-  // ASSERT_EQ(ins_2.value().name, "r2d2");
-  // ASSERT_EQ(ins_2.value().type, "robot");
+  {
+    std::ostringstream os;
+    std::string command("set instance r2d2 robot");
+    terminal_node->process_command(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_command"]);
+    ASSERT_TRUE(terminal_node->method_executed_["process_set_instance"]);
+    ASSERT_TRUE(os.str().empty());
+
+    // auto ins_1 = problem_client->getInstance("leia");
+    // ASSERT_TRUE(ins_1.has_value());
+    // ASSERT_EQ(ins_1.value().name, "leia");
+    // ASSERT_EQ(ins_1.value().type, "robot");
+
+    terminal_node->reset_executions();
+  }
+
+  {
+    std::ostringstream os;
+    std::vector<std::string> command = {"entrance", "room"};
+    terminal_node->process_set_instance(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_set_instance"]);
+    ASSERT_TRUE(os.str().empty());
+
+    // auto ins_2 = problem_client->getInstance("r2d2");
+    // ASSERT_TRUE(ins_2.has_value());
+    // ASSERT_EQ(ins_2.value().name, "r2d2");
+    // ASSERT_EQ(ins_2.value().type, "robot");
+
+    terminal_node->reset_executions();
+  }
+
+  {
+    std::ostringstream os;
+    std::string command("set predicate (robot_at leia entrance)");
+    terminal_node->process_command(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_command"]);
+    ASSERT_TRUE(terminal_node->method_executed_["process_set_predicate"]);
+    ASSERT_TRUE(os.str().empty());
+
+    // auto ins_1 = problem_client->getInstance("leia");
+    // ASSERT_TRUE(ins_1.has_value());
+    // ASSERT_EQ(ins_1.value().name, "leia");
+    // ASSERT_EQ(ins_1.value().type, "robot");
+
+    terminal_node->reset_executions();
+  }
+
+  {
+    std::ostringstream os;
+    std::string command("set predicate (robot_at data voyager)");
+    terminal_node->process_command(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_command"]);
+    ASSERT_TRUE(terminal_node->method_executed_["process_set_predicate"]);
+    ASSERT_FALSE(os.str().empty());
+
+    // auto ins_1 = problem_client->getInstance("leia");
+    // ASSERT_TRUE(ins_1.has_value());
+    // ASSERT_EQ(ins_1.value().name, "leia");
+    // ASSERT_EQ(ins_1.value().type, "robot");
+
+    terminal_node->reset_executions();
+  }
+
+  {
+    std::ostringstream os;
+    std::vector<std::string> command = {"(robot_at", "r2d2", "entrance)"};
+    terminal_node->process_set_predicate(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_set_predicate"]);
+    ASSERT_TRUE(os.str().empty());
+
+    // auto ins_1 = problem_client->getInstance("leia");
+    // ASSERT_TRUE(ins_1.has_value());
+    // ASSERT_EQ(ins_1.value().name, "leia");
+    // ASSERT_EQ(ins_1.value().type, "robot");
+
+    terminal_node->reset_executions();
+  }
+
+  {
+    std::ostringstream os;
+    std::string command("set goal (and(robot_at leia bathroom))");
+    terminal_node->process_command(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_command"]);
+    ASSERT_TRUE(terminal_node->method_executed_["process_set_goal"]);
+    ASSERT_FALSE(os.str().empty());
+
+    // auto ins_1 = problem_client->getInstance("leia");
+    // ASSERT_TRUE(ins_1.has_value());
+    // ASSERT_EQ(ins_1.value().name, "leia");
+    // ASSERT_EQ(ins_1.value().type, "robot");
+
+    terminal_node->reset_executions();
+  }
+
+  {
+    std::ostringstream os;
+    std::string command("set goal (and(robot_at leia entrance))");
+    terminal_node->process_command(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_command"]);
+    ASSERT_TRUE(terminal_node->method_executed_["process_set_goal"]);
+    ASSERT_TRUE(os.str().empty());
+
+    // auto ins_1 = problem_client->getInstance("leia");
+    // ASSERT_TRUE(ins_1.has_value());
+    // ASSERT_EQ(ins_1.value().name, "leia");
+    // ASSERT_EQ(ins_1.value().type, "robot");
+
+    terminal_node->reset_executions();
+  }
+
+  {
+    std::ostringstream os;
+    std::vector<std::string> command = {"(=(robot_at", "r2d2", "entrance)", "0)"};
+    terminal_node->process_set_assignment(command, os);
+    // ASSERT_TRUE(terminal_node->method_executed_["process_command"]);
+    // ASSERT_TRUE(terminal_node->method_executed_["process_set_goal"]);
+    // ASSERT_TRUE(os.str().empty());
+
+    // auto ins_1 = problem_client->getInstance("leia");
+    // ASSERT_TRUE(ins_1.has_value());
+    // ASSERT_EQ(ins_1.value().name, "leia");
+    // ASSERT_EQ(ins_1.value().type, "robot");
+
+    terminal_node->reset_executions();
+  }
+
+  {
+    std::ostringstream os;
+    std::vector<std::string> command = {"(robot_at", "r2d2", "entrance)"};
+    terminal_node->process_get_model_predicate(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_get_model_predicate"]);
+  }
+
+  {
+    std::ostringstream os;
+    std::vector<std::string> command = {"move"};
+    terminal_node->process_get_model_action(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_get_model_action"]);
+  }
+
+  {
+    std::ostringstream os;
+    std::vector<std::string> command = {"types"};
+    terminal_node->process_get_model(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_get_model"]);
+  }
+
+  {
+    std::ostringstream os;
+    std::vector<std::string> command = {"instances"};
+    terminal_node->process_get_problem(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_get_problem"]);
+  }
+
+  {
+    std::ostringstream os;
+    std::vector<std::string> command = {"problem", "instances"};
+    terminal_node->process_get(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_get"]);
+    ASSERT_TRUE(terminal_node->method_executed_["process_get_problem"]);
+  }
+
+  {
+    std::ostringstream os;
+    std::vector<std::string> command = {"r2d2"};
+    terminal_node->process_remove_instance(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_remove_instance"]);
+    ASSERT_TRUE(os.str().empty());
+  }
+
+  {
+    {
+      std::ostringstream os;
+      std::string command = "set instance leia robot";
+      terminal_node->process_command(command, os);
+    }
+    {
+      std::ostringstream os;
+      std::string command = "set instance entrance room";
+      terminal_node->process_command(command, os);
+    }
+    {
+      std::ostringstream os;
+      std::string command = "set instance kitchen room";
+      terminal_node->process_command(command, os);
+    }
+    {
+      std::ostringstream os;
+      std::string command = "set predicate (robot_at leia entrance)";
+      terminal_node->process_command(command, os);
+    }
+    {
+      std::ostringstream os;
+      std::string command = "set goal (and(robot_at leia kitchen))";
+      terminal_node->process_command(command, os);
+    }
+
+    terminal_node->reset_executions();
+
+    terminal_node->execute_plan();
+    ASSERT_TRUE(terminal_node->method_executed_["execute_plan"]);
+
+    terminal_node->reset_executions();
+
+    std::ostringstream os;
+    std::vector<std::string> command = {};
+    terminal_node->process_run(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_run"]);
+  }
 
   finish = true;
   t.join();

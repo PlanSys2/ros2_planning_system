@@ -18,6 +18,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <sstream>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -47,25 +48,31 @@ protected:
 
   virtual void clean_command(std::string & command);
 
-  virtual void process_get_model_predicate(std::vector<std::string> & command);
-  virtual void process_get_mode_action(std::vector<std::string> & command);
-  virtual void process_get_model(std::vector<std::string> & command);
-  virtual void process_get_problem(std::vector<std::string> & command);
-  virtual void process_get(std::vector<std::string> & command);
+  virtual void process_get_model_predicate(
+    std::vector<std::string> & command,
+    std::ostringstream & os);
+  virtual void process_get_model_action(
+    std::vector<std::string> & command,
+    std::ostringstream & os);
+  virtual void process_get_model(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_get_problem(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_get(std::vector<std::string> & command, std::ostringstream & os);
 
-  virtual void process_set_instance(std::vector<std::string> & command);
-  virtual void process_set_assignment(std::vector<std::string> & command);
-  virtual void process_set_predicate(std::vector<std::string> & command);
-  virtual void process_set_goal(std::vector<std::string> & command);
-  virtual void process_set(std::vector<std::string> & command);
+  virtual void process_set_instance(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_set_assignment(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_set_predicate(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_set_goal(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_set(std::vector<std::string> & command, std::ostringstream & os);
 
-  virtual void process_remove_instance(std::vector<std::string> & command);
-  virtual void process_remove_predicate(std::vector<std::string> & command);
-  virtual void process_remove(std::vector<std::string> & command);
+  virtual void process_remove_instance(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_remove_predicate(
+    std::vector<std::string> & command,
+    std::ostringstream & os);
+  virtual void process_remove(std::vector<std::string> & command, std::ostringstream & os);
 
   virtual void execute_plan();
-  virtual void process_run(std::vector<std::string> & command);
-  virtual void process_command(std::string & command);
+  virtual void process_run(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_command(std::string & command, std::ostringstream & os);
 
 private:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
