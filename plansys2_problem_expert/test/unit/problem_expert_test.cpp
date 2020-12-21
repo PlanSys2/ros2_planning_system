@@ -475,6 +475,11 @@ TEST(problem_expert, addget_goals)
   ASSERT_TRUE(problem_expert.clearGoal());
 
   ASSERT_EQ(problem_expert.getGoal().toString(), "");
+
+  plansys2::Goal goal4;
+  goal4.fromString(
+    "(and (or (robot_at r2d2 bedroom)(robot_at r2d2 kitchen))(not(person_at paco kitchen)))");
+  ASSERT_TRUE(problem_expert.setGoal(goal4));
 }
 
 TEST(problem_expert, get_probem)
