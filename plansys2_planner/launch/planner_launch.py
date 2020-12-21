@@ -34,7 +34,7 @@ def generate_launch_description():
         package='plansys2_planner',
         node_executable='planner_node',
         node_name='planner',
-        node_namespace=namespace,
+        namespace=namespace,
         output='screen',
         parameters=[params_file])
 

@@ -4,7 +4,7 @@
 
 In one terminal run:
 
-```
+``` shell
 ros2 launch patrol_navigation_example patrol_example_launch.py
 ```
 
@@ -24,7 +24,7 @@ The [Patrol](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_exa
 
 Next, we will run the node of the application, [patrolling controller node](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/patrol_navigation_example/src/patrolling_controller_node.cpp). This controls the phase of the behavior of the robot. It is implemented with a Finite State Machine (FSM). In each state, it sets a goal (`(and(patrolled wp1))`, for example), and calls to executor to generate a plan and execute it. The `init_knowledge()` method sets the connections among waypoints (all the navigations from a waypoint to another has to visit `wp_control`):
 
-```
+``` c++
     problem_expert_->addInstance(plansys2::Instance{"r2d2", "robot"});
     problem_expert_->addInstance(plansys2::Instance{"wp_control", "waypoint"});
     problem_expert_->addInstance(plansys2::Instance{"wp1", "waypoint"});
@@ -45,7 +45,7 @@ Next, we will run the node of the application, [patrolling controller node](http
 
 To run this node, only type in another terminal:
 
-```
+``` shell
 ros2 run patrol_navigation_example patrolling_controller_node
 ```
 
@@ -54,6 +54,3 @@ When the robot visit wp_4, it starts again the patrolling.
 You have to see something like this:
 
 [![Patrolling example](https://img.youtube.com/vi/fAEGySqefwo/0.jpg)](https://www.youtube.com/watch?v=fAEGySqefwo)
-
-
-
