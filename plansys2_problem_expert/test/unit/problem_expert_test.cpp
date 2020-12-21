@@ -476,9 +476,10 @@ TEST(problem_expert, addget_goals)
 
   ASSERT_EQ(problem_expert.getGoal().toString(), "");
 
-  plansys2::Goal goal4;
+  parser::pddl::tree::Goal goal4;
   goal4.fromString(
-    "(and (or (robot_at r2d2 bedroom)(robot_at r2d2 kitchen))(not(person_at paco kitchen)))");
+    "(and (or (robot_at r2d2 bedroom) (robot_at r2d2 kitchen)) (not (person_at paco kitchen)))",
+    "(and (or (predicate) (predicate)) (not (predicate)))");
   ASSERT_TRUE(problem_expert.setGoal(goal4));
 }
 
