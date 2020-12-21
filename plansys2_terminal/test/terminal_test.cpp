@@ -119,7 +119,7 @@ public:
     method_executed_["process_set_predicate"] = true;
     Terminal::process_set_predicate(command, os);
   }
-  
+
   void process_set_function(std::vector<std::string> & command, std::ostringstream & os)
   {
     method_executed_["process_set_function"] = true;

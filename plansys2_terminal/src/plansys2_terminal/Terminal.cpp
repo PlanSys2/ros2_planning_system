@@ -347,11 +347,14 @@ Terminal::process_get_model(std::vector<std::string> & command, std::ostringstre
       process_get_model_action(command, os);
     } else {
       os <<
-        "\tUsage: \n\t\tget model [types|predicates|functions|actions|predicate|function|action]..." <<
+        "\tUsage: \n\t\tget model [types|predicates|functions|actions|predicate|function|action]..."
+         <<
         std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\tget model [types|predicates|functions|actions|predicate|function|action]..." <<
+    os <<
+      "\tUsage: \n\t\tget model [types|predicates|functions|actions|predicate|function|action]..."
+       <<
       std::endl;
   }
 }
@@ -609,7 +612,7 @@ Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostr
   }
 }
 
-void 
+void
 Terminal::process_remove_function(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
