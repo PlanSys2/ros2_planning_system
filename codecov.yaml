@@ -2,3 +2,5 @@ fixes:
   - "ros_ws/src/*/ros2_planning_system/::"
 ignore:
   - "ros_ws/build"
+  - "ros_ws/*/**/test/*"
+  - "ros_ws/*/**/**/test/*"
