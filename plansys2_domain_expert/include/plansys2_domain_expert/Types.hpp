@@ -104,7 +104,7 @@ public:
    * @param[in] expression a bracketed e
    * @return a vector with the first level elements in the expression
    */
-  std::vector<std::string> splitExpr(const std::string & expression);
+  static std::vector<std::string> splitExpr(const std::string & expression);
 
   /**
    * /brief Generates a Assignment from a string containing the assignment
