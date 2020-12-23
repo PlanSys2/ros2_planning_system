@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "plansys2_planner/PlannerNode.hpp"
+#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 #include <string>
 #include <memory>
@@ -27,8 +28,8 @@ namespace plansys2
 PlannerNode::PlannerNode()
 : rclcpp_lifecycle::LifecycleNode("planner"),
   lp_loader_("plansys2_core", "plansys2::PlanSolverBase"),
-  default_ids_{"POPF"},
-  default_types_{"plansys2/POPFPlanSolver"}
+  default_ids_{},
+  default_types_{}
 {
   get_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
     "planner/get_plan",
@@ -52,31 +53,41 @@ PlannerNode::on_configure(const rclcpp_lifecycle::State & state)
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
 
   get_parameter("plan_solver_plugins", solver_ids_);
-  if (solver_ids_ == default_ids_) {
-    for (size_t i = 0; i < default_ids_.size(); ++i) {
-      plansys2::declare_parameter_if_not_declared(
-        node, default_ids_[i] + ".plugin",
-        rclcpp::ParameterValue(default_types_[i]));
+
+  if (!solver_ids_.empty()) {
+    if (solver_ids_ == default_ids_) {
+      for (size_t i = 0; i < default_ids_.size(); ++i) {
+        plansys2::declare_parameter_if_not_declared(
+          node, default_ids_[i] + ".plugin",
+          rclcpp::ParameterValue(default_types_[i]));
+      }
     }
-  }
-  solver_types_.resize(solver_ids_.size());
+    solver_types_.resize(solver_ids_.size());
 
-  for (size_t i = 0; i != solver_types_.size(); i++) {
-    try {
-      solver_types_[i] = plansys2::get_plugin_type_param(node, solver_ids_[i]);
-      plansys2::PlanSolverBase::Ptr solver =
-        lp_loader_.createUniqueInstance(solver_types_[i]);
+    for (size_t i = 0; i != solver_types_.size(); i++) {
+      try {
+        solver_types_[i] = plansys2::get_plugin_type_param(node, solver_ids_[i]);
+        plansys2::PlanSolverBase::Ptr solver =
+          lp_loader_.createUniqueInstance(solver_types_[i]);
 
-      solver->configure(node, solver_ids_[i]);
+        solver->configure(node, solver_ids_[i]);
 
-      RCLCPP_INFO(
-        get_logger(), "Created solver : %s of type %s",
-        solver_ids_[i].c_str(), solver_types_[i].c_str());
-      solvers_.insert({solver_ids_[i], solver});
-    } catch (const pluginlib::PluginlibException & ex) {
-      RCLCPP_FATAL(get_logger(), "Failed to create solver. Exception: %s", ex.what());
-      exit(-1);
+        RCLCPP_INFO(
+          get_logger(), "Created solver : %s of type %s",
+          solver_ids_[i].c_str(), solver_types_[i].c_str());
+        solvers_.insert({solver_ids_[i], solver});
+      } catch (const pluginlib::PluginlibException & ex) {
+        RCLCPP_FATAL(get_logger(), "Failed to create solver. Exception: %s", ex.what());
+        exit(-1);
+      }
     }
+  } else {
+    auto default_solver = std::make_shared<plansys2::POPFPlanSolver>();
+    default_solver->configure(node, "POPF");
+    solvers_.insert({"POPF", default_solver});
+    RCLCPP_INFO(
+      get_logger(), "Created default solver : %s of type %s",
+      "POPF", "plansys2/POPFPlanSolver");
   }
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
