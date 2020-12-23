@@ -2,8 +2,8 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.2 (2020-12-23)
+------------------
 * Plan solvers as plugins
 * Contributors: Fabrice Larribe, Francisco Martin Rico, Francisco Martín Rico, f269858
 
