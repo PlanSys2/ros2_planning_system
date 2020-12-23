@@ -16,8 +16,6 @@ find_package(plansys2_domain_expert REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
 find_package(pluginlib REQUIRED)
 
-find_package(Boost 1.65.1 REQUIRED)
-
 set(dependencies
   rclcpp
   rclcpp_action
