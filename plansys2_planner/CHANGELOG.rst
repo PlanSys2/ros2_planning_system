@@ -2,6 +2,11 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Plan solvers as plugins
+* Contributors: Fabrice Larribe, Francisco Martin Rico, Francisco Martín Rico, f269858
+
 1.0.1 (2020-07-19)
 ------------------
 

@@ -2,6 +2,11 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Plan solvers as plugins
+* Contributors: Fabrice Larribe, Francisco Martin Rico, Francisco Martín Rico, f269858
+
 1.0.0 (2020-07-19)
 ------------------
 * Foxy initial version
