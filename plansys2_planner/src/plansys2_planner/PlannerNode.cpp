@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plansys2_planner/PlannerNode.hpp"
-#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
-
 #include <string>
 #include <memory>
 #include <iostream>
 #include <fstream>
+
+#include "plansys2_planner/PlannerNode.hpp"
+#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 
