@@ -28,7 +28,7 @@ PlannerNode::PlannerNode()
 : rclcpp_lifecycle::LifecycleNode("planner"),
   lp_loader_("plansys2_core", "plansys2::PlanSolverBase"),
   default_ids_{"POPF"},
-  default_types_{"plansys2::POPFPlanSolver"}
+  default_types_{"plansys2/POPFPlanSolver"}
 {
   get_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
     "planner/get_plan",
