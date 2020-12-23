@@ -2,6 +2,9 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.2 (2020-12-23)
 ------------------
 * Plan solvers as plugins

@@ -2,6 +2,11 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Default plugin as library
+* Contributors: Francisco Martin Rico
+
 1.0.2 (2020-12-23)
 ------------------
 * Plan solvers as plugins
