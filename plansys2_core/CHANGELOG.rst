@@ -2,6 +2,11 @@
 Changelog for package plansys2_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add missing package dep
+* Contributors: Francisco Martin Rico
+
 1.0.3 (2020-12-23)
 ------------------
 
