@@ -2,6 +2,11 @@
 Changelog for package plansys2_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Migration to c++17
+* Contributors: Francisco Martín Rico
+
 1.0.4 (2020-12-24)
 ------------------
 * Add missing package dep
