@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_PLANNER__TYPES_HPP_
-#define PLANSYS2_PLANNER__TYPES_HPP_
+#ifndef PLANSYS2_CORE__TYPES_HPP_
+#define PLANSYS2_CORE__TYPES_HPP_
 
 #include <string>
 #include <vector>
@@ -32,4 +32,4 @@ typedef std::vector<PlanItem> Plan;
 
 }  // namespace plansys2
 
-#endif  // PLANSYS2_PLANNER__TYPES_HPP_
+#endif  // PLANSYS2_CORE__TYPES_HPP_

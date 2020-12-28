@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_PLANNER__PLANSOLVERBASE_HPP_
-#define PLANSYS2_PLANNER__PLANSOLVERBASE_HPP_
+#ifndef PLANSYS2_CORE__PLANSOLVERBASE_HPP_
+#define PLANSYS2_CORE__PLANSOLVERBASE_HPP_
 
-#include <string>
 #include <optional>
+#include <string>
+#include <memory>
 
 #include "plansys2_core/Types.hpp"
 
@@ -42,4 +43,4 @@ public:
 
 }  // namespace plansys2
 
-#endif  // PLANSYS2_PLANNER__PLANNERINTERFACE_HPP_
+#endif  // PLANSYS2_CORE__PLANSOLVERBASE_HPP_
