@@ -12,6 +12,8 @@ find_package(ament_index_cpp REQUIRED)
 find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 
+set(CMAKE_CXX_STANDARD 17)
+
 set(dependencies
     rclcpp
     rclcpp_action
@@ -32,7 +34,6 @@ set(DOMAIN_EXPERT_SOURCES
 
 add_library(${PROJECT_NAME} SHARED ${DOMAIN_EXPERT_SOURCES})
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
-target_include_directories(${PROJECT_NAME} PUBLIC ${Boost_INCLUDE_DIRS})
 
 add_executable(domain_expert_node
   src/domain_expert_node.cpp

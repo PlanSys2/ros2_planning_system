@@ -2,6 +2,14 @@
 Changelog for package plansys2_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.4 (2020-12-24)
+------------------
+* Add missing package dep
+* Contributors: Francisco Martin Rico
+
+1.0.3 (2020-12-23)
+------------------
+
 1.0.2 (2020-12-23)
 ------------------
 * Plan solvers as plugins

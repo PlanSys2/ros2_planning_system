@@ -56,7 +56,7 @@ int main(int argc, char ** argv)
     action_name,
     bt_xml_file,
     plugin_lib_names_,
-    200ms
+    200ms  // ToDo(fmrico): This should be specified by a parameter
   );
 
   action_node->set_parameter(rclcpp::Parameter("action", action_name));

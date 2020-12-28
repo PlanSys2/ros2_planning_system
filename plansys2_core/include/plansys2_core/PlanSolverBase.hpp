@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_PLANNER__PLANSOLVERBASE_HPP_
-#define PLANSYS2_PLANNER__PLANSOLVERBASE_HPP_
+#ifndef PLANSYS2_CORE__PLANSOLVERBASE_HPP_
+#define PLANSYS2_CORE__PLANSOLVERBASE_HPP_
 
+#include <optional>
 #include <string>
-
-#include <boost/optional.hpp>
+#include <memory>
 
 #include "plansys2_core/Types.hpp"
 
@@ -36,11 +36,11 @@ public:
 
   virtual void configure(rclcpp_lifecycle::LifecycleNode::SharedPtr &, const std::string &) {}
 
-  virtual boost::optional<Plan> getPlan(
+  virtual std::optional<Plan> getPlan(
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace = "") = 0;
 };
 
 }  // namespace plansys2
 
-#endif  // PLANSYS2_PLANNER__PLANNERINTERFACE_HPP_
+#endif  // PLANSYS2_CORE__PLANSOLVERBASE_HPP_
