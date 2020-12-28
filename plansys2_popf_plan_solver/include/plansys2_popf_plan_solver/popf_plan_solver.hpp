@@ -15,8 +15,7 @@
 #ifndef PLANSYS2_POPF_PLAN_SOLVER__POPF_PLAN_SOLVER_HPP_
 #define PLANSYS2_POPF_PLAN_SOLVER__POPF_PLAN_SOLVER_HPP_
 
-#include <boost/optional.hpp>
-
+#include <optional>
 #include <memory>
 #include <string>
 
@@ -32,7 +31,7 @@ public:
 
   void configure(rclcpp_lifecycle::LifecycleNode::SharedPtr &, const std::string &) {}
 
-  boost::optional<Plan> getPlan(
+  std::optional<Plan> getPlan(
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace = "");
 };

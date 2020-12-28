@@ -15,8 +15,7 @@
 #ifndef PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTNODE_HPP_
 #define PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTNODE_HPP_
 
-#include <boost/optional.hpp>
-
+#include <optional>
 #include <memory>
 
 #include "plansys2_domain_expert/DomainExpert.hpp"

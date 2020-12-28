@@ -68,7 +68,7 @@ ProblemExpert::removeInstance(const std::string & name)
   return found;
 }
 
-boost::optional<Instance>
+std::optional<Instance>
 ProblemExpert::getInstance(const std::string & instance_name)
 {
   Instance ret;
@@ -323,7 +323,7 @@ ProblemExpert::isValidAssignment(const Assignment & assignment)
 {
   bool valid = false;
 
-  const boost::optional<plansys2::Function> & model_function = domain_expert_->getFunction(
+  const std::optional<plansys2::Function> & model_function = domain_expert_->getFunction(
     assignment.name);
   if (model_function) {
     if (model_function.value().parameters.size() == assignment.parameters.size()) {

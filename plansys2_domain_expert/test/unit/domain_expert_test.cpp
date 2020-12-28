@@ -242,7 +242,7 @@ TEST(domain_expert, sub_types)
   plansys2::DomainExpert domain_expert(domain_str);
 
   // Parameter subtypes with a durative-action
-  boost::optional<plansys2::DurativeAction> durative_action =
+  std::optional<plansys2::DurativeAction> durative_action =
     domain_expert.getDurativeAction("move");
   if (durative_action.has_value()) {
     if (durative_action.value().parameters.size() == 3) {
@@ -258,7 +258,7 @@ TEST(domain_expert, sub_types)
   }
 
   // Parameter subtypes with a predicate
-  boost::optional<plansys2::Predicate> predicate =
+  std::optional<plansys2::Predicate> predicate =
     domain_expert.getPredicate("robot_at");
   if (predicate.has_value()) {
     if (predicate.value().parameters.size() == 2) {
@@ -274,7 +274,7 @@ TEST(domain_expert, sub_types)
   }
 
   // Parameter subtypes with as action
-  boost::optional<plansys2::Action> action =
+  std::optional<plansys2::Action> action =
     domain_expert.getAction("move_person");
   if (action.has_value()) {
     if (action.value().parameters.size() == 3) {
@@ -290,7 +290,7 @@ TEST(domain_expert, sub_types)
   }
 
   // Parameter subtypes with as function
-  boost::optional<plansys2::Function> function =
+  std::optional<plansys2::Function> function =
     domain_expert.getFunction("teleportation_time");
   if (function.has_value()) {
     if (function.value().parameters.size() == 2) {

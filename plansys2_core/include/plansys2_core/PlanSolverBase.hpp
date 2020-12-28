@@ -16,8 +16,7 @@
 #define PLANSYS2_PLANNER__PLANSOLVERBASE_HPP_
 
 #include <string>
-
-#include <boost/optional.hpp>
+#include <optional>
 
 #include "plansys2_core/Types.hpp"
 
@@ -36,7 +35,7 @@ public:
 
   virtual void configure(rclcpp_lifecycle::LifecycleNode::SharedPtr &, const std::string &) {}
 
-  virtual boost::optional<Plan> getPlan(
+  virtual std::optional<Plan> getPlan(
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace = "") = 0;
 };

@@ -12,6 +12,8 @@ find_package(plansys2_executor REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(test_msgs REQUIRED)
 
+set(CMAKE_CXX_STANDARD 17)
+
 set(dependencies
     rclcpp
     rclcpp_action

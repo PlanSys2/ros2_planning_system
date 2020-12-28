@@ -30,7 +30,7 @@ POPFPlanSolver::POPFPlanSolver()
 {
 }
 
-boost::optional<Plan>
+std::optional<Plan>
 POPFPlanSolver::getPlan(
   const std::string & domain, const std::string & problem,
   const std::string & node_namespace)

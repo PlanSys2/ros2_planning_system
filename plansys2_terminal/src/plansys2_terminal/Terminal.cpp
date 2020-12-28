@@ -657,6 +657,9 @@ Terminal::process_run(std::vector<std::string> & command, std::ostringstream & o
   if (command.size() == 0) {
     execute_plan();
   }
+
+  // ToDo(fmrico): We should be able to run directly an action, for example:
+  // run (move leia entrance dinning)
 }
 
 void
