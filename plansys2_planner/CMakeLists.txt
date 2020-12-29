@@ -17,6 +17,8 @@ find_package(plansys2_problem_expert REQUIRED)
 find_package(plansys2_popf_plan_solver REQUIRED)
 find_package(pluginlib REQUIRED)
 
+set(CMAKE_CXX_STANDARD 17)
+
 set(dependencies
   rclcpp
   rclcpp_action
@@ -40,12 +42,13 @@ set(PLANNER_SOURCES
 
 add_library(${PROJECT_NAME} SHARED ${PLANNER_SOURCES})
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
-target_include_directories(${PROJECT_NAME} PUBLIC ${Boost_INCLUDE_DIRS})
+target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 
 add_executable(planner_node
   src/planner_node.cpp
 )
 ament_target_dependencies(planner_node ${dependencies})
+target_compile_definitions(planner_node PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 target_link_libraries(planner_node ${PROJECT_NAME})
 
 install(DIRECTORY include/

@@ -15,8 +15,7 @@
 #ifndef PLANSYS2_PLANNER__PLANNERINTERFACE_HPP_
 #define PLANSYS2_PLANNER__PLANNERINTERFACE_HPP_
 
-#include <boost/optional.hpp>
-
+#include <optional>
 #include <string>
 
 #include "plansys2_core/Types.hpp"
@@ -29,7 +28,7 @@ class PlannerInterface
 public:
   PlannerInterface() {}
 
-  virtual boost::optional<Plan> getPlan(
+  virtual std::optional<Plan> getPlan(
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace) = 0;
 };

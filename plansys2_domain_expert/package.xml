@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>plansys2_domain_expert</name>
-  <version>1.0.2</version>
+  <version>1.0.6</version>
   
   <description>This package contains the Domain Expert module for the ROS2 Planning System</description>
 
@@ -11,8 +11,6 @@
   <license>Apache License, Version 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-
-  <build_depend>libboost-program-options-dev</build_depend>
 
   <depend>rclcpp</depend>
   <depend>rclcpp_action</depend>

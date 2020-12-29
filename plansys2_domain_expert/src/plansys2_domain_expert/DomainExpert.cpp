@@ -71,11 +71,11 @@ DomainExpert::getPredicates()
  * @brief Search a function in the Domain and return it.
  *
  * @param function name of the function
- * @return boost::optional<plansys2::Function>
+ * @return std::optional<plansys2::Function>
  *  The parameters name is the type name, prefixed by '?'
  *  and suffixed by the parameter index (starting at 0).
  */
-boost::optional<plansys2::Function> DomainExpert::getFunction(const std::string & function)
+std::optional<plansys2::Function> DomainExpert::getFunction(const std::string & function)
 {
   std::string function_search = function;
   std::transform(
@@ -109,7 +109,7 @@ boost::optional<plansys2::Function> DomainExpert::getFunction(const std::string 
 }
 
 
-boost::optional<plansys2::Predicate>
+std::optional<plansys2::Predicate>
 DomainExpert::getPredicate(const std::string & predicate)
 {
   std::string predicate_search = predicate;
@@ -158,7 +158,7 @@ DomainExpert::getActions()
   return ret;
 }
 
-boost::optional<plansys2::Action>
+std::optional<plansys2::Action>
 DomainExpert::getAction(const std::string & action)
 {
   std::string action_search = action;
@@ -233,7 +233,7 @@ DomainExpert::getDurativeActions()
   return ret;
 }
 
-boost::optional<plansys2::DurativeAction>
+std::optional<plansys2::DurativeAction>
 DomainExpert::getDurativeAction(const std::string & action)
 {
   std::string action_search = action;
