@@ -2,8 +2,8 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.6 (2020-12-29)
+------------------
 * Disable boost functions
 * Contributors: Francisco Martin Rico
 
