@@ -33,6 +33,7 @@ include_directories(include)
 add_library(terminal SHARED
   src/plansys2_terminal/Terminal.cpp)
 ament_target_dependencies(terminal ${dependencies})
+target_compile_definitions(terminal PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 
 add_executable(${PROJECT_NAME}
   src/terminal_node.cpp)

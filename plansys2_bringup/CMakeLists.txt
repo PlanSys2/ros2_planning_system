@@ -27,6 +27,7 @@ add_executable(plansys2_node
   src/plansys2_node.cpp
 )
 ament_target_dependencies(plansys2_node ${dependencies})
+target_compile_definitions(plansys2_node PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
