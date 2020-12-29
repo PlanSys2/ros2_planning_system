@@ -2,6 +2,11 @@
 Changelog for package plansys2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Disable boost functions
+* Contributors: Francisco Martin Rico
+
 1.0.5 (2020-12-28)
 ------------------
 * Migration to c++17
