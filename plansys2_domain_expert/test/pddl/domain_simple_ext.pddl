@@ -1,4 +1,4 @@
-(define (domain simple)
+(define (domain plansys2)
 (:requirements :strips :typing :adl :fluents :durative-actions)
 
 ;; Types ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
