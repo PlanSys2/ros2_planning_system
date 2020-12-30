@@ -34,7 +34,16 @@
 
 #include "gtest/gtest.h"
 
-TEST(terminal_test, token_utils)
+class TerminalTestCase : public ::testing::Test
+{
+protected:
+  static void SetUpTestCase()
+  {
+    rclcpp::init(0, nullptr);
+  }
+};
+
+TEST_F(TerminalTestCase, token_utils)
 {
   auto test1 = plansys2_terminal::tokenize("");
   ASSERT_EQ(test1.size(), 0u);
@@ -184,7 +193,7 @@ public:
   std::map<std::string, bool> method_executed_;
 };
 
-TEST(terminal_test, load_popf_plugin)
+TEST_F(TerminalTestCase, load_popf_plugin)
 {
   auto test_node = rclcpp::Node::make_shared("terminal_node_test");
 
@@ -200,16 +209,16 @@ TEST(terminal_test, load_popf_plugin)
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
 
-  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 16, true);
+  ASSERT_GT(exe.get_number_of_threads(), 15u);
 
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(planner_node->get_node_base_interface());
   exe.add_node(executor_node->get_node_base_interface());
 
-  bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
+      exe.spin();
     });
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -226,7 +235,11 @@ TEST(terminal_test, load_popf_plugin)
   }
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp_lifecycle::State state = problem_node->trigger_transition(
+    lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  std::string stateLabel = state.label();
+
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
@@ -253,10 +266,10 @@ TEST(terminal_test, load_popf_plugin)
     ASSERT_TRUE(terminal_node->method_executed_["process_set_instance"]);
     ASSERT_TRUE(os.str().empty());
 
-    // auto ins_1 = problem_client->getInstance("leia");
-    // ASSERT_TRUE(ins_1.has_value());
-    // ASSERT_EQ(ins_1.value().name, "leia");
-    // ASSERT_EQ(ins_1.value().type, "robot");
+    auto ins_1 = problem_client->getInstance("leia");
+    ASSERT_TRUE(ins_1.has_value());
+    ASSERT_EQ(ins_1.value().name, "leia");
+    ASSERT_EQ(ins_1.value().type, "robot");
 
     terminal_node->reset_executions();
   }
@@ -269,10 +282,10 @@ TEST(terminal_test, load_popf_plugin)
     ASSERT_TRUE(terminal_node->method_executed_["process_set_instance"]);
     ASSERT_TRUE(os.str().empty());
 
-    // auto ins_1 = problem_client->getInstance("leia");
-    // ASSERT_TRUE(ins_1.has_value());
-    // ASSERT_EQ(ins_1.value().name, "leia");
-    // ASSERT_EQ(ins_1.value().type, "robot");
+    auto ins_1 = problem_client->getInstance("leia");
+    ASSERT_TRUE(ins_1.has_value());
+    ASSERT_EQ(ins_1.value().name, "leia");
+    ASSERT_EQ(ins_1.value().type, "robot");
 
     terminal_node->reset_executions();
   }
@@ -284,10 +297,10 @@ TEST(terminal_test, load_popf_plugin)
     ASSERT_TRUE(terminal_node->method_executed_["process_set_instance"]);
     ASSERT_TRUE(os.str().empty());
 
-    // auto ins_2 = problem_client->getInstance("r2d2");
-    // ASSERT_TRUE(ins_2.has_value());
-    // ASSERT_EQ(ins_2.value().name, "r2d2");
-    // ASSERT_EQ(ins_2.value().type, "robot");
+    auto ins_2 = problem_client->getInstance("r2d2");
+    ASSERT_TRUE(ins_2.has_value());
+    ASSERT_EQ(ins_2.value().name, "r2d2");
+    ASSERT_EQ(ins_2.value().type, "robot");
 
     terminal_node->reset_executions();
   }
@@ -300,10 +313,10 @@ TEST(terminal_test, load_popf_plugin)
     ASSERT_TRUE(terminal_node->method_executed_["process_set_predicate"]);
     ASSERT_TRUE(os.str().empty());
 
-    // auto ins_1 = problem_client->getInstance("leia");
-    // ASSERT_TRUE(ins_1.has_value());
-    // ASSERT_EQ(ins_1.value().name, "leia");
-    // ASSERT_EQ(ins_1.value().type, "robot");
+    auto ins_1 = problem_client->getInstance("leia");
+    ASSERT_TRUE(ins_1.has_value());
+    ASSERT_EQ(ins_1.value().name, "leia");
+    ASSERT_EQ(ins_1.value().type, "robot");
 
     terminal_node->reset_executions();
   }
@@ -316,10 +329,10 @@ TEST(terminal_test, load_popf_plugin)
     ASSERT_TRUE(terminal_node->method_executed_["process_set_predicate"]);
     ASSERT_FALSE(os.str().empty());
 
-    // auto ins_1 = problem_client->getInstance("leia");
-    // ASSERT_TRUE(ins_1.has_value());
-    // ASSERT_EQ(ins_1.value().name, "leia");
-    // ASSERT_EQ(ins_1.value().type, "robot");
+    auto ins_1 = problem_client->getInstance("leia");
+    ASSERT_TRUE(ins_1.has_value());
+    ASSERT_EQ(ins_1.value().name, "leia");
+    ASSERT_EQ(ins_1.value().type, "robot");
 
     terminal_node->reset_executions();
   }
@@ -331,10 +344,10 @@ TEST(terminal_test, load_popf_plugin)
     ASSERT_TRUE(terminal_node->method_executed_["process_set_predicate"]);
     ASSERT_TRUE(os.str().empty());
 
-    // auto ins_1 = problem_client->getInstance("leia");
-    // ASSERT_TRUE(ins_1.has_value());
-    // ASSERT_EQ(ins_1.value().name, "leia");
-    // ASSERT_EQ(ins_1.value().type, "robot");
+    auto ins_1 = problem_client->getInstance("leia");
+    ASSERT_TRUE(ins_1.has_value());
+    ASSERT_EQ(ins_1.value().name, "leia");
+    ASSERT_EQ(ins_1.value().type, "robot");
 
     terminal_node->reset_executions();
   }
@@ -347,10 +360,10 @@ TEST(terminal_test, load_popf_plugin)
     ASSERT_TRUE(terminal_node->method_executed_["process_set_goal"]);
     ASSERT_FALSE(os.str().empty());
 
-    // auto ins_1 = problem_client->getInstance("leia");
-    // ASSERT_TRUE(ins_1.has_value());
-    // ASSERT_EQ(ins_1.value().name, "leia");
-    // ASSERT_EQ(ins_1.value().type, "robot");
+    auto ins_1 = problem_client->getInstance("leia");
+    ASSERT_TRUE(ins_1.has_value());
+    ASSERT_EQ(ins_1.value().name, "leia");
+    ASSERT_EQ(ins_1.value().type, "robot");
 
     terminal_node->reset_executions();
   }
@@ -363,10 +376,10 @@ TEST(terminal_test, load_popf_plugin)
     ASSERT_TRUE(terminal_node->method_executed_["process_set_goal"]);
     ASSERT_TRUE(os.str().empty());
 
-    // auto ins_1 = problem_client->getInstance("leia");
-    // ASSERT_TRUE(ins_1.has_value());
-    // ASSERT_EQ(ins_1.value().name, "leia");
-    // ASSERT_EQ(ins_1.value().type, "robot");
+    auto ins_1 = problem_client->getInstance("leia");
+    ASSERT_TRUE(ins_1.has_value());
+    ASSERT_EQ(ins_1.value().name, "leia");
+    ASSERT_EQ(ins_1.value().type, "robot");
 
     terminal_node->reset_executions();
   }
@@ -471,14 +484,32 @@ TEST(terminal_test, load_popf_plugin)
     ASSERT_TRUE(terminal_node->method_executed_["process_run"]);
   }
 
-  finish = true;
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  exe.cancel();
   t.join();
-}
-
-
-int main(int argc, char ** argv)
-{
-  testing::InitGoogleTest(&argc, argv);
-  rclcpp::init(argc, argv);
-  return RUN_ALL_TESTS();
 }
