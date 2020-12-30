@@ -238,7 +238,6 @@ TEST_F(TerminalTestCase, load_popf_plugin)
 
   rclcpp_lifecycle::State state = problem_node->trigger_transition(
     lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  std::cout << "problem_node->trigger_transition " << state.label() << std::endl;
   std::string stateLabel = state.label();
 
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
