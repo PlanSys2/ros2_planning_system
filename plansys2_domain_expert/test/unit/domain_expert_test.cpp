@@ -71,8 +71,26 @@ TEST(domain_expert, get_domain)
     std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
-  ASSERT_EQ(domain_expert.getDomain(), domain_str_p);  
+  ASSERT_EQ(domain_expert.getDomain(), domain_str_p);
 }
+
+TEST(domain_expert, get_domain2)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/factory.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  std::ifstream domain_ifs_p(pkgpath + "/pddl/factory_processed.pddl");
+  std::string domain_str_p((
+      std::istreambuf_iterator<char>(domain_ifs_p)),
+    std::istreambuf_iterator<char>());
+
+  plansys2::DomainExpert domain_expert(domain_str);
+  ASSERT_EQ(domain_expert.getDomain(), domain_str_p);
+}
+
 
 TEST(domain_expert, get_types)
 {
