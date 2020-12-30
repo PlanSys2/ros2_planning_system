@@ -240,7 +240,7 @@ DomainReader::get_actions(const std::string & domain)
         break;
       }
 
-      ret.push_back(ldomain.substr(pos - 1, end_pos - pos + 2));
+      ret.push_back("(" + ldomain.substr(pos, end_pos - pos + 1));
       ldomain = ldomain.substr(end_pos + 1);
     }
   } while (!ldomain.empty() && pos != std::string::npos);
