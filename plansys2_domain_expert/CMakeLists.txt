@@ -11,6 +11,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
+find_package(plansys2_core REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -21,6 +22,7 @@ set(dependencies
     plansys2_pddl_parser
     ament_index_cpp
     plansys2_msgs
+    plansys2_core
 )
 
 include_directories(include)
@@ -28,6 +30,7 @@ include_directories(include)
 set(DOMAIN_EXPERT_SOURCES
   src/plansys2_domain_expert/DomainExpert.cpp
   src/plansys2_domain_expert/DomainExpertClient.cpp
+  src/plansys2_domain_expert/DomainReader.cpp
   src/plansys2_domain_expert/Types.cpp
   src/plansys2_domain_expert/DomainExpertNode.cpp
 )
