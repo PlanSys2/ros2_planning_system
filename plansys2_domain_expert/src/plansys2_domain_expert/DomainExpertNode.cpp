@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "plansys2_core/Utils.hpp"
+#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 
@@ -83,7 +84,14 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
 
+  auto planner = std::make_shared<plansys2::POPFPlanSolver>();
   domain_expert_ = std::make_shared<DomainExpert>(domain_str);
+
+  std::string check = planner->check_domain(domain_expert_->getDomain(), get_namespace());
+  if (!check.empty()) {
+    RCLCPP_ERROR_STREAM(get_logger(), "PDDL syntax error: \n" << check);
+    return CallbackReturnT::FAILURE;
+  }
 
   for (size_t i = 1; i < model_files.size(); i++) {
     std::ifstream domain_ifs(model_files[i]);
@@ -91,6 +99,13 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
         std::istreambuf_iterator<char>(domain_ifs)),
       std::istreambuf_iterator<char>());
     domain_expert_->extendDomain(domain_str);
+
+    std::string check = planner->check_domain(domain_expert_->getDomain(), get_namespace());
+
+    if (!check.empty()) {
+      RCLCPP_ERROR_STREAM(get_logger(), "PDDL syntax error: \n" << check);
+      return CallbackReturnT::FAILURE;
+    }
   }
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());

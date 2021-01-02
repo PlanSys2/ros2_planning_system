@@ -12,6 +12,7 @@ find_package(ament_index_cpp REQUIRED)
 find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_core REQUIRED)
+find_package(plansys2_popf_plan_solver REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -23,6 +24,7 @@ set(dependencies
     ament_index_cpp
     plansys2_msgs
     plansys2_core
+    plansys2_popf_plan_solver
 )
 
 include_directories(include)

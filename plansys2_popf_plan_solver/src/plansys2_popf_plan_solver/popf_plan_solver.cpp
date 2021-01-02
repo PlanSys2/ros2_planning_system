@@ -93,6 +93,35 @@ POPFPlanSolver::getPlan(
   }
 }
 
+std::string
+POPFPlanSolver::check_domain(
+  const std::string & domain,
+  const std::string & node_namespace)
+{
+  if (node_namespace != "") {
+    mkdir(("/tmp/" + node_namespace).c_str(), ACCESSPERMS);
+  }
+
+  std::ofstream domain_out("/tmp/" + node_namespace + "/check_domain.pddl");
+  domain_out << domain;
+  domain_out.close();
+
+  std::ofstream problem_out("/tmp/" + node_namespace + "/check_problem.pddl");
+  problem_out << "(define (problem void) (:domain plansys2))";
+  problem_out.close();
+
+  system(
+    ("ros2 run popf popf /tmp/" + node_namespace + "/check_domain.pddl /tmp/" +
+    node_namespace + "/check_problem.pddl > /tmp/" + node_namespace + "/check.out").c_str());
+
+  std::ifstream plan_file("/tmp/" + node_namespace + "/check.out");
+
+  std::string result((std::istreambuf_iterator<char>(plan_file)),
+    std::istreambuf_iterator<char>());
+
+  return result;
+}
+
 }  // namespace plansys2
 
 #include "pluginlib/class_list_macros.hpp"
