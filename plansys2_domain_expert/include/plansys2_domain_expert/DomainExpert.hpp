@@ -18,11 +18,13 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "plansys2_pddl_parser/Domain.h"
 
 #include "plansys2_domain_expert/DomainExpertInterface.hpp"
 #include "plansys2_domain_expert/Types.hpp"
+#include "plansys2_domain_expert/DomainReader.hpp"
 
 namespace plansys2
 {
@@ -112,7 +114,8 @@ public:
   std::string getDomain();
 
 private:
-  parser::pddl::Domain domain_;
+  std::shared_ptr<parser::pddl::Domain> domain_;
+  DomainReader domains_;
 };
 
 }  // namespace plansys2

@@ -57,6 +57,40 @@ TEST(domain_expert, functions)
   ASSERT_EQ(getReducedString(my_string), "((and))");
 }
 
+TEST(domain_expert, get_domain)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_processed.pddl");
+  std::string domain_str_p((
+      std::istreambuf_iterator<char>(domain_ifs_p)),
+    std::istreambuf_iterator<char>());
+
+  plansys2::DomainExpert domain_expert(domain_str);
+  ASSERT_EQ(domain_expert.getDomain(), domain_str_p);
+}
+
+TEST(domain_expert, get_domain2)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/factory.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  std::ifstream domain_ifs_p(pkgpath + "/pddl/factory_processed.pddl");
+  std::string domain_str_p((
+      std::istreambuf_iterator<char>(domain_ifs_p)),
+    std::istreambuf_iterator<char>());
+
+  plansys2::DomainExpert domain_expert(domain_str);
+  ASSERT_EQ(domain_expert.getDomain(), domain_str_p);
+}
+
 
 TEST(domain_expert, get_types)
 {
@@ -86,8 +120,8 @@ TEST(domain_expert, get_predicates)
   plansys2::DomainExpert domain_expert(domain_str);
 
   std::vector<std::string> predicates = domain_expert.getPredicates();
-  std::vector<std::string> predicates_types {"robot_talk", "robot_near_person", "robot_at",
-    "person_at"};
+  std::vector<std::string> predicates_types {"person_at", "robot_at", "robot_near_person",
+    "robot_talk"};
 
   ASSERT_EQ(predicates, predicates_types);
 }
@@ -214,8 +248,8 @@ TEST(domain_expert, multidomain_get_types)
   ASSERT_EQ(types, test_types);
 
   std::vector<std::string> predicates = domain_expert->getPredicates();
-  std::vector<std::string> test_predicates {"robot_talk", "robot_near_person",
-    "robot_at", "person_at", "robot_at", "object_at_robot", "object_at_room"};
+  std::vector<std::string> test_predicates {"object_at_robot", "object_at_room", "person_at",
+    "robot_at", "robot_near_person", "robot_talk"};
 
   ASSERT_EQ(predicates, test_predicates);
 

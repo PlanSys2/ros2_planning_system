@@ -1,5 +1,5 @@
-(define (problem simple_1)
-  (:domain simple)
+(define (problem plansys2_1)
+  (:domain plansys2)
   (:objects
     leia - robot
     Jack - person
