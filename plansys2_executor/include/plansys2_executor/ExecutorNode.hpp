@@ -35,6 +35,10 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
+#ifdef ZMQ_FOUND
+#include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
+#endif
+
 namespace plansys2
 {
 
@@ -64,6 +68,11 @@ private:
   std::shared_ptr<plansys2::PlannerClient> planner_client_;
 
   rclcpp_action::Server<ExecutePlan>::SharedPtr execute_plan_action_server_;
+
+#ifdef ZMQ_FOUND
+  // This logger publish status changes using ZeroMQ. Used by Groot
+  std::shared_ptr<BT::PublisherZMQ> publisher_zmq_;
+#endif
 
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID & uuid,

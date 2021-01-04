@@ -2,6 +2,8 @@ project(plansys2_executor)
 
 cmake_minimum_required(VERSION 3.5)
 
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
 set(CMAKE_BUILD_TYPE Debug)
 
 find_package(Threads REQUIRED)
@@ -22,6 +24,14 @@ find_package(behaviortree_cpp_v3 REQUIRED)
 
 find_package(Boost 1.65.1 REQUIRED)
 
+find_package(ZMQ)
+if(ZMQ_FOUND)
+    message(STATUS "ZeroMQ found.")
+    add_definitions(-DZMQ_FOUND)
+else()
+  message(WARNING "ZeroMQ NOT found. Not including PublisherZMQ.")
+endif()
+
 set(dependencies
     rclcpp
     rclcpp_lifecycle
@@ -37,7 +47,7 @@ set(dependencies
     behaviortree_cpp_v3
 )
 
-include_directories(include)
+include_directories(include ${ZMQ_INCLUDE_DIRS})
 
 set(EXECUTOR_SOURCES
   src/plansys2_executor/ExecutorClient.cpp
@@ -58,6 +68,7 @@ set(EXECUTOR_SOURCES
 
 add_library(${PROJECT_NAME} SHARED ${EXECUTOR_SOURCES})
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
+target_link_libraries(${PROJECT_NAME} ${ZMQ_LIBRARIES})
 
 add_executable(executor_node
   src/executor_node.cpp

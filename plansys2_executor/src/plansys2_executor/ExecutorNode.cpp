@@ -213,6 +213,10 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
+#ifdef ZMQ_FOUND
+  publisher_zmq_.reset(new BT::PublisherZMQ(tree));
+#endif
+
   rclcpp::Rate rate(10);
   auto start = now();
   auto status = BT::NodeStatus::RUNNING;
