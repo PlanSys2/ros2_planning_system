@@ -18,6 +18,8 @@
   <depend>ament_index_cpp</depend>
   <depend>plansys2_pddl_parser</depend>
   <depend>plansys2_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>lifecycle_msgs</depend>
  
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>

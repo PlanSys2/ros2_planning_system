@@ -12,6 +12,8 @@ find_package(ament_index_cpp REQUIRED)
 find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_domain_expert REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -23,6 +25,8 @@ set(dependencies
     ament_index_cpp
     plansys2_msgs
     plansys2_domain_expert
+    std_msgs
+    lifecycle_msgs
 )
 
 include_directories(include)
