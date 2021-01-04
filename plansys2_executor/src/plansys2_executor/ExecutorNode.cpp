@@ -51,6 +51,13 @@ ExecutorNode::ExecutorNode()
 {
   using namespace std::placeholders;
 
+#ifdef ZMQ_FOUND
+  this->declare_parameter<bool>("enable_groot_monitoring", true);
+  this->declare_parameter<int>("publisher_port", 1666);
+  this->declare_parameter<int>("server_port", 1667);
+  this->declare_parameter<int>("max_msgs_per_second", 25);
+#endif
+
   execute_plan_action_server_ = rclcpp_action::create_server<ExecutePlan>(
     this->get_node_base_interface(),
     this->get_node_clock_interface(),
@@ -214,7 +221,20 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
 #ifdef ZMQ_FOUND
-  publisher_zmq_.reset(new BT::PublisherZMQ(tree));
+  bool enable_groot_monitoring = false;
+  this->get_parameter("enable_groot_monitoring", enable_groot_monitoring);
+  int publisher_port = 1666;
+  this->get_parameter("publisher_port", publisher_port);
+  int server_port = 1667;
+  this->get_parameter("server_port", server_port);
+  int max_msgs_per_second = 25;
+  this->get_parameter("max_msgs_per_second", max_msgs_per_second);
+
+  if (enable_groot_monitoring)
+  {
+    RCLCPP_INFO(get_logger(), "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d", get_name(), publisher_port, server_port, max_msgs_per_second);
+    publisher_zmq_.reset(new BT::PublisherZMQ(tree, max_msgs_per_second, publisher_port, server_port));
+  }
 #endif
 
   rclcpp::Rate rate(10);
