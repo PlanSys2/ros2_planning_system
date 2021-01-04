@@ -28,10 +28,28 @@
 namespace plansys2
 {
 
-bool check(
+/// Check a PDDL expression represented as a tree.
+/**
+ * \param[in] node The root node of the PDDL expression.
+ * \param[in] problem_client The problem expert client.
+ * \return result <- tuple(bool, double)
+ *         result(0) truth value of boolen expression
+ *         result(1) value of numeric expression
+ */
+std::tuple<bool, double> check(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
 
+/// Apply a PDDL expression represented as a tree.
+/**
+ * \param[in] node The root node of the PDDL expression.
+ * \param[in] problem_client The problem expert client.
+ * \param[in] negate Invert the truth value.
+ * \return result <- tuple(bool, bool, double)
+ *         result(0) true if success
+ *         result(1) truth value of boolen expression
+ *         result(2) value of numeric expression
+ */
 std::tuple<bool, bool, double> apply(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,

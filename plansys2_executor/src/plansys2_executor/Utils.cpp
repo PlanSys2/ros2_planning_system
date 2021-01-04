@@ -22,12 +22,12 @@
 namespace plansys2
 {
 
-bool check(
+std::tuple<bool, double> check(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client)
 {
   if (node == nullptr) {  // No req expression
-    return true;
+    return std::make_tuple(true, 0);
   }
 
   switch (node->type_) {
@@ -37,9 +37,10 @@ bool check(
         bool ret = true;
 
         for (const auto & op : pn_and->ops) {
-          ret = ret && check(op, problem_client);
+          std::tuple<bool, double> result = check(op, problem_client);
+          ret = ret && std::get<0>(result);
         }
-        return ret;
+        return std::make_tuple(ret, 0);
       }
 
     case parser::pddl::tree::OR: {
@@ -48,56 +49,144 @@ bool check(
         bool ret = true;
 
         for (const auto & op : pn_or->ops) {
-          ret = ret || check(op, problem_client);
+          std::tuple<bool, double> result = check(op, problem_client);
+          ret = ret || std::get<0>(result);
         }
-        return ret;
+        return std::make_tuple(ret, 0);
       }
 
     case parser::pddl::tree::NOT: {
         std::shared_ptr<parser::pddl::tree::NotNode> pn_not =
           std::dynamic_pointer_cast<parser::pddl::tree::NotNode>(node);
 
-        return !check(pn_not->op, problem_client);
+        std::tuple<bool, double> result = check(pn_not->op, problem_client);
+        return std::make_tuple(!std::get<0>(result), 0);
       }
 
     case parser::pddl::tree::PREDICATE: {
         std::shared_ptr<parser::pddl::tree::PredicateNode> pred =
           std::dynamic_pointer_cast<parser::pddl::tree::PredicateNode>(node);
 
-        return problem_client->existPredicate(pred->predicate_);
+        return std::make_tuple(problem_client->existPredicate(pred->predicate_), 0);
       }
 
     case parser::pddl::tree::FUNCTION: {
-        std::shared_ptr<parser::pddl::tree::FunctionNode> func =
+        std::shared_ptr<parser::pddl::tree::FunctionNode> func_node =
           std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(node);
 
-        return problem_client->existFunction(func->function_);
+        boost::optional<parser::pddl::tree::Function> func =
+          problem_client->getFunction(func_node->toString());
+
+        if (func.has_value()) {
+          return std::make_tuple(true, func.value().value);
+        }
+
+        return std::make_tuple(false, 0);
       }
 
     case parser::pddl::tree::EXPRESSION: {
         std::shared_ptr<parser::pddl::tree::ExpressionNode> expr =
           std::dynamic_pointer_cast<parser::pddl::tree::ExpressionNode>(node);
-        bool ret = true;
 
-        for (const auto & op : expr->ops) {
-          ret = ret && check(op, problem_client);
+        std::tuple<bool, double> left = check(expr->ops[0], problem_client);
+        std::tuple<bool, double> right = check(expr->ops[1], problem_client);
+
+        if (!std::get<0>(left) || !std::get<0>(right))
+        {
+          return std::make_tuple(false, 0);;
         }
-        return ret;
+
+        switch (expr->expr_type) {
+          case parser::pddl::tree::COMP_GE:
+            if (std::get<1>(left) >= std::get<1>(right)) {
+              return std::make_tuple(true, 0);
+            }
+            else {
+              return std::make_tuple(false, 0);
+            }
+            break;
+          case parser::pddl::tree::COMP_GT:
+            if (std::get<1>(left) > std::get<1>(right)) {
+              return std::make_tuple(true, 0);
+            }
+            else {
+              return std::make_tuple(false, 0);
+            }
+            break;
+          case parser::pddl::tree::COMP_LE:
+            if (std::get<1>(left) <= std::get<1>(right)) {
+              return std::make_tuple(true, 0);
+            }
+            else {
+              return std::make_tuple(false, 0);
+            }
+            break;
+          case parser::pddl::tree::COMP_LT:
+            if (std::get<1>(left) < std::get<1>(right)) {
+              return std::make_tuple(true, 0);
+            }
+            else {
+              return std::make_tuple(false, 0);
+            }
+            break;
+          case parser::pddl::tree::ARITH_MULT:
+            return std::make_tuple(true, std::get<1>(left) * std::get<1>(right));
+            break;
+          case parser::pddl::tree::ARITH_DIV:
+            if (std::get<1>(right) > 1e-5) {
+              return std::make_tuple(true, std::get<1>(left) / std::get<1>(right));
+            } else {
+              // Division by zero not allowed.
+              return std::make_tuple(false, 0);
+            }
+            break;
+          default:
+            break;
+        }
+
+        return std::make_tuple(false, 0);
       }
 
     case parser::pddl::tree::FUNCTION_MODIFIER: {
         std::shared_ptr<parser::pddl::tree::FunctionModifierNode> func_mod =
           std::dynamic_pointer_cast<parser::pddl::tree::FunctionModifierNode>(node);
-        bool ret = true;
 
-        for (const auto & op : func_mod->ops) {
-          ret = ret && check(op, problem_client);
+        std::tuple<bool, double> left = check(func_mod->ops[0], problem_client);
+        std::tuple<bool, double> right = check(func_mod->ops[1], problem_client);
+
+        if (!std::get<0>(left) || !std::get<0>(right))
+        {
+          return std::make_tuple(false, 0);
         }
-        return ret;
+
+        switch (func_mod->modifier_type) {
+          case parser::pddl::tree::ASSIGN:
+            return std::make_tuple(true, std::get<1>(right));
+            break;
+          case parser::pddl::tree::INCREASE:
+            return std::make_tuple(true, std::get<1>(left) + std::get<1>(right));
+            break;
+          case parser::pddl::tree::DECREASE:
+            return std::make_tuple(true, std::get<1>(left) - std::get<1>(right));
+            break;
+          case parser::pddl::tree::SCALE_UP:
+            return std::make_tuple(true, std::get<1>(left) * std::get<1>(right));
+            break;
+          case parser::pddl::tree::SCALE_DOWN:
+            return std::make_tuple(true, std::get<1>(left) / std::get<1>(right));
+            break;
+          default:
+            break;
+        }
+
+        return std::make_tuple(false, 0);
       }
 
     case parser::pddl::tree::NUMBER: {
-        return true;
+        std::shared_ptr<parser::pddl::tree::NumberNode> num =
+          std::dynamic_pointer_cast<parser::pddl::tree::NumberNode>(node);
+
+        return std::make_tuple(true, num->value_);
       }
 
     default:
@@ -105,7 +194,7 @@ bool check(
         node->toString() << "]" << std::endl;
   }
 
-  return false;
+  return std::make_tuple(false, 0);
 }
 
 std::tuple<bool, bool, double> apply(
@@ -120,25 +209,29 @@ std::tuple<bool, bool, double> apply(
     case parser::pddl::tree::AND: {
         std::shared_ptr<parser::pddl::tree::AndNode> pn_and =
           std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(node);
-        bool ret = true;
+        bool success = true;
+        bool truth_value = true;
 
         for (const auto & op : pn_and->ops) {
           std::tuple<bool, bool, double> result = apply(op, problem_client, negate);
-          ret = ret && std::get<0>(result);
+          success = success && std::get<0>(result);
+          truth_value = truth_value && std::get<1>(result);
         }
-        return std::make_tuple(ret, false, 0);
+        return std::make_tuple(success, truth_value, 0);
       }
 
     case parser::pddl::tree::OR: {
         std::shared_ptr<parser::pddl::tree::OrNode> pn_or =
           std::dynamic_pointer_cast<parser::pddl::tree::OrNode>(node);
-        bool ret = true;
+        bool success = true;
+        bool truth_value = true;
 
         for (const auto & op : pn_or->ops) {
           std::tuple<bool, bool, double> result = apply(op, problem_client, negate);
-          ret = ret || std::get<0>(result);
+          success = success && std::get<0>(result);
+          truth_value = truth_value || std::get<1>(result);
         }
-        return std::make_tuple(ret, false, 0);
+        return std::make_tuple(success, truth_value, 0);
       }
 
     case parser::pddl::tree::NOT: {
@@ -157,79 +250,85 @@ std::tuple<bool, bool, double> apply(
           return std::make_tuple(success, false, 0);
         } else {
           auto success = problem_client->addPredicate(pred->predicate_);
-          return std::make_tuple(success, false, 0);
+          return std::make_tuple(success, true, 0);
         }
       }
 
     case parser::pddl::tree::FUNCTION: {
         std::shared_ptr<parser::pddl::tree::FunctionNode> func_node =
           std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(node);
-        std::tuple<bool, bool, double> ret = std::make_tuple(false, false, 0);
 
         boost::optional<parser::pddl::tree::Function> func =
-          problem_client->getFunction(func_node->function_.name);
+          problem_client->getFunction(func_node->toString());
 
         if (func.has_value()) {
-          std::get<0>(ret) = true;
-          std::get<1>(ret) = true;
-          std::get<2>(ret) = func.value().value;
+          return std::make_tuple(true, true, func.value().value);
         }
 
-        return ret;
+        return std::make_tuple(false, false, 0);;
       }
 
     case parser::pddl::tree::EXPRESSION: {
         std::shared_ptr<parser::pddl::tree::ExpressionNode> expr =
           std::dynamic_pointer_cast<parser::pddl::tree::ExpressionNode>(node);
-        std::tuple<bool, bool, double> ret = std::make_tuple(false, false, 0);
 
         std::tuple<bool, bool, double> left = apply(expr->ops[0], problem_client, negate);
         std::tuple<bool, bool, double> right = apply(expr->ops[1], problem_client, negate);
 
-        if (!(std::get<0>(left) && std::get<0>(right)) ||
-          !(std::get<1>(left) && std::get<1>(right)))
+        if (!std::get<0>(left) || !std::get<0>(right))
         {
-          return ret;
+          return std::make_tuple(false, false, 0);;
         }
 
         switch (expr->expr_type) {
           case parser::pddl::tree::COMP_GE:
             if (std::get<2>(left) >= std::get<2>(right)) {
-              std::get<0>(ret) = true;
+              return std::make_tuple(true, true, 0);
+            }
+            else {
+              return std::make_tuple(true, false, 0);
             }
             break;
           case parser::pddl::tree::COMP_GT:
             if (std::get<2>(left) > std::get<2>(right)) {
-              std::get<0>(ret) = true;
+              return std::make_tuple(true, true, 0);
+            }
+            else {
+              return std::make_tuple(true, false, 0);
             }
             break;
           case parser::pddl::tree::COMP_LE:
             if (std::get<2>(left) <= std::get<2>(right)) {
-              std::get<0>(ret) = true;
+              return std::make_tuple(true, true, 0);
+            }
+            else {
+              return std::make_tuple(true, false, 0);
             }
             break;
           case parser::pddl::tree::COMP_LT:
             if (std::get<2>(left) < std::get<2>(right)) {
-              std::get<0>(ret) = true;
+              return std::make_tuple(true, true, 0);
+            }
+            else {
+              return std::make_tuple(true, false, 0);
             }
             break;
           case parser::pddl::tree::ARITH_MULT:
-            std::get<0>(ret) = true;
-            std::get<1>(ret) = true;
-            std::get<2>(ret) = std::get<2>(left) * std::get<2>(right);
+            return std::make_tuple(true, true, std::get<2>(left) * std::get<2>(right));
             break;
           case parser::pddl::tree::ARITH_DIV:
             if (std::get<2>(right) > 1e-5) {
-              std::get<0>(ret) = true;
-              std::get<1>(ret) = true;
-              std::get<2>(ret) = std::get<2>(left) / std::get<2>(right);
+              return std::make_tuple(true, true, std::get<2>(left) / std::get<2>(right));
+            } else {
+              // Division by zero not allowed.
+              return std::make_tuple(false, false, 0);
             }
             break;
           default:
             break;
         }
 
-        return ret;
+        return std::make_tuple(false, false, 0);
       }
 
     case parser::pddl::tree::FUNCTION_MODIFIER: {
@@ -239,33 +338,32 @@ std::tuple<bool, bool, double> apply(
         std::tuple<bool, bool, double> left = apply(func_mod->ops[0], problem_client, negate);
         std::tuple<bool, bool, double> right = apply(func_mod->ops[1], problem_client, negate);
 
-        if (!(std::get<0>(left) && std::get<0>(right)) ||
-          !(std::get<1>(left) && std::get<1>(right)))
+        if (!std::get<0>(left) || !std::get<0>(right))
         {
           return std::make_tuple(false, false, 0);
         }
 
-        std::shared_ptr<parser::pddl::tree::FunctionNode> func =
+        std::shared_ptr<parser::pddl::tree::FunctionNode> func_node =
           std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(func_mod->ops[0]);
 
         bool valid_modifier = true;
-        std::stringstream ss;
+        double result = 0;
 
         switch (func_mod->modifier_type) {
           case parser::pddl::tree::ASSIGN:
-            ss << "(= " << func->toString() << " " << std::get<2>(right) << ")";
+            result = std::get<2>(right);
             break;
           case parser::pddl::tree::INCREASE:
-            ss << "(= " << func->toString() << " " << std::get<2>(left) + std::get<2>(right) << ")";
+            result = std::get<2>(left) + std::get<2>(right);
             break;
           case parser::pddl::tree::DECREASE:
-            ss << "(= " << func->toString() << " " << std::get<2>(left) - std::get<2>(right) << ")";
+            result = std::get<2>(left) - std::get<2>(right);
             break;
           case parser::pddl::tree::SCALE_UP:
-            ss << "(= " << func->toString() << " " << std::get<2>(left) * std::get<2>(right) << ")";
+            result = std::get<2>(left) * std::get<2>(right);
             break;
           case parser::pddl::tree::SCALE_DOWN:
-            ss << "(= " << func->toString() << " " << std::get<2>(left) / std::get<2>(right) << ")";
+            result = std::get<2>(left) / std::get<2>(right);
             break;
           default:
             valid_modifier = false;
@@ -273,8 +371,10 @@ std::tuple<bool, bool, double> apply(
         }
 
         if (valid_modifier) {
+          std::stringstream ss;
+          ss << "(= " << func_node->toString() << " " << result << ")";
           problem_client->updateFunction(parser::pddl::tree::Function(ss.str()));
-          return std::make_tuple(true, false, 0);
+          return std::make_tuple(true, true, result);
         }
 
         return std::make_tuple(false, false, 0);

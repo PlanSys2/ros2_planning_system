@@ -42,8 +42,9 @@ CheckAtEndReq::tick()
   getInput("action", action);
 
   auto reqs = (*action_map_)[action].durative_action_info->at_end_requirements;
+  std::tuple<bool, double> result = check(reqs.root_, problem_client_);
 
-  if (!check(reqs.root_, problem_client_)) {
+  if (!std::get<0>(result)) {
     (*action_map_)[action].execution_error_info = "Error checking at end requirements";
     return BT::NodeStatus::FAILURE;
   } else {
