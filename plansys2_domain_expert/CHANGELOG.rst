@@ -2,8 +2,8 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.7 (2021-01-04)
+------------------
 * Making explicit dependencies
 * Contributors: Francisco Martin Rico
 
