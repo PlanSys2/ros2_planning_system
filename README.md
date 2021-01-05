@@ -18,4 +18,4 @@ We want to invite you to contribute to this Open Source project !!
 **Visit the [Web Page](http://intelligentroboticslab.gsyc.urjc.es/ros2_planning_system.github.io/) for tutorials, videos and more!!**
 
 
-![PlanSys2 Logo >](/plansys2_docs/plansys2_logo.png =200)
+![PlanSys2 Logo](plansys2_docs/plansys2_logo.png =200)
