@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>plansys2_terminal</name>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
   
   <description>A terminal tool for monitor and manage the ROS2 Planning System</description>
 
@@ -15,7 +15,6 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_action</depend>
   <depend>rclcpp_lifecycle</depend>
-  <depend>ament_index_cpp</depend>
   <depend>plansys2_msgs</depend>
   <depend>plansys2_domain_expert</depend>
   <depend>plansys2_problem_expert</depend>
@@ -26,6 +25,8 @@
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_index_cpp</test_depend>
+  <test_depend>lifecycle_msgs</test_depend>
   
   <export>
     <build_type>ament_cmake</build_type>
