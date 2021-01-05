@@ -74,7 +74,7 @@ std::tuple<bool, double> check(
         std::shared_ptr<parser::pddl::tree::FunctionNode> func_node =
           std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(node);
 
-        boost::optional<parser::pddl::tree::Function> func =
+        std::optional<parser::pddl::tree::Function> func =
           problem_client->getFunction(func_node->toString());
 
         if (func.has_value()) {
@@ -258,7 +258,7 @@ std::tuple<bool, bool, double> apply(
         std::shared_ptr<parser::pddl::tree::FunctionNode> func_node =
           std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(node);
 
-        boost::optional<parser::pddl::tree::Function> func =
+        std::optional<parser::pddl::tree::Function> func =
           problem_client->getFunction(func_node->toString());
 
         if (func.has_value()) {

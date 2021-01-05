@@ -15,8 +15,7 @@
 #ifndef PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTINTERFACE_HPP_
 #define PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTINTERFACE_HPP_
 
-#include <boost/optional.hpp>
-
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -52,7 +51,7 @@ public:
    * \return A Predicate object containing the predicate name and its parameters (name and type).
    *    If the predicate does not exist, the value returned has not value.
    */
-  virtual boost::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & predicate)
+  virtual std::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & predicate)
   = 0;
 
   /// Get the functions existing in the domain.
@@ -67,7 +66,7 @@ public:
    * \return A Function object containing the function name and its parameters (name and type).
    *    If the function does not exist, the value returned has not value.
    */
-  virtual boost::optional<parser::pddl::tree::Function> getFunction(const std::string & function) =
+  virtual std::optional<parser::pddl::tree::Function> getFunction(const std::string & function) =
   0;
 
   /// Get the regular actions existing in the domain.
@@ -82,7 +81,7 @@ public:
    * \return An Action object containing the action name, parameters, requirements and effects.
    *    If the action does not exist, the value returned has not value.
    */
-  virtual boost::optional<parser::pddl::tree::Action> getAction(const std::string & action) = 0;
+  virtual std::optional<parser::pddl::tree::Action> getAction(const std::string & action) = 0;
 
   /// Get the temporal actions existing in the domain.
   /**
@@ -96,7 +95,7 @@ public:
    * \return A Durative Action object containing the action name, parameters, requirements and
    *    effects. If the action does not exist, the value returned has not value.
    */
-  virtual boost::optional<parser::pddl::tree::DurativeAction> getDurativeAction(
+  virtual std::optional<parser::pddl::tree::DurativeAction> getDurativeAction(
     const std::string & action) =
   0;
 

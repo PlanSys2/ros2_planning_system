@@ -469,8 +469,10 @@ std::shared_ptr<TreeNode> get_tree_node(const std::string & expr,
         return number_node;
     }
 
+    // LCOV_EXCL_START
     default:
       std::cerr << "get_tree_node: Error parsing expresion [" << wexpr << "]" << std::endl;
+      // LCOV_EXCL_STOP
   }
 
   return nullptr;

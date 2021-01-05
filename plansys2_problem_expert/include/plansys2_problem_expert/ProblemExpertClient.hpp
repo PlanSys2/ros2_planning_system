@@ -55,20 +55,20 @@ public:
   std::vector<parser::pddl::tree::Instance> getInstances();
   bool addInstance(const parser::pddl::tree::Instance & instance);
   bool removeInstance(const std::string & name);
-  boost::optional<parser::pddl::tree::Instance> getInstance(const std::string & name);
+  std::optional<parser::pddl::tree::Instance> getInstance(const std::string & name);
 
   std::vector<parser::pddl::tree::Predicate> getPredicates();
   bool addPredicate(const parser::pddl::tree::Predicate & predicate);
   bool removePredicate(const parser::pddl::tree::Predicate & predicate);
   bool existPredicate(const parser::pddl::tree::Predicate & predicate);
-  boost::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & expr);
+  std::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & expr);
 
   std::vector<parser::pddl::tree::Function> getFunctions();
   bool addFunction(const parser::pddl::tree::Function & function);
   bool removeFunction(const parser::pddl::tree::Function & function);
   bool existFunction(const parser::pddl::tree::Function & function);
   bool updateFunction(const parser::pddl::tree::Function & function);
-  boost::optional<parser::pddl::tree::Function> getFunction(const std::string & expr);
+  std::optional<parser::pddl::tree::Function> getFunction(const std::string & expr);
 
   parser::pddl::tree::Goal getGoal();
   bool setGoal(const parser::pddl::tree::Goal & goal);

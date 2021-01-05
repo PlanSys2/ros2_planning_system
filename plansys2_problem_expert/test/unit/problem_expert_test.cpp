@@ -100,7 +100,7 @@ TEST(problem_expert, add_functions)
   ASSERT_EQ(
     problem_expert.getProblem(),
     "( define ( problem problem_1 )\n"
-    "( :domain simple )\n"
+    "( :domain plansys2 )\n"
     "( :objects\n"
     "\tbedroom - room\n"
     "\tkitchen - room_with_teleporter\n"
@@ -133,7 +133,7 @@ TEST(problem_expert, add_functions)
   ASSERT_EQ(
     problem_expert.getProblem(),
     "( define ( problem problem_1 )\n"
-    "( :domain simple )\n"
+    "( :domain plansys2 )\n"
     "( :objects\n"
     "\tbedroom - room\n"
     "\tkitchen - room_with_teleporter\n"
@@ -155,7 +155,7 @@ TEST(problem_expert, add_functions)
   ASSERT_EQ(
     problem_expert.getProblem(),
     "( define ( problem problem_1 )\n"
-    "( :domain simple )\n"
+    "( :domain plansys2 )\n"
     "( :objects\n"
     "\tbedroom - room\n"
     "\tkitchen - room_with_teleporter\n"
@@ -548,7 +548,7 @@ TEST(problem_expert, get_probem)
 
   ASSERT_EQ(
     problem_expert.getProblem(),
-    std::string("( define ( problem problem_1 )\n( :domain simple ") +
+    std::string("( define ( problem problem_1 )\n( :domain plansys2 ") +
     std::string(")\n( :objects\n\tpaco - person\n\tr2d2 - robot\n\tbedroom kitchen - room\n)\n") +
     std::string("( :init\n\t( robot_at r2d2 bedroom )\n\t( robot_at r2d2 kitchen )\n\t( ") +
     std::string("person_at paco bedroom )\n\t( person_at paco kitchen )\n)\n( :goal\n\t( ") +

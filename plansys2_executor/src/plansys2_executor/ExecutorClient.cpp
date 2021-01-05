@@ -117,7 +117,7 @@ ExecutorClient::result_callback(const GoalHandleExecutePlan::WrappedResult & res
   }
 }
 
-boost::optional<ExecutePlan::Result>
+std::optional<ExecutePlan::Result>
 ExecutorClient::getResult()
 {
   if (finished_) {

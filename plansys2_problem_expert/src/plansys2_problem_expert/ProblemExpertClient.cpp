@@ -38,7 +38,7 @@ ProblemExpertClient::ProblemExpertClient(rclcpp::Node::SharedPtr provided_node)
     "problem_expert/get_problem_goal");
   get_problem_instance_details_client_ =
     node_->create_client<plansys2_msgs::srv::GetProblemInstanceDetails>(
-    "problem_expert/get_problem_instance");
+    "problem_expert/get_problem_instance_details");
   get_problem_instances_client_ = node_->create_client<plansys2_msgs::srv::GetProblemInstances>(
     "problem_expert/get_problem_instances");
   get_problem_predicate_details_client_ =
@@ -189,7 +189,7 @@ ProblemExpertClient::removeInstance(const std::string & name)
   }
 }
 
-boost::optional<parser::pddl::tree::Instance>
+std::optional<parser::pddl::tree::Instance>
 ProblemExpertClient::getInstance(const std::string & name)
 {
   parser::pddl::tree::Instance ret;
@@ -381,7 +381,7 @@ ProblemExpertClient::existPredicate(const parser::pddl::tree::Predicate & predic
   return future_result.get()->exist;
 }
 
-boost::optional<parser::pddl::tree::Predicate>
+std::optional<parser::pddl::tree::Predicate>
 ProblemExpertClient::getPredicate(const std::string & expr)
 {
   parser::pddl::tree::Predicate ret;
@@ -625,7 +625,7 @@ bool ProblemExpertClient::updateFunction(const parser::pddl::tree::Function & fu
   }
 }
 
-boost::optional<parser::pddl::tree::Function>
+std::optional<parser::pddl::tree::Function>
 ProblemExpertClient::getFunction(const std::string & expr)
 {
   parser::pddl::tree::Function ret;

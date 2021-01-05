@@ -1,8 +1,6 @@
 project(plansys2_terminal)
 cmake_minimum_required(VERSION 3.5)
 
-set(CMAKE_BUILD_TYPE Debug)
-
 find_package(Threads REQUIRED)
 
 find_package(ament_cmake REQUIRED)
@@ -15,6 +13,8 @@ find_package(plansys2_domain_expert REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
 find_package(plansys2_planner REQUIRED)
 find_package(plansys2_executor REQUIRED)
+
+set(CMAKE_CXX_STANDARD 17)
 
 set(dependencies
     rclcpp
@@ -33,6 +33,7 @@ include_directories(include)
 add_library(terminal SHARED
   src/plansys2_terminal/Terminal.cpp)
 ament_target_dependencies(terminal ${dependencies})
+target_compile_definitions(terminal PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 
 add_executable(${PROJECT_NAME}
   src/terminal_node.cpp)

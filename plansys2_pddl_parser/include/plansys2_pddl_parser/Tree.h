@@ -15,9 +15,8 @@
 #ifndef PLANSYS2_PDDL_PARSER__TREE_H_
 #define PLANSYS2_PDDL_PARSER__TREE_H_
 
-#include <boost/optional.hpp>
-
 #include <regex>
+#include <optional>
 #include <string>
 #include <vector>
 #include <memory>

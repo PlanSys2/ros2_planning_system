@@ -2,8 +2,6 @@ project(plansys2_executor)
 
 cmake_minimum_required(VERSION 3.5)
 
-set(CMAKE_BUILD_TYPE Debug)
-
 find_package(Threads REQUIRED)
 
 find_package(ament_cmake REQUIRED)
@@ -20,7 +18,7 @@ find_package(plansys2_problem_expert REQUIRED)
 find_package(plansys2_planner REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
 
-find_package(Boost 1.65.1 REQUIRED)
+set(CMAKE_CXX_STANDARD 17)
 
 set(dependencies
     rclcpp

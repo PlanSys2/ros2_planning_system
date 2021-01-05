@@ -15,15 +15,16 @@
 #ifndef PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERT_HPP_
 #define PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERT_HPP_
 
-#include <boost/optional.hpp>
-
+#include <optional>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "plansys2_pddl_parser/Domain.h"
 #include "plansys2_pddl_parser/Tree.h"
 
 #include "plansys2_domain_expert/DomainExpertInterface.hpp"
+#include "plansys2_domain_expert/DomainReader.hpp"
 
 namespace plansys2
 {
@@ -62,7 +63,7 @@ public:
    * \return A Predicate object containing the predicate name and its parameters (name and type).
    *    If the predicate does not exist, the value returned has not value.
    */
-  boost::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & predicate);
+  std::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & predicate);
 
   /// Get the functions existing in the domain.
   /**
@@ -76,7 +77,7 @@ public:
    * \return A Function object containing the function name and its parameters (name and type).
    *    If the function does not exist, the value returned has not value.
    */
-  boost::optional<parser::pddl::tree::Function> getFunction(const std::string & function);
+  std::optional<parser::pddl::tree::Function> getFunction(const std::string & function);
 
   /// Get the regular actions existing in the domain.
   /**
@@ -90,7 +91,7 @@ public:
    * \return An Action object containing the action name, parameters, requirements and effects.
    *    If the action does not exist, the value returned has not value.
    */
-  boost::optional<parser::pddl::tree::Action> getAction(const std::string & action);
+  std::optional<parser::pddl::tree::Action> getAction(const std::string & action);
 
   /// Get the temporal actions existing in the domain.
   /**
@@ -104,7 +105,7 @@ public:
    * \return A Durative Action object containing the action name, parameters, requirements and
    *    effects. If the action does not exist, the value returned has not value.
    */
-  boost::optional<parser::pddl::tree::DurativeAction> getDurativeAction(const std::string & action);
+  std::optional<parser::pddl::tree::DurativeAction> getDurativeAction(const std::string & action);
 
   /// Get the current domain, ready to be saved to file, or to initialize another domain.
   /**
@@ -113,7 +114,8 @@ public:
   std::string getDomain();
 
 private:
-  parser::pddl::Domain domain_;
+  std::shared_ptr<parser::pddl::Domain> domain_;
+  DomainReader domains_;
 };
 
 }  // namespace plansys2

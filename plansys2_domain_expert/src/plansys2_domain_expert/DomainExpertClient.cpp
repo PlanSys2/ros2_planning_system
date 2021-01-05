@@ -106,7 +106,7 @@ DomainExpertClient::getPredicates()
   return ret;
 }
 
-boost::optional<parser::pddl::tree::Predicate>
+std::optional<parser::pddl::tree::Predicate>
 DomainExpertClient::getPredicate(const std::string & predicate)
 {
   parser::pddl::tree::Predicate ret;
@@ -187,7 +187,7 @@ DomainExpertClient::getFunctions()
   return ret;
 }
 
-boost::optional<parser::pddl::tree::Function>
+std::optional<parser::pddl::tree::Function>
 DomainExpertClient::getFunction(const std::string & function)
 {
   parser::pddl::tree::Function ret;
@@ -272,7 +272,7 @@ DomainExpertClient::getActions()
   return ret;
 }
 
-boost::optional<parser::pddl::tree::Action>
+std::optional<parser::pddl::tree::Action>
 DomainExpertClient::getAction(const std::string & action)
 {
   parser::pddl::tree::Action ret;
@@ -368,7 +368,7 @@ DomainExpertClient::getDurativeActions()
   return ret;
 }
 
-boost::optional<parser::pddl::tree::DurativeAction>
+std::optional<parser::pddl::tree::DurativeAction>
 DomainExpertClient::getDurativeAction(const std::string & action)
 {
   parser::pddl::tree::DurativeAction ret;

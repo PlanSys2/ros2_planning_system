@@ -68,7 +68,7 @@ ProblemExpert::removeInstance(const std::string & name)
   return found;
 }
 
-boost::optional<parser::pddl::tree::Instance>
+std::optional<parser::pddl::tree::Instance>
 ProblemExpert::getInstance(const std::string & instance_name)
 {
   parser::pddl::tree::Instance ret;
@@ -131,7 +131,7 @@ ProblemExpert::removePredicate(const parser::pddl::tree::Predicate & predicate)
   return true;
 }
 
-boost::optional<parser::pddl::tree::Predicate>
+std::optional<parser::pddl::tree::Predicate>
 ProblemExpert::getPredicate(const std::string & expr)
 {
   parser::pddl::tree::Predicate ret;
@@ -213,7 +213,7 @@ ProblemExpert::updateFunction(const parser::pddl::tree::Function & function)
   }
 }
 
-boost::optional<parser::pddl::tree::Function>
+std::optional<parser::pddl::tree::Function>
 ProblemExpert::getFunction(const std::string & expr)
 {
   parser::pddl::tree::Function ret;
@@ -520,8 +520,10 @@ ProblemExpert::checkPredicateTreeTypes(
       }
 
     default:
+      // LCOV_EXCL_START
       std::cerr << "checkPredicateTreeTypes: Error parsing expresion [" <<
         node->toString() << "]" << std::endl;
+      // LCOV_EXCL_START
   }
 
   return false;
