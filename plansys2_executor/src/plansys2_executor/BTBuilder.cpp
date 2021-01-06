@@ -325,23 +325,25 @@ BTBuilder::print_levels(std::vector<ExecutionLevel::Ptr> & levels)
       std::cout << "\t" << action_unit->action << "\tin_cardinality: " <<
         in_cardinality(action_unit) << "\tout_cardinality: " <<
           out_cardinality(action_unit) << std::endl;
-      std::cout << "\t\tReqs: " << std::endl;
+      std::cout << "\t\tRequirements: " << std::endl;
 
       for (const auto & req : action_unit->reqs) {
         std::cout << "\t\t\t" << req->requirement->toString() <<
         (req->satisfied ? " Satisfied" : " Not satisfied") << std::endl;
+        std::cout << "\t\t\t\tEffect Connections: " << std::endl;
 
         for (auto & action : req->effect_connections) {
-          std::cout << "\t\t\t\t" << action->action->action << std::endl;
+          std::cout << "\t\t\t\t\t" << action->action->action << std::endl;
         }
       }
       std::cout << "\t\tEffects: " << std::endl;
 
       for (const auto & effect : action_unit->effects) {
         std::cout << "\t\t\t" << effect->effect->toString() << std::endl;
+        std::cout << "\t\t\t\tRequirement Connections: " << std::endl;
 
         for (auto & req : effect->requirement_connections) {
-          std::cout << "\t\t\t\t" << req->action->action << std::endl;
+          std::cout << "\t\t\t\t\t" << req->action->action << std::endl;
         }
       }
     }
