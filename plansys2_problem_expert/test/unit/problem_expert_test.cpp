@@ -71,7 +71,10 @@ TEST(problem_expert, add_functions)
   plansys2::ProblemExpert problem_expert(domain_expert);
 
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::tree::Instance{"bedroom", "room"}));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::tree::Instance{"kitchen", "room_with_teleporter"}));
+  ASSERT_TRUE(
+    problem_expert.addInstance(
+      parser::pddl::tree::Instance{"kitchen",
+        "room_with_teleporter"}));
 
   parser::pddl::tree::Param param_1;
   param_1.name = "bedroom";
@@ -294,7 +297,10 @@ TEST(problem_expert, addget_predicates)
   predicates = problem_expert.getPredicates();
   ASSERT_EQ(predicates.size(), 3);
 
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::tree::Instance{"bathroom", "room_with_teleporter"}));
+  ASSERT_TRUE(
+    problem_expert.addInstance(
+      parser::pddl::tree::Instance{"bathroom",
+        "room_with_teleporter"}));
   parser::pddl::tree::Param param_5;
   param_5.name = "bathroom";
   param_5.type = "room_with_teleporter";
@@ -392,7 +398,7 @@ TEST(problem_expert, addget_functions)
   ASSERT_TRUE(problem_expert.addFunction(function_1));
   functions = problem_expert.getFunctions();
   ASSERT_FALSE(functions.empty());
-  ASSERT_FALSE(problem_expert.addFunction(function_1));
+  ASSERT_TRUE(problem_expert.addFunction(function_1));
   ASSERT_TRUE(problem_expert.addFunction(function_2));
   ASSERT_FALSE(problem_expert.addFunction(function_3));
   ASSERT_FALSE(problem_expert.addFunction(function_4));
