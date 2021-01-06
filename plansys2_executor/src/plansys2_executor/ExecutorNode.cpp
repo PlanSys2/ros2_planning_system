@@ -230,10 +230,14 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   int max_msgs_per_second = 25;
   this->get_parameter("max_msgs_per_second", max_msgs_per_second);
 
-  if (enable_groot_monitoring)
-  {
-    RCLCPP_INFO(get_logger(), "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d", get_name(), publisher_port, server_port, max_msgs_per_second);
-    publisher_zmq_.reset(new BT::PublisherZMQ(tree, max_msgs_per_second, publisher_port, server_port));
+  if (enable_groot_monitoring) {
+    RCLCPP_INFO(
+      get_logger(), "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
+      get_name(), publisher_port, server_port, max_msgs_per_second);
+    publisher_zmq_.reset(
+      new BT::PublisherZMQ(
+        tree, max_msgs_per_second, publisher_port,
+        server_port));
   }
 #endif
 
