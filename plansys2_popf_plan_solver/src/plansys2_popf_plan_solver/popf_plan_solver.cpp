@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <filesystem>
 #include <string>
 #include <iostream>
 #include <cstdio>
@@ -36,10 +37,13 @@ POPFPlanSolver::getPlan(
   const std::string & node_namespace)
 {
   if (node_namespace != "") {
-    //  This doesn't work as cxx flags must apper at end of link options, and I didn't
-    //  find a way
-    // std::experimental::filesystem::create_directories("/tmp/" + node_namespace);
-    mkdir(("/tmp/" + node_namespace).c_str(), ACCESSPERMS);
+    std::filesystem::path tp = std::filesystem::temp_directory_path();
+    for (auto p : std::filesystem::path(node_namespace) ) {
+      if (p != std::filesystem::current_path().root_directory()) {
+        tp /= p;
+      }
+    }
+    std::filesystem::create_directories(tp);
   }
 
   Plan ret;
