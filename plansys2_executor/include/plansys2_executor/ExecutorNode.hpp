@@ -71,7 +71,7 @@ private:
 
 #ifdef ZMQ_FOUND
   // This logger publish status changes using ZeroMQ. Used by Groot
-  std::shared_ptr<BT::PublisherZMQ> publisher_zmq_;
+  std::unique_ptr<BT::PublisherZMQ> publisher_zmq_;
 #endif
 
   rclcpp_action::GoalResponse handle_goal(

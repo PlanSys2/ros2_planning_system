@@ -221,24 +221,25 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
 #ifdef ZMQ_FOUND
-  bool enable_groot_monitoring = false;
-  this->get_parameter("enable_groot_monitoring", enable_groot_monitoring);
-  int publisher_port = 1666;
-  this->get_parameter("publisher_port", publisher_port);
-  int server_port = 1667;
-  this->get_parameter("server_port", server_port);
-  int max_msgs_per_second = 25;
-  this->get_parameter("max_msgs_per_second", max_msgs_per_second);
+  unsigned int publisher_port = this->get_parameter("publisher_port").as_int();
+  unsigned int server_port = this->get_parameter("server_port").as_int();
+  unsigned int max_msgs_per_second = this->get_parameter("max_msgs_per_second").as_int();
 
-  if (enable_groot_monitoring) {
+  if (this->get_parameter("enable_groot_monitoring").as_bool()) {
     RCLCPP_INFO(
       get_logger(),
       "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
       get_name(), publisher_port, server_port, max_msgs_per_second);
-    publisher_zmq_.reset(
-      new BT::PublisherZMQ(
-        tree, max_msgs_per_second, publisher_port,
-        server_port));
+    try {
+      // publisher_zmq_ = std::make_unique<BT::PublisherZMQ>(
+      publisher_zmq_.reset(
+        new BT::PublisherZMQ(
+          tree, max_msgs_per_second, publisher_port,
+          // server_port);
+          server_port));
+    } catch (const BT::LogicError & exc) {
+      RCLCPP_ERROR(get_logger(), "ZMQ already enabled, Error: %s", exc.what());
+    }
   }
 #endif
 
@@ -280,6 +281,13 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     goal_handle->succeed(result);
     RCLCPP_INFO(this->get_logger(), "Plan Succeeded");
   }
+
+#ifdef ZMQ_FOUND
+  if (this->get_parameter("enable_groot_monitoring").as_bool()) {
+    // the tree object used by this publisher is only valid in this function
+    publisher_zmq_.reset();
+  }
+#endif
 }
 
 void
