@@ -387,7 +387,8 @@ ProblemExpert::isValidPredicate(const parser::pddl::tree::Predicate & predicate)
 {
   bool valid = false;
 
-  const auto & model_predicate = domain_expert_->getPredicate(predicate.name);
+  const std::optional<parser::pddl::tree::Predicate> & model_predicate =
+    domain_expert_->getPredicate(predicate.name);
   if (model_predicate) {
     if (model_predicate.value().parameters.size() == predicate.parameters.size()) {
       bool same_types = true;
@@ -423,7 +424,8 @@ ProblemExpert::isValidFunction(const parser::pddl::tree::Function & function)
 {
   bool valid = false;
 
-  const auto & model_function = domain_expert_->getFunction(function.name);
+  const std::optional<parser::pddl::tree::Function> & model_function = domain_expert_->getFunction(
+    function.name);
   if (model_function) {
     if (model_function.value().parameters.size() == function.parameters.size()) {
       bool same_types = true;
