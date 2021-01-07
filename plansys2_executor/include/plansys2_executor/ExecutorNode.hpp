@@ -76,7 +76,7 @@ private:
 
   void handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_handle);
 
-  boost::optional<Plan> current_plan_;
+  std::optional<Plan> current_plan_;
 
   std::vector<plansys2_msgs::msg::ActionExecutionInfo> get_feedback_info(
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map);

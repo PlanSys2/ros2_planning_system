@@ -189,7 +189,7 @@ ProblemExpertClient::removeInstance(const std::string & name)
   }
 }
 
-boost::optional<plansys2::Instance>
+std::optional<plansys2::Instance>
 ProblemExpertClient::getInstance(const std::string & name)
 {
   plansys2::Instance ret;
@@ -381,7 +381,7 @@ ProblemExpertClient::existPredicate(const Predicate & predicate)
   return future_result.get()->exist;
 }
 
-boost::optional<Predicate>
+std::optional<Predicate>
 ProblemExpertClient::getPredicate(const std::string & name)
 {
   Predicate ret;
@@ -622,7 +622,7 @@ bool ProblemExpertClient::updateFunction(const Function & function)
   }
 }
 
-boost::optional<Function>
+std::optional<Function>
 ProblemExpertClient::getFunction(const std::string & name)
 {
   Function ret;

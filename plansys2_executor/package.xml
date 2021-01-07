@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>plansys2_executor</name>
-  <version>1.0.1</version>
+  <version>1.0.7</version>
   
   <description>This package contains the Executor module for the ROS2 Planning System</description>
 
@@ -24,14 +24,13 @@
   <depend>plansys2_problem_expert</depend>
   <depend>plansys2_planner</depend>
   <depend>behaviortree_cpp_v3</depend>
+  <depend>std_msgs</depend>
 
   <exec_depend>popf</exec_depend>
 
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>
-  <test_depend>test_msgs</test_depend>
-  <test_depend>geometry_msgs</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

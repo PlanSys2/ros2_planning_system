@@ -10,7 +10,10 @@ find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(plansys2_executor REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
-find_package(test_msgs REQUIRED)
+find_package(action_msgs REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
+
+set(CMAKE_CXX_STANDARD 17)
 
 set(dependencies
     rclcpp
@@ -18,7 +21,8 @@ set(dependencies
     rclcpp_lifecycle
     plansys2_executor
     behaviortree_cpp_v3
-    test_msgs
+    action_msgs
+    lifecycle_msgs
 )
 
 include_directories(include)
@@ -53,7 +57,10 @@ if(BUILD_TESTING)
 
   find_package(ament_cmake_gtest REQUIRED)
   find_package(plansys2_msgs REQUIRED)
-  set(dependencies ${dependencies} plansys2_msgs)
+  find_package(test_msgs REQUIRED)
+  find_package(geometry_msgs REQUIRED)
+
+  set(dependencies ${dependencies} plansys2_msgs test_msgs geometry_msgs)
 
   add_subdirectory(test)
 endif()

@@ -68,7 +68,7 @@ ProblemExpert::removeInstance(const std::string & name)
   return found;
 }
 
-boost::optional<Instance>
+std::optional<Instance>
 ProblemExpert::getInstance(const std::string & instance_name)
 {
   Instance ret;
@@ -131,7 +131,7 @@ ProblemExpert::removePredicate(const Predicate & predicate)
   return true;
 }
 
-boost::optional<Predicate>
+std::optional<Predicate>
 ProblemExpert::getPredicate(const std::string & predicate_name)
 {
   Predicate ret;
@@ -210,7 +210,7 @@ ProblemExpert::updateFunction(const Function & function)
   }
 }
 
-boost::optional<Function>
+std::optional<Function>
 ProblemExpert::getFunction(const std::string & function_name)
 {
   Function ret;
@@ -365,7 +365,8 @@ ProblemExpert::isValidPredicate(const Predicate & predicate)
 {
   bool valid = false;
 
-  const auto & model_predicate = domain_expert_->getPredicate(predicate.name);
+  const std::optional<plansys2::Predicate> & model_predicate = domain_expert_->getPredicate(
+    predicate.name);
   if (model_predicate) {
     if (model_predicate.value().parameters.size() == predicate.parameters.size()) {
       bool same_types = true;
@@ -481,8 +482,10 @@ ProblemExpert::checkPredicateTreeTypes(
       }
 
     default:
+      // LCOV_EXCL_START
       std::cerr << "checkPredicateTreeTypes: Error parsing expresion [" <<
         node->toString() << "]" << std::endl;
+      // LCOV_EXCL_START
   }
 
   return false;

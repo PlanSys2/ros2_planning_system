@@ -2,6 +2,30 @@
 Changelog for package plansys2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.7 (2021-01-04)
+------------------
+
+1.0.6 (2020-12-29)
+------------------
+* Disable boost functions
+* Contributors: Francisco Martin Rico
+
+1.0.5 (2020-12-28)
+------------------
+* Migration to c++17
+* Contributors: Francisco Martín Rico
+
+1.0.4 (2020-12-24)
+------------------
+
+1.0.3 (2020-12-23)
+------------------
+
+1.0.2 (2020-12-23)
+------------------
+* Plan solvers as plugins
+* Contributors: Fabrice Larribe, Francisco Martin Rico, Stephen Balakirsky
+
 1.0.1 (2020-07-19)
 ------------------
 
