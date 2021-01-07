@@ -81,7 +81,6 @@ TEST(domain_expert, get_domain2)
   ASSERT_EQ(domain_expert.getDomain(), domain_str_p);
 }
 
-
 TEST(domain_expert, get_types)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
@@ -97,7 +96,6 @@ TEST(domain_expert, get_types)
 
   ASSERT_EQ(types, test_types);
 }
-
 
 TEST(domain_expert, get_predicates)
 {

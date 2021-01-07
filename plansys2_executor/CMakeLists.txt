@@ -17,6 +17,7 @@ find_package(plansys2_domain_expert REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
 find_package(plansys2_planner REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
+find_package(std_msgs REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -33,6 +34,7 @@ set(dependencies
     plansys2_problem_expert
     plansys2_planner
     behaviortree_cpp_v3
+    std_msgs
 )
 
 include_directories(include)
@@ -83,8 +85,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
-  find_package(test_msgs REQUIRED)
-  find_package(geometry_msgs REQUIRED)
+
   add_subdirectory(test)
 endif()
 

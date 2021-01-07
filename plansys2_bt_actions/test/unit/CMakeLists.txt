@@ -20,6 +20,7 @@ ament_add_gtest(bt_action_test bt_action_test.cpp)
 target_link_libraries(bt_action_test
   ${PROJECT_NAME}
 )
+ament_target_dependencies(bt_action_test ${dependencies})
 
 install(DIRECTORY ../behavior_tree
   DESTINATION share/${PROJECT_NAME}/test

@@ -2,6 +2,11 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.7 (2021-01-04)
+------------------
+* Making explicit dependencies
+* Contributors: Francisco Martin Rico
+
 1.0.6 (2020-12-29)
 ------------------
 * Disable boost functions
