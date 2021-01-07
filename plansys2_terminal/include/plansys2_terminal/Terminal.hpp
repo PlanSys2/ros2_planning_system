@@ -31,6 +31,7 @@
 namespace plansys2_terminal
 {
 
+int get_parenthesis(const std::string & expr, int start);
 std::vector<std::string> tokenize(const std::string & text);
 void pop_front(std::vector<std::string> & tokens);
 char * completion_generator(const char * text, int state);
@@ -64,8 +65,12 @@ protected:
   virtual void process_set_instance(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_set_predicate(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_set_function(std::vector<std::string> & command, std::ostringstream & os);
-  virtual void process_set_goal(std::vector<std::string> & command, std::ostringstream & os);
-  virtual void process_set(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_set_goal(
+    std::vector<std::string> & command, std::ostringstream & os,
+    std::string const & construct);
+  virtual void process_set(
+    std::vector<std::string> & command, std::ostringstream & os,
+    std::string const & construct = std::string());
 
   virtual void process_remove_instance(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_remove_predicate(

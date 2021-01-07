@@ -382,8 +382,11 @@ TEST(problem_expert, action_executor)
     ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
   }
 
-  ASSERT_TRUE(problem_client->setGoal(parser::pddl::tree::Goal("(and (car_assembled car_1))",
-                                                               "(and (predicate))")));
+  ASSERT_TRUE(
+    problem_client->setGoal(
+      parser::pddl::tree::Goal(
+        "(and (car_assembled car_1))",
+        "(and (predicate))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);

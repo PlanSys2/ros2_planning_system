@@ -14,8 +14,9 @@
 
 #include <string>
 #include <memory>
-#include <vector>
 #include <set>
+#include <tuple>
+#include <vector>
 #include <algorithm>
 
 #include "plansys2_executor/BTBuilder.hpp"
@@ -259,29 +260,30 @@ BTBuilder::check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr d
         for (auto & up_action_unit : up_level->action_units) {
           for (auto & effect : up_action_unit->effects) {
             if (req->requirement->type_ == parser::pddl::tree::EXPRESSION &&
-                effect->effect->type_ == parser::pddl::tree::FUNCTION_MODIFIER) {
-
+              effect->effect->type_ == parser::pddl::tree::FUNCTION_MODIFIER)
+            {
               std::shared_ptr<parser::pddl::tree::ExpressionNode> req_expression_node =
                 std::dynamic_pointer_cast<parser::pddl::tree::ExpressionNode>(req->requirement);
               std::shared_ptr<parser::pddl::tree::FunctionNode> req_function_node =
-                std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(req_expression_node->ops[0]);
+                std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(
+                req_expression_node->ops[0]);
 
               std::shared_ptr<parser::pddl::tree::FunctionModifierNode> eff_function_modifier_node =
                 std::dynamic_pointer_cast<parser::pddl::tree::FunctionModifierNode>(effect->effect);
               std::shared_ptr<parser::pddl::tree::FunctionNode> eff_function_node =
-                std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(eff_function_modifier_node->ops[0]);
+                std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(
+                eff_function_modifier_node->ops[0]);
 
-              // A function modifier effect connects to an expression requirement when they operate on
-              // the same function.
+              // A function modifier effect connects to an expression requirement when they operate
+              // on the same function.
               if (req_function_node->function_ == eff_function_node->function_) {
                 req->satisfied = true;
                 req->effect_connections.push_back(effect);
                 effect->requirement_connections.push_back(req);
               }
-            }
-            else if (req->requirement->type_ == parser::pddl::tree::PREDICATE &&
-                     effect->effect->type_ == parser::pddl::tree::PREDICATE) {
-
+            } else if (req->requirement->type_ == parser::pddl::tree::PREDICATE && // NOLINT
+              effect->effect->type_ == parser::pddl::tree::PREDICATE)
+            {
               std::shared_ptr<parser::pddl::tree::PredicateNode> req_predicate_node =
                 std::dynamic_pointer_cast<parser::pddl::tree::PredicateNode>(req->requirement);
 
@@ -324,7 +326,7 @@ BTBuilder::print_levels(std::vector<ExecutionLevel::Ptr> & levels)
     for (const auto & action_unit : level->action_units) {
       std::cout << "\t" << action_unit->action << "\tin_cardinality: " <<
         in_cardinality(action_unit) << "\tout_cardinality: " <<
-          out_cardinality(action_unit) << std::endl;
+        out_cardinality(action_unit) << std::endl;
       std::cout << "\t\tRequirements: " << std::endl;
 
       for (const auto & req : action_unit->reqs) {
@@ -377,9 +379,13 @@ BTBuilder::get_plan_actions(const Plan & plan)
 
     auto dur_action = get_action_from_string(item.action, domain_client_);
     std::shared_ptr<parser::pddl::tree::AndNode> at_start_requirements =
-      std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(dur_action->at_start_requirements.root_);
+      std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(
+      dur_action->at_start_requirements.root_
+      );
     std::shared_ptr<parser::pddl::tree::AndNode> over_all_requirements =
-      std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(dur_action->over_all_requirements.root_);
+      std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(
+      dur_action->over_all_requirements.root_
+      );
     std::shared_ptr<parser::pddl::tree::AndNode> at_end_requirements =
       std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(dur_action->at_end_requirements.root_);
 

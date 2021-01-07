@@ -91,41 +91,36 @@ std::tuple<bool, double> check(
         std::tuple<bool, double> left = check(expr->ops[0], problem_client);
         std::tuple<bool, double> right = check(expr->ops[1], problem_client);
 
-        if (!std::get<0>(left) || !std::get<0>(right))
-        {
-          return std::make_tuple(false, 0);;
+        if (!std::get<0>(left) || !std::get<0>(right)) {
+          return std::make_tuple(false, 0);
         }
 
         switch (expr->expr_type) {
           case parser::pddl::tree::COMP_GE:
             if (std::get<1>(left) >= std::get<1>(right)) {
               return std::make_tuple(true, 0);
-            }
-            else {
+            } else {
               return std::make_tuple(false, 0);
             }
             break;
           case parser::pddl::tree::COMP_GT:
             if (std::get<1>(left) > std::get<1>(right)) {
               return std::make_tuple(true, 0);
-            }
-            else {
+            } else {
               return std::make_tuple(false, 0);
             }
             break;
           case parser::pddl::tree::COMP_LE:
             if (std::get<1>(left) <= std::get<1>(right)) {
               return std::make_tuple(true, 0);
-            }
-            else {
+            } else {
               return std::make_tuple(false, 0);
             }
             break;
           case parser::pddl::tree::COMP_LT:
             if (std::get<1>(left) < std::get<1>(right)) {
               return std::make_tuple(true, 0);
-            }
-            else {
+            } else {
               return std::make_tuple(false, 0);
             }
             break;
@@ -154,8 +149,7 @@ std::tuple<bool, double> check(
         std::tuple<bool, double> left = check(func_mod->ops[0], problem_client);
         std::tuple<bool, double> right = check(func_mod->ops[1], problem_client);
 
-        if (!std::get<0>(left) || !std::get<0>(right))
-        {
+        if (!std::get<0>(left) || !std::get<0>(right)) {
           return std::make_tuple(false, 0);
         }
 
@@ -265,7 +259,7 @@ std::tuple<bool, bool, double> apply(
           return std::make_tuple(true, true, func.value().value);
         }
 
-        return std::make_tuple(false, false, 0);;
+        return std::make_tuple(false, false, 0);
       }
 
     case parser::pddl::tree::EXPRESSION: {
@@ -275,41 +269,36 @@ std::tuple<bool, bool, double> apply(
         std::tuple<bool, bool, double> left = apply(expr->ops[0], problem_client, negate);
         std::tuple<bool, bool, double> right = apply(expr->ops[1], problem_client, negate);
 
-        if (!std::get<0>(left) || !std::get<0>(right))
-        {
-          return std::make_tuple(false, false, 0);;
+        if (!std::get<0>(left) || !std::get<0>(right)) {
+          return std::make_tuple(false, false, 0);
         }
 
         switch (expr->expr_type) {
           case parser::pddl::tree::COMP_GE:
             if (std::get<2>(left) >= std::get<2>(right)) {
               return std::make_tuple(true, true, 0);
-            }
-            else {
+            } else {
               return std::make_tuple(true, false, 0);
             }
             break;
           case parser::pddl::tree::COMP_GT:
             if (std::get<2>(left) > std::get<2>(right)) {
               return std::make_tuple(true, true, 0);
-            }
-            else {
+            } else {
               return std::make_tuple(true, false, 0);
             }
             break;
           case parser::pddl::tree::COMP_LE:
             if (std::get<2>(left) <= std::get<2>(right)) {
               return std::make_tuple(true, true, 0);
-            }
-            else {
+            } else {
               return std::make_tuple(true, false, 0);
             }
             break;
           case parser::pddl::tree::COMP_LT:
             if (std::get<2>(left) < std::get<2>(right)) {
               return std::make_tuple(true, true, 0);
-            }
-            else {
+            } else {
               return std::make_tuple(true, false, 0);
             }
             break;
@@ -338,8 +327,7 @@ std::tuple<bool, bool, double> apply(
         std::tuple<bool, bool, double> left = apply(func_mod->ops[0], problem_client, negate);
         std::tuple<bool, bool, double> right = apply(func_mod->ops[1], problem_client, negate);
 
-        if (!std::get<0>(left) || !std::get<0>(right))
-        {
+        if (!std::get<0>(left) || !std::get<0>(right)) {
           return std::make_tuple(false, false, 0);
         }
 
