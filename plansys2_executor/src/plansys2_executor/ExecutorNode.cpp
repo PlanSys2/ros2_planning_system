@@ -231,11 +231,9 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
       "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
       get_name(), publisher_port, server_port, max_msgs_per_second);
     try {
-      // publisher_zmq_ = std::make_unique<BT::PublisherZMQ>(
       publisher_zmq_.reset(
         new BT::PublisherZMQ(
           tree, max_msgs_per_second, publisher_port,
-          // server_port);
           server_port));
     } catch (const BT::LogicError & exc) {
       RCLCPP_ERROR(get_logger(), "ZMQ already enabled, Error: %s", exc.what());
