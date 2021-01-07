@@ -15,8 +15,8 @@
 #ifndef PLANSYS2_DOMAIN_EXPERT__TYPES_HPP_
 #define PLANSYS2_DOMAIN_EXPERT__TYPES_HPP_
 
-#include <regex>
 #include <optional>
+#include <regex>
 #include <string>
 #include <vector>
 #include <memory>

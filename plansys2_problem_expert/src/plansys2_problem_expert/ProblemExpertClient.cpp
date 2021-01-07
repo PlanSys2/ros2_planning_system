@@ -38,7 +38,7 @@ ProblemExpertClient::ProblemExpertClient(rclcpp::Node::SharedPtr provided_node)
     "problem_expert/get_problem_goal");
   get_problem_instance_details_client_ =
     node_->create_client<plansys2_msgs::srv::GetProblemInstanceDetails>(
-    "problem_expert/get_problem_instance_details");
+    "problem_expert/get_problem_instance");
   get_problem_instances_client_ = node_->create_client<plansys2_msgs::srv::GetProblemInstances>(
     "problem_expert/get_problem_instances");
   get_problem_predicate_details_client_ =
