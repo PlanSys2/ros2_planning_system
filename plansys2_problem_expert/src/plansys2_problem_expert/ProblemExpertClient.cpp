@@ -38,7 +38,7 @@ ProblemExpertClient::ProblemExpertClient(rclcpp::Node::SharedPtr provided_node)
     "problem_expert/get_problem_goal");
   get_problem_instance_details_client_ =
     node_->create_client<plansys2_msgs::srv::GetProblemInstanceDetails>(
-    "problem_expert/get_problem_instance");
+    "problem_expert/get_problem_instance_details");
   get_problem_instances_client_ = node_->create_client<plansys2_msgs::srv::GetProblemInstances>(
     "problem_expert/get_problem_instances");
   get_problem_predicate_details_client_ =
@@ -189,7 +189,7 @@ ProblemExpertClient::removeInstance(const std::string & name)
   }
 }
 
-boost::optional<plansys2::Instance>
+std::optional<plansys2::Instance>
 ProblemExpertClient::getInstance(const std::string & name)
 {
   plansys2::Instance ret;
@@ -381,7 +381,7 @@ ProblemExpertClient::existPredicate(const Predicate & predicate)
   return future_result.get()->exist;
 }
 
-boost::optional<Predicate>
+std::optional<Predicate>
 ProblemExpertClient::getPredicate(const std::string & name)
 {
   Predicate ret;
@@ -622,7 +622,7 @@ bool ProblemExpertClient::updateFunction(const Function & function)
   }
 }
 
-boost::optional<Function>
+std::optional<Function>
 ProblemExpertClient::getFunction(const std::string & name)
 {
   Function ret;

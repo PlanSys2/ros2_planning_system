@@ -15,9 +15,8 @@
 #ifndef PLANSYS2_DOMAIN_EXPERT__TYPES_HPP_
 #define PLANSYS2_DOMAIN_EXPERT__TYPES_HPP_
 
-#include <boost/optional.hpp>
-
 #include <regex>
+#include <optional>
 #include <string>
 #include <vector>
 #include <memory>
