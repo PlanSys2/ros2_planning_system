@@ -282,12 +282,6 @@ public:
    */
   virtual void getPredicates(std::vector<Predicate> & predicates, bool only_positives) = 0;
 
-  /// This method will be recursivelly called to recollect the functions in the tree.
-  /**
-   * \param[out] functions Functions in the node (and its children in cascade)
-   */
-  virtual void getFunctions(std::vector<Function> & functions) = 0;
-
   NodeType type_;
 };
 
@@ -336,15 +330,6 @@ public:
     predicates.push_back(predicate_);
   }
 
-  /// Required by the superclass, but nothing to do for this subclass
-  /**
-   * \param[out] functions The vector of functions
-   */
-  void getFunctions(std::vector<Function> & functions)
-  {
-    // Do nothing
-  }
-
   Predicate predicate_;
 };
 
@@ -383,15 +368,6 @@ public:
     // Do nothing
   }
 
-  /// Adds the containing function to the vector of functions
-  /**
-   * \param[out] functions The vector of functions
-   */
-  void getFunctions(std::vector<Function> & functions)
-  {
-    functions.push_back(function_);
-  }
-
   Function function_;
 };
 
@@ -426,15 +402,6 @@ public:
    * \param[out] predicates The vector of predicates
    */
   void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
-  {
-    // Do nothing
-  }
-
-  /// Required by the superclass, but nothing to do for this subclass
-  /**
-   * \param[out] functions The vector of functions
-   */
-  void getFunctions(std::vector<Function> & functions)
   {
     // Do nothing
   }
@@ -497,17 +464,6 @@ public:
     }
   }
 
-  /// This method calls recursivelly to the getFunctions method of its children.
-  /**
-   * \param[out] functions The vector of functions
-   */
-  void getFunctions(std::vector<Function> & functions)
-  {
-    for (auto op : ops) {
-      op->getFunctions(functions);
-    }
-  }
-
   std::vector<std::shared_ptr<TreeNode>> ops;
 };
 
@@ -566,17 +522,6 @@ public:
     }
   }
 
-  /// This method calls recursivelly to the getFunctions method of its children.
-  /**
-   * \param[out] functions The vector of functions
-   */
-  void getFunctions(std::vector<Function> & functions)
-  {
-    for (auto op : ops) {
-      op->getFunctions(functions);
-    }
-  }
-
   std::vector<std::shared_ptr<TreeNode>> ops;
 };
 
@@ -627,15 +572,6 @@ public:
   void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
   {
     op->getPredicates(predicates, only_positives);
-  }
-
-  /// This method calls recursivelly to the getFunctions method of its children.
-  /**
-   * \param[out] functions The vector of functions
-   */
-  void getFunctions(std::vector<Function> & functions)
-  {
-    op->getFunctions(functions);
   }
 
   std::shared_ptr<TreeNode> op;
@@ -717,17 +653,6 @@ public:
     // Do nothing
   }
 
-  /// This method calls recursivelly to the getFunctions method of its children.
-  /**
-   * \param[out] functions The vector of functions
-   */
-  void getFunctions(std::vector<Function> & functions)
-  {
-    for (auto op : ops) {
-      op->getFunctions(functions);
-    }
-  }
-
   ExprType expr_type;
   std::vector<std::shared_ptr<TreeNode>> ops;
 };
@@ -805,17 +730,6 @@ public:
     // Do nothing
   }
 
-  /// This method calls recursivelly to the getFunctions method of its children.
-  /**
-   * \param[out] functions The vector of functions
-   */
-  void getFunctions(std::vector<Function> & functions)
-  {
-    for (auto op : ops) {
-      op->getFunctions(functions);
-    }
-  }
-
   FunModType modifier_type;
   std::vector<std::shared_ptr<TreeNode>> ops;
 };
@@ -861,20 +775,6 @@ public:
     }
     for (auto op : eff) {
       op->getPredicates(predicates, only_positives);
-    }
-  }
-
-  /// This method calls recursivelly to the getFunctions method of its children.
-  /**
-   * \param[out] functions The vector of functions
-   */
-  void getFunctions(std::vector<Function> & functions)
-  {
-    for (auto op : pre) {
-      op->getFunctions(functions);
-    }
-    for (auto op : eff) {
-      op->getFunctions(functions);
     }
   }
 
@@ -968,17 +868,6 @@ public:
   {
     if (root_ != nullptr) {
       root_->getPredicates(predicates, only_positives);
-    }
-  }
-
-  /// This method calls recursivelly to the getFunctions method of its children.
-  /**
-   * \param[out] functions The vector of functions
-   */
-  void getFunctions(std::vector<Function> & functions)
-  {
-    if (root_ != nullptr) {
-      root_->getFunctions(functions);
     }
   }
 
