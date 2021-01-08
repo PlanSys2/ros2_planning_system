@@ -104,12 +104,12 @@ TEST(problem_expert, check_atstart_req_test)
   }
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
-  (*action_map)["(move r2d2 wp1 wp2):5"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(move r2d2 wp1 wp2):5"].durative_action_info =
-    plansys2::get_action_from_string("(move r2d2 wp1 wp2)", domain_client);
+  (*action_map)["(move robot1 wp1 wp2):5"] = plansys2::ActionExecutionInfo();
+  (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info =
+    plansys2::get_action_from_string("(move robot1 wp1 wp2)", domain_client);
 
   ASSERT_NE(
-    (*action_map)["(move r2d2 wp1 wp2):5"].durative_action_info,
+    (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info,
     nullptr);
 
   std::string bt_xml_tree =
@@ -117,7 +117,7 @@ TEST(problem_expert, check_atstart_req_test)
     <root main_tree_to_execute = "MainTree" >
       <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-          <CheckAtStartReq action="(move r2d2 wp1 wp2):5"/>
+          <CheckAtStartReq action="(move robot1 wp1 wp2):5"/>
        </Sequence>
       </BehaviorTree>
     </root>
@@ -133,19 +133,19 @@ TEST(problem_expert, check_atstart_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::CheckAtStartReq>("CheckAtStartReq");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot1", "robot"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp1", "waypoint"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp2", "waypoint"}));
 
   std::vector<std::string> predicates = {
-    "(robot_at r2d2 wp1)",
+    "(robot_at robot1 wp1)",
     "(charger_at wp2)",
     "(connected wp1 wp2)"};
 
   std::vector<std::string> functions = {
-    "(= (speed r2d2) 3)",
-    "(= (max_range r2d2) 75)",
-    "(= (state_of_charge r2d2) 99)",
+    "(= (speed robot1) 3)",
+    "(= (max_range robot1) 75)",
+    "(= (state_of_charge robot1) 99)",
     "(= (distance wp1 wp2) 15)",
     "(= (distance wp2 wp1) 15)"};
 
@@ -226,12 +226,12 @@ TEST(problem_expert, wait_atstart_req_test)
   }
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
-  (*action_map)["(move r2d2 wp1 wp2):5"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(move r2d2 wp1 wp2):5"].durative_action_info =
-    plansys2::get_action_from_string("(move r2d2 wp1 wp2)", domain_client);
+  (*action_map)["(move robot1 wp1 wp2):5"] = plansys2::ActionExecutionInfo();
+  (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info =
+    plansys2::get_action_from_string("(move robot1 wp1 wp2)", domain_client);
 
   ASSERT_NE(
-    (*action_map)["(move r2d2 wp1 wp2):5"].durative_action_info,
+    (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info,
     nullptr);
 
   std::string bt_xml_tree =
@@ -239,7 +239,7 @@ TEST(problem_expert, wait_atstart_req_test)
     <root main_tree_to_execute = "MainTree" >
       <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-          <WaitAtStartReq action="(move r2d2 wp1 wp2):5"/>
+          <WaitAtStartReq action="(move robot1 wp1 wp2):5"/>
        </Sequence>
       </BehaviorTree>
     </root>
@@ -255,19 +255,19 @@ TEST(problem_expert, wait_atstart_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::WaitAtStartReq>("WaitAtStartReq");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot1", "robot"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp1", "waypoint"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp2", "waypoint"}));
 
   std::vector<std::string> predicates = {
-    "(robot_at r2d2 wp1)",
+    "(robot_at robot1 wp1)",
     "(charger_at wp2)",
     "(connected wp1 wp2)"};
 
   std::vector<std::string> functions = {
-    "(= (speed r2d2) 3)",
-    "(= (max_range r2d2) 75)",
-    "(= (state_of_charge r2d2) 99)",
+    "(= (speed robot1) 3)",
+    "(= (max_range robot1) 75)",
+    "(= (state_of_charge robot1) 99)",
     "(= (distance wp1 wp2) 15)",
     "(= (distance wp2 wp1) 15)"};
 
@@ -349,12 +349,12 @@ TEST(problem_expert, apply_atstart_effect_test)
   }
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
-  (*action_map)["(move r2d2 wp1 wp2):5"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(move r2d2 wp1 wp2):5"].durative_action_info =
-    plansys2::get_action_from_string("(move r2d2 wp1 wp2)", domain_client);
+  (*action_map)["(move robot1 wp1 wp2):5"] = plansys2::ActionExecutionInfo();
+  (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info =
+    plansys2::get_action_from_string("(move robot1 wp1 wp2)", domain_client);
 
   ASSERT_NE(
-    (*action_map)["(move r2d2 wp1 wp2):5"].durative_action_info,
+    (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info,
     nullptr);
 
   std::string bt_xml_tree =
@@ -362,7 +362,7 @@ TEST(problem_expert, apply_atstart_effect_test)
     <root main_tree_to_execute = "MainTree" >
       <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-          <ApplyAtStartEffect action="(move r2d2 wp1 wp2):5"/>
+          <ApplyAtStartEffect action="(move robot1 wp1 wp2):5"/>
        </Sequence>
       </BehaviorTree>
     </root>
@@ -378,13 +378,13 @@ TEST(problem_expert, apply_atstart_effect_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtStartEffect>("ApplyAtStartEffect");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot1", "robot"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp1", "waypoint"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp2", "waypoint"}));
 
   try {
     std::vector<std::string> predicates = {
-      "(robot_at r2d2 wp1)",
+      "(robot_at robot1 wp1)",
       "(charger_at wp2)",
       "(connected wp1 wp2)"};
 
@@ -393,9 +393,9 @@ TEST(problem_expert, apply_atstart_effect_test)
     }
 
     std::vector<std::string> functions = {
-      "(= (speed r2d2) 3)",
-      "(= (max_range r2d2) 75)",
-      "(= (state_of_charge r2d2) 99)",
+      "(= (speed robot1) 3)",
+      "(= (max_range robot1) 75)",
+      "(= (state_of_charge robot1) 99)",
       "(= (distance wp1 wp2) 15)",
       "(= (distance wp2 wp1) 15)"};
 
@@ -418,7 +418,7 @@ TEST(problem_expert, apply_atstart_effect_test)
     }
     ASSERT_FALSE(
       problem_client->existPredicate(
-        parser::pddl::tree::Predicate{"(robot_at r2d2 wp1)"}));
+        parser::pddl::tree::Predicate{"(robot_at robot1 wp1)"}));
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
@@ -476,12 +476,12 @@ TEST(problem_expert, apply_atend_effect_test)
   }
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
-  (*action_map)["(move r2d2 wp1 wp2):5"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(move r2d2 wp1 wp2):5"].durative_action_info =
-    plansys2::get_action_from_string("(move r2d2 wp1 wp2)", domain_client);
+  (*action_map)["(move robot1 wp1 wp2):5"] = plansys2::ActionExecutionInfo();
+  (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info =
+    plansys2::get_action_from_string("(move robot1 wp1 wp2)", domain_client);
 
   ASSERT_NE(
-    (*action_map)["(move r2d2 wp1 wp2):5"].durative_action_info,
+    (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info,
     nullptr);
 
   std::string bt_xml_tree =
@@ -489,7 +489,7 @@ TEST(problem_expert, apply_atend_effect_test)
     <root main_tree_to_execute = "MainTree" >
       <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-          <ApplyAtEndEffect action="(move r2d2 wp1 wp2):5"/>
+          <ApplyAtEndEffect action="(move robot1 wp1 wp2):5"/>
        </Sequence>
       </BehaviorTree>
     </root>
@@ -505,13 +505,13 @@ TEST(problem_expert, apply_atend_effect_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtEndEffect>("ApplyAtEndEffect");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot1", "robot"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp1", "waypoint"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp2", "waypoint"}));
 
   try {
     std::vector<std::string> predicates = {
-      "(robot_at r2d2 wp1)",
+      "(robot_at robot1 wp1)",
       "(charger_at wp2)",
       "(connected wp1 wp2)"};
 
@@ -520,9 +520,9 @@ TEST(problem_expert, apply_atend_effect_test)
     }
 
     std::vector<std::string> functions = {
-      "(= (speed r2d2) 3)",
-      "(= (max_range r2d2) 75)",
-      "(= (state_of_charge r2d2) 99)",
+      "(= (speed robot1) 3)",
+      "(= (max_range robot1) 75)",
+      "(= (state_of_charge robot1) 99)",
       "(= (distance wp1 wp2) 15)",
       "(= (distance wp2 wp1) 15)"};
 
@@ -546,7 +546,7 @@ TEST(problem_expert, apply_atend_effect_test)
 
     ASSERT_TRUE(
       problem_client->existPredicate(
-        parser::pddl::tree::Predicate{"(robot_at r2d2 wp2)"}));
+        parser::pddl::tree::Predicate{"(robot_at robot1 wp2)"}));
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
