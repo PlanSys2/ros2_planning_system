@@ -359,6 +359,8 @@ std::tuple<bool, bool, double> apply(
             // Division by zero not allowed.
             if (std::abs(std::get<2>(right)) > 1e-5) {
               result = std::get<2>(left) / std::get<2>(right);
+            } else {
+              valid_modifier = false;
             }
             break;
           default:
