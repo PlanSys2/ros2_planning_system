@@ -204,7 +204,7 @@ TEST(problem_expert, action_executor_client)
   std::vector<plansys2_msgs::msg::ActionExecution> history_msgs;
   bool confirmed = false;
   auto actions_sub = aux_node->create_subscription<plansys2_msgs::msg::ActionExecution>(
-    "/actions_hub",
+    "actions_hub",
     rclcpp::QoS(100).reliable(), [&](plansys2_msgs::msg::ActionExecution::UniquePtr msg) {
       history_msgs.push_back(*msg);
     });
