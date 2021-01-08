@@ -34,19 +34,6 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-TEST(planner_expert, load_popf_plugin)
-{
-  try {
-    pluginlib::ClassLoader<plansys2::PlanSolverBase> lp_loader(
-      "plansys2_core", "plansys2::PlanSolverBase");
-    plansys2::PlanSolverBase::Ptr plugin =
-      lp_loader.createUniqueInstance("plansys2/POPFPlanSolver");
-    ASSERT_TRUE(true);
-  } catch (std::exception & e) {
-    std::cerr << e.what() << std::endl;
-    ASSERT_TRUE(false);
-  }
-}
 
 TEST(planner_expert, generate_plan_good)
 {

@@ -12,6 +12,10 @@ find_package(ament_index_cpp REQUIRED)
 find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_domain_expert REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
+
+set(CMAKE_CXX_STANDARD 17)
 
 set(dependencies
     rclcpp
@@ -21,6 +25,8 @@ set(dependencies
     ament_index_cpp
     plansys2_msgs
     plansys2_domain_expert
+    std_msgs
+    lifecycle_msgs
 )
 
 include_directories(include)
@@ -33,7 +39,6 @@ set(PROBLEM_EXPERT_SOURCES
 
 add_library(${PROJECT_NAME} SHARED ${PROBLEM_EXPERT_SOURCES})
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
-target_include_directories(${PROJECT_NAME} PUBLIC ${Boost_INCLUDE_DIRS})
 
 add_executable(problem_expert_node
   src/problem_expert_node.cpp

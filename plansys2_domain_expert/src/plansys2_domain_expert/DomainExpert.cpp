@@ -18,29 +18,33 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <memory>
 
 
 namespace plansys2
 {
 
 DomainExpert::DomainExpert(const std::string & domain)
-: domain_(domain)
 {
+  extendDomain(domain);
 }
 
 void
 DomainExpert::extendDomain(const std::string & domain)
 {
-  domain_.parse(domain);
+  domains_.add_domain(domain);
+
+  domain_ = std::make_shared<parser::pddl::Domain>();
+  domain_->parse(domains_.get_joint_domain());
 }
 
 std::vector<std::string>
 DomainExpert::getTypes()
 {
   std::vector<std::string> ret;
-  if (domain_.typed) {
-    for (unsigned i = 1; i < domain_.types.size(); i++) {
-      ret.push_back(domain_.types[i]->name);
+  if (domain_->typed) {
+    for (unsigned i = 1; i < domain_->types.size(); i++) {
+      ret.push_back(domain_->types[i]->name);
     }
   }
   return ret;
@@ -50,13 +54,13 @@ std::vector<std::string>
 DomainExpert::getPredicates()
 {
   std::vector<std::string> ret;
-  for (unsigned i = 0; i < domain_.preds.size(); i++) {
-    ret.push_back(domain_.preds[i]->name);
+  for (unsigned i = 0; i < domain_->preds.size(); i++) {
+    ret.push_back(domain_->preds[i]->name);
   }
   return ret;
 }
 
-boost::optional<plansys2::Predicate>
+std::optional<plansys2::Predicate>
 DomainExpert::getPredicate(const std::string & predicate)
 {
   std::string predicate_search = predicate;
@@ -68,16 +72,16 @@ DomainExpert::getPredicate(const std::string & predicate)
   bool found = false;
   unsigned i = 0;
 
-  while (i < domain_.preds.size() && !found) {
-    if (domain_.preds[i]->name == predicate_search) {
+  while (i < domain_->preds.size() && !found) {
+    if (domain_->preds[i]->name == predicate_search) {
       found = true;
       ret.name = predicate_search;
-      for (unsigned j = 0; j < domain_.preds[i]->params.size(); j++) {
+      for (unsigned j = 0; j < domain_->preds[i]->params.size(); j++) {
         plansys2::Param param;
-        param.name = "?" + domain_.types[domain_.preds[i]->params[j]]->getName() +
+        param.name = "?" + domain_->types[domain_->preds[i]->params[j]]->getName() +
           std::to_string(j);
-        param.type = domain_.types[domain_.preds[i]->params[j]]->name;
-        domain_.types[domain_.preds[i]->params[j]]->getSubTypesNames(param.subTypes);
+        param.type = domain_->types[domain_->preds[i]->params[j]]->name;
+        domain_->types[domain_->preds[i]->params[j]]->getSubTypesNames(param.subTypes);
         ret.parameters.push_back(param);
       }
     }
@@ -95,13 +99,13 @@ std::vector<std::string>
 DomainExpert::getFunctions()
 {
   std::vector<std::string> ret;
-  for (unsigned i = 0; i < domain_.funcs.size(); i++) {
-    ret.push_back(domain_.funcs[i]->name);
+  for (unsigned i = 0; i < domain_->funcs.size(); i++) {
+    ret.push_back(domain_->funcs[i]->name);
   }
   return ret;
 }
 
-boost::optional<plansys2::Function>
+std::optional<plansys2::Function>
 DomainExpert::getFunction(const std::string & function)
 {
   std::string function_search = function;
@@ -113,16 +117,16 @@ DomainExpert::getFunction(const std::string & function)
   bool found = false;
   unsigned i = 0;
 
-  while (i < domain_.funcs.size() && !found) {
-    if (domain_.funcs[i]->name == function_search) {
+  while (i < domain_->funcs.size() && !found) {
+    if (domain_->funcs[i]->name == function_search) {
       found = true;
       ret.name = function_search;
-      for (unsigned j = 0; j < domain_.funcs[i]->params.size(); j++) {
+      for (unsigned j = 0; j < domain_->funcs[i]->params.size(); j++) {
         plansys2::Param param;
-        param.name = "?" + domain_.types[domain_.funcs[i]->params[j]]->getName() +
+        param.name = "?" + domain_->types[domain_->funcs[i]->params[j]]->getName() +
           std::to_string(j);
-        param.type = domain_.types[domain_.funcs[i]->params[j]]->name;
-        domain_.types[domain_.funcs[i]->params[j]]->getSubTypesNames(param.subTypes);
+        param.type = domain_->types[domain_->funcs[i]->params[j]]->name;
+        domain_->types[domain_->funcs[i]->params[j]]->getSubTypesNames(param.subTypes);
         ret.parameters.push_back(param);
       }
     }
@@ -140,17 +144,17 @@ std::vector<std::string>
 DomainExpert::getActions()
 {
   std::vector<std::string> ret;
-  for (unsigned i = 0; i < domain_.actions.size(); i++) {
-    bool is_action = dynamic_cast<parser::pddl::TemporalAction *>(domain_.actions[i]) == nullptr;
-    parser::pddl::Action * action_obj = dynamic_cast<parser::pddl::Action *>(domain_.actions[i]);
+  for (unsigned i = 0; i < domain_->actions.size(); i++) {
+    bool is_action = dynamic_cast<parser::pddl::TemporalAction *>(domain_->actions[i]) == nullptr;
+    parser::pddl::Action * action_obj = dynamic_cast<parser::pddl::Action *>(domain_->actions[i]);
     if (is_action) {
-      ret.push_back(domain_.actions[i]->name);
+      ret.push_back(domain_->actions[i]->name);
     }
   }
   return ret;
 }
 
-boost::optional<plansys2::Action>
+std::optional<plansys2::Action>
 DomainExpert::getAction(const std::string & action)
 {
   std::string action_search = action;
@@ -162,9 +166,9 @@ DomainExpert::getAction(const std::string & action)
   bool found = false;
   unsigned i = 0;
 
-  while (i < domain_.actions.size() && !found) {
-    bool is_action = dynamic_cast<parser::pddl::TemporalAction *>(domain_.actions[i]) == nullptr;
-    parser::pddl::Action * action_obj = dynamic_cast<parser::pddl::Action *>(domain_.actions[i]);
+  while (i < domain_->actions.size() && !found) {
+    bool is_action = dynamic_cast<parser::pddl::TemporalAction *>(domain_->actions[i]) == nullptr;
+    parser::pddl::Action * action_obj = dynamic_cast<parser::pddl::Action *>(domain_->actions[i]);
 
     if (is_action && action_obj->name == action_search) {
       found = true;
@@ -174,8 +178,8 @@ DomainExpert::getAction(const std::string & action)
       for (unsigned j = 0; j < action_obj->params.size(); j++) {
         Param param;
         param.name = "?" + std::to_string(j);
-        param.type = domain_.types[action_obj->params[j]]->name;
-        domain_.types[action_obj->params[j]]->getSubTypesNames(param.subTypes);
+        param.type = domain_->types[action_obj->params[j]]->name;
+        domain_->types[action_obj->params[j]]->getSubTypesNames(param.subTypes);
         ret.parameters.push_back(param);
       }
 
@@ -184,7 +188,7 @@ DomainExpert::getAction(const std::string & action)
         std::stringstream pre_stream;
         action_obj->pre->PDDLPrint(
           pre_stream, 0,
-          parser::pddl::TokenStruct<std::string>(), domain_);
+          parser::pddl::TokenStruct<std::string>(), *domain_);
 
         ret.preconditions.fromString(pre_stream.str());
       }
@@ -194,7 +198,7 @@ DomainExpert::getAction(const std::string & action)
         std::stringstream effects_stream;
         action_obj->eff->PDDLPrint(
           effects_stream, 0,
-          parser::pddl::TokenStruct<std::string>(), domain_);
+          parser::pddl::TokenStruct<std::string>(), *domain_);
 
         ret.effects.fromString(effects_stream.str());
       }
@@ -213,19 +217,19 @@ std::vector<std::string>
 DomainExpert::getDurativeActions()
 {
   std::vector<std::string> ret;
-  for (unsigned i = 0; i < domain_.actions.size(); i++) {
+  for (unsigned i = 0; i < domain_->actions.size(); i++) {
     bool is_durative_action =
-      dynamic_cast<parser::pddl::TemporalAction *>(domain_.actions[i]) != nullptr;
+      dynamic_cast<parser::pddl::TemporalAction *>(domain_->actions[i]) != nullptr;
     parser::pddl::TemporalAction * action_obj =
-      dynamic_cast<parser::pddl::TemporalAction *>(domain_.actions[i]);
+      dynamic_cast<parser::pddl::TemporalAction *>(domain_->actions[i]);
     if (is_durative_action) {
-      ret.push_back(domain_.actions[i]->name);
+      ret.push_back(domain_->actions[i]->name);
     }
   }
   return ret;
 }
 
-boost::optional<plansys2::DurativeAction>
+std::optional<plansys2::DurativeAction>
 DomainExpert::getDurativeAction(const std::string & action)
 {
   std::string action_search = action;
@@ -237,11 +241,11 @@ DomainExpert::getDurativeAction(const std::string & action)
   bool found = false;
   unsigned i = 0;
 
-  while (i < domain_.actions.size() && !found) {
+  while (i < domain_->actions.size() && !found) {
     bool is_durative_action =
-      dynamic_cast<parser::pddl::TemporalAction *>(domain_.actions[i]) != nullptr;
+      dynamic_cast<parser::pddl::TemporalAction *>(domain_->actions[i]) != nullptr;
     parser::pddl::TemporalAction * action_obj =
-      dynamic_cast<parser::pddl::TemporalAction *>(domain_.actions[i]);
+      dynamic_cast<parser::pddl::TemporalAction *>(domain_->actions[i]);
 
     if (is_durative_action && action_obj->name == action_search) {
       found = true;
@@ -251,8 +255,8 @@ DomainExpert::getDurativeAction(const std::string & action)
       for (unsigned j = 0; j < action_obj->params.size(); j++) {
         Param param;
         param.name = "?" + std::to_string(j);
-        param.type = domain_.types[action_obj->params[j]]->name;
-        domain_.types[action_obj->params[j]]->getSubTypesNames(param.subTypes);
+        param.type = domain_->types[action_obj->params[j]]->name;
+        domain_->types[action_obj->params[j]]->getSubTypesNames(param.subTypes);
         ret.parameters.push_back(param);
       }
 
@@ -262,7 +266,7 @@ DomainExpert::getDurativeAction(const std::string & action)
           std::stringstream pre_stream;
           action_obj->pre->PDDLPrint(
             pre_stream, 0,
-            parser::pddl::TokenStruct<std::string>(), domain_);
+            parser::pddl::TokenStruct<std::string>(), *domain_);
           ret.at_start_requirements.fromString(pre_stream.str());
         }
       }
@@ -272,7 +276,7 @@ DomainExpert::getDurativeAction(const std::string & action)
         std::stringstream pre_stream;
         action_obj->pre_o->PDDLPrint(
           pre_stream, 0,
-          parser::pddl::TokenStruct<std::string>(), domain_);
+          parser::pddl::TokenStruct<std::string>(), *domain_);
 
         ret.over_all_requirements.fromString(pre_stream.str());
       }
@@ -282,7 +286,7 @@ DomainExpert::getDurativeAction(const std::string & action)
         std::stringstream pre_stream;
         action_obj->pre_e->PDDLPrint(
           pre_stream, 0,
-          parser::pddl::TokenStruct<std::string>(), domain_);
+          parser::pddl::TokenStruct<std::string>(), *domain_);
 
         ret.at_end_requirements.fromString(pre_stream.str());
       }
@@ -292,7 +296,7 @@ DomainExpert::getDurativeAction(const std::string & action)
         std::stringstream effects_stream;
         action_obj->eff->PDDLPrint(
           effects_stream, 0,
-          parser::pddl::TokenStruct<std::string>(), domain_);
+          parser::pddl::TokenStruct<std::string>(), *domain_);
 
         ret.at_start_effects.fromString(effects_stream.str());
       }
@@ -302,7 +306,7 @@ DomainExpert::getDurativeAction(const std::string & action)
         std::stringstream effects_stream;
         action_obj->eff_e->PDDLPrint(
           effects_stream, 0,
-          parser::pddl::TokenStruct<std::string>(), domain_);
+          parser::pddl::TokenStruct<std::string>(), *domain_);
 
         ret.at_end_effects.fromString(effects_stream.str());
       }
@@ -320,9 +324,7 @@ DomainExpert::getDurativeAction(const std::string & action)
 std::string
 DomainExpert::getDomain()
 {
-  std::ostringstream stream;
-  stream << domain_;
-  return stream.str();
+  return domains_.get_joint_domain();
 }
 
 }  // namespace plansys2

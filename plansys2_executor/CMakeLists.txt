@@ -4,8 +4,6 @@ cmake_minimum_required(VERSION 3.5)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-set(CMAKE_BUILD_TYPE Debug)
-
 find_package(Threads REQUIRED)
 
 find_package(ament_cmake REQUIRED)
@@ -21,8 +19,7 @@ find_package(plansys2_domain_expert REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
 find_package(plansys2_planner REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
-
-find_package(Boost 1.65.1 REQUIRED)
+find_package(std_msgs REQUIRED)
 
 find_package(ZMQ)
 if(ZMQ_FOUND)
@@ -31,6 +28,8 @@ if(ZMQ_FOUND)
 else()
   message(WARNING "ZeroMQ NOT found. Not including PublisherZMQ.")
 endif()
+
+set(CMAKE_CXX_STANDARD 17)
 
 set(dependencies
     rclcpp
@@ -45,6 +44,7 @@ set(dependencies
     plansys2_problem_expert
     plansys2_planner
     behaviortree_cpp_v3
+    std_msgs
 )
 
 include_directories(include ${ZMQ_INCLUDE_DIRS})
@@ -95,8 +95,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
-  find_package(test_msgs REQUIRED)
-  find_package(geometry_msgs REQUIRED)
+
   add_subdirectory(test)
 endif()
 

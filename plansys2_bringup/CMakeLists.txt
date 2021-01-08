@@ -12,6 +12,8 @@ find_package(plansys2_planner REQUIRED)
 find_package(plansys2_executor REQUIRED)
 find_package(plansys2_lifecycle_manager REQUIRED)
 
+set(CMAKE_CXX_STANDARD 17)
+
 set(dependencies
     rclcpp
     plansys2_domain_expert
@@ -25,6 +27,7 @@ add_executable(plansys2_node
   src/plansys2_node.cpp
 )
 ament_target_dependencies(plansys2_node ${dependencies})
+target_compile_definitions(plansys2_node PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
