@@ -47,9 +47,9 @@ ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
     "specialized_arguments", specialized_arguments_, std::vector<std::string>({}));
 
   action_hub_pub_ = create_publisher<plansys2_msgs::msg::ActionExecution>(
-    "/actions_hub", rclcpp::QoS(100).reliable());
+    "actions_hub", rclcpp::QoS(100).reliable());
   action_hub_sub_ = create_subscription<plansys2_msgs::msg::ActionExecution>(
-    "/actions_hub", rclcpp::QoS(100).reliable(),
+    "actions_hub", rclcpp::QoS(100).reliable(),
     std::bind(&ActionExecutorClient::action_hub_callback, this, _1));
 
   action_hub_pub_->on_activate();
