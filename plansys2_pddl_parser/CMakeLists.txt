@@ -5,13 +5,8 @@ cmake_minimum_required(VERSION 3.5)
 find_package(Threads REQUIRED)
 
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
-
-set(dependencies
-    rclcpp
-)
 
 include_directories(include)
 
