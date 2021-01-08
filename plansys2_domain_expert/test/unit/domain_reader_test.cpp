@@ -133,13 +133,13 @@ TEST(domain_reader, types)
   std::string req1_estr = " type1 type2";
 
   std::string req2_str = "(:types\ntype1 type2\n)";
-  std::string req2_estr = "\ntype1 type2\n";
+  std::string req2_estr = "type1 type2";
 
   std::string req3_str = "(:types\ntype1\ntype2\n)";
-  std::string req3_estr = "\ntype1\ntype2\n";
+  std::string req3_estr = "type1\ntype2";
 
   std::string req4_str = "(:types\ntype1\ntype2\n) ) ";
-  std::string req4_estr = "\ntype1\ntype2\n";
+  std::string req4_estr = "type1\ntype2";
 
   std::string req5_str = "(:types\ntype1\ntype2\n";
   std::string req5_estr = "";
@@ -162,7 +162,7 @@ TEST(domain_reader, predicates)
   DomainReaderTest dr;
 
   std::string req1_str = "(:predicates\n(robot_at leia bedroom) (person_at paco kitchen)\n)";
-  std::string req1_estr = "\n(robot_at leia bedroom) (person_at paco kitchen)\n";
+  std::string req1_estr = "(robot_at leia bedroom) (person_at paco kitchen)";
 
   std::string req2_str = "(:predicates\n(robot_at leia bedroom) (person_at paco kitchen\n";
   std::string req2_estr = "";
@@ -181,7 +181,7 @@ TEST(domain_reader, functions)
 
   std::string req1_str =
     "(:functions\n(=(robot_at leia bedroom) 10)\n(=(person_at paco kitchen) 30)\n)";
-  std::string req1_estr = "\n(=(robot_at leia bedroom) 10)\n(=(person_at paco kitchen) 30)\n";
+  std::string req1_estr = "(=(robot_at leia bedroom) 10)\n(=(person_at paco kitchen) 30)";
 
   std::string req2_str =
     "(:functions\n(=(robot_at leia bedroom) 10)\n(=(person_at paco kitchen) 30\n)";

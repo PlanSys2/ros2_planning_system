@@ -15,6 +15,7 @@
 #include "plansys2_domain_expert/DomainReader.hpp"
 
 #include <string>
+#include <sstream>
 #include <vector>
 #include <algorithm>
 #include <iostream>
@@ -45,6 +46,8 @@ DomainReader::add_domain(const std::string & domain)
     domain.begin(), domain.end(), lc_domain.begin(),
     [](unsigned char c) {return std::tolower(c);});
 
+  lc_domain = remove_comments(lc_domain);
+
   new_domain.requirements = get_requirements(lc_domain);
   new_domain.types = get_types(lc_domain);
   new_domain.predicates = get_predicates(lc_domain);
@@ -73,7 +76,9 @@ DomainReader::get_joint_domain() const
 
   ret += "(:types\n";
   for (auto & domain : domains_) {
-    ret += domain.types + "\n";
+    if (!domain.types.empty()) {
+      ret += domain.types + "\n";
+    }
   }
   ret += ")\n\n";
 
@@ -90,13 +95,17 @@ DomainReader::get_joint_domain() const
 
   ret += "(:functions\n";
   for (auto & domain : domains_) {
-    ret += domain.functions + "\n";
+    if (!domain.functions.empty()) {
+      ret += domain.functions + "\n";
+    }
   }
   ret += ")\n\n";
 
   for (auto & domain : domains_) {
     for (auto & action : domain.actions) {
-      ret += action + "\n";
+      if (!action.empty()) {
+        ret += action + "\n";
+      }
     }
   }
 
@@ -170,7 +179,8 @@ DomainReader::get_types(const std::string & domain)
   auto end_pos = get_end_block(domain, init_pos);
 
   if (end_pos >= 0) {
-    return domain.substr(init_pos, end_pos - init_pos);
+    std::string ret = substr_without_empty_lines(domain, init_pos, end_pos);
+    return ret;
   } else {
     return "";
   }
@@ -190,7 +200,8 @@ DomainReader::get_predicates(const std::string & domain)
   auto end_pos = get_end_block(domain, init_pos);
 
   if (end_pos >= 0) {
-    return domain.substr(init_pos, end_pos - init_pos);
+    std::string ret = substr_without_empty_lines(domain, init_pos, end_pos);
+    return ret;
   } else {
     return "";
   }
@@ -210,7 +221,8 @@ DomainReader::get_functions(const std::string & domain)
   auto end_pos = get_end_block(domain, init_pos);
 
   if (end_pos >= 0) {
-    return domain.substr(init_pos, end_pos - init_pos);
+    std::string ret = substr_without_empty_lines(domain, init_pos, end_pos);
+    return ret;
   } else {
     return "";
   }
@@ -240,12 +252,14 @@ DomainReader::get_actions(const std::string & domain)
         break;
       }
 
-      ret.push_back("(" + ldomain.substr(pos, end_pos - pos + 1));
+      std::string lines = substr_without_empty_lines(ldomain, pos, end_pos + 1);
+      ret.push_back("(" + lines);
       ldomain = ldomain.substr(end_pos + 1);
     }
   } while (!ldomain.empty() && pos != std::string::npos);
 
   return ret;
 }
+
 
 }  // namespace plansys2
