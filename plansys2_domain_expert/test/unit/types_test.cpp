@@ -118,18 +118,15 @@ TEST(domain_types, predicate_tree_from_string)
 {
   std::string expresion = std::string("(and (robot_at r2d2 bedroom)(not ") +
     std::string("(robot_at r2d2 kitchen))(or (person_at paco bedroom)(person_at paco kitchen)))");
-  std::string construct = std::string("(and (predicate)(not ") +
-    std::string("(predicate))(or (predicate)(predicate)))");
 
   parser::pddl::tree::PredicateTree tree;
-  tree.fromString(expresion, construct);
+  tree.fromString(expresion);
 
   ASSERT_EQ(tree.toString(), expresion);
 
   std::string expresion2 = std::string("(and (person_at ?0 ?2)(not (person_at ?0 ?1)))");
-  std::string construct2 = std::string("(and (predicate)(not (predicate)))");
   parser::pddl::tree::PredicateTree tree2;
-  tree2.fromString(expresion2, construct2);
+  tree2.fromString(expresion2);
 
   ASSERT_EQ(tree2.toString(), expresion2);
 }

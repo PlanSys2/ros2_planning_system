@@ -175,8 +175,7 @@ TEST(executiotest_noden_tree, bt_builder_factory)
   ASSERT_TRUE(
     problem_client->setGoal(
       parser::pddl::tree::Goal(
-        "(and (car_assembled car_1) (car_assembled car_2) (car_assembled car_3))",
-        "(and (predicate) (predicate) (predicate))")));
+        "(and (car_assembled car_1) (car_assembled car_2) (car_assembled car_3))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
@@ -322,8 +321,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
     problem_client->setGoal(
       parser::pddl::tree::Goal(
         std::string("(and (car_assembled car_1) (piece_at body_car_2 assembly_zone)") +
-        std::string("(piece_at body_car_3 assembly_zone))"),
-        std::string("(and (predicate) (predicate) (predicate))"))
+        std::string("(piece_at body_car_3 assembly_zone))"))
   ));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
@@ -452,8 +450,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
   ASSERT_TRUE(
     problem_client->setGoal(
       parser::pddl::tree::Goal(
-        std::string("(and (patrolled wp1) (patrolled wp2) (patrolled wp3) (patrolled wp4))"),
-        std::string("(and (predicate) (predicate) (predicate) (predicate))"))));
+        std::string("(and (patrolled wp1) (patrolled wp2) (patrolled wp3) (patrolled wp4))"))));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);

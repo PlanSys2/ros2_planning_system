@@ -135,12 +135,10 @@ public:
     Terminal::process_set_function(command, os);
   }
 
-  void process_set_goal(
-    std::vector<std::string> & command, std::ostringstream & os,
-    std::string const & construct)
+  void process_set_goal(std::vector<std::string> & command, std::ostringstream & os)
   {
     method_executed_["process_set_goal"] = true;
-    Terminal::process_set_goal(command, os, construct);
+    Terminal::process_set_goal(command, os);
   }
 
   void process_set(std::vector<std::string> & command, std::ostringstream & os)

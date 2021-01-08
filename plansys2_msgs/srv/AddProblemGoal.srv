@@ -1,5 +1,4 @@
 string goal
-string construct
 ---
 bool success
 string error_info
