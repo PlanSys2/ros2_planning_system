@@ -128,7 +128,7 @@ std::tuple<bool, double> check(
             return std::make_tuple(true, std::get<1>(left) * std::get<1>(right));
             break;
           case parser::pddl::tree::ARITH_DIV:
-            if (std::get<1>(right) > 1e-5) {
+            if (std::abs(std::get<1>(right)) > 1e-5) {
               return std::make_tuple(true, std::get<1>(left) / std::get<1>(right));
             } else {
               // Division by zero not allowed.
@@ -167,7 +167,12 @@ std::tuple<bool, double> check(
             return std::make_tuple(true, std::get<1>(left) * std::get<1>(right));
             break;
           case parser::pddl::tree::SCALE_DOWN:
-            return std::make_tuple(true, std::get<1>(left) / std::get<1>(right));
+            if (std::abs(std::get<1>(right)) > 1e-5) {
+              return std::make_tuple(true, std::get<1>(left) / std::get<1>(right));
+            } else {
+              // Division by zero not allowed.
+              return std::make_tuple(false, 0);
+            }
             break;
           default:
             break;
@@ -306,7 +311,7 @@ std::tuple<bool, bool, double> apply(
             return std::make_tuple(true, true, std::get<2>(left) * std::get<2>(right));
             break;
           case parser::pddl::tree::ARITH_DIV:
-            if (std::get<2>(right) > 1e-5) {
+            if (std::abs(std::get<2>(right) > 1e-5)) {
               return std::make_tuple(true, true, std::get<2>(left) / std::get<2>(right));
             } else {
               // Division by zero not allowed.
@@ -351,7 +356,10 @@ std::tuple<bool, bool, double> apply(
             result = std::get<2>(left) * std::get<2>(right);
             break;
           case parser::pddl::tree::SCALE_DOWN:
-            result = std::get<2>(left) / std::get<2>(right);
+            // Division by zero not allowed.
+            if (std::abs(std::get<2>(right)) > 1e-5) {
+              result = std::get<2>(left) / std::get<2>(right);
+            }
             break;
           default:
             valid_modifier = false;
