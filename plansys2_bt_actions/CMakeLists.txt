@@ -15,8 +15,6 @@ find_package(lifecycle_msgs REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_CXX_STANDARD 17)
-
 set(dependencies
     rclcpp
     rclcpp_action
