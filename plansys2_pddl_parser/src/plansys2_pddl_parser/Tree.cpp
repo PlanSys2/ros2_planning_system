@@ -97,11 +97,35 @@ NodeType getNodeType(const std::string & expr, NodeType default_node_type)
     }
   }
 
-  std::regex num_regexp("[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)");
-  if (std::regex_search(expr, match, num_regexp)) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      node_type = NUMBER;
+  std::string wexpr = expr;
+  while (wexpr.size() > 0) {
+    std::regex num_regexp("[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)");
+
+    if (std::regex_search(wexpr, match, num_regexp)) {
+      bool valid_number = true;
+
+      // Ignore integer characters within a parameter or construct name.
+      // A valid number can only be preceded by a space or a left parenthesis.
+      if (match.position() > 0) {
+        valid_number = false;
+        if (isspace(wexpr.at(match.position() - 1))) {
+          valid_number = true;
+        } else if (wexpr.at(match.position() - 1) == '(') {
+          valid_number = true;
+        }
+      }
+
+      if (valid_number) {
+        if (static_cast<int>(match.position()) < first) {
+          first = static_cast<int>(match.position());
+          node_type = NUMBER;
+        }
+        break;
+      } else {
+        wexpr.erase(wexpr.begin(), wexpr.begin() + match.position() + match.length());
+      }
+    } else {
+      break;
     }
   }
 
@@ -385,97 +409,66 @@ std::shared_ptr<TreeNode> get_tree_node(const std::string & expr, NodeType paren
   switch (node_type) {
     case AND: {
         std::shared_ptr<parser::pddl::tree::AndNode> pn_and = std::make_shared<parser::pddl::tree::AndNode>();
-
         std::vector<std::string> subexprs = getSubExpr(wexpr);
-
         for (unsigned i = 0; i < subexprs.size(); ++i) {
           pn_and->ops.push_back(get_tree_node(subexprs[i], AND));
         }
-
         return pn_and;
       }
-
     case OR: {
         std::shared_ptr<parser::pddl::tree::OrNode> pn_or = std::make_shared<parser::pddl::tree::OrNode>();
-
         std::vector<std::string> subexprs = getSubExpr(wexpr);
-
         for (unsigned i = 0; i < subexprs.size(); ++i) {
           pn_or->ops.push_back(get_tree_node(subexprs[i], OR));
         }
-
         return pn_or;
       }
-
     case NOT: {
         std::shared_ptr<parser::pddl::tree::NotNode> pn_not = std::make_shared<parser::pddl::tree::NotNode>();
-
         std::vector<std::string> subexprs = getSubExpr(wexpr);
-
         pn_not->op = get_tree_node(subexprs[0], NOT);
-
         return pn_not;
       }
-
     case PREDICATE: {
         std::shared_ptr<parser::pddl::tree::PredicateNode> pred =
           std::make_shared<parser::pddl::tree::PredicateNode>();
-
         pred->predicate_.name = getPredicateName(wexpr);
         pred->predicate_.parameters = getPredicateParams(wexpr);
-
         return pred;
       }
-
     case FUNCTION: {
         std::shared_ptr<parser::pddl::tree::FunctionNode> func =
           std::make_shared<parser::pddl::tree::FunctionNode>();
-
         func->function_.name = getFunctionName(wexpr);
         func->function_.parameters = getFunctionParams(wexpr);
-
         return func;
     }
-
     case EXPRESSION: {
         std::shared_ptr<parser::pddl::tree::ExpressionNode> expression =
           std::make_shared<parser::pddl::tree::ExpressionNode>();
-
         expression->expr_type = getExprType(wexpr);
-
         std::vector<std::string> subexprs = getSubExpr(wexpr);
-
         for (unsigned i = 0; i < subexprs.size(); ++i) {
           expression->ops.push_back(get_tree_node(subexprs[i], EXPRESSION));
         }
-
         return expression;
     }
-
     case FUNCTION_MODIFIER: {
         std::shared_ptr<parser::pddl::tree::FunctionModifierNode> fun_mod =
           std::make_shared<parser::pddl::tree::FunctionModifierNode>();
-
         fun_mod->modifier_type = getFunModType(wexpr);
-
         std::vector<std::string> subexprs = getSubExpr(wexpr);
-
         for (unsigned i = 0; i < subexprs.size(); ++i) {
           fun_mod->ops.push_back(get_tree_node(subexprs[i], FUNCTION_MODIFIER));
         }
-
         return fun_mod;
     }
-
     case NUMBER: {
         std::shared_ptr<parser::pddl::tree::NumberNode> number_node =
           std::make_shared<parser::pddl::tree::NumberNode>();
-
         number_node->value_ = std::stod(wexpr);
-
         return number_node;
     }
-
     // LCOV_EXCL_START
     default:
       std::cerr << "get_tree_node: Error parsing expresion [" << wexpr << "]" << std::endl;
