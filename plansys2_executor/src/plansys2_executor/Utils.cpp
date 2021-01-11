@@ -413,9 +413,6 @@ std::shared_ptr<parser::pddl::tree::DurativeAction> get_action_from_string(
     auto at_start_req = action.value().preconditions.toString();
     auto at_end_eff = action.value().effects.toString();
 
-    auto at_start_req_construct = action.value().preconditions.construct();
-    auto at_end_eff_construct = action.value().effects.construct();
-
     for (size_t i = 0; i < action_output->parameters.size(); i++) {
       std::string pattern = "?" + std::to_string(i);
       size_t pos;
@@ -427,11 +424,11 @@ std::shared_ptr<parser::pddl::tree::DurativeAction> get_action_from_string(
       }
     }
 
-    action_output->at_start_requirements.fromString(at_start_req, at_start_req_construct);
-    action_output->over_all_requirements.fromString("", "");
-    action_output->at_end_requirements.fromString("", "");
-    action_output->at_start_effects.fromString("", "");
-    action_output->at_end_effects.fromString(at_end_eff, at_end_eff_construct);
+    action_output->at_start_requirements.fromString(at_start_req);
+    action_output->over_all_requirements.fromString("");
+    action_output->at_end_requirements.fromString("");
+    action_output->at_start_effects.fromString("");
+    action_output->at_end_effects.fromString(at_end_eff);
 
     return action_output;
   }
@@ -442,12 +439,6 @@ std::shared_ptr<parser::pddl::tree::DurativeAction> get_action_from_string(
     auto at_end_req = durative_action.value().at_end_requirements.toString();
     auto at_start_eff = durative_action.value().at_start_effects.toString();
     auto at_end_eff = durative_action.value().at_end_effects.toString();
-
-    auto at_start_req_construct = durative_action.value().at_start_requirements.construct();
-    auto over_all_req_construct = durative_action.value().over_all_requirements.construct();
-    auto at_end_req_construct = durative_action.value().at_end_requirements.construct();
-    auto at_start_eff_construct = durative_action.value().at_start_effects.construct();
-    auto at_end_eff_construct = durative_action.value().at_end_effects.construct();
 
     for (size_t i = 0; i < action_output->parameters.size(); i++) {
       std::string pattern = "?" + std::to_string(i);
@@ -469,11 +460,11 @@ std::shared_ptr<parser::pddl::tree::DurativeAction> get_action_from_string(
       }
     }
 
-    action_output->at_start_requirements.fromString(at_start_req, at_start_req_construct);
-    action_output->over_all_requirements.fromString(over_all_req, over_all_req_construct);
-    action_output->at_end_requirements.fromString(at_end_req, at_end_req_construct);
-    action_output->at_start_effects.fromString(at_start_eff, at_start_eff_construct);
-    action_output->at_end_effects.fromString(at_end_eff, at_end_eff_construct);
+    action_output->at_start_requirements.fromString(at_start_req);
+    action_output->over_all_requirements.fromString(over_all_req);
+    action_output->at_end_requirements.fromString(at_end_req);
+    action_output->at_start_effects.fromString(at_start_eff);
+    action_output->at_end_effects.fromString(at_end_eff);
 
     return action_output;
   }

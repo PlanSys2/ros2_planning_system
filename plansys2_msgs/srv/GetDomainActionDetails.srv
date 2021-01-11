@@ -11,11 +11,5 @@ string at_end_requirements
 string at_start_effects
 string at_end_effects
 
-string at_start_requirements_construct
-string over_all_requirements_construct
-string at_end_requirements_construct
-string at_start_effects_construct
-string at_end_effects_construct
-
 bool success
 string error_info

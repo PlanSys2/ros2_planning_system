@@ -40,25 +40,6 @@
 namespace plansys2_terminal
 {
 
-int get_parenthesis(const std::string & expr, int start)
-{
-  int it = start + 1;
-  int balance = 1;
-
-  while (it < expr.size()) {
-    if (expr[it] == '(') {balance++;}
-    if (expr[it] == ')') {balance--;}
-
-    if (balance == 0) {
-      return it;
-    }
-
-    it++;
-  }
-
-  return it;
-}
-
 std::vector<std::string> tokenize(const std::string & text)
 {
   if (text.empty()) {
@@ -529,9 +510,7 @@ Terminal::process_set_function(std::vector<std::string> & command, std::ostrings
 }
 
 void
-Terminal::process_set_goal(
-  std::vector<std::string> & command, std::ostringstream & os,
-  std::string const & construct)
+Terminal::process_set_goal(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
     std::string total_expr;
@@ -539,7 +518,7 @@ Terminal::process_set_goal(
       total_expr += " " + token;
     }
 
-    parser::pddl::tree::Goal goal(total_expr, construct);
+    parser::pddl::tree::Goal goal(total_expr);
 
     if (goal.root_ != nullptr) {
       if (!problem_client_->setGoal(goal)) {
@@ -555,9 +534,7 @@ Terminal::process_set_goal(
 }
 
 void
-Terminal::process_set(
-  std::vector<std::string> & command, std::ostringstream & os,
-  std::string const & construct)
+Terminal::process_set(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
     if (command[0] == "instance") {
@@ -571,7 +548,7 @@ Terminal::process_set(
       process_set_function(command, os);
     } else if (command[0] == "goal") {
       pop_front(command);
-      process_set_goal(command, os, construct);
+      process_set_goal(command, os);
     } else {
       os << "\tUsage: \n\t\tset [instance|predicate|function|goal]..." <<
         std::endl;
@@ -763,29 +740,7 @@ Terminal::process_run(std::vector<std::string> & command, std::ostringstream & o
 void
 Terminal::process_command(std::string & command, std::ostringstream & os)
 {
-  std::string wexpr(command);
-
-  std::string cmd;
-  std::string expr;
-  std::string construct;
-
-  int first = wexpr.find("(");
-  if (first != std::string::npos) {
-    int last = get_parenthesis(wexpr, first);
-    cmd = wexpr.substr(0, last + 1);
-    expr = wexpr.substr(first, last - first + 1);
-    wexpr.erase(wexpr.begin(), wexpr.begin() + last + 1);
-  } else {
-    cmd = command;
-  }
-
-  first = wexpr.find("(");
-  if (first != std::string::npos) {
-    int last = get_parenthesis(wexpr, first);
-    construct = wexpr.substr(first, last - first + 1);
-  }
-
-  std::vector<std::string> tokens = tokenize(cmd);
+  std::vector<std::string> tokens = tokenize(command);
 
   if (tokens.empty()) {
     return;
@@ -796,7 +751,7 @@ Terminal::process_command(std::string & command, std::ostringstream & os)
     process_get(tokens, os);
   } else if (tokens[0] == "set") {
     pop_front(tokens);
-    process_set(tokens, os, construct);
+    process_set(tokens, os);
   } else if (tokens[0] == "remove") {
     pop_front(tokens);
     process_remove(tokens, os);

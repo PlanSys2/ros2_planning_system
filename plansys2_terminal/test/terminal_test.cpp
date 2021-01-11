@@ -135,12 +135,10 @@ public:
     Terminal::process_set_function(command, os);
   }
 
-  void process_set_goal(
-    std::vector<std::string> & command, std::ostringstream & os,
-    std::string const & construct)
+  void process_set_goal(std::vector<std::string> & command, std::ostringstream & os)
   {
     method_executed_["process_set_goal"] = true;
-    Terminal::process_set_goal(command, os, construct);
+    Terminal::process_set_goal(command, os);
   }
 
   void process_set(std::vector<std::string> & command, std::ostringstream & os)
@@ -356,7 +354,7 @@ TEST_F(TerminalTestCase, load_popf_plugin)
 
   {
     std::ostringstream os;
-    std::string command("set goal (and (robot_at leia bathroom)) (and (predicate))");
+    std::string command("set goal (and (robot_at leia bathroom))");
     terminal_node->process_command(command, os);
     ASSERT_TRUE(terminal_node->method_executed_["process_command"]);
     ASSERT_TRUE(terminal_node->method_executed_["process_set_goal"]);
@@ -372,7 +370,7 @@ TEST_F(TerminalTestCase, load_popf_plugin)
 
   {
     std::ostringstream os;
-    std::string command("set goal (and (robot_at leia entrance)) (and (predicate))");
+    std::string command("set goal (and (robot_at leia entrance))");
     terminal_node->process_command(command, os);
     ASSERT_TRUE(terminal_node->method_executed_["process_command"]);
     ASSERT_TRUE(terminal_node->method_executed_["process_set_goal"]);
@@ -469,7 +467,7 @@ TEST_F(TerminalTestCase, load_popf_plugin)
     }
     {
       std::ostringstream os;
-      std::string command = "set goal (and (robot_at leia kitchen)) (and (predicate))";
+      std::string command = "set goal (and (robot_at leia kitchen))";
       terminal_node->process_command(command, os);
     }
 

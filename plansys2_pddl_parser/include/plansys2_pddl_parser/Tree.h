@@ -19,6 +19,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <tuple>
 #include <memory>
 #include <iostream>
 
@@ -40,7 +41,7 @@ typedef enum {
     EXPRESSION,
     FUNCTION_MODIFIER,
     NUMBER,
-    UNKNOWN
+    UNKNOWN_NODE_TYPE
 } NodeType;
 
 // The type of expression
@@ -87,6 +88,13 @@ bool operator==(const Param & op1, const Param & op2);
  */
 std::string getReducedString(const std::string & expr);
 
+/// Returns NodeType corresponding to the string input
+/**
+ * \param[in] input The input string
+ * \return The NodeType
+ */
+NodeType getNodeType(const std::string & expr, NodeType def = UNKNOWN_NODE_TYPE);
+
 /// Returns ExprType corresponding to the string input
 /**
  * \param[in] input The input string
@@ -94,12 +102,30 @@ std::string getReducedString(const std::string & expr);
  */
 ExprType getExprType(const std::string & input);
 
+/// Returns ExprType and start position of an expression in a string
+/**
+ * \param[in] input The input string
+ * \return result <- tuple(ExprType, int)
+ *         result(0) The ExprType
+ *         result(1) The start position of the first occurrence
+ */
+std::tuple < ExprType, int > getExpr(const std::string & input);
+
 /// Returns FunModType corresponding to the string input
 /**
  * \param[in] input The input string
  * \return The FunModType
  */
 FunModType getFunModType(const std::string & input);
+
+/// Returns FunModType and start position of a function modifier in a string
+/**
+ * \param[in] input The input string
+ * \return result <- tuple(FunModType, int)
+ *         result(0) The FunModType
+ *         result(1) The start position of the first occurrence
+ */
+std::tuple < FunModType, int > getFunMod(const std::string & input);
 
 /// A PDDL Predicate
 /**
@@ -270,12 +296,6 @@ public:
    */
   virtual std::string toString() = 0;
 
-  /// Generates a construct string from this node
-  /**
-   * \return The string representing the node construct (and its children in cascade)
-   */
-  virtual std::string construct() = 0;
-
   /// This method will be recursivelly called to recollect the predicates in the tree.
   /**
    * \param[out] predicates Predicates in the node (and its children in cascade)
@@ -293,7 +313,7 @@ public:
  * \param[in] construct A string containg the associated PDDL constructs
  * \return A smart pointer to the node created
 */
-std::shared_ptr<TreeNode> get_tree_node(const std::string & expr, const std::string & construct);
+std::shared_ptr<TreeNode> get_tree_node(const std::string & expr, NodeType parent = UNKNOWN_NODE_TYPE);
 
 /// A node that contains a Predicate
 class PredicateNode : public TreeNode
@@ -310,15 +330,6 @@ public:
   std::string toString()
   {
     return predicate_.toString();
-  }
-
-  /// Generates the construct string
-  /**
-   * \return The construct string
-   */
-  std::string construct()
-  {
-    return "(predicate)";
   }
 
   /// Adds the containing predicate to the vector of predicates
@@ -350,15 +361,6 @@ public:
     return function_.toString();
   }
 
-  /// Generates the construct string
-  /**
-   * \return The construct string
-   */
-  std::string construct()
-  {
-    return "(function)";
-  }
-
   /// Required by the superclass, but nothing to do for this subclass
   /**
    * \param[out] predicates The vector of predicates
@@ -386,15 +388,6 @@ public:
   std::string toString()
   {
     return std::to_string(value_);
-  }
-
-  /// Generates the construct string
-  /**
-   * \return The construct string
-   */
-  std::string construct()
-  {
-    return std::string("(number)");
   }
 
   /// Required by the superclass, but nothing to do for this subclass
@@ -431,22 +424,6 @@ public:
     ret = "(and ";
     for (auto op : ops) {
       ret += op->toString();
-    }
-    ret += ")";
-
-    return ret;
-  }
-
-  /// Generates the construct string
-  /**
-   * \return The construct string
-   */
-  std::string construct()
-  {
-    std::string ret;
-    ret = "(and ";
-    for (auto op : ops) {
-      ret += op->construct();
     }
     ret += ")";
 
@@ -495,22 +472,6 @@ public:
     return ret;
   }
 
-  /// Generates the construct string
-  /**
-   * \return The construct string
-   */
-  std::string construct()
-  {
-    std::string ret;
-    ret = "(or ";
-    for (auto op : ops) {
-      ret += op->construct();
-    }
-    ret += ")";
-
-    return ret;
-  }
-
   /// This method calls recursivelly to the getPredicates method of its children.
   /**
    * \param[out] predicates The vector of predicates
@@ -546,20 +507,6 @@ public:
     std::string ret;
     ret = "(not ";
     ret += op->toString();
-    ret += ")";
-
-    return ret;
-  }
-
-  /// Generates the construct string
-  /**
-   * \return The construct string
-   */
-  std::string construct()
-  {
-    std::string ret;
-    ret = "(not ";
-    ret += op->construct();
     ret += ")";
 
     return ret;
@@ -628,22 +575,6 @@ public:
     return ret;
   }
 
-  /// Generates the construct string
-  /**
-   * \return The construct string
-   */
-  std::string construct()
-  {
-    std::string ret;
-    ret = "(expression ";
-    for (auto op : ops) {
-      ret += op->construct();
-    }
-    ret += ")";
-
-    return ret;
-  }
-
   /// Required by the superclass, but nothing to do for this subclass
   /**
    * \param[out] functions The vector of predicates
@@ -705,22 +636,6 @@ public:
     return ret;
   }
 
-  /// Generates the construct string
-  /**
-   * \return The construct string
-   */
-  std::string construct()
-  {
-    std::string ret;
-    ret = "(function_modifier ";
-    for (auto op : ops) {
-      ret += op->construct();
-    }
-    ret += ")";
-
-    return ret;
-  }
-
   /// Required by the superclass, but nothing to do for this subclass
   /**
    * \param[out] functions The vector of predicates with the child's ones
@@ -755,15 +670,6 @@ public:
     return std::string("");
   }
 
-  /// Required by the superclass, but nothing to do for this subclass
-  /**
-   * \return The construct string
-   */
-  std::string construct()
-  {
-    return std::string("");
-  }
-
   /// This method calls recursivelly to the getPredicates method of its children.
   /**
    * \param[out] predicates The vector of predicates
@@ -790,10 +696,10 @@ public:
   PredicateTree()
   : root_(nullptr) {}
 
-  explicit PredicateTree(const std::string & predicate, const std::string & type)
+  explicit PredicateTree(const std::string & predicate)
   : PredicateTree()
   {
-    fromString(predicate, type);
+    fromString(predicate);
   }
 
   ~PredicateTree()
@@ -833,30 +739,16 @@ public:
     }
   }
 
-  /// Generates the construct string
-  /**
-   * \return The construct string
-   */
-  std::string construct() const
-  {
-    if (root_ != nullptr) {
-      return root_->construct();
-    }
-    else {
-      return "";
-    }
-  }
-
   /// Init this PredicateTree from a string
   /**
    * \param[in] expr A string with a PDDL logical expression
    */
-  void fromString(const std::string & expr, const std::string & type_expr)
+  void fromString(const std::string & expr)
   {
     if (expr == "") {
       root_ = nullptr;
     } else {
-      root_ = get_tree_node(expr, type_expr);
+      root_ = get_tree_node(expr);
     }
   }
 

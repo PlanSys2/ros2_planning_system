@@ -312,13 +312,8 @@ DomainExpertClient::getAction(const std::string & action)
         ret.parameters.push_back(param);
       }
 
-      ret.preconditions.fromString(
-        future_result.get()->at_start_requirements,
-        future_result.get()->at_start_requirements_construct);
-
-      ret.effects.fromString(
-        future_result.get()->at_start_effects,
-        future_result.get()->at_start_effects_construct);
+      ret.preconditions.fromString(future_result.get()->at_start_requirements);
+      ret.effects.fromString(future_result.get()->at_start_effects);
 
       return ret;
     } else {
@@ -407,21 +402,11 @@ DomainExpertClient::getDurativeAction(const std::string & action)
         ret.parameters.push_back(param);
       }
 
-      ret.at_start_requirements.fromString(
-        future_result.get()->at_start_requirements,
-        future_result.get()->at_start_requirements_construct);
-      ret.over_all_requirements.fromString(
-        future_result.get()->over_all_requirements,
-        future_result.get()->over_all_requirements_construct);
-      ret.at_end_requirements.fromString(
-        future_result.get()->at_end_requirements,
-        future_result.get()->at_end_requirements_construct);
-      ret.at_start_effects.fromString(
-        future_result.get()->at_start_effects,
-        future_result.get()->at_start_effects_construct);
-      ret.at_end_effects.fromString(
-        future_result.get()->at_end_effects,
-        future_result.get()->at_end_effects_construct);
+      ret.at_start_requirements.fromString(future_result.get()->at_start_requirements);
+      ret.over_all_requirements.fromString(future_result.get()->over_all_requirements);
+      ret.at_end_requirements.fromString(future_result.get()->at_end_requirements);
+      ret.at_start_effects.fromString(future_result.get()->at_start_effects);
+      ret.at_end_effects.fromString(future_result.get()->at_end_effects);
 
       return ret;
     } else {

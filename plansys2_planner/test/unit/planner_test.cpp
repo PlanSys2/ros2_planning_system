@@ -106,8 +106,7 @@ TEST(planner_expert, generate_plan_good)
   ASSERT_TRUE(
     problem_client->setGoal(
       parser::pddl::tree::Goal(
-        "(and (robot_talk leia message1 francisco))",
-        "(and (predicate))")));
+        "(and (robot_talk leia message1 francisco))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);

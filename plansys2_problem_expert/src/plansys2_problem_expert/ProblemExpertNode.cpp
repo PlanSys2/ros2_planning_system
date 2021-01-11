@@ -278,7 +278,7 @@ ProblemExpertNode::add_problem_goal_service_callback(
   } else {
     if (request->goal != "(and )") {
       parser::pddl::tree::Goal goal;
-      goal.fromString(request->goal, request->construct);
+      goal.fromString(request->goal);
       response->success = problem_expert_->setGoal(goal);
 
       if (response->success) {
@@ -393,7 +393,6 @@ ProblemExpertNode::get_problem_goal_service_callback(
   } else {
     response->success = true;
     response->goal = problem_expert_->getGoal().toString();
-    response->construct = problem_expert_->getGoal().construct();
   }
 }
 
