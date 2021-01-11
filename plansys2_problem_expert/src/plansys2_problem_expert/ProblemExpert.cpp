@@ -29,7 +29,7 @@ ProblemExpert::ProblemExpert(std::shared_ptr<DomainExpert> & domain_expert)
 }
 
 bool
-ProblemExpert::addInstance(const Instance & instance)
+ProblemExpert::addInstance(const parser::pddl::tree::Instance & instance)
 {
   if (!isValidType(instance.type)) {
     return false;
@@ -41,7 +41,7 @@ ProblemExpert::addInstance(const Instance & instance)
   }
 }
 
-std::vector<Instance>
+std::vector<parser::pddl::tree::Instance>
 ProblemExpert::getInstances()
 {
   return instances_;
@@ -68,10 +68,10 @@ ProblemExpert::removeInstance(const std::string & name)
   return found;
 }
 
-std::optional<Instance>
+std::optional<parser::pddl::tree::Instance>
 ProblemExpert::getInstance(const std::string & instance_name)
 {
-  Instance ret;
+  parser::pddl::tree::Instance ret;
 
   bool found = false;
   int i = 0;
@@ -90,14 +90,14 @@ ProblemExpert::getInstance(const std::string & instance_name)
   }
 }
 
-std::vector<Predicate>
+std::vector<parser::pddl::tree::Predicate>
 ProblemExpert::getPredicates()
 {
   return predicates_;
 }
 
 bool
-ProblemExpert::addPredicate(const Predicate & predicate)
+ProblemExpert::addPredicate(const parser::pddl::tree::Predicate & predicate)
 {
   if (!existPredicate(predicate)) {
     if (isValidPredicate(predicate)) {
@@ -112,7 +112,7 @@ ProblemExpert::addPredicate(const Predicate & predicate)
 }
 
 bool
-ProblemExpert::removePredicate(const Predicate & predicate)
+ProblemExpert::removePredicate(const parser::pddl::tree::Predicate & predicate)
 {
   bool found = false;
   int i = 0;
@@ -131,17 +131,28 @@ ProblemExpert::removePredicate(const Predicate & predicate)
   return true;
 }
 
-std::optional<Predicate>
-ProblemExpert::getPredicate(const std::string & predicate_name)
+std::optional<parser::pddl::tree::Predicate>
+ProblemExpert::getPredicate(const std::string & expr)
 {
-  Predicate ret;
+  parser::pddl::tree::Predicate ret;
+  parser::pddl::tree::Predicate pred(expr);
 
   bool found = false;
-  int i = 0;
+  size_t i = 0;
   while (i < predicates_.size() && !found) {
-    if (predicates_[i].name == predicate_name) {
-      found = true;
-      ret = predicates_[i];
+    if (predicates_[i].name == pred.name) {
+      if (predicates_[i].parameters.size() == pred.parameters.size()) {
+        found = true;
+        for (size_t j = 0; j < predicates_[i].parameters.size(); ++j) {
+          if (predicates_[i].parameters[j].name != pred.parameters[j].name) {
+            found = false;
+            break;
+          }
+        }
+        if (found) {
+          ret = predicates_[i];
+        }
+      }
     }
     i++;
   }
@@ -153,14 +164,14 @@ ProblemExpert::getPredicate(const std::string & predicate_name)
   }
 }
 
-std::vector<Function>
+std::vector<parser::pddl::tree::Function>
 ProblemExpert::getFunctions()
 {
   return functions_;
 }
 
 bool
-ProblemExpert::addFunction(const Function & function)
+ProblemExpert::addFunction(const parser::pddl::tree::Function & function)
 {
   if (!existFunction(function)) {
     if (isValidFunction(function)) {
@@ -175,7 +186,7 @@ ProblemExpert::addFunction(const Function & function)
 }
 
 bool
-ProblemExpert::removeFunction(const Function & function)
+ProblemExpert::removeFunction(const parser::pddl::tree::Function & function)
 {
   bool found = false;
   int i = 0;
@@ -195,7 +206,7 @@ ProblemExpert::removeFunction(const Function & function)
 }
 
 bool
-ProblemExpert::updateFunction(const Function & function)
+ProblemExpert::updateFunction(const parser::pddl::tree::Function & function)
 {
   if (existFunction(function)) {
     if (isValidFunction(function)) {
@@ -210,17 +221,28 @@ ProblemExpert::updateFunction(const Function & function)
   }
 }
 
-std::optional<Function>
-ProblemExpert::getFunction(const std::string & function_name)
+std::optional<parser::pddl::tree::Function>
+ProblemExpert::getFunction(const std::string & expr)
 {
-  Function ret;
+  parser::pddl::tree::Function ret;
+  parser::pddl::tree::Function func(expr);
 
   bool found = false;
-  int i = 0;
+  size_t i = 0;
   while (i < functions_.size() && !found) {
-    if (functions_[i].name == function_name) {
-      found = true;
-      ret = functions_[i];
+    if (functions_[i].name == func.name) {
+      if (functions_[i].parameters.size() == func.parameters.size()) {
+        found = true;
+        for (size_t j = 0; j < functions_[i].parameters.size(); ++j) {
+          if (functions_[i].parameters[j].name != func.parameters[j].name) {
+            found = false;
+            break;
+          }
+        }
+        if (found) {
+          ret = functions_[i];
+        }
+      }
     }
     i++;
   }
@@ -239,7 +261,7 @@ ProblemExpert::removeFunctionsReferencing(const std::string & name)
 
   while (i < functions_.size()) {
     bool found = false;
-    for (Param parameter : functions_[i].parameters) {
+    for (parser::pddl::tree::Param parameter : functions_[i].parameters) {
       if (parameter.name == name) {
         functions_.erase(functions_.begin() + i);
         found = true;
@@ -260,7 +282,7 @@ ProblemExpert::removePredicatesReferencing(const std::string & name)
 
   while (i < predicates_.size()) {
     bool found = false;
-    for (Param parameter : predicates_[i].parameters) {
+    for (parser::pddl::tree::Param parameter : predicates_[i].parameters) {
       if (parameter.name == name) {
         predicates_.erase(predicates_.begin() + i);
         found = true;
@@ -274,14 +296,14 @@ ProblemExpert::removePredicatesReferencing(const std::string & name)
   return false;
 }
 
-Goal
+parser::pddl::tree::Goal
 ProblemExpert::getGoal()
 {
   return goal_;
 }
 
 bool
-ProblemExpert::setGoal(const Goal & goal)
+ProblemExpert::setGoal(const parser::pddl::tree::Goal & goal)
 {
   if (isValidGoal(goal)) {
     goal_.clear();
@@ -325,7 +347,7 @@ ProblemExpert::existInstance(const std::string & name)
 }
 
 bool
-ProblemExpert::existPredicate(const Predicate & predicate)
+ProblemExpert::existPredicate(const parser::pddl::tree::Predicate & predicate)
 {
   bool found = false;
   int i = 0;
@@ -343,7 +365,7 @@ ProblemExpert::existPredicate(const Predicate & predicate)
 }
 
 bool
-ProblemExpert::existFunction(const Function & function)
+ProblemExpert::existFunction(const parser::pddl::tree::Function & function)
 {
   bool found = false;
   int i = 0;
@@ -361,12 +383,12 @@ ProblemExpert::existFunction(const Function & function)
 }
 
 bool
-ProblemExpert::isValidPredicate(const Predicate & predicate)
+ProblemExpert::isValidPredicate(const parser::pddl::tree::Predicate & predicate)
 {
   bool valid = false;
 
-  const std::optional<plansys2::Predicate> & model_predicate = domain_expert_->getPredicate(
-    predicate.name);
+  const std::optional<parser::pddl::tree::Predicate> & model_predicate =
+    domain_expert_->getPredicate(predicate.name);
   if (model_predicate) {
     if (model_predicate.value().parameters.size() == predicate.parameters.size()) {
       bool same_types = true;
@@ -398,11 +420,12 @@ ProblemExpert::isValidPredicate(const Predicate & predicate)
 }
 
 bool
-ProblemExpert::isValidFunction(const Function & function)
+ProblemExpert::isValidFunction(const parser::pddl::tree::Function & function)
 {
   bool valid = false;
 
-  const auto & model_function = domain_expert_->getFunction(function.name);
+  const std::optional<parser::pddl::tree::Function> & model_function = domain_expert_->getFunction(
+    function.name);
   if (model_function) {
     if (model_function.value().parameters.size() == function.parameters.size()) {
       bool same_types = true;
@@ -434,20 +457,20 @@ ProblemExpert::isValidFunction(const Function & function)
 }
 
 bool
-ProblemExpert::isValidGoal(const Goal & goal)
+ProblemExpert::isValidGoal(const parser::pddl::tree::Goal & goal)
 {
   return checkPredicateTreeTypes(goal.root_, domain_expert_);
 }
 
 bool
 ProblemExpert::checkPredicateTreeTypes(
-  std::shared_ptr<TreeNode> node,
+  std::shared_ptr<parser::pddl::tree::TreeNode> node,
   std::shared_ptr<DomainExpert> & domain_expert_)
 {
   switch (node->type_) {
-    case AND: {
-        std::shared_ptr<plansys2::AndNode> pn_and =
-          std::dynamic_pointer_cast<plansys2::AndNode>(node);
+    case parser::pddl::tree::AND: {
+        std::shared_ptr<parser::pddl::tree::AndNode> pn_and =
+          std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(node);
         bool ret = true;
 
         for (const auto & op : pn_and->ops) {
@@ -456,9 +479,9 @@ ProblemExpert::checkPredicateTreeTypes(
         return ret;
       }
 
-    case OR: {
-        std::shared_ptr<plansys2::OrNode> pn_or =
-          std::dynamic_pointer_cast<plansys2::OrNode>(node);
+    case parser::pddl::tree::OR: {
+        std::shared_ptr<parser::pddl::tree::OrNode> pn_or =
+          std::dynamic_pointer_cast<parser::pddl::tree::OrNode>(node);
         bool ret = true;
 
         for (const auto & op : pn_or->ops) {
@@ -467,18 +490,51 @@ ProblemExpert::checkPredicateTreeTypes(
         return ret;
       }
 
-    case NOT: {
-        std::shared_ptr<plansys2::NotNode> pn_not =
-          std::dynamic_pointer_cast<NotNode>(node);
+    case parser::pddl::tree::NOT: {
+        std::shared_ptr<parser::pddl::tree::NotNode> pn_not =
+          std::dynamic_pointer_cast<parser::pddl::tree::NotNode>(node);
 
         return checkPredicateTreeTypes(pn_not->op, domain_expert_);
       }
 
-    case PREDICATE: {
-        std::shared_ptr<plansys2::PredicateNode> pred =
-          std::dynamic_pointer_cast<PredicateNode>(node);
+    case parser::pddl::tree::PREDICATE: {
+        std::shared_ptr<parser::pddl::tree::PredicateNode> pred =
+          std::dynamic_pointer_cast<parser::pddl::tree::PredicateNode>(node);
 
         return isValidPredicate(pred->predicate_);
+      }
+
+    case parser::pddl::tree::FUNCTION: {
+        std::shared_ptr<parser::pddl::tree::FunctionNode> func =
+          std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(node);
+
+        return isValidFunction(func->function_);
+      }
+
+    case parser::pddl::tree::EXPRESSION: {
+        std::shared_ptr<parser::pddl::tree::ExpressionNode> expression =
+          std::dynamic_pointer_cast<parser::pddl::tree::ExpressionNode>(node);
+        bool ret = true;
+
+        for (const auto & op : expression->ops) {
+          ret = ret && checkPredicateTreeTypes(op, domain_expert_);
+        }
+        return ret;
+      }
+
+    case parser::pddl::tree::FUNCTION_MODIFIER: {
+        std::shared_ptr<parser::pddl::tree::FunctionModifierNode> fun_mod =
+          std::dynamic_pointer_cast<parser::pddl::tree::FunctionModifierNode>(node);
+        bool ret = true;
+
+        for (const auto & op : fun_mod->ops) {
+          ret = ret && checkPredicateTreeTypes(op, domain_expert_);
+        }
+        return ret;
+      }
+
+    case parser::pddl::tree::NUMBER: {
+        return true;
       }
 
     default:
@@ -499,11 +555,11 @@ ProblemExpert::getProblem()
 
   problem.name = "problem_1";
 
-  for (const Instance & instance : instances_) {
+  for (const parser::pddl::tree::Instance & instance : instances_) {
     problem.addObject(instance.name, instance.type);
   }
 
-  for (Predicate predicate : predicates_) {
+  for (parser::pddl::tree::Predicate predicate : predicates_) {
     StringVec v;
 
     for (size_t i = 0; i < predicate.parameters.size(); i++) {
@@ -515,7 +571,7 @@ ProblemExpert::getProblem()
     problem.addInit(predicate.name, v);
   }
 
-  for (Function function : functions_) {
+  for (parser::pddl::tree::Function function : functions_) {
     StringVec v;
 
     for (size_t i = 0; i < function.parameters.size(); i++) {
@@ -529,7 +585,7 @@ ProblemExpert::getProblem()
     problem.addInit(function.name, function.value, v);
   }
 
-  std::vector<Predicate> predicates;
+  std::vector<parser::pddl::tree::Predicate> predicates;
   goal_.getPredicates(predicates);
 
   for (auto predicate : predicates) {

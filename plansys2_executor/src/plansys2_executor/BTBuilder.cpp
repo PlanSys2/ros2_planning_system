@@ -14,15 +14,15 @@
 
 #include <string>
 #include <memory>
-#include <vector>
 #include <set>
+#include <tuple>
+#include <vector>
 #include <algorithm>
 
 #include "plansys2_executor/BTBuilder.hpp"
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_domain_expert/Types.hpp"
 #include "plansys2_executor/Utils.hpp"
 
 #include "rclcpp/rclcpp.hpp"
@@ -54,7 +54,8 @@ BTBuilder::get_tree(const Plan & current_plan)
     for (auto & action_unit : level->action_units) {
       for (auto & req : action_unit->reqs) {
         if (!req->satisfied) {
-          req->satisfied = problem_client_->existPredicate(Predicate(req->requirement));
+          std::tuple<bool, double> result = check(req->requirement, problem_client_);
+          req->satisfied = std::get<0>(result);
         }
       }
     }
@@ -258,10 +259,42 @@ BTBuilder::check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr d
       if (!req->satisfied) {
         for (auto & up_action_unit : up_level->action_units) {
           for (auto & effect : up_action_unit->effects) {
-            if (req->requirement == effect->effect) {
-              req->satisfied = true;
-              req->effect_connections.push_back(effect);
-              effect->requirement_connections.push_back(req);
+            if (req->requirement->type_ == parser::pddl::tree::EXPRESSION &&
+              effect->effect->type_ == parser::pddl::tree::FUNCTION_MODIFIER)
+            {
+              std::shared_ptr<parser::pddl::tree::ExpressionNode> req_expression_node =
+                std::dynamic_pointer_cast<parser::pddl::tree::ExpressionNode>(req->requirement);
+              std::shared_ptr<parser::pddl::tree::FunctionNode> req_function_node =
+                std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(
+                req_expression_node->ops[0]);
+
+              std::shared_ptr<parser::pddl::tree::FunctionModifierNode> eff_function_modifier_node =
+                std::dynamic_pointer_cast<parser::pddl::tree::FunctionModifierNode>(effect->effect);
+              std::shared_ptr<parser::pddl::tree::FunctionNode> eff_function_node =
+                std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(
+                eff_function_modifier_node->ops[0]);
+
+              // A function modifier effect connects to an expression requirement when they operate
+              // on the same function.
+              if (req_function_node->function_ == eff_function_node->function_) {
+                req->satisfied = true;
+                req->effect_connections.push_back(effect);
+                effect->requirement_connections.push_back(req);
+              }
+            } else if (req->requirement->type_ == parser::pddl::tree::PREDICATE && // NOLINT
+              effect->effect->type_ == parser::pddl::tree::PREDICATE)
+            {
+              std::shared_ptr<parser::pddl::tree::PredicateNode> req_predicate_node =
+                std::dynamic_pointer_cast<parser::pddl::tree::PredicateNode>(req->requirement);
+
+              std::shared_ptr<parser::pddl::tree::PredicateNode> eff_predicate_node =
+                std::dynamic_pointer_cast<parser::pddl::tree::PredicateNode>(effect->effect);
+
+              if (req_predicate_node->predicate_ == eff_predicate_node->predicate_) {
+                req->satisfied = true;
+                req->effect_connections.push_back(effect);
+                effect->requirement_connections.push_back(req);
+              }
             }
           }
         }
@@ -269,7 +302,6 @@ BTBuilder::check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr d
     }
   }
 }
-
 
 bool
 BTBuilder::level_satisfied(ExecutionLevel::Ptr level)
@@ -293,24 +325,27 @@ BTBuilder::print_levels(std::vector<ExecutionLevel::Ptr> & levels)
 
     for (const auto & action_unit : level->action_units) {
       std::cout << "\t" << action_unit->action << "\tin_cardinality: " <<
-        in_cardinality(action_unit) << std::endl;
-      std::cout << "\t\tReqs: " << std::endl;
+        in_cardinality(action_unit) << "\tout_cardinality: " <<
+        out_cardinality(action_unit) << std::endl;
+      std::cout << "\t\tRequirements: " << std::endl;
 
       for (const auto & req : action_unit->reqs) {
-        std::cout << "\t\t\t" << req->requirement <<
-        (req->satisfied ? "Satisfied" : "Not satisfied") << std::endl;
+        std::cout << "\t\t\t" << req->requirement->toString() <<
+        (req->satisfied ? " Satisfied" : " Not satisfied") << std::endl;
+        std::cout << "\t\t\t\tEffect Connections: " << std::endl;
 
         for (auto & action : req->effect_connections) {
-          std::cout << "\t\t\t\t" << action->action->action << std::endl;
+          std::cout << "\t\t\t\t\t" << action->action->action << std::endl;
         }
       }
       std::cout << "\t\tEffects: " << std::endl;
 
       for (const auto & effect : action_unit->effects) {
-        std::cout << "\t\t\t" << effect->effect << std::endl;
+        std::cout << "\t\t\t" << effect->effect->toString() << std::endl;
+        std::cout << "\t\t\t\tRequirement Connections: " << std::endl;
 
         for (auto & req : effect->requirement_connections) {
-          std::cout << "\t\t\t\t" << req->action->action << std::endl;
+          std::cout << "\t\t\t\t\t" << req->action->action << std::endl;
         }
       }
     }
@@ -343,50 +378,70 @@ BTBuilder::get_plan_actions(const Plan & plan)
     action_unit->time = current_level->time;
 
     auto dur_action = get_action_from_string(item.action, domain_client_);
-    std::vector<plansys2::Predicate> at_start_requirements;
-    dur_action->at_start_requirements.getPredicates(at_start_requirements, true);
+    std::shared_ptr<parser::pddl::tree::AndNode> at_start_requirements =
+      std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(
+      dur_action->at_start_requirements.root_
+      );
+    std::shared_ptr<parser::pddl::tree::AndNode> over_all_requirements =
+      std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(
+      dur_action->over_all_requirements.root_
+      );
+    std::shared_ptr<parser::pddl::tree::AndNode> at_end_requirements =
+      std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(dur_action->at_end_requirements.root_);
 
-    std::vector<plansys2::Predicate> over_all_requirements;
-    dur_action->over_all_requirements.getPredicates(over_all_requirements, true);
-    std::vector<plansys2::Predicate> at_end_requirements;
-    dur_action->at_end_requirements.getPredicates(at_end_requirements, true);
+    std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> requirements;
 
-    std::vector<plansys2::Predicate> requirements;
+    if (at_start_requirements) {
+      std::copy(
+        at_start_requirements->ops.begin(),
+        at_start_requirements->ops.end(),
+        std::back_inserter(requirements));
+    }
+    if (over_all_requirements) {
+      std::copy(
+        over_all_requirements->ops.begin(),
+        over_all_requirements->ops.end(),
+        std::back_inserter(requirements));
+    }
+    if (at_end_requirements) {
+      std::copy(
+        at_end_requirements->ops.begin(),
+        at_end_requirements->ops.end(),
+        std::back_inserter(requirements));
+    }
 
-    std::copy(
-      at_start_requirements.begin(),
-      at_start_requirements.end(),
-      std::back_inserter(requirements));
-    std::copy(
-      over_all_requirements.begin(),
-      over_all_requirements.end(),
-      std::back_inserter(requirements));
-    std::copy(
-      at_end_requirements.begin(),
-      at_end_requirements.end(),
-      std::back_inserter(requirements));
-
-    for (const auto & p : requirements) {
+    for (const auto & requirement : requirements) {
       auto req = RequirementConnection::make_shared();
       action_unit->reqs.push_back(req);
-      req->requirement = p.toString();
+      req->requirement = requirement;
       req->action = action_unit;
     }
 
-    std::vector<plansys2::Predicate> at_start_effects;
-    dur_action->at_start_effects.getPredicates(at_start_effects, true);
-    std::vector<plansys2::Predicate> at_end_effects;
-    dur_action->at_end_effects.getPredicates(at_end_effects, true);
+    std::shared_ptr<parser::pddl::tree::AndNode> at_start_effects =
+      std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(dur_action->at_start_effects.root_);
+    std::shared_ptr<parser::pddl::tree::AndNode> at_end_effects =
+      std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(dur_action->at_end_effects.root_);
 
-    std::vector<plansys2::Predicate> effects;
-    std::copy(at_start_effects.begin(), at_start_effects.end(), std::back_inserter(effects));
-    std::copy(at_end_effects.begin(), at_end_effects.end(), std::back_inserter(effects));
+    std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> effects;
 
-    for (const auto & p : effects) {
-      auto effect = EffectConnection::make_shared();
-      action_unit->effects.push_back(effect);
-      effect->effect = p.toString();
-      effect->action = action_unit;
+    if (at_start_effects) {
+      std::copy(
+        at_start_effects->ops.begin(),
+        at_start_effects->ops.end(),
+        std::back_inserter(effects));
+    }
+    if (at_end_effects) {
+      std::copy(
+        at_end_effects->ops.begin(),
+        at_end_effects->ops.end(),
+        std::back_inserter(effects));
+    }
+
+    for (const auto & effect : effects) {
+      auto eff = EffectConnection::make_shared();
+      action_unit->effects.push_back(eff);
+      eff->effect = effect;
+      eff->action = action_unit;
     }
   }
 

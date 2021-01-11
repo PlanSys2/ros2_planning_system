@@ -17,12 +17,12 @@
 #include <memory>
 #include <tuple>
 
-#include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
+#include "plansys2_executor/behavior_tree/check_atstart_req_node.hpp"
 
 namespace plansys2
 {
 
-CheckOverAllReq::CheckOverAllReq(
+CheckAtStartReq::CheckAtStartReq(
   const std::string & xml_tag_name,
   const BT::NodeConfiguration & conf)
 : ActionNodeBase(xml_tag_name, conf)
@@ -37,16 +37,16 @@ CheckOverAllReq::CheckOverAllReq(
 }
 
 BT::NodeStatus
-CheckOverAllReq::tick()
+CheckAtStartReq::tick()
 {
   std::string action;
   getInput("action", action);
 
-  auto reqs = (*action_map_)[action].durative_action_info->over_all_requirements;
+  auto reqs = (*action_map_)[action].durative_action_info->at_start_requirements;
   std::tuple<bool, double> result = check(reqs.root_, problem_client_);
 
   if (!std::get<0>(result)) {
-    (*action_map_)[action].execution_error_info = "Error checking over all requirements";
+    (*action_map_)[action].execution_error_info = "Error checking at start requirements";
     return BT::NodeStatus::FAILURE;
   } else {
     return BT::NodeStatus::SUCCESS;

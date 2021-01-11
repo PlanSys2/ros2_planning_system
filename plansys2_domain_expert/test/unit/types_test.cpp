@@ -17,19 +17,19 @@
 #include <memory>
 
 #include "gtest/gtest.h"
-#include "plansys2_domain_expert/Types.hpp"
+#include "plansys2_pddl_parser/Tree.h"
 
 TEST(domain_types, basic_types)
 {
-  plansys2::Param param_1;
+  parser::pddl::tree::Param param_1;
   param_1.name = "r2d2";
   param_1.type = "robot";
 
-  plansys2::Param param_2;
+  parser::pddl::tree::Param param_2;
   param_2.name = "bedroom";
   param_2.type = "room";
 
-  plansys2::Predicate predicate_1;
+  parser::pddl::tree::Predicate predicate_1;
   predicate_1.name = "robot_at";
   predicate_1.parameters.push_back(param_1);
   predicate_1.parameters.push_back(param_2);
@@ -39,67 +39,74 @@ TEST(domain_types, basic_types)
 
 TEST(domain_types, predicate_tree_to_string)
 {
-  plansys2::Param param_1;
+  parser::pddl::tree::Param param_1;
   param_1.name = "r2d2";
   param_1.type = "robot";
 
-  plansys2::Param param_2;
+  parser::pddl::tree::Param param_2;
   param_2.name = "bedroom";
   param_2.type = "room";
 
-  plansys2::Param param_3;
+  parser::pddl::tree::Param param_3;
   param_3.name = "kitchen";
   param_3.type = "room";
 
-  plansys2::Param param_4;
+  parser::pddl::tree::Param param_4;
   param_4.name = "paco";
   param_4.type = "person";
 
-  plansys2::Predicate predicate_1;
+  parser::pddl::tree::Predicate predicate_1;
   predicate_1.name = "robot_at";
   predicate_1.parameters.push_back(param_1);
   predicate_1.parameters.push_back(param_2);
 
-  plansys2::Predicate predicate_2;
+  parser::pddl::tree::Predicate predicate_2;
   predicate_2.name = "robot_at";
   predicate_2.parameters.push_back(param_1);
   predicate_2.parameters.push_back(param_3);
 
-  plansys2::Predicate predicate_3;
+  parser::pddl::tree::Predicate predicate_3;
   predicate_3.name = "person_at";
   predicate_3.parameters.push_back(param_4);
   predicate_3.parameters.push_back(param_2);
 
-  plansys2::Predicate predicate_4;
+  parser::pddl::tree::Predicate predicate_4;
   predicate_4.name = "person_at";
   predicate_4.parameters.push_back(param_4);
   predicate_4.parameters.push_back(param_3);
 
-  std::shared_ptr<plansys2::PredicateNode> pn_1 = std::make_shared<plansys2::PredicateNode>();
+  std::shared_ptr<parser::pddl::tree::PredicateNode> pn_1 =
+    std::make_shared<parser::pddl::tree::PredicateNode>();
   pn_1->predicate_ = predicate_1;
 
-  std::shared_ptr<plansys2::PredicateNode> pn_2 = std::make_shared<plansys2::PredicateNode>();
+  std::shared_ptr<parser::pddl::tree::PredicateNode> pn_2 =
+    std::make_shared<parser::pddl::tree::PredicateNode>();
   pn_2->predicate_ = predicate_2;
 
-  std::shared_ptr<plansys2::PredicateNode> pn_3 = std::make_shared<plansys2::PredicateNode>();
+  std::shared_ptr<parser::pddl::tree::PredicateNode> pn_3 =
+    std::make_shared<parser::pddl::tree::PredicateNode>();
   pn_3->predicate_ = predicate_3;
 
-  std::shared_ptr<plansys2::PredicateNode> pn_4 = std::make_shared<plansys2::PredicateNode>();
+  std::shared_ptr<parser::pddl::tree::PredicateNode> pn_4 =
+    std::make_shared<parser::pddl::tree::PredicateNode>();
   pn_4->predicate_ = predicate_4;
 
-  std::shared_ptr<plansys2::NotNode> pn_not = std::make_shared<plansys2::NotNode>();
+  std::shared_ptr<parser::pddl::tree::NotNode> pn_not =
+    std::make_shared<parser::pddl::tree::NotNode>();
   pn_not->op = pn_2;
 
-  std::shared_ptr<plansys2::OrNode> pn_or = std::make_shared<plansys2::OrNode>();
+  std::shared_ptr<parser::pddl::tree::OrNode> pn_or =
+    std::make_shared<parser::pddl::tree::OrNode>();
   pn_or->ops.push_back(pn_3);
   pn_or->ops.push_back(pn_4);
 
-  std::shared_ptr<plansys2::AndNode> pn_and = std::make_shared<plansys2::AndNode>();
+  std::shared_ptr<parser::pddl::tree::AndNode> pn_and =
+    std::make_shared<parser::pddl::tree::AndNode>();
   pn_and->ops.push_back(pn_1);
   pn_and->ops.push_back(pn_not);
   pn_and->ops.push_back(pn_or);
 
-  plansys2::PredicateTree tree;
+  parser::pddl::tree::PredicateTree tree;
   tree.root_ = pn_and;
 
   ASSERT_EQ(
@@ -111,15 +118,18 @@ TEST(domain_types, predicate_tree_from_string)
 {
   std::string expresion = std::string("(and (robot_at r2d2 bedroom)(not ") +
     std::string("(robot_at r2d2 kitchen))(or (person_at paco bedroom)(person_at paco kitchen)))");
+  std::string construct = std::string("(and (predicate)(not ") +
+    std::string("(predicate))(or (predicate)(predicate)))");
 
-  plansys2::PredicateTree tree;
-  tree.fromString(expresion);
+  parser::pddl::tree::PredicateTree tree;
+  tree.fromString(expresion, construct);
 
   ASSERT_EQ(tree.toString(), expresion);
 
   std::string expresion2 = std::string("(and (person_at ?0 ?2)(not (person_at ?0 ?1)))");
-  plansys2::PredicateTree tree2;
-  tree2.fromString(expresion2);
+  std::string construct2 = std::string("(and (predicate)(not (predicate)))");
+  parser::pddl::tree::PredicateTree tree2;
+  tree2.fromString(expresion2, construct2);
 
   ASSERT_EQ(tree2.toString(), expresion2);
 }

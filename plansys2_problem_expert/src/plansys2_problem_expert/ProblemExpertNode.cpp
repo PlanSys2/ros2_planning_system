@@ -277,8 +277,8 @@ ProblemExpertNode::add_problem_goal_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     if (request->goal != "(and )") {
-      plansys2::Goal goal;
-      goal.fromString(request->goal);
+      parser::pddl::tree::Goal goal;
+      goal.fromString(request->goal, request->construct);
       response->success = problem_expert_->setGoal(goal);
 
       if (response->success) {
@@ -304,7 +304,7 @@ ProblemExpertNode::add_problem_instance_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    plansys2::Instance instance;
+    parser::pddl::tree::Instance instance;
     instance.name = request->instance;
     instance.type = request->type;
 
@@ -329,11 +329,11 @@ ProblemExpertNode::add_problem_predicate_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    plansys2::Predicate predicate;
+    parser::pddl::tree::Predicate predicate;
     predicate.name = request->predicate;
 
     for (const auto & param_name : request->arguments) {
-      plansys2::Param param;
+      parser::pddl::tree::Param param;
       param.name = param_name;
       predicate.parameters.push_back(param);
     }
@@ -359,11 +359,11 @@ ProblemExpertNode::add_problem_function_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    plansys2::Function function;
+    parser::pddl::tree::Function function;
     function.name = request->function;
 
     for (const auto & param_name : request->arguments) {
-      plansys2::Param param;
+      parser::pddl::tree::Param param;
       param.name = param_name;
       function.parameters.push_back(param);
     }
@@ -393,6 +393,7 @@ ProblemExpertNode::get_problem_goal_service_callback(
   } else {
     response->success = true;
     response->goal = problem_expert_->getGoal().toString();
+    response->construct = problem_expert_->getGoal().construct();
   }
 }
 
@@ -449,25 +450,16 @@ ProblemExpertNode::get_problem_predicate_details_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto predicates = problem_expert_->getPredicates();
+    auto params = problem_expert_->getPredicate(request->predicate);
+    if (params) {
+      response->name = params.value().name;
 
-    bool found = false;
-    int i = 0;
-
-    while (!found && i < predicates.size()) {
-      if (predicates[i].name == request->predicate) {
-        found = true;
-      } else {
-        i++;
+      for (const auto & param :  params.value().parameters) {
+        response->param_names.push_back(param.name);
+        response->param_types.push_back(param.type);
       }
-    }
 
-    if (found) {
       response->success = true;
-
-      for (size_t j = 0; j < predicates[i].parameters.size(); j++) {
-        response->argument_params.push_back(predicates[i].parameters[j].name);
-      }
     } else {
       response->success = false;
       response->error_info = "Predicate not found";
@@ -505,27 +497,18 @@ ProblemExpertNode::get_problem_function_details_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto functions = problem_expert_->getFunctions();
+    auto params = problem_expert_->getFunction(request->function);
+    if (params) {
+      response->name = params.value().name;
 
-    bool found = false;
-    int i = 0;
-
-    while (!found && i < functions.size()) {
-      if (functions[i].name == request->function) {
-        found = true;
-      } else {
-        i++;
+      for (const auto & param : params.value().parameters) {
+        response->param_names.push_back(param.name);
+        response->param_types.push_back(param.type);
       }
-    }
 
-    if (found) {
+      response->value = params.value().value;
+
       response->success = true;
-
-      for (size_t j = 0; j < functions[i].parameters.size(); j++) {
-        response->argument_params.push_back(functions[i].parameters[j].name);
-      }
-
-      response->value = functions[i].value;
     } else {
       response->success = false;
       response->error_info = "Function not found";
@@ -621,11 +604,11 @@ ProblemExpertNode::remove_problem_predicate_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    plansys2::Predicate predicate;
+    parser::pddl::tree::Predicate predicate;
     predicate.name = request->predicate;
 
     for (const auto & param_name : request->arguments) {
-      plansys2::Param param;
+      parser::pddl::tree::Param param;
       param.name = param_name;
       predicate.parameters.push_back(param);
     }
@@ -651,11 +634,11 @@ ProblemExpertNode::remove_problem_function_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    plansys2::Function function;
+    parser::pddl::tree::Function function;
     function.name = request->function;
 
     for (const auto & param_name : request->arguments) {
-      plansys2::Param param;
+      parser::pddl::tree::Param param;
       param.name = param_name;
       function.parameters.push_back(param);
     }
@@ -680,11 +663,11 @@ ProblemExpertNode::exist_problem_predicate_service_callback(
     response->exist = false;
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    plansys2::Predicate predicate;
+    parser::pddl::tree::Predicate predicate;
     predicate.name = request->predicate;
 
     for (const auto & param_name : request->arguments) {
-      plansys2::Param param;
+      parser::pddl::tree::Param param;
       param.name = param_name;
       predicate.parameters.push_back(param);
     }
@@ -703,11 +686,11 @@ ProblemExpertNode::exist_problem_function_service_callback(
     response->exist = false;
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    plansys2::Function function;
+    parser::pddl::tree::Function function;
     function.name = request->function;
 
     for (const auto & param_name : request->arguments) {
-      plansys2::Param param;
+      parser::pddl::tree::Param param;
       param.name = param_name;
       function.parameters.push_back(param);
     }
@@ -727,11 +710,11 @@ ProblemExpertNode::update_problem_function_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    plansys2::Function function;
+    parser::pddl::tree::Function function;
     function.name = request->function;
 
     for (const auto & param_name : request->arguments) {
-      plansys2::Param param;
+      parser::pddl::tree::Param param;
       param.name = param_name;
       function.parameters.push_back(param);
     }

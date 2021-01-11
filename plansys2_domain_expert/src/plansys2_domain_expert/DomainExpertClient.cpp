@@ -106,10 +106,10 @@ DomainExpertClient::getPredicates()
   return ret;
 }
 
-std::optional<plansys2::Predicate>
+std::optional<parser::pddl::tree::Predicate>
 DomainExpertClient::getPredicate(const std::string & predicate)
 {
-  plansys2::Predicate ret;
+  parser::pddl::tree::Predicate ret;
   bool found = false;
 
   while (!get_predicate_details_client_->wait_for_service(std::chrono::seconds(1))) {
@@ -135,11 +135,11 @@ DomainExpertClient::getPredicate(const std::string & predicate)
   }
 
   if (future_result.get()->success) {
-    plansys2::Predicate ret;
+    parser::pddl::tree::Predicate ret;
     ret.name = future_result.get()->name;
 
     for (size_t i = 0; i < future_result.get()->param_names.size(); i++) {
-      plansys2::Param param;
+      parser::pddl::tree::Param param;
       param.name = future_result.get()->param_names[i];
       param.type = future_result.get()->param_types[i];
       ret.parameters.push_back(param);
@@ -187,10 +187,10 @@ DomainExpertClient::getFunctions()
   return ret;
 }
 
-std::optional<plansys2::Function>
+std::optional<parser::pddl::tree::Function>
 DomainExpertClient::getFunction(const std::string & function)
 {
-  plansys2::Function ret;
+  parser::pddl::tree::Function ret;
   bool found = false;
 
   while (!get_function_details_client_->wait_for_service(std::chrono::seconds(1))) {
@@ -216,11 +216,11 @@ DomainExpertClient::getFunction(const std::string & function)
   }
 
   if (future_result.get()->success) {
-    plansys2::Function ret;
+    parser::pddl::tree::Function ret;
     ret.name = future_result.get()->name;
 
     for (size_t i = 0; i < future_result.get()->param_names.size(); i++) {
-      plansys2::Param param;
+      parser::pddl::tree::Param param;
       param.name = future_result.get()->param_names[i];
       param.type = future_result.get()->param_types[i];
       ret.parameters.push_back(param);
@@ -272,10 +272,10 @@ DomainExpertClient::getActions()
   return ret;
 }
 
-std::optional<plansys2::Action>
+std::optional<parser::pddl::tree::Action>
 DomainExpertClient::getAction(const std::string & action)
 {
-  plansys2::Action ret;
+  parser::pddl::tree::Action ret;
   bool found = false;
 
   while (!get_action_details_client_->wait_for_service(std::chrono::seconds(1))) {
@@ -302,19 +302,23 @@ DomainExpertClient::getAction(const std::string & action)
 
   if (future_result.get()->success) {
     if (future_result.get()->type == "action") {
-      plansys2::Action ret;
+      parser::pddl::tree::Action ret;
       ret.name = future_result.get()->name;
 
       for (size_t i = 0; i < future_result.get()->param_names.size(); i++) {
-        plansys2::Param param;
+        parser::pddl::tree::Param param;
         param.name = future_result.get()->param_names[i];
         param.type = future_result.get()->param_types[i];
         ret.parameters.push_back(param);
       }
 
-      ret.preconditions.fromString(future_result.get()->at_start_requirements);
+      ret.preconditions.fromString(
+        future_result.get()->at_start_requirements,
+        future_result.get()->at_start_requirements_construct);
 
-      ret.effects.fromString(future_result.get()->at_start_effects);
+      ret.effects.fromString(
+        future_result.get()->at_start_effects,
+        future_result.get()->at_start_effects_construct);
 
       return ret;
     } else {
@@ -364,10 +368,10 @@ DomainExpertClient::getDurativeActions()
   return ret;
 }
 
-std::optional<plansys2::DurativeAction>
+std::optional<parser::pddl::tree::DurativeAction>
 DomainExpertClient::getDurativeAction(const std::string & action)
 {
-  plansys2::DurativeAction ret;
+  parser::pddl::tree::DurativeAction ret;
   bool found = false;
 
   while (!get_action_details_client_->wait_for_service(std::chrono::seconds(1))) {
@@ -397,17 +401,27 @@ DomainExpertClient::getDurativeAction(const std::string & action)
       ret.name = future_result.get()->name;
 
       for (size_t i = 0; i < future_result.get()->param_names.size(); i++) {
-        plansys2::Param param;
+        parser::pddl::tree::Param param;
         param.name = future_result.get()->param_names[i];
         param.type = future_result.get()->param_types[i];
         ret.parameters.push_back(param);
       }
 
-      ret.at_start_requirements.fromString(future_result.get()->at_start_requirements);
-      ret.over_all_requirements.fromString(future_result.get()->over_all_requirements);
-      ret.at_end_requirements.fromString(future_result.get()->at_end_requirements);
-      ret.at_start_effects.fromString(future_result.get()->at_start_effects);
-      ret.at_end_effects.fromString(future_result.get()->at_end_effects);
+      ret.at_start_requirements.fromString(
+        future_result.get()->at_start_requirements,
+        future_result.get()->at_start_requirements_construct);
+      ret.over_all_requirements.fromString(
+        future_result.get()->over_all_requirements,
+        future_result.get()->over_all_requirements_construct);
+      ret.at_end_requirements.fromString(
+        future_result.get()->at_end_requirements,
+        future_result.get()->at_end_requirements_construct);
+      ret.at_start_effects.fromString(
+        future_result.get()->at_start_effects,
+        future_result.get()->at_start_effects_construct);
+      ret.at_end_effects.fromString(
+        future_result.get()->at_end_effects,
+        future_result.get()->at_end_effects_construct);
 
       return ret;
     } else {

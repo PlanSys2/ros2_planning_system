@@ -10,6 +10,12 @@ void Not::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::
 	s << " )";
 }
 
+std::shared_ptr<tree::TreeNode> Not::PDDLTree( const Domain & d ) const {
+    std::shared_ptr<tree::NotNode> tree = std::make_shared<tree::NotNode>();
+    if ( cond ) tree->op = cond->PDDLTree( d );
+    return tree;
+}
+
 void Not::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	f.assert_token( "(" );

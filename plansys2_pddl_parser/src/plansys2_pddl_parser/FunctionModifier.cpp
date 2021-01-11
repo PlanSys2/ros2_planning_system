@@ -40,6 +40,19 @@ void FunctionModifier::PDDLPrint( std::ostream & s, unsigned indent, const Token
 	s << " )";
 }
 
+std::shared_ptr<tree::TreeNode> FunctionModifier::PDDLTree( const Domain & d ) const {
+    std::shared_ptr<tree::FunctionModifierNode> tree = std::make_shared<tree::FunctionModifierNode>();
+    tree->modifier_type = tree::getFunModType( name );
+    if (modifiedGround) {
+        tree->ops.push_back( modifiedGround->PDDLTree( d ) );
+    }
+    else {
+        std::cerr << "function modifier for total-cost not supported" << std::endl;
+    }
+    tree->ops.push_back( modifierExpr->PDDLTree( d ) );
+    return tree;
+}
+
 void FunctionModifier::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 

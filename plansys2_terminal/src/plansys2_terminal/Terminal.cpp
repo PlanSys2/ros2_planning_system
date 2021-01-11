@@ -40,6 +40,25 @@
 namespace plansys2_terminal
 {
 
+int get_parenthesis(const std::string & expr, int start)
+{
+  int it = start + 1;
+  int balance = 1;
+
+  while (it < expr.size()) {
+    if (expr[it] == '(') {balance++;}
+    if (expr[it] == ')') {balance--;}
+
+    if (balance == 0) {
+      return it;
+    }
+
+    it++;
+  }
+
+  return it;
+}
+
 std::vector<std::string> tokenize(const std::string & text)
 {
   if (text.empty()) {
@@ -435,7 +454,7 @@ void
 Terminal::process_set_instance(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 2) {
-    if (!problem_client_->addInstance(plansys2::Instance{command[0], command[1]})) {
+    if (!problem_client_->addInstance(parser::pddl::tree::Instance{command[0], command[1]})) {
       os << "Could not add the instance [" << command[0] << "]" << std::endl;
     }
   } else {
@@ -448,7 +467,7 @@ void
 Terminal::process_set_predicate(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
-    plansys2::Predicate predicate;
+    parser::pddl::tree::Predicate predicate;
     predicate.name = command[0];
 
     if (predicate.name.front() != '(') {
@@ -461,7 +480,7 @@ Terminal::process_set_predicate(std::vector<std::string> & command, std::ostring
 
     pop_front(command);
     while (!command.empty()) {
-      plansys2::Param param {command[0], ""};
+      parser::pddl::tree::Param param {command[0], ""};
       predicate.parameters.push_back(param);
       pop_front(command);
     }
@@ -487,7 +506,7 @@ void
 Terminal::process_set_function(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
-    plansys2::Function function;
+    parser::pddl::tree::Function function;
 
     std::string total_expr;
     for (const auto & token : command) {
@@ -510,17 +529,17 @@ Terminal::process_set_function(std::vector<std::string> & command, std::ostrings
 }
 
 void
-Terminal::process_set_goal(std::vector<std::string> & command, std::ostringstream & os)
+Terminal::process_set_goal(
+  std::vector<std::string> & command, std::ostringstream & os,
+  std::string const & construct)
 {
   if (command.size() > 0) {
-    plansys2::Goal goal;
-
     std::string total_expr;
     for (const auto & token : command) {
       total_expr += " " + token;
     }
 
-    goal.fromString(total_expr);
+    parser::pddl::tree::Goal goal(total_expr, construct);
 
     if (goal.root_ != nullptr) {
       if (!problem_client_->setGoal(goal)) {
@@ -536,7 +555,9 @@ Terminal::process_set_goal(std::vector<std::string> & command, std::ostringstrea
 }
 
 void
-Terminal::process_set(std::vector<std::string> & command, std::ostringstream & os)
+Terminal::process_set(
+  std::vector<std::string> & command, std::ostringstream & os,
+  std::string const & construct)
 {
   if (command.size() > 0) {
     if (command[0] == "instance") {
@@ -550,7 +571,7 @@ Terminal::process_set(std::vector<std::string> & command, std::ostringstream & o
       process_set_function(command, os);
     } else if (command[0] == "goal") {
       pop_front(command);
-      process_set_goal(command, os);
+      process_set_goal(command, os, construct);
     } else {
       os << "\tUsage: \n\t\tset [instance|predicate|function|goal]..." <<
         std::endl;
@@ -578,7 +599,7 @@ void
 Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
-    plansys2::Predicate predicate;
+    parser::pddl::tree::Predicate predicate;
     predicate.name = command[0];
 
     if (predicate.name.front() != '(') {
@@ -590,7 +611,7 @@ Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostr
 
     pop_front(command);
     while (!command.empty()) {
-      plansys2::Param param {command[0], ""};
+      parser::pddl::tree::Param param {command[0], ""};
       predicate.parameters.push_back(param);
       pop_front(command);
     }
@@ -616,7 +637,7 @@ void
 Terminal::process_remove_function(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
-    plansys2::Function function;
+    parser::pddl::tree::Function function;
 
     std::regex name_regexp("[a-zA-Z][a-zA-Z0-9_\\-]*");
 
@@ -633,7 +654,7 @@ Terminal::process_remove_function(std::vector<std::string> & command, std::ostri
     }
 
     while (std::regex_search(temp, match, name_regexp)) {
-      function.parameters.push_back(plansys2::Param{match.str(0), ""});
+      function.parameters.push_back(parser::pddl::tree::Param{match.str(0), ""});
       temp = match.suffix().str();
     }
 
@@ -682,7 +703,7 @@ Terminal::execute_plan()
       std::cout << "\r\e[K" << std::flush;
       for (const auto & action_status : feedback.action_execution_status) {
         if (action_status.status == plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED ||
-          action_status.status == plansys2_msgs::msg::ActionExecutionInfo::SUCCEDED)
+          action_status.status == plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED)
         {
           continue;
         }
@@ -703,8 +724,8 @@ Terminal::execute_plan()
           case plansys2_msgs::msg::ActionExecutionInfo::FAILED:
             std::cout << "FAILED]";
             break;
-          case plansys2_msgs::msg::ActionExecutionInfo::SUCCEDED:
-            std::cout << "succeded]";
+          case plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED:
+            std::cout << "succeeded]";
             break;
         }
       }
@@ -742,7 +763,29 @@ Terminal::process_run(std::vector<std::string> & command, std::ostringstream & o
 void
 Terminal::process_command(std::string & command, std::ostringstream & os)
 {
-  std::vector<std::string> tokens = tokenize(command);
+  std::string wexpr(command);
+
+  std::string cmd;
+  std::string expr;
+  std::string construct;
+
+  int first = wexpr.find("(");
+  if (first != std::string::npos) {
+    int last = get_parenthesis(wexpr, first);
+    cmd = wexpr.substr(0, last + 1);
+    expr = wexpr.substr(first, last - first + 1);
+    wexpr.erase(wexpr.begin(), wexpr.begin() + last + 1);
+  } else {
+    cmd = command;
+  }
+
+  first = wexpr.find("(");
+  if (first != std::string::npos) {
+    int last = get_parenthesis(wexpr, first);
+    construct = wexpr.substr(first, last - first + 1);
+  }
+
+  std::vector<std::string> tokens = tokenize(cmd);
 
   if (tokens.empty()) {
     return;
@@ -753,7 +796,7 @@ Terminal::process_command(std::string & command, std::ostringstream & os)
     process_get(tokens, os);
   } else if (tokens[0] == "set") {
     pop_front(tokens);
-    process_set(tokens, os);
+    process_set(tokens, os, construct);
   } else if (tokens[0] == "remove") {
     pop_front(tokens);
     process_remove(tokens, os);

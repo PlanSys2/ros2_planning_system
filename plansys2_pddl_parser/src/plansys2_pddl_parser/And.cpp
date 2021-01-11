@@ -14,6 +14,14 @@ void And::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::
 	s << ")";
 }
 
+std::shared_ptr<tree::TreeNode> And::PDDLTree( const Domain & d ) const {
+    std::shared_ptr<tree::AndNode> tree = std::make_shared<tree::AndNode>();
+    for ( unsigned i = 0; i < conds.size(); ++i ) {
+        tree->ops.push_back( conds[i]->PDDLTree( d ) );
+    }
+    return tree;
+}
+
 void And::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	for ( f.next(); f.getChar() != ')'; f.next() ) {
 		f.assert_token( "(" );
