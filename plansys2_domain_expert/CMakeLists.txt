@@ -35,7 +35,6 @@ set(DOMAIN_EXPERT_SOURCES
   src/plansys2_domain_expert/DomainExpert.cpp
   src/plansys2_domain_expert/DomainExpertClient.cpp
   src/plansys2_domain_expert/DomainReader.cpp
-  src/plansys2_domain_expert/Types.cpp
   src/plansys2_domain_expert/DomainExpertNode.cpp
 )
 

@@ -20,6 +20,16 @@ void GroundFunc<int>::PDDLPrint( std::ostream & s, unsigned indent, const TokenS
 }
 
 template <>
+std::shared_ptr<tree::TreeNode> GroundFunc<double>::PDDLTree( const Domain & d ) const {
+    throw UnsupportedConstruct("GroundFunc");
+}
+
+template <>
+std::shared_ptr<tree::TreeNode> GroundFunc<int>::PDDLTree( const Domain & d ) const {
+    throw UnsupportedConstruct("GroundFunc");
+}
+
+template <>
 void GroundFunc<double>::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	TypeGround::parse( f, ts, d );
 	

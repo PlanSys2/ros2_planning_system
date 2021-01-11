@@ -14,6 +14,10 @@ void Lifted::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << " )";
 }
 
+std::shared_ptr<tree::TreeNode> Lifted::PDDLTree( const Domain & d ) const {
+    throw UnsupportedConstruct("Lifted");
+}
+
 void Lifted::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	TokenStruct< std::string > lstruct = f.parseTypedList( true, d.types );
 	params = d.convertTypes( lstruct.types );

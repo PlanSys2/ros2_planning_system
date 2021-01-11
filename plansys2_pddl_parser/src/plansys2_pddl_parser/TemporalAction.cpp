@@ -46,6 +46,10 @@ void TemporalAction::PDDLPrint( std::ostream & s, unsigned indent, const TokenSt
 	s << ")\n";
 }
 
+std::shared_ptr<tree::TreeNode> TemporalAction::PDDLTree( const Domain & d ) const {
+    throw UnsupportedConstruct("TemporalAction");
+}
+
 void TemporalAction::parseCondition( Stringreader & f, TokenStruct< std::string > & ts, Domain & d, And * a ) {
 	f.next();
 	f.assert_token( "(" );

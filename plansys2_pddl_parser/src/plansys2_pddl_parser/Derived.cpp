@@ -27,6 +27,10 @@ void Derived::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< s
 	s << "\n)\n";
 }
 
+std::shared_ptr<tree::TreeNode> Derived::PDDLTree( const Domain & d ) const {
+    throw UnsupportedConstruct("Derived");
+}
+
 void Derived::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	f.assert_token( "(" );

@@ -27,6 +27,7 @@
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_core/Types.hpp"
+#include "plansys2_pddl_parser/Tree.h"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
@@ -45,6 +46,7 @@ struct ActionUnit
 
   std::string action;
   int time;
+
   std::list<std::shared_ptr<RequirementConnection>> reqs;
   std::list<std::shared_ptr<EffectConnection>> effects;
 };
@@ -56,7 +58,7 @@ struct RequirementConnection
   using Ptr = std::shared_ptr<RequirementConnection>;
   static Ptr make_shared() {return std::make_shared<RequirementConnection>();}
 
-  std::string requirement;
+  std::shared_ptr<parser::pddl::tree::TreeNode> requirement;
   ActionUnit::Ptr action;
   bool satisfied;
   std::list<std::shared_ptr<EffectConnection>> effect_connections;
@@ -67,7 +69,7 @@ struct EffectConnection
   using Ptr = std::shared_ptr<EffectConnection>;
   static Ptr make_shared() {return std::make_shared<EffectConnection>();}
 
-  std::string effect;
+  std::shared_ptr<parser::pddl::tree::TreeNode> effect;
   std::shared_ptr<ActionUnit> action;
   std::list<RequirementConnection::Ptr> requirement_connections;
 };

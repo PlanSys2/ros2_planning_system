@@ -14,6 +14,10 @@ void Oneof::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std
 	s << ")";
 }
 
+std::shared_ptr<tree::TreeNode> Oneof::PDDLTree( const Domain & d ) const {
+    throw UnsupportedConstruct("Oneof");
+}
+
 void Oneof::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	for ( f.next(); f.getChar() != ')'; f.next() ) {
 		f.assert_token( "(" );
