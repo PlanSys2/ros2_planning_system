@@ -311,7 +311,7 @@ std::tuple<bool, bool, double> apply(
             return std::make_tuple(true, true, std::get<2>(left) * std::get<2>(right));
             break;
           case parser::pddl::tree::ARITH_DIV:
-            if (std::abs(std::get<2>(right) > 1e-5)) {
+            if (std::abs(std::get<2>(right)) > 1e-5) {
               return std::make_tuple(true, true, std::get<2>(left) / std::get<2>(right));
             } else {
               // Division by zero not allowed.
