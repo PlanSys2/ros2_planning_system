@@ -456,15 +456,11 @@ TEST(problem_expert, addget_goals)
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::tree::Instance{"kitchen", "room"}));
 
   parser::pddl::tree::Goal goal;
-  goal.fromString(
-    "(and (robot_at r2d2 bedroom)(person_at paco kitchen))",
-    "(and (predicate)(predicate))");
+  goal.fromString("(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
   ASSERT_EQ(goal.toString(), "(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
 
   parser::pddl::tree::Goal goal2;
-  goal2.fromString(
-    "(and (robot_at r2d2 bedroom)(not(person_at paco kitchen)))",
-    "(and (predicate)(not (predicate)))");
+  goal2.fromString("(and (robot_at r2d2 bedroom)(not(person_at paco kitchen)))");
   ASSERT_EQ(goal2.toString(), "(and (robot_at r2d2 bedroom)(not (person_at paco kitchen)))");
 
   ASSERT_TRUE(problem_expert.setGoal(goal));
@@ -484,8 +480,7 @@ TEST(problem_expert, addget_goals)
 
   parser::pddl::tree::Goal goal4;
   goal4.fromString(
-    "(and (or (robot_at r2d2 bedroom) (robot_at r2d2 kitchen)) (not (person_at paco kitchen)))",
-    "(and (or (predicate) (predicate)) (not (predicate)))");
+    "(and (or (robot_at r2d2 bedroom) (robot_at r2d2 kitchen)) (not (person_at paco kitchen)))");
   ASSERT_TRUE(problem_expert.setGoal(goal4));
 }
 
@@ -547,9 +542,7 @@ TEST(problem_expert, get_probem)
   ASSERT_TRUE(problem_expert.addPredicate(predicate_4));
 
   parser::pddl::tree::Goal goal;
-  goal.fromString(
-    "(and (robot_at r2d2 bedroom)(person_at paco kitchen))",
-    "(and (predicate)(predicate))");
+  goal.fromString("(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
   ASSERT_TRUE(problem_expert.setGoal(goal));
 
   ASSERT_EQ(

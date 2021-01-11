@@ -700,7 +700,7 @@ ProblemExpertClient::getGoal()
   }
 
   if (future_result.get()->success) {
-    ret.fromString(future_result.get()->goal, future_result.get()->construct);
+    ret.fromString(future_result.get()->goal);
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
@@ -726,7 +726,6 @@ ProblemExpertClient::setGoal(const parser::pddl::tree::Goal & goal)
 
   auto request = std::make_shared<plansys2_msgs::srv::AddProblemGoal::Request>();
   request->goal = goal.toString();
-  request->construct = goal.construct();
 
   auto future_result = add_problem_goal_client_->async_send_request(request);
 
