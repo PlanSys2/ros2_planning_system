@@ -283,13 +283,6 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     goal_handle->succeed(result);
     RCLCPP_INFO(this->get_logger(), "Plan Succeeded");
   }
-
-#ifdef ZMQ_FOUND
-  if (this->get_parameter("enable_groot_monitoring").as_bool()) {
-    // the tree object used by this publisher is only valid in this function
-    publisher_zmq.reset();
-  }
-#endif
 }
 
 void
