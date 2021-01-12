@@ -33,6 +33,10 @@
 #include "behaviortree_cpp_v3/utils/shared_library.h"
 #include "behaviortree_cpp_v3/blackboard.h"
 
+#ifdef ZMQ_FOUND
+#include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
+#endif
+
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
@@ -224,13 +228,14 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   unsigned int server_port = this->get_parameter("server_port").as_int();
   unsigned int max_msgs_per_second = this->get_parameter("max_msgs_per_second").as_int();
 
+  std::unique_ptr<BT::PublisherZMQ> publisher_zmq;
   if (this->get_parameter("enable_groot_monitoring").as_bool()) {
     RCLCPP_INFO(
       get_logger(),
       "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
       get_name(), publisher_port, server_port, max_msgs_per_second);
     try {
-      publisher_zmq_.reset(
+      publisher_zmq.reset(
         new BT::PublisherZMQ(
           tree, max_msgs_per_second, publisher_port,
           server_port));
@@ -282,7 +287,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 #ifdef ZMQ_FOUND
   if (this->get_parameter("enable_groot_monitoring").as_bool()) {
     // the tree object used by this publisher is only valid in this function
-    publisher_zmq_.reset();
+    publisher_zmq.reset();
   }
 #endif
 }
