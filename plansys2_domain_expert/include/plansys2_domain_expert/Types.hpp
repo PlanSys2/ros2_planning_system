@@ -132,6 +132,7 @@ public:
   std::string name;
   std::vector<Param> parameters;
   double value;
+  bool negate = {false};
 };
 
 
@@ -173,15 +174,25 @@ public:
    *
    * \return A text representing the predicate (name name_param1 name_par2 ... name_parN)
   */
-  std::string toString() const
+  std::string toString(bool negate = false) const
   {
     std::string ret;
-    ret = "(" + name;
+
+    if (negate) {
+      ret = "(not (" + name;
+    } else {
+      ret = "(" + name;
+    }
+
     for (const auto & param : parameters) {
       ret += " " + param.name;
     }
 
-    ret += ")";
+    if (negate) {
+      ret += "))";
+    } else {
+      ret += ")";
+    }
 
     return ret;
   }
@@ -220,6 +231,7 @@ public:
 
   std::string name;
   std::vector<Param> parameters;
+  bool negative = {false};
 };
 
 // The type of nodes in a TreeNode
@@ -244,15 +256,17 @@ public:
   /**
    * \return The string representing this node (and its childs in cascade)
    */
-  virtual std::string toString() = 0;
+  virtual std::string toString(bool negate = false) = 0;
 
 
   /// This method will be recursively called to recollect the predicates in the tree
   /**
    * \param[out] predicates Predicates in the node (and its childs in cascade)
    */
-  virtual void getPredicates(std::vector<Predicate> & predicates, bool only_positives) = 0;
+  virtual void getPredicates(std::vector<Predicate> & predicates, bool negate) = 0;
+
   NodeType type_;
+  bool negate_ {false};
 };
 
 /// This function creates a complete tree node
@@ -262,7 +276,7 @@ public:
  * \param[in] expr A expression containing predicates and logic operators
  * \return A smart pointer to the node created
 */
-std::shared_ptr<TreeNode> get_tree_node(const std::string & expr);
+std::shared_ptr<TreeNode> get_tree_node(const std::string & expr, bool negate = false);
 
 /// A Node that contains a Predicate
 class PredicateNode : public TreeNode
@@ -276,17 +290,21 @@ public:
   /**
    * \return The string with the predicate
    */
-  std::string toString()
+  std::string toString(bool negate = false)
   {
-    return predicate_.toString();
+    std::string ret = predicate_.toString(negate);
+
+    return ret;
   }
 
   /// This method add the containing predicate to the recollected vector of predicates.
   /**
    * \param[out] predicates The vector of predicates with this node's predicate
    */
-  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
+  void getPredicates(std::vector<Predicate> & predicates, bool negate)
   {
+    negate_ = negate;
+    predicate_.negative = negate_;
     predicates.push_back(predicate_);
   }
 
@@ -309,12 +327,18 @@ public:
   /**
    * \return The string with the predicate
    */
-  std::string toString()
+  std::string toString(bool negate = false)
   {
     std::string ret;
-    ret = "(and ";
+
+    if (!negate) {
+      ret = "(and ";
+    } else {
+      ret = "(or ";
+    }
+
     for (auto op : ops) {
-      ret += op->toString();
+      ret += op->toString(negate);
     }
     ret += ")";
 
@@ -325,10 +349,11 @@ public:
   /**
    * \param[out] predicates The vector of predicates with the child's ones
    */
-  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
+  void getPredicates(std::vector<Predicate> & predicates, bool negate)
   {
+    negate_ = negate;
     for (auto op : ops) {
-      op->getPredicates(predicates, only_positives);
+      op->getPredicates(predicates, negate_);
     }
   }
 
@@ -351,12 +376,18 @@ public:
   /**
    * \return The string with the predicate
    */
-  std::string toString()
+  std::string toString(bool negate = false)
   {
     std::string ret;
-    ret = "(or ";
+
+    if (!negate) {
+      ret = "(or ";
+    } else {
+      ret = "(and ";
+    }
+
     for (auto op : ops) {
-      ret += op->toString();
+      ret += op->toString(negate);
     }
     ret += ")";
 
@@ -367,10 +398,11 @@ public:
   /**
    * \param[out] predicates The vector of predicates with the child's ones
    */
-  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
+  void getPredicates(std::vector<Predicate> & predicates, bool negate)
   {
+    negate_ = negate;
     for (auto op : ops) {
-      op->getPredicates(predicates, only_positives);
+      op->getPredicates(predicates, negate_);
     }
   }
 
@@ -393,12 +425,11 @@ public:
   /**
    * \return The string with the predicate
    */
-  std::string toString()
+  std::string toString(bool negate = false)
   {
     std::string ret;
-    ret = "(not ";
-    ret += op->toString();
-    ret += ")";
+
+    ret += op->toString(!negate);
 
     return ret;
   }
@@ -407,11 +438,10 @@ public:
   /**
    * \param[out] predicates The vector of predicates with the child's ones
    */
-  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
+  void getPredicates(std::vector<Predicate> & predicates, bool negate)
   {
-    if (!only_positives) {
-      op->getPredicates(predicates, only_positives);
-    }
+    negate_ = negate;
+    op->getPredicates(predicates, !negate_);
   }
   std::shared_ptr<TreeNode> op;
 };
@@ -459,10 +489,10 @@ public:
    * \return The string with the PDDL logical expression contained in this PredicateTree.
    *    It returns a void string if the PredicateTree is void.
    */
-  std::string toString() const
+  std::string toString(bool negate = false) const
   {
     if (root_ != nullptr) {
-      return root_->toString();
+      return root_->toString(negate);
     } else {
       return "";
     }
@@ -485,10 +515,10 @@ public:
   /**
    * \param[out] predicates The vector of predicates contained in the PredicateTree.
    */
-  void getPredicates(std::vector<Predicate> & predicates, bool only_positives = false)
+  void getPredicates(std::vector<Predicate> & predicates)
   {
     if (root_ != nullptr) {
-      root_->getPredicates(predicates, only_positives);
+      root_->getPredicates(predicates, false);
     }
   }
 

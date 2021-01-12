@@ -60,9 +60,9 @@ std::string getReducedString(const std::string & expr)
 
 NodeType getType(const std::string & expr)
 {
-  if (std::regex_search(expr, std::regex("\\(and[ ]*\\(", std::regex::ECMAScript))) {return AND;}
-  if (std::regex_search(expr, std::regex("\\(or[ ]*\\(", std::regex::ECMAScript))) {return OR;}
-  if (std::regex_search(expr, std::regex("\\(not[ ]*\\(", std::regex::ECMAScript))) {return NOT;}
+  if (std::regex_search(expr, std::regex("^\\(and[ ]*\\(", std::regex::ECMAScript))) {return AND;}
+  if (std::regex_search(expr, std::regex("^\\(or[ ]*\\(", std::regex::ECMAScript))) {return OR;}
+  if (std::regex_search(expr, std::regex("^\\(not[ ]*\\(", std::regex::ECMAScript))) {return NOT;}
 
   return PREDICATE;
 }
@@ -194,7 +194,7 @@ std::vector<plansys2::Param> getPredicateParams(const std::string & expr)
   return ret;
 }
 
-std::shared_ptr<TreeNode> get_tree_node(const std::string & expr)
+std::shared_ptr<TreeNode> get_tree_node(const std::string & expr, bool negate)
 {
   std::string wexpr = getReducedString(expr);
   NodeType type = getType(wexpr);
@@ -205,11 +205,12 @@ std::shared_ptr<TreeNode> get_tree_node(const std::string & expr)
   switch (type) {
     case AND: {
         std::shared_ptr<plansys2::AndNode> pn_and = std::make_shared<plansys2::AndNode>();
+        pn_and->negate_ = negate;
 
         std::vector<std::string> subexprs = getSubExpr(wexpr);
 
         for (const auto & e : subexprs) {
-          pn_and->ops.push_back(get_tree_node(e));
+          pn_and->ops.push_back(get_tree_node(e, negate));
         }
 
         return pn_and;
@@ -217,11 +218,12 @@ std::shared_ptr<TreeNode> get_tree_node(const std::string & expr)
 
     case OR: {
         std::shared_ptr<plansys2::OrNode> pn_or = std::make_shared<plansys2::OrNode>();
+        pn_or->negate_ = negate;
 
         std::vector<std::string> subexprs = getSubExpr(wexpr);
 
         for (const auto & e : subexprs) {
-          pn_or->ops.push_back(get_tree_node(e));
+          pn_or->ops.push_back(get_tree_node(e, negate));
         }
 
         return pn_or;
@@ -229,9 +231,10 @@ std::shared_ptr<TreeNode> get_tree_node(const std::string & expr)
 
     case NOT: {
         std::shared_ptr<plansys2::NotNode> pn_not = std::make_shared<plansys2::NotNode>();
+        pn_not->negate_ = negate;
 
         std::vector<std::string> subexprs = getSubExpr(wexpr);
-        pn_not->op = get_tree_node(subexprs[0]);
+        pn_not->op = get_tree_node(subexprs[0], !negate);
 
         return pn_not;
       }
@@ -242,6 +245,8 @@ std::shared_ptr<TreeNode> get_tree_node(const std::string & expr)
 
         pred->predicate_.name = getPredicateName(wexpr);
         pred->predicate_.parameters = getPredicateParams(wexpr);
+        pred->negate_ = negate;
+        pred->predicate_.negative = negate;
 
         return pred;
       }

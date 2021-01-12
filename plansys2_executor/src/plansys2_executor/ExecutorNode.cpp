@@ -19,6 +19,7 @@
 #include <fstream>
 #include <map>
 #include <vector>
+#include <filesystem>
 
 #include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
@@ -210,6 +211,11 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
 
   auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
+
+  std::filesystem::path tp = std::filesystem::temp_directory_path();
+  std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
+  out << bt_xml_tree;
+  out.close();
 
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 

@@ -42,6 +42,22 @@ BTBuilder::get_tree(const Plan & current_plan)
 {
   auto levels = get_plan_actions(current_plan);
 
+  for (int i = 0; i <  levels.size(); i++) {
+    for (const auto & action_unit : levels[i]->action_units) {
+      std::cerr << i << " - " << action_unit->action << std::endl;
+
+      std::cerr << "\tRequirements: " <<  action_unit->reqs.size() << std::endl;
+      for (const auto & req : action_unit->reqs) {
+        std::cerr << "\t\tReq " << req->requirement << std::endl;
+      }
+
+      std::cerr << "\tEffects: " <<  action_unit->effects.size() << std::endl;
+      for (const auto & effect : action_unit->effects) {
+        std::cerr << "\t\tEffect " << effect->effect << std::endl;
+      }
+    }
+  }
+
   for (int i = 1; i < levels.size(); i++) {
     int level_comp = i - 1;
     while (level_comp >= 0 && !level_satisfied(levels[i])) {
@@ -344,12 +360,12 @@ BTBuilder::get_plan_actions(const Plan & plan)
 
     auto dur_action = get_action_from_string(item.action, domain_client_);
     std::vector<plansys2::Predicate> at_start_requirements;
-    dur_action->at_start_requirements.getPredicates(at_start_requirements, true);
+    dur_action->at_start_requirements.getPredicates(at_start_requirements);
 
     std::vector<plansys2::Predicate> over_all_requirements;
-    dur_action->over_all_requirements.getPredicates(over_all_requirements, true);
+    dur_action->over_all_requirements.getPredicates(over_all_requirements);
     std::vector<plansys2::Predicate> at_end_requirements;
-    dur_action->at_end_requirements.getPredicates(at_end_requirements, true);
+    dur_action->at_end_requirements.getPredicates(at_end_requirements);
 
     std::vector<plansys2::Predicate> requirements;
 
@@ -374,9 +390,9 @@ BTBuilder::get_plan_actions(const Plan & plan)
     }
 
     std::vector<plansys2::Predicate> at_start_effects;
-    dur_action->at_start_effects.getPredicates(at_start_effects, true);
+    dur_action->at_start_effects.getPredicates(at_start_effects);
     std::vector<plansys2::Predicate> at_end_effects;
-    dur_action->at_end_effects.getPredicates(at_end_effects, true);
+    dur_action->at_end_effects.getPredicates(at_end_effects);
 
     std::vector<plansys2::Predicate> effects;
     std::copy(at_start_effects.begin(), at_start_effects.end(), std::back_inserter(effects));
