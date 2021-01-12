@@ -154,8 +154,7 @@ DomainReader::get_requirements(std::string & domain)
   auto end_pos = get_end_block(domain, init_pos);
 
   if (end_pos >= 0) {
-    auto ret = domain.substr(init_pos, end_pos - init_pos);
-
+    auto ret = substr_without_empty_lines(domain, init_pos, end_pos);
     // We remove the requirements part for not interfering with next analysis
     domain.replace(init_pos, end_pos - init_pos, "");
 
