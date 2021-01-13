@@ -51,6 +51,15 @@ BTBuilder::get_tree(const Plan & current_plan)
     }
   }
 
+  
+  // Remove unnecessary connections
+  for (int i = levels.size() - 1; i >= 0; i--) {
+    std::cerr << "level: " << levels[i]->time << std::endl;
+    for (auto & action_unit : levels[i]->action_units) {
+      purge_connections(action_unit);
+    }
+  }
+
   // Test if requirement is satisfied by pre-existing knowledge
   for (auto & level : levels) {
     for (auto & action_unit : level->action_units) {
@@ -285,65 +294,48 @@ BTBuilder::execution_block(const std::string & action, int plan_time, int l)
 }
 
 void
+BTBuilder::check_req_effect(
+  std::shared_ptr<plansys2::RequirementConnection> & req,
+  std::shared_ptr<plansys2::EffectConnection> & effect)
+{
+  if (req->requirement == effect->effect) {
+    std::cerr << "\tat_start_effects [" << effect->action->action << "] satisfy at_start_req [" << req->requirement << "]" << std::endl;
+
+    req->satisfied = true;
+    req->effect_connections.push_back(effect);
+    effect->requirement_connections.push_back(req);
+  }
+}
+
+void
 BTBuilder::check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr down_level)
 {
   for (auto & down_action_unit : down_level->action_units) {
     for (auto & req : down_action_unit->at_start_reqs) {
       if (!req->satisfied) {
         for (auto & up_action_unit : up_level->action_units) {
-          
           for (auto & effect : up_action_unit->at_start_effects) {
-            
             std::cerr << effect->effect << " <-1-> " << req->requirement << std::endl;
-            if (req->requirement == effect->effect) {
-
-              std::cerr << "\tat_start_effects [" << effect->action->action << "] satisfy at_start_req [" << req->requirement << "]" << std::endl;
-
-              req->satisfied = true;
-              req->effect_connections.push_back(effect);
-              effect->requirement_connections.push_back(req);
-            }
+            check_req_effect(req, effect);
           }
           for (auto & effect : up_action_unit->at_end_effects) {
             std::cerr << effect->effect << " <-2-> " << req->requirement << std::endl;
-            if (req->requirement == effect->effect) {
-
-              std::cerr << "\tat_end_effects [" << effect->action->action << "] satisfy at_start_req [" << req->requirement << "]" << std::endl;
-
-              req->satisfied = true;
-              req->effect_connections.push_back(effect);
-              effect->requirement_connections.push_back(req);
-            }
+            check_req_effect(req, effect);
           }
         }
       }
     }
+
     for (auto & req : down_action_unit->over_all_reqs) {
       if (!req->satisfied) {
-        for (auto & up_action_unit : up_level->action_units) {
-          
+        for (auto & up_action_unit : up_level->action_units) {          
           for (auto & effect : up_action_unit->at_start_effects) {
             std::cerr << effect->effect << " <-3-> " << req->requirement << std::endl;
-            if (req->requirement == effect->effect) {
- 
-               std::cerr << "\tat_start_effects [" << effect->action->action << "] satisfy over_all_req [" << req->requirement << "]" << std::endl;
-
-              req->satisfied = true;
-              req->effect_connections.push_back(effect);
-              effect->requirement_connections.push_back(req);
-            }
+            check_req_effect(req, effect);
           }
           for (auto & effect : up_action_unit->at_end_effects) {
             std::cerr << effect->effect << " <-4-> " << req->requirement << std::endl;
-
-            if (req->requirement == effect->effect) {
-
-               std::cerr << "\tat_end_effects [" << effect->action->action << "] satisfy over_all_req [" << req->requirement << "]" << std::endl;
-
-              req->satisfied = true;
-              req->effect_connections.push_back(effect);
-              effect->requirement_connections.push_back(req);
-            }
+            check_req_effect(req, effect);
           }
         }
       }
@@ -351,43 +343,92 @@ BTBuilder::check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr d
 
     for (auto & req : down_action_unit->at_end_reqs) {
       if (!req->satisfied) {
-        for (auto & up_action_unit : up_level->action_units) {
-          
+        for (auto & up_action_unit : up_level->action_units) {     
           for (auto & effect : up_action_unit->at_start_effects) {
-
-            std::cerr << effect->effect << " <-4-> " << req->requirement << std::endl;
-
-            if (req->requirement == effect->effect) {
-
-               std::cerr << "\tat_start_effects [" << effect->action->action << "] satisfy at_end_req [" << req->requirement << "]" << std::endl;
-
-              req->satisfied = true;
-              req->effect_connections.push_back(effect);
-              effect->requirement_connections.push_back(req);
-            }
+            std::cerr << effect->effect << " <-5-> " << req->requirement << std::endl;
+            check_req_effect(req, effect);
           }
           for (auto & effect : up_action_unit->at_end_effects) {
-
-            std::cerr << effect->effect << " <-5-> " << req->requirement << std::endl;
-
-            if (req->requirement == effect->effect) {
-
-               std::cerr << "\tat_end_effects [" << effect->action->action << "] satisfy at_end_req [" << req->requirement << "]" << std::endl;
-
-              req->satisfied = true;
-              req->effect_connections.push_back(effect);
-              effect->requirement_connections.push_back(req);
-            }
+            std::cerr << effect->effect << " <-6-> " << req->requirement << std::endl;
+            check_req_effect(req, effect);
           }
         }
       }
     }
-
-
-
   }
 }
 
+void
+BTBuilder::purge_connections(ActionUnit::Ptr action_unit)
+{
+  std::cerr << "Purging " << action_unit->action << " =====================================" << std::endl;
+  // Get all the requirements
+  std::set<RequirementConnection::Ptr> requirements;
+  std::copy(
+    action_unit->at_start_reqs.begin(),
+    action_unit->at_start_reqs.end(),
+    std::inserter(requirements, requirements.begin()));
+  std::copy(
+    action_unit->over_all_reqs.begin(),
+    action_unit->over_all_reqs.end(),
+    std::inserter(requirements, requirements.begin()));
+  std::copy(
+    action_unit->at_end_reqs.begin(),
+    action_unit->at_end_reqs.end(),
+    std::inserter(requirements, requirements.begin()));
+  
+  for (auto req : requirements) {
+    for (auto action_unit_effect : req->effect_connections) {
+      std::cerr << "\tPurge " << req->requirement << " in " << action_unit_effect->action->action << std::endl;
+      purge_requirement(action_unit_effect->action, requirements);
+    }
+  }
+}
+
+void
+BTBuilder::purge_requirement(ActionUnit::Ptr action_unit, std::set<RequirementConnection::Ptr> & requirements_test)
+{
+  std::cerr << "\t\tPurging with " << action_unit->action << " ===" << std::endl;
+  // Get all the requirements of the current action_unit
+  std::set<RequirementConnection::Ptr> requirements;
+  std::copy(
+    action_unit->at_start_reqs.begin(),
+    action_unit->at_start_reqs.end(),
+    std::inserter(requirements, requirements.begin()));
+  std::copy(
+    action_unit->over_all_reqs.begin(),
+    action_unit->over_all_reqs.end(),
+    std::inserter(requirements, requirements.begin()));
+  std::copy(
+    action_unit->at_end_reqs.begin(),
+    action_unit->at_end_reqs.end(),
+    std::inserter(requirements, requirements.begin()));
+
+  auto it = requirements_test.begin();
+  while (it != requirements_test.end()) {
+    for (const auto & req_current_action_unit : requirements) {
+      std::cerr << "\t\t\t[" << (*it)->requirement << " - " << req_current_action_unit->requirement << "]" << std::endl;
+      if ((*it)->requirement == req_current_action_unit->requirement) {
+        std::cerr << "\t\t\t\t****" << (*it)->requirement << " satisfied here" << std::endl;
+        
+        std::cerr << "Antes " << requirements_test.size() << std::endl;
+        it = requirements_test.erase(it);
+        std::cerr << "Despues " << requirements_test.size() << std::endl;
+      } else {
+        ++it;
+      }
+    }
+  }
+
+  // if (!requirements_test.empty()) {
+  //   for (auto req : requirements) {
+  //     for (auto action_unit_effect : req->effect_connections) {
+  //       std::cerr << "\tPurge " << req->requirement << " in " << action_unit_effect->action->action << std::endl;
+  //       purge_requirement(action_unit_effect->action, requirements_test);
+  //     }
+  //   }
+  // }
+}
 
 bool
 BTBuilder::level_satisfied(ExecutionLevel::Ptr level)

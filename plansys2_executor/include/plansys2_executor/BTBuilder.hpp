@@ -107,6 +107,11 @@ protected:
   void print_levels(std::vector<ExecutionLevel::Ptr> & levels);
   bool level_satisfied(ExecutionLevel::Ptr level);
   void check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr down_level);
+  void check_req_effect(
+    std::shared_ptr<plansys2::RequirementConnection> & req,
+    std::shared_ptr<plansys2::EffectConnection> & effect);
+  void purge_connections(ActionUnit::Ptr action_unit);
+  void purge_requirement(ActionUnit::Ptr action_unit, std::set<RequirementConnection::Ptr> & requirements_test);
 
   std::string get_flow_tree(
     ActionUnit::Ptr root_flow, std::set<ActionUnit::Ptr> & used_actions, int level = 0);
