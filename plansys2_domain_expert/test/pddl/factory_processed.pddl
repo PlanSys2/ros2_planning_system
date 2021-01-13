@@ -2,12 +2,10 @@
 (:requirements :adl :durative-actions :fluents :strips :typing )
 
 (:types
-
 	robot - object
 	zone - object
 	piece - object
 	car - object
-
 )
 
 (:predicates
@@ -23,7 +21,6 @@
 )
 
 (:functions
-
 )
 
 (:durative-action move
