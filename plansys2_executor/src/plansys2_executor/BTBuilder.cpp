@@ -42,22 +42,7 @@ BTBuilder::get_tree(const Plan & current_plan)
 {
   auto levels = get_plan_actions(current_plan);
 
-  for (int i = 0; i <  levels.size(); i++) {
-    for (const auto & action_unit : levels[i]->action_units) {
-      std::cerr << i << " - " << action_unit->action << std::endl;
-
-      std::cerr << "\tRequirements: " <<  action_unit->reqs.size() << std::endl;
-      for (const auto & req : action_unit->reqs) {
-        std::cerr << "\t\tReq " << req->requirement << std::endl;
-      }
-
-      std::cerr << "\tEffects: " <<  action_unit->effects.size() << std::endl;
-      for (const auto & effect : action_unit->effects) {
-        std::cerr << "\t\tEffect " << effect->effect << std::endl;
-      }
-    }
-  }
-
+  // Test the required action for each action
   for (int i = 1; i < levels.size(); i++) {
     int level_comp = i - 1;
     while (level_comp >= 0 && !level_satisfied(levels[i])) {
@@ -66,9 +51,20 @@ BTBuilder::get_tree(const Plan & current_plan)
     }
   }
 
+  // Test if requirement is satisfied by pre-existing knowledge
   for (auto & level : levels) {
     for (auto & action_unit : level->action_units) {
-      for (auto & req : action_unit->reqs) {
+      for (auto & req : action_unit->at_start_reqs) {
+        if (!req->satisfied) {
+          req->satisfied = problem_client_->existPredicate(Predicate(req->requirement));
+        }
+      }
+      for (auto & req : action_unit->over_all_reqs) {
+        if (!req->satisfied) {
+          req->satisfied = problem_client_->existPredicate(Predicate(req->requirement));
+        }
+      }
+      for (auto & req : action_unit->at_end_reqs) {
         if (!req->satisfied) {
           req->satisfied = problem_client_->existPredicate(Predicate(req->requirement));
         }
@@ -76,6 +72,7 @@ BTBuilder::get_tree(const Plan & current_plan)
     }
   }
 
+  // Check how many independent flows there are
   int root_counters = 0;
   for (auto & level : levels) {
     for (auto & action_unit : level->action_units) {
@@ -84,6 +81,10 @@ BTBuilder::get_tree(const Plan & current_plan)
       }
     }
   }
+
+  print_levels(levels);
+
+  std::cerr << "==============> Roots = " << root_counters << std::endl;
 
   std::string bt_plan;
 
@@ -121,13 +122,25 @@ BTBuilder::get_tree(const Plan & current_plan)
   }
 
   return bt_plan;
+
+  return "";
 }
 
 std::set<ActionUnit::Ptr>
 BTBuilder::pred(ActionUnit::Ptr action_unit)
 {
   std::set<ActionUnit::Ptr> deps;
-  for (auto & req : action_unit->reqs) {
+  for (auto & req : action_unit->at_start_reqs) {
+    for (auto & effect_con : req->effect_connections) {
+      deps.insert(effect_con->action);
+    }
+  }
+  for (auto & req : action_unit->over_all_reqs) {
+    for (auto & effect_con : req->effect_connections) {
+      deps.insert(effect_con->action);
+    }
+  }
+  for (auto & req : action_unit->at_end_reqs) {
     for (auto & effect_con : req->effect_connections) {
       deps.insert(effect_con->action);
     }
@@ -140,7 +153,12 @@ std::set<ActionUnit::Ptr>
 BTBuilder::succ(ActionUnit::Ptr action_unit)
 {
   std::set<ActionUnit::Ptr> deps;
-  for (auto & effect : action_unit->effects) {
+  for (auto & effect : action_unit->at_start_effects) {
+    for (auto & req_con : effect->requirement_connections) {
+      deps.insert(req_con->action);
+    }
+  }
+  for (auto & effect : action_unit->at_end_effects) {
     for (auto & req_con : effect->requirement_connections) {
       deps.insert(req_con->action);
     }
@@ -270,11 +288,28 @@ void
 BTBuilder::check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr down_level)
 {
   for (auto & down_action_unit : down_level->action_units) {
-    for (auto & req : down_action_unit->reqs) {
+    for (auto & req : down_action_unit->at_start_reqs) {
       if (!req->satisfied) {
         for (auto & up_action_unit : up_level->action_units) {
-          for (auto & effect : up_action_unit->effects) {
+          
+          for (auto & effect : up_action_unit->at_start_effects) {
+            
+            std::cerr << effect->effect << " <-1-> " << req->requirement << std::endl;
             if (req->requirement == effect->effect) {
+
+              std::cerr << "\tat_start_effects [" << effect->action->action << "] satisfy at_start_req [" << req->requirement << "]" << std::endl;
+
+              req->satisfied = true;
+              req->effect_connections.push_back(effect);
+              effect->requirement_connections.push_back(req);
+            }
+          }
+          for (auto & effect : up_action_unit->at_end_effects) {
+            std::cerr << effect->effect << " <-2-> " << req->requirement << std::endl;
+            if (req->requirement == effect->effect) {
+
+              std::cerr << "\tat_end_effects [" << effect->action->action << "] satisfy at_start_req [" << req->requirement << "]" << std::endl;
+
               req->satisfied = true;
               req->effect_connections.push_back(effect);
               effect->requirement_connections.push_back(req);
@@ -283,6 +318,73 @@ BTBuilder::check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr d
         }
       }
     }
+    for (auto & req : down_action_unit->over_all_reqs) {
+      if (!req->satisfied) {
+        for (auto & up_action_unit : up_level->action_units) {
+          
+          for (auto & effect : up_action_unit->at_start_effects) {
+            std::cerr << effect->effect << " <-3-> " << req->requirement << std::endl;
+            if (req->requirement == effect->effect) {
+ 
+               std::cerr << "\tat_start_effects [" << effect->action->action << "] satisfy over_all_req [" << req->requirement << "]" << std::endl;
+
+              req->satisfied = true;
+              req->effect_connections.push_back(effect);
+              effect->requirement_connections.push_back(req);
+            }
+          }
+          for (auto & effect : up_action_unit->at_end_effects) {
+            std::cerr << effect->effect << " <-4-> " << req->requirement << std::endl;
+
+            if (req->requirement == effect->effect) {
+
+               std::cerr << "\tat_end_effects [" << effect->action->action << "] satisfy over_all_req [" << req->requirement << "]" << std::endl;
+
+              req->satisfied = true;
+              req->effect_connections.push_back(effect);
+              effect->requirement_connections.push_back(req);
+            }
+          }
+        }
+      }
+    }
+
+    for (auto & req : down_action_unit->at_end_reqs) {
+      if (!req->satisfied) {
+        for (auto & up_action_unit : up_level->action_units) {
+          
+          for (auto & effect : up_action_unit->at_start_effects) {
+
+            std::cerr << effect->effect << " <-4-> " << req->requirement << std::endl;
+
+            if (req->requirement == effect->effect) {
+
+               std::cerr << "\tat_start_effects [" << effect->action->action << "] satisfy at_end_req [" << req->requirement << "]" << std::endl;
+
+              req->satisfied = true;
+              req->effect_connections.push_back(effect);
+              effect->requirement_connections.push_back(req);
+            }
+          }
+          for (auto & effect : up_action_unit->at_end_effects) {
+
+            std::cerr << effect->effect << " <-5-> " << req->requirement << std::endl;
+
+            if (req->requirement == effect->effect) {
+
+               std::cerr << "\tat_end_effects [" << effect->action->action << "] satisfy at_end_req [" << req->requirement << "]" << std::endl;
+
+              req->satisfied = true;
+              req->effect_connections.push_back(effect);
+              effect->requirement_connections.push_back(req);
+            }
+          }
+        }
+      }
+    }
+
+
+
   }
 }
 
@@ -292,7 +394,13 @@ BTBuilder::level_satisfied(ExecutionLevel::Ptr level)
 {
   bool ret = true;
   for (auto & action_unit : level->action_units) {
-    for (auto & req : action_unit->reqs) {
+    for (auto & req : action_unit->at_start_reqs) {
+      ret = ret && req->satisfied;
+    }
+    for (auto & req : action_unit->over_all_reqs) {
+      ret = ret && req->satisfied;
+    }
+    for (auto & req : action_unit->at_end_reqs) {
       ret = ret && req->satisfied;
     }
   }
@@ -309,21 +417,94 @@ BTBuilder::print_levels(std::vector<ExecutionLevel::Ptr> & levels)
 
     for (const auto & action_unit : level->action_units) {
       std::cout << "\t" << action_unit->action << "\tin_cardinality: " <<
-        in_cardinality(action_unit) << std::endl;
+        in_cardinality(action_unit) << "\tout_cardinality: " <<
+        out_cardinality(action_unit) << std::endl;
+
       std::cout << "\t\tReqs: " << std::endl;
 
-      for (const auto & req : action_unit->reqs) {
-        std::cout << "\t\t\t" << req->requirement <<
-        (req->satisfied ? "Satisfied" : "Not satisfied") << std::endl;
+      // At Start Reqs
+      for (const auto & req : action_unit->at_start_reqs) {
+        std::cout << "\t\t\tReq At Start: " << req->requirement <<
+        (req->satisfied ? " Satisfied" : " Not satisfied") << std::endl;
+        
+        for (auto & action : req->effect_connections) {
+          std::cout << "\t\t\t\t" << action->action->action << std::endl;
+        }
+      }
+      for (const auto & req : action_unit->at_start_neg_reqs) {
+        std::cout << "\t\t\tReq At Start: NOT " << req->requirement <<
+        (req->satisfied ? " Satisfied" : " Not satisfied") << std::endl;
 
         for (auto & action : req->effect_connections) {
           std::cout << "\t\t\t\t" << action->action->action << std::endl;
         }
       }
+
+      // Over All Reqs
+      for (const auto & req : action_unit->over_all_reqs) {
+        std::cout << "\t\t\tReq Over All: " << req->requirement <<
+        (req->satisfied ? " Satisfied" : " Not satisfied") << std::endl;
+
+        for (auto & action : req->effect_connections) {
+          std::cout << "\t\t\t\t" << action->action->action << std::endl;
+        }
+      }
+
+      for (const auto & req : action_unit->at_start_neg_reqs) {
+        std::cout << "\t\t\tReq Over all: NOT " << req->requirement <<
+        (req->satisfied ? " Satisfied" : "  Not satisfied") << std::endl;
+
+        for (auto & action : req->effect_connections) {
+          std::cout << "\t\t\t\t" << action->action->action << std::endl;
+        }
+      }
+
+      // At End Reqs
+      for (const auto & req : action_unit->at_end_reqs) {
+        std::cout << "\t\t\tReq At End: " << req->requirement <<
+        (req->satisfied ? " Satisfied" : " Not satisfied") << std::endl;
+
+        for (auto & action : req->effect_connections) {
+          std::cout << "\t\t\t\t" << action->action->action << std::endl;
+        }
+      }
+
+      for (const auto & req : action_unit->at_start_neg_reqs) {
+        std::cout << "\t\t\tReq At End: NOT " << req->requirement <<
+        (req->satisfied ? " Satisfied" : " Not satisfied") << std::endl;
+
+        for (auto & action : req->effect_connections) {
+          std::cout << "\t\t\t\t" << action->action->action << std::endl;
+        }
+      }
+
       std::cout << "\t\tEffects: " << std::endl;
 
-      for (const auto & effect : action_unit->effects) {
-        std::cout << "\t\t\t" << effect->effect << std::endl;
+      // At Start Effect
+      for (const auto & effect : action_unit->at_start_effects) {
+        std::cout << "\t\t\tEffect At Start: " << effect->effect << std::endl;
+
+        for (auto & req : effect->requirement_connections) {
+          std::cout << "\t\t\t\t" << req->action->action << std::endl;
+        }
+      }
+      for (const auto & effect : action_unit->at_start_neg_effects) {
+        std::cout << "\t\t\tEffect At Start: NOT " << effect->effect << std::endl;
+
+        for (auto & req : effect->requirement_connections) {
+          std::cout << "\t\t\t\t" << req->action->action << std::endl;
+        }
+      }
+      // At End Effect
+      for (const auto & effect : action_unit->at_end_effects) {
+        std::cout << "\t\t\tEffect At End: " << effect->effect << std::endl;
+
+        for (auto & req : effect->requirement_connections) {
+          std::cout << "\t\t\t\t" << req->action->action << std::endl;
+        }
+      }
+      for (const auto & effect : action_unit->at_end_neg_effects) {
+        std::cout << "\t\t\tEffect At Start: NOT " << effect->effect << std::endl;
 
         for (auto & req : effect->requirement_connections) {
           std::cout << "\t\t\t\t" << req->action->action << std::endl;
@@ -343,7 +524,7 @@ BTBuilder::get_plan_actions(const Plan & plan)
 
   int last_time = 0;
   for (auto & item : plan) {
-    int time = static_cast<int>(item.time);
+    int time = static_cast<int>(item.time * 1000);
     if (time > last_time) {
       last_time = time;
       current_level = ExecutionLevel::make_shared();
@@ -369,23 +550,42 @@ BTBuilder::get_plan_actions(const Plan & plan)
 
     std::vector<plansys2::Predicate> requirements;
 
-    std::copy(
-      at_start_requirements.begin(),
-      at_start_requirements.end(),
-      std::back_inserter(requirements));
-    std::copy(
-      over_all_requirements.begin(),
-      over_all_requirements.end(),
-      std::back_inserter(requirements));
-    std::copy(
-      at_end_requirements.begin(),
-      at_end_requirements.end(),
-      std::back_inserter(requirements));
-
-    for (const auto & p : requirements) {
+    for (const auto & r : at_start_requirements) {
       auto req = RequirementConnection::make_shared();
-      action_unit->reqs.push_back(req);
-      req->requirement = p.toString();
+
+      if (r.negative) {
+        action_unit->at_start_neg_reqs.push_back(req);
+      } else {
+        action_unit->at_start_reqs.push_back(req);
+      }
+
+      req->requirement = r.toString();
+      req->action = action_unit;
+    }
+
+    for (const auto & r : at_end_requirements) {
+      auto req = RequirementConnection::make_shared();
+
+      if (r.negative) {
+        action_unit->at_end_neg_reqs.push_back(req);
+      } else {
+        action_unit->at_end_reqs.push_back(req);
+      }
+
+      req->requirement = r.toString();
+      req->action = action_unit;
+    }
+
+    for (const auto & r : over_all_requirements) {
+      auto req = RequirementConnection::make_shared();
+
+      if (r.negative) {
+        action_unit->over_all_neg_reqs.push_back(req);
+      } else {
+        action_unit->over_all_reqs.push_back(req);
+      }
+
+      req->requirement = r.toString();
       req->action = action_unit;
     }
 
@@ -394,14 +594,29 @@ BTBuilder::get_plan_actions(const Plan & plan)
     std::vector<plansys2::Predicate> at_end_effects;
     dur_action->at_end_effects.getPredicates(at_end_effects);
 
-    std::vector<plansys2::Predicate> effects;
-    std::copy(at_start_effects.begin(), at_start_effects.end(), std::back_inserter(effects));
-    std::copy(at_end_effects.begin(), at_end_effects.end(), std::back_inserter(effects));
-
-    for (const auto & p : effects) {
+    for (const auto & e : at_start_effects) {
       auto effect = EffectConnection::make_shared();
-      action_unit->effects.push_back(effect);
-      effect->effect = p.toString();
+      
+      if (e.negative) {
+        action_unit->at_start_neg_effects.push_back(effect);
+      } else {
+        action_unit->at_start_effects.push_back(effect);
+      }
+
+      effect->effect = e.toString();
+      effect->action = action_unit;
+    }
+
+    for (const auto & e : at_end_effects) {
+      auto effect = EffectConnection::make_shared();
+      
+      if (e.negative) {
+        action_unit->at_end_neg_effects.push_back(effect);
+      } else {
+        action_unit->at_end_effects.push_back(effect);
+      }
+
+      effect->effect = e.toString();
       effect->action = action_unit;
     }
   }

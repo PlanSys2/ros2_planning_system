@@ -45,8 +45,17 @@ struct ActionUnit
 
   std::string action;
   int time;
-  std::list<std::shared_ptr<RequirementConnection>> reqs;
-  std::list<std::shared_ptr<EffectConnection>> effects;
+  std::list<std::shared_ptr<RequirementConnection>> at_start_reqs;
+  std::list<std::shared_ptr<RequirementConnection>> over_all_reqs;
+  std::list<std::shared_ptr<RequirementConnection>> at_end_reqs;
+  std::list<std::shared_ptr<EffectConnection>> at_start_effects;
+  std::list<std::shared_ptr<EffectConnection>> at_end_effects;
+
+  std::list<std::shared_ptr<RequirementConnection>> at_start_neg_reqs;
+  std::list<std::shared_ptr<RequirementConnection>> over_all_neg_reqs;
+  std::list<std::shared_ptr<RequirementConnection>> at_end_neg_reqs;
+  std::list<std::shared_ptr<EffectConnection>> at_start_neg_effects;
+  std::list<std::shared_ptr<EffectConnection>> at_end_neg_effects;
 };
 
 bool operator<(const ActionUnit::Ptr & op1, const ActionUnit::Ptr & op2);

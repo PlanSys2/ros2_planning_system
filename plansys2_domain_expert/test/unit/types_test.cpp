@@ -392,6 +392,24 @@ TEST(domain_types, predicate_tree_from_string_2)
   ASSERT_EQ(tree2.toString(), expresion2);
 }
 
+TEST(domain_types, predicate_tree_from_string_3)
+{
+  std::string expresion = std::string("(and (patrolled ro1) (patrolled ro2) (patrolled ro3))");
+  plansys2::PredicateTree tree;
+  tree.fromString(expresion);
+
+  ASSERT_EQ(tree.toString(), "(and (patrolled ro1)(patrolled ro2)(patrolled ro3))");
+}
+
+TEST(domain_types, predicate_tree_from_string_4)
+{
+  std::string expresion = std::string("  (  and (patrolled ro1) (patrolled ro2) (patrolled ro3))");
+  plansys2::PredicateTree tree;
+  tree.fromString(expresion);
+
+  ASSERT_EQ(tree.toString(), "(and (patrolled ro1)(patrolled ro2)(patrolled ro3))");
+}
+
 TEST(domain_types, predicate_tree_from_string_negative)
 {
   std::string expresion = std::string("(and (robot_at r2d2 bedroom)(not ") +
