@@ -109,7 +109,7 @@ TEST(bt_actions, load_plugins)
 
   factory.registerFromPlugin(loader.getOSName("plansys2_close_gripper_bt_node"));
   factory.registerFromPlugin(loader.getOSName("plansys2_open_gripper_bt_node"));
-  factory.registerFromPlugin(loader.getOSName("plansys2_move_bt_node"));
+  factory.registerFromPlugin(loader.getOSName("plansys2_move_bt_test_node"));
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
   std::string xml_file = pkgpath + "/test/behavior_tree/transport.xml";
