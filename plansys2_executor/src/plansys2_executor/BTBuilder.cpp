@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <string>
+#include <sstream>
 #include <memory>
 #include <set>
 #include <tuple>
@@ -41,25 +42,6 @@ std::string
 BTBuilder::get_tree(const Plan & current_plan)
 {
   auto levels = get_plan_actions(current_plan);
-
-  for (size_t i = 1; i < levels.size(); i++) {
-    int level_comp = static_cast<int>(i) - 1;
-    while (level_comp >= 0 && !level_satisfied(levels[i])) {
-      check_connections(levels[level_comp], levels[i]);
-      level_comp--;
-    }
-  }
-
-  for (auto & level : levels) {
-    for (auto & action_unit : level->action_units) {
-      for (auto & req : action_unit->reqs) {
-        if (!req->satisfied) {
-          std::tuple<bool, double> result = check(req->requirement, problem_client_);
-          req->satisfied = std::get<0>(result);
-        }
-      }
-    }
-  }
 
   int root_counters = 0;
   for (auto & level : levels) {
@@ -106,6 +88,15 @@ BTBuilder::get_tree(const Plan & current_plan)
   }
 
   return bt_plan;
+}
+
+std::string
+BTBuilder::get_tree_dotgraph(const Plan & current_plan)
+{
+  auto levels = get_plan_actions(current_plan);
+  print_levels(levels);
+  std::string dotgraph = get_levels_dotgraph(levels);
+  return dotgraph;
 }
 
 std::set<ActionUnit::Ptr>
@@ -352,6 +343,116 @@ BTBuilder::print_levels(std::vector<ExecutionLevel::Ptr> & levels)
   }
 }
 
+std::string
+BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
+{
+  // create xdot graph
+  std::stringstream ss;
+  ss << "digraph plan {\n";
+
+  // dotgraph formatting options
+  ss << "node[shape=box];\n";
+
+  // get nodes
+  std::vector<ActionUnit::Ptr> nodes;
+  int node_counter = 0;
+  int counter_level = 0;
+  for (auto & level : levels) {
+    ss << "subgraph cluster_" << counter_level++ << " {\n";
+    ss << "label = \"Time: " << level->time << "\";\n";
+    for (const auto & action_unit : level->action_units) {
+      // get nodes
+      // node i = action_unit
+      nodes.push_back(action_unit);
+      ss << node_counter++ << " [label=\"" << action_unit->action << "\"];\n";
+      // ss << "subgraph cluster_" << node_counter++ << " {\n [label=\"" << action_unit->action << "\"];\n";
+      for (const auto & req : action_unit->reqs) {
+        for (auto & effect_conn : req->effect_connections) {
+        }
+      }
+      // ss << "}\n";
+    }
+    ss << "}\n";
+  }
+
+  // get edges
+  std::set<std::pair<int,int> > edges;
+  node_counter = 0;
+  for (auto & level : levels) {
+    for (const auto & action_unit : level->action_units) {
+      for (const auto & req : action_unit->reqs) {
+        for (auto & effect_conn : req->effect_connections) {
+          // incoming edges
+          auto found = std::find(nodes.begin(), nodes.end(), effect_conn->action);
+          if (found != nodes.end())
+          {
+            int index = found - nodes.begin();
+            std::pair<int,int> edge(index, node_counter);
+            edges.insert(edge);
+            ss << index << " -> " << node_counter << ";\n";
+          }
+        }
+      }
+
+      for (const auto & effect : action_unit->effects) {
+        for (auto & req : effect->requirement_connections) {
+          // outgoing edges
+          auto found = std::find(nodes.begin(), nodes.end(), req->action);
+          if (found != nodes.end())
+          {
+            int index = found - nodes.begin();
+            std::pair<int,int> edge(node_counter, index);
+            edges.insert(edge);
+            ss << node_counter << " -> " << index << ";\n";
+          }
+        }
+      }
+      node_counter++;
+    }
+  }
+
+  node_counter = 0;
+  // int counter_level = 0;
+  for (auto & level : levels) {
+    // std::cout << "====== Level " << counter_level++ << " [" << level->time << "]" << std::endl;
+    // ss << "subgraph level" << counter_level++ << " {\n";
+    // ss << "label = \"" << level->time << "\";";
+
+    for (const auto & action_unit : level->action_units) {
+      // std::cout << "\t" << action_unit->action << "\tin_cardinality: " <<
+        // in_cardinality(action_unit) << "\tout_cardinality: " <<
+        // out_cardinality(action_unit) << std::endl;
+
+      // std::cout << "\t\tRequirements: " << std::endl;
+      for (const auto & req : action_unit->reqs) {
+        // std::cout << "\t\t\t" << req->requirement->toString() <<
+        // (req->satisfied ? " Satisfied" : " Not satisfied") << std::endl;
+
+        // incoming edges
+        // std::cout << "\t\t\t\tEffect Connections: " << std::endl;
+        for (auto & action : req->effect_connections) {
+          // std::cout << "\t\t\t\t\t" << action->action->action << std::endl;
+        }
+      }
+
+      // std::cout << "\t\tEffects: " << std::endl;
+      for (const auto & effect : action_unit->effects) {
+        // std::cout << "\t\t\t" << effect->effect->toString() << std::endl;
+
+        // outgoing edges
+        // std::cout << "\t\t\t\tRequirement Connections: " << std::endl;
+        for (auto & req : effect->requirement_connections) {
+          // std::cout << "\t\t\t\t\t" << req->action->action << std::endl;
+        }
+      }
+      // ss << "}";
+    }
+  }
+
+  ss << "}";
+  return ss.str();
+}
+
 std::vector<ExecutionLevel::Ptr>
 BTBuilder::get_plan_actions(const Plan & plan)
 {
@@ -442,6 +543,25 @@ BTBuilder::get_plan_actions(const Plan & plan)
       action_unit->effects.push_back(eff);
       eff->effect = effect;
       eff->action = action_unit;
+    }
+  }
+
+  for (size_t i = 1; i < ret.size(); i++) {
+    int level_comp = static_cast<int>(i) - 1;
+    while (level_comp >= 0 && !level_satisfied(ret[i])) {
+      check_connections(ret[level_comp], ret[i]);
+      level_comp--;
+    }
+  }
+
+  for (auto & level : ret) {
+    for (auto & action_unit : level->action_units) {
+      for (auto & req : action_unit->reqs) {
+        if (!req->satisfied) {
+          std::tuple<bool, double> result = check(req->requirement, problem_client_);
+          req->satisfied = std::get<0>(result);
+        }
+      }
     }
   }
 
