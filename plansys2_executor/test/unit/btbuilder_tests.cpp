@@ -123,36 +123,10 @@ public:
     return BTBuilder::get_node_satisfy(predicate, node, current);
   }
 
-  void print_node(
-    const plansys2::GraphNode::Ptr & node,
-    int level,
-    std::set<plansys2::GraphNode::Ptr> & used_nodes) const
-  { 
-    if (used_nodes.find(node) != used_nodes.end()) {
-      return;
-    }
-
-    used_nodes.insert(node);
-    
-    std::cerr << std::string(level, '\t') << "[" << node->action.time << "] ";
-    std::cerr << node->action.action->name << " ";
-    for (const auto & param : node->action.action->parameters) {
-      std::cerr << param.name<< " ";
-    }
-    std::cerr << " in arcs " << node->in_arcs.size() << std::endl;
-
-    for (const auto & out : node->out_arcs) {
-      print_node(out, level + 1, used_nodes);
-    }
-
-  }
 
   void print_graph(const plansys2::Graph::Ptr & graph) const
   {
-    std::set<plansys2::GraphNode::Ptr> used_nodes;
-    for (const auto & root : graph->roots) {
-      print_node(root, 0, used_nodes);
-    }    
+    BTBuilder::print_graph(graph);
   }
 
   void remove_existing_predicates(
@@ -163,6 +137,7 @@ public:
   }
 
 };
+
 
 TEST(btbuilder_tests, test_plan_1)
 {
@@ -629,10 +604,14 @@ TEST(btbuilder_tests, test_plan_3)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  auto graph = btbuilder->get_graph(plan.value());
-  ASSERT_NE(graph, nullptr);
+  // auto graph = btbuilder->get_graph(plan.value());
+  //ASSERT_NE(graph, nullptr);
 
-  btbuilder->print_graph(graph);
+  //btbuilder->print_graph(graph);
+  auto bt = btbuilder->get_tree(plan.value());
+
+  std::cerr << bt << std::endl;
+
 
   finish = true;
   t.join();

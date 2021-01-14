@@ -34,10 +34,6 @@
 namespace plansys2
 {
 
-struct RequirementConnection;
-struct EffectConnection;
-
-
 struct PredicateStamped
 {
   using Ptr = std::shared_ptr<PredicateStamped>;
@@ -69,66 +65,11 @@ struct Graph
   using Ptr = std::shared_ptr<Graph>;
   static Ptr make_shared() {return std::make_shared<Graph>();}
 
-  std::set<GraphNode::Ptr> out_arcs;
+  std::list<GraphNode::Ptr> roots;
 };
-
-///////////////////////////////////////////////////////////////////////////////
-struct ActionUnit
-{
-  using Ptr = std::shared_ptr<ActionUnit>;
-  static Ptr make_shared() {return std::make_shared<ActionUnit>();}
-
-  std::string action;
-  int time;
-  std::list<std::shared_ptr<RequirementConnection>> at_start_reqs;
-  std::list<std::shared_ptr<RequirementConnection>> over_all_reqs;
-  std::list<std::shared_ptr<RequirementConnection>> at_end_reqs;
-  std::list<std::shared_ptr<EffectConnection>> at_start_effects;
-  std::list<std::shared_ptr<EffectConnection>> at_end_effects;
-
-  std::list<std::shared_ptr<RequirementConnection>> at_start_neg_reqs;
-  std::list<std::shared_ptr<RequirementConnection>> over_all_neg_reqs;
-  std::list<std::shared_ptr<RequirementConnection>> at_end_neg_reqs;
-  std::list<std::shared_ptr<EffectConnection>> at_start_neg_effects;
-  std::list<std::shared_ptr<EffectConnection>> at_end_neg_effects;
-};
-
-bool operator<(const ActionUnit::Ptr & op1, const ActionUnit::Ptr & op2);
-
-///////////////////////////////////////////////////////////////////////////////
 
 bool operator<(const PredicateStamped & op1, const PredicateStamped & op2);
 bool operator<(const PredicateStamped & op1, const Predicate & op2);
-
-struct RequirementConnection
-{
-  using Ptr = std::shared_ptr<RequirementConnection>;
-  static Ptr make_shared() {return std::make_shared<RequirementConnection>();}
-
-  std::string requirement;
-  ActionUnit::Ptr action;
-  bool satisfied;
-  std::list<std::shared_ptr<EffectConnection>> effect_connections;
-};
-
-struct EffectConnection
-{
-  using Ptr = std::shared_ptr<EffectConnection>;
-  static Ptr make_shared() {return std::make_shared<EffectConnection>();}
-
-  std::string effect;
-  std::shared_ptr<ActionUnit> action;
-  std::list<RequirementConnection::Ptr> requirement_connections;
-};
-
-struct ExecutionLevel
-{
-  using Ptr = std::shared_ptr<ExecutionLevel>;
-  static Ptr make_shared() {return std::make_shared<ExecutionLevel>();}
-
-  int time;
-  std::list<ActionUnit::Ptr> action_units;
-};
 
 class BTBuilder
 {
@@ -171,29 +112,18 @@ protected:
     std::vector<Predicate> & check_predicates,
     const std::set<PredicateStamped> & predicates) const;
 
-  std::vector<ExecutionLevel::Ptr> levels_;
-
-  void print_levels(std::vector<ExecutionLevel::Ptr> & levels);
-  bool level_satisfied(ExecutionLevel::Ptr level);
-  void check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr down_level);
-  void check_req_effect(
-    std::shared_ptr<plansys2::RequirementConnection> & req,
-    std::shared_ptr<plansys2::EffectConnection> & effect);
-  void purge_connections(ActionUnit::Ptr action_unit);
-  void purge_requirement(ActionUnit::Ptr action_unit, std::set<RequirementConnection::Ptr> & requirements_test);
-
-  std::string get_flow_tree(
-    ActionUnit::Ptr root_flow, std::set<ActionUnit::Ptr> & used_actions, int level = 0);
-
-  std::set<ActionUnit::Ptr> pred(ActionUnit::Ptr action_unit);
-  std::set<ActionUnit::Ptr> succ(ActionUnit::Ptr action_unit);
-
-  int in_cardinality(ActionUnit::Ptr action_unit);
-  int out_cardinality(ActionUnit::Ptr action_unit);
+  std::string get_flow_tree(GraphNode::Ptr node, int level = 0);
 
   std::string t(int level);
 
-  std::string execution_block(const std::string & action, int plan_time, int l);
+  std::string execution_block(const GraphNode::Ptr & node, int l);
+  void print_node(
+    const GraphNode::Ptr & node,
+    int level,
+    std::set<GraphNode::Ptr> & used_nodes) const;
+
+  void print_graph(const plansys2::Graph::Ptr & graph) const;
+
   // bool is_predecessor(const PlanItem & op1, const PlanItem & op2);
   // void add_child(GraphNode & parent, GraphNode & new_child);
 
