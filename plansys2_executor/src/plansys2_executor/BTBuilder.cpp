@@ -352,25 +352,67 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
 
   // dotgraph formatting options
   ss << "node[shape=box];\n";
+  ss << "rankdir=TB;\n";
 
   // get nodes
   std::vector<ActionUnit::Ptr> nodes;
+  std::set< std::shared_ptr<parser::pddl::tree::TreeNode> > reqs_effs;
   int node_counter = 0;
-  int counter_level = 0;
+  int level_counter = 0;
+  int subgraph_counter = 0;
   for (auto & level : levels) {
-    ss << "subgraph cluster_" << counter_level++ << " {\n";
+    // ss << "subgraph cluster_" << level_counter++ << " {\n";
+    ss << "subgraph cluster_" << subgraph_counter++ << " {\n";
     ss << "label = \"Time: " << level->time << "\";\n";
+    ss << "labeljust = l;\n";
     for (const auto & action_unit : level->action_units) {
-      // get nodes
+      // nodes
       // node i = action_unit
       nodes.push_back(action_unit);
-      ss << node_counter++ << " [label=\"" << action_unit->action << "\"];\n";
+      // ss << node_counter++ << " [label=\"" << action_unit->action << "\"];\n";
       // ss << "subgraph cluster_" << node_counter++ << " {\n [label=\"" << action_unit->action << "\"];\n";
+      ss << "subgraph cluster_" << subgraph_counter++ << " {\n label=\"" << action_unit->action << "\";\n";
+      ss << "labeljust = c;\n";
+
+      // requirements
+      std::set<int> req_nodes;
       for (const auto & req : action_unit->reqs) {
-        for (auto & effect_conn : req->effect_connections) {
+        // ss << node_counter++ << "[label=\"" << req->requirement->toString() << "\"];\n";
+        req_nodes.insert(node_counter);
+        ss << node_counter++ << "[label=\"\",shape=circle];\n";
+        reqs_effs.insert(req->requirement);
+      }
+      ss << "{ rank=min; ";
+      for (const auto &node : req_nodes)
+      {
+        ss << node << "; ";
+      }
+      ss << "}\n";
+
+      // effects
+      std::set<int> eff_nodes;
+      for (const auto & eff : action_unit->effects) {
+        // ss << node_counter++ << "[label=\"" << eff->effect->toString() << "\"];\n";
+        eff_nodes.insert(node_counter);
+        ss << node_counter++ << "[label=\"\",shape=circle];\n";
+        reqs_effs.insert(eff->effect);
+      }
+      ss << "{ rank=max; ";
+      for (const auto &node : eff_nodes)
+      {
+        ss << node << "; ";
+      }
+      ss << "}\n";
+
+      for (const auto &req : req_nodes)
+      {
+        for (const auto &eff : eff_nodes)
+        {
+          ss << req << "->" << eff << "[style=invis];\n";
         }
       }
-      // ss << "}\n";
+
+      ss << "}\n";
     }
     ss << "}\n";
   }
@@ -412,10 +454,10 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
   }
 
   node_counter = 0;
-  // int counter_level = 0;
+  // int level_counter = 0;
   for (auto & level : levels) {
-    // std::cout << "====== Level " << counter_level++ << " [" << level->time << "]" << std::endl;
-    // ss << "subgraph level" << counter_level++ << " {\n";
+    // std::cout << "====== Level " << level_counter++ << " [" << level->time << "]" << std::endl;
+    // ss << "subgraph level" << level_counter++ << " {\n";
     // ss << "label = \"" << level->time << "\";";
 
     for (const auto & action_unit : level->action_units) {
