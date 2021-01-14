@@ -515,7 +515,7 @@ public:
   /**
    * \param[out] predicates The vector of predicates contained in the PredicateTree.
    */
-  void getPredicates(std::vector<Predicate> & predicates)
+  void getPredicates(std::vector<Predicate> & predicates) const
   {
     if (root_ != nullptr) {
       root_->getPredicates(predicates, false);
@@ -553,6 +553,15 @@ struct DurativeAction
   PredicateTree at_end_requirements;
   PredicateTree at_start_effects;
   PredicateTree at_end_effects;
+
+  std::string name_actions_to_string()
+  {
+    std::string ret = name;
+    for (const auto & param : parameters) {
+      ret = ret + " " + param.name;
+    }
+    return ret;
+  }
 };
 
 }  // namespace plansys2

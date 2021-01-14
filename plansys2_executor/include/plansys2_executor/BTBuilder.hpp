@@ -38,6 +38,41 @@ struct RequirementConnection;
 struct EffectConnection;
 
 
+struct PredicateStamped
+{
+  using Ptr = std::shared_ptr<PredicateStamped>;
+  static Ptr make_shared() {return std::make_shared<PredicateStamped>();}
+
+  std::string predicate;
+  std::string inserter;
+};
+
+struct ActionStamped
+{
+  float time;
+  std::shared_ptr<DurativeAction> action;
+};
+
+struct GraphNode
+{
+  using Ptr = std::shared_ptr<GraphNode>;
+  static Ptr make_shared() {return std::make_shared<GraphNode>();}
+
+  ActionStamped action;
+
+  std::set<GraphNode::Ptr> in_arcs;
+  std::set<GraphNode::Ptr> out_arcs;
+};
+
+struct Graph
+{
+  using Ptr = std::shared_ptr<Graph>;
+  static Ptr make_shared() {return std::make_shared<Graph>();}
+
+  std::set<GraphNode::Ptr> out_arcs;
+};
+
+///////////////////////////////////////////////////////////////////////////////
 struct ActionUnit
 {
   using Ptr = std::shared_ptr<ActionUnit>;
@@ -59,6 +94,11 @@ struct ActionUnit
 };
 
 bool operator<(const ActionUnit::Ptr & op1, const ActionUnit::Ptr & op2);
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool operator<(const PredicateStamped & op1, const PredicateStamped & op2);
+bool operator<(const PredicateStamped & op1, const Predicate & op2);
 
 struct RequirementConnection
 {
@@ -102,6 +142,35 @@ protected:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 
+  void init_predicates(
+    std::set<PredicateStamped> & predicates,
+    std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
+
+  std::vector<ActionStamped> get_plan_actions(const Plan & plan);
+
+  bool is_action_executable(
+    const ActionStamped & action,
+    const std::set<PredicateStamped> & predicates) const;
+  bool check_requirements(
+    const plansys2::PredicateTree & req_predicates,
+    const std::set<PredicateStamped> & predicates) const;
+  void apply_action(const ActionStamped & action, std::set<PredicateStamped> & predicates);
+  Graph::Ptr get_graph(const Plan & current_plan);
+  std::list<GraphNode::Ptr> get_roots(
+    std::vector<plansys2::ActionStamped> & action_sequence,
+    const std::set<PredicateStamped> & predicates);
+  GraphNode::Ptr get_node_satisfy(
+    const Predicate & predicate,
+    const std::list<GraphNode::Ptr> & roots,
+    const GraphNode::Ptr & current);
+  GraphNode::Ptr get_node_satisfy(
+    const Predicate & predicate,
+    const GraphNode::Ptr & node,
+    const GraphNode::Ptr & current);
+  void remove_existing_predicates(
+    std::vector<Predicate> & check_predicates,
+    const std::set<PredicateStamped> & predicates) const;
+
   std::vector<ExecutionLevel::Ptr> levels_;
 
   void print_levels(std::vector<ExecutionLevel::Ptr> & levels);
@@ -122,7 +191,6 @@ protected:
   int in_cardinality(ActionUnit::Ptr action_unit);
   int out_cardinality(ActionUnit::Ptr action_unit);
 
-  std::vector<ExecutionLevel::Ptr> get_plan_actions(const Plan & plan);
   std::string t(int level);
 
   std::string execution_block(const std::string & action, int plan_time, int l);
