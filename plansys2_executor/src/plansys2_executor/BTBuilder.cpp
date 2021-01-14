@@ -364,7 +364,11 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
     // ss << "subgraph cluster_" << level_counter++ << " {\n";
     ss << "subgraph cluster_" << subgraph_counter++ << " {\n";
     ss << "label = \"Time: " << level->time << "\";\n";
+    ss << "style = rounded;\n";
+    ss << "color = yellow3;\n";
+    ss << "bgcolor = lemonchiffon;\n";
     ss << "labeljust = l;\n";
+
     for (const auto & action_unit : level->action_units) {
       // nodes
       // node i = action_unit
@@ -373,13 +377,16 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
       // ss << "subgraph cluster_" << node_counter++ << " {\n [label=\"" << action_unit->action << "\"];\n";
       ss << "subgraph cluster_" << subgraph_counter++ << " {\n label=\"" << action_unit->action << "\";\n";
       ss << "labeljust = c;\n";
+      ss << "style = \"filled\";\n";
+      ss << "color = blue;\n";
+      ss << "fillcolor = skyblue;\n";
 
       // requirements
       std::set<int> req_nodes;
       for (const auto & req : action_unit->reqs) {
         // ss << node_counter++ << "[label=\"" << req->requirement->toString() << "\"];\n";
         req_nodes.insert(node_counter);
-        ss << node_counter++ << "[label=\"\",shape=circle];\n";
+        ss << node_counter++ << "[label=\"\",shape=circle,style=filled,color=darkgreen,fillcolor=palegreen];\n";
         reqs_effs.insert(req->requirement);
       }
       ss << "{ rank=min; ";
@@ -394,7 +401,7 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
       for (const auto & eff : action_unit->effects) {
         // ss << node_counter++ << "[label=\"" << eff->effect->toString() << "\"];\n";
         eff_nodes.insert(node_counter);
-        ss << node_counter++ << "[label=\"\",shape=circle];\n";
+        ss << node_counter++ << "[label=\"\",shape=circle,style=filled,color=red,fillcolor=pink];\n";
         reqs_effs.insert(eff->effect);
       }
       ss << "{ rank=max; ";
