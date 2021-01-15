@@ -33,14 +33,15 @@ class BTAction : public plansys2::ActionExecutorClient
 public:
   explicit BTAction(
     const std::string & action,
-    const std::string & bt_xml_file,
-    const std::vector<std::string> & plugin_list,
     const std::chrono::nanoseconds & rate);
 
   const std::string & getActionName() const {return action_;}
   const std::string & getBTFile() const {return bt_xml_file_;}
 
 protected:
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+  on_configure(const rclcpp_lifecycle::State & previous_state);
+
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
   on_activate(const rclcpp_lifecycle::State & previous_state);
 

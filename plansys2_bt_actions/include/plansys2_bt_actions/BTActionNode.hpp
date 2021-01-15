@@ -20,6 +20,7 @@
 
 #include "behaviortree_cpp_v3/action_node.h"
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 
 namespace plansys2
@@ -27,7 +28,7 @@ namespace plansys2
 
 using namespace std::chrono_literals;  // NOLINT
 
-template<class ActionT>
+template<class ActionT, class NodeT = rclcpp::Node>
 class BtActionNode : public BT::ActionNodeBase
 {
 public:
@@ -37,7 +38,7 @@ public:
     const BT::NodeConfiguration & conf)
   : BT::ActionNodeBase(xml_tag_name, conf), action_name_(action_name)
   {
-    node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node");
+    node_ = config().blackboard->get<typename NodeT::SharedPtr>("node");
 
     // Get the required items from the blackboard
     server_timeout_ = 1s;
@@ -157,7 +158,7 @@ public:
         on_new_goal_received();
       }
 
-      rclcpp::spin_some(node_);
+      rclcpp::spin_some(node_->get_node_base_interface());
 
       // check if, after invoking spin_some(), we finally received the result
       if (!goal_result_available_) {
@@ -187,7 +188,8 @@ public:
   {
     if (should_cancel_goal()) {
       auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
-      if (rclcpp::spin_until_future_complete(node_, future_cancel, server_timeout_) !=
+      if (rclcpp::spin_until_future_complete(
+          node_->get_node_base_interface(), future_cancel, server_timeout_) !=
         rclcpp::FutureReturnCode::SUCCESS)
       {
         RCLCPP_ERROR(
@@ -207,7 +209,7 @@ protected:
       return false;
     }
 
-    rclcpp::spin_some(node_);
+    rclcpp::spin_some(node_->get_node_base_interface());
     auto status = goal_handle_->get_status();
 
     // Check if the goal is still executing
@@ -233,7 +235,8 @@ protected:
 
     auto future_goal_handle = action_client_->async_send_goal(goal_, send_goal_options);
 
-    if (rclcpp::spin_until_future_complete(node_, future_goal_handle, server_timeout_) !=
+    if (rclcpp::spin_until_future_complete(
+        node_->get_node_base_interface(), future_goal_handle, server_timeout_) !=
       rclcpp::FutureReturnCode::SUCCESS)
     {
       throw std::runtime_error("send_goal failed");
@@ -264,7 +267,7 @@ protected:
   typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult result_;
 
   // The node that will be used for any ROS operations
-  rclcpp::Node::SharedPtr node_;
+  typename NodeT::SharedPtr node_;
 
   // The timeout value while waiting for response from a server when a
   // new action goal is sent or canceled
