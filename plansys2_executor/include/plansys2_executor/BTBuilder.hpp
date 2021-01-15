@@ -58,6 +58,7 @@ struct ActionUnit
   }
 
   int cluster_num;
+  int node_num;
   std::list<std::shared_ptr<RequirementConnection>> reqs;
   std::list<std::shared_ptr<EffectConnection>> effects;
 };

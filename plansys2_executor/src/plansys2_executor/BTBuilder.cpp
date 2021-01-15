@@ -369,11 +369,12 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
       // nodes
       // node i = action_unit
       ss << "subgraph cluster_" << action_unit->cluster_num;
-      ss << " {\n label=\"" << action_unit->action << "\";\n";
+      ss << " {\n label=\"\";\n";
       ss << "labeljust = c;\n";
       ss << "style = \"filled\";\n";
       ss << "color = blue;\n";
       ss << "fillcolor = skyblue;\n";
+      ss << action_unit->node_num << " [label=\"" << action_unit->action << "\",color=skyblue];\n";
 
       // requirements
       std::set<int> req_nodes;
@@ -394,7 +395,7 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
       for (const auto & eff : action_unit->effects) {
         eff_nodes.insert(eff->node_num);
         ss << eff->node_num;
-        ss << "[label=\"\",shape=circle,style=filled,color=red,fillcolor=pink];\n";
+        ss << " [label=\"\",shape=circle,style=filled,color=red,fillcolor=pink];\n";
       }
       ss << "{ rank=max; ";
       for (const auto &node : eff_nodes)
@@ -403,12 +404,44 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
       }
       ss << "}\n";
 
-      for (const auto &req : req_nodes)
+      if (req_nodes.size() > 1)
       {
+        bool first = true;
+        for (const auto &req : req_nodes)
+        {
+          if (!first)
+          {
+            ss << "->";
+          }
+          ss << req;
+          first = false;
+        }
+        ss << " [style=invis];\n";
+      }
+
+      if (eff_nodes.size() > 1)
+      {
+        bool first = true;
         for (const auto &eff : eff_nodes)
         {
-          ss << req << "->" << eff << "[style=invis];\n";
+          if (!first)
+          {
+            ss << "->";
+          }
+          ss << eff;
+          first = false;
         }
+        ss << " [style=invis];\n";
+      }
+
+      for (const auto &req : req_nodes)
+      {
+        ss << req << "->" << action_unit->node_num << " [style=invis];\n";
+      }
+
+      for (const auto &eff : eff_nodes)
+      {
+        ss << action_unit->node_num << "->" << eff << " [style=invis];\n";
       }
 
       ss << "}\n";
@@ -463,6 +496,7 @@ BTBuilder::get_plan_actions(const Plan & plan)
     action_unit->action = item.action;
     action_unit->time = current_level->time;
     action_unit->cluster_num = cluster_counter++;
+    action_unit->node_num = node_counter++;
 
     auto dur_action = get_action_from_string(item.action, domain_client_);
     std::shared_ptr<parser::pddl::tree::AndNode> at_start_requirements =
