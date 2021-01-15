@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <string>
+#include <sstream>
 #include <vector>
 
 #include "plansys2_core/Utils.hpp"
@@ -39,4 +40,51 @@ std::vector<std::string> tokenize(const std::string & string, const std::string 
   return tokens;
 }
 
+std::string substr_without_empty_lines(
+  std::string string,
+  std::size_t init_pos,
+  std::size_t end_pos)
+{
+  std::stringstream stream_in(string.substr(init_pos, end_pos - init_pos));
+  std::stringstream stream_out;
+  std::string line;
+  bool first = true;
+  while (std::getline(stream_in, line)) {
+    if (!(line.empty() || line.find_first_not_of(' ') == std::string::npos)) {
+      if (first) {
+        first = false;
+      } else {
+        stream_out << "\n";
+      }
+      stream_out << line;
+    }
+  }
+  return stream_out.str();
+}
+
+std::string remove_comments(const std::string & pddl)
+{
+  std::stringstream uncomment;
+
+  std::size_t pddl_length = pddl.length();
+  std::size_t start_pos = 0;
+  std::size_t end_pos = 0;
+  bool commented = false;
+  while (end_pos < pddl_length) {
+    if ((!commented) && (pddl.at(end_pos) == ';')) {
+      commented = true;
+      uncomment << pddl.substr(start_pos, end_pos - start_pos);
+    }
+
+    if (commented && (pddl.at(end_pos) == '\r' || pddl.at(end_pos) == '\n')) {
+      commented = false;
+      start_pos = end_pos;
+    }
+    end_pos++;
+  }
+  if (!commented) {
+    uncomment << pddl.substr(start_pos, end_pos - start_pos);
+  }
+  return std::string(uncomment.str());
+}
 }  // namespace plansys2

@@ -25,41 +25,11 @@ int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 
-  auto node = rclcpp::Node::make_shared("default");
-
-  if (std::string(node->get_name()) == "default") {
-    RCLCPP_ERROR(node->get_logger(), "Node name must be set externally");
-    rclcpp::shutdown();
-    return 1;
-  }
-
-  RCLCPP_INFO_STREAM(node->get_logger(), "Node name: [" << node->get_name() << "]");
-
-  node->declare_parameter("action_name");
-  node->declare_parameter("bt_xml_file");
-  node->declare_parameter("plugins");
-
-  std::string action_name;
-  node->get_parameter("action_name", action_name);
-  std::string bt_xml_file;
-  node->get_parameter("bt_xml_file", bt_xml_file);
-
-  RCLCPP_INFO_STREAM(node->get_logger(), "action_name: [" << action_name << "]");
-  RCLCPP_INFO_STREAM(node->get_logger(), "bt_xml_file: [" << bt_xml_file << "]");
-
-  auto plugin_lib_names_ = node->get_parameter("plugins").as_string_array();
-  for (auto plugin : plugin_lib_names_) {
-    RCLCPP_INFO_STREAM(node->get_logger(), "plugin: [" << plugin << "]");
-  }
-
   auto action_node = std::make_shared<plansys2::BTAction>(
-    action_name,
-    bt_xml_file,
-    plugin_lib_names_,
+    "default",
     200ms  // ToDo(fmrico): This should be specified by a parameter
   );
 
-  action_node->set_parameter(rclcpp::Parameter("action", action_name));
   action_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
   rclcpp::spin(action_node->get_node_base_interface());
