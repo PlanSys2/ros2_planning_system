@@ -137,16 +137,16 @@ TEST(bt_actions, bt_action)
 
   std::vector<std::string> plugins = {
     "plansys2_close_gripper_bt_node", "plansys2_open_gripper_bt_node"};
-  auto bt_action = std::make_shared<plansys2::BTAction>(
-    "assemble",
-    xml_file,
-    plugins,
-    100ms);
+
+  auto bt_action = std::make_shared<plansys2::BTAction>("assemble", 100ms);
 
   auto lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
   auto action_client = plansys2::ActionExecutor::make_shared("(assemble r2d2 z p1 p2 p3)", lc_node);
 
-  bt_action->set_parameter(rclcpp::Parameter("action", "assemble"));
+  bt_action->set_parameter(rclcpp::Parameter("action_name", "assemble"));
+  bt_action->set_parameter(rclcpp::Parameter("bt_xml_file", xml_file));
+  bt_action->set_parameter(rclcpp::Parameter("plugins", plugins));
+
   bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
   rclcpp::executors::MultiThreadedExecutor exe;
