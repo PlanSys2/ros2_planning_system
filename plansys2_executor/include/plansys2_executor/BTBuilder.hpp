@@ -57,6 +57,7 @@ struct ActionUnit
     return !(*this == other);
   }
 
+  int cluster_num;
   std::list<std::shared_ptr<RequirementConnection>> reqs;
   std::list<std::shared_ptr<EffectConnection>> effects;
 };
@@ -71,6 +72,7 @@ struct RequirementConnection
   std::shared_ptr<parser::pddl::tree::TreeNode> requirement;
   ActionUnit::Ptr action;
   bool satisfied;
+  int node_num;
   std::list<std::shared_ptr<EffectConnection>> effect_connections;
 };
 
@@ -81,6 +83,7 @@ struct EffectConnection
 
   std::shared_ptr<parser::pddl::tree::TreeNode> effect;
   std::shared_ptr<ActionUnit> action;
+  int node_num;
   std::list<RequirementConnection::Ptr> requirement_connections;
 };
 
@@ -90,6 +93,7 @@ struct ExecutionLevel
   static Ptr make_shared() {return std::make_shared<ExecutionLevel>();}
 
   int time;
+  int cluster_num;
   std::list<ActionUnit::Ptr> action_units;
 };
 
