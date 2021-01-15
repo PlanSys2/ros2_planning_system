@@ -20,6 +20,8 @@
 #include <thread>
 #include <fstream>
 #include <map>
+#include <set>
+#include <list>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
@@ -55,7 +57,8 @@
 class BTBuilderTest : public plansys2::BTBuilder
 {
 public:
-  BTBuilderTest(rclcpp::Node::SharedPtr node) : BTBuilder(node) {}
+  explicit BTBuilderTest(rclcpp::Node::SharedPtr node)
+  : BTBuilder(node) {}
 
   std::string get_tree(const plansys2::Plan & current_plan)
   {
@@ -63,8 +66,8 @@ public:
   }
 
   void init_predicates(
-  std::set<plansys2::PredicateStamped> & predicates,
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client)
+    std::set<plansys2::PredicateStamped> & predicates,
+    std::shared_ptr<plansys2::ProblemExpertClient> problem_client)
   {
     return BTBuilder::init_predicates(predicates, problem_client);
   }
@@ -135,7 +138,6 @@ public:
   {
     BTBuilder::remove_existing_predicates(check_predicates, predicates);
   }
-
 };
 
 
@@ -145,7 +147,7 @@ TEST(btbuilder_tests, test_plan_1)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
-  
+
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
   auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
@@ -221,8 +223,6 @@ TEST(btbuilder_tests, test_plan_1)
     ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
-
-
   ASSERT_TRUE(
     problem_client->setGoal(
       plansys2::Goal(
@@ -236,7 +236,7 @@ TEST(btbuilder_tests, test_plan_1)
   btbuilder->init_predicates(predicates_stamped, problem_client);
 
   ASSERT_EQ(problem_client->getPredicates().size(), predicates_stamped.size());
-  
+
   auto action_sequence = btbuilder->get_plan_actions(plan.value());
 
   ASSERT_EQ(action_sequence.size(), 6u);
@@ -248,7 +248,7 @@ TEST(btbuilder_tests, test_plan_1)
   ASSERT_EQ(action_sequence[0].action->parameters[2].name, "chargingroom");
   ASSERT_EQ(
     action_sequence[0].action->at_start_effects.toString(),
-     "(and (not (robot_at leia entrance))(robot_at leia chargingroom))");
+    "(and (not (robot_at leia entrance))(robot_at leia chargingroom))");
   std::vector<plansys2::Predicate> action_0_predicates;
   action_sequence[0].action->at_start_effects.getPredicates(action_0_predicates);
   ASSERT_EQ(action_0_predicates.size(), 2u);
@@ -257,25 +257,31 @@ TEST(btbuilder_tests, test_plan_1)
   ASSERT_EQ(action_0_predicates[0].parameters[1].name, "entrance");
   ASSERT_TRUE(action_0_predicates[0].negative);
 
-  ASSERT_TRUE(btbuilder->check_requirements(
-    action_sequence[0].action->at_start_requirements,
-    predicates_stamped));
+  ASSERT_TRUE(
+    btbuilder->check_requirements(
+      action_sequence[0].action->at_start_requirements,
+      predicates_stamped));
 
-  ASSERT_FALSE(btbuilder->check_requirements(
-    action_sequence[1].action->at_start_requirements,
-    predicates_stamped));
-  ASSERT_FALSE(btbuilder->check_requirements(
-    action_sequence[2].action->at_start_requirements,
-    predicates_stamped));
-  ASSERT_FALSE(btbuilder->check_requirements(
-    action_sequence[3].action->at_start_requirements,
-    predicates_stamped));
-  ASSERT_FALSE(btbuilder->check_requirements(
-    action_sequence[4].action->at_start_requirements,
-    predicates_stamped));
-  ASSERT_FALSE(btbuilder->check_requirements(
-    action_sequence[5].action->at_start_requirements,
-    predicates_stamped));
+  ASSERT_FALSE(
+    btbuilder->check_requirements(
+      action_sequence[1].action->at_start_requirements,
+      predicates_stamped));
+  ASSERT_FALSE(
+    btbuilder->check_requirements(
+      action_sequence[2].action->at_start_requirements,
+      predicates_stamped));
+  ASSERT_FALSE(
+    btbuilder->check_requirements(
+      action_sequence[3].action->at_start_requirements,
+      predicates_stamped));
+  ASSERT_FALSE(
+    btbuilder->check_requirements(
+      action_sequence[4].action->at_start_requirements,
+      predicates_stamped));
+  ASSERT_FALSE(
+    btbuilder->check_requirements(
+      action_sequence[5].action->at_start_requirements,
+      predicates_stamped));
 
   ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[0], predicates_stamped));
   ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[1], predicates_stamped));
@@ -335,7 +341,7 @@ TEST(btbuilder_tests, test_plan_2)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
-  
+
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
   auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
@@ -403,42 +409,42 @@ TEST(btbuilder_tests, test_plan_2)
   ASSERT_TRUE(problem_client->addInstance({"car_1", "car"}));
   ASSERT_TRUE(problem_client->addInstance({"car_2", "car"}));
   ASSERT_TRUE(problem_client->addInstance({"car_3", "car"}));
-  
+
   std::vector<std::string> predicates = {
-	  "(robot_at robot1 assembly_zone)",
-	  "(robot_at robot2 assembly_zone)",
-	  "(robot_at robot3 assembly_zone)",
-	  "(is_assembly_zone assembly_zone)",
-	  "(robot_available robot1)",
-	  "(robot_available robot2)",
-	  "(robot_available robot3)",
-	  "(piece_at wheel_1 wheels_zone)",
-	  "(piece_at body_car_1 body_car_zone)",
-	  "(piece_at steering_wheel_1 steering_wheels_zone)",
-	  "(piece_is_wheel wheel_1)",
-	  "(piece_is_body_car body_car_1)",
-	  "(piece_is_steering_wheel steering_wheel_1)",
-	  "(piece_at wheel_2 wheels_zone)",
-	  "(piece_at body_car_2 body_car_zone)",
-	  "(piece_at steering_wheel_2 steering_wheels_zone)",
-	  "(piece_is_wheel wheel_2)",
-	  "(piece_is_body_car body_car_2)",
-	  "(piece_is_steering_wheel steering_wheel_2)",
-	  "(piece_at wheel_3 wheels_zone)",
-	  "(piece_at body_car_3 body_car_zone)",
-	  "(piece_at steering_wheel_3 steering_wheels_zone)",
-	  "(piece_is_wheel wheel_3)",
-	  "(piece_is_body_car body_car_3)",
-	  "(piece_is_steering_wheel steering_wheel_3)",
-	  "(piece_not_used wheel_1)",
-	  "(piece_not_used wheel_2)",
-	  "(piece_not_used wheel_3)",
-	  "(piece_not_used body_car_1)",
-	  "(piece_not_used body_car_2)",
-	  "(piece_not_used body_car_3)",
-	  "(piece_not_used steering_wheel_1)",
-	  "(piece_not_used steering_wheel_2)",
-	  "(piece_not_used steering_wheel_3)"};
+    "(robot_at robot1 assembly_zone)",
+    "(robot_at robot2 assembly_zone)",
+    "(robot_at robot3 assembly_zone)",
+    "(is_assembly_zone assembly_zone)",
+    "(robot_available robot1)",
+    "(robot_available robot2)",
+    "(robot_available robot3)",
+    "(piece_at wheel_1 wheels_zone)",
+    "(piece_at body_car_1 body_car_zone)",
+    "(piece_at steering_wheel_1 steering_wheels_zone)",
+    "(piece_is_wheel wheel_1)",
+    "(piece_is_body_car body_car_1)",
+    "(piece_is_steering_wheel steering_wheel_1)",
+    "(piece_at wheel_2 wheels_zone)",
+    "(piece_at body_car_2 body_car_zone)",
+    "(piece_at steering_wheel_2 steering_wheels_zone)",
+    "(piece_is_wheel wheel_2)",
+    "(piece_is_body_car body_car_2)",
+    "(piece_is_steering_wheel steering_wheel_2)",
+    "(piece_at wheel_3 wheels_zone)",
+    "(piece_at body_car_3 body_car_zone)",
+    "(piece_at steering_wheel_3 steering_wheels_zone)",
+    "(piece_is_wheel wheel_3)",
+    "(piece_is_body_car body_car_3)",
+    "(piece_is_steering_wheel steering_wheel_3)",
+    "(piece_not_used wheel_1)",
+    "(piece_not_used wheel_2)",
+    "(piece_not_used wheel_3)",
+    "(piece_not_used body_car_1)",
+    "(piece_not_used body_car_2)",
+    "(piece_not_used body_car_3)",
+    "(piece_not_used steering_wheel_1)",
+    "(piece_not_used steering_wheel_2)",
+    "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
     ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
@@ -474,7 +480,7 @@ TEST(btbuilder_tests, test_plan_2)
 
 
   ASSERT_EQ(problem_client->getPredicates().size(), predicates_stamped.size());
-  
+
   auto action_sequence = btbuilder->get_plan_actions(plan.value());
 
   ASSERT_EQ(action_sequence.size(), 22u);
@@ -528,7 +534,7 @@ TEST(btbuilder_tests, test_plan_3)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
-  
+
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
   auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
@@ -604,10 +610,6 @@ TEST(btbuilder_tests, test_plan_3)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  // auto graph = btbuilder->get_graph(plan.value());
-  //ASSERT_NE(graph, nullptr);
-
-  //btbuilder->print_graph(graph);
   auto bt = btbuilder->get_tree(plan.value());
 
   std::cerr << bt << std::endl;

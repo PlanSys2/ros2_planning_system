@@ -17,6 +17,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <list>
 
 #include "plansys2_executor/BTBuilder.hpp"
 
@@ -56,7 +57,6 @@ BTBuilder::check_requirements(
   req_predicates.getPredicates(reqs);
 
   for (const auto & req : reqs) {
-
     bool found = false;
     auto it = predicates.begin();
     while (!found && it != predicates.end()) {
@@ -67,9 +67,8 @@ BTBuilder::check_requirements(
     }
 
     if (found) {
-      if(req.negative) {
+      if (req.negative) {
         return false;
-      } else {
       }
     } else {
       return false;
@@ -79,14 +78,14 @@ BTBuilder::check_requirements(
   return true;
 }
 
-bool 
+bool
 BTBuilder::is_action_executable(
   const ActionStamped & action,
   const std::set<PredicateStamped> & predicates) const
 {
   return check_requirements(action.action->at_start_requirements, predicates) &&
-    check_requirements(action.action->over_all_requirements, predicates) &&
-    check_requirements(action.action->at_end_requirements, predicates);
+         check_requirements(action.action->over_all_requirements, predicates) &&
+         check_requirements(action.action->at_end_requirements, predicates);
 }
 
 void
@@ -193,7 +192,6 @@ BTBuilder::is_parallelizable(
   const plansys2::ActionStamped & action,
   const std::list<GraphNode::Ptr> & ret) const
 {
-
   std::vector<Predicate> action_at_start_effects;
   std::vector<Predicate> action_at_end_effects;
 
@@ -222,16 +220,16 @@ BTBuilder::is_parallelizable(
     other->action.action->at_start_requirements.getPredicates(other_at_start_requirements);
     other->action.action->over_all_requirements.getPredicates(other_over_all_requirements);
     other->action.action->at_end_requirements.getPredicates(other_at_end_requirements);
-  
+
     for (const auto & prev_over_all_req : other_over_all_requirements) {
       for (const auto & action_at_start_req : action_at_start_requirements) {
         if (prev_over_all_req.toString() == action_at_start_req.toString() &&
-          prev_over_all_req.negative == action_at_start_req.negative) {            
-            return false;
-          }
+          prev_over_all_req.negative == action_at_start_req.negative)
+        {
+          return false;
+        }
       }
     }
-  
   }
 
   return true;
@@ -245,7 +243,7 @@ BTBuilder::get_node_satisfy(
 {
   GraphNode::Ptr ret;
   for (const auto & node : roots) {
-    auto node_ret  = get_node_satisfy(predicate, node, current);
+    auto node_ret = get_node_satisfy(predicate, node, current);
     if (node_ret != nullptr) {
       ret = node_ret;
     }
@@ -260,7 +258,7 @@ BTBuilder::get_roots(
   const std::set<PredicateStamped> & predicates)
 {
   std::list<GraphNode::Ptr> ret;
-  
+
   auto it = action_sequence.begin();
   while (it != action_sequence.end()) {
     const auto & action = *it;
@@ -285,7 +283,7 @@ BTBuilder::remove_existing_predicates(
 {
   auto it = check_predicates.begin();
   while (it != check_predicates.end()) {
-    if (predicates.find({it->toString() , ""}) != predicates.end()) {
+    if (predicates.find({it->toString(), ""}) != predicates.end()) {
       it = check_predicates.erase(it);
     } else {
       ++it;
@@ -303,7 +301,7 @@ BTBuilder::get_graph(const Plan & current_plan)
   init_predicates(predicates, problem_client_);
 
   graph->roots = get_roots(action_sequence, predicates);
- 
+
   // Apply roots actions
   for (auto & action_node : graph->roots) {
     apply_action(action_node->action, predicates);
@@ -313,7 +311,6 @@ BTBuilder::get_graph(const Plan & current_plan)
 
   // Build the rest of the graph
   while (!action_sequence.empty()) {
-
     auto new_node = GraphNode::make_shared();
     new_node->action = *action_sequence.begin();
 
@@ -350,10 +347,10 @@ BTBuilder::get_graph(const Plan & current_plan)
           used_nodes.insert(new_node);
         }
 
-        it_over_all =over_all_predicates.erase(it_over_all);
+        it_over_all = over_all_predicates.erase(it_over_all);
       } else {
         ++it_over_all;
-      };
+      }
     }
 
     auto it_at_end = at_end_predicates.begin();
@@ -398,7 +395,7 @@ BTBuilder::get_tree(const Plan & current_plan)
       t(1) + "<BehaviorTree ID=\"MainTree\">\n" +
       t(2) + "<Parallel success_threshold=\"" + std::to_string(action_graph->roots.size()) +
       "\" failure_threshold=\"1\">\n";
-    
+
     for (const auto & node : action_graph->roots) {
       bt_plan = bt_plan + get_flow_tree(node, 3);
     }
@@ -443,7 +440,8 @@ BTBuilder::get_flow_tree(
     ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
     ret = ret + execution_block(node, l + 1);
 
-    ret = ret + t(l + 1) + "<Parallel success_threshold=\"" + std::to_string(node->out_arcs.size()) +
+    ret = ret + t(l + 1) +
+      "<Parallel success_threshold=\"" + std::to_string(node->out_arcs.size()) +
       "\" failure_threshold=\"1\">\n";
 
     for (const auto & child_node : node->out_arcs) {
@@ -475,17 +473,15 @@ BTBuilder::execution_block(const GraphNode::Ptr & node, int l)
   const std::string action_id = "(" + action.action->name_actions_to_string() + "):" +
     std::to_string(static_cast<int>(action.time * 1000));
 
-  // ActionStamped
-  //const std::string 
-
   ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
-  
+
   for (const auto & previous_node : node->in_arcs) {
-    const std::string parent_action_id = "(" + previous_node->action.action->name_actions_to_string() + "):" +
+    const std::string parent_action_id = "(" +
+      previous_node->action.action->name_actions_to_string() + "):" +
       std::to_string(static_cast<int>( previous_node->action.time * 1000));
     ret = ret + t(l + 1) + "<WaitAtStartReq action=\"" + parent_action_id + "\"/>\n";
   }
-  
+
   ret = ret + t(l + 1) + "<ApplyAtStartEffect action=\"" + action_id + "\"/>\n";
   ret = ret + t(l + 1) + "<Parallel success_threshold=\"2\" failure_threshold=\"1\">\n";
   ret = ret + t(l + 2) + "<CheckOverAllReq action=\"" + action_id + "\"/>\n";
@@ -520,11 +516,11 @@ BTBuilder::print_node(
   const plansys2::GraphNode::Ptr & node,
   int level,
   std::set<plansys2::GraphNode::Ptr> & used_nodes) const
-{     
+{
   std::cerr << std::string(level, '\t') << "[" << node->action.time << "] ";
   std::cerr << node->action.action->name << " ";
   for (const auto & param : node->action.action->parameters) {
-    std::cerr << param.name<< " ";
+    std::cerr << param.name << " ";
   }
   std::cerr << " in arcs " << node->in_arcs.size() << std::endl;
 
@@ -539,7 +535,7 @@ BTBuilder::print_graph(const plansys2::Graph::Ptr & graph) const
   std::set<plansys2::GraphNode::Ptr> used_nodes;
   for (const auto & root : graph->roots) {
     print_node(root, 0, used_nodes);
-  }    
+  }
 }
 
 
