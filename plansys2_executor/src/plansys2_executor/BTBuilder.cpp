@@ -188,6 +188,55 @@ BTBuilder::get_node_satisfy(
   return ret;
 }
 
+bool
+BTBuilder::is_parallelizable(
+  const plansys2::ActionStamped & action,
+  const std::list<GraphNode::Ptr> & ret) const
+{
+
+  std::vector<Predicate> action_at_start_effects;
+  std::vector<Predicate> action_at_end_effects;
+
+  std::vector<Predicate> action_at_start_requirements;
+  std::vector<Predicate> action_over_all_requirements;
+  std::vector<Predicate> action_at_end_requirements;
+
+  action.action->at_start_effects.getPredicates(action_at_start_effects);
+  action.action->at_end_effects.getPredicates(action_at_end_effects);
+
+  action.action->at_start_requirements.getPredicates(action_at_start_requirements);
+  action.action->over_all_requirements.getPredicates(action_over_all_requirements);
+  action.action->at_end_requirements.getPredicates(action_at_end_requirements);
+
+  for (const auto & other : ret) {
+    std::vector<Predicate> other_at_start_effects;
+    std::vector<Predicate> other_at_end_effects;
+
+    std::vector<Predicate> other_at_start_requirements;
+    std::vector<Predicate> other_over_all_requirements;
+    std::vector<Predicate> other_at_end_requirements;
+
+    other->action.action->at_start_effects.getPredicates(other_at_start_effects);
+    other->action.action->at_end_effects.getPredicates(other_at_end_effects);
+
+    other->action.action->at_start_requirements.getPredicates(other_at_start_requirements);
+    other->action.action->over_all_requirements.getPredicates(other_over_all_requirements);
+    other->action.action->at_end_requirements.getPredicates(other_at_end_requirements);
+  
+    for (const auto & prev_over_all_req : other_over_all_requirements) {
+      for (const auto & action_at_start_req : action_at_start_requirements) {
+        if (prev_over_all_req.toString() == action_at_start_req.toString() &&
+          prev_over_all_req.negative == action_at_start_req.negative) {            
+            return false;
+          }
+      }
+    }
+  
+  }
+
+  return true;
+}
+
 GraphNode::Ptr
 BTBuilder::get_node_satisfy(
   const Predicate & predicate,
@@ -215,7 +264,7 @@ BTBuilder::get_roots(
   auto it = action_sequence.begin();
   while (it != action_sequence.end()) {
     const auto & action = *it;
-    if (is_action_executable(action, predicates)) {
+    if (is_action_executable(action, predicates) && is_parallelizable(action, ret)) {
       auto new_root = GraphNode::make_shared();
       new_root->action = action;
 
@@ -268,8 +317,6 @@ BTBuilder::get_graph(const Plan & current_plan)
     auto new_node = GraphNode::make_shared();
     new_node->action = *action_sequence.begin();
 
-    // std::cerr << "Processing " << new_node->action.action->name_actions_to_string() << std::endl;
-
     std::vector<Predicate> at_start_predicates;
     std::vector<Predicate> over_all_predicates;
     std::vector<Predicate> at_end_predicates;
@@ -280,15 +327,8 @@ BTBuilder::get_graph(const Plan & current_plan)
 
     auto it_at_start = at_start_predicates.begin();
     while (it_at_start != at_start_predicates.end()) {
-      // std::cerr << "\t[At Start] Looking for " << it_at_start->toString() << std::endl;
       auto node_satisfy = get_node_satisfy(*it_at_start, graph->roots, new_node);
       if (node_satisfy != nullptr) {
-        // std::cerr << "\t\tFound in " << node_satisfy->action.action->name << " ";
-        for (const auto & param : node_satisfy->action.action->parameters) {
-          // std::cerr << param.name<< " ";
-        }
-        // std::cerr << std::endl;
-
         if (used_nodes.find(new_node) == used_nodes.end()) {
           new_node->in_arcs.insert(node_satisfy);
           node_satisfy->out_arcs.insert(new_node);
@@ -302,15 +342,8 @@ BTBuilder::get_graph(const Plan & current_plan)
     }
     auto it_over_all = over_all_predicates.begin();
     while (it_over_all != over_all_predicates.end()) {
-      // std::cerr << "\t[Over All] Looking for " << it_over_all->toString() << std::endl;
       auto node_satisfy = get_node_satisfy(*it_over_all, graph->roots, new_node);
       if (node_satisfy != nullptr) {
-        // std::cerr << "\t\tFound in " << node_satisfy->action.action->name << " ";
-        for (const auto & param : node_satisfy->action.action->parameters) {
-          // std::cerr << param.name<< " ";
-        }
-        // std::cerr << std::endl;
-
         if (used_nodes.find(new_node) == used_nodes.end()) {
           new_node->in_arcs.insert(node_satisfy);
           node_satisfy->out_arcs.insert(new_node);
@@ -325,15 +358,8 @@ BTBuilder::get_graph(const Plan & current_plan)
 
     auto it_at_end = at_end_predicates.begin();
     while (it_at_end != at_end_predicates.end()) {
-      // std::cerr << "\t[At End] Looking for " << it_at_end->toString() << std::endl;
       auto node_satisfy = get_node_satisfy(*it_at_end, graph->roots, new_node);
       if (node_satisfy != nullptr) {
-        // std::cerr << "\t\tFound in " << node_satisfy->action.action->name << " ";
-        for (const auto & param : node_satisfy->action.action->parameters) {
-          // std::cerr << param.name<< " ";
-        }
-        // std::cerr << std::endl;
-
         if (used_nodes.find(new_node) == used_nodes.end()) {
           new_node->in_arcs.insert(node_satisfy);
           node_satisfy->out_arcs.insert(new_node);
@@ -364,8 +390,6 @@ std::string
 BTBuilder::get_tree(const Plan & current_plan)
 {
   auto action_graph = get_graph(current_plan);
-
-  print_graph(action_graph);
 
   std::string bt_plan;
 
@@ -404,13 +428,11 @@ BTBuilder::get_flow_tree(
   const std::string action_id = "(" + node->action.action->name_actions_to_string() + "):" +
     std::to_string(static_cast<int>(node->action.time * 1000));
 
-  std::cerr << t(level) << "Creating bt in node [" << action_id << "] {" << node->out_arcs.size() << "}" << std::endl;
-
   if (node->out_arcs.size() == 0) {
-    ret = ret + t(l) + node->action.action->name_actions_to_string() + "\n"; // execution_block(node, l);
+    ret = ret + execution_block(node, l);
   } else if (node->out_arcs.size() == 1) {
-    ret = t(l) + "<Sequence name=\"" + action_id + "\">\n";
-    ret = ret + t(l + 1) + node->action.action->name_actions_to_string() + "\n"; // execution_block(node, l + 1);
+    ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
+    ret = ret + execution_block(node, l + 1);
 
     for (const auto & child_node : node->out_arcs) {
       ret = ret + get_flow_tree(child_node, l + 1);
@@ -418,11 +440,10 @@ BTBuilder::get_flow_tree(
 
     ret = ret + t(l) + "</Sequence>\n";
   } else {
-    std::cerr << "=====================" << std::endl;
-    ret = t(l) + "<Sequence name=\"" + action_id + "\">\n";
-    ret = ret + t(l + 1) + node->action.action->name_actions_to_string() + "\n"; // execution_block(node, l + 1);
+    ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
+    ret = ret + execution_block(node, l + 1);
 
-    ret = t(l + 1) + "<Parallel success_threshold=\"" + std::to_string(node->out_arcs.size()) +
+    ret = ret + t(l + 1) + "<Parallel success_threshold=\"" + std::to_string(node->out_arcs.size()) +
       "\" failure_threshold=\"1\">\n";
 
     for (const auto & child_node : node->out_arcs) {
@@ -499,13 +520,7 @@ BTBuilder::print_node(
   const plansys2::GraphNode::Ptr & node,
   int level,
   std::set<plansys2::GraphNode::Ptr> & used_nodes) const
-{ 
-  //if (used_nodes.find(node) != used_nodes.end()) {
-  //  return;
-  //}
-//
-  //used_nodes.insert(node);
-    
+{     
   std::cerr << std::string(level, '\t') << "[" << node->action.time << "] ";
   std::cerr << node->action.action->name << " ";
   for (const auto & param : node->action.action->parameters) {

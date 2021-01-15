@@ -185,7 +185,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
   for (const auto & action : current_plan_.value()) {
-    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time));
+    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
 
     (*action_map)[index] = ActionExecutionInfo();
     (*action_map)[index].durative_action_info =

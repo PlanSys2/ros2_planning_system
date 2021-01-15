@@ -75,7 +75,6 @@ class BTBuilder
 {
 public:
   explicit BTBuilder(rclcpp::Node::SharedPtr node);
-  // void print(std::shared_ptr<GraphNode> current = root_) const;
 
   std::string get_tree(const Plan & current_plan);
 
@@ -111,6 +110,9 @@ protected:
   void remove_existing_predicates(
     std::vector<Predicate> & check_predicates,
     const std::set<PredicateStamped> & predicates) const;
+  bool is_parallelizable(
+    const plansys2::ActionStamped & action,
+    const std::list<GraphNode::Ptr> & ret) const;
 
   std::string get_flow_tree(GraphNode::Ptr node, int level = 0);
 
