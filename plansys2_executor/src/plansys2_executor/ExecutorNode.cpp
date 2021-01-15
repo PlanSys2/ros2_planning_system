@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <filesystem>
 
 #include <string>
 #include <memory>
@@ -184,7 +185,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
   for (const auto & action : current_plan_.value()) {
-    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time));
+    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
 
     (*action_map)[index] = ActionExecutionInfo();
     (*action_map)[index].durative_action_info =
@@ -210,6 +211,11 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
 
   auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
+
+  std::filesystem::path tp = std::filesystem::temp_directory_path();
+  std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
+  out << bt_xml_tree;
+  out.close();
 
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 

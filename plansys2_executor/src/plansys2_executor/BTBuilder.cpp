@@ -17,6 +17,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <list>
 
 #include "plansys2_executor/BTBuilder.hpp"
 
@@ -37,53 +38,366 @@ BTBuilder::BTBuilder(
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(node);
 }
 
+void
+BTBuilder::init_predicates(
+  std::set<PredicateStamped> & predicates,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client)
+{
+  for (const auto & current_predicate : problem_client->getPredicates()) {
+    predicates.insert({current_predicate.toString(), ""});
+  }
+}
+
+bool
+BTBuilder::check_requirements(
+  const plansys2::PredicateTree & req_predicates,
+  const std::set<PredicateStamped> & predicates) const
+{
+  std::vector<plansys2::Predicate> reqs;
+  req_predicates.getPredicates(reqs);
+
+  for (const auto & req : reqs) {
+    bool found = false;
+    auto it = predicates.begin();
+    while (!found && it != predicates.end()) {
+      if (it->predicate == req.toString()) {
+        found = true;
+      }
+      ++it;
+    }
+
+    if (found) {
+      if (req.negative) {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool
+BTBuilder::is_action_executable(
+  const ActionStamped & action,
+  const std::set<PredicateStamped> & predicates) const
+{
+  return check_requirements(action.action->at_start_requirements, predicates) &&
+         check_requirements(action.action->over_all_requirements, predicates) &&
+         check_requirements(action.action->at_end_requirements, predicates);
+}
+
+void
+BTBuilder::apply_action(
+  const ActionStamped & action,
+  std::set<PredicateStamped> & predicates)
+{
+  std::vector<Predicate> at_start_effect_predicates;
+  action.action->at_start_effects.getPredicates(at_start_effect_predicates);
+
+  for (const auto & effect : at_start_effect_predicates) {
+    if (effect.negative) {
+      predicates.erase({effect.toString(), ""});
+    } else {
+      predicates.insert({effect.toString(), ""});
+    }
+  }
+
+  std::vector<Predicate> at_end_effect_predicates;
+  action.action->at_end_effects.getPredicates(at_end_effect_predicates);
+
+  for (const auto & effect : at_end_effect_predicates) {
+    if (effect.negative) {
+      predicates.erase({effect.toString(), ""});
+    } else {
+      predicates.insert({effect.toString(), ""});
+    }
+  }
+}
+
+
+GraphNode::Ptr
+BTBuilder::get_node_satisfy(
+  const Predicate & predicate,
+  const GraphNode::Ptr & node,
+  const GraphNode::Ptr & current)
+{
+  if (node == current) {
+    return nullptr;
+  }
+
+  GraphNode::Ptr ret = nullptr;
+  std::vector<Predicate> at_start_effects;
+  std::vector<Predicate> at_end_effects;
+
+  std::vector<Predicate> at_start_requirements;
+  std::vector<Predicate> over_all_requirements;
+  std::vector<Predicate> at_end_requirements;
+
+  node->action.action->at_start_effects.getPredicates(at_start_effects);
+  node->action.action->at_end_effects.getPredicates(at_end_effects);
+
+  node->action.action->at_start_requirements.getPredicates(at_start_requirements);
+  node->action.action->over_all_requirements.getPredicates(over_all_requirements);
+  node->action.action->at_end_requirements.getPredicates(at_end_requirements);
+
+  for (const auto & effect : at_end_effects) {
+    if (effect.toString() == predicate.toString() && effect.negative == predicate.negative) {
+      ret = node;
+    }
+  }
+
+  for (const auto & effect : at_start_effects) {
+    if (effect.toString() == predicate.toString() && effect.negative == predicate.negative) {
+      ret = node;
+    }
+
+    if (effect.toString() == predicate.toString() && effect.negative && !predicate.negative) {
+      ret = node;
+    }
+  }
+
+  for (const auto & req : at_start_requirements) {
+    if (req.toString() == predicate.toString() && req.negative == predicate.negative) {
+      ret = node;
+    }
+  }
+
+  for (const auto & req : over_all_requirements) {
+    if (req.toString() == predicate.toString() && req.negative == predicate.negative) {
+      ret = node;
+    }
+  }
+
+  for (const auto & req : at_end_requirements) {
+    if (req.toString() == predicate.toString() && req.negative == predicate.negative) {
+      ret = node;
+    }
+  }
+
+  for (const auto & arc : node->out_arcs) {
+    auto node_ret = get_node_satisfy(predicate, arc, current);
+
+    if (node_ret != nullptr) {
+      ret = node_ret;
+    }
+  }
+
+  return ret;
+}
+
+bool
+BTBuilder::is_parallelizable(
+  const plansys2::ActionStamped & action,
+  const std::list<GraphNode::Ptr> & ret) const
+{
+  std::vector<Predicate> action_at_start_effects;
+  std::vector<Predicate> action_at_end_effects;
+
+  std::vector<Predicate> action_at_start_requirements;
+  std::vector<Predicate> action_over_all_requirements;
+  std::vector<Predicate> action_at_end_requirements;
+
+  action.action->at_start_effects.getPredicates(action_at_start_effects);
+  action.action->at_end_effects.getPredicates(action_at_end_effects);
+
+  action.action->at_start_requirements.getPredicates(action_at_start_requirements);
+  action.action->over_all_requirements.getPredicates(action_over_all_requirements);
+  action.action->at_end_requirements.getPredicates(action_at_end_requirements);
+
+  for (const auto & other : ret) {
+    std::vector<Predicate> other_at_start_effects;
+    std::vector<Predicate> other_at_end_effects;
+
+    std::vector<Predicate> other_at_start_requirements;
+    std::vector<Predicate> other_over_all_requirements;
+    std::vector<Predicate> other_at_end_requirements;
+
+    other->action.action->at_start_effects.getPredicates(other_at_start_effects);
+    other->action.action->at_end_effects.getPredicates(other_at_end_effects);
+
+    other->action.action->at_start_requirements.getPredicates(other_at_start_requirements);
+    other->action.action->over_all_requirements.getPredicates(other_over_all_requirements);
+    other->action.action->at_end_requirements.getPredicates(other_at_end_requirements);
+
+    for (const auto & prev_over_all_req : other_over_all_requirements) {
+      for (const auto & action_at_start_req : action_at_start_requirements) {
+        if (prev_over_all_req.toString() == action_at_start_req.toString() &&
+          prev_over_all_req.negative == action_at_start_req.negative)
+        {
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+GraphNode::Ptr
+BTBuilder::get_node_satisfy(
+  const Predicate & predicate,
+  const std::list<GraphNode::Ptr> & roots,
+  const GraphNode::Ptr & current)
+{
+  GraphNode::Ptr ret;
+  for (const auto & node : roots) {
+    auto node_ret = get_node_satisfy(predicate, node, current);
+    if (node_ret != nullptr) {
+      ret = node_ret;
+    }
+  }
+
+  return ret;
+}
+
+std::list<GraphNode::Ptr>
+BTBuilder::get_roots(
+  std::vector<plansys2::ActionStamped> & action_sequence,
+  const std::set<PredicateStamped> & predicates)
+{
+  std::list<GraphNode::Ptr> ret;
+
+  auto it = action_sequence.begin();
+  while (it != action_sequence.end()) {
+    const auto & action = *it;
+    if (is_action_executable(action, predicates) && is_parallelizable(action, ret)) {
+      auto new_root = GraphNode::make_shared();
+      new_root->action = action;
+
+      ret.push_back(new_root);
+      it = action_sequence.erase(it);
+    } else {
+      break;
+    }
+  }
+
+  return ret;
+}
+
+void
+BTBuilder::remove_existing_predicates(
+  std::vector<Predicate> & check_predicates,
+  const std::set<PredicateStamped> & predicates) const
+{
+  auto it = check_predicates.begin();
+  while (it != check_predicates.end()) {
+    if (predicates.find({it->toString(), ""}) != predicates.end()) {
+      it = check_predicates.erase(it);
+    } else {
+      ++it;
+    }
+  }
+}
+
+Graph::Ptr
+BTBuilder::get_graph(const Plan & current_plan)
+{
+  std::set<PredicateStamped> predicates;
+  auto graph = Graph::make_shared();
+
+  auto action_sequence = get_plan_actions(current_plan);
+  init_predicates(predicates, problem_client_);
+
+  graph->roots = get_roots(action_sequence, predicates);
+
+  // Apply roots actions
+  for (auto & action_node : graph->roots) {
+    apply_action(action_node->action, predicates);
+  }
+
+  std::set<plansys2::GraphNode::Ptr> used_nodes;
+
+  // Build the rest of the graph
+  while (!action_sequence.empty()) {
+    auto new_node = GraphNode::make_shared();
+    new_node->action = *action_sequence.begin();
+
+    std::vector<Predicate> at_start_predicates;
+    std::vector<Predicate> over_all_predicates;
+    std::vector<Predicate> at_end_predicates;
+
+    action_sequence.begin()->action->at_start_requirements.getPredicates(at_start_predicates);
+    action_sequence.begin()->action->over_all_requirements.getPredicates(over_all_predicates);
+    action_sequence.begin()->action->at_end_requirements.getPredicates(at_end_predicates);
+
+    auto it_at_start = at_start_predicates.begin();
+    while (it_at_start != at_start_predicates.end()) {
+      auto node_satisfy = get_node_satisfy(*it_at_start, graph->roots, new_node);
+      if (node_satisfy != nullptr) {
+        if (used_nodes.find(new_node) == used_nodes.end()) {
+          new_node->in_arcs.insert(node_satisfy);
+          node_satisfy->out_arcs.insert(new_node);
+          used_nodes.insert(new_node);
+        }
+
+        it_at_start = at_start_predicates.erase(it_at_start);
+      } else {
+        ++it_at_start;
+      }
+    }
+    auto it_over_all = over_all_predicates.begin();
+    while (it_over_all != over_all_predicates.end()) {
+      auto node_satisfy = get_node_satisfy(*it_over_all, graph->roots, new_node);
+      if (node_satisfy != nullptr) {
+        if (used_nodes.find(new_node) == used_nodes.end()) {
+          new_node->in_arcs.insert(node_satisfy);
+          node_satisfy->out_arcs.insert(new_node);
+          used_nodes.insert(new_node);
+        }
+
+        it_over_all = over_all_predicates.erase(it_over_all);
+      } else {
+        ++it_over_all;
+      }
+    }
+
+    auto it_at_end = at_end_predicates.begin();
+    while (it_at_end != at_end_predicates.end()) {
+      auto node_satisfy = get_node_satisfy(*it_at_end, graph->roots, new_node);
+      if (node_satisfy != nullptr) {
+        if (used_nodes.find(new_node) == used_nodes.end()) {
+          new_node->in_arcs.insert(node_satisfy);
+          node_satisfy->out_arcs.insert(new_node);
+          used_nodes.insert(new_node);
+        }
+
+        it_at_end = at_end_predicates.erase(it_at_end);
+      } else {
+        ++it_at_end;
+      }
+    }
+
+    remove_existing_predicates(at_start_predicates, predicates);
+    remove_existing_predicates(over_all_predicates, predicates);
+    remove_existing_predicates(at_end_predicates, predicates);
+
+    assert(at_start_predicates.empty());
+    assert(over_all_predicates.empty());
+    assert(at_end_predicates.empty());
+
+    action_sequence.erase(action_sequence.begin());
+  }
+
+  return graph;
+}
+
 std::string
 BTBuilder::get_tree(const Plan & current_plan)
 {
-  auto levels = get_plan_actions(current_plan);
-
-  for (int i = 1; i < levels.size(); i++) {
-    int level_comp = i - 1;
-    while (level_comp >= 0 && !level_satisfied(levels[i])) {
-      check_connections(levels[level_comp], levels[i]);
-      level_comp--;
-    }
-  }
-
-  for (auto & level : levels) {
-    for (auto & action_unit : level->action_units) {
-      for (auto & req : action_unit->reqs) {
-        if (!req->satisfied) {
-          req->satisfied = problem_client_->existPredicate(Predicate(req->requirement));
-        }
-      }
-    }
-  }
-
-  int root_counters = 0;
-  for (auto & level : levels) {
-    for (auto & action_unit : level->action_units) {
-      if (in_cardinality(action_unit) == 0) {
-        root_counters++;
-      }
-    }
-  }
+  auto action_graph = get_graph(current_plan);
 
   std::string bt_plan;
 
-  if (root_counters > 1) {
+  if (action_graph->roots.size() > 1) {
     bt_plan = std::string("<root main_tree_to_execute=\"MainTree\">\n") +
       t(1) + "<BehaviorTree ID=\"MainTree\">\n" +
-      t(2) + "<Parallel success_threshold=\"" + std::to_string(root_counters) +
+      t(2) + "<Parallel success_threshold=\"" + std::to_string(action_graph->roots.size()) +
       "\" failure_threshold=\"1\">\n";
 
-    for (auto & level : levels) {
-      for (auto & action_unit : level->action_units) {
-        if (in_cardinality(action_unit) == 0) {
-          std::set<ActionUnit::Ptr> used_actions;
-          bt_plan = bt_plan + get_flow_tree(action_unit, used_actions, 3);
-        }
-      }
+    for (const auto & node : action_graph->roots) {
+      bt_plan = bt_plan + get_flow_tree(node, 3);
     }
 
     bt_plan = bt_plan + t(2) + "</Parallel>\n" +
@@ -92,14 +406,7 @@ BTBuilder::get_tree(const Plan & current_plan)
     bt_plan = std::string("<root main_tree_to_execute=\"MainTree\">\n") +
       t(1) + "<BehaviorTree ID=\"MainTree\">\n";
 
-    for (auto & level : levels) {
-      for (auto & action_unit : level->action_units) {
-        if (in_cardinality(action_unit) == 0) {
-          std::set<ActionUnit::Ptr> used_actions;
-          bt_plan = bt_plan + get_flow_tree(action_unit, used_actions, 2);
-        }
-      }
-    }
+    bt_plan = bt_plan + get_flow_tree(*action_graph->roots.begin(), 2);
 
     bt_plan = bt_plan + t(1) + "</BehaviorTree>\n</root>\n";
   }
@@ -107,42 +414,45 @@ BTBuilder::get_tree(const Plan & current_plan)
   return bt_plan;
 }
 
-std::set<ActionUnit::Ptr>
-BTBuilder::pred(ActionUnit::Ptr action_unit)
+std::string
+BTBuilder::get_flow_tree(
+  GraphNode::Ptr node,
+  int level)
 {
-  std::set<ActionUnit::Ptr> deps;
-  for (auto & req : action_unit->reqs) {
-    for (auto & effect_con : req->effect_connections) {
-      deps.insert(effect_con->action);
+  std::string ret;
+  int l = level;
+
+  const std::string action_id = "(" + node->action.action->name_actions_to_string() + "):" +
+    std::to_string(static_cast<int>(node->action.time * 1000));
+
+  if (node->out_arcs.size() == 0) {
+    ret = ret + execution_block(node, l);
+  } else if (node->out_arcs.size() == 1) {
+    ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
+    ret = ret + execution_block(node, l + 1);
+
+    for (const auto & child_node : node->out_arcs) {
+      ret = ret + get_flow_tree(child_node, l + 1);
     }
+
+    ret = ret + t(l) + "</Sequence>\n";
+  } else {
+    ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
+    ret = ret + execution_block(node, l + 1);
+
+    ret = ret + t(l + 1) +
+      "<Parallel success_threshold=\"" + std::to_string(node->out_arcs.size()) +
+      "\" failure_threshold=\"1\">\n";
+
+    for (const auto & child_node : node->out_arcs) {
+      ret = ret + get_flow_tree(child_node, l + 2);
+    }
+
+    ret = ret + t(l + 1) + "</Parallel>\n";
+    ret = ret + t(l) + "</Sequence>\n";
   }
 
-  return deps;
-}
-
-std::set<ActionUnit::Ptr>
-BTBuilder::succ(ActionUnit::Ptr action_unit)
-{
-  std::set<ActionUnit::Ptr> deps;
-  for (auto & effect : action_unit->effects) {
-    for (auto & req_con : effect->requirement_connections) {
-      deps.insert(req_con->action);
-    }
-  }
-
-  return deps;
-}
-
-int
-BTBuilder::in_cardinality(ActionUnit::Ptr action_unit)
-{
-  return pred(action_unit).size();
-}
-
-int
-BTBuilder::out_cardinality(ActionUnit::Ptr action_unit)
-{
-  return succ(action_unit).size();
+  return ret;
 }
 
 std::string
@@ -156,249 +466,87 @@ BTBuilder::t(int level)
 }
 
 std::string
-BTBuilder::get_flow_tree(
-  ActionUnit::Ptr root_flow,
-  std::set<ActionUnit::Ptr> & used_actions, int level)
+BTBuilder::execution_block(const GraphNode::Ptr & node, int l)
 {
+  const auto & action = node->action;
   std::string ret;
-  int l = level;
+  const std::string action_id = "(" + action.action->name_actions_to_string() + "):" +
+    std::to_string(static_cast<int>(action.time * 1000));
 
-  used_actions.insert(root_flow);
+  ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
 
-  if (out_cardinality(root_flow) == 0) {
-    if (in_cardinality(root_flow) > 1) {
-      ret = t(l) + "<Sequence name=\"" + root_flow->action + ":" +
-        std::to_string(root_flow->time) + "\">\n";
-
-      for (auto & action : pred(root_flow)) {
-        ret = ret + t(l + 1) + "<WaitAction action=\"" + action->action + ":" +
-          std::to_string(action->time) + "\"/>\n";
-      }
-
-      ret = ret + execution_block(root_flow->action, root_flow->time, l + 1) +
-        t(l) + "</Sequence>\n";
-    } else {
-      ret = execution_block(root_flow->action, root_flow->time, l);
-    }
+  for (const auto & previous_node : node->in_arcs) {
+    const std::string parent_action_id = "(" +
+      previous_node->action.action->name_actions_to_string() + "):" +
+      std::to_string(static_cast<int>( previous_node->action.time * 1000));
+    ret = ret + t(l + 1) + "<WaitAtStartReq action=\"" + parent_action_id + "\"/>\n";
   }
 
-  if (out_cardinality(root_flow) == 1) {
-    ret = t(l) + "<Sequence name=\"" + root_flow->action + ":" +
-      std::to_string(root_flow->time) + "\">\n";
-
-    if (in_cardinality(root_flow) > 1) {
-      for (auto & action : pred(root_flow)) {
-        ret = ret + t(l + 1) + "<WaitAction action=\"" + action->action + ":" +
-          std::to_string(action->time) + "\"/>\n";
-      }
-    }
-
-    ret = ret + execution_block(root_flow->action, root_flow->time, l + 1) +
-      get_flow_tree(*succ(root_flow).begin(), used_actions, l + 1) +
-      t(l) + "</Sequence>\n";
-  }
-
-  if (out_cardinality(root_flow) > 1) {
-    ret = t(l) + "<Sequence name=\"" + root_flow->action + ":" +
-      std::to_string(root_flow->time) + "\">\n";
-
-    if (in_cardinality(root_flow) > 1) {
-      for (auto & action : pred(root_flow)) {
-        ret = ret + t(l + 1) + "<WaitAction action=\"" + action->action + ":" +
-          std::to_string(action->time) + "\"/>\n";
-      }
-    }
-
-    ret = ret +
-      execution_block(root_flow->action, root_flow->time, l + 1) +
-      t(l + 1) + "<Parallel success_threshold=\"" + std::to_string(succ(root_flow).size()) +
-      "\"  failure_threshold=\"1\">\n";
-
-    for (auto & action : succ(root_flow)) {
-      ret = ret + get_flow_tree(action, used_actions, l + 2);
-    }
-    ret = ret + t(l + 1) + "</Parallel>\n";
-    ret = ret + t(l) + "</Sequence>\n";
-  }
-
-  return ret;
-}
-
-std::string
-BTBuilder::execution_block(const std::string & action, int plan_time, int l)
-{
-  std::string ret;
-
-  ret = ret + t(l) + "<Sequence name=\"" + action + ":" +
-    std::to_string(plan_time) + "\">\n";
-  ret = ret + t(l + 1) + "<WaitAtStartReq action=\"" + action + ":" +
-    std::to_string(plan_time) + "\"/>\n";
-  ret = ret + t(l + 1) + "<ApplyAtStartEffect action=\"" + action + ":" +
-    std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l + 1) + "<ApplyAtStartEffect action=\"" + action_id + "\"/>\n";
   ret = ret + t(l + 1) + "<Parallel success_threshold=\"2\" failure_threshold=\"1\">\n";
-  ret = ret + t(l + 2) + "<CheckOverAllReq action=\"" + action + ":" +
-    std::to_string(plan_time) + "\"/>\n";
-  ret = ret + t(l + 2) + "<ExecuteAction action=\"" + action + ":" +
-    std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l + 2) + "<CheckOverAllReq action=\"" + action_id + "\"/>\n";
+  ret = ret + t(l + 2) + "<ExecuteAction action=\"" + action_id + "\"/>\n";
   ret = ret + t(l + 1) + "</Parallel>\n";
-  ret = ret + t(l + 1) + "<CheckAtEndReq action=\"" + action + ":" +
-    std::to_string(plan_time) + "\"/>\n";
-  ret = ret + t(l + 1) + "<ApplyAtEndEffect action=\"" + action + ":" +
-    std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l + 1) + "<CheckAtEndReq action=\"" + action_id + "\"/>\n";
+  ret = ret + t(l + 1) + "<ApplyAtEndEffect action=\"" + action_id + "\"/>\n";
   ret = ret + t(l) + "</Sequence>\n";
-
   return ret;
 }
 
-void
-BTBuilder::check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr down_level)
-{
-  for (auto & down_action_unit : down_level->action_units) {
-    for (auto & req : down_action_unit->reqs) {
-      if (!req->satisfied) {
-        for (auto & up_action_unit : up_level->action_units) {
-          for (auto & effect : up_action_unit->effects) {
-            if (req->requirement == effect->effect) {
-              req->satisfied = true;
-              req->effect_connections.push_back(effect);
-              effect->requirement_connections.push_back(req);
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-
-bool
-BTBuilder::level_satisfied(ExecutionLevel::Ptr level)
-{
-  bool ret = true;
-  for (auto & action_unit : level->action_units) {
-    for (auto & req : action_unit->reqs) {
-      ret = ret && req->satisfied;
-    }
-  }
-
-  return ret;
-}
-
-void
-BTBuilder::print_levels(std::vector<ExecutionLevel::Ptr> & levels)
-{
-  int counter_level = 0;
-  for (auto & level : levels) {
-    std::cout << "====== Level " << counter_level++ << " [" << level->time << "]" << std::endl;
-
-    for (const auto & action_unit : level->action_units) {
-      std::cout << "\t" << action_unit->action << "\tin_cardinality: " <<
-        in_cardinality(action_unit) << std::endl;
-      std::cout << "\t\tReqs: " << std::endl;
-
-      for (const auto & req : action_unit->reqs) {
-        std::cout << "\t\t\t" << req->requirement <<
-        (req->satisfied ? "Satisfied" : "Not satisfied") << std::endl;
-
-        for (auto & action : req->effect_connections) {
-          std::cout << "\t\t\t\t" << action->action->action << std::endl;
-        }
-      }
-      std::cout << "\t\tEffects: " << std::endl;
-
-      for (const auto & effect : action_unit->effects) {
-        std::cout << "\t\t\t" << effect->effect << std::endl;
-
-        for (auto & req : effect->requirement_connections) {
-          std::cout << "\t\t\t\t" << req->action->action << std::endl;
-        }
-      }
-    }
-  }
-}
-
-std::vector<ExecutionLevel::Ptr>
+std::vector<ActionStamped>
 BTBuilder::get_plan_actions(const Plan & plan)
 {
-  std::vector<ExecutionLevel::Ptr> ret;
+  std::vector<ActionStamped> ret;
 
-  auto current_level = ExecutionLevel::make_shared();
-  ret.push_back(current_level);
-
-  int last_time = 0;
   for (auto & item : plan) {
-    int time = static_cast<int>(item.time);
-    if (time > last_time) {
-      last_time = time;
-      current_level = ExecutionLevel::make_shared();
-      ret.push_back(current_level);
+    ActionStamped action_stamped;
 
-      current_level->time = time;
-    }
+    action_stamped.time = item.time;
+    action_stamped.action = get_action_from_string(item.action, domain_client_);
 
-    auto action_unit = ActionUnit::make_shared();
-    current_level->action_units.push_back(action_unit);
-
-    action_unit->action = item.action;
-    action_unit->time = current_level->time;
-
-    auto dur_action = get_action_from_string(item.action, domain_client_);
-    std::vector<plansys2::Predicate> at_start_requirements;
-    dur_action->at_start_requirements.getPredicates(at_start_requirements, true);
-
-    std::vector<plansys2::Predicate> over_all_requirements;
-    dur_action->over_all_requirements.getPredicates(over_all_requirements, true);
-    std::vector<plansys2::Predicate> at_end_requirements;
-    dur_action->at_end_requirements.getPredicates(at_end_requirements, true);
-
-    std::vector<plansys2::Predicate> requirements;
-
-    std::copy(
-      at_start_requirements.begin(),
-      at_start_requirements.end(),
-      std::back_inserter(requirements));
-    std::copy(
-      over_all_requirements.begin(),
-      over_all_requirements.end(),
-      std::back_inserter(requirements));
-    std::copy(
-      at_end_requirements.begin(),
-      at_end_requirements.end(),
-      std::back_inserter(requirements));
-
-    for (const auto & p : requirements) {
-      auto req = RequirementConnection::make_shared();
-      action_unit->reqs.push_back(req);
-      req->requirement = p.toString();
-      req->action = action_unit;
-    }
-
-    std::vector<plansys2::Predicate> at_start_effects;
-    dur_action->at_start_effects.getPredicates(at_start_effects, true);
-    std::vector<plansys2::Predicate> at_end_effects;
-    dur_action->at_end_effects.getPredicates(at_end_effects, true);
-
-    std::vector<plansys2::Predicate> effects;
-    std::copy(at_start_effects.begin(), at_start_effects.end(), std::back_inserter(effects));
-    std::copy(at_end_effects.begin(), at_end_effects.end(), std::back_inserter(effects));
-
-    for (const auto & p : effects) {
-      auto effect = EffectConnection::make_shared();
-      action_unit->effects.push_back(effect);
-      effect->effect = p.toString();
-      effect->action = action_unit;
-    }
+    ret.push_back(action_stamped);
   }
 
   return ret;
 }
 
-bool operator<(const ActionUnit::Ptr & op1, const ActionUnit::Ptr & op2)
-{
-  std::string op1_str = op1->action + ":" + std::to_string(op1->time);
-  std::string op2_str = op2->action + ":" + std::to_string(op2->time);
 
-  return op1_str < op2_str;
+void
+BTBuilder::print_node(
+  const plansys2::GraphNode::Ptr & node,
+  int level,
+  std::set<plansys2::GraphNode::Ptr> & used_nodes) const
+{
+  std::cerr << std::string(level, '\t') << "[" << node->action.time << "] ";
+  std::cerr << node->action.action->name << " ";
+  for (const auto & param : node->action.action->parameters) {
+    std::cerr << param.name << " ";
+  }
+  std::cerr << " in arcs " << node->in_arcs.size() << std::endl;
+
+  for (const auto & out : node->out_arcs) {
+    print_node(out, level + 1, used_nodes);
+  }
+}
+
+void
+BTBuilder::print_graph(const plansys2::Graph::Ptr & graph) const
+{
+  std::set<plansys2::GraphNode::Ptr> used_nodes;
+  for (const auto & root : graph->roots) {
+    print_node(root, 0, used_nodes);
+  }
+}
+
+
+bool operator<(const PredicateStamped & op1, const PredicateStamped & op2)
+{
+  return op1.predicate < op2.predicate;
+}
+
+bool operator<(const PredicateStamped & op1, const Predicate & op2)
+{
+  return op1.predicate < op2.toString();
 }
 
 }  // namespace plansys2
