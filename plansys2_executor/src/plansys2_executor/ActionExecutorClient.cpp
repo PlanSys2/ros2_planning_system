@@ -42,14 +42,16 @@ using std::placeholders::_1;
 CallbackReturnT
 ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
 {
-  action_managed_ = get_parameter("action_name").get_value<std::string>();
+  if (!get_parameter("action_name", action_managed_)) {
+    RCLCPP_ERROR(get_logger(), "action_name parameter not set");
+  }
   get_parameter_or<std::vector<std::string>>(
     "specialized_arguments", specialized_arguments_, std::vector<std::string>({}));
 
   action_hub_pub_ = create_publisher<plansys2_msgs::msg::ActionExecution>(
-    "actions_hub", rclcpp::QoS(100).reliable());
+    "/actions_hub", rclcpp::QoS(100).reliable());
   action_hub_sub_ = create_subscription<plansys2_msgs::msg::ActionExecution>(
-    "actions_hub", rclcpp::QoS(100).reliable(),
+    "/actions_hub", rclcpp::QoS(100).reliable(),
     std::bind(&ActionExecutorClient::action_hub_callback, this, _1));
 
   action_hub_pub_->on_activate();
@@ -128,7 +130,9 @@ ActionExecutorClient::should_execute(
     }
 
     for (int i = 0; i < specialized_arguments_.size() && i < args.size(); i++) {
-      if (specialized_arguments_[i] != "" && specialized_arguments_[i] != args[i]) {
+      if (specialized_arguments_[i] != "" && args[i] != "" &&
+        specialized_arguments_[i] != args[i])
+      {
         return false;
       }
     }

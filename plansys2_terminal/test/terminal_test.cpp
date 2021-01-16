@@ -29,6 +29,7 @@
 #include "plansys2_planner/PlannerClient.hpp"
 #include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
+#include "plansys2_executor/ActionExecutorClient.hpp"
 
 #include "plansys2_terminal/Terminal.hpp"
 
@@ -175,6 +176,18 @@ public:
   {
     method_executed_["process_run"] = true;
     Terminal::process_run(command, os);
+  }
+
+  void process_check(std::vector<std::string> & command, std::ostringstream & os)
+  {
+    method_executed_["process_check"] = true;
+    Terminal::process_check(command, os);
+  }
+
+  void process_check_actors(std::vector<std::string> & command, std::ostringstream & os)
+  {
+    method_executed_["process_check_actors"] = true;
+    Terminal::process_check_actors(command, os);
   }
 
   void process_command(std::string & command, std::ostringstream & os)
@@ -438,6 +451,14 @@ TEST_F(TerminalTestCase, load_popf_plugin)
 
   {
     std::ostringstream os;
+    std::string command("check actors");
+    terminal_node->process_command(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_check"]);
+    ASSERT_TRUE(terminal_node->method_executed_["process_check_actors"]);
+  }
+
+  {
+    std::ostringstream os;
     std::vector<std::string> command = {"r2d2"};
     terminal_node->process_remove_instance(command, os);
     ASSERT_TRUE(terminal_node->method_executed_["process_remove_instance"]);
@@ -509,6 +530,98 @@ TEST_F(TerminalTestCase, load_popf_plugin)
       rate.sleep();
     }
   }
+
+  exe.cancel();
+  t.join();
+}
+
+TEST_F(TerminalTestCase, check_actors)
+{
+  auto test_node = rclcpp::Node::make_shared("terminal_node_test");
+
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto executor_node = std::make_shared<plansys2::ExecutorNode>();
+
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+
+  using namespace std::chrono_literals;
+
+  auto move_actor_1_node = plansys2::ActionExecutorClient::make_shared("move_1", 100ms);
+  auto move_actor_2_node = plansys2::ActionExecutorClient::make_shared("move_2", 100ms);
+  auto ask_charge_actor_1_node = plansys2::ActionExecutorClient::make_shared("askcharge", 100ms);
+  auto charge_actor_1_node = plansys2::ActionExecutorClient::make_shared("charge", 100ms);
+
+  move_actor_1_node->set_parameter({"action_name", "move"});
+  move_actor_2_node->set_parameter({"action_name", "move"});
+  ask_charge_actor_1_node->set_parameter({"action_name", "askcharge"});
+  charge_actor_1_node->set_parameter({"action_name", "charge"});
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_terminal");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 16, true);
+  ASSERT_GT(exe.get_number_of_threads(), 15u);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(planner_node->get_node_base_interface());
+  exe.add_node(executor_node->get_node_base_interface());
+  exe.add_node(move_actor_1_node->get_node_base_interface());
+  exe.add_node(move_actor_2_node->get_node_base_interface());
+  exe.add_node(ask_charge_actor_1_node->get_node_base_interface());
+  exe.add_node(charge_actor_1_node->get_node_base_interface());
+
+  std::thread t([&]() {
+      exe.spin();
+    });
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  move_actor_1_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  move_actor_2_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  ask_charge_actor_1_node->trigger_transition(
+    lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  charge_actor_1_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp_lifecycle::State state = problem_node->trigger_transition(
+    lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  std::string stateLabel = state.label();
+
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  auto terminal_node = std::make_shared<TerminalTest>();
+  terminal_node->init();
+
+  std::ostringstream os;
+  std::string command("check actors");
+  terminal_node->process_command(command, os);
+
+  ASSERT_EQ(os.str(), "\t[askcharge] 1\n\t[charge] 1\n\t[move] 2\n");
 
   exe.cancel();
   t.join();
