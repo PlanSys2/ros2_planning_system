@@ -6,7 +6,7 @@ This module is very simple, as its only task is calling the popf binary and pars
 
 The main class is [`plansys2::PlannerNode`](include/include/plansys2_planner/PlannerNode.hpp), which is instantiated from [`planner_node.cpp`](src/planner_node.cpp). `plansys2::PlannerNode` is a also `rclcpp_lifecycle::LifecycleNode`, but currently the functionality is in the active phase.
 
-Plan solvers are specified in the `plan_solver_plugins` parameter. In case of more than one specified, the first one will be used. If this paremeter is not specified, POPF will be used by default.
+Plan solvers are specified in the `plan_solver_plugins` parameter. In case of more than one specified, the first one will be used. If this parameter is not specified, POPF will be used by default.
 
 ## Services
 
