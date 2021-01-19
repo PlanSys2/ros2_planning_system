@@ -164,8 +164,6 @@ ExecutorNode::handle_goal(
     RCLCPP_ERROR(get_logger(), "Executor problem [Plan not found]");
     return rclcpp_action::GoalResponse::REJECT;
   }
-
-  return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
 rclcpp_action::CancelResponse
