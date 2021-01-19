@@ -86,7 +86,7 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
 
-  dotgraph_pub_ = this->create_publisher<std_msgs::msg::String>("plan_graph", 1);
+  dotgraph_pub_ = this->create_publisher<std_msgs::msg::String>("dot_graph", 1);
 
   aux_node_ = std::make_shared<rclcpp::Node>("executor_helper");
   domain_client_ = std::make_shared<plansys2::DomainExpertClient>(aux_node_);
