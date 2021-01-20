@@ -228,7 +228,10 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
   std_msgs::msg::String msg;
-  msg.data = bt_builder.get_tree_dotgraph(current_plan_.value(), this->get_parameter("include_legend").as_bool());
+  msg.data =
+    bt_builder.get_tree_dotgraph(
+    current_plan_.value(), this->get_parameter(
+      "include_legend").as_bool());
   dotgraph_pub_->publish(msg);
 
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);

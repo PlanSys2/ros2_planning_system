@@ -47,12 +47,12 @@ struct ActionUnit
   std::string action;
   int time;
 
-  inline bool operator==(const ActionUnit& other)
+  inline bool operator==(const ActionUnit & other)
   {
     return action == other.action && time == other.time;
   }
 
-  bool operator!=(const ActionUnit& other)
+  bool operator!=(const ActionUnit & other)
   {
     return !(*this == other);
   }
@@ -114,7 +114,9 @@ protected:
   std::vector<ExecutionLevel::Ptr> levels_;
 
   void print_levels(std::vector<ExecutionLevel::Ptr> & levels);
-  std::string get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels, const bool include_legend);
+  std::string get_levels_dotgraph(
+    std::vector<ExecutionLevel::Ptr> & levels,
+    const bool include_legend);
   bool level_satisfied(ExecutionLevel::Ptr level);
   void check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr down_level);
 

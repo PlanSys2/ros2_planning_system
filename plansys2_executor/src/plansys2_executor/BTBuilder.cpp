@@ -387,19 +387,15 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels, bool i
         req_nodes.insert(req->node_num);
         all_nodes.insert(req->node_num);
         ss << req->node_num;
-        if (include_legend)
-        {
+        if (include_legend) {
           ss << " [label=\"" << req->node_num << "\"";
-        }
-        else
-        {
+        } else {
           ss << " [label=\"\"";
         }
         ss << ",shape=circle,style=filled,color=darkgreen,fillcolor=palegreen];\n";
       }
       ss << "{ rank=min; ";
-      for (const auto &node : req_nodes)
-      {
+      for (const auto & node : req_nodes) {
         ss << node << "; ";
       }
       ss << "}\n";
@@ -410,30 +406,23 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels, bool i
         eff_nodes.insert(eff->node_num);
         all_nodes.insert(eff->node_num);
         ss << eff->node_num;
-        if (include_legend)
-        {
+        if (include_legend) {
           ss << " [label=\"" << eff->node_num << "\"";
-        }
-        else
-        {
+        } else {
           ss << " [label=\"\"";
         }
         ss << ",shape=circle,style=filled,color=red,fillcolor=pink];\n";
       }
       ss << "{ rank=max; ";
-      for (const auto &node : eff_nodes)
-      {
+      for (const auto & node : eff_nodes) {
         ss << node << "; ";
       }
       ss << "}\n";
 
-      if (req_nodes.size() > 1)
-      {
+      if (req_nodes.size() > 1) {
         bool first = true;
-        for (const auto &req : req_nodes)
-        {
-          if (!first)
-          {
+        for (const auto & req : req_nodes) {
+          if (!first) {
             ss << "->";
           }
           ss << req;
@@ -442,13 +431,10 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels, bool i
         ss << " [style=invis];\n";
       }
 
-      if (eff_nodes.size() > 1)
-      {
+      if (eff_nodes.size() > 1) {
         bool first = true;
-        for (const auto &eff : eff_nodes)
-        {
-          if (!first)
-          {
+        for (const auto & eff : eff_nodes) {
+          if (!first) {
             ss << "->";
           }
           ss << eff;
@@ -457,13 +443,11 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels, bool i
         ss << " [style=invis];\n";
       }
 
-      for (const auto &req : req_nodes)
-      {
+      for (const auto & req : req_nodes) {
         ss << req << "->" << action_unit->node_num << " [style=invis];\n";
       }
 
-      for (const auto &eff : eff_nodes)
-      {
+      for (const auto & eff : eff_nodes) {
         ss << action_unit->node_num << "->" << eff << " [style=invis];\n";
       }
 
@@ -483,8 +467,7 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels, bool i
     }
   }
 
-  if (include_legend)
-  {
+  if (include_legend) {
     // create legend
     ss << "subgraph cluster_" << (*all_clusters.rbegin()) + 1 << " {\n";
     ss << "label = \"Legend\";\n";
@@ -506,10 +489,8 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels, bool i
       }
     }
     bool first = true;
-    for (const auto &node : legend_nodes)
-    {
-      if (!first)
-      {
+    for (const auto & node : legend_nodes) {
+      if (!first) {
         ss << "->";
       }
       ss << node;
