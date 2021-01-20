@@ -91,11 +91,11 @@ BTBuilder::get_tree(const Plan & current_plan)
 }
 
 std::string
-BTBuilder::get_tree_dotgraph(const Plan & current_plan)
+BTBuilder::get_tree_dotgraph(const Plan & current_plan, bool include_legend)
 {
   auto levels = get_plan_actions(current_plan);
   print_levels(levels);
-  std::string dotgraph = get_levels_dotgraph(levels);
+  std::string dotgraph = get_levels_dotgraph(levels, include_legend);
   return dotgraph;
 }
 
@@ -346,7 +346,7 @@ BTBuilder::print_levels(std::vector<ExecutionLevel::Ptr> & levels)
 }
 
 std::string
-BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
+BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels, bool include_legend)
 {
   // create xdot graph
   std::stringstream ss;
@@ -357,7 +357,10 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
   ss << "rankdir=TB;\n";
 
   // get nodes
+  std::set<int> all_nodes;
+  std::set<int> all_clusters;
   for (auto & level : levels) {
+    all_clusters.insert(level->cluster_num);
     ss << "subgraph cluster_" << level->cluster_num << " {\n";
     ss << "label = \"Time: " << level->time << "\";\n";
     ss << "style = rounded;\n";
@@ -368,6 +371,8 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
     for (const auto & action_unit : level->action_units) {
       // nodes
       // node i = action_unit
+      all_clusters.insert(action_unit->cluster_num);
+      all_nodes.insert(action_unit->node_num);
       ss << "subgraph cluster_" << action_unit->cluster_num;
       ss << " {\n label=\"\";\n";
       ss << "labeljust = c;\n";
@@ -380,8 +385,17 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
       std::set<int> req_nodes;
       for (const auto & req : action_unit->reqs) {
         req_nodes.insert(req->node_num);
+        all_nodes.insert(req->node_num);
         ss << req->node_num;
-        ss << " [label=\"\",shape=circle,style=filled,color=darkgreen,fillcolor=palegreen];\n";
+        if (include_legend)
+        {
+          ss << " [label=\"" << req->node_num << "\"";
+        }
+        else
+        {
+          ss << " [label=\"\"";
+        }
+        ss << ",shape=circle,style=filled,color=darkgreen,fillcolor=palegreen];\n";
       }
       ss << "{ rank=min; ";
       for (const auto &node : req_nodes)
@@ -394,8 +408,17 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
       std::set<int> eff_nodes;
       for (const auto & eff : action_unit->effects) {
         eff_nodes.insert(eff->node_num);
+        all_nodes.insert(eff->node_num);
         ss << eff->node_num;
-        ss << " [label=\"\",shape=circle,style=filled,color=red,fillcolor=pink];\n";
+        if (include_legend)
+        {
+          ss << " [label=\"" << eff->node_num << "\"";
+        }
+        else
+        {
+          ss << " [label=\"\"";
+        }
+        ss << ",shape=circle,style=filled,color=red,fillcolor=pink];\n";
       }
       ss << "{ rank=max; ";
       for (const auto &node : eff_nodes)
@@ -450,7 +473,6 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
   }
 
   // get edges
-  std::set<std::pair<int,int> > edges;
   for (auto & level : levels) {
     for (const auto & action_unit : level->action_units) {
       for (const auto & effect : action_unit->effects) {
@@ -459,6 +481,42 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels)
         }
       }
     }
+  }
+
+  if (include_legend)
+  {
+    // create legend
+    ss << "subgraph cluster_" << (*all_clusters.rbegin()) + 1 << " {\n";
+    ss << "label = \"Legend\";\n";
+
+    std::set<int> legend_nodes;
+    int legend_node_counter = (*all_nodes.rbegin()) + 1;
+    for (auto & level : levels) {
+      for (const auto & action_unit : level->action_units) {
+        for (const auto & req : action_unit->reqs) {
+          legend_nodes.insert(legend_node_counter);
+          ss << legend_node_counter++;
+          ss << " [label=\"" << req->node_num << ": " << req->requirement->toString() << "\"];\n";
+        }
+        for (const auto & eff : action_unit->effects) {
+          legend_nodes.insert(legend_node_counter);
+          ss << legend_node_counter++;
+          ss << " [label=\"" << eff->node_num << ": " << eff->effect->toString() << "\"];\n";
+        }
+      }
+    }
+    bool first = true;
+    for (const auto &node : legend_nodes)
+    {
+      if (!first)
+      {
+        ss << "->";
+      }
+      ss << node;
+      first = false;
+    }
+    ss << "[style=invis];\n";
+    ss << "}";
   }
 
   ss << "}";

@@ -55,6 +55,7 @@ ExecutorNode::ExecutorNode()
 {
   using namespace std::placeholders;
 
+  this->declare_parameter<bool>("include_legend", true);
 #ifdef ZMQ_FOUND
   this->declare_parameter<bool>("enable_groot_monitoring", true);
   this->declare_parameter<int>("publisher_port", 1666);
@@ -227,7 +228,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
   std_msgs::msg::String msg;
-  msg.data = bt_builder.get_tree_dotgraph(current_plan_.value());
+  msg.data = bt_builder.get_tree_dotgraph(current_plan_.value(), this->get_parameter("include_legend").as_bool());
   dotgraph_pub_->publish(msg);
 
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);

@@ -105,7 +105,7 @@ public:
   // void print(std::shared_ptr<GraphNode> current = root_) const;
 
   std::string get_tree(const Plan & current_plan);
-  std::string get_tree_dotgraph(const Plan & current_plan);
+  std::string get_tree_dotgraph(const Plan & current_plan, const bool include_legend);
 
 protected:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
@@ -114,7 +114,7 @@ protected:
   std::vector<ExecutionLevel::Ptr> levels_;
 
   void print_levels(std::vector<ExecutionLevel::Ptr> & levels);
-  std::string get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels);
+  std::string get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels, const bool include_legend);
   bool level_satisfied(ExecutionLevel::Ptr level);
   void check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr down_level);
 
