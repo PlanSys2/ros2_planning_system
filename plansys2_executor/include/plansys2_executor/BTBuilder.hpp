@@ -47,6 +47,18 @@ struct ActionUnit
   std::string action;
   int time;
 
+  inline bool operator==(const ActionUnit & other)
+  {
+    return action == other.action && time == other.time;
+  }
+
+  bool operator!=(const ActionUnit & other)
+  {
+    return !(*this == other);
+  }
+
+  int cluster_num;
+  int node_num;
   std::list<std::shared_ptr<RequirementConnection>> reqs;
   std::list<std::shared_ptr<EffectConnection>> effects;
 };
@@ -61,6 +73,7 @@ struct RequirementConnection
   std::shared_ptr<parser::pddl::tree::TreeNode> requirement;
   ActionUnit::Ptr action;
   bool satisfied;
+  int node_num;
   std::list<std::shared_ptr<EffectConnection>> effect_connections;
 };
 
@@ -71,6 +84,7 @@ struct EffectConnection
 
   std::shared_ptr<parser::pddl::tree::TreeNode> effect;
   std::shared_ptr<ActionUnit> action;
+  int node_num;
   std::list<RequirementConnection::Ptr> requirement_connections;
 };
 
@@ -80,6 +94,7 @@ struct ExecutionLevel
   static Ptr make_shared() {return std::make_shared<ExecutionLevel>();}
 
   int time;
+  int cluster_num;
   std::list<ActionUnit::Ptr> action_units;
 };
 
@@ -90,6 +105,7 @@ public:
   // void print(std::shared_ptr<GraphNode> current = root_) const;
 
   std::string get_tree(const Plan & current_plan);
+  std::string get_tree_dotgraph(const Plan & current_plan, const bool include_legend);
 
 protected:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
@@ -98,6 +114,9 @@ protected:
   std::vector<ExecutionLevel::Ptr> levels_;
 
   void print_levels(std::vector<ExecutionLevel::Ptr> & levels);
+  std::string get_levels_dotgraph(
+    std::vector<ExecutionLevel::Ptr> & levels,
+    const bool include_legend);
   bool level_satisfied(ExecutionLevel::Ptr level);
   void check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr down_level);
 

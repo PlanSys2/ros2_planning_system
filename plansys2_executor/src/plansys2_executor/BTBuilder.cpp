@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <string>
+#include <sstream>
 #include <memory>
 #include <set>
 #include <tuple>
@@ -41,25 +42,6 @@ std::string
 BTBuilder::get_tree(const Plan & current_plan)
 {
   auto levels = get_plan_actions(current_plan);
-
-  for (size_t i = 1; i < levels.size(); i++) {
-    int level_comp = static_cast<int>(i) - 1;
-    while (level_comp >= 0 && !level_satisfied(levels[i])) {
-      check_connections(levels[level_comp], levels[i]);
-      level_comp--;
-    }
-  }
-
-  for (auto & level : levels) {
-    for (auto & action_unit : level->action_units) {
-      for (auto & req : action_unit->reqs) {
-        if (!req->satisfied) {
-          std::tuple<bool, double> result = check(req->requirement, problem_client_);
-          req->satisfied = std::get<0>(result);
-        }
-      }
-    }
-  }
 
   int root_counters = 0;
   for (auto & level : levels) {
@@ -106,6 +88,15 @@ BTBuilder::get_tree(const Plan & current_plan)
   }
 
   return bt_plan;
+}
+
+std::string
+BTBuilder::get_tree_dotgraph(const Plan & current_plan, bool include_legend)
+{
+  auto levels = get_plan_actions(current_plan);
+  print_levels(levels);
+  std::string dotgraph = get_levels_dotgraph(levels, include_legend);
+  return dotgraph;
 }
 
 std::set<ActionUnit::Ptr>
@@ -334,8 +325,9 @@ BTBuilder::print_levels(std::vector<ExecutionLevel::Ptr> & levels)
         (req->satisfied ? " Satisfied" : " Not satisfied") << std::endl;
         std::cout << "\t\t\t\tEffect Connections: " << std::endl;
 
-        for (auto & action : req->effect_connections) {
-          std::cout << "\t\t\t\t\t" << action->action->action << std::endl;
+        for (auto & eff : req->effect_connections) {
+          std::cout << "\t\t\t\t\taction: " << eff->action->action << std::endl;
+          std::cout << "\t\t\t\t\teffect: " << eff->effect->toString() << std::endl;
         }
       }
       std::cout << "\t\tEffects: " << std::endl;
@@ -345,11 +337,172 @@ BTBuilder::print_levels(std::vector<ExecutionLevel::Ptr> & levels)
         std::cout << "\t\t\t\tRequirement Connections: " << std::endl;
 
         for (auto & req : effect->requirement_connections) {
-          std::cout << "\t\t\t\t\t" << req->action->action << std::endl;
+          std::cout << "\t\t\t\t\taction: " << req->action->action << std::endl;
+          std::cout << "\t\t\t\t\trequirement: " << req->requirement->toString() << std::endl;
         }
       }
     }
   }
+}
+
+std::string
+BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels, bool include_legend)
+{
+  // create xdot graph
+  std::stringstream ss;
+  ss << "digraph plan {\n";
+
+  // dotgraph formatting options
+  ss << "node[shape=box];\n";
+  ss << "rankdir=TB;\n";
+
+  // get nodes
+  std::set<int> all_nodes;
+  std::set<int> all_clusters;
+  for (auto & level : levels) {
+    all_clusters.insert(level->cluster_num);
+    ss << "subgraph cluster_" << level->cluster_num << " {\n";
+    ss << "label = \"Time: " << level->time << "\";\n";
+    ss << "style = rounded;\n";
+    ss << "color = yellow3;\n";
+    ss << "bgcolor = lemonchiffon;\n";
+    ss << "labeljust = l;\n";
+
+    for (const auto & action_unit : level->action_units) {
+      // nodes
+      // node i = action_unit
+      all_clusters.insert(action_unit->cluster_num);
+      all_nodes.insert(action_unit->node_num);
+      ss << "subgraph cluster_" << action_unit->cluster_num;
+      ss << " {\n label=\"\";\n";
+      ss << "labeljust = c;\n";
+      ss << "style = \"filled\";\n";
+      ss << "color = blue;\n";
+      ss << "fillcolor = skyblue;\n";
+      ss << action_unit->node_num << " [label=\"" << action_unit->action << "\",color=skyblue];\n";
+
+      // requirements
+      std::set<int> req_nodes;
+      for (const auto & req : action_unit->reqs) {
+        req_nodes.insert(req->node_num);
+        all_nodes.insert(req->node_num);
+        ss << req->node_num;
+        if (include_legend) {
+          ss << " [label=\"" << req->node_num << "\"";
+        } else {
+          ss << " [label=\"\"";
+        }
+        ss << ",shape=circle,style=filled,color=darkgreen,fillcolor=palegreen];\n";
+      }
+      ss << "{ rank=min; ";
+      for (const auto & node : req_nodes) {
+        ss << node << "; ";
+      }
+      ss << "}\n";
+
+      // effects
+      std::set<int> eff_nodes;
+      for (const auto & eff : action_unit->effects) {
+        eff_nodes.insert(eff->node_num);
+        all_nodes.insert(eff->node_num);
+        ss << eff->node_num;
+        if (include_legend) {
+          ss << " [label=\"" << eff->node_num << "\"";
+        } else {
+          ss << " [label=\"\"";
+        }
+        ss << ",shape=circle,style=filled,color=red,fillcolor=pink];\n";
+      }
+      ss << "{ rank=max; ";
+      for (const auto & node : eff_nodes) {
+        ss << node << "; ";
+      }
+      ss << "}\n";
+
+      if (req_nodes.size() > 1) {
+        bool first = true;
+        for (const auto & req : req_nodes) {
+          if (!first) {
+            ss << "->";
+          }
+          ss << req;
+          first = false;
+        }
+        ss << " [style=invis];\n";
+      }
+
+      if (eff_nodes.size() > 1) {
+        bool first = true;
+        for (const auto & eff : eff_nodes) {
+          if (!first) {
+            ss << "->";
+          }
+          ss << eff;
+          first = false;
+        }
+        ss << " [style=invis];\n";
+      }
+
+      for (const auto & req : req_nodes) {
+        ss << req << "->" << action_unit->node_num << " [style=invis];\n";
+      }
+
+      for (const auto & eff : eff_nodes) {
+        ss << action_unit->node_num << "->" << eff << " [style=invis];\n";
+      }
+
+      ss << "}\n";
+    }
+    ss << "}\n";
+  }
+
+  // get edges
+  for (auto & level : levels) {
+    for (const auto & action_unit : level->action_units) {
+      for (const auto & effect : action_unit->effects) {
+        for (auto & req : effect->requirement_connections) {
+          ss << effect->node_num << " -> " << req->node_num << ";\n";
+        }
+      }
+    }
+  }
+
+  if (include_legend) {
+    // create legend
+    ss << "subgraph cluster_" << (*all_clusters.rbegin()) + 1 << " {\n";
+    ss << "label = \"Legend\";\n";
+
+    std::set<int> legend_nodes;
+    int legend_node_counter = (*all_nodes.rbegin()) + 1;
+    for (auto & level : levels) {
+      for (const auto & action_unit : level->action_units) {
+        for (const auto & req : action_unit->reqs) {
+          legend_nodes.insert(legend_node_counter);
+          ss << legend_node_counter++;
+          ss << " [label=\"" << req->node_num << ": " << req->requirement->toString() << "\"];\n";
+        }
+        for (const auto & eff : action_unit->effects) {
+          legend_nodes.insert(legend_node_counter);
+          ss << legend_node_counter++;
+          ss << " [label=\"" << eff->node_num << ": " << eff->effect->toString() << "\"];\n";
+        }
+      }
+    }
+    bool first = true;
+    for (const auto & node : legend_nodes) {
+      if (!first) {
+        ss << "->";
+      }
+      ss << node;
+      first = false;
+    }
+    ss << "[style=invis];\n";
+    ss << "}";
+  }
+
+  ss << "}";
+
+  return ss.str();
 }
 
 std::vector<ExecutionLevel::Ptr>
@@ -357,7 +510,11 @@ BTBuilder::get_plan_actions(const Plan & plan)
 {
   std::vector<ExecutionLevel::Ptr> ret;
 
+  int cluster_counter = 0;
+  int node_counter = 0;
+
   auto current_level = ExecutionLevel::make_shared();
+  current_level->cluster_num = cluster_counter++;
   ret.push_back(current_level);
 
   int last_time = 0;
@@ -369,6 +526,7 @@ BTBuilder::get_plan_actions(const Plan & plan)
       ret.push_back(current_level);
 
       current_level->time = time;
+      current_level->cluster_num = cluster_counter++;
     }
 
     auto action_unit = ActionUnit::make_shared();
@@ -376,6 +534,8 @@ BTBuilder::get_plan_actions(const Plan & plan)
 
     action_unit->action = item.action;
     action_unit->time = current_level->time;
+    action_unit->cluster_num = cluster_counter++;
+    action_unit->node_num = node_counter++;
 
     auto dur_action = get_action_from_string(item.action, domain_client_);
     std::shared_ptr<parser::pddl::tree::AndNode> at_start_requirements =
@@ -415,6 +575,7 @@ BTBuilder::get_plan_actions(const Plan & plan)
       action_unit->reqs.push_back(req);
       req->requirement = requirement;
       req->action = action_unit;
+      req->node_num = node_counter++;
     }
 
     std::shared_ptr<parser::pddl::tree::AndNode> at_start_effects =
@@ -442,6 +603,26 @@ BTBuilder::get_plan_actions(const Plan & plan)
       action_unit->effects.push_back(eff);
       eff->effect = effect;
       eff->action = action_unit;
+      eff->node_num = node_counter++;
+    }
+  }
+
+  for (size_t i = 1; i < ret.size(); i++) {
+    int level_comp = static_cast<int>(i) - 1;
+    while (level_comp >= 0 && !level_satisfied(ret[i])) {
+      check_connections(ret[level_comp], ret[i]);
+      level_comp--;
+    }
+  }
+
+  for (auto & level : ret) {
+    for (auto & action_unit : level->action_units) {
+      for (auto & req : action_unit->reqs) {
+        if (!req->satisfied) {
+          std::tuple<bool, double> result = check(req->requirement, problem_client_);
+          req->satisfied = std::get<0>(result);
+        }
+      }
     }
   }
 

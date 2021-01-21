@@ -30,6 +30,7 @@
 
 #include "plansys2_msgs/action/execute_plan.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
+#include "std_msgs/msg/string.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
@@ -64,6 +65,7 @@ private:
   std::shared_ptr<plansys2::PlannerClient> planner_client_;
 
   rclcpp_action::Server<ExecutePlan>::SharedPtr execute_plan_action_server_;
+  rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::String>::SharedPtr dotgraph_pub_;
 
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID & uuid,
