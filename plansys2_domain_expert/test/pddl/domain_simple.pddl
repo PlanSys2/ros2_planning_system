@@ -5,6 +5,7 @@
 (:types
 person  - object 
 message - object
+; This bracket inside a comment, is here for testing purpose :-)
 robot   - object
 room    - object
 teleporter_room - room
@@ -65,6 +66,7 @@ teleporter_room - room
     )
     :effect (and
         (person_at ?p ?r2)
+        ; This bracket inside a comment, is here for testing purpose : '('
         (not(person_at ?p ?r1))
     )
 )

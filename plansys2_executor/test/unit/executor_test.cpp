@@ -175,9 +175,9 @@ TEST(problem_expert, action_executor_client)
   auto move_action_2_node = MoveAction::make_shared("move_node_2", 100ms);
   auto transport_action_node = TransportAction::make_shared("transport_node", 50ms);
 
-  move_action_1_node->set_parameter({"action", "move"});
-  move_action_2_node->set_parameter({"action", "move"});
-  transport_action_node->set_parameter({"action", "transport"});
+  move_action_1_node->set_parameter({"action_name", "move"});
+  move_action_2_node->set_parameter({"action_name", "move"});
+  transport_action_node->set_parameter({"action_name", "transport"});
 
   move_action_1_node->set_parameter(
     {"specialized_arguments", std::vector<std::string>({"robot1"})});
@@ -204,7 +204,7 @@ TEST(problem_expert, action_executor_client)
   std::vector<plansys2_msgs::msg::ActionExecution> history_msgs;
   bool confirmed = false;
   auto actions_sub = aux_node->create_subscription<plansys2_msgs::msg::ActionExecution>(
-    "/actions_hub",
+    "actions_hub",
     rclcpp::QoS(100).reliable(), [&](plansys2_msgs::msg::ActionExecution::UniquePtr msg) {
       history_msgs.push_back(*msg);
     });

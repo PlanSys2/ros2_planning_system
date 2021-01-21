@@ -379,7 +379,7 @@ std::vector<parser::pddl::tree::Param> getFunctionParams(const std::string & exp
   return ret;
 }
 
-std::shared_ptr<TreeNode> get_tree_node(const std::string & expr, NodeType parent)
+std::shared_ptr<TreeNode> get_tree_node(const std::string & expr, bool negate, NodeType parent)
 {
   std::string wexpr = getReducedString(expr);
 
@@ -409,64 +409,89 @@ std::shared_ptr<TreeNode> get_tree_node(const std::string & expr, NodeType paren
   switch (node_type) {
     case AND: {
         std::shared_ptr<parser::pddl::tree::AndNode> pn_and = std::make_shared<parser::pddl::tree::AndNode>();
+        pn_and->negate_ = negate;
+
         std::vector<std::string> subexprs = getSubExpr(wexpr);
-        for (unsigned i = 0; i < subexprs.size(); ++i) {
-          pn_and->ops.push_back(get_tree_node(subexprs[i], AND));
+
+        for (const auto & e : subexprs) {
+          pn_and->ops.push_back(get_tree_node(e, negate, AND));
         }
+
         return pn_and;
       }
     case OR: {
         std::shared_ptr<parser::pddl::tree::OrNode> pn_or = std::make_shared<parser::pddl::tree::OrNode>();
+        pn_or->negate_ = negate;
+
         std::vector<std::string> subexprs = getSubExpr(wexpr);
-        for (unsigned i = 0; i < subexprs.size(); ++i) {
-          pn_or->ops.push_back(get_tree_node(subexprs[i], OR));
+
+        for (const auto & e : subexprs) {
+          pn_or->ops.push_back(get_tree_node(e, negate, OR));
         }
+
         return pn_or;
       }
     case NOT: {
         std::shared_ptr<parser::pddl::tree::NotNode> pn_not = std::make_shared<parser::pddl::tree::NotNode>();
+        pn_not->negate_ = negate;
+
         std::vector<std::string> subexprs = getSubExpr(wexpr);
-        pn_not->op = get_tree_node(subexprs[0], NOT);
+        pn_not->op = get_tree_node(subexprs[0], !negate, NOT);
+
         return pn_not;
       }
     case PREDICATE: {
         std::shared_ptr<parser::pddl::tree::PredicateNode> pred =
           std::make_shared<parser::pddl::tree::PredicateNode>();
+
         pred->predicate_.name = getPredicateName(wexpr);
         pred->predicate_.parameters = getPredicateParams(wexpr);
+        pred->negate_ = negate;
+        pred->predicate_.negative = negate;
+
         return pred;
       }
     case FUNCTION: {
         std::shared_ptr<parser::pddl::tree::FunctionNode> func =
           std::make_shared<parser::pddl::tree::FunctionNode>();
+
         func->function_.name = getFunctionName(wexpr);
         func->function_.parameters = getFunctionParams(wexpr);
+
         return func;
     }
     case EXPRESSION: {
         std::shared_ptr<parser::pddl::tree::ExpressionNode> expression =
           std::make_shared<parser::pddl::tree::ExpressionNode>();
+
         expression->expr_type = getExprType(wexpr);
         std::vector<std::string> subexprs = getSubExpr(wexpr);
-        for (unsigned i = 0; i < subexprs.size(); ++i) {
-          expression->ops.push_back(get_tree_node(subexprs[i], EXPRESSION));
+
+        for (const auto & e : subexprs) {
+          expression->ops.push_back(get_tree_node(e, false, EXPRESSION));
         }
+
         return expression;
     }
     case FUNCTION_MODIFIER: {
         std::shared_ptr<parser::pddl::tree::FunctionModifierNode> fun_mod =
           std::make_shared<parser::pddl::tree::FunctionModifierNode>();
+
         fun_mod->modifier_type = getFunModType(wexpr);
         std::vector<std::string> subexprs = getSubExpr(wexpr);
-        for (unsigned i = 0; i < subexprs.size(); ++i) {
-          fun_mod->ops.push_back(get_tree_node(subexprs[i], FUNCTION_MODIFIER));
+
+        for (const auto & e : subexprs) {
+          fun_mod->ops.push_back(get_tree_node(e, false, FUNCTION_MODIFIER));
         }
+
         return fun_mod;
     }
     case NUMBER: {
         std::shared_ptr<parser::pddl::tree::NumberNode> number_node =
           std::make_shared<parser::pddl::tree::NumberNode>();
+
         number_node->value_ = std::stod(wexpr);
+
         return number_node;
     }
     // LCOV_EXCL_START

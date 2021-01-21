@@ -102,18 +102,26 @@ TEST(domain_reader, requirements)
   std::string req1_estr = " :strips :typing :adl :fluents :durative-actions";
 
   std::string req2_str = "(\n:requirements :strips :typing :adl :fluents :durative-actions\n)";
-  std::string req2_estr = " :strips :typing :adl :fluents :durative-actions\n";
+  std::string req2_estr = " :strips :typing :adl :fluents :durative-actions";
 
   std::string req3_str = "(:requirements :strips :typing :adl :fluents :durative-actions\n) (\n))";
-  std::string req3_estr = " :strips :typing :adl :fluents :durative-actions\n";
+  std::string req3_estr = " :strips :typing :adl :fluents :durative-actions";
 
   std::string req4_str = "(:requirements :strips :typing :adl :fluents :durative-actions";
   std::string req4_estr = "";
+
+  std::string req5_str = "(:requirements )";
+  std::string req5_estr = "";
+
+  std::string req6_str = "";
+  std::string req6_estr = "";
 
   auto res1 = dr.get_requirements_test(req1_str);
   auto res2 = dr.get_requirements_test(req2_str);
   auto res3 = dr.get_requirements_test(req3_str);
   auto res4 = dr.get_requirements_test(req4_str);
+  auto res5 = dr.get_requirements_test(req5_str);
+  auto res6 = dr.get_requirements_test(req6_str);
 
   ASSERT_EQ(res1, req1_estr);
   ASSERT_EQ(req1_str, "(:requirements)");
@@ -123,6 +131,8 @@ TEST(domain_reader, requirements)
 
   ASSERT_EQ(res3, req3_estr);
   ASSERT_EQ(res4, req4_estr);
+  ASSERT_EQ(res5, req5_estr);
+  ASSERT_EQ(res6, req6_estr);
 }
 
 TEST(domain_reader, types)
@@ -133,28 +143,38 @@ TEST(domain_reader, types)
   std::string req1_estr = " type1 type2";
 
   std::string req2_str = "(:types\ntype1 type2\n)";
-  std::string req2_estr = "\ntype1 type2\n";
+  std::string req2_estr = "type1 type2";
 
   std::string req3_str = "(:types\ntype1\ntype2\n)";
-  std::string req3_estr = "\ntype1\ntype2\n";
+  std::string req3_estr = "type1\ntype2";
 
   std::string req4_str = "(:types\ntype1\ntype2\n) ) ";
-  std::string req4_estr = "\ntype1\ntype2\n";
+  std::string req4_estr = "type1\ntype2";
 
   std::string req5_str = "(:types\ntype1\ntype2\n";
   std::string req5_estr = "";
+
+  std::string req6_str = "(:types )";
+  std::string req6_estr = "";
+
+  std::string req7_str = "";
+  std::string req7_estr = "";
 
   auto res1 = dr.get_types_test(req1_str);
   auto res2 = dr.get_types_test(req2_str);
   auto res3 = dr.get_types_test(req3_str);
   auto res4 = dr.get_types_test(req4_str);
   auto res5 = dr.get_types_test(req5_str);
+  auto res6 = dr.get_types_test(req6_str);
+  auto res7 = dr.get_types_test(req7_str);
 
   ASSERT_EQ(res1, req1_estr);
   ASSERT_EQ(res2, req2_estr);
   ASSERT_EQ(res3, req3_estr);
   ASSERT_EQ(res4, req4_estr);
   ASSERT_EQ(res5, req5_estr);
+  ASSERT_EQ(res6, req6_estr);
+  ASSERT_EQ(res7, req7_estr);
 }
 
 TEST(domain_reader, predicates)
@@ -162,17 +182,27 @@ TEST(domain_reader, predicates)
   DomainReaderTest dr;
 
   std::string req1_str = "(:predicates\n(robot_at leia bedroom) (person_at paco kitchen)\n)";
-  std::string req1_estr = "\n(robot_at leia bedroom) (person_at paco kitchen)\n";
+  std::string req1_estr = "\n(robot_at leia bedroom) (person_at paco kitchen)";
 
   std::string req2_str = "(:predicates\n(robot_at leia bedroom) (person_at paco kitchen\n";
   std::string req2_estr = "";
 
+  std::string req3_str = "(:predicates )";
+  std::string req3_estr = "";
+
+  std::string req4_str = "";
+  std::string req4_estr = "";
+
 
   auto res1 = dr.get_predicates_test(req1_str);
   auto res2 = dr.get_predicates_test(req2_str);
+  auto res3 = dr.get_predicates_test(req3_str);
+  auto res4 = dr.get_predicates_test(req4_str);
 
   ASSERT_EQ(res1, req1_estr);
   ASSERT_EQ(res2, req2_estr);
+  ASSERT_EQ(res3, req3_estr);
+  ASSERT_EQ(res4, req4_estr);
 }
 
 TEST(domain_reader, functions)
@@ -181,18 +211,28 @@ TEST(domain_reader, functions)
 
   std::string req1_str =
     "(:functions\n(=(robot_at leia bedroom) 10)\n(=(person_at paco kitchen) 30)\n)";
-  std::string req1_estr = "\n(=(robot_at leia bedroom) 10)\n(=(person_at paco kitchen) 30)\n";
+  std::string req1_estr = "(=(robot_at leia bedroom) 10)\n(=(person_at paco kitchen) 30)";
 
   std::string req2_str =
     "(:functions\n(=(robot_at leia bedroom) 10)\n(=(person_at paco kitchen) 30\n)";
   std::string req2_estr = "";
 
+  std::string req3_str = "(:functions )";
+  std::string req3_estr = "";
+
+  std::string req4_str = "";
+  std::string req4_estr = "";
+
 
   auto res1 = dr.get_functions_test(req1_str);
   auto res2 = dr.get_functions_test(req2_str);
+  auto res3 = dr.get_functions_test(req3_str);
+  auto res4 = dr.get_functions_test(req4_str);
 
   ASSERT_EQ(res1, req1_estr);
   ASSERT_EQ(res2, req2_estr);
+  ASSERT_EQ(res3, req3_estr);
+  ASSERT_EQ(res4, req4_estr);
 }
 
 TEST(domain_reader, actions)
@@ -218,12 +258,15 @@ TEST(domain_reader, actions)
     std::string("(:durative-action\n  whatever\n");
   std::string req4_1_estr = "(:action\n   whatever\n)";
 
+  std::string req5_str = std::string("");
+
 
   auto res0 = dr.get_actions_test(req0_str);
   auto res1 = dr.get_actions_test(req1_str);
   auto res2 = dr.get_actions_test(req2_str);
   auto res3 = dr.get_actions_test(req3_str);
   auto res4 = dr.get_actions_test(req4_str);
+  auto res5 = dr.get_actions_test(req5_str);
 
   ASSERT_TRUE(res0.empty());
 
@@ -241,6 +284,8 @@ TEST(domain_reader, actions)
 
   ASSERT_EQ(res4.size(), 1u);
   ASSERT_EQ(res4[0], req4_1_estr);
+
+  ASSERT_EQ(res5.size(), 0u);
 }
 
 TEST(domain_reader, add_domain)
