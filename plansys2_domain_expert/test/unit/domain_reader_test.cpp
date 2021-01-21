@@ -182,7 +182,7 @@ TEST(domain_reader, predicates)
   DomainReaderTest dr;
 
   std::string req1_str = "(:predicates\n(robot_at leia bedroom) (person_at paco kitchen)\n)";
-  std::string req1_estr = "\n(robot_at leia bedroom) (person_at paco kitchen)";
+  std::string req1_estr = "(robot_at leia bedroom) (person_at paco kitchen)";
 
   std::string req2_str = "(:predicates\n(robot_at leia bedroom) (person_at paco kitchen\n";
   std::string req2_estr = "";
