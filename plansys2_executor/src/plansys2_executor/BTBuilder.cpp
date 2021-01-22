@@ -392,7 +392,9 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels, bool i
         } else {
           ss << " [label=\"\"";
         }
-        ss << ",shape=circle,style=filled,color=darkgreen,fillcolor=palegreen];\n";
+        ss << ",shape=circle,style=filled,color=darkgreen,fillcolor=palegreen";
+        ss << ",tooltip=\"" << req->requirement->toString() << "\"";
+        ss << "];\n";
       }
       ss << "{ rank=min; ";
       for (const auto & node : req_nodes) {
@@ -411,7 +413,9 @@ BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels, bool i
         } else {
           ss << " [label=\"\"";
         }
-        ss << ",shape=circle,style=filled,color=red,fillcolor=pink];\n";
+        ss << ",shape=circle,style=filled,color=red,fillcolor=pink";
+        ss << ",tooltip=\"" << eff->effect->toString() << "\"";
+        ss << "];\n";
       }
       ss << "{ rank=max; ";
       for (const auto & node : eff_nodes) {
