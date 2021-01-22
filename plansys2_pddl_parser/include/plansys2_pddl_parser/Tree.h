@@ -65,6 +65,14 @@ typedef enum {
     UNKNOWN_FUN_MOD_TYPE
 } FunModType;
 
+// The type of temporal condition or effect
+typedef enum {
+    AT_START,
+    OVER_ALL,
+    AT_END,
+    UNKNOWN_TEMPORAL_TYPE
+} TemporalType;
+
 // A parameter is defined by a name and a type
 struct Param
 {

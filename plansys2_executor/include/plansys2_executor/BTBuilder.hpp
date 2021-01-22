@@ -35,15 +35,6 @@
 namespace plansys2
 {
 
-struct PredicateStamped
-{
-  using Ptr = std::shared_ptr<PredicateStamped>;
-  static Ptr make_shared() {return std::make_shared<PredicateStamped>();}
-
-  std::string predicate;
-  std::string inserter;
-};
-
 struct ActionStamped
 {
   float time;
@@ -69,9 +60,6 @@ struct Graph
   std::list<GraphNode::Ptr> roots;
 };
 
-bool operator<(const PredicateStamped & op1, const PredicateStamped & op2);
-bool operator<(const PredicateStamped & op1, const parser::pddl::tree::Predicate & op2);
-
 class BTBuilder
 {
 public:
@@ -84,33 +72,48 @@ protected:
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 
   void init_predicates(
-    std::set<PredicateStamped> & predicates,
+    std::set<std::string> & predicates,
+    std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
+  void init_functions(
+    std::map<std::string, double> & functions,
     std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
 
   std::vector<ActionStamped> get_plan_actions(const Plan & plan);
 
   bool is_action_executable(
     const ActionStamped & action,
-    const std::set<PredicateStamped> & predicates) const;
-  bool check_requirements(
-    const parser::pddl::tree::PredicateTree & req_predicates,
-    const std::set<PredicateStamped> & predicates) const;
-  void apply_action(const ActionStamped & action, std::set<PredicateStamped> & predicates);
+    std::shared_ptr<plansys2::ProblemExpertClient> problem_client) const;
+  void apply_action(
+    GraphNode::Ptr node,
+    std::set<std::string> & predicates,
+    std::map<std::string, double> & functions);
+  bool apply_and_check(
+    const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
+    const std::shared_ptr<parser::pddl::tree::TreeNode> effect,
+    std::set<std::string> predicates,
+    std::map<std::string, double> functions);
+  std::pair<std::string, parser::pddl::tree::NodeType> get_base(
+    const std::shared_ptr<parser::pddl::tree::TreeNode> tree_node);
   Graph::Ptr get_graph(const Plan & current_plan);
   std::list<GraphNode::Ptr> get_roots(
     std::vector<plansys2::ActionStamped> & action_sequence,
-    const std::set<PredicateStamped> & predicates);
+    std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
   GraphNode::Ptr get_node_satisfy(
-    const parser::pddl::tree::Predicate & predicate,
+    const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
+    const std::set<std::string> & predicates,
+    const std::map<std::string, double> & functions,
     const std::list<GraphNode::Ptr> & roots,
     const GraphNode::Ptr & current);
   GraphNode::Ptr get_node_satisfy(
-    const parser::pddl::tree::Predicate & predicate,
+    const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
+    const std::set<std::string> & predicates,
+    const std::map<std::string, double> & functions,
     const GraphNode::Ptr & node,
     const GraphNode::Ptr & current);
-  void remove_existing_predicates(
-    std::vector<parser::pddl::tree::Predicate> & check_predicates,
-    const std::set<PredicateStamped> & predicates) const;
+  void remove_existing_requirements(
+    std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> & requirements,
+    const std::set<std::string> & predicates,
+    const std::map<std::string, double> & functions) const;
   bool is_parallelizable(
     const plansys2::ActionStamped & action,
     const std::list<GraphNode::Ptr> & ret) const;

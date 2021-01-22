@@ -28,32 +28,78 @@
 namespace plansys2
 {
 
-/// Check a PDDL expression represented as a tree.
+/// Evaluate a PDDL expression represented as a tree.
 /**
  * \param[in] node The root node of the PDDL expression.
  * \param[in] problem_client The problem expert client.
- * \return result <- tuple(bool, double)
- *         result(0) truth value of boolen expression
- *         result(1) value of numeric expression
- */
-std::tuple<bool, double> check(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
-
-/// Apply a PDDL expression represented as a tree.
-/**
- * \param[in] node The root node of the PDDL expression.
- * \param[in] problem_client The problem expert client.
+ * \param[in] predicates Current predicates state.
+ * \param[in] functions Current functions state.
  * \param[in] negate Invert the truth value.
+ * \param[in] apply Apply result to problem expert or state.
+ * \param[in] use_state Use state representation or problem client.
  * \return result <- tuple(bool, bool, double)
  *         result(0) true if success
  *         result(1) truth value of boolen expression
  *         result(2) value of numeric expression
  */
-std::tuple<bool, bool, double> apply(
+std::tuple<bool, bool, double> evaluate(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
-  bool negate = false);
+  std::set<std::string> predicates,
+  std::map<std::string, double> functions,
+  bool negate = false,
+  bool apply = false,
+  bool use_state = false);
+
+std::tuple<bool, bool, double> evaluate(
+  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
+  bool negate = false,
+  bool apply = false);
+
+std::tuple<bool, bool, double> evaluate(
+  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
+  std::set<std::string> predicates,
+  std::map<std::string, double> functions,
+  bool negate = false,
+  bool apply = false);
+
+/// Check a PDDL expression represented as a tree.
+/**
+* \param[in] node The root node of the PDDL expression.
+* \param[in] problem_client The problem expert client.
+* \return ret Truth value of the PDDL expression.
+*
+* This function calls the evaluate function.
+*/
+bool check(
+  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
+
+bool check(
+  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
+  std::set<std::string> predicates,
+  std::map<std::string, double> functions);
+
+/// Apply a PDDL expression represented as a tree.
+/**
+ * \param[in] node The root node of the PDDL expression.
+ * \param[in] problem_client The problem expert client.
+ * \return success Indicates whether the execution was successful.
+ *
+ * This function calls the evaluate function.
+ */
+bool apply(
+  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
+
+bool apply(
+  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
+  std::set<std::string> predicates,
+  std::map<std::string, double> functions);
+
+std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> get_subtrees(
+    const std::shared_ptr<parser::pddl::tree::TreeNode> node);
 
 std::shared_ptr<parser::pddl::tree::DurativeAction> get_action_from_string(
   const std::string & action_expr,
