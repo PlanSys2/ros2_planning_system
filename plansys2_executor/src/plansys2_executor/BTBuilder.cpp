@@ -75,25 +75,6 @@ BTBuilder::is_action_executable(
          check(action.action->at_end_requirements.root_, problem_client);
 }
 
-void
-BTBuilder::apply_action(
-  GraphNode::Ptr node,
-  std::set<std::string> & predicates,
-  std::map<std::string, double> & functions)
-{
-  std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> at_start_effects =
-    get_subtrees(node->action.action->at_start_effects.root_);
-  for (auto & effect : at_start_effects) {
-    evaluate(effect, predicates, functions, false, true);
-  }
-
-  std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> at_end_effects =
-    get_subtrees(node->action.action->at_end_effects.root_);
-  for (auto & effect : at_end_effects) {
-    evaluate(effect, predicates, functions, false, true);
-  }
-}
-
 bool
 BTBuilder::apply_and_check(
   const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
@@ -101,10 +82,7 @@ BTBuilder::apply_and_check(
   std::set<std::string> predicates,
   std::map<std::string, double> functions)
 {
-  // Apply the effect.
   apply(effect, predicates, functions);
-
-  // Check if the rquirement is satisfied.
   return check(requirement, predicates, functions);
 }
 
@@ -359,7 +337,8 @@ BTBuilder::get_graph(const Plan & current_plan)
 
   // Apply roots actions
   for (auto & action_node : graph->roots) {
-    apply_action(action_node, predicates, functions);
+    apply(action_node->action.action->at_start_effects.root_, predicates, functions);
+    apply(action_node->action.action->at_end_effects.root_, predicates, functions);
   }
 
   std::set<plansys2::GraphNode::Ptr> used_nodes;
@@ -431,6 +410,9 @@ BTBuilder::get_graph(const Plan & current_plan)
     assert(at_start_requirements.empty());
     assert(over_all_requirements.empty());
     assert(at_end_requirements.empty());
+
+    apply(action_sequence.begin()->action->at_start_effects.root_, predicates, functions);
+    apply(action_sequence.begin()->action->at_end_effects.root_, predicates, functions);
 
     action_sequence.erase(action_sequence.begin());
   }

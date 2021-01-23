@@ -83,10 +83,6 @@ protected:
   bool is_action_executable(
     const ActionStamped & action,
     std::shared_ptr<plansys2::ProblemExpertClient> problem_client) const;
-  void apply_action(
-    GraphNode::Ptr node,
-    std::set<std::string> & predicates,
-    std::map<std::string, double> & functions);
   bool apply_and_check(
     const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
     const std::shared_ptr<parser::pddl::tree::TreeNode> effect,

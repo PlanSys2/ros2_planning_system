@@ -99,14 +99,6 @@ public:
     return plansys2::check(req_predicates.root_, problem_client);
   }
 
-  void apply_action(
-    std::shared_ptr<plansys2::GraphNode> node,
-    std::set<std::string> & predicates,
-    std::map<std::string, double> & functions)
-  {
-    return BTBuilder::apply_action(node, predicates, functions);
-  }
-
   plansys2::Graph::Ptr get_graph(const plansys2::Plan & current_plan)
   {
     return BTBuilder::get_graph(current_plan);
