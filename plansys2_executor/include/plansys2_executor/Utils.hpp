@@ -45,8 +45,8 @@ namespace plansys2
 std::tuple<bool, bool, double> evaluate(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
-  std::set<std::string> predicates,
-  std::map<std::string, double> functions,
+  std::set<std::string> & predicates,
+  std::map<std::string, double> & functions,
   bool negate = false,
   bool apply = false,
   bool use_state = false);
@@ -59,8 +59,8 @@ std::tuple<bool, bool, double> evaluate(
 
 std::tuple<bool, bool, double> evaluate(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::set<std::string> predicates,
-  std::map<std::string, double> functions,
+  std::set<std::string> & predicates,
+  std::map<std::string, double> & functions,
   bool negate = false,
   bool apply = false);
 
@@ -78,8 +78,8 @@ bool check(
 
 bool check(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::set<std::string> predicates,
-  std::map<std::string, double> functions);
+  std::set<std::string> & predicates,
+  std::map<std::string, double> & functions);
 
 /// Apply a PDDL expression represented as a tree.
 /**
@@ -95,8 +95,8 @@ bool apply(
 
 bool apply(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::set<std::string> predicates,
-  std::map<std::string, double> functions);
+  std::set<std::string> & predicates,
+  std::map<std::string, double> & functions);
 
 std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> get_subtrees(
     const std::shared_ptr<parser::pddl::tree::TreeNode> node);

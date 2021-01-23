@@ -54,7 +54,14 @@ BTBuilder::init_functions(
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client)
 {
   for (const auto & function : problem_client->getFunctions()) {
-    functions.insert(std::make_pair(function.toString(), function.value));
+    std::optional<parser::pddl::tree::Function> func =
+      problem_client->getFunction(function.toString());
+    if (func.has_value()) {
+      functions.insert(std::make_pair(func.value().toString(), func.value().value));
+    } else {
+      std::cerr << "init_functions: Error retrieving function [" <<
+        function.toString() << "]" << std::endl;
+    }
   }
 }
 
@@ -94,13 +101,6 @@ BTBuilder::apply_and_check(
   std::set<std::string> predicates,
   std::map<std::string, double> functions)
 {
-  std::pair<std::string, parser::pddl::tree::NodeType> req_base = get_base(requirement);
-  std::pair<std::string, parser::pddl::tree::NodeType> eff_base = get_base(effect);
-
-  if (req_base != eff_base) {
-    return false;
-  }
-
   // Apply the effect.
   apply(effect, predicates, functions);
 
@@ -121,11 +121,13 @@ BTBuilder::get_base(
           std::dynamic_pointer_cast<parser::pddl::tree::NotNode>(tree_node);
         base_expr = pn_not->op->toString();
         base_type = parser::pddl::tree::PREDICATE;
+        break;
       }
 
     case parser::pddl::tree::PREDICATE: {
         base_expr = tree_node->toString();
         base_type = parser::pddl::tree::PREDICATE;
+        break;
       }
 
     case parser::pddl::tree::EXPRESSION: {
@@ -140,6 +142,7 @@ BTBuilder::get_base(
           std::cerr << "get_subtrees: Error parsing expresion [" <<
             tree_node->toString() << "]" << std::endl;
         }
+        break;
       }
 
     case parser::pddl::tree::FUNCTION_MODIFIER: {
@@ -149,11 +152,14 @@ BTBuilder::get_base(
           std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(func_mod->ops[0]);
         base_expr = func_node->toString();
         base_type = parser::pddl::tree::FUNCTION;
+        break;
       }
 
-    default:
-      std::cerr << "get_subtrees: Error parsing expresion [" <<
-        tree_node->toString() << "]" << std::endl;
+    default: {
+        std::cerr << "get_subtrees: Error parsing expresion [" <<
+          tree_node->toString() << "]" << std::endl;
+        break;
+      }
   }
 
   return std::make_pair(base_expr, base_type);
@@ -171,6 +177,9 @@ BTBuilder::get_node_satisfy(
     return nullptr;
   }
 
+  std::pair<std::string, parser::pddl::tree::NodeType> requirement_base =
+    get_base(requirement);
+
   GraphNode::Ptr ret = nullptr;
   std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> at_start_effects =
     get_subtrees(node->action.action->at_start_effects.root_);
@@ -185,30 +194,55 @@ BTBuilder::get_node_satisfy(
     get_subtrees(node->action.action->at_end_requirements.root_);
 
   for (const auto & effect : at_end_effects) {
+    std::pair<std::string, parser::pddl::tree::NodeType> base = get_base(effect);
+    if (base != requirement_base) {
+      continue;
+    }
+
     if (apply_and_check(requirement, effect, predicates, functions)) {
       ret = node;
     }
   }
 
   for (const auto & effect : at_start_effects) {
+    std::pair<std::string, parser::pddl::tree::NodeType> base = get_base(effect);
+    if (base != requirement_base) {
+      continue;
+    }
+
     if (apply_and_check(requirement, effect, predicates, functions)) {
       ret = node;
     }
   }
 
   for (const auto & req : at_start_requirements) {
+    std::pair<std::string, parser::pddl::tree::NodeType> base = get_base(req);
+    if (base != requirement_base) {
+      continue;
+    }
+
     if (apply_and_check(requirement, req, predicates, functions)) {
       ret = node;
     }
   }
 
   for (const auto & req : over_all_requirements) {
+    std::pair<std::string, parser::pddl::tree::NodeType> base = get_base(req);
+    if (base != requirement_base) {
+      continue;
+    }
+
     if (apply_and_check(requirement, req, predicates, functions)) {
       ret = node;
     }
   }
 
   for (const auto & req : at_end_requirements) {
+    std::pair<std::string, parser::pddl::tree::NodeType> base = get_base(req);
+    if (base != requirement_base) {
+      continue;
+    }
+
     if (apply_and_check(requirement, req, predicates, functions)) {
       ret = node;
     }
@@ -297,8 +331,8 @@ BTBuilder::get_roots(
 void
 BTBuilder::remove_existing_requirements(
   std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> & requirements,
-  const std::set<std::string> & predicates,
-  const std::map<std::string, double> & functions) const
+  std::set<std::string> & predicates,
+  std::map<std::string, double> & functions) const
 {
   auto it = requirements.begin();
   while (it != requirements.end()) {
@@ -530,7 +564,6 @@ BTBuilder::get_plan_actions(const Plan & plan)
 
   return ret;
 }
-
 
 void
 BTBuilder::print_node(

@@ -147,8 +147,8 @@ public:
 
   void remove_existing_requirements(
     std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> & requirements,
-    const std::set<std::string> & predicates,
-    const std::map<std::string, double> & functions) const
+    std::set<std::string> & predicates,
+    std::map<std::string, double> & functions) const
   {
     BTBuilder::remove_existing_requirements(requirements, predicates, functions);
   }

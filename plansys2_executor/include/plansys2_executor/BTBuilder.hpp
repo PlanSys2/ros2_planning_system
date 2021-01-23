@@ -112,8 +112,8 @@ protected:
     const GraphNode::Ptr & current);
   void remove_existing_requirements(
     std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> & requirements,
-    const std::set<std::string> & predicates,
-    const std::map<std::string, double> & functions) const;
+    std::set<std::string> & predicates,
+    std::map<std::string, double> & functions) const;
   bool is_parallelizable(
     const plansys2::ActionStamped & action,
     const std::list<GraphNode::Ptr> & ret) const;

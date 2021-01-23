@@ -25,14 +25,14 @@ namespace plansys2
 std::tuple<bool, bool, double> evaluate(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
-  std::set<std::string> predicates,
-  std::map<std::string, double> functions,
+  std::set<std::string> & predicates,
+  std::map<std::string, double> & functions,
   bool negate,
   bool apply,
   bool use_state)
 {
   if (node == nullptr) {  // No expression
-    return std::make_tuple(true, false, 0);
+    return std::make_tuple(true, true, 0);
   }
 
   switch (node->type_) {
@@ -277,8 +277,8 @@ std::tuple<bool, bool, double> evaluate(
 
 std::tuple<bool, bool, double> evaluate(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::set<std::string> predicates,
-  std::map<std::string, double> functions,
+  std::set<std::string> & predicates,
+  std::map<std::string, double> & functions,
   bool negate,
   bool apply)
 {
@@ -297,8 +297,8 @@ bool check(
 
 bool check(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::set<std::string> predicates,
-  std::map<std::string, double> functions)
+  std::set<std::string> & predicates,
+  std::map<std::string, double> & functions)
 {
   std::tuple<bool, bool, double> ret = evaluate(node, predicates, functions);
 
@@ -316,8 +316,8 @@ bool apply(
 
 bool apply(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::set<std::string> predicates,
-  std::map<std::string, double> functions)
+  std::set<std::string> &predicates,
+  std::map<std::string, double> & functions)
 {
   std::tuple<bool, bool, double> ret = evaluate(node, predicates, functions, false, true);
 
