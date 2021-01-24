@@ -12,6 +12,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/FunctionAssignment.msg"
   "msg/ActionExecution.msg"
   "msg/ActionExecutionInfo.msg"
+  "msg/ActionPerformerStatus.msg"
+  "msg/Knownledge.msg"
   "srv/GetDomain.srv"
   "srv/GetDomainTypes.srv"
   "srv/GetDomainPredicates.srv"
@@ -35,7 +37,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/ExistProblemPredicate.srv"
   "srv/GetPlan.srv"
   "action/ExecutePlan.action"
-  "action/ExecuteAction.action" 
   DEPENDENCIES builtin_interfaces std_msgs action_msgs
 )
 

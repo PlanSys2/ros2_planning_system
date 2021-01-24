@@ -23,6 +23,7 @@
 #include "std_msgs/msg/empty.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_msgs/msg/knownledge.hpp"
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
 #include "plansys2_msgs/srv/add_problem_assignment.hpp"
 #include "plansys2_msgs/srv/add_problem_instance.hpp"
@@ -58,6 +59,8 @@ public:
   CallbackReturnT on_cleanup(const rclcpp_lifecycle::State & state);
   CallbackReturnT on_shutdown(const rclcpp_lifecycle::State & state);
   CallbackReturnT on_error(const rclcpp_lifecycle::State & state);
+
+  plansys2_msgs::msg::Knownledge::SharedPtr get_knowledge_as_msg() const;
 
   void add_problem_goal_service_callback(
     const std::shared_ptr<rmw_request_id_t> request_header,
@@ -162,6 +165,7 @@ private:
     exist_problem_predicate_service_;
 
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Empty>::SharedPtr update_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::Knownledge>::SharedPtr knownledge_pub_;
 };
 
 }  // namespace plansys2

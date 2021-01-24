@@ -27,7 +27,7 @@
 #include "plansys2_executor/Utils.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
-#include "plansys2_msgs/action/execute_action.hpp"
+#include "plansys2_msgs/msg/action_execution_info.hpp"
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
@@ -46,6 +46,7 @@ namespace plansys2
 {
 
 using ExecutePlan = plansys2_msgs::action::ExecutePlan;
+using namespace std::chrono_literals;
 
 ExecutorNode::ExecutorNode()
 : rclcpp_lifecycle::LifecycleNode("executor")
@@ -61,10 +62,6 @@ ExecutorNode::ExecutorNode()
     std::bind(&ExecutorNode::handle_goal, this, _1, _2),
     std::bind(&ExecutorNode::handle_cancel, this, _1),
     std::bind(&ExecutorNode::handle_accepted, this, _1));
-
-  // if (rmw_set_log_severity(rmw_log_severity_t::RMW_LOG_SEVERITY_DEBUG) != RMW_RET_OK) {
-  //   RCLCPP_WARN(get_logger(), "Error to set verbosity");
-  // }
 }
 
 
@@ -80,6 +77,10 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   domain_client_ = std::make_shared<plansys2::DomainExpertClient>(aux_node_);
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(aux_node_);
   planner_client_ = std::make_shared<plansys2::PlannerClient>(aux_node_);
+
+  execution_info_pub_ = create_publisher<plansys2_msgs::msg::ActionExecutionInfo>(
+    "/action_execution_info", 100);
+  execution_info_pub_->on_activate();
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
@@ -182,10 +183,13 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   auto result = std::make_shared<ExecutePlan::Result>();
 
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
+
   for (const auto & action : current_plan_.value()) {
     auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
 
     (*action_map)[index] = ActionExecutionInfo();
+    (*action_map)[index].action_executor =
+      ActionExecutor::make_shared(action.action, shared_from_this());
     (*action_map)[index].durative_action_info =
       get_action_from_string(action.action, domain_client_);
   }
@@ -217,9 +221,18 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
+  auto info_pub = create_wall_timer(
+    1s, [this, &action_map]() {
+      auto msgs = get_feedback_info(action_map);
+      for (const auto & msg : msgs) {
+        execution_info_pub_->publish(msg);
+      }
+    });
+
   rclcpp::Rate rate(10);
   auto start = now();
   auto status = BT::NodeStatus::RUNNING;
+
   while (status == BT::NodeStatus::RUNNING) {
     try {
       status = tree.tickRoot();
@@ -274,12 +287,6 @@ ExecutorNode::get_feedback_info(
   for (const auto & action : *action_map) {
     plansys2_msgs::msg::ActionExecutionInfo info;
 
-    if (action.second.action_executor == nullptr) {
-      info.status = plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED;
-      info.message_status = action.second.execution_error_info;
-      continue;
-    }
-
     switch (action.second.action_executor->get_internal_status()) {
       case ActionExecutor::IDLE:
       case ActionExecutor::DEALING:
@@ -299,6 +306,7 @@ ExecutorNode::get_feedback_info(
     info.start_stamp = action.second.action_executor->get_start_time();
     info.status_stamp = action.second.action_executor->get_status_time();
     info.action = action.second.action_executor->get_action_name();
+
     info.arguments = action.second.action_executor->get_action_params();
     info.completion = action.second.action_executor->get_completion();
     info.message_status = action.second.action_executor->get_feedback();
@@ -317,26 +325,22 @@ ExecutorNode::print_execution_info(
 
   for (const auto & action_info : *exec_info) {
     fprintf(stderr, "[%s]", action_info.first.c_str());
-    if (action_info.second.action_executor == nullptr) {
-      fprintf(stderr, "\tNOT EXECUTED\n");
-    } else {
-      switch (action_info.second.action_executor->get_internal_status()) {
-        case ActionExecutor::IDLE:
-          fprintf(stderr, "\tIDLE\n");
-          break;
-        case ActionExecutor::DEALING:
-          fprintf(stderr, "\tDEALING\n");
-          break;
-        case ActionExecutor::RUNNING:
-          fprintf(stderr, "\tRUNNING\n");
-          break;
-        case ActionExecutor::SUCCESS:
-          fprintf(stderr, "\tSUCCESS\n");
-          break;
-        case ActionExecutor::FAILURE:
-          fprintf(stderr, "\tFAILURE\n");
-          break;
-      }
+    switch (action_info.second.action_executor->get_internal_status()) {
+      case ActionExecutor::IDLE:
+        fprintf(stderr, "\tIDLE\n");
+        break;
+      case ActionExecutor::DEALING:
+        fprintf(stderr, "\tDEALING\n");
+        break;
+      case ActionExecutor::RUNNING:
+        fprintf(stderr, "\tRUNNING\n");
+        break;
+      case ActionExecutor::SUCCESS:
+        fprintf(stderr, "\tSUCCESS\n");
+        break;
+      case ActionExecutor::FAILURE:
+        fprintf(stderr, "\tFAILURE\n");
+        break;
     }
     if (action_info.second.durative_action_info == nullptr) {
       fprintf(stderr, "\tWith no duration info\n");
