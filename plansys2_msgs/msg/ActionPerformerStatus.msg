@@ -5,6 +5,5 @@ int8 FAILURE=4
 
 int8 state
 string action
-string[] arguments
 string[] specialized_arguments
 string node_name
