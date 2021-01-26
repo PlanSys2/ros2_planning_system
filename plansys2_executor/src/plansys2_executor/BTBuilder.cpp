@@ -19,6 +19,8 @@
 #include <algorithm>
 #include <list>
 #include <tuple>
+#include <map>
+#include <utility>
 
 #include "plansys2_executor/BTBuilder.hpp"
 
@@ -68,22 +70,12 @@ BTBuilder::init_functions(
 bool
 BTBuilder::is_action_executable(
   const ActionStamped & action,
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client) const
+  std::set<std::string> & predicates,
+  std::map<std::string, double> & functions) const
 {
-  return check(action.action->at_start_requirements.root_, problem_client) &&
-         check(action.action->over_all_requirements.root_, problem_client) &&
-         check(action.action->at_end_requirements.root_, problem_client);
-}
-
-bool
-BTBuilder::apply_and_check(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
-  const std::shared_ptr<parser::pddl::tree::TreeNode> effect,
-  std::set<std::string> predicates,
-  std::map<std::string, double> functions)
-{
-  apply(effect, predicates, functions);
-  return check(requirement, predicates, functions);
+  return check(action.action->at_start_requirements.root_, predicates, functions) &&
+         check(action.action->over_all_requirements.root_, predicates, functions) &&
+         check(action.action->at_end_requirements.root_, predicates, functions);
 }
 
 std::pair<std::string, parser::pddl::tree::NodeType>
@@ -146,8 +138,6 @@ BTBuilder::get_base(
 GraphNode::Ptr
 BTBuilder::get_node_satisfy(
   const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
-  const std::set<std::string> & predicates,
-  const std::map<std::string, double> & functions,
   const GraphNode::Ptr & node,
   const GraphNode::Ptr & current)
 {
@@ -177,7 +167,7 @@ BTBuilder::get_node_satisfy(
       continue;
     }
 
-    if (apply_and_check(requirement, effect, predicates, functions)) {
+    if (check(requirement, node->predicates, node->functions)) {
       ret = node;
     }
   }
@@ -188,7 +178,7 @@ BTBuilder::get_node_satisfy(
       continue;
     }
 
-    if (apply_and_check(requirement, effect, predicates, functions)) {
+    if (check(requirement, node->predicates, node->functions)) {
       ret = node;
     }
   }
@@ -199,7 +189,7 @@ BTBuilder::get_node_satisfy(
       continue;
     }
 
-    if (apply_and_check(requirement, req, predicates, functions)) {
+    if (check(requirement, node->predicates, node->functions)) {
       ret = node;
     }
   }
@@ -210,7 +200,7 @@ BTBuilder::get_node_satisfy(
       continue;
     }
 
-    if (apply_and_check(requirement, req, predicates, functions)) {
+    if (check(requirement, node->predicates, node->functions)) {
       ret = node;
     }
   }
@@ -221,13 +211,13 @@ BTBuilder::get_node_satisfy(
       continue;
     }
 
-    if (apply_and_check(requirement, req, predicates, functions)) {
+    if (check(requirement, node->predicates, node->functions)) {
       ret = node;
     }
   }
 
   for (const auto & arc : node->out_arcs) {
-    auto node_ret = get_node_satisfy(requirement, predicates, functions, arc, current);
+    auto node_ret = get_node_satisfy(requirement, arc, current);
 
     if (node_ret != nullptr) {
       ret = node_ret;
@@ -266,14 +256,12 @@ BTBuilder::is_parallelizable(
 GraphNode::Ptr
 BTBuilder::get_node_satisfy(
   const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
-  const std::set<std::string> & predicates,
-  const std::map<std::string, double> & functions,
   const std::list<GraphNode::Ptr> & roots,
   const GraphNode::Ptr & current)
 {
   GraphNode::Ptr ret;
   for (const auto & node : roots) {
-    auto node_ret = get_node_satisfy(requirement, predicates, functions, node, current);
+    auto node_ret = get_node_satisfy(requirement, node, current);
     if (node_ret != nullptr) {
       ret = node_ret;
     }
@@ -285,14 +273,15 @@ BTBuilder::get_node_satisfy(
 std::list<GraphNode::Ptr>
 BTBuilder::get_roots(
   std::vector<plansys2::ActionStamped> & action_sequence,
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client)
+  std::set<std::string> & predicates,
+  std::map<std::string, double> & functions)
 {
   std::list<GraphNode::Ptr> ret;
 
   auto it = action_sequence.begin();
   while (it != action_sequence.end()) {
     const auto & action = *it;
-    if (is_action_executable(action, problem_client) && is_parallelizable(action, ret)) {
+    if (is_action_executable(action, predicates, functions) && is_parallelizable(action, ret)) {
       auto new_root = GraphNode::make_shared();
       new_root->action = action;
 
@@ -333,12 +322,29 @@ BTBuilder::get_graph(const Plan & current_plan)
   init_predicates(predicates, problem_client_);
   init_functions(functions, problem_client_);
 
-  graph->roots = get_roots(action_sequence, problem_client_);
+  graph->roots = get_roots(action_sequence, predicates, functions);
 
-  // Apply roots actions
+  // Apply root actions
   for (auto & action_node : graph->roots) {
-    apply(action_node->action.action->at_start_effects.root_, predicates, functions);
-    apply(action_node->action.action->at_end_effects.root_, predicates, functions);
+    // Create a local copy of the state
+    init_predicates(action_node->predicates, problem_client_);
+    init_functions(action_node->functions, problem_client_);
+
+    // Apply the effects to the local node state
+    apply(
+      action_node->action.action->at_start_effects.root_,
+      action_node->predicates, action_node->functions);
+    apply(
+      action_node->action.action->at_end_effects.root_,
+      action_node->predicates, action_node->functions);
+
+    // Apply the effects to the global state
+    apply(
+      action_node->action.action->at_start_effects.root_,
+      predicates, functions);
+    apply(
+      action_node->action.action->at_end_effects.root_,
+      predicates, functions);
   }
 
   std::set<plansys2::GraphNode::Ptr> used_nodes;
@@ -357,11 +363,26 @@ BTBuilder::get_graph(const Plan & current_plan)
 
     auto it_at_start = at_start_requirements.begin();
     while (it_at_start != at_start_requirements.end()) {
-      auto node_satisfy = get_node_satisfy(*it_at_start, predicates, functions, graph->roots, new_node);
+      auto node_satisfy = get_node_satisfy(*it_at_start, graph->roots, new_node);
       if (node_satisfy != nullptr) {
         if (used_nodes.find(new_node) == used_nodes.end()) {
+          // Create the connections to the parent node
           new_node->in_arcs.insert(node_satisfy);
           node_satisfy->out_arcs.insert(new_node);
+
+          // Copy the state from the parent node
+          new_node->predicates = node_satisfy->predicates;
+          new_node->functions = node_satisfy->functions;
+
+          // Apply the effects of the new node
+          apply(
+            new_node->action.action->at_start_effects.root_,
+            new_node->predicates, new_node->functions);
+          apply(
+            new_node->action.action->at_end_effects.root_,
+            new_node->predicates, new_node->functions);
+
+          // Add the new node to the list of used nodes
           used_nodes.insert(new_node);
         }
 
@@ -373,11 +394,26 @@ BTBuilder::get_graph(const Plan & current_plan)
 
     auto it_over_all = over_all_requirements.begin();
     while (it_over_all != over_all_requirements.end()) {
-      auto node_satisfy = get_node_satisfy(*it_over_all, predicates, functions, graph->roots, new_node);
+      auto node_satisfy = get_node_satisfy(*it_over_all, graph->roots, new_node);
       if (node_satisfy != nullptr) {
         if (used_nodes.find(new_node) == used_nodes.end()) {
+          // Create the connections to the parent node
           new_node->in_arcs.insert(node_satisfy);
           node_satisfy->out_arcs.insert(new_node);
+
+          // Copy the state from the parent node
+          new_node->predicates = node_satisfy->predicates;
+          new_node->functions = node_satisfy->functions;
+
+          // Apply the effects of the new node
+          apply(
+            new_node->action.action->at_start_effects.root_,
+            new_node->predicates, new_node->functions);
+          apply(
+            new_node->action.action->at_end_effects.root_,
+            new_node->predicates, new_node->functions);
+
+          // Add the new node to the list of used nodes
           used_nodes.insert(new_node);
         }
 
@@ -389,11 +425,26 @@ BTBuilder::get_graph(const Plan & current_plan)
 
     auto it_at_end = at_end_requirements.begin();
     while (it_at_end != at_end_requirements.end()) {
-      auto node_satisfy = get_node_satisfy(*it_at_end, predicates, functions, graph->roots, new_node);
+      auto node_satisfy = get_node_satisfy(*it_at_end, graph->roots, new_node);
       if (node_satisfy != nullptr) {
         if (used_nodes.find(new_node) == used_nodes.end()) {
+          // Create the connections to the parent node
           new_node->in_arcs.insert(node_satisfy);
           node_satisfy->out_arcs.insert(new_node);
+
+          // Copy the state from the parent node
+          new_node->predicates = node_satisfy->predicates;
+          new_node->functions = node_satisfy->functions;
+
+          // Apply the effects of the new node
+          apply(
+            new_node->action.action->at_start_effects.root_,
+            new_node->predicates, new_node->functions);
+          apply(
+            new_node->action.action->at_end_effects.root_,
+            new_node->predicates, new_node->functions);
+
+          // Add the new node to the list of used nodes
           used_nodes.insert(new_node);
         }
 
@@ -410,9 +461,6 @@ BTBuilder::get_graph(const Plan & current_plan)
     assert(at_start_requirements.empty());
     assert(over_all_requirements.empty());
     assert(at_end_requirements.empty());
-
-    apply(action_sequence.begin()->action->at_start_effects.root_, predicates, functions);
-    apply(action_sequence.begin()->action->at_end_effects.root_, predicates, functions);
 
     action_sequence.erase(action_sequence.begin());
   }

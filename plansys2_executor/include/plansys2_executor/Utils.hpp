@@ -20,6 +20,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <set>
 
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
@@ -99,7 +100,7 @@ bool apply(
   std::map<std::string, double> & functions);
 
 std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> get_subtrees(
-    const std::shared_ptr<parser::pddl::tree::TreeNode> node);
+  const std::shared_ptr<parser::pddl::tree::TreeNode> node);
 
 std::shared_ptr<parser::pddl::tree::DurativeAction> get_action_from_string(
   const std::string & action_expr,

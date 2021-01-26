@@ -20,6 +20,8 @@
 #include <vector>
 #include <set>
 #include <list>
+#include <map>
+#include <utility>
 
 #include "std_msgs/msg/empty.hpp"
 #include "plansys2_msgs/action/execute_action.hpp"
@@ -47,6 +49,9 @@ struct GraphNode
   static Ptr make_shared() {return std::make_shared<GraphNode>();}
 
   ActionStamped action;
+
+  std::set<std::string> predicates;
+  std::map<std::string, double> functions;
 
   std::set<GraphNode::Ptr> in_arcs;
   std::set<GraphNode::Ptr> out_arcs;
@@ -82,28 +87,21 @@ protected:
 
   bool is_action_executable(
     const ActionStamped & action,
-    std::shared_ptr<plansys2::ProblemExpertClient> problem_client) const;
-  bool apply_and_check(
-    const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
-    const std::shared_ptr<parser::pddl::tree::TreeNode> effect,
-    std::set<std::string> predicates,
-    std::map<std::string, double> functions);
+    std::set<std::string> & predicates,
+    std::map<std::string, double> & functions) const;
   std::pair<std::string, parser::pddl::tree::NodeType> get_base(
     const std::shared_ptr<parser::pddl::tree::TreeNode> tree_node);
   Graph::Ptr get_graph(const Plan & current_plan);
   std::list<GraphNode::Ptr> get_roots(
     std::vector<plansys2::ActionStamped> & action_sequence,
-    std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
+    std::set<std::string> & predicates,
+    std::map<std::string, double> & functions);
   GraphNode::Ptr get_node_satisfy(
     const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
-    const std::set<std::string> & predicates,
-    const std::map<std::string, double> & functions,
     const std::list<GraphNode::Ptr> & roots,
     const GraphNode::Ptr & current);
   GraphNode::Ptr get_node_satisfy(
     const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
-    const std::set<std::string> & predicates,
-    const std::map<std::string, double> & functions,
     const GraphNode::Ptr & node,
     const GraphNode::Ptr & current);
   void remove_existing_requirements(

@@ -16,6 +16,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <set>
+#include <map>
 
 #include "plansys2_executor/Utils.hpp"
 
@@ -70,7 +72,9 @@ std::tuple<bool, bool, double> evaluate(
         std::shared_ptr<parser::pddl::tree::NotNode> pn_not =
           std::dynamic_pointer_cast<parser::pddl::tree::NotNode>(node);
 
-        return evaluate(pn_not->op, problem_client, predicates, functions, !negate, apply, use_state);
+        return evaluate(
+          pn_not->op, problem_client, predicates, functions, !negate, apply,
+          use_state);
       }
 
     case parser::pddl::tree::PREDICATE: {
@@ -139,8 +143,12 @@ std::tuple<bool, bool, double> evaluate(
         std::shared_ptr<parser::pddl::tree::ExpressionNode> expr =
           std::dynamic_pointer_cast<parser::pddl::tree::ExpressionNode>(node);
 
-        std::tuple<bool, bool, double> left = evaluate(expr->ops[0], problem_client, predicates, functions, negate, apply, use_state);
-        std::tuple<bool, bool, double> right = evaluate(expr->ops[1], problem_client, predicates, functions, negate, apply, use_state);
+        std::tuple<bool, bool, double> left = evaluate(
+          expr->ops[0], problem_client, predicates,
+          functions, negate, apply, use_state);
+        std::tuple<bool, bool, double> right = evaluate(
+          expr->ops[1], problem_client, predicates,
+          functions, negate, apply, use_state);
 
         if (!std::get<0>(left) || !std::get<0>(right)) {
           return std::make_tuple(false, false, 0);
@@ -197,8 +205,13 @@ std::tuple<bool, bool, double> evaluate(
         std::shared_ptr<parser::pddl::tree::FunctionModifierNode> func_mod =
           std::dynamic_pointer_cast<parser::pddl::tree::FunctionModifierNode>(node);
 
-        std::tuple<bool, bool, double> left = evaluate(func_mod->ops[0], problem_client, predicates, functions, negate, apply, use_state);
-        std::tuple<bool, bool, double> right = evaluate(func_mod->ops[1], problem_client, predicates, functions, negate, apply, use_state);
+        std::tuple<bool, bool, double> left = evaluate(
+          func_mod->ops[0], problem_client, predicates,
+          functions, negate, apply, use_state);
+        std::tuple<bool, bool, double> right = evaluate(
+          func_mod->ops[1], problem_client,
+          predicates, functions, negate, apply,
+          use_state);
 
         if (!std::get<0>(left) || !std::get<0>(right)) {
           return std::make_tuple(false, false, 0);
@@ -316,7 +329,7 @@ bool apply(
 
 bool apply(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::set<std::string> &predicates,
+  std::set<std::string> & predicates,
   std::map<std::string, double> & functions)
 {
   std::tuple<bool, bool, double> ret = evaluate(node, predicates, functions, false, true);
@@ -325,10 +338,10 @@ bool apply(
 }
 
 std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> get_subtrees(
-    const std::shared_ptr<parser::pddl::tree::TreeNode> node)
+  const std::shared_ptr<parser::pddl::tree::TreeNode> node)
 {
   if (node == nullptr) {  // No expression
-      return {};
+    return {};
   }
 
   switch (node->type_) {
