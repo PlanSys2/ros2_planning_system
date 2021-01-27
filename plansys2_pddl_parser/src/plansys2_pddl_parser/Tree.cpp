@@ -60,21 +60,21 @@ NodeType getNodeType(const std::string & expr, NodeType default_node_type)
   std::smatch match;
   int first = std::numeric_limits<int>::max();
 
-  if (std::regex_search(expr, match, std::regex("\\(and"))) {
+  if (std::regex_search(expr, match, std::regex("\\(\\s*and"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       node_type = AND;
     }
   }
 
-  if (std::regex_search(expr, match, std::regex("\\(or"))) {
+  if (std::regex_search(expr, match, std::regex("\\(\\s*or"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       node_type = OR;
     }
   }
 
-  if (std::regex_search(expr, match, std::regex("\\(not"))) {
+  if (std::regex_search(expr, match, std::regex("\\(\\s*not"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       node_type = NOT;
