@@ -55,7 +55,7 @@ ExecutorNode::ExecutorNode()
 {
   using namespace std::placeholders;
 
-  this->declare_parameter<bool>("include_legend", true);
+  this->declare_parameter<bool>("include_legend", false);
 #ifdef ZMQ_FOUND
   this->declare_parameter<bool>("enable_groot_monitoring", true);
   this->declare_parameter<int>("publisher_port", 1666);
