@@ -29,9 +29,9 @@ std::tuple<bool, bool, double> evaluate(
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
   std::set<std::string> & predicates,
   std::map<std::string, double> & functions,
-  bool negate,
   bool apply,
-  bool use_state)
+  bool use_state,
+  bool negate)
 {
   if (node == nullptr) {  // No expression
     return std::make_tuple(true, true, 0);
@@ -46,7 +46,7 @@ std::tuple<bool, bool, double> evaluate(
 
         for (const auto & op : pn_and->ops) {
           std::tuple<bool, bool, double> result =
-            evaluate(op, problem_client, predicates, functions, negate, apply, use_state);
+            evaluate(op, problem_client, predicates, functions, apply, use_state, negate);
           success = success && std::get<0>(result);
           truth_value = truth_value && std::get<1>(result);
         }
@@ -61,7 +61,7 @@ std::tuple<bool, bool, double> evaluate(
 
         for (const auto & op : pn_or->ops) {
           std::tuple<bool, bool, double> result =
-            evaluate(op, problem_client, predicates, functions, negate, apply, use_state);
+            evaluate(op, problem_client, predicates, functions, apply, use_state, negate);
           success = success && std::get<0>(result);
           truth_value = truth_value || std::get<1>(result);
         }
@@ -73,8 +73,8 @@ std::tuple<bool, bool, double> evaluate(
           std::dynamic_pointer_cast<parser::pddl::tree::NotNode>(node);
 
         return evaluate(
-          pn_not->op, problem_client, predicates, functions, !negate, apply,
-          use_state);
+          pn_not->op, problem_client, predicates, functions, apply, use_state,
+          !negate);
       }
 
     case parser::pddl::tree::PREDICATE: {
@@ -145,10 +145,10 @@ std::tuple<bool, bool, double> evaluate(
 
         std::tuple<bool, bool, double> left = evaluate(
           expr->ops[0], problem_client, predicates,
-          functions, negate, apply, use_state);
+          functions, apply, use_state, negate);
         std::tuple<bool, bool, double> right = evaluate(
           expr->ops[1], problem_client, predicates,
-          functions, negate, apply, use_state);
+          functions, apply, use_state, negate);
 
         if (!std::get<0>(left) || !std::get<0>(right)) {
           return std::make_tuple(false, false, 0);
@@ -207,11 +207,11 @@ std::tuple<bool, bool, double> evaluate(
 
         std::tuple<bool, bool, double> left = evaluate(
           func_mod->ops[0], problem_client, predicates,
-          functions, negate, apply, use_state);
+          functions, apply, use_state, negate);
         std::tuple<bool, bool, double> right = evaluate(
           func_mod->ops[1], problem_client,
-          predicates, functions, negate, apply,
-          use_state);
+          predicates, functions, apply, use_state,
+          negate);
 
         if (!std::get<0>(left) || !std::get<0>(right)) {
           return std::make_tuple(false, false, 0);
@@ -280,23 +280,21 @@ std::tuple<bool, bool, double> evaluate(
 std::tuple<bool, bool, double> evaluate(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
-  bool negate,
   bool apply)
 {
   std::set<std::string> predicates;
   std::map<std::string, double> functions;
-  return evaluate(node, problem_client, predicates, functions, negate, apply, false);
+  return evaluate(node, problem_client, predicates, functions, apply);
 }
 
 std::tuple<bool, bool, double> evaluate(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
   std::set<std::string> & predicates,
   std::map<std::string, double> & functions,
-  bool negate,
   bool apply)
 {
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client;
-  return evaluate(node, problem_client, predicates, functions, negate, apply, true);
+  return evaluate(node, problem_client, predicates, functions, apply, true);
 }
 
 bool check(
@@ -322,7 +320,7 @@ bool apply(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client)
 {
-  std::tuple<bool, bool, double> ret = evaluate(node, problem_client, false, true);
+  std::tuple<bool, bool, double> ret = evaluate(node, problem_client, true);
 
   return std::get<0>(ret);
 }
@@ -332,7 +330,7 @@ bool apply(
   std::set<std::string> & predicates,
   std::map<std::string, double> & functions)
 {
-  std::tuple<bool, bool, double> ret = evaluate(node, predicates, functions, false, true);
+  std::tuple<bool, bool, double> ret = evaluate(node, predicates, functions, true);
 
   return std::get<0>(ret);
 }

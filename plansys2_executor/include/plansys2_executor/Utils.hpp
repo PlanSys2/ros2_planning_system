@@ -35,9 +35,9 @@ namespace plansys2
  * \param[in] problem_client The problem expert client.
  * \param[in] predicates Current predicates state.
  * \param[in] functions Current functions state.
- * \param[in] negate Invert the truth value.
  * \param[in] apply Apply result to problem expert or state.
  * \param[in] use_state Use state representation or problem client.
+ * \param[in] negate Invert the truth value.
  * \return result <- tuple(bool, bool, double)
  *         result(0) true if success
  *         result(1) truth value of boolen expression
@@ -48,21 +48,19 @@ std::tuple<bool, bool, double> evaluate(
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
   std::set<std::string> & predicates,
   std::map<std::string, double> & functions,
-  bool negate = false,
   bool apply = false,
-  bool use_state = false);
+  bool use_state = false,
+  bool negate = false);
 
 std::tuple<bool, bool, double> evaluate(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
-  bool negate = false,
   bool apply = false);
 
 std::tuple<bool, bool, double> evaluate(
   const std::shared_ptr<parser::pddl::tree::TreeNode> node,
   std::set<std::string> & predicates,
   std::map<std::string, double> & functions,
-  bool negate = false,
   bool apply = false);
 
 /// Check a PDDL expression represented as a tree.

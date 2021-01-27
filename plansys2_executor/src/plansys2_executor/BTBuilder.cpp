@@ -109,7 +109,7 @@ BTBuilder::get_base(
           base_expr = func_node->toString();
           base_type = parser::pddl::tree::FUNCTION;
         } else {
-          std::cerr << "get_subtrees: Error parsing expresion [" <<
+          std::cerr << "get_base: Error parsing expresion [" <<
             tree_node->toString() << "]" << std::endl;
         }
         break;
@@ -126,7 +126,7 @@ BTBuilder::get_base(
       }
 
     default: {
-        std::cerr << "get_subtrees: Error parsing expresion [" <<
+        std::cerr << "get_base: Error parsing expresion [" <<
           tree_node->toString() << "]" << std::endl;
         break;
       }
