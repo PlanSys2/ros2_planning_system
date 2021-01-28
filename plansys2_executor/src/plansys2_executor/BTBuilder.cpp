@@ -286,6 +286,7 @@ BTBuilder::get_roots(
       auto new_root = GraphNode::make_shared();
       new_root->action = action;
       new_root->node_num = node_counter++;
+      new_root->level_num = 0;
 
       ret.push_back(new_root);
       it = action_sequence.erase(it);
@@ -319,6 +320,7 @@ BTBuilder::get_graph(const Plan & current_plan)
   std::set<std::string> predicates;
   std::map<std::string, double> functions;
   int node_counter = 0;
+  int level_counter = 0;
   auto graph = Graph::make_shared();
 
   auto action_sequence = get_plan_actions(current_plan);
@@ -357,6 +359,21 @@ BTBuilder::get_graph(const Plan & current_plan)
     auto new_node = GraphNode::make_shared();
     new_node->action = *action_sequence.begin();
     new_node->node_num = node_counter++;
+    float time = new_node->action.time;
+
+    auto level = graph->levels.find(time);
+    if (level == graph->levels.end())
+    {
+      level_counter++;
+      std::list<GraphNode::Ptr> new_level;
+      new_level.push_back(new_node);
+      graph->levels.insert({time, new_level});
+    }
+    else
+    {
+      level->second.push_back(new_node);
+    }
+    new_node->level_num = level_counter;
 
     std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> at_start_requirements =
       get_subtrees(action_sequence.begin()->action->at_start_requirements.root_);
@@ -514,13 +531,77 @@ BTBuilder::get_dotgraph(const Plan & current_plan)
   std::stringstream ss;
   ss << "digraph plan {\n";
 
+  int tab_level = 1;
   // dotgraph formatting options
+  ss << t(tab_level);
   ss << "node[shape=box];\n";
+  ss << t(tab_level);
   ss << "rankdir=TB;\n";
 
+  // define all the levels and nodes
+  ss << t(tab_level);
+  ss << "subgraph cluster_0 {\n";
+
+  tab_level = 2;
+  ss << t(tab_level);
+  ss << "label = \"Time: 0.0\";\n";
+  ss << t(tab_level);
+  ss << "style = rounded;\n";
+  ss << t(tab_level);
+  ss << "color = yellow3;\n";
+  ss << t(tab_level);
+  ss << "bgcolor = lemonchiffon;\n";
+  ss << t(tab_level);
+  ss << "labeljust = l;\n";
+
+  tab_level = 3;
+  for (auto & node : action_graph->roots) {
+    ss << t(tab_level);
+    ss << node->node_num << " [label=\"" << node->action.action->name_actions_to_string() << "\"";
+    ss << "labeljust=c,style=filled,color=blue,fillcolor=skyblue];\n";
+  }
+  tab_level = 2;
+
+  ss << t(tab_level);
+  ss << "}\n";
+
+  for (auto & level : action_graph->levels) {
+    if (!level.second.empty())
+    {
+      ss << t(tab_level);
+      ss << "subgraph cluster_" << level.second.front()->level_num << " {\n";
+
+      tab_level = 2;
+      ss << t(tab_level);
+      ss << "label = \"Time: " << level.second.front()->action.time << "\";\n";
+      ss << t(tab_level);
+      ss << "style = rounded;\n";
+      ss << t(tab_level);
+      ss << "color = yellow3;\n";
+      ss << t(tab_level);
+      ss << "bgcolor = lemonchiffon;\n";
+      ss << t(tab_level);
+      ss << "labeljust = l;\n";
+
+      tab_level = 3;
+      for (auto & node : level.second)
+      {
+        ss << t(tab_level);
+        ss << node->node_num << " [label=\"" << node->action.action->name_actions_to_string() << "\"";
+        ss << "labeljust=c,style=filled,color=blue,fillcolor=skyblue];\n";
+      }
+      tab_level = 2;
+
+      ss << t(tab_level);
+      ss << "}\n";
+    }
+  }
+
+  tab_level = 1;
+  // define the edges
   std::set<int> all_nodes;
   for (const auto & graph_root : action_graph->roots) {
-    ss << get_flow_dotgraph(graph_root, all_nodes, 1);
+    ss << get_flow_dotgraph(graph_root, all_nodes, tab_level);
   }
 
   ss << "}";
@@ -576,11 +657,6 @@ BTBuilder::get_flow_dotgraph(
   int level)
 {
   std::stringstream ss;
-
-  all_nodes.insert(node->node_num);
-  ss << t(level);
-  ss << node->node_num << " [label=\"" << node->action.action->name_actions_to_string() << "\"";
-  ss << "labeljust=c,style=filled,color=blue,fillcolor=skyblue];\n";
 
   for (const auto & child_node : node->out_arcs) {
     ss << t(level);

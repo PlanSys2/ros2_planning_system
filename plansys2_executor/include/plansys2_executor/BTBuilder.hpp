@@ -50,6 +50,7 @@ struct GraphNode
 
   ActionStamped action;
   int node_num;
+  int level_num;
 
   std::set<std::string> predicates;
   std::map<std::string, double> functions;
@@ -64,6 +65,7 @@ struct Graph
   static Ptr make_shared() {return std::make_shared<Graph>();}
 
   std::list<GraphNode::Ptr> roots;
+  std::map<float, std::list<GraphNode::Ptr> > levels;
 };
 
 class BTBuilder
