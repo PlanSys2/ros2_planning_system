@@ -34,6 +34,10 @@
 #include "behaviortree_cpp_v3/utils/shared_library.h"
 #include "behaviortree_cpp_v3/blackboard.h"
 
+#ifdef ZMQ_FOUND
+#include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
+#endif
+
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
@@ -51,6 +55,14 @@ ExecutorNode::ExecutorNode()
 : rclcpp_lifecycle::LifecycleNode("executor")
 {
   using namespace std::placeholders;
+
+  this->declare_parameter<bool>("include_legend", false);
+#ifdef ZMQ_FOUND
+  this->declare_parameter<bool>("enable_groot_monitoring", true);
+  this->declare_parameter<int>("publisher_port", 1666);
+  this->declare_parameter<int>("server_port", 1667);
+  this->declare_parameter<int>("max_msgs_per_second", 25);
+#endif
 
   execute_plan_action_server_ = rclcpp_action::create_server<ExecutePlan>(
     this->get_node_base_interface(),
@@ -76,6 +88,8 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
 
+  dotgraph_pub_ = this->create_publisher<std_msgs::msg::String>("dot_graph", 1);
+
   aux_node_ = std::make_shared<rclcpp::Node>("executor_helper");
   domain_client_ = std::make_shared<plansys2::DomainExpertClient>(aux_node_);
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(aux_node_);
@@ -89,6 +103,7 @@ CallbackReturnT
 ExecutorNode::on_activate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Activating...", get_name());
+  dotgraph_pub_->on_activate();
   RCLCPP_INFO(get_logger(), "[%s] Activated", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -98,6 +113,7 @@ CallbackReturnT
 ExecutorNode::on_deactivate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Deactivating...", get_name());
+  dotgraph_pub_->on_deactivate();
   RCLCPP_INFO(get_logger(), "[%s] Deactivated", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -107,6 +123,7 @@ CallbackReturnT
 ExecutorNode::on_cleanup(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Cleaning up...", get_name());
+  dotgraph_pub_.reset();
   RCLCPP_INFO(get_logger(), "[%s] Cleaned up", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -116,6 +133,7 @@ CallbackReturnT
 ExecutorNode::on_shutdown(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Shutting down...", get_name());
+  dotgraph_pub_.reset();
   RCLCPP_INFO(get_logger(), "[%s] Shutted down", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -208,6 +226,12 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
 
   auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
+  std_msgs::msg::String msg;
+  msg.data =
+    bt_builder.get_tree_dotgraph(
+    current_plan_.value(), this->get_parameter(
+      "include_legend").as_bool());
+  dotgraph_pub_->publish(msg);
 
   std::filesystem::path tp = std::filesystem::temp_directory_path();
   std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
@@ -215,6 +239,28 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   out.close();
 
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
+
+#ifdef ZMQ_FOUND
+  unsigned int publisher_port = this->get_parameter("publisher_port").as_int();
+  unsigned int server_port = this->get_parameter("server_port").as_int();
+  unsigned int max_msgs_per_second = this->get_parameter("max_msgs_per_second").as_int();
+
+  std::unique_ptr<BT::PublisherZMQ> publisher_zmq;
+  if (this->get_parameter("enable_groot_monitoring").as_bool()) {
+    RCLCPP_INFO(
+      get_logger(),
+      "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
+      get_name(), publisher_port, server_port, max_msgs_per_second);
+    try {
+      publisher_zmq.reset(
+        new BT::PublisherZMQ(
+          tree, max_msgs_per_second, publisher_port,
+          server_port));
+    } catch (const BT::LogicError & exc) {
+      RCLCPP_ERROR(get_logger(), "ZMQ already enabled, Error: %s", exc.what());
+    }
+  }
+#endif
 
   rclcpp::Rate rate(10);
   auto start = now();
