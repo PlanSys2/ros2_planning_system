@@ -274,7 +274,8 @@ std::list<GraphNode::Ptr>
 BTBuilder::get_roots(
   std::vector<plansys2::ActionStamped> & action_sequence,
   std::set<std::string> & predicates,
-  std::map<std::string, double> & functions)
+  std::map<std::string, double> & functions,
+  int & node_counter)
 {
   std::list<GraphNode::Ptr> ret;
 
@@ -284,6 +285,7 @@ BTBuilder::get_roots(
     if (is_action_executable(action, predicates, functions) && is_parallelizable(action, ret)) {
       auto new_root = GraphNode::make_shared();
       new_root->action = action;
+      new_root->node_num = node_counter++;
 
       ret.push_back(new_root);
       it = action_sequence.erase(it);
@@ -316,13 +318,14 @@ BTBuilder::get_graph(const Plan & current_plan)
 {
   std::set<std::string> predicates;
   std::map<std::string, double> functions;
+  int node_counter = 0;
   auto graph = Graph::make_shared();
 
   auto action_sequence = get_plan_actions(current_plan);
   init_predicates(predicates, problem_client_);
   init_functions(functions, problem_client_);
 
-  graph->roots = get_roots(action_sequence, predicates, functions);
+  graph->roots = get_roots(action_sequence, predicates, functions, node_counter);
 
   // Apply root actions
   for (auto & action_node : graph->roots) {
@@ -353,6 +356,7 @@ BTBuilder::get_graph(const Plan & current_plan)
   while (!action_sequence.empty()) {
     auto new_node = GraphNode::make_shared();
     new_node->action = *action_sequence.begin();
+    new_node->node_num = node_counter++;
 
     std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> at_start_requirements =
       get_subtrees(action_sequence.begin()->action->at_start_requirements.root_);
@@ -500,6 +504,31 @@ BTBuilder::get_tree(const Plan & current_plan)
 }
 
 std::string
+BTBuilder::get_dotgraph(const Plan & current_plan)
+{
+  auto action_graph = get_graph(current_plan);
+
+  print_graph(action_graph);
+
+  // create xdot graph
+  std::stringstream ss;
+  ss << "digraph plan {\n";
+
+  // dotgraph formatting options
+  ss << "node[shape=box];\n";
+  ss << "rankdir=TB;\n";
+
+  std::set<int> all_nodes;
+  for (const auto & graph_root : action_graph->roots) {
+    ss << get_flow_dotgraph(graph_root, all_nodes, 1);
+  }
+
+  ss << "}";
+
+  return ss.str();
+}
+
+std::string
 BTBuilder::get_flow_tree(
   GraphNode::Ptr node,
   int level)
@@ -538,6 +567,28 @@ BTBuilder::get_flow_tree(
   }
 
   return ret;
+}
+
+std::string
+BTBuilder::get_flow_dotgraph(
+  GraphNode::Ptr node,
+  std::set<int> all_nodes,
+  int level)
+{
+  std::stringstream ss;
+
+  all_nodes.insert(node->node_num);
+  ss << t(level);
+  ss << node->node_num << " [label=\"" << node->action.action->name_actions_to_string() << "\"";
+  ss << "labeljust=c,style=filled,color=blue,fillcolor=skyblue];\n";
+
+  for (const auto & child_node : node->out_arcs) {
+    ss << t(level);
+    ss << node->node_num << "->" << child_node->node_num << ";\n";
+    ss << get_flow_dotgraph(child_node, all_nodes, level);
+  }
+
+  return ss.str();
 }
 
 std::string
