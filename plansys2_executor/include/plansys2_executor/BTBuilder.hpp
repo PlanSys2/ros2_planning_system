@@ -65,7 +65,7 @@ struct Graph
   static Ptr make_shared() {return std::make_shared<Graph>();}
 
   std::list<GraphNode::Ptr> roots;
-  std::map<float, std::list<GraphNode::Ptr> > levels;
+  std::map<float, std::list<GraphNode::Ptr>> levels;
 };
 
 class BTBuilder

@@ -362,15 +362,12 @@ BTBuilder::get_graph(const Plan & current_plan)
     float time = new_node->action.time;
 
     auto level = graph->levels.find(time);
-    if (level == graph->levels.end())
-    {
+    if (level == graph->levels.end()) {
       level_counter++;
       std::list<GraphNode::Ptr> new_level;
       new_level.push_back(new_node);
       graph->levels.insert({time, new_level});
-    }
-    else
-    {
+    } else {
       level->second.push_back(new_node);
     }
     new_node->level_num = level_counter;
@@ -566,8 +563,7 @@ BTBuilder::get_dotgraph(const Plan & current_plan)
   ss << "}\n";
 
   for (auto & level : action_graph->levels) {
-    if (!level.second.empty())
-    {
+    if (!level.second.empty()) {
       ss << t(tab_level);
       ss << "subgraph cluster_" << level.second.front()->level_num << " {\n";
 
@@ -584,10 +580,10 @@ BTBuilder::get_dotgraph(const Plan & current_plan)
       ss << "labeljust = l;\n";
 
       tab_level = 3;
-      for (auto & node : level.second)
-      {
+      for (auto & node : level.second) {
         ss << t(tab_level);
-        ss << node->node_num << " [label=\"" << node->action.action->name_actions_to_string() << "\"";
+        ss << node->node_num << " [label=\"" << node->action.action->name_actions_to_string() <<
+          "\"";
         ss << "labeljust=c,style=filled,color=blue,fillcolor=skyblue];\n";
       }
       tab_level = 2;
