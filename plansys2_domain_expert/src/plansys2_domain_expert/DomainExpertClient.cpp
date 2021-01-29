@@ -32,11 +32,16 @@ DomainExpertClient::DomainExpertClient(rclcpp::Node::SharedPtr provided_node)
     "domain_expert/get_domain_types");
   get_predicates_client_ = node_->create_client<plansys2_msgs::srv::GetDomainPredicates>(
     "domain_expert/get_domain_predicates");
+  get_functions_client_ = node_->create_client<plansys2_msgs::srv::GetDomainFunctions>(
+    "domain_expert/get_domain_functions");
   get_actions_client_ = node_->create_client<plansys2_msgs::srv::GetDomainActions>(
     "domain_expert/get_domain_actions");
   get_predicate_details_client_ =
     node_->create_client<plansys2_msgs::srv::GetDomainPredicateDetails>(
     "domain_expert/get_domain_predicate_details");
+  get_function_details_client_ =
+    node_->create_client<plansys2_msgs::srv::GetDomainFunctionDetails>(
+    "domain_expert/get_domain_function_details");
   get_action_details_client_ = node_->create_client<plansys2_msgs::srv::GetDomainActionDetails>(
     "domain_expert/get_domain_action_details");
 }
@@ -101,10 +106,10 @@ DomainExpertClient::getPredicates()
   return ret;
 }
 
-std::optional<plansys2::Predicate>
+std::optional<parser::pddl::tree::Predicate>
 DomainExpertClient::getPredicate(const std::string & predicate)
 {
-  plansys2::Predicate ret;
+  parser::pddl::tree::Predicate ret;
   bool found = false;
 
   while (!get_predicate_details_client_->wait_for_service(std::chrono::seconds(1))) {
@@ -130,11 +135,11 @@ DomainExpertClient::getPredicate(const std::string & predicate)
   }
 
   if (future_result.get()->success) {
-    plansys2::Predicate ret;
+    parser::pddl::tree::Predicate ret;
     ret.name = future_result.get()->name;
 
     for (size_t i = 0; i < future_result.get()->param_names.size(); i++) {
-      plansys2::Param param;
+      parser::pddl::tree::Param param;
       param.name = future_result.get()->param_names[i];
       param.type = future_result.get()->param_types[i];
       ret.parameters.push_back(param);
@@ -146,6 +151,87 @@ DomainExpertClient::getPredicate(const std::string & predicate)
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
       get_predicate_details_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
+    return {};
+  }
+  return {};
+}
+
+std::vector<std::string>
+DomainExpertClient::getFunctions()
+{
+  std::vector<std::string> ret;
+
+  while (!get_functions_client_->wait_for_service(std::chrono::seconds(1))) {
+    if (!rclcpp::ok()) {
+      return ret;
+    }
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      get_functions_client_->get_service_name() <<
+        " service client: waiting for service to appear...");
+  }
+
+  auto request = std::make_shared<plansys2_msgs::srv::GetDomainFunctions::Request>();
+
+  auto future_result = get_functions_client_->async_send_request(request);
+
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
+    rclcpp::executor::FutureReturnCode::SUCCESS)
+  {
+    return ret;
+  }
+
+  ret = future_result.get()->functions;
+
+  return ret;
+}
+
+std::optional<parser::pddl::tree::Function>
+DomainExpertClient::getFunction(const std::string & function)
+{
+  parser::pddl::tree::Function ret;
+  bool found = false;
+
+  while (!get_function_details_client_->wait_for_service(std::chrono::seconds(1))) {
+    if (!rclcpp::ok()) {
+      return {};
+    }
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      get_function_details_client_->get_service_name() <<
+        " service client: waiting for service to appear...");
+  }
+
+  auto request = std::make_shared<plansys2_msgs::srv::GetDomainFunctionDetails::Request>();
+
+  request->function = function;
+
+  auto future_result = get_function_details_client_->async_send_request(request);
+
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
+    rclcpp::executor::FutureReturnCode::SUCCESS)
+  {
+    return {};
+  }
+
+  if (future_result.get()->success) {
+    parser::pddl::tree::Function ret;
+    ret.name = future_result.get()->name;
+
+    for (size_t i = 0; i < future_result.get()->param_names.size(); i++) {
+      parser::pddl::tree::Param param;
+      param.name = future_result.get()->param_names[i];
+      param.type = future_result.get()->param_types[i];
+      ret.parameters.push_back(param);
+    }
+
+    return ret;
+
+  } else {
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      get_function_details_client_->get_service_name() << ": " <<
         future_result.get()->error_info);
     return {};
   }
@@ -186,10 +272,10 @@ DomainExpertClient::getActions()
   return ret;
 }
 
-std::optional<plansys2::Action>
+std::optional<parser::pddl::tree::Action>
 DomainExpertClient::getAction(const std::string & action)
 {
-  plansys2::Action ret;
+  parser::pddl::tree::Action ret;
   bool found = false;
 
   while (!get_action_details_client_->wait_for_service(std::chrono::seconds(1))) {
@@ -216,18 +302,17 @@ DomainExpertClient::getAction(const std::string & action)
 
   if (future_result.get()->success) {
     if (future_result.get()->type == "action") {
-      plansys2::Action ret;
+      parser::pddl::tree::Action ret;
       ret.name = future_result.get()->name;
 
       for (size_t i = 0; i < future_result.get()->param_names.size(); i++) {
-        plansys2::Param param;
+        parser::pddl::tree::Param param;
         param.name = future_result.get()->param_names[i];
         param.type = future_result.get()->param_types[i];
         ret.parameters.push_back(param);
       }
 
       ret.preconditions.fromString(future_result.get()->at_start_requirements);
-
       ret.effects.fromString(future_result.get()->at_start_effects);
 
       return ret;
@@ -278,10 +363,10 @@ DomainExpertClient::getDurativeActions()
   return ret;
 }
 
-std::optional<plansys2::DurativeAction>
+std::optional<parser::pddl::tree::DurativeAction>
 DomainExpertClient::getDurativeAction(const std::string & action)
 {
-  plansys2::DurativeAction ret;
+  parser::pddl::tree::DurativeAction ret;
   bool found = false;
 
   while (!get_action_details_client_->wait_for_service(std::chrono::seconds(1))) {
@@ -311,7 +396,7 @@ DomainExpertClient::getDurativeAction(const std::string & action)
       ret.name = future_result.get()->name;
 
       for (size_t i = 0; i < future_result.get()->param_names.size(); i++) {
-        plansys2::Param param;
+        parser::pddl::tree::Param param;
         param.name = future_result.get()->param_names[i];
         param.type = future_result.get()->param_types[i];
         ret.parameters.push_back(param);

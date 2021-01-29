@@ -17,6 +17,7 @@
 
 #include <readline/history.h>
 
+#include <regex>
 #include <vector>
 #include <list>
 #include <string>
@@ -76,12 +77,12 @@ char * completion_generator(const char * text, int state)
 
   std::vector<std::string> vocabulary{"get", "set", "remove", "run", "check"};
   std::vector<std::string> vocabulary_check{"actors"};
-  std::vector<std::string> vocabulary_set{"instance", "predicate", "assignment", "goal"};
+  std::vector<std::string> vocabulary_set{"instance", "predicate", "function", "goal"};
   std::vector<std::string> vocabulary_get{"model", "problem", "domain", "plan"};
-  std::vector<std::string> vocabulary_remove{"instance", "predicate", "goal"};
-  std::vector<std::string> vocabulary_get_problem{"instances", "predicates", "goal"};
-  std::vector<std::string> vocabulary_get_model{"types", "predicates", "actions", "predicate",
-    "action"};
+  std::vector<std::string> vocabulary_remove{"instance", "predicate", "function", "goal"};
+  std::vector<std::string> vocabulary_get_problem{"instances", "predicates", "functions", "goal"};
+  std::vector<std::string> vocabulary_get_model{"types", "predicates", "functions", "actions",
+    "predicate", "function", "action"};
 
   if (state == 0) {
     // During initialization, compute the actual matches for 'text' and keep
@@ -246,6 +247,25 @@ Terminal::process_get_model_predicate(std::vector<std::string> & command, std::o
 }
 
 void
+Terminal::process_get_model_function(std::vector<std::string> & command, std::ostringstream & os)
+{
+  if (command.size() == 1) {
+    auto functions = domain_client_->getFunction(command[0]);
+    if (functions) {
+      os << "Parameters: " << functions.value().parameters.size() << std::endl;
+      for (size_t i = 0; i < functions.value().parameters.size(); i++) {
+        os << "\t" << functions.value().parameters[i].type << " - " <<
+          functions.value().parameters[i].name << std::endl;
+      }
+    } else {
+      os << "Error when looking for params of " << command[0] << std::endl;
+    }
+  } else {
+    os << "\tUsage: \n\t\tget model function [function_name]" << std::endl;
+  }
+}
+
+void
 Terminal::process_get_model_action(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 1) {
@@ -303,6 +323,13 @@ Terminal::process_get_model(std::vector<std::string> & command, std::ostringstre
       for (const auto & predicate : predicates) {
         os << "\t" << predicate << std::endl;
       }
+    } else if (command[0] == "functions") {
+      auto functions = domain_client_->getFunctions();
+
+      os << "Functions: " << functions.size() << std::endl;
+      for (const auto & function : functions) {
+        os << "\t" << function << std::endl;
+      }
     } else if (command[0] == "actions") {
       auto actions = domain_client_->getActions();
       auto durative_actions = domain_client_->getDurativeActions();
@@ -317,16 +344,22 @@ Terminal::process_get_model(std::vector<std::string> & command, std::ostringstre
     } else if (command[0] == "predicate") {
       pop_front(command);
       process_get_model_predicate(command, os);
+    } else if (command[0] == "function") {
+      pop_front(command);
+      process_get_model_function(command, os);
     } else if (command[0] == "action") {
       pop_front(command);
       process_get_model_action(command, os);
     } else {
       os <<
-        "\tUsage: \n\t\tget model [types|predicates|actions|predicate|action]..." <<
+        "\tUsage: \n\t\tget model [types|predicates|functions|actions|predicate|function|action]..."
+         <<
         std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\tget model [types|predicates|actions|predicate|action]..." <<
+    os <<
+      "\tUsage: \n\t\tget model [types|predicates|functions|actions|predicate|function|action]..."
+       <<
       std::endl;
   }
 }
@@ -349,12 +382,19 @@ Terminal::process_get_problem(std::vector<std::string> & command, std::ostringst
       for (const auto & predicate : predicates) {
         os << predicate.toString() << std::endl;
       }
+    } else if (command[0] == "functions") {
+      auto functions = problem_client_->getFunctions();
+
+      os << "Functions: " << functions.size() << std::endl;
+      for (const auto & function : functions) {
+        os << function.toString() << std::endl;
+      }
     } else if (command[0] == "goal") {
       auto goal = problem_client_->getGoal();
       os << "Goal: " << goal.toString() << std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\tget problem [instances|predicates|goal]..." <<
+    os << "\tUsage: \n\t\tget problem [instances|predicates|functions|goal]..." <<
       std::endl;
   }
 }
@@ -400,7 +440,7 @@ void
 Terminal::process_set_instance(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 2) {
-    if (!problem_client_->addInstance(plansys2::Instance{command[0], command[1]})) {
+    if (!problem_client_->addInstance(parser::pddl::tree::Instance{command[0], command[1]})) {
       os << "Could not add the instance [" << command[0] << "]" << std::endl;
     }
   } else {
@@ -410,36 +450,10 @@ Terminal::process_set_instance(std::vector<std::string> & command, std::ostrings
 }
 
 void
-Terminal::process_set_assignment(std::vector<std::string> & command, std::ostringstream & os)
-{
-  if (command.size() > 0) {
-    plansys2::Assignment assignment;
-
-    std::string total_expr;
-    for (const auto & token : command) {
-      total_expr += " " + token;
-    }
-    assignment.fromString(total_expr);
-
-    if (!problem_client_->addAssignment(assignment)) {
-      os <<
-        "Could not add the assignment [" <<
-        assignment.toString() << "]" << std::endl;
-    } else {
-      os << "done" << std::endl;
-    }
-  } else {
-    os << "\tUsage: \n\t\tset assignment [assignment]" <<
-      std::endl;
-  }
-}
-
-
-void
 Terminal::process_set_predicate(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
-    plansys2::Predicate predicate;
+    parser::pddl::tree::Predicate predicate;
     predicate.name = command[0];
 
     if (predicate.name.front() != '(') {
@@ -452,7 +466,7 @@ Terminal::process_set_predicate(std::vector<std::string> & command, std::ostring
 
     pop_front(command);
     while (!command.empty()) {
-      plansys2::Param param {command[0], ""};
+      parser::pddl::tree::Param param {command[0], ""};
       predicate.parameters.push_back(param);
       pop_front(command);
     }
@@ -475,17 +489,41 @@ Terminal::process_set_predicate(std::vector<std::string> & command, std::ostring
 }
 
 void
-Terminal::process_set_goal(std::vector<std::string> & command, std::ostringstream & os)
+Terminal::process_set_function(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
-    plansys2::Goal goal;
+    parser::pddl::tree::Function function;
 
     std::string total_expr;
     for (const auto & token : command) {
       total_expr += " " + token;
     }
 
-    goal.fromString(total_expr);
+    function.fromString(total_expr);
+
+    if (!problem_client_->addFunction(function)) {
+      os <<
+        "Could not add the function [" <<
+        function.toString() << "]" << std::endl;
+    } else {
+      os << "done" << std::endl;
+    }
+  } else {
+    os << "\tUsage: \n\t\tset function [function]" <<
+      std::endl;
+  }
+}
+
+void
+Terminal::process_set_goal(std::vector<std::string> & command, std::ostringstream & os)
+{
+  if (command.size() > 0) {
+    std::string total_expr;
+    for (const auto & token : command) {
+      total_expr += " " + token;
+    }
+
+    parser::pddl::tree::Goal goal(total_expr);
 
     if (goal.root_ != nullptr) {
       if (!problem_client_->setGoal(goal)) {
@@ -510,18 +548,18 @@ Terminal::process_set(std::vector<std::string> & command, std::ostringstream & o
     } else if (command[0] == "predicate") {
       pop_front(command);
       process_set_predicate(command, os);
-    } else if (command[0] == "assignment") {
+    } else if (command[0] == "function") {
       pop_front(command);
-      process_set_assignment(command, os);
+      process_set_function(command, os);
     } else if (command[0] == "goal") {
       pop_front(command);
       process_set_goal(command, os);
     } else {
-      os << "\tUsage: \n\t\tset [instance|predicate|assignment|goal]..." <<
+      os << "\tUsage: \n\t\tset [instance|predicate|function|goal]..." <<
         std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\tset [instance|predicate|assignment|goal]..." <<
+    os << "\tUsage: \n\t\tset [instance|predicate|function|goal]..." <<
       std::endl;
   }
 }
@@ -543,7 +581,7 @@ void
 Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
-    plansys2::Predicate predicate;
+    parser::pddl::tree::Predicate predicate;
     predicate.name = command[0];
 
     if (predicate.name.front() != '(') {
@@ -555,7 +593,7 @@ Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostr
 
     pop_front(command);
     while (!command.empty()) {
-      plansys2::Param param {command[0], ""};
+      parser::pddl::tree::Param param {command[0], ""};
       predicate.parameters.push_back(param);
       pop_front(command);
     }
@@ -578,6 +616,40 @@ Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostr
 }
 
 void
+Terminal::process_remove_function(std::vector<std::string> & command, std::ostringstream & os)
+{
+  if (command.size() > 0) {
+    parser::pddl::tree::Function function;
+
+    std::regex name_regexp("[a-zA-Z][a-zA-Z0-9_\\-]*");
+
+    std::smatch match;
+    std::string temp;
+
+    for (const auto & token : command) {
+      temp += token + " ";
+    }
+
+    if (std::regex_search(temp, match, name_regexp)) {
+      function.name = match.str(0);
+      temp = match.suffix().str();
+    }
+
+    while (std::regex_search(temp, match, name_regexp)) {
+      function.parameters.push_back(parser::pddl::tree::Param{match.str(0), ""});
+      temp = match.suffix().str();
+    }
+
+    if (!problem_client_->removeFunction(function)) {
+      os << "Could not remove the function [" << function.toString() << "]" << std::endl;
+    }
+  } else {
+    os << "\tUsage: \n\t\remove function [name] [instance1] [instance2] ...[instaceN]" <<
+      std::endl;
+  }
+}
+
+void
 Terminal::process_remove(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
@@ -587,14 +659,17 @@ Terminal::process_remove(std::vector<std::string> & command, std::ostringstream 
     } else if (command[0] == "predicate") {
       pop_front(command);
       process_remove_predicate(command, os);
+    } else if (command[0] == "function") {
+      pop_front(command);
+      process_remove_function(command, os);
     } else if (command[0] == "goal", os) {
       problem_client_->clearGoal();
     } else {
-      os << "\tUsage: \n\t\tremove [instance|predicate|goal]..." <<
+      os << "\tUsage: \n\t\tremove [instance|predicate|function|goal]..." <<
         std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\tremove [instance|predicate|goal]..." <<
+    os << "\tUsage: \n\t\tremove [instance|predicate|function|goal]..." <<
       std::endl;
   }
 }

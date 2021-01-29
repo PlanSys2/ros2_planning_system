@@ -21,12 +21,10 @@
 #include <memory>
 
 #include "plansys2_pddl_parser/Instance.h"
+#include "plansys2_pddl_parser/Tree.h"
 
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
-
-#include "plansys2_domain_expert/Types.hpp"
-#include "plansys2_problem_expert/Types.hpp"
 
 namespace plansys2
 {
@@ -36,47 +34,50 @@ class ProblemExpert : public ProblemExpertInterface
 public:
   explicit ProblemExpert(std::shared_ptr<DomainExpert> & domain_expert);
 
-  std::vector<Instance> getInstances();
-  bool addInstance(const Instance & instance);
+  std::vector<parser::pddl::tree::Instance> getInstances();
+  bool addInstance(const parser::pddl::tree::Instance & instance);
   bool removeInstance(const std::string & name);
-  std::optional<Instance> getInstance(const std::string & name);
+  std::optional<parser::pddl::tree::Instance> getInstance(const std::string & name);
 
-  std::vector<Predicate> getPredicates();
-  bool addPredicate(const Predicate & predicate);
-  bool removePredicate(const Predicate & predicate);
+  std::vector<parser::pddl::tree::Predicate> getPredicates();
+  bool addPredicate(const parser::pddl::tree::Predicate & predicate);
+  bool removePredicate(const parser::pddl::tree::Predicate & predicate);
+  std::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & expr);
 
-  bool addAssignment(const Assignment & assignment);
-  bool removeAssignment(const Assignment & assignment);
+  std::vector<parser::pddl::tree::Function> getFunctions();
+  bool addFunction(const parser::pddl::tree::Function & function);
+  bool removeFunction(const parser::pddl::tree::Function & function);
+  bool updateFunction(const parser::pddl::tree::Function & function);
+  std::optional<parser::pddl::tree::Function> getFunction(const std::string & expr);
 
-  Goal getGoal();
-  bool setGoal(const Goal & goal);
+  parser::pddl::tree::Goal getGoal();
+  bool setGoal(const parser::pddl::tree::Goal & goal);
   bool clearGoal();
 
   std::string getProblem();
 
   bool existInstance(const std::string & name);
-  bool existPredicate(const Predicate & predicate);
-  bool existAssignment(const Assignment & assignment);
-  bool existGoal(const Goal & goal);
+  bool existPredicate(const parser::pddl::tree::Predicate & predicate);
+  bool existFunction(const parser::pddl::tree::Function & function);
+  bool existGoal(const parser::pddl::tree::Goal & goal);
   bool isValidType(const std::string & type);
-  bool isValidPredicate(const Predicate & predicate);
-  bool isValidAssignment(const Assignment & assignment);
-  bool isValidGoal(const Goal & goal);
-  bool updateAssignment(const Assignment & assignment);
+  bool isValidPredicate(const parser::pddl::tree::Predicate & predicate);
+  bool isValidFunction(const parser::pddl::tree::Function & function);
+  bool isValidGoal(const parser::pddl::tree::Goal & goal);
 
 private:
   bool checkPredicateTreeTypes(
-    std::shared_ptr<TreeNode> node,
+    std::shared_ptr<parser::pddl::tree::TreeNode> node,
     std::shared_ptr<DomainExpert> & domain_expert_);
 
-  bool removeAssignmentsReferencing(const std::string & name);
+  bool removeFunctionsReferencing(const std::string & name);
   bool removePredicatesReferencing(const std::string & name);
 
   // parser::pddl::Problem problem_;
-  std::vector<Instance> instances_;
-  std::vector<Predicate> predicates_;
-  std::vector<Assignment> assignments_;
-  Goal goal_;
+  std::vector<parser::pddl::tree::Instance> instances_;
+  std::vector<parser::pddl::tree::Predicate> predicates_;
+  std::vector<parser::pddl::tree::Function> functions_;
+  parser::pddl::tree::Goal goal_;
 
   std::shared_ptr<DomainExpert> domain_expert_;
 };

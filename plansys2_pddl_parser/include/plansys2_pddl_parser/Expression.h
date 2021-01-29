@@ -67,6 +67,14 @@ public:
 		s << " )";
 	}
 
+	std::shared_ptr<tree::TreeNode> PDDLTree( const Domain & d ) const override {
+		std::shared_ptr<tree::ExpressionNode> tree = std::make_shared<tree::ExpressionNode>();
+		tree->expr_type = tree::getExprType( op );
+		tree->ops.push_back( left->PDDLTree( d ) );
+		tree->ops.push_back( right->PDDLTree( d ) );
+		return tree;
+	}
+
 	double compute( double x, double y ) {
 		double res = 0;
 
@@ -120,6 +128,8 @@ public:
 
 	void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override;
 
+	std::shared_ptr<tree::TreeNode> PDDLTree( const Domain & d ) const override;
+
 	double evaluate() { return 1; }
 
 	double evaluate( Instance & ins, const StringVec & par );
@@ -151,6 +161,12 @@ public:
 		s << value;
 	}
 
+	std::shared_ptr<tree::TreeNode> PDDLTree( const Domain & d ) const override {
+		std::shared_ptr<tree::NumberNode> tree = std::make_shared<tree::NumberNode>();
+		tree->value_ = value;
+		return tree;
+	}
+
 	double evaluate() { return value; }
 
 	double evaluate( Instance & ins, const StringVec & par ) {
@@ -170,6 +186,10 @@ class DurationExpression : public Expression {
 
 	void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override {
 		s << "?DURATION";
+	}
+
+	std::shared_ptr<tree::TreeNode> PDDLTree( const Domain & d ) const override {
+		throw UnsupportedConstruct("DurationExpression");
 	}
 
 	std::string info() const {

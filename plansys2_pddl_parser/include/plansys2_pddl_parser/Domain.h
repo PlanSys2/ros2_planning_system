@@ -582,6 +582,7 @@ public:
 		if ( s == "and" ) return new And;
 		if ( s == "exists" ) return new Exists;
 		if ( s == "forall" ) return new Forall;
+		if ( s == "assign" ) return new Assign;
 		if ( s == "increase" ) return new Increase;
 		if ( s == "decrease" ) return new Decrease;
 		if ( s == "not" ) return new Not;

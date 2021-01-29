@@ -21,9 +21,9 @@
 #include <memory>
 
 #include "plansys2_pddl_parser/Domain.h"
+#include "plansys2_pddl_parser/Tree.h"
 
 #include "plansys2_domain_expert/DomainExpertInterface.hpp"
-#include "plansys2_domain_expert/Types.hpp"
 #include "plansys2_domain_expert/DomainReader.hpp"
 
 namespace plansys2
@@ -57,6 +57,14 @@ public:
    */
   std::vector<std::string> getPredicates();
 
+  /// Get the details of a predicate existing in the domain.
+  /**
+   * \param[in] predicate The name of the predicate.
+   * \return A Predicate object containing the predicate name and its parameters (name and type).
+   *    If the predicate does not exist, the value returned has not value.
+   */
+  std::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & predicate);
+
   /// Get the functions existing in the domain.
   /**
    * \return The vector containing the name of the functions.
@@ -66,18 +74,10 @@ public:
   /// Get the details of a function existing in the domain.
   /**
    * \param[in] function The name of the function.
-   * \return A Fuction object containing the predicate name and its parameters (name and type).
+   * \return A Function object containing the function name and its parameters (name and type).
    *    If the function does not exist, the value returned has not value.
    */
-  std::optional<plansys2::Function> getFunction(const std::string & function);
-
-  /// Get the details of a predicate existing in the domain.
-  /**
-   * \param[in] predicate The name of the predicate.
-   * \return A Predicate object containing the predicate name andt its parameters (name and type).
-   *    If the predicate does not exist, the value returned has not value.
-   */
-  std::optional<plansys2::Predicate> getPredicate(const std::string & predicate);
+  std::optional<parser::pddl::tree::Function> getFunction(const std::string & function);
 
   /// Get the regular actions existing in the domain.
   /**
@@ -91,7 +91,7 @@ public:
    * \return An Action object containing the action name, parameters, requirements and effects.
    *    If the action does not exist, the value returned has not value.
    */
-  std::optional<plansys2::Action> getAction(const std::string & action);
+  std::optional<parser::pddl::tree::Action> getAction(const std::string & action);
 
   /// Get the temporal actions existing in the domain.
   /**
@@ -105,7 +105,7 @@ public:
    * \return A Durative Action object containing the action name, parameters, requirements and
    *    effects. If the action does not exist, the value returned has not value.
    */
-  std::optional<plansys2::DurativeAction> getDurativeAction(const std::string & action);
+  std::optional<parser::pddl::tree::DurativeAction> getDurativeAction(const std::string & action);
 
   /// Get the current domain, ready to be saved to file, or to initialize another domain.
   /**

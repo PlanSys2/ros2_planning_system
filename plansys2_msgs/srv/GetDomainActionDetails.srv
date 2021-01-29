@@ -4,10 +4,12 @@ string name
 string[] param_names
 string[] param_types
 string type
+
 string at_start_requirements
 string over_all_requirements
 string at_end_requirements
 string at_start_effects
 string at_end_effects
+
 bool success
 string error_info

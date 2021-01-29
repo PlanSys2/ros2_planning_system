@@ -41,13 +41,12 @@ public:
   std::optional<ExecutePlan::Result> getResult();
 
 private:
+  rclcpp::Node::SharedPtr node_;
   rclcpp_action::Client<ExecutePlan>::SharedPtr execute_plan_client_ptr_;
 
   ExecutePlan::Feedback feedback_;
   ExecutePlan::Result result_;
   bool finished_;
-
-  rclcpp::Node::SharedPtr node_;
 
   void feedback_callback(
     GoalHandleExecutePlan::SharedPtr,

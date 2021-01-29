@@ -100,13 +100,13 @@ TEST(planner_expert, generate_plan_good)
     "(person_at francisco bedroom)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
   }
 
   ASSERT_TRUE(
     problem_client->setGoal(
-      plansys2::Goal(
-        "(and(robot_talk leia message1 francisco))")));
+      parser::pddl::tree::Goal(
+        "(and (robot_talk leia message1 francisco))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);

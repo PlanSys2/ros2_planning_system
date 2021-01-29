@@ -11,6 +11,10 @@ void Equals::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << " )";
 }
 
+std::shared_ptr<tree::TreeNode> Equals::PDDLTree( const Domain & d ) const {
+    throw UnsupportedConstruct("Equals");
+}
+
 void Equals::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	params.resize( 2 );
