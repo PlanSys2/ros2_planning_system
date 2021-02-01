@@ -595,9 +595,8 @@ BTBuilder::get_dotgraph(const Plan & current_plan)
 
   tab_level = 1;
   // define the edges
-  std::set<int> all_nodes;
   for (const auto & graph_root : action_graph->roots) {
-    ss << get_flow_dotgraph(graph_root, all_nodes, tab_level);
+    ss << get_flow_dotgraph(graph_root, tab_level);
   }
 
   ss << "}";
@@ -649,7 +648,6 @@ BTBuilder::get_flow_tree(
 std::string
 BTBuilder::get_flow_dotgraph(
   GraphNode::Ptr node,
-  std::set<int> all_nodes,
   int level)
 {
   std::stringstream ss;
@@ -657,7 +655,7 @@ BTBuilder::get_flow_dotgraph(
   for (const auto & child_node : node->out_arcs) {
     ss << t(level);
     ss << node->node_num << "->" << child_node->node_num << ";\n";
-    ss << get_flow_dotgraph(child_node, all_nodes, level);
+    ss << get_flow_dotgraph(child_node, level);
   }
 
   return ss.str();

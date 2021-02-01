@@ -118,7 +118,7 @@ protected:
     const std::list<GraphNode::Ptr> & ret) const;
 
   std::string get_flow_tree(GraphNode::Ptr node, int level = 0);
-  std::string get_flow_dotgraph(GraphNode::Ptr node, std::set<int> all_nodes, int level = 0);
+  std::string get_flow_dotgraph(GraphNode::Ptr node, int level = 0);
 
   std::string t(int level);
 
