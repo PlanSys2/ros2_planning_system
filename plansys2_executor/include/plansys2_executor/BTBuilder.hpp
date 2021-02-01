@@ -24,7 +24,6 @@
 #include <utility>
 
 #include "std_msgs/msg/empty.hpp"
-#include "plansys2_msgs/action/execute_action.hpp"
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"

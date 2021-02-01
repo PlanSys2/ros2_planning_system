@@ -40,6 +40,7 @@ ActionExecutor::ActionExecutor(
   action_ = action;
   action_name_ = get_name(action);
   action_params_ = get_params(action);
+  completion_ = 0.0;
 }
 
 void
@@ -67,13 +68,9 @@ ActionExecutor::action_hub_callback(const plansys2_msgs::msg::ActionExecution::S
       }
       break;
     case plansys2_msgs::msg::ActionExecution::FEEDBACK:
-      if (state_ != RUNNING && msg->arguments == action_params_ && msg->action == action_name_) {
-        RCLCPP_WARN(
-          node_->get_logger(), "Feedback received in not running %s executor requester",
-          action_);
+      if (state_ != RUNNING || msg->arguments != action_params_ || msg->action != action_name_) {
         return;
       }
-
       feedback_ = msg->status;
       completion_ = msg->completion;
 
