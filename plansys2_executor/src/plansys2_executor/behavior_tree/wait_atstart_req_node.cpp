@@ -42,6 +42,10 @@ WaitAtStartReq::tick()
   std::string action;
   getInput("action", action);
 
+  if ((*action_map_).find(action) == (*action_map_).end()) {
+    return BT::NodeStatus::RUNNING;  // Not started yet
+  }
+
   if ((*action_map_)[action].action_executor != nullptr &&
     (*action_map_)[action].action_executor->is_finished())
   {
@@ -49,9 +53,8 @@ WaitAtStartReq::tick()
   }
 
   auto reqs = (*action_map_)[action].durative_action_info->at_start_requirements;
-  std::tuple<bool, double> result = check(reqs.root_, problem_client_);
 
-  if (!std::get<0>(result)) {
+  if (!check(reqs.root_, problem_client_)) {
     // ToDo (fmrico): We should add here a timeout
     return BT::NodeStatus::RUNNING;
   } else {

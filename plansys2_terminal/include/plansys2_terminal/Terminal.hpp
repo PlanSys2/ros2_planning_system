@@ -78,6 +78,9 @@ protected:
 
   virtual void execute_plan();
   virtual void process_run(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_check(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_check_actors(std::vector<std::string> & command, std::ostringstream & os);
+
   virtual void process_command(std::string & command, std::ostringstream & os);
 
 private:

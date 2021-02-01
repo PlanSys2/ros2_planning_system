@@ -13,12 +13,14 @@
 // limitations under the License.
 
 #include <string>
-#include <sstream>
 #include <memory>
-#include <set>
-#include <tuple>
 #include <vector>
+#include <set>
 #include <algorithm>
+#include <list>
+#include <tuple>
+#include <map>
+#include <utility>
 
 #include "plansys2_executor/BTBuilder.hpp"
 
@@ -38,35 +40,467 @@ BTBuilder::BTBuilder(
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(node);
 }
 
-std::string
-BTBuilder::get_tree(const Plan & current_plan)
+void
+BTBuilder::init_predicates(
+  std::set<std::string> & predicates,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client)
 {
-  auto levels = get_plan_actions(current_plan);
+  for (const auto & predicate : problem_client->getPredicates()) {
+    predicates.insert(predicate.toString());
+  }
+}
 
-  int root_counters = 0;
-  for (auto & level : levels) {
-    for (auto & action_unit : level->action_units) {
-      if (in_cardinality(action_unit) == 0) {
-        root_counters++;
+void
+BTBuilder::init_functions(
+  std::map<std::string, double> & functions,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client)
+{
+  for (const auto & function : problem_client->getFunctions()) {
+    std::optional<parser::pddl::tree::Function> func =
+      problem_client->getFunction(function.toString());
+    if (func.has_value()) {
+      functions.insert(std::make_pair(func.value().toString(), func.value().value));
+    } else {
+      std::cerr << "init_functions: Error retrieving function [" <<
+        function.toString() << "]" << std::endl;
+    }
+  }
+}
+
+bool
+BTBuilder::is_action_executable(
+  const ActionStamped & action,
+  std::set<std::string> & predicates,
+  std::map<std::string, double> & functions) const
+{
+  return check(action.action->at_start_requirements.root_, predicates, functions) &&
+         check(action.action->over_all_requirements.root_, predicates, functions) &&
+         check(action.action->at_end_requirements.root_, predicates, functions);
+}
+
+std::pair<std::string, parser::pddl::tree::NodeType>
+BTBuilder::get_base(
+  const std::shared_ptr<parser::pddl::tree::TreeNode> tree_node)
+{
+  std::string base_expr;
+  parser::pddl::tree::NodeType base_type = parser::pddl::tree::UNKNOWN_NODE_TYPE;
+
+  switch (tree_node->type_) {
+    case parser::pddl::tree::NOT: {
+        std::shared_ptr<parser::pddl::tree::NotNode> pn_not =
+          std::dynamic_pointer_cast<parser::pddl::tree::NotNode>(tree_node);
+        base_expr = pn_not->op->toString();
+        base_type = parser::pddl::tree::PREDICATE;
+        break;
+      }
+
+    case parser::pddl::tree::PREDICATE: {
+        base_expr = tree_node->toString();
+        base_type = parser::pddl::tree::PREDICATE;
+        break;
+      }
+
+    case parser::pddl::tree::EXPRESSION: {
+        std::shared_ptr<parser::pddl::tree::ExpressionNode> expr =
+          std::dynamic_pointer_cast<parser::pddl::tree::ExpressionNode>(tree_node);
+        if (expr->ops[0]->type_ == parser::pddl::tree::FUNCTION) {
+          std::shared_ptr<parser::pddl::tree::FunctionNode> func_node =
+            std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(expr->ops[0]);
+          base_expr = func_node->toString();
+          base_type = parser::pddl::tree::FUNCTION;
+        } else {
+          std::cerr << "get_base: Error parsing expresion [" <<
+            tree_node->toString() << "]" << std::endl;
+        }
+        break;
+      }
+
+    case parser::pddl::tree::FUNCTION_MODIFIER: {
+        std::shared_ptr<parser::pddl::tree::FunctionModifierNode> func_mod =
+          std::dynamic_pointer_cast<parser::pddl::tree::FunctionModifierNode>(tree_node);
+        std::shared_ptr<parser::pddl::tree::FunctionNode> func_node =
+          std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(func_mod->ops[0]);
+        base_expr = func_node->toString();
+        base_type = parser::pddl::tree::FUNCTION;
+        break;
+      }
+
+    default: {
+        std::cerr << "get_base: Error parsing expresion [" <<
+          tree_node->toString() << "]" << std::endl;
+        break;
+      }
+  }
+
+  return std::make_pair(base_expr, base_type);
+}
+
+GraphNode::Ptr
+BTBuilder::get_node_satisfy(
+  const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
+  const GraphNode::Ptr & node,
+  const GraphNode::Ptr & current)
+{
+  if (node == current) {
+    return nullptr;
+  }
+
+  std::pair<std::string, parser::pddl::tree::NodeType> requirement_base =
+    get_base(requirement);
+
+  GraphNode::Ptr ret = nullptr;
+  std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> at_start_effects =
+    get_subtrees(node->action.action->at_start_effects.root_);
+  std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> at_end_effects =
+    get_subtrees(node->action.action->at_end_effects.root_);
+
+  std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> at_start_requirements =
+    get_subtrees(node->action.action->at_start_requirements.root_);
+  std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> over_all_requirements =
+    get_subtrees(node->action.action->over_all_requirements.root_);
+  std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> at_end_requirements =
+    get_subtrees(node->action.action->at_end_requirements.root_);
+
+  for (const auto & effect : at_end_effects) {
+    std::pair<std::string, parser::pddl::tree::NodeType> base = get_base(effect);
+    if (base != requirement_base) {
+      continue;
+    }
+
+    if (check(requirement, node->predicates, node->functions)) {
+      ret = node;
+    }
+  }
+
+  for (const auto & effect : at_start_effects) {
+    std::pair<std::string, parser::pddl::tree::NodeType> base = get_base(effect);
+    if (base != requirement_base) {
+      continue;
+    }
+
+    if (check(requirement, node->predicates, node->functions)) {
+      ret = node;
+    }
+  }
+
+  for (const auto & req : at_start_requirements) {
+    std::pair<std::string, parser::pddl::tree::NodeType> base = get_base(req);
+    if (base != requirement_base) {
+      continue;
+    }
+
+    if (check(requirement, node->predicates, node->functions)) {
+      ret = node;
+    }
+  }
+
+  for (const auto & req : over_all_requirements) {
+    std::pair<std::string, parser::pddl::tree::NodeType> base = get_base(req);
+    if (base != requirement_base) {
+      continue;
+    }
+
+    if (check(requirement, node->predicates, node->functions)) {
+      ret = node;
+    }
+  }
+
+  for (const auto & req : at_end_requirements) {
+    std::pair<std::string, parser::pddl::tree::NodeType> base = get_base(req);
+    if (base != requirement_base) {
+      continue;
+    }
+
+    if (check(requirement, node->predicates, node->functions)) {
+      ret = node;
+    }
+  }
+
+  for (const auto & arc : node->out_arcs) {
+    auto node_ret = get_node_satisfy(requirement, arc, current);
+
+    if (node_ret != nullptr) {
+      ret = node_ret;
+    }
+  }
+
+  return ret;
+}
+
+bool
+BTBuilder::is_parallelizable(
+  const plansys2::ActionStamped & action,
+  const std::list<GraphNode::Ptr> & ret) const
+{
+  std::vector<parser::pddl::tree::Predicate> action_at_start_requirements;
+  action.action->at_start_requirements.getPredicates(action_at_start_requirements);
+
+  for (const auto & other : ret) {
+    std::vector<parser::pddl::tree::Predicate> other_over_all_requirements;
+    other->action.action->over_all_requirements.getPredicates(other_over_all_requirements);
+
+    for (const auto & prev_over_all_req : other_over_all_requirements) {
+      for (const auto & action_at_start_req : action_at_start_requirements) {
+        if (prev_over_all_req.toString() == action_at_start_req.toString() &&
+          prev_over_all_req.negative == action_at_start_req.negative)
+        {
+          return false;
+        }
       }
     }
   }
 
+  return true;
+}
+
+GraphNode::Ptr
+BTBuilder::get_node_satisfy(
+  const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
+  const std::list<GraphNode::Ptr> & roots,
+  const GraphNode::Ptr & current)
+{
+  GraphNode::Ptr ret;
+  for (const auto & node : roots) {
+    auto node_ret = get_node_satisfy(requirement, node, current);
+    if (node_ret != nullptr) {
+      ret = node_ret;
+    }
+  }
+
+  return ret;
+}
+
+std::list<GraphNode::Ptr>
+BTBuilder::get_roots(
+  std::vector<plansys2::ActionStamped> & action_sequence,
+  std::set<std::string> & predicates,
+  std::map<std::string, double> & functions,
+  int & node_counter)
+{
+  std::list<GraphNode::Ptr> ret;
+
+  auto it = action_sequence.begin();
+  while (it != action_sequence.end()) {
+    const auto & action = *it;
+    if (is_action_executable(action, predicates, functions) && is_parallelizable(action, ret)) {
+      auto new_root = GraphNode::make_shared();
+      new_root->action = action;
+      new_root->node_num = node_counter++;
+      new_root->level_num = 0;
+
+      ret.push_back(new_root);
+      it = action_sequence.erase(it);
+    } else {
+      break;
+    }
+  }
+
+  return ret;
+}
+
+void
+BTBuilder::remove_existing_requirements(
+  std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> & requirements,
+  std::set<std::string> & predicates,
+  std::map<std::string, double> & functions) const
+{
+  auto it = requirements.begin();
+  while (it != requirements.end()) {
+    if (check(*it, predicates, functions)) {
+      it = requirements.erase(it);
+    } else {
+      ++it;
+    }
+  }
+}
+
+Graph::Ptr
+BTBuilder::get_graph(const Plan & current_plan)
+{
+  std::set<std::string> predicates;
+  std::map<std::string, double> functions;
+  int node_counter = 0;
+  int level_counter = 0;
+  auto graph = Graph::make_shared();
+
+  auto action_sequence = get_plan_actions(current_plan);
+  init_predicates(predicates, problem_client_);
+  init_functions(functions, problem_client_);
+
+  graph->roots = get_roots(action_sequence, predicates, functions, node_counter);
+
+  // Apply root actions
+  for (auto & action_node : graph->roots) {
+    // Create a local copy of the state
+    init_predicates(action_node->predicates, problem_client_);
+    init_functions(action_node->functions, problem_client_);
+
+    // Apply the effects to the local node state
+    apply(
+      action_node->action.action->at_start_effects.root_,
+      action_node->predicates, action_node->functions);
+    apply(
+      action_node->action.action->at_end_effects.root_,
+      action_node->predicates, action_node->functions);
+
+    // Apply the effects to the global state
+    apply(
+      action_node->action.action->at_start_effects.root_,
+      predicates, functions);
+    apply(
+      action_node->action.action->at_end_effects.root_,
+      predicates, functions);
+  }
+
+  std::set<plansys2::GraphNode::Ptr> used_nodes;
+
+  // Build the rest of the graph
+  while (!action_sequence.empty()) {
+    auto new_node = GraphNode::make_shared();
+    new_node->action = *action_sequence.begin();
+    new_node->node_num = node_counter++;
+    float time = new_node->action.time;
+
+    auto level = graph->levels.find(time);
+    if (level == graph->levels.end()) {
+      level_counter++;
+      std::list<GraphNode::Ptr> new_level;
+      new_level.push_back(new_node);
+      graph->levels.insert({time, new_level});
+    } else {
+      level->second.push_back(new_node);
+    }
+    new_node->level_num = level_counter;
+
+    std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> at_start_requirements =
+      get_subtrees(action_sequence.begin()->action->at_start_requirements.root_);
+    std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> over_all_requirements =
+      get_subtrees(action_sequence.begin()->action->over_all_requirements.root_);
+    std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> at_end_requirements =
+      get_subtrees(action_sequence.begin()->action->at_end_requirements.root_);
+
+    auto it_at_start = at_start_requirements.begin();
+    while (it_at_start != at_start_requirements.end()) {
+      auto node_satisfy = get_node_satisfy(*it_at_start, graph->roots, new_node);
+      if (node_satisfy != nullptr) {
+        if (used_nodes.find(new_node) == used_nodes.end()) {
+          // Create the connections to the parent node
+          new_node->in_arcs.insert(node_satisfy);
+          node_satisfy->out_arcs.insert(new_node);
+
+          // Copy the state from the parent node
+          new_node->predicates = node_satisfy->predicates;
+          new_node->functions = node_satisfy->functions;
+
+          // Apply the effects of the new node
+          apply(
+            new_node->action.action->at_start_effects.root_,
+            new_node->predicates, new_node->functions);
+          apply(
+            new_node->action.action->at_end_effects.root_,
+            new_node->predicates, new_node->functions);
+
+          // Add the new node to the list of used nodes
+          used_nodes.insert(new_node);
+        }
+
+        it_at_start = at_start_requirements.erase(it_at_start);
+      } else {
+        ++it_at_start;
+      }
+    }
+
+    auto it_over_all = over_all_requirements.begin();
+    while (it_over_all != over_all_requirements.end()) {
+      auto node_satisfy = get_node_satisfy(*it_over_all, graph->roots, new_node);
+      if (node_satisfy != nullptr) {
+        if (used_nodes.find(new_node) == used_nodes.end()) {
+          // Create the connections to the parent node
+          new_node->in_arcs.insert(node_satisfy);
+          node_satisfy->out_arcs.insert(new_node);
+
+          // Copy the state from the parent node
+          new_node->predicates = node_satisfy->predicates;
+          new_node->functions = node_satisfy->functions;
+
+          // Apply the effects of the new node
+          apply(
+            new_node->action.action->at_start_effects.root_,
+            new_node->predicates, new_node->functions);
+          apply(
+            new_node->action.action->at_end_effects.root_,
+            new_node->predicates, new_node->functions);
+
+          // Add the new node to the list of used nodes
+          used_nodes.insert(new_node);
+        }
+
+        it_over_all = over_all_requirements.erase(it_over_all);
+      } else {
+        ++it_over_all;
+      }
+    }
+
+    auto it_at_end = at_end_requirements.begin();
+    while (it_at_end != at_end_requirements.end()) {
+      auto node_satisfy = get_node_satisfy(*it_at_end, graph->roots, new_node);
+      if (node_satisfy != nullptr) {
+        if (used_nodes.find(new_node) == used_nodes.end()) {
+          // Create the connections to the parent node
+          new_node->in_arcs.insert(node_satisfy);
+          node_satisfy->out_arcs.insert(new_node);
+
+          // Copy the state from the parent node
+          new_node->predicates = node_satisfy->predicates;
+          new_node->functions = node_satisfy->functions;
+
+          // Apply the effects of the new node
+          apply(
+            new_node->action.action->at_start_effects.root_,
+            new_node->predicates, new_node->functions);
+          apply(
+            new_node->action.action->at_end_effects.root_,
+            new_node->predicates, new_node->functions);
+
+          // Add the new node to the list of used nodes
+          used_nodes.insert(new_node);
+        }
+
+        it_at_end = at_end_requirements.erase(it_at_end);
+      } else {
+        ++it_at_end;
+      }
+    }
+
+    remove_existing_requirements(at_start_requirements, predicates, functions);
+    remove_existing_requirements(over_all_requirements, predicates, functions);
+    remove_existing_requirements(at_end_requirements, predicates, functions);
+
+    assert(at_start_requirements.empty());
+    assert(over_all_requirements.empty());
+    assert(at_end_requirements.empty());
+
+    action_sequence.erase(action_sequence.begin());
+  }
+
+  return graph;
+}
+
+std::string
+BTBuilder::get_tree(const Plan & current_plan)
+{
+  auto action_graph = get_graph(current_plan);
+
   std::string bt_plan;
 
-  if (root_counters > 1) {
+  if (action_graph->roots.size() > 1) {
     bt_plan = std::string("<root main_tree_to_execute=\"MainTree\">\n") +
       t(1) + "<BehaviorTree ID=\"MainTree\">\n" +
-      t(2) + "<Parallel success_threshold=\"" + std::to_string(root_counters) +
+      t(2) + "<Parallel success_threshold=\"" + std::to_string(action_graph->roots.size()) +
       "\" failure_threshold=\"1\">\n";
 
-    for (auto & level : levels) {
-      for (auto & action_unit : level->action_units) {
-        if (in_cardinality(action_unit) == 0) {
-          std::set<ActionUnit::Ptr> used_actions;
-          bt_plan = bt_plan + get_flow_tree(action_unit, used_actions, 3);
-        }
-      }
+    for (const auto & node : action_graph->roots) {
+      bt_plan = bt_plan + get_flow_tree(node, 3);
     }
 
     bt_plan = bt_plan + t(2) + "</Parallel>\n" +
@@ -75,14 +509,7 @@ BTBuilder::get_tree(const Plan & current_plan)
     bt_plan = std::string("<root main_tree_to_execute=\"MainTree\">\n") +
       t(1) + "<BehaviorTree ID=\"MainTree\">\n";
 
-    for (auto & level : levels) {
-      for (auto & action_unit : level->action_units) {
-        if (in_cardinality(action_unit) == 0) {
-          std::set<ActionUnit::Ptr> used_actions;
-          bt_plan = bt_plan + get_flow_tree(action_unit, used_actions, 2);
-        }
-      }
-    }
+    bt_plan = bt_plan + get_flow_tree(*action_graph->roots.begin(), 2);
 
     bt_plan = bt_plan + t(1) + "</BehaviorTree>\n</root>\n";
   }
@@ -91,50 +518,147 @@ BTBuilder::get_tree(const Plan & current_plan)
 }
 
 std::string
-BTBuilder::get_tree_dotgraph(const Plan & current_plan, bool include_legend)
+BTBuilder::get_dotgraph(const Plan & current_plan)
 {
-  auto levels = get_plan_actions(current_plan);
-  print_levels(levels);
-  std::string dotgraph = get_levels_dotgraph(levels, include_legend);
-  return dotgraph;
-}
+  auto action_graph = get_graph(current_plan);
 
-std::set<ActionUnit::Ptr>
-BTBuilder::pred(ActionUnit::Ptr action_unit)
-{
-  std::set<ActionUnit::Ptr> deps;
-  for (auto & req : action_unit->reqs) {
-    for (auto & effect_con : req->effect_connections) {
-      deps.insert(effect_con->action);
+  print_graph(action_graph);
+
+  // create xdot graph
+  std::stringstream ss;
+  ss << "digraph plan {\n";
+
+  int tab_level = 1;
+  // dotgraph formatting options
+  ss << t(tab_level);
+  ss << "node[shape=box];\n";
+  ss << t(tab_level);
+  ss << "rankdir=TB;\n";
+
+  // define all the levels and nodes
+  ss << t(tab_level);
+  ss << "subgraph cluster_0 {\n";
+
+  tab_level = 2;
+  ss << t(tab_level);
+  ss << "label = \"Time: 0.0\";\n";
+  ss << t(tab_level);
+  ss << "style = rounded;\n";
+  ss << t(tab_level);
+  ss << "color = yellow3;\n";
+  ss << t(tab_level);
+  ss << "bgcolor = lemonchiffon;\n";
+  ss << t(tab_level);
+  ss << "labeljust = l;\n";
+
+  tab_level = 3;
+  for (auto & node : action_graph->roots) {
+    ss << t(tab_level);
+    ss << node->node_num << " [label=\"" << node->action.action->name_actions_to_string() << "\"";
+    ss << "labeljust=c,style=filled,color=blue,fillcolor=skyblue];\n";
+  }
+  tab_level = 2;
+
+  ss << t(tab_level);
+  ss << "}\n";
+
+  for (auto & level : action_graph->levels) {
+    if (!level.second.empty()) {
+      ss << t(tab_level);
+      ss << "subgraph cluster_" << level.second.front()->level_num << " {\n";
+
+      tab_level = 2;
+      ss << t(tab_level);
+      ss << "label = \"Time: " << level.second.front()->action.time << "\";\n";
+      ss << t(tab_level);
+      ss << "style = rounded;\n";
+      ss << t(tab_level);
+      ss << "color = yellow3;\n";
+      ss << t(tab_level);
+      ss << "bgcolor = lemonchiffon;\n";
+      ss << t(tab_level);
+      ss << "labeljust = l;\n";
+
+      tab_level = 3;
+      for (auto & node : level.second) {
+        ss << t(tab_level);
+        ss << node->node_num << " [label=\"" << node->action.action->name_actions_to_string() <<
+          "\"";
+        ss << "labeljust=c,style=filled,color=blue,fillcolor=skyblue];\n";
+      }
+      tab_level = 2;
+
+      ss << t(tab_level);
+      ss << "}\n";
     }
   }
 
-  return deps;
-}
-
-std::set<ActionUnit::Ptr>
-BTBuilder::succ(ActionUnit::Ptr action_unit)
-{
-  std::set<ActionUnit::Ptr> deps;
-  for (auto & effect : action_unit->effects) {
-    for (auto & req_con : effect->requirement_connections) {
-      deps.insert(req_con->action);
-    }
+  tab_level = 1;
+  // define the edges
+  for (const auto & graph_root : action_graph->roots) {
+    ss << get_flow_dotgraph(graph_root, tab_level);
   }
 
-  return deps;
+  ss << "}";
+
+  return ss.str();
 }
 
-int
-BTBuilder::in_cardinality(ActionUnit::Ptr action_unit)
+std::string
+BTBuilder::get_flow_tree(
+  GraphNode::Ptr node,
+  int level)
 {
-  return pred(action_unit).size();
+  std::string ret;
+  int l = level;
+
+  const std::string action_id = "(" + node->action.action->name_actions_to_string() + "):" +
+    std::to_string(static_cast<int>(node->action.time * 1000));
+
+  if (node->out_arcs.size() == 0) {
+    ret = ret + execution_block(node, l);
+  } else if (node->out_arcs.size() == 1) {
+    ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
+    ret = ret + execution_block(node, l + 1);
+
+    for (const auto & child_node : node->out_arcs) {
+      ret = ret + get_flow_tree(child_node, l + 1);
+    }
+
+    ret = ret + t(l) + "</Sequence>\n";
+  } else {
+    ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
+    ret = ret + execution_block(node, l + 1);
+
+    ret = ret + t(l + 1) +
+      "<Parallel success_threshold=\"" + std::to_string(node->out_arcs.size()) +
+      "\" failure_threshold=\"1\">\n";
+
+    for (const auto & child_node : node->out_arcs) {
+      ret = ret + get_flow_tree(child_node, l + 2);
+    }
+
+    ret = ret + t(l + 1) + "</Parallel>\n";
+    ret = ret + t(l) + "</Sequence>\n";
+  }
+
+  return ret;
 }
 
-int
-BTBuilder::out_cardinality(ActionUnit::Ptr action_unit)
+std::string
+BTBuilder::get_flow_dotgraph(
+  GraphNode::Ptr node,
+  int level)
 {
-  return succ(action_unit).size();
+  std::stringstream ss;
+
+  for (const auto & child_node : node->out_arcs) {
+    ss << t(level);
+    ss << node->node_num << "->" << child_node->node_num << ";\n";
+    ss << get_flow_dotgraph(child_node, level);
+  }
+
+  return ss.str();
 }
 
 std::string
@@ -148,497 +672,75 @@ BTBuilder::t(int level)
 }
 
 std::string
-BTBuilder::get_flow_tree(
-  ActionUnit::Ptr root_flow,
-  std::set<ActionUnit::Ptr> & used_actions, int level)
+BTBuilder::execution_block(const GraphNode::Ptr & node, int l)
 {
+  const auto & action = node->action;
   std::string ret;
-  int l = level;
+  const std::string action_id = "(" + action.action->name_actions_to_string() + "):" +
+    std::to_string(static_cast<int>(action.time * 1000));
 
-  used_actions.insert(root_flow);
+  ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
 
-  if (out_cardinality(root_flow) == 0) {
-    if (in_cardinality(root_flow) > 1) {
-      ret = t(l) + "<Sequence name=\"" + root_flow->action + ":" +
-        std::to_string(root_flow->time) + "\">\n";
-
-      for (auto & action : pred(root_flow)) {
-        ret = ret + t(l + 1) + "<WaitAction action=\"" + action->action + ":" +
-          std::to_string(action->time) + "\"/>\n";
-      }
-
-      ret = ret + execution_block(root_flow->action, root_flow->time, l + 1) +
-        t(l) + "</Sequence>\n";
-    } else {
-      ret = execution_block(root_flow->action, root_flow->time, l);
-    }
+  for (const auto & previous_node : node->in_arcs) {
+    const std::string parent_action_id = "(" +
+      previous_node->action.action->name_actions_to_string() + "):" +
+      std::to_string(static_cast<int>( previous_node->action.time * 1000));
+    ret = ret + t(l + 1) + "<WaitAtStartReq action=\"" + parent_action_id + "\"/>\n";
   }
 
-  if (out_cardinality(root_flow) == 1) {
-    ret = t(l) + "<Sequence name=\"" + root_flow->action + ":" +
-      std::to_string(root_flow->time) + "\">\n";
-
-    if (in_cardinality(root_flow) > 1) {
-      for (auto & action : pred(root_flow)) {
-        ret = ret + t(l + 1) + "<WaitAction action=\"" + action->action + ":" +
-          std::to_string(action->time) + "\"/>\n";
-      }
-    }
-
-    ret = ret + execution_block(root_flow->action, root_flow->time, l + 1) +
-      get_flow_tree(*succ(root_flow).begin(), used_actions, l + 1) +
-      t(l) + "</Sequence>\n";
-  }
-
-  if (out_cardinality(root_flow) > 1) {
-    ret = t(l) + "<Sequence name=\"" + root_flow->action + ":" +
-      std::to_string(root_flow->time) + "\">\n";
-
-    if (in_cardinality(root_flow) > 1) {
-      for (auto & action : pred(root_flow)) {
-        ret = ret + t(l + 1) + "<WaitAction action=\"" + action->action + ":" +
-          std::to_string(action->time) + "\"/>\n";
-      }
-    }
-
-    ret = ret +
-      execution_block(root_flow->action, root_flow->time, l + 1) +
-      t(l + 1) + "<Parallel success_threshold=\"" + std::to_string(succ(root_flow).size()) +
-      "\"  failure_threshold=\"1\">\n";
-
-    for (auto & action : succ(root_flow)) {
-      ret = ret + get_flow_tree(action, used_actions, l + 2);
-    }
-    ret = ret + t(l + 1) + "</Parallel>\n";
-    ret = ret + t(l) + "</Sequence>\n";
-  }
-
-  return ret;
-}
-
-std::string
-BTBuilder::execution_block(const std::string & action, int plan_time, int l)
-{
-  std::string ret;
-
-  ret = ret + t(l) + "<Sequence name=\"" + action + ":" +
-    std::to_string(plan_time) + "\">\n";
-  ret = ret + t(l + 1) + "<WaitAtStartReq action=\"" + action + ":" +
-    std::to_string(plan_time) + "\"/>\n";
-  ret = ret + t(l + 1) + "<ApplyAtStartEffect action=\"" + action + ":" +
-    std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l + 1) + "<ApplyAtStartEffect action=\"" + action_id + "\"/>\n";
   ret = ret + t(l + 1) + "<Parallel success_threshold=\"2\" failure_threshold=\"1\">\n";
-  ret = ret + t(l + 2) + "<CheckOverAllReq action=\"" + action + ":" +
-    std::to_string(plan_time) + "\"/>\n";
-  ret = ret + t(l + 2) + "<ExecuteAction action=\"" + action + ":" +
-    std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l + 2) + "<CheckOverAllReq action=\"" + action_id + "\"/>\n";
+  ret = ret + t(l + 2) + "<ExecuteAction action=\"" + action_id + "\"/>\n";
   ret = ret + t(l + 1) + "</Parallel>\n";
-  ret = ret + t(l + 1) + "<CheckAtEndReq action=\"" + action + ":" +
-    std::to_string(plan_time) + "\"/>\n";
-  ret = ret + t(l + 1) + "<ApplyAtEndEffect action=\"" + action + ":" +
-    std::to_string(plan_time) + "\"/>\n";
+  ret = ret + t(l + 1) + "<CheckAtEndReq action=\"" + action_id + "\"/>\n";
+  ret = ret + t(l + 1) + "<ApplyAtEndEffect action=\"" + action_id + "\"/>\n";
   ret = ret + t(l) + "</Sequence>\n";
-
   return ret;
 }
 
-void
-BTBuilder::check_connections(ExecutionLevel::Ptr up_level, ExecutionLevel::Ptr down_level)
-{
-  for (auto & down_action_unit : down_level->action_units) {
-    for (auto & req : down_action_unit->reqs) {
-      if (!req->satisfied) {
-        for (auto & up_action_unit : up_level->action_units) {
-          for (auto & effect : up_action_unit->effects) {
-            if (req->requirement->type_ == parser::pddl::tree::EXPRESSION &&
-              effect->effect->type_ == parser::pddl::tree::FUNCTION_MODIFIER)
-            {
-              std::shared_ptr<parser::pddl::tree::ExpressionNode> req_expression_node =
-                std::dynamic_pointer_cast<parser::pddl::tree::ExpressionNode>(req->requirement);
-              std::shared_ptr<parser::pddl::tree::FunctionNode> req_function_node =
-                std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(
-                req_expression_node->ops[0]);
-
-              std::shared_ptr<parser::pddl::tree::FunctionModifierNode> eff_function_modifier_node =
-                std::dynamic_pointer_cast<parser::pddl::tree::FunctionModifierNode>(effect->effect);
-              std::shared_ptr<parser::pddl::tree::FunctionNode> eff_function_node =
-                std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(
-                eff_function_modifier_node->ops[0]);
-
-              // A function modifier effect connects to an expression requirement when they operate
-              // on the same function.
-              if (req_function_node->function_ == eff_function_node->function_) {
-                req->satisfied = true;
-                req->effect_connections.push_back(effect);
-                effect->requirement_connections.push_back(req);
-              }
-            } else if (req->requirement->type_ == parser::pddl::tree::PREDICATE && // NOLINT
-              effect->effect->type_ == parser::pddl::tree::PREDICATE)
-            {
-              std::shared_ptr<parser::pddl::tree::PredicateNode> req_predicate_node =
-                std::dynamic_pointer_cast<parser::pddl::tree::PredicateNode>(req->requirement);
-
-              std::shared_ptr<parser::pddl::tree::PredicateNode> eff_predicate_node =
-                std::dynamic_pointer_cast<parser::pddl::tree::PredicateNode>(effect->effect);
-
-              if (req_predicate_node->predicate_ == eff_predicate_node->predicate_) {
-                req->satisfied = true;
-                req->effect_connections.push_back(effect);
-                effect->requirement_connections.push_back(req);
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-bool
-BTBuilder::level_satisfied(ExecutionLevel::Ptr level)
-{
-  bool ret = true;
-  for (auto & action_unit : level->action_units) {
-    for (auto & req : action_unit->reqs) {
-      ret = ret && req->satisfied;
-    }
-  }
-
-  return ret;
-}
-
-void
-BTBuilder::print_levels(std::vector<ExecutionLevel::Ptr> & levels)
-{
-  int counter_level = 0;
-  for (auto & level : levels) {
-    std::cout << "====== Level " << counter_level++ << " [" << level->time << "]" << std::endl;
-
-    for (const auto & action_unit : level->action_units) {
-      std::cout << "\t" << action_unit->action << "\tin_cardinality: " <<
-        in_cardinality(action_unit) << "\tout_cardinality: " <<
-        out_cardinality(action_unit) << std::endl;
-      std::cout << "\t\tRequirements: " << std::endl;
-
-      for (const auto & req : action_unit->reqs) {
-        std::cout << "\t\t\t" << req->requirement->toString() <<
-        (req->satisfied ? " Satisfied" : " Not satisfied") << std::endl;
-        std::cout << "\t\t\t\tEffect Connections: " << std::endl;
-
-        for (auto & eff : req->effect_connections) {
-          std::cout << "\t\t\t\t\taction: " << eff->action->action << std::endl;
-          std::cout << "\t\t\t\t\teffect: " << eff->effect->toString() << std::endl;
-        }
-      }
-      std::cout << "\t\tEffects: " << std::endl;
-
-      for (const auto & effect : action_unit->effects) {
-        std::cout << "\t\t\t" << effect->effect->toString() << std::endl;
-        std::cout << "\t\t\t\tRequirement Connections: " << std::endl;
-
-        for (auto & req : effect->requirement_connections) {
-          std::cout << "\t\t\t\t\taction: " << req->action->action << std::endl;
-          std::cout << "\t\t\t\t\trequirement: " << req->requirement->toString() << std::endl;
-        }
-      }
-    }
-  }
-}
-
-std::string
-BTBuilder::get_levels_dotgraph(std::vector<ExecutionLevel::Ptr> & levels, bool include_legend)
-{
-  // create xdot graph
-  std::stringstream ss;
-  ss << "digraph plan {\n";
-
-  // dotgraph formatting options
-  ss << "node[shape=box];\n";
-  ss << "rankdir=TB;\n";
-
-  // get nodes
-  std::set<int> all_nodes;
-  std::set<int> all_clusters;
-  for (auto & level : levels) {
-    all_clusters.insert(level->cluster_num);
-    ss << "subgraph cluster_" << level->cluster_num << " {\n";
-    ss << "label = \"Time: " << level->time << "\";\n";
-    ss << "style = rounded;\n";
-    ss << "color = yellow3;\n";
-    ss << "bgcolor = lemonchiffon;\n";
-    ss << "labeljust = l;\n";
-
-    for (const auto & action_unit : level->action_units) {
-      // nodes
-      // node i = action_unit
-      all_clusters.insert(action_unit->cluster_num);
-      all_nodes.insert(action_unit->node_num);
-      ss << "subgraph cluster_" << action_unit->cluster_num;
-      ss << " {\n label=\"\";\n";
-      ss << "labeljust = c;\n";
-      ss << "style = \"filled\";\n";
-      ss << "color = blue;\n";
-      ss << "fillcolor = skyblue;\n";
-      ss << action_unit->node_num << " [label=\"" << action_unit->action << "\",color=skyblue];\n";
-
-      // requirements
-      std::set<int> req_nodes;
-      for (const auto & req : action_unit->reqs) {
-        req_nodes.insert(req->node_num);
-        all_nodes.insert(req->node_num);
-        ss << req->node_num;
-        if (include_legend) {
-          ss << " [label=\"" << req->node_num << "\"";
-        } else {
-          ss << " [label=\"\"";
-        }
-        ss << ",shape=circle,style=filled,color=darkgreen,fillcolor=palegreen";
-        ss << ",tooltip=\"" << req->requirement->toString() << "\"";
-        ss << "];\n";
-      }
-      ss << "{ rank=min; ";
-      for (const auto & node : req_nodes) {
-        ss << node << "; ";
-      }
-      ss << "}\n";
-
-      // effects
-      std::set<int> eff_nodes;
-      for (const auto & eff : action_unit->effects) {
-        eff_nodes.insert(eff->node_num);
-        all_nodes.insert(eff->node_num);
-        ss << eff->node_num;
-        if (include_legend) {
-          ss << " [label=\"" << eff->node_num << "\"";
-        } else {
-          ss << " [label=\"\"";
-        }
-        ss << ",shape=circle,style=filled,color=red,fillcolor=pink";
-        ss << ",tooltip=\"" << eff->effect->toString() << "\"";
-        ss << "];\n";
-      }
-      ss << "{ rank=max; ";
-      for (const auto & node : eff_nodes) {
-        ss << node << "; ";
-      }
-      ss << "}\n";
-
-      if (req_nodes.size() > 1) {
-        bool first = true;
-        for (const auto & req : req_nodes) {
-          if (!first) {
-            ss << "->";
-          }
-          ss << req;
-          first = false;
-        }
-        ss << " [style=invis];\n";
-      }
-
-      if (eff_nodes.size() > 1) {
-        bool first = true;
-        for (const auto & eff : eff_nodes) {
-          if (!first) {
-            ss << "->";
-          }
-          ss << eff;
-          first = false;
-        }
-        ss << " [style=invis];\n";
-      }
-
-      for (const auto & req : req_nodes) {
-        ss << req << "->" << action_unit->node_num << " [style=invis];\n";
-      }
-
-      for (const auto & eff : eff_nodes) {
-        ss << action_unit->node_num << "->" << eff << " [style=invis];\n";
-      }
-
-      ss << "}\n";
-    }
-    ss << "}\n";
-  }
-
-  // get edges
-  for (auto & level : levels) {
-    for (const auto & action_unit : level->action_units) {
-      for (const auto & effect : action_unit->effects) {
-        for (auto & req : effect->requirement_connections) {
-          ss << effect->node_num << " -> " << req->node_num << ";\n";
-        }
-      }
-    }
-  }
-
-  if (include_legend) {
-    // create legend
-    ss << "subgraph cluster_" << (*all_clusters.rbegin()) + 1 << " {\n";
-    ss << "label = \"Legend\";\n";
-
-    std::set<int> legend_nodes;
-    int legend_node_counter = (*all_nodes.rbegin()) + 1;
-    for (auto & level : levels) {
-      for (const auto & action_unit : level->action_units) {
-        for (const auto & req : action_unit->reqs) {
-          legend_nodes.insert(legend_node_counter);
-          ss << legend_node_counter++;
-          ss << " [label=\"" << req->node_num << ": " << req->requirement->toString() << "\"];\n";
-        }
-        for (const auto & eff : action_unit->effects) {
-          legend_nodes.insert(legend_node_counter);
-          ss << legend_node_counter++;
-          ss << " [label=\"" << eff->node_num << ": " << eff->effect->toString() << "\"];\n";
-        }
-      }
-    }
-    bool first = true;
-    for (const auto & node : legend_nodes) {
-      if (!first) {
-        ss << "->";
-      }
-      ss << node;
-      first = false;
-    }
-    ss << "[style=invis];\n";
-    ss << "}";
-  }
-
-  ss << "}";
-
-  return ss.str();
-}
-
-std::vector<ExecutionLevel::Ptr>
+std::vector<ActionStamped>
 BTBuilder::get_plan_actions(const Plan & plan)
 {
-  std::vector<ExecutionLevel::Ptr> ret;
+  std::vector<ActionStamped> ret;
 
-  int cluster_counter = 0;
-  int node_counter = 0;
-
-  auto current_level = ExecutionLevel::make_shared();
-  current_level->cluster_num = cluster_counter++;
-  ret.push_back(current_level);
-
-  int last_time = 0;
   for (auto & item : plan) {
-    int time = static_cast<int>(item.time);
-    if (time > last_time) {
-      last_time = time;
-      current_level = ExecutionLevel::make_shared();
-      ret.push_back(current_level);
+    ActionStamped action_stamped;
 
-      current_level->time = time;
-      current_level->cluster_num = cluster_counter++;
-    }
+    action_stamped.time = item.time;
+    action_stamped.action = get_action_from_string(item.action, domain_client_);
 
-    auto action_unit = ActionUnit::make_shared();
-    current_level->action_units.push_back(action_unit);
-
-    action_unit->action = item.action;
-    action_unit->time = current_level->time;
-    action_unit->cluster_num = cluster_counter++;
-    action_unit->node_num = node_counter++;
-
-    auto dur_action = get_action_from_string(item.action, domain_client_);
-    std::shared_ptr<parser::pddl::tree::AndNode> at_start_requirements =
-      std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(
-      dur_action->at_start_requirements.root_
-      );
-    std::shared_ptr<parser::pddl::tree::AndNode> over_all_requirements =
-      std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(
-      dur_action->over_all_requirements.root_
-      );
-    std::shared_ptr<parser::pddl::tree::AndNode> at_end_requirements =
-      std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(dur_action->at_end_requirements.root_);
-
-    std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> requirements;
-
-    if (at_start_requirements) {
-      std::copy(
-        at_start_requirements->ops.begin(),
-        at_start_requirements->ops.end(),
-        std::back_inserter(requirements));
-    }
-    if (over_all_requirements) {
-      std::copy(
-        over_all_requirements->ops.begin(),
-        over_all_requirements->ops.end(),
-        std::back_inserter(requirements));
-    }
-    if (at_end_requirements) {
-      std::copy(
-        at_end_requirements->ops.begin(),
-        at_end_requirements->ops.end(),
-        std::back_inserter(requirements));
-    }
-
-    for (const auto & requirement : requirements) {
-      auto req = RequirementConnection::make_shared();
-      action_unit->reqs.push_back(req);
-      req->requirement = requirement;
-      req->action = action_unit;
-      req->node_num = node_counter++;
-    }
-
-    std::shared_ptr<parser::pddl::tree::AndNode> at_start_effects =
-      std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(dur_action->at_start_effects.root_);
-    std::shared_ptr<parser::pddl::tree::AndNode> at_end_effects =
-      std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(dur_action->at_end_effects.root_);
-
-    std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> effects;
-
-    if (at_start_effects) {
-      std::copy(
-        at_start_effects->ops.begin(),
-        at_start_effects->ops.end(),
-        std::back_inserter(effects));
-    }
-    if (at_end_effects) {
-      std::copy(
-        at_end_effects->ops.begin(),
-        at_end_effects->ops.end(),
-        std::back_inserter(effects));
-    }
-
-    for (const auto & effect : effects) {
-      auto eff = EffectConnection::make_shared();
-      action_unit->effects.push_back(eff);
-      eff->effect = effect;
-      eff->action = action_unit;
-      eff->node_num = node_counter++;
-    }
-  }
-
-  for (size_t i = 1; i < ret.size(); i++) {
-    int level_comp = static_cast<int>(i) - 1;
-    while (level_comp >= 0 && !level_satisfied(ret[i])) {
-      check_connections(ret[level_comp], ret[i]);
-      level_comp--;
-    }
-  }
-
-  for (auto & level : ret) {
-    for (auto & action_unit : level->action_units) {
-      for (auto & req : action_unit->reqs) {
-        if (!req->satisfied) {
-          std::tuple<bool, double> result = check(req->requirement, problem_client_);
-          req->satisfied = std::get<0>(result);
-        }
-      }
-    }
+    ret.push_back(action_stamped);
   }
 
   return ret;
 }
 
-bool operator<(const ActionUnit::Ptr & op1, const ActionUnit::Ptr & op2)
+void
+BTBuilder::print_node(
+  const plansys2::GraphNode::Ptr & node,
+  int level,
+  std::set<plansys2::GraphNode::Ptr> & used_nodes) const
 {
-  std::string op1_str = op1->action + ":" + std::to_string(op1->time);
-  std::string op2_str = op2->action + ":" + std::to_string(op2->time);
+  std::cerr << std::string(level, '\t') << "[" << node->action.time << "] ";
+  std::cerr << node->action.action->name << " ";
+  for (const auto & param : node->action.action->parameters) {
+    std::cerr << param.name << " ";
+  }
+  std::cerr << " in arcs " << node->in_arcs.size() << std::endl;
 
-  return op1_str < op2_str;
+  for (const auto & out : node->out_arcs) {
+    print_node(out, level + 1, used_nodes);
+  }
+}
+
+void
+BTBuilder::print_graph(const plansys2::Graph::Ptr & graph) const
+{
+  std::set<plansys2::GraphNode::Ptr> used_nodes;
+  for (const auto & root : graph->roots) {
+    print_node(root, 0, used_nodes);
+  }
 }
 
 }  // namespace plansys2

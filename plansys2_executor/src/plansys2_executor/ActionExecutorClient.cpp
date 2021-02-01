@@ -31,7 +31,7 @@ ActionExecutorClient::ActionExecutorClient(
   rate_(rate),
   commited_(false)
 {
-  declare_parameter("action");
+  declare_parameter("action_name");
   declare_parameter("specialized_arguments");
 }
 
@@ -42,7 +42,9 @@ using std::placeholders::_1;
 CallbackReturnT
 ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
 {
-  action_managed_ = get_parameter("action").get_value<std::string>();
+  if (!get_parameter("action_name", action_managed_)) {
+    RCLCPP_ERROR(get_logger(), "action_name parameter not set");
+  }
   get_parameter_or<std::vector<std::string>>(
     "specialized_arguments", specialized_arguments_, std::vector<std::string>({}));
 
@@ -128,7 +130,9 @@ ActionExecutorClient::should_execute(
     }
 
     for (size_t i = 0; i < specialized_arguments_.size() && i < args.size(); i++) {
-      if (specialized_arguments_[i] != "" && specialized_arguments_[i] != args[i]) {
+      if (specialized_arguments_[i] != "" && args[i] != "" &&
+        specialized_arguments_[i] != args[i])
+      {
         return false;
       }
     }

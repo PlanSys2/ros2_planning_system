@@ -554,6 +554,15 @@ TEST(problem_expert, get_probem)
     std::string("and\n\t\t( robot_at r2d2 bedroom )\n\t\t( person_at paco kitchen )\n\t)\n)\n)\n"));
 }
 
+TEST(problem_expert, set_goal)
+{
+  std::string expresion = std::string("(and (patrolled ro1) (patrolled ro2) (patrolled ro3))");
+  parser::pddl::tree::Goal goal;
+  goal.fromString(expresion);
+
+  ASSERT_EQ(goal.toString(), "(and (patrolled ro1)(patrolled ro2)(patrolled ro3))");
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

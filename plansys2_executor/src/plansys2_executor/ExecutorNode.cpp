@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <filesystem>
 
 #include <string>
 #include <memory>
@@ -55,7 +56,6 @@ ExecutorNode::ExecutorNode()
 {
   using namespace std::placeholders;
 
-  this->declare_parameter<bool>("include_legend", false);
 #ifdef ZMQ_FOUND
   this->declare_parameter<bool>("enable_groot_monitoring", true);
   this->declare_parameter<int>("publisher_port", 1666);
@@ -181,8 +181,6 @@ ExecutorNode::handle_goal(
     RCLCPP_ERROR(get_logger(), "Executor problem [Plan not found]");
     return rclcpp_action::GoalResponse::REJECT;
   }
-
-  return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
 rclcpp_action::CancelResponse
@@ -202,7 +200,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
   for (const auto & action : current_plan_.value()) {
-    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time));
+    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
 
     (*action_map)[index] = ActionExecutionInfo();
     (*action_map)[index].durative_action_info =
@@ -229,10 +227,14 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
   std_msgs::msg::String msg;
   msg.data =
-    bt_builder.get_tree_dotgraph(
-    current_plan_.value(), this->get_parameter(
-      "include_legend").as_bool());
+    bt_builder.get_dotgraph(
+    current_plan_.value());
   dotgraph_pub_->publish(msg);
+
+  std::filesystem::path tp = std::filesystem::temp_directory_path();
+  std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
+  out << bt_xml_tree;
+  out.close();
 
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 

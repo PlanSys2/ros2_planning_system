@@ -23,6 +23,7 @@
 #include <string>
 #include <memory>
 #include <sstream>
+#include <map>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -33,6 +34,7 @@
 #include "plansys2_executor/ActionExecutor.hpp"
 
 #include "plansys2_msgs/msg/action_execution_info.hpp"
+#include "plansys2_msgs/msg/action_execution.hpp"
 
 #include "plansys2_terminal/Terminal.hpp"
 
@@ -73,7 +75,8 @@ char * completion_generator(const char * text, int state)
   static std::vector<std::string> matches;
   static size_t match_index = 0;
 
-  std::vector<std::string> vocabulary{"get", "set", "remove", "run"};
+  std::vector<std::string> vocabulary{"get", "set", "remove", "run", "check"};
+  std::vector<std::string> vocabulary_check{"actors"};
   std::vector<std::string> vocabulary_set{"instance", "predicate", "function", "goal"};
   std::vector<std::string> vocabulary_get{"model", "problem", "domain", "plan"};
   std::vector<std::string> vocabulary_remove{"instance", "predicate", "function", "goal"};
@@ -93,7 +96,7 @@ char * completion_generator(const char * text, int state)
     auto current_text = tokenize(rl_line_buffer);
     std::vector<std::string> * current_vocabulary = nullptr;
 
-    if (current_text.size() == 1) {
+    if (current_text.size() <= 1) {
       current_vocabulary = &vocabulary;
     } else {
       if (current_text.size() == 2) {
@@ -103,6 +106,8 @@ char * completion_generator(const char * text, int state)
           current_vocabulary = &vocabulary_get;
         } else if (current_text[0] == "remove") {
           current_vocabulary = &vocabulary_remove;
+        } else if (current_text[0] == "check") {
+          current_vocabulary = &vocabulary_check;
         }
       } else if (current_text.size() == 3) {
         if (current_text[0] == "get" && current_text[1] == "problem") {
@@ -738,6 +743,74 @@ Terminal::process_run(std::vector<std::string> & command, std::ostringstream & o
 }
 
 void
+Terminal::process_check_actors(std::vector<std::string> & command, std::ostringstream & os)
+{
+  std::map<std::string, int> actors;
+  auto action_hub_pub = create_publisher<plansys2_msgs::msg::ActionExecution>(
+    "/actions_hub", rclcpp::QoS(100).reliable());
+
+  auto protocol_callback =
+    [this, &actors, action_hub_pub](const plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
+      if (msg->node_id == get_name() ||
+        msg->type != plansys2_msgs::msg::ActionExecution::RESPONSE)
+      {
+        return;
+      }
+
+      if (actors.find(msg->action) == actors.end()) {
+        actors[msg->action] = 1;
+      } else {
+        actors[msg->action]++;
+      }
+
+      plansys2_msgs::msg::ActionExecution resp;
+      resp.node_id = msg->node_id;
+      resp.type = plansys2_msgs::msg::ActionExecution::REJECT;
+      action_hub_pub->publish(resp);
+    };
+
+  auto action_hub_sub = create_subscription<plansys2_msgs::msg::ActionExecution>(
+    "/actions_hub", rclcpp::QoS(100).reliable(), protocol_callback);
+
+  for (const auto & action : domain_client_->getDurativeActions()) {
+    auto action_details = domain_client_->getDurativeAction(action);
+    assert(action_details.has_value());
+
+    plansys2_msgs::msg::ActionExecution req;
+    req.type = plansys2_msgs::msg::ActionExecution::REQUEST;
+    req.node_id = get_name();
+    req.action = action;
+    req.arguments = std::vector<std::string>(action_details.value().parameters.size(), "");
+
+    action_hub_pub->publish(req);
+  }
+
+  auto start = now();
+  while (rclcpp::ok() && (now() - start).seconds() < 2.0) {
+    rclcpp::spin_some(shared_from_this());
+  }
+
+  for (const auto & actor : actors) {
+    os << "\t[" << actor.first << "] " << actor.second << std::endl;
+  }
+}
+
+void
+Terminal::process_check(std::vector<std::string> & command, std::ostringstream & os)
+{
+  if (command.empty()) {
+    return;
+  }
+
+  if (command[0] == "actors") {
+    process_check_actors(command, os);
+  }
+
+  // ToDo(fmrico): We should be able to run directly an action, for example:
+  // run (move leia entrance dinning)
+}
+
+void
 Terminal::process_command(std::string & command, std::ostringstream & os)
 {
   std::vector<std::string> tokens = tokenize(command);
@@ -758,6 +831,9 @@ Terminal::process_command(std::string & command, std::ostringstream & os)
   } else if (tokens[0] == "run") {
     pop_front(tokens);
     process_run(tokens, os);
+  } else if (tokens[0] == "check") {
+    pop_front(tokens);
+    process_check(tokens, os);
   } else {
     os << "Command not found" << std::endl;
   }

@@ -43,9 +43,8 @@ CheckOverAllReq::tick()
   getInput("action", action);
 
   auto reqs = (*action_map_)[action].durative_action_info->over_all_requirements;
-  std::tuple<bool, double> result = check(reqs.root_, problem_client_);
 
-  if (!std::get<0>(result)) {
+  if (!check(reqs.root_, problem_client_)) {
     (*action_map_)[action].execution_error_info = "Error checking over all requirements";
     return BT::NodeStatus::FAILURE;
   } else {
