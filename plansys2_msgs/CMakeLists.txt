@@ -13,7 +13,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ActionExecution.msg"
   "msg/ActionExecutionInfo.msg"
   "msg/ActionPerformerStatus.msg"
-  "msg/Knownledge.msg"
+  "msg/Knowledge.msg"
   "srv/GetDomain.srv"
   "srv/GetDomainTypes.srv"
   "srv/GetDomainPredicates.srv"
