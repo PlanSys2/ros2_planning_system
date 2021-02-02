@@ -27,7 +27,7 @@
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 
-#include "plansys2_msgs/msg/knownledge.hpp"
+#include "plansys2_msgs/msg/knowledge.hpp"
 
 TEST(problem_expert_node, addget_instances)
 {
@@ -55,12 +55,12 @@ TEST(problem_expert_node, addget_instances)
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(test_node_2->get_node_base_interface());
 
-  plansys2_msgs::msg::Knownledge last_knowledge_msg;
+  plansys2_msgs::msg::Knowledge last_knowledge_msg;
   int knowledge_msg_counter = 0;
-  auto knownledge_sub = test_node_2->create_subscription<plansys2_msgs::msg::Knownledge>(
-    "problem_expert/knownledge", rclcpp::QoS(100).transient_local(),
+  auto knowledge_sub = test_node_2->create_subscription<plansys2_msgs::msg::Knowledge>(
+    "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
     [&last_knowledge_msg, &knowledge_msg_counter]
-      (const plansys2_msgs::msg::Knownledge::SharedPtr msg) {
+      (const plansys2_msgs::msg::Knowledge::SharedPtr msg) {
       last_knowledge_msg = *msg;
       knowledge_msg_counter++;
     });

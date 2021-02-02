@@ -147,8 +147,8 @@ ProblemExpertNode::ProblemExpertNode()
     "problem_expert/update_notify",
     rclcpp::QoS(100));
 
-  knownledge_pub_ = create_publisher<plansys2_msgs::msg::Knownledge>(
-    "problem_expert/knownledge",
+  knowledge_pub_ = create_publisher<plansys2_msgs::msg::Knowledge>(
+    "problem_expert/knowledge",
     rclcpp::QoS(100).transient_local());
 }
 
@@ -192,7 +192,7 @@ ProblemExpertNode::on_activate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Activating...", get_name());
   update_pub_->on_activate();
-  knownledge_pub_->on_activate();
+  knowledge_pub_->on_activate();
   RCLCPP_INFO(get_logger(), "[%s] Activated", get_name());
   return CallbackReturnT::SUCCESS;
 }
@@ -202,7 +202,7 @@ ProblemExpertNode::on_deactivate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Deactivating...", get_name());
   update_pub_->on_deactivate();
-  knownledge_pub_->on_deactivate();
+  knowledge_pub_->on_deactivate();
   RCLCPP_INFO(get_logger(), "[%s] Deactivated", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -252,7 +252,7 @@ ProblemExpertNode::add_problem_goal_service_callback(
 
       if (response->success) {
         update_pub_->publish(std_msgs::msg::Empty());
-        knownledge_pub_->publish(*get_knowledge_as_msg());
+        knowledge_pub_->publish(*get_knowledge_as_msg());
       } else {
         response->error_info = "Goal not valid";
       }
@@ -290,7 +290,7 @@ ProblemExpertNode::add_problem_assignment_service_callback(
 
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
-      knownledge_pub_->publish(*get_knowledge_as_msg());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
     } else {
       response->error_info = "Invalid function assignment";
     }
@@ -316,7 +316,7 @@ ProblemExpertNode::add_problem_instance_service_callback(
 
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
-      knownledge_pub_->publish(*get_knowledge_as_msg());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
     } else {
       response->error_info = "Instance not valid";
     }
@@ -347,7 +347,7 @@ ProblemExpertNode::add_problem_predicate_service_callback(
 
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
-      knownledge_pub_->publish(*get_knowledge_as_msg());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
     } else {
       response->error_info = "Predicate not valid";
     }
@@ -499,7 +499,7 @@ ProblemExpertNode::remove_problem_goal_service_callback(
 
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
-      knownledge_pub_->publish(*get_knowledge_as_msg());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
     } else {
       response->error_info = "Error clearing goal";
     }
@@ -521,7 +521,7 @@ ProblemExpertNode::remove_problem_instance_service_callback(
 
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
-      knownledge_pub_->publish(*get_knowledge_as_msg());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
     } else {
       response->error_info = "Error removing instance";
     }
@@ -552,7 +552,7 @@ ProblemExpertNode::remove_problem_predicate_service_callback(
 
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
-      knownledge_pub_->publish(*get_knowledge_as_msg());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
     } else {
       response->error_info = "Error removing predicate";
     }
@@ -582,10 +582,10 @@ ProblemExpertNode::exist_problem_predicate_service_callback(
   }
 }
 
-plansys2_msgs::msg::Knownledge::SharedPtr
+plansys2_msgs::msg::Knowledge::SharedPtr
 ProblemExpertNode::get_knowledge_as_msg() const
 {
-  auto ret_msgs = std::make_shared<plansys2_msgs::msg::Knownledge>();
+  auto ret_msgs = std::make_shared<plansys2_msgs::msg::Knowledge>();
 
   for (const auto & instance : problem_expert_->getInstances()) {
     ret_msgs->instances.push_back(instance.name);
