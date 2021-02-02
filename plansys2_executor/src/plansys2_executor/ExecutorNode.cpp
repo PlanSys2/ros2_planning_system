@@ -80,7 +80,6 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
 
   execution_info_pub_ = create_publisher<plansys2_msgs::msg::ActionExecutionInfo>(
     "/action_execution_info", 100);
-  execution_info_pub_->on_activate();
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
@@ -90,6 +89,7 @@ CallbackReturnT
 ExecutorNode::on_activate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Activating...", get_name());
+  execution_info_pub_->on_activate();
   RCLCPP_INFO(get_logger(), "[%s] Activated", get_name());
 
   return CallbackReturnT::SUCCESS;
