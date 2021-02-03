@@ -25,6 +25,7 @@
   <depend>plansys2_planner</depend>
   <depend>behaviortree_cpp_v3</depend>
   <depend>std_msgs</depend>
+  <depend>libzmq3-dev</depend>
 
   <exec_depend>popf</exec_depend>
 
