@@ -68,6 +68,40 @@ TEST(popf_plan_solver, load_popf_plugin)
   }
 }
 
+TEST(popf_plan_solver, check_1_ok_domain)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_1_ok.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
+  auto planner = std::make_shared<plansys2::POPFPlanSolver>();
+  planner->configure(node, "POPF");
+
+  auto result = planner->check_domain(domain_str, "check_1_ok_domain");
+
+  ASSERT_TRUE(result.empty());
+}
+
+
+TEST(popf_plan_solver, check_2_error_domain)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_2_error.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
+  auto planner = std::make_shared<plansys2::POPFPlanSolver>();
+  planner->configure(node, "POPF");
+
+  auto result = planner->check_domain(domain_str, "check_2_error_domain");
+
+  ASSERT_FALSE(result.empty());
+}
 
 /*
 TEST(popf_plan_solver, generate_plan_unsolvable)

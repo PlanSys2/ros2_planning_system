@@ -35,7 +35,13 @@ DomainExpert::extendDomain(const std::string & domain)
   domains_.add_domain(domain);
 
   domain_ = std::make_shared<parser::pddl::Domain>();
-  domain_->parse(domains_.get_joint_domain());
+
+  try {
+    domain_->parse(domains_.get_joint_domain());
+  } catch (const std::exception & e) {
+    std::cerr << "\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nError parsing PDDL: " << e.what() << std::endl;
+    std::cerr << "Error parsing PDDL: " << e.what() << std::endl;
+  }
 }
 
 std::vector<std::string>

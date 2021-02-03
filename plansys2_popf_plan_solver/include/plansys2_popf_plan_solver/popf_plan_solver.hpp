@@ -34,6 +34,10 @@ public:
   std::optional<Plan> getPlan(
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace = "");
+
+  std::string check_domain(
+    const std::string & domain,
+    const std::string & node_namespace = "");
 };
 
 }  // namespace plansys2
