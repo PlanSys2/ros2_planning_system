@@ -18,8 +18,7 @@
 #include <string>
 #include <vector>
 
-#include "plansys2_domain_expert/Types.hpp"
-#include "plansys2_problem_expert/Types.hpp"
+#include "plansys2_pddl_parser/Tree.h"
 
 namespace plansys2
 {
@@ -29,20 +28,26 @@ class ProblemExpertInterface
 public:
   ProblemExpertInterface() {}
 
-  virtual std::vector<Instance> getInstances() = 0;
-  virtual bool addInstance(const Instance & instance) = 0;
+  virtual std::vector<parser::pddl::tree::Instance> getInstances() = 0;
+  virtual bool addInstance(const parser::pddl::tree::Instance & instance) = 0;
   virtual bool removeInstance(const std::string & name) = 0;
-  virtual std::optional<Instance> getInstance(const std::string & name) = 0;
+  virtual std::optional<parser::pddl::tree::Instance> getInstance(const std::string & name) = 0;
 
-  virtual std::vector<Predicate> getPredicates() = 0;
-  virtual bool addPredicate(const Predicate & predicate) = 0;
-  virtual bool removePredicate(const Predicate & predicate) = 0;
-  virtual bool existPredicate(const Predicate & predicate) = 0;
+  virtual std::vector<parser::pddl::tree::Predicate> getPredicates() = 0;
+  virtual bool addPredicate(const parser::pddl::tree::Predicate & predicate) = 0;
+  virtual bool removePredicate(const parser::pddl::tree::Predicate & predicate) = 0;
+  virtual bool existPredicate(const parser::pddl::tree::Predicate & predicate) = 0;
+  virtual std::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & expr) = 0;
 
-  virtual bool addAssignment(const Assignment & assignment) = 0;
+  virtual std::vector<parser::pddl::tree::Function> getFunctions() = 0;
+  virtual bool addFunction(const parser::pddl::tree::Function & function) = 0;
+  virtual bool removeFunction(const parser::pddl::tree::Function & function) = 0;
+  virtual bool existFunction(const parser::pddl::tree::Function & function) = 0;
+  virtual bool updateFunction(const parser::pddl::tree::Function & function) = 0;
+  virtual std::optional<parser::pddl::tree::Function> getFunction(const std::string & expr) = 0;
 
-  virtual Goal getGoal() = 0;
-  virtual bool setGoal(const Goal & goal) = 0;
+  virtual parser::pddl::tree::Goal getGoal() = 0;
+  virtual bool setGoal(const parser::pddl::tree::Goal & goal) = 0;
   virtual bool clearGoal() = 0;
 
   virtual std::string getProblem() = 0;

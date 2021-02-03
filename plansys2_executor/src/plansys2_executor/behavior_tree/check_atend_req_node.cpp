@@ -15,6 +15,7 @@
 #include <string>
 #include <map>
 #include <memory>
+#include <tuple>
 
 #include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
 

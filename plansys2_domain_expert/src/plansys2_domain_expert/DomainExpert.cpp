@@ -57,16 +57,6 @@ DomainExpert::getTypes()
 }
 
 std::vector<std::string>
-DomainExpert::getFunctions()
-{
-  std::vector<std::string> ret;
-  for (unsigned i = 0; i < domain_->funcs.size(); i++) {
-    ret.push_back(domain_->funcs[i]->name);
-  }
-  return ret;
-}
-
-std::vector<std::string>
 DomainExpert::getPredicates()
 {
   std::vector<std::string> ret;
@@ -76,34 +66,28 @@ DomainExpert::getPredicates()
   return ret;
 }
 
-/**
- * @brief Search a function in the Domain and return it.
- *
- * @param function name of the function
- * @return std::optional<plansys2::Function>
- *  The parameters name is the type name, prefixed by '?'
- *  and suffixed by the parameter index (starting at 0).
- */
-std::optional<plansys2::Function> DomainExpert::getFunction(const std::string & function)
+std::optional<parser::pddl::tree::Predicate>
+DomainExpert::getPredicate(const std::string & predicate)
 {
-  std::string function_search = function;
+  std::string predicate_search = predicate;
   std::transform(
-    function_search.begin(), function_search.end(),
-    function_search.begin(), ::tolower);
-  plansys2::Function ret;
+    predicate_search.begin(), predicate_search.end(),
+    predicate_search.begin(), ::tolower);
+
+  parser::pddl::tree::Predicate ret;
   bool found = false;
   unsigned i = 0;
 
-  while (i < domain_->funcs.size() && !found) {
-    if (domain_->funcs[i]->name == function_search) {
+  while (i < domain_->preds.size() && !found) {
+    if (domain_->preds[i]->name == predicate_search) {
       found = true;
-      ret.name = function_search;
-      for (unsigned j = 0; j < domain_->funcs[i]->params.size(); j++) {
-        plansys2::Param param;
-        param.name = "?" + domain_->types[domain_->funcs[i]->params[j]]->getName() +
+      ret.name = predicate_search;
+      for (unsigned j = 0; j < domain_->preds[i]->params.size(); j++) {
+        parser::pddl::tree::Param param;
+        param.name = "?" + domain_->types[domain_->preds[i]->params[j]]->getName() +
           std::to_string(j);
-        param.type = domain_->types[domain_->funcs[i]->params[j]]->getName();
-        domain_->types[domain_->funcs[i]->params[j]]->getSubTypesNames(param.subTypes);
+        param.type = domain_->types[domain_->preds[i]->params[j]]->name;
+        domain_->types[domain_->preds[i]->params[j]]->getSubTypesNames(param.subTypes);
         ret.parameters.push_back(param);
       }
     }
@@ -117,28 +101,38 @@ std::optional<plansys2::Function> DomainExpert::getFunction(const std::string & 
   }
 }
 
-std::optional<plansys2::Predicate>
-DomainExpert::getPredicate(const std::string & predicate)
+std::vector<std::string>
+DomainExpert::getFunctions()
 {
-  std::string predicate_search = predicate;
-  std::transform(
-    predicate_search.begin(), predicate_search.end(),
-    predicate_search.begin(), ::tolower);
+  std::vector<std::string> ret;
+  for (unsigned i = 0; i < domain_->funcs.size(); i++) {
+    ret.push_back(domain_->funcs[i]->name);
+  }
+  return ret;
+}
 
-  plansys2::Predicate ret;
+std::optional<parser::pddl::tree::Function>
+DomainExpert::getFunction(const std::string & function)
+{
+  std::string function_search = function;
+  std::transform(
+    function_search.begin(), function_search.end(),
+    function_search.begin(), ::tolower);
+
+  parser::pddl::tree::Function ret;
   bool found = false;
   unsigned i = 0;
 
-  while (i < domain_->preds.size() && !found) {
-    if (domain_->preds[i]->name == predicate_search) {
+  while (i < domain_->funcs.size() && !found) {
+    if (domain_->funcs[i]->name == function_search) {
       found = true;
-      ret.name = predicate_search;
-      for (unsigned j = 0; j < domain_->preds[i]->params.size(); j++) {
-        plansys2::Param param;
-        param.name = "?" + domain_->types[domain_->preds[i]->params[j]]->getName() +
+      ret.name = function_search;
+      for (unsigned j = 0; j < domain_->funcs[i]->params.size(); j++) {
+        parser::pddl::tree::Param param;
+        param.name = "?" + domain_->types[domain_->funcs[i]->params[j]]->getName() +
           std::to_string(j);
-        param.type = domain_->types[domain_->preds[i]->params[j]]->name;
-        domain_->types[domain_->preds[i]->params[j]]->getSubTypesNames(param.subTypes);
+        param.type = domain_->types[domain_->funcs[i]->params[j]]->name;
+        domain_->types[domain_->funcs[i]->params[j]]->getSubTypesNames(param.subTypes);
         ret.parameters.push_back(param);
       }
     }
@@ -166,7 +160,7 @@ DomainExpert::getActions()
   return ret;
 }
 
-std::optional<plansys2::Action>
+std::optional<parser::pddl::tree::Action>
 DomainExpert::getAction(const std::string & action)
 {
   std::string action_search = action;
@@ -174,7 +168,7 @@ DomainExpert::getAction(const std::string & action)
     action_search.begin(), action_search.end(),
     action_search.begin(), ::tolower);
 
-  plansys2::Action ret;
+  parser::pddl::tree::Action ret;
   bool found = false;
   unsigned i = 0;
 
@@ -188,7 +182,7 @@ DomainExpert::getAction(const std::string & action)
 
       // Parameters
       for (unsigned j = 0; j < action_obj->params.size(); j++) {
-        Param param;
+        parser::pddl::tree::Param param;
         param.name = "?" + std::to_string(j);
         param.type = domain_->types[action_obj->params[j]]->name;
         domain_->types[action_obj->params[j]]->getSubTypesNames(param.subTypes);
@@ -197,22 +191,12 @@ DomainExpert::getAction(const std::string & action)
 
       // Preconditions
       if (action_obj->pre) {
-        std::stringstream pre_stream;
-        action_obj->pre->PDDLPrint(
-          pre_stream, 0,
-          parser::pddl::TokenStruct<std::string>(), *domain_);
-
-        ret.preconditions.fromString(pre_stream.str());
+        ret.preconditions.root_ = action_obj->pre->PDDLTree(*domain_);
       }
 
       // Effects
       if (action_obj->eff) {
-        std::stringstream effects_stream;
-        action_obj->eff->PDDLPrint(
-          effects_stream, 0,
-          parser::pddl::TokenStruct<std::string>(), *domain_);
-
-        ret.effects.fromString(effects_stream.str());
+        ret.effects.root_ = action_obj->eff->PDDLTree(*domain_);
       }
     }
     i++;
@@ -241,7 +225,7 @@ DomainExpert::getDurativeActions()
   return ret;
 }
 
-std::optional<plansys2::DurativeAction>
+std::optional<parser::pddl::tree::DurativeAction>
 DomainExpert::getDurativeAction(const std::string & action)
 {
   std::string action_search = action;
@@ -249,7 +233,7 @@ DomainExpert::getDurativeAction(const std::string & action)
     action_search.begin(), action_search.end(),
     action_search.begin(), ::tolower);
 
-  plansys2::DurativeAction ret;
+  parser::pddl::tree::DurativeAction ret;
   bool found = false;
   unsigned i = 0;
 
@@ -265,7 +249,7 @@ DomainExpert::getDurativeAction(const std::string & action)
 
       // Parameters
       for (unsigned j = 0; j < action_obj->params.size(); j++) {
-        Param param;
+        parser::pddl::tree::Param param;
         param.name = "?" + std::to_string(j);
         param.type = domain_->types[action_obj->params[j]]->name;
         domain_->types[action_obj->params[j]]->getSubTypesNames(param.subTypes);
@@ -274,53 +258,27 @@ DomainExpert::getDurativeAction(const std::string & action)
 
       // Preconditions AtStart
       if (action_obj->pre) {
-        {
-          std::stringstream pre_stream;
-          action_obj->pre->PDDLPrint(
-            pre_stream, 0,
-            parser::pddl::TokenStruct<std::string>(), *domain_);
-          ret.at_start_requirements.fromString(pre_stream.str());
-        }
+        ret.at_start_requirements.root_ = action_obj->pre->PDDLTree(*domain_);
       }
 
       // Preconditions OverAll
       if (action_obj->pre_o) {
-        std::stringstream pre_stream;
-        action_obj->pre_o->PDDLPrint(
-          pre_stream, 0,
-          parser::pddl::TokenStruct<std::string>(), *domain_);
-
-        ret.over_all_requirements.fromString(pre_stream.str());
+        ret.over_all_requirements.root_ = action_obj->pre_o->PDDLTree(*domain_);
       }
 
       // Preconditions AtEnd
       if (action_obj->pre_e) {
-        std::stringstream pre_stream;
-        action_obj->pre_e->PDDLPrint(
-          pre_stream, 0,
-          parser::pddl::TokenStruct<std::string>(), *domain_);
-
-        ret.at_end_requirements.fromString(pre_stream.str());
+        ret.at_end_requirements.root_ = action_obj->pre_e->PDDLTree(*domain_);
       }
 
       // Effects AtStart
       if (action_obj->eff) {
-        std::stringstream effects_stream;
-        action_obj->eff->PDDLPrint(
-          effects_stream, 0,
-          parser::pddl::TokenStruct<std::string>(), *domain_);
-
-        ret.at_start_effects.fromString(effects_stream.str());
+        ret.at_start_effects.root_ = action_obj->eff->PDDLTree(*domain_);
       }
 
       // Effects AtEnd
       if (action_obj->eff_e) {
-        std::stringstream effects_stream;
-        action_obj->eff_e->PDDLPrint(
-          effects_stream, 0,
-          parser::pddl::TokenStruct<std::string>(), *domain_);
-
-        ret.at_end_effects.fromString(effects_stream.str());
+        ret.at_end_effects.root_ = action_obj->eff_e->PDDLTree(*domain_);
       }
     }
     i++;

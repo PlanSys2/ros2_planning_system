@@ -18,8 +18,6 @@
 
 #include "plansys2_executor/ActionExecutor.hpp"
 
-#include "plansys2_domain_expert/Types.hpp"
-
 namespace plansys2
 {
 
@@ -29,7 +27,7 @@ using namespace std::chrono_literals;
 ActionExecutor::ActionExecutor(
   const std::string & action,
   rclcpp_lifecycle::LifecycleNode::SharedPtr node)
-: state_(IDLE), node_(node)
+: node_(node), state_(IDLE)
 {
   action_hub_pub_ = node_->create_publisher<plansys2_msgs::msg::ActionExecution>(
     "/actions_hub", rclcpp::QoS(100).reliable());
@@ -42,6 +40,7 @@ ActionExecutor::ActionExecutor(
   action_ = action;
   action_name_ = get_name(action);
   action_params_ = get_params(action);
+  completion_ = 0.0;
 }
 
 void
@@ -69,13 +68,9 @@ ActionExecutor::action_hub_callback(const plansys2_msgs::msg::ActionExecution::S
       }
       break;
     case plansys2_msgs::msg::ActionExecution::FEEDBACK:
-      if (state_ != RUNNING && msg->arguments == action_params_ && msg->action == action_name_) {
-        RCLCPP_WARN(
-          node_->get_logger(), "Feedback received in not running %s executor requester",
-          action_);
+      if (state_ != RUNNING || msg->arguments != action_params_ || msg->action != action_name_) {
         return;
       }
-
       feedback_ = msg->status;
       completion_ = msg->completion;
 
@@ -215,7 +210,7 @@ ActionExecutor::tick(const rclcpp::Time & now)
 std::string
 ActionExecutor::get_name(const std::string & action_expr)
 {
-  std::string working_action_expr = getReducedString(action_expr);
+  std::string working_action_expr = parser::pddl::tree::getReducedString(action_expr);
   working_action_expr.erase(0, 1);  // remove initial (
   working_action_expr.pop_back();  // remove last )
 
@@ -229,7 +224,7 @@ ActionExecutor::get_params(const std::string & action_expr)
 {
   std::vector<std::string> ret;
 
-  std::string working_action_expr = getReducedString(action_expr);
+  std::string working_action_expr = parser::pddl::tree::getReducedString(action_expr);
   working_action_expr.erase(0, 1);  // remove initial (
   working_action_expr.pop_back();  // remove last )
 

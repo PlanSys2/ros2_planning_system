@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>plansys2_pddl_parser</name>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
   
   <description>This package contains a library for parsing PDDL domains and problems.
   
@@ -23,8 +23,6 @@
   <author>Francisco Martin</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-
-  <depend>rclcpp</depend>
 
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>

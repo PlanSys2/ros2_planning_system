@@ -20,21 +20,27 @@
 #include <vector>
 
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
+#include "plansys2_pddl_parser/Tree.h"
 
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
-#include "plansys2_msgs/srv/add_problem_assignment.hpp"
 #include "plansys2_msgs/srv/add_problem_instance.hpp"
 #include "plansys2_msgs/srv/add_problem_predicate.hpp"
+#include "plansys2_msgs/srv/add_problem_function.hpp"
 #include "plansys2_msgs/srv/get_problem_goal.hpp"
 #include "plansys2_msgs/srv/get_problem_instance_details.hpp"
 #include "plansys2_msgs/srv/get_problem_instances.hpp"
 #include "plansys2_msgs/srv/get_problem_predicate_details.hpp"
 #include "plansys2_msgs/srv/get_problem_predicates.hpp"
+#include "plansys2_msgs/srv/get_problem_function_details.hpp"
+#include "plansys2_msgs/srv/get_problem_functions.hpp"
 #include "plansys2_msgs/srv/get_problem.hpp"
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
 #include "plansys2_msgs/srv/remove_problem_instance.hpp"
 #include "plansys2_msgs/srv/remove_problem_predicate.hpp"
+#include "plansys2_msgs/srv/remove_problem_function.hpp"
 #include "plansys2_msgs/srv/exist_problem_predicate.hpp"
+#include "plansys2_msgs/srv/exist_problem_function.hpp"
+#include "plansys2_msgs/srv/update_problem_function.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -46,20 +52,26 @@ class ProblemExpertClient : public ProblemExpertInterface
 public:
   explicit ProblemExpertClient(rclcpp::Node::SharedPtr provided_node);
 
-  std::vector<Instance> getInstances();
-  bool addInstance(const Instance & instance);
+  std::vector<parser::pddl::tree::Instance> getInstances();
+  bool addInstance(const parser::pddl::tree::Instance & instance);
   bool removeInstance(const std::string & name);
-  std::optional<Instance> getInstance(const std::string & name);
+  std::optional<parser::pddl::tree::Instance> getInstance(const std::string & name);
 
-  std::vector<Predicate> getPredicates();
-  bool addPredicate(const Predicate & predicate);
-  bool removePredicate(const Predicate & predicate);
-  bool existPredicate(const Predicate & predicate);
+  std::vector<parser::pddl::tree::Predicate> getPredicates();
+  bool addPredicate(const parser::pddl::tree::Predicate & predicate);
+  bool removePredicate(const parser::pddl::tree::Predicate & predicate);
+  bool existPredicate(const parser::pddl::tree::Predicate & predicate);
+  std::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & expr);
 
-  bool addAssignment(const Assignment & assignment);
+  std::vector<parser::pddl::tree::Function> getFunctions();
+  bool addFunction(const parser::pddl::tree::Function & function);
+  bool removeFunction(const parser::pddl::tree::Function & function);
+  bool existFunction(const parser::pddl::tree::Function & function);
+  bool updateFunction(const parser::pddl::tree::Function & function);
+  std::optional<parser::pddl::tree::Function> getFunction(const std::string & expr);
 
-  Goal getGoal();
-  bool setGoal(const Goal & goal);
+  parser::pddl::tree::Goal getGoal();
+  bool setGoal(const parser::pddl::tree::Goal & goal);
   bool clearGoal();
 
   std::string getProblem();
@@ -67,12 +79,12 @@ public:
 private:
   rclcpp::Client<plansys2_msgs::srv::AddProblemGoal>::SharedPtr
     add_problem_goal_client_;
-  rclcpp::Client<plansys2_msgs::srv::AddProblemAssignment>::SharedPtr
-    add_problem_assignment_client_;
   rclcpp::Client<plansys2_msgs::srv::AddProblemInstance>::SharedPtr
     add_problem_instance_client_;
   rclcpp::Client<plansys2_msgs::srv::AddProblemPredicate>::SharedPtr
     add_problem_predicate_client_;
+  rclcpp::Client<plansys2_msgs::srv::AddProblemFunction>::SharedPtr
+    add_problem_function_client_;
   rclcpp::Client<plansys2_msgs::srv::GetProblemGoal>::SharedPtr
     get_problem_goal_client_;
   rclcpp::Client<plansys2_msgs::srv::GetProblemInstanceDetails>::SharedPtr
@@ -83,6 +95,10 @@ private:
     get_problem_predicate_details_client_;
   rclcpp::Client<plansys2_msgs::srv::GetProblemPredicates>::SharedPtr
     get_problem_predicates_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblemFunctionDetails>::SharedPtr
+    get_problem_function_details_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblemFunctions>::SharedPtr
+    get_problem_functions_client_;
   rclcpp::Client<plansys2_msgs::srv::GetProblem>::SharedPtr
     get_problem_client_;
   rclcpp::Client<plansys2_msgs::srv::RemoveProblemGoal>::SharedPtr
@@ -91,8 +107,14 @@ private:
     remove_problem_instance_client_;
   rclcpp::Client<plansys2_msgs::srv::RemoveProblemPredicate>::SharedPtr
     remove_problem_predicate_client_;
+  rclcpp::Client<plansys2_msgs::srv::RemoveProblemFunction>::SharedPtr
+    remove_problem_function_client_;
   rclcpp::Client<plansys2_msgs::srv::ExistProblemPredicate>::SharedPtr
     exist_problem_predicate_client_;
+  rclcpp::Client<plansys2_msgs::srv::ExistProblemFunction>::SharedPtr
+    exist_problem_function_client_;
+  rclcpp::Client<plansys2_msgs::srv::UpdateProblemFunction>::SharedPtr
+    update_problem_function_client_;
   rclcpp::Node::SharedPtr node_;
 };
 

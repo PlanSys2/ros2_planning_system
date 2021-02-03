@@ -15,6 +15,7 @@
 #include <string>
 #include <map>
 #include <memory>
+#include <tuple>
 
 #include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
 
@@ -40,6 +41,10 @@ WaitAtStartReq::tick()
 {
   std::string action;
   getInput("action", action);
+
+  if ((*action_map_).find(action) == (*action_map_).end()) {
+    return BT::NodeStatus::RUNNING;  // Not started yet
+  }
 
   if ((*action_map_)[action].action_executor != nullptr &&
     (*action_map_)[action].action_executor->is_finished())

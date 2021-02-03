@@ -153,7 +153,7 @@ TEST(problem_expert, wait_overall_req_test)
     ASSERT_EQ(status, BT::NodeStatus::FAILURE);
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
+      ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
     }
 
     tree = factory.createTreeFromText(bt_xml_tree, blackboard);
@@ -270,7 +270,7 @@ TEST(problem_expert, wait_atstart_req_test)
 
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
+      ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
     }
 
     status = tree.tickRoot();
@@ -379,7 +379,7 @@ TEST(problem_expert, wait_atend_req_test)
     ASSERT_EQ(status, BT::NodeStatus::FAILURE);
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
+      ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
     }
 
     tree = factory.createTreeFromText(bt_xml_tree, blackboard);
@@ -485,7 +485,7 @@ TEST(problem_expert, at_start_effect_test)
       "(robot_at robot1 wheels_zone)"};
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
+      ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
     }
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
@@ -502,7 +502,7 @@ TEST(problem_expert, at_start_effect_test)
     }
     ASSERT_FALSE(
       problem_client->existPredicate(
-        plansys2::Predicate{"(robot_at robot1 wheels_zone)"}));
+        parser::pddl::tree::Predicate{"(robot_at robot1 wheels_zone)"}));
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
@@ -600,7 +600,7 @@ TEST(problem_expert, at_end_effect_test)
       "(robot_at robot1 wheels_zone)"};
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
+      ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
     }
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
@@ -618,7 +618,7 @@ TEST(problem_expert, at_end_effect_test)
 
     ASSERT_TRUE(
       problem_client->existPredicate(
-        plansys2::Predicate{"(robot_at robot1 assembly_zone)"}));
+        parser::pddl::tree::Predicate{"(robot_at robot1 assembly_zone)"}));
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }

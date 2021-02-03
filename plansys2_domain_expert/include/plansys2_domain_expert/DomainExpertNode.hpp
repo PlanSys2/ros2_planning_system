@@ -27,6 +27,8 @@
 #include "plansys2_msgs/srv/get_domain_actions.hpp"
 #include "plansys2_msgs/srv/get_domain_action_details.hpp"
 #include "plansys2_msgs/srv/get_domain_predicates.hpp"
+#include "plansys2_msgs/srv/get_domain_function_details.hpp"
+#include "plansys2_msgs/srv/get_domain_functions.hpp"
 #include "plansys2_msgs/srv/get_domain_predicate_details.hpp"
 #include "plansys2_msgs/srv/get_domain.hpp"
 
@@ -144,6 +146,28 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::GetDomainPredicateDetails::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::GetDomainPredicateDetails::Response> response);
 
+  /// Receives the result of the GetDomainFunctions service call
+  /**
+   * \param[in] request_header The header of the request
+   * \param[in] request The request
+   * \param[out] request The response
+   */
+  void get_domain_functions_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::GetDomainFunctions::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::GetDomainFunctions::Response> response);
+
+  /// Receives the result of the GetDomainFunctionDetails service call
+  /**
+   * \param[in] request_header The header of the request
+   * \param[in] request The request
+   * \param[out] request The response
+   */
+  void get_domain_function_details_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::GetDomainFunctionDetails::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::GetDomainFunctionDetails::Response> response);
+
   /// Receives the result of the GetDomain service call
   /**
    * \param[in] request_header The header of the request
@@ -166,6 +190,10 @@ private:
     get_domain_predicates_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainPredicateDetails>::SharedPtr
     get_domain_predicate_details_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetDomainFunctions>::SharedPtr
+    get_domain_functions_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetDomainFunctionDetails>::SharedPtr
+    get_domain_function_details_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_service_;
 };
 

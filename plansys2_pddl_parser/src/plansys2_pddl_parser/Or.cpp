@@ -22,6 +22,10 @@ void Or::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::s
 	s << ")";
 }
 
+std::shared_ptr<tree::TreeNode> Or::PDDLTree( const Domain & d ) const {
+    throw UnsupportedConstruct("Or");
+}
+
 void Or::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	f.assert_token( "(" );

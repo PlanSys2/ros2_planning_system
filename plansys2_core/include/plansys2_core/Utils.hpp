@@ -23,6 +23,27 @@ namespace plansys2
 
 std::vector<std::string> tokenize(const std::string & string, const std::string & delim);
 
+/**
+ * @brief get a substring without empty lines
+ *
+ * @param string original string
+ * @param init_pos first character in the original string
+ * @param end_pos last character in the original string
+ * @return a substring without empty lines
+ */
+std::string substr_without_empty_lines(
+  std::string string,
+  std::size_t init_pos,
+  std::size_t end_pos);
+
+/**
+ * @brief remove the comments on a pddl string
+ *
+ * @param pddl a pddl string
+ * @return a pddl string without comments
+ */
+std::string remove_comments(const std::string & pddl);
+
 }  // namespace plansys2
 
 #endif  // PLANSYS2_CORE__UTILS_HPP_

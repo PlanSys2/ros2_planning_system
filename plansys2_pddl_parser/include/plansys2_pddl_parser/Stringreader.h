@@ -38,7 +38,7 @@ public:
 	std::string s;
 	unsigned r, c;      // current row and column of file
   
-	Stringreader( const std::string & domain ) : r( 1 ), c( 0 ), current_line( 0 ) {
+	Stringreader( const std::string & domain ) : current_line( 0 ), r( 1 ), c( 0 ) {
 		
 		lines = getLines(domain);
 	

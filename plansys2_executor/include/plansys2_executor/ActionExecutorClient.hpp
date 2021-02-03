@@ -20,10 +20,10 @@
 #include <vector>
 
 #include "plansys2_msgs/msg/action_execution.hpp"
+#include "plansys2_msgs/msg/action_performer_status.hpp"
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_domain_expert/Types.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_cascade_lifecycle/rclcpp_cascade_lifecycle.hpp"
@@ -75,6 +75,11 @@ protected:
     action_hub_pub_;
   rclcpp::Subscription<plansys2_msgs::msg::ActionExecution>::SharedPtr action_hub_sub_;
   rclcpp::TimerBase::SharedPtr timer_;
+
+  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionPerformerStatus>::SharedPtr
+    status_pub_;
+  rclcpp::TimerBase::SharedPtr hearbeat_pub_;
+  plansys2_msgs::msg::ActionPerformerStatus status_;
 };
 
 }  // namespace plansys2

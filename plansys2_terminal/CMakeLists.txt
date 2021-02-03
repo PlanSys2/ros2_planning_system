@@ -7,7 +7,6 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
-find_package(ament_index_cpp REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_domain_expert REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
@@ -20,7 +19,6 @@ set(dependencies
     rclcpp
     rclcpp_action
     rclcpp_lifecycle
-    ament_index_cpp
     plansys2_msgs
     plansys2_domain_expert
     plansys2_problem_expert
@@ -53,6 +51,11 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_index_cpp REQUIRED)
+  find_package(lifecycle_msgs REQUIRED)
+
+  set(dependencies ${dependencies} ament_index_cpp lifecycle_msgs)
+
   add_subdirectory(test)
 endif()
 

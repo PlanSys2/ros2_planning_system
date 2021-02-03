@@ -2,18 +2,14 @@
 (:requirements :adl :durative-actions :fluents :strips :typing )
 
 (:types
-
 person  - object 
 message - object
 robot   - object
 room    - object
 teleporter_room - room
-
-
 robot
 pickable_object
 room
-
 )
 
 (:predicates
@@ -26,12 +22,7 @@ room
 )
 
 (:functions
-
     (teleportation_time ?from - teleporter_room ?to - room)
-
-
-
-
 )
 
 (:durative-action move

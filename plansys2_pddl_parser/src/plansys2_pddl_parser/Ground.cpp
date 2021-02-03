@@ -17,6 +17,31 @@ void Ground::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << " )";
 }
 
+std::shared_ptr<tree::TreeNode> Ground::PDDLTree( const Domain & d ) const {
+    if ( d.funcs.index( name ) >= 0) {
+        std::shared_ptr<tree::FunctionNode> tree = std::make_shared<tree::FunctionNode>();
+        tree->function_.name = name;
+        for ( unsigned i = 0; i < params.size(); ++i ) {
+            tree::Param param;
+            param.name = "?" + std::to_string(params[i]);
+            param.type = d.types[lifted->params[i]]->name;
+            tree->function_.parameters.push_back(param);
+        }
+        return tree;
+    }
+    else {
+        std::shared_ptr<tree::PredicateNode> tree = std::make_shared<tree::PredicateNode>();
+        tree->predicate_.name = name;
+        for ( unsigned i = 0; i < params.size(); ++i ) {
+            tree::Param param;
+            param.name = "?" + std::to_string(params[i]);
+            param.type = d.types[lifted->params[i]]->name;
+            tree->predicate_.parameters.push_back(param);
+        }
+        return tree;
+    }
+}
+
 void Ground::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	params.resize( lifted->params.size() );

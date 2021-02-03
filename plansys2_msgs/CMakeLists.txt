@@ -9,13 +9,16 @@ find_package(std_msgs REQUIRED)
 find_package(action_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/FunctionAssignment.msg"
   "msg/ActionExecution.msg"
   "msg/ActionExecutionInfo.msg"
+  "msg/ActionPerformerStatus.msg"
+  "msg/Knowledge.msg"
   "srv/GetDomain.srv"
   "srv/GetDomainTypes.srv"
   "srv/GetDomainPredicates.srv"
   "srv/GetDomainPredicateDetails.srv"
+  "srv/GetDomainFunctions.srv"
+  "srv/GetDomainFunctionDetails.srv"
   "srv/GetDomainActions.srv"
   "srv/GetDomainActionDetails.srv"
   "srv/GetProblem.srv"
@@ -23,19 +26,22 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetProblemInstanceDetails.srv"
   "srv/GetProblemPredicates.srv"
   "srv/GetProblemPredicateDetails.srv"
+  "srv/GetProblemFunctions.srv"
   "srv/GetProblemFunctionDetails.srv"
   "srv/GetProblemGoal.srv"
   "srv/AddProblemGoal.srv"
-  "srv/AddProblemAssignment.srv"
   "srv/AddProblemInstance.srv"
   "srv/AddProblemPredicate.srv"
+  "srv/AddProblemFunction.srv"
   "srv/RemoveProblemGoal.srv"
   "srv/RemoveProblemInstance.srv"
   "srv/RemoveProblemPredicate.srv"
+  "srv/RemoveProblemFunction.srv"
   "srv/ExistProblemPredicate.srv"
+  "srv/ExistProblemFunction.srv"
+  "srv/UpdateProblemFunction.srv"
   "srv/GetPlan.srv"
   "action/ExecutePlan.action"
-  "action/ExecuteAction.action" 
   DEPENDENCIES builtin_interfaces std_msgs action_msgs
 )
 

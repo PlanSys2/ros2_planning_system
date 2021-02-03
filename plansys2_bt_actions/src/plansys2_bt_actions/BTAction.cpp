@@ -26,24 +26,41 @@ namespace plansys2
 
 BTAction::BTAction(
   const std::string & action,
-  const std::string & bt_xml_file,
-  const std::vector<std::string> & plugin_list,
   const std::chrono::nanoseconds & rate)
-: ActionExecutorClient(action, rate),
-  action_(action),
-  bt_xml_file_(bt_xml_file),
-  plugin_list_(plugin_list)
+: ActionExecutorClient(action, rate)
 {
+  declare_parameter("bt_xml_file");
+  declare_parameter("plugins");
+}
+
+rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
+{
+  get_parameter("action_name", action_);
+  get_parameter("bt_xml_file", bt_xml_file_);
+
+  RCLCPP_INFO_STREAM(get_logger(), "action_name: [" << action_ << "]");
+  RCLCPP_INFO_STREAM(get_logger(), "bt_xml_file: [" << bt_xml_file_ << "]");
+
+  auto plugin_lib_names = get_parameter("plugins").as_string_array();
+  for (auto plugin : plugin_lib_names) {
+    RCLCPP_INFO_STREAM(get_logger(), "plugin: [" << plugin << "]");
+  }
+
   BT::BehaviorTreeFactory factory;
   BT::SharedLibrary loader;
 
-  for (auto plugin : plugin_list_) {
+  for (auto plugin : plugin_lib_names) {
     factory.registerFromPlugin(loader.getOSName(plugin));
   }
 
+  auto node = rclcpp::Node::make_shared(std::string(get_name()) + "_aux");
   blackboard_ = BT::Blackboard::create();
-  blackboard_->set("node", rclcpp::Node::make_shared(get_name()));
+  blackboard_->set("node", node);
+
   tree_ = factory.createTreeFromFile(bt_xml_file_, blackboard_);
+
+  return ActionExecutorClient::on_configure(previous_state);
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn

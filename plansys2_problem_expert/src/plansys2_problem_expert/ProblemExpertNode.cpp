@@ -18,8 +18,6 @@
 #include <memory>
 #include <vector>
 
-#include "lifecycle_msgs/msg/state.hpp"
-
 std::vector<std::string> tokenize(const std::string & string, const std::string & delim)
 {
   std::string::size_type lastPos = 0, pos = string.find_first_of(delim, lastPos);
@@ -54,13 +52,6 @@ ProblemExpertNode::ProblemExpertNode()
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
 
-  add_problem_assignment_service_ = create_service<plansys2_msgs::srv::AddProblemAssignment>(
-    "problem_expert/add_problem_assignment",
-    std::bind(
-      &ProblemExpertNode::add_problem_assignment_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
-
   add_problem_instance_service_ = create_service<plansys2_msgs::srv::AddProblemInstance>(
     "problem_expert/add_problem_instance",
     std::bind(
@@ -75,6 +66,13 @@ ProblemExpertNode::ProblemExpertNode()
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
 
+  add_problem_function_service_ = create_service<plansys2_msgs::srv::AddProblemFunction>(
+    "problem_expert/add_problem_function",
+    std::bind(
+      &ProblemExpertNode::add_problem_function_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+
   get_problem_goal_service_ = create_service<plansys2_msgs::srv::GetProblemGoal>(
     "problem_expert/get_problem_goal",
     std::bind(
@@ -84,7 +82,7 @@ ProblemExpertNode::ProblemExpertNode()
 
   get_problem_instance_details_service_ =
     create_service<plansys2_msgs::srv::GetProblemInstanceDetails>(
-    "problem_expert/get_problem_instance_details",
+    "problem_expert/get_problem_instance",
     std::bind(
       &ProblemExpertNode::get_problem_instance_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
@@ -99,7 +97,7 @@ ProblemExpertNode::ProblemExpertNode()
 
   get_problem_predicate_details_service_ =
     create_service<plansys2_msgs::srv::GetProblemPredicateDetails>(
-    "problem_expert/get_problem_predicate_details", std::bind(
+    "problem_expert/get_problem_predicate", std::bind(
       &ProblemExpertNode::get_problem_predicate_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
@@ -108,6 +106,20 @@ ProblemExpertNode::ProblemExpertNode()
     "problem_expert/get_problem_predicates",
     std::bind(
       &ProblemExpertNode::get_problem_predicates_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+
+  get_problem_function_details_service_ =
+    create_service<plansys2_msgs::srv::GetProblemFunctionDetails>(
+    "problem_expert/get_problem_function", std::bind(
+      &ProblemExpertNode::get_problem_function_details_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+
+  get_problem_functions_service_ = create_service<plansys2_msgs::srv::GetProblemFunctions>(
+    "problem_expert/get_problem_functions",
+    std::bind(
+      &ProblemExpertNode::get_problem_functions_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
 
@@ -138,6 +150,13 @@ ProblemExpertNode::ProblemExpertNode()
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
 
+  remove_problem_function_service_ = create_service<plansys2_msgs::srv::RemoveProblemFunction>(
+    "problem_expert/remove_problem_function",
+    std::bind(
+      &ProblemExpertNode::remove_problem_function_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+
   exist_problem_predicate_service_ = create_service<plansys2_msgs::srv::ExistProblemPredicate>(
     "problem_expert/exist_problem_predicate",
     std::bind(
@@ -145,9 +164,27 @@ ProblemExpertNode::ProblemExpertNode()
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
 
+  exist_problem_function_service_ = create_service<plansys2_msgs::srv::ExistProblemFunction>(
+    "problem_expert/exist_problem_function",
+    std::bind(
+      &ProblemExpertNode::exist_problem_function_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+
+  update_problem_function_service_ = create_service<plansys2_msgs::srv::UpdateProblemFunction>(
+    "problem_expert/update_problem_function",
+    std::bind(
+      &ProblemExpertNode::update_problem_function_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+
   update_pub_ = create_publisher<std_msgs::msg::Empty>(
     "problem_expert/update_notify",
     rclcpp::QoS(100));
+
+  knowledge_pub_ = create_publisher<plansys2_msgs::msg::Knowledge>(
+    "problem_expert/knowledge",
+    rclcpp::QoS(100).transient_local());
 }
 
 
@@ -190,6 +227,7 @@ ProblemExpertNode::on_activate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Activating...", get_name());
   update_pub_->on_activate();
+  knowledge_pub_->on_activate();
   RCLCPP_INFO(get_logger(), "[%s] Activated", get_name());
   return CallbackReturnT::SUCCESS;
 }
@@ -199,6 +237,7 @@ ProblemExpertNode::on_deactivate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Deactivating...", get_name());
   update_pub_->on_deactivate();
+  knowledge_pub_->on_deactivate();
   RCLCPP_INFO(get_logger(), "[%s] Deactivated", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -242,51 +281,19 @@ ProblemExpertNode::add_problem_goal_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     if (request->goal != "(and )") {
-      plansys2::Goal goal;
+      parser::pddl::tree::Goal goal;
       goal.fromString(request->goal);
       response->success = problem_expert_->setGoal(goal);
 
       if (response->success) {
         update_pub_->publish(std_msgs::msg::Empty());
+        knowledge_pub_->publish(*get_knowledge_as_msg());
       } else {
         response->error_info = "Goal not valid";
       }
     } else {
       response->success = false;
       response->error_info = "Malformed expression";
-    }
-  }
-}
-
-void
-ProblemExpertNode::add_problem_assignment_service_callback(
-  const std::shared_ptr<rmw_request_id_t> request_header,
-  const std::shared_ptr<plansys2_msgs::srv::AddProblemAssignment::Request> request,
-  const std::shared_ptr<plansys2_msgs::srv::AddProblemAssignment::Response> response)
-{
-  if (problem_expert_ == nullptr) {
-    response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
-  } else {
-    plansys2::Assignment assignment;
-
-    assignment.name = request->assignment;
-
-    for (std::string param_name : request->arguments) {
-      plansys2::Param p;
-      p.name = param_name;
-      p.type = "";
-      assignment.parameters.push_back(p);
-    }
-    assignment.value = request->value;
-
-    response->success = problem_expert_->addAssignment(assignment);
-
-    if (response->success) {
-      update_pub_->publish(std_msgs::msg::Empty());
-    } else {
-      response->error_info = "Invalid function assignment";
     }
   }
 }
@@ -302,7 +309,7 @@ ProblemExpertNode::add_problem_instance_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    plansys2::Instance instance;
+    parser::pddl::tree::Instance instance;
     instance.name = request->instance;
     instance.type = request->type;
 
@@ -310,6 +317,7 @@ ProblemExpertNode::add_problem_instance_service_callback(
 
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
     } else {
       response->error_info = "Instance not valid";
     }
@@ -327,11 +335,11 @@ ProblemExpertNode::add_problem_predicate_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    plansys2::Predicate predicate;
+    parser::pddl::tree::Predicate predicate;
     predicate.name = request->predicate;
 
     for (const auto & param_name : request->arguments) {
-      plansys2::Param param;
+      parser::pddl::tree::Param param;
       param.name = param_name;
       predicate.parameters.push_back(param);
     }
@@ -340,8 +348,42 @@ ProblemExpertNode::add_problem_predicate_service_callback(
 
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
     } else {
       response->error_info = "Predicate not valid";
+    }
+  }
+}
+
+void
+ProblemExpertNode::add_problem_function_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::AddProblemFunction::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::AddProblemFunction::Response> response)
+{
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    parser::pddl::tree::Function function;
+    function.name = request->function;
+
+    for (const auto & param_name : request->arguments) {
+      parser::pddl::tree::Param param;
+      param.name = param_name;
+      function.parameters.push_back(param);
+    }
+
+    function.value = request->value;
+
+    response->success = problem_expert_->addFunction(function);
+
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
+    } else {
+      response->error_info = "Function not valid";
     }
   }
 }
@@ -415,25 +457,16 @@ ProblemExpertNode::get_problem_predicate_details_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto predicates = problem_expert_->getPredicates();
+    auto params = problem_expert_->getPredicate(request->predicate);
+    if (params) {
+      response->name = params.value().name;
 
-    bool found = false;
-    int i = 0;
-
-    while (!found && i < predicates.size()) {
-      if (predicates[i].name == request->predicate) {
-        found = true;
-      } else {
-        i++;
+      for (const auto & param :  params.value().parameters) {
+        response->param_names.push_back(param.name);
+        response->param_types.push_back(param.type);
       }
-    }
 
-    if (found) {
       response->success = true;
-
-      for (size_t j = 0; j < predicates[i].parameters.size(); j++) {
-        response->argument_params.push_back(predicates[i].parameters[j].name);
-      }
     } else {
       response->success = false;
       response->error_info = "Predicate not found";
@@ -456,6 +489,55 @@ ProblemExpertNode::get_problem_predicates_service_callback(
     response->success = true;
     for (const auto & predicate : predicates) {
       response->predicates.push_back(predicate.toString());
+    }
+  }
+}
+
+void
+ProblemExpertNode::get_problem_function_details_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::GetProblemFunctionDetails::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::GetProblemFunctionDetails::Response> response)
+{
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    auto params = problem_expert_->getFunction(request->function);
+    if (params) {
+      response->name = params.value().name;
+
+      for (const auto & param : params.value().parameters) {
+        response->param_names.push_back(param.name);
+        response->param_types.push_back(param.type);
+      }
+
+      response->value = params.value().value;
+
+      response->success = true;
+    } else {
+      response->success = false;
+      response->error_info = "Function not found";
+    }
+  }
+}
+
+void
+ProblemExpertNode::get_problem_functions_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::GetProblemFunctions::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::GetProblemFunctions::Response> response)
+{
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    auto functions = problem_expert_->getFunctions();
+    response->success = true;
+    for (const auto & function : functions) {
+      response->functions.push_back(function.toString());
     }
   }
 }
@@ -491,6 +573,7 @@ ProblemExpertNode::remove_problem_goal_service_callback(
 
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
     } else {
       response->error_info = "Error clearing goal";
     }
@@ -512,6 +595,7 @@ ProblemExpertNode::remove_problem_instance_service_callback(
 
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
     } else {
       response->error_info = "Error removing instance";
     }
@@ -529,11 +613,11 @@ ProblemExpertNode::remove_problem_predicate_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    plansys2::Predicate predicate;
+    parser::pddl::tree::Predicate predicate;
     predicate.name = request->predicate;
 
     for (const auto & param_name : request->arguments) {
-      plansys2::Param param;
+      parser::pddl::tree::Param param;
       param.name = param_name;
       predicate.parameters.push_back(param);
     }
@@ -542,8 +626,39 @@ ProblemExpertNode::remove_problem_predicate_service_callback(
 
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
     } else {
       response->error_info = "Error removing predicate";
+    }
+  }
+}
+
+void
+ProblemExpertNode::remove_problem_function_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::RemoveProblemFunction::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::RemoveProblemFunction::Response> response)
+{
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    parser::pddl::tree::Function function;
+    function.name = request->function;
+
+    for (const auto & param_name : request->arguments) {
+      parser::pddl::tree::Param param;
+      param.name = param_name;
+      function.parameters.push_back(param);
+    }
+
+    response->success = problem_expert_->removeFunction(function);
+
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+    } else {
+      response->error_info = "Error removing function";
     }
   }
 }
@@ -558,11 +673,11 @@ ProblemExpertNode::exist_problem_predicate_service_callback(
     response->exist = false;
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    plansys2::Predicate predicate;
+    parser::pddl::tree::Predicate predicate;
     predicate.name = request->predicate;
 
     for (const auto & param_name : request->arguments) {
-      plansys2::Param param;
+      parser::pddl::tree::Param param;
       param.name = param_name;
       predicate.parameters.push_back(param);
     }
@@ -570,4 +685,78 @@ ProblemExpertNode::exist_problem_predicate_service_callback(
     response->exist = problem_expert_->existPredicate(predicate);
   }
 }
+
+void
+ProblemExpertNode::exist_problem_function_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::ExistProblemFunction::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::ExistProblemFunction::Response> response)
+{
+  if (problem_expert_ == nullptr) {
+    response->exist = false;
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    parser::pddl::tree::Function function;
+    function.name = request->function;
+
+    for (const auto & param_name : request->arguments) {
+      parser::pddl::tree::Param param;
+      param.name = param_name;
+      function.parameters.push_back(param);
+    }
+
+    response->exist = problem_expert_->existFunction(function);
+  }
+}
+
+void
+ProblemExpertNode::update_problem_function_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::UpdateProblemFunction::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::UpdateProblemFunction::Response> response)
+{
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    parser::pddl::tree::Function function;
+    function.name = request->function;
+
+    for (const auto & param_name : request->arguments) {
+      parser::pddl::tree::Param param;
+      param.name = param_name;
+      function.parameters.push_back(param);
+    }
+
+    function.value = request->value;
+
+    response->success = problem_expert_->updateFunction(function);
+
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+    } else {
+      response->error_info = "Function not valid";
+    }
+  }
+}
+
+plansys2_msgs::msg::Knowledge::SharedPtr
+ProblemExpertNode::get_knowledge_as_msg() const
+{
+  auto ret_msgs = std::make_shared<plansys2_msgs::msg::Knowledge>();
+
+  for (const auto & instance : problem_expert_->getInstances()) {
+    ret_msgs->instances.push_back(instance.name);
+  }
+
+  for (const auto & predicate : problem_expert_->getPredicates()) {
+    ret_msgs->predicates.push_back(predicate.toString());
+  }
+
+  ret_msgs->goal = problem_expert_->getGoal().toString();
+
+  return ret_msgs;
+}
+
 }  // namespace plansys2

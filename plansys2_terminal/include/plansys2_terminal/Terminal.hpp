@@ -51,6 +51,9 @@ protected:
   virtual void process_get_model_predicate(
     std::vector<std::string> & command,
     std::ostringstream & os);
+  virtual void process_get_model_function(
+    std::vector<std::string> & command,
+    std::ostringstream & os);
   virtual void process_get_model_action(
     std::vector<std::string> & command,
     std::ostringstream & os);
@@ -59,8 +62,8 @@ protected:
   virtual void process_get(std::vector<std::string> & command, std::ostringstream & os);
 
   virtual void process_set_instance(std::vector<std::string> & command, std::ostringstream & os);
-  virtual void process_set_assignment(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_set_predicate(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_set_function(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_set_goal(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_set(std::vector<std::string> & command, std::ostringstream & os);
 
@@ -68,10 +71,16 @@ protected:
   virtual void process_remove_predicate(
     std::vector<std::string> & command,
     std::ostringstream & os);
+  virtual void process_remove_function(
+    std::vector<std::string> & command,
+    std::ostringstream & os);
   virtual void process_remove(std::vector<std::string> & command, std::ostringstream & os);
 
   virtual void execute_plan();
   virtual void process_run(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_check(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_check_actors(std::vector<std::string> & command, std::ostringstream & os);
+
   virtual void process_command(std::string & command, std::ostringstream & os);
 
 private:

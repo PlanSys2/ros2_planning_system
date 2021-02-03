@@ -23,6 +23,10 @@ void Forall::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << ")";
 }
 
+std::shared_ptr<tree::TreeNode> Forall::PDDLTree( const Domain & d ) const {
+    throw UnsupportedConstruct("Forall");
+}
+
 void Forall::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	f.assert_token( "(" );

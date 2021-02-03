@@ -13,6 +13,8 @@ find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_core REQUIRED)
 find_package(plansys2_popf_plan_solver REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -25,6 +27,8 @@ set(dependencies
     plansys2_msgs
     plansys2_core
     plansys2_popf_plan_solver
+    std_msgs
+    lifecycle_msgs
 )
 
 include_directories(include)
@@ -33,7 +37,6 @@ set(DOMAIN_EXPERT_SOURCES
   src/plansys2_domain_expert/DomainExpert.cpp
   src/plansys2_domain_expert/DomainExpertClient.cpp
   src/plansys2_domain_expert/DomainReader.cpp
-  src/plansys2_domain_expert/Types.cpp
   src/plansys2_domain_expert/DomainExpertNode.cpp
 )
 
