@@ -44,7 +44,7 @@ public:
   {
     return BT::PortsList(
       {
-        BT::InputPort<std::string>("action", "Action whose over all reqs maust stop"),
+        BT::InputPort<std::string>("action", "Action whose over all reqs must stop"),
       });
   }
 

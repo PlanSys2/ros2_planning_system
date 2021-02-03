@@ -379,15 +379,15 @@ TEST(problem_expert, action_executor)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
   }
 
-  ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and(car_assembled car_1))")));
+  ASSERT_TRUE(problem_client->setGoal(parser::pddl::tree::Goal("(and (car_assembled car_1))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  std::map<std::string, plansys2::DurativeAction> durative_actions_map;
+  std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
   plansys2::BTBuilder exec_tree(test_node);
   auto tree_str = exec_tree.get_tree(plan.value());
 
@@ -523,10 +523,10 @@ TEST(problem_expert, executor_client)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
   }
 
-  ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and(car_assembled car_1))")));
+  ASSERT_TRUE(problem_client->setGoal(parser::pddl::tree::Goal("(and(car_assembled car_1))")));
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
 
   ASSERT_TRUE(plan);

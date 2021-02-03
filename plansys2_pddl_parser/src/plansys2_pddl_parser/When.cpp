@@ -22,6 +22,10 @@ void When::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std:
 	s << ")";
 }
 
+std::shared_ptr<tree::TreeNode> When::PDDLTree( const Domain & d ) const {
+    throw UnsupportedConstruct("When");
+}
+
 void When::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 	f.assert_token( "(" );

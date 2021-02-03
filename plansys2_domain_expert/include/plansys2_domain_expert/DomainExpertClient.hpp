@@ -25,10 +25,14 @@
 #include "plansys2_msgs/srv/get_domain.hpp"
 #include "plansys2_msgs/srv/get_domain_types.hpp"
 #include "plansys2_msgs/srv/get_domain_predicates.hpp"
+#include "plansys2_msgs/srv/get_domain_functions.hpp"
 #include "plansys2_msgs/srv/get_domain_actions.hpp"
 #include "plansys2_msgs/srv/get_problem_function_details.hpp"
 #include "plansys2_msgs/srv/get_domain_predicate_details.hpp"
+#include "plansys2_msgs/srv/get_domain_function_details.hpp"
 #include "plansys2_msgs/srv/get_domain_action_details.hpp"
+
+#include "plansys2_pddl_parser/Tree.h"
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -65,10 +69,24 @@ public:
   /// Get the details of a predicate existing in the domain.
   /**
    * \param[in] predicate The name of the predicate.
-   * \return A Predicate object containing the predicate name andt its parameters (name and type).
+   * \return A Predicate object containing the predicate name and its parameters (name and type).
    *    If the predicate does not exist, the value returned has not value.
    */
-  std::optional<plansys2::Predicate> getPredicate(const std::string & predicate);
+  std::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & predicate);
+
+  /// Get the functions existing in the domain.
+  /**
+   * \return The vector containing the name of the functions.
+   */
+  std::vector<std::string> getFunctions();
+
+  /// Get the details of a function existing in the domain.
+  /**
+   * \param[in] function The name of the function.
+   * \return A Function object containing the function name and its parameters (name and type).
+   *    If the function does not exist, the value returned has not value.
+   */
+  std::optional<parser::pddl::tree::Function> getFunction(const std::string & function);
 
   /// Get the regular actions existing in the domain.
   /**
@@ -82,7 +100,7 @@ public:
    * \return An Action object containing the action name, parameters, requirements and effects.
    *    If the action does not exist, the value returned has not value.
    */
-  std::optional<plansys2::Action> getAction(const std::string & action);
+  std::optional<parser::pddl::tree::Action> getAction(const std::string & action);
 
   /// Get the temporal actions existing in the domain.
   /**
@@ -96,7 +114,7 @@ public:
    * \return A Durative Action object containing the action name, parameters, requirements and
    *    effects. If the action does not exist, the value returned has not value.
    */
-  std::optional<plansys2::DurativeAction> getDurativeAction(const std::string & action);
+  std::optional<parser::pddl::tree::DurativeAction> getDurativeAction(const std::string & action);
 
   /// Get the current domain, ready to be saved to file, or to initialize another domain.
   /**
@@ -110,9 +128,12 @@ private:
   rclcpp::Client<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainTypes>::SharedPtr get_types_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainPredicates>::SharedPtr get_predicates_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetDomainFunctions>::SharedPtr get_functions_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_actions_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainPredicateDetails>::SharedPtr
     get_predicate_details_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetDomainFunctionDetails>::SharedPtr
+    get_function_details_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr get_action_details_client_;
 };
 

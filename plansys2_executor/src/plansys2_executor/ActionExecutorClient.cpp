@@ -153,7 +153,7 @@ ActionExecutorClient::should_execute(
         args.size(), specialized_arguments_.size());
     }
 
-    for (int i = 0; i < specialized_arguments_.size() && i < args.size(); i++) {
+    for (size_t i = 0; i < specialized_arguments_.size() && i < args.size(); i++) {
       if (specialized_arguments_[i] != "" && args[i] != "" &&
         specialized_arguments_[i] != args[i])
       {
