@@ -19,10 +19,14 @@
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
 
+#include "plansys2_msgs/msg/action_execution_info.hpp"
+
 #include "plansys2_executor/ActionExecutorClient.hpp"
 
 namespace plansys2
 {
+
+using namespace std::chrono_literals;
 
 ActionExecutorClient::ActionExecutorClient(
   const std::string & node_name,
@@ -33,6 +37,9 @@ ActionExecutorClient::ActionExecutorClient(
 {
   declare_parameter("action_name");
   declare_parameter("specialized_arguments");
+
+  status_.state = plansys2_msgs::msg::ActionPerformerStatus::NOT_READY;
+  status_.node_name = get_name();
 }
 
 using CallbackReturnT =
@@ -42,8 +49,18 @@ using std::placeholders::_1;
 CallbackReturnT
 ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
 {
+  status_pub_ = create_publisher<plansys2_msgs::msg::ActionPerformerStatus>(
+    "/performers_status", rclcpp::QoS(100).reliable());
+  status_pub_->on_activate();
+
+  hearbeat_pub_ = create_wall_timer(
+    1s, [this]() {
+      status_pub_->publish(status_);
+    });
+
   if (!get_parameter("action_name", action_managed_)) {
     RCLCPP_ERROR(get_logger(), "action_name parameter not set");
+    status_.state = plansys2_msgs::msg::ActionPerformerStatus::FAILURE;
   }
   get_parameter_or<std::vector<std::string>>(
     "specialized_arguments", specialized_arguments_, std::vector<std::string>({}));
@@ -56,12 +73,18 @@ ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
 
   action_hub_pub_->on_activate();
 
+  status_.state = plansys2_msgs::msg::ActionPerformerStatus::READY;
+  status_.action = action_managed_;
+  status_.specialized_arguments = specialized_arguments_;
+
   return CallbackReturnT::SUCCESS;
 }
 
 CallbackReturnT
 ActionExecutorClient::on_activate(const rclcpp_lifecycle::State & state)
 {
+  status_.state = plansys2_msgs::msg::ActionPerformerStatus::RUNNING;
+
   timer_ = create_wall_timer(
     rate_, std::bind(&ActionExecutorClient::do_work, this));
 
@@ -71,6 +94,7 @@ ActionExecutorClient::on_activate(const rclcpp_lifecycle::State & state)
 CallbackReturnT
 ActionExecutorClient::on_deactivate(const rclcpp_lifecycle::State & state)
 {
+  status_.state = plansys2_msgs::msg::ActionPerformerStatus::READY;
   timer_ = nullptr;
 
   return CallbackReturnT::SUCCESS;

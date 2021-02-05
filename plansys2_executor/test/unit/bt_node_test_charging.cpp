@@ -42,7 +42,6 @@
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
-#include "plansys2_executor/behavior_tree/check_atstart_req_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
 
@@ -53,129 +52,6 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 #include "gtest/gtest.h"
-
-
-TEST(problem_expert, check_atstart_req_test)
-{
-  auto test_node = rclcpp::Node::make_shared("test_node");
-  auto test_lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_lc_node");
-  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
-  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
-
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
-
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
-
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
-
-  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
-
-  exe.add_node(domain_node->get_node_base_interface());
-  exe.add_node(problem_node->get_node_base_interface());
-
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
-
-
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
-
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
-
-  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
-  (*action_map)["(move robot1 wp1 wp2):5"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info =
-    plansys2::get_action_from_string("(move robot1 wp1 wp2)", domain_client);
-
-  ASSERT_NE(
-    (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info,
-    nullptr);
-
-  std::string bt_xml_tree =
-    R"(
-    <root main_tree_to_execute = "MainTree" >
-      <BehaviorTree ID="MainTree">
-        <Sequence name="root_sequence">
-          <CheckAtStartReq action="(move robot1 wp1 wp2):5"/>
-       </Sequence>
-      </BehaviorTree>
-    </root>
-  )";
-
-  auto blackboard = BT::Blackboard::create();
-
-  blackboard->set("action_map", action_map);
-  blackboard->set("node", test_lc_node);
-  blackboard->set("problem_client", problem_client);
-
-  BT::BehaviorTreeFactory factory;
-  factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
-  factory.registerNodeType<plansys2::CheckAtStartReq>("CheckAtStartReq");
-
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp1", "waypoint"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp2", "waypoint"}));
-
-  std::vector<std::string> predicates = {
-    "(robot_at robot1 wp1)",
-    "(charger_at wp2)",
-    "(connected wp1 wp2)"};
-
-  std::vector<std::string> functions = {
-    "(= (speed robot1) 3)",
-    "(= (max_range robot1) 75)",
-    "(= (state_of_charge robot1) 99)",
-    "(= (distance wp1 wp2) 15)",
-    "(= (distance wp2 wp1) 15)"};
-
-  try {
-    auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
-
-    auto status = BT::NodeStatus::RUNNING;
-    status = tree.tickRoot();
-    ASSERT_EQ(status, BT::NodeStatus::FAILURE);
-
-    for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
-    }
-
-    for (const auto & func : functions) {
-      ASSERT_TRUE(problem_client->addFunction(parser::pddl::tree::Function(func)));
-    }
-
-    tree = factory.createTreeFromText(bt_xml_tree, blackboard);
-
-    status = BT::NodeStatus::RUNNING;
-    status = tree.tickRoot();
-    ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
-  } catch (std::exception & e) {
-    std::cerr << e.what() << std::endl;
-  }
-
-  finish = true;
-  t.join();
-}
 
 TEST(problem_expert, wait_atstart_req_test)
 {

@@ -12,6 +12,7 @@ find_package(ament_index_cpp REQUIRED)
 find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_core REQUIRED)
+find_package(plansys2_popf_plan_solver REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
 
@@ -25,6 +26,7 @@ set(dependencies
     ament_index_cpp
     plansys2_msgs
     plansys2_core
+    plansys2_popf_plan_solver
     std_msgs
     lifecycle_msgs
 )

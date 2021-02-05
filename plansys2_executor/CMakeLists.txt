@@ -59,7 +59,6 @@ set(EXECUTOR_SOURCES
   src/plansys2_executor/behavior_tree/execute_action_node.cpp
   src/plansys2_executor/behavior_tree/wait_action_node.cpp
   src/plansys2_executor/behavior_tree/wait_atstart_req_node.cpp
-  src/plansys2_executor/behavior_tree/check_atstart_req_node.cpp
   src/plansys2_executor/behavior_tree/check_overall_req_node.cpp
   src/plansys2_executor/behavior_tree/check_atend_req_node.cpp
   src/plansys2_executor/behavior_tree/apply_atstart_effect_node.cpp

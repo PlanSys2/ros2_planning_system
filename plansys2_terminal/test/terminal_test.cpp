@@ -621,7 +621,12 @@ TEST_F(TerminalTestCase, check_actors)
   std::string command("check actors");
   terminal_node->process_command(command, os);
 
-  ASSERT_EQ(os.str(), "\t[askcharge] 1\n\t[charge] 1\n\t[move] 2\n");
+  ASSERT_EQ(
+    os.str(),
+    "\t[askcharge] askcharge\tREADY\n"
+    "\t[charge] charge\tREADY\n"
+    "\t[move_1] move\tREADY\n"
+    "\t[move_2] move\tREADY\n");
 
   exe.cancel();
   t.join();

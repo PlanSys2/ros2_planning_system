@@ -855,4 +855,11 @@ typedef PredicateTree Goal;
 }  // namespace pddl
 }  // namespace parser
 
+ namespace plansys2 {
+  typedef parser::pddl::tree::Predicate Predicate;
+  typedef parser::pddl::tree::Function Function;
+  typedef parser::pddl::tree::Instance Instance;
+  typedef parser::pddl::tree::Goal Goal;
+}
+
 #endif  // PLANSYS2_PDDL_PARSER__TREE_H_

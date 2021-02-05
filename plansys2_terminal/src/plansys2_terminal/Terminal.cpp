@@ -33,7 +33,7 @@
 #include "plansys2_executor/ExecutorClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 
-#include "plansys2_msgs/msg/action_execution_info.hpp"
+#include "plansys2_msgs/msg/action_performer_status.hpp"
 #include "plansys2_msgs/msg/action_execution.hpp"
 
 #include "plansys2_terminal/Terminal.hpp"
@@ -745,53 +745,44 @@ Terminal::process_run(std::vector<std::string> & command, std::ostringstream & o
 void
 Terminal::process_check_actors(std::vector<std::string> & command, std::ostringstream & os)
 {
-  std::map<std::string, int> actors;
-  auto action_hub_pub = create_publisher<plansys2_msgs::msg::ActionExecution>(
-    "/actions_hub", rclcpp::QoS(100).reliable());
+  std::map<std::string, plansys2_msgs::msg::ActionPerformerStatus> actors;
 
-  auto protocol_callback =
-    [this, &actors, action_hub_pub](const plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
-      if (msg->node_id == get_name() ||
-        msg->type != plansys2_msgs::msg::ActionExecution::RESPONSE)
-      {
-        return;
-      }
-
-      if (actors.find(msg->action) == actors.end()) {
-        actors[msg->action] = 1;
-      } else {
-        actors[msg->action]++;
-      }
-
-      plansys2_msgs::msg::ActionExecution resp;
-      resp.node_id = msg->node_id;
-      resp.type = plansys2_msgs::msg::ActionExecution::REJECT;
-      action_hub_pub->publish(resp);
+  auto status_callback =
+    [this, &actors](const plansys2_msgs::msg::ActionPerformerStatus::SharedPtr msg) {
+      actors[msg->node_name] = *msg;
     };
 
-  auto action_hub_sub = create_subscription<plansys2_msgs::msg::ActionExecution>(
-    "/actions_hub", rclcpp::QoS(100).reliable(), protocol_callback);
-
-  for (const auto & action : domain_client_->getDurativeActions()) {
-    auto action_details = domain_client_->getDurativeAction(action);
-    assert(action_details.has_value());
-
-    plansys2_msgs::msg::ActionExecution req;
-    req.type = plansys2_msgs::msg::ActionExecution::REQUEST;
-    req.node_id = get_name();
-    req.action = action;
-    req.arguments = std::vector<std::string>(action_details.value().parameters.size(), "");
-
-    action_hub_pub->publish(req);
-  }
+  auto status_sub = create_subscription<plansys2_msgs::msg::ActionPerformerStatus>(
+    "/performers_status", rclcpp::QoS(100).reliable(), status_callback);
 
   auto start = now();
   while (rclcpp::ok() && (now() - start).seconds() < 2.0) {
     rclcpp::spin_some(shared_from_this());
   }
 
+  std::list<std::string> keys;
   for (const auto & actor : actors) {
-    os << "\t[" << actor.first << "] " << actor.second << std::endl;
+    keys.push_back(actor.first);
+  }
+  keys.sort();
+
+  for (const auto & key : keys) {
+    os << "\t[" << key << "] " << actors[key].action;
+
+    switch (actors[key].state) {
+      case plansys2_msgs::msg::ActionPerformerStatus::NOT_READY:
+        os << "\tNOT READY" << std::endl;
+        break;
+      case plansys2_msgs::msg::ActionPerformerStatus::READY:
+        os << "\tREADY" << std::endl;
+        break;
+      case plansys2_msgs::msg::ActionPerformerStatus::RUNNING:
+        os << "\tRUNNING" << std::endl;
+        break;
+      case plansys2_msgs::msg::ActionPerformerStatus::FAILURE:
+        os << "\tFAILURE" << std::endl;
+        break;
+    }
   }
 }
 

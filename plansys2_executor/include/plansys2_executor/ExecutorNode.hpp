@@ -35,6 +35,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "rclcpp_lifecycle/lifecycle_publisher.hpp"
 
 namespace plansys2
 {
@@ -63,6 +64,9 @@ private:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   std::shared_ptr<plansys2::PlannerClient> planner_client_;
+
+  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecutionInfo>::SharedPtr
+    execution_info_pub_;
 
   rclcpp_action::Server<ExecutePlan>::SharedPtr execute_plan_action_server_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::String>::SharedPtr dotgraph_pub_;
