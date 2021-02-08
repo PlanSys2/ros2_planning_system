@@ -72,11 +72,12 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
   unsigned int max_msgs_per_second = get_parameter("max_msgs_per_second").as_int();
 
   if (publisher_port <= 0 || server_port <= 0) {
-    RCLCPP_WARN(get_logger(),
-      "[%s] Groot monitoring ports not provided, disabling Groot monitoring. publisher port: %d, server port: d",
+    RCLCPP_WARN(
+      get_logger(),
+      "[%s] Groot monitoring ports not provided, disabling Groot monitoring."
+      " publisher port: %d, server port: %d",
       get_name(), publisher_port, server_port);
-  }
-  else if (get_parameter("enable_groot_monitoring").as_bool()) {
+  } else if (get_parameter("enable_groot_monitoring").as_bool()) {
     RCLCPP_INFO(
       get_logger(),
       "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
