@@ -31,6 +31,12 @@ BTAction::BTAction(
 {
   declare_parameter("bt_xml_file");
   declare_parameter("plugins");
+#ifdef ZMQ_FOUND
+  declare_parameter<bool>("enable_groot_monitoring", true);
+  declare_parameter<int>("publisher_port", -1);
+  declare_parameter<int>("server_port", -1);
+  declare_parameter<int>("max_msgs_per_second", 25);
+#endif
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
@@ -60,7 +66,40 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
 
   tree_ = factory.createTreeFromFile(bt_xml_file_, blackboard_);
 
+#ifdef ZMQ_FOUND
+  int publisher_port = get_parameter("publisher_port").as_int();
+  int server_port = get_parameter("server_port").as_int();
+  unsigned int max_msgs_per_second = get_parameter("max_msgs_per_second").as_int();
+
+  if (publisher_port <= 0 || server_port <= 0) {
+    RCLCPP_WARN(get_logger(),
+      "[%s] Groot monitoring ports not provided, disabling Groot monitoring. publisher port: %d, server port: d",
+      get_name(), publisher_port, server_port);
+  }
+  else if (get_parameter("enable_groot_monitoring").as_bool()) {
+    RCLCPP_INFO(
+      get_logger(),
+      "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
+      get_name(), publisher_port, server_port, max_msgs_per_second);
+    try {
+      publisher_zmq_.reset(
+        new BT::PublisherZMQ(
+          tree_, max_msgs_per_second, publisher_port,
+          server_port));
+    } catch (const BT::LogicError & exc) {
+      RCLCPP_ERROR(get_logger(), "ZMQ error: %s", exc.what());
+    }
+  }
+#endif
+
   return ActionExecutorClient::on_configure(previous_state);
+}
+
+rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+BTAction::on_cleanup(const rclcpp_lifecycle::State & previous_state)
+{
+  publisher_zmq_.reset();
+  return ActionExecutorClient::on_cleanup(previous_state);
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
