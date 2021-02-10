@@ -19,6 +19,8 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <set>
+#include <map>
 
 #include "plansys2_problem_expert/Utils.hpp"
 

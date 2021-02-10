@@ -73,7 +73,8 @@ ProblemExpertClient::ProblemExpertClient(rclcpp::Node::SharedPtr provided_node)
   update_problem_function_client_ =
     node_->create_client<plansys2_msgs::srv::UpdateProblemFunction>(
     "problem_expert/update_problem_function");
-  is_problem_goal_satisfied_client_ = node_->create_client<plansys2_msgs::srv::IsProblemGoalSatisfied>(
+  is_problem_goal_satisfied_client_ =
+    node_->create_client<plansys2_msgs::srv::IsProblemGoalSatisfied>(
     "problem_expert/is_problem_goal_satisfied");
 }
 
@@ -797,7 +798,7 @@ ProblemExpertClient::isGoalSatisfied(const parser::pddl::tree::Goal & goal)
         " service  client: waiting for service to appear...");
   }
 
-  auto request = std::make_shared<plansys2_msgs::srv::IsProblemGoalSatisfied::Request>(); 
+  auto request = std::make_shared<plansys2_msgs::srv::IsProblemGoalSatisfied::Request>();
   request->goal = goal.toString();
   auto future_result = is_problem_goal_satisfied_client_->async_send_request(request);
 
