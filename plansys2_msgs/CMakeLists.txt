@@ -29,6 +29,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetProblemFunctions.srv"
   "srv/GetProblemFunctionDetails.srv"
   "srv/GetProblemGoal.srv"
+  "srv/IsProblemGoalSatisfied.srv"
   "srv/AddProblemGoal.srv"
   "srv/AddProblemInstance.srv"
   "srv/AddProblemPredicate.srv"
