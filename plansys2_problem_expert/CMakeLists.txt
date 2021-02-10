@@ -35,6 +35,7 @@ set(PROBLEM_EXPERT_SOURCES
   src/plansys2_problem_expert/ProblemExpert.cpp
   src/plansys2_problem_expert/ProblemExpertClient.cpp
   src/plansys2_problem_expert/ProblemExpertNode.cpp
+  src/plansys2_problem_expert/Utils.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${PROBLEM_EXPERT_SOURCES})

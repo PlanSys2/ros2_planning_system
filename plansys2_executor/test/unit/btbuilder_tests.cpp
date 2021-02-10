@@ -32,7 +32,7 @@
 #include "plansys2_planner/PlannerNode.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
-#include "plansys2_executor/Utils.hpp"
+#include "plansys2_problem_expert/Utils.hpp"
 
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/ActionExecutorClient.hpp"
