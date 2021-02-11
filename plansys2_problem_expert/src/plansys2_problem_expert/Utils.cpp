@@ -249,7 +249,7 @@ std::tuple<bool, bool, double> evaluate(
             break;
         }
 
-        if (apply) {
+        if (success && apply) {
           if (use_state) {
             functions[func_node->toString()] = value;
           } else {
