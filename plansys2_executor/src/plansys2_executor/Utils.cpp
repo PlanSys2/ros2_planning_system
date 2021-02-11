@@ -57,7 +57,7 @@ std::tuple<bool, bool, double> evaluate(
         std::shared_ptr<parser::pddl::tree::OrNode> pn_or =
           std::dynamic_pointer_cast<parser::pddl::tree::OrNode>(node);
         bool success = true;
-        bool truth_value = true;
+        bool truth_value = false;
 
         for (const auto & op : pn_or->ops) {
           std::tuple<bool, bool, double> result =
