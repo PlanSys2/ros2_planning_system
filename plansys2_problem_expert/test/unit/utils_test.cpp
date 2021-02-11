@@ -42,7 +42,7 @@ TEST(utils, evaluate_predicate_use_state)
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   auto test_tree_node = parser::pddl::tree::get_tree_node(
-    "(patrolled r2d2 wp1)", false, parser::pddl::tree::AND);
+    "(patrolled wp1)", false, parser::pddl::tree::AND);
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, problem_client, predicates, functions, false, true),
@@ -56,7 +56,7 @@ TEST(utils, evaluate_predicate_use_state)
     plansys2::evaluate(test_tree_node, problem_client, predicates, functions, true, true),
     std::make_tuple(true, true, 0));
   ASSERT_EQ(predicates.size(), 1);
-  ASSERT_EQ(*predicates.begin(), "(patrolled r2d2 wp1)");
+  ASSERT_EQ(*predicates.begin(), "(patrolled wp1)");
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, problem_client, predicates, functions, false, true),
@@ -119,7 +119,7 @@ TEST(utils, evaluate_invalid)
     std::make_tuple(true, true, 0));
 
   auto test_tree_node = parser::pddl::tree::get_tree_node(
-    "(patrolled r2d2 wp1)", false, parser::pddl::tree::AND);
+    "(patrolled wp1)", false, parser::pddl::tree::AND);
   test_tree_node->type_ = parser::pddl::tree::UNKNOWN_NODE_TYPE;
 
   ASSERT_EQ(
@@ -134,21 +134,21 @@ TEST(utils, get_subtrees)
   ASSERT_EQ(plansys2::get_subtrees(NULL), empty_expected);
 
   plansys2::Goal invalid_goal;
-  invalid_goal.fromString("(or (patrolled r2d2 wp1) (patrolled r2d2 wp2))");
+  invalid_goal.fromString("(or (patrolled wp1) (patrolled wp2))");
   ASSERT_EQ(plansys2::get_subtrees(invalid_goal.root_), empty_expected);
 
   std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> expected;
   expected.push_back(
     parser::pddl::tree::get_tree_node(
-      "(patrolled r2d2 wp1)", false,
+      "(patrolled wp1)", false,
       parser::pddl::tree::AND));
   expected.push_back(
     parser::pddl::tree::get_tree_node(
-      "(patrolled r2d2 wp2)", false,
+      "(patrolled wp2)", false,
       parser::pddl::tree::AND));
 
   plansys2::Goal goal;
-  goal.fromString("(and (patrolled r2d2 wp1) (patrolled r2d2 wp2))");
+  goal.fromString("(and (patrolled wp1) (patrolled wp2))");
   auto actual = plansys2::get_subtrees(goal.root_);
   ASSERT_EQ(actual.size(), expected.size());
   for (size_t i = 0; i < expected.size(); i++) {
