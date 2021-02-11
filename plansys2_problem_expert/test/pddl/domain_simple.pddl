@@ -67,6 +67,7 @@ room_with_teleporter - room
     :condition (and
         (over all(robot_at ?r ?ro))
         (over all(person_at ?p ?ro))
+        (at end(person_at ?p ?ro))
     )
     :effect (and
         (at end(robot_near_person ?r ?p))

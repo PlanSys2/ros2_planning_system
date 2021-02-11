@@ -845,6 +845,37 @@ TEST(utils, get_action_from_string)
     durative_actual->at_end_effects.toString(),
     durative_expected->at_end_effects.toString());
 
+  std::string overall_action_str = "(approach leia kitchen Jack)";
+
+  std::shared_ptr<parser::pddl::tree::DurativeAction> overall_expected =
+    std::make_shared<parser::pddl::tree::DurativeAction>();
+  overall_expected->name = "approach";
+  overall_expected->parameters.push_back(parser::pddl::tree::Param{"leia", ""});
+  overall_expected->parameters.push_back(parser::pddl::tree::Param{"kitchen", ""});
+  overall_expected->parameters.push_back(parser::pddl::tree::Param{"Jack", ""});
+  overall_expected->over_all_requirements.fromString("(and (robot_at leia kitchen) (person_at Jack kitchen))");
+  overall_expected->at_end_requirements.fromString("(and (person_at Jack kitchen))");
+  overall_expected->at_end_effects.fromString("(and (robot_near_person leia Jack))");
+
+  std::shared_ptr<parser::pddl::tree::DurativeAction> overall_actual =
+    plansys2::get_action_from_string(overall_action_str, domain_client);
+
+  ASSERT_EQ(overall_actual->name_actions_to_string(), overall_expected->name_actions_to_string());
+  ASSERT_EQ(
+    overall_actual->at_start_requirements.toString(),
+    overall_expected->at_start_requirements.toString());
+  ASSERT_EQ(
+    overall_actual->over_all_requirements.toString(),
+    overall_expected->over_all_requirements.toString());
+  ASSERT_EQ(
+    overall_actual->at_end_requirements.toString(),
+    overall_expected->at_end_requirements.toString());
+  ASSERT_EQ(
+    overall_actual->at_start_effects.toString(), overall_expected->at_start_effects.toString());
+  ASSERT_EQ(
+    overall_actual->at_end_effects.toString(),
+    overall_expected->at_end_effects.toString());
+
   finish = true;
   t.join();
 }
