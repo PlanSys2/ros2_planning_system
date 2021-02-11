@@ -208,7 +208,8 @@ TEST(utils, evaluate_predicate_client)
   ASSERT_TRUE(plansys2::apply(test_tree_node, problem_client));
   ASSERT_TRUE(plansys2::check(test_tree_node, problem_client));
 
-  ASSERT_EQ(plansys2::evaluate(test_tree_node, problem_client, predicates, functions, true, false, true),
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client, predicates, functions, true, false, true),
     std::make_tuple(true, false, 0.0));
   ASSERT_FALSE(plansys2::check(test_tree_node, problem_client));
 
@@ -596,7 +597,10 @@ TEST(utils, evaluate_function_mod_client)
 
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"bedroom", "room"}));
   ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"kitchen", "room"}));
-  ASSERT_TRUE(problem_client->addFunction(parser::pddl::tree::Function("(= (room_distance bedroom kitchen) 1.0)")));
+  ASSERT_TRUE(
+    problem_client->addFunction(
+      parser::pddl::tree::Function(
+        "(= (room_distance bedroom kitchen) 1.0)")));
 
   {
     rclcpp::Rate rate(10);
@@ -612,7 +616,8 @@ TEST(utils, evaluate_function_mod_client)
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, problem_client, true),
     std::make_tuple(true, false, 0));
-  std::optional<plansys2::Function> func = problem_client->getFunction("(room_distance bedroom kitchen)");
+  std::optional<plansys2::Function> func = problem_client->getFunction(
+    "(room_distance bedroom kitchen)");
   ASSERT_TRUE(func.has_value());
   ASSERT_EQ(func.value().value, 0.0);
 
@@ -640,7 +645,8 @@ TEST(utils, evaluate_function_mod_invalid)
   // Unknown function modifier type
   auto tree_node = parser::pddl::tree::get_tree_node(
     "(assign (vx) 3.0)", false, parser::pddl::tree::EXPRESSION);
-  auto test_tree_node = std::dynamic_pointer_cast<parser::pddl::tree::FunctionModifierNode>(tree_node);
+  auto test_tree_node = std::dynamic_pointer_cast<parser::pddl::tree::FunctionModifierNode>(
+    tree_node);
   test_tree_node->modifier_type = parser::pddl::tree::UNKNOWN_FUN_MOD_TYPE;
 
   ASSERT_EQ(
@@ -853,7 +859,8 @@ TEST(utils, get_action_from_string)
   overall_expected->parameters.push_back(parser::pddl::tree::Param{"leia", ""});
   overall_expected->parameters.push_back(parser::pddl::tree::Param{"kitchen", ""});
   overall_expected->parameters.push_back(parser::pddl::tree::Param{"Jack", ""});
-  overall_expected->over_all_requirements.fromString("(and (robot_at leia kitchen) (person_at Jack kitchen))");
+  overall_expected->over_all_requirements.fromString(
+    "(and (robot_at leia kitchen) (person_at Jack kitchen))");
   overall_expected->at_end_requirements.fromString("(and (person_at Jack kitchen))");
   overall_expected->at_end_effects.fromString("(and (robot_near_person leia Jack))");
 
