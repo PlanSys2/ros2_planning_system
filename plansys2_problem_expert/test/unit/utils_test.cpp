@@ -34,6 +34,96 @@
 
 #include "plansys2_msgs/msg/knowledge.hpp"
 
+TEST(utils, evaluate_and)
+{
+  std::set<std::string> predicates;
+  std::map<std::string, double> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+
+  std::string expression = "(and (patrolled wp1) (patrolled wp2))";
+  parser::pddl::tree::Goal goal;
+  goal.fromString(expression);
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal.root_, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, false, 0));
+
+  predicates.insert("(patrolled wp1)");
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal.root_, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, false, 0));
+
+  predicates.clear();
+  predicates.insert("(patrolled wp2)");
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal.root_, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, false, 0));
+
+  predicates.insert("(patrolled wp1)");
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal.root_, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, true, 0));
+}
+
+TEST(utils, evaluate_or)
+{
+  std::set<std::string> predicates;
+  std::map<std::string, double> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+
+  auto test_tree_node = parser::pddl::tree::get_tree_node(
+    "(or (patrolled wp1) (patrolled wp2))", false, parser::pddl::tree::AND);
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, false, 0));
+
+  predicates.insert("(patrolled wp1)");
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, true, 0));
+
+  predicates.clear();
+  predicates.insert("(patrolled wp2)");
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, true, 0));
+
+  predicates.insert("(patrolled wp1)");
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, true, 0));
+}
+
+TEST(utils, evaluate_not)
+{
+  std::set<std::string> predicates;
+  std::map<std::string, double> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+
+  auto test_tree_node = parser::pddl::tree::get_tree_node(
+    "(not (patrolled wp1))", false, parser::pddl::tree::AND);
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, true, 0));
+
+  predicates.insert("(patrolled wp1)");
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, false, 0));
+}
+
 TEST(utils, evaluate_predicate_use_state)
 {
   std::set<std::string> predicates;
@@ -90,6 +180,222 @@ TEST(utils, evaluate_function_use_state)
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
     std::make_tuple(true, false, 1.0));
+}
+
+TEST(utils, evaluate_expression_ge)
+{
+  std::set<std::string> predicates;
+  std::map<std::string, double> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+
+  auto test_tree_node = parser::pddl::tree::get_tree_node(
+    "(>= (vx) 3.0)", false, parser::pddl::tree::EXPRESSION);
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, false, 0));
+
+  functions["(vx)"] = 2.9999;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, false, 0));
+
+  functions["(vx)"] = 4.0;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, true, 0));
+
+  functions["(vx)"] = 3.0;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, true, 0));
+}
+
+TEST(utils, evaluate_expression_gt)
+{
+  std::set<std::string> predicates;
+  std::map<std::string, double> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+
+  auto test_tree_node = parser::pddl::tree::get_tree_node(
+    "(> (distance wp1 wp2) 3.0)", false, parser::pddl::tree::AND);
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, false, 0));
+
+  functions["(distance wp1 wp2)"] = 3.0;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, false, 0));
+
+  functions["(distance wp1 wp2)"] = 3.00001;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, true, 0));
+}
+
+TEST(utils, evaluate_expression_le)
+{
+  std::set<std::string> predicates;
+  std::map<std::string, double> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+
+  auto test_tree_node = parser::pddl::tree::get_tree_node(
+    "(<= (vx) -3.0)", false, parser::pddl::tree::EXPRESSION);
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, false, 0));
+
+  functions["(vx)"] = -2.9999;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, false, 0));
+
+  functions["(vx)"] = -4.0;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, true, 0));
+
+  functions["(vx)"] = -3.0;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, true, 0));
+}
+
+TEST(utils, evaluate_expression_lt)
+{
+  std::set<std::string> predicates;
+  std::map<std::string, double> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+
+  auto test_tree_node = parser::pddl::tree::get_tree_node(
+    "(< (distance wp1 wp2) -3.0)", false, parser::pddl::tree::AND);
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, false, 0));
+
+  functions["(distance wp1 wp2)"] = -3.0;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, false, 0));
+
+  functions["(distance wp1 wp2)"] = -3.00001;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, true, 0));
+}
+
+TEST(utils, evaluate_expression_invalid)
+{
+  std::set<std::string> predicates;
+  std::map<std::string, double> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+
+  // Unknown expression type
+  auto tree_node = parser::pddl::tree::get_tree_node(
+    "(> (vx) 0)", false, parser::pddl::tree::AND);
+  auto test_tree_node = std::dynamic_pointer_cast<parser::pddl::tree::ExpressionNode>(tree_node);
+  test_tree_node->expr_type = parser::pddl::tree::UNKNOWN_EXPR_TYPE;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(false, false, 0));
+
+  functions["(vx)"] = 1.0;
+
+  // Divide by zero
+  tree_node = parser::pddl::tree::get_tree_node(
+    "(/ (vx) 0)", false, parser::pddl::tree::AND);
+
+  ASSERT_EQ(
+    plansys2::evaluate(tree_node, predicates, functions),
+    std::make_tuple(false, false, 0));
+}
+
+TEST(utils, evaluate_expression_invalid_client)
+{
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"leia", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"Jack", "person"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"bedroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"kitchen", "room"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"m1", "message"}));
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  auto test_tree_node = parser::pddl::tree::get_tree_node(
+    "(> (room_distance bedroom kitchen) 0)", false, parser::pddl::tree::AND);
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client),
+    std::make_tuple(false, false, 0));
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  test_tree_node = parser::pddl::tree::get_tree_node(
+    "(> 0 (room_distance bedroom kitchen))", false, parser::pddl::tree::AND);
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client),
+    std::make_tuple(false, false, 0));
+
+  finish = true;
+  t.join();
 }
 
 TEST(utils, evaluate_number)
@@ -177,6 +483,9 @@ TEST(utils, get_action_from_string)
   std::thread t([&]() {
       while (!finish) {exe.spin_some();}
     });
+
+  std::string invalid_action_str = "(invalid r2d2 kitchen bedroom)";
+  ASSERT_EQ(plansys2::get_action_from_string(invalid_action_str, domain_client), nullptr);
 
   std::string action_str = "(teleport r2d2 kitchen bedroom)";
 
