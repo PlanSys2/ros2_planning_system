@@ -77,15 +77,18 @@ TEST(utils, evaluate_function_use_state)
   std::set<std::string> predicates;
   std::map<std::string, double> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   auto test_tree_node = parser::pddl::tree::get_tree_node(
     "(distance wp1 wp2)", false, parser::pddl::tree::EXPRESSION);
 
-  functions.insert({"(distance wp1 wp2)", 1.0});
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, false, 0.0));
+
+  functions["(distance wp1 wp2)"] = 1.0;
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree_node, problem_client, predicates, functions, true, true),
+    plansys2::evaluate(test_tree_node, predicates, functions),
     std::make_tuple(true, false, 1.0));
 }
 
