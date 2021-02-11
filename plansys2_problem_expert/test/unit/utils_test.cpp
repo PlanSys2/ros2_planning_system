@@ -34,6 +34,44 @@
 
 #include "plansys2_msgs/msg/knowledge.hpp"
 
+TEST(utils, evaluate_predicate_use_state)
+{
+  std::set<std::string> predicates;
+  std::map<std::string, double> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+
+  auto test_tree_node = parser::pddl::tree::get_tree_node(
+    "(patrolled r2d2 wp1)", false, parser::pddl::tree::AND);
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, false, 0));
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client, predicates, functions, false, true, true),
+    std::make_tuple(true, true, 0));
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client, predicates, functions, true, true),
+    std::make_tuple(true, true, 0));
+  ASSERT_EQ(predicates.size(), 1);
+  ASSERT_EQ(*predicates.begin(), "(patrolled r2d2 wp1)");
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, true, 0));
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client, predicates, functions, false, true, true),
+    std::make_tuple(true, false, 0));
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client, predicates, functions, true, true, true),
+    std::make_tuple(true, false, 0));
+  ASSERT_TRUE(predicates.empty());
+}
+
 TEST(utils, evaluate_invalid)
 {
   std::set<std::string> predicates;
