@@ -16,6 +16,9 @@
 #include <vector>
 #include <memory>
 #include <thread>
+#include <map>
+#include <set>
+#include <tuple>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
@@ -30,6 +33,26 @@
 #include "plansys2_pddl_parser/Tree.h"
 
 #include "plansys2_msgs/msg/knowledge.hpp"
+
+TEST(utils, evaluate_invalid)
+{
+  std::set<std::string> predicates;
+  std::map<std::string, double> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+
+  ASSERT_EQ(
+    plansys2::evaluate(NULL, problem_client, predicates, functions),
+    std::make_tuple(true, true, 0));
+
+  auto test_tree_node = parser::pddl::tree::get_tree_node(
+    "(patrolled r2d2 wp1)", false, parser::pddl::tree::AND);
+  test_tree_node->type_ = parser::pddl::tree::UNKNOWN_NODE_TYPE;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, problem_client, predicates, functions),
+    std::make_tuple(false, false, 0));
+}
 
 TEST(utils, get_subtrees)
 {
