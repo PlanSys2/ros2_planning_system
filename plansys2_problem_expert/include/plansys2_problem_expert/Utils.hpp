@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_EXECUTOR__UTILS_HPP_
-#define PLANSYS2_EXECUTOR__UTILS_HPP_
+#ifndef PLANSYS2_PROBLEM_EXPERT__UTILS_HPP_
+#define PLANSYS2_PROBLEM_EXPERT__UTILS_HPP_
 
 #include <tuple>
 #include <memory>
@@ -110,4 +110,4 @@ std::string get_name(const std::string & action_expr);
 
 }  // namespace plansys2
 
-#endif  // PLANSYS2_EXECUTOR__UTILS_HPP_
+#endif  // PLANSYS2_PROBLEM_EXPERT__UTILS_HPP_
