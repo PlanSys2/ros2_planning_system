@@ -129,6 +129,12 @@ ProblemExpertNode::ProblemExpertNode()
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
 
+  is_problem_goal_satisfied_service_ = create_service<plansys2_msgs::srv::IsProblemGoalSatisfied>(
+    "problem_expert/is_problem_goal_satisfied", std::bind(
+      &ProblemExpertNode::is_problem_goal_satisfied_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+
   remove_problem_goal_service_ = create_service<plansys2_msgs::srv::RemoveProblemGoal>(
     "problem_expert/remove_problem_goal",
     std::bind(
@@ -555,6 +561,22 @@ ProblemExpertNode::get_problem_service_callback(
   } else {
     response->success = true;
     response->problem = problem_expert_->getProblem();
+  }
+}
+
+void
+ProblemExpertNode::is_problem_goal_satisfied_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::IsProblemGoalSatisfied::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::IsProblemGoalSatisfied::Response> response)
+{
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    response->success = true;
+    response->satisfied = problem_expert_->isGoalSatisfied(parser::pddl::tree::Goal(request->goal));
   }
 }
 
