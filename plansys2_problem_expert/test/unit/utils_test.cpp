@@ -369,19 +369,19 @@ TEST(utils, evaluate_expression_multiply)
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
-    std::make_tuple(true, true, 0));
+    std::make_tuple(true, false, 0));
 
   functions["(vx)"] = 3.0;
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
-    std::make_tuple(true, true, 9.0));
+    std::make_tuple(true, false, 9.0));
 
   functions["(vx)"] = -0.001;
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
-    std::make_tuple(true, true, -0.003));
+    std::make_tuple(true, false, -0.003));
 }
 
 TEST(utils, evaluate_expression_divide)
@@ -396,19 +396,19 @@ TEST(utils, evaluate_expression_divide)
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
-    std::make_tuple(true, true, 0));
+    std::make_tuple(true, false, 0));
 
   functions["(vx)"] = 3.0;
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
-    std::make_tuple(true, true, 1.0));
+    std::make_tuple(true, false, 1.0));
 
   functions["(vx)"] = -9.0;
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
-    std::make_tuple(true, true, -3.0));
+    std::make_tuple(true, false, -3.0));
 
   // Divide by zero
   test_tree_node = parser::pddl::tree::get_tree_node(
