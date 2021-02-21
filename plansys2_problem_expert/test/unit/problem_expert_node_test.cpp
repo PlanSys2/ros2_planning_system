@@ -617,6 +617,128 @@ TEST(problem_expert, set_goal)
   ASSERT_EQ(goal.toString(), "(and (patrolled ro1)(patrolled ro2)(patrolled ro3))");
 }
 */
+
+TEST(problem_expert_node, addget_goal_is_satisfied)
+{
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto test_node_2 = rclcpp::Node::make_shared("test_problem_expert_node_2");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(test_node_2->get_node_base_interface());
+
+  plansys2_msgs::msg::Knowledge last_knowledge_msg;
+  int knowledge_msg_counter = 0;
+  auto knowledge_sub = test_node_2->create_subscription<plansys2_msgs::msg::Knowledge>(
+    "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
+    [&last_knowledge_msg, &knowledge_msg_counter]
+      (const plansys2_msgs::msg::Knowledge::SharedPtr msg) {
+      last_knowledge_msg = *msg;
+      knowledge_msg_counter++;
+    });
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"leia", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"Jack", "person"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"bedroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"kitchen", "room"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"m1", "message"}));
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  ASSERT_EQ(knowledge_msg_counter, 5u);
+  ASSERT_EQ(last_knowledge_msg.instances.size(), 5u);
+  ASSERT_EQ(last_knowledge_msg.instances[0], "leia");
+  ASSERT_EQ(last_knowledge_msg.instances[1], "Jack");
+  ASSERT_EQ(last_knowledge_msg.instances[2], "bedroom");
+  ASSERT_EQ(last_knowledge_msg.instances[3], "kitchen");
+  ASSERT_EQ(last_knowledge_msg.instances[4], "m1");
+  ASSERT_EQ(last_knowledge_msg.predicates.size(), 0);
+  ASSERT_EQ(last_knowledge_msg.goal, "");
+
+  ASSERT_TRUE(
+    problem_client->addPredicate(
+      parser::pddl::tree::Predicate("(robot_at leia kitchen)")));
+  ASSERT_TRUE(
+    problem_client->addPredicate(
+      parser::pddl::tree::Predicate("(person_at Jack bedroom)")));
+
+  std::string expression = "(and (robot_talk leia m1 Jack))";
+  parser::pddl::tree::Goal goal;
+  goal.fromString(expression);
+  ASSERT_TRUE(problem_client->setGoal(goal));
+  ASSERT_FALSE(problem_client->isGoalSatisfied(goal));
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  ASSERT_EQ(knowledge_msg_counter, 8u);
+  ASSERT_EQ(last_knowledge_msg.instances.size(), 5u);
+  ASSERT_EQ(last_knowledge_msg.instances[0], "leia");
+  ASSERT_EQ(last_knowledge_msg.instances[1], "Jack");
+  ASSERT_EQ(last_knowledge_msg.instances[2], "bedroom");
+  ASSERT_EQ(last_knowledge_msg.instances[3], "kitchen");
+  ASSERT_EQ(last_knowledge_msg.instances[4], "m1");
+  ASSERT_EQ(last_knowledge_msg.predicates.size(), 2u);
+  ASSERT_EQ(last_knowledge_msg.predicates[0], "(robot_at leia kitchen)");
+  ASSERT_EQ(last_knowledge_msg.predicates[1], "(person_at Jack bedroom)");
+  ASSERT_EQ(last_knowledge_msg.goal, "(and (robot_talk leia m1 Jack))");
+
+  ASSERT_TRUE(
+    problem_client->addPredicate(
+      parser::pddl::tree::Predicate("(robot_talk leia m1 Jack)")));
+
+  ASSERT_TRUE(problem_client->isGoalSatisfied(goal));
+
+  ASSERT_EQ(knowledge_msg_counter, 9u);
+  ASSERT_EQ(last_knowledge_msg.instances.size(), 5u);
+  ASSERT_EQ(last_knowledge_msg.instances[0], "leia");
+  ASSERT_EQ(last_knowledge_msg.instances[1], "Jack");
+  ASSERT_EQ(last_knowledge_msg.instances[2], "bedroom");
+  ASSERT_EQ(last_knowledge_msg.instances[3], "kitchen");
+  ASSERT_EQ(last_knowledge_msg.instances[4], "m1");
+  ASSERT_EQ(last_knowledge_msg.predicates.size(), 3u);
+  ASSERT_EQ(last_knowledge_msg.predicates[0], "(robot_at leia kitchen)");
+  ASSERT_EQ(last_knowledge_msg.predicates[1], "(person_at Jack bedroom)");
+  ASSERT_EQ(last_knowledge_msg.predicates[2], "(robot_talk leia m1 Jack)");
+  ASSERT_EQ(last_knowledge_msg.goal, "(and (robot_talk leia m1 Jack))");
+
+  finish = true;
+  t.join();
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

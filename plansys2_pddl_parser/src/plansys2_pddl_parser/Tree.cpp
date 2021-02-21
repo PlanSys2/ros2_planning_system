@@ -309,7 +309,7 @@ std::string getPredicateName(const std::string & expr)
 
   size_t start = 1, end = 0;
   end = ret.find(" ", start);
-  ret = ret.substr(start, (end == std::string::npos) ? std::string::npos : end - start);
+  ret = ret.substr(start, (end == std::string::npos) ? (ret.length() - 2) : end - start);
 
   return ret;
 }
@@ -347,7 +347,7 @@ std::string getFunctionName(const std::string & expr)
 
   size_t start = 1, end = 0;
   end = ret.find(" ", start);
-  ret = ret.substr(start, (end == std::string::npos) ? std::string::npos : end - start);
+  ret = ret.substr(start, (end == std::string::npos) ? (ret.length() - 2) : end - start);
 
   return ret;
 }

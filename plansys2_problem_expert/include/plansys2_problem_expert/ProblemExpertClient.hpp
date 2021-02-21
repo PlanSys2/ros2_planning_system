@@ -34,6 +34,7 @@
 #include "plansys2_msgs/srv/get_problem_function_details.hpp"
 #include "plansys2_msgs/srv/get_problem_functions.hpp"
 #include "plansys2_msgs/srv/get_problem.hpp"
+#include "plansys2_msgs/srv/is_problem_goal_satisfied.hpp"
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
 #include "plansys2_msgs/srv/remove_problem_instance.hpp"
 #include "plansys2_msgs/srv/remove_problem_predicate.hpp"
@@ -73,6 +74,7 @@ public:
   parser::pddl::tree::Goal getGoal();
   bool setGoal(const parser::pddl::tree::Goal & goal);
   bool clearGoal();
+  bool isGoalSatisfied(const parser::pddl::tree::Goal & goal);
 
   std::string getProblem();
 
@@ -115,6 +117,8 @@ private:
     exist_problem_function_client_;
   rclcpp::Client<plansys2_msgs::srv::UpdateProblemFunction>::SharedPtr
     update_problem_function_client_;
+  rclcpp::Client<plansys2_msgs::srv::IsProblemGoalSatisfied>::SharedPtr
+    is_problem_goal_satisfied_client_;
   rclcpp::Node::SharedPtr node_;
 };
 

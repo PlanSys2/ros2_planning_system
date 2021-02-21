@@ -26,7 +26,7 @@
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_executor/Utils.hpp"
+#include "plansys2_problem_expert/Utils.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 

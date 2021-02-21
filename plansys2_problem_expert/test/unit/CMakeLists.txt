@@ -1,3 +1,6 @@
+ament_add_gtest(utils_test utils_test.cpp)
+target_link_libraries(utils_test ${PROJECT_NAME})
+
 ament_add_gtest(problem_expert_test problem_expert_test.cpp)
 target_link_libraries(problem_expert_test ${PROJECT_NAME})
 

@@ -49,6 +49,7 @@ public:
   virtual parser::pddl::tree::Goal getGoal() = 0;
   virtual bool setGoal(const parser::pddl::tree::Goal & goal) = 0;
   virtual bool clearGoal() = 0;
+  virtual bool isGoalSatisfied(const parser::pddl::tree::Goal & goal) = 0;
 
   virtual std::string getProblem() = 0;
 };
