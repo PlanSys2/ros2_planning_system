@@ -559,13 +559,43 @@ TEST(problem_expert, get_probem)
   ASSERT_EQ(problem_expert.getInstances().size(), 0);
 }
 
-TEST(problem_expert, set_goal)
+TEST(problem_expert, is_goal_satisfied)
 {
-  std::string expresion = std::string("(and (patrolled ro1) (patrolled ro2) (patrolled ro3))");
-  parser::pddl::tree::Goal goal;
-  goal.fromString(expresion);
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
 
-  ASSERT_EQ(goal.toString(), "(and (patrolled ro1)(patrolled ro2)(patrolled ro3))");
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::tree::Instance{"leia", "robot"}));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::tree::Instance{"Jack", "person"}));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::tree::Instance{"kitchen", "room"}));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::tree::Instance{"bedroom", "room"}));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::tree::Instance{"m1", "message"}));
+
+  ASSERT_TRUE(
+    problem_expert.addPredicate(
+      parser::pddl::tree::Predicate("(robot_at leia kitchen)")));
+  ASSERT_TRUE(
+    problem_expert.addPredicate(
+      parser::pddl::tree::Predicate("(person_at Jack bedroom)")));
+
+  std::string expression = "(and (robot_talk leia m1 Jack))";
+  parser::pddl::tree::Goal goal;
+  goal.fromString(expression);
+
+  ASSERT_EQ(goal.toString(), "(and (robot_talk leia m1 Jack))");
+  ASSERT_TRUE(problem_expert.setGoal(goal));
+  ASSERT_FALSE(problem_expert.isGoalSatisfied(goal));
+
+  ASSERT_TRUE(
+    problem_expert.addPredicate(
+      parser::pddl::tree::Predicate("(robot_talk leia m1 Jack)")));
+
+  ASSERT_TRUE(problem_expert.isGoalSatisfied(goal));
 }
 
 int main(int argc, char ** argv)

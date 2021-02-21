@@ -15,12 +15,17 @@
 #ifndef PLANSYS2_BT_ACTIONS__BTACTION_HPP_
 #define PLANSYS2_BT_ACTIONS__BTACTION_HPP_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/xml_parsing.h"
+
+#ifdef ZMQ_FOUND
+#include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
+#endif
 
 #include "plansys2_executor/ActionExecutorClient.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -43,6 +48,9 @@ protected:
   on_configure(const rclcpp_lifecycle::State & previous_state);
 
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+  on_cleanup(const rclcpp_lifecycle::State & previous_state);
+
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
   on_activate(const rclcpp_lifecycle::State & previous_state);
 
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
@@ -59,6 +67,7 @@ private:
   std::string bt_xml_file_;
   std::vector<std::string> plugin_list_;
   bool finished_;
+  std::unique_ptr<BT::PublisherZMQ> publisher_zmq_;
 };
 
 }  // namespace plansys2

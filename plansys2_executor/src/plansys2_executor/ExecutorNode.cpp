@@ -24,7 +24,7 @@
 #include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
-#include "plansys2_executor/Utils.hpp"
+#include "plansys2_problem_expert/Utils.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
@@ -236,7 +236,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
           tree, max_msgs_per_second, publisher_port,
           server_port));
     } catch (const BT::LogicError & exc) {
-      RCLCPP_ERROR(get_logger(), "ZMQ already enabled, Error: %s", exc.what());
+      RCLCPP_ERROR(get_logger(), "ZMQ error: %s", exc.what());
     }
   }
 #endif

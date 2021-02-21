@@ -37,18 +37,16 @@ room_with_teleporter - room
     )
 )
 
-(:durative-action teleport
+(:action teleport
     :parameters (?r - robot ?r1 - room_with_teleporter ?r2 - room)
-    :duration ( = ?duration 0.5)
-    :condition (and
-        (at start(and
+    :precondition (and
             (robot_at ?r ?r1)
             (is_teleporter_enabled ?r1)
             (is_teleporter_destination ?r2)
-            )))
+            )
     :effect (and
-        (at start(not(robot_at ?r ?r1)))
-        (at end(robot_at ?r ?r2))
+        (not(robot_at ?r ?r1))
+        (robot_at ?r ?r2)
     )
 )
 
@@ -69,6 +67,7 @@ room_with_teleporter - room
     :condition (and
         (over all(robot_at ?r ?ro))
         (over all(person_at ?p ?ro))
+        (at end(person_at ?p ?ro))
     )
     :effect (and
         (at end(robot_near_person ?r ?p))

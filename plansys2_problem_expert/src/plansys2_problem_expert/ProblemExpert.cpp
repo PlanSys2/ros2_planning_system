@@ -19,6 +19,10 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <set>
+#include <map>
+
+#include "plansys2_problem_expert/Utils.hpp"
 
 namespace plansys2
 {
@@ -300,6 +304,21 @@ parser::pddl::tree::Goal
 ProblemExpert::getGoal()
 {
   return goal_;
+}
+
+bool ProblemExpert::isGoalSatisfied(const parser::pddl::tree::Goal & goal)
+{
+  std::set<std::string> predicates;
+  for (auto & predicate : predicates_) {
+    predicates.insert(predicate.toString());
+  }
+
+  std::map<std::string, double> functions;
+  for (auto & function : functions_) {
+    functions.insert({function.toString(), function.value});
+  }
+
+  return check(goal.root_, predicates, functions);
 }
 
 bool

@@ -54,6 +54,7 @@ public:
   bool setGoal(const parser::pddl::tree::Goal & goal);
   bool clearGoal();
   bool clearKnowledge();
+  bool isGoalSatisfied(const parser::pddl::tree::Goal & goal);
 
   std::string getProblem();
 
