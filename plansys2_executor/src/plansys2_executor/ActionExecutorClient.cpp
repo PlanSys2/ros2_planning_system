@@ -84,7 +84,6 @@ CallbackReturnT
 ActionExecutorClient::on_activate(const rclcpp_lifecycle::State & state)
 {
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::RUNNING;
-
   timer_ = create_wall_timer(
     rate_, std::bind(&ActionExecutorClient::do_work, this));
 
@@ -124,6 +123,13 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
     case plansys2_msgs::msg::ActionExecution::REJECT:
       if (msg->node_id == get_name()) {
         commited_ = false;
+      }
+      break;
+    case plansys2_msgs::msg::ActionExecution::CANCEL:
+      if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE &&
+        msg->node_id == get_name())
+      {
+        trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
       }
       break;
     case plansys2_msgs::msg::ActionExecution::RESPONSE:

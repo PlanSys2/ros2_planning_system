@@ -136,6 +136,13 @@ ProblemExpertNode::ProblemExpertNode()
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
 
+  clear_problem_knowledge_service_ = create_service<plansys2_msgs::srv::ClearProblemKnowledge>(
+    "problem_expert/clear_problem_knowledge",
+    std::bind(
+      &ProblemExpertNode::clear_problem_knowledge_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+
   remove_problem_instance_service_ = create_service<plansys2_msgs::srv::RemoveProblemInstance>(
     "problem_expert/remove_problem_instance",
     std::bind(
@@ -350,7 +357,8 @@ ProblemExpertNode::add_problem_predicate_service_callback(
       update_pub_->publish(std_msgs::msg::Empty());
       knowledge_pub_->publish(*get_knowledge_as_msg());
     } else {
-      response->error_info = "Predicate not valid";
+      response->error_info =
+        "Predicate [" + predicate.toString() + "] not valid";
     }
   }
 }
@@ -579,6 +587,29 @@ ProblemExpertNode::remove_problem_goal_service_callback(
     }
   }
 }
+
+void
+ProblemExpertNode::clear_problem_knowledge_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::ClearProblemKnowledge::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::ClearProblemKnowledge::Response> response)
+{
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    response->success = problem_expert_->clearKnowledge();
+
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
+    } else {
+      response->error_info = "Error clearing knowledge";
+    }
+  }
+}
+
 
 void
 ProblemExpertNode::remove_problem_instance_service_callback(

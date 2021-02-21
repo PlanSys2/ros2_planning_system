@@ -552,6 +552,11 @@ TEST(problem_expert, get_probem)
     std::string("( :init\n\t( robot_at r2d2 bedroom )\n\t( robot_at r2d2 kitchen )\n\t( ") +
     std::string("person_at paco bedroom )\n\t( person_at paco kitchen )\n)\n( :goal\n\t( ") +
     std::string("and\n\t\t( robot_at r2d2 bedroom )\n\t\t( person_at paco kitchen )\n\t)\n)\n)\n"));
+
+  ASSERT_TRUE(problem_expert.clearKnowledge());
+  ASSERT_EQ(problem_expert.getPredicates().size(), 0);
+  ASSERT_EQ(problem_expert.getFunctions().size(), 0);
+  ASSERT_EQ(problem_expert.getInstances().size(), 0);
 }
 
 TEST(problem_expert, set_goal)

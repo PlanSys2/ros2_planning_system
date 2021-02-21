@@ -35,24 +35,35 @@ public:
 
   explicit ExecutorClient(rclcpp::Node::SharedPtr provided_node);
 
-  bool executePlan();
+  bool start_plan_execution();
+  bool execute_and_check_plan();
+  void cancel_plan_execution();
 
   ExecutePlan::Feedback getFeedBack() {return feedback_;}
   std::optional<ExecutePlan::Result> getResult();
 
 private:
   rclcpp::Node::SharedPtr node_;
-  rclcpp_action::Client<ExecutePlan>::SharedPtr execute_plan_client_ptr_;
 
+  rclcpp_action::Client<ExecutePlan>::SharedPtr action_client_;
+
+  ExecutePlan::Goal goal_;
   ExecutePlan::Feedback feedback_;
-  ExecutePlan::Result result_;
-  bool finished_;
+  rclcpp_action::ClientGoalHandle<ExecutePlan>::SharedPtr goal_handle_;
+  rclcpp_action::ClientGoalHandle<ExecutePlan>::WrappedResult result_;
 
-  void feedback_callback(
-    GoalHandleExecutePlan::SharedPtr,
-    const std::shared_ptr<const ExecutePlan::Feedback> feedback);
+  bool goal_result_available_{false};
+
+  bool executing_plan_;
 
   void result_callback(const GoalHandleExecutePlan::WrappedResult & result);
+  void feedback_callback(
+    GoalHandleExecutePlan::SharedPtr goal_handle,
+    const std::shared_ptr<const ExecutePlan::Feedback> feedback);
+
+  bool on_new_goal_received();
+  bool should_cancel_goal();
+  void createActionClient();
 };
 
 }  // namespace plansys2

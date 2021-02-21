@@ -45,6 +45,9 @@ protected:
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
   on_activate(const rclcpp_lifecycle::State & previous_state);
 
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+  on_deactivate(const rclcpp_lifecycle::State & previous_state);
+
   void do_work();
 
   BT::BehaviorTreeFactory factory_;
@@ -55,6 +58,7 @@ private:
   std::string action_;
   std::string bt_xml_file_;
   std::vector<std::string> plugin_list_;
+  bool finished_;
 };
 
 }  // namespace plansys2

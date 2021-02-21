@@ -53,6 +53,7 @@ public:
   parser::pddl::tree::Goal getGoal();
   bool setGoal(const parser::pddl::tree::Goal & goal);
   bool clearGoal();
+  bool clearKnowledge();
 
   std::string getProblem();
 

@@ -47,18 +47,15 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
     RCLCPP_INFO_STREAM(get_logger(), "plugin: [" << plugin << "]");
   }
 
-  BT::BehaviorTreeFactory factory;
   BT::SharedLibrary loader;
 
   for (auto plugin : plugin_lib_names) {
-    factory.registerFromPlugin(loader.getOSName(plugin));
+    factory_.registerFromPlugin(loader.getOSName(plugin));
   }
 
   auto node = rclcpp::Node::make_shared(std::string(get_name()) + "_aux");
   blackboard_ = BT::Blackboard::create();
   blackboard_->set("node", node);
-
-  tree_ = factory.createTreeFromFile(bt_xml_file_, blackboard_);
 
   return ActionExecutorClient::on_configure(previous_state);
 }
@@ -66,29 +63,44 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
 {
+  tree_ = factory_.createTreeFromFile(bt_xml_file_, blackboard_);
+
   for (int i = 0; i < get_arguments().size(); i++) {
     std::string argname = "arg" + std::to_string(i);
     blackboard_->set(argname, get_arguments()[i]);
   }
 
+  finished_ = false;
   return ActionExecutorClient::on_activate(previous_state);
+}
+
+rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+BTAction::on_deactivate(const rclcpp_lifecycle::State & previous_state)
+{
+  tree_.haltTree();
+
+  return ActionExecutorClient::on_deactivate(previous_state);
 }
 
 void
 BTAction::do_work()
 {
-  auto result = tree_.rootNode()->executeTick();
+  if (!finished_) {
+    auto result = tree_.rootNode()->executeTick();
 
-  switch (result) {
-    case BT::NodeStatus::SUCCESS:
-      finish(true, 1.0, "Action completed");
-      break;
-    case BT::NodeStatus::RUNNING:
-      send_feedback(0.0, "Action running");
-      break;
-    case BT::NodeStatus::FAILURE:
-      finish(false, 1.0, "Action failed");
-      break;
+    switch (result) {
+      case BT::NodeStatus::SUCCESS:
+        finish(true, 1.0, "Action completed");
+        finished_ = true;
+        break;
+      case BT::NodeStatus::RUNNING:
+        send_feedback(0.0, "Action running");
+        break;
+      case BT::NodeStatus::FAILURE:
+        finish(false, 1.0, "Action failed");
+        finished_ = true;
+        break;
+    }
   }
 }
 

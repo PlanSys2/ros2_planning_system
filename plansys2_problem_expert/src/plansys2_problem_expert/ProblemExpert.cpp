@@ -322,6 +322,15 @@ ProblemExpert::clearGoal()
 }
 
 bool
+ProblemExpert::clearKnowledge()
+{
+  instances_.clear();
+  predicates_.clear();
+  functions_.clear();
+  return true;
+}
+
+bool
 ProblemExpert::isValidType(const std::string & type)
 {
   auto valid_types = domain_expert_->getTypes();

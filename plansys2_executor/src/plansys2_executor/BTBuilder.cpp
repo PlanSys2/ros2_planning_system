@@ -568,10 +568,10 @@ BTBuilder::execution_block(const GraphNode::Ptr & node, int l)
   }
 
   ret = ret + t(l + 1) + "<ApplyAtStartEffect action=\"" + action_id + "\"/>\n";
-  ret = ret + t(l + 1) + "<Parallel success_threshold=\"2\" failure_threshold=\"1\">\n";
+  ret = ret + t(l + 1) + "<ReactiveSequence name=\"" + action_id + "\">\n";
   ret = ret + t(l + 2) + "<CheckOverAllReq action=\"" + action_id + "\"/>\n";
   ret = ret + t(l + 2) + "<ExecuteAction action=\"" + action_id + "\"/>\n";
-  ret = ret + t(l + 1) + "</Parallel>\n";
+  ret = ret + t(l + 1) + "</ReactiveSequence>\n";
   ret = ret + t(l + 1) + "<CheckAtEndReq action=\"" + action_id + "\"/>\n";
   ret = ret + t(l + 1) + "<ApplyAtEndEffect action=\"" + action_id + "\"/>\n";
   ret = ret + t(l) + "</Sequence>\n";

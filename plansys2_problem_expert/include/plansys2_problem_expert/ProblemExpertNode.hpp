@@ -37,6 +37,7 @@
 #include "plansys2_msgs/srv/get_problem_functions.hpp"
 #include "plansys2_msgs/srv/get_problem.hpp"
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
+#include "plansys2_msgs/srv/clear_problem_knowledge.hpp"
 #include "plansys2_msgs/srv/remove_problem_instance.hpp"
 #include "plansys2_msgs/srv/remove_problem_predicate.hpp"
 #include "plansys2_msgs/srv/remove_problem_function.hpp"
@@ -132,6 +133,11 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::RemoveProblemGoal::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::RemoveProblemGoal::Response> response);
 
+  void clear_problem_knowledge_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::ClearProblemKnowledge::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::ClearProblemKnowledge::Response> response);
+
   void remove_problem_instance_service_callback(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::RemoveProblemInstance::Request> request,
@@ -191,6 +197,8 @@ private:
     get_problem_service_;
   rclcpp::Service<plansys2_msgs::srv::RemoveProblemGoal>::SharedPtr
     remove_problem_goal_service_;
+  rclcpp::Service<plansys2_msgs::srv::ClearProblemKnowledge>::SharedPtr
+    clear_problem_knowledge_service_;
   rclcpp::Service<plansys2_msgs::srv::RemoveProblemInstance>::SharedPtr
     remove_problem_instance_service_;
   rclcpp::Service<plansys2_msgs::srv::RemoveProblemPredicate>::SharedPtr

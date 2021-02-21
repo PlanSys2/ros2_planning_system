@@ -52,12 +52,14 @@ ActionExecutor::action_hub_callback(const plansys2_msgs::msg::ActionExecution::S
     case plansys2_msgs::msg::ActionExecution::REQUEST:
     case plansys2_msgs::msg::ActionExecution::CONFIRM:
     case plansys2_msgs::msg::ActionExecution::REJECT:
+    case plansys2_msgs::msg::ActionExecution::CANCEL:
       // These cases have no meaning requester
       break;
     case plansys2_msgs::msg::ActionExecution::RESPONSE:
       if (msg->arguments == action_params_ && msg->action == action_name_) {
         if (state_ == DEALING) {
           confirm_performer(msg->node_id);
+          current_performer_id_ = msg->node_id;
           state_ = RUNNING;
           waiting_timer_ = nullptr;
           start_execution_ = node_->now();
@@ -199,12 +201,26 @@ ActionExecutor::tick(const rclcpp::Time & now)
       break;
     case SUCCESS:
     case FAILURE:
+    case CANCELLED:
       break;
     default:
       break;
   }
 
   return get_status();
+}
+
+void
+ActionExecutor::cancel()
+{
+  state_ = CANCELLED;
+  plansys2_msgs::msg::ActionExecution msg;
+  msg.type = plansys2_msgs::msg::ActionExecution::CANCEL;
+  msg.node_id = current_performer_id_;
+  msg.action = action_name_;
+  msg.arguments = action_params_;
+
+  action_hub_pub_->publish(msg);
 }
 
 std::string
