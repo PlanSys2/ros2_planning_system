@@ -63,6 +63,26 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
   blackboard_ = BT::Blackboard::create();
   blackboard_->set("node", node);
 
+  return ActionExecutorClient::on_configure(previous_state);
+}
+
+rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+BTAction::on_cleanup(const rclcpp_lifecycle::State & previous_state)
+{
+  publisher_zmq_.reset();
+  return ActionExecutorClient::on_cleanup(previous_state);
+}
+
+rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
+{
+  tree_ = factory_.createTreeFromFile(bt_xml_file_, blackboard_);
+
+  for (int i = 0; i < get_arguments().size(); i++) {
+    std::string argname = "arg" + std::to_string(i);
+    blackboard_->set(argname, get_arguments()[i]);
+  }
+
 #ifdef ZMQ_FOUND
   int publisher_port = get_parameter("publisher_port").as_int();
   int server_port = get_parameter("server_port").as_int();
@@ -90,26 +110,6 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
   }
 #endif
 
-  return ActionExecutorClient::on_configure(previous_state);
-}
-
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-BTAction::on_cleanup(const rclcpp_lifecycle::State & previous_state)
-{
-  publisher_zmq_.reset();
-  return ActionExecutorClient::on_cleanup(previous_state);
-}
-
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
-{
-  tree_ = factory_.createTreeFromFile(bt_xml_file_, blackboard_);
-
-  for (int i = 0; i < get_arguments().size(); i++) {
-    std::string argname = "arg" + std::to_string(i);
-    blackboard_->set(argname, get_arguments()[i]);
-  }
-
   finished_ = false;
   return ActionExecutorClient::on_activate(previous_state);
 }
@@ -117,6 +117,7 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 BTAction::on_deactivate(const rclcpp_lifecycle::State & previous_state)
 {
+  publisher_zmq_.reset();
   tree_.haltTree();
 
   return ActionExecutorClient::on_deactivate(previous_state);
