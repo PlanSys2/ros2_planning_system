@@ -259,7 +259,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
           tree, max_msgs_per_second, publisher_port,
           server_port));
     } catch (const BT::LogicError & exc) {
-      RCLCPP_ERROR(get_logger(), "ZMQ already enabled, Error: %s", exc.what());
+      RCLCPP_ERROR(get_logger(), "ZMQ error: %s", exc.what());
     }
   }
 #endif
