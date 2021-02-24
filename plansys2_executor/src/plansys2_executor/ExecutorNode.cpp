@@ -293,8 +293,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   if (status == BT::NodeStatus::FAILURE) {
     RCLCPP_ERROR(get_logger(), "Executor BT finished with FAILURE state");
     result->success = false;
-  }
-  else {
+  } else {
     result->success = true;
   }
 
@@ -314,8 +313,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     goal_handle->succeed(result);
     if (result->success) {
       RCLCPP_INFO(this->get_logger(), "Plan Succeeded");
-    }
-    else {
+    } else {
       RCLCPP_INFO(this->get_logger(), "Plan Failed");
     }
   }
