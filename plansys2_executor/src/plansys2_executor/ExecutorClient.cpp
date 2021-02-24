@@ -173,6 +173,7 @@ ExecutorClient::result_callback(const GoalHandleExecutePlan::WrappedResult & res
 {
   goal_result_available_ = true;
   result_ = result;
+  feedback_ = ExecutePlan::Feedback();
 }
 
 std::optional<ExecutePlan::Result>
