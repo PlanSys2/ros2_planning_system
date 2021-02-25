@@ -93,6 +93,7 @@ void
 ExecutorClient::result_callback(const GoalHandleExecutePlan::WrappedResult & result)
 {
   finished_ = true;
+  feedback_ = empty_feedback_;
   result_ = *result.result;
 
   switch (result.code) {

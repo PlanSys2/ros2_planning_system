@@ -45,6 +45,7 @@ private:
   rclcpp_action::Client<ExecutePlan>::SharedPtr execute_plan_client_ptr_;
 
   ExecutePlan::Feedback feedback_;
+  ExecutePlan::Feedback empty_feedback_;
   ExecutePlan::Result result_;
   bool finished_;
 
