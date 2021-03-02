@@ -2,6 +2,11 @@ ament_add_gtest(executor_test executor_test.cpp)
 target_compile_definitions(executor_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 target_link_libraries(executor_test ${PROJECT_NAME})
 
+ament_add_gtest(action_execution_test action_execution_test.cpp)
+target_compile_definitions(action_execution_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(action_execution_test ${PROJECT_NAME})
+
+
 ament_add_gtest(execution_tree_test execution_tree_test.cpp)
 target_compile_definitions(execution_tree_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 target_link_libraries(execution_tree_test ${PROJECT_NAME})

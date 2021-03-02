@@ -166,6 +166,94 @@ TEST(bt_actions, bt_action)
   }
 }
 
+TEST(bt_actions, cancel_bt_action)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
+  std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
+
+  std::vector<std::string> plugins = {
+    "plansys2_close_gripper_bt_node", "plansys2_open_gripper_bt_node"};
+
+  auto bt_action = std::make_shared<plansys2::BTAction>("assemble", 1s);
+
+  auto lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
+  auto action_client = plansys2::ActionExecutor::make_shared("(assemble r2d2 z p1 p2 p3)", lc_node);
+
+  bt_action->set_parameter(rclcpp::Parameter("action_name", "assemble"));
+  bt_action->set_parameter(rclcpp::Parameter("bt_xml_file", xml_file));
+  bt_action->set_parameter(rclcpp::Parameter("plugins", plugins));
+
+  bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  rclcpp::executors::MultiThreadedExecutor exe;
+  exe.add_node(bt_action->get_node_base_interface());
+  exe.add_node(lc_node->get_node_base_interface());
+
+  std::vector<plansys2_msgs::msg::ActionExecution> action_execution_msgs;
+
+  auto action_hub_sub = lc_node->create_subscription<plansys2_msgs::msg::ActionExecution>(
+    "/actions_hub", rclcpp::QoS(100).reliable(),
+    [&action_execution_msgs](const plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
+      action_execution_msgs.push_back(*msg);
+    });
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+
+  ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::IDLE);
+  ASSERT_EQ(
+    bt_action->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = lc_node->now();
+    while ((lc_node->now() - start).seconds() < 0.5) {
+      action_client->tick(lc_node->now());
+      rate.sleep();
+    }
+  }
+
+  ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::RUNNING);
+  ASSERT_EQ(bt_action->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);
+
+  ASSERT_EQ(action_execution_msgs.size(), 3u);
+  ASSERT_EQ(action_execution_msgs[0].type, plansys2_msgs::msg::ActionExecution::REQUEST);
+  ASSERT_EQ(action_execution_msgs[1].type, plansys2_msgs::msg::ActionExecution::RESPONSE);
+  ASSERT_EQ(action_execution_msgs[2].type, plansys2_msgs::msg::ActionExecution::CONFIRM);
+  {
+    rclcpp::Rate rate(10);
+    auto start = lc_node->now();
+    while ((lc_node->now() - start).seconds() < 1.0) {
+      action_client->tick(lc_node->now());
+      rate.sleep();
+    }
+  }
+
+  ASSERT_EQ(action_execution_msgs.size(), 4u);
+  action_client->cancel();
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = lc_node->now();
+    while ((lc_node->now() - start).seconds() < 1.0) {
+      action_client->tick(lc_node->now());
+      rate.sleep();
+    }
+  }
+  ASSERT_EQ(action_execution_msgs.size(), 5u);
+  ASSERT_EQ(action_execution_msgs[3].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
+  ASSERT_EQ(action_execution_msgs[4].type, plansys2_msgs::msg::ActionExecution::CANCEL);
+
+  ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::CANCELLED);
+  ASSERT_EQ(
+    bt_action->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
+
+  finish = true;
+  t.join();
+}
+
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);

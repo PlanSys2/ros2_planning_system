@@ -37,7 +37,7 @@ public:
     const std::string & xml_tag_name,
     const BT::NodeConfiguration & conf);
 
-  void halt() {}
+  void halt();
   BT::NodeStatus tick() override;
 
   static BT::PortsList providedPorts()
