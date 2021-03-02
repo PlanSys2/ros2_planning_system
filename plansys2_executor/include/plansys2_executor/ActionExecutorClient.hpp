@@ -45,6 +45,8 @@ public:
     const std::string & node_name,
     const std::chrono::nanoseconds & rate);
 
+  plansys2_msgs::msg::ActionPerformerStatus get_internal_status() const {return status_;}
+
 protected:
   virtual void do_work() {}
 

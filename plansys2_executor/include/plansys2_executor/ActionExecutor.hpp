@@ -40,7 +40,8 @@ public:
     DEALING,
     RUNNING,
     SUCCESS,
-    FAILURE
+    FAILURE,
+    CANCELLED
   };
 
   using Ptr = std::shared_ptr<ActionExecutor>;
@@ -55,6 +56,7 @@ public:
     const std::string & action, rclcpp_lifecycle::LifecycleNode::SharedPtr node);
 
   BT::NodeStatus tick(const rclcpp::Time & now);
+  void cancel();
   BT::NodeStatus get_status();
   bool is_finished();
 
@@ -80,6 +82,7 @@ protected:
 
   std::string action_;
   std::string action_name_;
+  std::string current_performer_id_;
   std::vector<std::string> action_params_;
 
   std::string feedback_;

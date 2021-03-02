@@ -56,9 +56,11 @@ public:
   CallbackReturnT on_shutdown(const rclcpp_lifecycle::State & state);
   CallbackReturnT on_error(const rclcpp_lifecycle::State & state);
 
-private:
+protected:
   rclcpp::Node::SharedPtr node_;
   rclcpp::Node::SharedPtr aux_node_;
+
+  bool cancel_plan_requested_;
 
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
@@ -79,8 +81,6 @@ private:
   void execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle);
 
   void handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_handle);
-
-  std::optional<Plan> current_plan_;
 
   std::vector<plansys2_msgs::msg::ActionExecutionInfo> get_feedback_info(
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map);

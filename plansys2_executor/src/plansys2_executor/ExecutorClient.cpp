@@ -23,37 +23,83 @@
 namespace plansys2
 {
 
+using namespace std::chrono_literals;
+using namespace std::placeholders;
+
 using ExecutePlan = plansys2_msgs::action::ExecutePlan;
 
 ExecutorClient::ExecutorClient(rclcpp::Node::SharedPtr provided_node)
-: node_(provided_node), finished_(false)
+: node_(provided_node)
 {
-  this->execute_plan_client_ptr_ = rclcpp_action::create_client<ExecutePlan>(
-    node_->get_node_base_interface(),
-    node_->get_node_graph_interface(),
-    node_->get_node_logging_interface(),
-    node_->get_node_waitables_interface(),
-    "execute_plan");
+  createActionClient();
+}
+
+void
+ExecutorClient::createActionClient()
+{
+  action_client_ = rclcpp_action::create_client<ExecutePlan>(node_, "execute_plan");
+
+  if (!this->action_client_->wait_for_action_server(3s)) {
+    RCLCPP_ERROR(node_->get_logger(), "Action server not available after waiting");
+  }
 }
 
 bool
-ExecutorClient::executePlan()
+ExecutorClient::start_plan_execution()
 {
-  using namespace std::placeholders;
+  if (!executing_plan_) {
+    createActionClient();
+    auto success = on_new_goal_received();
 
-  finished_ = false;
-
-  if (!this->execute_plan_client_ptr_) {
-    RCLCPP_ERROR(node_->get_logger(), "Action client not initialized");
+    if (success) {
+      executing_plan_ = true;
+      return true;
+    }
+  } else {
+    RCLCPP_INFO(node_->get_logger(), "Already executing a plan");
   }
 
-  if (!this->execute_plan_client_ptr_->wait_for_action_server(std::chrono::seconds(10))) {
-    RCLCPP_ERROR(node_->get_logger(), "Action server not available after waiting");
-    return false;
+  return false;
+}
+
+bool
+ExecutorClient::execute_and_check_plan()
+{
+  if (rclcpp::ok() && !goal_result_available_) {
+    rclcpp::spin_some(node_);
+
+    if (!goal_result_available_) {
+      return true;  // Plan not finished
+    }
   }
 
-  auto goal_msg = ExecutePlan::Goal();
+  switch (result_.code) {
+    case rclcpp_action::ResultCode::SUCCEEDED:
+      RCLCPP_INFO(node_->get_logger(), "Plan Succeded");
+      break;
 
+    case rclcpp_action::ResultCode::ABORTED:
+      RCLCPP_WARN(node_->get_logger(), "Plan Aborted");
+      break;
+
+    case rclcpp_action::ResultCode::CANCELED:
+      RCLCPP_INFO(node_->get_logger(), "Plan Cancelled");
+      break;
+
+    default:
+      throw std::logic_error("ExecutorClient::executePlan: invalid status value");
+  }
+
+  executing_plan_ = false;
+  goal_result_available_ = false;
+
+  return false;  // Plan finished
+}
+
+
+bool
+ExecutorClient::on_new_goal_received()
+{
   auto send_goal_options = rclcpp_action::Client<ExecutePlan>::SendGoalOptions();
 
   send_goal_options.feedback_callback =
@@ -61,29 +107,62 @@ ExecutorClient::executePlan()
 
   send_goal_options.result_callback =
     std::bind(&ExecutorClient::result_callback, this, _1);
-  auto goal_handle_future = this->execute_plan_client_ptr_->async_send_goal(
-    goal_msg, send_goal_options);
 
-  if (rclcpp::spin_until_future_complete(node_, goal_handle_future) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+  auto future_goal_handle = action_client_->async_send_goal(goal_, send_goal_options);
+
+  if (rclcpp::spin_until_future_complete(
+      node_->get_node_base_interface(), future_goal_handle, 3s) !=
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     RCLCPP_ERROR(node_->get_logger(), "send_goal failed");
     return false;
   }
 
-  auto goal_handle = goal_handle_future.get();
-  if (!goal_handle) {
-    RCLCPP_ERROR(
-      node_->get_logger(), "ExecutorClient: Plan execution was rejected by the action server");
+  goal_handle_ = future_goal_handle.get();
+  if (!goal_handle_) {
+    RCLCPP_ERROR(node_->get_logger(), "Goal was rejected by the action server");
     return false;
   }
 
   return true;
 }
 
+bool
+ExecutorClient::should_cancel_goal()
+{
+  if (!executing_plan_) {
+    return false;
+  }
+
+  rclcpp::spin_some(node_);
+  auto status = goal_handle_->get_status();
+
+  return status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
+         status == action_msgs::msg::GoalStatus::STATUS_EXECUTING;
+}
+
+void
+ExecutorClient::cancel_plan_execution()
+{
+  if (should_cancel_goal()) {
+    auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
+    if (rclcpp::spin_until_future_complete(
+        node_->get_node_base_interface(), future_cancel, 3s) !=
+      rclcpp::FutureReturnCode::SUCCESS)
+    {
+      RCLCPP_ERROR(
+        node_->get_logger(),
+        "Failed to cancel action server for execute_plan");
+    }
+  }
+
+  executing_plan_ = false;
+  goal_result_available_ = false;
+}
+
 void
 ExecutorClient::feedback_callback(
-  GoalHandleExecutePlan::SharedPtr,
+  GoalHandleExecutePlan::SharedPtr goal_handle,
   const std::shared_ptr<const ExecutePlan::Feedback> feedback)
 {
   feedback_ = *feedback;
@@ -92,36 +171,16 @@ ExecutorClient::feedback_callback(
 void
 ExecutorClient::result_callback(const GoalHandleExecutePlan::WrappedResult & result)
 {
-  finished_ = true;
-  result_ = *result.result;
-
-  switch (result.code) {
-    case rclcpp_action::ResultCode::SUCCEEDED:
-      break;
-    case rclcpp_action::ResultCode::ABORTED:
-      RCLCPP_ERROR(node_->get_logger(), "Goal was aborted");
-      return;
-    case rclcpp_action::ResultCode::CANCELED:
-      RCLCPP_ERROR(node_->get_logger(), "Goal was canceled");
-      return;
-    default:
-      RCLCPP_ERROR(node_->get_logger(), "Unknown result code");
-      return;
-  }
-
-  if (result.result->success) {
-    RCLCPP_INFO(node_->get_logger(), "Result received: Success");
-  } else {
-    RCLCPP_INFO(
-      node_->get_logger(), "Result received: Fail");
-  }
+  goal_result_available_ = true;
+  result_ = result;
+  feedback_ = ExecutePlan::Feedback();
 }
 
 std::optional<ExecutePlan::Result>
 ExecutorClient::getResult()
 {
-  if (finished_) {
-    return result_;
+  if (result_.result != nullptr) {
+    return *result_.result;
   } else {
     return {};
   }
