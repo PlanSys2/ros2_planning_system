@@ -330,6 +330,23 @@ BTBuilder::prune_backwards(GraphNode::Ptr new_node, GraphNode::Ptr node_satisfy)
   }
 }
 
+void
+BTBuilder::prune_forward(GraphNode::Ptr current, std::list<GraphNode::Ptr> & used_nodes)
+{
+  auto it = current->out_arcs.begin();
+  while (it != current->out_arcs.end()) {
+    if (std::find(used_nodes.begin(), used_nodes.end(), *it) != used_nodes.end()) {
+      // (*it)->in_arcs.erase(current);
+      it = current->out_arcs.erase(it);
+    } else {
+      prune_forward(*it, used_nodes);
+      used_nodes.push_back(*it);
+
+      ++it;
+    }
+  }
+}
+
 Graph::Ptr
 BTBuilder::get_graph(const Plan & current_plan)
 {
@@ -474,6 +491,10 @@ BTBuilder::get_graph(const Plan & current_plan)
     action_sequence.erase(action_sequence.begin());
   }
 
+  std::list<GraphNode::Ptr> used_nodes;
+  for (auto & root : graph->roots) {
+    prune_forward(root, used_nodes);
+  }
   return graph;
 }
 

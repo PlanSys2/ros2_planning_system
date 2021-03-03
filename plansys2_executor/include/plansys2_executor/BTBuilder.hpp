@@ -84,6 +84,7 @@ protected:
 
   std::vector<ActionStamped> get_plan_actions(const Plan & plan);
   void prune_backwards(GraphNode::Ptr new_node, GraphNode::Ptr node_satisfy);
+  void prune_forward(GraphNode::Ptr current, std::list<GraphNode::Ptr> & used_nodes);
 
   bool is_action_executable(
     const ActionStamped & action,
