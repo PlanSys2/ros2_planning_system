@@ -336,7 +336,6 @@ BTBuilder::prune_forward(GraphNode::Ptr current, std::list<GraphNode::Ptr> & use
   auto it = current->out_arcs.begin();
   while (it != current->out_arcs.end()) {
     if (std::find(used_nodes.begin(), used_nodes.end(), *it) != used_nodes.end()) {
-      // (*it)->in_arcs.erase(current);
       it = current->out_arcs.erase(it);
     } else {
       prune_forward(*it, used_nodes);
