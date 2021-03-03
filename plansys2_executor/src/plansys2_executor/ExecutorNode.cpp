@@ -84,6 +84,8 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
 
+  dotgraph_pub_ = this->create_publisher<std_msgs::msg::String>("dot_graph", 1);
+
   aux_node_ = std::make_shared<rclcpp::Node>("executor_helper");
   domain_client_ = std::make_shared<plansys2::DomainExpertClient>(aux_node_);
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(aux_node_);
@@ -100,6 +102,7 @@ CallbackReturnT
 ExecutorNode::on_activate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Activating...", get_name());
+  dotgraph_pub_->on_activate();
   execution_info_pub_->on_activate();
   RCLCPP_INFO(get_logger(), "[%s] Activated", get_name());
 
@@ -110,6 +113,7 @@ CallbackReturnT
 ExecutorNode::on_deactivate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Deactivating...", get_name());
+  dotgraph_pub_->on_deactivate();
   RCLCPP_INFO(get_logger(), "[%s] Deactivated", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -119,6 +123,7 @@ CallbackReturnT
 ExecutorNode::on_cleanup(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Cleaning up...", get_name());
+  dotgraph_pub_.reset();
   RCLCPP_INFO(get_logger(), "[%s] Cleaned up", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -128,6 +133,7 @@ CallbackReturnT
 ExecutorNode::on_shutdown(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Shutting down...", get_name());
+  dotgraph_pub_.reset();
   RCLCPP_INFO(get_logger(), "[%s] Shutted down", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -211,6 +217,11 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
 
   auto bt_xml_tree = bt_builder.get_tree(current_plan.value());
+  std_msgs::msg::String msg;
+  msg.data =
+    bt_builder.get_dotgraph(
+    current_plan.value());
+  dotgraph_pub_->publish(msg);
 
   std::filesystem::path tp = std::filesystem::temp_directory_path();
   std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
