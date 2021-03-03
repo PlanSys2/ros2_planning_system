@@ -677,56 +677,58 @@ Terminal::process_remove(std::vector<std::string> & command, std::ostringstream 
 void
 Terminal::execute_plan()
 {
-  if (executor_client_->executePlan()) {
-    rclcpp::Rate loop_rate(5);
-    while (rclcpp::ok() && !executor_client_->getResult()) {
-      auto feedback = executor_client_->getFeedBack();
+  rclcpp::Rate loop_rate(5);
 
-      std::cout << "\r\e[K" << std::flush;
-      for (const auto & action_status : feedback.action_execution_status) {
-        if (action_status.status == plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED ||
-          action_status.status == plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED)
-        {
-          continue;
-        }
-        std::cout << "[(" << action_status.action;
+  if (!executor_client_->start_plan_execution()) {
+    std::cout << "Execution could not start " << std::endl;
+    return;
+  }
 
-        for (const auto & param : action_status.arguments) {
-          std::cout << " " << param;
-        }
-        std::cout << ") ";
+  while (rclcpp::ok() && executor_client_->execute_and_check_plan()) {
+    auto feedback = executor_client_->getFeedBack();
 
-        switch (action_status.status) {
-          case plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED:
-            std::cout << "waiting]";
-            break;
-          case plansys2_msgs::msg::ActionExecutionInfo::EXECUTING:
-            std::cout << action_status.completion * 100.0 << "%]";
-            break;
-          case plansys2_msgs::msg::ActionExecutionInfo::FAILED:
-            std::cout << "FAILED]";
-            break;
-          case plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED:
-            std::cout << "succeeded]";
-            break;
-        }
+    std::cout << "\r\e[K" << std::flush;
+    for (const auto & action_status : feedback.action_execution_status) {
+      if (action_status.status == plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED ||
+        action_status.status == plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED)
+      {
+        continue;
       }
+      std::cout << "[(" << action_status.action;
 
-      std::cout << std::flush;
+      for (const auto & param : action_status.arguments) {
+        std::cout << " " << param;
+      }
+      std::cout << ") ";
 
-      rclcpp::spin_some(this->get_node_base_interface());
-      loop_rate.sleep();
+      switch (action_status.status) {
+        case plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED:
+          std::cout << "waiting]";
+          break;
+        case plansys2_msgs::msg::ActionExecutionInfo::EXECUTING:
+          std::cout << action_status.completion * 100.0 << "%]";
+          break;
+        case plansys2_msgs::msg::ActionExecutionInfo::FAILED:
+          std::cout << "FAILED]";
+          break;
+        case plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED:
+          std::cout << "succeeded]";
+          break;
+      }
     }
 
-    std::cout << std::endl;
+    std::cout << std::flush;
 
-    if (executor_client_->getResult().value().success) {
-      std::cout << "Successful finished " << std::endl;
-    } else {
-      std::cout << "Finished with error: " << std::endl;
-    }
+    rclcpp::spin_some(this->get_node_base_interface());
+    loop_rate.sleep();
+  }
+
+  std::cout << std::endl;
+
+  if (executor_client_->getResult().value().success) {
+    std::cout << "Successful finished " << std::endl;
   } else {
-    std::cout << "Rejected execution. is there any plan?" << std::endl;
+    std::cout << "Finished with error: " << std::endl;
   }
 }
 

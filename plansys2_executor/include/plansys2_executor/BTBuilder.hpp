@@ -87,6 +87,7 @@ protected:
     std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
 
   std::vector<ActionStamped> get_plan_actions(const Plan & plan);
+  void prune_backwards(GraphNode::Ptr new_node, GraphNode::Ptr node_satisfy);
 
   bool is_action_executable(
     const ActionStamped & action,
@@ -116,7 +117,10 @@ protected:
     const plansys2::ActionStamped & action,
     const std::list<GraphNode::Ptr> & ret) const;
 
-  std::string get_flow_tree(GraphNode::Ptr node, int level = 0);
+  std::string get_flow_tree(
+    GraphNode::Ptr node,
+    std::list<std::string> & used_nodes,
+    int level = 0);
   std::string get_flow_dotgraph(GraphNode::Ptr node, int level = 0);
 
   std::string t(int level);

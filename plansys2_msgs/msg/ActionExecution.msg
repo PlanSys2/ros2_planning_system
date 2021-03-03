@@ -4,6 +4,7 @@ int16 CONFIRM=3
 int16 REJECT=4
 int16 FEEDBACK=5
 int16 FINISH=6
+int16 CANCEL=7
 
 int16 type
 string node_id

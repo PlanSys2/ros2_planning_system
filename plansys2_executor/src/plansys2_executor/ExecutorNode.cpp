@@ -152,43 +152,18 @@ ExecutorNode::handle_goal(
   const rclcpp_action::GoalUUID & uuid,
   std::shared_ptr<const ExecutePlan::Goal> goal)
 {
-  auto start = now();
-  RCLCPP_INFO(this->get_logger(), "Received goal request with order");
+  RCLCPP_DEBUG(this->get_logger(), "Received goal request with order");
 
-  auto domain = domain_client_->getDomain();
-  auto problem = problem_client_->getProblem();
-
-  auto domain_problem_ts = now();
-
-  current_plan_ = planner_client_->getPlan(domain, problem);
-  auto plan_ts = now();
-
-  RCLCPP_INFO(
-    get_logger(), "Getting domain and problem = %lf secs",
-    (domain_problem_ts - start).seconds());
-
-  RCLCPP_INFO(
-    get_logger(), "Getting plan = %lf secs",
-    (plan_ts - domain_problem_ts).seconds());
-
-  if (current_plan_) {
-    std::cout << "plan: " << std::endl;
-    for (const auto & action : current_plan_.value()) {
-      std::cout << action.time << "\t" << action.action << "\t" <<
-        action.duration << std::endl;
-    }
-    return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
-  } else {
-    RCLCPP_ERROR(get_logger(), "Executor problem [Plan not found]");
-    return rclcpp_action::GoalResponse::REJECT;
-  }
+  return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
 rclcpp_action::CancelResponse
 ExecutorNode::handle_cancel(
   const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 {
-  RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
+  RCLCPP_DEBUG(this->get_logger(), "Received request to cancel goal");
+
+  cancel_plan_requested_ = true;
 
   return rclcpp_action::CancelResponse::ACCEPT;
 }
@@ -199,9 +174,22 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   auto feedback = std::make_shared<ExecutePlan::Feedback>();
   auto result = std::make_shared<ExecutePlan::Result>();
 
+  cancel_plan_requested_ = false;
+
+  auto domain = domain_client_->getDomain();
+  auto problem = problem_client_->getProblem();
+  auto current_plan = planner_client_->getPlan(domain, problem);
+
+  if (!current_plan.has_value()) {
+    RCLCPP_ERROR(get_logger(), "No plan found");
+    result->success = false;
+    goal_handle->succeed(result);
+    return;
+  }
+
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
 
-  for (const auto & action : current_plan_.value()) {
+  for (const auto & action : current_plan.value()) {
     auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
 
     (*action_map)[index] = ActionExecutionInfo();
@@ -228,11 +216,11 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtStartEffect>("ApplyAtStartEffect");
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
 
-  auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
+  auto bt_xml_tree = bt_builder.get_tree(current_plan.value());
   std_msgs::msg::String msg;
   msg.data =
     bt_builder.get_dotgraph(
-    current_plan_.value());
+    current_plan.value());
   dotgraph_pub_->publish(msg);
 
   std::filesystem::path tp = std::filesystem::temp_directory_path();
@@ -276,7 +264,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   auto start = now();
   auto status = BT::NodeStatus::RUNNING;
 
-  while (status == BT::NodeStatus::RUNNING) {
+  while (status == BT::NodeStatus::RUNNING && !cancel_plan_requested_) {
     try {
       status = tree.tickRoot();
     } catch (std::exception & e) {
@@ -290,7 +278,12 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     rate.sleep();
   }
 
+  if (cancel_plan_requested_) {
+    tree.haltTree();
+  }
+
   if (status == BT::NodeStatus::FAILURE) {
+    tree.haltTree();
     RCLCPP_ERROR(get_logger(), "Executor BT finished with FAILURE state");
     result->success = false;
   } else {
@@ -349,6 +342,9 @@ ExecutorNode::get_feedback_info(
         break;
       case ActionExecutor::FAILURE:
         info.status = plansys2_msgs::msg::ActionExecutionInfo::FAILED;
+        break;
+      case ActionExecutor::CANCELLED:
+        info.status = plansys2_msgs::msg::ActionExecutionInfo::CANCELLED;
         break;
     }
 
