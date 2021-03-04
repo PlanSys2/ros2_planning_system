@@ -274,10 +274,12 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   if (status == BT::NodeStatus::FAILURE) {
     tree.haltTree();
     RCLCPP_ERROR(get_logger(), "Executor BT finished with FAILURE state");
+    result->success = false;
+  } else {
+    result->success = true;
   }
 
   result->action_execution_status = get_feedback_info(action_map);
-  result->success = true;
 
   size_t i = 0;
   while (i < result->action_execution_status.size() && result->success) {
