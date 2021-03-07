@@ -94,7 +94,7 @@ def generate_launch_description():
         package='plansys2_lifecycle_manager',
         executable='lifecycle_manager_node',
         node_name='lifecycle_manager_node',
-        node_namespace=namespace,
+        namespace=namespace,
         output='screen',
         parameters=[])
 

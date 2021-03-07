@@ -100,7 +100,7 @@ ProblemExpertClient::getInstances()
   auto future_result = get_problem_instances_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return ret;
   }
@@ -143,7 +143,7 @@ ProblemExpertClient::addInstance(const parser::pddl::tree::Instance & instance)
   auto future_result = add_problem_instance_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return false;
   }
@@ -178,7 +178,7 @@ ProblemExpertClient::removeInstance(const std::string & name)
   auto future_result = remove_problem_instance_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return false;
   }
@@ -217,7 +217,7 @@ ProblemExpertClient::getInstance(const std::string & name)
   auto future_result = get_problem_instance_details_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return ret;
   }
@@ -256,7 +256,7 @@ ProblemExpertClient::getPredicates()
   auto future_result = get_problem_predicates_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return ret;
   }
@@ -300,7 +300,7 @@ ProblemExpertClient::addPredicate(const parser::pddl::tree::Predicate & predicat
   auto future_result = add_problem_predicate_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return false;
   }
@@ -339,7 +339,7 @@ ProblemExpertClient::removePredicate(const parser::pddl::tree::Predicate & predi
   auto future_result = remove_problem_predicate_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return false;
   }
@@ -378,7 +378,7 @@ ProblemExpertClient::existPredicate(const parser::pddl::tree::Predicate & predic
   auto future_result = exist_problem_predicate_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return false;
   }
@@ -408,7 +408,7 @@ ProblemExpertClient::getPredicate(const std::string & expr)
   auto future_result = get_problem_predicate_details_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return ret;
   }
@@ -453,7 +453,7 @@ ProblemExpertClient::getFunctions()
   auto future_result = get_problem_functions_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return ret;
   }
@@ -504,7 +504,7 @@ ProblemExpertClient::addFunction(const parser::pddl::tree::Function & function)
       node_,
       future_result,
       std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return false;
   }
@@ -543,7 +543,7 @@ ProblemExpertClient::removeFunction(const parser::pddl::tree::Function & functio
   auto future_result = remove_problem_function_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return false;
   }
@@ -582,7 +582,7 @@ ProblemExpertClient::existFunction(const parser::pddl::tree::Function & function
   auto future_result = exist_problem_function_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return false;
   }
@@ -614,7 +614,7 @@ bool ProblemExpertClient::updateFunction(const parser::pddl::tree::Function & fu
   auto future_result = update_problem_function_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return false;
   }
@@ -652,7 +652,7 @@ ProblemExpertClient::getFunction(const std::string & expr)
   auto future_result = get_problem_function_details_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return ret;
   }
@@ -699,7 +699,7 @@ ProblemExpertClient::getGoal()
   auto future_result = get_problem_goal_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return ret;
   }
@@ -735,7 +735,7 @@ ProblemExpertClient::setGoal(const parser::pddl::tree::Goal & goal)
   auto future_result = add_problem_goal_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return false;
   }
@@ -770,7 +770,7 @@ ProblemExpertClient::clearGoal()
   auto future_result = remove_problem_goal_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return false;
   }
@@ -804,7 +804,7 @@ ProblemExpertClient::clearKnowledge()
   auto future_result = clear_problem_knowledge_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return false;
   }
@@ -838,7 +838,7 @@ ProblemExpertClient::isGoalSatisfied(const parser::pddl::tree::Goal & goal)
   auto future_result = is_problem_goal_satisfied_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return false;
   }
@@ -874,7 +874,7 @@ ProblemExpertClient::getProblem()
   auto future_result = get_problem_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return ret;
   }

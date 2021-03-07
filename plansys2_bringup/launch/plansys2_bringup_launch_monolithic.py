@@ -48,7 +48,7 @@ def generate_launch_description():
         package='plansys2_bringup',
         executable='plansys2_node',
         output='screen',
-        node_namespace=namespace,
+        namespace=namespace,
         parameters=[
           {'model_file': model_file},
           config_file

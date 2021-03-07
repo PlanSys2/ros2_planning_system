@@ -43,7 +43,7 @@ def generate_launch_description():
         package='plansys2_domain_expert',
         node_executable='domain_expert_node',
         node_name='domain_expert',
-        node_namespace=namespace,
+        namespace=namespace,
         output='screen',
         parameters=[
           {'model_file': model_file}, params_file])
