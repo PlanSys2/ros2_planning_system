@@ -495,6 +495,10 @@ ProblemExpert::checkPredicateTreeTypes(
   std::shared_ptr<parser::pddl::tree::TreeNode> node,
   std::shared_ptr<DomainExpert> & domain_expert_)
 {
+  if (!node) {
+    return false;
+  }
+
   switch (node->type_) {
     case parser::pddl::tree::AND: {
         std::shared_ptr<parser::pddl::tree::AndNode> pn_and =
