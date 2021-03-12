@@ -48,6 +48,8 @@ struct GraphNode
   static Ptr make_shared() {return std::make_shared<GraphNode>();}
 
   ActionStamped action;
+  int node_num;
+  int level_num;
 
   std::set<std::string> predicates;
   std::map<std::string, double> functions;
@@ -62,6 +64,7 @@ struct Graph
   static Ptr make_shared() {return std::make_shared<Graph>();}
 
   std::list<GraphNode::Ptr> roots;
+  std::map<float, std::list<GraphNode::Ptr>> levels;
 };
 
 class BTBuilder
@@ -70,6 +73,7 @@ public:
   explicit BTBuilder(rclcpp::Node::SharedPtr node);
 
   std::string get_tree(const Plan & current_plan);
+  std::string get_dotgraph(const Plan & current_plan);
 
 protected:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
@@ -96,7 +100,8 @@ protected:
   std::list<GraphNode::Ptr> get_roots(
     std::vector<plansys2::ActionStamped> & action_sequence,
     std::set<std::string> & predicates,
-    std::map<std::string, double> & functions);
+    std::map<std::string, double> & functions,
+    int & node_counter);
   GraphNode::Ptr get_node_satisfy(
     const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
     const std::list<GraphNode::Ptr> & roots,
@@ -117,6 +122,7 @@ protected:
     GraphNode::Ptr node,
     std::list<std::string> & used_nodes,
     int level = 0);
+  std::string get_flow_dotgraph(GraphNode::Ptr node, int level = 0);
 
   std::string t(int level);
 

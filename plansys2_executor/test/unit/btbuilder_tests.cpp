@@ -101,9 +101,10 @@ public:
   std::list<plansys2::GraphNode::Ptr> get_roots(
     std::vector<plansys2::ActionStamped> & action_sequence,
     std::set<std::string> & predicates,
-    std::map<std::string, double> & functions)
+    std::map<std::string, double> & functions,
+    int & node_counter)
   {
-    return BTBuilder::get_roots(action_sequence, predicates, functions);
+    return BTBuilder::get_roots(action_sequence, predicates, functions, node_counter);
   }
 
   plansys2::GraphNode::Ptr get_node_satisfy(
@@ -527,7 +528,8 @@ TEST(btbuilder_tests, test_plan_2)
 
   ASSERT_EQ(action_sequence.size(), 22u);
 
-  auto roots = btbuilder->get_roots(action_sequence, predicates_set, functions_map);
+  int node_counter = 0;
+  auto roots = btbuilder->get_roots(action_sequence, predicates_set, functions_map, node_counter);
   ASSERT_EQ(roots.size(), 3u);
   // Apply roots actions
   for (auto & action_node : roots) {
