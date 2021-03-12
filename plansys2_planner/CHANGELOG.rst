@@ -2,6 +2,13 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update API for FutureReturnCode
+* Add support for numeric conditions and effects.
+* minor tipo
+* Contributors: Fabrice Larribe, Francisco Martin Rico, Josh Zapf
+
 1.0.7 (2021-01-04)
 ------------------
 * Making explicit dependencies

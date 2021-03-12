@@ -2,6 +2,18 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Action execution refactoring
+* Adding isGoalSatisfied function and unit tests to the problem expert api.
+* Fixing typo in message name.
+* Add support for numeric conditions and effects.
+* Remove unused field
+* Publish knownledge content
+* Monitorization info
+* fix minor typo
+* Contributors: Alexander Xydes, Fabrice Larribe, Francisco Martin Rico, Josh Zapf
+
 1.0.7 (2021-01-04)
 ------------------
 

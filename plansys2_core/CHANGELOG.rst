@@ -2,6 +2,12 @@
 Changelog for package plansys2_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Ignore comments on block end search
+* PDDL transparent merge
+* Contributors: Fabrice Larribe, Francisco Martin Rico
+
 1.0.7 (2021-01-04)
 ------------------
 

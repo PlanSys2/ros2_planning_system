@@ -2,6 +2,23 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add unit test checking that an empty goal is not valid.
+* Add check for empty pointer prior to accessing pointer. Applies to checking the tree types of a predicate, involved in checking if a goal is valid.
+* Fix typo in comment string to stop LCOV exclusion block.
+* Update API for FutureReturnCode
+* Action execution refactoring
+* Adding unit tests for the Utils file. Fixing bug in plansys2_pddl_parser when getting predicate or function name that has no params it used to include the closing parenthesis in the name, which was incorrect. Making truth value false for expression arithmetic variants. fixing bug: not applying function modifier if trying to divide by zero.
+* Adding isGoalSatisfied function and unit tests to the problem expert api.
+* Moving Utils file to plansys2_problem_expert since all the functions are checking information in the problem or modifying the problem.
+* Fixing typo in message name.
+* Add support for numeric conditions and effects.
+* Publish knownledge content
+* PDDL transparent merge
+* Fix the call of the get_problem_instance service
+* Contributors: Alexander Xydes, Fabrice Larribe, Francisco Martin Rico, Josh Zapf, Thomas Denewiler
+
 1.0.7 (2021-01-04)
 ------------------
 * Making explicit dependencies
