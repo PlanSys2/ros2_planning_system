@@ -93,7 +93,7 @@ ActionExecutor::action_hub_callback(const plansys2_msgs::msg::ActionExecution::S
         }
 
         feedback_ = msg->status;
-        completion_ = 1.0;
+        completion_ = msg->completion;
 
         state_time_ = node_->now();
 

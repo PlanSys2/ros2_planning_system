@@ -287,8 +287,8 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     RCLCPP_ERROR(get_logger(), "Executor BT finished with FAILURE state");
   }
 
+  result->success = status == BT::NodeStatus::SUCCESS;
   result->action_execution_status = get_feedback_info(action_map);
-  result->success = true;
 
   size_t i = 0;
   while (i < result->action_execution_status.size() && result->success) {
