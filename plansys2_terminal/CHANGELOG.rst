@@ -2,8 +2,8 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.8 (2021-03-12)
+------------------
 * Action execution refactoring
 * Add support for numeric conditions and effects.
 * Monitorization info

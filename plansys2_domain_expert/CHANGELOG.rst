@@ -2,8 +2,8 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.8 (2021-03-12)
+------------------
 * Update API for FutureReturnCode
 * Add support for numeric conditions and effects.
 * New Graph creation Algorithm

@@ -2,8 +2,8 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.8 (2021-03-12)
+------------------
 * Add unit test checking that an empty goal is not valid.
 * Add check for empty pointer prior to accessing pointer. Applies to checking the tree types of a predicate, involved in checking if a goal is valid.
 * Fix typo in comment string to stop LCOV exclusion block.

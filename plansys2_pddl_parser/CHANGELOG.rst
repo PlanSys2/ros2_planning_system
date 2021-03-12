@@ -2,8 +2,8 @@
 Changelog for package plansys2_pddl_parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.8 (2021-03-12)
+------------------
 * Adding unit tests for the Utils file. Fixing bug in plansys2_pddl_parser when getting predicate or function name that has no params it used to include the closing parenthesis in the name, which was incorrect. Making truth value false for expression arithmetic variants. fixing bug: not applying function modifier if trying to divide by zero.
 * Add support for numeric conditions and effects.
 * Contributors: Alexander Xydes, Fabrice Larribe, Francisco Martin Rico, Josh Zapf

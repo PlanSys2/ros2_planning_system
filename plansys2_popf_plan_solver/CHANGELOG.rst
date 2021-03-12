@@ -2,8 +2,8 @@
 Changelog for package plansys2_popf_plan_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.8 (2021-03-12)
+------------------
 * Create tmp directories
 * Add more verbose output to pddl errors
 * Contributors: Fabrice Larribe, Francisco Martin Rico
