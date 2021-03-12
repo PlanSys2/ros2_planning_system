@@ -59,8 +59,8 @@ ExecutorNode::ExecutorNode()
 
 #ifdef ZMQ_FOUND
   this->declare_parameter<bool>("enable_groot_monitoring", true);
-  this->declare_parameter<int>("publisher_port", 1666);
-  this->declare_parameter<int>("server_port", 1667);
+  this->declare_parameter<int>("publisher_port", 2666);
+  this->declare_parameter<int>("server_port", 2667);
   this->declare_parameter<int>("max_msgs_per_second", 25);
 #endif
 
