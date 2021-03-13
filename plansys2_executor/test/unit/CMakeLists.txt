@@ -23,5 +23,6 @@ target_link_libraries(bt_node_test ${PROJECT_NAME})
 ament_target_dependencies(bt_node_test ${dependencies})
 
 ament_add_gtest(bt_node_test_charging bt_node_test_charging.cpp)
+target_compile_definitions(bt_node_test_charging PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 target_link_libraries(bt_node_test_charging ${PROJECT_NAME})
 ament_target_dependencies(bt_node_test_charging ${dependencies})
