@@ -2,8 +2,8 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.9 (2021-03-15)
+------------------
 * Disable boost in tests
 * Contributors: Francisco Martin Rico
 
