@@ -2,6 +2,9 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.8 (2021-03-12)
 ------------------
 * Action execution refactoring

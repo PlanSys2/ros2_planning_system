@@ -2,6 +2,9 @@
 Changelog for package plansys2_popf_plan_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.8 (2021-03-12)
 ------------------
 * Create tmp directories

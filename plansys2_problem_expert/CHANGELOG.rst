@@ -2,6 +2,9 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.8 (2021-03-12)
 ------------------
 * Add unit test checking that an empty goal is not valid.
