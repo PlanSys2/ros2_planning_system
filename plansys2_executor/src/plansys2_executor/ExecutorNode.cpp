@@ -19,6 +19,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <set>
 #include <vector>
 
 #include "plansys2_executor/ExecutorNode.hpp"
@@ -73,6 +74,13 @@ ExecutorNode::ExecutorNode()
     std::bind(&ExecutorNode::handle_goal, this, _1, _2),
     std::bind(&ExecutorNode::handle_cancel, this, _1),
     std::bind(&ExecutorNode::handle_accepted, this, _1));
+
+  get_ordered_sub_goals_service_ = create_service<plansys2_msgs::srv::GetOrderedSubGoals>(
+    "executor/get_ordered_sub_goals",
+    std::bind(
+      &ExecutorNode::get_ordered_sub_goals_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 }
 
 
@@ -147,12 +155,87 @@ ExecutorNode::on_error(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
+void
+ExecutorNode::get_ordered_sub_goals_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::GetOrderedSubGoals::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::GetOrderedSubGoals::Response> response)
+{
+  if (ordered_sub_goals_.has_value()) {
+    for (auto goal : ordered_sub_goals_.value()) {
+      response->sub_goals.push_back(goal.toString());
+    }
+    response->success = true;
+  } else {
+    response->success = false;
+    response->error_info = "No current plan.";
+  }
+}
+
+std::optional<std::vector<parser::pddl::tree::Goal>>
+ExecutorNode::getOrderedSubGoals()
+{
+  if (!current_plan_.has_value()) {
+    return {};
+  }
+
+  parser::pddl::tree::Goal goal = problem_client_->getGoal();
+  std::vector<parser::pddl::tree::Predicate> predicates = problem_client_->getPredicates();
+  std::set<std::string> local_predicates;
+  for (auto & predicate : predicates) {
+    local_predicates.insert(predicate.toString());
+  }
+
+  std::vector<parser::pddl::tree::Function> functions = problem_client_->getFunctions();
+  std::map<std::string, double> local_functions;
+  for (auto & function : functions) {
+    local_functions.insert({function.toString(), function.value});
+  }
+
+  std::vector<parser::pddl::tree::Goal> ordered_goals;
+  std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> unordered_subgoals = get_subtrees(
+    goal.root_);
+
+  // just in case some goals are already satisfied
+  for (auto it = unordered_subgoals.begin(); it != unordered_subgoals.end(); ) {
+    if (check(*it, local_predicates, local_functions)) {
+      parser::pddl::tree::Goal new_goal("(and " + (*it)->toString() + ")");
+      ordered_goals.push_back(new_goal);
+      it = unordered_subgoals.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  for (const auto & plan_item : current_plan_.value()) {
+    std::shared_ptr<parser::pddl::tree::DurativeAction> action = get_action_from_string(
+      plan_item.action, domain_client_);
+    apply(action->at_start_effects.root_, local_predicates, local_functions);
+    apply(action->at_end_effects.root_, local_predicates, local_functions);
+
+    for (auto it = unordered_subgoals.begin(); it != unordered_subgoals.end(); ) {
+      if (check(*it, local_predicates, local_functions)) {
+        parser::pddl::tree::Goal new_goal("(and " + (*it)->toString() + ")");
+        ordered_goals.push_back(new_goal);
+        it = unordered_subgoals.erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+
+  return ordered_goals;
+}
+
 rclcpp_action::GoalResponse
 ExecutorNode::handle_goal(
   const rclcpp_action::GoalUUID & uuid,
   std::shared_ptr<const ExecutePlan::Goal> goal)
 {
   RCLCPP_DEBUG(this->get_logger(), "Received goal request with order");
+
+  current_plan_ = {};
+  ordered_sub_goals_ = {};
 
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
@@ -178,9 +261,9 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   auto domain = domain_client_->getDomain();
   auto problem = problem_client_->getProblem();
-  auto current_plan = planner_client_->getPlan(domain, problem);
+  current_plan_ = planner_client_->getPlan(domain, problem);
 
-  if (!current_plan.has_value()) {
+  if (!current_plan_.has_value()) {
     RCLCPP_ERROR(get_logger(), "No plan found");
     result->success = false;
     goal_handle->succeed(result);
@@ -189,7 +272,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
 
-  for (const auto & action : current_plan.value()) {
+  for (const auto & action : current_plan_.value()) {
     auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
 
     (*action_map)[index] = ActionExecutionInfo();
@@ -198,6 +281,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     (*action_map)[index].durative_action_info =
       get_action_from_string(action.action, domain_client_);
   }
+  ordered_sub_goals_ = getOrderedSubGoals();
 
   BTBuilder bt_builder(aux_node_);
   auto blackboard = BT::Blackboard::create();
@@ -216,11 +300,11 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtStartEffect>("ApplyAtStartEffect");
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
 
-  auto bt_xml_tree = bt_builder.get_tree(current_plan.value());
+  auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
   std_msgs::msg::String msg;
   msg.data =
     bt_builder.get_dotgraph(
-    current_plan.value());
+    current_plan_.value());
   dotgraph_pub_->publish(msg);
 
   std::filesystem::path tp = std::filesystem::temp_directory_path();
@@ -285,11 +369,9 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   if (status == BT::NodeStatus::FAILURE) {
     tree.haltTree();
     RCLCPP_ERROR(get_logger(), "Executor BT finished with FAILURE state");
-    result->success = false;
-  } else {
-    result->success = true;
   }
 
+  result->success = status == BT::NodeStatus::SUCCESS;
   result->action_execution_status = get_feedback_info(action_map);
 
   size_t i = 0;
