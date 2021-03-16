@@ -21,6 +21,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetDomainFunctionDetails.srv"
   "srv/GetDomainActions.srv"
   "srv/GetDomainActionDetails.srv"
+  "srv/GetOrderedSubGoals.srv"
   "srv/GetProblem.srv"
   "srv/GetProblemInstances.srv"
   "srv/GetProblemInstanceDetails.srv"

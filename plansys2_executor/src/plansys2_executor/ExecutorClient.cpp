@@ -32,6 +32,9 @@ ExecutorClient::ExecutorClient(rclcpp::Node::SharedPtr provided_node)
 : node_(provided_node)
 {
   createActionClient();
+
+  get_ordered_sub_goals_client_ = node_->create_client<plansys2_msgs::srv::GetOrderedSubGoals>(
+    "executor/get_ordered_sub_goals");
 }
 
 void
@@ -75,7 +78,11 @@ ExecutorClient::execute_and_check_plan()
 
   switch (result_.code) {
     case rclcpp_action::ResultCode::SUCCEEDED:
-      RCLCPP_INFO(node_->get_logger(), "Plan Succeded");
+      if (result_.result != nullptr && result_.result->success) {
+        RCLCPP_INFO(node_->get_logger(), "Plan Succeeded");
+      } else {
+        RCLCPP_INFO(node_->get_logger(), "Plan Failed");
+      }
       break;
 
     case rclcpp_action::ResultCode::ABORTED:
@@ -158,6 +165,45 @@ ExecutorClient::cancel_plan_execution()
 
   executing_plan_ = false;
   goal_result_available_ = false;
+}
+
+std::vector<parser::pddl::tree::Goal> ExecutorClient::getOrderedSubGoals()
+{
+  std::vector<parser::pddl::tree::Goal> ret;
+
+  while (!get_ordered_sub_goals_client_->wait_for_service(std::chrono::seconds(5))) {
+    if (!rclcpp::ok()) {
+      return ret;
+    }
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      get_ordered_sub_goals_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
+  }
+
+  auto request = std::make_shared<plansys2_msgs::srv::GetOrderedSubGoals::Request>();
+
+  auto future_result = get_ordered_sub_goals_client_->async_send_request(request);
+
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
+    rclcpp::executor::FutureReturnCode::SUCCESS)
+  {
+    return ret;
+  }
+
+  if (future_result.get()->success) {
+    for (std::string goal_str : future_result.get()->sub_goals) {
+      parser::pddl::tree::Goal new_goal(goal_str);
+      ret.push_back(new_goal);
+    }
+  } else {
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      get_ordered_sub_goals_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
+  }
+
+  return ret;
 }
 
 void

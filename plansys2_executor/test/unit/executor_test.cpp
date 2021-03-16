@@ -1193,7 +1193,6 @@ TEST(problem_expert, executor_client_execute_plan)
   t.join();
 }
 
-
 TEST(problem_expert, executor_client_cancel_plan)
 {
   auto test_node_1 = rclcpp::Node::make_shared("test_node_1");
