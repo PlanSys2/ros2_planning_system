@@ -1,3 +1,6 @@
+executor:
+  ros__parameters:
+    duration_overrun_percentage: -1.0
 planner:
   ros__parameters:
     plan_solver_plugins: ["POPF"]

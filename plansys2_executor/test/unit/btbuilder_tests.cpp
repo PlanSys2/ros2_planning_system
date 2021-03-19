@@ -61,9 +61,11 @@ public:
   explicit BTBuilderTest(rclcpp::Node::SharedPtr node)
   : BTBuilder(node) {}
 
-  std::string get_tree(const plansys2::Plan & current_plan)
+  std::string get_tree(
+    const plansys2::Plan & current_plan,
+    std::shared_ptr<std::map<std::string, plansys2::ActionExecutionInfo>> action_map)
   {
-    return BTBuilder::get_tree(current_plan);
+    return BTBuilder::get_tree(current_plan, action_map);
   }
 
   void init_predicates(
@@ -593,6 +595,7 @@ TEST(btbuilder_tests, test_plan_3)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
   auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
@@ -669,7 +672,23 @@ TEST(btbuilder_tests, test_plan_3)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  auto bt = btbuilder->get_tree(plan.value());
+  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
+
+  for (const auto & action : plan.value()) {
+    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
+
+    (*action_map)[index] = plansys2::ActionExecutionInfo();
+    (*action_map)[index].durative_action_info =
+      get_action_from_string(action.action, domain_client);
+    (*action_map)[index].action_executor =
+      plansys2::ActionExecutor::make_shared(
+      action.action,
+      executor_node,
+      rclcpp::Duration::from_seconds(action.duration)
+      );
+  }
+
+  auto bt = btbuilder->get_tree(plan.value(), action_map);
 
   std::cerr << bt << std::endl;
 

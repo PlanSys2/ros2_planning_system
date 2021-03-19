@@ -12,5 +12,8 @@ builtin_interfaces/Time status_stamp
 string action
 string[] arguments
 
+builtin_interfaces/Duration duration
+float32 duration_overrun_percentage
+
 float32 completion
 string message_status

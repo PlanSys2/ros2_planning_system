@@ -27,6 +27,7 @@
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_core/Types.hpp"
 #include "plansys2_pddl_parser/Tree.h"
 
@@ -39,6 +40,7 @@ namespace plansys2
 struct ActionStamped
 {
   float time;
+  float duration;
   std::shared_ptr<parser::pddl::tree::DurativeAction> action;
 };
 
@@ -72,7 +74,9 @@ class BTBuilder
 public:
   explicit BTBuilder(rclcpp::Node::SharedPtr node);
 
-  std::string get_tree(const Plan & current_plan);
+  std::string get_tree(
+    const Plan & current_plan,
+    std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map);
   std::string get_dotgraph(const Plan & current_plan);
 
 protected:
@@ -120,12 +124,13 @@ protected:
   std::string get_flow_tree(
     GraphNode::Ptr node,
     std::list<std::string> & used_nodes,
+    std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
     int level = 0);
   std::string get_flow_dotgraph(GraphNode::Ptr node, int level = 0);
 
   std::string t(int level);
 
-  std::string execution_block(const GraphNode::Ptr & node, int l);
+  std::string execution_block(const GraphNode::Ptr & node, int l, int timeout = 0);
   void print_node(
     const GraphNode::Ptr & node,
     int level,

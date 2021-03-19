@@ -27,8 +27,10 @@
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_problem_expert/Utils.hpp"
 #include "plansys2_planner/PlannerNode.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
+#include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
 
 #include "rclcpp/rclcpp.hpp"
@@ -51,6 +53,7 @@ TEST(executiotest_noden_tree, bt_builder_factory)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto executor_node = std::make_shared<plansys2::ExecutorNode>();
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
   auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
@@ -180,9 +183,24 @@ TEST(executiotest_noden_tree, bt_builder_factory)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
+  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
+
+  for (const auto & action : plan.value()) {
+    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
+
+    (*action_map)[index] = plansys2::ActionExecutionInfo();
+    (*action_map)[index].durative_action_info =
+      get_action_from_string(action.action, domain_client);
+    (*action_map)[index].action_executor =
+      plansys2::ActionExecutor::make_shared(
+      action.action,
+      executor_node,
+      rclcpp::Duration::from_seconds(action.duration)
+      );
+  }
+
   BTBuilderTest exec_tree(test_node);
-  auto tree_str = exec_tree.get_tree(plan.value());
+  auto tree_str = exec_tree.get_tree(plan.value(), action_map);
 
   std::cout << tree_str << std::endl;
   finish = true;
@@ -196,6 +214,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto executor_node = std::make_shared<plansys2::ExecutorNode>();
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
   auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
@@ -327,6 +346,22 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
+  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
+
+  for (const auto & action : plan.value()) {
+    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
+
+    (*action_map)[index] = plansys2::ActionExecutionInfo();
+    (*action_map)[index].durative_action_info =
+      get_action_from_string(action.action, domain_client);
+    (*action_map)[index].action_executor =
+      plansys2::ActionExecutor::make_shared(
+      action.action,
+      executor_node,
+      rclcpp::Duration::from_seconds(action.duration)
+      );
+  }
+
   std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
   BTBuilderTest exec_tree(test_node);
 
@@ -335,7 +370,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
   //   "(move robot1 assembly_zone wheels_zone)"),
   //   durative_actions_map.end());
 
-  auto tree_str = exec_tree.get_tree(plan.value());
+  auto tree_str = exec_tree.get_tree(plan.value(), action_map);
 
   finish = true;
   t.join();
@@ -347,6 +382,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto executor_node = std::make_shared<plansys2::ExecutorNode>();
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
   auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
@@ -455,10 +491,25 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
+  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
+
+  for (const auto & action : plan.value()) {
+    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
+
+    (*action_map)[index] = plansys2::ActionExecutionInfo();
+    (*action_map)[index].durative_action_info =
+      get_action_from_string(action.action, domain_client);
+    (*action_map)[index].action_executor =
+      plansys2::ActionExecutor::make_shared(
+      action.action,
+      executor_node,
+      rclcpp::Duration::from_seconds(action.duration)
+      );
+  }
+
   BTBuilderTest exec_tree(test_node);
 
-  auto tree_str = exec_tree.get_tree(plan.value());
+  auto tree_str = exec_tree.get_tree(plan.value(), action_map);
 
   finish = true;
   t.join();

@@ -26,21 +26,28 @@ using namespace std::chrono_literals;
 
 ActionExecutor::ActionExecutor(
   const std::string & action,
-  rclcpp_lifecycle::LifecycleNode::SharedPtr node)
-: node_(node), state_(IDLE)
+  rclcpp_lifecycle::LifecycleNode::SharedPtr node,
+  rclcpp::Duration duration,
+  float duration_overrun_percentage)
+: node_(node),
+  state_(SETUP),
+  duration_(duration),
+  duration_overrun_percentage_(duration_overrun_percentage),
+  completion_(0)
 {
   action_hub_pub_ = node_->create_publisher<plansys2_msgs::msg::ActionExecution>(
     "/actions_hub", rclcpp::QoS(100).reliable());
   action_hub_sub_ = node_->create_subscription<plansys2_msgs::msg::ActionExecution>(
     "/actions_hub", rclcpp::QoS(100).reliable(),
-    std::bind(&ActionExecutor::action_hub_callback, this, _1));
+    std::bind(&ActionExecutor::action_hub_callback, this, std::placeholders::_1));
+
+  action_hub_pub_->on_activate();
 
   state_time_ = node_->now();
 
   action_ = action;
   action_name_ = get_name(action);
   action_params_ = get_params(action);
-  completion_ = 0.0;
   start_execution_ = node_->now();
   state_time_ = start_execution_;
 }
@@ -51,11 +58,20 @@ ActionExecutor::action_hub_callback(const plansys2_msgs::msg::ActionExecution::S
   last_msg = *msg;
 
   switch (msg->type) {
+    case plansys2_msgs::msg::ActionExecution::SETUP_REQUEST:
     case plansys2_msgs::msg::ActionExecution::REQUEST:
     case plansys2_msgs::msg::ActionExecution::CONFIRM:
     case plansys2_msgs::msg::ActionExecution::REJECT:
     case plansys2_msgs::msg::ActionExecution::CANCEL:
       // These cases have no meaning requester
+      break;
+    case plansys2_msgs::msg::ActionExecution::SETUP_RESPONSE:
+      if (state_ == SETUP && msg->action == action_name_) {
+        if (msg->duration_overrun_percentage >= 0) {
+          duration_overrun_percentage_ = msg->duration_overrun_percentage;
+        }
+        state_ = IDLE;
+      }
       break;
     case plansys2_msgs::msg::ActionExecution::RESPONSE:
       if (msg->arguments == action_params_ && msg->action == action_name_) {
@@ -150,6 +166,7 @@ BT::NodeStatus
 ActionExecutor::get_status()
 {
   switch (state_) {
+    case SETUP:
     case IDLE:
       return BT::NodeStatus::IDLE;
       break;
@@ -179,15 +196,12 @@ BT::NodeStatus
 ActionExecutor::tick(const rclcpp::Time & now)
 {
   switch (state_) {
+    case SETUP:
     case IDLE:
       state_ = DEALING;
       state_time_ = node_->now();
-
-      action_hub_pub_->on_activate();
-
       completion_ = 0.0;
       feedback_ = "";
-
       request_for_performers();
       waiting_timer_ = node_->create_wall_timer(
         1s, std::bind(&ActionExecutor::wait_timeout, this));
@@ -215,6 +229,17 @@ ActionExecutor::tick(const rclcpp::Time & now)
   }
 
   return get_status();
+}
+
+void
+ActionExecutor::setup()
+{
+  plansys2_msgs::msg::ActionExecution msg;
+  msg.type = plansys2_msgs::msg::ActionExecution::SETUP_REQUEST;
+  msg.action = action_name_;
+  msg.duration = duration_;
+
+  action_hub_pub_->publish(msg);
 }
 
 void

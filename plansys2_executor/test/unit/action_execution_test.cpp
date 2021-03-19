@@ -119,6 +119,9 @@ TEST(action_execution, protocol_basic)
   auto move_action_executor = plansys2::ActionExecutor::make_shared(
     "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
 
+  ASSERT_EQ(move_action_executor->get_internal_status(), plansys2::ActionExecutor::Status::SETUP);
+  move_action_executor->set_internal_status(plansys2::ActionExecutor::IDLE);
+
   ASSERT_EQ(move_action_executor->get_action_name(), "move");
   ASSERT_EQ(move_action_executor->get_action_params().size(), 3u);
   ASSERT_EQ(move_action_executor->get_action_params()[0], "r2d2");
@@ -233,6 +236,9 @@ TEST(action_execution, protocol_cancelation)
   auto move_action_node = std::make_shared<MoveAction>("move_action", 1s);
   auto move_action_executor = plansys2::ActionExecutor::make_shared(
     "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
+
+  ASSERT_EQ(move_action_executor->get_internal_status(), plansys2::ActionExecutor::Status::SETUP);
+  move_action_executor->set_internal_status(plansys2::ActionExecutor::IDLE);
 
   ASSERT_EQ(move_action_executor->get_action_name(), "move");
   ASSERT_EQ(move_action_executor->get_action_params().size(), 3u);
