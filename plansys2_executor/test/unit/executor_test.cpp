@@ -116,7 +116,7 @@ public:
       finish(true, 1.0, "completed");
       executions_++;
     } else {
-      send_feedback(counter_ * 0.0, "running");
+      send_feedback((counter_ / 3.0) * 100.0, "running");
     }
   }
 
@@ -1193,6 +1193,198 @@ TEST(problem_expert, executor_client_execute_plan)
   t.join();
 }
 
+class PatrolAction : public plansys2::ActionExecutorClient
+{
+public:
+  using Ptr = std::shared_ptr<PatrolAction>;
+  static Ptr make_shared(const std::string & node_name, const std::chrono::nanoseconds & rate)
+  {
+    return std::make_shared<PatrolAction>(node_name, rate);
+  }
+
+
+  PatrolAction(const std::string & id, const std::chrono::nanoseconds & rate)
+  : ActionExecutorClient(id, rate)
+  {
+    executions_ = 0;
+    cycles_ = 0;
+  }
+
+  CallbackReturnT
+  on_activate(const rclcpp_lifecycle::State & state)
+  {
+    std::cerr << "PatrolAction::on_activate" << std::endl;
+    counter_ = 0;
+
+    return ActionExecutorClient::on_activate(state);
+  }
+
+  void do_work() override
+  {
+    RCLCPP_INFO_STREAM(get_logger(), "Executing [" << action_managed_ << "]");
+    for (const auto & arg : current_arguments_) {
+      RCLCPP_INFO_STREAM(get_logger(), "\t[" << arg << "]");
+    }
+
+    cycles_++;
+
+    if (counter_++ > 1) {
+      finish(true, 1.0, "completed");
+      executions_++;
+    } else {
+      send_feedback((counter_ / 1.0) * 100.0, "running");
+    }
+  }
+
+  int counter_;
+  int executions_;
+  int cycles_;
+};
+
+TEST(problem_expert, executor_client_ordered_sub_goals)
+{
+  auto test_node_1 = rclcpp::Node::make_shared("test_node_1");
+  auto test_node_2 = rclcpp::Node::make_shared("test_node_2");
+  auto test_node_3 = rclcpp::Node::make_shared("test_node_3");
+  auto test_lf_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_lf_node");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto executor_node = std::make_shared<ExecutorNodeTest>();
+
+  auto move_action_node = MoveAction::make_shared("move_action_performer", 100ms);
+  move_action_node->set_parameter({"action_name", "move"});
+
+  auto patrol_action_node = PatrolAction::make_shared("patrol_action_performer", 100ms);
+  patrol_action_node->set_parameter({"action_name", "patrol"});
+
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node_1);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_1);
+  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node_2);
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>(test_node_3);
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 9);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(planner_node->get_node_base_interface());
+  exe.add_node(executor_node->get_node_base_interface());
+  exe.add_node(move_action_node->get_node_base_interface());
+  exe.add_node(patrol_action_node->get_node_base_interface());
+  exe.add_node(test_lf_node->get_node_base_interface());
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  move_action_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  patrol_action_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node_1->now();
+    while ((test_node_1->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node_1->now();
+    while ((test_node_1->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wp0", "waypoint"}));
+  ASSERT_TRUE(problem_client->addInstance({"wp1", "waypoint"}));
+  ASSERT_TRUE(problem_client->addInstance({"wp2", "waypoint"}));
+
+  std::vector<std::string> predicates = {
+    "(robot_at r2d2 wp0)",
+    "(connected wp0 wp1)",
+    "(connected wp1 wp0)",
+    "(connected wp0 wp2)",
+    "(connected wp2 wp0)",
+    "(connected wp1 wp2)",
+    "(connected wp2 wp1)",
+  };
+  for (const auto & pred : predicates) {
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+  }
+
+  std::vector<std::string> functions = {
+    "(= (speed r2d2) 1.0)",
+    "(= (max_range r2d2) 100.0)",
+    "(= (state_of_charge r2d2) 100.0)",
+    "(= (distance wp0 wp1) 5.0)",
+    "(= (distance wp1 wp0) 5.0)",
+    "(= (distance wp0 wp2) 15.0)",
+    "(= (distance wp2 wp0) 15.0)",
+    "(= (distance wp1 wp2) 5.0)",
+    "(= (distance wp2 wp1) 5.0)",
+  };
+  for (const auto & func : functions) {
+    ASSERT_TRUE(problem_client->addFunction(parser::pddl::tree::Function(func)));
+  }
+
+  problem_client->setGoal(
+    plansys2::Goal(
+      "(and(patrolled wp1) (patrolled wp2))"));
+
+  std::vector<plansys2::Goal> expected_sub_goals = {
+    plansys2::Goal("(and(patrolled wp1))"),
+    plansys2::Goal("(and(patrolled wp2))"),
+  };
+
+  auto domain = domain_client->getDomain();
+  auto problem = problem_client->getProblem();
+  auto plan = planner_client->getPlan(domain, problem);
+  ASSERT_FALSE(domain.empty());
+  ASSERT_FALSE(problem.empty());
+  ASSERT_TRUE(plan.has_value());
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node_1->now();
+
+    ASSERT_TRUE(executor_client->start_plan_execution());
+
+    while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
+      auto feedback = executor_client->getFeedBack();
+
+      ASSERT_LE(feedback.action_execution_status.size(), 4);
+      rate.sleep();
+    }
+  }
+  std::vector<plansys2::Goal> actual_sub_goals = executor_client->getOrderedSubGoals();
+
+  ASSERT_EQ(actual_sub_goals.size(), expected_sub_goals.size());
+  for (size_t i = 0; i < actual_sub_goals.size(); i++) {
+    ASSERT_EQ(actual_sub_goals[i].toString(), expected_sub_goals[i].toString());
+  }
+
+  finish = true;
+  t.join();
+}
 
 TEST(problem_expert, executor_client_cancel_plan)
 {

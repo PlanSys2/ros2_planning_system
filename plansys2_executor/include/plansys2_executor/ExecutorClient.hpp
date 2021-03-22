@@ -18,8 +18,11 @@
 #include <optional>
 #include <string>
 #include <memory>
+#include <vector>
 
 #include "plansys2_msgs/action/execute_plan.hpp"
+#include "plansys2_msgs/srv/get_ordered_sub_goals.hpp"
+#include "plansys2_pddl_parser/Tree.h"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
@@ -38,6 +41,7 @@ public:
   bool start_plan_execution();
   bool execute_and_check_plan();
   void cancel_plan_execution();
+  std::vector<parser::pddl::tree::Goal> getOrderedSubGoals();
 
   ExecutePlan::Feedback getFeedBack() {return feedback_;}
   std::optional<ExecutePlan::Result> getResult();
@@ -46,6 +50,8 @@ private:
   rclcpp::Node::SharedPtr node_;
 
   rclcpp_action::Client<ExecutePlan>::SharedPtr action_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetOrderedSubGoals>::SharedPtr
+    get_ordered_sub_goals_client_;
 
   ExecutePlan::Goal goal_;
   ExecutePlan::Feedback feedback_;
