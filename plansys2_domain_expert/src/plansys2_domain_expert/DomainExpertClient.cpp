@@ -66,7 +66,7 @@ DomainExpertClient::getTypes()
   auto future_result = get_types_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return ret;
   }
@@ -96,7 +96,7 @@ DomainExpertClient::getPredicates()
   auto future_result = get_predicates_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return ret;
   }
@@ -129,7 +129,7 @@ DomainExpertClient::getPredicate(const std::string & predicate)
   auto future_result = get_predicate_details_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return {};
   }
@@ -177,7 +177,7 @@ DomainExpertClient::getFunctions()
   auto future_result = get_functions_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return ret;
   }
@@ -210,7 +210,7 @@ DomainExpertClient::getFunction(const std::string & function)
   auto future_result = get_function_details_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return {};
   }
@@ -258,7 +258,7 @@ DomainExpertClient::getActions()
   auto future_result = get_actions_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return ret;
   }
@@ -295,7 +295,7 @@ DomainExpertClient::getAction(const std::string & action)
   auto future_result = get_action_details_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return {};
   }
@@ -349,7 +349,7 @@ DomainExpertClient::getDurativeActions()
   auto future_result = get_actions_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return ret;
   }
@@ -386,7 +386,7 @@ DomainExpertClient::getDurativeAction(const std::string & action)
   auto future_result = get_action_details_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return {};
   }
@@ -442,7 +442,7 @@ DomainExpertClient::getDomain()
   auto future_result = get_domain_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return ret;
   }

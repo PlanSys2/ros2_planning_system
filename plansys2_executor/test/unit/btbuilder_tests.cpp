@@ -140,7 +140,6 @@ public:
   }
 };
 
-
 TEST(btbuilder_tests, test_plan_1)
 {
   auto test_node = rclcpp::Node::make_shared("test_plan_1");
@@ -696,6 +695,142 @@ TEST(btbuilder_tests, test_plan_3)
   finish = true;
   t.join();
 }
+
+TEST(btbuilder_tests, test_plan_4)
+{
+  auto test_node = rclcpp::Node::make_shared("test_plan_4");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto planner_node = std::make_shared<plansys2::PlannerNode>();
+
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
+
+  auto btbuilder = std::make_shared<BTBuilderTest>(test_node);
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/cooking_domain.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/cooking_domain.pddl"});
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(planner_node->get_node_base_interface());
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"c3po", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"fridge_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"pantry_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"watertap_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"cooking_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"recharge_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"eggs", "ingredient"}));
+  ASSERT_TRUE(problem_client->addInstance({"oil", "ingredient"}));
+  ASSERT_TRUE(problem_client->addInstance({"salt", "ingredient"}));
+  ASSERT_TRUE(problem_client->addInstance({"omelette", "dish"}));
+  ASSERT_TRUE(problem_client->addInstance({"flour", "ingredient"}));
+  ASSERT_TRUE(problem_client->addInstance({"sugar", "ingredient"}));
+  ASSERT_TRUE(problem_client->addInstance({"cake", "dish"}));
+
+  std::vector<std::string> predicates = {
+    "(is_cooking_zone cooking_zone)",
+    "(is_fridge_zone fridge_zone)",
+    "(is_fridge_zone fridge_zone)",
+    "(is_watertap_zone watertap_zone)",
+    "(is_recharge_zone recharge_zone)",
+    "(ingredient_at eggs fridge_zone)",
+    "(ingredient_at oil pantry_zone)",
+    "(ingredient_at salt pantry_zone)",
+    "(ingredient_at flour pantry_zone)",
+    "(ingredient_at sugar pantry_zone)",
+    "(is_oil oil)",
+    "(is_egg eggs)",
+    "(is_salt salt)",
+    "(is_flour flour)",
+    "(is_sugar sugar)",
+    "(is_cake cake)",
+    "(is_omelette omelette)",
+    "(robot_at r2d2 cooking_zone)",
+    "(battery_full r2d2)",
+    "(robot_at c3po cooking_zone)",
+    "(battery_full c3po)"
+  };
+
+  for (const auto & pred : predicates) {
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+  }
+
+  ASSERT_TRUE(
+    problem_client->setGoal(
+      parser::pddl::tree::Goal(
+        "(and (dish_prepared cake)(dish_prepared omelette))")));
+
+  auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
+  ASSERT_TRUE(plan);
+
+  btbuilder->print_graph(btbuilder->get_graph(plan.value()));
+
+  auto executor_node = std::make_shared<plansys2::ExecutorNode>();
+  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
+
+  for (const auto & action : plan.value()) {
+    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
+
+    (*action_map)[index] = plansys2::ActionExecutionInfo();
+    (*action_map)[index].durative_action_info =
+      get_action_from_string(action.action, domain_client);
+    (*action_map)[index].action_executor =
+      plansys2::ActionExecutor::make_shared(
+      action.action,
+      executor_node,
+      rclcpp::Duration::from_seconds(action.duration)
+      );
+  }
+
+  auto bt = btbuilder->get_tree(plan.value(), action_map);
+
+  std::cerr << bt << std::endl;
+
+  // Todo: Test that the BT is correct
+
+  finish = true;
+  t.join();
+}
+
 
 int main(int argc, char ** argv)
 {
