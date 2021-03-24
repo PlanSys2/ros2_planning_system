@@ -178,19 +178,20 @@ ExecutorNode::get_ordered_sub_goals_service_callback(
 bool
 ExecutorNode::setup_action_executor(
   std::shared_ptr<ActionExecutor> action_executor,
-  std::chrono::seconds timeout)
+  rclcpp::Duration timeout)
 {
-  auto start = std::chrono::steady_clock::now();
+  rclcpp::Rate rate(10);
+  auto start = this->now();
 
   while (action_executor->get_internal_status() == ActionExecutor::SETUP) {
     action_executor->setup();
 
-    auto elapsed_time = std::chrono::steady_clock::now() - start;
+    auto elapsed_time = this->now() - start;
     if (elapsed_time > timeout) {
       return false;
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    rate.sleep();
   }
 
   return true;
@@ -312,12 +313,22 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
       rclcpp::Duration::from_seconds(action.duration),
       duration_overrun_percentage
       );
+
     if (!setup_action_executor((*action_map)[index].action_executor)) {
-      (*action_map)[index].action_executor->set_internal_status(ActionExecutor::IDLE);
-      RCLCPP_WARN(
+      RCLCPP_ERROR(
         get_logger(),
-        "[%s] Failed to setup %s action executor. Using default values.",
-        get_name(), action.action);
+        "[%s] Failed to setup %s action executor.",
+        get_name(), action.action.c_str());
+      result->success = false;
+      result->action_execution_status = get_feedback_info(action_map);
+      for (auto & info : result->action_execution_status) {
+        if (info.action == (*action_map)[index].action_executor->get_action_name()) {
+          info.message_status = "Failed to setup action executor.";
+        }
+        execution_info_pub_->publish(info);
+      }
+      goal_handle->succeed(result);
+      return;
     }
   }
   ordered_sub_goals_ = getOrderedSubGoals();
