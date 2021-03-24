@@ -573,7 +573,7 @@ ProblemExpert::checkPredicateTreeTypes(
       // LCOV_EXCL_START
       std::cerr << "checkPredicateTreeTypes: Error parsing expresion [" <<
         node->toString() << "]" << std::endl;
-      // LCOV_EXCL_START
+      // LCOV_EXCL_STOP
   }
 
   return false;
