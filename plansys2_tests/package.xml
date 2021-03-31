@@ -4,7 +4,7 @@
   <name>plansys2_tests</name>
   <version>1.0.8</version>
   
-  <description>This package contains the Executor module for the ROS2 Planning System</description>
+  <description>This package contains the tests package for the ROS2 Planning System</description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
  
