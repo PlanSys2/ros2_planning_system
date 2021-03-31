@@ -430,6 +430,8 @@ ExecutorNode::get_feedback_info(
         break;
     }
 
+    info.action_full_name = action.first;
+
     info.start_stamp = action.second.action_executor->get_start_time();
     info.status_stamp = action.second.action_executor->get_status_time();
     info.action = action.second.action_executor->get_action_name();
