@@ -553,8 +553,6 @@ BTBuilder::get_dotgraph(const Plan & current_plan)
 {
   auto action_graph = get_graph(current_plan);
 
-  print_graph(action_graph);
-
   // create xdot graph
   std::stringstream ss;
   ss << "digraph plan {\n";

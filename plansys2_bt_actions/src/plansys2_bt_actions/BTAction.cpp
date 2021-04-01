@@ -95,7 +95,7 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
       " publisher port: %d, server port: %d",
       get_name(), publisher_port, server_port);
   } else if (get_parameter("enable_groot_monitoring").as_bool()) {
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
       get_logger(),
       "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
       get_name(), publisher_port, server_port, max_msgs_per_second);

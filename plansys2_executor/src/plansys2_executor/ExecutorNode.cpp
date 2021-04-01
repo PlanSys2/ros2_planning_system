@@ -321,7 +321,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   std::unique_ptr<BT::PublisherZMQ> publisher_zmq;
   if (this->get_parameter("enable_groot_monitoring").as_bool()) {
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
       get_logger(),
       "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
       get_name(), publisher_port, server_port, max_msgs_per_second);
