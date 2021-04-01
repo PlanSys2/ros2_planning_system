@@ -53,6 +53,7 @@ public:
   bool started_before(const std::string & op1, const std::string & op2);
   bool before(const std::string & op1, const std::string & op2);
   bool sorted(const std::list<std::string> & actions);
+  bool is_executed(const std::string & action_full_name);
 
 private:
   rclcpp::Subscription<plansys2_msgs::msg::ActionExecution>::SharedPtr action_execution_sub_;

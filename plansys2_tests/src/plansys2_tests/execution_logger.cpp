@@ -74,7 +74,7 @@ ExecutionLogger::started_before(const std::string & op1, const std::string & op2
       action.completion > 0.0000001;
 
     if (op2_found && !op1_found) {
-      std::cerr << op2 << " started before " << op1 << std::endl;
+      RCLCPP_ERROR_STREAM(get_logger(), op2 << " started before " << op1);
       return false;
     }
 
@@ -98,7 +98,7 @@ ExecutionLogger::before(const std::string & op1, const std::string & op2)
       action.completion > 0.0000001;
 
     if (op2_found && !op1_found) {
-      std::cerr << op2 << " started before " << op1 << " finishes" << std::endl;
+      RCLCPP_ERROR_STREAM(get_logger(), op2 << " started before " << op1 << " finishes");
       return false;
     }
 
@@ -111,6 +111,24 @@ ExecutionLogger::before(const std::string & op1, const std::string & op2)
 }
 
 bool
+ExecutionLogger::is_executed(const std::string & action_full_name)
+{
+  bool executed = false;
+  bool exist = false;
+  for (const auto & action : action_execution_info_log_) {
+    exist = exist || action.action_full_name == action_full_name;
+    executed = executed || action.action_full_name == action_full_name &&
+      action.completion > 0.000001;
+  }
+
+  if (!exist) {
+    RCLCPP_WARN_STREAM(get_logger(), action_full_name << " not exist (misspelled?) in plan");
+  }
+
+  return exist && executed;
+}
+
+bool
 ExecutionLogger::sorted(const std::list<std::string> & actions)
 {
   auto it = actions.begin();
@@ -120,6 +138,16 @@ ExecutionLogger::sorted(const std::list<std::string> & actions)
 
   auto it2 = std::next(it);
   while (it2 != actions.end()) {
+    if (!is_executed(*it)) {
+      RCLCPP_ERROR_STREAM(get_logger(), *it << " not found in execution");
+      return false;
+    }
+
+    if (!is_executed(*it2)) {
+      RCLCPP_ERROR_STREAM(get_logger(), *it2 << " not found in execution");
+      return false;
+    }
+
     if (!before(*it, *it2)) {
       return false;
     }
