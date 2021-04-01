@@ -149,7 +149,7 @@ public:
   /**
     * \param[in] predicate A string containing a predicate
     */
-  explicit Predicate(const std::string & predicate)
+  Predicate(const std::string & predicate)
   {
     fromString(predicate);
   }
@@ -734,7 +734,7 @@ public:
   PredicateTree()
   : root_(nullptr) {}
 
-  explicit PredicateTree(const std::string & predicate)
+  PredicateTree(const std::string & predicate)
   : PredicateTree()
   {
     fromString(predicate);

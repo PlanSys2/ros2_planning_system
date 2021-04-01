@@ -9,6 +9,8 @@ int8 status
 builtin_interfaces/Time start_stamp
 builtin_interfaces/Time status_stamp
 
+string action_full_name
+
 string action
 string[] arguments
 
