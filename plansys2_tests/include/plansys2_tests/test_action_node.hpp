@@ -50,6 +50,7 @@ public:
 private:
   void do_work();
 
+  static int node_name_counter_;
   float progress_;
   float increment_;
 };
