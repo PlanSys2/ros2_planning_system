@@ -52,6 +52,7 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
   add_subdirectory(test_1)
+  add_subdirectory(test_2)
 endif()
 
 ament_package()
