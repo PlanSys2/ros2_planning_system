@@ -1,6 +1,6 @@
 # Test 2
 
-Short lineal plan with 6 actions.
+Short lineal plan with 6 actions and sub-types
 
 ## PlanSys2
 
@@ -12,7 +12,7 @@ Short lineal plan with 6 actions.
 ## PDDL
 
 - [x] Types
-- [x] Super Types
+- [x] Sub-Types
 - [ ] Durative actions
   - [x] at start req
   - [x] over all req
