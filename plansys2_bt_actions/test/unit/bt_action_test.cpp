@@ -179,6 +179,9 @@ TEST(bt_actions, cancel_bt_action)
   auto lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
   auto action_client = plansys2::ActionExecutor::make_shared("(assemble r2d2 z p1 p2 p3)", lc_node);
 
+  ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::SETUP);
+  action_client->set_internal_status(plansys2::ActionExecutor::IDLE);
+
   bt_action->set_parameter(rclcpp::Parameter("action_name", "assemble"));
   bt_action->set_parameter(rclcpp::Parameter("bt_xml_file", xml_file));
   bt_action->set_parameter(rclcpp::Parameter("plugins", plugins));

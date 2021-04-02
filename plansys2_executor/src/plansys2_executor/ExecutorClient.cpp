@@ -197,7 +197,7 @@ std::vector<parser::pddl::tree::Goal> ExecutorClient::getOrderedSubGoals()
       ret.push_back(new_goal);
     }
   } else {
-    RCLCPP_ERROR_STREAM(
+    RCLCPP_INFO_STREAM(
       node_->get_logger(),
       get_ordered_sub_goals_client_->get_service_name() << ": " <<
         future_result.get()->error_info);

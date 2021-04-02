@@ -14,6 +14,7 @@
 
 #include <filesystem>
 
+#include <chrono>
 #include <string>
 #include <memory>
 #include <iostream>
@@ -57,6 +58,8 @@ ExecutorNode::ExecutorNode()
 : rclcpp_lifecycle::LifecycleNode("executor")
 {
   using namespace std::placeholders;
+
+  this->declare_parameter<double>("duration_overrun_percentage", -1.0);
 
 #ifdef ZMQ_FOUND
   this->declare_parameter<bool>("enable_groot_monitoring", true);
@@ -172,6 +175,28 @@ ExecutorNode::get_ordered_sub_goals_service_callback(
   }
 }
 
+bool
+ExecutorNode::setup_action_executor(
+  std::shared_ptr<ActionExecutor> action_executor,
+  rclcpp::Duration timeout)
+{
+  rclcpp::Rate rate(10);
+  auto start = this->now();
+
+  while (action_executor->get_internal_status() == ActionExecutor::SETUP) {
+    action_executor->setup();
+
+    auto elapsed_time = this->now() - start;
+    if (elapsed_time > timeout) {
+      return false;
+    }
+
+    rate.sleep();
+  }
+
+  return true;
+}
+
 std::optional<std::vector<parser::pddl::tree::Goal>>
 ExecutorNode::getOrderedSubGoals()
 {
@@ -270,16 +295,41 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     return;
   }
 
+  float duration_overrun_percentage;
+  get_parameter("duration_overrun_percentage", duration_overrun_percentage);
+
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
 
   for (const auto & action : current_plan_.value()) {
     auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
 
     (*action_map)[index] = ActionExecutionInfo();
-    (*action_map)[index].action_executor =
-      ActionExecutor::make_shared(action.action, shared_from_this());
     (*action_map)[index].durative_action_info =
       get_action_from_string(action.action, domain_client_);
+    (*action_map)[index].action_executor =
+      ActionExecutor::make_shared(
+      action.action,
+      shared_from_this(),
+      rclcpp::Duration::from_seconds(action.duration),
+      duration_overrun_percentage
+      );
+
+    if (!setup_action_executor((*action_map)[index].action_executor)) {
+      RCLCPP_ERROR(
+        get_logger(),
+        "[%s] Failed to setup %s action executor.",
+        get_name(), action.action.c_str());
+      result->success = false;
+      result->action_execution_status = get_feedback_info(action_map);
+      for (auto & info : result->action_execution_status) {
+        if (info.action == (*action_map)[index].action_executor->get_action_name()) {
+          info.message_status = "Failed to setup action executor.";
+        }
+        execution_info_pub_->publish(info);
+      }
+      goal_handle->succeed(result);
+      return;
+    }
   }
   ordered_sub_goals_ = getOrderedSubGoals();
 
@@ -300,7 +350,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtStartEffect>("ApplyAtStartEffect");
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
 
-  auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
+  auto bt_xml_tree = bt_builder.get_tree(current_plan_.value(), action_map);
   std_msgs::msg::String msg;
   msg.data =
     bt_builder.get_dotgraph(
@@ -412,6 +462,7 @@ ExecutorNode::get_feedback_info(
     plansys2_msgs::msg::ActionExecutionInfo info;
 
     switch (action.second.action_executor->get_internal_status()) {
+      case ActionExecutor::SETUP:
       case ActionExecutor::IDLE:
       case ActionExecutor::DEALING:
         info.status = plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED;
@@ -437,6 +488,9 @@ ExecutorNode::get_feedback_info(
     info.action = action.second.action_executor->get_action_name();
 
     info.arguments = action.second.action_executor->get_action_params();
+    info.duration = action.second.action_executor->get_duration();
+    info.duration_overrun_percentage =
+      action.second.action_executor->get_duration_overrun_percentage();
     info.completion = action.second.action_executor->get_completion();
     info.message_status = action.second.action_executor->get_feedback();
 
@@ -455,6 +509,9 @@ ExecutorNode::print_execution_info(
   for (const auto & action_info : *exec_info) {
     fprintf(stderr, "[%s]", action_info.first.c_str());
     switch (action_info.second.action_executor->get_internal_status()) {
+      case ActionExecutor::SETUP:
+        fprintf(stderr, "\tSETUP\n");
+        break;
       case ActionExecutor::IDLE:
         fprintf(stderr, "\tIDLE\n");
         break;

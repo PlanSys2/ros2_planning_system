@@ -516,7 +516,9 @@ BTBuilder::get_graph(const Plan & current_plan)
 }
 
 std::string
-BTBuilder::get_tree(const Plan & current_plan)
+BTBuilder::get_tree(
+  const Plan & current_plan,
+  std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map)
 {
   auto action_graph = get_graph(current_plan);
 
@@ -531,7 +533,7 @@ BTBuilder::get_tree(const Plan & current_plan)
       "\" failure_threshold=\"1\">\n";
 
     for (const auto & node : action_graph->roots) {
-      bt_plan = bt_plan + get_flow_tree(node, used_nodes, 3);
+      bt_plan = bt_plan + get_flow_tree(node, used_nodes, action_map, 3);
     }
 
     bt_plan = bt_plan + t(2) + "</Parallel>\n" +
@@ -540,7 +542,7 @@ BTBuilder::get_tree(const Plan & current_plan)
     bt_plan = std::string("<root main_tree_to_execute=\"MainTree\">\n") +
       t(1) + "<BehaviorTree ID=\"MainTree\">\n";
 
-    bt_plan = bt_plan + get_flow_tree(*action_graph->roots.begin(), used_nodes, 2);
+    bt_plan = bt_plan + get_flow_tree(*action_graph->roots.begin(), used_nodes, action_map, 2);
 
     bt_plan = bt_plan + t(1) + "</BehaviorTree>\n</root>\n";
   }
@@ -639,6 +641,7 @@ std::string
 BTBuilder::get_flow_tree(
   GraphNode::Ptr node,
   std::list<std::string> & used_nodes,
+  std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
   int level)
 {
   std::string ret;
@@ -653,27 +656,36 @@ BTBuilder::get_flow_tree(
 
   used_nodes.push_back(action_id);
 
+  int timeout = -1;
+  rclcpp::Duration duration = (*action_map)[action_id].action_executor->get_duration();
+  float duration_overrun_percentage =
+    (*action_map)[action_id].action_executor->get_duration_overrun_percentage();
+  if (duration_overrun_percentage >= 0) {
+    timeout =
+      static_cast<int>(1000.0 * duration.seconds() * (1.0 + duration_overrun_percentage / 100.0));
+  }
+
   if (node->out_arcs.size() == 0) {
-    ret = ret + execution_block(node, l);
+    ret = ret + execution_block(node, l, timeout);
   } else if (node->out_arcs.size() == 1) {
     ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
-    ret = ret + execution_block(node, l + 1);
+    ret = ret + execution_block(node, l + 1, timeout);
 
     for (const auto & child_node : node->out_arcs) {
-      ret = ret + get_flow_tree(child_node, used_nodes, l + 1);
+      ret = ret + get_flow_tree(child_node, used_nodes, action_map, l + 1);
     }
 
     ret = ret + t(l) + "</Sequence>\n";
   } else {
     ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
-    ret = ret + execution_block(node, l + 1);
+    ret = ret + execution_block(node, l + 1, timeout);
 
     ret = ret + t(l + 1) +
       "<Parallel success_threshold=\"" + std::to_string(node->out_arcs.size()) +
       "\" failure_threshold=\"1\">\n";
 
     for (const auto & child_node : node->out_arcs) {
-      ret = ret + get_flow_tree(child_node, used_nodes, l + 2);
+      ret = ret + get_flow_tree(child_node, used_nodes, action_map, l + 2);
     }
 
     ret = ret + t(l + 1) + "</Parallel>\n";
@@ -710,7 +722,7 @@ BTBuilder::t(int level)
 }
 
 std::string
-BTBuilder::execution_block(const GraphNode::Ptr & node, int l)
+BTBuilder::execution_block(const GraphNode::Ptr & node, int l, int timeout)
 {
   const auto & action = node->action;
   std::string ret;
@@ -726,11 +738,18 @@ BTBuilder::execution_block(const GraphNode::Ptr & node, int l)
     ret = ret + t(l + 1) + "<WaitAtStartReq action=\"" + parent_action_id + "\"/>\n";
   }
 
+  int m = (timeout > 0) ? 1 : 0;
   ret = ret + t(l + 1) + "<ApplyAtStartEffect action=\"" + action_id + "\"/>\n";
-  ret = ret + t(l + 1) + "<ReactiveSequence name=\"" + action_id + "\">\n";
-  ret = ret + t(l + 2) + "<CheckOverAllReq action=\"" + action_id + "\"/>\n";
-  ret = ret + t(l + 2) + "<ExecuteAction action=\"" + action_id + "\"/>\n";
-  ret = ret + t(l + 1) + "</ReactiveSequence>\n";
+  if (timeout > 0) {
+    ret = ret + t(l + 1) + "<Timeout msec=\"" + std::to_string(timeout) + "\">\n";
+  }
+  ret = ret + t(l + m + 1) + "<ReactiveSequence name=\"" + action_id + "\">\n";
+  ret = ret + t(l + m + 2) + "<CheckOverAllReq action=\"" + action_id + "\"/>\n";
+  ret = ret + t(l + m + 2) + "<ExecuteAction action=\"" + action_id + "\"/>\n";
+  ret = ret + t(l + m + 1) + "</ReactiveSequence>\n";
+  if (timeout > 0) {
+    ret = ret + t(l + 1) + "</Timeout>\n";
+  }
   ret = ret + t(l + 1) + "<CheckAtEndReq action=\"" + action_id + "\"/>\n";
   ret = ret + t(l + 1) + "<ApplyAtEndEffect action=\"" + action_id + "\"/>\n";
   ret = ret + t(l) + "</Sequence>\n";
@@ -746,6 +765,7 @@ BTBuilder::get_plan_actions(const Plan & plan)
     ActionStamped action_stamped;
 
     action_stamped.time = item.time;
+    action_stamped.duration = item.duration;
     action_stamped.action = get_action_from_string(item.action, domain_client_);
 
     ret.push_back(action_stamped);

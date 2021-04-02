@@ -62,6 +62,7 @@ protected:
   void action_hub_callback(const plansys2_msgs::msg::ActionExecution::SharedPtr msg);
 
   bool should_execute(const std::string & action, const std::vector<std::string> & args);
+  void send_setup_response(const plansys2_msgs::msg::ActionExecution::SharedPtr msg);
   void send_response(const plansys2_msgs::msg::ActionExecution::SharedPtr msg);
   void send_feedback(float completion, const std::string & status = "");
   void finish(bool success, float completion, const std::string & status = "");
@@ -69,6 +70,8 @@ protected:
   std::chrono::nanoseconds rate_;
   std::string action_managed_;
   bool commited_;
+  rclcpp::Duration duration_;
+  float duration_overrun_percentage_;
 
   std::vector<std::string> current_arguments_;
   std::vector<std::string> specialized_arguments_;

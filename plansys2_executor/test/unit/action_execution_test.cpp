@@ -80,6 +80,16 @@ public:
     cycles_ = 0;
   }
 
+  rclcpp::Duration get_duration()
+  {
+    return duration_;
+  }
+
+  float get_duration_overrun_percentage()
+  {
+    return duration_overrun_percentage_;
+  }
+
   CallbackReturnT
   on_activate(const rclcpp_lifecycle::State & state)
   {
@@ -111,6 +121,90 @@ public:
   int cycles_;
 };
 
+class ExecutorNodeTest : public plansys2::ExecutorNode
+{
+public:
+  bool setup_action_executor(
+    std::shared_ptr<plansys2::ActionExecutor> action_executor,
+    rclcpp::Duration timeout = rclcpp::Duration::from_seconds(0.5))
+  {
+    return ExecutorNode::setup_action_executor(action_executor, timeout);
+  }
+};
+
+TEST(action_execution, action_setup)
+{
+  auto test_node = rclcpp::Node::make_shared("test_node");
+  auto test_lf_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_lf_node");
+
+  auto executor_node = std::make_shared<ExecutorNodeTest>();
+  executor_node->set_parameter({"duration_overrun_percentage", 10.0});
+
+  auto move_action_node = MoveAction::make_shared("move_action_performer", 1s);
+  move_action_node->set_parameter({"action_name", "move"});
+  move_action_node->set_parameter({"performer_parameters", std::vector<std::string>({"20.0"})});
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
+
+  exe.add_node(test_node);
+  exe.add_node(executor_node->get_node_base_interface());
+  exe.add_node(move_action_node->get_node_base_interface());
+  exe.add_node(test_lf_node->get_node_base_interface());
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+
+  move_action_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  // This parameter should be set after the preformer node is configured.
+  ASSERT_EQ(move_action_node->get_duration_overrun_percentage(), 20.0);
+
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  float duration_overrun_percentage;
+  executor_node->get_parameter("duration_overrun_percentage", duration_overrun_percentage);
+  ASSERT_EQ(duration_overrun_percentage, 10.0);
+
+  auto action_executor =
+    plansys2::ActionExecutor::make_shared(
+    "(move r2d2 steering_wheels_zone assembly_zone)",
+    test_lf_node,
+    rclcpp::Duration::from_seconds(5),
+    duration_overrun_percentage
+    );
+
+  // This function will initiate communication between the action executor and the performer.
+  // The action executor will send the duration to the performer.
+  // The performer will respond back with the duration overrun percentage.
+  ASSERT_TRUE(executor_node->setup_action_executor(action_executor));
+  ASSERT_EQ(move_action_node->get_duration().seconds(), 5.0);
+  ASSERT_EQ(action_executor->get_duration_overrun_percentage(), 20.0);
+
+  finish = true;
+  t.join();
+}
+
 TEST(action_execution, protocol_basic)
 {
   auto test_node = rclcpp::Node::make_shared("test_node");
@@ -118,6 +212,9 @@ TEST(action_execution, protocol_basic)
   auto move_action_node = std::make_shared<MoveAction>("move_action", 1s);
   auto move_action_executor = plansys2::ActionExecutor::make_shared(
     "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
+
+  ASSERT_EQ(move_action_executor->get_internal_status(), plansys2::ActionExecutor::Status::SETUP);
+  move_action_executor->set_internal_status(plansys2::ActionExecutor::IDLE);
 
   ASSERT_EQ(move_action_executor->get_action_name(), "move");
   ASSERT_EQ(move_action_executor->get_action_params().size(), 3u);
@@ -233,6 +330,9 @@ TEST(action_execution, protocol_cancelation)
   auto move_action_node = std::make_shared<MoveAction>("move_action", 1s);
   auto move_action_executor = plansys2::ActionExecutor::make_shared(
     "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
+
+  ASSERT_EQ(move_action_executor->get_internal_status(), plansys2::ActionExecutor::Status::SETUP);
+  move_action_executor->set_internal_status(plansys2::ActionExecutor::IDLE);
 
   ASSERT_EQ(move_action_executor->get_action_name(), "move");
   ASSERT_EQ(move_action_executor->get_action_params().size(), 3u);
