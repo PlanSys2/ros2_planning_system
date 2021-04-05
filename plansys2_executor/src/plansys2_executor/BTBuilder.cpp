@@ -38,6 +38,9 @@ BTBuilder::BTBuilder(
 {
   domain_client_ = std::make_shared<plansys2::DomainExpertClient>(node);
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(node);
+
+  std::string action_bt_xml_filename =
+    get_parameter("default_action_bt_xml_filename").get_value<std::string>();
 }
 
 void
@@ -500,6 +503,10 @@ BTBuilder::get_graph(const Plan & current_plan)
     remove_existing_requirements(at_start_requirements, predicates, functions);
     remove_existing_requirements(over_all_requirements, predicates, functions);
     remove_existing_requirements(at_end_requirements, predicates, functions);
+
+    for (const auto & req : at_start_requirements) {
+      std::cerr << "===> [" << req->toString() << "]" << std::endl;
+    }
 
     assert(at_start_requirements.empty());
     assert(over_all_requirements.empty());

@@ -58,6 +58,8 @@ ExecutorNode::ExecutorNode()
 {
   using namespace std::placeholders;
 
+  declare_parameter("default_action_bt_xml_filename");
+
 #ifdef ZMQ_FOUND
   this->declare_parameter<bool>("enable_groot_monitoring", true);
   this->declare_parameter<int>("publisher_port", 2666);
