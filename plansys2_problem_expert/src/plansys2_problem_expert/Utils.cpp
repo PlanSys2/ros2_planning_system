@@ -124,7 +124,11 @@ std::tuple<bool, bool, double> evaluate(
         double value = 0;
 
         if (use_state) {
-          value = functions[func_node->toString()];
+          if (functions.find(func_node->toString()) == functions.end()) {
+            success = false;
+          } else {
+            value = functions[func_node->toString()];
+          }
         } else {
           std::optional<parser::pddl::tree::Function> func =
             problem_client->getFunction(func_node->toString());
@@ -193,6 +197,12 @@ std::tuple<bool, bool, double> evaluate(
               // Division by zero not allowed.
               return std::make_tuple(false, false, 0);
             }
+            break;
+          case parser::pddl::tree::ARITH_ADD:
+            return std::make_tuple(true, false, std::get<2>(left) + std::get<2>(right));
+            break;
+          case parser::pddl::tree::ARITH_SUB:
+            return std::make_tuple(true, false, std::get<2>(left) - std::get<2>(right));
             break;
           default:
             break;
