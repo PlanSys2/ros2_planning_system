@@ -62,8 +62,9 @@ def generate_launch_description():
         output='screen',
         namespace=namespace,
         parameters=[
-          {'model_file': model_file,
-           'default_action_bt_xml_filename': default_action_bt_xml_filename
+          {
+            'model_file': model_file,
+            'default_action_bt_xml_filename': default_action_bt_xml_filename
           },
           params_file
         ])

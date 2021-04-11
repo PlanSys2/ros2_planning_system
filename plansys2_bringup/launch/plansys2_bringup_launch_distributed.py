@@ -30,7 +30,7 @@ def generate_launch_description():
     model_file = LaunchConfiguration('model_file')
     namespace = LaunchConfiguration('namespace')
     params_file = LaunchConfiguration('params_file')
-    default_action_bt_xml_filename = LaunchConfiguration('default_action_bt_xml_filename')    
+    default_action_bt_xml_filename = LaunchConfiguration('default_action_bt_xml_filename')
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
         'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')

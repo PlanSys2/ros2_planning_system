@@ -43,7 +43,8 @@ BTBuilder::BTBuilder(
   if (bt_action != "") {
     bt_action_ = bt_action;
   } else {
-    bt_action_ = R""""(<Sequence name="ACTION_ID">
+    bt_action_ =
+      R""""(<Sequence name="ACTION_ID">
 WAIT_AT_START_ACTIONS
   <ApplyAtStartEffect action="ACTION_ID"/>
   <ReactiveSequence name="ACTION_ID">
@@ -730,10 +731,10 @@ BTBuilder::t(int level)
   return ret;
 }
 
-void replace(std::string& str, const std::string& from, const std::string& to) {
-  
+void replace(std::string& str, const std::string& from, const std::string& to)
+{  
   size_t start_pos = std::string::npos;
-  while((start_pos = str.find(from)) != std::string::npos) {
+  while ((start_pos = str.find(from)) != std::string::npos) {
     str.replace(start_pos, from.length(), to);
   }
 }

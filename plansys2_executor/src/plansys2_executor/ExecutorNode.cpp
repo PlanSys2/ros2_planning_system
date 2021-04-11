@@ -111,7 +111,7 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
 
   action_bt_xml_.assign(
     std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
-  
+
   dotgraph_pub_ = this->create_publisher<std_msgs::msg::String>("dot_graph", 1);
 
   aux_node_ = std::make_shared<rclcpp::Node>("executor_helper");
