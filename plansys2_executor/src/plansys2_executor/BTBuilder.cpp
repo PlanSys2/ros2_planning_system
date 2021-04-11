@@ -731,8 +731,8 @@ BTBuilder::t(int level)
   return ret;
 }
 
-void replace(std::string& str, const std::string& from, const std::string& to)
-{  
+void replace(std::string & str, const std::string & from, const std::string & to)
+{
   size_t start_pos = std::string::npos;
   while ((start_pos = str.find(from)) != std::string::npos) {
     str.replace(start_pos, from.length(), to);

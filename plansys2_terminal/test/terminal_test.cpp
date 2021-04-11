@@ -277,7 +277,7 @@ TEST_F(TerminalTestCase, load_popf_plugin)
     terminal_node->process_command(command, os);
     ASSERT_TRUE(terminal_node->method_executed_["process_command"]);
     ASSERT_TRUE(terminal_node->method_executed_["process_set_instance"]);
-    ASSERT_TRUE(os.str().empty());
+    ASSERT_EQ(os.str(), "");
 
     auto ins_1 = problem_client->getInstance("leia");
     ASSERT_TRUE(ins_1.has_value());
