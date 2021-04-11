@@ -71,6 +71,8 @@ protected:
   std::optional<Plan> current_plan_;
   std::optional<std::vector<parser::pddl::tree::Goal>> ordered_sub_goals_;
 
+  std::string action_bt_xml_;
+
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   std::shared_ptr<plansys2::PlannerClient> planner_client_;

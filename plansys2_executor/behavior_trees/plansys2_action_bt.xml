@@ -1,5 +1,5 @@
 <Sequence name="ACTION_ID">
-  WAIT_AT_START_ACTIONS
+WAIT_AT_START_ACTIONS
   <ApplyAtStartEffect action="ACTION_ID"/>
   <ReactiveSequence name="ACTION_ID">
     <CheckOverAllReq action="ACTION_ID"/>

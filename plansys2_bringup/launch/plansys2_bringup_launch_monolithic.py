@@ -49,12 +49,12 @@ def generate_launch_description():
         default_value=os.path.join(bringup_dir, 'params', 'plansys2_params.yaml'),
         description='Full path to the ROS2 parameters file to use for all launched nodes')
 
-    declare_action_bt_xml_cmd = DeclareLaunchArgument(
+    declare_default_bt_file_cmd = DeclareLaunchArgument(
         'default_action_bt_xml_filename',
         default_value=os.path.join(
-            get_package_share_directory('plansys2_executor'),
-            'behavior_trees', 'plansys2_action_bt.xml'),
-        description='Full path to the behavior tree xml file to use for an action')
+          get_package_share_directory('plansys2_executor'),
+          'behavior_trees', 'plansys2_action_bt.xml'),
+        description='BT representing a PDDL action')
 
     plansys2_node_cmd = Node(
         package='plansys2_bringup',
@@ -65,7 +65,7 @@ def generate_launch_description():
           {'model_file': model_file,
            'default_action_bt_xml_filename': default_action_bt_xml_filename
           },
-          config_file
+          params_file
         ])
 
     # Create the launch description and populate
@@ -74,9 +74,9 @@ def generate_launch_description():
     # Set environment variables
     ld.add_action(stdout_linebuf_envvar)
     ld.add_action(declare_model_file_cmd)
+    ld.add_action(declare_default_bt_file_cmd)
     ld.add_action(declare_namespace_cmd)
     ld.add_action(declare_params_file_cmd)
-    ld.add_action(declare_action_bt_xml_cmd)
 
     # Declare the launch options
     ld.add_action(plansys2_node_cmd)
