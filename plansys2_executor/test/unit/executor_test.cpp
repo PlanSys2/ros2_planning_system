@@ -96,16 +96,6 @@ public:
   {
   }
 
-  rclcpp::Duration get_duration()
-  {
-    return duration_;
-  }
-
-  float get_duration_overrun_percentage()
-  {
-    return duration_overrun_percentage_;
-  }
-
   void set_runtime(rclcpp::Duration runtime)
   {
     runtime_ = runtime;
@@ -432,14 +422,11 @@ TEST(problem_expert, action_executor)
     auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
 
     (*action_map)[index] = plansys2::ActionExecutionInfo();
+    (*action_map)[index].action_executor =
+      plansys2::ActionExecutor::make_shared(action.action, executor_node);
     (*action_map)[index].durative_action_info =
       get_action_from_string(action.action, domain_client);
-    (*action_map)[index].action_executor =
-      plansys2::ActionExecutor::make_shared(
-      action.action,
-      executor_node,
-      rclcpp::Duration::from_seconds(action.duration)
-      );
+    (*action_map)[index].duration = action.duration;
   }
 
   plansys2::BTBuilder exec_tree(test_node);
@@ -1578,10 +1565,13 @@ TEST(problem_expert, action_timeout)
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<ExecutorNodeTest>();
+  executor_node->set_parameter({"action_timeouts.actions", std::vector<std::string>({"move"})});
+  // have to declare because the actions vector above was not available at node creation
+  executor_node->declare_parameter("action_timeouts.move.duration_overrun_percentage");
+  executor_node->set_parameter({"action_timeouts.move.duration_overrun_percentage", 20.0});
 
   auto move_action_node = MoveAction::make_shared("move_action_performer", 1s);
   move_action_node->set_parameter({"action_name", "move"});
-  move_action_node->set_parameter({"performer_parameters", std::vector<std::string>({"20.0"})});
   move_action_node->set_runtime(rclcpp::Duration::from_seconds(10));
 
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node_1);
@@ -1593,7 +1583,6 @@ TEST(problem_expert, action_timeout)
 
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
-  executor_node->set_parameter({"duration_overrun_percentage", -1.0});
 
   rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
 
@@ -1623,9 +1612,6 @@ TEST(problem_expert, action_timeout)
       rate.sleep();
     }
   }
-
-  // This parameter should be set after the preformer node is configured.
-  ASSERT_EQ(move_action_node->get_duration_overrun_percentage(), 20.0);
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
@@ -1707,147 +1693,6 @@ TEST(problem_expert, action_timeout)
   ASSERT_EQ(
     move_action_node->get_current_state().id(),
     lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
-
-  finish = true;
-  t.join();
-}
-
-
-TEST(problem_expert, action_setup_failure)
-{
-  auto test_node_1 = rclcpp::Node::make_shared("test_node_1");
-  auto test_node_2 = rclcpp::Node::make_shared("test_node_2");
-  auto test_node_3 = rclcpp::Node::make_shared("test_node_3");
-  auto test_node_4 = rclcpp::Node::make_shared("test_node_4");
-  auto test_lf_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_lf_node");
-  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
-  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
-  auto planner_node = std::make_shared<plansys2::PlannerNode>();
-  auto executor_node = std::make_shared<ExecutorNodeTest>();
-
-  auto move_action_node = MoveAction::make_shared("move_action_performer", 1s);
-  move_action_node->set_parameter({"action_name", "move"});
-  move_action_node->set_parameter({"performer_parameters", std::vector<std::string>({"20.0"})});
-  move_action_node->set_runtime(rclcpp::Duration::from_seconds(10));
-
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node_1);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_2);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node_3);
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>(test_node_4);
-
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
-
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
-  executor_node->set_parameter({"duration_overrun_percentage", -1.0});
-
-  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
-
-  exe.add_node(domain_node->get_node_base_interface());
-  exe.add_node(problem_node->get_node_base_interface());
-  exe.add_node(planner_node->get_node_base_interface());
-  exe.add_node(executor_node->get_node_base_interface());
-  exe.add_node(move_action_node->get_node_base_interface());
-  exe.add_node(test_lf_node->get_node_base_interface());
-
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
-
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  // We purposely leave the move action node unconfigured.
-  // move_action_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node_1->now();
-    while ((test_node_1->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
-
-  // This should be -1.0, not 20.0, since the performer node was left unconfigured.
-  ASSERT_EQ(move_action_node->get_duration_overrun_percentage(), -1.0);
-
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node_1->now();
-    while ((test_node_1->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
-
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
-
-  std::vector<std::string> predicates = {
-    "(robot_at r2d2 steering_wheels_zone)",
-    "(robot_available r2d2)",
-    "(battery_full r2d2)",
-  };
-
-  for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
-  }
-
-  problem_client->setGoal(
-    plansys2::Goal(
-      "(and(robot_at r2d2 assembly_zone))"));
-
-  auto domain = domain_client->getDomain();
-  auto problem = problem_client->getProblem();
-  auto plan = planner_client->getPlan(domain, problem);
-
-  ASSERT_FALSE(domain.empty());
-  ASSERT_FALSE(problem.empty());
-  ASSERT_TRUE(plan.has_value());
-
-  {
-    rclcpp::Rate rate(10);
-
-    ASSERT_TRUE(executor_client->start_plan_execution());
-
-    while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
-      auto feedback = executor_client->getFeedBack();
-      std::stringstream ss;
-      ss.setf(std::ios_base::fixed, std::ios_base::floatfield);
-      for (const auto & action_feedback : feedback.action_execution_status) {
-        ss << "[" << action_feedback.action << " " << std::setprecision(1) <<
-          action_feedback.completion * 100.0 <<
-          "%]";
-      }
-      auto & clk = *executor_node->get_clock();
-      RCLCPP_WARN_THROTTLE(executor_node->get_logger(), clk, 500, "%s", ss.str().c_str());
-      rate.sleep();
-    }
-  }
-
-  // The call to setup_action_executor in the execute function of the executor node should return
-  // false, since the move action node was left unconfigured.
-  ASSERT_TRUE(executor_client->getResult().has_value());
-  auto result = executor_client->getResult().value();
-  ASSERT_FALSE(result.success);
-  for (auto & info : result.action_execution_status) {
-    if (info.action == "move") {
-      ASSERT_EQ(
-        result.action_execution_status.back().message_status,
-        "Failed to setup action executor.");
-    }
-  }
 
   finish = true;
   t.join();

@@ -189,14 +189,11 @@ TEST(executiotest_noden_tree, bt_builder_factory)
     auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
 
     (*action_map)[index] = plansys2::ActionExecutionInfo();
+    (*action_map)[index].action_executor =
+      plansys2::ActionExecutor::make_shared(action.action, executor_node);
     (*action_map)[index].durative_action_info =
       get_action_from_string(action.action, domain_client);
-    (*action_map)[index].action_executor =
-      plansys2::ActionExecutor::make_shared(
-      action.action,
-      executor_node,
-      rclcpp::Duration::from_seconds(action.duration)
-      );
+    (*action_map)[index].duration = action.duration;
   }
 
   BTBuilderTest exec_tree(test_node);
@@ -352,14 +349,11 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
     auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
 
     (*action_map)[index] = plansys2::ActionExecutionInfo();
+    (*action_map)[index].action_executor =
+      plansys2::ActionExecutor::make_shared(action.action, executor_node);
     (*action_map)[index].durative_action_info =
       get_action_from_string(action.action, domain_client);
-    (*action_map)[index].action_executor =
-      plansys2::ActionExecutor::make_shared(
-      action.action,
-      executor_node,
-      rclcpp::Duration::from_seconds(action.duration)
-      );
+    (*action_map)[index].duration = action.duration;
   }
 
   std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
@@ -497,14 +491,11 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
     auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
 
     (*action_map)[index] = plansys2::ActionExecutionInfo();
+    (*action_map)[index].action_executor =
+      plansys2::ActionExecutor::make_shared(action.action, executor_node);
     (*action_map)[index].durative_action_info =
       get_action_from_string(action.action, domain_client);
-    (*action_map)[index].action_executor =
-      plansys2::ActionExecutor::make_shared(
-      action.action,
-      executor_node,
-      rclcpp::Duration::from_seconds(action.duration)
-      );
+    (*action_map)[index].duration = action.duration;
   }
 
   BTBuilderTest exec_tree(test_node);

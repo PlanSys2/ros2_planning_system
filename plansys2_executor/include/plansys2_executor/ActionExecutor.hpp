@@ -15,7 +15,6 @@
 #ifndef PLANSYS2_EXECUTOR__ACTIONEXECUTOR_HPP_
 #define PLANSYS2_EXECUTOR__ACTIONEXECUTOR_HPP_
 
-#include <chrono>
 #include <string>
 #include <memory>
 #include <vector>
@@ -37,7 +36,6 @@ class ActionExecutor
 public:
   enum Status
   {
-    SETUP,
     IDLE,
     DEALING,
     RUNNING,
@@ -49,21 +47,16 @@ public:
   using Ptr = std::shared_ptr<ActionExecutor>;
   static Ptr make_shared(
     const std::string & action,
-    rclcpp_lifecycle::LifecycleNode::SharedPtr node,
-    rclcpp::Duration duration = rclcpp::Duration(0),
-    float duration_overrun_percentage = -1)
+    rclcpp_lifecycle::LifecycleNode::SharedPtr node)
   {
-    return std::make_shared<ActionExecutor>(action, node, duration, duration_overrun_percentage);
+    return std::make_shared<ActionExecutor>(action, node);
   }
 
   explicit ActionExecutor(
     const std::string & action,
-    rclcpp_lifecycle::LifecycleNode::SharedPtr node,
-    rclcpp::Duration duration = rclcpp::Duration(0),
-    float duration_overrun_percentage = -1);
+    rclcpp_lifecycle::LifecycleNode::SharedPtr node);
 
   BT::NodeStatus tick(const rclcpp::Time & now);
-  void setup();
   void cancel();
   BT::NodeStatus get_status();
   bool is_finished();
@@ -73,11 +66,6 @@ public:
   void set_internal_status(Status state) {state_ = state;}
   std::string get_action_name() const {return action_name_;}
   std::vector<std::string> get_action_params() const {return action_params_;}
-  rclcpp::Duration get_duration() const {return duration_;}
-  float get_duration_overrun_percentage() const
-  {
-    return duration_overrun_percentage_;
-  }
   plansys2_msgs::msg::ActionExecution last_msg;
 
   rclcpp::Time get_start_time() const {return start_execution_;}
@@ -97,8 +85,6 @@ protected:
   std::string action_name_;
   std::string current_performer_id_;
   std::vector<std::string> action_params_;
-  rclcpp::Duration duration_;
-  float duration_overrun_percentage_;
 
   std::string feedback_;
   float completion_;
@@ -126,6 +112,8 @@ struct ActionExecutionInfo
   bool at_end_effects_applied = {false};
   std::shared_ptr<parser::pddl::tree::DurativeAction> durative_action_info = {nullptr};
   std::string execution_error_info;
+  double duration;
+  double duration_overrun_percentage = -1.0;
 };
 
 }  // namespace plansys2
