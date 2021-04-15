@@ -27,6 +27,7 @@
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_core/Types.hpp"
 #include "plansys2_pddl_parser/Tree.h"
 
@@ -72,8 +73,12 @@ class BTBuilder
 public:
   explicit BTBuilder(rclcpp::Node::SharedPtr node);
 
+  Graph::Ptr get_graph(const Plan & current_plan);
   std::string get_tree(const Plan & current_plan);
-  std::string get_dotgraph(const Plan & current_plan);
+  std::string get_dotgraph(
+    Graph::Ptr action_graph, std::shared_ptr<std::map<std::string,
+    ActionExecutionInfo>> action_map, bool enable_legend = false,
+    bool enable_print_graph = false);
 
 protected:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
@@ -96,7 +101,6 @@ protected:
     std::map<std::string, double> & functions) const;
   std::pair<std::string, parser::pddl::tree::NodeType> get_base(
     const std::shared_ptr<parser::pddl::tree::TreeNode> tree_node);
-  Graph::Ptr get_graph(const Plan & current_plan);
   std::list<GraphNode::Ptr> get_roots(
     std::vector<plansys2::ActionStamped> & action_sequence,
     std::set<std::string> & predicates,
@@ -123,6 +127,15 @@ protected:
     std::list<std::string> & used_nodes,
     int level = 0);
   std::string get_flow_dotgraph(GraphNode::Ptr node, int level = 0);
+  std::string get_node_dotgraph(
+    GraphNode::Ptr node, std::shared_ptr<std::map<std::string,
+    ActionExecutionInfo>> action_map, int level = 0);
+  ActionExecutor::Status get_action_status(
+    std::shared_ptr<parser::pddl::tree::DurativeAction> action,
+    std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map);
+  void addDotGraphLegend(
+    std::stringstream & ss, int tab_level, int level_counter,
+    int node_counter);
 
   std::string t(int level);
 

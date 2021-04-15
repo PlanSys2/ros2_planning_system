@@ -549,9 +549,14 @@ BTBuilder::get_tree(const Plan & current_plan)
 }
 
 std::string
-BTBuilder::get_dotgraph(const Plan & current_plan)
+BTBuilder::get_dotgraph(
+  Graph::Ptr action_graph, std::shared_ptr<std::map<std::string,
+  ActionExecutionInfo>> action_map, bool enable_legend,
+  bool enable_print_graph)
 {
-  auto action_graph = get_graph(current_plan);
+  if (enable_print_graph) {
+    print_graph(action_graph);
+  }
 
   // create xdot graph
   std::stringstream ss;
@@ -582,19 +587,20 @@ BTBuilder::get_dotgraph(const Plan & current_plan)
 
   tab_level = 3;
   for (auto & node : action_graph->roots) {
-    ss << t(tab_level);
-    ss << node->node_num << " [label=\"" << node->action.action->name_actions_to_string() << "\"";
-    ss << "labeljust=c,style=filled,color=blue,fillcolor=skyblue];\n";
+    ss << get_node_dotgraph(node, action_map, tab_level);
   }
   tab_level = 2;
 
   ss << t(tab_level);
   ss << "}\n";
 
+  int max_level = 0;
+  int max_node = 0;
   for (auto & level : action_graph->levels) {
     if (!level.second.empty()) {
       ss << t(tab_level);
       ss << "subgraph cluster_" << level.second.front()->level_num << " {\n";
+      max_level = std::max(max_level, level.second.front()->level_num);
 
       tab_level = 2;
       ss << t(tab_level);
@@ -610,10 +616,8 @@ BTBuilder::get_dotgraph(const Plan & current_plan)
 
       tab_level = 3;
       for (auto & node : level.second) {
-        ss << t(tab_level);
-        ss << node->node_num << " [label=\"" << node->action.action->name_actions_to_string() <<
-          "\"";
-        ss << "labeljust=c,style=filled,color=blue,fillcolor=skyblue];\n";
+        max_node = std::max(max_node, node->node_num);
+        ss << get_node_dotgraph(node, action_map, tab_level);
       }
       tab_level = 2;
 
@@ -626,6 +630,12 @@ BTBuilder::get_dotgraph(const Plan & current_plan)
   // define the edges
   for (const auto & graph_root : action_graph->roots) {
     ss << get_flow_dotgraph(graph_root, tab_level);
+  }
+
+  if (enable_legend) {
+    max_level++;
+    max_node++;
+    addDotGraphLegend(ss, tab_level, max_level, max_node);
   }
 
   ss << "}";
@@ -695,6 +705,109 @@ BTBuilder::get_flow_dotgraph(
   }
 
   return ss.str();
+}
+
+std::string
+BTBuilder::get_node_dotgraph(
+  GraphNode::Ptr node, std::shared_ptr<std::map<std::string,
+  ActionExecutionInfo>> action_map, int level)
+{
+  std::stringstream ss;
+  ss << t(level);
+  ss << node->node_num << " [label=\"" << node->action.action->name_actions_to_string() << "\"";
+  ss << "labeljust=c,style=filled";
+
+  auto status = get_action_status(node->action.action, action_map);
+  switch (status) {
+    case ActionExecutor::RUNNING:
+      ss << ",color=blue,fillcolor=skyblue";
+      break;
+    case ActionExecutor::SUCCESS:
+      ss << ",color=green4,fillcolor=seagreen2";
+      break;
+    case ActionExecutor::FAILURE:
+      ss << ",color=red,fillcolor=pink";
+      break;
+    case ActionExecutor::CANCELLED:
+      ss << ",color=red,fillcolor=pink";
+      break;
+    case ActionExecutor::IDLE:
+    case ActionExecutor::DEALING:
+    default:
+      ss << ",color=yellow3,fillcolor=lightgoldenrod1";
+      break;
+  }
+  ss << "];\n";
+  return ss.str();
+}
+
+ActionExecutor::Status BTBuilder::get_action_status(
+  std::shared_ptr<parser::pddl::tree::DurativeAction> action,
+  std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map)
+{
+  for (const auto & action_pair : *action_map) {
+    if (action_pair.second.durative_action_info->name_actions_to_string() ==
+      action->name_actions_to_string())
+    {
+      return action_pair.second.action_executor->get_internal_status();
+    }
+  }
+  return ActionExecutor::IDLE;
+}
+
+void BTBuilder::addDotGraphLegend(
+  std::stringstream & ss, int tab_level, int level_counter,
+  int node_counter)
+{
+  int legend_counter = level_counter;
+  int legend_node_counter = node_counter;
+  ss << t(tab_level);
+  ss << "subgraph cluster_" << legend_counter++ << " {\n";
+  tab_level++;
+  ss << t(tab_level);
+  ss << "label = \"Legend\";\n";
+
+  ss << t(tab_level);
+  ss << "subgraph cluster_" << legend_counter++ << " {\n";
+  tab_level++;
+  ss << t(tab_level);
+  ss << "label = \"Plan Timestep (sec): X.X\";\n";
+  ss << t(tab_level);
+  ss << "style = rounded;\n";
+  ss << t(tab_level);
+  ss << "color = yellow3;\n";
+  ss << t(tab_level);
+  ss << "bgcolor = lemonchiffon;\n";
+  ss << t(tab_level);
+  ss << "labeljust = l;\n";
+  ss << t(tab_level);
+  ss << legend_node_counter++ <<
+    " [label=\n\"Finished action\n\",labeljust=c,style=filled,color=green4,fillcolor=seagreen2];\n";
+  ss << t(tab_level);
+  ss << legend_node_counter++ <<
+    " [label=\n\"Failed action\n\",labeljust=c,style=filled,color=red,fillcolor=pink];\n";
+  ss << t(tab_level);
+  ss << legend_node_counter++ <<
+    " [label=\n\"Current action\n\",labeljust=c,style=filled,color=blue,fillcolor=skyblue];\n";
+  ss << t(tab_level);
+  ss << legend_node_counter++ << " [label=\n\"Future action\n\",labeljust=c,style=filled," <<
+    "color=yellow3,fillcolor=lightgoldenrod1];\n";
+  tab_level--;
+  ss << t(tab_level);
+  ss << "}\n";
+
+  ss << t(tab_level);
+  for (int i = node_counter; i < legend_node_counter; i++) {
+    if (i > node_counter) {
+      ss << "->";
+    }
+    ss << i;
+  }
+  ss << " [style=invis];\n";
+
+  tab_level--;
+  ss << t(tab_level);
+  ss << "}\n";
 }
 
 std::string
