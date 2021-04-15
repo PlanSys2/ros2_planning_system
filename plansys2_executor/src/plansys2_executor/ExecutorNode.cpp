@@ -62,8 +62,7 @@ ExecutorNode::ExecutorNode()
   this->declare_parameter("action_timeouts.actions", std::vector<std::string>{});
   // Declaring individual action parameters so they can be queried on the command line
   auto action_timeouts_actions = this->get_parameter("action_timeouts.actions").as_string_array();
-  for (auto action : action_timeouts_actions)
-  {
+  for (auto action : action_timeouts_actions) {
     this->declare_parameter("action_timeouts." + action + ".duration_overrun_percentage");
   }
 
@@ -293,8 +292,13 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
     (*action_map)[index].duration = action.duration;
     std::string action_name = (*action_map)[index].durative_action_info->name;
-    if (std::find(action_timeout_actions.begin(), action_timeout_actions.end(), action_name) != action_timeout_actions.end() && this->has_parameter("action_timeouts." + action_name + ".duration_overrun_percentage")) {
-      (*action_map)[index].duration_overrun_percentage = this->get_parameter("action_timeouts." + action_name + ".duration_overrun_percentage").as_double();
+    if (std::find(
+        action_timeout_actions.begin(), action_timeout_actions.end(),
+        action_name) != action_timeout_actions.end() &&
+      this->has_parameter("action_timeouts." + action_name + ".duration_overrun_percentage"))
+    {
+      (*action_map)[index].duration_overrun_percentage = this->get_parameter(
+        "action_timeouts." + action_name + ".duration_overrun_percentage").as_double();
     }
   }
   ordered_sub_goals_ = getOrderedSubGoals();
