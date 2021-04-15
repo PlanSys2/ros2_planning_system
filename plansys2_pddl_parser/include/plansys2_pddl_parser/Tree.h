@@ -52,6 +52,8 @@ typedef enum {
     COMP_LT,
     ARITH_MULT,
     ARITH_DIV,
+    ARITH_ADD,
+    ARITH_SUB,
     UNKNOWN_EXPR_TYPE
 } ExprType;
 
@@ -600,6 +602,12 @@ public:
         break;
     case ARITH_DIV:
         ret = "(/ ";
+        break;
+    case ARITH_ADD:
+        ret = "(+ ";
+        break;
+    case ARITH_SUB:
+        ret = "(- ";
         break;
     default:
         break;

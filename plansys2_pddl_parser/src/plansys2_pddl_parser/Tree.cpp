@@ -89,14 +89,6 @@ NodeType getNodeType(const std::string & expr, NodeType default_node_type)
     }
   }
 
-  std::tuple<ExprType, int> expression_search_result = getExpr(expr);
-  if (std::get<0>(expression_search_result) != UNKNOWN_EXPR_TYPE) {
-    if (std::get<1>(expression_search_result) < first) {
-      first = std::get<1>(expression_search_result);
-      node_type = EXPRESSION;
-    }
-  }
-
   std::string wexpr = expr;
   while (wexpr.size() > 0) {
     std::regex num_regexp("[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)");
@@ -126,6 +118,16 @@ NodeType getNodeType(const std::string & expr, NodeType default_node_type)
       }
     } else {
       break;
+    }
+  }
+
+  // The number search must precede the expression search in order to differentiate between an
+  // addition or subtraction expression and a number with a "+" or "-" prefix.
+  std::tuple<ExprType, int> expression_search_result = getExpr(expr);
+  if (std::get<0>(expression_search_result) != UNKNOWN_EXPR_TYPE) {
+    if (std::get<1>(expression_search_result) < first) {
+      first = std::get<1>(expression_search_result);
+      node_type = EXPRESSION;
     }
   }
 
@@ -184,6 +186,20 @@ std::tuple<ExprType, int> getExpr(const std::string & input)
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       expr_type = ARITH_DIV;
+    }
+  }
+
+  if (std::regex_search(input, match, std::regex("\\+"))) {
+    if (static_cast<int>(match.position()) < first) {
+      first = static_cast<int>(match.position());
+      expr_type = ARITH_ADD;
+    }
+  }
+
+  if (std::regex_search(input, match, std::regex("\\-"))) {
+    if (static_cast<int>(match.position()) < first) {
+      first = static_cast<int>(match.position());
+      expr_type = ARITH_SUB;
     }
   }
 
