@@ -146,19 +146,9 @@ ProblemExpert::getPredicate(const std::string & expr)
   bool found = false;
   size_t i = 0;
   while (i < predicates_.size() && !found) {
-    if (predicates_[i].name == pred.name) {
-      if (predicates_[i].parameters.size() == pred.parameters.size()) {
-        found = true;
-        for (size_t j = 0; j < predicates_[i].parameters.size(); ++j) {
-          if (predicates_[i].parameters[j].name != pred.parameters[j].name) {
-            found = false;
-            break;
-          }
-        }
-        if (found) {
-          ret = predicates_[i];
-        }
-      }
+    if (parser::pddl::checkNodeEquality(predicates_[i], pred)) {
+      found = true;
+      ret = predicates_[i];
     }
     i++;
   }
@@ -236,19 +226,9 @@ ProblemExpert::getFunction(const std::string & expr)
   bool found = false;
   size_t i = 0;
   while (i < functions_.size() && !found) {
-    if (functions_[i].name == func.name) {
-      if (functions_[i].parameters.size() == func.parameters.size()) {
-        found = true;
-        for (size_t j = 0; j < functions_[i].parameters.size(); ++j) {
-          if (functions_[i].parameters[j].name != func.parameters[j].name) {
-            found = false;
-            break;
-          }
-        }
-        if (found) {
-          ret = functions_[i];
-        }
-      }
+    if (parser::pddl::checkNodeEquality(functions_[i], func)) {
+      found = true;
+      ret = functions_[i];
     }
     i++;
   }
