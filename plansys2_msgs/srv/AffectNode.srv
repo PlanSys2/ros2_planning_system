@@ -1,5 +1,4 @@
-string function
-string[] arguments
+plansys2_msgs/Node node
 ---
 bool success
 string error_info

@@ -155,7 +155,7 @@ ActionExecutorClient::should_execute(
   if (!specialized_arguments_.empty()) {
     if (specialized_arguments_.size() != args.size()) {
       RCLCPP_WARN(
-        get_logger(), "current and specialized arguments lenght doesn't match %zu %zu",
+        get_logger(), "current and specialized arguments length doesn't match %zu %zu",
         args.size(), specialized_arguments_.size());
     }
 

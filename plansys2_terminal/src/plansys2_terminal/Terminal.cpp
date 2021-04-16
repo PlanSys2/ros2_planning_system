@@ -32,6 +32,7 @@
 #include "plansys2_planner/PlannerClient.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_pddl_parser/Utils.h"
 
 #include "plansys2_msgs/msg/action_performer_status.hpp"
 #include "plansys2_msgs/msg/action_execution.hpp"
@@ -273,30 +274,30 @@ Terminal::process_get_model_action(std::vector<std::string> & command, std::ostr
     auto durative_action = domain_client_->getDurativeAction(command[0]);
     if (action) {
       os << "Type: action" << std::endl;
-      os << "Parameters: " << action.value().parameters.size() << std::endl;
-      for (size_t i = 0; i < action.value().parameters.size(); i++) {
-        os << "\t" << action.value().parameters[i].type << " - " <<
-          action.value().parameters[i].name << std::endl;
+      os << "Parameters: " << action->parameters.size() << std::endl;
+      for (size_t i = 0; i < action->parameters.size(); i++) {
+        os << "\t" << action->parameters[i].type << " - " <<
+          action->parameters[i].name << std::endl;
       }
-      os << "Preconditions: " << action.value().preconditions.toString() << std::endl;
-      os << "Effects: " << action.value().effects.toString() << std::endl;
+      os << "Preconditions: " << parser::pddl::toString(action->preconditions) << std::endl;
+      os << "Effects: " << parser::pddl::toString(action->effects) << std::endl;
     } else if (durative_action) {
       os << "Type: durative-action" << std::endl;
-      os << "Parameters: " << durative_action.value().parameters.size() << std::endl;
-      for (size_t i = 0; i < durative_action.value().parameters.size(); i++) {
-        os << "\t" << durative_action.value().parameters[i].name << " - " <<
-          durative_action.value().parameters[i].type << std::endl;
+      os << "Parameters: " << durative_action->parameters.size() << std::endl;
+      for (size_t i = 0; i < durative_action->parameters.size(); i++) {
+        os << "\t" << durative_action->parameters[i].name << " - " <<
+          durative_action->parameters[i].type << std::endl;
       }
       os << "AtStart requirements: " <<
-        durative_action.value().at_start_requirements.toString() << std::endl;
+        parser::pddl::toString(durative_action->at_start_requirements) << std::endl;
       os << "OverAll requirements: " <<
-        durative_action.value().over_all_requirements.toString() << std::endl;
+        parser::pddl::toString(durative_action->over_all_requirements) << std::endl;
       os << "AtEnd requirements: " <<
-        durative_action.value().at_end_requirements.toString() << std::endl;
+        parser::pddl::toString(durative_action->at_end_requirements) << std::endl;
       os << "AtStart effect: " <<
-        durative_action.value().at_start_effects.toString() << std::endl;
+        parser::pddl::toString(durative_action->at_start_effects) << std::endl;
       os << "AtEnd effect: " <<
-        durative_action.value().at_end_effects.toString() << std::endl;
+        parser::pddl::toString(durative_action->at_end_effects) << std::endl;
     } else {
       os << "Error when looking for params of " << command[0] << std::endl;
     }
@@ -321,14 +322,14 @@ Terminal::process_get_model(std::vector<std::string> & command, std::ostringstre
 
       os << "Predicates: " << predicates.size() << std::endl;
       for (const auto & predicate : predicates) {
-        os << "\t" << predicate << std::endl;
+        os << "\t" << predicate.name << std::endl;
       }
     } else if (command[0] == "functions") {
       auto functions = domain_client_->getFunctions();
 
       os << "Functions: " << functions.size() << std::endl;
       for (const auto & function : functions) {
-        os << "\t" << function << std::endl;
+        os << "\t" << function.name << std::endl;
       }
     } else if (command[0] == "actions") {
       auto actions = domain_client_->getActions();
@@ -380,18 +381,18 @@ Terminal::process_get_problem(std::vector<std::string> & command, std::ostringst
 
       os << "Predicates: " << predicates.size() << std::endl;
       for (const auto & predicate : predicates) {
-        os << predicate.toString() << std::endl;
+        os << parser::pddl::toString(predicate) << std::endl;
       }
     } else if (command[0] == "functions") {
       auto functions = problem_client_->getFunctions();
 
       os << "Functions: " << functions.size() << std::endl;
       for (const auto & function : functions) {
-        os << function.toString() << std::endl;
+        os << parser::pddl::toString(function) << std::endl;
       }
     } else if (command[0] == "goal") {
       auto goal = problem_client_->getGoal();
-      os << "Goal: " << goal.toString() << std::endl;
+      os << "Goal: " << parser::pddl::toString(goal) << std::endl;
     }
   } else {
     os << "\tUsage: \n\t\tget problem [instances|predicates|functions|goal]..." <<
@@ -440,7 +441,7 @@ void
 Terminal::process_set_instance(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 2) {
-    if (!problem_client_->addInstance(parser::pddl::tree::Instance{command[0], command[1]})) {
+    if (!problem_client_->addInstance(parser::pddl::fromStringParam(command[0], command[1]))) {
       os << "Could not add the instance [" << command[0] << "]" << std::endl;
     }
   } else {
@@ -453,7 +454,8 @@ void
 Terminal::process_set_predicate(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
-    parser::pddl::tree::Predicate predicate;
+    plansys2_msgs::msg::Node predicate;
+    predicate.node_type = plansys2_msgs::msg::Node::PREDICATE;
     predicate.name = command[0];
 
     if (predicate.name.front() != '(') {
@@ -466,8 +468,7 @@ Terminal::process_set_predicate(std::vector<std::string> & command, std::ostring
 
     pop_front(command);
     while (!command.empty()) {
-      parser::pddl::tree::Param param {command[0], ""};
-      predicate.parameters.push_back(param);
+      predicate.parameters.push_back(parser::pddl::fromStringParam(command[0]));
       pop_front(command);
     }
 
@@ -480,7 +481,8 @@ Terminal::process_set_predicate(std::vector<std::string> & command, std::ostring
     predicate.parameters.back().name.pop_back();  // Remove last (
 
     if (!problem_client_->addPredicate(predicate)) {
-      os << "Could not add the predicate [" << predicate.toString() << "]" << std::endl;
+      os << "Could not add the predicate [" << parser::pddl::toString(predicate) << "]" <<
+        std::endl;
     }
   } else {
     os << "\tUsage: \n\t\tset predicate [predicate]" <<
@@ -492,19 +494,17 @@ void
 Terminal::process_set_function(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
-    parser::pddl::tree::Function function;
-
     std::string total_expr;
     for (const auto & token : command) {
       total_expr += " " + token;
     }
 
-    function.fromString(total_expr);
+    plansys2_msgs::msg::Node function = parser::pddl::fromStringFunction(total_expr);
 
     if (!problem_client_->addFunction(function)) {
       os <<
         "Could not add the function [" <<
-        function.toString() << "]" << std::endl;
+        parser::pddl::toString(function) << "]" << std::endl;
     } else {
       os << "done" << std::endl;
     }
@@ -523,11 +523,12 @@ Terminal::process_set_goal(std::vector<std::string> & command, std::ostringstrea
       total_expr += " " + token;
     }
 
-    parser::pddl::tree::Goal goal(total_expr);
+    plansys2_msgs::msg::Tree goal;
+    parser::pddl::fromString(goal, total_expr);
 
-    if (goal.root_ != nullptr) {
+    if (!goal.nodes.empty()) {
       if (!problem_client_->setGoal(goal)) {
-        os << "Could not set the goal [" << goal.toString() << "]" << std::endl;
+        os << "Could not set the goal [" << parser::pddl::toString(goal) << "]" << std::endl;
       }
     } else {
       os << "\tUsage: \n\t\tset goal [goal]" <<
@@ -568,7 +569,7 @@ void
 Terminal::process_remove_instance(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 1) {
-    if (!problem_client_->removeInstance(command[0])) {
+    if (!problem_client_->removeInstance(parser::pddl::fromStringParam(command[0]))) {
       os << "Could not remove the instance [" << command[0] << "]" << std::endl;
     }
   } else {
@@ -581,7 +582,8 @@ void
 Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
-    parser::pddl::tree::Predicate predicate;
+    plansys2_msgs::msg::Node predicate;
+    predicate.node_type = plansys2_msgs::msg::Node::PREDICATE;
     predicate.name = command[0];
 
     if (predicate.name.front() != '(') {
@@ -593,8 +595,7 @@ Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostr
 
     pop_front(command);
     while (!command.empty()) {
-      parser::pddl::tree::Param param {command[0], ""};
-      predicate.parameters.push_back(param);
+      predicate.parameters.push_back(parser::pddl::fromStringParam(command[0]));
       pop_front(command);
     }
 
@@ -607,7 +608,8 @@ Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostr
     predicate.parameters.back().name.pop_back();  // Remove last (
 
     if (!problem_client_->removePredicate(predicate)) {
-      os << "Could not remove the predicate [" << predicate.toString() << "]" << std::endl;
+      os << "Could not remove the predicate [" << parser::pddl::toString(predicate) << "]" <<
+        std::endl;
     }
   } else {
     os << "\tUsage: \n\t\remove predicate [name] [instance1] [instance2] ...[instaceN]" <<
@@ -619,7 +621,8 @@ void
 Terminal::process_remove_function(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
-    parser::pddl::tree::Function function;
+    plansys2_msgs::msg::Node function;
+    function.node_type = plansys2_msgs::msg::Node::FUNCTION;
 
     std::regex name_regexp("[a-zA-Z][a-zA-Z0-9_\\-]*");
 
@@ -636,12 +639,13 @@ Terminal::process_remove_function(std::vector<std::string> & command, std::ostri
     }
 
     while (std::regex_search(temp, match, name_regexp)) {
-      function.parameters.push_back(parser::pddl::tree::Param{match.str(0), ""});
+      function.parameters.push_back(parser::pddl::fromStringParam(match.str(0)));
       temp = match.suffix().str();
     }
 
     if (!problem_client_->removeFunction(function)) {
-      os << "Could not remove the function [" << function.toString() << "]" << std::endl;
+      os << "Could not remove the function [" << parser::pddl::toString(function) << "]" <<
+        std::endl;
     }
   } else {
     os << "\tUsage: \n\t\remove function [name] [instance1] [instance2] ...[instaceN]" <<

@@ -167,9 +167,9 @@ ExecutorClient::cancel_plan_execution()
   goal_result_available_ = false;
 }
 
-std::vector<parser::pddl::tree::Goal> ExecutorClient::getOrderedSubGoals()
+std::vector<plansys2_msgs::msg::Tree> ExecutorClient::getOrderedSubGoals()
 {
-  std::vector<parser::pddl::tree::Goal> ret;
+  std::vector<plansys2_msgs::msg::Tree> ret;
 
   while (!get_ordered_sub_goals_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
@@ -192,12 +192,9 @@ std::vector<parser::pddl::tree::Goal> ExecutorClient::getOrderedSubGoals()
   }
 
   if (future_result.get()->success) {
-    for (std::string goal_str : future_result.get()->sub_goals) {
-      parser::pddl::tree::Goal new_goal(goal_str);
-      ret.push_back(new_goal);
-    }
+    ret = future_result.get()->sub_goals;
   } else {
-    RCLCPP_INFO_STREAM(
+    RCLCPP_ERROR_STREAM(
       node_->get_logger(),
       get_ordered_sub_goals_client_->get_service_name() << ": " <<
         future_result.get()->error_info);

@@ -69,7 +69,7 @@ protected:
 
   bool cancel_plan_requested_;
   std::optional<Plan> current_plan_;
-  std::optional<std::vector<parser::pddl::tree::Goal>> ordered_sub_goals_;
+  std::optional<std::vector<plansys2_msgs::msg::Tree>> ordered_sub_goals_;
 
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
@@ -83,7 +83,7 @@ protected:
     get_ordered_sub_goals_service_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::String>::SharedPtr dotgraph_pub_;
 
-  std::optional<std::vector<parser::pddl::tree::Goal>> getOrderedSubGoals();
+  std::optional<std::vector<plansys2_msgs::msg::Tree>> getOrderedSubGoals();
 
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID & uuid,

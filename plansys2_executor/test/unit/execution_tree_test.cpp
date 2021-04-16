@@ -27,6 +27,7 @@
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_problem_expert/Utils.hpp"
 #include "plansys2_planner/PlannerNode.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
@@ -97,40 +98,44 @@ TEST(executiotest_noden_tree, bt_builder_factory)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot3", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot3", "robot")));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
   ASSERT_TRUE(
     problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheels_zone",
-        "zone"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"assembly_zone", "zone"}));
+      parser::pddl::fromStringParam(
+        "steering_wheels_zone",
+        "zone")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheel_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_3", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheel_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheel_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheel_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_3", "piece")));
   ASSERT_TRUE(
     problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheel_1",
-        "piece"}));
+      parser::pddl::fromStringParam(
+        "steering_wheel_1",
+        "piece")));
   ASSERT_TRUE(
     problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheel_2",
-        "piece"}));
+      parser::pddl::fromStringParam(
+        "steering_wheel_2",
+        "piece")));
   ASSERT_TRUE(
     problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheel_3",
-        "piece"}));
+      parser::pddl::fromStringParam(
+        "steering_wheel_3",
+        "piece")));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_1", "car"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_2", "car"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_3", "car"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("car_1", "car")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("car_2", "car")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("car_3", "car")));
 
   std::vector<std::string> predicates = {
     "(robot_at robot1 assembly_zone)",
@@ -169,18 +174,18 @@ TEST(executiotest_noden_tree, bt_builder_factory)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
   }
 
-  ASSERT_TRUE(
-    problem_client->setGoal(
-      parser::pddl::tree::Goal(
-        "(and (car_assembled car_1) (car_assembled car_2) (car_assembled car_3))")));
+  plansys2_msgs::msg::Tree goal;
+  parser::pddl::fromString(
+    goal,
+    "(and (car_assembled car_1) (car_assembled car_2) (car_assembled car_3))");
+  ASSERT_TRUE(problem_client->setGoal(goal));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
   BTBuilderTest exec_tree(test_node);
   auto tree_str = exec_tree.get_tree(plan.value());
 
@@ -242,40 +247,44 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot3", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot3", "robot")));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
   ASSERT_TRUE(
     problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheels_zone",
-        "zone"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"assembly_zone", "zone"}));
+      parser::pddl::fromStringParam(
+        "steering_wheels_zone",
+        "zone")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheel_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_3", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheel_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheel_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheel_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_3", "piece")));
   ASSERT_TRUE(
     problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheel_1",
-        "piece"}));
+      parser::pddl::fromStringParam(
+        "steering_wheel_1",
+        "piece")));
   ASSERT_TRUE(
     problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheel_2",
-        "piece"}));
+      parser::pddl::fromStringParam(
+        "steering_wheel_2",
+        "piece")));
   ASSERT_TRUE(
     problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheel_3",
-        "piece"}));
+      parser::pddl::fromStringParam(
+        "steering_wheel_3",
+        "piece")));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_1", "car"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_2", "car"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_3", "car"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("car_1", "car")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("car_2", "car")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("car_3", "car")));
 
   std::vector<std::string> predicates = {
     "(robot_at robot1 wheels_zone)",
@@ -314,26 +323,20 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
   }
 
-  ASSERT_TRUE(
-    problem_client->setGoal(
-      parser::pddl::tree::Goal(
-        std::string("(and (car_assembled car_1) (piece_at body_car_2 assembly_zone)") +
-        std::string("(piece_at body_car_3 assembly_zone))"))
-  ));
+  plansys2_msgs::msg::Tree goal;
+  parser::pddl::fromString(
+    goal,
+    std::string("(and (car_assembled car_1) (piece_at body_car_2 assembly_zone)") +
+    std::string("(piece_at body_car_3 assembly_zone))"));
+  ASSERT_TRUE(problem_client->setGoal(goal));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
   BTBuilderTest exec_tree(test_node);
-
-
-  // ASSERT_NE(durative_actions_map.find(
-  //   "(move robot1 assembly_zone wheels_zone)"),
-  //   durative_actions_map.end());
 
   auto tree_str = exec_tree.get_tree(plan.value());
 
@@ -393,13 +396,14 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp_control", "waypoint"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wp_control", "waypoint")));
   for (unsigned i = 1; i <= 4; i++) {
     ASSERT_TRUE(
       problem_client->addInstance(
-        parser::pddl::tree::Instance{"wp" + std::to_string(i),
-          "waypoint"}));
+        parser::pddl::fromStringParam(
+          "wp" + std::to_string(i),
+          "waypoint")));
   }
 
   std::vector<std::string> predicates = {
@@ -415,7 +419,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
     "(connected wp4 wp_control)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
   }
 
   std::vector<std::string> functions = {
@@ -444,18 +448,18 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
     "(= (distance wp_control wp4) 20)"};
 
   for (const auto & func : functions) {
-    ASSERT_TRUE(problem_client->addFunction(parser::pddl::tree::Function(func)));
+    ASSERT_TRUE(problem_client->addFunction(parser::pddl::fromStringFunction(func)));
   }
 
-  ASSERT_TRUE(
-    problem_client->setGoal(
-      parser::pddl::tree::Goal(
-        std::string("(and (patrolled wp1) (patrolled wp2) (patrolled wp3) (patrolled wp4))"))));
+  plansys2_msgs::msg::Tree goal;
+  parser::pddl::fromString(
+    goal,
+    "(and (patrolled wp1) (patrolled wp2) (patrolled wp3) (patrolled wp4))");
+  ASSERT_TRUE(problem_client->setGoal(goal));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
   BTBuilderTest exec_tree(test_node);
 
   auto tree_str = exec_tree.get_tree(plan.value());

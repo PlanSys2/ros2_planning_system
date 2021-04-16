@@ -326,28 +326,44 @@ TEST(problem_expert, action_executor)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"robot2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"robot3", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot3", "robot")));
 
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::fromStringParam(
+        "steering_wheels_zone",
+        "zone")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
 
-  ASSERT_TRUE(problem_client->addInstance({"wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheel_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_3", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheel_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheel_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheel_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_3", "piece")));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::fromStringParam(
+        "steering_wheel_1",
+        "piece")));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::fromStringParam(
+        "steering_wheel_2",
+        "piece")));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::fromStringParam(
+        "steering_wheel_3",
+        "piece")));
 
-  ASSERT_TRUE(problem_client->addInstance({"car_1", "car"}));
-  ASSERT_TRUE(problem_client->addInstance({"car_2", "car"}));
-  ASSERT_TRUE(problem_client->addInstance({"car_3", "car"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("car_1", "car")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("car_2", "car")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("car_3", "car")));
 
   std::vector<std::string> predicates = {
     "(robot_at robot1 assembly_zone)",
@@ -386,15 +402,16 @@ TEST(problem_expert, action_executor)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
   }
 
-  ASSERT_TRUE(problem_client->setGoal(parser::pddl::tree::Goal("(and (car_assembled car_1))")));
+  plansys2_msgs::msg::Tree goal;
+  parser::pddl::fromString(goal, "(and (car_assembled car_1))");
+  ASSERT_TRUE(problem_client->setGoal(goal));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
   plansys2::BTBuilder exec_tree(test_node);
   auto tree_str = exec_tree.get_tree(plan.value());
 
@@ -650,11 +667,15 @@ TEST(problem_expert, action_real_action_1)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::fromStringParam(
+        "steering_wheels_zone",
+        "zone")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
 
   std::string bt_xml_tree =
     R"(
@@ -681,8 +702,9 @@ TEST(problem_expert, action_real_action_1)
     plansys2::ActionExecutor::make_shared(
     "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
   (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].durative_action_info =
-    plansys2::get_action_from_string(
-    "(move r2d2 steering_wheels_zone assembly_zone):0", domain_client);
+    domain_client->getDurativeAction(
+    plansys2::get_action_name("(move r2d2 steering_wheels_zone assembly_zone):0"),
+    plansys2::get_action_params("(move r2d2 steering_wheels_zone assembly_zone):0"));
 
   auto blackboard = BT::Blackboard::create();
 
@@ -741,7 +763,7 @@ TEST(problem_expert, action_real_action_1)
   };
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
   }
 
   try {
@@ -750,15 +772,15 @@ TEST(problem_expert, action_real_action_1)
     auto status = BT::NodeStatus::RUNNING;
 
     ASSERT_TRUE(
-      problem_client->existPredicate(parser::pddl::tree::Predicate("(robot_available r2d2)")));
+      problem_client->existPredicate(parser::pddl::fromStringPredicate("(robot_available r2d2)")));
     status = tree.tickRoot();
 
     ASSERT_EQ(ApplyAtStartEffectTest::test_status, BT::NodeStatus::SUCCESS);
     ASSERT_FALSE(
-      problem_client->existPredicate(parser::pddl::tree::Predicate("(robot_available r2d2)")));
+      problem_client->existPredicate(parser::pddl::fromStringPredicate("(robot_available r2d2)")));
     ASSERT_FALSE(
       problem_client->existPredicate(
-        parser::pddl::tree::Predicate("(robot_at r2d2 steering_wheels_zone)")));
+        parser::pddl::fromStringPredicate("(robot_at r2d2 steering_wheels_zone)")));
 
     status = tree.tickRoot();
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
@@ -768,7 +790,7 @@ TEST(problem_expert, action_real_action_1)
     ASSERT_EQ(ExecuteActionTest::test_status, BT::NodeStatus::RUNNING);
 
     ASSERT_TRUE(
-      problem_client->removePredicate(parser::pddl::tree::Predicate("(battery_full r2d2)")));
+      problem_client->removePredicate(parser::pddl::fromStringPredicate("(battery_full r2d2)")));
 
     status = tree.tickRoot();
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::FAILURE);
@@ -784,7 +806,7 @@ TEST(problem_expert, action_real_action_1)
   ApplyAtStartEffectTest::test_status = BT::NodeStatus::IDLE;
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
   }
 
   try {
@@ -793,7 +815,7 @@ TEST(problem_expert, action_real_action_1)
     auto status = BT::NodeStatus::RUNNING;
 
     ASSERT_TRUE(
-      problem_client->existPredicate(parser::pddl::tree::Predicate("(robot_available r2d2)")));
+      problem_client->existPredicate(parser::pddl::fromStringPredicate("(robot_available r2d2)")));
 
     while (ApplyAtStartEffectTest::test_status != BT::NodeStatus::SUCCESS) {
       status = tree.tickRoot();
@@ -801,9 +823,9 @@ TEST(problem_expert, action_real_action_1)
 
     ASSERT_FALSE(
       problem_client->existPredicate(
-        parser::pddl::tree::Predicate("(robot_at r2d2 assembly_zone)")));
+        parser::pddl::fromStringPredicate("(robot_at r2d2 assembly_zone)")));
     ASSERT_FALSE(
-      problem_client->existPredicate(parser::pddl::tree::Predicate("(robot_available r2d2)")));
+      problem_client->existPredicate(parser::pddl::fromStringPredicate("(robot_available r2d2)")));
 
     while (ExecuteActionTest::test_status != BT::NodeStatus::SUCCESS) {
       status = tree.tickRoot();
@@ -816,9 +838,9 @@ TEST(problem_expert, action_real_action_1)
 
     ASSERT_TRUE(
       problem_client->existPredicate(
-        parser::pddl::tree::Predicate("(robot_at r2d2 assembly_zone)")));
+        parser::pddl::fromStringPredicate("(robot_at r2d2 assembly_zone)")));
     ASSERT_TRUE(
-      problem_client->existPredicate(parser::pddl::tree::Predicate("(robot_available r2d2)")));
+      problem_client->existPredicate(parser::pddl::fromStringPredicate("(robot_available r2d2)")));
   } catch (const std::exception & e) {
     std::cerr << e.what() << '\n';
   }
@@ -907,11 +929,15 @@ TEST(problem_expert, cancel_bt_execution)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::fromStringParam(
+        "steering_wheels_zone",
+        "zone")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
 
   std::string bt_xml_tree =
     R"(
@@ -937,8 +963,9 @@ TEST(problem_expert, cancel_bt_execution)
     plansys2::ActionExecutor::make_shared(
     "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
   (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].durative_action_info =
-    plansys2::get_action_from_string(
-    "(move r2d2 steering_wheels_zone assembly_zone):0", domain_client);
+    domain_client->getDurativeAction(
+    plansys2::get_action_name("(move r2d2 steering_wheels_zone assembly_zone):0"),
+    plansys2::get_action_params("(move r2d2 steering_wheels_zone assembly_zone):0"));
 
   auto blackboard = BT::Blackboard::create();
 
@@ -963,7 +990,7 @@ TEST(problem_expert, cancel_bt_execution)
   };
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
   }
 
   try {
@@ -972,15 +999,15 @@ TEST(problem_expert, cancel_bt_execution)
     auto status = BT::NodeStatus::RUNNING;
 
     ASSERT_TRUE(
-      problem_client->existPredicate(parser::pddl::tree::Predicate("(robot_available r2d2)")));
+      problem_client->existPredicate(parser::pddl::fromStringPredicate("(robot_available r2d2)")));
     status = tree.tickRoot();
 
     ASSERT_EQ(ApplyAtStartEffectTest::test_status, BT::NodeStatus::SUCCESS);
     ASSERT_FALSE(
-      problem_client->existPredicate(parser::pddl::tree::Predicate("(robot_available r2d2)")));
+      problem_client->existPredicate(parser::pddl::fromStringPredicate("(robot_available r2d2)")));
     ASSERT_FALSE(
       problem_client->existPredicate(
-        parser::pddl::tree::Predicate("(robot_at r2d2 steering_wheels_zone)")));
+        parser::pddl::fromStringPredicate("(robot_at r2d2 steering_wheels_zone)")));
 
     status = tree.tickRoot();
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
@@ -1110,11 +1137,15 @@ TEST(problem_expert, executor_client_execute_plan)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::fromStringParam(
+        "steering_wheels_zone",
+        "zone")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
 
   std::vector<std::string> predicates = {
     "(robot_at r2d2 steering_wheels_zone)",
@@ -1123,11 +1154,11 @@ TEST(problem_expert, executor_client_execute_plan)
   };
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
   }
-  problem_client->setGoal(
-    plansys2::Goal(
-      "(and(robot_at r2d2 assembly_zone))"));
+  plansys2_msgs::msg::Tree goal;
+  parser::pddl::fromString(goal, "(and(robot_at r2d2 assembly_zone))");
+  problem_client->setGoal(goal);
 
   auto domain = domain_client->getDomain();
   auto problem = problem_client->getProblem();
@@ -1151,7 +1182,7 @@ TEST(problem_expert, executor_client_execute_plan)
 
   ASSERT_TRUE(
     problem_client->existPredicate(
-      parser::pddl::tree::Predicate("(robot_at r2d2 assembly_zone)")));
+      parser::pddl::fromStringPredicate("(robot_at r2d2 assembly_zone)")));
 
   ASSERT_TRUE(executor_client->getResult().has_value());
   auto result = executor_client->getResult().value();
@@ -1162,9 +1193,9 @@ TEST(problem_expert, executor_client_execute_plan)
     ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
   }
 
-  problem_client->setGoal(
-    plansys2::Goal(
-      "(and(robot_at r2d2 body_car_zone))"));
+  goal.nodes.clear();
+  parser::pddl::fromString(goal, "(and(robot_at r2d2 body_car_zone))");
+  problem_client->setGoal(goal);
 
   {
     rclcpp::Rate rate(10);
@@ -1181,7 +1212,7 @@ TEST(problem_expert, executor_client_execute_plan)
 
   ASSERT_TRUE(
     problem_client->existPredicate(
-      parser::pddl::tree::Predicate("(robot_at r2d2 body_car_zone)")));
+      parser::pddl::fromStringPredicate("(robot_at r2d2 body_car_zone)")));
 
   ASSERT_TRUE(executor_client->getResult().has_value());
   result = executor_client->getResult().value();
@@ -1313,10 +1344,10 @@ TEST(problem_expert, executor_client_ordered_sub_goals)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wp0", "waypoint"}));
-  ASSERT_TRUE(problem_client->addInstance({"wp1", "waypoint"}));
-  ASSERT_TRUE(problem_client->addInstance({"wp2", "waypoint"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wp0", "waypoint")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wp1", "waypoint")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wp2", "waypoint")));
 
   std::vector<std::string> predicates = {
     "(robot_at r2d2 wp0)",
@@ -1328,7 +1359,7 @@ TEST(problem_expert, executor_client_ordered_sub_goals)
     "(connected wp2 wp1)",
   };
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
   }
 
   std::vector<std::string> functions = {
@@ -1343,17 +1374,18 @@ TEST(problem_expert, executor_client_ordered_sub_goals)
     "(= (distance wp2 wp1) 5.0)",
   };
   for (const auto & func : functions) {
-    ASSERT_TRUE(problem_client->addFunction(parser::pddl::tree::Function(func)));
+    ASSERT_TRUE(problem_client->addFunction(parser::pddl::fromStringFunction(func)));
   }
 
-  problem_client->setGoal(
-    plansys2::Goal(
-      "(and(patrolled wp1) (patrolled wp2))"));
+  plansys2_msgs::msg::Tree goal;
+  parser::pddl::fromString(goal, "(and(patrolled wp1) (patrolled wp2))");
+  problem_client->setGoal(goal);
 
-  std::vector<plansys2::Goal> expected_sub_goals = {
-    plansys2::Goal("(and(patrolled wp1))"),
-    plansys2::Goal("(and(patrolled wp2))"),
-  };
+  plansys2_msgs::msg::Tree sub_goal_1;
+  plansys2_msgs::msg::Tree sub_goal_2;
+  parser::pddl::fromString(sub_goal_1, "(and(patrolled wp1))");
+  parser::pddl::fromString(sub_goal_2, "(and(patrolled wp2))");
+  std::vector<plansys2_msgs::msg::Tree> expected_sub_goals = {sub_goal_1, sub_goal_2};
 
   auto domain = domain_client->getDomain();
   auto problem = problem_client->getProblem();
@@ -1375,11 +1407,13 @@ TEST(problem_expert, executor_client_ordered_sub_goals)
       rate.sleep();
     }
   }
-  std::vector<plansys2::Goal> actual_sub_goals = executor_client->getOrderedSubGoals();
+  std::vector<plansys2_msgs::msg::Tree> actual_sub_goals = executor_client->getOrderedSubGoals();
 
   ASSERT_EQ(actual_sub_goals.size(), expected_sub_goals.size());
   for (size_t i = 0; i < actual_sub_goals.size(); i++) {
-    ASSERT_EQ(actual_sub_goals[i].toString(), expected_sub_goals[i].toString());
+    ASSERT_EQ(
+      parser::pddl::toString(actual_sub_goals[i]),
+      parser::pddl::toString(expected_sub_goals[i]));
   }
 
   finish = true;
@@ -1455,11 +1489,15 @@ TEST(problem_expert, executor_client_cancel_plan)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
+  ASSERT_TRUE(
+    problem_client->addInstance(
+      parser::pddl::fromStringParam(
+        "steering_wheels_zone",
+        "zone")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
 
   std::vector<std::string> predicates = {
     "(robot_at r2d2 steering_wheels_zone)",
@@ -1468,11 +1506,12 @@ TEST(problem_expert, executor_client_cancel_plan)
   };
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
   }
-  problem_client->setGoal(
-    plansys2::Goal(
-      "(and(robot_at r2d2 assembly_zone))"));
+
+  plansys2_msgs::msg::Tree goal;
+  parser::pddl::fromString(goal, "(and(robot_at r2d2 assembly_zone))");
+  problem_client->setGoal(goal);
 
   auto domain = domain_client->getDomain();
   auto problem = problem_client->getProblem();

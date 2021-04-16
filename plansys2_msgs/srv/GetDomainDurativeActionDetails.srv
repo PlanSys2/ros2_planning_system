@@ -1,0 +1,6 @@
+string durative_action
+string[] parameters
+---
+plansys2_msgs/DurativeAction durative_action
+bool success
+string error_info

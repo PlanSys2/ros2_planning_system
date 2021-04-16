@@ -14,7 +14,7 @@ void Lifted::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << " )";
 }
 
-std::shared_ptr<tree::TreeNode> Lifted::PDDLTree( const Domain & d ) const {
+plansys2_msgs::msg::Node::SharedPtr Lifted::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
     throw UnsupportedConstruct("Lifted");
 }
 

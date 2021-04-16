@@ -54,7 +54,7 @@ WaitAtStartReq::tick()
 
   auto reqs = (*action_map_)[action].durative_action_info->at_start_requirements;
 
-  if (!check(reqs.root_, problem_client_)) {
+  if (!check(reqs, problem_client_)) {
     // ToDo (fmrico): We should add here a timeout
     return BT::NodeStatus::RUNNING;
   } else {

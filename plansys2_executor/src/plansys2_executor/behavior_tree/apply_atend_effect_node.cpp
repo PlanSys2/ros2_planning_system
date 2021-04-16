@@ -45,7 +45,7 @@ ApplyAtEndEffect::tick()
 
   if (!(*action_map_)[action].at_end_effects_applied) {
     (*action_map_)[action].at_end_effects_applied = true;
-    apply(effect.root_, problem_client_);
+    apply(effect, problem_client_, 0);
   }
 
   return BT::NodeStatus::SUCCESS;

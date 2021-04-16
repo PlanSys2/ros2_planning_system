@@ -44,7 +44,7 @@ CheckOverAllReq::tick()
 
   auto reqs = (*action_map_)[action].durative_action_info->over_all_requirements;
 
-  if (!check(reqs.root_, problem_client_)) {
+  if (!check(reqs, problem_client_)) {
     (*action_map_)[action].execution_error_info = "Error checking over all requirements";
     return BT::NodeStatus::FAILURE;
   } else {

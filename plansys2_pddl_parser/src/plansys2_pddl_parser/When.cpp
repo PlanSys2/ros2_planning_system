@@ -22,7 +22,7 @@ void When::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std:
 	s << ")";
 }
 
-std::shared_ptr<tree::TreeNode> When::PDDLTree( const Domain & d ) const {
+plansys2_msgs::msg::Node::SharedPtr When::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
     throw UnsupportedConstruct("When");
 }
 

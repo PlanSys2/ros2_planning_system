@@ -20,13 +20,17 @@ void GroundFunc<int>::PDDLPrint( std::ostream & s, unsigned indent, const TokenS
 }
 
 template <>
-std::shared_ptr<tree::TreeNode> GroundFunc<double>::PDDLTree( const Domain & d ) const {
-    throw UnsupportedConstruct("GroundFunc");
+plansys2_msgs::msg::Node::SharedPtr GroundFunc<double>::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+    auto node = TypeGround::getTree(tree, d, replace);
+    node->value = value;
+    return node;
 }
 
 template <>
-std::shared_ptr<tree::TreeNode> GroundFunc<int>::PDDLTree( const Domain & d ) const {
-    throw UnsupportedConstruct("GroundFunc");
+plansys2_msgs::msg::Node::SharedPtr GroundFunc<int>::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+    auto node = TypeGround::getTree(tree, d, replace);
+    node->value = value;
+    return node;
 }
 
 template <>

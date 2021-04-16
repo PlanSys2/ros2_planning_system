@@ -1,5 +1,0 @@
-string predicate
-string[] arguments
----
-bool success
-string error_info

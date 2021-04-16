@@ -24,7 +24,7 @@
 
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_pddl_parser/Tree.h"
+#include "plansys2_msgs/msg/tree.hpp"
 
 namespace plansys2
 {
@@ -44,24 +44,27 @@ namespace plansys2
  *         result(2) value of numeric expression
  */
 std::tuple<bool, bool, double> evaluate(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
+  const plansys2_msgs::msg::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
-  std::set<std::string> & predicates,
-  std::map<std::string, double> & functions,
+  std::vector<plansys2_msgs::msg::Node> & predicates,
+  std::vector<plansys2_msgs::msg::Node> & functions,
   bool apply = false,
   bool use_state = false,
+  uint8_t node_id = 0,
   bool negate = false);
 
 std::tuple<bool, bool, double> evaluate(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
+  const plansys2_msgs::msg::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
-  bool apply = false);
+  bool apply = false,
+  uint32_t node_id = 0);
 
 std::tuple<bool, bool, double> evaluate(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::set<std::string> & predicates,
-  std::map<std::string, double> & functions,
-  bool apply = false);
+  const plansys2_msgs::msg::Tree & tree,
+  std::vector<plansys2_msgs::msg::Node> & predicates,
+  std::vector<plansys2_msgs::msg::Node> & functions,
+  bool apply = false,
+  uint32_t node_id = 0);
 
 /// Check a PDDL expression represented as a tree.
 /**
@@ -72,13 +75,15 @@ std::tuple<bool, bool, double> evaluate(
 * This function calls the evaluate function.
 */
 bool check(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
+  const plansys2_msgs::msg::Tree & tree,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
+  uint32_t node_id = 0);
 
 bool check(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::set<std::string> & predicates,
-  std::map<std::string, double> & functions);
+  const plansys2_msgs::msg::Tree & tree,
+  std::vector<plansys2_msgs::msg::Node> & predicates,
+  std::vector<plansys2_msgs::msg::Node> & functions,
+  uint32_t node_id = 0);
 
 /// Apply a PDDL expression represented as a tree.
 /**
@@ -89,24 +94,37 @@ bool check(
  * This function calls the evaluate function.
  */
 bool apply(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
+  const plansys2_msgs::msg::Tree & tree,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
+  uint32_t node_id = 0);
 
 bool apply(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::set<std::string> & predicates,
-  std::map<std::string, double> & functions);
+  const plansys2_msgs::msg::Tree & tree,
+  std::vector<plansys2_msgs::msg::Node> & predicates,
+  std::vector<plansys2_msgs::msg::Node> & functions,
+  uint32_t node_id = 0);
 
-std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> get_subtrees(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node);
+/// Parse the action name from a plan action expression.
+/**
+ * \param[in] action_expr An action expression taken from a plan.
+ * \return The name of the action.
+ *
+ * A plan action expression will have the following format.
+ *   (<name> <param_1> ... <param_n>):<time>
+ */
+std::string get_action_name(
+  const std::string & action_expr);
 
-std::shared_ptr<parser::pddl::tree::DurativeAction> get_action_from_string(
-  const std::string & action_expr,
-  std::shared_ptr<plansys2::DomainExpertClient> domain_client);
-
-std::vector<std::string> get_params(const std::string & action_expr);
-
-std::string get_name(const std::string & action_expr);
+/// Parse the action parameter names from a plan action expression.
+/**
+ * \param[in] action_expr An action expression taken from a plan.
+ * \return A list of the action parameter names.
+ *
+ * A plan action expression will have the following format.
+ *   (<name> <param_1> ... <param_n>):<time>
+ */
+std::vector<std::string> get_action_params(
+  const std::string & action_expr);
 
 }  // namespace plansys2
 

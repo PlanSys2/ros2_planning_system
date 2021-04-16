@@ -11,8 +11,8 @@ void TypeGround::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct
 	s << " )";
 }
 
-std::shared_ptr<tree::TreeNode> TypeGround::PDDLTree( const Domain & d ) const {
-    throw UnsupportedConstruct("TypeGround");
+plansys2_msgs::msg::Node::SharedPtr TypeGround::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+    return Ground::getTree(tree, d, replace);
 }
 
 void TypeGround::insert( Domain & d, const StringVec & v ) {

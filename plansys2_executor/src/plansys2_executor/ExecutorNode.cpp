@@ -22,6 +22,7 @@
 #include <set>
 #include <vector>
 
+#include "plansys2_pddl_parser/Utils.h"
 #include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
@@ -57,6 +58,9 @@ ExecutorNode::ExecutorNode()
 : rclcpp_lifecycle::LifecycleNode("executor")
 {
   using namespace std::placeholders;
+
+  this->declare_parameter<bool>("enable_dotgraph_legend", true);
+  this->declare_parameter<bool>("print_graph", false);
 
 #ifdef ZMQ_FOUND
   this->declare_parameter<bool>("enable_groot_monitoring", true);
@@ -162,9 +166,7 @@ ExecutorNode::get_ordered_sub_goals_service_callback(
   const std::shared_ptr<plansys2_msgs::srv::GetOrderedSubGoals::Response> response)
 {
   if (ordered_sub_goals_.has_value()) {
-    for (auto goal : ordered_sub_goals_.value()) {
-      response->sub_goals.push_back(goal.toString());
-    }
+    response->sub_goals = ordered_sub_goals_.value();
     response->success = true;
   } else {
     response->success = false;
@@ -172,34 +174,25 @@ ExecutorNode::get_ordered_sub_goals_service_callback(
   }
 }
 
-std::optional<std::vector<parser::pddl::tree::Goal>>
+std::optional<std::vector<plansys2_msgs::msg::Tree>>
 ExecutorNode::getOrderedSubGoals()
 {
   if (!current_plan_.has_value()) {
     return {};
   }
 
-  parser::pddl::tree::Goal goal = problem_client_->getGoal();
-  std::vector<parser::pddl::tree::Predicate> predicates = problem_client_->getPredicates();
-  std::set<std::string> local_predicates;
-  for (auto & predicate : predicates) {
-    local_predicates.insert(predicate.toString());
-  }
+  auto goal = problem_client_->getGoal();
+  auto local_predicates = problem_client_->getPredicates();
+  auto local_functions = problem_client_->getFunctions();
 
-  std::vector<parser::pddl::tree::Function> functions = problem_client_->getFunctions();
-  std::map<std::string, double> local_functions;
-  for (auto & function : functions) {
-    local_functions.insert({function.toString(), function.value});
-  }
-
-  std::vector<parser::pddl::tree::Goal> ordered_goals;
-  std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> unordered_subgoals = get_subtrees(
-    goal.root_);
+  std::vector<plansys2_msgs::msg::Tree> ordered_goals;
+  std::vector<uint32_t> unordered_subgoals = parser::pddl::getSubtrees(goal);
 
   // just in case some goals are already satisfied
   for (auto it = unordered_subgoals.begin(); it != unordered_subgoals.end(); ) {
-    if (check(*it, local_predicates, local_functions)) {
-      parser::pddl::tree::Goal new_goal("(and " + (*it)->toString() + ")");
+    if (check(goal, local_predicates, local_functions, *it)) {
+      plansys2_msgs::msg::Tree new_goal;
+      parser::pddl::fromString(new_goal, "(and " + parser::pddl::toString(goal, (*it)) + ")");
       ordered_goals.push_back(new_goal);
       it = unordered_subgoals.erase(it);
     } else {
@@ -208,14 +201,16 @@ ExecutorNode::getOrderedSubGoals()
   }
 
   for (const auto & plan_item : current_plan_.value()) {
-    std::shared_ptr<parser::pddl::tree::DurativeAction> action = get_action_from_string(
-      plan_item.action, domain_client_);
-    apply(action->at_start_effects.root_, local_predicates, local_functions);
-    apply(action->at_end_effects.root_, local_predicates, local_functions);
+    std::shared_ptr<plansys2_msgs::msg::DurativeAction> action =
+      domain_client_->getDurativeAction(
+      get_action_name(plan_item.action), get_action_params(plan_item.action));
+    apply(action->at_start_effects, local_predicates, local_functions);
+    apply(action->at_end_effects, local_predicates, local_functions);
 
     for (auto it = unordered_subgoals.begin(); it != unordered_subgoals.end(); ) {
-      if (check(*it, local_predicates, local_functions)) {
-        parser::pddl::tree::Goal new_goal("(and " + (*it)->toString() + ")");
+      if (check(goal, local_predicates, local_functions, *it)) {
+        plansys2_msgs::msg::Tree new_goal;
+        parser::pddl::fromString(new_goal, "(and " + parser::pddl::toString(goal, (*it)) + ")");
         ordered_goals.push_back(new_goal);
         it = unordered_subgoals.erase(it);
       } else {
@@ -276,10 +271,14 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
 
     (*action_map)[index] = ActionExecutionInfo();
-    (*action_map)[index].action_executor =
-      ActionExecutor::make_shared(action.action, shared_from_this());
     (*action_map)[index].durative_action_info =
-      get_action_from_string(action.action, domain_client_);
+      domain_client_->getDurativeAction(
+      get_action_name(action.action), get_action_params(action.action));
+    (*action_map)[index].action_executor =
+      ActionExecutor::make_shared(
+      action.action,
+      shared_from_this()
+      );
   }
   ordered_sub_goals_ = getOrderedSubGoals();
 
@@ -301,11 +300,13 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
 
   auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
-  std_msgs::msg::String msg;
-  msg.data =
+  auto action_graph = bt_builder.get_graph(current_plan_.value());
+  std_msgs::msg::String dotgraph_msg;
+  dotgraph_msg.data =
     bt_builder.get_dotgraph(
-    current_plan_.value());
-  dotgraph_pub_->publish(msg);
+    action_graph, action_map, this->get_parameter(
+      "enable_dotgraph_legend").as_bool(), this->get_parameter("print_graph").as_bool());
+  dotgraph_pub_->publish(dotgraph_msg);
 
   std::filesystem::path tp = std::filesystem::temp_directory_path();
   std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
@@ -359,6 +360,12 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     feedback->action_execution_status = get_feedback_info(action_map);
     goal_handle->publish_feedback(feedback);
 
+    dotgraph_msg.data =
+      bt_builder.get_dotgraph(
+      action_graph, action_map, this->get_parameter(
+        "enable_dotgraph_legend").as_bool());
+    dotgraph_pub_->publish(dotgraph_msg);
+
     rate.sleep();
   }
 
@@ -370,6 +377,12 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     tree.haltTree();
     RCLCPP_ERROR(get_logger(), "Executor BT finished with FAILURE state");
   }
+
+  dotgraph_msg.data =
+    bt_builder.get_dotgraph(
+    action_graph, action_map, this->get_parameter(
+      "enable_dotgraph_legend").as_bool());
+  dotgraph_pub_->publish(dotgraph_msg);
 
   result->success = status == BT::NodeStatus::SUCCESS;
   result->action_execution_status = get_feedback_info(action_map);
