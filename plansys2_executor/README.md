@@ -28,3 +28,26 @@ Next graph shows an example of the execution flow:
 (in ActionExecutor)
 
 - `/problem_expert/update_notify` [`std_msgs::msg::Empty`]
+
+## Parameters:
+
+(in ExecutorNode)
+
+- `~/action_timeouts/actions` [`list of strings`]
+
+  - List of actions which have duration overrun percentages specified.
+
+- `~/action_timeouts/[ACTION_NAME]/duration_overrun_percentage` [`double`]
+
+  - Defines the allowable time overrun of an action based on a percentage of the predicted plan duration.
+    For example, if the plan predicts that an action should take 1000 secs and a duration overrun percentage of
+    20% is specified, then the action should be halted if the actual duration exceeds 1200 secs.
+
+```yaml
+executor:
+  ros__parameters:
+    action_timeouts:
+      actions: ["move"]
+      move:
+        duration_overrun_percentage: 20.0
+```

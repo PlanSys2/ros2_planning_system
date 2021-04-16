@@ -83,9 +83,6 @@ protected:
     get_ordered_sub_goals_service_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::String>::SharedPtr dotgraph_pub_;
 
-  bool setup_action_executor(
-    std::shared_ptr<ActionExecutor> action_executor,
-    rclcpp::Duration timeout = rclcpp::Duration::from_seconds(1.0));
   std::optional<std::vector<parser::pddl::tree::Goal>> getOrderedSubGoals();
 
   rclcpp_action::GoalResponse handle_goal(
