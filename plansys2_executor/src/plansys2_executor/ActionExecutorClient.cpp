@@ -33,13 +33,10 @@ ActionExecutorClient::ActionExecutorClient(
   const std::chrono::nanoseconds & rate)
 : CascadeLifecycleNode(node_name),
   rate_(rate),
-  commited_(false),
-  duration_(rclcpp::Duration(0)),
-  duration_overrun_percentage_(-1)
+  commited_(false)
 {
   declare_parameter("action_name");
   declare_parameter("specialized_arguments");
-  declare_parameter("performer_parameters");
 
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::NOT_READY;
   status_.node_name = get_name();
@@ -67,10 +64,6 @@ ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
   }
   get_parameter_or<std::vector<std::string>>(
     "specialized_arguments", specialized_arguments_, std::vector<std::string>({}));
-  std::vector<std::string> performer_parameters;
-  get_parameter_or<std::vector<std::string>>(
-    "performer_parameters", performer_parameters, std::vector<std::string>({"-1.0"}));
-  duration_overrun_percentage_ = std::stof(performer_parameters[0]);
 
   action_hub_pub_ = create_publisher<plansys2_msgs::msg::ActionExecution>(
     "/actions_hub", rclcpp::QoS(100).reliable());
@@ -110,14 +103,6 @@ void
 ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecution::SharedPtr msg)
 {
   switch (msg->type) {
-    case plansys2_msgs::msg::ActionExecution::SETUP_REQUEST:
-      if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE) {
-        if (msg->action == action_managed_) {
-          duration_ = msg->duration;
-          send_setup_response(msg);
-        }
-      }
-      break;
     case plansys2_msgs::msg::ActionExecution::REQUEST:
       if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE &&
         !commited_ && should_execute(msg->action, msg->arguments))
@@ -147,7 +132,6 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
         trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
       }
       break;
-    case plansys2_msgs::msg::ActionExecution::SETUP_RESPONSE:
     case plansys2_msgs::msg::ActionExecution::RESPONSE:
     case plansys2_msgs::msg::ActionExecution::FEEDBACK:
     case plansys2_msgs::msg::ActionExecution::FINISH:
@@ -185,18 +169,6 @@ ActionExecutorClient::should_execute(
   }
 
   return true;
-}
-
-void
-ActionExecutorClient::send_setup_response(
-  const plansys2_msgs::msg::ActionExecution::SharedPtr msg)
-{
-  plansys2_msgs::msg::ActionExecution msg_resp(*msg);
-  msg_resp.type = plansys2_msgs::msg::ActionExecution::SETUP_RESPONSE;
-  msg_resp.action = action_managed_;
-  msg_resp.duration_overrun_percentage = duration_overrun_percentage_;
-
-  action_hub_pub_->publish(msg_resp);
 }
 
 void

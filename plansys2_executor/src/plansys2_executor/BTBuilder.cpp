@@ -665,12 +665,12 @@ BTBuilder::get_flow_tree(
   used_nodes.push_back(action_id);
 
   int timeout = -1;
-  rclcpp::Duration duration = (*action_map)[action_id].action_executor->get_duration();
-  float duration_overrun_percentage =
-    (*action_map)[action_id].action_executor->get_duration_overrun_percentage();
+  double duration = (*action_map)[action_id].duration;
+  double duration_overrun_percentage =
+    (*action_map)[action_id].duration_overrun_percentage;
   if (duration_overrun_percentage >= 0) {
     timeout =
-      static_cast<int>(1000.0 * duration.seconds() * (1.0 + duration_overrun_percentage / 100.0));
+      static_cast<int>(1000.0 * duration * (1.0 + duration_overrun_percentage / 100.0));
   }
 
   if (node->out_arcs.size() == 0) {
@@ -743,7 +743,6 @@ BTBuilder::get_node_dotgraph(
     case ActionExecutor::CANCELLED:
       ss << ",color=red,fillcolor=pink";
       break;
-    case ActionExecutor::SETUP:
     case ActionExecutor::IDLE:
     case ActionExecutor::DEALING:
     default:

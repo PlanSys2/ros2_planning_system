@@ -1,6 +1,3 @@
-executor:
-  ros__parameters:
-    duration_overrun_percentage: -1.0
 planner:
   ros__parameters:
     plan_solver_plugins: ["POPF"]
@@ -8,3 +5,8 @@ planner:
       plugin: "plansys2/POPFPlanSolver"
     TFD:
       plugin: "plansys2::TFDPlanSolver"
+
+executor:
+  ros__parameters:
+    action_timeouts:
+      actions: []
