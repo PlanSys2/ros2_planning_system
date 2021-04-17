@@ -30,6 +30,7 @@ def generate_launch_description():
     model_file = LaunchConfiguration('model_file')
     namespace = LaunchConfiguration('namespace')
     params_file = LaunchConfiguration('params_file')
+    default_action_bt_xml_filename = LaunchConfiguration('default_action_bt_xml_filename')
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
         'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
@@ -47,6 +48,13 @@ def generate_launch_description():
         'params_file',
         default_value=os.path.join(bringup_dir, 'params', 'plansys2_params.yaml'),
         description='Full path to the ROS2 parameters file to use for all launched nodes')
+
+    declare_default_bt_file_cmd = DeclareLaunchArgument(
+        'default_action_bt_xml_filename',
+        default_value=os.path.join(
+          get_package_share_directory('plansys2_executor'),
+          'behavior_trees', 'plansys2_action_bt.xml'),
+        description='BT representing a PDDL action')
 
     domain_expert_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
@@ -87,7 +95,8 @@ def generate_launch_description():
             'executor_launch.py')),
         launch_arguments={
           'namespace': namespace,
-          'params_file': params_file
+          'params_file': params_file,
+          'default_action_bt_xml_filename': default_action_bt_xml_filename
         }.items())
 
     lifecycle_manager_cmd = Node(
@@ -104,6 +113,7 @@ def generate_launch_description():
     # Set environment variables
     ld.add_action(stdout_linebuf_envvar)
     ld.add_action(declare_model_file_cmd)
+    ld.add_action(declare_default_bt_file_cmd)
     ld.add_action(declare_namespace_cmd)
     ld.add_action(declare_params_file_cmd)
 
