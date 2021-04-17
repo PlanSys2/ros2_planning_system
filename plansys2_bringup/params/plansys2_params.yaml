@@ -4,4 +4,4 @@ planner:
     POPF:
       plugin: "plansys2/POPFPlanSolver"
     TFD:
-      plugin: "plansys2::TFDPlanSolver"
+      plugin: "plansys2/TFDPlanSolver"
