@@ -228,7 +228,7 @@ TEST(utils, evaluate_function_use_state)
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
-    std::make_tuple(true, false, 0.0));
+    std::make_tuple(false, false, 0.0));
 
   functions["(distance wp1 wp2)"] = 1.0;
 
@@ -249,7 +249,7 @@ TEST(utils, evaluate_expression_ge)
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
-    std::make_tuple(true, false, 0));
+    std::make_tuple(false, false, 0));
 
   functions["(vx)"] = 2.9999;
 
@@ -282,7 +282,7 @@ TEST(utils, evaluate_expression_gt)
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
-    std::make_tuple(true, false, 0));
+    std::make_tuple(false, false, 0));
 
   functions["(distance wp1 wp2)"] = 3.0;
 
@@ -309,7 +309,7 @@ TEST(utils, evaluate_expression_le)
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
-    std::make_tuple(true, false, 0));
+    std::make_tuple(false, false, 0));
 
   functions["(vx)"] = -2.9999;
 
@@ -342,7 +342,7 @@ TEST(utils, evaluate_expression_lt)
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
-    std::make_tuple(true, false, 0));
+    std::make_tuple(false, false, 0));
 
   functions["(distance wp1 wp2)"] = -3.0;
 
@@ -369,7 +369,7 @@ TEST(utils, evaluate_expression_multiply)
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
-    std::make_tuple(true, false, 0));
+    std::make_tuple(false, false, 0));
 
   functions["(vx)"] = 3.0;
 
@@ -396,7 +396,7 @@ TEST(utils, evaluate_expression_divide)
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
-    std::make_tuple(true, false, 0));
+    std::make_tuple(false, false, 0));
 
   functions["(vx)"] = 3.0;
 
@@ -417,6 +417,60 @@ TEST(utils, evaluate_expression_divide)
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
     std::make_tuple(false, false, 0));
+}
+
+TEST(utils, evaluate_expression_add)
+{
+  std::set<std::string> predicates;
+  std::map<std::string, double> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+
+  auto test_tree_node = parser::pddl::tree::get_tree_node(
+    "(+ (vx) 3.0)", false, parser::pddl::tree::AND);
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(false, false, 0));
+
+  functions["(vx)"] = 3.0;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, false, 6.0));
+
+  functions["(vx)"] = -0.001;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, false, 2.999));
+}
+
+TEST(utils, evaluate_expression_subtract)
+{
+  std::set<std::string> predicates;
+  std::map<std::string, double> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+
+  auto test_tree_node = parser::pddl::tree::get_tree_node(
+    "(- (vx) 3.0)", false, parser::pddl::tree::AND);
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(false, false, 0));
+
+  functions["(vx)"] = 2.5;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, false, -0.5));
+
+  functions["(vx)"] = -0.001;
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree_node, predicates, functions),
+    std::make_tuple(true, false, -3.001));
 }
 
 TEST(utils, evaluate_expression_invalid)
@@ -517,7 +571,7 @@ TEST(utils, evaluate_function_mod)
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree_node, predicates, functions),
-    std::make_tuple(true, false, 3.0));
+    std::make_tuple(false, false, 0.0));
   ASSERT_EQ(functions["(vx)"], 0.0);
 
   ASSERT_EQ(
