@@ -34,10 +34,28 @@ namespace plansys2
 {
 
 BTBuilder::BTBuilder(
-  rclcpp::Node::SharedPtr node)
+  rclcpp::Node::SharedPtr node,
+  const std::string & bt_action)
 {
   domain_client_ = std::make_shared<plansys2::DomainExpertClient>(node);
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(node);
+
+  if (bt_action != "") {
+    bt_action_ = bt_action;
+  } else {
+    bt_action_ =
+      R""""(<Sequence name="ACTION_ID">
+WAIT_AT_START_ACTIONS
+  <ApplyAtStartEffect action="ACTION_ID"/>
+  <ReactiveSequence name="ACTION_ID">
+    <CheckOverAllReq action="ACTION_ID"/>
+    <ExecuteAction action="ACTION_ID"/>
+  </ReactiveSequence>
+  <CheckAtEndReq action="ACTION_ID"/>
+  <ApplyAtEndEffect action="ACTION_ID"/>
+</Sequence>
+)"""";
+  }
 }
 
 void
@@ -501,6 +519,10 @@ BTBuilder::get_graph(const Plan & current_plan)
     remove_existing_requirements(over_all_requirements, predicates, functions);
     remove_existing_requirements(at_end_requirements, predicates, functions);
 
+    for (const auto & req : at_start_requirements) {
+      std::cerr << "===> [" << req->toString() << "]" << std::endl;
+    }
+
     assert(at_start_requirements.empty());
     assert(over_all_requirements.empty());
     assert(at_end_requirements.empty());
@@ -820,31 +842,46 @@ BTBuilder::t(int level)
   return ret;
 }
 
+void replace(std::string & str, const std::string & from, const std::string & to)
+{
+  size_t start_pos = std::string::npos;
+  while ((start_pos = str.find(from)) != std::string::npos) {
+    str.replace(start_pos, from.length(), to);
+  }
+}
+
 std::string
 BTBuilder::execution_block(const GraphNode::Ptr & node, int l)
 {
   const auto & action = node->action;
   std::string ret;
+  std::string ret_aux = bt_action_;
   const std::string action_id = "(" + action.action->name_actions_to_string() + "):" +
     std::to_string(static_cast<int>(action.time * 1000));
 
-  ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
 
+  std::string wait_actions;
   for (const auto & previous_node : node->in_arcs) {
     const std::string parent_action_id = "(" +
       previous_node->action.action->name_actions_to_string() + "):" +
       std::to_string(static_cast<int>( previous_node->action.time * 1000));
-    ret = ret + t(l + 1) + "<WaitAtStartReq action=\"" + parent_action_id + "\"/>\n";
+    wait_actions = wait_actions + t(1) + "<WaitAtStartReq action=\"" + parent_action_id + "\"/>";
+
+    if (previous_node != *node->in_arcs.rbegin()) {
+      wait_actions = wait_actions + "\n";
+    }
   }
 
-  ret = ret + t(l + 1) + "<ApplyAtStartEffect action=\"" + action_id + "\"/>\n";
-  ret = ret + t(l + 1) + "<ReactiveSequence name=\"" + action_id + "\">\n";
-  ret = ret + t(l + 2) + "<CheckOverAllReq action=\"" + action_id + "\"/>\n";
-  ret = ret + t(l + 2) + "<ExecuteAction action=\"" + action_id + "\"/>\n";
-  ret = ret + t(l + 1) + "</ReactiveSequence>\n";
-  ret = ret + t(l + 1) + "<CheckAtEndReq action=\"" + action_id + "\"/>\n";
-  ret = ret + t(l + 1) + "<ApplyAtEndEffect action=\"" + action_id + "\"/>\n";
-  ret = ret + t(l) + "</Sequence>\n";
+  replace(ret_aux, "ACTION_ID", action_id);
+  replace(ret_aux, "WAIT_AT_START_ACTIONS", wait_actions);
+
+  std::istringstream f(ret_aux);
+  std::string line;
+  while (std::getline(f, line)) {
+    if (line != "") {
+      ret = ret + t(l) + line + "\n";
+    }
+  }
   return ret;
 }
 
