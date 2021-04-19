@@ -538,9 +538,7 @@ BTBuilder::get_graph(const Plan & current_plan)
 }
 
 std::string
-BTBuilder::get_tree(
-  const Plan & current_plan,
-  std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map)
+BTBuilder::get_tree(const Plan & current_plan)
 {
   auto action_graph = get_graph(current_plan);
 
@@ -555,7 +553,7 @@ BTBuilder::get_tree(
       "\" failure_threshold=\"1\">\n";
 
     for (const auto & node : action_graph->roots) {
-      bt_plan = bt_plan + get_flow_tree(node, used_nodes, action_map, 3);
+      bt_plan = bt_plan + get_flow_tree(node, used_nodes, 3);
     }
 
     bt_plan = bt_plan + t(2) + "</Parallel>\n" +
@@ -564,7 +562,7 @@ BTBuilder::get_tree(
     bt_plan = std::string("<root main_tree_to_execute=\"MainTree\">\n") +
       t(1) + "<BehaviorTree ID=\"MainTree\">\n";
 
-    bt_plan = bt_plan + get_flow_tree(*action_graph->roots.begin(), used_nodes, action_map, 2);
+    bt_plan = bt_plan + get_flow_tree(*action_graph->roots.begin(), used_nodes, 2);
 
     bt_plan = bt_plan + t(1) + "</BehaviorTree>\n</root>\n";
   }
@@ -671,7 +669,6 @@ std::string
 BTBuilder::get_flow_tree(
   GraphNode::Ptr node,
   std::list<std::string> & used_nodes,
-  std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
   int level)
 {
   std::string ret;
@@ -693,7 +690,7 @@ BTBuilder::get_flow_tree(
     ret = ret + execution_block(node, l + 1);
 
     for (const auto & child_node : node->out_arcs) {
-      ret = ret + get_flow_tree(child_node, used_nodes, action_map, l + 1);
+      ret = ret + get_flow_tree(child_node, used_nodes, l + 1);
     }
 
     ret = ret + t(l) + "</Sequence>\n";
@@ -706,7 +703,7 @@ BTBuilder::get_flow_tree(
       "\" failure_threshold=\"1\">\n";
 
     for (const auto & child_node : node->out_arcs) {
-      ret = ret + get_flow_tree(child_node, used_nodes, action_map, l + 2);
+      ret = ret + get_flow_tree(child_node, used_nodes, l + 2);
     }
 
     ret = ret + t(l + 1) + "</Parallel>\n";

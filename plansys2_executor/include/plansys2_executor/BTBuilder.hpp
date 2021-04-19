@@ -75,9 +75,7 @@ public:
   explicit BTBuilder(rclcpp::Node::SharedPtr node, const std::string & bt_action = "");
 
   Graph::Ptr get_graph(const Plan & current_plan);
-  std::string get_tree(
-    const Plan & current_plan,
-    std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map);
+  std::string get_tree(const Plan & current_plan);
   std::string get_dotgraph(
     Graph::Ptr action_graph, std::shared_ptr<std::map<std::string,
     ActionExecutionInfo>> action_map, bool enable_legend = false,
@@ -130,7 +128,6 @@ protected:
   std::string get_flow_tree(
     GraphNode::Ptr node,
     std::list<std::string> & used_nodes,
-    std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
     int level = 0);
   std::string get_flow_dotgraph(GraphNode::Ptr node, int level = 0);
   std::string get_node_dotgraph(

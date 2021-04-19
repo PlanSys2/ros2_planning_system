@@ -343,7 +343,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
 
-  auto bt_xml_tree = bt_builder.get_tree(current_plan_.value(), action_map);
+  auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
   auto action_graph = bt_builder.get_graph(current_plan_.value());
   std_msgs::msg::String dotgraph_msg;
   dotgraph_msg.data =
