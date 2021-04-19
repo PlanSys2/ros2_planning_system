@@ -31,6 +31,8 @@
 #include "lifecycle_msgs/msg/state.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 
+#include "ament_index_cpp/get_package_share_directory.hpp"
+
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/utils/shared_library.h"
@@ -45,6 +47,7 @@
 #include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
+#include "plansys2_executor/behavior_tree/check_timeout_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
 
@@ -59,6 +62,7 @@ ExecutorNode::ExecutorNode()
 {
   using namespace std::placeholders;
 
+  this->declare_parameter<std::string>("default_action_bt_xml_filename", "");
   this->declare_parameter<bool>("enable_dotgraph_legend", true);
   this->declare_parameter<bool>("print_graph", false);
   this->declare_parameter("action_timeouts.actions", std::vector<std::string>{});
@@ -101,6 +105,22 @@ CallbackReturnT
 ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
+
+  std::string default_action_bt_xml_filename;
+  if (!get_parameter("default_action_bt_xml_filename", default_action_bt_xml_filename)) {
+    default_action_bt_xml_filename =
+      ament_index_cpp::get_package_share_directory("plansys2_executor") +
+      "/behavior_trees/plansys2_action_bt.xml";
+  }
+
+  std::ifstream ifs(default_action_bt_xml_filename);
+  if (!ifs) {
+    RCLCPP_ERROR_STREAM(get_logger(), "Error openning [" << default_action_bt_xml_filename << "]");
+    return CallbackReturnT::FAILURE;
+  }
+
+  action_bt_xml_.assign(
+    std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
 
   dotgraph_pub_ = this->create_publisher<std_msgs::msg::String>("dot_graph", 1);
 
@@ -305,7 +325,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   }
   ordered_sub_goals_ = getOrderedSubGoals();
 
-  BTBuilder bt_builder(aux_node_);
+  BTBuilder bt_builder(aux_node_, action_bt_xml_);
   auto blackboard = BT::Blackboard::create();
 
   blackboard->set("action_map", action_map);
@@ -321,6 +341,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<CheckAtEndReq>("CheckAtEndReq");
   factory.registerNodeType<ApplyAtStartEffect>("ApplyAtStartEffect");
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
+  factory.registerNodeType<CheckTimeout>("CheckTimeout");
 
   auto bt_xml_tree = bt_builder.get_tree(current_plan_.value(), action_map);
   auto action_graph = bt_builder.get_graph(current_plan_.value());
@@ -345,7 +366,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   std::unique_ptr<BT::PublisherZMQ> publisher_zmq;
   if (this->get_parameter("enable_groot_monitoring").as_bool()) {
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
       get_logger(),
       "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
       get_name(), publisher_port, server_port, max_msgs_per_second);
@@ -465,6 +486,8 @@ ExecutorNode::get_feedback_info(
         info.status = plansys2_msgs::msg::ActionExecutionInfo::CANCELLED;
         break;
     }
+
+    info.action_full_name = action.first;
 
     info.start_stamp = action.second.action_executor->get_start_time();
     info.status_stamp = action.second.action_executor->get_status_time();

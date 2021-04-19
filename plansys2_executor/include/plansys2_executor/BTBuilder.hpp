@@ -72,7 +72,7 @@ struct Graph
 class BTBuilder
 {
 public:
-  explicit BTBuilder(rclcpp::Node::SharedPtr node);
+  explicit BTBuilder(rclcpp::Node::SharedPtr node, const std::string & bt_action = "");
 
   Graph::Ptr get_graph(const Plan & current_plan);
   std::string get_tree(
@@ -86,6 +86,8 @@ public:
 protected:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
+
+  std::string bt_action_;
 
   void init_predicates(
     std::set<std::string> & predicates,
@@ -144,7 +146,7 @@ protected:
 
   std::string t(int level);
 
-  std::string execution_block(const GraphNode::Ptr & node, int l, int timeout = 0);
+  std::string execution_block(const GraphNode::Ptr & node, int l);
   void print_node(
     const GraphNode::Ptr & node,
     int level,
