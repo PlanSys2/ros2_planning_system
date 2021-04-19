@@ -106,8 +106,9 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
 
-  std::string default_action_bt_xml_filename;
-  if (!get_parameter("default_action_bt_xml_filename", default_action_bt_xml_filename)) {
+  auto default_action_bt_xml_filename =
+    this->get_parameter("default_action_bt_xml_filename").as_string();
+  if (default_action_bt_xml_filename.empty()) {
     default_action_bt_xml_filename =
       ament_index_cpp::get_package_share_directory("plansys2_executor") +
       "/behavior_trees/plansys2_action_bt.xml";

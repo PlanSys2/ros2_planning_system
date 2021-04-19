@@ -1569,6 +1569,9 @@ TEST(problem_expert, action_timeout)
 
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
+  executor_node->set_parameter(
+    {"default_action_bt_xml_filename",
+      pkgpath + "/behavior_trees/plansys2_action_bt.xml"});
 
   rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
 

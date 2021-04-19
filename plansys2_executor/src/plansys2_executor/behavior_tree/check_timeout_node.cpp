@@ -47,20 +47,20 @@ CheckTimeout::tick()
   }
   setStatus(BT::NodeStatus::RUNNING);
 
-  if ((*action_map_)[action].action_executor != nullptr)
-  {
+  if ((*action_map_)[action].action_executor != nullptr) {
     double duration = (*action_map_)[action].duration;
     double duration_overrun_percentage = (*action_map_)[action].duration_overrun_percentage;
     if (duration_overrun_percentage >= 0) {
-      double max_duration =  (1.0 + duration_overrun_percentage / 100.0) * duration;
+      double max_duration = (1.0 + duration_overrun_percentage / 100.0) * duration;
       auto current_time = std::chrono::high_resolution_clock::now();
-      auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_);
+      auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+        current_time - start_);
       if (elapsed_time > std::chrono::duration<double>(max_duration)) {
         return BT::NodeStatus::FAILURE;
       }
     }
   }
-  
+
   return BT::NodeStatus::SUCCESS;
 }
 
