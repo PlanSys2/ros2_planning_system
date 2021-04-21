@@ -16,7 +16,7 @@ foreach(bt_plugin ${plugin_libs})
   target_compile_definitions(${bt_plugin} PRIVATE BT_PLUGIN_EXPORT)
 endforeach()
 
-ament_add_gtest(bt_action_test bt_action_test.cpp TIMEOUT 120)
+ament_add_gtest(bt_action_test bt_action_test.cpp)
 target_link_libraries(bt_action_test
   ${PROJECT_NAME}
 )
