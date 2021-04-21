@@ -31,6 +31,15 @@ POPFPlanSolver::POPFPlanSolver()
 {
 }
 
+void POPFPlanSolver::configure(
+  rclcpp_lifecycle::LifecycleNode::SharedPtr & lc_node,
+  const std::string & plugin_name)
+{
+  parameter_name_ = plugin_name + ".arguments";
+  lc_node_ = lc_node;
+  lc_node_->declare_parameter<std::string>(parameter_name_, "");
+}
+
 std::optional<Plan>
 POPFPlanSolver::getPlan(
   const std::string & domain, const std::string & problem,
@@ -56,8 +65,10 @@ POPFPlanSolver::getPlan(
   problem_out.close();
 
   system(
-    ("ros2 run popf popf /tmp/" + node_namespace + "/domain.pddl /tmp/" +
-    node_namespace + "/problem.pddl > /tmp/" + node_namespace + "/plan").c_str());
+    ("ros2 run popf popf " +
+    lc_node_->get_parameter(parameter_name_).value_to_string() +
+    " /tmp/" + node_namespace + "/domain.pddl /tmp/" + node_namespace +
+    "/problem.pddl > /tmp/" + node_namespace + "/plan").c_str());
 
   std::string line;
   std::ifstream plan_file("/tmp/" + node_namespace + "/plan");
