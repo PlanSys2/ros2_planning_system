@@ -61,6 +61,8 @@ ExecutorNode::ExecutorNode()
   using namespace std::placeholders;
 
   declare_parameter("default_action_bt_xml_filename");
+  this->declare_parameter<bool>("enable_dotgraph_legend", true);
+  this->declare_parameter<bool>("print_graph", false);
 
 #ifdef ZMQ_FOUND
   this->declare_parameter<bool>("enable_groot_monitoring", true);
@@ -321,11 +323,13 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
 
   auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
-  std_msgs::msg::String msg;
-  msg.data =
+  auto action_graph = bt_builder.get_graph(current_plan_.value());
+  std_msgs::msg::String dotgraph_msg;
+  dotgraph_msg.data =
     bt_builder.get_dotgraph(
-    current_plan_.value());
-  dotgraph_pub_->publish(msg);
+    action_graph, action_map, this->get_parameter(
+      "enable_dotgraph_legend").as_bool(), this->get_parameter("print_graph").as_bool());
+  dotgraph_pub_->publish(dotgraph_msg);
 
   std::filesystem::path tp = std::filesystem::temp_directory_path();
   std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
@@ -379,6 +383,12 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     feedback->action_execution_status = get_feedback_info(action_map);
     goal_handle->publish_feedback(feedback);
 
+    dotgraph_msg.data =
+      bt_builder.get_dotgraph(
+      action_graph, action_map, this->get_parameter(
+        "enable_dotgraph_legend").as_bool());
+    dotgraph_pub_->publish(dotgraph_msg);
+
     rate.sleep();
   }
 
@@ -390,6 +400,12 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     tree.haltTree();
     RCLCPP_ERROR(get_logger(), "Executor BT finished with FAILURE state");
   }
+
+  dotgraph_msg.data =
+    bt_builder.get_dotgraph(
+    action_graph, action_map, this->get_parameter(
+      "enable_dotgraph_legend").as_bool());
+  dotgraph_pub_->publish(dotgraph_msg);
 
   result->success = status == BT::NodeStatus::SUCCESS;
   result->action_execution_status = get_feedback_info(action_map);
