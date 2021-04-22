@@ -91,12 +91,11 @@ public:
   : ActionExecutorClient(id, rate),
     executions_(0),
     cycles_(0),
-    runtime_(rclcpp::Duration(0)),
-    start_(rclcpp::Time(0))
+    runtime_(0)
   {
   }
 
-  void set_runtime(rclcpp::Duration runtime)
+  void set_runtime(double runtime)
   {
     runtime_ = runtime;
   }
@@ -106,7 +105,7 @@ public:
   {
     std::cerr << "MoveAction::on_activate" << std::endl;
     counter_ = 0;
-    start_ = this->now();
+    start_ = std::chrono::high_resolution_clock::now();
 
     return ActionExecutorClient::on_activate(state);
   }
@@ -119,14 +118,15 @@ public:
     }
 
     cycles_++;
-    rclcpp::Duration elapsed_time = this->now() - start_;
+    auto current_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed_time = current_time - start_;
 
-    if (runtime_ > rclcpp::Duration(0)) {
-      if (elapsed_time > runtime_) {
+    if (runtime_ > 1e-5) {
+      if (elapsed_time.count() > runtime_) {
         finish(true, 1.0, "completed");
         executions_++;
       } else {
-        send_feedback(elapsed_time.seconds() / runtime_.seconds(), "running");
+        send_feedback(elapsed_time.count() / runtime_, "running");
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
       }
     } else {
@@ -142,8 +142,8 @@ public:
   int counter_;
   int executions_;
   int cycles_;
-  rclcpp::Duration runtime_;
-  rclcpp::Time start_;
+  double runtime_;
+  std::chrono::high_resolution_clock::time_point start_;
 };
 
 class TransportAction : public plansys2::ActionExecutorClient
@@ -1554,7 +1554,7 @@ TEST(problem_expert, action_timeout)
 
   auto move_action_node = MoveAction::make_shared("move_action_performer", 1s);
   move_action_node->set_parameter({"action_name", "move"});
-  move_action_node->set_runtime(rclcpp::Duration::from_seconds(10));
+  move_action_node->set_runtime(10.0);
 
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node_1);
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_2);
