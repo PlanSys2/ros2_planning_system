@@ -323,6 +323,8 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
       (*action_map)[index].duration_overrun_percentage = this->get_parameter(
         "action_timeouts." + action_name + ".duration_overrun_percentage").as_double();
     }
+    RCLCPP_INFO(get_logger(), "Action %s timeout percentage %f", action_name.c_str(),
+                 (*action_map)[index].duration_overrun_percentage);
   }
   ordered_sub_goals_ = getOrderedSubGoals();
 
