@@ -1551,10 +1551,6 @@ TEST(problem_expert, action_timeout)
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<ExecutorNodeTest>();
-  executor_node->set_parameter({"action_timeouts.actions", std::vector<std::string>({"move"})});
-  // have to declare because the actions vector above was not available at node creation
-  executor_node->declare_parameter("action_timeouts.move.duration_overrun_percentage");
-  executor_node->set_parameter({"action_timeouts.move.duration_overrun_percentage", 20.0});
 
   auto move_action_node = MoveAction::make_shared("move_action_performer", 1s);
   move_action_node->set_parameter({"action_name", "move"});
@@ -1572,6 +1568,10 @@ TEST(problem_expert, action_timeout)
   executor_node->set_parameter(
     {"default_action_bt_xml_filename",
       pkgpath + "/behavior_trees/plansys2_action_bt.xml"});
+  executor_node->set_parameter({"action_timeouts.actions", std::vector<std::string>({"move"})});
+  // have to declare because the actions vector above was not available at node creation
+  executor_node->declare_parameter("action_timeouts.move.duration_overrun_percentage");
+  executor_node->set_parameter({"action_timeouts.move.duration_overrun_percentage", 1.0});
 
   rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
 
