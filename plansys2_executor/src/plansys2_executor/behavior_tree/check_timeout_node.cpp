@@ -53,8 +53,9 @@ CheckTimeout::tick()
     if (duration_overrun_percentage >= 0) {
       double max_duration = (1.0 + duration_overrun_percentage / 100.0) * duration;
       auto current_time = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double, std::milli> elapsed_time = current_time - start_;
-      if (elapsed_time.count() > max_duration) {
+      auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+        current_time - start_);
+      if (elapsed_time > std::chrono::duration<double>(max_duration)) {
         return BT::NodeStatus::FAILURE;
       }
     }

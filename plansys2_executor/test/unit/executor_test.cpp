@@ -119,14 +119,15 @@ public:
 
     cycles_++;
     auto current_time = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> elapsed_time = current_time - start_;
+    auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+      current_time - start_);
 
     if (runtime_ > 1e-5) {
-      if (elapsed_time.count() > runtime_) {
+      if (elapsed_time > std::chrono::duration<double>(runtime_)) {
         finish(true, 1.0, "completed");
         executions_++;
       } else {
-        send_feedback(elapsed_time.count() / runtime_, "running");
+        send_feedback((static_cast<double>(elapsed_time.count()) / 1000.0) / runtime_, "running");
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
       }
     } else {
