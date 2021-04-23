@@ -25,12 +25,12 @@ from launch_ros.actions import Node
 def generate_launch_description():
     # Get the launch directory
     bringup_dir = get_package_share_directory('plansys2_bringup')
-    config_dir = os.path.join(bringup_dir, 'params')
-    config_file = os.path.join(config_dir, 'plansys2_params.yaml')
 
     # Create the launch configuration variables
     model_file = LaunchConfiguration('model_file')
     namespace = LaunchConfiguration('namespace')
+    params_file = LaunchConfiguration('params_file')
+    default_action_bt_xml_filename = LaunchConfiguration('default_action_bt_xml_filename')
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
         'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
@@ -44,14 +44,29 @@ def generate_launch_description():
         default_value='',
         description='Namespace')
 
+    declare_params_file_cmd = DeclareLaunchArgument(
+        'params_file',
+        default_value=os.path.join(bringup_dir, 'params', 'plansys2_params.yaml'),
+        description='Full path to the ROS2 parameters file to use for all launched nodes')
+
+    declare_default_bt_file_cmd = DeclareLaunchArgument(
+        'default_action_bt_xml_filename',
+        default_value=os.path.join(
+          get_package_share_directory('plansys2_executor'),
+          'behavior_trees', 'plansys2_action_bt.xml'),
+        description='BT representing a PDDL action')
+
     plansys2_node_cmd = Node(
         package='plansys2_bringup',
         executable='plansys2_node',
         output='screen',
         namespace=namespace,
         parameters=[
-          {'model_file': model_file},
-          config_file
+          {
+            'model_file': model_file,
+            'default_action_bt_xml_filename': default_action_bt_xml_filename
+          },
+          params_file
         ])
 
     # Create the launch description and populate
@@ -60,7 +75,9 @@ def generate_launch_description():
     # Set environment variables
     ld.add_action(stdout_linebuf_envvar)
     ld.add_action(declare_model_file_cmd)
+    ld.add_action(declare_default_bt_file_cmd)
     ld.add_action(declare_namespace_cmd)
+    ld.add_action(declare_params_file_cmd)
 
     # Declare the launch options
     ld.add_action(plansys2_node_cmd)

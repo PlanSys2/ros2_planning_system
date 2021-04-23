@@ -28,6 +28,7 @@
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_executor/ExecutorNode.hpp"
+#include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_core/Types.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
 
@@ -71,7 +72,7 @@ struct Graph
 class BTBuilder
 {
 public:
-  explicit BTBuilder(rclcpp::Node::SharedPtr node);
+  explicit BTBuilder(rclcpp::Node::SharedPtr node, const std::string & bt_action = "");
 
   Graph::Ptr get_graph(const Plan & current_plan);
   std::string get_tree(const Plan & current_plan);
@@ -83,6 +84,8 @@ public:
 protected:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
+
+  std::string bt_action_;
 
   std::vector<ActionStamped> get_plan_actions(const Plan & plan);
   void prune_backwards(GraphNode::Ptr new_node, GraphNode::Ptr node_satisfy);
@@ -133,7 +136,6 @@ protected:
   void addDotGraphLegend(
     std::stringstream & ss, int tab_level, int level_counter,
     int node_counter);
-
 
   std::string t(int level);
 
