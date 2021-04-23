@@ -91,12 +91,11 @@ public:
   : ActionExecutorClient(id, rate),
     executions_(0),
     cycles_(0),
-    runtime_(rclcpp::Duration(0)),
-    start_(rclcpp::Time(0))
+    runtime_(0)
   {
   }
 
-  void set_runtime(rclcpp::Duration runtime)
+  void set_runtime(double runtime)
   {
     runtime_ = runtime;
   }
@@ -106,7 +105,7 @@ public:
   {
     std::cerr << "MoveAction::on_activate" << std::endl;
     counter_ = 0;
-    start_ = this->now();
+    start_ = std::chrono::high_resolution_clock::now();
 
     return ActionExecutorClient::on_activate(state);
   }
@@ -119,14 +118,16 @@ public:
     }
 
     cycles_++;
-    rclcpp::Duration elapsed_time = this->now() - start_;
+    auto current_time = std::chrono::high_resolution_clock::now();
+    auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+      current_time - start_);
 
-    if (runtime_ > rclcpp::Duration(0)) {
-      if (elapsed_time > runtime_) {
+    if (runtime_ > 1e-5) {
+      if (elapsed_time > std::chrono::duration<double>(runtime_)) {
         finish(true, 1.0, "completed");
         executions_++;
       } else {
-        send_feedback(elapsed_time.seconds() / runtime_.seconds(), "running");
+        send_feedback((static_cast<double>(elapsed_time.count()) / 1000.0) / runtime_, "running");
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
       }
     } else {
@@ -142,8 +143,8 @@ public:
   int counter_;
   int executions_;
   int cycles_;
-  rclcpp::Duration runtime_;
-  rclcpp::Time start_;
+  double runtime_;
+  std::chrono::high_resolution_clock::time_point start_;
 };
 
 class TransportAction : public plansys2::ActionExecutorClient
@@ -1552,14 +1553,10 @@ TEST(problem_expert, action_timeout)
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<ExecutorNodeTest>();
-  executor_node->set_parameter({"action_timeouts.actions", std::vector<std::string>({"move"})});
-  // have to declare because the actions vector above was not available at node creation
-  executor_node->declare_parameter("action_timeouts.move.duration_overrun_percentage");
-  executor_node->set_parameter({"action_timeouts.move.duration_overrun_percentage", 20.0});
 
-  auto move_action_node = MoveAction::make_shared("move_action_performer", 1s);
+  auto move_action_node = MoveAction::make_shared("move_action_performer", 100ms);
   move_action_node->set_parameter({"action_name", "move"});
-  move_action_node->set_runtime(rclcpp::Duration::from_seconds(10));
+  move_action_node->set_runtime(10.0);
 
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node_1);
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_2);
@@ -1570,6 +1567,13 @@ TEST(problem_expert, action_timeout)
 
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
+  executor_node->set_parameter(
+    {"default_action_bt_xml_filename",
+      pkgpath + "/test_behavior_trees/plansys2_action_bt.xml"});
+  executor_node->set_parameter({"action_timeouts.actions", std::vector<std::string>({"move"})});
+  // have to declare because the actions vector above was not available at node creation
+  executor_node->declare_parameter("action_timeouts.move.duration_overrun_percentage");
+  executor_node->set_parameter({"action_timeouts.move.duration_overrun_percentage", 1.0});
 
   rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
 

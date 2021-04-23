@@ -47,6 +47,7 @@
 #include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
+#include "plansys2_executor/behavior_tree/check_timeout_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
 
@@ -61,7 +62,7 @@ ExecutorNode::ExecutorNode()
 {
   using namespace std::placeholders;
 
-  declare_parameter("default_action_bt_xml_filename");
+  this->declare_parameter<std::string>("default_action_bt_xml_filename", "");
   this->declare_parameter<bool>("enable_dotgraph_legend", true);
   this->declare_parameter<bool>("print_graph", false);
   this->declare_parameter("action_timeouts.actions", std::vector<std::string>{});
@@ -105,8 +106,9 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
 
-  std::string default_action_bt_xml_filename;
-  if (!get_parameter("default_action_bt_xml_filename", default_action_bt_xml_filename)) {
+  auto default_action_bt_xml_filename =
+    this->get_parameter("default_action_bt_xml_filename").as_string();
+  if (default_action_bt_xml_filename.empty()) {
     default_action_bt_xml_filename =
       ament_index_cpp::get_package_share_directory("plansys2_executor") +
       "/behavior_trees/plansys2_action_bt.xml";
@@ -321,6 +323,9 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
       (*action_map)[index].duration_overrun_percentage = this->get_parameter(
         "action_timeouts." + action_name + ".duration_overrun_percentage").as_double();
     }
+    RCLCPP_INFO(
+      get_logger(), "Action %s timeout percentage %f", action_name.c_str(),
+      (*action_map)[index].duration_overrun_percentage);
   }
   ordered_sub_goals_ = getOrderedSubGoals();
 
@@ -340,6 +345,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<CheckAtEndReq>("CheckAtEndReq");
   factory.registerNodeType<ApplyAtStartEffect>("ApplyAtStartEffect");
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
+  factory.registerNodeType<CheckTimeout>("CheckTimeout");
 
   auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
   auto action_graph = bt_builder.get_graph(current_plan_.value());
