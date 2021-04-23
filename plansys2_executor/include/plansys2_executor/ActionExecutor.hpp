@@ -53,8 +53,7 @@ public:
   }
 
   explicit ActionExecutor(
-    const std::string & action,
-    rclcpp_lifecycle::LifecycleNode::SharedPtr node);
+    const std::string & action, rclcpp_lifecycle::LifecycleNode::SharedPtr node);
 
   BT::NodeStatus tick(const rclcpp::Time & now);
   void cancel();

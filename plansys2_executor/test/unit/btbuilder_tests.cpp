@@ -592,7 +592,6 @@ TEST(btbuilder_tests, test_plan_3)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
-  auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
   auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);

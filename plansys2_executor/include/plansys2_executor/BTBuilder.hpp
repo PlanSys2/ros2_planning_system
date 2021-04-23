@@ -27,7 +27,6 @@
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_core/Types.hpp"
 #include "plansys2_pddl_parser/Tree.h"
