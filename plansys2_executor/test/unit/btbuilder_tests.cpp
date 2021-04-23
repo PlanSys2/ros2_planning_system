@@ -785,9 +785,6 @@ TEST(btbuilder_tests, test_plan_4)
   ASSERT_TRUE(plan);
 
   btbuilder->print_graph(btbuilder->get_graph(plan.value()));
-
-  auto executor_node = std::make_shared<plansys2::ExecutorNode>();
-
   auto bt = btbuilder->get_tree(plan.value());
 
   std::cerr << bt << std::endl;

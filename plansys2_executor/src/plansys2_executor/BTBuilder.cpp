@@ -851,7 +851,7 @@ void replace(std::string & str, const std::string & from, const std::string & to
 }
 
 std::string
-BTBuilder::execution_block(const GraphNode::Ptr & node, int l, int timeout)
+BTBuilder::execution_block(const GraphNode::Ptr & node, int l)
 {
   const auto & action = node->action;
   std::string ret;

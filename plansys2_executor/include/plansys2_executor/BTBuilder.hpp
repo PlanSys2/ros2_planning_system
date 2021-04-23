@@ -143,7 +143,7 @@ protected:
 
   std::string t(int level);
 
-  std::string execution_block(const GraphNode::Ptr & node, int l, int timeout = 0);
+  std::string execution_block(const GraphNode::Ptr & node, int l);
   void print_node(
     const GraphNode::Ptr & node,
     int level,
