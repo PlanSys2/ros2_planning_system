@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
+from ament_index_python.packages import get_package_share_directory
+
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable
 from launch.substitutions import LaunchConfiguration
@@ -24,11 +28,19 @@ def generate_launch_description():
 
     namespace = LaunchConfiguration('namespace')
     params_file = LaunchConfiguration('params_file')
+    default_action_bt_xml_filename = LaunchConfiguration('default_action_bt_xml_filename')
 
     declare_namespace_cmd = DeclareLaunchArgument(
         'namespace',
         default_value='',
         description='Namespace')
+
+    declare_default_bt_file_cmd = DeclareLaunchArgument(
+        'default_action_bt_xml_filename',
+        default_value=os.path.join(
+          get_package_share_directory('plansys2_executor'),
+          'behavior_trees', 'plansys2_action_bt.xml'),
+        description='BT representing a PDDL action')
 
     # Specify the actions
     executor_cmd = Node(
@@ -37,7 +49,12 @@ def generate_launch_description():
         node_name='executor',
         namespace=namespace,
         output='screen',
-        parameters=[params_file])
+        parameters=[
+          {
+            'default_action_bt_xml_filename': default_action_bt_xml_filename
+          },
+          params_file
+        ])
 
     # Create the launch description and populate
     ld = LaunchDescription()
@@ -45,6 +62,7 @@ def generate_launch_description():
     # Set environment variables
     ld.add_action(stdout_linebuf_envvar)
     ld.add_action(declare_namespace_cmd)
+    ld.add_action(declare_default_bt_file_cmd)
 
     # Declare the launch options
     ld.add_action(executor_cmd)

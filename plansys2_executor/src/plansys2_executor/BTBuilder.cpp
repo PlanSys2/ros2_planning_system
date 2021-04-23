@@ -34,10 +34,28 @@ namespace plansys2
 {
 
 BTBuilder::BTBuilder(
-  rclcpp::Node::SharedPtr node)
+  rclcpp::Node::SharedPtr node,
+  const std::string & bt_action)
 {
   domain_client_ = std::make_shared<plansys2::DomainExpertClient>(node);
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(node);
+
+  if (bt_action != "") {
+    bt_action_ = bt_action;
+  } else {
+    bt_action_ =
+      R""""(<Sequence name="ACTION_ID">
+WAIT_AT_START_ACTIONS
+  <ApplyAtStartEffect action="ACTION_ID"/>
+  <ReactiveSequence name="ACTION_ID">
+    <CheckOverAllReq action="ACTION_ID"/>
+    <ExecuteAction action="ACTION_ID"/>
+  </ReactiveSequence>
+  <CheckAtEndReq action="ACTION_ID"/>
+  <ApplyAtEndEffect action="ACTION_ID"/>
+</Sequence>
+)"""";
+  }
 }
 
 void
@@ -501,6 +519,10 @@ BTBuilder::get_graph(const Plan & current_plan)
     remove_existing_requirements(over_all_requirements, predicates, functions);
     remove_existing_requirements(at_end_requirements, predicates, functions);
 
+    for (const auto & req : at_start_requirements) {
+      std::cerr << "===> [" << req->toString() << "]" << std::endl;
+    }
+
     assert(at_start_requirements.empty());
     assert(over_all_requirements.empty());
     assert(at_end_requirements.empty());
@@ -516,9 +538,7 @@ BTBuilder::get_graph(const Plan & current_plan)
 }
 
 std::string
-BTBuilder::get_tree(
-  const Plan & current_plan,
-  std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map)
+BTBuilder::get_tree(const Plan & current_plan)
 {
   auto action_graph = get_graph(current_plan);
 
@@ -533,7 +553,7 @@ BTBuilder::get_tree(
       "\" failure_threshold=\"1\">\n";
 
     for (const auto & node : action_graph->roots) {
-      bt_plan = bt_plan + get_flow_tree(node, used_nodes, action_map, 3);
+      bt_plan = bt_plan + get_flow_tree(node, used_nodes, 3);
     }
 
     bt_plan = bt_plan + t(2) + "</Parallel>\n" +
@@ -542,7 +562,7 @@ BTBuilder::get_tree(
     bt_plan = std::string("<root main_tree_to_execute=\"MainTree\">\n") +
       t(1) + "<BehaviorTree ID=\"MainTree\">\n";
 
-    bt_plan = bt_plan + get_flow_tree(*action_graph->roots.begin(), used_nodes, action_map, 2);
+    bt_plan = bt_plan + get_flow_tree(*action_graph->roots.begin(), used_nodes, 2);
 
     bt_plan = bt_plan + t(1) + "</BehaviorTree>\n</root>\n";
   }
@@ -551,9 +571,14 @@ BTBuilder::get_tree(
 }
 
 std::string
-BTBuilder::get_dotgraph(const Plan & current_plan)
+BTBuilder::get_dotgraph(
+  Graph::Ptr action_graph, std::shared_ptr<std::map<std::string,
+  ActionExecutionInfo>> action_map, bool enable_legend,
+  bool enable_print_graph)
 {
-  auto action_graph = get_graph(current_plan);
+  if (enable_print_graph) {
+    print_graph(action_graph);
+  }
 
   // create xdot graph
   std::stringstream ss;
@@ -584,19 +609,20 @@ BTBuilder::get_dotgraph(const Plan & current_plan)
 
   tab_level = 3;
   for (auto & node : action_graph->roots) {
-    ss << t(tab_level);
-    ss << node->node_num << " [label=\"" << node->action.action->name_actions_to_string() << "\"";
-    ss << "labeljust=c,style=filled,color=blue,fillcolor=skyblue];\n";
+    ss << get_node_dotgraph(node, action_map, tab_level);
   }
   tab_level = 2;
 
   ss << t(tab_level);
   ss << "}\n";
 
+  int max_level = 0;
+  int max_node = 0;
   for (auto & level : action_graph->levels) {
     if (!level.second.empty()) {
       ss << t(tab_level);
       ss << "subgraph cluster_" << level.second.front()->level_num << " {\n";
+      max_level = std::max(max_level, level.second.front()->level_num);
 
       tab_level = 2;
       ss << t(tab_level);
@@ -612,10 +638,8 @@ BTBuilder::get_dotgraph(const Plan & current_plan)
 
       tab_level = 3;
       for (auto & node : level.second) {
-        ss << t(tab_level);
-        ss << node->node_num << " [label=\"" << node->action.action->name_actions_to_string() <<
-          "\"";
-        ss << "labeljust=c,style=filled,color=blue,fillcolor=skyblue];\n";
+        max_node = std::max(max_node, node->node_num);
+        ss << get_node_dotgraph(node, action_map, tab_level);
       }
       tab_level = 2;
 
@@ -630,6 +654,12 @@ BTBuilder::get_dotgraph(const Plan & current_plan)
     ss << get_flow_dotgraph(graph_root, tab_level);
   }
 
+  if (enable_legend) {
+    max_level++;
+    max_node++;
+    addDotGraphLegend(ss, tab_level, max_level, max_node);
+  }
+
   ss << "}";
 
   return ss.str();
@@ -639,7 +669,6 @@ std::string
 BTBuilder::get_flow_tree(
   GraphNode::Ptr node,
   std::list<std::string> & used_nodes,
-  std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
   int level)
 {
   std::string ret;
@@ -654,36 +683,27 @@ BTBuilder::get_flow_tree(
 
   used_nodes.push_back(action_id);
 
-  int timeout = -1;
-  double duration = (*action_map)[action_id].duration;
-  double duration_overrun_percentage =
-    (*action_map)[action_id].duration_overrun_percentage;
-  if (duration_overrun_percentage >= 0) {
-    timeout =
-      static_cast<int>(1000.0 * duration * (1.0 + duration_overrun_percentage / 100.0));
-  }
-
   if (node->out_arcs.size() == 0) {
-    ret = ret + execution_block(node, l, timeout);
+    ret = ret + execution_block(node, l);
   } else if (node->out_arcs.size() == 1) {
     ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
-    ret = ret + execution_block(node, l + 1, timeout);
+    ret = ret + execution_block(node, l + 1);
 
     for (const auto & child_node : node->out_arcs) {
-      ret = ret + get_flow_tree(child_node, used_nodes, action_map, l + 1);
+      ret = ret + get_flow_tree(child_node, used_nodes, l + 1);
     }
 
     ret = ret + t(l) + "</Sequence>\n";
   } else {
     ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
-    ret = ret + execution_block(node, l + 1, timeout);
+    ret = ret + execution_block(node, l + 1);
 
     ret = ret + t(l + 1) +
       "<Parallel success_threshold=\"" + std::to_string(node->out_arcs.size()) +
       "\" failure_threshold=\"1\">\n";
 
     for (const auto & child_node : node->out_arcs) {
-      ret = ret + get_flow_tree(child_node, used_nodes, action_map, l + 2);
+      ret = ret + get_flow_tree(child_node, used_nodes, l + 2);
     }
 
     ret = ret + t(l + 1) + "</Parallel>\n";
@@ -710,6 +730,109 @@ BTBuilder::get_flow_dotgraph(
 }
 
 std::string
+BTBuilder::get_node_dotgraph(
+  GraphNode::Ptr node, std::shared_ptr<std::map<std::string,
+  ActionExecutionInfo>> action_map, int level)
+{
+  std::stringstream ss;
+  ss << t(level);
+  ss << node->node_num << " [label=\"" << node->action.action->name_actions_to_string() << "\"";
+  ss << "labeljust=c,style=filled";
+
+  auto status = get_action_status(node->action.action, action_map);
+  switch (status) {
+    case ActionExecutor::RUNNING:
+      ss << ",color=blue,fillcolor=skyblue";
+      break;
+    case ActionExecutor::SUCCESS:
+      ss << ",color=green4,fillcolor=seagreen2";
+      break;
+    case ActionExecutor::FAILURE:
+      ss << ",color=red,fillcolor=pink";
+      break;
+    case ActionExecutor::CANCELLED:
+      ss << ",color=red,fillcolor=pink";
+      break;
+    case ActionExecutor::IDLE:
+    case ActionExecutor::DEALING:
+    default:
+      ss << ",color=yellow3,fillcolor=lightgoldenrod1";
+      break;
+  }
+  ss << "];\n";
+  return ss.str();
+}
+
+ActionExecutor::Status BTBuilder::get_action_status(
+  std::shared_ptr<parser::pddl::tree::DurativeAction> action,
+  std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map)
+{
+  for (const auto & action_pair : *action_map) {
+    if (action_pair.second.durative_action_info->name_actions_to_string() ==
+      action->name_actions_to_string())
+    {
+      return action_pair.second.action_executor->get_internal_status();
+    }
+  }
+  return ActionExecutor::IDLE;
+}
+
+void BTBuilder::addDotGraphLegend(
+  std::stringstream & ss, int tab_level, int level_counter,
+  int node_counter)
+{
+  int legend_counter = level_counter;
+  int legend_node_counter = node_counter;
+  ss << t(tab_level);
+  ss << "subgraph cluster_" << legend_counter++ << " {\n";
+  tab_level++;
+  ss << t(tab_level);
+  ss << "label = \"Legend\";\n";
+
+  ss << t(tab_level);
+  ss << "subgraph cluster_" << legend_counter++ << " {\n";
+  tab_level++;
+  ss << t(tab_level);
+  ss << "label = \"Plan Timestep (sec): X.X\";\n";
+  ss << t(tab_level);
+  ss << "style = rounded;\n";
+  ss << t(tab_level);
+  ss << "color = yellow3;\n";
+  ss << t(tab_level);
+  ss << "bgcolor = lemonchiffon;\n";
+  ss << t(tab_level);
+  ss << "labeljust = l;\n";
+  ss << t(tab_level);
+  ss << legend_node_counter++ <<
+    " [label=\n\"Finished action\n\",labeljust=c,style=filled,color=green4,fillcolor=seagreen2];\n";
+  ss << t(tab_level);
+  ss << legend_node_counter++ <<
+    " [label=\n\"Failed action\n\",labeljust=c,style=filled,color=red,fillcolor=pink];\n";
+  ss << t(tab_level);
+  ss << legend_node_counter++ <<
+    " [label=\n\"Current action\n\",labeljust=c,style=filled,color=blue,fillcolor=skyblue];\n";
+  ss << t(tab_level);
+  ss << legend_node_counter++ << " [label=\n\"Future action\n\",labeljust=c,style=filled," <<
+    "color=yellow3,fillcolor=lightgoldenrod1];\n";
+  tab_level--;
+  ss << t(tab_level);
+  ss << "}\n";
+
+  ss << t(tab_level);
+  for (int i = node_counter; i < legend_node_counter; i++) {
+    if (i > node_counter) {
+      ss << "->";
+    }
+    ss << i;
+  }
+  ss << " [style=invis];\n";
+
+  tab_level--;
+  ss << t(tab_level);
+  ss << "}\n";
+}
+
+std::string
 BTBuilder::t(int level)
 {
   std::string ret;
@@ -719,38 +842,46 @@ BTBuilder::t(int level)
   return ret;
 }
 
+void replace(std::string & str, const std::string & from, const std::string & to)
+{
+  size_t start_pos = std::string::npos;
+  while ((start_pos = str.find(from)) != std::string::npos) {
+    str.replace(start_pos, from.length(), to);
+  }
+}
+
 std::string
 BTBuilder::execution_block(const GraphNode::Ptr & node, int l, int timeout)
 {
   const auto & action = node->action;
   std::string ret;
+  std::string ret_aux = bt_action_;
   const std::string action_id = "(" + action.action->name_actions_to_string() + "):" +
     std::to_string(static_cast<int>(action.time * 1000));
 
-  ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
 
+  std::string wait_actions;
   for (const auto & previous_node : node->in_arcs) {
     const std::string parent_action_id = "(" +
       previous_node->action.action->name_actions_to_string() + "):" +
       std::to_string(static_cast<int>( previous_node->action.time * 1000));
-    ret = ret + t(l + 1) + "<WaitAtStartReq action=\"" + parent_action_id + "\"/>\n";
+    wait_actions = wait_actions + t(1) + "<WaitAtStartReq action=\"" + parent_action_id + "\"/>";
+
+    if (previous_node != *node->in_arcs.rbegin()) {
+      wait_actions = wait_actions + "\n";
+    }
   }
 
-  int m = (timeout > 0) ? 1 : 0;
-  ret = ret + t(l + 1) + "<ApplyAtStartEffect action=\"" + action_id + "\"/>\n";
-  if (timeout > 0) {
-    ret = ret + t(l + 1) + "<Timeout msec=\"" + std::to_string(timeout) + "\">\n";
+  replace(ret_aux, "ACTION_ID", action_id);
+  replace(ret_aux, "WAIT_AT_START_ACTIONS", wait_actions);
+
+  std::istringstream f(ret_aux);
+  std::string line;
+  while (std::getline(f, line)) {
+    if (line != "") {
+      ret = ret + t(l) + line + "\n";
+    }
   }
-  ret = ret + t(l + m + 1) + "<ReactiveSequence name=\"" + action_id + "\">\n";
-  ret = ret + t(l + m + 2) + "<CheckOverAllReq action=\"" + action_id + "\"/>\n";
-  ret = ret + t(l + m + 2) + "<ExecuteAction action=\"" + action_id + "\"/>\n";
-  ret = ret + t(l + m + 1) + "</ReactiveSequence>\n";
-  if (timeout > 0) {
-    ret = ret + t(l + 1) + "</Timeout>\n";
-  }
-  ret = ret + t(l + 1) + "<CheckAtEndReq action=\"" + action_id + "\"/>\n";
-  ret = ret + t(l + 1) + "<ApplyAtEndEffect action=\"" + action_id + "\"/>\n";
-  ret = ret + t(l) + "</Sequence>\n";
   return ret;
 }
 

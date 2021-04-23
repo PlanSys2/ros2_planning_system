@@ -31,6 +31,8 @@
 #include "lifecycle_msgs/msg/state.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 
+#include "ament_index_cpp/get_package_share_directory.hpp"
+
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/utils/shared_library.h"
@@ -59,6 +61,9 @@ ExecutorNode::ExecutorNode()
 {
   using namespace std::placeholders;
 
+  declare_parameter("default_action_bt_xml_filename");
+  this->declare_parameter<bool>("enable_dotgraph_legend", true);
+  this->declare_parameter<bool>("print_graph", false);
   this->declare_parameter("action_timeouts.actions", std::vector<std::string>{});
   // Declaring individual action parameters so they can be queried on the command line
   auto action_timeouts_actions = this->get_parameter("action_timeouts.actions").as_string_array();
@@ -99,6 +104,22 @@ CallbackReturnT
 ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
+
+  std::string default_action_bt_xml_filename;
+  if (!get_parameter("default_action_bt_xml_filename", default_action_bt_xml_filename)) {
+    default_action_bt_xml_filename =
+      ament_index_cpp::get_package_share_directory("plansys2_executor") +
+      "/behavior_trees/plansys2_action_bt.xml";
+  }
+
+  std::ifstream ifs(default_action_bt_xml_filename);
+  if (!ifs) {
+    RCLCPP_ERROR_STREAM(get_logger(), "Error openning [" << default_action_bt_xml_filename << "]");
+    return CallbackReturnT::FAILURE;
+  }
+
+  action_bt_xml_.assign(
+    std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
 
   dotgraph_pub_ = this->create_publisher<std_msgs::msg::String>("dot_graph", 1);
 
@@ -303,7 +324,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   }
   ordered_sub_goals_ = getOrderedSubGoals();
 
-  BTBuilder bt_builder(aux_node_);
+  BTBuilder bt_builder(aux_node_, action_bt_xml_);
   auto blackboard = BT::Blackboard::create();
 
   blackboard->set("action_map", action_map);
@@ -320,12 +341,14 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtStartEffect>("ApplyAtStartEffect");
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
 
-  auto bt_xml_tree = bt_builder.get_tree(current_plan_.value(), action_map);
-  std_msgs::msg::String msg;
-  msg.data =
+  auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
+  auto action_graph = bt_builder.get_graph(current_plan_.value());
+  std_msgs::msg::String dotgraph_msg;
+  dotgraph_msg.data =
     bt_builder.get_dotgraph(
-    current_plan_.value());
-  dotgraph_pub_->publish(msg);
+    action_graph, action_map, this->get_parameter(
+      "enable_dotgraph_legend").as_bool(), this->get_parameter("print_graph").as_bool());
+  dotgraph_pub_->publish(dotgraph_msg);
 
   std::filesystem::path tp = std::filesystem::temp_directory_path();
   std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
@@ -379,6 +402,12 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     feedback->action_execution_status = get_feedback_info(action_map);
     goal_handle->publish_feedback(feedback);
 
+    dotgraph_msg.data =
+      bt_builder.get_dotgraph(
+      action_graph, action_map, this->get_parameter(
+        "enable_dotgraph_legend").as_bool());
+    dotgraph_pub_->publish(dotgraph_msg);
+
     rate.sleep();
   }
 
@@ -390,6 +419,12 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     tree.haltTree();
     RCLCPP_ERROR(get_logger(), "Executor BT finished with FAILURE state");
   }
+
+  dotgraph_msg.data =
+    bt_builder.get_dotgraph(
+    action_graph, action_map, this->get_parameter(
+      "enable_dotgraph_legend").as_bool());
+  dotgraph_pub_->publish(dotgraph_msg);
 
   result->success = status == BT::NodeStatus::SUCCESS;
   result->action_execution_status = get_feedback_info(action_map);

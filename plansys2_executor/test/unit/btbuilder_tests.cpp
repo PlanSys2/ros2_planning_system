@@ -61,11 +61,9 @@ public:
   explicit BTBuilderTest(rclcpp::Node::SharedPtr node)
   : BTBuilder(node) {}
 
-  std::string get_tree(
-    const plansys2::Plan & current_plan,
-    std::shared_ptr<std::map<std::string, plansys2::ActionExecutionInfo>> action_map)
+  std::string get_tree(const plansys2::Plan & current_plan)
   {
-    return BTBuilder::get_tree(current_plan, action_map);
+    return BTBuilder::get_tree(current_plan);
   }
 
   void init_predicates(
@@ -671,20 +669,7 @@ TEST(btbuilder_tests, test_plan_3)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
-
-  for (const auto & action : plan.value()) {
-    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
-
-    (*action_map)[index] = plansys2::ActionExecutionInfo();
-    (*action_map)[index].action_executor =
-      plansys2::ActionExecutor::make_shared(action.action, executor_node);
-    (*action_map)[index].durative_action_info =
-      get_action_from_string(action.action, domain_client);
-    (*action_map)[index].duration = action.duration;
-  }
-
-  auto bt = btbuilder->get_tree(plan.value(), action_map);
+  auto bt = btbuilder->get_tree(plan.value());
 
   std::cerr << bt << std::endl;
 
@@ -802,20 +787,8 @@ TEST(btbuilder_tests, test_plan_4)
   btbuilder->print_graph(btbuilder->get_graph(plan.value()));
 
   auto executor_node = std::make_shared<plansys2::ExecutorNode>();
-  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
 
-  for (const auto & action : plan.value()) {
-    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
-
-    (*action_map)[index] = plansys2::ActionExecutionInfo();
-    (*action_map)[index].action_executor =
-      plansys2::ActionExecutor::make_shared(action.action, executor_node);
-    (*action_map)[index].durative_action_info =
-      get_action_from_string(action.action, domain_client);
-    (*action_map)[index].duration = action.duration;
-  }
-
-  auto bt = btbuilder->get_tree(plan.value(), action_map);
+  auto bt = btbuilder->get_tree(plan.value());
 
   std::cerr << bt << std::endl;
 

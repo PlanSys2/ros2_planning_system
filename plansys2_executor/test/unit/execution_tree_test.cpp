@@ -183,21 +183,8 @@ TEST(executiotest_noden_tree, bt_builder_factory)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
-
-  for (const auto & action : plan.value()) {
-    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
-
-    (*action_map)[index] = plansys2::ActionExecutionInfo();
-    (*action_map)[index].action_executor =
-      plansys2::ActionExecutor::make_shared(action.action, executor_node);
-    (*action_map)[index].durative_action_info =
-      get_action_from_string(action.action, domain_client);
-    (*action_map)[index].duration = action.duration;
-  }
-
   BTBuilderTest exec_tree(test_node);
-  auto tree_str = exec_tree.get_tree(plan.value(), action_map);
+  auto tree_str = exec_tree.get_tree(plan.value());
 
   std::cout << tree_str << std::endl;
   finish = true;
@@ -343,19 +330,6 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
-
-  for (const auto & action : plan.value()) {
-    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
-
-    (*action_map)[index] = plansys2::ActionExecutionInfo();
-    (*action_map)[index].action_executor =
-      plansys2::ActionExecutor::make_shared(action.action, executor_node);
-    (*action_map)[index].durative_action_info =
-      get_action_from_string(action.action, domain_client);
-    (*action_map)[index].duration = action.duration;
-  }
-
   std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
   BTBuilderTest exec_tree(test_node);
 
@@ -364,7 +338,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
   //   "(move robot1 assembly_zone wheels_zone)"),
   //   durative_actions_map.end());
 
-  auto tree_str = exec_tree.get_tree(plan.value(), action_map);
+  auto tree_str = exec_tree.get_tree(plan.value());
 
   finish = true;
   t.join();
@@ -485,22 +459,9 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
-
-  for (const auto & action : plan.value()) {
-    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
-
-    (*action_map)[index] = plansys2::ActionExecutionInfo();
-    (*action_map)[index].action_executor =
-      plansys2::ActionExecutor::make_shared(action.action, executor_node);
-    (*action_map)[index].durative_action_info =
-      get_action_from_string(action.action, domain_client);
-    (*action_map)[index].duration = action.duration;
-  }
-
   BTBuilderTest exec_tree(test_node);
 
-  auto tree_str = exec_tree.get_tree(plan.value(), action_map);
+  auto tree_str = exec_tree.get_tree(plan.value());
 
   finish = true;
   t.join();
