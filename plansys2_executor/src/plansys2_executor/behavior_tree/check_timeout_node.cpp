@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <iostream>
+#include <iomanip>
 #include <string>
 #include <map>
 #include <memory>
@@ -56,6 +58,8 @@ CheckTimeout::tick()
       auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(
         current_time - start_);
       if (elapsed_time > std::chrono::duration<double>(max_duration)) {
+        std::cerr << "Actual duration of " << action << " exceeds max duration (" << std::fixed <<
+          std::setprecision(2) << max_duration << " secs)." << std::endl;
         return BT::NodeStatus::FAILURE;
       }
     }
