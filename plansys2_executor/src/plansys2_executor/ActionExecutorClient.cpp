@@ -155,7 +155,7 @@ ActionExecutorClient::should_execute(
   if (!specialized_arguments_.empty()) {
     if (specialized_arguments_.size() != args.size()) {
       RCLCPP_WARN(
-        get_logger(), "current and specialized arguments lenght doesn't match %zu %zu",
+        get_logger(), "current and specialized arguments length doesn't match %zu %zu",
         args.size(), specialized_arguments_.size());
     }
 
@@ -199,7 +199,9 @@ ActionExecutorClient::send_feedback(float completion, const std::string & status
 void
 ActionExecutorClient::finish(bool success, float completion, const std::string & status)
 {
-  trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE) {
+    trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  }
 
   plansys2_msgs::msg::ActionExecution msg_resp;
   msg_resp.type = plansys2_msgs::msg::ActionExecution::FINISH;

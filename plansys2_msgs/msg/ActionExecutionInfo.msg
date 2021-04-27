@@ -14,5 +14,8 @@ string action_full_name
 string action
 string[] arguments
 
+# predicted duration of the action from the planner
+builtin_interfaces/Duration duration
+
 float32 completion
 string message_status

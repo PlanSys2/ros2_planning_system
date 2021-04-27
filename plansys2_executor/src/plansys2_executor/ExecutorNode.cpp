@@ -14,6 +14,7 @@
 
 #include <filesystem>
 
+#include <algorithm>
 #include <string>
 #include <memory>
 #include <iostream>
@@ -46,6 +47,7 @@
 #include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
+#include "plansys2_executor/behavior_tree/check_timeout_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
 
@@ -60,9 +62,15 @@ ExecutorNode::ExecutorNode()
 {
   using namespace std::placeholders;
 
-  declare_parameter("default_action_bt_xml_filename");
+  this->declare_parameter<std::string>("default_action_bt_xml_filename", "");
   this->declare_parameter<bool>("enable_dotgraph_legend", true);
   this->declare_parameter<bool>("print_graph", false);
+  this->declare_parameter("action_timeouts.actions", std::vector<std::string>{});
+  // Declaring individual action parameters so they can be queried on the command line
+  auto action_timeouts_actions = this->get_parameter("action_timeouts.actions").as_string_array();
+  for (auto action : action_timeouts_actions) {
+    this->declare_parameter("action_timeouts." + action + ".duration_overrun_percentage");
+  }
 
 #ifdef ZMQ_FOUND
   this->declare_parameter<bool>("enable_groot_monitoring", true);
@@ -98,8 +106,9 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
 
-  std::string default_action_bt_xml_filename;
-  if (!get_parameter("default_action_bt_xml_filename", default_action_bt_xml_filename)) {
+  auto default_action_bt_xml_filename =
+    this->get_parameter("default_action_bt_xml_filename").as_string();
+  if (default_action_bt_xml_filename.empty()) {
     default_action_bt_xml_filename =
       ament_index_cpp::get_package_share_directory("plansys2_executor") +
       "/behavior_trees/plansys2_action_bt.xml";
@@ -293,6 +302,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   }
 
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
+  auto action_timeout_actions = this->get_parameter("action_timeouts.actions").as_string_array();
 
   for (const auto & action : current_plan_.value()) {
     auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
@@ -302,6 +312,20 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
       ActionExecutor::make_shared(action.action, shared_from_this());
     (*action_map)[index].durative_action_info =
       get_action_from_string(action.action, domain_client_);
+
+    (*action_map)[index].duration = action.duration;
+    std::string action_name = (*action_map)[index].durative_action_info->name;
+    if (std::find(
+        action_timeout_actions.begin(), action_timeout_actions.end(),
+        action_name) != action_timeout_actions.end() &&
+      this->has_parameter("action_timeouts." + action_name + ".duration_overrun_percentage"))
+    {
+      (*action_map)[index].duration_overrun_percentage = this->get_parameter(
+        "action_timeouts." + action_name + ".duration_overrun_percentage").as_double();
+    }
+    RCLCPP_INFO(
+      get_logger(), "Action %s timeout percentage %f", action_name.c_str(),
+      (*action_map)[index].duration_overrun_percentage);
   }
   ordered_sub_goals_ = getOrderedSubGoals();
 
@@ -321,6 +345,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<CheckAtEndReq>("CheckAtEndReq");
   factory.registerNodeType<ApplyAtStartEffect>("ApplyAtStartEffect");
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
+  factory.registerNodeType<CheckTimeout>("CheckTimeout");
 
   auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
   auto action_graph = bt_builder.get_graph(current_plan_.value());
@@ -473,6 +498,7 @@ ExecutorNode::get_feedback_info(
     info.action = action.second.action_executor->get_action_name();
 
     info.arguments = action.second.action_executor->get_action_params();
+    info.duration = rclcpp::Duration::from_seconds(action.second.duration);
     info.completion = action.second.action_executor->get_completion();
     info.message_status = action.second.action_executor->get_feedback();
 

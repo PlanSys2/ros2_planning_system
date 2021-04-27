@@ -111,6 +111,8 @@ struct ActionExecutionInfo
   bool at_end_effects_applied = {false};
   std::shared_ptr<parser::pddl::tree::DurativeAction> durative_action_info = {nullptr};
   std::string execution_error_info;
+  double duration;
+  double duration_overrun_percentage = -1.0;
 };
 
 }  // namespace plansys2
