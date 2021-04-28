@@ -119,6 +119,8 @@ plansys2_msgs::msg::Param fromStringParam(const std::string & name, const std::s
 
 plansys2_msgs::msg::Tree fromPredicates(const std::vector<std::string> & preds);
 
+plansys2_msgs::msg::Tree::SharedPtr fromSubtree(const plansys2_msgs::msg::Tree & subtree, uint8_t node_type);
+
 plansys2_msgs::msg::Tree::SharedPtr fromSubtrees(const std::vector<plansys2_msgs::msg::Tree> & subtrees, uint8_t node_type);
 
 std::vector<uint32_t> getSubtrees(const plansys2_msgs::msg::Tree & tree);
@@ -127,9 +129,11 @@ void getPredicates(std::vector<plansys2_msgs::msg::Node> & predicates, const pla
 
 void getFunctions(std::vector<plansys2_msgs::msg::Node> & functions, const plansys2_msgs::msg::Tree & tree, uint32_t node_id = 0, bool negate = false);
 
+bool checkTreeEquality(const plansys2_msgs::msg::Tree & first, const plansys2_msgs::msg::Tree & second);
+
 bool checkNodeEquality(const plansys2_msgs::msg::Node & first, const plansys2_msgs::msg::Node & second);
 
-bool checkParameterEquality(const std::vector<plansys2_msgs::msg::Param> & params_1, const std::vector<plansys2_msgs::msg::Param> & params_2);
+bool checkParamEquality(const plansys2_msgs::msg::Param & first, const plansys2_msgs::msg::Param & second);
 
 bool empty(const plansys2_msgs::msg::Tree & tree);
 

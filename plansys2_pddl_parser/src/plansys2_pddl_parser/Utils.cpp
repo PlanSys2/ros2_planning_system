@@ -814,6 +814,13 @@ plansys2_msgs::msg::Tree fromPredicates(const std::vector<std::string> & preds)
   return tree;
 }
 
+plansys2_msgs::msg::Tree::SharedPtr fromSubtree(const plansys2_msgs::msg::Tree & subtree, uint8_t node_type)
+{
+  std::vector<plansys2_msgs::msg::Tree> temp;
+  temp.push_back(subtree);
+  return fromSubtrees(temp, node_type);
+}
+
 plansys2_msgs::msg::Tree::SharedPtr fromSubtrees(const std::vector<plansys2_msgs::msg::Tree> & subtrees, uint8_t node_type)
 {
   if (node_type != plansys2_msgs::msg::Node::AND && node_type != plansys2_msgs::msg::Node::OR && node_type != plansys2_msgs::msg::Node::NOT) {
@@ -955,34 +962,78 @@ void getFunctions(std::vector<plansys2_msgs::msg::Node> & functions, const plans
   }
 }
 
-bool checkNodeEquality(const plansys2_msgs::msg::Node & first, const plansys2_msgs::msg::Node & second)
+bool checkTreeEquality(const plansys2_msgs::msg::Tree & first, const plansys2_msgs::msg::Tree & second)
 {
-  bool nodes_equal = false;
-  if (first.name == second.name) {
-    if (checkParameterEquality(first.parameters, second.parameters)) {
-      nodes_equal = true;
-    }
-  }
-  return nodes_equal;
-}
-
-bool checkParameterEquality(const std::vector<plansys2_msgs::msg::Param> & first, const std::vector<plansys2_msgs::msg::Param> & second)
-{
-  if (first.size() != second.size()) {
+  if (first.nodes.size() != second.nodes.size()) {
     return false;
   }
 
-  bool params_match = true;
-  int i = 0;
-
-  while (params_match && i < first.size()) {
-    if (first[i].name != second[i].name) {
-      params_match = false;
+  for (unsigned i = 0; i < first.nodes.size(); i++) {
+    if (!checkNodeEquality(first.nodes[i], second.nodes[i])) {
+      return false;
     }
-    i++;
   }
 
-  return params_match;
+  return true;
+}
+
+bool checkNodeEquality(const plansys2_msgs::msg::Node & first, const plansys2_msgs::msg::Node & second)
+{
+  if (first.node_type != second.node_type) {
+    return false;
+  }
+
+  if (first.node_type == plansys2_msgs::msg::Node::ACTION ||
+      first.node_type == plansys2_msgs::msg::Node::PREDICATE ||
+      first.node_type == plansys2_msgs::msg::Node::FUNCTION)
+  {
+    if (first.name != second.name) {
+      return false;
+    }
+  }
+
+  if (first.node_type == plansys2_msgs::msg::Node::EXPRESSION) {
+    if (first.expression_type != second.expression_type) {
+      return false;
+    }
+  }
+
+  if (first.node_type == plansys2_msgs::msg::Node::FUNCTION_MODIFIER) {
+    if (first.modifier_type != second.modifier_type) {
+      return false;
+    }
+  }
+
+  if (first.node_type == plansys2_msgs::msg::Node::NUMBER) {
+    if (abs(first.value - second.value) > 1e-9) {
+      return false;
+    }
+  }
+
+  if (first.children.size() != second.children.size()) {
+    return false;
+  }
+
+  if (first.parameters.size() != second.parameters.size()) {
+    return false;
+  }
+
+  for (unsigned i = 0; i < first.parameters.size(); i++) {
+    if (!checkParamEquality(first.parameters[i], second.parameters[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool checkParamEquality(const plansys2_msgs::msg::Param & first, const plansys2_msgs::msg::Param & second)
+{
+  if (first.name != second.name) {
+    return false;
+  }
+
+  return true;
 }
 
 bool empty(const plansys2_msgs::msg::Tree & tree)
