@@ -194,7 +194,7 @@ std::vector<plansys2_msgs::msg::Tree> ExecutorClient::getOrderedSubGoals()
   if (future_result.get()->success) {
     ret = future_result.get()->sub_goals;
   } else {
-    RCLCPP_ERROR_STREAM(
+    RCLCPP_INFO_STREAM(
       node_->get_logger(),
       get_ordered_sub_goals_client_->get_service_name() << ": " <<
         future_result.get()->error_info);
