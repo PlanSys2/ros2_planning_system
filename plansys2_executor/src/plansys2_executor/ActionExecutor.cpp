@@ -35,7 +35,7 @@ ActionExecutor::ActionExecutor(
     "/actions_hub", rclcpp::QoS(100).reliable());
   action_hub_sub_ = node_->create_subscription<plansys2_msgs::msg::ActionExecution>(
     "/actions_hub", rclcpp::QoS(100).reliable(),
-    std::bind(&ActionExecutor::action_hub_callback, this, std::placeholders::_1));
+    std::bind(&ActionExecutor::action_hub_callback, this, _1));
 
   state_time_ = node_->now();
 
