@@ -856,7 +856,6 @@ BTBuilder::execution_block(const GraphNode::Ptr & node, int l)
   const std::string action_id = "(" + parser::pddl::nameActionsToString(action.action) + "):" +
     std::to_string(static_cast<int>(action.time * 1000));
 
-
   std::string wait_actions;
   for (const auto & previous_node : node->in_arcs) {
     const std::string parent_action_id = "(" +
@@ -891,6 +890,7 @@ BTBuilder::get_plan_actions(const Plan & plan)
     ActionStamped action_stamped;
 
     action_stamped.time = item.time;
+    action_stamped.duration = item.duration;
     action_stamped.action =
       domain_client_->getDurativeAction(
       get_action_name(item.action), get_action_params(item.action));
