@@ -40,6 +40,7 @@ namespace plansys2
 struct ActionStamped
 {
   float time;
+  float duration;
   std::shared_ptr<parser::pddl::tree::DurativeAction> action;
 };
 

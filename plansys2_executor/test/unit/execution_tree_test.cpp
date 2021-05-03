@@ -180,7 +180,6 @@ TEST(executiotest_noden_tree, bt_builder_factory)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
   BTBuilderTest exec_tree(test_node);
   auto tree_str = exec_tree.get_tree(plan.value());
 
@@ -455,7 +454,6 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
   BTBuilderTest exec_tree(test_node);
 
   auto tree_str = exec_tree.get_tree(plan.value());
