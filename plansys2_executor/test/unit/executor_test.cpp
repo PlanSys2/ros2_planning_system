@@ -1568,7 +1568,7 @@ TEST(problem_expert, action_timeout)
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
   executor_node->set_parameter(
     {"default_action_bt_xml_filename",
-      pkgpath + "/test_behavior_trees/plansys2_action_bt.xml"});
+      pkgpath + "/test_behavior_trees/test_action_timeout_bt.xml"});
   executor_node->set_parameter({"action_timeouts.actions", std::vector<std::string>({"move"})});
   // have to declare because the actions vector above was not available at node creation
   executor_node->declare_parameter("action_timeouts.move.duration_overrun_percentage");
