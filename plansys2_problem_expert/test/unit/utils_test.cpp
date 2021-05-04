@@ -198,8 +198,8 @@ TEST(utils, evaluate_predicate_client)
       while (!finish) {exe.spin_some();}
     });
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("kitchen", "room")));
+  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
 
   {
     rclcpp::Rate rate(10);
@@ -536,11 +536,11 @@ TEST(utils, evaluate_expression_invalid_client)
       while (!finish) {exe.spin_some();}
     });
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("leia", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("Jack", "person")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("kitchen", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("m1", "message")));
+  ASSERT_TRUE(problem_client->addInstance({"leia", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"Jack", "person"}));
+  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"m1", "message"}));
 
   {
     rclcpp::Rate rate(10);
@@ -685,8 +685,8 @@ TEST(utils, evaluate_function_mod_client)
       while (!finish) {exe.spin_some();}
     });
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("kitchen", "room")));
+  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
   ASSERT_TRUE(
     problem_client->addFunction(
       parser::pddl::fromStringFunction(

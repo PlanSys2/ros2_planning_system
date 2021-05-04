@@ -722,6 +722,13 @@ plansys2_msgs::msg::Node::SharedPtr fromString(plansys2_msgs::msg::Tree & tree, 
   return nullptr;
 }
 
+plansys2_msgs::msg::Tree fromString(const std::string & expr, bool negate, uint8_t parent)
+{
+  plansys2_msgs::msg::Tree tree;
+  fromString(tree, expr, negate, parent);
+  return tree;
+}
+
 plansys2_msgs::msg::Node fromStringPredicate(const std::string & predicate)
 {
   plansys2_msgs::msg::Node ret;

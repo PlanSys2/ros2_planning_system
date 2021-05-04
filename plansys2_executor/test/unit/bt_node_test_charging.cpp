@@ -133,9 +133,9 @@ TEST(problem_expert, wait_atstart_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::WaitAtStartReq>("WaitAtStartReq");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot1", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wp1", "waypoint")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wp2", "waypoint")));
+  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wp1", "waypoint"}));
+  ASSERT_TRUE(problem_client->addInstance({"wp2", "waypoint"}));
 
   std::vector<std::string> predicates = {
     "(robot_at robot1 wp1)",
@@ -258,9 +258,9 @@ TEST(problem_expert, apply_atstart_effect_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtStartEffect>("ApplyAtStartEffect");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot1", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wp1", "waypoint")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wp2", "waypoint")));
+  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wp1", "waypoint"}));
+  ASSERT_TRUE(problem_client->addInstance({"wp2", "waypoint"}));
 
   try {
     std::vector<std::string> predicates = {
@@ -387,9 +387,9 @@ TEST(problem_expert, apply_atend_effect_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtEndEffect>("ApplyAtEndEffect");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot1", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wp1", "waypoint")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wp2", "waypoint")));
+  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wp1", "waypoint"}));
+  ASSERT_TRUE(problem_client->addInstance({"wp2", "waypoint"}));
 
   try {
     std::vector<std::string> predicates = {

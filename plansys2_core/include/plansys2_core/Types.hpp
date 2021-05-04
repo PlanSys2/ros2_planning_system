@@ -18,6 +18,12 @@
 #include <string>
 #include <vector>
 
+#include "plansys2_msgs/msg/node.hpp"
+#include "plansys2_msgs/msg/param.hpp"
+#include "plansys2_msgs/msg/tree.hpp"
+
+#include "plansys2_pddl_parser/Utils.h"
+
 namespace plansys2
 {
 
@@ -29,6 +35,42 @@ struct PlanItem
 };
 
 typedef std::vector<PlanItem> Plan;
+
+class Instance : public plansys2_msgs::msg::Param
+{
+public:
+  Instance(const std::string & name, const std::string & type = {})
+  : plansys2_msgs::msg::Param(parser::pddl::fromStringParam(name, type)) {}
+  Instance(const plansys2_msgs::msg::Param & instance)
+  : plansys2_msgs::msg::Param(instance) {}
+};
+
+class Predicate : public plansys2_msgs::msg::Node
+{
+public:
+  Predicate(const std::string & pred)
+  : plansys2_msgs::msg::Node(parser::pddl::fromStringPredicate(pred)) {}
+  Predicate(const plansys2_msgs::msg::Node & pred)
+  : plansys2_msgs::msg::Node(pred) {}
+};
+
+class Function : public plansys2_msgs::msg::Node
+{
+public:
+  Function(const std::string & func)
+  : plansys2_msgs::msg::Node(parser::pddl::fromStringFunction(func)) {}
+  Function(const plansys2_msgs::msg::Node & func)
+  : plansys2_msgs::msg::Node(func) {}
+};
+
+class Goal : public plansys2_msgs::msg::Tree
+{
+public:
+  Goal(const std::string & goal)
+  : plansys2_msgs::msg::Tree(parser::pddl::fromString(goal)) {}
+  Goal(const plansys2_msgs::msg::Tree & goal)
+  : plansys2_msgs::msg::Tree(goal) {}
+};
 
 }  // namespace plansys2
 

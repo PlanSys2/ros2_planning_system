@@ -111,6 +111,8 @@ std::string toStringFunctionModifier(const plansys2_msgs::msg::Tree & tree, uint
 */
 plansys2_msgs::msg::Node::SharedPtr fromString(plansys2_msgs::msg::Tree & tree, const std::string & expr, bool negate = false, uint8_t parent = plansys2_msgs::msg::Node::UNKNOWN);
 
+plansys2_msgs::msg::Tree fromString(const std::string & expr, bool negate = false, uint8_t parent = plansys2_msgs::msg::Node::UNKNOWN);
+
 plansys2_msgs::msg::Node fromStringPredicate(const std::string & predicate);
 
 plansys2_msgs::msg::Node fromStringFunction(const std::string & function);

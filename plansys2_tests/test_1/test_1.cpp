@@ -96,13 +96,13 @@ TEST(test_1, test_1)
     }
   }
 
-  problem_client->addInstance(parser::pddl::fromStringParam("leia", "robot"));
-  problem_client->addInstance(parser::pddl::fromStringParam("entrance", "room"));
-  problem_client->addInstance(parser::pddl::fromStringParam("kitchen", "room"));
-  problem_client->addInstance(parser::pddl::fromStringParam("bedroom", "room"));
-  problem_client->addInstance(parser::pddl::fromStringParam("dinning", "room"));
-  problem_client->addInstance(parser::pddl::fromStringParam("bathroom", "room"));
-  problem_client->addInstance(parser::pddl::fromStringParam("chargingroom", "room"));
+  problem_client->addInstance({"leia", "robot"});
+  problem_client->addInstance({"entrance", "room"});
+  problem_client->addInstance({"kitchen", "room"});
+  problem_client->addInstance({"bedroom", "room"});
+  problem_client->addInstance({"dinning", "room"});
+  problem_client->addInstance({"bathroom", "room"});
+  problem_client->addInstance({"chargingroom", "room"});
   problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected entrance dinning)"));
   problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected dinning entrance)"));
   problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected dinning kitchen)"));

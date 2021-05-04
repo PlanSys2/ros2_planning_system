@@ -118,7 +118,7 @@ ProblemExpertClient::getInstances()
 }
 
 bool
-ProblemExpertClient::addInstance(const plansys2_msgs::msg::Param & instance)
+ProblemExpertClient::addInstance(const plansys2::Instance & instance)
 {
   while (!add_problem_instance_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
@@ -153,7 +153,7 @@ ProblemExpertClient::addInstance(const plansys2_msgs::msg::Param & instance)
 }
 
 bool
-ProblemExpertClient::removeInstance(const plansys2_msgs::msg::Param & instance)
+ProblemExpertClient::removeInstance(const plansys2::Instance & instance)
 {
   while (!remove_problem_instance_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {

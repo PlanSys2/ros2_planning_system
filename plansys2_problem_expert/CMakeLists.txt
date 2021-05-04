@@ -9,9 +9,10 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(ament_index_cpp REQUIRED)
-find_package(plansys2_pddl_parser REQUIRED)
-find_package(plansys2_msgs REQUIRED)
+find_package(plansys2_core REQUIRED)
 find_package(plansys2_domain_expert REQUIRED)
+find_package(plansys2_msgs REQUIRED)
+find_package(plansys2_pddl_parser REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
 
@@ -21,10 +22,11 @@ set(dependencies
     rclcpp
     rclcpp_action
     rclcpp_lifecycle
-    plansys2_pddl_parser
     ament_index_cpp
-    plansys2_msgs
+    plansys2_core
     plansys2_domain_expert
+    plansys2_msgs
+    plansys2_pddl_parser
     std_msgs
     lifecycle_msgs
 )

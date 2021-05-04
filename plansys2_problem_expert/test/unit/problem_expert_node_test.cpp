@@ -74,11 +74,11 @@ TEST(problem_expert_node, addget_instances)
       while (!finish) {exe.spin_some();}
     });
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("Paco", "person")));
-  ASSERT_FALSE(problem_client->addInstance(parser::pddl::fromStringParam("Paco", "person")));
-  ASSERT_FALSE(problem_client->addInstance(parser::pddl::fromStringParam("Paco", "SCIENTIFIC")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("kitchen", "room")));
+  ASSERT_TRUE(problem_client->addInstance({"Paco", "person"}));
+  ASSERT_FALSE(problem_client->addInstance({"Paco", "person"}));
+  ASSERT_FALSE(problem_client->addInstance({"Paco", "SCIENTIFIC"}));
+  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
 
   {
     rclcpp::Rate rate(10);
@@ -96,7 +96,7 @@ TEST(problem_expert_node, addget_instances)
   ASSERT_EQ(last_knowledge_msg.predicates.size(), 0);
   ASSERT_EQ(last_knowledge_msg.goal, "");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
 
   {
     rclcpp::Rate rate(10);
@@ -125,7 +125,7 @@ TEST(problem_expert_node, addget_instances)
   ASSERT_EQ(problem_client->getInstances()[3].name, "r2d2");
   ASSERT_EQ(problem_client->getInstances()[3].type, "robot");
 
-  ASSERT_TRUE(problem_client->removeInstance(parser::pddl::fromStringParam("Paco", "person")));
+  ASSERT_TRUE(problem_client->removeInstance({"Paco", "person"}));
   ASSERT_EQ(problem_client->getInstances().size(), 3);
   ASSERT_EQ(problem_client->getInstances()[0].name, "bedroom");
   ASSERT_EQ(problem_client->getInstances()[0].type, "room");
@@ -235,8 +235,8 @@ TEST(problem_expert, add_assignments)
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("kitchen", "room_with_teleporter")));
+  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room_with_teleporter"}));
 
   plansys2_msgs::msg::Node function_1;
   function_1.node_type = plansys2_msgs::msg::Node::FUNCTION;
@@ -409,10 +409,10 @@ TEST(problem_expert, addget_predicates)
   predicate_6.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
   predicate_6.parameters.push_back(parser::pddl::fromStringParam("paco", "person"));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("paco", "person")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("kitchen", "room")));
+  ASSERT_TRUE(problem_client->addInstance({"paco", "person"}));
+  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
 
   std::vector<plansys2_msgs::msg::Node> predicates = problem_client->getPredicates();
   ASSERT_TRUE(predicates.empty());
@@ -437,7 +437,7 @@ TEST(problem_expert, addget_predicates)
   predicates = problem_client->getPredicates();
   ASSERT_EQ(predicates.size(), 3);
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("bathroom", "room_with_teleporter")));
+  ASSERT_TRUE(problem_client->addInstance({"bathroom", "room_with_teleporter"}));
 
   plansys2_msgs::msg::Node predicate_7;
   predicate_7.node_type = plansys2_msgs::msg::Node::PREDICATE;
@@ -477,10 +477,10 @@ TEST(problem_expert, addget_goals)
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("paco", "person")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("kitchen", "room")));
+  ASSERT_TRUE(problem_client->addInstance({"paco", "person"}));
+  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
 
   plansys2_msgs::msg::Tree goal;
   parser::pddl::fromString(goal, "(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
@@ -545,10 +545,10 @@ TEST(problem_expert, get_probem)
   predicate_4.parameters.push_back(parser::pddl::fromStringParam("paco", "person"));
   predicate_4.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("paco", "person")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("kitchen", "room")));
+  ASSERT_TRUE(problem_client->addInstance({"paco", "person"}));
+  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
 
   ASSERT_TRUE(problem_client->addPredicate(predicate_1));
   ASSERT_TRUE(problem_client->addPredicate(predicate_2));
@@ -620,11 +620,11 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
       while (!finish) {exe.spin_some();}
     });
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("leia", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("Jack", "person")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("kitchen", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("m1", "message")));
+  ASSERT_TRUE(problem_client->addInstance({"leia", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"Jack", "person"}));
+  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"m1", "message"}));
 
   {
     rclcpp::Rate rate(10);

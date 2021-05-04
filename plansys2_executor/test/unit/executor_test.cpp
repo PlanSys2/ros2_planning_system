@@ -348,44 +348,28 @@ TEST(problem_expert, action_executor)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot1", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot2", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot3", "robot")));
+  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"robot2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"robot3", "robot"}));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::fromStringParam(
-        "steering_wheels_zone",
-        "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheel_1", "piece")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheel_2", "piece")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheel_3", "piece")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_1", "piece")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_2", "piece")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_3", "piece")));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::fromStringParam(
-        "steering_wheel_1",
-        "piece")));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::fromStringParam(
-        "steering_wheel_2",
-        "piece")));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::fromStringParam(
-        "steering_wheel_3",
-        "piece")));
+  ASSERT_TRUE(problem_client->addInstance({"wheel_1", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheel_2", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheel_3", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"body_car_1", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"body_car_2", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"body_car_3", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_1", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_2", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_3", "piece"}));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("car_1", "car")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("car_2", "car")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("car_3", "car")));
+  ASSERT_TRUE(problem_client->addInstance({"car_1", "car"}));
+  ASSERT_TRUE(problem_client->addInstance({"car_2", "car"}));
+  ASSERT_TRUE(problem_client->addInstance({"car_3", "car"}));
 
   std::vector<std::string> predicates = {
     "(robot_at robot1 assembly_zone)",
@@ -689,15 +673,11 @@ TEST(problem_expert, action_real_action_1)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::fromStringParam(
-        "steering_wheels_zone",
-        "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
 
   std::string bt_xml_tree =
     R"(
@@ -951,15 +931,11 @@ TEST(problem_expert, cancel_bt_execution)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::fromStringParam(
-        "steering_wheels_zone",
-        "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
 
   std::string bt_xml_tree =
     R"(
@@ -1159,15 +1135,11 @@ TEST(problem_expert, executor_client_execute_plan)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::fromStringParam(
-        "steering_wheels_zone",
-        "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
 
   std::vector<std::string> predicates = {
     "(robot_at r2d2 steering_wheels_zone)",
@@ -1366,10 +1338,10 @@ TEST(problem_expert, executor_client_ordered_sub_goals)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wp0", "waypoint")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wp1", "waypoint")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wp2", "waypoint")));
+  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wp0", "waypoint"}));
+  ASSERT_TRUE(problem_client->addInstance({"wp1", "waypoint"}));
+  ASSERT_TRUE(problem_client->addInstance({"wp2", "waypoint"}));
 
   std::vector<std::string> predicates = {
     "(robot_at r2d2 wp0)",
@@ -1511,15 +1483,11 @@ TEST(problem_expert, executor_client_cancel_plan)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::fromStringParam(
-        "steering_wheels_zone",
-        "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
 
   std::vector<std::string> predicates = {
     "(robot_at r2d2 steering_wheels_zone)",
@@ -1657,15 +1625,11 @@ TEST(problem_expert, action_timeout)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::fromStringParam(
-        "steering_wheels_zone",
-        "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
 
   std::vector<std::string> predicates = {
     "(robot_at r2d2 steering_wheels_zone)",

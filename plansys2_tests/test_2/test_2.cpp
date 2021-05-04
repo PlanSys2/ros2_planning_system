@@ -96,13 +96,13 @@ TEST(test_2, test_2)
     }
   }
 
-  problem_client->addInstance(parser::pddl::fromStringParam("leia", "robot"));
-  problem_client->addInstance(parser::pddl::fromStringParam("room_1", "room"));
-  problem_client->addInstance(parser::pddl::fromStringParam("room_2", "room"));
-  problem_client->addInstance(parser::pddl::fromStringParam("corridor_1", "corridor"));
-  problem_client->addInstance(parser::pddl::fromStringParam("zone_1_1", "zone"));
-  problem_client->addInstance(parser::pddl::fromStringParam("zone_1_2", "zone"));
-  problem_client->addInstance(parser::pddl::fromStringParam("zone_recharge", "zone"));
+  problem_client->addInstance({"leia", "robot"});
+  problem_client->addInstance({"room_1", "room"});
+  problem_client->addInstance({"room_2", "room"});
+  problem_client->addInstance({"corridor_1", "corridor"});
+  problem_client->addInstance({"zone_1_1", "zone"});
+  problem_client->addInstance({"zone_1_2", "zone"});
+  problem_client->addInstance({"zone_recharge", "zone"});
   problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected room_1 corridor_1)"));
   problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected corridor_1 room_1)"));
   problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected room_2 corridor_1)"));

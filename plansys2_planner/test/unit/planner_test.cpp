@@ -89,13 +89,13 @@ TEST(planner_expert, generate_plan_good)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("leia", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("francisco", "person")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("message1", "message")));
+  ASSERT_TRUE(problem_client->addInstance({"leia", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"francisco", "person"}));
+  ASSERT_TRUE(problem_client->addInstance({"message1", "message"}));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("kitchen", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("corridor", "room")));
+  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"corridor", "room"}));
 
   std::vector<std::string> predicates = {
     "(robot_at leia kitchen)",

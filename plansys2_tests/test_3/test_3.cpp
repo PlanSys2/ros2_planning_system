@@ -110,26 +110,26 @@ TEST(test_3, test_3)
     }
   }
 
-  problem_client->addInstance(parser::pddl::fromStringParam("robot1", "robot"));
-  problem_client->addInstance(parser::pddl::fromStringParam("robot2", "robot"));
-  problem_client->addInstance(parser::pddl::fromStringParam("robot3", "robot"));
-  problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone"));
-  problem_client->addInstance(parser::pddl::fromStringParam("sterwheel_zone", "zone"));
-  problem_client->addInstance(parser::pddl::fromStringParam("body_car_zone", "zone"));
-  problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone"));
-  problem_client->addInstance(parser::pddl::fromStringParam("recharge_zone", "zone"));
-  problem_client->addInstance(parser::pddl::fromStringParam("wheel_1", "piece"));
-  problem_client->addInstance(parser::pddl::fromStringParam("wheel_2", "piece"));
-  problem_client->addInstance(parser::pddl::fromStringParam("wheel_3", "piece"));
-  problem_client->addInstance(parser::pddl::fromStringParam("body_car_1", "piece"));
-  problem_client->addInstance(parser::pddl::fromStringParam("body_car_2", "piece"));
-  problem_client->addInstance(parser::pddl::fromStringParam("body_car_3", "piece"));
-  problem_client->addInstance(parser::pddl::fromStringParam("sterwheel_1", "piece"));
-  problem_client->addInstance(parser::pddl::fromStringParam("sterwheel_2", "piece"));
-  problem_client->addInstance(parser::pddl::fromStringParam("sterwheel_3", "piece"));
-  problem_client->addInstance(parser::pddl::fromStringParam("car1", "car"));
-  problem_client->addInstance(parser::pddl::fromStringParam("car2", "car"));
-  problem_client->addInstance(parser::pddl::fromStringParam("car3", "car"));
+  problem_client->addInstance({"robot1", "robot"});
+  problem_client->addInstance({"robot2", "robot"});
+  problem_client->addInstance({"robot3", "robot"});
+  problem_client->addInstance({"wheels_zone", "zone"});
+  problem_client->addInstance({"sterwheel_zone", "zone"});
+  problem_client->addInstance({"body_car_zone", "zone"});
+  problem_client->addInstance({"assembly_zone", "zone"});
+  problem_client->addInstance({"recharge_zone", "zone"});
+  problem_client->addInstance({"wheel_1", "piece"});
+  problem_client->addInstance({"wheel_2", "piece"});
+  problem_client->addInstance({"wheel_3", "piece"});
+  problem_client->addInstance({"body_car_1", "piece"});
+  problem_client->addInstance({"body_car_2", "piece"});
+  problem_client->addInstance({"body_car_3", "piece"});
+  problem_client->addInstance({"sterwheel_1", "piece"});
+  problem_client->addInstance({"sterwheel_2", "piece"});
+  problem_client->addInstance({"sterwheel_3", "piece"});
+  problem_client->addInstance({"car1", "car"});
+  problem_client->addInstance({"car2", "car"});
+  problem_client->addInstance({"car3", "car"});
   problem_client->addPredicate(
     parser::pddl::fromStringPredicate("(robot_at robot1 assembly_zone)"));
   problem_client->addPredicate(

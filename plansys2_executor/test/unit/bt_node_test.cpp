@@ -139,9 +139,9 @@ TEST(problem_expert, wait_overall_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::CheckOverAllReq>("CheckOverAllReq");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot1", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
 
   std::vector<std::string> predicates = {
     "(robot_available robot1)",
@@ -251,9 +251,9 @@ TEST(problem_expert, wait_atstart_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::WaitAtStartReq>("WaitAtStartReq");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot1", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
 
   std::vector<std::string> predicates = {
     "(robot_available robot1)",
@@ -365,9 +365,9 @@ TEST(problem_expert, wait_atend_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::CheckAtEndReq>("CheckAtEndReq");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot1", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
 
   std::vector<std::string> predicates = {
     "(robot_available robot1)",
@@ -477,9 +477,9 @@ TEST(problem_expert, at_start_effect_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtStartEffect>("ApplyAtStartEffect");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot1", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
 
   try {
     std::vector<std::string> predicates = {
@@ -593,9 +593,9 @@ TEST(problem_expert, at_end_effect_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtEndEffect>("ApplyAtEndEffect");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot1", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
 
   try {
     std::vector<std::string> predicates = {

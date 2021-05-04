@@ -181,13 +181,13 @@ TEST(btbuilder_tests, test_plan_1)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("leia", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("entrance", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("kitchen", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("dinning", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("bathroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("chargingroom", "room")));
+  ASSERT_TRUE(problem_client->addInstance({"leia", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"entrance", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"dinning", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"bathroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"chargingroom", "room"}));
 
   std::vector<std::string> predicate_strings = {
     "(connected entrance dinning)",
@@ -421,41 +421,25 @@ TEST(btbuilder_tests, test_plan_2)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot1", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot2", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("robot3", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheels_zone", "zone")));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::fromStringParam(
-        "steering_wheels_zone",
-        "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("assembly_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheel_1", "piece")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheel_2", "piece")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("wheel_3", "piece")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_1", "piece")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_2", "piece")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("body_car_3", "piece")));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::fromStringParam(
-        "steering_wheel_1",
-        "piece")));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::fromStringParam(
-        "steering_wheel_2",
-        "piece")));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::fromStringParam(
-        "steering_wheel_3",
-        "piece")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("car_1", "car")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("car_2", "car")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("car_3", "car")));
+  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"robot2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"robot3", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheel_1", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheel_2", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"wheel_3", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"body_car_1", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"body_car_2", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"body_car_3", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_1","piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_2", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_3","piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"car_1", "car"}));
+  ASSERT_TRUE(problem_client->addInstance({"car_2", "car"}));
+  ASSERT_TRUE(problem_client->addInstance({"car_3", "car"}));
 
   std::vector<std::string> predicate_strings = {
     "(robot_at robot1 assembly_zone)",
@@ -654,10 +638,10 @@ TEST(btbuilder_tests, test_plan_3)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("leia", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("ro1", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("ro2", "room")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("ro3", "room")));
+  ASSERT_TRUE(problem_client->addInstance({"leia", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"ro1", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"ro2", "room"}));
+  ASSERT_TRUE(problem_client->addInstance({"ro3", "room"}));
 
   std::vector<std::string> predicates = {
     "(connected ro1 ro2)",
@@ -745,20 +729,20 @@ TEST(btbuilder_tests, test_plan_4)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("c3po", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("fridge_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("pantry_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("watertap_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("cooking_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("recharge_zone", "zone")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("eggs", "ingredient")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("oil", "ingredient")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("salt", "ingredient")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("omelette", "dish")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("flour", "ingredient")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("sugar", "ingredient")));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::fromStringParam("cake", "dish")));
+  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"c3po", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance({"fridge_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"pantry_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"watertap_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"cooking_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"recharge_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance({"eggs", "ingredient"}));
+  ASSERT_TRUE(problem_client->addInstance({"oil", "ingredient"}));
+  ASSERT_TRUE(problem_client->addInstance({"salt", "ingredient"}));
+  ASSERT_TRUE(problem_client->addInstance({"omelette", "dish"}));
+  ASSERT_TRUE(problem_client->addInstance({"flour", "ingredient"}));
+  ASSERT_TRUE(problem_client->addInstance({"sugar", "ingredient"}));
+  ASSERT_TRUE(problem_client->addInstance({"cake", "dish"}));
 
   std::vector<std::string> predicates = {
     "(is_cooking_zone cooking_zone)",

@@ -35,7 +35,7 @@ ProblemExpert::ProblemExpert(std::shared_ptr<DomainExpert> & domain_expert)
 }
 
 bool
-ProblemExpert::addInstance(const plansys2_msgs::msg::Param & instance)
+ProblemExpert::addInstance(const plansys2::Instance & instance)
 {
   if (!isValidType(instance.type)) {
     return false;
@@ -54,7 +54,7 @@ ProblemExpert::getInstances()
 }
 
 bool
-ProblemExpert::removeInstance(const plansys2_msgs::msg::Param & instance)
+ProblemExpert::removeInstance(const plansys2::Instance & instance)
 {
   bool found = false;
   int i = 0;

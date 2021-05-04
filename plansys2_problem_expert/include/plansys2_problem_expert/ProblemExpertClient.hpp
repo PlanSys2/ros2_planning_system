@@ -49,8 +49,8 @@ public:
   explicit ProblemExpertClient(rclcpp::Node::SharedPtr provided_node);
 
   std::vector<plansys2_msgs::msg::Param> getInstances();
-  bool addInstance(const plansys2_msgs::msg::Param & instance);
-  bool removeInstance(const plansys2_msgs::msg::Param & instance);
+  bool addInstance(const plansys2::Instance & instance);
+  bool removeInstance(const plansys2::Instance & instance);
   std::optional<plansys2_msgs::msg::Param> getInstance(const std::string & name);
 
   std::vector<plansys2_msgs::msg::Node> getPredicates();

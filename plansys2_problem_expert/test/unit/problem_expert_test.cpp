@@ -38,10 +38,10 @@ TEST(problem_expert, addget_instances)
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("Paco", "person")));
-  ASSERT_FALSE(problem_expert.addInstance(parser::pddl::fromStringParam("Paco", "person")));
-  ASSERT_FALSE(problem_expert.addInstance(parser::pddl::fromStringParam("Paco", "SCIENTIFIC")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_TRUE(problem_expert.addInstance({"Paco", "person"}));
+  ASSERT_FALSE(problem_expert.addInstance({"Paco", "person"}));
+  ASSERT_FALSE(problem_expert.addInstance({"Paco", "SCIENTIFIC"}));
+  ASSERT_TRUE(problem_expert.addInstance({"r2d2", "robot"}));
 
   ASSERT_EQ(problem_expert.getInstances().size(), 2);
   ASSERT_EQ(problem_expert.getInstances()[0].name, "Paco");
@@ -49,7 +49,7 @@ TEST(problem_expert, addget_instances)
   ASSERT_EQ(problem_expert.getInstances()[1].name, "r2d2");
   ASSERT_EQ(problem_expert.getInstances()[1].type, "robot");
 
-  ASSERT_TRUE(problem_expert.removeInstance(parser::pddl::fromStringParam("Paco", "person")));
+  ASSERT_TRUE(problem_expert.removeInstance({"Paco", "person"}));
   ASSERT_EQ(problem_expert.getInstances().size(), 1);
   ASSERT_EQ(problem_expert.getInstances()[0].name, "r2d2");
   ASSERT_EQ(problem_expert.getInstances()[0].type, "robot");
@@ -73,12 +73,8 @@ TEST(problem_expert, add_functions)
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(
-    problem_expert.addInstance(
-      parser::pddl::fromStringParam(
-        "kitchen",
-        "room_with_teleporter")));
+  ASSERT_TRUE(problem_expert.addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_expert.addInstance({"kitchen", "room_with_teleporter"}));
 
   plansys2_msgs::msg::Node function_1;
   function_1.node_type = plansys2_msgs::msg::Node::FUNCTION;
@@ -182,11 +178,7 @@ TEST(problem_expert, add_functions)
 
   ASSERT_FALSE(problem_expert.removeFunction(function_3));
 
-  ASSERT_TRUE(
-    problem_expert.removeInstance(
-      parser::pddl::fromStringParam(
-        "kitchen",
-        "room_with_teleporter")));
+  ASSERT_TRUE(problem_expert.removeInstance({"kitchen", "room_with_teleporter"}));
 }
 
 TEST(problem_expert, addget_predicates)
@@ -253,10 +245,10 @@ TEST(problem_expert, addget_predicates)
   predicate_6.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
   predicate_6.parameters.push_back(parser::pddl::fromStringParam("paco", "person"));
 
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("paco", "person")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("kitchen", "room")));
+  ASSERT_TRUE(problem_expert.addInstance({"paco", "person"}));
+  ASSERT_TRUE(problem_expert.addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_expert.addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_expert.addInstance({"kitchen", "room"}));
 
   std::vector<plansys2_msgs::msg::Node> predicates = problem_expert.getPredicates();
   ASSERT_TRUE(predicates.empty());
@@ -290,11 +282,7 @@ TEST(problem_expert, addget_predicates)
   predicates = problem_expert.getPredicates();
   ASSERT_EQ(predicates.size(), 3);
 
-  ASSERT_TRUE(
-    problem_expert.addInstance(
-      parser::pddl::fromStringParam(
-        "bathroom",
-        "room_with_teleporter")));
+  ASSERT_TRUE(problem_expert.addInstance({"bathroom", "room_with_teleporter"}));
 
   plansys2_msgs::msg::Node predicate_7;
   predicate_7.node_type = plansys2_msgs::msg::Node::PREDICATE;
@@ -326,11 +314,7 @@ TEST(problem_expert, addget_predicates)
 
   ASSERT_TRUE(problem_expert.addPredicate(predicate_8));
 
-  ASSERT_TRUE(
-    problem_expert.removeInstance(
-      parser::pddl::fromStringParam(
-        "bathroom",
-        "room_with_teleporter")));
+  ASSERT_TRUE(problem_expert.removeInstance({"bathroom", "room_with_teleporter"}));
 }
 
 TEST(problem_expert, addget_functions)
@@ -383,9 +367,9 @@ TEST(problem_expert, addget_functions)
   function_4.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
   function_4.parameters.push_back(parser::pddl::fromStringParam("wp1", "waypoint"));
 
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("wp1", "waypoint")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("wp2", "waypoint")));
+  ASSERT_TRUE(problem_expert.addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_expert.addInstance({"wp1", "waypoint"}));
+  ASSERT_TRUE(problem_expert.addInstance({"wp2", "waypoint"}));
 
   std::vector<plansys2_msgs::msg::Node> functions = problem_expert.getFunctions();
   ASSERT_TRUE(functions.empty());
@@ -429,10 +413,10 @@ TEST(problem_expert, addget_goals)
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("paco", "person")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("kitchen", "room")));
+  ASSERT_TRUE(problem_expert.addInstance({"paco", "person"}));
+  ASSERT_TRUE(problem_expert.addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_expert.addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_expert.addInstance({"kitchen", "room"}));
 
   plansys2_msgs::msg::Tree goal;
   parser::pddl::fromString(goal, "(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
@@ -518,10 +502,10 @@ TEST(problem_expert, get_probem)
   predicate_4.parameters.push_back(parser::pddl::fromStringParam("paco", "person"));
   predicate_4.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
 
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("paco", "person")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("kitchen", "room")));
+  ASSERT_TRUE(problem_expert.addInstance({"paco", "person"}));
+  ASSERT_TRUE(problem_expert.addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_expert.addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_expert.addInstance({"kitchen", "room"}));
 
   ASSERT_TRUE(problem_expert.addPredicate(predicate_1));
   ASSERT_TRUE(problem_expert.addPredicate(predicate_2));
@@ -557,11 +541,11 @@ TEST(problem_expert, is_goal_satisfied)
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("leia", "robot")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("Jack", "person")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("kitchen", "room")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room")));
-  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("m1", "message")));
+  ASSERT_TRUE(problem_expert.addInstance({"leia", "robot"}));
+  ASSERT_TRUE(problem_expert.addInstance({"Jack", "person"}));
+  ASSERT_TRUE(problem_expert.addInstance({"kitchen", "room"}));
+  ASSERT_TRUE(problem_expert.addInstance({"bedroom", "room"}));
+  ASSERT_TRUE(problem_expert.addInstance({"m1", "message"}));
 
   ASSERT_TRUE(
     problem_expert.addPredicate(parser::pddl::fromStringPredicate("(robot_at leia kitchen)")));

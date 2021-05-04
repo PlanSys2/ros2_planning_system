@@ -569,7 +569,7 @@ void
 Terminal::process_remove_instance(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 1) {
-    if (!problem_client_->removeInstance(parser::pddl::fromStringParam(command[0]))) {
+    if (!problem_client_->removeInstance(command[0])) {
       os << "Could not remove the instance [" << command[0] << "]" << std::endl;
     }
   } else {
