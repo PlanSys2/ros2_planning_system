@@ -434,9 +434,9 @@ TEST(btbuilder_tests, test_plan_2)
   ASSERT_TRUE(problem_client->addInstance({"body_car_1", "piece"}));
   ASSERT_TRUE(problem_client->addInstance({"body_car_2", "piece"}));
   ASSERT_TRUE(problem_client->addInstance({"body_car_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_1","piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_1", "piece"}));
   ASSERT_TRUE(problem_client->addInstance({"steering_wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_3","piece"}));
+  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_3", "piece"}));
   ASSERT_TRUE(problem_client->addInstance({"car_1", "car"}));
   ASSERT_TRUE(problem_client->addInstance({"car_2", "car"}));
   ASSERT_TRUE(problem_client->addInstance({"car_3", "car"}));
