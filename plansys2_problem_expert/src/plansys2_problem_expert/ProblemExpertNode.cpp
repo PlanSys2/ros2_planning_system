@@ -296,7 +296,7 @@ ProblemExpertNode::add_problem_goal_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     if (!parser::pddl::empty(request->tree)) {
-      response->success = problem_expert_->setGoal(request->tree);
+      response->success = problem_expert_->setGoalTree(request->tree);
       if (response->success) {
         update_pub_->publish(std_msgs::msg::Empty());
         knowledge_pub_->publish(*get_knowledge_as_msg());
@@ -387,7 +387,7 @@ ProblemExpertNode::get_problem_goal_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = true;
-    response->tree = problem_expert_->getGoal();
+    response->tree = problem_expert_->getGoalTree();
   }
 }
 
@@ -533,7 +533,7 @@ ProblemExpertNode::is_problem_goal_satisfied_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = true;
-    response->satisfied = problem_expert_->isGoalSatisfied(request->tree);
+    response->satisfied = problem_expert_->isGoalTreeSatisfied(request->tree);
   }
 }
 
@@ -702,7 +702,7 @@ ProblemExpertNode::get_knowledge_as_msg() const
     ret_msgs->predicates.push_back(parser::pddl::toString(predicate));
   }
 
-  auto goal = problem_expert_->getGoal();
+  auto goal = problem_expert_->getGoalTree();
   ret_msgs->goal = parser::pddl::toString(goal);
 
   return ret_msgs;

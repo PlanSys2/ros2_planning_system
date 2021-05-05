@@ -48,11 +48,12 @@ public:
   virtual bool updateFunctionNode(const plansys2_msgs::msg::Node & function) = 0;
   virtual std::optional<plansys2_msgs::msg::Node> getFunctionNode(const std::string & expr) = 0;
 
-  virtual plansys2_msgs::msg::Tree getGoal() = 0;
-  virtual bool setGoal(const plansys2_msgs::msg::Tree & goal) = 0;
+  virtual plansys2_msgs::msg::Tree getGoalTree() = 0;
+  virtual bool setGoalTree(const plansys2_msgs::msg::Tree & goal) = 0;
+  virtual bool isGoalTreeSatisfied(const plansys2_msgs::msg::Tree & goal) = 0;
+
   virtual bool clearGoal() = 0;
   virtual bool clearKnowledge() = 0;
-  virtual bool isGoalSatisfied(const plansys2_msgs::msg::Tree & goal) = 0;
 
   virtual std::string getProblem() = 0;
 };

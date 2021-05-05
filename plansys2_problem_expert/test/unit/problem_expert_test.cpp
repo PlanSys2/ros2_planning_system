@@ -448,14 +448,14 @@ TEST(problem_expert, addget_goals)
     parser::pddl::toString(
       goal2), "(and (robot_at r2d2 bedroom)(not (person_at paco kitchen)))");
 
-  ASSERT_TRUE(problem_expert.setGoal(goal));
-  ASSERT_TRUE(problem_expert.setGoal(goal2));
+  ASSERT_TRUE(problem_expert.setGoalTree(goal));
+  ASSERT_TRUE(problem_expert.setGoalTree(goal2));
 
   ASSERT_EQ(
-    parser::pddl::toString(problem_expert.getGoal()),
+    parser::pddl::toString(problem_expert.getGoalTree()),
     "(and (robot_at r2d2 bedroom)(not (person_at paco kitchen)))");
 
-  const plansys2_msgs::msg::Tree & goal3 = problem_expert.getGoal();
+  const plansys2_msgs::msg::Tree & goal3 = problem_expert.getGoalTree();
   ASSERT_EQ(
     parser::pddl::toString(
       goal3), "(and (robot_at r2d2 bedroom)(not (person_at paco kitchen)))");
@@ -463,13 +463,13 @@ TEST(problem_expert, addget_goals)
   ASSERT_TRUE(problem_expert.clearGoal());
   ASSERT_TRUE(problem_expert.clearGoal());
 
-  ASSERT_EQ(parser::pddl::toString(problem_expert.getGoal()), "");
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getGoalTree()), "");
 
   plansys2_msgs::msg::Tree goal4;
   parser::pddl::fromString(
     goal4,
     "(and (or (robot_at r2d2 bedroom) (robot_at r2d2 kitchen)) (not (person_at paco kitchen)))");
-  ASSERT_TRUE(problem_expert.setGoal(goal4));
+  ASSERT_TRUE(problem_expert.setGoalTree(goal4));
 }
 
 TEST(problem_expert, empty_goals)
@@ -534,7 +534,7 @@ TEST(problem_expert, get_probem)
 
   plansys2_msgs::msg::Tree goal;
   parser::pddl::fromString(goal, "(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
-  ASSERT_TRUE(problem_expert.setGoal(goal));
+  ASSERT_TRUE(problem_expert.setGoalTree(goal));
 
   ASSERT_EQ(
     problem_expert.getProblem(),
@@ -577,14 +577,14 @@ TEST(problem_expert, is_goal_satisfied)
   parser::pddl::fromString(goal, expression);
 
   ASSERT_EQ(parser::pddl::toString(goal), "(and (robot_talk leia m1 Jack))");
-  ASSERT_TRUE(problem_expert.setGoal(goal));
-  ASSERT_FALSE(problem_expert.isGoalSatisfied(goal));
+  ASSERT_TRUE(problem_expert.setGoalTree(goal));
+  ASSERT_FALSE(problem_expert.isGoalTreeSatisfied(goal));
 
   ASSERT_TRUE(
     problem_expert.addPredicateNode(
       parser::pddl::fromStringPredicate("(robot_talk leia m1 Jack)")));
 
-  ASSERT_TRUE(problem_expert.isGoalSatisfied(goal));
+  ASSERT_TRUE(problem_expert.isGoalTreeSatisfied(goal));
 }
 
 int main(int argc, char ** argv)

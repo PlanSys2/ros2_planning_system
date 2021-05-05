@@ -283,18 +283,13 @@ ProblemExpert::removePredicatesReferencing(const plansys2_msgs::msg::Param & par
 }
 
 plansys2_msgs::msg::Tree
-ProblemExpert::getGoal()
+ProblemExpert::getGoalTree()
 {
   return goal_;
 }
 
-bool ProblemExpert::isGoalSatisfied(const plansys2_msgs::msg::Tree & goal)
-{
-  return check(goal, predicates_, functions_);
-}
-
 bool
-ProblemExpert::setGoal(const plansys2_msgs::msg::Tree & goal)
+ProblemExpert::setGoalTree(const plansys2_msgs::msg::Tree & goal)
 {
   if (isValidGoal(goal)) {
     goal_ = goal;
@@ -302,6 +297,11 @@ ProblemExpert::setGoal(const plansys2_msgs::msg::Tree & goal)
   } else {
     return false;
   }
+}
+
+bool ProblemExpert::isGoalTreeSatisfied(const plansys2_msgs::msg::Tree & goal)
+{
+  return check(goal, predicates_, functions_);
 }
 
 bool

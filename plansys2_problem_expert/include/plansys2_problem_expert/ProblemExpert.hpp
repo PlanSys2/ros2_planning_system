@@ -54,11 +54,12 @@ public:
   bool updateFunctionNode(const plansys2_msgs::msg::Node & function);
   std::optional<plansys2_msgs::msg::Node> getFunctionNode(const std::string & expr);
 
-  plansys2_msgs::msg::Tree getGoal();
-  bool setGoal(const plansys2_msgs::msg::Tree & goal);
+  plansys2_msgs::msg::Tree getGoalTree();
+  bool setGoalTree(const plansys2_msgs::msg::Tree & goal);
+  bool isGoalTreeSatisfied(const plansys2_msgs::msg::Tree & goal);
+
   bool clearGoal();
   bool clearKnowledge();
-  bool isGoalSatisfied(const plansys2_msgs::msg::Tree & goal);
 
   std::string getProblem();
 

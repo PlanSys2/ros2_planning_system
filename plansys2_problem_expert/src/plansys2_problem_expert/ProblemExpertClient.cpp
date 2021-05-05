@@ -710,8 +710,14 @@ ProblemExpertClient::getFunctionNode(const std::string & function)
   }
 }
 
-plansys2_msgs::msg::Tree
+plansys2::Goal
 ProblemExpertClient::getGoal()
+{
+  return getGoalTree();
+}
+
+plansys2_msgs::msg::Tree
+ProblemExpertClient::getGoalTree()
 {
   plansys2_msgs::msg::Tree ret;
 
@@ -748,7 +754,13 @@ ProblemExpertClient::getGoal()
 }
 
 bool
-ProblemExpertClient::setGoal(const plansys2_msgs::msg::Tree & goal)
+ProblemExpertClient::setGoal(const plansys2::Goal & goal)
+{
+  return setGoalTree(goal);
+}
+
+bool
+ProblemExpertClient::setGoalTree(const plansys2_msgs::msg::Tree & goal)
 {
   while (!add_problem_goal_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
@@ -782,6 +794,46 @@ ProblemExpertClient::setGoal(const plansys2_msgs::msg::Tree & goal)
   }
 }
 
+bool
+ProblemExpertClient::isGoalSatisfied(const plansys2::Goal & goal)
+{
+  return isGoalTreeSatisfied(goal);
+}
+
+bool
+ProblemExpertClient::isGoalTreeSatisfied(const plansys2_msgs::msg::Tree & goal)
+{
+  while (!is_problem_goal_satisfied_client_->wait_for_service(std::chrono::seconds(5))) {
+    if (!rclcpp::ok()) {
+      return false;
+    }
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      is_problem_goal_satisfied_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
+  }
+
+  auto request = std::make_shared<plansys2_msgs::srv::IsProblemGoalSatisfied::Request>();
+  request->tree = goal;
+
+  auto future_result = is_problem_goal_satisfied_client_->async_send_request(request);
+
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
+    rclcpp::FutureReturnCode::SUCCESS)
+  {
+    return false;
+  }
+
+  if (future_result.get()->success) {
+    return future_result.get()->satisfied;
+  } else {
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      is_problem_goal_satisfied_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
+    return false;
+  }
+}
 
 bool
 ProblemExpertClient::clearGoal()
@@ -850,42 +902,6 @@ ProblemExpertClient::clearKnowledge()
     return false;
   }
 }
-
-bool
-ProblemExpertClient::isGoalSatisfied(const plansys2_msgs::msg::Tree & goal)
-{
-  while (!is_problem_goal_satisfied_client_->wait_for_service(std::chrono::seconds(5))) {
-    if (!rclcpp::ok()) {
-      return false;
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      is_problem_goal_satisfied_client_->get_service_name() <<
-        " service  client: waiting for service to appear...");
-  }
-
-  auto request = std::make_shared<plansys2_msgs::srv::IsProblemGoalSatisfied::Request>();
-  request->tree = goal;
-
-  auto future_result = is_problem_goal_satisfied_client_->async_send_request(request);
-
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
-  {
-    return false;
-  }
-
-  if (future_result.get()->success) {
-    return future_result.get()->satisfied;
-  } else {
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      is_problem_goal_satisfied_client_->get_service_name() << ": " <<
-        future_result.get()->error_info);
-    return false;
-  }
-}
-
 
 std::string
 ProblemExpertClient::getProblem()
