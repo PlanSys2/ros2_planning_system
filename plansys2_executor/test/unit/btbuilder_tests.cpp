@@ -215,8 +215,8 @@ TEST(btbuilder_tests, test_plan_1)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  auto predicates = problem_client->getPredicates();
-  auto functions = problem_client->getFunctions();
+  auto predicates = problem_client->getPredicateNodes();
+  auto functions = problem_client->getFunctionNodes();
 
   auto action_sequence = btbuilder->get_plan_actions(plan.value());
 
@@ -491,8 +491,8 @@ TEST(btbuilder_tests, test_plan_2)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  auto predicates = problem_client->getPredicates();
-  auto functions = problem_client->getFunctions();
+  auto predicates = problem_client->getPredicateNodes();
+  auto functions = problem_client->getFunctionNodes();
 
   auto predicates_plus_one = predicate_strings;
   predicates_plus_one.push_back("(is_assembly_zone body_car_zone)");
@@ -509,7 +509,7 @@ TEST(btbuilder_tests, test_plan_2)
       tree.nodes[check_predicates.front()]), "(is_assembly_zone body_car_zone)");
 
 
-  ASSERT_EQ(problem_client->getPredicates().size(), predicates.size());
+  ASSERT_EQ(problem_client->getPredicateNodes().size(), predicates.size());
 
   auto action_sequence = btbuilder->get_plan_actions(plan.value());
 
@@ -520,8 +520,8 @@ TEST(btbuilder_tests, test_plan_2)
   ASSERT_EQ(roots.size(), 3u);
   // Apply roots actions
   for (auto & action_node : roots) {
-    action_node->predicates = problem_client->getPredicates();
-    action_node->functions = problem_client->getFunctions();
+    action_node->predicates = problem_client->getPredicateNodes();
+    action_node->functions = problem_client->getFunctionNodes();
     plansys2::apply(
       action_node->action.action->at_start_effects,
       action_node->predicates, action_node->functions);

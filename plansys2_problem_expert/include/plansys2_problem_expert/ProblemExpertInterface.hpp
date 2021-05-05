@@ -35,18 +35,18 @@ public:
   virtual bool removeInstanceParam(const plansys2_msgs::msg::Param & instance) = 0;
   virtual std::optional<plansys2_msgs::msg::Param> getInstanceParam(const std::string & name) = 0;
 
-  virtual std::vector<plansys2_msgs::msg::Node> getPredicates() = 0;
-  virtual bool addPredicate(const plansys2_msgs::msg::Node & predicate) = 0;
-  virtual bool removePredicate(const plansys2_msgs::msg::Node & predicate) = 0;
-  virtual bool existPredicate(const plansys2_msgs::msg::Node & predicate) = 0;
-  virtual std::optional<plansys2_msgs::msg::Node> getPredicate(const std::string & expr) = 0;
+  virtual std::vector<plansys2_msgs::msg::Node> getPredicateNodes() = 0;
+  virtual bool addPredicateNode(const plansys2_msgs::msg::Node & predicate) = 0;
+  virtual bool removePredicateNode(const plansys2_msgs::msg::Node & predicate) = 0;
+  virtual bool existPredicateNode(const plansys2_msgs::msg::Node & predicate) = 0;
+  virtual std::optional<plansys2_msgs::msg::Node> getPredicateNode(const std::string & expr) = 0;
 
-  virtual std::vector<plansys2_msgs::msg::Node> getFunctions() = 0;
-  virtual bool addFunction(const plansys2_msgs::msg::Node & function) = 0;
-  virtual bool removeFunction(const plansys2_msgs::msg::Node & function) = 0;
-  virtual bool existFunction(const plansys2_msgs::msg::Node & function) = 0;
-  virtual bool updateFunction(const plansys2_msgs::msg::Node & function) = 0;
-  virtual std::optional<plansys2_msgs::msg::Node> getFunction(const std::string & expr) = 0;
+  virtual std::vector<plansys2_msgs::msg::Node> getFunctionNodes() = 0;
+  virtual bool addFunctionNode(const plansys2_msgs::msg::Node & function) = 0;
+  virtual bool removeFunctionNode(const plansys2_msgs::msg::Node & function) = 0;
+  virtual bool existFunctionNode(const plansys2_msgs::msg::Node & function) = 0;
+  virtual bool updateFunctionNode(const plansys2_msgs::msg::Node & function) = 0;
+  virtual std::optional<plansys2_msgs::msg::Node> getFunctionNode(const std::string & expr) = 0;
 
   virtual plansys2_msgs::msg::Tree getGoal() = 0;
   virtual bool setGoal(const plansys2_msgs::msg::Tree & goal) = 0;

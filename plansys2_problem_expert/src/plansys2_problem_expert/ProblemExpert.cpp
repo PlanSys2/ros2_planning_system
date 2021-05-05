@@ -97,15 +97,15 @@ ProblemExpert::getInstanceParam(const std::string & instance_name)
 }
 
 std::vector<plansys2_msgs::msg::Node>
-ProblemExpert::getPredicates()
+ProblemExpert::getPredicateNodes()
 {
   return predicates_;
 }
 
 bool
-ProblemExpert::addPredicate(const plansys2_msgs::msg::Node & predicate)
+ProblemExpert::addPredicateNode(const plansys2_msgs::msg::Node & predicate)
 {
-  if (!existPredicate(predicate)) {
+  if (!existPredicateNode(predicate)) {
     if (isValidPredicate(predicate)) {
       predicates_.push_back(predicate);
       return true;
@@ -118,7 +118,7 @@ ProblemExpert::addPredicate(const plansys2_msgs::msg::Node & predicate)
 }
 
 bool
-ProblemExpert::removePredicate(const plansys2_msgs::msg::Node & predicate)
+ProblemExpert::removePredicateNode(const plansys2_msgs::msg::Node & predicate)
 {
   bool found = false;
   int i = 0;
@@ -138,7 +138,7 @@ ProblemExpert::removePredicate(const plansys2_msgs::msg::Node & predicate)
 }
 
 std::optional<plansys2_msgs::msg::Node>
-ProblemExpert::getPredicate(const std::string & expr)
+ProblemExpert::getPredicateNode(const std::string & expr)
 {
   plansys2_msgs::msg::Node ret;
   plansys2_msgs::msg::Node pred = parser::pddl::fromStringPredicate(expr);
@@ -161,15 +161,15 @@ ProblemExpert::getPredicate(const std::string & expr)
 }
 
 std::vector<plansys2_msgs::msg::Node>
-ProblemExpert::getFunctions()
+ProblemExpert::getFunctionNodes()
 {
   return functions_;
 }
 
 bool
-ProblemExpert::addFunction(const plansys2_msgs::msg::Node & function)
+ProblemExpert::addFunctionNode(const plansys2_msgs::msg::Node & function)
 {
-  if (!existFunction(function)) {
+  if (!existFunctionNode(function)) {
     if (isValidFunction(function)) {
       functions_.push_back(function);
       return true;
@@ -177,12 +177,12 @@ ProblemExpert::addFunction(const plansys2_msgs::msg::Node & function)
       return false;
     }
   } else {
-    return updateFunction(function);
+    return updateFunctionNode(function);
   }
 }
 
 bool
-ProblemExpert::removeFunction(const plansys2_msgs::msg::Node & function)
+ProblemExpert::removeFunctionNode(const plansys2_msgs::msg::Node & function)
 {
   bool found = false;
   int i = 0;
@@ -202,11 +202,11 @@ ProblemExpert::removeFunction(const plansys2_msgs::msg::Node & function)
 }
 
 bool
-ProblemExpert::updateFunction(const plansys2_msgs::msg::Node & function)
+ProblemExpert::updateFunctionNode(const plansys2_msgs::msg::Node & function)
 {
-  if (existFunction(function)) {
+  if (existFunctionNode(function)) {
     if (isValidFunction(function)) {
-      removeFunction(function);
+      removeFunctionNode(function);
       functions_.push_back(function);
       return true;
     } else {
@@ -218,7 +218,7 @@ ProblemExpert::updateFunction(const plansys2_msgs::msg::Node & function)
 }
 
 std::optional<plansys2_msgs::msg::Node>
-ProblemExpert::getFunction(const std::string & expr)
+ProblemExpert::getFunctionNode(const std::string & expr)
 {
   plansys2_msgs::msg::Node ret;
   plansys2_msgs::msg::Node func = parser::pddl::fromStringFunction(expr);
@@ -346,7 +346,7 @@ ProblemExpert::existInstance(const std::string & name)
 }
 
 bool
-ProblemExpert::existPredicate(const plansys2_msgs::msg::Node & predicate)
+ProblemExpert::existPredicateNode(const plansys2_msgs::msg::Node & predicate)
 {
   bool found = false;
   int i = 0;
@@ -362,7 +362,7 @@ ProblemExpert::existPredicate(const plansys2_msgs::msg::Node & predicate)
 }
 
 bool
-ProblemExpert::existFunction(const plansys2_msgs::msg::Node & function)
+ProblemExpert::existFunctionNode(const plansys2_msgs::msg::Node & function)
 {
   bool found = false;
   int i = 0;

@@ -59,18 +59,31 @@ public:
   bool removeInstanceParam(const plansys2_msgs::msg::Param & instance);
   std::optional<plansys2_msgs::msg::Param> getInstanceParam(const std::string & name);
 
-  std::vector<plansys2_msgs::msg::Node> getPredicates();
-  bool addPredicate(const plansys2_msgs::msg::Node & predicate);
-  bool removePredicate(const plansys2_msgs::msg::Node & predicate);
-  bool existPredicate(const plansys2_msgs::msg::Node & predicate);
-  std::optional<plansys2_msgs::msg::Node> getPredicate(const std::string & predicate);
+  std::vector<plansys2::Predicate> getPredicates();
+  bool addPredicate(const plansys2::Predicate & predicate);
+  bool removePredicate(const plansys2::Predicate & predicate);
+  bool existPredicate(const plansys2::Predicate & predicate);
+  std::optional<plansys2::Predicate> getPredicate(const std::string & predicate);
 
-  std::vector<plansys2_msgs::msg::Node> getFunctions();
-  bool addFunction(const plansys2_msgs::msg::Node & function);
-  bool removeFunction(const plansys2_msgs::msg::Node & function);
-  bool existFunction(const plansys2_msgs::msg::Node & function);
-  bool updateFunction(const plansys2_msgs::msg::Node & function);
-  std::optional<plansys2_msgs::msg::Node> getFunction(const std::string & function);
+  std::vector<plansys2_msgs::msg::Node> getPredicateNodes();
+  bool addPredicateNode(const plansys2_msgs::msg::Node & predicate);
+  bool removePredicateNode(const plansys2_msgs::msg::Node & predicate);
+  bool existPredicateNode(const plansys2_msgs::msg::Node & predicate);
+  std::optional<plansys2_msgs::msg::Node> getPredicateNode(const std::string & predicate);
+
+  std::vector<plansys2::Function> getFunctions();
+  bool addFunction(const plansys2::Function & function);
+  bool removeFunction(const plansys2::Function & function);
+  bool existFunction(const plansys2::Function & function);
+  bool updateFunction(const plansys2::Function & function);
+  std::optional<plansys2::Function> getFunction(const std::string & function);
+
+  std::vector<plansys2_msgs::msg::Node> getFunctionNodes();
+  bool addFunctionNode(const plansys2_msgs::msg::Node & function);
+  bool removeFunctionNode(const plansys2_msgs::msg::Node & function);
+  bool existFunctionNode(const plansys2_msgs::msg::Node & function);
+  bool updateFunctionNode(const plansys2_msgs::msg::Node & function);
+  std::optional<plansys2_msgs::msg::Node> getFunctionNode(const std::string & function);
 
   plansys2_msgs::msg::Tree getGoal();
   bool setGoal(const plansys2_msgs::msg::Tree & goal);
