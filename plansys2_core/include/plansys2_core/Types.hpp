@@ -64,7 +64,7 @@ public:
       input.begin(), input.end(), std::back_inserter(ret),
       [](plansys2_msgs::msg::Param item)
       {
-        return Instance(item.name, item.type);
+        return Instance(item);
       });
     return ret;
   }
