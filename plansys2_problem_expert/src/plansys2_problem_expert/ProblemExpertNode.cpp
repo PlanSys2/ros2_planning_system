@@ -424,9 +424,8 @@ ProblemExpertNode::get_problem_instances_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto instances = problem_expert_->getInstances();
     response->success = true;
-    response->instances = instances;
+    response->instances = Instance::toParam(problem_expert_->getInstances());
   }
 }
 

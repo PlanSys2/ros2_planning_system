@@ -32,10 +32,10 @@ class ProblemExpertInterface
 public:
   ProblemExpertInterface() {}
 
-  virtual std::vector<plansys2_msgs::msg::Param> getInstances() = 0;
+  virtual std::vector<plansys2::Instance> getInstances() = 0;
   virtual bool addInstance(const plansys2::Instance & instance) = 0;
   virtual bool removeInstance(const plansys2::Instance & instance) = 0;
-  virtual std::optional<plansys2_msgs::msg::Param> getInstance(const std::string & name) = 0;
+  virtual std::optional<plansys2::Instance> getInstance(const std::string & name) = 0;
 
   virtual std::vector<plansys2_msgs::msg::Node> getPredicates() = 0;
   virtual bool addPredicate(const plansys2_msgs::msg::Node & predicate) = 0;

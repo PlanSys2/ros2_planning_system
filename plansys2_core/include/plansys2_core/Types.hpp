@@ -15,6 +15,7 @@
 #ifndef PLANSYS2_CORE__TYPES_HPP_
 #define PLANSYS2_CORE__TYPES_HPP_
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -43,6 +44,30 @@ public:
   : plansys2_msgs::msg::Param(parser::pddl::fromStringParam(name, type)) {}
   Instance(const plansys2_msgs::msg::Param & instance)
   : plansys2_msgs::msg::Param(instance) {}
+  static std::vector<plansys2_msgs::msg::Param> toParam(const std::vector<Instance> & input)
+  {
+    std::vector<plansys2_msgs::msg::Param> ret;
+    ret.reserve(input.size());
+    std::transform(
+      input.begin(), input.end(), std::back_inserter(ret),
+      [](Instance item)
+      {
+        return parser::pddl::fromStringParam(item.name, item.type);
+      });
+    return ret;
+  }
+  static std::vector<Instance> toInstance(const std::vector<plansys2_msgs::msg::Param> & input)
+  {
+    std::vector<Instance> ret;
+    ret.reserve(input.size());
+    std::transform(
+      input.begin(), input.end(), std::back_inserter(ret),
+      [](plansys2_msgs::msg::Param item)
+      {
+        return Instance(item.name, item.type);
+      });
+    return ret;
+  }
 };
 
 class Predicate : public plansys2_msgs::msg::Node

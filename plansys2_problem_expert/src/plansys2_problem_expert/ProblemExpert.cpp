@@ -47,7 +47,7 @@ ProblemExpert::addInstance(const plansys2::Instance & instance)
   }
 }
 
-std::vector<plansys2_msgs::msg::Param>
+std::vector<plansys2::Instance>
 ProblemExpert::getInstances()
 {
   return instances_;
@@ -74,7 +74,7 @@ ProblemExpert::removeInstance(const plansys2::Instance & instance)
   return found;
 }
 
-std::optional<plansys2_msgs::msg::Param>
+std::optional<plansys2::Instance>
 ProblemExpert::getInstance(const std::string & instance_name)
 {
   plansys2_msgs::msg::Param ret;
@@ -538,7 +538,7 @@ ProblemExpert::getProblem()
 
   problem.name = "problem_1";
 
-  for (const plansys2_msgs::msg::Param & instance : instances_) {
+  for (const auto & instance : instances_) {
     problem.addObject(instance.name, instance.type);
   }
 

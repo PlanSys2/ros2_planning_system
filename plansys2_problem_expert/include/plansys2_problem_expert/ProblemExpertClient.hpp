@@ -48,10 +48,10 @@ class ProblemExpertClient : public ProblemExpertInterface
 public:
   explicit ProblemExpertClient(rclcpp::Node::SharedPtr provided_node);
 
-  std::vector<plansys2_msgs::msg::Param> getInstances();
+  std::vector<plansys2::Instance> getInstances();
   bool addInstance(const plansys2::Instance & instance);
   bool removeInstance(const plansys2::Instance & instance);
-  std::optional<plansys2_msgs::msg::Param> getInstance(const std::string & name);
+  std::optional<plansys2::Instance> getInstance(const std::string & name);
 
   std::vector<plansys2_msgs::msg::Node> getPredicates();
   bool addPredicate(const plansys2_msgs::msg::Node & predicate);

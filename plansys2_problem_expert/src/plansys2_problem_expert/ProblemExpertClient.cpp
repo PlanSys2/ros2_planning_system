@@ -82,7 +82,7 @@ ProblemExpertClient::ProblemExpertClient(rclcpp::Node::SharedPtr provided_node)
     "problem_expert/is_problem_goal_satisfied");
 }
 
-std::vector<plansys2_msgs::msg::Param>
+std::vector<plansys2::Instance>
 ProblemExpertClient::getInstances()
 {
   while (!get_problem_instances_client_->wait_for_service(std::chrono::seconds(5))) {
@@ -106,7 +106,7 @@ ProblemExpertClient::getInstances()
   }
 
   if (future_result.get()->success) {
-    return future_result.get()->instances;
+    return Instance::toInstance(future_result.get()->instances);
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
@@ -187,7 +187,7 @@ ProblemExpertClient::removeInstance(const plansys2::Instance & instance)
   }
 }
 
-std::optional<plansys2_msgs::msg::Param>
+std::optional<plansys2::Instance>
 ProblemExpertClient::getInstance(const std::string & name)
 {
   while (!get_problem_instance_details_client_->wait_for_service(std::chrono::seconds(5))) {
