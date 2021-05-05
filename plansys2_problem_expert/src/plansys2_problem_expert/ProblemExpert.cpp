@@ -97,15 +97,15 @@ ProblemExpert::getInstanceParam(const std::string & instance_name)
 }
 
 std::vector<plansys2_msgs::msg::Node>
-ProblemExpert::getPredicates()
+ProblemExpert::getPredicateNodes()
 {
   return predicates_;
 }
 
 bool
-ProblemExpert::addPredicate(const plansys2_msgs::msg::Node & predicate)
+ProblemExpert::addPredicateNode(const plansys2_msgs::msg::Node & predicate)
 {
-  if (!existPredicate(predicate)) {
+  if (!existPredicateNode(predicate)) {
     if (isValidPredicate(predicate)) {
       predicates_.push_back(predicate);
       return true;
@@ -118,7 +118,7 @@ ProblemExpert::addPredicate(const plansys2_msgs::msg::Node & predicate)
 }
 
 bool
-ProblemExpert::removePredicate(const plansys2_msgs::msg::Node & predicate)
+ProblemExpert::removePredicateNode(const plansys2_msgs::msg::Node & predicate)
 {
   bool found = false;
   int i = 0;
@@ -138,7 +138,7 @@ ProblemExpert::removePredicate(const plansys2_msgs::msg::Node & predicate)
 }
 
 std::optional<plansys2_msgs::msg::Node>
-ProblemExpert::getPredicate(const std::string & expr)
+ProblemExpert::getPredicateNode(const std::string & expr)
 {
   plansys2_msgs::msg::Node ret;
   plansys2_msgs::msg::Node pred = parser::pddl::fromStringPredicate(expr);
@@ -346,7 +346,7 @@ ProblemExpert::existInstance(const std::string & name)
 }
 
 bool
-ProblemExpert::existPredicate(const plansys2_msgs::msg::Node & predicate)
+ProblemExpert::existPredicateNode(const plansys2_msgs::msg::Node & predicate)
 {
   bool found = false;
   int i = 0;

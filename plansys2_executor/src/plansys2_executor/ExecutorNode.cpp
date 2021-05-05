@@ -210,7 +210,7 @@ ExecutorNode::getOrderedSubGoals()
   }
 
   auto goal = problem_client_->getGoal();
-  auto local_predicates = problem_client_->getPredicates();
+  auto local_predicates = problem_client_->getPredicateNodes();
   auto local_functions = problem_client_->getFunctions();
 
   std::vector<plansys2_msgs::msg::Tree> ordered_goals;

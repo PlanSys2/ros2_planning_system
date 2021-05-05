@@ -350,7 +350,7 @@ BTBuilder::get_graph(const Plan & current_plan)
   auto graph = Graph::make_shared();
 
   auto action_sequence = get_plan_actions(current_plan);
-  auto predicates = problem_client_->getPredicates();
+  auto predicates = problem_client_->getPredicateNodes();
   auto functions = problem_client_->getFunctions();
 
   graph->roots = get_roots(action_sequence, predicates, functions, node_counter);
@@ -358,7 +358,7 @@ BTBuilder::get_graph(const Plan & current_plan)
   // Apply root actions
   for (auto & action_node : graph->roots) {
     // Create a local copy of the state
-    action_node->predicates = problem_client_->getPredicates();
+    action_node->predicates = problem_client_->getPredicateNodes();
     action_node->functions = problem_client_->getFunctions();
 
     // Apply the effects to the local node state

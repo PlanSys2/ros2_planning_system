@@ -256,8 +256,23 @@ ProblemExpertClient::getInstanceParam(const std::string & name)
   }
 }
 
-std::vector<plansys2_msgs::msg::Node>
+std::vector<plansys2::Predicate>
 ProblemExpertClient::getPredicates()
+{
+  auto predicates = getPredicateNodes();
+  std::vector<plansys2::Predicate> ret;
+  ret.reserve(predicates.size());
+  std::transform(
+    predicates.begin(), predicates.end(), std::back_inserter(ret),
+    [](plansys2_msgs::msg::Node item)
+    {
+      return plansys2::Predicate(item);
+    });
+  return ret;
+}
+
+std::vector<plansys2_msgs::msg::Node>
+ProblemExpertClient::getPredicateNodes()
 {
   while (!get_problem_predicates_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
@@ -291,7 +306,13 @@ ProblemExpertClient::getPredicates()
 }
 
 bool
-ProblemExpertClient::addPredicate(const plansys2_msgs::msg::Node & predicate)
+ProblemExpertClient::addPredicate(const plansys2::Predicate & predicate)
+{
+  return addPredicateNode(predicate);
+}
+
+bool
+ProblemExpertClient::addPredicateNode(const plansys2_msgs::msg::Node & predicate)
 {
   while (!add_problem_predicate_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
@@ -326,7 +347,13 @@ ProblemExpertClient::addPredicate(const plansys2_msgs::msg::Node & predicate)
 }
 
 bool
-ProblemExpertClient::removePredicate(const plansys2_msgs::msg::Node & predicate)
+ProblemExpertClient::removePredicate(const plansys2::Predicate & predicate)
+{
+  return removePredicateNode(predicate);
+}
+
+bool
+ProblemExpertClient::removePredicateNode(const plansys2_msgs::msg::Node & predicate)
 {
   while (!remove_problem_predicate_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
@@ -361,7 +388,13 @@ ProblemExpertClient::removePredicate(const plansys2_msgs::msg::Node & predicate)
 }
 
 bool
-ProblemExpertClient::existPredicate(const plansys2_msgs::msg::Node & predicate)
+ProblemExpertClient::existPredicate(const plansys2::Predicate & predicate)
+{
+  return existPredicateNode(predicate);
+}
+
+bool
+ProblemExpertClient::existPredicateNode(const plansys2_msgs::msg::Node & predicate)
 {
   while (!exist_problem_predicate_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
@@ -387,8 +420,14 @@ ProblemExpertClient::existPredicate(const plansys2_msgs::msg::Node & predicate)
   return future_result.get()->exist;
 }
 
-std::optional<plansys2_msgs::msg::Node>
+std::optional<plansys2::Predicate>
 ProblemExpertClient::getPredicate(const std::string & predicate)
+{
+  return getPredicateNode(predicate);
+}
+
+std::optional<plansys2_msgs::msg::Node>
+ProblemExpertClient::getPredicateNode(const std::string & predicate)
 {
   while (!get_problem_predicate_details_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {

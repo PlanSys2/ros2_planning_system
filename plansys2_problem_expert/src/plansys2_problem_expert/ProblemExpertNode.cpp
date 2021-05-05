@@ -342,7 +342,7 @@ ProblemExpertNode::add_problem_predicate_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    response->success = problem_expert_->addPredicate(request->node);
+    response->success = problem_expert_->addPredicateNode(request->node);
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
       knowledge_pub_->publish(*get_knowledge_as_msg());
@@ -440,7 +440,7 @@ ProblemExpertNode::get_problem_predicate_details_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto predicate = problem_expert_->getPredicate(request->expression);
+    auto predicate = problem_expert_->getPredicateNode(request->expression);
     if (predicate) {
       response->node = predicate.value();
       response->success = true;
@@ -463,7 +463,7 @@ ProblemExpertNode::get_problem_predicates_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = true;
-    response->states = problem_expert_->getPredicates();
+    response->states = problem_expert_->getPredicateNodes();
   }
 }
 
@@ -611,7 +611,7 @@ ProblemExpertNode::remove_problem_predicate_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    response->success = problem_expert_->removePredicate(request->node);
+    response->success = problem_expert_->removePredicateNode(request->node);
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
       knowledge_pub_->publish(*get_knowledge_as_msg());
@@ -651,7 +651,7 @@ ProblemExpertNode::exist_problem_predicate_service_callback(
     response->exist = false;
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    response->exist = problem_expert_->existPredicate(request->node);
+    response->exist = problem_expert_->existPredicateNode(request->node);
   }
 }
 
@@ -698,7 +698,7 @@ ProblemExpertNode::get_knowledge_as_msg() const
     ret_msgs->instances.push_back(instance.name);
   }
 
-  for (const auto & predicate : problem_expert_->getPredicates()) {
+  for (const auto & predicate : problem_expert_->getPredicateNodes()) {
     ret_msgs->predicates.push_back(parser::pddl::toString(predicate));
   }
 

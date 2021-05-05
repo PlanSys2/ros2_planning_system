@@ -41,14 +41,16 @@ public:
   bool removeInstanceParam(const plansys2_msgs::msg::Param & instance);
   std::optional<plansys2_msgs::msg::Param> getInstanceParam(const std::string & name);
 
-  std::vector<plansys2_msgs::msg::Node> getPredicates();
-  bool addPredicate(const plansys2_msgs::msg::Node & predicate);
-  bool removePredicate(const plansys2_msgs::msg::Node & predicate);
-  std::optional<plansys2_msgs::msg::Node> getPredicate(const std::string & expr);
+  std::vector<plansys2_msgs::msg::Node> getPredicateNodes();
+  bool addPredicateNode(const plansys2_msgs::msg::Node & predicate);
+  bool removePredicateNode(const plansys2_msgs::msg::Node & predicate);
+  bool existPredicateNode(const plansys2_msgs::msg::Node & predicate);
+  std::optional<plansys2_msgs::msg::Node> getPredicateNode(const std::string & expr);
 
   std::vector<plansys2_msgs::msg::Node> getFunctions();
   bool addFunction(const plansys2_msgs::msg::Node & function);
   bool removeFunction(const plansys2_msgs::msg::Node & function);
+  bool existFunction(const plansys2_msgs::msg::Node & function);
   bool updateFunction(const plansys2_msgs::msg::Node & function);
   std::optional<plansys2_msgs::msg::Node> getFunction(const std::string & expr);
 
@@ -61,8 +63,6 @@ public:
   std::string getProblem();
 
   bool existInstance(const std::string & name);
-  bool existPredicate(const plansys2_msgs::msg::Node & predicate);
-  bool existFunction(const plansys2_msgs::msg::Node & function);
   bool isValidType(const std::string & type);
   bool isValidPredicate(const plansys2_msgs::msg::Node & predicate);
   bool isValidFunction(const plansys2_msgs::msg::Node & function);

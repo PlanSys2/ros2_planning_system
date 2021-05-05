@@ -35,11 +35,11 @@ public:
   virtual bool removeInstanceParam(const plansys2_msgs::msg::Param & instance) = 0;
   virtual std::optional<plansys2_msgs::msg::Param> getInstanceParam(const std::string & name) = 0;
 
-  virtual std::vector<plansys2_msgs::msg::Node> getPredicates() = 0;
-  virtual bool addPredicate(const plansys2_msgs::msg::Node & predicate) = 0;
-  virtual bool removePredicate(const plansys2_msgs::msg::Node & predicate) = 0;
-  virtual bool existPredicate(const plansys2_msgs::msg::Node & predicate) = 0;
-  virtual std::optional<plansys2_msgs::msg::Node> getPredicate(const std::string & expr) = 0;
+  virtual std::vector<plansys2_msgs::msg::Node> getPredicateNodes() = 0;
+  virtual bool addPredicateNode(const plansys2_msgs::msg::Node & predicate) = 0;
+  virtual bool removePredicateNode(const plansys2_msgs::msg::Node & predicate) = 0;
+  virtual bool existPredicateNode(const plansys2_msgs::msg::Node & predicate) = 0;
+  virtual std::optional<plansys2_msgs::msg::Node> getPredicateNode(const std::string & expr) = 0;
 
   virtual std::vector<plansys2_msgs::msg::Node> getFunctions() = 0;
   virtual bool addFunction(const plansys2_msgs::msg::Node & function) = 0;
