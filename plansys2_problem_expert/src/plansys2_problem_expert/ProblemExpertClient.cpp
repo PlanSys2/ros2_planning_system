@@ -85,6 +85,21 @@ ProblemExpertClient::ProblemExpertClient(rclcpp::Node::SharedPtr provided_node)
 std::vector<plansys2::Instance>
 ProblemExpertClient::getInstances()
 {
+  auto params = getInstanceParams();
+  std::vector<plansys2::Instance> ret;
+  ret.reserve(params.size());
+  std::transform(
+    params.begin(), params.end(), std::back_inserter(ret),
+    [](plansys2_msgs::msg::Param item)
+    {
+      return plansys2::Instance(item);
+    });
+  return ret;
+}
+
+std::vector<plansys2_msgs::msg::Param>
+ProblemExpertClient::getInstanceParams()
+{
   while (!get_problem_instances_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return {};
@@ -106,7 +121,7 @@ ProblemExpertClient::getInstances()
   }
 
   if (future_result.get()->success) {
-    return Instance::toInstance(future_result.get()->instances);
+    return future_result.get()->instances;
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
@@ -119,6 +134,12 @@ ProblemExpertClient::getInstances()
 
 bool
 ProblemExpertClient::addInstance(const plansys2::Instance & instance)
+{
+  return addInstanceParam(instance);
+}
+
+bool
+ProblemExpertClient::addInstanceParam(const plansys2_msgs::msg::Param & instance)
 {
   while (!add_problem_instance_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
@@ -155,6 +176,12 @@ ProblemExpertClient::addInstance(const plansys2::Instance & instance)
 bool
 ProblemExpertClient::removeInstance(const plansys2::Instance & instance)
 {
+  return removeInstanceParam(instance);
+}
+
+bool
+ProblemExpertClient::removeInstanceParam(const plansys2_msgs::msg::Param & instance)
+{
   while (!remove_problem_instance_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
@@ -189,6 +216,12 @@ ProblemExpertClient::removeInstance(const plansys2::Instance & instance)
 
 std::optional<plansys2::Instance>
 ProblemExpertClient::getInstance(const std::string & name)
+{
+  return getInstanceParam(name);
+}
+
+std::optional<plansys2_msgs::msg::Param>
+ProblemExpertClient::getInstanceParam(const std::string & name)
 {
   while (!get_problem_instance_details_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {

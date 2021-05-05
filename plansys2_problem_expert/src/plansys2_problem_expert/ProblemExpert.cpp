@@ -35,7 +35,7 @@ ProblemExpert::ProblemExpert(std::shared_ptr<DomainExpert> & domain_expert)
 }
 
 bool
-ProblemExpert::addInstance(const plansys2::Instance & instance)
+ProblemExpert::addInstanceParam(const plansys2_msgs::msg::Param & instance)
 {
   if (!isValidType(instance.type)) {
     return false;
@@ -47,14 +47,14 @@ ProblemExpert::addInstance(const plansys2::Instance & instance)
   }
 }
 
-std::vector<plansys2::Instance>
-ProblemExpert::getInstances()
+std::vector<plansys2_msgs::msg::Param>
+ProblemExpert::getInstanceParams()
 {
   return instances_;
 }
 
 bool
-ProblemExpert::removeInstance(const plansys2::Instance & instance)
+ProblemExpert::removeInstanceParam(const plansys2_msgs::msg::Param & instance)
 {
   bool found = false;
   int i = 0;
@@ -74,8 +74,8 @@ ProblemExpert::removeInstance(const plansys2::Instance & instance)
   return found;
 }
 
-std::optional<plansys2::Instance>
-ProblemExpert::getInstance(const std::string & instance_name)
+std::optional<plansys2_msgs::msg::Param>
+ProblemExpert::getInstanceParam(const std::string & instance_name)
 {
   plansys2_msgs::msg::Param ret;
 
@@ -389,7 +389,7 @@ ProblemExpert::isValidPredicate(const plansys2_msgs::msg::Node & predicate)
       bool same_types = true;
       int i = 0;
       while (same_types && i < predicate.parameters.size()) {
-        auto arg_type = getInstance(predicate.parameters[i].name);
+        auto arg_type = getInstanceParam(predicate.parameters[i].name);
 
         if (!arg_type.has_value()) {
           same_types = false;
@@ -426,7 +426,7 @@ ProblemExpert::isValidFunction(const plansys2_msgs::msg::Node & function)
       bool same_types = true;
       int i = 0;
       while (same_types && i < function.parameters.size()) {
-        auto arg_type = getInstance(function.parameters[i].name);
+        auto arg_type = getInstanceParam(function.parameters[i].name);
 
         if (!arg_type.has_value()) {
           same_types = false;

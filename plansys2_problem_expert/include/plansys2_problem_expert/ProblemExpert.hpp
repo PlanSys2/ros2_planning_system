@@ -36,10 +36,10 @@ class ProblemExpert : public ProblemExpertInterface
 public:
   explicit ProblemExpert(std::shared_ptr<DomainExpert> & domain_expert);
 
-  std::vector<plansys2::Instance> getInstances();
-  bool addInstance(const plansys2::Instance & instance);
-  bool removeInstance(const plansys2::Instance & instance);
-  std::optional<plansys2::Instance> getInstance(const std::string & name);
+  std::vector<plansys2_msgs::msg::Param> getInstanceParams();
+  bool addInstanceParam(const plansys2_msgs::msg::Param & instance);
+  bool removeInstanceParam(const plansys2_msgs::msg::Param & instance);
+  std::optional<plansys2_msgs::msg::Param> getInstanceParam(const std::string & name);
 
   std::vector<plansys2_msgs::msg::Node> getPredicates();
   bool addPredicate(const plansys2_msgs::msg::Node & predicate);
@@ -77,7 +77,7 @@ private:
   bool removeFunctionsReferencing(const plansys2_msgs::msg::Param & param);
   bool removePredicatesReferencing(const plansys2_msgs::msg::Param & param);
 
-  std::vector<Instance> instances_;
+  std::vector<plansys2_msgs::msg::Param> instances_;
   std::vector<plansys2_msgs::msg::Node> predicates_;
   std::vector<plansys2_msgs::msg::Node> functions_;
   plansys2_msgs::msg::Tree goal_;

@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include "plansys2_core/Types.hpp"
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 
 #include "plansys2_msgs/msg/node.hpp"
@@ -52,6 +53,11 @@ public:
   bool addInstance(const plansys2::Instance & instance);
   bool removeInstance(const plansys2::Instance & instance);
   std::optional<plansys2::Instance> getInstance(const std::string & name);
+
+  std::vector<plansys2_msgs::msg::Param> getInstanceParams();
+  bool addInstanceParam(const plansys2_msgs::msg::Param & instance);
+  bool removeInstanceParam(const plansys2_msgs::msg::Param & instance);
+  std::optional<plansys2_msgs::msg::Param> getInstanceParam(const std::string & name);
 
   std::vector<plansys2_msgs::msg::Node> getPredicates();
   bool addPredicate(const plansys2_msgs::msg::Node & predicate);

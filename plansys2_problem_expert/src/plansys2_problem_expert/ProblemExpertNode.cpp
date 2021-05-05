@@ -321,7 +321,7 @@ ProblemExpertNode::add_problem_instance_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    response->success = problem_expert_->addInstance(request->param);
+    response->success = problem_expert_->addInstanceParam(request->param);
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
       knowledge_pub_->publish(*get_knowledge_as_msg());
@@ -402,7 +402,7 @@ ProblemExpertNode::get_problem_instance_details_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto instance = problem_expert_->getInstance(request->instance);
+    auto instance = problem_expert_->getInstanceParam(request->instance);
     if (instance) {
       response->success = true;
       response->instance = instance.value();
@@ -425,7 +425,7 @@ ProblemExpertNode::get_problem_instances_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = true;
-    response->instances = Instance::toParam(problem_expert_->getInstances());
+    response->instances = problem_expert_->getInstanceParams();
   }
 }
 
@@ -590,7 +590,7 @@ ProblemExpertNode::remove_problem_instance_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    response->success = problem_expert_->removeInstance(request->param);
+    response->success = problem_expert_->removeInstanceParam(request->param);
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
       knowledge_pub_->publish(*get_knowledge_as_msg());
@@ -694,7 +694,7 @@ ProblemExpertNode::get_knowledge_as_msg() const
 {
   auto ret_msgs = std::make_shared<plansys2_msgs::msg::Knowledge>();
 
-  for (const auto & instance : problem_expert_->getInstances()) {
+  for (const auto & instance : problem_expert_->getInstanceParams()) {
     ret_msgs->instances.push_back(instance.name);
   }
 
