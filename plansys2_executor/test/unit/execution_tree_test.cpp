@@ -157,14 +157,13 @@ TEST(executiotest_noden_tree, bt_builder_factory)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(
-    goal,
-    "(and (car_assembled car_1) (car_assembled car_2) (car_assembled car_3))");
-  ASSERT_TRUE(problem_client->setGoal(goal));
+  ASSERT_TRUE(
+    problem_client->setGoal(
+  {
+    "(and (car_assembled car_1) (car_assembled car_2) (car_assembled car_3))"}));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
@@ -290,15 +289,13 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(
-    goal,
-    std::string("(and (car_assembled car_1) (piece_at body_car_2 assembly_zone)") +
-    std::string("(piece_at body_car_3 assembly_zone))"));
-  ASSERT_TRUE(problem_client->setGoal(goal));
+  ASSERT_TRUE(
+    problem_client->setGoal(
+      {std::string("(and (car_assembled car_1) (piece_at body_car_2 assembly_zone)") +
+        std::string("(piece_at body_car_3 assembly_zone))")}));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
@@ -382,7 +379,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
     "(connected wp4 wp_control)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
 
   std::vector<std::string> functions = {
@@ -411,14 +408,13 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
     "(= (distance wp_control wp4) 20)"};
 
   for (const auto & func : functions) {
-    ASSERT_TRUE(problem_client->addFunction(parser::pddl::fromStringFunction(func)));
+    ASSERT_TRUE(problem_client->addFunction({func}));
   }
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(
-    goal,
-    "(and (patrolled wp1) (patrolled wp2) (patrolled wp3) (patrolled wp4))");
-  ASSERT_TRUE(problem_client->setGoal(goal));
+  ASSERT_TRUE(
+    problem_client->setGoal(
+  {
+    "(and (patrolled wp1) (patrolled wp2) (patrolled wp3) (patrolled wp4))"}));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);

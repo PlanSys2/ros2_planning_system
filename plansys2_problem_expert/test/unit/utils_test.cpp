@@ -687,10 +687,7 @@ TEST(utils, evaluate_function_mod_client)
 
   ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
   ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
-  ASSERT_TRUE(
-    problem_client->addFunction(
-      parser::pddl::fromStringFunction(
-        "(= (room_distance bedroom kitchen) 1.0)")));
+  ASSERT_TRUE(problem_client->addFunction({"(= (room_distance bedroom kitchen) 1.0)"}));
 
   {
     rclcpp::Rate rate(10);

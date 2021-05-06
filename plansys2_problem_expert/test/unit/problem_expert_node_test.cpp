@@ -184,9 +184,7 @@ TEST(problem_expert_node, addget_instances)
   ASSERT_EQ(last_knowledge_msg.predicates[1], "(robot_at r2d2 kitchen)");
   ASSERT_EQ(last_knowledge_msg.goal, "");
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(goal, "(and (robot_at r2d2 kitchen))");
-  ASSERT_TRUE(problem_client->setGoal(goal));
+  ASSERT_TRUE(problem_client->setGoal({"(and (robot_at r2d2 kitchen))"}));
 
   {
     rclcpp::Rate rate(10);
@@ -505,9 +503,7 @@ TEST(problem_expert, addget_goals)
 
   ASSERT_EQ(problem_client->getGoal().toString(), "");
 
-  plansys2_msgs::msg::Tree goal4;
-  parser::pddl::fromString(goal4, "(and (or (robot_at r2d2 bedroom)(robot_at r2d2 kitchen))(not(person_at paco kitchen)))");
-  ASSERT_TRUE(problem_client->setGoal(goal4));
+  ASSERT_TRUE(problem_client->setGoal({"(and (or (robot_at r2d2 bedroom)(robot_at r2d2 kitchen))(not(person_at paco kitchen)))"}));
 }
 
 TEST(problem_expert, get_probem)
@@ -555,9 +551,7 @@ TEST(problem_expert, get_probem)
   ASSERT_TRUE(problem_client->addPredicate(predicate_3));
   ASSERT_TRUE(problem_client->addPredicate(predicate_4));
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(goal, "(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
-  ASSERT_TRUE(problem_client->setGoal(goal));
+  ASSERT_TRUE(problem_client->setGoal({"(and (robot_at r2d2 bedroom)(person_at paco kitchen))"}));
 
   ASSERT_EQ(
     problem_client->getProblem(),
@@ -645,11 +639,9 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
   ASSERT_EQ(last_knowledge_msg.goal, "");
 
   ASSERT_TRUE(
-    problem_client->addPredicate(
-      parser::pddl::fromStringPredicate("(robot_at leia kitchen)")));
+    problem_client->addPredicate({"(robot_at leia kitchen)"}));
   ASSERT_TRUE(
-    problem_client->addPredicate(
-      parser::pddl::fromStringPredicate("(person_at Jack bedroom)")));
+    problem_client->addPredicate({"(person_at Jack bedroom)"}));
 
   std::string expression = "(and (robot_talk leia m1 Jack))";
   plansys2_msgs::msg::Tree goal;
@@ -678,8 +670,7 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
   ASSERT_EQ(last_knowledge_msg.goal, "(and (robot_talk leia m1 Jack))");
 
   ASSERT_TRUE(
-    problem_client->addPredicate(
-      parser::pddl::fromStringPredicate("(robot_talk leia m1 Jack)")));
+    problem_client->addPredicate({"(robot_talk leia m1 Jack)"}));
 
   ASSERT_TRUE(problem_client->isGoalSatisfied(goal));
 

@@ -101,10 +101,10 @@ std::tuple<bool, bool, double> evaluate(
             }
           } else {
             if (negate) {
-              success = success && problem_client->removePredicate(tree.nodes[node_id]);
+              success = success && problem_client->removePredicateNode(tree.nodes[node_id]);
               value = false;
             } else {
-              success = success && problem_client->addPredicate(tree.nodes[node_id]);
+              success = success && problem_client->addPredicateNode(tree.nodes[node_id]);
             }
           }
         } else {

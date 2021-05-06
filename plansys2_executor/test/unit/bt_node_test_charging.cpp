@@ -161,11 +161,11 @@ TEST(problem_expert, wait_atstart_req_test)
     ASSERT_EQ(status, BT::NodeStatus::RUNNING);
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+      ASSERT_TRUE(problem_client->addPredicate({pred}));
     }
 
     for (const auto & func : functions) {
-      ASSERT_TRUE(problem_client->addFunction(parser::pddl::fromStringFunction(func)));
+      ASSERT_TRUE(problem_client->addFunction({func}));
     }
 
     status = tree.tickRoot();
@@ -269,7 +269,7 @@ TEST(problem_expert, apply_atstart_effect_test)
       "(connected wp1 wp2)"};
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+      ASSERT_TRUE(problem_client->addPredicate({pred}));
     }
 
     std::vector<std::string> functions = {
@@ -280,7 +280,7 @@ TEST(problem_expert, apply_atstart_effect_test)
       "(= (distance wp2 wp1) 15)"};
 
     for (const auto & func : functions) {
-      ASSERT_TRUE(problem_client->addFunction(parser::pddl::fromStringFunction(func)));
+      ASSERT_TRUE(problem_client->addFunction({func}));
     }
 
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
@@ -296,9 +296,7 @@ TEST(problem_expert, apply_atstart_effect_test)
         rate.sleep();
       }
     }
-    ASSERT_FALSE(
-      problem_client->existPredicate(
-        parser::pddl::fromStringPredicate("(robot_at robot1 wp1)")));
+    ASSERT_FALSE(problem_client->existPredicate({"(robot_at robot1 wp1)"}));
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
@@ -398,7 +396,7 @@ TEST(problem_expert, apply_atend_effect_test)
       "(connected wp1 wp2)"};
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+      ASSERT_TRUE(problem_client->addPredicate({pred}));
     }
 
     std::vector<std::string> functions = {
@@ -409,7 +407,7 @@ TEST(problem_expert, apply_atend_effect_test)
       "(= (distance wp2 wp1) 15)"};
 
     for (const auto & func : functions) {
-      ASSERT_TRUE(problem_client->addFunction(parser::pddl::fromStringFunction(func)));
+      ASSERT_TRUE(problem_client->addFunction({func}));
     }
 
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
@@ -426,9 +424,7 @@ TEST(problem_expert, apply_atend_effect_test)
       }
     }
 
-    ASSERT_TRUE(
-      problem_client->existPredicate(
-        parser::pddl::fromStringPredicate("(robot_at robot1 wp2)")));
+    ASSERT_TRUE(problem_client->existPredicate({"(robot_at robot1 wp2)"}));
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }

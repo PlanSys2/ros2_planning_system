@@ -103,28 +103,21 @@ TEST(test_1, test_1)
   problem_client->addInstance({"dinning", "room"});
   problem_client->addInstance({"bathroom", "room"});
   problem_client->addInstance({"chargingroom", "room"});
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected entrance dinning)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected dinning entrance)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected dinning kitchen)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected kitchen dinning)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected dinning bedroom)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected bedroom dinning)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected bathroom bedroom)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected bedroom bathroom)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate("(connected chargingroom kitchen)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate("(connected kitchen chargingroom)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate("(charging_point_at chargingroom)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(battery_low leia)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(robot_at leia entrance)"));
+  problem_client->addPredicate({"(connected entrance dinning)"});
+  problem_client->addPredicate({"(connected dinning entrance)"});
+  problem_client->addPredicate({"(connected dinning kitchen)"});
+  problem_client->addPredicate({"(connected kitchen dinning)"});
+  problem_client->addPredicate({"(connected dinning bedroom)"});
+  problem_client->addPredicate({"(connected bedroom dinning)"});
+  problem_client->addPredicate({"(connected bathroom bedroom)"});
+  problem_client->addPredicate({"(connected bedroom bathroom)"});
+  problem_client->addPredicate({"(connected chargingroom kitchen)"});
+  problem_client->addPredicate({"(connected kitchen chargingroom)"});
+  problem_client->addPredicate({"(charging_point_at chargingroom)"});
+  problem_client->addPredicate({"(battery_low leia)"});
+  problem_client->addPredicate({"(robot_at leia entrance)"});
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(
-    goal, "(and(robot_at leia bathroom))", false,
-    plansys2_msgs::msg::Node::AND);
-  problem_client->setGoal(goal);
+  problem_client->setGoal({"(and(robot_at leia bathroom))"});
 
   ASSERT_TRUE(executor_client->start_plan_execution());
 

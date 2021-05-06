@@ -441,7 +441,7 @@ void
 Terminal::process_set_instance(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 2) {
-    if (!problem_client_->addInstance(parser::pddl::fromStringParam(command[0], command[1]))) {
+    if (!problem_client_->addInstance({command[0], command[1]})) {
       os << "Could not add the instance [" << command[0] << "]" << std::endl;
     }
   } else {

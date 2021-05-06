@@ -408,12 +408,10 @@ TEST(problem_expert, action_executor)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(goal, "(and (car_assembled car_1))");
-  ASSERT_TRUE(problem_client->setGoal(goal));
+  ASSERT_TRUE(problem_client->setGoal({"(and (car_assembled car_1))"}));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
@@ -765,7 +763,7 @@ TEST(problem_expert, action_real_action_1)
   };
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
 
   try {
@@ -773,16 +771,12 @@ TEST(problem_expert, action_real_action_1)
 
     auto status = BT::NodeStatus::RUNNING;
 
-    ASSERT_TRUE(
-      problem_client->existPredicate(parser::pddl::fromStringPredicate("(robot_available r2d2)")));
+    ASSERT_TRUE(problem_client->existPredicate({"(robot_available r2d2)"}));
     status = tree.tickRoot();
 
     ASSERT_EQ(ApplyAtStartEffectTest::test_status, BT::NodeStatus::SUCCESS);
-    ASSERT_FALSE(
-      problem_client->existPredicate(parser::pddl::fromStringPredicate("(robot_available r2d2)")));
-    ASSERT_FALSE(
-      problem_client->existPredicate(
-        parser::pddl::fromStringPredicate("(robot_at r2d2 steering_wheels_zone)")));
+    ASSERT_FALSE(problem_client->existPredicate({"(robot_available r2d2)"}));
+    ASSERT_FALSE(problem_client->existPredicate({"(robot_at r2d2 steering_wheels_zone)"}));
 
     status = tree.tickRoot();
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
@@ -791,8 +785,7 @@ TEST(problem_expert, action_real_action_1)
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
     ASSERT_EQ(ExecuteActionTest::test_status, BT::NodeStatus::RUNNING);
 
-    ASSERT_TRUE(
-      problem_client->removePredicate(parser::pddl::fromStringPredicate("(battery_full r2d2)")));
+    ASSERT_TRUE(problem_client->removePredicate({"(battery_full r2d2)"}));
 
     status = tree.tickRoot();
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::FAILURE);
@@ -808,7 +801,7 @@ TEST(problem_expert, action_real_action_1)
   ApplyAtStartEffectTest::test_status = BT::NodeStatus::IDLE;
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
 
   try {
@@ -816,18 +809,14 @@ TEST(problem_expert, action_real_action_1)
 
     auto status = BT::NodeStatus::RUNNING;
 
-    ASSERT_TRUE(
-      problem_client->existPredicate(parser::pddl::fromStringPredicate("(robot_available r2d2)")));
+    ASSERT_TRUE(problem_client->existPredicate({"(robot_available r2d2)"}));
 
     while (ApplyAtStartEffectTest::test_status != BT::NodeStatus::SUCCESS) {
       status = tree.tickRoot();
     }
 
-    ASSERT_FALSE(
-      problem_client->existPredicate(
-        parser::pddl::fromStringPredicate("(robot_at r2d2 assembly_zone)")));
-    ASSERT_FALSE(
-      problem_client->existPredicate(parser::pddl::fromStringPredicate("(robot_available r2d2)")));
+    ASSERT_FALSE(problem_client->existPredicate({"(robot_at r2d2 assembly_zone)"}));
+    ASSERT_FALSE(problem_client->existPredicate({"(robot_available r2d2)"}));
 
     while (ExecuteActionTest::test_status != BT::NodeStatus::SUCCESS) {
       status = tree.tickRoot();
@@ -838,11 +827,8 @@ TEST(problem_expert, action_real_action_1)
       status = tree.tickRoot();
     }
 
-    ASSERT_TRUE(
-      problem_client->existPredicate(
-        parser::pddl::fromStringPredicate("(robot_at r2d2 assembly_zone)")));
-    ASSERT_TRUE(
-      problem_client->existPredicate(parser::pddl::fromStringPredicate("(robot_available r2d2)")));
+    ASSERT_TRUE(problem_client->existPredicate({"(robot_at r2d2 assembly_zone)"}));
+    ASSERT_TRUE(problem_client->existPredicate({"(robot_available r2d2)"}));
   } catch (const std::exception & e) {
     std::cerr << e.what() << '\n';
   }
@@ -988,7 +974,7 @@ TEST(problem_expert, cancel_bt_execution)
   };
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
 
   try {
@@ -996,16 +982,12 @@ TEST(problem_expert, cancel_bt_execution)
 
     auto status = BT::NodeStatus::RUNNING;
 
-    ASSERT_TRUE(
-      problem_client->existPredicate(parser::pddl::fromStringPredicate("(robot_available r2d2)")));
+    ASSERT_TRUE(problem_client->existPredicate({"(robot_available r2d2)"}));
     status = tree.tickRoot();
 
     ASSERT_EQ(ApplyAtStartEffectTest::test_status, BT::NodeStatus::SUCCESS);
-    ASSERT_FALSE(
-      problem_client->existPredicate(parser::pddl::fromStringPredicate("(robot_available r2d2)")));
-    ASSERT_FALSE(
-      problem_client->existPredicate(
-        parser::pddl::fromStringPredicate("(robot_at r2d2 steering_wheels_zone)")));
+    ASSERT_FALSE(problem_client->existPredicate({"(robot_available r2d2)"}));
+    ASSERT_FALSE(problem_client->existPredicate({"(robot_at r2d2 steering_wheels_zone)"}));
 
     status = tree.tickRoot();
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
@@ -1148,11 +1130,9 @@ TEST(problem_expert, executor_client_execute_plan)
   };
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(goal, "(and(robot_at r2d2 assembly_zone))");
-  problem_client->setGoal(goal);
+  problem_client->setGoal({"(and(robot_at r2d2 assembly_zone))"});
 
   auto domain = domain_client->getDomain();
   auto problem = problem_client->getProblem();
@@ -1174,9 +1154,7 @@ TEST(problem_expert, executor_client_execute_plan)
     }
   }
 
-  ASSERT_TRUE(
-    problem_client->existPredicate(
-      parser::pddl::fromStringPredicate("(robot_at r2d2 assembly_zone)")));
+  ASSERT_TRUE(problem_client->existPredicate({"(robot_at r2d2 assembly_zone)"}));
 
   ASSERT_TRUE(executor_client->getResult().has_value());
   auto result = executor_client->getResult().value();
@@ -1187,9 +1165,7 @@ TEST(problem_expert, executor_client_execute_plan)
     ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
   }
 
-  goal.nodes.clear();
-  parser::pddl::fromString(goal, "(and(robot_at r2d2 body_car_zone))");
-  problem_client->setGoal(goal);
+  problem_client->setGoal({"(and(robot_at r2d2 body_car_zone))"});
 
   {
     rclcpp::Rate rate(10);
@@ -1205,8 +1181,7 @@ TEST(problem_expert, executor_client_execute_plan)
   }
 
   ASSERT_TRUE(
-    problem_client->existPredicate(
-      parser::pddl::fromStringPredicate("(robot_at r2d2 body_car_zone)")));
+    problem_client->existPredicate({"(robot_at r2d2 body_car_zone)"}));
 
   ASSERT_TRUE(executor_client->getResult().has_value());
   result = executor_client->getResult().value();
@@ -1353,7 +1328,7 @@ TEST(problem_expert, executor_client_ordered_sub_goals)
     "(connected wp2 wp1)",
   };
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
 
   std::vector<std::string> functions = {
@@ -1368,12 +1343,10 @@ TEST(problem_expert, executor_client_ordered_sub_goals)
     "(= (distance wp2 wp1) 5.0)",
   };
   for (const auto & func : functions) {
-    ASSERT_TRUE(problem_client->addFunction(parser::pddl::fromStringFunction(func)));
+    ASSERT_TRUE(problem_client->addFunction({func}));
   }
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(goal, "(and(patrolled wp1) (patrolled wp2))");
-  problem_client->setGoal(goal);
+  problem_client->setGoal({"(and(patrolled wp1) (patrolled wp2))"});
 
   plansys2_msgs::msg::Tree sub_goal_1;
   plansys2_msgs::msg::Tree sub_goal_2;
@@ -1496,12 +1469,10 @@ TEST(problem_expert, executor_client_cancel_plan)
   };
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(goal, "(and(robot_at r2d2 assembly_zone))");
-  problem_client->setGoal(goal);
+  problem_client->setGoal({"(and(robot_at r2d2 assembly_zone))"});
 
   auto domain = domain_client->getDomain();
   auto problem = problem_client->getProblem();
@@ -1638,12 +1609,10 @@ TEST(problem_expert, action_timeout)
   };
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(goal, "(and(robot_at r2d2 assembly_zone))");
-  problem_client->setGoal(goal);
+  problem_client->setGoal({"(and(robot_at r2d2 assembly_zone))"});
 
   auto domain = domain_client->getDomain();
   auto problem = problem_client->getProblem();

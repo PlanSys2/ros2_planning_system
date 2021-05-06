@@ -130,69 +130,42 @@ TEST(test_3, test_3)
   problem_client->addInstance({"car1", "car"});
   problem_client->addInstance({"car2", "car"});
   problem_client->addInstance({"car3", "car"});
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate("(robot_at robot1 assembly_zone)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate("(robot_at robot2 assembly_zone)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate("(robot_at robot3 assembly_zone)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate("(is_assembly_zone assembly_zone)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(robot_available robot1)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(robot_available robot2)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(robot_available robot3)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_at wheel_1 wheels_zone)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate(
-      "(piece_at body_car_1 body_car_zone)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate(
-      "(piece_at sterwheel_1 sterwheel_zone)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_is_wheel wheel_1)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_is_body_car body_car_1)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate(
-      "(piece_is_steering_wheel sterwheel_1)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_at wheel_2 wheels_zone)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate(
-      "(piece_at body_car_2 body_car_zone)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate(
-      "(piece_at sterwheel_2 sterwheel_zone)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_is_wheel wheel_2)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_is_body_car body_car_2)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate(
-      "(piece_is_steering_wheel sterwheel_2)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_at wheel_3 wheels_zone)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate(
-      "(piece_at body_car_3 body_car_zone)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate(
-      "(piece_at sterwheel_3 sterwheel_zone)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_is_wheel wheel_3)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_is_body_car body_car_3)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate(
-      "(piece_is_steering_wheel sterwheel_3)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_not_used wheel_1)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_not_used wheel_2)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_not_used wheel_3)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_not_used body_car_1)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_not_used body_car_2)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_not_used body_car_3)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_not_used sterwheel_1)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_not_used sterwheel_2)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(piece_not_used sterwheel_3)"));
+  problem_client->addPredicate({"(robot_at robot1 assembly_zone)"});
+  problem_client->addPredicate({"(robot_at robot2 assembly_zone)"});
+  problem_client->addPredicate({"(robot_at robot3 assembly_zone)"});
+  problem_client->addPredicate({"(is_assembly_zone assembly_zone)"});
+  problem_client->addPredicate({"(robot_available robot1)"});
+  problem_client->addPredicate({"(robot_available robot2)"});
+  problem_client->addPredicate({"(robot_available robot3)"});
+  problem_client->addPredicate({"(piece_at wheel_1 wheels_zone)"});
+  problem_client->addPredicate({"(piece_at body_car_1 body_car_zone)"});
+  problem_client->addPredicate({"(piece_at sterwheel_1 sterwheel_zone)"});
+  problem_client->addPredicate({"(piece_is_wheel wheel_1)"});
+  problem_client->addPredicate({"(piece_is_body_car body_car_1)"});
+  problem_client->addPredicate({"(piece_is_steering_wheel sterwheel_1)"});
+  problem_client->addPredicate({"(piece_at wheel_2 wheels_zone)"});
+  problem_client->addPredicate({"(piece_at body_car_2 body_car_zone)"});
+  problem_client->addPredicate({"(piece_at sterwheel_2 sterwheel_zone)"});
+  problem_client->addPredicate({"(piece_is_wheel wheel_2)"});
+  problem_client->addPredicate({"(piece_is_body_car body_car_2)"});
+  problem_client->addPredicate({"(piece_is_steering_wheel sterwheel_2)"});
+  problem_client->addPredicate({"(piece_at wheel_3 wheels_zone)"});
+  problem_client->addPredicate({"(piece_at body_car_3 body_car_zone)"});
+  problem_client->addPredicate({"(piece_at sterwheel_3 sterwheel_zone)"});
+  problem_client->addPredicate({"(piece_is_wheel wheel_3)"});
+  problem_client->addPredicate({"(piece_is_body_car body_car_3)"});
+  problem_client->addPredicate({"(piece_is_steering_wheel sterwheel_3)"});
+  problem_client->addPredicate({"(piece_not_used wheel_1)"});
+  problem_client->addPredicate({"(piece_not_used wheel_2)"});
+  problem_client->addPredicate({"(piece_not_used wheel_3)"});
+  problem_client->addPredicate({"(piece_not_used body_car_1)"});
+  problem_client->addPredicate({"(piece_not_used body_car_2)"});
+  problem_client->addPredicate({"(piece_not_used body_car_3)"});
+  problem_client->addPredicate({"(piece_not_used sterwheel_1)"});
+  problem_client->addPredicate({"(piece_not_used sterwheel_2)"});
+  problem_client->addPredicate({"(piece_not_used sterwheel_3)"});
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(
-    goal,
-    "(and(car_assembled car1) (car_assembled car2) (car_assembled car3))",
-    false, plansys2_msgs::msg::Node::AND);
-  problem_client->setGoal(goal);
+  problem_client->setGoal({"(and(car_assembled car1) (car_assembled car2) (car_assembled car3))"});
 
   ASSERT_TRUE(executor_client->start_plan_execution());
 

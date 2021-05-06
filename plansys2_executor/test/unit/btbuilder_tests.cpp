@@ -205,12 +205,10 @@ TEST(btbuilder_tests, test_plan_1)
     "(robot_at leia entrance)"};
 
   for (const auto & pred : predicate_strings) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(goal, "(and(robot_at leia bathroom))");
-  ASSERT_TRUE(problem_client->setGoal(goal));
+  ASSERT_TRUE(problem_client->setGoal({"(and(robot_at leia bathroom))"}));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
@@ -478,15 +476,13 @@ TEST(btbuilder_tests, test_plan_2)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicate_strings) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
 
-
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(
-    goal,
-    "(and(car_assembled car_1)(car_assembled car_2)(car_assembled car_3))");
-  ASSERT_TRUE(problem_client->setGoal(goal));
+  ASSERT_TRUE(
+    problem_client->setGoal(
+  {
+    "(and(car_assembled car_1)(car_assembled car_2)(car_assembled car_3))"}));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
@@ -654,12 +650,10 @@ TEST(btbuilder_tests, test_plan_3)
     "(battery_full leia)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(goal, "(and (patrolled ro1) (patrolled ro2) (patrolled ro3))");
-  ASSERT_TRUE(problem_client->setGoal(goal));
+  ASSERT_TRUE(problem_client->setGoal({"(and (patrolled ro1) (patrolled ro2) (patrolled ro3))"}));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
@@ -769,12 +763,10 @@ TEST(btbuilder_tests, test_plan_4)
   };
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(goal, "(and (dish_prepared cake)(dish_prepared omelette))");
-  ASSERT_TRUE(problem_client->setGoal(goal));
+  ASSERT_TRUE(problem_client->setGoal({"(and (dish_prepared cake)(dish_prepared omelette))"}));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);

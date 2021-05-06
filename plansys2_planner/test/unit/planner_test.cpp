@@ -102,12 +102,10 @@ TEST(planner_expert, generate_plan_good)
     "(person_at francisco bedroom)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate({pred}));
   }
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(goal, "(and (robot_talk leia message1 francisco))");
-  ASSERT_TRUE(problem_client->setGoal(goal));
+  ASSERT_TRUE(problem_client->setGoal({"(and (robot_talk leia message1 francisco))"}));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);

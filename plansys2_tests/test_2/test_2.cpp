@@ -103,29 +103,21 @@ TEST(test_2, test_2)
   problem_client->addInstance({"zone_1_1", "zone"});
   problem_client->addInstance({"zone_1_2", "zone"});
   problem_client->addInstance({"zone_recharge", "zone"});
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected room_1 corridor_1)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected corridor_1 room_1)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected room_2 corridor_1)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected corridor_1 room_2)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected room_1 zone_1_1)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected zone_1_1 room_1)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected room_1 zone_1_2)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected zone_1_2 room_1)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate("(connected room_2 zone_recharge)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate("(connected zone_recharge room_2)"));
-  problem_client->addPredicate(
-    parser::pddl::fromStringPredicate(
-      "(charging_point_at zone_recharge)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(battery_low leia)"));
-  problem_client->addPredicate(parser::pddl::fromStringPredicate("(robot_at leia zone_1_1)"));
+  problem_client->addPredicate({"(connected room_1 corridor_1)"});
+  problem_client->addPredicate({"(connected corridor_1 room_1)"});
+  problem_client->addPredicate({"(connected room_2 corridor_1)"});
+  problem_client->addPredicate({"(connected corridor_1 room_2)"});
+  problem_client->addPredicate({"(connected room_1 zone_1_1)"});
+  problem_client->addPredicate({"(connected zone_1_1 room_1)"});
+  problem_client->addPredicate({"(connected room_1 zone_1_2)"});
+  problem_client->addPredicate({"(connected zone_1_2 room_1)"});
+  problem_client->addPredicate({"(connected room_2 zone_recharge)"});
+  problem_client->addPredicate({"(connected zone_recharge room_2)"});
+  problem_client->addPredicate({"(charging_point_at zone_recharge)"});
+  problem_client->addPredicate({"(battery_low leia)"});
+  problem_client->addPredicate({"(robot_at leia zone_1_1)"});
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(
-    goal, "(and(robot_at leia zone_1_2))", false,
-    plansys2_msgs::msg::Node::AND);
-  problem_client->setGoal(goal);
+  problem_client->setGoal({"(and(robot_at leia zone_1_2))"});
 
   ASSERT_TRUE(executor_client->start_plan_execution());
 
