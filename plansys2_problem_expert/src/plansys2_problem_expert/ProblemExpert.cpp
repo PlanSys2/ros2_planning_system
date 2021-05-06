@@ -383,7 +383,7 @@ ProblemExpert::isValidPredicate(const plansys2_msgs::msg::Node & predicate)
   bool valid = false;
 
   const std::optional<plansys2_msgs::msg::Node> & model_predicate =
-    domain_expert_->getPredicate(predicate.name);
+    domain_expert_->getPredicateNode(predicate.name);
   if (model_predicate) {
     if (model_predicate.value().parameters.size() == predicate.parameters.size()) {
       bool same_types = true;
@@ -420,7 +420,7 @@ ProblemExpert::isValidFunction(const plansys2_msgs::msg::Node & function)
   bool valid = false;
 
   const std::optional<plansys2_msgs::msg::Node> & model_function =
-    domain_expert_->getFunction(function.name);
+    domain_expert_->getFunctionNode(function.name);
   if (model_function) {
     if (model_function.value().parameters.size() == function.parameters.size()) {
       bool same_types = true;

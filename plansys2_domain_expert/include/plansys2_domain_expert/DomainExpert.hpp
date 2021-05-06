@@ -58,7 +58,7 @@ public:
   /**
    * \return The vector containing the name of the predicates.
    */
-  std::vector<plansys2_msgs::msg::Node> getPredicates();
+  std::vector<plansys2_msgs::msg::Node> getPredicateNodes();
 
   /// Get the details of a predicate existing in the domain.
   /**
@@ -66,13 +66,13 @@ public:
    * \return A Predicate object containing the predicate name and its parameters (name and type).
    *    If the predicate does not exist, the value returned has not value.
    */
-  std::optional<plansys2_msgs::msg::Node> getPredicate(const std::string & predicate);
+  std::optional<plansys2_msgs::msg::Node> getPredicateNode(const std::string & predicate);
 
   /// Get the functions existing in the domain.
   /**
    * \return The vector containing the name of the functions.
    */
-  std::vector<plansys2_msgs::msg::Node> getFunctions();
+  std::vector<plansys2_msgs::msg::Node> getFunctionNodes();
 
   /// Get the details of a function existing in the domain.
   /**
@@ -80,7 +80,7 @@ public:
    * \return A Function object containing the function name and its parameters (name and type).
    *    If the function does not exist, the value returned has not value.
    */
-  std::optional<plansys2_msgs::msg::Node> getFunction(const std::string & function);
+  std::optional<plansys2_msgs::msg::Node> getFunctionNode(const std::string & function);
 
   /// Get the regular actions existing in the domain.
   /**

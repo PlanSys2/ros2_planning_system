@@ -81,8 +81,23 @@ DomainExpertClient::getTypes()
   return ret;
 }
 
-std::vector<plansys2_msgs::msg::Node>
+std::vector<plansys2::Predicate>
 DomainExpertClient::getPredicates()
+{
+  auto predicates = getPredicateNodes();
+  std::vector<plansys2::Predicate> ret;
+  ret.reserve(predicates.size());
+  std::transform(
+    predicates.begin(), predicates.end(), std::back_inserter(ret),
+    [](plansys2_msgs::msg::Node item)
+    {
+      return plansys2::Predicate(item);
+    });
+  return ret;
+}
+
+std::vector<plansys2_msgs::msg::Node>
+DomainExpertClient::getPredicateNodes()
 {
   std::vector<plansys2_msgs::msg::Node> ret;
 
@@ -111,8 +126,14 @@ DomainExpertClient::getPredicates()
   return ret;
 }
 
-std::optional<plansys2_msgs::msg::Node>
+std::optional<plansys2::Predicate>
 DomainExpertClient::getPredicate(const std::string & predicate)
+{
+  return getPredicateNode(predicate);
+}
+
+std::optional<plansys2_msgs::msg::Node>
+DomainExpertClient::getPredicateNode(const std::string & predicate)
 {
   while (!get_predicate_details_client_->wait_for_service(std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
@@ -148,8 +169,23 @@ DomainExpertClient::getPredicate(const std::string & predicate)
   return {};
 }
 
-std::vector<plansys2_msgs::msg::Node>
+std::vector<plansys2::Function>
 DomainExpertClient::getFunctions()
+{
+  auto functions = getFunctionNodes();
+  std::vector<plansys2::Function> ret;
+  ret.reserve(functions.size());
+  std::transform(
+    functions.begin(), functions.end(), std::back_inserter(ret),
+    [](plansys2_msgs::msg::Node item)
+    {
+      return plansys2::Function(item);
+    });
+  return ret;
+}
+
+std::vector<plansys2_msgs::msg::Node>
+DomainExpertClient::getFunctionNodes()
 {
   std::vector<plansys2_msgs::msg::Node> ret;
 
@@ -178,8 +214,14 @@ DomainExpertClient::getFunctions()
   return ret;
 }
 
-std::optional<plansys2_msgs::msg::Node>
+std::optional<plansys2::Function>
 DomainExpertClient::getFunction(const std::string & function)
+{
+  return getFunctionNode(function);
+}
+
+std::optional<plansys2_msgs::msg::Node>
+DomainExpertClient::getFunctionNode(const std::string & function)
 {
   while (!get_function_details_client_->wait_for_service(std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {

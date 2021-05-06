@@ -108,7 +108,7 @@ TEST(domain_expert, get_predicates)
 
   plansys2::DomainExpert domain_expert(domain_str);
 
-  std::vector<plansys2_msgs::msg::Node> predicates = domain_expert.getPredicates();
+  std::vector<plansys2_msgs::msg::Node> predicates = domain_expert.getPredicateNodes();
   std::vector<std::string> predicates_types {"person_at", "robot_at", "robot_near_person",
     "robot_talk"};
 
@@ -128,7 +128,7 @@ TEST(domain_expert, get_predicate_params)
 
   plansys2::DomainExpert domain_expert(domain_str);
 
-  auto params_1 = domain_expert.getPredicate("robot_talk");
+  auto params_1 = domain_expert.getPredicateNode("robot_talk");
   ASSERT_TRUE(params_1);
   ASSERT_EQ(params_1.value().name, "robot_talk");
   ASSERT_EQ(params_1.value().parameters.size(), 3);
@@ -139,10 +139,10 @@ TEST(domain_expert, get_predicate_params)
   ASSERT_EQ(params_1.value().parameters[2].name, "?person2");
   ASSERT_EQ(params_1.value().parameters[2].type, "person");
 
-  auto params_2 = domain_expert.getPredicate("ROBOT_TALK");
+  auto params_2 = domain_expert.getPredicateNode("ROBOT_TALK");
   ASSERT_TRUE(params_2);
 
-  auto params_3 = domain_expert.getPredicate("person_at");
+  auto params_3 = domain_expert.getPredicateNode("person_at");
   ASSERT_TRUE(params_3);
   ASSERT_EQ(params_3.value().parameters.size(), 2);
   ASSERT_EQ(params_3.value().parameters[0].name, "?person0");
@@ -161,7 +161,7 @@ TEST(domain_expert, get_functions)
 
   plansys2::DomainExpert domain_expert(domain_str);
 
-  std::vector<plansys2_msgs::msg::Node> functions = domain_expert.getFunctions();
+  std::vector<plansys2_msgs::msg::Node> functions = domain_expert.getFunctionNodes();
   std::vector<std::string> functions_types {"speed", "max_range", "state_of_charge",
     "distance"};
 
@@ -181,17 +181,17 @@ TEST(domain_expert, get_function_params)
 
   plansys2::DomainExpert domain_expert(domain_str);
 
-  auto params_1 = domain_expert.getFunction("speed");
+  auto params_1 = domain_expert.getFunctionNode("speed");
   ASSERT_TRUE(params_1);
   ASSERT_EQ(params_1.value().name, "speed");
   ASSERT_EQ(params_1.value().parameters.size(), 1);
   ASSERT_EQ(params_1.value().parameters[0].name, "?robot0");
   ASSERT_EQ(params_1.value().parameters[0].type, "robot");
 
-  auto params_2 = domain_expert.getFunction("SPEED");
+  auto params_2 = domain_expert.getFunctionNode("SPEED");
   ASSERT_TRUE(params_2);
 
-  auto params_3 = domain_expert.getFunction("distance");
+  auto params_3 = domain_expert.getFunctionNode("distance");
   ASSERT_TRUE(params_3);
   ASSERT_EQ(params_3.value().parameters.size(), 2);
   ASSERT_EQ(params_3.value().parameters[0].name, "?waypoint0");
@@ -288,7 +288,7 @@ TEST(domain_expert, multidomain_get_types)
 
   ASSERT_EQ(types, test_types);
 
-  std::vector<plansys2_msgs::msg::Node> predicates = domain_expert->getPredicates();
+  std::vector<plansys2_msgs::msg::Node> predicates = domain_expert->getPredicateNodes();
   std::vector<std::string> test_predicates {"object_at_robot", "object_at_room", "person_at",
     "robot_at", "robot_near_person", "robot_talk"};
 
@@ -337,7 +337,7 @@ TEST(domain_expert, sub_types)
 
   // Parameter subtypes with a predicate
   std::optional<plansys2_msgs::msg::Node> predicate =
-    domain_expert.getPredicate("robot_at");
+    domain_expert.getPredicateNode("robot_at");
   if (predicate.has_value()) {
     if (predicate.value().parameters.size() == 2) {
       ASSERT_EQ(predicate.value().parameters[1].type, "room");
@@ -369,7 +369,7 @@ TEST(domain_expert, sub_types)
 
   // Parameter subtypes with as function
   std::optional<plansys2_msgs::msg::Node> function =
-    domain_expert.getFunction("teleportation_time");
+    domain_expert.getFunctionNode("teleportation_time");
   if (function.has_value()) {
     if (function.value().parameters.size() == 2) {
       ASSERT_EQ(function.value().parameters[0].type, "teleporter_room");
