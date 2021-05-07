@@ -38,8 +38,8 @@ set(PDDL-PARSER-SOURCES
   src/plansys2_pddl_parser/Oneof.cpp
   src/plansys2_pddl_parser/FunctionModifier.cpp
   src/plansys2_pddl_parser/Ground.cpp
-  src/plansys2_pddl_parser/TypeGround.cpp
   src/plansys2_pddl_parser/Utils.cpp
+  src/plansys2_pddl_parser/TypeGround.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${PDDL-PARSER-SOURCES})

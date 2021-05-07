@@ -21,8 +21,8 @@
 #include <vector>
 
 #include "plansys2_msgs/action/execute_plan.hpp"
-#include "plansys2_msgs/msg/tree.hpp"
 #include "plansys2_msgs/srv/get_ordered_sub_goals.hpp"
+#include "plansys2_msgs/msg/tree.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"

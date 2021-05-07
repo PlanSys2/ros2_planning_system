@@ -1,5 +1,5 @@
 std_msgs/Empty request
 ---
-string[] actions
 bool success
+string[] actions
 string error_info

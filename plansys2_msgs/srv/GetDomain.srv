@@ -1,5 +1,5 @@
 std_msgs/Empty request
 ---
-string domain
 bool success
+string domain
 string error_info

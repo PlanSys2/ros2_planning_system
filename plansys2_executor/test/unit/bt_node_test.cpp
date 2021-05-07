@@ -23,8 +23,6 @@
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
-#include "plansys2_pddl_parser/Utils.h"
-
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
@@ -36,6 +34,7 @@
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/ActionExecutorClient.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
+#include "plansys2_pddl_parser/Utils.h"
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
@@ -139,7 +138,9 @@ TEST(problem_expert, wait_overall_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::CheckOverAllReq>("CheckOverAllReq");
 
+
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
@@ -251,7 +252,9 @@ TEST(problem_expert, wait_atstart_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::WaitAtStartReq>("WaitAtStartReq");
 
+
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
@@ -365,7 +368,9 @@ TEST(problem_expert, wait_atend_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::CheckAtEndReq>("CheckAtEndReq");
 
+
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
@@ -477,7 +482,9 @@ TEST(problem_expert, at_start_effect_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtStartEffect>("ApplyAtStartEffect");
 
+
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
@@ -594,7 +601,9 @@ TEST(problem_expert, at_end_effect_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtEndEffect>("ApplyAtEndEffect");
 
+
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 

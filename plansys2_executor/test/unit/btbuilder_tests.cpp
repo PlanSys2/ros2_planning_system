@@ -156,6 +156,7 @@ TEST(btbuilder_tests, test_plan_1)
       while (!finish) {exe.spin_some();}
     });
 
+
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
@@ -212,6 +213,7 @@ TEST(btbuilder_tests, test_plan_1)
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
+
 
   auto predicates = problem_client->getPredicateNodes();
   auto functions = problem_client->getFunctionNodes();
@@ -479,6 +481,7 @@ TEST(btbuilder_tests, test_plan_2)
     ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
+
   ASSERT_TRUE(
     problem_client->setGoal(
       plansys2::Goal(
@@ -665,7 +668,6 @@ TEST(btbuilder_tests, test_plan_3)
 
   std::cerr << bt << std::endl;
 
-  // Todo: Test that the BT is correct
 
   finish = true;
   t.join();
@@ -778,7 +780,6 @@ TEST(btbuilder_tests, test_plan_4)
   ASSERT_TRUE(plan);
 
   btbuilder->print_graph(btbuilder->get_graph(plan.value()));
-
   auto bt = btbuilder->get_tree(plan.value());
 
   std::cerr << bt << std::endl;

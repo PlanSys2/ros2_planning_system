@@ -1,8 +1,8 @@
 string domain
 string problem
 ---
+bool success
 float32[] times
 string[] actions
 float32[] durations
-bool success
 string error_info

@@ -1,5 +1,5 @@
 string expression
 ---
-plansys2_msgs/Node node
 bool success
+plansys2_msgs/Node node
 string error_info

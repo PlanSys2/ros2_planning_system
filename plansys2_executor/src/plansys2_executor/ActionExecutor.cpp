@@ -183,9 +183,12 @@ ActionExecutor::tick(const rclcpp::Time & now)
     case IDLE:
       state_ = DEALING;
       state_time_ = node_->now();
+
       action_hub_pub_->on_activate();
+
       completion_ = 0.0;
       feedback_ = "";
+
       request_for_performers();
       waiting_timer_ = node_->create_wall_timer(
         1s, std::bind(&ActionExecutor::wait_timeout, this));

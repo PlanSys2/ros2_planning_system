@@ -16,12 +16,11 @@
 #include <vector>
 #include <memory>
 
-#include "plansys2_msgs/msg/node.hpp"
-#include "plansys2_msgs/msg/param.hpp"
-
+#include "gtest/gtest.h"
 #include "plansys2_pddl_parser/Utils.h"
 
-#include "gtest/gtest.h"
+#include "plansys2_msgs/msg/node.hpp"
+#include "plansys2_msgs/msg/param.hpp"
 
 TEST(domain_types, basic_types)
 {
@@ -46,7 +45,7 @@ TEST(domain_types, predicate_tree_to_string)
 
   plansys2_msgs::msg::Node predicate_2;
   predicate_2.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  predicate_1.node_id = 0;
+  predicate_2.node_id = 0;
   predicate_2.name = "robot_at";
   predicate_2.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
   predicate_2.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
@@ -54,7 +53,7 @@ TEST(domain_types, predicate_tree_to_string)
 
   plansys2_msgs::msg::Node predicate_3;
   predicate_3.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  predicate_1.node_id = 0;
+  predicate_3.node_id = 0;
   predicate_3.name = "person_at";
   predicate_3.parameters.push_back(parser::pddl::fromStringParam("paco", "person"));
   predicate_3.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
@@ -62,7 +61,7 @@ TEST(domain_types, predicate_tree_to_string)
 
   plansys2_msgs::msg::Node predicate_4;
   predicate_4.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  predicate_1.node_id = 0;
+  predicate_4.node_id = 0;
   predicate_4.name = "person_at";
   predicate_4.parameters.push_back(parser::pddl::fromStringParam("paco", "person"));
   predicate_4.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));

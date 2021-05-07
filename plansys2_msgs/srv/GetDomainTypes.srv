@@ -1,5 +1,5 @@
 std_msgs/Empty request
 ---
-string[] types
 bool success
+string[] types
 string error_info

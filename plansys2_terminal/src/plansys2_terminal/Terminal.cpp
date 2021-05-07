@@ -523,8 +523,7 @@ Terminal::process_set_goal(std::vector<std::string> & command, std::ostringstrea
       total_expr += " " + token;
     }
 
-    plansys2_msgs::msg::Tree goal;
-    parser::pddl::fromString(goal, total_expr);
+    auto goal = parser::pddl::fromString(total_expr);
 
     if (!goal.nodes.empty()) {
       if (!problem_client_->setGoalTree(goal)) {

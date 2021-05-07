@@ -25,9 +25,9 @@
 #include "plansys2_executor/BTBuilder.hpp"
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_pddl_parser/Utils.h"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
+#include "plansys2_pddl_parser/Utils.h"
 
 #include "rclcpp/rclcpp.hpp"
 

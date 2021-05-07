@@ -1,5 +1,5 @@
 std_msgs/Empty request
 ---
-string problem
 bool success
+string problem
 string error_info

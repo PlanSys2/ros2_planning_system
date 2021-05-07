@@ -19,8 +19,8 @@
 #include <set>
 #include <map>
 
-#include "plansys2_pddl_parser/Utils.h"
 #include "plansys2_problem_expert/Utils.hpp"
+#include "plansys2_pddl_parser/Utils.h"
 
 namespace plansys2
 {

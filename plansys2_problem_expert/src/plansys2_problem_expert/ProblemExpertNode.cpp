@@ -549,6 +549,7 @@ ProblemExpertNode::remove_problem_goal_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = problem_expert_->clearGoal();
+
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
       knowledge_pub_->publish(*get_knowledge_as_msg());
@@ -570,6 +571,7 @@ ProblemExpertNode::clear_problem_knowledge_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = problem_expert_->clearKnowledge();
+
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
       knowledge_pub_->publish(*get_knowledge_as_msg());
@@ -578,6 +580,7 @@ ProblemExpertNode::clear_problem_knowledge_service_callback(
     }
   }
 }
+
 
 void
 ProblemExpertNode::remove_problem_instance_service_callback(
