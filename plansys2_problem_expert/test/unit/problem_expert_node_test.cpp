@@ -74,11 +74,11 @@ TEST(problem_expert_node, addget_instances)
       while (!finish) {exe.spin_some();}
     });
 
-  ASSERT_TRUE(problem_client->addInstance({"Paco", "person"}));
-  ASSERT_FALSE(problem_client->addInstance({"Paco", "person"}));
-  ASSERT_FALSE(problem_client->addInstance({"Paco", "SCIENTIFIC"}));
-  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("Paco", "person")));
+  ASSERT_FALSE(problem_client->addInstance(plansys2::Instance("Paco", "person")));
+  ASSERT_FALSE(problem_client->addInstance(plansys2::Instance("Paco", "SCIENTIFIC")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
 
   {
     rclcpp::Rate rate(10);
@@ -96,7 +96,7 @@ TEST(problem_expert_node, addget_instances)
   ASSERT_EQ(last_knowledge_msg.predicates.size(), 0);
   ASSERT_EQ(last_knowledge_msg.goal, "");
 
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
 
   {
     rclcpp::Rate rate(10);
@@ -125,7 +125,7 @@ TEST(problem_expert_node, addget_instances)
   ASSERT_EQ(problem_client->getInstances()[3].name, "r2d2");
   ASSERT_EQ(problem_client->getInstances()[3].type, "robot");
 
-  ASSERT_TRUE(problem_client->removeInstance({"Paco", "person"}));
+  ASSERT_TRUE(problem_client->removeInstance(plansys2::Instance("Paco", "person")));
   ASSERT_EQ(problem_client->getInstances().size(), 3);
   ASSERT_EQ(problem_client->getInstances()[0].name, "bedroom");
   ASSERT_EQ(problem_client->getInstances()[0].type, "room");
@@ -156,7 +156,7 @@ TEST(problem_expert_node, addget_instances)
   predicate_1.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
   predicate_1.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
 
-  ASSERT_TRUE(problem_client->addPredicate(predicate_1));
+  ASSERT_TRUE(problem_client->addPredicateNode(predicate_1));
 
   plansys2_msgs::msg::Node predicate_2;
   predicate_2.node_type = plansys2_msgs::msg::Node::PREDICATE;
@@ -164,7 +164,7 @@ TEST(problem_expert_node, addget_instances)
   predicate_2.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
   predicate_2.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
 
-  ASSERT_TRUE(problem_client->addPredicate(predicate_2));
+  ASSERT_TRUE(problem_client->addPredicateNode(predicate_2));
 
   {
     rclcpp::Rate rate(10);
@@ -184,7 +184,7 @@ TEST(problem_expert_node, addget_instances)
   ASSERT_EQ(last_knowledge_msg.predicates[1], "(robot_at r2d2 kitchen)");
   ASSERT_EQ(last_knowledge_msg.goal, "");
 
-  ASSERT_TRUE(problem_client->setGoal({"(and (robot_at r2d2 kitchen))"}));
+  ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and (robot_at r2d2 kitchen))")));
 
   {
     rclcpp::Rate rate(10);
@@ -233,8 +233,8 @@ TEST(problem_expert, add_assignments)
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room_with_teleporter"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room_with_teleporter")));
 
   plansys2_msgs::msg::Node function_1;
   function_1.node_type = plansys2_msgs::msg::Node::FUNCTION;
@@ -407,23 +407,23 @@ TEST(problem_expert, addget_predicates)
   predicate_6.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
   predicate_6.parameters.push_back(parser::pddl::fromStringParam("paco", "person"));
 
-  ASSERT_TRUE(problem_client->addInstance({"paco", "person"}));
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("paco", "person")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
 
   std::vector<plansys2_msgs::msg::Node> predicates = problem_client->getPredicates();
   ASSERT_TRUE(predicates.empty());
 
-  ASSERT_TRUE(problem_client->addPredicate(predicate_1));
+  ASSERT_TRUE(problem_client->addPredicateNode(predicate_1));
   predicates = problem_client->getPredicates();
   ASSERT_FALSE(predicates.empty());
-  ASSERT_TRUE(problem_client->addPredicate(predicate_1));
-  ASSERT_TRUE(problem_client->addPredicate(predicate_2));
-  ASSERT_TRUE(problem_client->addPredicate(predicate_3));
-  ASSERT_TRUE(problem_client->addPredicate(predicate_4));
-  ASSERT_FALSE(problem_client->addPredicate(predicate_5));
-  ASSERT_FALSE(problem_client->addPredicate(predicate_6));
+  ASSERT_TRUE(problem_client->addPredicateNode(predicate_1));
+  ASSERT_TRUE(problem_client->addPredicateNode(predicate_2));
+  ASSERT_TRUE(problem_client->addPredicateNode(predicate_3));
+  ASSERT_TRUE(problem_client->addPredicateNode(predicate_4));
+  ASSERT_FALSE(problem_client->addPredicateNode(predicate_5));
+  ASSERT_FALSE(problem_client->addPredicateNode(predicate_6));
 
   predicates = problem_client->getPredicates();
   ASSERT_EQ(predicates.size(), 4);
@@ -435,7 +435,7 @@ TEST(problem_expert, addget_predicates)
   predicates = problem_client->getPredicates();
   ASSERT_EQ(predicates.size(), 3);
 
-  ASSERT_TRUE(problem_client->addInstance({"bathroom", "room_with_teleporter"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bathroom", "room_with_teleporter")));
 
   plansys2_msgs::msg::Node predicate_7;
   predicate_7.node_type = plansys2_msgs::msg::Node::PREDICATE;
@@ -447,7 +447,7 @@ TEST(problem_expert, addget_predicates)
   ASSERT_EQ(predicate_7.parameters[0].name, "bathroom");
   ASSERT_EQ(predicate_7.parameters[0].type, "room_with_teleporter");
 
-  ASSERT_TRUE(problem_client->addPredicate(predicate_7));
+  ASSERT_TRUE(problem_client->addPredicateNode(predicate_7));
 
   plansys2_msgs::msg::Node predicate_8;
   predicate_8.node_type = plansys2_msgs::msg::Node::PREDICATE;
@@ -459,7 +459,7 @@ TEST(problem_expert, addget_predicates)
   ASSERT_EQ(predicate_8.parameters[0].name, "bathroom");
   ASSERT_EQ(predicate_8.parameters[0].type, "room_with_teleporter");
 
-  ASSERT_TRUE(problem_client->addPredicate(predicate_8));
+  ASSERT_TRUE(problem_client->addPredicateNode(predicate_8));
 
   ASSERT_TRUE(problem_client->removeInstance("bathroom"));
 }
@@ -475,10 +475,10 @@ TEST(problem_expert, addget_goals)
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  ASSERT_TRUE(problem_client->addInstance({"paco", "person"}));
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("paco", "person")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
 
   plansys2_msgs::msg::Tree goal;
   parser::pddl::fromString(goal, "(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
@@ -503,7 +503,7 @@ TEST(problem_expert, addget_goals)
 
   ASSERT_EQ(problem_client->getGoal().toString(), "");
 
-  ASSERT_TRUE(problem_client->setGoal({"(and (or (robot_at r2d2 bedroom)(robot_at r2d2 kitchen))(not(person_at paco kitchen)))"}));
+  ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and (or (robot_at r2d2 bedroom)(robot_at r2d2 kitchen))(not(person_at paco kitchen)))")));
 }
 
 TEST(problem_expert, get_probem)
@@ -541,17 +541,17 @@ TEST(problem_expert, get_probem)
   predicate_4.parameters.push_back(parser::pddl::fromStringParam("paco", "person"));
   predicate_4.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
 
-  ASSERT_TRUE(problem_client->addInstance({"paco", "person"}));
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("paco", "person")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
 
-  ASSERT_TRUE(problem_client->addPredicate(predicate_1));
-  ASSERT_TRUE(problem_client->addPredicate(predicate_2));
-  ASSERT_TRUE(problem_client->addPredicate(predicate_3));
-  ASSERT_TRUE(problem_client->addPredicate(predicate_4));
+  ASSERT_TRUE(problem_client->addPredicateNode(predicate_1));
+  ASSERT_TRUE(problem_client->addPredicateNode(predicate_2));
+  ASSERT_TRUE(problem_client->addPredicateNode(predicate_3));
+  ASSERT_TRUE(problem_client->addPredicateNode(predicate_4));
 
-  ASSERT_TRUE(problem_client->setGoal({"(and (robot_at r2d2 bedroom)(person_at paco kitchen))"}));
+  ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and (robot_at r2d2 bedroom)(person_at paco kitchen))")));
 
   ASSERT_EQ(
     problem_client->getProblem(),
@@ -614,11 +614,11 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
       while (!finish) {exe.spin_some();}
     });
 
-  ASSERT_TRUE(problem_client->addInstance({"leia", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"Jack", "person"}));
-  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"m1", "message"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("leia", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("Jack", "person")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("m1", "message")));
 
   {
     rclcpp::Rate rate(10);
@@ -639,15 +639,15 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
   ASSERT_EQ(last_knowledge_msg.goal, "");
 
   ASSERT_TRUE(
-    problem_client->addPredicate({"(robot_at leia kitchen)"}));
+    problem_client->addPredicate(plansys2::Predicate("(robot_at leia kitchen)")));
   ASSERT_TRUE(
-    problem_client->addPredicate({"(person_at Jack bedroom)"}));
+    problem_client->addPredicate(plansys2::Predicate("(person_at Jack bedroom)")));
 
   std::string expression = "(and (robot_talk leia m1 Jack))";
   plansys2_msgs::msg::Tree goal;
   parser::pddl::fromString(goal, expression);
-  ASSERT_TRUE(problem_client->setGoal(goal));
-  ASSERT_FALSE(problem_client->isGoalSatisfied(goal));
+  ASSERT_TRUE(problem_client->setGoalTree(goal));
+  ASSERT_FALSE(problem_client->isGoalTreeSatisfied(goal));
 
   {
     rclcpp::Rate rate(10);
@@ -670,9 +670,9 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
   ASSERT_EQ(last_knowledge_msg.goal, "(and (robot_talk leia m1 Jack))");
 
   ASSERT_TRUE(
-    problem_client->addPredicate({"(robot_talk leia m1 Jack)"}));
+    problem_client->addPredicate(plansys2::Predicate("(robot_talk leia m1 Jack)")));
 
-  ASSERT_TRUE(problem_client->isGoalSatisfied(goal));
+  ASSERT_TRUE(problem_client->isGoalTreeSatisfied(goal));
 
   ASSERT_EQ(knowledge_msg_counter, 9u);
   ASSERT_EQ(last_knowledge_msg.instances.size(), 5u);

@@ -129,7 +129,11 @@ DomainExpertClient::getPredicateNodes()
 std::optional<plansys2::Predicate>
 DomainExpertClient::getPredicate(const std::string & predicate)
 {
-  return getPredicateNode(predicate);
+  auto predicate_node = getPredicateNode(predicate);
+  if (predicate_node.has_value()) {
+    return plansys2::Predicate(predicate_node.value());
+  }
+  return {};
 }
 
 std::optional<plansys2_msgs::msg::Node>
@@ -217,7 +221,11 @@ DomainExpertClient::getFunctionNodes()
 std::optional<plansys2::Function>
 DomainExpertClient::getFunction(const std::string & function)
 {
-  return getFunctionNode(function);
+  auto function_node = getFunctionNode(function);
+  if (function_node.has_value()) {
+    return plansys2::Function(function_node.value());
+  }
+  return {};
 }
 
 std::optional<plansys2_msgs::msg::Node>

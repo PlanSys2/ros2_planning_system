@@ -96,28 +96,28 @@ TEST(test_2, test_2)
     }
   }
 
-  problem_client->addInstance({"leia", "robot"});
-  problem_client->addInstance({"room_1", "room"});
-  problem_client->addInstance({"room_2", "room"});
-  problem_client->addInstance({"corridor_1", "corridor"});
-  problem_client->addInstance({"zone_1_1", "zone"});
-  problem_client->addInstance({"zone_1_2", "zone"});
-  problem_client->addInstance({"zone_recharge", "zone"});
-  problem_client->addPredicate({"(connected room_1 corridor_1)"});
-  problem_client->addPredicate({"(connected corridor_1 room_1)"});
-  problem_client->addPredicate({"(connected room_2 corridor_1)"});
-  problem_client->addPredicate({"(connected corridor_1 room_2)"});
-  problem_client->addPredicate({"(connected room_1 zone_1_1)"});
-  problem_client->addPredicate({"(connected zone_1_1 room_1)"});
-  problem_client->addPredicate({"(connected room_1 zone_1_2)"});
-  problem_client->addPredicate({"(connected zone_1_2 room_1)"});
-  problem_client->addPredicate({"(connected room_2 zone_recharge)"});
-  problem_client->addPredicate({"(connected zone_recharge room_2)"});
-  problem_client->addPredicate({"(charging_point_at zone_recharge)"});
-  problem_client->addPredicate({"(battery_low leia)"});
-  problem_client->addPredicate({"(robot_at leia zone_1_1)"});
+  problem_client->addInstance(plansys2::Instance("leia", "robot"));
+  problem_client->addInstance(plansys2::Instance("room_1", "room"));
+  problem_client->addInstance(plansys2::Instance("room_2", "room"));
+  problem_client->addInstance(plansys2::Instance("corridor_1", "corridor"));
+  problem_client->addInstance(plansys2::Instance("zone_1_1", "zone"));
+  problem_client->addInstance(plansys2::Instance("zone_1_2", "zone"));
+  problem_client->addInstance(plansys2::Instance("zone_recharge", "zone"));
+  problem_client->addPredicate(plansys2::Predicate("(connected room_1 corridor_1)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected corridor_1 room_1)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected room_2 corridor_1)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected corridor_1 room_2)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected room_1 zone_1_1)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected zone_1_1 room_1)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected room_1 zone_1_2)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected zone_1_2 room_1)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected room_2 zone_recharge)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected zone_recharge room_2)"));
+  problem_client->addPredicate(plansys2::Predicate("(charging_point_at zone_recharge)"));
+  problem_client->addPredicate(plansys2::Predicate("(battery_low leia)"));
+  problem_client->addPredicate(plansys2::Predicate("(robot_at leia zone_1_1)"));
 
-  problem_client->setGoal({"(and(robot_at leia zone_1_2))"});
+  problem_client->setGoal(plansys2::Goal("(and(robot_at leia zone_1_2))"));
 
   ASSERT_TRUE(executor_client->start_plan_execution());
 

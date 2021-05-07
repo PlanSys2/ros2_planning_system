@@ -121,7 +121,7 @@ std::tuple<bool, bool, double> evaluate(
                   &parser::pddl::checkNodeEquality, std::placeholders::_1,
                   tree.nodes[node_id])) != predicates.end());
           } else {
-            value = negate ^ problem_client->existPredicate(tree.nodes[node_id]);
+            value = negate ^ problem_client->existPredicateNode(tree.nodes[node_id]);
           }
         }
 
@@ -282,7 +282,7 @@ std::tuple<bool, bool, double> evaluate(
           } else {
             std::stringstream ss;
             ss << "(= " << parser::pddl::toString(tree, left_id) << " " << value << ")";
-            problem_client->updateFunction(parser::pddl::fromStringFunction(ss.str()));
+            problem_client->updateFunctionNode(parser::pddl::fromStringFunction(ss.str()));
           }
         }
 

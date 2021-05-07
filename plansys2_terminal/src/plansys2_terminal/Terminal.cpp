@@ -441,7 +441,7 @@ void
 Terminal::process_set_instance(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 2) {
-    if (!problem_client_->addInstance({command[0], command[1]})) {
+    if (!problem_client_->addInstance(plansys2::Instance(command[0], command[1]))) {
       os << "Could not add the instance [" << command[0] << "]" << std::endl;
     }
   } else {
@@ -480,7 +480,7 @@ Terminal::process_set_predicate(std::vector<std::string> & command, std::ostring
 
     predicate.parameters.back().name.pop_back();  // Remove last (
 
-    if (!problem_client_->addPredicate(predicate)) {
+    if (!problem_client_->addPredicateNode(predicate)) {
       os << "Could not add the predicate [" << parser::pddl::toString(predicate) << "]" <<
         std::endl;
     }
@@ -501,7 +501,7 @@ Terminal::process_set_function(std::vector<std::string> & command, std::ostrings
 
     plansys2_msgs::msg::Node function = parser::pddl::fromStringFunction(total_expr);
 
-    if (!problem_client_->addFunction(function)) {
+    if (!problem_client_->addFunctionNode(function)) {
       os <<
         "Could not add the function [" <<
         parser::pddl::toString(function) << "]" << std::endl;
@@ -527,7 +527,7 @@ Terminal::process_set_goal(std::vector<std::string> & command, std::ostringstrea
     parser::pddl::fromString(goal, total_expr);
 
     if (!goal.nodes.empty()) {
-      if (!problem_client_->setGoal(goal)) {
+      if (!problem_client_->setGoalTree(goal)) {
         os << "Could not set the goal [" << parser::pddl::toString(goal) << "]" << std::endl;
       }
     } else {
@@ -569,7 +569,7 @@ void
 Terminal::process_remove_instance(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 1) {
-    if (!problem_client_->removeInstance(command[0])) {
+    if (!problem_client_->removeInstance(plansys2::Instance(command[0]))) {
       os << "Could not remove the instance [" << command[0] << "]" << std::endl;
     }
   } else {
@@ -607,7 +607,7 @@ Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostr
 
     predicate.parameters.back().name.pop_back();  // Remove last (
 
-    if (!problem_client_->removePredicate(predicate)) {
+    if (!problem_client_->removePredicateNode(predicate)) {
       os << "Could not remove the predicate [" << parser::pddl::toString(predicate) << "]" <<
         std::endl;
     }
@@ -643,7 +643,7 @@ Terminal::process_remove_function(std::vector<std::string> & command, std::ostri
       temp = match.suffix().str();
     }
 
-    if (!problem_client_->removeFunction(function)) {
+    if (!problem_client_->removeFunctionNode(function)) {
       os << "Could not remove the function [" << parser::pddl::toString(function) << "]" <<
         std::endl;
     }

@@ -217,7 +217,11 @@ ProblemExpertClient::removeInstanceParam(const plansys2_msgs::msg::Param & insta
 std::optional<plansys2::Instance>
 ProblemExpertClient::getInstance(const std::string & name)
 {
-  return getInstanceParam(name);
+  auto instance_param = getInstanceParam(name);
+  if (instance_param.has_value()) {
+    return plansys2::Instance(instance_param.value());
+  }
+  return {};
 }
 
 std::optional<plansys2_msgs::msg::Param>
@@ -423,7 +427,11 @@ ProblemExpertClient::existPredicateNode(const plansys2_msgs::msg::Node & predica
 std::optional<plansys2::Predicate>
 ProblemExpertClient::getPredicate(const std::string & predicate)
 {
-  return getPredicateNode(predicate);
+  auto predicate_node = getPredicateNode(predicate);
+  if (predicate_node.has_value()) {
+    return plansys2::Predicate(predicate_node.value());
+  }
+  return {};
 }
 
 std::optional<plansys2_msgs::msg::Node>
@@ -671,7 +679,11 @@ bool ProblemExpertClient::updateFunctionNode(const plansys2_msgs::msg::Node & fu
 std::optional<plansys2::Function>
 ProblemExpertClient::getFunction(const std::string & function)
 {
-  return getFunctionNode(function);
+  auto function_node = getFunctionNode(function);
+  if (function_node.has_value()) {
+    return plansys2::Function(function_node.value());
+  }
+  return {};
 }
 
 std::optional<plansys2_msgs::msg::Node>
@@ -713,7 +725,7 @@ ProblemExpertClient::getFunctionNode(const std::string & function)
 plansys2::Goal
 ProblemExpertClient::getGoal()
 {
-  return getGoalTree();
+  return plansys2::Goal(getGoalTree());
 }
 
 plansys2_msgs::msg::Tree

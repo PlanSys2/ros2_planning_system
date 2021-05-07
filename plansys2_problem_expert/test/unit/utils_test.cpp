@@ -198,8 +198,8 @@ TEST(utils, evaluate_predicate_client)
       while (!finish) {exe.spin_some();}
     });
 
-  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
 
   {
     rclcpp::Rate rate(10);
@@ -536,11 +536,11 @@ TEST(utils, evaluate_expression_invalid_client)
       while (!finish) {exe.spin_some();}
     });
 
-  ASSERT_TRUE(problem_client->addInstance({"leia", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"Jack", "person"}));
-  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"m1", "message"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("leia", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("Jack", "person")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("m1", "message")));
 
   {
     rclcpp::Rate rate(10);
@@ -685,9 +685,12 @@ TEST(utils, evaluate_function_mod_client)
       while (!finish) {exe.spin_some();}
     });
 
-  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
-  ASSERT_TRUE(problem_client->addFunction({"(= (room_distance bedroom kitchen) 1.0)"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
+  ASSERT_TRUE(
+    problem_client->addFunction(
+      plansys2::Function(
+        "(= (room_distance bedroom kitchen) 1.0)")));
 
   {
     rclcpp::Rate rate(10);

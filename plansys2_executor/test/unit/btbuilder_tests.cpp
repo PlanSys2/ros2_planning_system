@@ -181,13 +181,13 @@ TEST(btbuilder_tests, test_plan_1)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"leia", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"entrance", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"dinning", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"bathroom", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"chargingroom", "room"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("leia", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("entrance", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("dinning", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bathroom", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("chargingroom", "room")));
 
   std::vector<std::string> predicate_strings = {
     "(connected entrance dinning)",
@@ -205,10 +205,10 @@ TEST(btbuilder_tests, test_plan_1)
     "(robot_at leia entrance)"};
 
   for (const auto & pred : predicate_strings) {
-    ASSERT_TRUE(problem_client->addPredicate({pred}));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
-  ASSERT_TRUE(problem_client->setGoal({"(and(robot_at leia bathroom))"}));
+  ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and(robot_at leia bathroom))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
@@ -419,25 +419,25 @@ TEST(btbuilder_tests, test_plan_2)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"robot2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"robot3", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheel_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"car_1", "car"}));
-  ASSERT_TRUE(problem_client->addInstance({"car_2", "car"}));
-  ASSERT_TRUE(problem_client->addInstance({"car_3", "car"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot3", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_1", "car")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_2", "car")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_3", "car")));
 
   std::vector<std::string> predicate_strings = {
     "(robot_at robot1 assembly_zone)",
@@ -476,13 +476,13 @@ TEST(btbuilder_tests, test_plan_2)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicate_strings) {
-    ASSERT_TRUE(problem_client->addPredicate({pred}));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
   ASSERT_TRUE(
     problem_client->setGoal(
-  {
-    "(and(car_assembled car_1)(car_assembled car_2)(car_assembled car_3))"}));
+      plansys2::Goal(
+        "(and(car_assembled car_1)(car_assembled car_2)(car_assembled car_3))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
@@ -634,10 +634,10 @@ TEST(btbuilder_tests, test_plan_3)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"leia", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"ro1", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"ro2", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"ro3", "room"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("leia", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("ro1", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("ro2", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("ro3", "room")));
 
   std::vector<std::string> predicates = {
     "(connected ro1 ro2)",
@@ -650,10 +650,13 @@ TEST(btbuilder_tests, test_plan_3)
     "(battery_full leia)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate({pred}));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
-  ASSERT_TRUE(problem_client->setGoal({"(and (patrolled ro1) (patrolled ro2) (patrolled ro3))"}));
+  ASSERT_TRUE(
+    problem_client->setGoal(
+      plansys2::Goal(
+        "(and (patrolled ro1) (patrolled ro2) (patrolled ro3))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
@@ -723,20 +726,20 @@ TEST(btbuilder_tests, test_plan_4)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"c3po", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"fridge_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"pantry_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"watertap_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"cooking_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"recharge_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"eggs", "ingredient"}));
-  ASSERT_TRUE(problem_client->addInstance({"oil", "ingredient"}));
-  ASSERT_TRUE(problem_client->addInstance({"salt", "ingredient"}));
-  ASSERT_TRUE(problem_client->addInstance({"omelette", "dish"}));
-  ASSERT_TRUE(problem_client->addInstance({"flour", "ingredient"}));
-  ASSERT_TRUE(problem_client->addInstance({"sugar", "ingredient"}));
-  ASSERT_TRUE(problem_client->addInstance({"cake", "dish"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("c3po", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("fridge_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("pantry_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("watertap_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("cooking_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("recharge_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("eggs", "ingredient")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("oil", "ingredient")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("salt", "ingredient")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("omelette", "dish")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("flour", "ingredient")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("sugar", "ingredient")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("cake", "dish")));
 
   std::vector<std::string> predicates = {
     "(is_cooking_zone cooking_zone)",
@@ -763,10 +766,13 @@ TEST(btbuilder_tests, test_plan_4)
   };
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate({pred}));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
-  ASSERT_TRUE(problem_client->setGoal({"(and (dish_prepared cake)(dish_prepared omelette))"}));
+  ASSERT_TRUE(
+    problem_client->setGoal(
+      plansys2::Goal(
+        "(and (dish_prepared cake)(dish_prepared omelette))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);

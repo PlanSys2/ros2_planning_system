@@ -96,28 +96,28 @@ TEST(test_1, test_1)
     }
   }
 
-  problem_client->addInstance({"leia", "robot"});
-  problem_client->addInstance({"entrance", "room"});
-  problem_client->addInstance({"kitchen", "room"});
-  problem_client->addInstance({"bedroom", "room"});
-  problem_client->addInstance({"dinning", "room"});
-  problem_client->addInstance({"bathroom", "room"});
-  problem_client->addInstance({"chargingroom", "room"});
-  problem_client->addPredicate({"(connected entrance dinning)"});
-  problem_client->addPredicate({"(connected dinning entrance)"});
-  problem_client->addPredicate({"(connected dinning kitchen)"});
-  problem_client->addPredicate({"(connected kitchen dinning)"});
-  problem_client->addPredicate({"(connected dinning bedroom)"});
-  problem_client->addPredicate({"(connected bedroom dinning)"});
-  problem_client->addPredicate({"(connected bathroom bedroom)"});
-  problem_client->addPredicate({"(connected bedroom bathroom)"});
-  problem_client->addPredicate({"(connected chargingroom kitchen)"});
-  problem_client->addPredicate({"(connected kitchen chargingroom)"});
-  problem_client->addPredicate({"(charging_point_at chargingroom)"});
-  problem_client->addPredicate({"(battery_low leia)"});
-  problem_client->addPredicate({"(robot_at leia entrance)"});
+  problem_client->addInstance(plansys2::Instance("leia", "robot"));
+  problem_client->addInstance(plansys2::Instance("entrance", "room"));
+  problem_client->addInstance(plansys2::Instance("kitchen", "room"));
+  problem_client->addInstance(plansys2::Instance("bedroom", "room"));
+  problem_client->addInstance(plansys2::Instance("dinning", "room"));
+  problem_client->addInstance(plansys2::Instance("bathroom", "room"));
+  problem_client->addInstance(plansys2::Instance("chargingroom", "room"));
+  problem_client->addPredicate(plansys2::Predicate("(connected entrance dinning)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected dinning entrance)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected dinning kitchen)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected kitchen dinning)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected dinning bedroom)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected bedroom dinning)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected bathroom bedroom)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected bedroom bathroom)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected chargingroom kitchen)"));
+  problem_client->addPredicate(plansys2::Predicate("(connected kitchen chargingroom)"));
+  problem_client->addPredicate(plansys2::Predicate("(charging_point_at chargingroom)"));
+  problem_client->addPredicate(plansys2::Predicate("(battery_low leia)"));
+  problem_client->addPredicate(plansys2::Predicate("(robot_at leia entrance)"));
 
-  problem_client->setGoal({"(and(robot_at leia bathroom))"});
+  problem_client->setGoal(plansys2::Goal("(and(robot_at leia bathroom))"));
 
   ASSERT_TRUE(executor_client->start_plan_execution());
 

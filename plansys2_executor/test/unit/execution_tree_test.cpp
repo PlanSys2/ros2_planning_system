@@ -97,28 +97,28 @@ TEST(executiotest_noden_tree, bt_builder_factory)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"robot2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"robot3", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot3", "robot")));
 
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
-  ASSERT_TRUE(problem_client->addInstance({"wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheel_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_3", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_3", "piece")));
 
-  ASSERT_TRUE(problem_client->addInstance({"car_1", "car"}));
-  ASSERT_TRUE(problem_client->addInstance({"car_2", "car"}));
-  ASSERT_TRUE(problem_client->addInstance({"car_3", "car"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_1", "car")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_2", "car")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_3", "car")));
 
   std::vector<std::string> predicates = {
     "(robot_at robot1 assembly_zone)",
@@ -157,13 +157,13 @@ TEST(executiotest_noden_tree, bt_builder_factory)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate({pred}));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
   ASSERT_TRUE(
     problem_client->setGoal(
-  {
-    "(and (car_assembled car_1) (car_assembled car_2) (car_assembled car_3))"}));
+      plansys2::Goal(
+        "(and (car_assembled car_1) (car_assembled car_2) (car_assembled car_3))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
@@ -229,28 +229,28 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"robot2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"robot3", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot3", "robot")));
 
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
-  ASSERT_TRUE(problem_client->addInstance({"wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheel_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_3", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_3", "piece")));
 
-  ASSERT_TRUE(problem_client->addInstance({"car_1", "car"}));
-  ASSERT_TRUE(problem_client->addInstance({"car_2", "car"}));
-  ASSERT_TRUE(problem_client->addInstance({"car_3", "car"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_1", "car")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_2", "car")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_3", "car")));
 
   std::vector<std::string> predicates = {
     "(robot_at robot1 wheels_zone)",
@@ -289,13 +289,14 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate({pred}));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
   ASSERT_TRUE(
     problem_client->setGoal(
-      {std::string("(and (car_assembled car_1) (piece_at body_car_2 assembly_zone)") +
-        std::string("(piece_at body_car_3 assembly_zone))")}));
+      plansys2::Goal(
+        std::string("(and (car_assembled car_1) (piece_at body_car_2 assembly_zone)") +
+        std::string("(piece_at body_car_3 assembly_zone))"))));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
@@ -360,10 +361,14 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wp_control", "waypoint"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wp_control", "waypoint")));
   for (unsigned i = 1; i <= 4; i++) {
-    ASSERT_TRUE(problem_client->addInstance({"wp" + std::to_string(i), "waypoint"}));
+    ASSERT_TRUE(
+      problem_client->addInstance(
+        plansys2::Instance(
+          "wp" + std::to_string(
+            i), "waypoint")));
   }
 
   std::vector<std::string> predicates = {
@@ -379,7 +384,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
     "(connected wp4 wp_control)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate({pred}));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
   std::vector<std::string> functions = {
@@ -408,13 +413,13 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
     "(= (distance wp_control wp4) 20)"};
 
   for (const auto & func : functions) {
-    ASSERT_TRUE(problem_client->addFunction({func}));
+    ASSERT_TRUE(problem_client->addFunction(plansys2::Function(func)));
   }
 
   ASSERT_TRUE(
     problem_client->setGoal(
-  {
-    "(and (patrolled wp1) (patrolled wp2) (patrolled wp3) (patrolled wp4))"}));
+      plansys2::Goal(
+        "(and (patrolled wp1) (patrolled wp2) (patrolled wp3) (patrolled wp4))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);

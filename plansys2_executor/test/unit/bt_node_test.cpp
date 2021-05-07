@@ -139,9 +139,9 @@ TEST(problem_expert, wait_overall_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::CheckOverAllReq>("CheckOverAllReq");
 
-  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
   std::vector<std::string> predicates = {
     "(robot_available robot1)",
@@ -155,7 +155,7 @@ TEST(problem_expert, wait_overall_req_test)
     ASSERT_EQ(status, BT::NodeStatus::FAILURE);
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate({pred}));
+      ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
     }
 
     tree = factory.createTreeFromText(bt_xml_tree, blackboard);
@@ -251,9 +251,9 @@ TEST(problem_expert, wait_atstart_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::WaitAtStartReq>("WaitAtStartReq");
 
-  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
   std::vector<std::string> predicates = {
     "(robot_available robot1)",
@@ -272,7 +272,7 @@ TEST(problem_expert, wait_atstart_req_test)
 
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate({pred}));
+      ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
     }
 
     status = tree.tickRoot();
@@ -365,9 +365,9 @@ TEST(problem_expert, wait_atend_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::CheckAtEndReq>("CheckAtEndReq");
 
-  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
   std::vector<std::string> predicates = {
     "(robot_available robot1)",
@@ -381,7 +381,7 @@ TEST(problem_expert, wait_atend_req_test)
     ASSERT_EQ(status, BT::NodeStatus::FAILURE);
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate({pred}));
+      ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
     }
 
     tree = factory.createTreeFromText(bt_xml_tree, blackboard);
@@ -477,9 +477,9 @@ TEST(problem_expert, at_start_effect_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtStartEffect>("ApplyAtStartEffect");
 
-  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
   try {
     std::vector<std::string> predicates = {
@@ -487,7 +487,7 @@ TEST(problem_expert, at_start_effect_test)
       "(robot_at robot1 wheels_zone)"};
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate({pred}));
+      ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
     }
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
@@ -502,7 +502,10 @@ TEST(problem_expert, at_start_effect_test)
         rate.sleep();
       }
     }
-    ASSERT_FALSE(problem_client->existPredicate({"(robot_at robot1 wheels_zone)"}));
+    ASSERT_FALSE(
+      problem_client->existPredicate(
+        plansys2::Predicate(
+          "(robot_at robot1 wheels_zone)")));
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
@@ -591,16 +594,16 @@ TEST(problem_expert, at_end_effect_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtEndEffect>("ApplyAtEndEffect");
 
-  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
   try {
     std::vector<std::string> predicates = {
       "(robot_at robot1 wheels_zone)"};
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate({pred}));
+      ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
     }
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
@@ -616,7 +619,10 @@ TEST(problem_expert, at_end_effect_test)
       }
     }
 
-    ASSERT_TRUE(problem_client->existPredicate({"(robot_at robot1 assembly_zone)"}));
+    ASSERT_TRUE(
+      problem_client->existPredicate(
+        plansys2::Predicate(
+          "(robot_at robot1 assembly_zone)")));
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
