@@ -21,6 +21,7 @@
 #include <map>
 #include <vector>
 #include <set>
+#include <utility>
 
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
@@ -104,27 +105,64 @@ bool apply(
   std::vector<plansys2_msgs::msg::Node> & functions,
   uint32_t node_id = 0);
 
-/// Parse the action name from a plan action expression.
+/// Parse the action expression and time (optional) from an input string.
 /**
- * \param[in] action_expr An action expression taken from a plan.
+* \param[in] input The input string.
+* \return result <- pair(string, int)
+*         result(0) The action expression.
+*         result(1) The action start time.
+*
+* The input string can have either of the following formats.
+*   "(<name> <param_1> ... <param_n>)"
+*   "(<name> <param_1> ... <param_n>):<time>"
+ * The output action expression will have the following format.
+ *   "<name> <param_1> ... <param_n>"
+*/
+std::pair<std::string, int> parse_action(const std::string & input);
+
+/// Parse the action expression from an input string.
+/**
+ * \param[in] input The input string.
+ * \return The action expression.
+ *
+ * The input string can have either of the following formats.
+ *   "(<name> <param_1> ... <param_n>)"
+ *   "(<name> <param_1> ... <param_n>):<time>"
+ */
+std::string get_action_expression(const std::string & input);
+
+/// Parse the action time from an input string.
+/**
+ * \param[in] input The input string.
+ * \return The action start time.
+ *
+ * The input string can have either of the following formats.
+ *   "(<name> <param_1> ... <param_n>)"
+ *   "(<name> <param_1> ... <param_n>):<time>"
+ */
+int get_action_time(const std::string & input);
+
+/// Parse the action name from an input string.
+/**
+ * \param[in] input The input string.
  * \return The name of the action.
  *
- * A plan action expression will have the following format.
- *   (<name> <param_1> ... <param_n>):<time>
+ * The input string can have either of the following formats.
+ *   "(<name> <param_1> ... <param_n>)"
+ *   "(<name> <param_1> ... <param_n>):<time>"
  */
-std::string get_action_name(
-  const std::string & action_expr);
+std::string get_action_name(const std::string & input);
 
-/// Parse the action parameter names from a plan action expression.
+/// Parse the action parameter names from an input string.
 /**
- * \param[in] action_expr An action expression taken from a plan.
+ * \param[in] input The input string.
  * \return A list of the action parameter names.
  *
- * A plan action expression will have the following format.
- *   (<name> <param_1> ... <param_n>):<time>
+ * The input string can have either of the following formats.
+ *   "(<name> <param_1> ... <param_n>)"
+ *   "(<name> <param_1> ... <param_n>):<time>"
  */
-std::vector<std::string> get_action_params(
-  const std::string & action_expr);
+std::vector<std::string> get_action_params(const std::string & action_expr);
 
 }  // namespace plansys2
 

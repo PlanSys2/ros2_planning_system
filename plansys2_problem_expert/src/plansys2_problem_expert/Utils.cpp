@@ -18,6 +18,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <utility>
 
 #include "plansys2_problem_expert/Utils.hpp"
 #include "plansys2_pddl_parser/Utils.h"
@@ -365,40 +366,57 @@ bool apply(
   return std::get<0>(ret);
 }
 
-std::string get_action_name(const std::string & action_expr)
+std::pair<std::string, int> parse_action(const std::string & input)
 {
-  std::string wexpr = parser::pddl::getReducedString(action_expr);
-  wexpr.erase(0, 1);  // remove initial (
-  wexpr.pop_back();  // remove last )
+  std::string action = parser::pddl::getReducedString(input);
+  int time = -1;
 
-  size_t delim = wexpr.find(" ");
+  size_t delim = action.find(":");
+  if (delim != std::string::npos) {
+    time = std::stoi(action.substr(delim + 1, action.length() - delim - 1));
+    action.erase(action.begin() + delim, action.end());
+  }
 
-  return wexpr.substr(0, delim);
+  action.erase(0, 1);  // remove initial (
+  action.pop_back();  // remove last )
+
+  return std::make_pair(action, time);
 }
 
-std::vector<std::string> get_action_params(const std::string & action_expr)
+std::string get_action_expression(const std::string & input)
+{
+  auto action = parse_action(input);
+  return action.first;
+}
+
+int get_action_time(const std::string & input)
+{
+  auto action = parse_action(input);
+  return action.second;
+}
+
+std::string get_action_name(const std::string & input)
+{
+  auto expr = get_action_expression(input);
+  size_t delim = expr.find(" ");
+  return expr.substr(0, delim);
+}
+
+std::vector<std::string> get_action_params(const std::string & input)
 {
   std::vector<std::string> ret;
 
-  std::string wexpr = parser::pddl::getReducedString(action_expr);
+  auto expr = get_action_expression(input);
 
-  // remove the time portion of the action expression
-  int pos = wexpr.find(":");
-  if (pos != std::string::npos) {
-    wexpr.erase(wexpr.begin() + pos, wexpr.end());
+  size_t delim = expr.find(" ");
+  if (delim != std::string::npos) {
+    expr.erase(expr.begin(), expr.begin() + delim + 1);
   }
-
-  wexpr.erase(0, 1);  // remove initial (
-  wexpr.pop_back();  // remove last )
-
-  size_t delim = wexpr.find(" ");
-
-  wexpr = wexpr.substr(delim + 1);
 
   size_t start = 0, end = 0;
   while (end != std::string::npos) {
-    end = wexpr.find(" ", start);
-    auto param = wexpr.substr(
+    end = expr.find(" ", start);
+    auto param = expr.substr(
       start, (end == std::string::npos) ? std::string::npos : end - start);
     ret.push_back(param);
     start = ((end > (std::string::npos - 1)) ? std::string::npos : end + 1);
