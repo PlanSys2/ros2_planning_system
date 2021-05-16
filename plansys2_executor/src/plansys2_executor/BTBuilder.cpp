@@ -62,8 +62,8 @@ WAIT_AT_START_ACTIONS
 bool
 BTBuilder::is_action_executable(
   const ActionStamped & action,
-  std::vector<plansys2_msgs::msg::Node> & predicates,
-  std::vector<plansys2_msgs::msg::Node> & functions) const
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions) const
 {
   return check(action.action->at_start_requirements, predicates, functions) &&
          check(action.action->over_all_requirements, predicates, functions) &&
@@ -265,8 +265,8 @@ BTBuilder::get_node_satisfy(
 std::list<GraphNode::Ptr>
 BTBuilder::get_roots(
   std::vector<plansys2::ActionStamped> & action_sequence,
-  std::vector<plansys2_msgs::msg::Node> & predicates,
-  std::vector<plansys2_msgs::msg::Node> & functions,
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions,
   int & node_counter)
 {
   std::list<GraphNode::Ptr> ret;
@@ -294,8 +294,8 @@ void
 BTBuilder::remove_existing_requirements(
   const plansys2_msgs::msg::Tree & tree,
   std::vector<uint32_t> & requirements,
-  std::vector<plansys2_msgs::msg::Node> & predicates,
-  std::vector<plansys2_msgs::msg::Node> & functions) const
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions) const
 {
   auto it = requirements.begin();
   while (it != requirements.end()) {
@@ -350,16 +350,16 @@ BTBuilder::get_graph(const Plan & current_plan)
   auto graph = Graph::make_shared();
 
   auto action_sequence = get_plan_actions(current_plan);
-  auto predicates = problem_client_->getPredicateNodes();
-  auto functions = problem_client_->getFunctionNodes();
+  auto predicates = problem_client_->getPredicates();
+  auto functions = problem_client_->getFunctions();
 
   graph->roots = get_roots(action_sequence, predicates, functions, node_counter);
 
   // Apply root actions
   for (auto & action_node : graph->roots) {
     // Create a local copy of the state
-    action_node->predicates = problem_client_->getPredicateNodes();
-    action_node->functions = problem_client_->getFunctionNodes();
+    action_node->predicates = problem_client_->getPredicates();
+    action_node->functions = problem_client_->getFunctions();
 
     // Apply the effects to the local node state
     apply(

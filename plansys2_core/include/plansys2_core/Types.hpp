@@ -39,38 +39,57 @@ typedef std::vector<PlanItem> Plan;
 class Instance : public plansys2_msgs::msg::Param
 {
 public:
+  Instance()
+  : plansys2_msgs::msg::Param() {}
   explicit Instance(const std::string & name, const std::string & type = {})
   : plansys2_msgs::msg::Param(parser::pddl::fromStringParam(name, type)) {}
-  explicit Instance(const plansys2_msgs::msg::Param & instance)
+  Instance(const plansys2_msgs::msg::Param & instance)
   : plansys2_msgs::msg::Param(instance) {}
 };
 
 class Predicate : public plansys2_msgs::msg::Node
 {
 public:
+  Predicate()
+  : plansys2_msgs::msg::Node() {}
   explicit Predicate(const std::string & pred)
   : plansys2_msgs::msg::Node(parser::pddl::fromStringPredicate(pred)) {}
-  explicit Predicate(const plansys2_msgs::msg::Node & pred)
+  Predicate(const plansys2_msgs::msg::Node & pred)
   : plansys2_msgs::msg::Node(pred) {}
 };
 
 class Function : public plansys2_msgs::msg::Node
 {
 public:
+  Function()
+  : plansys2_msgs::msg::Node() {}
   explicit Function(const std::string & func)
   : plansys2_msgs::msg::Node(parser::pddl::fromStringFunction(func)) {}
-  explicit Function(const plansys2_msgs::msg::Node & func)
+  Function(const plansys2_msgs::msg::Node & func)
   : plansys2_msgs::msg::Node(func) {}
 };
 
 class Goal : public plansys2_msgs::msg::Tree
 {
 public:
+  Goal()
+  : plansys2_msgs::msg::Tree() {}
   explicit Goal(const std::string & goal)
   : plansys2_msgs::msg::Tree(parser::pddl::fromString(goal)) {}
-  explicit Goal(const plansys2_msgs::msg::Tree & goal)
+  Goal(const plansys2_msgs::msg::Tree & goal)
   : plansys2_msgs::msg::Tree(goal) {}
 };
+
+template<class toT, class fromT>
+std::vector<toT>
+convertVector(const std::vector<fromT> & in_vector)
+{
+  std::vector<toT> ret;
+  for (const auto & item : in_vector) {
+    ret.push_back(item);
+  }
+  return ret;
+}
 
 }  // namespace plansys2
 

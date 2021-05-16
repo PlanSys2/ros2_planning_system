@@ -22,6 +22,8 @@
 #include "plansys2_msgs/msg/param.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
 
+#include "plansys2_core/Types.hpp"
+
 namespace plansys2
 {
 
@@ -30,27 +32,27 @@ class ProblemExpertInterface
 public:
   ProblemExpertInterface() {}
 
-  virtual std::vector<plansys2_msgs::msg::Param> getInstanceParams() = 0;
-  virtual bool addInstanceParam(const plansys2_msgs::msg::Param & instance) = 0;
-  virtual bool removeInstanceParam(const plansys2_msgs::msg::Param & instance) = 0;
-  virtual std::optional<plansys2_msgs::msg::Param> getInstanceParam(const std::string & name) = 0;
+  virtual std::vector<plansys2::Instance> getInstances() = 0;
+  virtual bool addInstance(const plansys2::Instance & instance) = 0;
+  virtual bool removeInstance(const plansys2::Instance & instance) = 0;
+  virtual std::optional<plansys2::Instance> getInstance(const std::string & name) = 0;
 
-  virtual std::vector<plansys2_msgs::msg::Node> getPredicateNodes() = 0;
-  virtual bool addPredicateNode(const plansys2_msgs::msg::Node & predicate) = 0;
-  virtual bool removePredicateNode(const plansys2_msgs::msg::Node & predicate) = 0;
-  virtual bool existPredicateNode(const plansys2_msgs::msg::Node & predicate) = 0;
-  virtual std::optional<plansys2_msgs::msg::Node> getPredicateNode(const std::string & expr) = 0;
+  virtual std::vector<plansys2::Predicate> getPredicates() = 0;
+  virtual bool addPredicate(const plansys2::Predicate & predicate) = 0;
+  virtual bool removePredicate(const plansys2::Predicate & predicate) = 0;
+  virtual bool existPredicate(const plansys2::Predicate & predicate) = 0;
+  virtual std::optional<plansys2::Predicate> getPredicate(const std::string & expr) = 0;
 
-  virtual std::vector<plansys2_msgs::msg::Node> getFunctionNodes() = 0;
-  virtual bool addFunctionNode(const plansys2_msgs::msg::Node & function) = 0;
-  virtual bool removeFunctionNode(const plansys2_msgs::msg::Node & function) = 0;
-  virtual bool existFunctionNode(const plansys2_msgs::msg::Node & function) = 0;
-  virtual bool updateFunctionNode(const plansys2_msgs::msg::Node & function) = 0;
-  virtual std::optional<plansys2_msgs::msg::Node> getFunctionNode(const std::string & expr) = 0;
+  virtual std::vector<plansys2::Function> getFunctions() = 0;
+  virtual bool addFunction(const plansys2::Function & function) = 0;
+  virtual bool removeFunction(const plansys2::Function & function) = 0;
+  virtual bool existFunction(const plansys2::Function & function) = 0;
+  virtual bool updateFunction(const plansys2::Function & function) = 0;
+  virtual std::optional<plansys2::Function> getFunction(const std::string & expr) = 0;
 
-  virtual plansys2_msgs::msg::Tree getGoalTree() = 0;
-  virtual bool setGoalTree(const plansys2_msgs::msg::Tree & goal) = 0;
-  virtual bool isGoalTreeSatisfied(const plansys2_msgs::msg::Tree & goal) = 0;
+  virtual plansys2::Goal getGoal() = 0;
+  virtual bool setGoal(const plansys2::Goal & goal) = 0;
+  virtual bool isGoalSatisfied(const plansys2::Goal & goal) = 0;
 
   virtual bool clearGoal() = 0;
   virtual bool clearKnowledge() = 0;

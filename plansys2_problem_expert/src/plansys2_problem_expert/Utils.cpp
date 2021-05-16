@@ -29,8 +29,8 @@ namespace plansys2
 std::tuple<bool, bool, double> evaluate(
   const plansys2_msgs::msg::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
-  std::vector<plansys2_msgs::msg::Node> & predicates,
-  std::vector<plansys2_msgs::msg::Node> & functions,
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions,
   bool apply,
   bool use_state,
   uint8_t node_id,
@@ -102,10 +102,10 @@ std::tuple<bool, bool, double> evaluate(
             }
           } else {
             if (negate) {
-              success = success && problem_client->removePredicateNode(tree.nodes[node_id]);
+              success = success && problem_client->removePredicate(tree.nodes[node_id]);
               value = false;
             } else {
-              success = success && problem_client->addPredicateNode(tree.nodes[node_id]);
+              success = success && problem_client->addPredicate(tree.nodes[node_id]);
             }
           }
         } else {
@@ -122,7 +122,7 @@ std::tuple<bool, bool, double> evaluate(
                   &parser::pddl::checkNodeEquality, std::placeholders::_1,
                   tree.nodes[node_id])) != predicates.end());
           } else {
-            value = negate ^ problem_client->existPredicateNode(tree.nodes[node_id]);
+            value = negate ^ problem_client->existPredicate(tree.nodes[node_id]);
           }
         }
 
@@ -283,7 +283,7 @@ std::tuple<bool, bool, double> evaluate(
           } else {
             std::stringstream ss;
             ss << "(= " << parser::pddl::toString(tree, left_id) << " " << value << ")";
-            problem_client->updateFunctionNode(parser::pddl::fromStringFunction(ss.str()));
+            problem_client->updateFunction(parser::pddl::fromStringFunction(ss.str()));
           }
         }
 
@@ -308,15 +308,15 @@ std::tuple<bool, bool, double> evaluate(
   bool apply,
   uint32_t node_id)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   return evaluate(tree, problem_client, predicates, functions, apply, false, node_id);
 }
 
 std::tuple<bool, bool, double> evaluate(
   const plansys2_msgs::msg::Tree & tree,
-  std::vector<plansys2_msgs::msg::Node> & predicates,
-  std::vector<plansys2_msgs::msg::Node> & functions,
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions,
   bool apply,
   uint32_t node_id)
 {
@@ -336,8 +336,8 @@ bool check(
 
 bool check(
   const plansys2_msgs::msg::Tree & tree,
-  std::vector<plansys2_msgs::msg::Node> & predicates,
-  std::vector<plansys2_msgs::msg::Node> & functions,
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions,
   uint32_t node_id)
 {
   std::tuple<bool, bool, double> ret = evaluate(tree, predicates, functions, false, node_id);
@@ -357,8 +357,8 @@ bool apply(
 
 bool apply(
   const plansys2_msgs::msg::Tree & tree,
-  std::vector<plansys2_msgs::msg::Node> & predicates,
-  std::vector<plansys2_msgs::msg::Node> & functions,
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions,
   uint32_t node_id)
 {
   std::tuple<bool, bool, double> ret = evaluate(tree, predicates, functions, true, node_id);

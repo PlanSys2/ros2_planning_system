@@ -47,8 +47,8 @@ namespace plansys2
 std::tuple<bool, bool, double> evaluate(
   const plansys2_msgs::msg::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
-  std::vector<plansys2_msgs::msg::Node> & predicates,
-  std::vector<plansys2_msgs::msg::Node> & functions,
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions,
   bool apply = false,
   bool use_state = false,
   uint8_t node_id = 0,
@@ -62,8 +62,8 @@ std::tuple<bool, bool, double> evaluate(
 
 std::tuple<bool, bool, double> evaluate(
   const plansys2_msgs::msg::Tree & tree,
-  std::vector<plansys2_msgs::msg::Node> & predicates,
-  std::vector<plansys2_msgs::msg::Node> & functions,
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions,
   bool apply = false,
   uint32_t node_id = 0);
 
@@ -82,8 +82,8 @@ bool check(
 
 bool check(
   const plansys2_msgs::msg::Tree & tree,
-  std::vector<plansys2_msgs::msg::Node> & predicates,
-  std::vector<plansys2_msgs::msg::Node> & functions,
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions,
   uint32_t node_id = 0);
 
 /// Apply a PDDL expression represented as a tree.
@@ -101,8 +101,8 @@ bool apply(
 
 bool apply(
   const plansys2_msgs::msg::Tree & tree,
-  std::vector<plansys2_msgs::msg::Node> & predicates,
-  std::vector<plansys2_msgs::msg::Node> & functions,
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions,
   uint32_t node_id = 0);
 
 /// Parse the action expression and time (optional) from an input string.
