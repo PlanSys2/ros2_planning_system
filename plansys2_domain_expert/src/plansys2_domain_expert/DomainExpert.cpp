@@ -56,10 +56,10 @@ DomainExpert::getTypes()
   return ret;
 }
 
-std::vector<plansys2_msgs::msg::Node>
-DomainExpert::getPredicateNodes()
+std::vector<plansys2::Predicate>
+DomainExpert::getPredicates()
 {
-  std::vector<plansys2_msgs::msg::Node> ret;
+  std::vector<plansys2::Predicate> ret;
   for (unsigned i = 0; i < domain_->preds.size(); i++) {
     plansys2_msgs::msg::Node pred;
     pred.node_type = plansys2_msgs::msg::Node::PREDICATE;
@@ -69,8 +69,8 @@ DomainExpert::getPredicateNodes()
   return ret;
 }
 
-std::optional<plansys2_msgs::msg::Node>
-DomainExpert::getPredicateNode(const std::string & predicate)
+std::optional<plansys2::Predicate>
+DomainExpert::getPredicate(const std::string & predicate)
 {
   std::string predicate_search = predicate;
   std::transform(
@@ -104,10 +104,10 @@ DomainExpert::getPredicateNode(const std::string & predicate)
   }
 }
 
-std::vector<plansys2_msgs::msg::Node>
-DomainExpert::getFunctionNodes()
+std::vector<plansys2::Function>
+DomainExpert::getFunctions()
 {
-  std::vector<plansys2_msgs::msg::Node> ret;
+  std::vector<plansys2::Function> ret;
   for (unsigned i = 0; i < domain_->funcs.size(); i++) {
     plansys2_msgs::msg::Node func;
     func.node_type = plansys2_msgs::msg::Node::FUNCTION;
@@ -117,15 +117,15 @@ DomainExpert::getFunctionNodes()
   return ret;
 }
 
-std::optional<plansys2_msgs::msg::Node>
-DomainExpert::getFunctionNode(const std::string & function)
+std::optional<plansys2::Function>
+DomainExpert::getFunction(const std::string & function)
 {
   std::string function_search = function;
   std::transform(
     function_search.begin(), function_search.end(),
     function_search.begin(), ::tolower);
 
-  plansys2_msgs::msg::Node ret;
+  plansys2::Function ret;
   bool found = false;
   unsigned i = 0;
 

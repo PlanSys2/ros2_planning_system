@@ -53,8 +53,8 @@ struct GraphNode
   int node_num;
   int level_num;
 
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
 
   std::set<GraphNode::Ptr> in_arcs;
   std::set<GraphNode::Ptr> out_arcs;
@@ -93,15 +93,15 @@ protected:
 
   bool is_action_executable(
     const ActionStamped & action,
-    std::vector<plansys2_msgs::msg::Node> & predicates,
-    std::vector<plansys2_msgs::msg::Node> & functions) const;
+    std::vector<plansys2::Predicate> & predicates,
+    std::vector<plansys2::Function> & functions) const;
   std::pair<std::string, uint8_t> get_base(
     const plansys2_msgs::msg::Tree & tree,
     uint32_t node_id = 0);
   std::list<GraphNode::Ptr> get_roots(
     std::vector<plansys2::ActionStamped> & action_sequence,
-    std::vector<plansys2_msgs::msg::Node> & predicates,
-    std::vector<plansys2_msgs::msg::Node> & functions,
+    std::vector<plansys2::Predicate> & predicates,
+    std::vector<plansys2::Function> & functions,
     int & node_counter);
   GraphNode::Ptr get_node_satisfy(
     const plansys2_msgs::msg::Tree & requirement,
@@ -116,8 +116,8 @@ protected:
   void remove_existing_requirements(
     const plansys2_msgs::msg::Tree & tree,
     std::vector<uint32_t> & requirements,
-    std::vector<plansys2_msgs::msg::Node> & predicates,
-    std::vector<plansys2_msgs::msg::Node> & functions) const;
+    std::vector<plansys2::Predicate> & predicates,
+    std::vector<plansys2::Function> & functions) const;
   bool is_parallelizable(
     const plansys2::ActionStamped & action,
     const std::list<GraphNode::Ptr> & ret) const;

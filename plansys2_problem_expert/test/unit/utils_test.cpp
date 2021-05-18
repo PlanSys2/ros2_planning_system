@@ -40,8 +40,8 @@
 
 TEST(utils, evaluate_and)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -75,8 +75,8 @@ TEST(utils, evaluate_and)
 
 TEST(utils, evaluate_or)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -111,8 +111,8 @@ TEST(utils, evaluate_or)
 
 TEST(utils, evaluate_not)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -134,8 +134,8 @@ TEST(utils, evaluate_not)
 
 TEST(utils, evaluate_predicate_use_state)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -170,8 +170,8 @@ TEST(utils, evaluate_predicate_use_state)
 
 TEST(utils, evaluate_predicate_client)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
@@ -229,8 +229,8 @@ TEST(utils, evaluate_predicate_client)
 
 TEST(utils, evaluate_function_use_state)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
 
   plansys2_msgs::msg::Tree test_tree;
@@ -251,8 +251,8 @@ TEST(utils, evaluate_function_use_state)
 
 TEST(utils, evaluate_expression_ge)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -284,8 +284,8 @@ TEST(utils, evaluate_expression_ge)
 
 TEST(utils, evaluate_expression_gt)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -313,8 +313,8 @@ TEST(utils, evaluate_expression_gt)
 
 TEST(utils, evaluate_expression_le)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -348,8 +348,8 @@ TEST(utils, evaluate_expression_le)
 
 TEST(utils, evaluate_expression_lt)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -377,8 +377,8 @@ TEST(utils, evaluate_expression_lt)
 
 TEST(utils, evaluate_expression_multiply)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -404,8 +404,8 @@ TEST(utils, evaluate_expression_multiply)
 
 TEST(utils, evaluate_expression_divide)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -439,8 +439,8 @@ TEST(utils, evaluate_expression_divide)
 
 TEST(utils, evaluate_expression_add)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -466,8 +466,8 @@ TEST(utils, evaluate_expression_add)
 
 TEST(utils, evaluate_expression_subtract)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -493,8 +493,8 @@ TEST(utils, evaluate_expression_subtract)
 
 TEST(utils, evaluate_expression_invalid)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -582,8 +582,9 @@ TEST(utils, evaluate_expression_invalid_client)
 
 TEST(utils, evaluate_function_mod)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2_msgs::msg::Node> predicates_msg;
+  std::vector<plansys2_msgs::msg::Node> functions_msg;
+
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -592,8 +593,13 @@ TEST(utils, evaluate_function_mod)
     test_tree, "(assign (vx) 3.0)", false,
     plansys2_msgs::msg::Node::EXPRESSION);
 
-  parser::pddl::getPredicates(predicates, test_tree);
-  parser::pddl::getFunctions(functions, test_tree);
+  parser::pddl::getPredicates(predicates_msg, test_tree);
+  parser::pddl::getFunctions(functions_msg, test_tree);
+
+  auto predicates = plansys2::convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(
+    predicates_msg);
+  auto functions = plansys2::convertVector<plansys2::Function, plansys2_msgs::msg::Node>(
+    functions_msg);
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree, predicates, functions),
@@ -731,8 +737,8 @@ TEST(utils, evaluate_function_mod_client)
 
 TEST(utils, evaluate_function_mod_invalid)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -808,8 +814,8 @@ TEST(utils, evaluate_function_mod_invalid_client)
 
 TEST(utils, evaluate_number)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
@@ -823,8 +829,8 @@ TEST(utils, evaluate_number)
 
 TEST(utils, evaluate_invalid)
 {
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  std::vector<plansys2_msgs::msg::Node> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 

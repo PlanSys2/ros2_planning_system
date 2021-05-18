@@ -36,27 +36,27 @@ class ProblemExpert : public ProblemExpertInterface
 public:
   explicit ProblemExpert(std::shared_ptr<DomainExpert> & domain_expert);
 
-  std::vector<plansys2_msgs::msg::Param> getInstanceParams();
-  bool addInstanceParam(const plansys2_msgs::msg::Param & instance);
-  bool removeInstanceParam(const plansys2_msgs::msg::Param & instance);
-  std::optional<plansys2_msgs::msg::Param> getInstanceParam(const std::string & name);
+  std::vector<plansys2::Instance> getInstances();
+  bool addInstance(const plansys2::Instance & instance);
+  bool removeInstance(const plansys2::Instance & instance);
+  std::optional<plansys2::Instance> getInstance(const std::string & name);
 
-  std::vector<plansys2_msgs::msg::Node> getPredicateNodes();
-  bool addPredicateNode(const plansys2_msgs::msg::Node & predicate);
-  bool removePredicateNode(const plansys2_msgs::msg::Node & predicate);
-  bool existPredicateNode(const plansys2_msgs::msg::Node & predicate);
-  std::optional<plansys2_msgs::msg::Node> getPredicateNode(const std::string & expr);
+  std::vector<plansys2::Predicate> getPredicates();
+  bool addPredicate(const plansys2::Predicate & predicate);
+  bool removePredicate(const plansys2::Predicate & predicate);
+  bool existPredicate(const plansys2::Predicate & predicate);
+  std::optional<plansys2::Predicate> getPredicate(const std::string & expr);
 
-  std::vector<plansys2_msgs::msg::Node> getFunctionNodes();
-  bool addFunctionNode(const plansys2_msgs::msg::Node & function);
-  bool removeFunctionNode(const plansys2_msgs::msg::Node & function);
-  bool existFunctionNode(const plansys2_msgs::msg::Node & function);
-  bool updateFunctionNode(const plansys2_msgs::msg::Node & function);
-  std::optional<plansys2_msgs::msg::Node> getFunctionNode(const std::string & expr);
+  std::vector<plansys2::Function> getFunctions();
+  bool addFunction(const plansys2::Function & function);
+  bool removeFunction(const plansys2::Function & function);
+  bool existFunction(const plansys2::Function & function);
+  bool updateFunction(const plansys2::Function & function);
+  std::optional<plansys2::Function> getFunction(const std::string & expr);
 
-  plansys2_msgs::msg::Tree getGoalTree();
-  bool setGoalTree(const plansys2_msgs::msg::Tree & goal);
-  bool isGoalTreeSatisfied(const plansys2_msgs::msg::Tree & goal);
+  plansys2::Goal getGoal();
+  bool setGoal(const plansys2::Goal & goal);
+  bool isGoalSatisfied(const plansys2::Goal & goal);
 
   bool clearGoal();
   bool clearKnowledge();
@@ -65,9 +65,9 @@ public:
 
   bool existInstance(const std::string & name);
   bool isValidType(const std::string & type);
-  bool isValidPredicate(const plansys2_msgs::msg::Node & predicate);
-  bool isValidFunction(const plansys2_msgs::msg::Node & function);
-  bool isValidGoal(const plansys2_msgs::msg::Tree & goal);
+  bool isValidPredicate(const plansys2::Predicate & predicate);
+  bool isValidFunction(const plansys2::Function & function);
+  bool isValidGoal(const plansys2::Goal & goal);
 
 private:
   bool checkPredicateTreeTypes(
@@ -78,10 +78,10 @@ private:
   bool removeFunctionsReferencing(const plansys2_msgs::msg::Param & param);
   bool removePredicatesReferencing(const plansys2_msgs::msg::Param & param);
 
-  std::vector<plansys2_msgs::msg::Param> instances_;
-  std::vector<plansys2_msgs::msg::Node> predicates_;
-  std::vector<plansys2_msgs::msg::Node> functions_;
-  plansys2_msgs::msg::Tree goal_;
+  std::vector<plansys2::Instance> instances_;
+  std::vector<plansys2::Predicate> predicates_;
+  std::vector<plansys2::Function> functions_;
+  plansys2::Goal goal_;
 
   std::shared_ptr<DomainExpert> domain_expert_;
 };

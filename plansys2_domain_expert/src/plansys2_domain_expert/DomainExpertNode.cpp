@@ -295,7 +295,8 @@ DomainExpertNode::get_domain_predicates_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = true;
-    response->states = domain_expert_->getPredicateNodes();
+    response->states = plansys2::convertVector<plansys2_msgs::msg::Node, plansys2::Predicate>(
+      domain_expert_->getPredicates());
   }
 }
 
@@ -310,7 +311,7 @@ DomainExpertNode::get_domain_predicate_details_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto predicate = domain_expert_->getPredicateNode(request->expression);
+    auto predicate = domain_expert_->getPredicate(request->expression);
     if (predicate) {
       response->node = predicate.value();
       response->success = true;
@@ -336,7 +337,8 @@ DomainExpertNode::get_domain_functions_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = true;
-    response->states = domain_expert_->getFunctionNodes();
+    response->states = plansys2::convertVector<plansys2_msgs::msg::Node, plansys2::Function>(
+      domain_expert_->getFunctions());
   }
 }
 
@@ -351,7 +353,7 @@ DomainExpertNode::get_domain_function_details_service_callback(
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto function = domain_expert_->getFunctionNode(request->expression);
+    auto function = domain_expert_->getFunction(request->expression);
     if (function) {
       response->node = function.value();
       response->success = true;

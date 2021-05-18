@@ -73,8 +73,8 @@ public:
 
   bool is_action_executable(
     const plansys2::ActionStamped & action,
-    std::vector<plansys2_msgs::msg::Node> & predicates,
-    std::vector<plansys2_msgs::msg::Node> & functions) const
+    std::vector<plansys2::Predicate> & predicates,
+    std::vector<plansys2::Function> & functions) const
   {
     return BTBuilder::is_action_executable(action, predicates, functions);
   }
@@ -86,8 +86,8 @@ public:
 
   std::list<plansys2::GraphNode::Ptr> get_roots(
     std::vector<plansys2::ActionStamped> & action_sequence,
-    std::vector<plansys2_msgs::msg::Node> & predicates,
-    std::vector<plansys2_msgs::msg::Node> & functions,
+    std::vector<plansys2::Predicate> & predicates,
+    std::vector<plansys2::Function> & functions,
     int & node_counter)
   {
     return BTBuilder::get_roots(action_sequence, predicates, functions, node_counter);
@@ -120,8 +120,8 @@ public:
   void remove_existing_requirements(
     const plansys2_msgs::msg::Tree & tree,
     std::vector<uint32_t> & requirements,
-    std::vector<plansys2_msgs::msg::Node> & predicates,
-    std::vector<plansys2_msgs::msg::Node> & functions) const
+    std::vector<plansys2::Predicate> & predicates,
+    std::vector<plansys2::Function> & functions) const
   {
     BTBuilder::remove_existing_requirements(tree, requirements, predicates, functions);
   }
@@ -215,8 +215,8 @@ TEST(btbuilder_tests, test_plan_1)
   ASSERT_TRUE(plan);
 
 
-  auto predicates = problem_client->getPredicateNodes();
-  auto functions = problem_client->getFunctionNodes();
+  auto predicates = problem_client->getPredicates();
+  auto functions = problem_client->getFunctions();
 
   auto action_sequence = btbuilder->get_plan_actions(plan.value());
 
@@ -490,8 +490,8 @@ TEST(btbuilder_tests, test_plan_2)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  auto predicates = problem_client->getPredicateNodes();
-  auto functions = problem_client->getFunctionNodes();
+  auto predicates = problem_client->getPredicates();
+  auto functions = problem_client->getFunctions();
 
   auto predicates_plus_one = predicate_strings;
   predicates_plus_one.push_back("(is_assembly_zone body_car_zone)");
@@ -508,7 +508,7 @@ TEST(btbuilder_tests, test_plan_2)
       tree.nodes[check_predicates.front()]), "(is_assembly_zone body_car_zone)");
 
 
-  ASSERT_EQ(problem_client->getPredicateNodes().size(), predicates.size());
+  ASSERT_EQ(problem_client->getPredicates().size(), predicates.size());
 
   auto action_sequence = btbuilder->get_plan_actions(plan.value());
 
@@ -519,8 +519,8 @@ TEST(btbuilder_tests, test_plan_2)
   ASSERT_EQ(roots.size(), 3u);
   // Apply roots actions
   for (auto & action_node : roots) {
-    action_node->predicates = problem_client->getPredicateNodes();
-    action_node->functions = problem_client->getFunctionNodes();
+    action_node->predicates = problem_client->getPredicates();
+    action_node->functions = problem_client->getFunctions();
     plansys2::apply(
       action_node->action.action->at_start_effects,
       action_node->predicates, action_node->functions);

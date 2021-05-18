@@ -85,21 +85,6 @@ ProblemExpertClient::ProblemExpertClient(rclcpp::Node::SharedPtr provided_node)
 std::vector<plansys2::Instance>
 ProblemExpertClient::getInstances()
 {
-  auto params = getInstanceParams();
-  std::vector<plansys2::Instance> ret;
-  ret.reserve(params.size());
-  std::transform(
-    params.begin(), params.end(), std::back_inserter(ret),
-    [](plansys2_msgs::msg::Param item)
-    {
-      return plansys2::Instance(item);
-    });
-  return ret;
-}
-
-std::vector<plansys2_msgs::msg::Param>
-ProblemExpertClient::getInstanceParams()
-{
   while (!get_problem_instances_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return {};
@@ -121,7 +106,8 @@ ProblemExpertClient::getInstanceParams()
   }
 
   if (future_result.get()->success) {
-    return future_result.get()->instances;
+    return plansys2::convertVector<plansys2::Instance, plansys2_msgs::msg::Param>(
+      future_result.get()->instances);
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
@@ -134,12 +120,6 @@ ProblemExpertClient::getInstanceParams()
 
 bool
 ProblemExpertClient::addInstance(const plansys2::Instance & instance)
-{
-  return addInstanceParam(instance);
-}
-
-bool
-ProblemExpertClient::addInstanceParam(const plansys2_msgs::msg::Param & instance)
 {
   while (!add_problem_instance_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
@@ -176,12 +156,6 @@ ProblemExpertClient::addInstanceParam(const plansys2_msgs::msg::Param & instance
 bool
 ProblemExpertClient::removeInstance(const plansys2::Instance & instance)
 {
-  return removeInstanceParam(instance);
-}
-
-bool
-ProblemExpertClient::removeInstanceParam(const plansys2_msgs::msg::Param & instance)
-{
   while (!remove_problem_instance_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
@@ -214,18 +188,9 @@ ProblemExpertClient::removeInstanceParam(const plansys2_msgs::msg::Param & insta
   }
 }
 
+
 std::optional<plansys2::Instance>
 ProblemExpertClient::getInstance(const std::string & name)
-{
-  auto instance_param = getInstanceParam(name);
-  if (instance_param.has_value()) {
-    return plansys2::Instance(instance_param.value());
-  }
-  return {};
-}
-
-std::optional<plansys2_msgs::msg::Param>
-ProblemExpertClient::getInstanceParam(const std::string & name)
 {
   while (!get_problem_instance_details_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
@@ -263,21 +228,6 @@ ProblemExpertClient::getInstanceParam(const std::string & name)
 std::vector<plansys2::Predicate>
 ProblemExpertClient::getPredicates()
 {
-  auto predicates = getPredicateNodes();
-  std::vector<plansys2::Predicate> ret;
-  ret.reserve(predicates.size());
-  std::transform(
-    predicates.begin(), predicates.end(), std::back_inserter(ret),
-    [](plansys2_msgs::msg::Node item)
-    {
-      return plansys2::Predicate(item);
-    });
-  return ret;
-}
-
-std::vector<plansys2_msgs::msg::Node>
-ProblemExpertClient::getPredicateNodes()
-{
   while (!get_problem_predicates_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return {};
@@ -299,7 +249,8 @@ ProblemExpertClient::getPredicateNodes()
   }
 
   if (future_result.get()->success) {
-    return future_result.get()->states;
+    return plansys2::convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(
+      future_result.get()->states);
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
@@ -311,12 +262,6 @@ ProblemExpertClient::getPredicateNodes()
 
 bool
 ProblemExpertClient::addPredicate(const plansys2::Predicate & predicate)
-{
-  return addPredicateNode(predicate);
-}
-
-bool
-ProblemExpertClient::addPredicateNode(const plansys2_msgs::msg::Node & predicate)
 {
   while (!add_problem_predicate_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
@@ -353,12 +298,6 @@ ProblemExpertClient::addPredicateNode(const plansys2_msgs::msg::Node & predicate
 bool
 ProblemExpertClient::removePredicate(const plansys2::Predicate & predicate)
 {
-  return removePredicateNode(predicate);
-}
-
-bool
-ProblemExpertClient::removePredicateNode(const plansys2_msgs::msg::Node & predicate)
-{
   while (!remove_problem_predicate_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
@@ -394,12 +333,6 @@ ProblemExpertClient::removePredicateNode(const plansys2_msgs::msg::Node & predic
 bool
 ProblemExpertClient::existPredicate(const plansys2::Predicate & predicate)
 {
-  return existPredicateNode(predicate);
-}
-
-bool
-ProblemExpertClient::existPredicateNode(const plansys2_msgs::msg::Node & predicate)
-{
   while (!exist_problem_predicate_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
@@ -426,16 +359,6 @@ ProblemExpertClient::existPredicateNode(const plansys2_msgs::msg::Node & predica
 
 std::optional<plansys2::Predicate>
 ProblemExpertClient::getPredicate(const std::string & predicate)
-{
-  auto predicate_node = getPredicateNode(predicate);
-  if (predicate_node.has_value()) {
-    return plansys2::Predicate(predicate_node.value());
-  }
-  return {};
-}
-
-std::optional<plansys2_msgs::msg::Node>
-ProblemExpertClient::getPredicateNode(const std::string & predicate)
 {
   while (!get_problem_predicate_details_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
@@ -473,21 +396,6 @@ ProblemExpertClient::getPredicateNode(const std::string & predicate)
 std::vector<plansys2::Function>
 ProblemExpertClient::getFunctions()
 {
-  auto functions = getFunctionNodes();
-  std::vector<plansys2::Function> ret;
-  ret.reserve(functions.size());
-  std::transform(
-    functions.begin(), functions.end(), std::back_inserter(ret),
-    [](plansys2_msgs::msg::Node item)
-    {
-      return plansys2::Function(item);
-    });
-  return ret;
-}
-
-std::vector<plansys2_msgs::msg::Node>
-ProblemExpertClient::getFunctionNodes()
-{
   while (!get_problem_functions_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return {};
@@ -509,7 +417,8 @@ ProblemExpertClient::getFunctionNodes()
   }
 
   if (future_result.get()->success) {
-    return future_result.get()->states;
+    return plansys2::convertVector<plansys2::Function, plansys2_msgs::msg::Node>(
+      future_result.get()->states);
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
@@ -521,12 +430,6 @@ ProblemExpertClient::getFunctionNodes()
 
 bool
 ProblemExpertClient::addFunction(const plansys2::Function & function)
-{
-  return addFunctionNode(function);
-}
-
-bool
-ProblemExpertClient::addFunctionNode(const plansys2_msgs::msg::Node & function)
 {
   while (!add_problem_function_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
@@ -566,12 +469,6 @@ ProblemExpertClient::addFunctionNode(const plansys2_msgs::msg::Node & function)
 bool
 ProblemExpertClient::removeFunction(const plansys2::Function & function)
 {
-  return removeFunctionNode(function);
-}
-
-bool
-ProblemExpertClient::removeFunctionNode(const plansys2_msgs::msg::Node & function)
-{
   while (!remove_problem_function_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
@@ -607,12 +504,6 @@ ProblemExpertClient::removeFunctionNode(const plansys2_msgs::msg::Node & functio
 bool
 ProblemExpertClient::existFunction(const plansys2::Function & function)
 {
-  return existFunctionNode(function);
-}
-
-bool
-ProblemExpertClient::existFunctionNode(const plansys2_msgs::msg::Node & function)
-{
   while (!exist_problem_function_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
@@ -638,11 +529,6 @@ ProblemExpertClient::existFunctionNode(const plansys2_msgs::msg::Node & function
 }
 
 bool ProblemExpertClient::updateFunction(const plansys2::Function & function)
-{
-  return updateFunctionNode(function);
-}
-
-bool ProblemExpertClient::updateFunctionNode(const plansys2_msgs::msg::Node & function)
 {
   while (!update_problem_function_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
@@ -679,16 +565,6 @@ bool ProblemExpertClient::updateFunctionNode(const plansys2_msgs::msg::Node & fu
 std::optional<plansys2::Function>
 ProblemExpertClient::getFunction(const std::string & function)
 {
-  auto function_node = getFunctionNode(function);
-  if (function_node.has_value()) {
-    return plansys2::Function(function_node.value());
-  }
-  return {};
-}
-
-std::optional<plansys2_msgs::msg::Node>
-ProblemExpertClient::getFunctionNode(const std::string & function)
-{
   while (!get_problem_function_details_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return {};
@@ -722,14 +598,9 @@ ProblemExpertClient::getFunctionNode(const std::string & function)
   }
 }
 
+
 plansys2::Goal
 ProblemExpertClient::getGoal()
-{
-  return plansys2::Goal(getGoalTree());
-}
-
-plansys2_msgs::msg::Tree
-ProblemExpertClient::getGoalTree()
 {
   plansys2_msgs::msg::Tree ret;
 
@@ -768,12 +639,6 @@ ProblemExpertClient::getGoalTree()
 bool
 ProblemExpertClient::setGoal(const plansys2::Goal & goal)
 {
-  return setGoalTree(goal);
-}
-
-bool
-ProblemExpertClient::setGoalTree(const plansys2_msgs::msg::Tree & goal)
-{
   while (!add_problem_goal_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
@@ -808,12 +673,6 @@ ProblemExpertClient::setGoalTree(const plansys2_msgs::msg::Tree & goal)
 
 bool
 ProblemExpertClient::isGoalSatisfied(const plansys2::Goal & goal)
-{
-  return isGoalTreeSatisfied(goal);
-}
-
-bool
-ProblemExpertClient::isGoalTreeSatisfied(const plansys2_msgs::msg::Tree & goal)
 {
   while (!is_problem_goal_satisfied_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
