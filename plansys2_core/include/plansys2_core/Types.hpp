@@ -43,7 +43,7 @@ public:
   : plansys2_msgs::msg::Param() {}
   explicit Instance(const std::string & name, const std::string & type = {})
   : plansys2_msgs::msg::Param(parser::pddl::fromStringParam(name, type)) {}
-  Instance(const plansys2_msgs::msg::Param & instance)
+  explicit Instance(const plansys2_msgs::msg::Param & instance)
   : plansys2_msgs::msg::Param(instance) {}
 };
 
@@ -54,7 +54,7 @@ public:
   : plansys2_msgs::msg::Node() {}
   explicit Predicate(const std::string & pred)
   : plansys2_msgs::msg::Node(parser::pddl::fromStringPredicate(pred)) {}
-  Predicate(const plansys2_msgs::msg::Node & pred)
+  explicit Predicate(const plansys2_msgs::msg::Node & pred)
   : plansys2_msgs::msg::Node(pred) {}
 };
 
@@ -65,7 +65,7 @@ public:
   : plansys2_msgs::msg::Node() {}
   explicit Function(const std::string & func)
   : plansys2_msgs::msg::Node(parser::pddl::fromStringFunction(func)) {}
-  Function(const plansys2_msgs::msg::Node & func)
+  explicit Function(const plansys2_msgs::msg::Node & func)
   : plansys2_msgs::msg::Node(func) {}
 };
 
@@ -76,7 +76,7 @@ public:
   : plansys2_msgs::msg::Tree() {}
   explicit Goal(const std::string & goal)
   : plansys2_msgs::msg::Tree(parser::pddl::fromString(goal)) {}
-  Goal(const plansys2_msgs::msg::Tree & goal)
+  explicit Goal(const plansys2_msgs::msg::Tree & goal)
   : plansys2_msgs::msg::Tree(goal) {}
 };
 
