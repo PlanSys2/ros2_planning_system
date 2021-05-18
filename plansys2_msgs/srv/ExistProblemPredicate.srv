@@ -1,4 +1,0 @@
-string predicate
-string[] arguments
----
-bool exist

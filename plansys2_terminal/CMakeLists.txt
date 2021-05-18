@@ -12,6 +12,7 @@ find_package(plansys2_domain_expert REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
 find_package(plansys2_planner REQUIRED)
 find_package(plansys2_executor REQUIRED)
+find_package(plansys2_pddl_parser REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -24,6 +25,7 @@ set(dependencies
     plansys2_problem_expert
     plansys2_planner
     plansys2_executor
+    plansys2_pddl_parser
 )
 
 include_directories(include)

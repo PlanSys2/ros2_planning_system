@@ -29,7 +29,7 @@
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_core/Types.hpp"
-#include "plansys2_pddl_parser/Tree.h"
+#include "plansys2_msgs/msg/durative_action.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
@@ -41,7 +41,7 @@ struct ActionStamped
 {
   float time;
   float duration;
-  std::shared_ptr<parser::pddl::tree::DurativeAction> action;
+  std::shared_ptr<plansys2_msgs::msg::DurativeAction> action;
 };
 
 struct GraphNode
@@ -53,8 +53,8 @@ struct GraphNode
   int node_num;
   int level_num;
 
-  std::set<std::string> predicates;
-  std::map<std::string, double> functions;
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
 
   std::set<GraphNode::Ptr> in_arcs;
   std::set<GraphNode::Ptr> out_arcs;
@@ -87,40 +87,37 @@ protected:
 
   std::string bt_action_;
 
-  void init_predicates(
-    std::set<std::string> & predicates,
-    std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
-  void init_functions(
-    std::map<std::string, double> & functions,
-    std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
-
   std::vector<ActionStamped> get_plan_actions(const Plan & plan);
   void prune_backwards(GraphNode::Ptr new_node, GraphNode::Ptr node_satisfy);
   void prune_forward(GraphNode::Ptr current, std::list<GraphNode::Ptr> & used_nodes);
 
   bool is_action_executable(
     const ActionStamped & action,
-    std::set<std::string> & predicates,
-    std::map<std::string, double> & functions) const;
-  std::pair<std::string, parser::pddl::tree::NodeType> get_base(
-    const std::shared_ptr<parser::pddl::tree::TreeNode> tree_node);
+    std::vector<plansys2::Predicate> & predicates,
+    std::vector<plansys2::Function> & functions) const;
+  std::pair<std::string, uint8_t> get_base(
+    const plansys2_msgs::msg::Tree & tree,
+    uint32_t node_id = 0);
   std::list<GraphNode::Ptr> get_roots(
     std::vector<plansys2::ActionStamped> & action_sequence,
-    std::set<std::string> & predicates,
-    std::map<std::string, double> & functions,
+    std::vector<plansys2::Predicate> & predicates,
+    std::vector<plansys2::Function> & functions,
     int & node_counter);
   GraphNode::Ptr get_node_satisfy(
-    const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
+    const plansys2_msgs::msg::Tree & requirement,
+    uint32_t node_id,
     const std::list<GraphNode::Ptr> & roots,
     const GraphNode::Ptr & current);
   GraphNode::Ptr get_node_satisfy(
-    const std::shared_ptr<parser::pddl::tree::TreeNode> requirement,
+    const plansys2_msgs::msg::Tree & requirement,
+    uint32_t node_id,
     const GraphNode::Ptr & node,
     const GraphNode::Ptr & current);
   void remove_existing_requirements(
-    std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> & requirements,
-    std::set<std::string> & predicates,
-    std::map<std::string, double> & functions) const;
+    const plansys2_msgs::msg::Tree & tree,
+    std::vector<uint32_t> & requirements,
+    std::vector<plansys2::Predicate> & predicates,
+    std::vector<plansys2::Function> & functions) const;
   bool is_parallelizable(
     const plansys2::ActionStamped & action,
     const std::list<GraphNode::Ptr> & ret) const;
@@ -134,7 +131,7 @@ protected:
     GraphNode::Ptr node, std::shared_ptr<std::map<std::string,
     ActionExecutionInfo>> action_map, int level = 0);
   ActionExecutor::Status get_action_status(
-    std::shared_ptr<parser::pddl::tree::DurativeAction> action,
+    std::shared_ptr<plansys2_msgs::msg::DurativeAction> action,
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map);
   void addDotGraphLegend(
     std::stringstream & ss, int tab_level, int level_counter,

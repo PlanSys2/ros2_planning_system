@@ -609,7 +609,7 @@ TEST_F(TerminalTestCase, check_actors)
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
+    while ((test_node->now() - start).seconds() < 1.0) {
       rate.sleep();
     }
   }

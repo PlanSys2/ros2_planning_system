@@ -23,6 +23,8 @@
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
+#include "plansys2_msgs/msg/param.h"
+#include "plansys2_pddl_parser/Utils.h"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_planner/PlannerNode.hpp"
@@ -87,26 +89,24 @@ TEST(planner_expert, generate_plan_good)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"leia", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"francisco", "person"}));
-  ASSERT_TRUE(problem_client->addInstance({"message1", "message"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("leia", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("francisco", "person")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("message1", "message")));
 
-  ASSERT_TRUE(problem_client->addInstance({"bedroom", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"kitchen", "room"}));
-  ASSERT_TRUE(problem_client->addInstance({"corridor", "room"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("corridor", "room")));
 
   std::vector<std::string> predicates = {
     "(robot_at leia kitchen)",
     "(person_at francisco bedroom)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
   ASSERT_TRUE(
-    problem_client->setGoal(
-      parser::pddl::tree::Goal(
-        "(and (robot_talk leia message1 francisco))")));
+    problem_client->setGoal(plansys2::Goal("(and (robot_talk leia message1 francisco))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);

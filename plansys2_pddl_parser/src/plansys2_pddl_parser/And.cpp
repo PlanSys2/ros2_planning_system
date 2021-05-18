@@ -14,12 +14,18 @@ void And::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::
 	s << ")";
 }
 
-std::shared_ptr<tree::TreeNode> And::PDDLTree( const Domain & d ) const {
-    std::shared_ptr<tree::AndNode> tree = std::make_shared<tree::AndNode>();
-    for ( unsigned i = 0; i < conds.size(); ++i ) {
-        tree->ops.push_back( conds[i]->PDDLTree( d ) );
+plansys2_msgs::msg::Node::SharedPtr And::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::AND;
+    node->node_id = tree.nodes.size();
+    tree.nodes.push_back(*node);
+
+    for ( unsigned i = 0; i < conds.size(); ++i) {
+        plansys2_msgs::msg::Node::SharedPtr child = conds[i]->getTree(tree, d, replace);
+        tree.nodes[node->node_id].children.push_back(child->node_id);
     }
-    return tree;
+
+    return node;
 }
 
 void And::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {

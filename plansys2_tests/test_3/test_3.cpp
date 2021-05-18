@@ -26,6 +26,7 @@
 #include "plansys2_planner/PlannerClient.hpp"
 #include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
+#include "plansys2_pddl_parser/Utils.h"
 
 #include "plansys2_tests/test_action_node.hpp"
 #include "plansys2_tests/execution_logger.hpp"
@@ -109,63 +110,64 @@ TEST(test_3, test_3)
     }
   }
 
-  problem_client->addInstance({"robot1", "robot"});
-  problem_client->addInstance({"robot2", "robot"});
-  problem_client->addInstance({"robot3", "robot"});
-  problem_client->addInstance({"wheels_zone", "zone"});
-  problem_client->addInstance({"sterwheel_zone", "zone"});
-  problem_client->addInstance({"body_car_zone", "zone"});
-  problem_client->addInstance({"assembly_zone", "zone"});
-  problem_client->addInstance({"recharge_zone", "zone"});
-  problem_client->addInstance({"wheel_1", "piece"});
-  problem_client->addInstance({"wheel_2", "piece"});
-  problem_client->addInstance({"wheel_3", "piece"});
-  problem_client->addInstance({"body_car_1", "piece"});
-  problem_client->addInstance({"body_car_2", "piece"});
-  problem_client->addInstance({"body_car_3", "piece"});
-  problem_client->addInstance({"sterwheel_1", "piece"});
-  problem_client->addInstance({"sterwheel_2", "piece"});
-  problem_client->addInstance({"sterwheel_3", "piece"});
-  problem_client->addInstance({"car1", "car"});
-  problem_client->addInstance({"car2", "car"});
-  problem_client->addInstance({"car3", "car"});
-  problem_client->addPredicate({"(robot_at robot1 assembly_zone)"});
-  problem_client->addPredicate({"(robot_at robot2 assembly_zone)"});
-  problem_client->addPredicate({"(robot_at robot3 assembly_zone)"});
-  problem_client->addPredicate({"(is_assembly_zone assembly_zone)"});
-  problem_client->addPredicate({"(robot_available robot1)"});
-  problem_client->addPredicate({"(robot_available robot2)"});
-  problem_client->addPredicate({"(robot_available robot3)"});
-  problem_client->addPredicate({"(piece_at wheel_1 wheels_zone)"});
-  problem_client->addPredicate({"(piece_at body_car_1 body_car_zone)"});
-  problem_client->addPredicate({"(piece_at sterwheel_1 sterwheel_zone)"});
-  problem_client->addPredicate({"(piece_is_wheel wheel_1)"});
-  problem_client->addPredicate({"(piece_is_body_car body_car_1)"});
-  problem_client->addPredicate({"(piece_is_steering_wheel sterwheel_1)"});
-  problem_client->addPredicate({"(piece_at wheel_2 wheels_zone)"});
-  problem_client->addPredicate({"(piece_at body_car_2 body_car_zone)"});
-  problem_client->addPredicate({"(piece_at sterwheel_2 sterwheel_zone)"});
-  problem_client->addPredicate({"(piece_is_wheel wheel_2)"});
-  problem_client->addPredicate({"(piece_is_body_car body_car_2)"});
-  problem_client->addPredicate({"(piece_is_steering_wheel sterwheel_2)"});
-  problem_client->addPredicate({"(piece_at wheel_3 wheels_zone)"});
-  problem_client->addPredicate({"(piece_at body_car_3 body_car_zone)"});
-  problem_client->addPredicate({"(piece_at sterwheel_3 sterwheel_zone)"});
-  problem_client->addPredicate({"(piece_is_wheel wheel_3)"});
-  problem_client->addPredicate({"(piece_is_body_car body_car_3)"});
-  problem_client->addPredicate({"(piece_is_steering_wheel sterwheel_3)"});
-  problem_client->addPredicate({"(piece_not_used wheel_1)"});
-  problem_client->addPredicate({"(piece_not_used wheel_2)"});
-  problem_client->addPredicate({"(piece_not_used wheel_3)"});
-  problem_client->addPredicate({"(piece_not_used body_car_1)"});
-  problem_client->addPredicate({"(piece_not_used body_car_2)"});
-  problem_client->addPredicate({"(piece_not_used body_car_3)"});
-  problem_client->addPredicate({"(piece_not_used sterwheel_1)"});
-  problem_client->addPredicate({"(piece_not_used sterwheel_2)"});
-  problem_client->addPredicate({"(piece_not_used sterwheel_3)"});
+  problem_client->addInstance(plansys2::Instance("robot1", "robot"));
+  problem_client->addInstance(plansys2::Instance("robot2", "robot"));
+  problem_client->addInstance(plansys2::Instance("robot3", "robot"));
+  problem_client->addInstance(plansys2::Instance("wheels_zone", "zone"));
+  problem_client->addInstance(plansys2::Instance("sterwheel_zone", "zone"));
+  problem_client->addInstance(plansys2::Instance("body_car_zone", "zone"));
+  problem_client->addInstance(plansys2::Instance("assembly_zone", "zone"));
+  problem_client->addInstance(plansys2::Instance("recharge_zone", "zone"));
+  problem_client->addInstance(plansys2::Instance("wheel_1", "piece"));
+  problem_client->addInstance(plansys2::Instance("wheel_2", "piece"));
+  problem_client->addInstance(plansys2::Instance("wheel_3", "piece"));
+  problem_client->addInstance(plansys2::Instance("body_car_1", "piece"));
+  problem_client->addInstance(plansys2::Instance("body_car_2", "piece"));
+  problem_client->addInstance(plansys2::Instance("body_car_3", "piece"));
+  problem_client->addInstance(plansys2::Instance("sterwheel_1", "piece"));
+  problem_client->addInstance(plansys2::Instance("sterwheel_2", "piece"));
+  problem_client->addInstance(plansys2::Instance("sterwheel_3", "piece"));
+  problem_client->addInstance(plansys2::Instance("car1", "car"));
+  problem_client->addInstance(plansys2::Instance("car2", "car"));
+  problem_client->addInstance(plansys2::Instance("car3", "car"));
+  problem_client->addPredicate(plansys2::Predicate("(robot_at robot1 assembly_zone)"));
+  problem_client->addPredicate(plansys2::Predicate("(robot_at robot2 assembly_zone)"));
+  problem_client->addPredicate(plansys2::Predicate("(robot_at robot3 assembly_zone)"));
+  problem_client->addPredicate(plansys2::Predicate("(is_assembly_zone assembly_zone)"));
+  problem_client->addPredicate(plansys2::Predicate("(robot_available robot1)"));
+  problem_client->addPredicate(plansys2::Predicate("(robot_available robot2)"));
+  problem_client->addPredicate(plansys2::Predicate("(robot_available robot3)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_at wheel_1 wheels_zone)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_at body_car_1 body_car_zone)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_at sterwheel_1 sterwheel_zone)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_is_wheel wheel_1)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_is_body_car body_car_1)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_is_steering_wheel sterwheel_1)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_at wheel_2 wheels_zone)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_at body_car_2 body_car_zone)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_at sterwheel_2 sterwheel_zone)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_is_wheel wheel_2)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_is_body_car body_car_2)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_is_steering_wheel sterwheel_2)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_at wheel_3 wheels_zone)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_at body_car_3 body_car_zone)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_at sterwheel_3 sterwheel_zone)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_is_wheel wheel_3)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_is_body_car body_car_3)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_is_steering_wheel sterwheel_3)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_not_used wheel_1)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_not_used wheel_2)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_not_used wheel_3)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_not_used body_car_1)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_not_used body_car_2)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_not_used body_car_3)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_not_used sterwheel_1)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_not_used sterwheel_2)"));
+  problem_client->addPredicate(plansys2::Predicate("(piece_not_used sterwheel_3)"));
 
   problem_client->setGoal(
-    {"(and(car_assembled car1) (car_assembled car2) (car_assembled car3))"});
+    plansys2::Goal(
+      "(and(car_assembled car1) (car_assembled car2) (car_assembled car3))"));
 
   ASSERT_TRUE(executor_client->start_plan_execution());
 

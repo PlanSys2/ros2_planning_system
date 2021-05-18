@@ -18,86 +18,94 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <utility>
 
 #include "plansys2_problem_expert/Utils.hpp"
+#include "plansys2_pddl_parser/Utils.h"
 
 namespace plansys2
 {
 
 std::tuple<bool, bool, double> evaluate(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
+  const plansys2_msgs::msg::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
-  std::set<std::string> & predicates,
-  std::map<std::string, double> & functions,
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions,
   bool apply,
   bool use_state,
+  uint8_t node_id,
   bool negate)
 {
-  if (node == nullptr) {  // No expression
+  if (tree.nodes.empty()) {  // No expression
     return std::make_tuple(true, true, 0);
   }
 
-  switch (node->type_) {
-    case parser::pddl::tree::AND: {
-        std::shared_ptr<parser::pddl::tree::AndNode> pn_and =
-          std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(node);
+  switch (tree.nodes[node_id].node_type) {
+    case plansys2_msgs::msg::Node::AND: {
         bool success = true;
         bool truth_value = true;
 
-        for (const auto & op : pn_and->ops) {
+        for (auto & child_id : tree.nodes[node_id].children) {
           std::tuple<bool, bool, double> result =
-            evaluate(op, problem_client, predicates, functions, apply, use_state, negate);
+            evaluate(
+            tree, problem_client, predicates, functions, apply, use_state, child_id,
+            negate);
           success = success && std::get<0>(result);
           truth_value = truth_value && std::get<1>(result);
         }
         return std::make_tuple(success, truth_value, 0);
       }
 
-    case parser::pddl::tree::OR: {
-        std::shared_ptr<parser::pddl::tree::OrNode> pn_or =
-          std::dynamic_pointer_cast<parser::pddl::tree::OrNode>(node);
+    case plansys2_msgs::msg::Node::OR: {
         bool success = true;
         bool truth_value = false;
 
-        for (const auto & op : pn_or->ops) {
+        for (auto & child_id : tree.nodes[node_id].children) {
           std::tuple<bool, bool, double> result =
-            evaluate(op, problem_client, predicates, functions, apply, use_state, negate);
+            evaluate(
+            tree, problem_client, predicates, functions, apply, use_state, child_id,
+            negate);
           success = success && std::get<0>(result);
           truth_value = truth_value || std::get<1>(result);
         }
         return std::make_tuple(success, truth_value, 0);
       }
 
-    case parser::pddl::tree::NOT: {
-        std::shared_ptr<parser::pddl::tree::NotNode> pn_not =
-          std::dynamic_pointer_cast<parser::pddl::tree::NotNode>(node);
-
+    case plansys2_msgs::msg::Node::NOT: {
         return evaluate(
-          pn_not->op, problem_client, predicates, functions, apply, use_state,
+          tree, problem_client, predicates, functions, apply, use_state,
+          tree.nodes[node_id].children[0],
           !negate);
       }
 
-    case parser::pddl::tree::PREDICATE: {
-        std::shared_ptr<parser::pddl::tree::PredicateNode> pred =
-          std::dynamic_pointer_cast<parser::pddl::tree::PredicateNode>(node);
-
+    case plansys2_msgs::msg::Node::PREDICATE: {
         bool success = true;
         bool value = true;
 
         if (apply) {
           if (use_state) {
+            auto it =
+              std::find_if(
+              predicates.begin(), predicates.end(),
+              std::bind(
+                &parser::pddl::checkNodeEquality, std::placeholders::_1,
+                tree.nodes[node_id]));
             if (negate) {
-              predicates.erase(pred->toString());
+              if (it != predicates.end()) {
+                predicates.erase(it);
+              }
               value = false;
             } else {
-              predicates.insert(pred->toString());
+              if (it == predicates.end()) {
+                predicates.push_back(tree.nodes[node_id]);
+              }
             }
           } else {
             if (negate) {
-              success = success && problem_client->removePredicate(pred->predicate_);
+              success = success && problem_client->removePredicate(tree.nodes[node_id]);
               value = false;
             } else {
-              success = success && problem_client->addPredicate(pred->predicate_);
+              success = success && problem_client->addPredicate(tree.nodes[node_id]);
             }
           }
         } else {
@@ -107,31 +115,39 @@ std::tuple<bool, bool, double> evaluate(
           //   T    |   F   |   T
           //   T    |   T   |   F
           if (use_state) {
-            value = negate ^ (predicates.find(pred->toString()) != predicates.end());
+            value = negate ^
+              (std::find_if(
+                predicates.begin(), predicates.end(),
+                std::bind(
+                  &parser::pddl::checkNodeEquality, std::placeholders::_1,
+                  tree.nodes[node_id])) != predicates.end());
           } else {
-            value = negate ^ problem_client->existPredicate(pred->predicate_);
+            value = negate ^ problem_client->existPredicate(tree.nodes[node_id]);
           }
         }
 
         return std::make_tuple(success, value, 0);
       }
 
-    case parser::pddl::tree::FUNCTION: {
-        std::shared_ptr<parser::pddl::tree::FunctionNode> func_node =
-          std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(node);
-
+    case plansys2_msgs::msg::Node::FUNCTION: {
         bool success = true;
         double value = 0;
 
         if (use_state) {
-          if (functions.find(func_node->toString()) == functions.end()) {
-            success = false;
+          auto it =
+            std::find_if(
+            functions.begin(), functions.end(),
+            std::bind(
+              &parser::pddl::checkNodeEquality, std::placeholders::_1,
+              tree.nodes[node_id]));
+          if (it != functions.end()) {
+            value = it->value;
           } else {
-            value = functions[func_node->toString()];
+            success = false;
           }
         } else {
-          std::optional<parser::pddl::tree::Function> func =
-            problem_client->getFunction(func_node->toString());
+          std::optional<plansys2_msgs::msg::Node> func =
+            problem_client->getFunction(parser::pddl::toString(tree, node_id));
 
           if (func.has_value()) {
             value = func.value().value;
@@ -143,54 +159,51 @@ std::tuple<bool, bool, double> evaluate(
         return std::make_tuple(success, false, value);
       }
 
-    case parser::pddl::tree::EXPRESSION: {
-        std::shared_ptr<parser::pddl::tree::ExpressionNode> expr =
-          std::dynamic_pointer_cast<parser::pddl::tree::ExpressionNode>(node);
-
+    case plansys2_msgs::msg::Node::EXPRESSION: {
         std::tuple<bool, bool, double> left = evaluate(
-          expr->ops[0], problem_client, predicates,
-          functions, apply, use_state, negate);
+          tree, problem_client, predicates,
+          functions, apply, use_state, tree.nodes[node_id].children[0], negate);
         std::tuple<bool, bool, double> right = evaluate(
-          expr->ops[1], problem_client, predicates,
-          functions, apply, use_state, negate);
+          tree, problem_client, predicates,
+          functions, apply, use_state, tree.nodes[node_id].children[1], negate);
 
         if (!std::get<0>(left) || !std::get<0>(right)) {
           return std::make_tuple(false, false, 0);
         }
 
-        switch (expr->expr_type) {
-          case parser::pddl::tree::COMP_GE:
+        switch (tree.nodes[node_id].expression_type) {
+          case plansys2_msgs::msg::Node::COMP_GE:
             if (std::get<2>(left) >= std::get<2>(right)) {
               return std::make_tuple(true, true, 0);
             } else {
               return std::make_tuple(true, false, 0);
             }
             break;
-          case parser::pddl::tree::COMP_GT:
+          case plansys2_msgs::msg::Node::COMP_GT:
             if (std::get<2>(left) > std::get<2>(right)) {
               return std::make_tuple(true, true, 0);
             } else {
               return std::make_tuple(true, false, 0);
             }
             break;
-          case parser::pddl::tree::COMP_LE:
+          case plansys2_msgs::msg::Node::COMP_LE:
             if (std::get<2>(left) <= std::get<2>(right)) {
               return std::make_tuple(true, true, 0);
             } else {
               return std::make_tuple(true, false, 0);
             }
             break;
-          case parser::pddl::tree::COMP_LT:
+          case plansys2_msgs::msg::Node::COMP_LT:
             if (std::get<2>(left) < std::get<2>(right)) {
               return std::make_tuple(true, true, 0);
             } else {
               return std::make_tuple(true, false, 0);
             }
             break;
-          case parser::pddl::tree::ARITH_MULT:
+          case plansys2_msgs::msg::Node::ARITH_MULT:
             return std::make_tuple(true, false, std::get<2>(left) * std::get<2>(right));
             break;
-          case parser::pddl::tree::ARITH_DIV:
+          case plansys2_msgs::msg::Node::ARITH_DIV:
             if (std::abs(std::get<2>(right)) > 1e-5) {
               return std::make_tuple(true, false, std::get<2>(left) / std::get<2>(right));
             } else {
@@ -198,10 +211,10 @@ std::tuple<bool, bool, double> evaluate(
               return std::make_tuple(false, false, 0);
             }
             break;
-          case parser::pddl::tree::ARITH_ADD:
+          case plansys2_msgs::msg::Node::ARITH_ADD:
             return std::make_tuple(true, false, std::get<2>(left) + std::get<2>(right));
             break;
-          case parser::pddl::tree::ARITH_SUB:
+          case plansys2_msgs::msg::Node::ARITH_SUB:
             return std::make_tuple(true, false, std::get<2>(left) - std::get<2>(right));
             break;
           default:
@@ -211,42 +224,36 @@ std::tuple<bool, bool, double> evaluate(
         return std::make_tuple(false, false, 0);
       }
 
-    case parser::pddl::tree::FUNCTION_MODIFIER: {
-        std::shared_ptr<parser::pddl::tree::FunctionModifierNode> func_mod =
-          std::dynamic_pointer_cast<parser::pddl::tree::FunctionModifierNode>(node);
-
+    case plansys2_msgs::msg::Node::FUNCTION_MODIFIER: {
         std::tuple<bool, bool, double> left = evaluate(
-          func_mod->ops[0], problem_client, predicates,
-          functions, apply, use_state, negate);
+          tree, problem_client, predicates,
+          functions, apply, use_state, tree.nodes[node_id].children[0], negate);
         std::tuple<bool, bool, double> right = evaluate(
-          func_mod->ops[1], problem_client,
-          predicates, functions, apply, use_state,
+          tree, problem_client,
+          predicates, functions, apply, use_state, tree.nodes[node_id].children[1],
           negate);
 
         if (!std::get<0>(left) || !std::get<0>(right)) {
           return std::make_tuple(false, false, 0);
         }
 
-        std::shared_ptr<parser::pddl::tree::FunctionNode> func_node =
-          std::dynamic_pointer_cast<parser::pddl::tree::FunctionNode>(func_mod->ops[0]);
-
         bool success = true;
         double value = 0;
 
-        switch (func_mod->modifier_type) {
-          case parser::pddl::tree::ASSIGN:
+        switch (tree.nodes[node_id].modifier_type) {
+          case plansys2_msgs::msg::Node::ASSIGN:
             value = std::get<2>(right);
             break;
-          case parser::pddl::tree::INCREASE:
+          case plansys2_msgs::msg::Node::INCREASE:
             value = std::get<2>(left) + std::get<2>(right);
             break;
-          case parser::pddl::tree::DECREASE:
+          case plansys2_msgs::msg::Node::DECREASE:
             value = std::get<2>(left) - std::get<2>(right);
             break;
-          case parser::pddl::tree::SCALE_UP:
+          case plansys2_msgs::msg::Node::SCALE_UP:
             value = std::get<2>(left) * std::get<2>(right);
             break;
-          case parser::pddl::tree::SCALE_DOWN:
+          case plansys2_msgs::msg::Node::SCALE_DOWN:
             // Division by zero not allowed.
             if (std::abs(std::get<2>(right)) > 1e-5) {
               value = std::get<2>(left) / std::get<2>(right);
@@ -260,228 +267,162 @@ std::tuple<bool, bool, double> evaluate(
         }
 
         if (success && apply) {
+          uint8_t left_id = tree.nodes[node_id].children[0];
           if (use_state) {
-            functions[func_node->toString()] = value;
+            auto it =
+              std::find_if(
+              functions.begin(), functions.end(),
+              std::bind(
+                &parser::pddl::checkNodeEquality, std::placeholders::_1,
+                tree.nodes[left_id]));
+            if (it != functions.end()) {
+              it->value = value;
+            } else {
+              success = false;
+            }
           } else {
             std::stringstream ss;
-            ss << "(= " << func_node->toString() << " " << value << ")";
-            problem_client->updateFunction(parser::pddl::tree::Function(ss.str()));
+            ss << "(= " << parser::pddl::toString(tree, left_id) << " " << value << ")";
+            problem_client->updateFunction(parser::pddl::fromStringFunction(ss.str()));
           }
         }
 
         return std::make_tuple(success, false, value);
       }
 
-    case parser::pddl::tree::NUMBER: {
-        std::shared_ptr<parser::pddl::tree::NumberNode> num =
-          std::dynamic_pointer_cast<parser::pddl::tree::NumberNode>(node);
-
-        return std::make_tuple(true, true, num->value_);
+    case plansys2_msgs::msg::Node::NUMBER: {
+        return std::make_tuple(true, true, tree.nodes[node_id].value);
       }
 
     default:
       std::cerr << "evaluate: Error parsing expresion [" <<
-        node->toString() << "]" << std::endl;
+        parser::pddl::toString(tree, node_id) << "]" << std::endl;
   }
 
   return std::make_tuple(false, false, 0);
 }
 
 std::tuple<bool, bool, double> evaluate(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
+  const plansys2_msgs::msg::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
-  bool apply)
+  bool apply,
+  uint32_t node_id)
 {
-  std::set<std::string> predicates;
-  std::map<std::string, double> functions;
-  return evaluate(node, problem_client, predicates, functions, apply);
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
+  return evaluate(tree, problem_client, predicates, functions, apply, false, node_id);
 }
 
 std::tuple<bool, bool, double> evaluate(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::set<std::string> & predicates,
-  std::map<std::string, double> & functions,
-  bool apply)
+  const plansys2_msgs::msg::Tree & tree,
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions,
+  bool apply,
+  uint32_t node_id)
 {
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client;
-  return evaluate(node, problem_client, predicates, functions, apply, true);
+  return evaluate(tree, problem_client, predicates, functions, apply, true, node_id);
 }
 
 bool check(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client)
+  const plansys2_msgs::msg::Tree & tree,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
+  uint32_t node_id)
 {
-  std::tuple<bool, bool, double> ret = evaluate(node, problem_client);
+  std::tuple<bool, bool, double> ret = evaluate(tree, problem_client, false, node_id);
 
   return std::get<1>(ret);
 }
 
 bool check(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::set<std::string> & predicates,
-  std::map<std::string, double> & functions)
+  const plansys2_msgs::msg::Tree & tree,
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions,
+  uint32_t node_id)
 {
-  std::tuple<bool, bool, double> ret = evaluate(node, predicates, functions);
+  std::tuple<bool, bool, double> ret = evaluate(tree, predicates, functions, false, node_id);
 
   return std::get<1>(ret);
 }
 
 bool apply(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client)
+  const plansys2_msgs::msg::Tree & tree,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
+  uint32_t node_id)
 {
-  std::tuple<bool, bool, double> ret = evaluate(node, problem_client, true);
+  std::tuple<bool, bool, double> ret = evaluate(tree, problem_client, true, node_id);
 
   return std::get<0>(ret);
 }
 
 bool apply(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node,
-  std::set<std::string> & predicates,
-  std::map<std::string, double> & functions)
+  const plansys2_msgs::msg::Tree & tree,
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions,
+  uint32_t node_id)
 {
-  std::tuple<bool, bool, double> ret = evaluate(node, predicates, functions, true);
+  std::tuple<bool, bool, double> ret = evaluate(tree, predicates, functions, true, node_id);
 
   return std::get<0>(ret);
 }
 
-std::vector<std::shared_ptr<parser::pddl::tree::TreeNode>> get_subtrees(
-  const std::shared_ptr<parser::pddl::tree::TreeNode> node)
+std::pair<std::string, int> parse_action(const std::string & input)
 {
-  if (node == nullptr) {  // No expression
-    return {};
+  std::string action = parser::pddl::getReducedString(input);
+  int time = -1;
+
+  size_t delim = action.find(":");
+  if (delim != std::string::npos) {
+    time = std::stoi(action.substr(delim + 1, action.length() - delim - 1));
+    action.erase(action.begin() + delim, action.end());
   }
 
-  switch (node->type_) {
-    case parser::pddl::tree::AND: {
-        std::shared_ptr<parser::pddl::tree::AndNode> pn_and =
-          std::dynamic_pointer_cast<parser::pddl::tree::AndNode>(node);
-        return pn_and->ops;
-      }
+  action.erase(0, 1);  // remove initial (
+  action.pop_back();  // remove last )
 
-    default:
-      std::cerr << "get_subtrees: Error parsing expresion [" <<
-        node->toString() << "]" << std::endl;
-  }
-
-  return {};
+  return std::make_pair(action, time);
 }
 
-std::shared_ptr<parser::pddl::tree::DurativeAction> get_action_from_string(
-  const std::string & action_expr,
-  std::shared_ptr<plansys2::DomainExpertClient> domain_client)
+std::string get_action_expression(const std::string & input)
 {
-  auto action_output = std::make_shared<parser::pddl::tree::DurativeAction>();
-
-  action_output->name = get_name(action_expr);
-
-  action_output->parameters.clear();
-  for (const auto & param : get_params(action_expr)) {
-    action_output->parameters.push_back(parser::pddl::tree::Param{param, ""});
-  }
-
-  auto action = domain_client->getAction(action_output->name);
-  auto durative_action = domain_client->getDurativeAction(action_output->name);
-
-  if (action) {
-    auto at_start_req = action.value().preconditions.toString();
-    auto at_end_eff = action.value().effects.toString();
-
-    for (size_t i = 0; i < action_output->parameters.size(); i++) {
-      std::string pattern = "?" + std::to_string(i);
-      size_t pos;
-      while ((pos = at_start_req.find(pattern)) != std::string::npos) {
-        at_start_req.replace(pos, pattern.length(), action_output->parameters[i].name);
-      }
-      while ((pos = at_end_eff.find(pattern)) != std::string::npos) {
-        at_end_eff.replace(pos, pattern.length(), action_output->parameters[i].name);
-      }
-    }
-
-    action_output->at_start_requirements.fromString(at_start_req);
-    action_output->over_all_requirements.fromString("");
-    action_output->at_end_requirements.fromString("");
-    action_output->at_start_effects.fromString("");
-    action_output->at_end_effects.fromString(at_end_eff);
-
-    return action_output;
-  }
-
-  if (durative_action) {
-    auto at_start_req = durative_action.value().at_start_requirements.toString();
-    auto over_all_req = durative_action.value().over_all_requirements.toString();
-    auto at_end_req = durative_action.value().at_end_requirements.toString();
-    auto at_start_eff = durative_action.value().at_start_effects.toString();
-    auto at_end_eff = durative_action.value().at_end_effects.toString();
-
-    for (size_t i = 0; i < action_output->parameters.size(); i++) {
-      std::string pattern = "?" + std::to_string(i);
-      size_t pos;
-      while ((pos = at_start_req.find(pattern)) != std::string::npos) {
-        at_start_req.replace(pos, pattern.length(), action_output->parameters[i].name);
-      }
-      while ((pos = over_all_req.find(pattern)) != std::string::npos) {
-        over_all_req.replace(pos, pattern.length(), action_output->parameters[i].name);
-      }
-      while ((pos = at_end_req.find(pattern)) != std::string::npos) {
-        at_end_req.replace(pos, pattern.length(), action_output->parameters[i].name);
-      }
-      while ((pos = at_start_eff.find(pattern)) != std::string::npos) {
-        at_start_eff.replace(pos, pattern.length(), action_output->parameters[i].name);
-      }
-      while ((pos = at_end_eff.find(pattern)) != std::string::npos) {
-        at_end_eff.replace(pos, pattern.length(), action_output->parameters[i].name);
-      }
-    }
-
-    action_output->at_start_requirements.fromString(at_start_req);
-    action_output->over_all_requirements.fromString(over_all_req);
-    action_output->at_end_requirements.fromString(at_end_req);
-    action_output->at_start_effects.fromString(at_start_eff);
-    action_output->at_end_effects.fromString(at_end_eff);
-
-    return action_output;
-  }
-
-  RCLCPP_ERROR(
-    rclcpp::get_logger("rclcpp"), "Action [%s] not found",
-    action_output->name.c_str());
-  return nullptr;
+  auto action = parse_action(input);
+  return action.first;
 }
 
-std::vector<std::string> get_params(const std::string & action_expr)
+int get_action_time(const std::string & input)
+{
+  auto action = parse_action(input);
+  return action.second;
+}
+
+std::string get_action_name(const std::string & input)
+{
+  auto expr = get_action_expression(input);
+  size_t delim = expr.find(" ");
+  return expr.substr(0, delim);
+}
+
+std::vector<std::string> get_action_params(const std::string & input)
 {
   std::vector<std::string> ret;
 
-  std::string working_action_expr = parser::pddl::tree::getReducedString(action_expr);
-  working_action_expr.erase(0, 1);  // remove initial (
-  working_action_expr.pop_back();  // remove last )
+  auto expr = get_action_expression(input);
 
-  size_t delim = working_action_expr.find(" ");
-
-  working_action_expr = working_action_expr.substr(delim + 1);
+  size_t delim = expr.find(" ");
+  if (delim != std::string::npos) {
+    expr.erase(expr.begin(), expr.begin() + delim + 1);
+  }
 
   size_t start = 0, end = 0;
   while (end != std::string::npos) {
-    end = working_action_expr.find(" ", start);
-    auto param = working_action_expr.substr(
+    end = expr.find(" ", start);
+    auto param = expr.substr(
       start, (end == std::string::npos) ? std::string::npos : end - start);
     ret.push_back(param);
     start = ((end > (std::string::npos - 1)) ? std::string::npos : end + 1);
   }
 
   return ret;
-}
-
-std::string get_name(const std::string & action_expr)
-{
-  std::string working_action_expr = parser::pddl::tree::getReducedString(action_expr);
-  working_action_expr.erase(0, 1);  // remove initial (
-  working_action_expr.pop_back();  // remove last )
-
-  size_t delim = working_action_expr.find(" ");
-
-  return working_action_expr.substr(0, delim);
 }
 
 }  // namespace plansys2

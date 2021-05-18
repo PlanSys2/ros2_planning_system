@@ -16,6 +16,8 @@
 #include <memory>
 #include <vector>
 
+#include "plansys2_pddl_parser/Utils.h"
+
 #include "plansys2_executor/ActionExecutor.hpp"
 
 namespace plansys2
@@ -232,7 +234,7 @@ ActionExecutor::cancel()
 std::string
 ActionExecutor::get_name(const std::string & action_expr)
 {
-  std::string working_action_expr = parser::pddl::tree::getReducedString(action_expr);
+  std::string working_action_expr = parser::pddl::getReducedString(action_expr);
   working_action_expr.erase(0, 1);  // remove initial (
   working_action_expr.pop_back();  // remove last )
 
@@ -246,7 +248,7 @@ ActionExecutor::get_params(const std::string & action_expr)
 {
   std::vector<std::string> ret;
 
-  std::string working_action_expr = parser::pddl::tree::getReducedString(action_expr);
+  std::string working_action_expr = parser::pddl::getReducedString(action_expr);
   working_action_expr.erase(0, 1);  // remove initial (
   working_action_expr.pop_back();  // remove last )
 

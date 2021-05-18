@@ -1,7 +1,0 @@
-string predicate
----
-string name
-string[] param_names
-string[] param_types
-bool success
-string error_info

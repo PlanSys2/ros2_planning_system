@@ -8,6 +8,8 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(plansys2_pddl_parser REQUIRED)
+find_package(plansys2_msgs REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -15,6 +17,8 @@ set(dependencies
     rclcpp
     rclcpp_lifecycle
     pluginlib
+    plansys2_pddl_parser
+    plansys2_msgs
 )
 
 include_directories(include)

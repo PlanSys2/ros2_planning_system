@@ -1,5 +1,0 @@
-std_msgs/Empty request
----
-bool success
-string[] functions
-string error_info

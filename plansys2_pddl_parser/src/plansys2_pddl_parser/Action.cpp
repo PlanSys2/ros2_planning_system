@@ -25,15 +25,23 @@ void Action::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << ")\n";
 }
 
-std::shared_ptr<tree::TreeNode> Action::PDDLTree( const Domain & d ) const {
-    std::shared_ptr<tree::ActionNode> tree = std::make_shared<tree::ActionNode>();
-    if ( pre ) {
-        tree->pre.push_back( pre->PDDLTree( d ) );
+plansys2_msgs::msg::Node::SharedPtr Action::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::ACTION;
+    node->node_id = tree.nodes.size();
+    tree.nodes.push_back(*node);
+
+    if (pre) {
+        plansys2_msgs::msg::Node::SharedPtr child = pre->getTree(tree, d, replace);
+        tree.nodes[node->node_id].children.push_back(child->node_id);
     }
-    if ( eff ) {
-        tree->eff.push_back( eff->PDDLTree( d ) );
+
+    if (eff) {
+        plansys2_msgs::msg::Node::SharedPtr child = eff->getTree(tree, d, replace);
+        tree.nodes[node->node_id].children.push_back(child->node_id);
     }
-    return tree;
+
+    return node;
 }
 
 void Action::parseConditions( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {

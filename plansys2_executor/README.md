@@ -23,6 +23,10 @@ Next graph shows an example of the execution flow:
 
 - `/${ACTION_NAME`}[[`plansys2_msgs::action::ExecuteAction`](../plansys2_msgs/action/ExecuteAction.action)]
 
+## Services:
+
+- `/executor/get_ordered_sub_goals` [[`plansys2_msgs::srv::GetOrderedSubGoals`](../plansys2_msgs/srv/GetOrderedSubGoals.srv)]
+
 ## Subscribed topics:
 
 (in ActionExecutor)

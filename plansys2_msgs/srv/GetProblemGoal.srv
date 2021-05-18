@@ -1,5 +1,5 @@
 std_msgs/Empty request
 ---
 bool success
-string goal
+plansys2_msgs/Tree tree
 string error_info

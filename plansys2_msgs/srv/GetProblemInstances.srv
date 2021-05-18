@@ -1,6 +1,5 @@
 std_msgs/Empty request
 ---
 bool success
-string[] instances
-string[] types
+plansys2_msgs/Param[] instances
 string error_info

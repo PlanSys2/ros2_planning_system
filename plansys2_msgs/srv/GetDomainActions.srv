@@ -2,5 +2,4 @@ std_msgs/Empty request
 ---
 bool success
 string[] actions
-string[] type
 string error_info
