@@ -474,8 +474,7 @@ Terminal::process_set_predicate(std::vector<std::string> & command, std::ostring
 
     if (!predicate.parameters.empty()) {
       if (predicate.parameters.back().name.back() != ')') {
-        os << "\tUsage: \n\t\tset predicate (predicate)" <<
-          std::endl;
+        os << "\tUsage: \n\t\tset predicate (predicate)" << std::endl;
         return;
       }
 
