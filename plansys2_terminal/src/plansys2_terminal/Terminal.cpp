@@ -472,13 +472,17 @@ Terminal::process_set_predicate(std::vector<std::string> & command, std::ostring
       pop_front(command);
     }
 
-    if (predicate.parameters.back().name.back() != ')') {
-      os << "\tUsage: \n\t\tset predicate (predicate)" <<
-        std::endl;
-      return;
-    }
+    if (!predicate.parameters.empty()) {
+      if (predicate.parameters.back().name.back() != ')') {
+        os << "\tUsage: \n\t\tset predicate (predicate)" <<
+          std::endl;
+        return;
+      }
 
-    predicate.parameters.back().name.pop_back();  // Remove last (
+      predicate.parameters.back().name.pop_back();  // Remove last (
+    } else {
+      predicate.name.pop_back();  // Remove last (
+    }
 
     if (!problem_client_->addPredicate(predicate)) {
       os << "Could not add the predicate [" << parser::pddl::toString(predicate) << "]" <<
