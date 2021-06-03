@@ -27,15 +27,6 @@
 namespace plansys2
 {
 
-struct PlanItem
-{
-  float time;
-  std::string action;
-  float duration;
-};
-
-typedef std::vector<PlanItem> Plan;
-
 class Instance : public plansys2_msgs::msg::Param
 {
 public:

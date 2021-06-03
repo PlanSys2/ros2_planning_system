@@ -419,9 +419,9 @@ Terminal::process_get(std::vector<std::string> & command, std::ostringstream & o
 
       if (plan) {
         os << "plan: " << std::endl;
-        for (const auto & action : plan.value()) {
-          os << action.time << "\t" << action.action << "\t" <<
-            action.duration << std::endl;
+        for (const auto & plan_item : plan.value().items) {
+          os << plan_item.time << "\t" << plan_item.action << "\t" <<
+            plan_item.duration << std::endl;
         }
       } else {
         os << "No se ha encontrado plan" << std::endl;
@@ -472,16 +472,12 @@ Terminal::process_set_predicate(std::vector<std::string> & command, std::ostring
       pop_front(command);
     }
 
-    if (!predicate.parameters.empty()) {
-      if (predicate.parameters.back().name.back() != ')') {
-        os << "\tUsage: \n\t\tset predicate (predicate)" << std::endl;
-        return;
-      }
-
-      predicate.parameters.back().name.pop_back();  // Remove last (
-    } else {
-      predicate.name.pop_back();  // Remove last (
+    if (predicate.parameters.back().name.back() != ')') {
+      os << "\tUsage: \n\t\tset predicate (predicate)" << std::endl;
+      return;
     }
+
+    predicate.parameters.back().name.pop_back();  // Remove last (
 
     if (!problem_client_->addPredicate(predicate)) {
       os << "Could not add the predicate [" << parser::pddl::toString(predicate) << "]" <<
@@ -685,7 +681,14 @@ Terminal::execute_plan()
 {
   rclcpp::Rate loop_rate(5);
 
-  if (!executor_client_->start_plan_execution()) {
+  auto plan = planner_client_->getPlan(domain_client_->getDomain(), problem_client_->getProblem());
+
+  if (!plan.has_value()) {
+    std::cout << "Plan could not be computed " << std::endl;
+    return;
+  }
+
+  if (!executor_client_->start_plan_execution(plan.value())) {
     std::cout << "Execution could not start " << std::endl;
     return;
   }

@@ -17,6 +17,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Knowledge.msg"
   "msg/Node.msg"
   "msg/Param.msg"
+  "msg/Plan.msg"
+  "msg/PlanItem.msg"
   "msg/Tree.msg"
   "srv/AddProblemGoal.srv"
   "srv/AffectNode.srv"

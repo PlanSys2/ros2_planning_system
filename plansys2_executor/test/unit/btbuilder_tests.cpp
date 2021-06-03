@@ -61,12 +61,12 @@ public:
   explicit BTBuilderTest(rclcpp::Node::SharedPtr node)
   : BTBuilder(node) {}
 
-  std::string get_tree(const plansys2::Plan & current_plan)
+  std::string get_tree(const plansys2_msgs::msg::Plan & current_plan)
   {
     return BTBuilder::get_tree(current_plan);
   }
 
-  std::vector<plansys2::ActionStamped> get_plan_actions(const plansys2::Plan & plan)
+  std::vector<plansys2::ActionStamped> get_plan_actions(const plansys2_msgs::msg::Plan & plan)
   {
     return BTBuilder::get_plan_actions(plan);
   }
@@ -79,7 +79,7 @@ public:
     return BTBuilder::is_action_executable(action, predicates, functions);
   }
 
-  plansys2::Graph::Ptr get_graph(const plansys2::Plan & current_plan)
+  plansys2::Graph::Ptr get_graph(const plansys2_msgs::msg::Plan & current_plan)
   {
     return BTBuilder::get_graph(current_plan);
   }
