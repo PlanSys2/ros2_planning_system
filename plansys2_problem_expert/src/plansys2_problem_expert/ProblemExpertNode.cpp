@@ -708,6 +708,10 @@ ProblemExpertNode::get_knowledge_as_msg() const
     ret_msgs->predicates.push_back(parser::pddl::toString(predicate));
   }
 
+  for (const auto & function : problem_expert_->getFunctions()) {
+    ret_msgs->functions.push_back(parser::pddl::toString(function));
+  }
+
   auto goal = problem_expert_->getGoal();
   ret_msgs->goal = parser::pddl::toString(goal);
 

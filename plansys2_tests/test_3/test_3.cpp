@@ -169,7 +169,15 @@ TEST(test_3, test_3)
     plansys2::Goal(
       "(and(car_assembled car1) (car_assembled car2) (car_assembled car3))"));
 
-  ASSERT_TRUE(executor_client->start_plan_execution());
+  auto domain = domain_client->getDomain();
+  auto problem = problem_client->getProblem();
+  auto plan = planner_client->getPlan(domain, problem);
+
+  ASSERT_FALSE(domain.empty());
+  ASSERT_FALSE(problem.empty());
+  ASSERT_TRUE(plan.has_value());
+
+  ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
 
   rclcpp::Rate rate(5);
   while (executor_client->execute_and_check_plan()) {

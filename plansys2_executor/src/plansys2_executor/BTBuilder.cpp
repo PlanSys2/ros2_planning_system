@@ -343,7 +343,7 @@ BTBuilder::prune_forward(GraphNode::Ptr current, std::list<GraphNode::Ptr> & use
 }
 
 Graph::Ptr
-BTBuilder::get_graph(const Plan & current_plan)
+BTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
 {
   int node_counter = 0;
   int level_counter = 0;
@@ -533,7 +533,7 @@ BTBuilder::get_graph(const Plan & current_plan)
 }
 
 std::string
-BTBuilder::get_tree(const Plan & current_plan)
+BTBuilder::get_tree(const plansys2_msgs::msg::Plan & current_plan)
 {
   auto action_graph = get_graph(current_plan);
 
@@ -882,11 +882,11 @@ BTBuilder::execution_block(const GraphNode::Ptr & node, int l)
 }
 
 std::vector<ActionStamped>
-BTBuilder::get_plan_actions(const Plan & plan)
+BTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan)
 {
   std::vector<ActionStamped> ret;
 
-  for (auto & item : plan) {
+  for (auto & item : plan.items) {
     ActionStamped action_stamped;
 
     action_stamped.time = item.time;

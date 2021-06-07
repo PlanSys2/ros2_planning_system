@@ -30,6 +30,7 @@
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_core/Types.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
+#include "plansys2_msgs/msg/plan.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
@@ -74,8 +75,8 @@ class BTBuilder
 public:
   explicit BTBuilder(rclcpp::Node::SharedPtr node, const std::string & bt_action = "");
 
-  Graph::Ptr get_graph(const Plan & current_plan);
-  std::string get_tree(const Plan & current_plan);
+  Graph::Ptr get_graph(const plansys2_msgs::msg::Plan & current_plan);
+  std::string get_tree(const plansys2_msgs::msg::Plan & current_plan);
   std::string get_dotgraph(
     Graph::Ptr action_graph, std::shared_ptr<std::map<std::string,
     ActionExecutionInfo>> action_map, bool enable_legend = false,
@@ -87,7 +88,7 @@ protected:
 
   std::string bt_action_;
 
-  std::vector<ActionStamped> get_plan_actions(const Plan & plan);
+  std::vector<ActionStamped> get_plan_actions(const plansys2_msgs::msg::Plan & plan);
   void prune_backwards(GraphNode::Ptr new_node, GraphNode::Ptr node_satisfy);
   void prune_forward(GraphNode::Ptr current, std::list<GraphNode::Ptr> & used_nodes);
 

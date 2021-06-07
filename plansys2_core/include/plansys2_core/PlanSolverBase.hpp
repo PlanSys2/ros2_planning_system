@@ -19,7 +19,7 @@
 #include <string>
 #include <memory>
 
-#include "plansys2_core/Types.hpp"
+#include "plansys2_msgs/msg/plan.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -36,7 +36,7 @@ public:
 
   virtual void configure(rclcpp_lifecycle::LifecycleNode::SharedPtr &, const std::string &) {}
 
-  virtual std::optional<Plan> getPlan(
+  virtual std::optional<plansys2_msgs::msg::Plan> getPlan(
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace = "") = 0;
 };

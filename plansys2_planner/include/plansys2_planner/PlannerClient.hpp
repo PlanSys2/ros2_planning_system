@@ -33,7 +33,7 @@ class PlannerClient : public PlannerInterface
 public:
   explicit PlannerClient(rclcpp::Node::SharedPtr provided_node);
 
-  std::optional<Plan> getPlan(
+  std::optional<plansys2_msgs::msg::Plan> getPlan(
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace = "");
 

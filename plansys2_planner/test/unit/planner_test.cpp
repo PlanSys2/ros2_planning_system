@@ -32,7 +32,6 @@
 
 #include "pluginlib/class_loader.hpp"
 #include "pluginlib/class_list_macros.hpp"
-#include "plansys2_core/PlanSolverBase.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 

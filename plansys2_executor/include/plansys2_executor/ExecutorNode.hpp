@@ -63,12 +63,17 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::GetOrderedSubGoals::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::GetOrderedSubGoals::Response> response);
 
+  void get_plan_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::GetPlan::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response);
+
 protected:
   rclcpp::Node::SharedPtr node_;
   rclcpp::Node::SharedPtr aux_node_;
 
   bool cancel_plan_requested_;
-  std::optional<Plan> current_plan_;
+  std::optional<plansys2_msgs::msg::Plan> current_plan_;
   std::optional<std::vector<plansys2_msgs::msg::Tree>> ordered_sub_goals_;
 
   std::string action_bt_xml_;
@@ -86,6 +91,8 @@ protected:
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::String>::SharedPtr dotgraph_pub_;
 
   std::optional<std::vector<plansys2_msgs::msg::Tree>> getOrderedSubGoals();
+
+  rclcpp::Service<plansys2_msgs::srv::GetPlan>::SharedPtr get_plan_service_;
 
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID & uuid,

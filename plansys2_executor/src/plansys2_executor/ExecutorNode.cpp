@@ -96,6 +96,13 @@ ExecutorNode::ExecutorNode()
       &ExecutorNode::get_ordered_sub_goals_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
+
+  get_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
+    "executor/get_plan",
+    std::bind(
+      &ExecutorNode::get_plan_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 }
 
 
@@ -228,7 +235,7 @@ ExecutorNode::getOrderedSubGoals()
     }
   }
 
-  for (const auto & plan_item : current_plan_.value()) {
+  for (const auto & plan_item : current_plan_.value().items) {
     std::shared_ptr<plansys2_msgs::msg::DurativeAction> action =
       domain_client_->getDurativeAction(
       get_action_name(plan_item.action), get_action_params(plan_item.action));
@@ -248,6 +255,21 @@ ExecutorNode::getOrderedSubGoals()
   }
 
   return ordered_goals;
+}
+
+void
+ExecutorNode::get_plan_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::GetPlan::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response)
+{
+  if (current_plan_) {
+    response->success = true;
+    response->plan = current_plan_.value();
+  } else {
+    response->success = false;
+    response->error_info = "Plan not available";
+  }
 }
 
 rclcpp_action::GoalResponse
@@ -282,9 +304,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   cancel_plan_requested_ = false;
 
-  auto domain = domain_client_->getDomain();
-  auto problem = problem_client_->getProblem();
-  current_plan_ = planner_client_->getPlan(domain, problem);
+  current_plan_ = goal_handle->get_goal()->plan;
 
   if (!current_plan_.has_value()) {
     RCLCPP_ERROR(get_logger(), "No plan found");
@@ -296,17 +316,17 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
   auto action_timeout_actions = this->get_parameter("action_timeouts.actions").as_string_array();
 
-  for (const auto & action : current_plan_.value()) {
-    auto index = action.action + ":" + std::to_string(static_cast<int>(action.time * 1000));
+  for (const auto & plan_item : current_plan_.value().items) {
+    auto index = plan_item.action + ":" + std::to_string(static_cast<int>(plan_item.time * 1000));
 
     (*action_map)[index] = ActionExecutionInfo();
     (*action_map)[index].action_executor =
-      ActionExecutor::make_shared(action.action, shared_from_this());
+      ActionExecutor::make_shared(plan_item.action, shared_from_this());
     (*action_map)[index].durative_action_info =
       domain_client_->getDurativeAction(
-      get_action_name(action.action), get_action_params(action.action));
+      get_action_name(plan_item.action), get_action_params(plan_item.action));
 
-    (*action_map)[index].duration = action.duration;
+    (*action_map)[index].duration = plan_item.duration;
     std::string action_name = (*action_map)[index].durative_action_info->name;
     if (std::find(
         action_timeout_actions.begin(), action_timeout_actions.end(),
@@ -461,6 +481,10 @@ ExecutorNode::get_feedback_info(
   ActionExecutionInfo>> action_map)
 {
   std::vector<plansys2_msgs::msg::ActionExecutionInfo> ret;
+
+  if (!action_map) {
+    return ret;
+  }
 
   for (const auto & action : *action_map) {
     plansys2_msgs::msg::ActionExecutionInfo info;

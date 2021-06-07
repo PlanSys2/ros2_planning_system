@@ -1155,7 +1155,7 @@ TEST(problem_expert, executor_client_execute_plan)
     rclcpp::Rate rate(10);
     auto start = test_node_1->now();
 
-    ASSERT_TRUE(executor_client->start_plan_execution());
+    ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
 
     while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
       auto feedback = executor_client->getFeedBack();
@@ -1177,11 +1177,16 @@ TEST(problem_expert, executor_client_execute_plan)
 
   problem_client->setGoal(plansys2::Goal("(and(robot_at r2d2 body_car_zone))"));
 
+  problem = problem_client->getProblem();
+  plan = planner_client->getPlan(domain, problem);
+  ASSERT_FALSE(problem.empty());
+  ASSERT_TRUE(plan.has_value());
+
   {
     rclcpp::Rate rate(10);
     auto start = test_node_1->now();
 
-    ASSERT_TRUE(executor_client->start_plan_execution());
+    ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
 
     while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
       auto feedback = executor_client->getFeedBack();
@@ -1375,7 +1380,7 @@ TEST(problem_expert, executor_client_ordered_sub_goals)
     rclcpp::Rate rate(10);
     auto start = test_node_1->now();
 
-    ASSERT_TRUE(executor_client->start_plan_execution());
+    ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
 
     while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
       auto feedback = executor_client->getFeedBack();
@@ -1495,7 +1500,7 @@ TEST(problem_expert, executor_client_cancel_plan)
     rclcpp::Rate rate(10);
     auto start = test_node_1->now();
 
-    ASSERT_TRUE(executor_client->start_plan_execution());
+    ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
 
     while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
       auto feedback = executor_client->getFeedBack();
@@ -1635,7 +1640,7 @@ TEST(problem_expert, action_timeout)
   {
     rclcpp::Rate rate(10);
 
-    ASSERT_TRUE(executor_client->start_plan_execution());
+    ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
 
     while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
       auto feedback = executor_client->getFeedBack();
