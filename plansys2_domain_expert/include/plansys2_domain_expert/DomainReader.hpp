@@ -23,6 +23,7 @@ namespace plansys2
 
 struct Domain
 {
+  std::string name;
   std::string requirements;
   std::string types;
   std::string predicates;
@@ -37,10 +38,12 @@ public:
 
   void add_domain(const std::string & domain);
   std::string get_joint_domain() const;
+  std::vector<Domain> get_domains() {return domains_;}
 
 protected:
   int get_end_block(const std::string & domain, std::size_t init_pos);
 
+  std::string get_name(std::string & domain);
   std::string get_requirements(std::string & domain);
   std::string get_types(const std::string & domain);
   std::string get_predicates(const std::string & domain);

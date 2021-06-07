@@ -311,4 +311,15 @@ DomainExpert::getDomain()
   return domains_.get_joint_domain();
 }
 
+bool
+DomainExpert::existDomain(const std::string & domain_name)
+{
+  for (auto domain : domains_.get_domains()) {
+    if (domain_name == domain.name) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace plansys2

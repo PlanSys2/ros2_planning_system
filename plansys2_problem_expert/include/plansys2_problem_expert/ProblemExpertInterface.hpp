@@ -58,6 +58,7 @@ public:
   virtual bool clearKnowledge() = 0;
 
   virtual std::string getProblem() = 0;
+  virtual bool addProblem(const std::string & problem_str) = 0;
 };
 
 }  // namespace plansys2

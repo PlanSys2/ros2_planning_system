@@ -49,7 +49,24 @@ public:
 		}
 	}
 
-	
+	std::string getDomainName( const std::string &s) {
+		std::string domain_name = "";
+
+		Stringreader f( s );
+		f.parseName( "problem" );
+
+		for ( ; f.getChar() != ')'; f.next() ) {
+			f.assert_token( "(" );
+			f.assert_token( ":" );
+			std::string t = f.getToken();
+			if ( t == "domain" ) {
+				f.next();
+				domain_name = f.getToken();
+				break;
+			}
+		}
+		return domain_name;
+	}
 
 	void parseDomain( Stringreader & f ) {
 		f.next();

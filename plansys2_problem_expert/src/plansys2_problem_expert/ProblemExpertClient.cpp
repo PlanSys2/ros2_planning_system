@@ -28,6 +28,8 @@ namespace plansys2
 ProblemExpertClient::ProblemExpertClient(rclcpp::Node::SharedPtr provided_node)
 : node_(provided_node)
 {
+  add_problem_client_ = node_->create_client<plansys2_msgs::srv::AddProblem>(
+    "problem_expert/add_problem");
   add_problem_goal_client_ = node_->create_client<plansys2_msgs::srv::AddProblemGoal>(
     "problem_expert/add_problem_goal");
   add_problem_instance_client_ = node_->create_client<plansys2_msgs::srv::AffectParam>(
@@ -806,6 +808,41 @@ ProblemExpertClient::getProblem()
       get_problem_client_->get_service_name() << ": " <<
         future_result.get()->error_info);
     return {};
+  }
+}
+
+bool
+ProblemExpertClient::addProblem(const std::string & problem_str)
+{
+  while (!add_problem_client_->wait_for_service(std::chrono::seconds(5))) {
+    if (!rclcpp::ok()) {
+      return false;
+    }
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      add_problem_client_->get_service_name() <<
+        " service  client: waiting for service to appear...");
+  }
+
+  auto request = std::make_shared<plansys2_msgs::srv::AddProblem::Request>();
+  request->problem = problem_str;
+
+  auto future_result = add_problem_client_->async_send_request(request);
+
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
+    rclcpp::FutureReturnCode::SUCCESS)
+  {
+    return false;
+  }
+
+  if (future_result.get()->success) {
+    return true;
+  } else {
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      add_problem_client_->get_service_name() << ": " <<
+        future_result.get()->error_info);
+    return false;
   }
 }
 

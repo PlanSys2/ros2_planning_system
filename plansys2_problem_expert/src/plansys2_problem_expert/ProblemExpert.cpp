@@ -22,6 +22,7 @@
 #include <set>
 #include <map>
 
+#include "plansys2_core/Utils.hpp"
 #include "plansys2_pddl_parser/Domain.h"
 #include "plansys2_pddl_parser/Instance.h"
 #include "plansys2_problem_expert/Utils.hpp"
@@ -588,6 +589,105 @@ ProblemExpert::getProblem()
   std::ostringstream stream;
   stream << problem;
   return stream.str();
+}
+
+bool
+ProblemExpert::addProblem(const std::string & problem_str)
+{
+  if (problem_str.empty()) {
+    std::cerr << "Empty problem." << std::endl;
+    return false;
+  }
+  parser::pddl::Domain domain(domain_expert_->getDomain());
+
+  std::string lc_problem = problem_str;
+  std::transform(
+    problem_str.begin(), problem_str.end(), lc_problem.begin(),
+    [](unsigned char c) {return std::tolower(c);});
+
+  lc_problem = remove_comments(lc_problem);
+
+  std::cout << "Domain:\n" << domain << std::endl;
+  std::cout << "Problem:\n" << lc_problem << std::endl;
+
+  parser::pddl::Instance problem(domain);
+
+  std::string domain_name = problem.getDomainName(lc_problem);
+  if (domain_name.empty()) {
+    std::cerr << "Domain name is empty" << std::endl;
+    return false;
+  } else if (!domain_expert_->existDomain(domain_name)) {
+    std::cerr << "Domain name does not exist: " << domain_name << std::endl;
+    return false;
+  }
+
+  domain.name = domain_name;
+  problem.parse(lc_problem);
+
+  std::cout << "Parsed problem: " << problem << std::endl;
+
+  for (unsigned i = 0; i < domain.types.size(); ++i) {
+    if (domain.types[i]->objects.size() ) {
+      for (unsigned j = 0; j < domain.types[i]->objects.size(); ++j) {
+        plansys2::Instance instance;
+        instance.name = domain.types[i]->objects[j];
+        instance.type = domain.types[i]->name;
+        std::cout << "Adding instance: " << instance.name << " " << instance.type << std::endl;
+        addInstance(instance);
+      }
+    }
+  }
+
+  plansys2_msgs::msg::Tree tree;
+  for (auto ground : problem.init) {
+    auto tree_node = ground->getTree(tree, domain);
+    switch (tree_node->node_type) {
+      case plansys2_msgs::msg::Node::PREDICATE: {
+          plansys2::Predicate pred_node(*tree_node);
+          std::cout << "Adding predicate: " <<
+            parser::pddl::toString(tree, tree_node->node_id) << std::endl;
+          if (!addPredicate(pred_node)) {
+            std::cerr << "Failed to add predicate: " << parser::pddl::toString(
+              tree,
+              tree_node->node_id) <<
+              std::endl;
+          }
+        }
+        break;
+      case plansys2_msgs::msg::Node::FUNCTION: {
+          plansys2::Function func_node(*tree_node);
+          std::cout << "Adding function: " <<
+            parser::pddl::toString(tree, tree_node->node_id) << std::endl;
+          if (!addFunction(func_node)) {
+            std::cerr << "Failed to add function: " << parser::pddl::toString(
+              tree,
+              tree_node->node_id) <<
+              std::endl;
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  plansys2_msgs::msg::Node node;
+  node.node_type = plansys2_msgs::msg::Node::AND;
+  node.node_id = 0;
+  node.negate = false;
+
+  plansys2_msgs::msg::Tree goal;
+  goal.nodes.push_back(node);
+  for (auto ground : problem.goal) {
+    auto goal_node = ground->getTree(goal, domain);
+    std::cout << "Adding goal node: " <<
+      parser::pddl::toString(goal, goal_node->node_id) << std::endl;
+    goal.nodes[0].children.push_back(goal_node->node_id);
+  }
+  std::cout << "Adding Goal: " << parser::pddl::toString(goal) << std::endl;
+  setGoal(goal);
+
+  return true;
 }
 
 }  // namespace plansys2
