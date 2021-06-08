@@ -152,6 +152,7 @@ char ** completer(const char * text, int start, int end)
 
   return rl_completion_matches(text, completion_generator);
 }
+// LCOV_EXCL_STOP
 
 
 Terminal::Terminal()
@@ -191,6 +192,7 @@ void Terminal::add_problem()
   }
 }
 
+// LCOV_EXCL_START
 void
 Terminal::run_console()
 {
