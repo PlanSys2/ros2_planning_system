@@ -30,6 +30,11 @@ public:
     return get_end_block(domain, init_pos);
   }
 
+  std::string get_name_test(std::string & domain)
+  {
+    return get_name(domain);
+  }
+
   std::string get_requirements_test(std::string & domain)
   {
     return get_requirements(domain);
@@ -92,6 +97,43 @@ TEST(domain_reader, get_block)
   ASSERT_EQ(6, dr.get_end_block_test(block8, 0));
   ASSERT_EQ(-1, dr.get_end_block_test(block9, 0));
   ASSERT_EQ(-1, dr.get_end_block_test(block10, 0));
+}
+
+TEST(domain_reader, name)
+{
+  DomainReaderTest dr;
+
+  std::string name1_str = "(define (domain simple)";
+  std::string name1_estr = "simple";
+
+  std::string name2_str = "(\ndefine (\ndomain simple\n)";
+  std::string name2_estr = "simple";
+
+  std::string name3_str = "(define (domain simple\n) (\n))";
+  std::string name3_estr = "simple";
+
+  std::string name4_str = "(define (domain simple";
+  std::string name4_estr = "";
+
+  std::string name5_str = "(define (domain ";
+  std::string name5_estr = "";
+
+  std::string name6_str = "";
+  std::string name6_estr = "";
+
+  auto res1 = dr.get_name_test(name1_str);
+  auto res2 = dr.get_name_test(name2_str);
+  auto res3 = dr.get_name_test(name3_str);
+  auto res4 = dr.get_name_test(name4_str);
+  auto res5 = dr.get_name_test(name5_str);
+  auto res6 = dr.get_name_test(name6_str);
+
+  ASSERT_EQ(res1, name1_estr);
+  ASSERT_EQ(res2, name2_estr);
+  ASSERT_EQ(res3, name3_estr);
+  ASSERT_EQ(res4, name4_estr);
+  ASSERT_EQ(res5, name5_estr);
+  ASSERT_EQ(res6, name6_estr);
 }
 
 TEST(domain_reader, requirements)
