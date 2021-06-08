@@ -16,6 +16,7 @@
 
 #include <optional>
 #include <algorithm>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include <memory>
@@ -622,7 +623,13 @@ ProblemExpert::addProblem(const std::string & problem_str)
   }
 
   domain.name = domain_name;
-  problem.parse(lc_problem);
+  try {
+    problem.parse(lc_problem);
+  } catch (std::runtime_error ex) {
+    // all errors thrown by the Stringreader object extend std::runtime_error
+    std::cerr << ex.what() << std::endl;
+    return false;
+  }
 
   std::cout << "Parsed problem: " << problem << std::endl;
 
