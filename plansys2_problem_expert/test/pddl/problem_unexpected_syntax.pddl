@@ -9,9 +9,13 @@
   (:init
     (robot_at leia kitchen)
     (person_at Jack bedroom)
-    (is_teleporter_destination kitchen bedroom)
-    (= (room_distance leia kitchen bedroom) 10)
     (= (room_distance kitchen bedroom) 10)
+
+    ;; problem syntax below
+    ;; too many rooms specified
+    (is_teleporter_destination kitchen bedroom)
+    ;; robot erroneously specified
+    (= (room_distance leia kitchen) 10)
 
 
   )
