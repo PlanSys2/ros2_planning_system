@@ -14,7 +14,7 @@
 
 #include <regex>
 #include <iostream>
-
+#include <functional> 
 #include "plansys2_pddl_parser/Utils.h"
 
 namespace parser
