@@ -11,6 +11,12 @@
     (person_at Jack bedroom)
     (= (room_distance kitchen bedroom) 10)
 
+    ;; problem syntax below
+    ;; too many rooms specified
+    (is_teleporter_destination kitchen bedroom)
+    ;; robot erroneously specified
+    (= (room_distance leia kitchen) 10)
+
 
   )
 

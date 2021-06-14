@@ -487,7 +487,7 @@ TEST(problem_expert, empty_goals)
   ASSERT_FALSE(problem_expert.isValidGoal(goal));
 }
 
-TEST(problem_expert, get_probem)
+TEST(problem_expert, get_problem)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
@@ -543,6 +543,91 @@ TEST(problem_expert, get_probem)
     std::string("( :init\n\t( robot_at r2d2 bedroom )\n\t( robot_at r2d2 kitchen )\n\t( ") +
     std::string("person_at paco bedroom )\n\t( person_at paco kitchen )\n)\n( :goal\n\t( ") +
     std::string("and\n\t\t( robot_at r2d2 bedroom )\n\t\t( person_at paco kitchen )\n\t)\n)\n)\n"));
+
+  ASSERT_TRUE(problem_expert.clearKnowledge());
+  ASSERT_EQ(problem_expert.getPredicates().size(), 0);
+  ASSERT_EQ(problem_expert.getFunctions().size(), 0);
+  ASSERT_EQ(problem_expert.getInstances().size(), 0);
+}
+
+TEST(problem_expert, add_problem)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  ASSERT_FALSE(problem_expert.addProblem(""));
+
+  // Empty domain name
+  std::ifstream problem_empty_domain_ifs(pkgpath + "/pddl/problem_empty_domain.pddl");
+  std::string problem_empty_domain_str((
+      std::istreambuf_iterator<char>(problem_empty_domain_ifs)),
+    std::istreambuf_iterator<char>());
+  ASSERT_FALSE(problem_expert.addProblem(problem_empty_domain_str));
+
+  // Domain doesn't exist
+  std::ifstream problem_charging_ifs(pkgpath + "/pddl/problem_charging.pddl");
+  std::string problem_charging_str((
+      std::istreambuf_iterator<char>(problem_charging_ifs)),
+    std::istreambuf_iterator<char>());
+  ASSERT_FALSE(problem_expert.addProblem(problem_charging_str));
+
+  // missing syntax causes std::runtime_error
+  std::ifstream problem_unexpected_syntax_ifs(pkgpath + "/pddl/problem_unexpected_syntax.pddl");
+  std::string problem_unexpected_syntax_str((
+      std::istreambuf_iterator<char>(problem_unexpected_syntax_ifs)),
+    std::istreambuf_iterator<char>());
+  ASSERT_FALSE(problem_expert.addProblem(problem_unexpected_syntax_str));
+
+  std::ifstream problem_ifs(pkgpath + "/pddl/problem_simple_1.pddl");
+  std::string problem_str((
+      std::istreambuf_iterator<char>(problem_ifs)),
+    std::istreambuf_iterator<char>());
+  ASSERT_TRUE(problem_expert.addProblem(problem_str));
+
+  ASSERT_TRUE(problem_expert.isValidType("robot"));
+  ASSERT_TRUE(problem_expert.isValidType("person"));
+  ASSERT_TRUE(problem_expert.isValidType("room"));
+  ASSERT_TRUE(problem_expert.isValidType("room_with_teleporter"));
+  ASSERT_TRUE(problem_expert.isValidType("message"));
+
+  ASSERT_EQ(problem_expert.getInstances().size(), 5);
+  ASSERT_EQ(problem_expert.getPredicates().size(), 2);
+  ASSERT_EQ(problem_expert.getFunctions().size(), 1);
+
+  ASSERT_TRUE(problem_expert.existInstance("leia"));
+  ASSERT_TRUE(problem_expert.existInstance("jack"));
+  ASSERT_TRUE(problem_expert.existInstance("kitchen"));
+  ASSERT_TRUE(problem_expert.existInstance("bedroom"));
+  ASSERT_TRUE(problem_expert.existInstance("m1"));
+
+  ASSERT_FALSE(problem_expert.existInstance("r2d2"));
+  ASSERT_FALSE(problem_expert.existInstance("hallway"));
+  ASSERT_FALSE(problem_expert.existInstance("m2"));
+
+  ASSERT_TRUE(
+    problem_expert.existPredicate(
+      parser::pddl::fromStringPredicate(
+        "(robot_at leia kitchen)")));
+  ASSERT_TRUE(
+    problem_expert.existPredicate(
+      parser::pddl::fromStringPredicate(
+        "(person_at jack bedroom)")));
+
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getGoal()), "(and (robot_talk leia m1 jack))");
+
+  ASSERT_EQ(
+    problem_expert.getProblem(),
+    std::string("( define ( problem problem_1 )\n( :domain plansys2 )\n( :objects\n\t") +
+    std::string("jack - person\n\tm1 - message\n\tleia - robot\n\tkitchen bedroom - room\n)\n") +
+    std::string("( :init\n\t( robot_at leia kitchen )\n\t( person_at jack bedroom )\n\t") +
+    std::string("( = ( room_distance kitchen bedroom ) 10 )\n)\n( :goal\n\t( and\n\t\t") +
+    std::string("( robot_talk leia m1 jack )\n\t)\n)\n)\n"));
 
   ASSERT_TRUE(problem_expert.clearKnowledge());
   ASSERT_EQ(problem_expert.getPredicates().size(), 0);

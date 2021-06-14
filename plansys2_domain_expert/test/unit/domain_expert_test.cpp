@@ -26,7 +26,7 @@
 
 #include "plansys2_msgs/msg/node.hpp"
 
-TEST(domain_expert, functions)
+TEST(domain_expert, get_reduced_string)
 {
   std::string my_string("(and)");
   ASSERT_EQ(parser::pddl::getReducedString(my_string), "(and)");
@@ -46,6 +46,26 @@ TEST(domain_expert, functions)
   ASSERT_EQ(parser::pddl::getReducedString(my_string), "(and)");
   my_string = "( ( and\n\t ) )";
   ASSERT_EQ(parser::pddl::getReducedString(my_string), "((and))");
+}
+
+TEST(domain_expert, exist_domain)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_charging.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  plansys2::DomainExpert domain_expert(domain_str);
+  ASSERT_TRUE(domain_expert.existDomain("charging"));
+
+  std::ifstream domain_simple_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::string domain_simple_str((
+      std::istreambuf_iterator<char>(domain_simple_ifs)),
+    std::istreambuf_iterator<char>());
+
+  domain_expert.extendDomain(domain_simple_str);
+  ASSERT_TRUE(domain_expert.existDomain("plansys2"));
 }
 
 TEST(domain_expert, get_domain)

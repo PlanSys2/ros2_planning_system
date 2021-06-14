@@ -48,6 +48,7 @@ DomainReader::add_domain(const std::string & domain)
 
   lc_domain = remove_comments(lc_domain);
 
+  new_domain.name = get_name(lc_domain);
   new_domain.requirements = get_requirements(lc_domain);
   new_domain.types = get_types(lc_domain);
   new_domain.predicates = get_predicates(lc_domain);
@@ -137,6 +138,31 @@ DomainReader::get_end_block(const std::string & domain, std::size_t init_pos)
     return end_pos;
   } else {
     return -1;
+  }
+}
+
+std::string
+DomainReader::get_name(std::string & domain)
+{
+  const std::string pattern("domain");
+
+  std::size_t init_pos = domain.find(pattern);
+  if (init_pos == std::string::npos) {
+    return "";
+  }
+  init_pos += pattern.length();
+
+  auto end_pos = get_end_block(domain, init_pos);
+
+  if (end_pos >= 0) {
+    auto ret = substr_without_empty_lines(domain, init_pos, end_pos);
+
+    // remove spaces
+    ret.erase(std::remove(ret.begin(), ret.end(), ' '), ret.end());
+
+    return ret;
+  } else {
+    return "";
   }
 }
 

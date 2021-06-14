@@ -23,6 +23,7 @@
 #include <string>
 #include <memory>
 #include <sstream>
+#include <fstream>
 #include <map>
 
 #include "rclcpp/rclcpp.hpp"
@@ -151,11 +152,13 @@ char ** completer(const char * text, int start, int end)
 
   return rl_completion_matches(text, completion_generator);
 }
+// LCOV_EXCL_STOP
 
 
 Terminal::Terminal()
 : rclcpp::Node("terminal")
 {
+  this->declare_parameter<std::string>("problem_file", "");
 }
 
 void
@@ -166,8 +169,30 @@ Terminal::init()
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(terminal_node);
   planner_client_ = std::make_shared<plansys2::PlannerClient>(terminal_node);
   executor_client_ = std::make_shared<plansys2::ExecutorClient>(terminal_node);
+
+  add_problem();
 }
 
+void Terminal::add_problem()
+{
+  this->get_parameter<std::string>("problem_file", problem_file_name_);
+  if (!problem_file_name_.empty()) {
+    RCLCPP_INFO(
+      this->get_logger(), "Adding problem file to problem_expert: %s",
+      problem_file_name_.c_str());
+    std::ifstream problem_ifs(problem_file_name_);
+    std::string problem_str((std::istreambuf_iterator<char>(
+        problem_ifs)), std::istreambuf_iterator<char>());
+
+    if (!problem_client_->addProblem(problem_str)) {
+      RCLCPP_ERROR(this->get_logger(), "Failed to add problem to problem_expert.");
+    }
+  } else {
+    RCLCPP_INFO(this->get_logger(), "No problem file specified.");
+  }
+}
+
+// LCOV_EXCL_START
 void
 Terminal::run_console()
 {

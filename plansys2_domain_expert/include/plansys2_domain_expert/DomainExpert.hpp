@@ -120,6 +120,13 @@ public:
    */
   std::string getDomain();
 
+  /// Determine if a particular domain exists.
+  /**
+   * \param[in] domain The name of the domain.
+   * \return true if the domain exists.
+   */
+  bool existDomain(const std::string & domain_name);
+
 private:
   std::shared_ptr<parser::pddl::Domain> domain_;
   DomainReader domains_;

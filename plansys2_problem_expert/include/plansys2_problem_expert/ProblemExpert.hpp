@@ -62,6 +62,7 @@ public:
   bool clearKnowledge();
 
   std::string getProblem();
+  bool addProblem(const std::string & problem_str);
 
   bool existInstance(const std::string & name);
   bool isValidType(const std::string & type);

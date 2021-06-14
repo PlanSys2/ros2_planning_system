@@ -46,6 +46,8 @@ public:
 protected:
   virtual void init();
 
+  virtual void add_problem();
+
   virtual void clean_command(std::string & command);
 
   virtual void process_get_model_predicate(
@@ -88,6 +90,8 @@ private:
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   std::shared_ptr<plansys2::PlannerClient> planner_client_;
   std::shared_ptr<plansys2::ExecutorClient> executor_client_;
+
+  std::string problem_file_name_;
 };
 
 }  // namespace plansys2_terminal
