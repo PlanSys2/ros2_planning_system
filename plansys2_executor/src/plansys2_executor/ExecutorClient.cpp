@@ -186,7 +186,7 @@ std::vector<parser::pddl::tree::Goal> ExecutorClient::getOrderedSubGoals()
   auto future_result = get_ordered_sub_goals_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
-    rclcpp::executor::FutureReturnCode::SUCCESS)
+    rclcpp::FutureReturnCode::SUCCESS)
   {
     return ret;
   }
