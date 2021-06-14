@@ -134,9 +134,9 @@ TEST(btbuilder_tests, test_plan_1)
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
 
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
   auto btbuilder = std::make_shared<BTBuilderTest>(test_node);
 
@@ -373,9 +373,9 @@ TEST(btbuilder_tests, test_plan_2)
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
 
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
   auto btbuilder = std::make_shared<BTBuilderTest>(test_node);
 
@@ -589,9 +589,9 @@ TEST(btbuilder_tests, test_plan_3)
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
 
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
   auto btbuilder = std::make_shared<BTBuilderTest>(test_node);
 
@@ -680,9 +680,9 @@ TEST(btbuilder_tests, test_plan_4)
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
 
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
   auto btbuilder = std::make_shared<BTBuilderTest>(test_node);
 

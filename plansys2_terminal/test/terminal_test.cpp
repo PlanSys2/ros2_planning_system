@@ -215,7 +215,7 @@ TEST_F(TerminalTestCase, load_popf_plugin)
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_terminal");
 
@@ -544,7 +544,7 @@ TEST_F(TerminalTestCase, add_problem)
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_terminal");
 
@@ -659,7 +659,7 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_terminal");
 
@@ -755,7 +755,7 @@ TEST_F(TerminalTestCase, check_actors)
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
   using namespace std::chrono_literals;
 

@@ -25,9 +25,10 @@
 namespace plansys2
 {
 
-ProblemExpertClient::ProblemExpertClient(rclcpp::Node::SharedPtr provided_node)
-: node_(provided_node)
+ProblemExpertClient::ProblemExpertClient()
 {
+  node_ = rclcpp::Node::make_shared("problem_expert_client");
+
   add_problem_client_ = node_->create_client<plansys2_msgs::srv::AddProblem>(
     "problem_expert/add_problem");
   add_problem_goal_client_ = node_->create_client<plansys2_msgs::srv::AddProblemGoal>(

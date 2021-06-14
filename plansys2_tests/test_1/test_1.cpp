@@ -38,10 +38,10 @@ TEST(test_1, test_1)
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
   auto move_action_node = plansys2_tests::TestAction::make_shared("move");
   auto ask_charge_node = plansys2_tests::TestAction::make_shared("askcharge");

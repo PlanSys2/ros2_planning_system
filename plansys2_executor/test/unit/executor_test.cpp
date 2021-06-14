@@ -302,9 +302,9 @@ TEST(problem_expert, action_executor)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -619,9 +619,9 @@ TEST(problem_expert, action_real_action_1)
   auto move_action_node = MoveAction::make_shared("move_action_performer", 100ms);
   move_action_node->set_parameter({"action_name", "move"});
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -872,9 +872,9 @@ TEST(problem_expert, cancel_bt_execution)
   auto move_action_node = MoveAction::make_shared("move_action_performer", 100ms);
   move_action_node->set_parameter({"action_name", "move"});
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -1072,10 +1072,10 @@ TEST(problem_expert, executor_client_execute_plan)
   auto move_action_node = MoveAction::make_shared("move_action_performer", 100ms);
   move_action_node->set_parameter({"action_name", "move"});
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node_1);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_1);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node_2);
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>(test_node_3);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -1273,10 +1273,10 @@ TEST(problem_expert, executor_client_ordered_sub_goals)
   auto patrol_action_node = PatrolAction::make_shared("patrol_action_performer", 100ms);
   patrol_action_node->set_parameter({"action_name", "patrol"});
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node_1);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_1);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node_2);
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>(test_node_3);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -1416,10 +1416,10 @@ TEST(problem_expert, executor_client_cancel_plan)
   auto move_action_node = MoveAction::make_shared("move_action_performer", 1s);
   move_action_node->set_parameter({"action_name", "move"});
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node_1);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_1);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node_2);
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>(test_node_3);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -1551,10 +1551,10 @@ TEST(problem_expert, action_timeout)
   move_action_node->set_parameter({"action_name", "move"});
   move_action_node->set_runtime(10.0);
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node_1);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_2);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node_3);
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>(test_node_4);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
