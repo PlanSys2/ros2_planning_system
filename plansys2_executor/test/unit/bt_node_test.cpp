@@ -65,8 +65,8 @@ TEST(problem_expert, wait_overall_req_test)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -179,8 +179,8 @@ TEST(problem_expert, wait_atstart_req_test)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -295,8 +295,8 @@ TEST(problem_expert, wait_atend_req_test)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -409,8 +409,8 @@ TEST(problem_expert, at_start_effect_test)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -528,8 +528,8 @@ TEST(problem_expert, at_end_effect_test)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 

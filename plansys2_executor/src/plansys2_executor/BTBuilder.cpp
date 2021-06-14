@@ -38,8 +38,8 @@ BTBuilder::BTBuilder(
   rclcpp::Node::SharedPtr node,
   const std::string & bt_action)
 {
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>(node);
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(node);
+  domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
+  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
 
   if (bt_action != "") {
     bt_action_ = bt_action;

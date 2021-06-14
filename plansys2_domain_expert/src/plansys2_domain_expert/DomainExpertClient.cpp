@@ -23,9 +23,10 @@
 namespace plansys2
 {
 
-DomainExpertClient::DomainExpertClient(rclcpp::Node::SharedPtr provided_node)
-: node_(provided_node)
+DomainExpertClient::DomainExpertClient()
 {
+  node_ = rclcpp::Node::make_shared("domain_expert_client");
+
   get_domain_client_ = node_->create_client<plansys2_msgs::srv::GetDomain>(
     "domain_expert/get_domain");
   get_types_client_ = node_->create_client<plansys2_msgs::srv::GetDomainTypes>(

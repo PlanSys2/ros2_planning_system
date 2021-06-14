@@ -134,9 +134,9 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   dotgraph_pub_ = this->create_publisher<std_msgs::msg::String>("dot_graph", 1);
 
   aux_node_ = std::make_shared<rclcpp::Node>("executor_helper");
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>(aux_node_);
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(aux_node_);
-  planner_client_ = std::make_shared<plansys2::PlannerClient>(aux_node_);
+  domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
+  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
+  planner_client_ = std::make_shared<plansys2::PlannerClient>();
 
   execution_info_pub_ = create_publisher<plansys2_msgs::msg::ActionExecutionInfo>(
     "/action_execution_info", 100);

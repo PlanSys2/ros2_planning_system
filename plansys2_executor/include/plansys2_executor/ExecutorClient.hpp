@@ -38,7 +38,7 @@ public:
   using ExecutePlan = plansys2_msgs::action::ExecutePlan;
   using GoalHandleExecutePlan = rclcpp_action::ClientGoalHandle<ExecutePlan>;
 
-  explicit ExecutorClient(rclcpp::Node::SharedPtr provided_node);
+  ExecutorClient();
 
   bool start_plan_execution(const plansys2_msgs::msg::Plan & plan);
   bool execute_and_check_plan();

@@ -28,9 +28,10 @@ using namespace std::placeholders;
 
 using ExecutePlan = plansys2_msgs::action::ExecutePlan;
 
-ExecutorClient::ExecutorClient(rclcpp::Node::SharedPtr provided_node)
-: node_(provided_node)
+ExecutorClient::ExecutorClient()
 {
+  node_ = rclcpp::Node::make_shared("executor_client");
+
   createActionClient();
 
   get_ordered_sub_goals_client_ = node_->create_client<plansys2_msgs::srv::GetOrderedSubGoals>(

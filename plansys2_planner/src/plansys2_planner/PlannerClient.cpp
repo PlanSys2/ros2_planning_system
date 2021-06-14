@@ -23,9 +23,10 @@
 namespace plansys2
 {
 
-PlannerClient::PlannerClient(rclcpp::Node::SharedPtr provided_node)
-: node_(provided_node)
+PlannerClient::PlannerClient()
 {
+  node_ = rclcpp::Node::make_shared("planner_client");
+
   get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("planner/get_plan");
 }
 

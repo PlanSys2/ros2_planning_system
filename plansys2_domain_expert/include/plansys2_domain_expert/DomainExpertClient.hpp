@@ -50,10 +50,7 @@ class DomainExpertClient : public DomainExpertInterface
 {
 public:
   /// Create a new DomainExpertClient.
-  /**
-   * \param[in] provided_node A node object used to create for services.
-   */
-  explicit DomainExpertClient(rclcpp::Node::SharedPtr provided_node);
+  DomainExpertClient();
 
   /// Get the predicates existing in the domain.
   /**

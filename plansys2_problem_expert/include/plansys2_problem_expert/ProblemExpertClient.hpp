@@ -47,7 +47,7 @@ namespace plansys2
 class ProblemExpertClient : public ProblemExpertInterface
 {
 public:
-  explicit ProblemExpertClient(rclcpp::Node::SharedPtr provided_node);
+  ProblemExpertClient();
 
   std::vector<plansys2::Instance> getInstances();
   bool addInstance(const plansys2::Instance & instance);
