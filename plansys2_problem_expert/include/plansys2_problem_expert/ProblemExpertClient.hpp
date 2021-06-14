@@ -25,6 +25,7 @@
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/param.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
+#include "plansys2_msgs/srv/add_problem.hpp"
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
 #include "plansys2_msgs/srv/affect_node.hpp"
 #include "plansys2_msgs/srv/affect_param.hpp"
@@ -75,8 +76,11 @@ public:
   bool clearKnowledge();
 
   std::string getProblem();
+  bool addProblem(const std::string & problem_str);
 
 private:
+  rclcpp::Client<plansys2_msgs::srv::AddProblem>::SharedPtr
+    add_problem_client_;
   rclcpp::Client<plansys2_msgs::srv::AddProblemGoal>::SharedPtr
     add_problem_goal_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr

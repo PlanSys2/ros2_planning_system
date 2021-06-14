@@ -26,6 +26,7 @@
 #include "plansys2_msgs/msg/knowledge.hpp"
 #include "plansys2_msgs/srv/affect_node.hpp"
 #include "plansys2_msgs/srv/affect_param.hpp"
+#include "plansys2_msgs/srv/add_problem.hpp"
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
 #include "plansys2_msgs/srv/exist_node.hpp"
 #include "plansys2_msgs/srv/get_problem.hpp"
@@ -60,6 +61,11 @@ public:
   CallbackReturnT on_error(const rclcpp_lifecycle::State & state);
 
   plansys2_msgs::msg::Knowledge::SharedPtr get_knowledge_as_msg() const;
+
+  void add_problem_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::AddProblem::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::AddProblem::Response> response);
 
   void add_problem_goal_service_callback(
     const std::shared_ptr<rmw_request_id_t> request_header,
@@ -169,6 +175,8 @@ public:
 private:
   std::shared_ptr<ProblemExpert> problem_expert_;
 
+  rclcpp::Service<plansys2_msgs::srv::AddProblem>::SharedPtr
+    add_problem_service_;
   rclcpp::Service<plansys2_msgs::srv::AddProblemGoal>::SharedPtr
     add_problem_goal_service_;
   rclcpp::Service<plansys2_msgs::srv::AffectParam>::SharedPtr

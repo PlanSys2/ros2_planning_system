@@ -25,6 +25,10 @@ public:
 
 	plansys2_msgs::msg::Node::SharedPtr getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override;
 
+	void print( std::ostream & stream ) const {
+		stream << name << params << value << "\n";
+	}
+
 	void parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d );
 
 };

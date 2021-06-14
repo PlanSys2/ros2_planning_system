@@ -30,6 +30,8 @@ plansys2_msgs::msg::Node::SharedPtr Ground::getTree( plansys2_msgs::msg::Tree & 
         plansys2_msgs::msg::Param param;
         if (i < replace.size()) {
           param.name = replace[params[i]];
+        } else if (d.types[lifted->params[i]]->objects.size() > params[i]) {
+          param.name = d.types[lifted->params[i]]->object( params[i] ).first;
         } else {
           param.name = "?" + std::to_string(params[i]);
         }

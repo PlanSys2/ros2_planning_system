@@ -46,6 +46,14 @@ ProblemExpertNode::ProblemExpertNode()
 : rclcpp_lifecycle::LifecycleNode("problem_expert")
 {
   declare_parameter("model_file", "");
+  declare_parameter("problem_file", "");
+
+  add_problem_service_ = create_service<plansys2_msgs::srv::AddProblem>(
+    "problem_expert/add_problem",
+    std::bind(
+      &ProblemExpertNode::add_problem_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 
   add_problem_goal_service_ = create_service<plansys2_msgs::srv::AddProblemGoal>(
     "problem_expert/add_problem_goal",
@@ -233,6 +241,16 @@ ProblemExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   }
 
   problem_expert_ = std::make_shared<ProblemExpert>(domain_expert);
+
+  auto problem_file = get_parameter("problem_file").get_value<std::string>();
+  if (!problem_file.empty()) {
+    std::ifstream problem_ifs(problem_file);
+    std::string problem_str((
+        std::istreambuf_iterator<char>(problem_ifs)),
+      std::istreambuf_iterator<char>());
+    problem_expert_->addProblem(problem_str);
+  }
+
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
 }
@@ -282,6 +300,29 @@ ProblemExpertNode::on_error(const rclcpp_lifecycle::State & state)
   RCLCPP_ERROR(get_logger(), "[%s] Error transition", get_name());
 
   return CallbackReturnT::SUCCESS;
+}
+
+void
+ProblemExpertNode::add_problem_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::AddProblem::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::AddProblem::Response> response)
+{
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    RCLCPP_INFO(get_logger(), "Adding problem:\n%s", request->problem.c_str());
+    response->success = problem_expert_->addProblem(request->problem);
+
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
+    } else {
+      response->error_info = "Problem not valid";
+    }
+  }
 }
 
 void
