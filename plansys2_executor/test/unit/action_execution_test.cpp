@@ -189,7 +189,7 @@ TEST(action_execution, protocol_basic)
     move_action_node->get_internal_status().state,
     plansys2_msgs::msg::ActionPerformerStatus::RUNNING);
 
-  ASSERT_EQ(action_execution_msgs.size(), 3u);
+  ASSERT_EQ(action_execution_msgs.size(), 4u);
   ASSERT_EQ(action_execution_msgs[0].type, plansys2_msgs::msg::ActionExecution::REQUEST);
   ASSERT_EQ(action_execution_msgs[1].type, plansys2_msgs::msg::ActionExecution::RESPONSE);
   ASSERT_EQ(action_execution_msgs[2].type, plansys2_msgs::msg::ActionExecution::CONFIRM);
@@ -305,7 +305,7 @@ TEST(action_execution, protocol_cancelation)
     move_action_node->get_internal_status().state,
     plansys2_msgs::msg::ActionPerformerStatus::RUNNING);
 
-  ASSERT_EQ(action_execution_msgs.size(), 3u);
+  ASSERT_EQ(action_execution_msgs.size(), 4u);
   ASSERT_EQ(action_execution_msgs[0].type, plansys2_msgs::msg::ActionExecution::REQUEST);
   ASSERT_EQ(action_execution_msgs[1].type, plansys2_msgs::msg::ActionExecution::RESPONSE);
   ASSERT_EQ(action_execution_msgs[2].type, plansys2_msgs::msg::ActionExecution::CONFIRM);
@@ -338,10 +338,11 @@ TEST(action_execution, protocol_cancelation)
     plansys2_msgs::msg::ActionPerformerStatus::READY);
 
 
-  ASSERT_EQ(action_execution_msgs.size(), 6u);
+  ASSERT_EQ(action_execution_msgs.size(), 7u);
   ASSERT_EQ(action_execution_msgs[3].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
   ASSERT_EQ(action_execution_msgs[4].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
-  ASSERT_EQ(action_execution_msgs[5].type, plansys2_msgs::msg::ActionExecution::CANCEL);
+  ASSERT_EQ(action_execution_msgs[5].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
+  ASSERT_EQ(action_execution_msgs[6].type, plansys2_msgs::msg::ActionExecution::CANCEL);
 
   finish = true;
   t.join();

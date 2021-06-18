@@ -218,7 +218,7 @@ TEST(bt_actions, cancel_bt_action)
   ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::RUNNING);
   ASSERT_EQ(bt_action->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);
 
-  ASSERT_EQ(action_execution_msgs.size(), 3u);
+  ASSERT_EQ(action_execution_msgs.size(), 4u);
   ASSERT_EQ(action_execution_msgs[0].type, plansys2_msgs::msg::ActionExecution::REQUEST);
   ASSERT_EQ(action_execution_msgs[1].type, plansys2_msgs::msg::ActionExecution::RESPONSE);
   ASSERT_EQ(action_execution_msgs[2].type, plansys2_msgs::msg::ActionExecution::CONFIRM);
@@ -231,7 +231,7 @@ TEST(bt_actions, cancel_bt_action)
     }
   }
 
-  ASSERT_EQ(action_execution_msgs.size(), 4u);
+  ASSERT_EQ(action_execution_msgs.size(), 5u);
   action_client->cancel();
 
   {
@@ -242,9 +242,10 @@ TEST(bt_actions, cancel_bt_action)
       rate.sleep();
     }
   }
-  ASSERT_EQ(action_execution_msgs.size(), 5u);
+  ASSERT_EQ(action_execution_msgs.size(), 6u);
   ASSERT_EQ(action_execution_msgs[3].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
-  ASSERT_EQ(action_execution_msgs[4].type, plansys2_msgs::msg::ActionExecution::CANCEL);
+  ASSERT_EQ(action_execution_msgs[4].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
+  ASSERT_EQ(action_execution_msgs[5].type, plansys2_msgs::msg::ActionExecution::CANCEL);
 
   ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::CANCELLED);
   ASSERT_EQ(

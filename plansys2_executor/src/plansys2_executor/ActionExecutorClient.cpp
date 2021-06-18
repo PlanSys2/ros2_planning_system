@@ -37,6 +37,7 @@ ActionExecutorClient::ActionExecutorClient(
 {
   declare_parameter("action_name");
   declare_parameter("specialized_arguments");
+  declare_parameter("rate");
 
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::NOT_READY;
   status_.node_name = get_name();
@@ -65,6 +66,13 @@ ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
   get_parameter_or<std::vector<std::string>>(
     "specialized_arguments", specialized_arguments_, std::vector<std::string>({}));
 
+
+  double rate = 1.0 / std::chrono::duration<double>(rate_).count();
+  get_parameter_or("rate", rate, rate);
+
+  rate_ = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+    std::chrono::duration<double>(1.0 / rate));
+
   action_hub_pub_ = create_publisher<plansys2_msgs::msg::ActionExecution>(
     "/actions_hub", rclcpp::QoS(100).reliable());
   action_hub_sub_ = create_subscription<plansys2_msgs::msg::ActionExecution>(
@@ -86,6 +94,8 @@ ActionExecutorClient::on_activate(const rclcpp_lifecycle::State & state)
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::RUNNING;
   timer_ = create_wall_timer(
     rate_, std::bind(&ActionExecutorClient::do_work, this));
+
+  do_work();
 
   return CallbackReturnT::SUCCESS;
 }
