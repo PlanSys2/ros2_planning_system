@@ -66,9 +66,12 @@ ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
   get_parameter_or<std::vector<std::string>>(
     "specialized_arguments", specialized_arguments_, std::vector<std::string>({}));
 
+
   double rate = 1.0 / std::chrono::duration<double>(rate_).count();
   get_parameter_or("rate", rate, rate);
-  rate_ = rclcpp::Rate(1.0 / rate).period();
+
+  rate_ = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+    std::chrono::duration<double>(1.0 / rate));
 
   action_hub_pub_ = create_publisher<plansys2_msgs::msg::ActionExecution>(
     "/actions_hub", rclcpp::QoS(100).reliable());
