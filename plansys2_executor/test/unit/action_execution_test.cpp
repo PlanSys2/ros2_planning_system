@@ -341,7 +341,8 @@ TEST(action_execution, protocol_cancelation)
   ASSERT_EQ(action_execution_msgs.size(), 7u);
   ASSERT_EQ(action_execution_msgs[3].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
   ASSERT_EQ(action_execution_msgs[4].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
-  ASSERT_EQ(action_execution_msgs[5].type, plansys2_msgs::msg::ActionExecution::CANCEL);
+  ASSERT_EQ(action_execution_msgs[5].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
+  ASSERT_EQ(action_execution_msgs[6].type, plansys2_msgs::msg::ActionExecution::CANCEL);
 
   finish = true;
   t.join();

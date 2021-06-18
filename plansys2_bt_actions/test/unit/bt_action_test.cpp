@@ -244,7 +244,8 @@ TEST(bt_actions, cancel_bt_action)
   }
   ASSERT_EQ(action_execution_msgs.size(), 6u);
   ASSERT_EQ(action_execution_msgs[3].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
-  ASSERT_EQ(action_execution_msgs[4].type, plansys2_msgs::msg::ActionExecution::CANCEL);
+  ASSERT_EQ(action_execution_msgs[4].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
+  ASSERT_EQ(action_execution_msgs[5].type, plansys2_msgs::msg::ActionExecution::CANCEL);
 
   ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::CANCELLED);
   ASSERT_EQ(
