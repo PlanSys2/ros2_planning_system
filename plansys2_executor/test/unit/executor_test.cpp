@@ -1568,7 +1568,7 @@ TEST(problem_expert, action_timeout)
   executor_node->declare_parameter("action_timeouts.move.duration_overrun_percentage");
   executor_node->set_parameter({"action_timeouts.move.duration_overrun_percentage", 1.0});
 
-  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
 
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
