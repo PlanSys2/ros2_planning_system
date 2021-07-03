@@ -18,7 +18,11 @@
 #include <string>
 #include <vector>
 
-#include "plansys2_pddl_parser/Tree.h"
+#include "plansys2_msgs/msg/node.hpp"
+#include "plansys2_msgs/msg/param.hpp"
+#include "plansys2_msgs/msg/tree.hpp"
+
+#include "plansys2_core/Types.hpp"
 
 namespace plansys2
 {
@@ -28,31 +32,33 @@ class ProblemExpertInterface
 public:
   ProblemExpertInterface() {}
 
-  virtual std::vector<parser::pddl::tree::Instance> getInstances() = 0;
-  virtual bool addInstance(const parser::pddl::tree::Instance & instance) = 0;
-  virtual bool removeInstance(const std::string & name) = 0;
-  virtual std::optional<parser::pddl::tree::Instance> getInstance(const std::string & name) = 0;
+  virtual std::vector<plansys2::Instance> getInstances() = 0;
+  virtual bool addInstance(const plansys2::Instance & instance) = 0;
+  virtual bool removeInstance(const plansys2::Instance & instance) = 0;
+  virtual std::optional<plansys2::Instance> getInstance(const std::string & name) = 0;
 
-  virtual std::vector<parser::pddl::tree::Predicate> getPredicates() = 0;
-  virtual bool addPredicate(const parser::pddl::tree::Predicate & predicate) = 0;
-  virtual bool removePredicate(const parser::pddl::tree::Predicate & predicate) = 0;
-  virtual bool existPredicate(const parser::pddl::tree::Predicate & predicate) = 0;
-  virtual std::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & expr) = 0;
+  virtual std::vector<plansys2::Predicate> getPredicates() = 0;
+  virtual bool addPredicate(const plansys2::Predicate & predicate) = 0;
+  virtual bool removePredicate(const plansys2::Predicate & predicate) = 0;
+  virtual bool existPredicate(const plansys2::Predicate & predicate) = 0;
+  virtual std::optional<plansys2::Predicate> getPredicate(const std::string & expr) = 0;
 
-  virtual std::vector<parser::pddl::tree::Function> getFunctions() = 0;
-  virtual bool addFunction(const parser::pddl::tree::Function & function) = 0;
-  virtual bool removeFunction(const parser::pddl::tree::Function & function) = 0;
-  virtual bool existFunction(const parser::pddl::tree::Function & function) = 0;
-  virtual bool updateFunction(const parser::pddl::tree::Function & function) = 0;
-  virtual std::optional<parser::pddl::tree::Function> getFunction(const std::string & expr) = 0;
+  virtual std::vector<plansys2::Function> getFunctions() = 0;
+  virtual bool addFunction(const plansys2::Function & function) = 0;
+  virtual bool removeFunction(const plansys2::Function & function) = 0;
+  virtual bool existFunction(const plansys2::Function & function) = 0;
+  virtual bool updateFunction(const plansys2::Function & function) = 0;
+  virtual std::optional<plansys2::Function> getFunction(const std::string & expr) = 0;
 
-  virtual parser::pddl::tree::Goal getGoal() = 0;
-  virtual bool setGoal(const parser::pddl::tree::Goal & goal) = 0;
+  virtual plansys2::Goal getGoal() = 0;
+  virtual bool setGoal(const plansys2::Goal & goal) = 0;
+  virtual bool isGoalSatisfied(const plansys2::Goal & goal) = 0;
+
   virtual bool clearGoal() = 0;
   virtual bool clearKnowledge() = 0;
-  virtual bool isGoalSatisfied(const parser::pddl::tree::Goal & goal) = 0;
 
   virtual std::string getProblem() = 0;
+  virtual bool addProblem(const std::string & problem_str) = 0;
 };
 
 }  // namespace plansys2

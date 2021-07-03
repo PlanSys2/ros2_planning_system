@@ -30,6 +30,7 @@
 
 #include "plansys2_msgs/action/execute_plan.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
+#include "plansys2_msgs/srv/get_ordered_sub_goals.hpp"
 #include "std_msgs/msg/string.hpp"
 
 #include "rclcpp/rclcpp.hpp"
@@ -57,11 +58,25 @@ public:
   CallbackReturnT on_shutdown(const rclcpp_lifecycle::State & state);
   CallbackReturnT on_error(const rclcpp_lifecycle::State & state);
 
+  void get_ordered_sub_goals_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::GetOrderedSubGoals::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::GetOrderedSubGoals::Response> response);
+
+  void get_plan_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::GetPlan::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response);
+
 protected:
   rclcpp::Node::SharedPtr node_;
   rclcpp::Node::SharedPtr aux_node_;
 
   bool cancel_plan_requested_;
+  std::optional<plansys2_msgs::msg::Plan> current_plan_;
+  std::optional<std::vector<plansys2_msgs::msg::Tree>> ordered_sub_goals_;
+
+  std::string action_bt_xml_;
 
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
@@ -71,7 +86,13 @@ protected:
     execution_info_pub_;
 
   rclcpp_action::Server<ExecutePlan>::SharedPtr execute_plan_action_server_;
+  rclcpp::Service<plansys2_msgs::srv::GetOrderedSubGoals>::SharedPtr
+    get_ordered_sub_goals_service_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::String>::SharedPtr dotgraph_pub_;
+
+  std::optional<std::vector<plansys2_msgs::msg::Tree>> getOrderedSubGoals();
+
+  rclcpp::Service<plansys2_msgs::srv::GetPlan>::SharedPtr get_plan_service_;
 
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID & uuid,

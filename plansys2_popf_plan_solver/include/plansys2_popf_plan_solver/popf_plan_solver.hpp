@@ -26,12 +26,16 @@ namespace plansys2
 
 class POPFPlanSolver : public PlanSolverBase
 {
+private:
+  std::string parameter_name_;
+  rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node_;
+
 public:
   POPFPlanSolver();
 
-  void configure(rclcpp_lifecycle::LifecycleNode::SharedPtr &, const std::string &) {}
+  void configure(rclcpp_lifecycle::LifecycleNode::SharedPtr &, const std::string &);
 
-  std::optional<Plan> getPlan(
+  std::optional<plansys2_msgs::msg::Plan> getPlan(
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace = "");
 

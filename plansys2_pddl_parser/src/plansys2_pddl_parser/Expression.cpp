@@ -16,16 +16,23 @@ void FunctionExpression::PDDLPrint( std::ostream & s, unsigned indent, const Tok
 	s << " )";
 }
 
-std::shared_ptr<tree::TreeNode> FunctionExpression::PDDLTree( const Domain & d ) const {
-    std::shared_ptr<tree::FunctionNode> tree = std::make_shared<tree::FunctionNode>();
-    tree->function_.name = fun->name;
+plansys2_msgs::msg::Node::SharedPtr FunctionExpression::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::FUNCTION;
+    node->node_id = tree.nodes.size();
+    node->name = fun->name;
     for ( unsigned i = 0; i < fun->params.size(); ++i ) {
-        tree::Param param;
-        param.name = "?" + std::to_string(fun->params[i]);
+        plansys2_msgs::msg::Param param;
+        if (i < replace.size()) {
+          param.name = replace[fun->params[i]];
+        } else {
+          param.name = "?" + std::to_string(fun->params[i]);
+        }
         param.type = d.types[fun->params[i]]->name;
-        tree->function_.parameters.push_back(param);
+        node->parameters.push_back(param);
     }
-    return tree;
+    tree.nodes.push_back(*node);
+    return node;
 }
 
 double FunctionExpression::evaluate( Instance & ins, const StringVec & par ) {

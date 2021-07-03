@@ -5,8 +5,17 @@ cmake_minimum_required(VERSION 3.5)
 find_package(Threads REQUIRED)
 
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(plansys2_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
+
+set(dependencies
+    rclcpp
+    plansys2_msgs
+    std_msgs
+)
 
 include_directories(include)
 
@@ -29,11 +38,12 @@ set(PDDL-PARSER-SOURCES
   src/plansys2_pddl_parser/Oneof.cpp
   src/plansys2_pddl_parser/FunctionModifier.cpp
   src/plansys2_pddl_parser/Ground.cpp
-  src/plansys2_pddl_parser/Tree.cpp
+  src/plansys2_pddl_parser/Utils.cpp
   src/plansys2_pddl_parser/TypeGround.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${PDDL-PARSER-SOURCES})
+ament_target_dependencies(${PROJECT_NAME} rclcpp plansys2_msgs)
 
 add_executable(parser src/parser.cpp)
 target_link_libraries(parser ${PROJECT_NAME})

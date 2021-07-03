@@ -27,7 +27,7 @@
 #include "pluginlib/class_list_macros.hpp"
 #include "plansys2_core/PlanSolverBase.hpp"
 
-TEST(popf_plan_solver, generate_plan_good)
+void test_plan_generation(const std::string & argument = "")
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
@@ -43,16 +43,26 @@ TEST(popf_plan_solver, generate_plan_good)
   auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
   auto planner = std::make_shared<plansys2::POPFPlanSolver>();
   planner->configure(node, "POPF");
+  node->set_parameter(rclcpp::Parameter("POPF.arguments", argument));
 
   auto plan = planner->getPlan(domain_str, problem_str, "generate_plan_good");
 
   ASSERT_TRUE(plan);
-  ASSERT_EQ(plan.value().size(), 3);
-  ASSERT_EQ(plan.value()[0].action, "(move leia kitchen bedroom)");
-  ASSERT_EQ(plan.value()[1].action, "(approach leia bedroom jack)");
-  ASSERT_EQ(plan.value()[2].action, "(talk leia jack jack m1)");
+  ASSERT_EQ(plan.value().items.size(), 3);
+  ASSERT_EQ(plan.value().items[0].action, "(move leia kitchen bedroom)");
+  ASSERT_EQ(plan.value().items[1].action, "(approach leia bedroom jack)");
+  ASSERT_EQ(plan.value().items[2].action, "(talk leia jack jack m1)");
 }
 
+TEST(popf_plan_solver, generate_plan_good)
+{
+  test_plan_generation();
+}
+
+TEST(popf_plan_solver, generate_plan_good_with_argument)
+{
+  test_plan_generation("-e");
+}
 
 TEST(popf_plan_solver, load_popf_plugin)
 {

@@ -21,9 +21,8 @@
 
 #include "plansys2_msgs/msg/action_execution.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
+#include "plansys2_msgs/msg/durative_action.hpp"
 #include "behaviortree_cpp_v3/behavior_tree.h"
-
-#include "plansys2_pddl_parser/Tree.h"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -109,8 +108,10 @@ struct ActionExecutionInfo
   std::shared_ptr<ActionExecutor> action_executor = {nullptr};
   bool at_start_effects_applied = {false};
   bool at_end_effects_applied = {false};
-  std::shared_ptr<parser::pddl::tree::DurativeAction> durative_action_info = {nullptr};
+  std::shared_ptr<plansys2_msgs::msg::DurativeAction> durative_action_info = {nullptr};
   std::string execution_error_info;
+  double duration;
+  double duration_overrun_percentage = -1.0;
 };
 
 }  // namespace plansys2

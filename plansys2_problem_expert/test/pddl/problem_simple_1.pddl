@@ -9,6 +9,7 @@
   (:init
     (robot_at leia kitchen)
     (person_at Jack bedroom)
+    (= (room_distance kitchen bedroom) 10)
 
 
   )

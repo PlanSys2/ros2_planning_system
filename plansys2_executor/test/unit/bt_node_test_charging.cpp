@@ -60,8 +60,8 @@ TEST(problem_expert, wait_atstart_req_test)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -104,7 +104,9 @@ TEST(problem_expert, wait_atstart_req_test)
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
   (*action_map)["(move robot1 wp1 wp2):5"] = plansys2::ActionExecutionInfo();
   (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info =
-    plansys2::get_action_from_string("(move robot1 wp1 wp2)", domain_client);
+    domain_client->getDurativeAction(
+    plansys2::get_action_name("(move robot1 wp1 wp2)"),
+    plansys2::get_action_params("(move robot1 wp1 wp2)"));
 
   ASSERT_NE(
     (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info,
@@ -131,9 +133,9 @@ TEST(problem_expert, wait_atstart_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::WaitAtStartReq>("WaitAtStartReq");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp1", "waypoint"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp2", "waypoint"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wp1", "waypoint")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wp2", "waypoint")));
 
   std::vector<std::string> predicates = {
     "(robot_at robot1 wp1)",
@@ -159,11 +161,11 @@ TEST(problem_expert, wait_atstart_req_test)
     ASSERT_EQ(status, BT::NodeStatus::RUNNING);
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+      ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
     }
 
     for (const auto & func : functions) {
-      ASSERT_TRUE(problem_client->addFunction(parser::pddl::tree::Function(func)));
+      ASSERT_TRUE(problem_client->addFunction(plansys2::Function(func)));
     }
 
     status = tree.tickRoot();
@@ -183,8 +185,8 @@ TEST(problem_expert, apply_atstart_effect_test)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -227,7 +229,9 @@ TEST(problem_expert, apply_atstart_effect_test)
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
   (*action_map)["(move robot1 wp1 wp2):5"] = plansys2::ActionExecutionInfo();
   (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info =
-    plansys2::get_action_from_string("(move robot1 wp1 wp2)", domain_client);
+    domain_client->getDurativeAction(
+    plansys2::get_action_name("(move robot1 wp1 wp2)"),
+    plansys2::get_action_params("(move robot1 wp1 wp2)"));
 
   ASSERT_NE(
     (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info,
@@ -254,9 +258,9 @@ TEST(problem_expert, apply_atstart_effect_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtStartEffect>("ApplyAtStartEffect");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp1", "waypoint"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp2", "waypoint"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wp1", "waypoint")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wp2", "waypoint")));
 
   try {
     std::vector<std::string> predicates = {
@@ -265,7 +269,7 @@ TEST(problem_expert, apply_atstart_effect_test)
       "(connected wp1 wp2)"};
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+      ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
     }
 
     std::vector<std::string> functions = {
@@ -276,7 +280,7 @@ TEST(problem_expert, apply_atstart_effect_test)
       "(= (distance wp2 wp1) 15)"};
 
     for (const auto & func : functions) {
-      ASSERT_TRUE(problem_client->addFunction(parser::pddl::tree::Function(func)));
+      ASSERT_TRUE(problem_client->addFunction(plansys2::Function(func)));
     }
 
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
@@ -292,9 +296,7 @@ TEST(problem_expert, apply_atstart_effect_test)
         rate.sleep();
       }
     }
-    ASSERT_FALSE(
-      problem_client->existPredicate(
-        parser::pddl::tree::Predicate{"(robot_at robot1 wp1)"}));
+    ASSERT_FALSE(problem_client->existPredicate(plansys2::Predicate("(robot_at robot1 wp1)")));
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
@@ -310,8 +312,8 @@ TEST(problem_expert, apply_atend_effect_test)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -354,7 +356,9 @@ TEST(problem_expert, apply_atend_effect_test)
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
   (*action_map)["(move robot1 wp1 wp2):5"] = plansys2::ActionExecutionInfo();
   (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info =
-    plansys2::get_action_from_string("(move robot1 wp1 wp2)", domain_client);
+    domain_client->getDurativeAction(
+    plansys2::get_action_name("(move robot1 wp1 wp2)"),
+    plansys2::get_action_params("(move robot1 wp1 wp2)"));
 
   ASSERT_NE(
     (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info,
@@ -381,9 +385,9 @@ TEST(problem_expert, apply_atend_effect_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtEndEffect>("ApplyAtEndEffect");
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp1", "waypoint"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp2", "waypoint"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wp1", "waypoint")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wp2", "waypoint")));
 
   try {
     std::vector<std::string> predicates = {
@@ -392,7 +396,7 @@ TEST(problem_expert, apply_atend_effect_test)
       "(connected wp1 wp2)"};
 
     for (const auto & pred : predicates) {
-      ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+      ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
     }
 
     std::vector<std::string> functions = {
@@ -403,7 +407,7 @@ TEST(problem_expert, apply_atend_effect_test)
       "(= (distance wp2 wp1) 15)"};
 
     for (const auto & func : functions) {
-      ASSERT_TRUE(problem_client->addFunction(parser::pddl::tree::Function(func)));
+      ASSERT_TRUE(problem_client->addFunction(plansys2::Function(func)));
     }
 
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
@@ -420,9 +424,7 @@ TEST(problem_expert, apply_atend_effect_test)
       }
     }
 
-    ASSERT_TRUE(
-      problem_client->existPredicate(
-        parser::pddl::tree::Predicate{"(robot_at robot1 wp2)"}));
+    ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_at robot1 wp2)")));
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }

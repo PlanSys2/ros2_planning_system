@@ -13,6 +13,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
 find_package(rclcpp_cascade_lifecycle REQUIRED)
 find_package(ament_index_cpp REQUIRED)
+find_package(plansys2_core REQUIRED)
 find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_domain_expert REQUIRED)
@@ -39,6 +40,7 @@ set(dependencies
     rclcpp_action
     plansys2_pddl_parser
     ament_index_cpp
+    plansys2_core
     plansys2_msgs
     plansys2_domain_expert
     plansys2_problem_expert
@@ -60,6 +62,7 @@ set(EXECUTOR_SOURCES
   src/plansys2_executor/behavior_tree/wait_atstart_req_node.cpp
   src/plansys2_executor/behavior_tree/check_overall_req_node.cpp
   src/plansys2_executor/behavior_tree/check_atend_req_node.cpp
+  src/plansys2_executor/behavior_tree/check_timeout_node.cpp
   src/plansys2_executor/behavior_tree/apply_atstart_effect_node.cpp
   src/plansys2_executor/behavior_tree/apply_atend_effect_node.cpp
 )
@@ -79,7 +82,7 @@ install(DIRECTORY include/
   DESTINATION include/
 )
 
-install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch behavior_trees DESTINATION share/${PROJECT_NAME})
 
 install(TARGETS
   ${PROJECT_NAME}

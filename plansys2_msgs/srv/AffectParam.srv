@@ -1,0 +1,4 @@
+plansys2_msgs/Param param
+---
+bool success
+string error_info

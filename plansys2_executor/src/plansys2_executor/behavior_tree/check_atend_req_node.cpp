@@ -44,7 +44,7 @@ CheckAtEndReq::tick()
 
   auto reqs = (*action_map_)[action].durative_action_info->at_end_requirements;
 
-  if (!check(reqs.root_, problem_client_)) {
+  if (!check(reqs, problem_client_)) {
     (*action_map_)[action].execution_error_info = "Error checking at end requirements";
     return BT::NodeStatus::FAILURE;
   } else {

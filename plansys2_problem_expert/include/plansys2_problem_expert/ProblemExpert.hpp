@@ -20,9 +20,11 @@
 #include <vector>
 #include <memory>
 
-#include "plansys2_pddl_parser/Instance.h"
-#include "plansys2_pddl_parser/Tree.h"
+#include "plansys2_msgs/msg/node.hpp"
+#include "plansys2_msgs/msg/param.hpp"
+#include "plansys2_msgs/msg/tree.hpp"
 
+#include "plansys2_pddl_parser/Utils.h"
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
 
@@ -34,52 +36,53 @@ class ProblemExpert : public ProblemExpertInterface
 public:
   explicit ProblemExpert(std::shared_ptr<DomainExpert> & domain_expert);
 
-  std::vector<parser::pddl::tree::Instance> getInstances();
-  bool addInstance(const parser::pddl::tree::Instance & instance);
-  bool removeInstance(const std::string & name);
-  std::optional<parser::pddl::tree::Instance> getInstance(const std::string & name);
+  std::vector<plansys2::Instance> getInstances();
+  bool addInstance(const plansys2::Instance & instance);
+  bool removeInstance(const plansys2::Instance & instance);
+  std::optional<plansys2::Instance> getInstance(const std::string & name);
 
-  std::vector<parser::pddl::tree::Predicate> getPredicates();
-  bool addPredicate(const parser::pddl::tree::Predicate & predicate);
-  bool removePredicate(const parser::pddl::tree::Predicate & predicate);
-  std::optional<parser::pddl::tree::Predicate> getPredicate(const std::string & expr);
+  std::vector<plansys2::Predicate> getPredicates();
+  bool addPredicate(const plansys2::Predicate & predicate);
+  bool removePredicate(const plansys2::Predicate & predicate);
+  bool existPredicate(const plansys2::Predicate & predicate);
+  std::optional<plansys2::Predicate> getPredicate(const std::string & expr);
 
-  std::vector<parser::pddl::tree::Function> getFunctions();
-  bool addFunction(const parser::pddl::tree::Function & function);
-  bool removeFunction(const parser::pddl::tree::Function & function);
-  bool updateFunction(const parser::pddl::tree::Function & function);
-  std::optional<parser::pddl::tree::Function> getFunction(const std::string & expr);
+  std::vector<plansys2::Function> getFunctions();
+  bool addFunction(const plansys2::Function & function);
+  bool removeFunction(const plansys2::Function & function);
+  bool existFunction(const plansys2::Function & function);
+  bool updateFunction(const plansys2::Function & function);
+  std::optional<plansys2::Function> getFunction(const std::string & expr);
 
-  parser::pddl::tree::Goal getGoal();
-  bool setGoal(const parser::pddl::tree::Goal & goal);
+  plansys2::Goal getGoal();
+  bool setGoal(const plansys2::Goal & goal);
+  bool isGoalSatisfied(const plansys2::Goal & goal);
+
   bool clearGoal();
   bool clearKnowledge();
-  bool isGoalSatisfied(const parser::pddl::tree::Goal & goal);
 
   std::string getProblem();
+  bool addProblem(const std::string & problem_str);
 
   bool existInstance(const std::string & name);
-  bool existPredicate(const parser::pddl::tree::Predicate & predicate);
-  bool existFunction(const parser::pddl::tree::Function & function);
-  bool existGoal(const parser::pddl::tree::Goal & goal);
   bool isValidType(const std::string & type);
-  bool isValidPredicate(const parser::pddl::tree::Predicate & predicate);
-  bool isValidFunction(const parser::pddl::tree::Function & function);
-  bool isValidGoal(const parser::pddl::tree::Goal & goal);
+  bool isValidPredicate(const plansys2::Predicate & predicate);
+  bool isValidFunction(const plansys2::Function & function);
+  bool isValidGoal(const plansys2::Goal & goal);
 
 private:
   bool checkPredicateTreeTypes(
-    std::shared_ptr<parser::pddl::tree::TreeNode> node,
-    std::shared_ptr<DomainExpert> & domain_expert_);
+    const plansys2_msgs::msg::Tree & tree,
+    std::shared_ptr<DomainExpert> & domain_expert_,
+    uint8_t node_id = 0);
 
-  bool removeFunctionsReferencing(const std::string & name);
-  bool removePredicatesReferencing(const std::string & name);
+  bool removeFunctionsReferencing(const plansys2_msgs::msg::Param & param);
+  bool removePredicatesReferencing(const plansys2_msgs::msg::Param & param);
 
-  // parser::pddl::Problem problem_;
-  std::vector<parser::pddl::tree::Instance> instances_;
-  std::vector<parser::pddl::tree::Predicate> predicates_;
-  std::vector<parser::pddl::tree::Function> functions_;
-  parser::pddl::tree::Goal goal_;
+  std::vector<plansys2::Instance> instances_;
+  std::vector<plansys2::Predicate> predicates_;
+  std::vector<plansys2::Function> functions_;
+  plansys2::Goal goal_;
 
   std::shared_ptr<DomainExpert> domain_expert_;
 };

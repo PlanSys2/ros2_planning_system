@@ -17,29 +17,29 @@ void Ground::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	s << " )";
 }
 
-std::shared_ptr<tree::TreeNode> Ground::PDDLTree( const Domain & d ) const {
+plansys2_msgs::msg::Node::SharedPtr Ground::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
     if ( d.funcs.index( name ) >= 0) {
-        std::shared_ptr<tree::FunctionNode> tree = std::make_shared<tree::FunctionNode>();
-        tree->function_.name = name;
-        for ( unsigned i = 0; i < params.size(); ++i ) {
-            tree::Param param;
-            param.name = "?" + std::to_string(params[i]);
-            param.type = d.types[lifted->params[i]]->name;
-            tree->function_.parameters.push_back(param);
-        }
-        return tree;
+        node->node_type = plansys2_msgs::msg::Node::FUNCTION;
+    } else {
+        node->node_type = plansys2_msgs::msg::Node::PREDICATE;
     }
-    else {
-        std::shared_ptr<tree::PredicateNode> tree = std::make_shared<tree::PredicateNode>();
-        tree->predicate_.name = name;
-        for ( unsigned i = 0; i < params.size(); ++i ) {
-            tree::Param param;
-            param.name = "?" + std::to_string(params[i]);
-            param.type = d.types[lifted->params[i]]->name;
-            tree->predicate_.parameters.push_back(param);
+    node->node_id = tree.nodes.size();
+    node->name = name;
+    for ( unsigned i = 0; i < params.size(); ++i ) {
+        plansys2_msgs::msg::Param param;
+        if (i < replace.size()) {
+          param.name = replace[params[i]];
+        } else if (d.types[lifted->params[i]]->objects.size() > params[i]) {
+          param.name = d.types[lifted->params[i]]->object( params[i] ).first;
+        } else {
+          param.name = "?" + std::to_string(params[i]);
         }
-        return tree;
+        param.type = d.types[lifted->params[i]]->name;
+        node->parameters.push_back(param);
     }
+    tree.nodes.push_back(*node);
+    return node;
 }
 
 void Ground::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {

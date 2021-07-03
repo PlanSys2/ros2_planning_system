@@ -1,4 +1,4 @@
-string goal
+plansys2_msgs/Tree tree
 ---
 bool success
 string error_info

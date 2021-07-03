@@ -51,9 +51,9 @@ TEST(executiotest_noden_tree, bt_builder_factory)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -97,40 +97,28 @@ TEST(executiotest_noden_tree, bt_builder_factory)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot3", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot3", "robot")));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheels_zone", "zone"}));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheels_zone",
-        "zone"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheel_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_3", "piece"}));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheel_1",
-        "piece"}));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheel_2",
-        "piece"}));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheel_3",
-        "piece"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_3", "piece")));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_1", "car"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_2", "car"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_3", "car"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_1", "car")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_2", "car")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_3", "car")));
 
   std::vector<std::string> predicates = {
     "(robot_at robot1 assembly_zone)",
@@ -169,18 +157,17 @@ TEST(executiotest_noden_tree, bt_builder_factory)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
   ASSERT_TRUE(
     problem_client->setGoal(
-      parser::pddl::tree::Goal(
+      plansys2::Goal(
         "(and (car_assembled car_1) (car_assembled car_2) (car_assembled car_3))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
   BTBuilderTest exec_tree(test_node);
   auto tree_str = exec_tree.get_tree(plan.value());
 
@@ -196,9 +183,9 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -242,40 +229,28 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"robot3", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot3", "robot")));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheels_zone", "zone"}));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheels_zone",
-        "zone"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wheel_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"body_car_3", "piece"}));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheel_1",
-        "piece"}));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheel_2",
-        "piece"}));
-  ASSERT_TRUE(
-    problem_client->addInstance(
-      parser::pddl::tree::Instance{"steering_wheel_3",
-        "piece"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_3", "piece")));
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_1", "car"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_2", "car"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"car_3", "car"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_1", "car")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_2", "car")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_3", "car")));
 
   std::vector<std::string> predicates = {
     "(robot_at robot1 wheels_zone)",
@@ -314,26 +289,19 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
   ASSERT_TRUE(
     problem_client->setGoal(
-      parser::pddl::tree::Goal(
+      plansys2::Goal(
         std::string("(and (car_assembled car_1) (piece_at body_car_2 assembly_zone)") +
-        std::string("(piece_at body_car_3 assembly_zone))"))
-  ));
+        std::string("(piece_at body_car_3 assembly_zone))"))));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
   BTBuilderTest exec_tree(test_node);
-
-
-  // ASSERT_NE(durative_actions_map.find(
-  //   "(move robot1 assembly_zone wheels_zone)"),
-  //   durative_actions_map.end());
 
   auto tree_str = exec_tree.get_tree(plan.value());
 
@@ -347,9 +315,9 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -393,13 +361,14 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance(parser::pddl::tree::Instance{"wp_control", "waypoint"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wp_control", "waypoint")));
   for (unsigned i = 1; i <= 4; i++) {
     ASSERT_TRUE(
       problem_client->addInstance(
-        parser::pddl::tree::Instance{"wp" + std::to_string(i),
-          "waypoint"}));
+        plansys2::Instance(
+          "wp" + std::to_string(
+            i), "waypoint")));
   }
 
   std::vector<std::string> predicates = {
@@ -415,7 +384,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
     "(connected wp4 wp_control)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
   std::vector<std::string> functions = {
@@ -444,18 +413,17 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
     "(= (distance wp_control wp4) 20)"};
 
   for (const auto & func : functions) {
-    ASSERT_TRUE(problem_client->addFunction(parser::pddl::tree::Function(func)));
+    ASSERT_TRUE(problem_client->addFunction(plansys2::Function(func)));
   }
 
   ASSERT_TRUE(
     problem_client->setGoal(
-      parser::pddl::tree::Goal(
-        std::string("(and (patrolled wp1) (patrolled wp2) (patrolled wp3) (patrolled wp4))"))));
+      plansys2::Goal(
+        "(and (patrolled wp1) (patrolled wp2) (patrolled wp3) (patrolled wp4))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
   BTBuilderTest exec_tree(test_node);
 
   auto tree_str = exec_tree.get_tree(plan.value());

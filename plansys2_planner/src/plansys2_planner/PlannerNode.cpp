@@ -146,15 +146,10 @@ PlannerNode::get_plan_service_callback(
 {
   auto plan = solvers_.begin()->second->getPlan(
     request->domain, request->problem, get_namespace());
-  // auto plan = planner_->getPlan(request->domain, request->problem, get_namespace());
 
   if (plan) {
     response->success = true;
-    for (size_t i = 0; i < plan.value().size(); i++) {
-      response->times.push_back(plan.value()[i].time);
-      response->actions.push_back(plan.value()[i].action);
-      response->durations.push_back(plan.value()[i].duration);
-    }
+    response->plan = plan.value();
   } else {
     response->success = false;
     response->error_info = "Plan not found";

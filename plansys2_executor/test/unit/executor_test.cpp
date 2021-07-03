@@ -88,10 +88,16 @@ public:
 
 
   MoveAction(const std::string & id, const std::chrono::nanoseconds & rate)
-  : ActionExecutorClient(id, rate)
+  : ActionExecutorClient(id, rate),
+    executions_(0),
+    cycles_(0),
+    runtime_(0)
   {
-    executions_ = 0;
-    cycles_ = 0;
+  }
+
+  void set_runtime(double runtime)
+  {
+    runtime_ = runtime;
   }
 
   CallbackReturnT
@@ -99,6 +105,7 @@ public:
   {
     std::cerr << "MoveAction::on_activate" << std::endl;
     counter_ = 0;
+    start_ = std::chrono::high_resolution_clock::now();
 
     return ActionExecutorClient::on_activate(state);
   }
@@ -111,18 +118,33 @@ public:
     }
 
     cycles_++;
+    auto current_time = std::chrono::high_resolution_clock::now();
+    auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+      current_time - start_);
 
-    if (counter_++ > 3) {
-      finish(true, 1.0, "completed");
-      executions_++;
+    if (runtime_ > 1e-5) {
+      if (elapsed_time > std::chrono::duration<double>(runtime_)) {
+        finish(true, 1.0, "completed");
+        executions_++;
+      } else {
+        send_feedback((static_cast<double>(elapsed_time.count()) / 1000.0) / runtime_, "running");
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      }
     } else {
-      send_feedback(counter_ * 0.0, "running");
+      if (counter_++ > 3) {
+        finish(true, 1.0, "completed");
+        executions_++;
+      } else {
+        send_feedback(counter_ * 0.0, "running");
+      }
     }
   }
 
   int counter_;
   int executions_;
   int cycles_;
+  double runtime_;
+  std::chrono::high_resolution_clock::time_point start_;
 };
 
 class TransportAction : public plansys2::ActionExecutorClient
@@ -280,9 +302,9 @@ TEST(problem_expert, action_executor)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -326,28 +348,28 @@ TEST(problem_expert, action_executor)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"robot1", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"robot2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"robot3", "robot"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot3", "robot")));
 
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
-  ASSERT_TRUE(problem_client->addInstance({"wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheel_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_3", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_1", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_2", "piece"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheel_3", "piece"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheel_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_3", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_1", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_2", "piece")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheel_3", "piece")));
 
-  ASSERT_TRUE(problem_client->addInstance({"car_1", "car"}));
-  ASSERT_TRUE(problem_client->addInstance({"car_2", "car"}));
-  ASSERT_TRUE(problem_client->addInstance({"car_3", "car"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_1", "car")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_2", "car")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("car_3", "car")));
 
   std::vector<std::string> predicates = {
     "(robot_at robot1 assembly_zone)",
@@ -386,15 +408,14 @@ TEST(problem_expert, action_executor)
     "(piece_not_used steering_wheel_3)"};
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
-  ASSERT_TRUE(problem_client->setGoal(parser::pddl::tree::Goal("(and (car_assembled car_1))")));
+  ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and (car_assembled car_1))")));
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  std::map<std::string, parser::pddl::tree::DurativeAction> durative_actions_map;
   plansys2::BTBuilder exec_tree(test_node);
   auto tree_str = exec_tree.get_tree(plan.value());
 
@@ -598,9 +619,9 @@ TEST(problem_expert, action_real_action_1)
   auto move_action_node = MoveAction::make_shared("move_action_performer", 100ms);
   move_action_node->set_parameter({"action_name", "move"});
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -650,11 +671,11 @@ TEST(problem_expert, action_real_action_1)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
   std::string bt_xml_tree =
     R"(
@@ -681,8 +702,9 @@ TEST(problem_expert, action_real_action_1)
     plansys2::ActionExecutor::make_shared(
     "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
   (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].durative_action_info =
-    plansys2::get_action_from_string(
-    "(move r2d2 steering_wheels_zone assembly_zone):0", domain_client);
+    domain_client->getDurativeAction(
+    plansys2::get_action_name("(move r2d2 steering_wheels_zone assembly_zone):0"),
+    plansys2::get_action_params("(move r2d2 steering_wheels_zone assembly_zone):0"));
 
   auto blackboard = BT::Blackboard::create();
 
@@ -741,7 +763,7 @@ TEST(problem_expert, action_real_action_1)
   };
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
   try {
@@ -749,16 +771,15 @@ TEST(problem_expert, action_real_action_1)
 
     auto status = BT::NodeStatus::RUNNING;
 
-    ASSERT_TRUE(
-      problem_client->existPredicate(parser::pddl::tree::Predicate("(robot_available r2d2)")));
+    ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
     status = tree.tickRoot();
 
     ASSERT_EQ(ApplyAtStartEffectTest::test_status, BT::NodeStatus::SUCCESS);
-    ASSERT_FALSE(
-      problem_client->existPredicate(parser::pddl::tree::Predicate("(robot_available r2d2)")));
+    ASSERT_FALSE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
     ASSERT_FALSE(
       problem_client->existPredicate(
-        parser::pddl::tree::Predicate("(robot_at r2d2 steering_wheels_zone)")));
+        plansys2::Predicate(
+          "(robot_at r2d2 steering_wheels_zone)")));
 
     status = tree.tickRoot();
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
@@ -767,8 +788,7 @@ TEST(problem_expert, action_real_action_1)
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
     ASSERT_EQ(ExecuteActionTest::test_status, BT::NodeStatus::RUNNING);
 
-    ASSERT_TRUE(
-      problem_client->removePredicate(parser::pddl::tree::Predicate("(battery_full r2d2)")));
+    ASSERT_TRUE(problem_client->removePredicate(plansys2::Predicate("(battery_full r2d2)")));
 
     status = tree.tickRoot();
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::FAILURE);
@@ -784,7 +804,7 @@ TEST(problem_expert, action_real_action_1)
   ApplyAtStartEffectTest::test_status = BT::NodeStatus::IDLE;
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
   try {
@@ -792,8 +812,7 @@ TEST(problem_expert, action_real_action_1)
 
     auto status = BT::NodeStatus::RUNNING;
 
-    ASSERT_TRUE(
-      problem_client->existPredicate(parser::pddl::tree::Predicate("(robot_available r2d2)")));
+    ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
 
     while (ApplyAtStartEffectTest::test_status != BT::NodeStatus::SUCCESS) {
       status = tree.tickRoot();
@@ -801,9 +820,9 @@ TEST(problem_expert, action_real_action_1)
 
     ASSERT_FALSE(
       problem_client->existPredicate(
-        parser::pddl::tree::Predicate("(robot_at r2d2 assembly_zone)")));
-    ASSERT_FALSE(
-      problem_client->existPredicate(parser::pddl::tree::Predicate("(robot_available r2d2)")));
+        plansys2::Predicate(
+          "(robot_at r2d2 assembly_zone)")));
+    ASSERT_FALSE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
 
     while (ExecuteActionTest::test_status != BT::NodeStatus::SUCCESS) {
       status = tree.tickRoot();
@@ -815,10 +834,8 @@ TEST(problem_expert, action_real_action_1)
     }
 
     ASSERT_TRUE(
-      problem_client->existPredicate(
-        parser::pddl::tree::Predicate("(robot_at r2d2 assembly_zone)")));
-    ASSERT_TRUE(
-      problem_client->existPredicate(parser::pddl::tree::Predicate("(robot_available r2d2)")));
+      problem_client->existPredicate(plansys2::Predicate("(robot_at r2d2 assembly_zone)")));
+    ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
   } catch (const std::exception & e) {
     std::cerr << e.what() << '\n';
   }
@@ -855,9 +872,9 @@ TEST(problem_expert, cancel_bt_execution)
   auto move_action_node = MoveAction::make_shared("move_action_performer", 100ms);
   move_action_node->set_parameter({"action_name", "move"});
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -907,11 +924,11 @@ TEST(problem_expert, cancel_bt_execution)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
   std::string bt_xml_tree =
     R"(
@@ -937,8 +954,9 @@ TEST(problem_expert, cancel_bt_execution)
     plansys2::ActionExecutor::make_shared(
     "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
   (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].durative_action_info =
-    plansys2::get_action_from_string(
-    "(move r2d2 steering_wheels_zone assembly_zone):0", domain_client);
+    domain_client->getDurativeAction(
+    plansys2::get_action_name("(move r2d2 steering_wheels_zone assembly_zone):0"),
+    plansys2::get_action_params("(move r2d2 steering_wheels_zone assembly_zone):0"));
 
   auto blackboard = BT::Blackboard::create();
 
@@ -963,7 +981,7 @@ TEST(problem_expert, cancel_bt_execution)
   };
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
   try {
@@ -971,16 +989,15 @@ TEST(problem_expert, cancel_bt_execution)
 
     auto status = BT::NodeStatus::RUNNING;
 
-    ASSERT_TRUE(
-      problem_client->existPredicate(parser::pddl::tree::Predicate("(robot_available r2d2)")));
+    ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
     status = tree.tickRoot();
 
     ASSERT_EQ(ApplyAtStartEffectTest::test_status, BT::NodeStatus::SUCCESS);
-    ASSERT_FALSE(
-      problem_client->existPredicate(parser::pddl::tree::Predicate("(robot_available r2d2)")));
+    ASSERT_FALSE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
     ASSERT_FALSE(
       problem_client->existPredicate(
-        parser::pddl::tree::Predicate("(robot_at r2d2 steering_wheels_zone)")));
+        plansys2::Predicate(
+          "(robot_at r2d2 steering_wheels_zone)")));
 
     status = tree.tickRoot();
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
@@ -1055,10 +1072,10 @@ TEST(problem_expert, executor_client_execute_plan)
   auto move_action_node = MoveAction::make_shared("move_action_performer", 100ms);
   move_action_node->set_parameter({"action_name", "move"});
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node_1);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_1);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node_2);
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>(test_node_3);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -1110,11 +1127,11 @@ TEST(problem_expert, executor_client_execute_plan)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
   std::vector<std::string> predicates = {
     "(robot_at r2d2 steering_wheels_zone)",
@@ -1123,11 +1140,9 @@ TEST(problem_expert, executor_client_execute_plan)
   };
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
-  problem_client->setGoal(
-    plansys2::Goal(
-      "(and(robot_at r2d2 assembly_zone))"));
+  problem_client->setGoal(plansys2::Goal("(and(robot_at r2d2 assembly_zone))"));
 
   auto domain = domain_client->getDomain();
   auto problem = problem_client->getProblem();
@@ -1140,7 +1155,7 @@ TEST(problem_expert, executor_client_execute_plan)
     rclcpp::Rate rate(10);
     auto start = test_node_1->now();
 
-    ASSERT_TRUE(executor_client->start_plan_execution());
+    ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
 
     while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
       auto feedback = executor_client->getFeedBack();
@@ -1149,9 +1164,7 @@ TEST(problem_expert, executor_client_execute_plan)
     }
   }
 
-  ASSERT_TRUE(
-    problem_client->existPredicate(
-      parser::pddl::tree::Predicate("(robot_at r2d2 assembly_zone)")));
+  ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_at r2d2 assembly_zone)")));
 
   ASSERT_TRUE(executor_client->getResult().has_value());
   auto result = executor_client->getResult().value();
@@ -1162,15 +1175,18 @@ TEST(problem_expert, executor_client_execute_plan)
     ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
   }
 
-  problem_client->setGoal(
-    plansys2::Goal(
-      "(and(robot_at r2d2 body_car_zone))"));
+  problem_client->setGoal(plansys2::Goal("(and(robot_at r2d2 body_car_zone))"));
+
+  problem = problem_client->getProblem();
+  plan = planner_client->getPlan(domain, problem);
+  ASSERT_FALSE(problem.empty());
+  ASSERT_TRUE(plan.has_value());
 
   {
     rclcpp::Rate rate(10);
     auto start = test_node_1->now();
 
-    ASSERT_TRUE(executor_client->start_plan_execution());
+    ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
 
     while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
       auto feedback = executor_client->getFeedBack();
@@ -1180,8 +1196,7 @@ TEST(problem_expert, executor_client_execute_plan)
   }
 
   ASSERT_TRUE(
-    problem_client->existPredicate(
-      parser::pddl::tree::Predicate("(robot_at r2d2 body_car_zone)")));
+    problem_client->existPredicate(plansys2::Predicate("(robot_at r2d2 body_car_zone)")));
 
   ASSERT_TRUE(executor_client->getResult().has_value());
   result = executor_client->getResult().value();
@@ -1193,6 +1208,199 @@ TEST(problem_expert, executor_client_execute_plan)
   t.join();
 }
 
+class PatrolAction : public plansys2::ActionExecutorClient
+{
+public:
+  using Ptr = std::shared_ptr<PatrolAction>;
+  static Ptr make_shared(const std::string & node_name, const std::chrono::nanoseconds & rate)
+  {
+    return std::make_shared<PatrolAction>(node_name, rate);
+  }
+
+
+  PatrolAction(const std::string & id, const std::chrono::nanoseconds & rate)
+  : ActionExecutorClient(id, rate)
+  {
+    executions_ = 0;
+    cycles_ = 0;
+  }
+
+  CallbackReturnT
+  on_activate(const rclcpp_lifecycle::State & state)
+  {
+    std::cerr << "PatrolAction::on_activate" << std::endl;
+    counter_ = 0;
+
+    return ActionExecutorClient::on_activate(state);
+  }
+
+  void do_work() override
+  {
+    RCLCPP_INFO_STREAM(get_logger(), "Executing [" << action_managed_ << "]");
+    for (const auto & arg : current_arguments_) {
+      RCLCPP_INFO_STREAM(get_logger(), "\t[" << arg << "]");
+    }
+
+    cycles_++;
+
+    if (counter_++ > 1) {
+      finish(true, 1.0, "completed");
+      executions_++;
+    } else {
+      send_feedback((counter_ / 1.0) * 100.0, "running");
+    }
+  }
+
+  int counter_;
+  int executions_;
+  int cycles_;
+};
+
+TEST(problem_expert, executor_client_ordered_sub_goals)
+{
+  auto test_node_1 = rclcpp::Node::make_shared("test_node_1");
+  auto test_node_2 = rclcpp::Node::make_shared("test_node_2");
+  auto test_node_3 = rclcpp::Node::make_shared("test_node_3");
+  auto test_lf_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_lf_node");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto executor_node = std::make_shared<ExecutorNodeTest>();
+
+  auto move_action_node = MoveAction::make_shared("move_action_performer", 100ms);
+  move_action_node->set_parameter({"action_name", "move"});
+
+  auto patrol_action_node = PatrolAction::make_shared("patrol_action_performer", 100ms);
+  patrol_action_node->set_parameter({"action_name", "patrol"});
+
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 9);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(planner_node->get_node_base_interface());
+  exe.add_node(executor_node->get_node_base_interface());
+  exe.add_node(move_action_node->get_node_base_interface());
+  exe.add_node(patrol_action_node->get_node_base_interface());
+  exe.add_node(test_lf_node->get_node_base_interface());
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  move_action_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  patrol_action_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node_1->now();
+    while ((test_node_1->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node_1->now();
+    while ((test_node_1->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wp0", "waypoint")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wp1", "waypoint")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wp2", "waypoint")));
+
+  std::vector<std::string> predicates = {
+    "(robot_at r2d2 wp0)",
+    "(connected wp0 wp1)",
+    "(connected wp1 wp0)",
+    "(connected wp0 wp2)",
+    "(connected wp2 wp0)",
+    "(connected wp1 wp2)",
+    "(connected wp2 wp1)",
+  };
+  for (const auto & pred : predicates) {
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
+  }
+
+  std::vector<std::string> functions = {
+    "(= (speed r2d2) 1.0)",
+    "(= (max_range r2d2) 100.0)",
+    "(= (state_of_charge r2d2) 100.0)",
+    "(= (distance wp0 wp1) 5.0)",
+    "(= (distance wp1 wp0) 5.0)",
+    "(= (distance wp0 wp2) 15.0)",
+    "(= (distance wp2 wp0) 15.0)",
+    "(= (distance wp1 wp2) 5.0)",
+    "(= (distance wp2 wp1) 5.0)",
+  };
+  for (const auto & func : functions) {
+    ASSERT_TRUE(problem_client->addFunction(plansys2::Function(func)));
+  }
+
+  problem_client->setGoal(plansys2::Goal("(and(patrolled wp1) (patrolled wp2))"));
+
+  plansys2_msgs::msg::Tree sub_goal_1;
+  plansys2_msgs::msg::Tree sub_goal_2;
+  parser::pddl::fromString(sub_goal_1, "(and(patrolled wp1))");
+  parser::pddl::fromString(sub_goal_2, "(and(patrolled wp2))");
+  std::vector<plansys2_msgs::msg::Tree> expected_sub_goals = {sub_goal_1, sub_goal_2};
+
+  auto domain = domain_client->getDomain();
+  auto problem = problem_client->getProblem();
+  auto plan = planner_client->getPlan(domain, problem);
+  ASSERT_FALSE(domain.empty());
+  ASSERT_FALSE(problem.empty());
+  ASSERT_TRUE(plan.has_value());
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node_1->now();
+
+    ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
+
+    while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
+      auto feedback = executor_client->getFeedBack();
+
+      ASSERT_LE(feedback.action_execution_status.size(), 4);
+      rate.sleep();
+    }
+  }
+  std::vector<plansys2_msgs::msg::Tree> actual_sub_goals = executor_client->getOrderedSubGoals();
+
+  ASSERT_EQ(actual_sub_goals.size(), expected_sub_goals.size());
+  for (size_t i = 0; i < actual_sub_goals.size(); i++) {
+    ASSERT_EQ(
+      parser::pddl::toString(actual_sub_goals[i]),
+      parser::pddl::toString(expected_sub_goals[i]));
+  }
+
+  finish = true;
+  t.join();
+}
 
 TEST(problem_expert, executor_client_cancel_plan)
 {
@@ -1208,10 +1416,10 @@ TEST(problem_expert, executor_client_cancel_plan)
   auto move_action_node = MoveAction::make_shared("move_action_performer", 1s);
   move_action_node->set_parameter({"action_name", "move"});
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node_1);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_1);
-  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node_2);
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>(test_node_3);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -1263,11 +1471,11 @@ TEST(problem_expert, executor_client_cancel_plan)
     }
   }
 
-  ASSERT_TRUE(problem_client->addInstance({"r2d2", "robot"}));
-  ASSERT_TRUE(problem_client->addInstance({"wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"steering_wheels_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"body_car_zone", "zone"}));
-  ASSERT_TRUE(problem_client->addInstance({"assembly_zone", "zone"}));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
   std::vector<std::string> predicates = {
     "(robot_at r2d2 steering_wheels_zone)",
@@ -1276,11 +1484,10 @@ TEST(problem_expert, executor_client_cancel_plan)
   };
 
   for (const auto & pred : predicates) {
-    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::tree::Predicate(pred)));
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
-  problem_client->setGoal(
-    plansys2::Goal(
-      "(and(robot_at r2d2 assembly_zone))"));
+
+  problem_client->setGoal(plansys2::Goal("(and(robot_at r2d2 assembly_zone))"));
 
   auto domain = domain_client->getDomain();
   auto problem = problem_client->getProblem();
@@ -1293,7 +1500,7 @@ TEST(problem_expert, executor_client_cancel_plan)
     rclcpp::Rate rate(10);
     auto start = test_node_1->now();
 
-    ASSERT_TRUE(executor_client->start_plan_execution());
+    ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
 
     while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
       auto feedback = executor_client->getFeedBack();
@@ -1310,6 +1517,152 @@ TEST(problem_expert, executor_client_cancel_plan)
   }
 
   ASSERT_FALSE(executor_client->getResult().has_value());
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node_1->now();
+    while ((test_node_1->now() - start).seconds() < 2.0) {
+      rate.sleep();
+    }
+  }
+
+  ASSERT_EQ(
+    move_action_node->get_current_state().id(),
+    lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
+
+  finish = true;
+  t.join();
+}
+
+
+TEST(problem_expert, action_timeout)
+{
+  auto test_node_1 = rclcpp::Node::make_shared("test_node_1");
+  auto test_node_2 = rclcpp::Node::make_shared("test_node_2");
+  auto test_node_3 = rclcpp::Node::make_shared("test_node_3");
+  auto test_node_4 = rclcpp::Node::make_shared("test_node_4");
+  auto test_lf_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_lf_node");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto executor_node = std::make_shared<ExecutorNodeTest>();
+
+  auto move_action_node = MoveAction::make_shared("move_action_performer", 100ms);
+  move_action_node->set_parameter({"action_name", "move"});
+  move_action_node->set_runtime(10.0);
+
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
+  executor_node->set_parameter(
+    {"default_action_bt_xml_filename",
+      pkgpath + "/test_behavior_trees/test_action_timeout_bt.xml"});
+  executor_node->set_parameter({"action_timeouts.actions", std::vector<std::string>({"move"})});
+  // have to declare because the actions vector above was not available at node creation
+  executor_node->declare_parameter("action_timeouts.move.duration_overrun_percentage");
+  executor_node->set_parameter({"action_timeouts.move.duration_overrun_percentage", 1.0});
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 8);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(planner_node->get_node_base_interface());
+  exe.add_node(executor_node->get_node_base_interface());
+  exe.add_node(move_action_node->get_node_base_interface());
+  exe.add_node(test_lf_node->get_node_base_interface());
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  move_action_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node_1->now();
+    while ((test_node_1->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node_1->now();
+    while ((test_node_1->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("steering_wheels_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("body_car_zone", "zone")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
+
+  std::vector<std::string> predicates = {
+    "(robot_at r2d2 steering_wheels_zone)",
+    "(robot_available r2d2)",
+    "(battery_full r2d2)",
+  };
+
+  for (const auto & pred : predicates) {
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
+  }
+
+  problem_client->setGoal(plansys2::Goal("(and(robot_at r2d2 assembly_zone))"));
+
+  auto domain = domain_client->getDomain();
+  auto problem = problem_client->getProblem();
+  auto plan = planner_client->getPlan(domain, problem);
+
+  ASSERT_FALSE(domain.empty());
+  ASSERT_FALSE(problem.empty());
+  ASSERT_TRUE(plan.has_value());
+
+  {
+    rclcpp::Rate rate(10);
+
+    ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
+
+    while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
+      auto feedback = executor_client->getFeedBack();
+      std::stringstream ss;
+      ss.setf(std::ios_base::fixed, std::ios_base::floatfield);
+      for (const auto & action_feedback : feedback.action_execution_status) {
+        ss << "[" << action_feedback.action << " " << std::setprecision(1) <<
+          action_feedback.completion * 100.0 <<
+          "%]";
+      }
+      auto & clk = *executor_node->get_clock();
+      RCLCPP_WARN_THROTTLE(executor_node->get_logger(), clk, 500, "%s", ss.str().c_str());
+      rate.sleep();
+    }
+  }
+
+  ASSERT_TRUE(executor_client->getResult().has_value());
+  auto result = executor_client->getResult().value();
+  ASSERT_FALSE(result.success);
+  ASSERT_EQ(
+    result.action_execution_status[0].status,
+    plansys2_msgs::msg::ActionExecutionInfo::CANCELLED);
 
   {
     rclcpp::Rate rate(10);

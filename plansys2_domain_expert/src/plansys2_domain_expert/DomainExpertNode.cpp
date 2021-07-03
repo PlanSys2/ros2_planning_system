@@ -49,24 +49,36 @@ DomainExpertNode::DomainExpertNode()
       &DomainExpertNode::get_domain_action_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
-  get_domain_predicates_service_ = create_service<plansys2_msgs::srv::GetDomainPredicates>(
+  get_domain_durative_actions_service_ = create_service<plansys2_msgs::srv::GetDomainActions>(
+    "domain_expert/get_domain_durative_actions",
+    std::bind(
+      &DomainExpertNode::get_domain_durative_actions_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+  get_domain_durative_action_details_service_ =
+    create_service<plansys2_msgs::srv::GetDomainDurativeActionDetails>(
+    "domain_expert/get_domain_durative_action_details", std::bind(
+      &DomainExpertNode::get_domain_durative_action_details_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+  get_domain_predicates_service_ = create_service<plansys2_msgs::srv::GetStates>(
     "domain_expert/get_domain_predicates", std::bind(
       &DomainExpertNode::get_domain_predicates_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
   get_domain_predicate_details_service_ =
-    create_service<plansys2_msgs::srv::GetDomainPredicateDetails>(
+    create_service<plansys2_msgs::srv::GetNodeDetails>(
     "domain_expert/get_domain_predicate_details", std::bind(
       &DomainExpertNode::get_domain_predicate_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
-  get_domain_functions_service_ = create_service<plansys2_msgs::srv::GetDomainFunctions>(
+  get_domain_functions_service_ = create_service<plansys2_msgs::srv::GetStates>(
     "domain_expert/get_domain_functions", std::bind(
       &DomainExpertNode::get_domain_functions_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
   get_domain_function_details_service_ =
-    create_service<plansys2_msgs::srv::GetDomainFunctionDetails>(
+    create_service<plansys2_msgs::srv::GetNodeDetails>(
     "domain_expert/get_domain_function_details", std::bind(
       &DomainExpertNode::get_domain_function_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
@@ -197,11 +209,6 @@ DomainExpertNode::get_domain_actions_service_callback(
     response->success = true;
     for (const auto & action : domain_expert_->getActions()) {
       response->actions.push_back(action);
-      response->type.push_back("action");
-    }
-    for (const auto & action : domain_expert_->getDurativeActions()) {
-      response->actions.push_back(action);
-      response->type.push_back("durative-action");
     }
   }
 }
@@ -218,36 +225,10 @@ DomainExpertNode::get_domain_action_details_service_callback(
 
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto action = domain_expert_->getAction(request->action);
-    auto durative_action = domain_expert_->getDurativeAction(request->action);
+    auto action = domain_expert_->getAction(request->action, request->parameters);
 
     if (action) {
-      response->name = request->action;
-      response->type = "action";
-
-      for (const auto & param :  action.value().parameters) {
-        response->param_names.push_back(param.name);
-        response->param_types.push_back(param.type);
-      }
-      response->at_start_requirements = action.value().preconditions.toString();
-      response->at_start_effects = action.value().effects.toString();
-
-      response->success = true;
-    } else if (durative_action) {
-      response->name = request->action;
-      response->type = "durative-action";
-
-      for (const auto & param :  durative_action.value().parameters) {
-        response->param_names.push_back(param.name);
-        response->param_types.push_back(param.type);
-      }
-
-      response->at_start_requirements = durative_action.value().at_start_requirements.toString();
-      response->over_all_requirements = durative_action.value().over_all_requirements.toString();
-      response->at_end_requirements = durative_action.value().at_end_requirements.toString();
-      response->at_start_effects = durative_action.value().at_start_effects.toString();
-      response->at_end_effects = durative_action.value().at_end_effects.toString();
-
+      response->action = *action;
       response->success = true;
     } else {
       RCLCPP_WARN(get_logger(), "Requesting a non-existing action [%s]", request->action.c_str());
@@ -258,10 +239,10 @@ DomainExpertNode::get_domain_action_details_service_callback(
 }
 
 void
-DomainExpertNode::get_domain_predicates_service_callback(
+DomainExpertNode::get_domain_durative_actions_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
-  const std::shared_ptr<plansys2_msgs::srv::GetDomainPredicates::Request> request,
-  const std::shared_ptr<plansys2_msgs::srv::GetDomainPredicates::Response> response)
+  const std::shared_ptr<plansys2_msgs::srv::GetDomainActions::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::GetDomainActions::Response> response)
 {
   if (domain_expert_ == nullptr) {
     response->success = false;
@@ -269,35 +250,75 @@ DomainExpertNode::get_domain_predicates_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = true;
-    response->predicates = domain_expert_->getPredicates();
+    for (const auto & action : domain_expert_->getDurativeActions()) {
+      response->actions.push_back(action);
+    }
   }
 }
 
 void
-DomainExpertNode::get_domain_predicate_details_service_callback(
+DomainExpertNode::get_domain_durative_action_details_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
-  const std::shared_ptr<plansys2_msgs::srv::GetDomainPredicateDetails::Request> request,
-  const std::shared_ptr<plansys2_msgs::srv::GetDomainPredicateDetails::Response> response)
+  const std::shared_ptr<plansys2_msgs::srv::GetDomainDurativeActionDetails::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::GetDomainDurativeActionDetails::Response> response)
+{
+  if (domain_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    auto action = domain_expert_->getDurativeAction(request->durative_action, request->parameters);
+
+    if (action) {
+      response->durative_action = *action;
+      response->success = true;
+    } else {
+      RCLCPP_WARN(
+        get_logger(), "Requesting a non-existing durative action [%s]",
+        request->durative_action.c_str());
+      response->success = false;
+      response->error_info = "Durative action not found";
+    }
+  }
+}
+
+void
+DomainExpertNode::get_domain_predicates_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::GetStates::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::GetStates::Response> response)
 {
   if (domain_expert_ == nullptr) {
     response->success = false;
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto params = domain_expert_->getPredicate(request->predicate);
-    if (params) {
-      response->name = request->predicate;
+    response->success = true;
+    response->states = plansys2::convertVector<plansys2_msgs::msg::Node, plansys2::Predicate>(
+      domain_expert_->getPredicates());
+  }
+}
 
-      for (const auto & param :  params.value().parameters) {
-        response->param_names.push_back(param.name);
-        response->param_types.push_back(param.type);
-      }
-
+void
+DomainExpertNode::get_domain_predicate_details_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::GetNodeDetails::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::GetNodeDetails::Response> response)
+{
+  if (domain_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    auto predicate = domain_expert_->getPredicate(request->expression);
+    if (predicate) {
+      response->node = predicate.value();
       response->success = true;
     } else {
       RCLCPP_WARN(
         get_logger(), "Requesting a non-existing predicate [%s]",
-        request->predicate.c_str());
+        request->expression);
       response->success = false;
       response->error_info = "Predicate not found";
     }
@@ -307,8 +328,8 @@ DomainExpertNode::get_domain_predicate_details_service_callback(
 void
 DomainExpertNode::get_domain_functions_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
-  const std::shared_ptr<plansys2_msgs::srv::GetDomainFunctions::Request> request,
-  const std::shared_ptr<plansys2_msgs::srv::GetDomainFunctions::Response> response)
+  const std::shared_ptr<plansys2_msgs::srv::GetStates::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::GetStates::Response> response)
 {
   if (domain_expert_ == nullptr) {
     response->success = false;
@@ -316,35 +337,30 @@ DomainExpertNode::get_domain_functions_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = true;
-    response->functions = domain_expert_->getFunctions();
+    response->states = plansys2::convertVector<plansys2_msgs::msg::Node, plansys2::Function>(
+      domain_expert_->getFunctions());
   }
 }
 
 void
 DomainExpertNode::get_domain_function_details_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
-  const std::shared_ptr<plansys2_msgs::srv::GetDomainFunctionDetails::Request> request,
-  const std::shared_ptr<plansys2_msgs::srv::GetDomainFunctionDetails::Response> response)
+  const std::shared_ptr<plansys2_msgs::srv::GetNodeDetails::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::GetNodeDetails::Response> response)
 {
   if (domain_expert_ == nullptr) {
     response->success = false;
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto params = domain_expert_->getFunction(request->function);
-    if (params) {
-      response->name = request->function;
-
-      for (const auto & param :  params.value().parameters) {
-        response->param_names.push_back(param.name);
-        response->param_types.push_back(param.type);
-      }
-
+    auto function = domain_expert_->getFunction(request->expression);
+    if (function) {
+      response->node = function.value();
       response->success = true;
     } else {
       RCLCPP_WARN(
         get_logger(), "Requesting a non-existing function [%s]",
-        request->function.c_str());
+        request->expression);
       response->success = false;
       response->error_info = "Function not found";
     }

@@ -14,7 +14,7 @@ void Oneof::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std
 	s << ")";
 }
 
-std::shared_ptr<tree::TreeNode> Oneof::PDDLTree( const Domain & d ) const {
+plansys2_msgs::msg::Node::SharedPtr Oneof::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
     throw UnsupportedConstruct("Oneof");
 }
 

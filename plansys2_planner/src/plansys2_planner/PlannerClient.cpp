@@ -23,19 +23,18 @@
 namespace plansys2
 {
 
-PlannerClient::PlannerClient(rclcpp::Node::SharedPtr provided_node)
-: node_(provided_node)
+PlannerClient::PlannerClient()
 {
+  node_ = rclcpp::Node::make_shared("planner_client");
+
   get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("planner/get_plan");
 }
 
-std::optional<Plan>
+std::optional<plansys2_msgs::msg::Plan>
 PlannerClient::getPlan(
   const std::string & domain, const std::string & problem,
   const std::string & node_namespace)
 {
-  Plan ret;
-
   while (!get_plan_client_->wait_for_service(std::chrono::seconds(30))) {
     if (!rclcpp::ok()) {
       return {};
@@ -59,14 +58,7 @@ PlannerClient::getPlan(
   }
 
   if (future_result.get()->success) {
-    for (size_t i = 0; i < future_result.get()->times.size(); i++) {
-      PlanItem item;
-      item.time = future_result.get()->times[i];
-      item.action = future_result.get()->actions[i];
-      item.duration = future_result.get()->durations[i];
-      ret.push_back(item);
-    }
-    return ret;
+    return future_result.get()->plan;
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),

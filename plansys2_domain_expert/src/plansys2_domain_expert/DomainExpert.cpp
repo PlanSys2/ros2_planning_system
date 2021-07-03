@@ -56,17 +56,20 @@ DomainExpert::getTypes()
   return ret;
 }
 
-std::vector<std::string>
+std::vector<plansys2::Predicate>
 DomainExpert::getPredicates()
 {
-  std::vector<std::string> ret;
+  std::vector<plansys2::Predicate> ret;
   for (unsigned i = 0; i < domain_->preds.size(); i++) {
-    ret.push_back(domain_->preds[i]->name);
+    plansys2_msgs::msg::Node pred;
+    pred.node_type = plansys2_msgs::msg::Node::PREDICATE;
+    pred.name = domain_->preds[i]->name;
+    ret.push_back(pred);
   }
   return ret;
 }
 
-std::optional<parser::pddl::tree::Predicate>
+std::optional<plansys2::Predicate>
 DomainExpert::getPredicate(const std::string & predicate)
 {
   std::string predicate_search = predicate;
@@ -74,7 +77,7 @@ DomainExpert::getPredicate(const std::string & predicate)
     predicate_search.begin(), predicate_search.end(),
     predicate_search.begin(), ::tolower);
 
-  parser::pddl::tree::Predicate ret;
+  plansys2_msgs::msg::Node ret;
   bool found = false;
   unsigned i = 0;
 
@@ -83,11 +86,11 @@ DomainExpert::getPredicate(const std::string & predicate)
       found = true;
       ret.name = predicate_search;
       for (unsigned j = 0; j < domain_->preds[i]->params.size(); j++) {
-        parser::pddl::tree::Param param;
+        plansys2_msgs::msg::Param param;
         param.name = "?" + domain_->types[domain_->preds[i]->params[j]]->getName() +
           std::to_string(j);
         param.type = domain_->types[domain_->preds[i]->params[j]]->name;
-        domain_->types[domain_->preds[i]->params[j]]->getSubTypesNames(param.subTypes);
+        domain_->types[domain_->preds[i]->params[j]]->getSubTypesNames(param.sub_types);
         ret.parameters.push_back(param);
       }
     }
@@ -101,17 +104,20 @@ DomainExpert::getPredicate(const std::string & predicate)
   }
 }
 
-std::vector<std::string>
+std::vector<plansys2::Function>
 DomainExpert::getFunctions()
 {
-  std::vector<std::string> ret;
+  std::vector<plansys2::Function> ret;
   for (unsigned i = 0; i < domain_->funcs.size(); i++) {
-    ret.push_back(domain_->funcs[i]->name);
+    plansys2_msgs::msg::Node func;
+    func.node_type = plansys2_msgs::msg::Node::FUNCTION;
+    func.name = domain_->funcs[i]->name;
+    ret.push_back(func);
   }
   return ret;
 }
 
-std::optional<parser::pddl::tree::Function>
+std::optional<plansys2::Function>
 DomainExpert::getFunction(const std::string & function)
 {
   std::string function_search = function;
@@ -119,7 +125,7 @@ DomainExpert::getFunction(const std::string & function)
     function_search.begin(), function_search.end(),
     function_search.begin(), ::tolower);
 
-  parser::pddl::tree::Function ret;
+  plansys2::Function ret;
   bool found = false;
   unsigned i = 0;
 
@@ -128,11 +134,11 @@ DomainExpert::getFunction(const std::string & function)
       found = true;
       ret.name = function_search;
       for (unsigned j = 0; j < domain_->funcs[i]->params.size(); j++) {
-        parser::pddl::tree::Param param;
+        plansys2_msgs::msg::Param param;
         param.name = "?" + domain_->types[domain_->funcs[i]->params[j]]->getName() +
           std::to_string(j);
         param.type = domain_->types[domain_->funcs[i]->params[j]]->name;
-        domain_->types[domain_->funcs[i]->params[j]]->getSubTypesNames(param.subTypes);
+        domain_->types[domain_->funcs[i]->params[j]]->getSubTypesNames(param.sub_types);
         ret.parameters.push_back(param);
       }
     }
@@ -160,15 +166,15 @@ DomainExpert::getActions()
   return ret;
 }
 
-std::optional<parser::pddl::tree::Action>
-DomainExpert::getAction(const std::string & action)
+plansys2_msgs::msg::Action::SharedPtr
+DomainExpert::getAction(const std::string & action, const std::vector<std::string> & params)
 {
   std::string action_search = action;
   std::transform(
     action_search.begin(), action_search.end(),
     action_search.begin(), ::tolower);
 
-  parser::pddl::tree::Action ret;
+  auto ret = std::make_shared<plansys2_msgs::msg::Action>();
   bool found = false;
   unsigned i = 0;
 
@@ -178,25 +184,29 @@ DomainExpert::getAction(const std::string & action)
 
     if (is_action && action_obj->name == action_search) {
       found = true;
-      ret.name = action;
+      ret->name = action;
 
       // Parameters
       for (unsigned j = 0; j < action_obj->params.size(); j++) {
-        parser::pddl::tree::Param param;
-        param.name = "?" + std::to_string(j);
+        plansys2_msgs::msg::Param param;
+        if (j < params.size()) {
+          param.name = params[j];
+        } else {
+          param.name = "?" + std::to_string(j);
+        }
         param.type = domain_->types[action_obj->params[j]]->name;
-        domain_->types[action_obj->params[j]]->getSubTypesNames(param.subTypes);
-        ret.parameters.push_back(param);
+        domain_->types[action_obj->params[j]]->getSubTypesNames(param.sub_types);
+        ret->parameters.push_back(param);
       }
 
       // Preconditions
       if (action_obj->pre) {
-        ret.preconditions.root_ = action_obj->pre->PDDLTree(*domain_);
+        action_obj->pre->getTree(ret->preconditions, *domain_, params);
       }
 
       // Effects
       if (action_obj->eff) {
-        ret.effects.root_ = action_obj->eff->PDDLTree(*domain_);
+        action_obj->eff->getTree(ret->effects, *domain_, params);
       }
     }
     i++;
@@ -225,15 +235,15 @@ DomainExpert::getDurativeActions()
   return ret;
 }
 
-std::optional<parser::pddl::tree::DurativeAction>
-DomainExpert::getDurativeAction(const std::string & action)
+plansys2_msgs::msg::DurativeAction::SharedPtr
+DomainExpert::getDurativeAction(const std::string & action, const std::vector<std::string> & params)
 {
   std::string action_search = action;
   std::transform(
     action_search.begin(), action_search.end(),
     action_search.begin(), ::tolower);
 
-  parser::pddl::tree::DurativeAction ret;
+  auto ret = std::make_shared<plansys2_msgs::msg::DurativeAction>();
   bool found = false;
   unsigned i = 0;
 
@@ -245,40 +255,44 @@ DomainExpert::getDurativeAction(const std::string & action)
 
     if (is_durative_action && action_obj->name == action_search) {
       found = true;
-      ret.name = action;
+      ret->name = action;
 
       // Parameters
       for (unsigned j = 0; j < action_obj->params.size(); j++) {
-        parser::pddl::tree::Param param;
-        param.name = "?" + std::to_string(j);
+        plansys2_msgs::msg::Param param;
+        if (j < params.size()) {
+          param.name = params[j];
+        } else {
+          param.name = "?" + std::to_string(j);
+        }
         param.type = domain_->types[action_obj->params[j]]->name;
-        domain_->types[action_obj->params[j]]->getSubTypesNames(param.subTypes);
-        ret.parameters.push_back(param);
+        domain_->types[action_obj->params[j]]->getSubTypesNames(param.sub_types);
+        ret->parameters.push_back(param);
       }
 
       // Preconditions AtStart
       if (action_obj->pre) {
-        ret.at_start_requirements.root_ = action_obj->pre->PDDLTree(*domain_);
+        action_obj->pre->getTree(ret->at_start_requirements, *domain_, params);
       }
 
       // Preconditions OverAll
       if (action_obj->pre_o) {
-        ret.over_all_requirements.root_ = action_obj->pre_o->PDDLTree(*domain_);
+        action_obj->pre_o->getTree(ret->over_all_requirements, *domain_, params);
       }
 
       // Preconditions AtEnd
       if (action_obj->pre_e) {
-        ret.at_end_requirements.root_ = action_obj->pre_e->PDDLTree(*domain_);
+        action_obj->pre_e->getTree(ret->at_end_requirements, *domain_, params);
       }
 
       // Effects AtStart
       if (action_obj->eff) {
-        ret.at_start_effects.root_ = action_obj->eff->PDDLTree(*domain_);
+        action_obj->eff->getTree(ret->at_start_effects, *domain_, params);
       }
 
       // Effects AtEnd
       if (action_obj->eff_e) {
-        ret.at_end_effects.root_ = action_obj->eff_e->PDDLTree(*domain_);
+        action_obj->eff_e->getTree(ret->at_end_effects, *domain_, params);
       }
     }
     i++;
@@ -295,6 +309,17 @@ std::string
 DomainExpert::getDomain()
 {
   return domains_.get_joint_domain();
+}
+
+bool
+DomainExpert::existDomain(const std::string & domain_name)
+{
+  for (auto domain : domains_.get_domains()) {
+    if (domain_name == domain.name) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace plansys2

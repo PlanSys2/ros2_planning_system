@@ -10,10 +10,18 @@ void Not::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::
 	s << " )";
 }
 
-std::shared_ptr<tree::TreeNode> Not::PDDLTree( const Domain & d ) const {
-    std::shared_ptr<tree::NotNode> tree = std::make_shared<tree::NotNode>();
-    if ( cond ) tree->op = cond->PDDLTree( d );
-    return tree;
+plansys2_msgs::msg::Node::SharedPtr Not::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::NOT;
+    node->node_id = tree.nodes.size();
+    tree.nodes.push_back(*node);
+
+    if (cond) {
+        plansys2_msgs::msg::Node::SharedPtr child = cond->getTree(tree, d, replace);
+        tree.nodes[node->node_id].children.push_back(child->node_id);
+    }
+
+    return node;
 }
 
 void Not::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {

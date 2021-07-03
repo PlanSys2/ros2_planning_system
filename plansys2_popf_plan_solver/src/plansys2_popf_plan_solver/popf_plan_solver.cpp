@@ -22,6 +22,7 @@
 #include <cstdlib>
 #include <fstream>
 
+#include "plansys2_msgs/msg/plan_item.hpp"
 #include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 namespace plansys2
@@ -31,7 +32,16 @@ POPFPlanSolver::POPFPlanSolver()
 {
 }
 
-std::optional<Plan>
+void POPFPlanSolver::configure(
+  rclcpp_lifecycle::LifecycleNode::SharedPtr & lc_node,
+  const std::string & plugin_name)
+{
+  parameter_name_ = plugin_name + ".arguments";
+  lc_node_ = lc_node;
+  lc_node_->declare_parameter<std::string>(parameter_name_, "");
+}
+
+std::optional<plansys2_msgs::msg::Plan>
 POPFPlanSolver::getPlan(
   const std::string & domain, const std::string & problem,
   const std::string & node_namespace)
@@ -46,7 +56,7 @@ POPFPlanSolver::getPlan(
     std::filesystem::create_directories(tp);
   }
 
-  Plan ret;
+  plansys2_msgs::msg::Plan ret;
   std::ofstream domain_out("/tmp/" + node_namespace + "/domain.pddl");
   domain_out << domain;
   domain_out.close();
@@ -56,8 +66,10 @@ POPFPlanSolver::getPlan(
   problem_out.close();
 
   system(
-    ("ros2 run popf popf /tmp/" + node_namespace + "/domain.pddl /tmp/" +
-    node_namespace + "/problem.pddl > /tmp/" + node_namespace + "/plan").c_str());
+    ("ros2 run popf popf " +
+    lc_node_->get_parameter(parameter_name_).value_to_string() +
+    " /tmp/" + node_namespace + "/domain.pddl /tmp/" + node_namespace +
+    "/problem.pddl > /tmp/" + node_namespace + "/plan").c_str());
 
   std::string line;
   std::ifstream plan_file("/tmp/" + node_namespace + "/plan");
@@ -70,7 +82,7 @@ POPFPlanSolver::getPlan(
           solution = true;
         }
       } else if (line.front() != ';') {
-        PlanItem item;
+        plansys2_msgs::msg::PlanItem item;
         size_t colon_pos = line.find(":");
         size_t colon_par = line.find(")");
         size_t colon_bra = line.find("[");
@@ -84,13 +96,13 @@ POPFPlanSolver::getPlan(
         item.action = action;
         item.duration = std::stof(duration);
 
-        ret.push_back(item);
+        ret.items.push_back(item);
       }
     }
     plan_file.close();
   }
 
-  if (ret.empty()) {
+  if (ret.items.empty()) {
     return {};
   } else {
     return ret;

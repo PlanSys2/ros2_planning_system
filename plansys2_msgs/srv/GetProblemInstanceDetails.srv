@@ -1,5 +1,5 @@
 string instance
 ---
 bool success
-string type
+plansys2_msgs/Param instance
 string error_info

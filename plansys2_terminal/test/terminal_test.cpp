@@ -215,7 +215,7 @@ TEST_F(TerminalTestCase, load_popf_plugin)
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_terminal");
 
@@ -277,7 +277,7 @@ TEST_F(TerminalTestCase, load_popf_plugin)
     terminal_node->process_command(command, os);
     ASSERT_TRUE(terminal_node->method_executed_["process_command"]);
     ASSERT_TRUE(terminal_node->method_executed_["process_set_instance"]);
-    ASSERT_TRUE(os.str().empty());
+    ASSERT_EQ(os.str(), "");
 
     auto ins_1 = problem_client->getInstance("leia");
     ASSERT_TRUE(ins_1.has_value());
@@ -535,6 +535,217 @@ TEST_F(TerminalTestCase, load_popf_plugin)
   t.join();
 }
 
+TEST_F(TerminalTestCase, add_problem)
+{
+  auto test_node = rclcpp::Node::make_shared("terminal_node_test");
+
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto executor_node = std::make_shared<plansys2::ExecutorNode>();
+
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_terminal");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 16, true);
+  ASSERT_GT(exe.get_number_of_threads(), 15u);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(planner_node->get_node_base_interface());
+  exe.add_node(executor_node->get_node_base_interface());
+
+  std::thread t([&]() {
+      exe.spin();
+    });
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp_lifecycle::State state = problem_node->trigger_transition(
+    lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  std::string stateLabel = state.label();
+
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  auto terminal_node = std::make_shared<TerminalTest>();
+  terminal_node->set_parameter({"problem_file", pkgpath + "/pddl/problem_charging.pddl"});
+  terminal_node->init();
+
+  ASSERT_EQ(problem_client->getInstances().size(), 4);
+  ASSERT_EQ(problem_client->getPredicates().size(), 7);
+  ASSERT_EQ(problem_client->getFunctions().size(), 0);
+
+  {
+    auto ins_1 = problem_client->getInstance("r2d2");
+    ASSERT_TRUE(ins_1.has_value());
+    ASSERT_EQ(ins_1.value().name, "r2d2");
+    ASSERT_EQ(ins_1.value().type, "robot");
+  }
+
+  {
+    std::vector<std::string> rooms = {"rm0", "rm1", "rm2"};
+    for (auto room_name : rooms) {
+      auto ins_2 = problem_client->getInstance(room_name);
+      ASSERT_TRUE(ins_2.has_value());
+      ASSERT_EQ(ins_2.value().name, room_name);
+      ASSERT_EQ(ins_2.value().type, "room");
+    }
+  }
+
+  ASSERT_EQ(parser::pddl::toString(problem_client->getGoal()), "(and (robot_at r2d2 rm2))");
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  exe.cancel();
+  t.join();
+}
+
+TEST_F(TerminalTestCase, add_problem_empty_domain)
+{
+  auto test_node = rclcpp::Node::make_shared("terminal_node_test");
+
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto executor_node = std::make_shared<plansys2::ExecutorNode>();
+
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_terminal");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 16, true);
+  ASSERT_GT(exe.get_number_of_threads(), 15u);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(planner_node->get_node_base_interface());
+  exe.add_node(executor_node->get_node_base_interface());
+
+  std::thread t([&]() {
+      exe.spin();
+    });
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp_lifecycle::State state = problem_node->trigger_transition(
+    lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  std::string stateLabel = state.label();
+
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  auto terminal_node = std::make_shared<TerminalTest>();
+  terminal_node->set_parameter({"problem_file", pkgpath + "/pddl/problem_empty_domain.pddl"});
+  terminal_node->init();
+
+  ASSERT_EQ(problem_client->getInstances().size(), 0);
+  ASSERT_EQ(problem_client->getPredicates().size(), 0);
+  ASSERT_EQ(problem_client->getFunctions().size(), 0);
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  exe.cancel();
+  t.join();
+}
+
 TEST_F(TerminalTestCase, check_actors)
 {
   auto test_node = rclcpp::Node::make_shared("terminal_node_test");
@@ -544,7 +755,7 @@ TEST_F(TerminalTestCase, check_actors)
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
   using namespace std::chrono_literals;
 
@@ -609,7 +820,7 @@ TEST_F(TerminalTestCase, check_actors)
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
+    while ((test_node->now() - start).seconds() < 1.0) {
       rate.sleep();
     }
   }

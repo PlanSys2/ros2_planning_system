@@ -27,7 +27,7 @@ void Derived::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< s
 	s << "\n)\n";
 }
 
-std::shared_ptr<tree::TreeNode> Derived::PDDLTree( const Domain & d ) const {
+plansys2_msgs::msg::Node::SharedPtr Derived::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
     throw UnsupportedConstruct("Derived");
 }
 
