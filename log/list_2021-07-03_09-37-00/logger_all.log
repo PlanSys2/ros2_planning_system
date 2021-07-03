@@ -1,0 +1,224 @@
+[0.442s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'list', '--paths-only', '--packages-up-to', 'plansys2_bringup', 'plansys2_bt_actions', 'plansys2_domain_expert', 'plansys2_executor', 'plansys2_lifecycle_manager', 'plansys2_msgs', 'plansys2_pddl_parser', 'plansys2_planner', 'plansys2_popf_plan_solver', 'plansys2_problem_expert', 'plansys2_terminal', 'plansys2_test']
+[0.443s] DEBUG:colcon:Parsed command line arguments: Namespace(base_paths=['.'], build_base='build', ignore_user_meta=False, log_base=None, log_level=None, main=<bound method ListVerb.main of <colcon_package_information.verb.list.ListVerb object at 0x7fda5273b580>>, metas=['./colcon.meta'], mixin=None, mixin_files=None, mixin_verb=('list',), names_only=False, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_end=None, packages_ignore=None, packages_ignore_regex=None, packages_select=None, packages_select_build_failed=False, packages_select_by_dep=None, packages_select_regex=None, packages_select_test_failures=False, packages_skip=None, packages_skip_build_finished=False, packages_skip_by_dep=None, packages_skip_regex=None, packages_skip_test_passed=False, packages_skip_up_to=None, packages_start=None, packages_up_to=['plansys2_bringup', 'plansys2_bt_actions', 'plansys2_domain_expert', 'plansys2_executor', 'plansys2_lifecycle_manager', 'plansys2_msgs', 'plansys2_pddl_parser', 'plansys2_planner', 'plansys2_popf_plan_solver', 'plansys2_problem_expert', 'plansys2_terminal', 'plansys2_test'], packages_up_to_regex=None, paths=None, paths_only=True, topological_graph=False, topological_graph_density=False, topological_graph_dot=False, topological_graph_dot_cluster=False, topological_graph_dot_include_skipped=False, topological_graph_legend=False, topological_order=False, verb_extension=<colcon_package_information.verb.list.ListVerb object at 0x7fda5273b580>, verb_name='list', verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0x7fda525c0550>)
+[0.469s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.469s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.469s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.469s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.469s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.469s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.469s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/fmrico/ros/ros2/planning_ws/src/ros2_planning_system'
+[0.469s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.469s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.469s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.469s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.469s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.469s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.469s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.470s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros.bazel']
+[0.470s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros.bazel'
+[0.480s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.480s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.480s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['bazel', 'cmake', 'python']
+[0.480s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'bazel'
+[0.480s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[0.480s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[0.480s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[0.480s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[0.480s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[0.480s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[0.480s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[0.480s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bringup) by extensions ['ignore', 'ignore_ament_install']
+[0.480s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bringup) by extension 'ignore'
+[0.481s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bringup) by extension 'ignore_ament_install'
+[0.481s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bringup) by extensions ['colcon_pkg']
+[0.481s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bringup) by extension 'colcon_pkg'
+[0.481s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bringup) by extensions ['colcon_meta']
+[0.481s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bringup) by extension 'colcon_meta'
+[0.481s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bringup) by extensions ['ros.bazel']
+[0.481s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bringup) by extension 'ros.bazel'
+[0.483s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bringup) by extensions ['ros']
+[0.483s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bringup) by extension 'ros'
+[0.483s] DEBUG:colcon.colcon_core.package_identification:Package 'plansys2_bringup' with type 'ros.ament_cmake' and name 'plansys2_bringup'
+[0.484s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bt_actions) by extensions ['ignore', 'ignore_ament_install']
+[0.484s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bt_actions) by extension 'ignore'
+[0.484s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bt_actions) by extension 'ignore_ament_install'
+[0.484s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bt_actions) by extensions ['colcon_pkg']
+[0.484s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bt_actions) by extension 'colcon_pkg'
+[0.484s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bt_actions) by extensions ['colcon_meta']
+[0.484s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bt_actions) by extension 'colcon_meta'
+[0.484s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bt_actions) by extensions ['ros.bazel']
+[0.484s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bt_actions) by extension 'ros.bazel'
+[0.485s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bt_actions) by extensions ['ros']
+[0.485s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_bt_actions) by extension 'ros'
+[0.485s] DEBUG:colcon.colcon_core.package_identification:Package 'plansys2_bt_actions' with type 'ros.ament_cmake' and name 'plansys2_bt_actions'
+[0.485s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_core) by extensions ['ignore', 'ignore_ament_install']
+[0.485s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_core) by extension 'ignore'
+[0.485s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_core) by extension 'ignore_ament_install'
+[0.485s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_core) by extensions ['colcon_pkg']
+[0.485s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_core) by extension 'colcon_pkg'
+[0.485s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_core) by extensions ['colcon_meta']
+[0.485s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_core) by extension 'colcon_meta'
+[0.485s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_core) by extensions ['ros.bazel']
+[0.485s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_core) by extension 'ros.bazel'
+[0.486s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_core) by extensions ['ros']
+[0.486s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_core) by extension 'ros'
+[0.486s] DEBUG:colcon.colcon_core.package_identification:Package 'plansys2_core' with type 'ros.ament_cmake' and name 'plansys2_core'
+[0.486s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extensions ['ignore', 'ignore_ament_install']
+[0.486s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extension 'ignore'
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extension 'ignore_ament_install'
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extensions ['colcon_pkg']
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extension 'colcon_pkg'
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extensions ['colcon_meta']
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extension 'colcon_meta'
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extensions ['ros.bazel']
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extension 'ros.bazel'
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extensions ['ros']
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extension 'ros'
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extensions ['bazel', 'cmake', 'python']
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extension 'bazel'
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extension 'cmake'
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extension 'python'
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extensions ['python_setup_py']
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs) by extension 'python_setup_py'
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extensions ['ignore', 'ignore_ament_install']
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extension 'ignore'
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extension 'ignore_ament_install'
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extensions ['colcon_pkg']
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extension 'colcon_pkg'
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extensions ['colcon_meta']
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extension 'colcon_meta'
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extensions ['ros.bazel']
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extension 'ros.bazel'
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extensions ['ros']
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extension 'ros'
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extensions ['bazel', 'cmake', 'python']
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extension 'bazel'
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extension 'cmake'
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extension 'python'
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extensions ['python_setup_py']
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_docs/tutorials) by extension 'python_setup_py'
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_domain_expert) by extensions ['ignore', 'ignore_ament_install']
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_domain_expert) by extension 'ignore'
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_domain_expert) by extension 'ignore_ament_install'
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_domain_expert) by extensions ['colcon_pkg']
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_domain_expert) by extension 'colcon_pkg'
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_domain_expert) by extensions ['colcon_meta']
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_domain_expert) by extension 'colcon_meta'
+[0.489s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_domain_expert) by extensions ['ros.bazel']
+[0.489s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_domain_expert) by extension 'ros.bazel'
+[0.490s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_domain_expert) by extensions ['ros']
+[0.490s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_domain_expert) by extension 'ros'
+[0.490s] DEBUG:colcon.colcon_core.package_identification:Package 'plansys2_domain_expert' with type 'ros.ament_cmake' and name 'plansys2_domain_expert'
+[0.490s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_executor) by extensions ['ignore', 'ignore_ament_install']
+[0.490s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_executor) by extension 'ignore'
+[0.490s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_executor) by extension 'ignore_ament_install'
+[0.490s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_executor) by extensions ['colcon_pkg']
+[0.490s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_executor) by extension 'colcon_pkg'
+[0.490s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_executor) by extensions ['colcon_meta']
+[0.490s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_executor) by extension 'colcon_meta'
+[0.490s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_executor) by extensions ['ros.bazel']
+[0.490s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_executor) by extension 'ros.bazel'
+[0.492s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_executor) by extensions ['ros']
+[0.492s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_executor) by extension 'ros'
+[0.492s] DEBUG:colcon.colcon_core.package_identification:Package 'plansys2_executor' with type 'ros.ament_cmake' and name 'plansys2_executor'
+[0.492s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_lifecycle_manager) by extensions ['ignore', 'ignore_ament_install']
+[0.492s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_lifecycle_manager) by extension 'ignore'
+[0.492s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_lifecycle_manager) by extension 'ignore_ament_install'
+[0.492s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_lifecycle_manager) by extensions ['colcon_pkg']
+[0.492s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_lifecycle_manager) by extension 'colcon_pkg'
+[0.492s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_lifecycle_manager) by extensions ['colcon_meta']
+[0.492s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_lifecycle_manager) by extension 'colcon_meta'
+[0.492s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_lifecycle_manager) by extensions ['ros.bazel']
+[0.492s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_lifecycle_manager) by extension 'ros.bazel'
+[0.493s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_lifecycle_manager) by extensions ['ros']
+[0.493s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_lifecycle_manager) by extension 'ros'
+[0.493s] DEBUG:colcon.colcon_core.package_identification:Package 'plansys2_lifecycle_manager' with type 'ros.ament_cmake' and name 'plansys2_lifecycle_manager'
+[0.493s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_msgs) by extensions ['ignore', 'ignore_ament_install']
+[0.493s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_msgs) by extension 'ignore'
+[0.493s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_msgs) by extension 'ignore_ament_install'
+[0.494s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_msgs) by extensions ['colcon_pkg']
+[0.494s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_msgs) by extension 'colcon_pkg'
+[0.494s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_msgs) by extensions ['colcon_meta']
+[0.494s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_msgs) by extension 'colcon_meta'
+[0.494s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_msgs) by extensions ['ros.bazel']
+[0.494s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_msgs) by extension 'ros.bazel'
+[0.495s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_msgs) by extensions ['ros']
+[0.495s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_msgs) by extension 'ros'
+[0.495s] DEBUG:colcon.colcon_core.package_identification:Package 'plansys2_msgs' with type 'ros.ament_cmake' and name 'plansys2_msgs'
+[0.495s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_pddl_parser) by extensions ['ignore', 'ignore_ament_install']
+[0.495s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_pddl_parser) by extension 'ignore'
+[0.495s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_pddl_parser) by extension 'ignore_ament_install'
+[0.495s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_pddl_parser) by extensions ['colcon_pkg']
+[0.495s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_pddl_parser) by extension 'colcon_pkg'
+[0.495s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_pddl_parser) by extensions ['colcon_meta']
+[0.495s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_pddl_parser) by extension 'colcon_meta'
+[0.495s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_pddl_parser) by extensions ['ros.bazel']
+[0.495s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_pddl_parser) by extension 'ros.bazel'
+[0.496s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_pddl_parser) by extensions ['ros']
+[0.496s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_pddl_parser) by extension 'ros'
+[0.496s] DEBUG:colcon.colcon_core.package_identification:Package 'plansys2_pddl_parser' with type 'ros.ament_cmake' and name 'plansys2_pddl_parser'
+[0.496s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_planner) by extensions ['ignore', 'ignore_ament_install']
+[0.496s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_planner) by extension 'ignore'
+[0.496s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_planner) by extension 'ignore_ament_install'
+[0.496s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_planner) by extensions ['colcon_pkg']
+[0.496s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_planner) by extension 'colcon_pkg'
+[0.496s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_planner) by extensions ['colcon_meta']
+[0.496s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_planner) by extension 'colcon_meta'
+[0.496s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_planner) by extensions ['ros.bazel']
+[0.496s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_planner) by extension 'ros.bazel'
+[0.498s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_planner) by extensions ['ros']
+[0.498s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_planner) by extension 'ros'
+[0.498s] DEBUG:colcon.colcon_core.package_identification:Package 'plansys2_planner' with type 'ros.ament_cmake' and name 'plansys2_planner'
+[0.498s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_popf_plan_solver) by extensions ['ignore', 'ignore_ament_install']
+[0.498s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_popf_plan_solver) by extension 'ignore'
+[0.498s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_popf_plan_solver) by extension 'ignore_ament_install'
+[0.498s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_popf_plan_solver) by extensions ['colcon_pkg']
+[0.498s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_popf_plan_solver) by extension 'colcon_pkg'
+[0.498s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_popf_plan_solver) by extensions ['colcon_meta']
+[0.498s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_popf_plan_solver) by extension 'colcon_meta'
+[0.498s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_popf_plan_solver) by extensions ['ros.bazel']
+[0.498s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_popf_plan_solver) by extension 'ros.bazel'
+[0.499s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_popf_plan_solver) by extensions ['ros']
+[0.499s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_popf_plan_solver) by extension 'ros'
+[0.499s] DEBUG:colcon.colcon_core.package_identification:Package 'plansys2_popf_plan_solver' with type 'ros.ament_cmake' and name 'plansys2_popf_plan_solver'
+[0.500s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_problem_expert) by extensions ['ignore', 'ignore_ament_install']
+[0.500s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_problem_expert) by extension 'ignore'
+[0.500s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_problem_expert) by extension 'ignore_ament_install'
+[0.500s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_problem_expert) by extensions ['colcon_pkg']
+[0.500s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_problem_expert) by extension 'colcon_pkg'
+[0.500s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_problem_expert) by extensions ['colcon_meta']
+[0.500s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_problem_expert) by extension 'colcon_meta'
+[0.500s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_problem_expert) by extensions ['ros.bazel']
+[0.500s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_problem_expert) by extension 'ros.bazel'
+[0.501s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_problem_expert) by extensions ['ros']
+[0.501s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_problem_expert) by extension 'ros'
+[0.501s] DEBUG:colcon.colcon_core.package_identification:Package 'plansys2_problem_expert' with type 'ros.ament_cmake' and name 'plansys2_problem_expert'
+[0.501s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_terminal) by extensions ['ignore', 'ignore_ament_install']
+[0.501s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_terminal) by extension 'ignore'
+[0.501s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_terminal) by extension 'ignore_ament_install'
+[0.501s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_terminal) by extensions ['colcon_pkg']
+[0.501s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_terminal) by extension 'colcon_pkg'
+[0.502s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_terminal) by extensions ['colcon_meta']
+[0.502s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_terminal) by extension 'colcon_meta'
+[0.502s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_terminal) by extensions ['ros.bazel']
+[0.502s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_terminal) by extension 'ros.bazel'
+[0.503s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_terminal) by extensions ['ros']
+[0.503s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_terminal) by extension 'ros'
+[0.503s] DEBUG:colcon.colcon_core.package_identification:Package 'plansys2_terminal' with type 'ros.ament_cmake' and name 'plansys2_terminal'
+[0.503s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_tests) by extensions ['ignore', 'ignore_ament_install']
+[0.503s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_tests) by extension 'ignore'
+[0.503s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_tests) by extension 'ignore_ament_install'
+[0.503s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_tests) by extensions ['colcon_pkg']
+[0.503s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_tests) by extension 'colcon_pkg'
+[0.503s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_tests) by extensions ['colcon_meta']
+[0.503s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_tests) by extension 'colcon_meta'
+[0.503s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_tests) by extensions ['ros.bazel']
+[0.504s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_tests) by extension 'ros.bazel'
+[0.505s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_tests) by extensions ['ros']
+[0.505s] Level 1:colcon.colcon_core.package_identification:_identify(plansys2_tests) by extension 'ros'
+[0.505s] DEBUG:colcon.colcon_core.package_identification:Package 'plansys2_tests' with type 'ros.ament_cmake' and name 'plansys2_tests'
+[0.505s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.505s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[0.505s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[0.505s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[0.505s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
