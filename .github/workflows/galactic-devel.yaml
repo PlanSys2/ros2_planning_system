@@ -1,12 +1,12 @@
-name: master
+name: galactic-devel
 
 on:
   pull_request:
     branches:
-      - master
+      - galactic-devel
   push:
     branches:
-      - master
+      - galactic-devel
       
 jobs:
   build-and-test:
