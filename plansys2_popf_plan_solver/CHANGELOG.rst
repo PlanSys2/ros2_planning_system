@@ -2,8 +2,8 @@
 Changelog for package plansys2_popf_plan_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.10 (2021-07-03)
+-------------------
 * ros2-plan-msg: Passing plan to executor to add further separation between plan creation and plan execution.
 * pddl-tree-messages: Merging upstream master and resolving conflicts.
 * Added ability to provide command-line arguments to popf via ROS parameter.

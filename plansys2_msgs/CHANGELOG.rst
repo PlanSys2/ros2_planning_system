@@ -2,8 +2,8 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.10 (2021-07-03)
+-------------------
 * Add ability to read in pddl problem files to plansys2 and a new AddProblem service to the plansys2_problem_expert.
   Adding problem_file node parameter to plansys2_problem_expert to load a single problem file at launch.
 * ros2-plan-msg: Adding functions to plansys2_msgs/Knowledge message.

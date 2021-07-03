@@ -2,8 +2,8 @@
 Changelog for package plansys2_lifecycle_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.10 (2021-07-03)
+-------------------
 * Update version
 * Contributors: Francisco Martín Rico
 

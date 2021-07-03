@@ -2,8 +2,8 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.10 (2021-07-03)
+-------------------
 * Remove node parameter in client constructors
 * Adding unit tests for new functions in plansys2_domain_expert.
 * Add ability to read in pddl problem files to plansys2 and a new AddProblem service to the plansys2_problem_expert.

@@ -2,8 +2,8 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.10 (2021-07-03)
+-------------------
 * Fix tests
 * Fix rate conversions
 * Reduce debug output

@@ -2,8 +2,8 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.10 (2021-07-03)
+-------------------
 * Remove node parameter in client constructors
 * Adding comments specifying how the syntax is wrong in unexpected_syntax problem file.
 * Adding unit tests for new functions in plansys2_problem_expert.

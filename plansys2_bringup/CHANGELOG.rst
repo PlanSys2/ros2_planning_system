@@ -2,8 +2,8 @@
 Changelog for package plansys2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.10 (2021-07-03)
+-------------------
 * pddl-tree-messages: Merging master and resolving conflicts.
 * Using custom behavior tree to enable action timeouts.
 * pddl-tree-messages: Merging upstream master and resolving conflicts.

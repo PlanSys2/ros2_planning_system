@@ -2,8 +2,8 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.10 (2021-07-03)
+-------------------
 * Revert wrong directory move
 * Remove node parameter in client constructors
 * Enabling code coverage of plansys2_terminal::Terminal node init functions.

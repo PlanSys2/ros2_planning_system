@@ -2,8 +2,8 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.10 (2021-07-03)
+-------------------
 * Revert wrong directory move
 * Remove node parameter in client constructors
 * ros2-plan-msg: Passing plan to executor to add further separation between plan creation and plan execution.
