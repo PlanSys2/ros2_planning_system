@@ -12,6 +12,18 @@ This project is the result of several years of experience in the development of 
 
 We hope that this software helps to include planning in more Robotics projects, offering simple and powerful software to generate intelligent behaviors for robots.
 
+Please, cite us if you use PlanSys2 in your reseach:
+
+```
+@INPROCEEDINGS {,
+    author    = "Francisco Mart{\'{\i}}n and Jonatan Gin{\'{e}}s and Francisco J. Rodr{\'{i}}guez and Vicente Matell{\'{\a}}n",
+    title     = "PlanSys2: A Planning System Framework for ROS2",
+    booktitle = "{IEEE/RSJ} International Conference on Intelligent Robots and Systems,  {IROS} 2021, Prague, Czech Republic, September 27 - October 1, 2021}",
+    year      = "2021",
+    publisher = "{IEEE}"
+}
+```
+
 We want to invite you to contribute to this Open Source project !!
 
 
