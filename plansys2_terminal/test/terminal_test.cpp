@@ -222,7 +222,7 @@ TEST_F(TerminalTestCase, load_popf_plugin)
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
 
-  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 16, true);
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 16, true);
   ASSERT_GT(exe.get_number_of_threads(), 15u);
 
   exe.add_node(domain_node->get_node_base_interface());
@@ -551,7 +551,7 @@ TEST_F(TerminalTestCase, add_problem)
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
 
-  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 16, true);
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 16, true);
   ASSERT_GT(exe.get_number_of_threads(), 15u);
 
   exe.add_node(domain_node->get_node_base_interface());
@@ -666,7 +666,7 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
 
-  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 16, true);
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 16, true);
   ASSERT_GT(exe.get_number_of_threads(), 15u);
 
   exe.add_node(domain_node->get_node_base_interface());
@@ -774,7 +774,7 @@ TEST_F(TerminalTestCase, check_actors)
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
 
-  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::executor::ExecutorArgs(), 16, true);
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 16, true);
   ASSERT_GT(exe.get_number_of_threads(), 15u);
 
   exe.add_node(domain_node->get_node_base_interface());
