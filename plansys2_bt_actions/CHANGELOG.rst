@@ -2,6 +2,20 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.9 (2021-03-15)
+------------------
+
+1.0.8 (2021-03-12)
+------------------
+* Moving zmq publisher creation to on_activate in BTAction, resetting the publisher in on_deactivate.
+* Action execution refactoring
+* Adding zeromq-based groot monitoring of plansys2 behaviortree actions. Ports are not specified by default to keep two different actions from accidentally using the same ports.
+* Add support for numeric conditions and effects.
+* Monitorization info
+* Improving BTActions
+* Change 'move' action name
+* Contributors: Alexander Xydes, Fabrice Larribe, Francisco Martin Rico, Josh Zapf
+
 1.0.7 (2021-01-04)
 ------------------
 * Making explicit dependencies

@@ -2,6 +2,39 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.9 (2021-03-15)
+------------------
+* Disable boost in tests
+* Contributors: Francisco Martin Rico
+
+1.0.8 (2021-03-12)
+------------------
+* Change default ZMQ ports
+* Removing whitespace.
+* Simplified logic.
+* Update API for FutureReturnCode
+* Handling edge cases of action failure and preventing overriding completion percentage on action completion.
+* Publishing generated plan as a dotgraph on a string topic.
+* Fix BT creation; parallel deps actions
+* Fixing feedback control
+* Action execution refactoring
+* Moving Utils file to plansys2_problem_expert since all the functions are checking information in the problem or modifying the problem.
+* utils-bug: Fixing bug in OR case of evaluate function in plansys2_executor/Utils.cpp.
+* Making zmq error message more generic to reflect that there are multiple possible reasons for a BT::LogicError to be thrown.
+* Add support to plansys2_executor/ExecutorNode for visualizing the behavior trees in Groot.
+* Moving publisher on_activate call to the ExecutorNode::on_activate callback.
+* Add support for numeric conditions and effects.
+* Monitorization info
+* Remove an unreshable return
+* Adding actor checker in terminal
+* Improving BTActions
+* Fix repeated nodes
+* New Graph creation Algorithm
+* Debugging
+* Added negative predicates support
+* Namespaced action_hub
+* Contributors: Alexander Xydes, Fabrice Larribe, Francisco Martin Rico, Greg Kogut, Josh Zapf
+
 1.0.7 (2021-01-04)
 ------------------
 * Making explicit dependencies

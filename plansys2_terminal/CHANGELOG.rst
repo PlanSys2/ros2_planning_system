@@ -2,6 +2,20 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.9 (2021-03-15)
+------------------
+
+1.0.8 (2021-03-12)
+------------------
+* Action execution refactoring
+* Add support for numeric conditions and effects.
+* Monitorization info
+* fix minor typo
+* Adding actor checker in terminal
+* Remove debugging traces
+* Fix the call of the get_problem_instance service
+* Contributors: Fabrice Larribe, Francisco Martin Rico, Josh Zapf
+
 1.0.7 (2021-01-04)
 ------------------
 * Making explicit dependencies

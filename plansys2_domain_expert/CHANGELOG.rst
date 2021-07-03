@@ -2,6 +2,20 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.9 (2021-03-15)
+------------------
+
+1.0.8 (2021-03-12)
+------------------
+* Update API for FutureReturnCode
+* Add support for numeric conditions and effects.
+* New Graph creation Algorithm
+* Added negative predicates support
+* Ignore comments on block end search
+* Add more verbose output to pddl errors
+* PDDL transparent merge
+* Contributors: Fabrice Larribe, Francisco Martin Rico, Josh Zapf
+
 1.0.7 (2021-01-04)
 ------------------
 * Making explicit dependencies
