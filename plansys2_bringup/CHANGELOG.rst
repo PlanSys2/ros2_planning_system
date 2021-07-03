@@ -2,6 +2,18 @@
 Changelog for package plansys2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* pddl-tree-messages: Merging master and resolving conflicts.
+* Using custom behavior tree to enable action timeouts.
+* pddl-tree-messages: Merging upstream master and resolving conflicts.
+* Making TFD plugin type match popf.
+* linting
+* Configurable action BT
+* Configurable BT Action
+* Update version
+* Contributors: Alexander Xydes, Francisco Martín Rico, Josh Zapf
+
 1.0.9 (2021-03-15)
 ------------------
 
@@ -17,8 +29,7 @@ Changelog for package plansys2_bringup
 1.0.6 (2020-12-29)
 ------------------
 * Disable boost functions
-* Contributors: Francisco Martin Rico
-
+* Contributors: Francisco Martín Rico
 1.0.5 (2020-12-28)
 ------------------
 * Migration to c++17
@@ -42,26 +53,25 @@ Changelog for package plansys2_bringup
 ------------------
 * Foxy initial version
 * Boost:optional
-* Contributors: Francisco Martin Rico, Francisco Martín Rico
+* Contributors: Francisco Martin Rico
 
 0.0.8 (2020-07-18)
 ------------------
 * Foxy initial version
-* Contributors: Francisco Martin Rico, Francisco Martín Rico
+* Contributors: Francisco Martin Rico
 
 0.0.7 (2020-03-26)
 ------------------
 * Fix warning in last cmake versions
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
-* Contributors: Francisco Martin Rico
-
+* Contributors: Francisco Martín Rico
 0.0.6 (2020-03-23)
 ------------------
 * Make mandatory to specify model
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Run in separate namespaces. Monolothic node
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
-* Contributors: Francisco Martin Rico, Francisco Martín Rico
+* Contributors: Francisco Martin Rico
 
 0.0.5 (2020-01-12)
 ------------------
@@ -88,4 +98,4 @@ Changelog for package plansys2_bringup
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Bringup and lifecycle manager
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
-* Contributors: Francisco Martin Rico, Francisco Martín Rico
+* Contributors: Francisco Martin Rico

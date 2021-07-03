@@ -2,6 +2,20 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove node parameter in client constructors
+* Adding unit tests for new functions in plansys2_domain_expert.
+* Add ability to read in pddl problem files to plansys2 and a new AddProblem service to the plansys2_problem_expert.
+  Adding problem_file node parameter to plansys2_problem_expert to load a single problem file at launch.
+* Suggestion for `#118 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/118>`_
+* pddl-tree-messages: Performing some minor cleanup.
+* pddl-tree-messages: Using explicit specifier for single parameter constructors in plansys2_core/Types.hpp.
+* pddl-tree-messages: Adding user access functions to domain expert client.
+* pddl-tree-messages: Using ROS messages to define the PDDL construct trees.
+* Update version
+* Contributors: Alexander Xydes, Francisco Martín Rico, Josh Zapf
+
 1.0.9 (2021-03-15)
 ------------------
 
@@ -19,8 +33,7 @@ Changelog for package plansys2_domain_expert
 1.0.7 (2021-01-04)
 ------------------
 * Making explicit dependencies
-* Contributors: Francisco Martin Rico
-
+* Contributors: Francisco Martín Rico
 1.0.6 (2020-12-29)
 ------------------
 
@@ -38,26 +51,25 @@ Changelog for package plansys2_domain_expert
 1.0.2 (2020-12-23)
 ------------------
 * Plan solvers as plugins
-* Contributors: Fabrice Larribe, Francisco Martin Rico, Francisco Martín Rico, f269858
+* Contributors: Fabrice Larribe, Francisco Martin Rico, f269858
 
 1.0.0 (2020-07-19)
 ------------------
 * Foxy initial version
 * Boost:optional
 * Support for BT actions
-* Contributors: Francisco Martin Rico, Francisco Martín Rico
+* Contributors: Francisco Martin Rico
 
 0.0.8 (2020-07-18)
 ------------------
 * Support for BT actions
-* Contributors: Francisco Martin Rico, Francisco Martín Rico
+* Contributors: Francisco Martin Rico
 
 0.0.7 (2020-03-26)
 ------------------
 * Fix warning in last cmake versions
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
-* Contributors: Francisco Martin Rico
-
+* Contributors: Francisco Martín Rico
 0.0.6 (2020-03-23)
 ------------------
 * Run in separate namespaces. Monolothic node
@@ -68,7 +80,7 @@ Changelog for package plansys2_domain_expert
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Avoid inserting duplicate types
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
-* Contributors: Francisco Martin Rico, Francisco Martín Rico
+* Contributors: Francisco Martin Rico
 
 0.0.5 (2020-01-12)
 ------------------
@@ -77,8 +89,7 @@ Changelog for package plansys2_domain_expert
 ------------------
 * Adding missing action dependencies
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
-* Contributors: Francisco Martin Rico
-
+* Contributors: Francisco Martín Rico
 0.0.3 (2020-01-09)
 ------------------
 
@@ -136,4 +147,4 @@ Changelog for package plansys2_domain_expert
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * First version of domain expert
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
-* Contributors: Francisco Martin Rico, Francisco Martín Rico
+* Contributors: Francisco Martin Rico

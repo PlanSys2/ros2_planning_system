@@ -2,6 +2,14 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix tests
+* Fix rate conversions
+* Reduce debug output
+* Update version
+* Contributors: Francisco Martín Rico
+
 1.0.9 (2021-03-15)
 ------------------
 
@@ -19,8 +27,7 @@ Changelog for package plansys2_bt_actions
 1.0.7 (2021-01-04)
 ------------------
 * Making explicit dependencies
-* Contributors: Francisco Martin Rico
-
+* Contributors: Francisco Martín Rico
 1.0.6 (2020-12-29)
 ------------------
 
@@ -38,7 +45,7 @@ Changelog for package plansys2_bt_actions
 1.0.2 (2020-12-23)
 ------------------
 * Plan solvers as plugins
-* Contributors: Fabrice Larribe, Francisco Martin Rico, Francisco Martín Rico, f269858
+* Contributors: Fabrice Larribe, Francisco Martin Rico, f269858
 
 1.0.1 (2020-07-19)
 ------------------
@@ -46,27 +53,26 @@ Changelog for package plansys2_bt_actions
 1.0.0 (2020-07-19)
 ------------------
 * Foxy initial version
-* Contributors: Francisco Martin Rico, Francisco Martín Rico
+* Contributors: Francisco Martin Rico
 
 
 0.0.8 (2020-07-18)
 ------------------
 * Boost:optional
-* Contributors: Francisco Martin Rico, Francisco Martín Rico
+* Contributors: Francisco Martin Rico
 
 0.0.7 (2020-03-26)
 ------------------
 * Fix warning in last cmake versions
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
-* Contributors: Francisco Martin Rico
-
+* Contributors: Francisco Martín Rico
 0.0.6 (2020-03-23)
 ------------------
 * Run in separate namespaces. Monolothic node
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Add multi domain
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
-* Contributors: Francisco Martin Rico, Francisco Martín Rico
+* Contributors: Francisco Martin Rico
 
 0.0.5 (2020-01-12)
 ------------------
@@ -75,8 +81,7 @@ Changelog for package plansys2_bt_actions
 ------------------
 * Adding missing action dependencies
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
-* Contributors: Francisco Martin Rico
-
+* Contributors: Francisco Martín Rico
 0.0.3 (2020-01-09)
 ------------------
 
@@ -122,4 +127,4 @@ Changelog for package plansys2_bt_actions
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Predicate Tree and types changed
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
-* Contributors: Francisco Martin Rico, Francisco Martín Rico
+* Contributors: Francisco Martin Rico
