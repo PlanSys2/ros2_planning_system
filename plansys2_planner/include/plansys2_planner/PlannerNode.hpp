@@ -91,7 +91,7 @@ std::string get_plugin_type_param(
   NodeT node,
   const std::string & plugin_name)
 {
-  declare_parameter_if_not_declared(node, plugin_name + ".plugin");
+  declare_parameter_if_not_declared(node, plugin_name + ".plugin", rclcpp::ParameterValue(""));
   std::string plugin_type;
   if (!node->get_parameter(plugin_name + ".plugin", plugin_type)) {
     RCLCPP_FATAL(node->get_logger(), "'plugin' param not defined for %s", plugin_name.c_str());
