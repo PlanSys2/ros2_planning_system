@@ -2,6 +2,9 @@
 Changelog for package plansys2_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.0.10 (2021-07-03)
 -------------------
 * ros2-plan-msg: Passing plan to executor to add further separation between plan creation and plan execution.

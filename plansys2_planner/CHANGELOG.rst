@@ -2,6 +2,12 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Solve statically parameter error
+* Compile for ROS2 Galactic
+* Contributors: Francisco Martín Rico, Jonatan Olofsson
+
 1.0.10 (2021-07-03)
 -------------------
 * Revert wrong directory move
