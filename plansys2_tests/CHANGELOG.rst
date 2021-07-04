@@ -2,8 +2,8 @@
 Changelog for package plansys2_tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2021-07-04)
+------------------
 * Fix compile issues for galactic
 * Contributors: Francisco Martín Rico, bjnjo
 

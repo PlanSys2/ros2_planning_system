@@ -2,8 +2,8 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2021-07-04)
+------------------
 * Solve statically parameter error
 * Compile for ROS2 Galactic
 * Contributors: Francisco Martín Rico, Jonatan Olofsson

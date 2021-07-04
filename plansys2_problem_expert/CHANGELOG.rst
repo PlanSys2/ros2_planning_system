@@ -2,8 +2,8 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2021-07-04)
+------------------
 * Compile for ROS2 Galactic
 * Contributors: Francisco Martín Rico, Jonatan Olofsson
 

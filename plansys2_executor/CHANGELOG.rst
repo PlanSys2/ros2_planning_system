@@ -2,8 +2,8 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2021-07-04)
+------------------
 * Fix default param
 * Solve statically parameter error
 * Fix compile issues for galactic
