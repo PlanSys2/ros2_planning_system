@@ -1565,7 +1565,8 @@ TEST(problem_expert, action_timeout)
       pkgpath + "/test_behavior_trees/test_action_timeout_bt.xml"});
   executor_node->set_parameter({"action_timeouts.actions", std::vector<std::string>({"move"})});
   // have to declare because the actions vector above was not available at node creation
-  executor_node->declare_parameter<double>("action_timeouts.move.duration_overrun_percentage");
+  executor_node->declare_parameter<double>(
+    "action_timeouts.move.duration_overrun_percentage", 1.0);
   executor_node->set_parameter({"action_timeouts.move.duration_overrun_percentage", 1.0});
 
   rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
