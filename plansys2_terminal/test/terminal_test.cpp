@@ -747,6 +747,7 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
   t.join();
 }*/
 
+/*
 TEST_F(TerminalTestCase, check_actors)
 {
   auto test_node = rclcpp::Node::make_shared("terminal_node_test");
@@ -843,3 +844,4 @@ TEST_F(TerminalTestCase, check_actors)
   exe.cancel();
   t.join();
 }
+*/

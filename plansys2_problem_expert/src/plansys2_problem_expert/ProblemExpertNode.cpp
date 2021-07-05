@@ -242,6 +242,8 @@ ProblemExpertNode::on_configure(const rclcpp_lifecycle::State & state)
 
   problem_expert_ = std::make_shared<ProblemExpert>(domain_expert);
 
+  RCLCPP_INFO_STREAM(get_logger(), "==========> " << problem_expert_.get());
+
   auto problem_file = get_parameter("problem_file").get_value<std::string>();
   if (!problem_file.empty()) {
     std::ifstream problem_ifs(problem_file);
@@ -357,6 +359,8 @@ ProblemExpertNode::add_problem_instance_service_callback(
   const std::shared_ptr<plansys2_msgs::srv::AffectParam::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::AffectParam::Response> response)
 {
+  RCLCPP_INFO_STREAM(get_logger(), "==========> " << problem_expert_.get());
+
   if (problem_expert_ == nullptr) {
     response->success = false;
     response->error_info = "Requesting service in non-active state";
