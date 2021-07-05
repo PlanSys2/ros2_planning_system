@@ -78,7 +78,7 @@ TEST(test_1, test_1)
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
+    while ((test_node->now() - start).seconds() < 1.5) {
       rate.sleep();
     }
   }
@@ -91,7 +91,7 @@ TEST(test_1, test_1)
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
+    while ((test_node->now() - start).seconds() < 1.5) {
       rate.sleep();
     }
   }
