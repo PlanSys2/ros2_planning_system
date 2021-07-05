@@ -27,6 +27,12 @@ jobs:
         with:
           package-name: plansys2_bringup plansys2_bt_actions plansys2_domain_expert plansys2_executor plansys2_lifecycle_manager plansys2_msgs plansys2_pddl_parser plansys2_planner plansys2_popf_plan_solver plansys2_problem_expert plansys2_terminal plansys2_tests
           target-ros2-distro: foxy
+          colcon-defaults: |
+            {
+              "test": {
+                "parallel-workers" : 1
+              }
+            }
           vcs-repo-file-url: ""
           colcon-mixin-name: coverage-gcc
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
