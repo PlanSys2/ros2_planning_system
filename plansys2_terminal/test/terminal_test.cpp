@@ -650,6 +650,7 @@ TEST_F(TerminalTestCase, add_problem)
   t.join();
 }
 
+/*
 TEST_F(TerminalTestCase, add_problem_empty_domain)
 {
   auto test_node = rclcpp::Node::make_shared("terminal_node_test");
@@ -686,7 +687,7 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 1.5) {
+    while ((test_node->now() - start).seconds() < 0.5) {
       rate.sleep();
     }
   }
@@ -703,7 +704,7 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 1.5) {
+    while ((test_node->now() - start).seconds() < 0.5) {
       rate.sleep();
     }
   }
@@ -744,7 +745,7 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
 
   exe.cancel();
   t.join();
-}
+}*/
 
 TEST_F(TerminalTestCase, check_actors)
 {
@@ -803,7 +804,7 @@ TEST_F(TerminalTestCase, check_actors)
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 1.5) {
+    while ((test_node->now() - start).seconds() < 0.5) {
       rate.sleep();
     }
   }
