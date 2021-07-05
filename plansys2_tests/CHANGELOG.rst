@@ -2,6 +2,11 @@
 Changelog for package plansys2_tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.0 (2021-07-04)
+------------------
+* Fix compile issues for galactic
+* Contributors: Francisco Martín Rico, bjnjo
+
 1.0.10 (2021-07-03)
 -------------------
 * Remove node parameter in client constructors

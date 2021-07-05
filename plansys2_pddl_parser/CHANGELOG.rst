@@ -2,6 +2,9 @@
 Changelog for package plansys2_pddl_parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.0 (2021-07-04)
+------------------
+
 1.0.10 (2021-07-03)
 -------------------
 * Solves error "error: 'bind' is not a member of 'std'"

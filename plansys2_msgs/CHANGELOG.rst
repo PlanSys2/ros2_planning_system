@@ -2,6 +2,9 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.0 (2021-07-04)
+------------------
+
 1.0.10 (2021-07-03)
 -------------------
 * Add ability to read in pddl problem files to plansys2 and a new AddProblem service to the plansys2_problem_expert.

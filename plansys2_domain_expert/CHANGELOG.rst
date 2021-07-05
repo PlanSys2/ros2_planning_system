@@ -2,6 +2,11 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.0 (2021-07-04)
+------------------
+* Compile for ROS2 Galactic
+* Contributors: Francisco Martín Rico, Jonatan Olofsson
+
 1.0.10 (2021-07-03)
 -------------------
 * Remove node parameter in client constructors

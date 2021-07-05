@@ -2,6 +2,12 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.0 (2021-07-04)
+------------------
+* Fix compile issues for galactic
+* Compile for ROS2 Galactic
+* Contributors: Francisco Martín Rico, Jonatan Olofsson, bjnjo
+
 1.0.10 (2021-07-03)
 -------------------
 * Revert wrong directory move
