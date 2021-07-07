@@ -23,11 +23,12 @@ We hope that this software helps to include planning in more Robotics projects, 
 
 Please, cite us if you use PlanSys2 in your reseach:
 
-```
-@INPROCEEDINGS {,
-    author    = "Francisco Mart{\'{\i}}n and Jonatan Gin{\'{e}}s and Francisco J. Rodr{\'{i}}guez and Vicente Matell{\'{\a}}n",
+``` 
+@INPROCEEDINGS
+ {PlanSys2,
+    author    = "Francisco Mart{\'{\i}}n and Jonatan Gin{\'{e}}s and Francisco J. Rodr{\'{i}}guez and Vicente Matell{\'{a}}n",
     title     = "PlanSys2: A Planning System Framework for ROS2",
-    booktitle = "{IEEE/RSJ} International Conference on Intelligent Robots and Systems,  {IROS} 2021, Prague, Czech Republic, September 27 - October 1, 2021}",
+    booktitle = "{{IEEE/RSJ} International Conference on Intelligent Robots and Systems,  {IROS} 2021, Prague, Czech Republic, September 27 - October 1, 2021}",
     year      = "2021",
     publisher = "{IEEE}"
 }
