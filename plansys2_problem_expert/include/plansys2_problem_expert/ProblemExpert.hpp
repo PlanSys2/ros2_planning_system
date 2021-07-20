@@ -76,8 +76,13 @@ private:
     std::shared_ptr<DomainExpert> & domain_expert_,
     uint8_t node_id = 0);
 
-  bool removeFunctionsReferencing(const plansys2_msgs::msg::Param & param);
-  bool removePredicatesReferencing(const plansys2_msgs::msg::Param & param);
+  void removeInvalidPredicates(
+    std::vector<plansys2::Predicate> & predicates,
+    const plansys2::Instance & instance);
+  void removeInvalidFunctions(
+    std::vector<plansys2::Function> & functions,
+    const plansys2::Instance & instance);
+  void removeInvalidGoals(const plansys2::Instance & instance);
 
   std::vector<plansys2::Instance> instances_;
   std::vector<plansys2::Predicate> predicates_;

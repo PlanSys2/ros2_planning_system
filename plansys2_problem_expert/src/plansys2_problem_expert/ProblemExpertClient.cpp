@@ -146,6 +146,7 @@ ProblemExpertClient::addInstance(const plansys2::Instance & instance)
   }
 
   if (future_result.get()->success) {
+    update_time_ = node_->now();
     return true;
   } else {
     RCLCPP_ERROR_STREAM(
@@ -181,6 +182,7 @@ ProblemExpertClient::removeInstance(const plansys2::Instance & instance)
   }
 
   if (future_result.get()->success) {
+    update_time_ = node_->now();
     return true;
   } else {
     RCLCPP_ERROR_STREAM(
@@ -288,6 +290,7 @@ ProblemExpertClient::addPredicate(const plansys2::Predicate & predicate)
   }
 
   if (future_result.get()->success) {
+    update_time_ = node_->now();
     return true;
   } else {
     RCLCPP_ERROR_STREAM(
@@ -323,6 +326,7 @@ ProblemExpertClient::removePredicate(const plansys2::Predicate & predicate)
   }
 
   if (future_result.get()->success) {
+    update_time_ = node_->now();
     return true;
   } else {
     RCLCPP_ERROR_STREAM(
@@ -459,6 +463,7 @@ ProblemExpertClient::addFunction(const plansys2::Function & function)
   }
 
   if (future_result.get()->success) {
+    update_time_ = node_->now();
     return true;
   } else {
     RCLCPP_ERROR_STREAM(
@@ -494,6 +499,7 @@ ProblemExpertClient::removeFunction(const plansys2::Function & function)
   }
 
   if (future_result.get()->success) {
+    update_time_ = node_->now();
     return true;
   } else {
     RCLCPP_ERROR_STREAM(
@@ -555,6 +561,7 @@ bool ProblemExpertClient::updateFunction(const plansys2::Function & function)
   }
 
   if (future_result.get()->success) {
+    update_time_ = node_->now();
     return true;
   } else {
     RCLCPP_ERROR_STREAM(
@@ -664,6 +671,7 @@ ProblemExpertClient::setGoal(const plansys2::Goal & goal)
   }
 
   if (future_result.get()->success) {
+    update_time_ = node_->now();
     return true;
   } else {
     RCLCPP_ERROR_STREAM(
@@ -733,6 +741,7 @@ ProblemExpertClient::clearGoal()
   }
 
   if (future_result.get()->success) {
+    update_time_ = node_->now();
     return true;
   } else {
     RCLCPP_ERROR_STREAM(
@@ -767,6 +776,7 @@ ProblemExpertClient::clearKnowledge()
   }
 
   if (future_result.get()->success) {
+    update_time_ = node_->now();
     return true;
   } else {
     RCLCPP_ERROR_STREAM(
@@ -837,6 +847,7 @@ ProblemExpertClient::addProblem(const std::string & problem_str)
   }
 
   if (future_result.get()->success) {
+    update_time_ = node_->now();
     return true;
   } else {
     RCLCPP_ERROR_STREAM(

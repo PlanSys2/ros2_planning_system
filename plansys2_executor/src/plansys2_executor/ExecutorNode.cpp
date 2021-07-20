@@ -221,7 +221,7 @@ ExecutorNode::getOrderedSubGoals()
   auto local_functions = problem_client_->getFunctions();
 
   std::vector<plansys2_msgs::msg::Tree> ordered_goals;
-  std::vector<uint32_t> unordered_subgoals = parser::pddl::getSubtrees(goal);
+  std::vector<uint32_t> unordered_subgoals = parser::pddl::getSubtreeIds(goal);
 
   // just in case some goals are already satisfied
   for (auto it = unordered_subgoals.begin(); it != unordered_subgoals.end(); ) {

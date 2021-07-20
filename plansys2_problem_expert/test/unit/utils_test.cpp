@@ -852,10 +852,10 @@ TEST(utils, get_subtrees)
   std::vector<uint32_t> empty_expected;
 
   plansys2_msgs::msg::Tree invalid_goal;
-  ASSERT_EQ(parser::pddl::getSubtrees(invalid_goal), empty_expected);
+  ASSERT_EQ(parser::pddl::getSubtreeIds(invalid_goal), empty_expected);
 
   parser::pddl::fromString(invalid_goal, "(or (patrolled wp1) (patrolled wp2))");
-  ASSERT_EQ(parser::pddl::getSubtrees(invalid_goal), empty_expected);
+  ASSERT_EQ(parser::pddl::getSubtreeIds(invalid_goal), empty_expected);
 
   std::vector<uint32_t> expected;
   expected.push_back(1);
@@ -863,7 +863,7 @@ TEST(utils, get_subtrees)
 
   plansys2_msgs::msg::Tree goal;
   parser::pddl::fromString(goal, "(and (patrolled wp1) (patrolled wp2))");
-  auto actual = parser::pddl::getSubtrees(goal);
+  auto actual = parser::pddl::getSubtreeIds(goal);
   ASSERT_EQ(actual.size(), expected.size());
   for (size_t i = 0; i < expected.size(); i++) {
     ASSERT_EQ(actual[i], expected[i]);
