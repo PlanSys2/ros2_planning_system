@@ -41,6 +41,10 @@ plansys2_msgs::msg::Node::SharedPtr Ground::getTree( plansys2_msgs::msg::Tree & 
           }
         } else if (d.types[lifted->params[i]]->objects.size() > params[i]) {
           param.name = d.types[lifted->params[i]]->object( params[i] ).first;
+	} else if (params[i] < 0){
+            int type_idx = lifted->params[i];            // idx of the type of this param [ref: d.type]
+            int constant_idx = (-1 * params[i]) -1;      // idx of the constant value [ref: d.type.constant]
+            param.name = d.types[type_idx]->constants[constant_idx]; // the actual constant value
         } else {
           param.name = "?" + std::to_string(params[i]);
         }
