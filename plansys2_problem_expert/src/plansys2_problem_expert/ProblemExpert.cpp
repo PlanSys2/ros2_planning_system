@@ -71,9 +71,9 @@ ProblemExpert::removeInstance(const plansys2::Instance & instance)
     i++;
   }
 
-  // (fmrico)ToDo: We should remove all goals containing the removed instance
-  removeFunctionsReferencing(instance);
-  removePredicatesReferencing(instance);
+  removeInvalidPredicates(predicates_, instance);
+  removeInvalidFunctions(functions_, instance);
+  removeInvalidGoals(instance);
 
   return found;
 }
@@ -244,46 +244,107 @@ ProblemExpert::getFunction(const std::string & expr)
   }
 }
 
-bool
-ProblemExpert::removeFunctionsReferencing(const plansys2_msgs::msg::Param & param)
+void
+ProblemExpert::removeInvalidPredicates(
+  std::vector<plansys2::Predicate> & predicates,
+  const plansys2::Instance & instance)
 {
-  int i = 0;
-
-  while (i < functions_.size()) {
-    bool found = false;
-    for (plansys2::Instance parameter : functions_[i].parameters) {
-      if (parameter.name == param.name) {
-        functions_.erase(functions_.begin() + i);
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      i++;
+  for (auto rit = predicates.rbegin(); rit != predicates.rend(); ++rit) {
+    if (std::find_if(
+        rit->parameters.begin(), rit->parameters.end(),
+        [&](const plansys2_msgs::msg::Param & param) {
+          return param.name == instance.name;
+        }) != rit->parameters.end())
+    {
+      predicates.erase(std::next(rit).base());
     }
   }
-  return false;
 }
 
-bool
-ProblemExpert::removePredicatesReferencing(const plansys2_msgs::msg::Param & param)
+void
+ProblemExpert::removeInvalidFunctions(
+  std::vector<plansys2::Function> & functions,
+  const plansys2::Instance & instance)
 {
-  int i = 0;
+  for (auto rit = functions.rbegin(); rit != functions.rend(); ++rit) {
+    if (std::find_if(
+        rit->parameters.begin(), rit->parameters.end(),
+        [&](const plansys2_msgs::msg::Param & param) {
+          return param.name == instance.name;
+        }) != rit->parameters.end())
+    {
+      functions.erase(std::next(rit).base());
+    }
+  }
+}
 
-  while (i < predicates_.size()) {
-    bool found = false;
-    for (plansys2::Instance parameter : predicates_[i].parameters) {
-      if (parameter.name == param.name) {
-        predicates_.erase(predicates_.begin() + i);
-        found = true;
+void ProblemExpert::removeInvalidGoals(const plansys2::Instance & instance)
+{
+  // Get subgoals.
+  auto subgoals = parser::pddl::getSubtrees(goal_);
+
+  // Check for subgoals before continuing.
+  if (subgoals.empty()) {
+    return;
+  }
+
+  // Remove invalid subgoals.
+  for (auto rit = subgoals.rbegin(); rit != subgoals.rend(); ++rit) {
+    // Get predicates.
+    std::vector<plansys2_msgs::msg::Node> predicates;
+    parser::pddl::getPredicates(predicates, *rit);
+
+    // Check predicates for removed instance.
+    bool params_valid = true;
+    for (const auto & predicate : predicates) {
+      if (std::find_if(
+          predicate.parameters.begin(), predicate.parameters.end(),
+          [&](const plansys2_msgs::msg::Param & param) {
+            return param.name == instance.name;
+          }) != predicate.parameters.end())
+      {
+        params_valid = false;
         break;
       }
     }
-    if (!found) {
-      i++;
+
+    // Remove invalid subgoal.
+    if (!params_valid) {
+      subgoals.erase(std::next(rit).base());
+      continue;
+    }
+
+    // Get functions.
+    std::vector<plansys2_msgs::msg::Node> functions;
+    parser::pddl::getFunctions(functions, *rit);
+
+    // Check functions for removed instance.
+    params_valid = true;
+    for (const auto & function : functions) {
+      if (std::find_if(
+          function.parameters.begin(), function.parameters.end(),
+          [&](const plansys2_msgs::msg::Param & param) {
+            return param.name == instance.name;
+          }) != function.parameters.end())
+      {
+        params_valid = false;
+        break;
+      }
+    }
+
+    // Remove invalid subgoal.
+    if (!params_valid) {
+      subgoals.erase(std::next(rit).base());
     }
   }
-  return false;
+
+  // Create a new goal from the remaining subgoals.
+  auto tree = parser::pddl::fromSubtrees(subgoals, goal_.nodes[0].node_type);
+  if (tree) {
+    goal_ = plansys2::Goal(*tree);
+  } else {
+    goal_.nodes.clear();
+  }
 }
 
 plansys2::Goal

@@ -136,16 +136,16 @@ BTBuilder::get_node_satisfy(
 
   GraphNode::Ptr ret = nullptr;
   std::vector<uint32_t> at_start_effects =
-    parser::pddl::getSubtrees(node->action.action->at_start_effects);
+    parser::pddl::getSubtreeIds(node->action.action->at_start_effects);
   std::vector<uint32_t> at_end_effects =
-    parser::pddl::getSubtrees(node->action.action->at_end_effects);
+    parser::pddl::getSubtreeIds(node->action.action->at_end_effects);
 
   std::vector<uint32_t> at_start_requirements =
-    parser::pddl::getSubtrees(node->action.action->at_start_requirements);
+    parser::pddl::getSubtreeIds(node->action.action->at_start_requirements);
   std::vector<uint32_t> over_all_requirements =
-    parser::pddl::getSubtrees(node->action.action->over_all_requirements);
+    parser::pddl::getSubtreeIds(node->action.action->over_all_requirements);
   std::vector<uint32_t> at_end_requirements =
-    parser::pddl::getSubtrees(node->action.action->at_end_requirements);
+    parser::pddl::getSubtreeIds(node->action.action->at_end_requirements);
 
   for (const auto & effect : at_end_effects) {
     std::pair<std::string, uint8_t> base = get_base(node->action.action->at_end_effects, effect);
@@ -398,11 +398,11 @@ BTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
     new_node->level_num = level_counter;
 
     std::vector<uint32_t> at_start_requirements =
-      parser::pddl::getSubtrees(action_sequence.begin()->action->at_start_requirements);
+      parser::pddl::getSubtreeIds(action_sequence.begin()->action->at_start_requirements);
     std::vector<uint32_t> over_all_requirements =
-      parser::pddl::getSubtrees(action_sequence.begin()->action->over_all_requirements);
+      parser::pddl::getSubtreeIds(action_sequence.begin()->action->over_all_requirements);
     std::vector<uint32_t> at_end_requirements =
-      parser::pddl::getSubtrees(action_sequence.begin()->action->at_end_requirements);
+      parser::pddl::getSubtreeIds(action_sequence.begin()->action->at_end_requirements);
 
     auto it_at_start = at_start_requirements.begin();
     while (it_at_start != at_start_requirements.end()) {

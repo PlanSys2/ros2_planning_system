@@ -78,6 +78,8 @@ public:
   std::string getProblem();
   bool addProblem(const std::string & problem_str);
 
+  rclcpp::Time getUpdateTime() const {return update_time_;}
+
 private:
   rclcpp::Client<plansys2_msgs::srv::AddProblem>::SharedPtr
     add_problem_client_;
@@ -124,6 +126,7 @@ private:
   rclcpp::Client<plansys2_msgs::srv::IsProblemGoalSatisfied>::SharedPtr
     is_problem_goal_satisfied_client_;
   rclcpp::Node::SharedPtr node_;
+  rclcpp::Time update_time_;
 };
 
 }  // namespace plansys2

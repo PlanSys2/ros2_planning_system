@@ -125,7 +125,11 @@ plansys2_msgs::msg::Tree::SharedPtr fromSubtree(const plansys2_msgs::msg::Tree &
 
 plansys2_msgs::msg::Tree::SharedPtr fromSubtrees(const std::vector<plansys2_msgs::msg::Tree> & subtrees, uint8_t node_type);
 
-std::vector<uint32_t> getSubtrees(const plansys2_msgs::msg::Tree & tree);
+std::vector<uint32_t> getSubtreeIds(const plansys2_msgs::msg::Tree & tree);
+
+std::vector<plansys2_msgs::msg::Tree> getSubtrees(const plansys2_msgs::msg::Tree & tree);
+
+void getSubtreeChildren(plansys2_msgs::msg::Tree & subtree, const plansys2_msgs::msg::Tree & tree, uint32_t tree_parent, uint32_t subtree_parent);
 
 void getPredicates(std::vector<plansys2_msgs::msg::Node> & predicates, const plansys2_msgs::msg::Tree & tree, uint32_t node_id = 0, bool negate = false);
 

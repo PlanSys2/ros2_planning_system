@@ -872,7 +872,7 @@ plansys2_msgs::msg::Tree::SharedPtr fromSubtrees(const std::vector<plansys2_msgs
   return tree;
 }
 
-std::vector<uint32_t> getSubtrees(const plansys2_msgs::msg::Tree & tree)
+std::vector<uint32_t> getSubtreeIds(const plansys2_msgs::msg::Tree & tree)
 {
   if (tree.nodes.empty()) {  // No expression
     return {};
@@ -884,10 +884,36 @@ std::vector<uint32_t> getSubtrees(const plansys2_msgs::msg::Tree & tree)
       }
 
     default:
-      std::cerr << "getSubtrees: Error parsing expresion [" << toString(tree) << "]" << std::endl;
+      std::cerr << "getSubtreeIds: Error parsing expresion [" << toString(tree) << "]" << std::endl;
   }
 
   return {};
+}
+
+std::vector<plansys2_msgs::msg::Tree> getSubtrees(const plansys2_msgs::msg::Tree & tree)
+{
+  std::vector<uint32_t> node_ids = parser::pddl::getSubtreeIds(tree);
+  std::vector<plansys2_msgs::msg::Tree> subtrees;
+  for (auto node_id : node_ids)
+  {
+    plansys2_msgs::msg::Tree subtree;
+    subtree.nodes.push_back(tree.nodes[node_id]);
+    subtree.nodes[0].node_id = 0;
+    getSubtreeChildren(subtree, tree, node_id, 0);
+    subtrees.push_back(subtree);
+  }
+  return subtrees;
+}
+
+void getSubtreeChildren(plansys2_msgs::msg::Tree & subtree, const plansys2_msgs::msg::Tree & tree, uint32_t tree_parent, uint32_t subtree_parent)
+{
+  for (auto child_id : tree.nodes[tree_parent].children) {
+    auto subtree_size = subtree.nodes.size();
+    subtree.nodes[subtree_parent].children.push_back(subtree_size);
+    subtree.nodes.push_back(tree.nodes[child_id]);
+    subtree.nodes.back().node_id = subtree_size;
+    getSubtreeChildren(subtree, tree, child_id, subtree_size);
+  }
 }
 
 void getPredicates(std::vector<plansys2_msgs::msg::Node> & predicates, const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate)
