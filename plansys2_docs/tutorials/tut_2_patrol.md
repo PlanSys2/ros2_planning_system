@@ -1,6 +1,6 @@
 # Patrolling example
 
-[This package](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/patrol_navigation_example) contains a more complex  example that uses ROS2 Navigation to make a robot patrol.
+[This package](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/tree/master/plansys2_patrol_navigation_example) contains a more complex  example that uses ROS2 Navigation to make a robot patrol.
 
 In one terminal run:
 
@@ -16,13 +16,13 @@ This command launchs plansys2 and the nodes that implements the actions (move an
 - wp3 (0.0, 2.0, 0.0)
 - wp4 (-0.5, 0.5, 0.0)
 
-The setup from symbol to metric coordinates are made in the contructior of [MoveAction](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/patrol_navigation_example/src/move_action_node.cpp). They are stored in a std::map to get the metric coordinate of the commanded waypoint when the action is activated. The waypoint is an argument of the action.
+The setup from symbol to metric coordinates are made in the contructior of [MoveAction](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/blob/master/plansys2_patrol_navigation_example/src/move_action_node.cpp). They are stored in a std::map to get the metric coordinate of the commanded waypoint when the action is activated. The waypoint is an argument of the action.
 
-The [MoveAction](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/patrol_navigation_example/src/move_action_node.cpp) action calls to the navigation 2 stack to make the robot move.
+The [MoveAction](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/blob/master/plansys2_patrol_navigation_example/src/move_action_node.cpp) action calls to the navigation 2 stack to make the robot move.
 
-The [Patrol](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/patrol_navigation_example/src/patrol_action_node.cpp) action only makes the robot turn few seconds, by sending `geometry_msgs::msg::Twist` to `/cmd_vel`.
+The [Patrol](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/blob/master/plansys2_patrol_navigation_example/src/patrol_action_node.cpp) action only makes the robot turn few seconds, by sending `geometry_msgs::msg::Twist` to `/cmd_vel`.
 
-Next, we will run the node of the application, [patrolling controller node](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/patrol_navigation_example/src/patrolling_controller_node.cpp). This controls the phase of the behavior of the robot. It is implemented with a Finite State Machine (FSM). In each state, it sets a goal (`(and(patrolled wp1))`, for example), and calls to executor to generate a plan and execute it. The `init_knowledge()` method sets the connections among waypoints (all the navigations from a waypoint to another has to visit `wp_control`):
+Next, we will run the node of the application, [patrolling controller node](https://github.com/IntelligentRoboticsLabs/ros2_planning_system_examples/blob/master/plansys2_patrol_navigation_example/src/patrolling_controller_node.cpp). This controls the phase of the behavior of the robot. It is implemented with a Finite State Machine (FSM). In each state, it sets a goal (`(and(patrolled wp1))`, for example), and calls to executor to generate a plan and execute it. The `init_knowledge()` method sets the connections among waypoints (all the navigations from a waypoint to another has to visit `wp_control`):
 
 ``` c++
     problem_expert_->addInstance(plansys2::Instance{"r2d2", "robot"});
