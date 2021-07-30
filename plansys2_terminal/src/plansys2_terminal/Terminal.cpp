@@ -448,7 +448,7 @@ Terminal::process_get(std::vector<std::string> & command, std::ostringstream & o
             plan_item.duration << std::endl;
         }
       } else {
-        os << "No se ha encontrado plan" << std::endl;
+        os << "Plan not found" << std::endl;
       }
     } else {
       os << " get ---> " << command[0] << std::endl;
