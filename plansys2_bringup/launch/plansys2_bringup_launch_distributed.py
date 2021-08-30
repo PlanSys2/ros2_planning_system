@@ -102,7 +102,7 @@ def generate_launch_description():
     lifecycle_manager_cmd = Node(
         package='plansys2_lifecycle_manager',
         executable='lifecycle_manager_node',
-        node_name='lifecycle_manager_node',
+        name='lifecycle_manager_node',
         namespace=namespace,
         output='screen',
         parameters=[])

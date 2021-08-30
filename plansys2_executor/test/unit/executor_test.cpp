@@ -60,7 +60,7 @@
 #include "gtest/gtest.h"
 
 
-TEST(problem_expert, action_executor_api)
+TEST(executor, action_executor_api)
 {
   auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
   node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -195,7 +195,7 @@ public:
   int cycles_;
 };
 
-TEST(problem_expert, action_executor_client)
+TEST(executor, action_executor_client)
 {
   auto test_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
   auto aux_node = rclcpp_lifecycle::LifecycleNode::make_shared("aux_node");
@@ -296,7 +296,7 @@ TEST(problem_expert, action_executor_client)
   t.join();
 }
 
-TEST(problem_expert, action_executor)
+TEST(executor, action_executor)
 {
   auto test_node = rclcpp::Node::make_shared("get_action_from_string");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
@@ -608,7 +608,7 @@ bool CheckAtEndReqTest::halted_ = false;
 bool ApplyAtStartEffectTest::halted_ = false;
 bool ApplyAtEndEffectTest::halted_ = false;
 
-TEST(problem_expert, action_real_action_1)
+TEST(executor, action_real_action_1)
 {
   auto test_node = rclcpp::Node::make_shared("action_real_action_1");
   auto test_lf_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_lf_node");
@@ -682,7 +682,8 @@ TEST(problem_expert, action_real_action_1)
     <root main_tree_to_execute="MainTree">
       <BehaviorTree ID="MainTree">
         <Sequence name="(move r2d2 steering_wheels_zone assembly_zone):0">
-          <WaitAtStartReq action="other"/>
+          <WaitAction action="other"/>
+          <WaitAtStartReq action="(move r2d2 steering_wheels_zone assembly_zone):0"/>
           <ApplyAtStartEffect action="(move r2d2 steering_wheels_zone assembly_zone):0"/>
           <ReactiveSequence name="(move r2d2 steering_wheels_zone assembly_zone):0">
             <CheckOverAllReq action="(move r2d2 steering_wheels_zone assembly_zone):0"/>
@@ -731,7 +732,7 @@ TEST(problem_expert, action_real_action_1)
     for (int i = 0; i < 10; i++) {
       status = tree.tickRoot();
       ASSERT_EQ(status, BT::NodeStatus::RUNNING);
-      ASSERT_EQ(WaitAtStartReqTest::test_status, BT::NodeStatus::RUNNING);
+      ASSERT_EQ(WaitActionTest::test_status, BT::NodeStatus::RUNNING);
     }
   } catch (const std::exception & e) {
     std::cerr << e.what() << '\n';
@@ -742,6 +743,7 @@ TEST(problem_expert, action_real_action_1)
     R"(
     <root main_tree_to_execute="MainTree">
       <BehaviorTree ID="MainTree">
+        <WaitAtStartReq action="(move r2d2 steering_wheels_zone assembly_zone):0"/>
         <Sequence name="(move r2d2 steering_wheels_zone assembly_zone):0">
           <ApplyAtStartEffect action="(move r2d2 steering_wheels_zone assembly_zone):0"/>
           <ReactiveSequence name="(move r2d2 steering_wheels_zone assembly_zone):0">
@@ -861,7 +863,7 @@ TEST(problem_expert, action_real_action_1)
   t.join();
 }
 
-TEST(problem_expert, cancel_bt_execution)
+TEST(executor, cancel_bt_execution)
 {
   auto test_node = rclcpp::Node::make_shared("action_real_action_1");
   auto test_lf_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_lf_node");
@@ -934,6 +936,7 @@ TEST(problem_expert, cancel_bt_execution)
     R"(
     <root main_tree_to_execute="MainTree">
       <BehaviorTree ID="MainTree">
+        <WaitAtStartReq action="(move r2d2 steering_wheels_zone assembly_zone):0"/>
         <Sequence name="(move r2d2 steering_wheels_zone assembly_zone):0">
           <ApplyAtStartEffect action="(move r2d2 steering_wheels_zone assembly_zone):0"/>
           <ReactiveSequence name="(move r2d2 steering_wheels_zone assembly_zone):0">
@@ -1058,7 +1061,7 @@ public:
   bool is_cancelled() {return cancel_plan_requested_;}
 };
 
-TEST(problem_expert, executor_client_execute_plan)
+TEST(executor, executor_client_execute_plan)
 {
   auto test_node_1 = rclcpp::Node::make_shared("test_node_1");
   auto test_node_2 = rclcpp::Node::make_shared("test_node_2");
@@ -1256,7 +1259,7 @@ public:
   int cycles_;
 };
 
-TEST(problem_expert, executor_client_ordered_sub_goals)
+TEST(executor, executor_client_ordered_sub_goals)
 {
   auto test_node_1 = rclcpp::Node::make_shared("test_node_1");
   auto test_node_2 = rclcpp::Node::make_shared("test_node_2");
@@ -1402,7 +1405,7 @@ TEST(problem_expert, executor_client_ordered_sub_goals)
   t.join();
 }
 
-TEST(problem_expert, executor_client_cancel_plan)
+TEST(executor, executor_client_cancel_plan)
 {
   auto test_node_1 = rclcpp::Node::make_shared("test_node_1");
   auto test_node_2 = rclcpp::Node::make_shared("test_node_2");
@@ -1535,7 +1538,7 @@ TEST(problem_expert, executor_client_cancel_plan)
 }
 
 
-TEST(problem_expert, action_timeout)
+TEST(executor, action_timeout)
 {
   auto test_node_1 = rclcpp::Node::make_shared("test_node_1");
   auto test_node_2 = rclcpp::Node::make_shared("test_node_2");
