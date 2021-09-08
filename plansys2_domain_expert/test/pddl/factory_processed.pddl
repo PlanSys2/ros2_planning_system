@@ -8,6 +8,9 @@
 	car - object
 )
 
+(:constants
+)
+
 (:predicates
 	( car_assembled ?car0 - car )
 	( is_assembly_zone ?zone0 - zone )
