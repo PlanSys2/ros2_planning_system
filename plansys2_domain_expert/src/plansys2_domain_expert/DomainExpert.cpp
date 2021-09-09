@@ -62,6 +62,14 @@ DomainExpert::getTypes()
   return ret;
 }
 
+std::vector<std::string>
+DomainExpert::getConstants(const std::string & type)
+{
+  if (!domain_->typed) {return std::vector<std::string>();}
+
+  return domain_->getType(type)->constants.tokens;
+}
+
 std::vector<plansys2::Predicate>
 DomainExpert::getPredicates()
 {
