@@ -42,10 +42,18 @@ CheckAtEndReq::tick()
   std::string action;
   getInput("action", action);
 
+  auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
+
   auto reqs = (*action_map_)[action].durative_action_info->at_end_requirements;
 
   if (!check(reqs, problem_client_)) {
     (*action_map_)[action].execution_error_info = "Error checking at end requirements";
+
+    RCLCPP_ERROR_STREAM(
+      node->get_logger(),
+      "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
+        parser::pddl::toString((*action_map_)[action].durative_action_info->at_end_requirements));
+
     return BT::NodeStatus::FAILURE;
   } else {
     return BT::NodeStatus::SUCCESS;

@@ -46,7 +46,7 @@ BTBuilder::BTBuilder(
   } else {
     bt_action_ =
       R""""(<Sequence name="ACTION_ID">
-WAIT_AT_START_ACTIONS
+WAIT_PREV_ACTIONS
   <ApplyAtStartEffect action="ACTION_ID"/>
   <ReactiveSequence name="ACTION_ID">
     <CheckOverAllReq action="ACTION_ID"/>
@@ -861,7 +861,7 @@ BTBuilder::execution_block(const GraphNode::Ptr & node, int l)
     const std::string parent_action_id = "(" +
       parser::pddl::nameActionsToString(previous_node->action.action) + "):" +
       std::to_string(static_cast<int>( previous_node->action.time * 1000));
-    wait_actions = wait_actions + t(1) + "<WaitAtStartReq action=\"" + parent_action_id + "\"/>";
+    wait_actions = wait_actions + t(1) + "<WaitAction action=\"" + parent_action_id + "\"/>";
 
     if (previous_node != *node->in_arcs.rbegin()) {
       wait_actions = wait_actions + "\n";
@@ -869,7 +869,7 @@ BTBuilder::execution_block(const GraphNode::Ptr & node, int l)
   }
 
   replace(ret_aux, "ACTION_ID", action_id);
-  replace(ret_aux, "WAIT_AT_START_ACTIONS", wait_actions);
+  replace(ret_aux, "WAIT_PREV_ACTIONS", wait_actions);
 
   std::istringstream f(ret_aux);
   std::string line;

@@ -45,8 +45,8 @@ def generate_launch_description():
     # Specify the actions
     executor_cmd = Node(
         package='plansys2_executor',
-        node_executable='executor_node',
-        node_name='executor',
+        executable='executor_node',
+        name='executor',
         namespace=namespace,
         output='screen',
         parameters=[

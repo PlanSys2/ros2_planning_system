@@ -1,5 +1,5 @@
 <Sequence name="ACTION_ID">
-WAIT_AT_START_ACTIONS
+WAIT_PREV_ACTIONS
   <ApplyAtStartEffect action="ACTION_ID"/>
   <ReactiveSequence name="ACTION_ID">
     <CheckTimeout action="ACTION_ID"/>

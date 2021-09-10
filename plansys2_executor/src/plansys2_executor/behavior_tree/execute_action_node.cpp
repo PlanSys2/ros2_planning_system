@@ -52,6 +52,8 @@ ExecuteAction::tick()
   std::string action;
   getInput("action", action);
 
+  auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
+
   size_t delim = action.find(":");
   auto action_expr = action.substr(0, delim);
 
@@ -59,7 +61,17 @@ ExecuteAction::tick()
     (*action_map_)[action].action_executor = ActionExecutor::make_shared(action_expr, node_);
   }
 
-  return (*action_map_)[action].action_executor->tick(node_->now());
+  auto retval = (*action_map_)[action].action_executor->tick(node_->now());
+
+  if (retval == BT::NodeStatus::FAILURE) {
+    (*action_map_)[action].execution_error_info = "Error executing the action";
+
+    RCLCPP_ERROR_STREAM(
+      node->get_logger(),
+      "[" << action << "]" << (*action_map_)[action].execution_error_info);
+  }
+
+  return retval;
 }
 
 }  // namespace plansys2
