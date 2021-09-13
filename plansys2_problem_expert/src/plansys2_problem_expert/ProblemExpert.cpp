@@ -382,6 +382,8 @@ ProblemExpert::clearKnowledge()
   instances_.clear();
   predicates_.clear();
   functions_.clear();
+  clearGoal();
+
   return true;
 }
 
