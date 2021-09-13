@@ -633,6 +633,10 @@ TEST(problem_expert, add_problem)
   ASSERT_EQ(problem_expert.getPredicates().size(), 0);
   ASSERT_EQ(problem_expert.getFunctions().size(), 0);
   ASSERT_EQ(problem_expert.getInstances().size(), 0);
+  ASSERT_EQ(
+    problem_expert.getProblem(),
+    std::string("( define ( problem problem_1 )\n( :domain plansys2 )\n") +
+    std::string("( :objects\n)\n( :init\n)\n( :goal\n\t( and\n\t)\n)\n)\n"));
 }
 
 TEST(problem_expert, is_goal_satisfied)
