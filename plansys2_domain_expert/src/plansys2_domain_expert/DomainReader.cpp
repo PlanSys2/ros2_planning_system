@@ -61,7 +61,15 @@ DomainReader::add_domain(const std::string & domain)
 std::string
 DomainReader::get_joint_domain() const
 {
-  std::string ret = "(define (domain plansys2)\n";
+  std::string ret = "(define (domain ";
+
+  for (size_t i = 0; i < domains_.size(); i++) {
+    ret += domains_[i].name;
+    if (i < domains_.size() - 1) {
+      ret += "_";
+    }
+  }
+  ret += ")\n";
 
   ret += "(:requirements ";
 

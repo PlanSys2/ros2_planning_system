@@ -44,6 +44,12 @@ DomainExpert::extendDomain(const std::string & domain)
   }
 }
 
+std::string
+DomainExpert::getName()
+{
+  return domain_->name;
+}
+
 std::vector<std::string>
 DomainExpert::getTypes()
 {

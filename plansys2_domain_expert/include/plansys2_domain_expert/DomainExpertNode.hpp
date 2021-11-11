@@ -23,6 +23,7 @@
 #include "std_msgs/msg/string.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_msgs/srv/get_domain_name.hpp"
 #include "plansys2_msgs/srv/get_domain_types.hpp"
 #include "plansys2_msgs/srv/get_domain_actions.hpp"
 #include "plansys2_msgs/srv/get_domain_action_details.hpp"
@@ -89,6 +90,17 @@ public:
    */
   CallbackReturnT on_error(const rclcpp_lifecycle::State & state);
 
+
+  /// Receives the result of the GetDomainName service call
+  /**
+   * \param[in] request_header The header of the request
+   * \param[in] request The request
+   * \param[out] request The response
+   */
+  void get_domain_name_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::GetDomainName::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::GetDomainName::Response> response);
 
   /// Receives the result of the GetDomainTypes service call
   /**
@@ -203,6 +215,7 @@ public:
 private:
   std::shared_ptr<DomainExpert> domain_expert_;
 
+  rclcpp::Service<plansys2_msgs::srv::GetDomainName>::SharedPtr get_name_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainTypes>::SharedPtr get_types_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_domain_actions_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr

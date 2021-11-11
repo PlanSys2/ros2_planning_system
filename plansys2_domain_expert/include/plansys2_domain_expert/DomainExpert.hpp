@@ -48,6 +48,12 @@ public:
    */
   void extendDomain(const std::string & domain);
 
+  /// Get the domain name.
+  /**
+   * \return A string containing the domain name.
+   */
+  std::string getName();
+
   /// Get the types existing in the domain.
   /**
    * \return The vector containing the names of the types.

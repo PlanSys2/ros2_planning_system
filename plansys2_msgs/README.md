@@ -184,6 +184,10 @@ If the optional parameter list is not empty it will be used to define the return
 Otherwise, auto-generated values will be used.
 The optional parameter list can be used to retrieve an instantiated plan action.
 
+[`plansys2_msgs::srv::GetDomainName`](../plansys2_msgs/srv/GetDomainName.srv)
+
+* Returns the domain name.
+
 [`plansys2_msgs::srv::GetDomainTypes`](../plansys2_msgs/srv/GetDomainTypes.srv)
 
 * Returns the domain types.
