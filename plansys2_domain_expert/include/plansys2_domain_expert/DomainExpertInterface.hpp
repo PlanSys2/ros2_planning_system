@@ -37,6 +37,12 @@ public:
    */
   DomainExpertInterface() {}
 
+  /// Get the domain name.
+  /**
+   * \return A string containing the domain name.
+   */
+  virtual std::string getName() = 0;
+
   /// Get the types existing in the domain.
   /**
    * \return The vector containing the names of the types.

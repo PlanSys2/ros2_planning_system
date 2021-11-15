@@ -1,4 +1,4 @@
-(define (domain plansys2)
+(define (domain factory)
 (:requirements :adl :durative-actions :fluents :strips :typing )
 
 (:types

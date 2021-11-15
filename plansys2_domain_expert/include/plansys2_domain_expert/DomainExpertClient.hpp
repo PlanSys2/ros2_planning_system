@@ -28,6 +28,7 @@
 #include "plansys2_msgs/msg/node.hpp"
 
 #include "plansys2_msgs/srv/get_domain.hpp"
+#include "plansys2_msgs/srv/get_domain_name.hpp"
 #include "plansys2_msgs/srv/get_domain_types.hpp"
 #include "plansys2_msgs/srv/get_domain_actions.hpp"
 #include "plansys2_msgs/srv/get_domain_action_details.hpp"
@@ -51,6 +52,12 @@ class DomainExpertClient : public DomainExpertInterface
 public:
   /// Create a new DomainExpertClient.
   DomainExpertClient();
+
+  /// Get the domain name.
+  /**
+   * \return A string containing the domain name.
+   */
+  std::string getName();
 
   /// Get the predicates existing in the domain.
   /**
@@ -128,6 +135,7 @@ private:
   rclcpp::Node::SharedPtr node_;
 
   rclcpp::Client<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetDomainName>::SharedPtr get_name_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainTypes>::SharedPtr get_types_client_;
   rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_predicates_client_;
   rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_functions_client_;
