@@ -57,6 +57,7 @@ install(DIRECTORY include/
 
 install(TARGETS
   bt_action_node
+  ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
