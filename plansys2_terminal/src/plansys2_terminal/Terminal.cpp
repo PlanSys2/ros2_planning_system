@@ -761,7 +761,7 @@ Terminal::execute_plan()
   if (executor_client_->getResult().value().success) {
     std::cout << "Successful finished " << std::endl;
   } else {
-    std::cout << "Finished with error: " << std::endl;
+    std::cout << "Finished with error(s) " << std::endl;
   }
 }
 
