@@ -106,7 +106,7 @@ ActionExecutor::action_hub_callback(const plansys2_msgs::msg::ActionExecution::S
     default:
       RCLCPP_ERROR(
         node_->get_logger(), "Msg %d type not recognized in %s executor requester",
-        msg->type, action_);
+        msg->type, action_.c_str());
       break;
   }
 }

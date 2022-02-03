@@ -340,7 +340,7 @@ DomainExpertNode::get_domain_predicate_details_service_callback(
     } else {
       RCLCPP_WARN(
         get_logger(), "Requesting a non-existing predicate [%s]",
-        request->expression);
+        request->expression.c_str());
       response->success = false;
       response->error_info = "Predicate not found";
     }
@@ -382,7 +382,7 @@ DomainExpertNode::get_domain_function_details_service_callback(
     } else {
       RCLCPP_WARN(
         get_logger(), "Requesting a non-existing function [%s]",
-        request->expression);
+        request->expression.c_str());
       response->success = false;
       response->error_info = "Function not found";
     }

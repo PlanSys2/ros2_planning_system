@@ -13,14 +13,12 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    stdout_linebuf_envvar = SetEnvironmentVariable(
-        'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
     namespace = LaunchConfiguration('namespace')
     params_file = LaunchConfiguration('params_file')
 
@@ -41,8 +39,6 @@ def generate_launch_description():
     # Create the launch description and populate
     ld = LaunchDescription()
 
-    # Set environment variables
-    ld.add_action(stdout_linebuf_envvar)
     ld.add_action(declare_namespace_cmd)
 
     # Declare the launch options

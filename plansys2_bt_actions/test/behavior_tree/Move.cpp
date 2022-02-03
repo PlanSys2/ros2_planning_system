@@ -35,16 +35,16 @@ Move::Move(
   rclcpp::Node::SharedPtr node;
   config().blackboard->get("node", node);
 
-  node->declare_parameter("waypoints");
-  node->declare_parameter("waypoint_coords");
-
+  node->declare_parameter<std::vector<std::string>>(
+    "waypoints", std::vector<std::string>({}));
   if (node->has_parameter("waypoints")) {
     std::vector<std::string> wp_names;
 
     node->get_parameter_or("waypoints", wp_names, {});
 
     for (auto & wp : wp_names) {
-      node->declare_parameter("waypoint_coords." + wp);
+      node->declare_parameter<std::vector<double>>(
+        "waypoint_coords." + wp, std::vector<double>({}));
 
       std::vector<double> coords;
       if (node->get_parameter_or("waypoint_coords." + wp, coords, {})) {
