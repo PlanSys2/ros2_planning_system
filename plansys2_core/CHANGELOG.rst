@@ -2,6 +2,12 @@
 Changelog for package plansys2_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove pthread dependency
+* Merge galactic-devel
+* Contributors: Francisco Martín Rico
+
 2.0.0 (2021-07-04)
 ------------------
 

@@ -2,6 +2,11 @@
 Changelog for package plansys2_lifecycle_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge galactic-devel
+* Contributors: Francisco Martín Rico
+
 2.0.0 (2021-07-04)
 ------------------
 

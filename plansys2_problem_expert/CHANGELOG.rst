@@ -2,6 +2,15 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update deprecated APIs in launchers and parameters
+* get-domain-name: Added service for retrieving domain name. Concatenating domain names when using multiple domains.
+* Update launcher param names
+* remove-invalid-goals: Removing invalid goals when instances are removed. Keep track of update time in problem expert.
+* Merge galactic-devel
+* Contributors: Francisco Martín Rico, Josh Zapf
+
 2.0.0 (2021-07-04)
 ------------------
 * Compile for ROS2 Galactic

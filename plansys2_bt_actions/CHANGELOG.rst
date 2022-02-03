@@ -2,6 +2,13 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update deprecated APIs in launchers and parameters
+* Fix plansys2_bt_actions CMakeLists.txt
+* Merge galactic-devel
+* Contributors: Francisco Martín Rico, Jake Keller
+
 2.0.0 (2021-07-04)
 ------------------
 
