@@ -29,8 +29,9 @@ BTAction::BTAction(
   const std::chrono::nanoseconds & rate)
 : ActionExecutorClient(action, rate)
 {
-  declare_parameter("bt_xml_file");
-  declare_parameter("plugins");
+  declare_parameter<std::string>("bt_xml_file", "");
+  declare_parameter<std::vector<std::string>>(
+    "plugins", std::vector<std::string>({}));
 #ifdef ZMQ_FOUND
   declare_parameter<bool>("enable_groot_monitoring", true);
   declare_parameter<int>("publisher_port", -1);

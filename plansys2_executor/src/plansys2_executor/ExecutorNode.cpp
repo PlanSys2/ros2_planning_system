@@ -70,7 +70,9 @@ ExecutorNode::ExecutorNode()
   // Declaring individual action parameters so they can be queried on the command line
   auto action_timeouts_actions = this->get_parameter("action_timeouts.actions").as_string_array();
   for (auto action : action_timeouts_actions) {
-    this->declare_parameter("action_timeouts." + action + ".duration_overrun_percentage");
+    this->declare_parameter<double>(
+      "action_timeouts." + action + ".duration_overrun_percentage",
+      0.0);
   }
 
 #ifdef ZMQ_FOUND
