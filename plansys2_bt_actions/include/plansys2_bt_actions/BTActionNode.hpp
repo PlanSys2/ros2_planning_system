@@ -40,10 +40,6 @@ public:
   {
     node_ = config().blackboard->get<typename NodeT::SharedPtr>("node");
 
-    // Get the required items from the blackboard
-    server_timeout_ = 1s;
-    //  config().blackboard->template get<std::chrono::milliseconds>("server_timeout");
-    // getInput<std::chrono::milliseconds>("server_timeout", server_timeout_);
 
     // Initialize the input and output messages
     goal_ = typename ActionT::Goal();
@@ -53,7 +49,6 @@ public:
     if (getInput("server_name", remapped_action_name)) {
       action_name_ = remapped_action_name;
     }
-    createActionClient(action_name_);
 
     // Give the derive class a chance to do any initialization
     RCLCPP_INFO(node_->get_logger(), "\"%s\" BtActionNode initialized", xml_tag_name.c_str());
@@ -66,14 +61,14 @@ public:
   }
 
   // Create instance of an action server
-  void createActionClient(const std::string & action_name)
+  bool createActionClient(const std::string & action_name)
   {
     // Now that we have the ROS node to use, create the action client for this BT action
     action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name);
 
     // Make sure the server is actually there before continuing
     RCLCPP_INFO(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
-    action_client_->wait_for_action_server();
+    return action_client_->wait_for_action_server(server_timeout_);
   }
 
   // Any subclass of BtActionNode that accepts parameters must provide a providedPorts method
@@ -82,7 +77,8 @@ public:
   {
     BT::PortsList basic = {
       BT::InputPort<std::string>("server_name", "Action server name"),
-      BT::InputPort<std::chrono::milliseconds>("server_timeout")
+      BT::InputPort<unsigned int>(
+        "server_timeout", 1000, "The amount of time to wait for a response from the action server, in units of milliseconds")
     };
     basic.insert(addition.begin(), addition.end());
 
@@ -134,7 +130,20 @@ public:
   {
     // first step to be done only at the beginning of the Action
     if (status() == BT::NodeStatus::IDLE) {
-      createActionClient(action_name_);
+      // Get the required items from the blackboard
+      unsigned int server_timeout_int
+      ;
+      if (!getInput<unsigned int>("server_timeout", server_timeout_int)) {
+        // this should never happen, due to the the port having a default value
+        throw BT::RuntimeError("missing required input [server_timeout]");
+      }
+      server_timeout_ = std::chrono::milliseconds(server_timeout_int);
+
+      if (!createActionClient(action_name_)) {
+        setStatus(BT::NodeStatus::IDLE);
+        RCLCPP_ERROR(node_->get_logger(), "Could not create action client!");
+        return BT::NodeStatus::FAILURE;
+      }
 
       // setting the status to RUNNING to notify the BT Loggers (if any)
       setStatus(BT::NodeStatus::RUNNING);
@@ -198,6 +207,7 @@ public:
       }
     }
 
+    action_client_ = nullptr;
     setStatus(BT::NodeStatus::IDLE);
   }
 
