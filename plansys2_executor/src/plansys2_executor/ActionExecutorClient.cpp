@@ -35,10 +35,12 @@ ActionExecutorClient::ActionExecutorClient(
   rate_(rate),
   commited_(false)
 {
-  declare_parameter("action_name");
-  declare_parameter("specialized_arguments");
-  declare_parameter("rate");
+  declare_parameter<std::string>("action_name", "");
+  declare_parameter<std::vector<std::string>>(
+    "specialized_arguments", std::vector<std::string>({}));
 
+  double default_rate = 1.0 / std::chrono::duration<double>(rate_).count();
+  declare_parameter<double>("rate", default_rate);
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::NOT_READY;
   status_.node_name = get_name();
 }
@@ -66,9 +68,8 @@ ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
   get_parameter_or<std::vector<std::string>>(
     "specialized_arguments", specialized_arguments_, std::vector<std::string>({}));
 
-
-  double rate = 1.0 / std::chrono::duration<double>(rate_).count();
-  get_parameter_or("rate", rate, rate);
+  double rate;
+  get_parameter("rate", rate);
 
   rate_ = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
     std::chrono::duration<double>(1.0 / rate));
