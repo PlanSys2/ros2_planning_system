@@ -2,8 +2,8 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.1 (2022-02-03)
+------------------
 * Update deprecated APIs in launchers and parameters
 * get-domain-name: Added service for retrieving domain name. Concatenating domain names when using multiple domains.
 * Update launcher param names

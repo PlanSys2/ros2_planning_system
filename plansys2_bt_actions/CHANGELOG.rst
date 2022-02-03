@@ -2,8 +2,8 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.1 (2022-02-03)
+------------------
 * Update deprecated APIs in launchers and parameters
 * Fix plansys2_bt_actions CMakeLists.txt
 * Merge galactic-devel

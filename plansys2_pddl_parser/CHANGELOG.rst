@@ -2,8 +2,8 @@
 Changelog for package plansys2_pddl_parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.1 (2022-02-03)
+------------------
 * remove-invalid-goals: Removing invalid goals when instances are removed. Keep track of update time in problem expert.
 * Merge galactic-devel
 * Contributors: Francisco Martín Rico, Josh Zapf
