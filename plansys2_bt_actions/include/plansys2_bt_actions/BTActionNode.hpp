@@ -94,10 +94,18 @@ public:
   }
 
   // Derived classes can override any of the following methods to hook into the
-  // processing for the action: on_tick, on_wait_for_result, and on_success
+  // processing for the action: on_tick, on_feedback, on_wait_for_result,
+  // and on_success
 
   // Could do dynamic checks, such as getting updates to values on the blackboard
   virtual void on_tick()
+  {
+  }
+
+  // Provides the opportunity for derived classes to log feedback, update the
+  // goal, or cancel the goal
+  virtual void on_feedback(
+    const std::shared_ptr<const typename ActionT::Feedback> feedback)
   {
   }
 
@@ -253,6 +261,11 @@ protected:
           goal_result_available_ = true;
           result_ = result;
         }
+      };
+    send_goal_options.feedback_callback =
+      [this](typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr,
+        const std::shared_ptr<const typename ActionT::Feedback> feedback) {
+        on_feedback(feedback);
       };
 
     auto future_goal_handle = action_client_->async_send_goal(goal_, send_goal_options);
