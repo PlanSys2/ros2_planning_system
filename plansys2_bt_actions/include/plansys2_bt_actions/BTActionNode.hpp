@@ -134,11 +134,20 @@ public:
     // first step to be done only at the beginning of the Action
     if (status() == BT::NodeStatus::IDLE) {
       // Get the required items from the blackboard
-      unsigned int server_timeout_int
-      ;
+      unsigned int server_timeout_int;
       if (!getInput<unsigned int>("server_timeout", server_timeout_int)) {
-        // this should never happen, due to the the port having a default value
-        throw BT::RuntimeError("missing required input [server_timeout]");
+        // This will only happen if `providedPorts` is overridden and
+        // the child class does not provide the "server_timeout" port.
+        // Child classes can use the `providedBasicPorts` method to avoid
+        // this issue
+        RCLCPP_INFO(
+          node_->get_logger(),
+          "Missing input port [server_timeout], "
+          "using default value of 1s");
+        RCLCPP_DEBUG(
+          node_->get_logger(),
+          "Use the `providedBasicPorts` method to avoid this issue");
+        server_timeout_int = 1000;
       }
       server_timeout_ = std::chrono::milliseconds(server_timeout_int);
 
