@@ -31,6 +31,7 @@
 #include "plansys2_msgs/action/execute_plan.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 #include "plansys2_msgs/srv/get_ordered_sub_goals.hpp"
+#include "plansys2_msgs/msg/plan.hpp"
 #include "std_msgs/msg/string.hpp"
 
 #include "rclcpp/rclcpp.hpp"
@@ -84,6 +85,7 @@ protected:
 
   rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecutionInfo>::SharedPtr
     execution_info_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::Plan>::SharedPtr executing_plan_pub_;
 
   rclcpp_action::Server<ExecutePlan>::SharedPtr execute_plan_action_server_;
   rclcpp::Service<plansys2_msgs::srv::GetOrderedSubGoals>::SharedPtr
