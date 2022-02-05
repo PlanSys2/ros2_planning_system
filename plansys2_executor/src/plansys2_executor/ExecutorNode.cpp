@@ -141,7 +141,7 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   planner_client_ = std::make_shared<plansys2::PlannerClient>();
 
   execution_info_pub_ = create_publisher<plansys2_msgs::msg::ActionExecutionInfo>(
-    "/action_execution_info", 100);
+    "action_execution_info", 100);
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
