@@ -31,6 +31,7 @@
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
+#include "plansys2_msgs/msg/plan.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
@@ -134,14 +135,15 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
     std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
 
   dotgraph_pub_ = this->create_publisher<std_msgs::msg::String>("dot_graph", 1);
+  execution_info_pub_ = create_publisher<plansys2_msgs::msg::ActionExecutionInfo>(
+    "action_execution_info", 100);
+  executing_plan_pub_ = create_publisher<plansys2_msgs::msg::Plan>(
+    "executing_plan", rclcpp::QoS(100).transient_local());
 
   aux_node_ = std::make_shared<rclcpp::Node>("executor_helper");
   domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
   planner_client_ = std::make_shared<plansys2::PlannerClient>();
-
-  execution_info_pub_ = create_publisher<plansys2_msgs::msg::ActionExecutionInfo>(
-    "/action_execution_info", 100);
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
@@ -153,6 +155,7 @@ ExecutorNode::on_activate(const rclcpp_lifecycle::State & state)
   RCLCPP_INFO(get_logger(), "[%s] Activating...", get_name());
   dotgraph_pub_->on_activate();
   execution_info_pub_->on_activate();
+  executing_plan_pub_->on_activate();
   RCLCPP_INFO(get_logger(), "[%s] Activated", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -163,6 +166,7 @@ ExecutorNode::on_deactivate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Deactivating...", get_name());
   dotgraph_pub_->on_deactivate();
+  executing_plan_pub_->on_deactivate();
   RCLCPP_INFO(get_logger(), "[%s] Deactivated", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -173,6 +177,7 @@ ExecutorNode::on_cleanup(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Cleaning up...", get_name());
   dotgraph_pub_.reset();
+  executing_plan_pub_.reset();
   RCLCPP_INFO(get_logger(), "[%s] Cleaned up", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -183,6 +188,7 @@ ExecutorNode::on_shutdown(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Shutting down...", get_name());
   dotgraph_pub_.reset();
+  executing_plan_pub_.reset();
   RCLCPP_INFO(get_logger(), "[%s] Shutted down", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -312,8 +318,13 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     RCLCPP_ERROR(get_logger(), "No plan found");
     result->success = false;
     goal_handle->succeed(result);
+
+    // Publish void plan
+    executing_plan_pub_->publish(plansys2_msgs::msg::Plan());
     return;
   }
+
+  executing_plan_pub_->publish(current_plan_.value());
 
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
   auto action_timeout_actions = this->get_parameter("action_timeouts.actions").as_string_array();
