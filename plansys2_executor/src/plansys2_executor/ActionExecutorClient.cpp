@@ -53,7 +53,7 @@ CallbackReturnT
 ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
 {
   status_pub_ = create_publisher<plansys2_msgs::msg::ActionPerformerStatus>(
-    "/performers_status", rclcpp::QoS(100).reliable());
+    "performers_status", rclcpp::QoS(100).reliable());
   status_pub_->on_activate();
 
   hearbeat_pub_ = create_wall_timer(
@@ -75,9 +75,9 @@ ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
     std::chrono::duration<double>(1.0 / rate));
 
   action_hub_pub_ = create_publisher<plansys2_msgs::msg::ActionExecution>(
-    "/actions_hub", rclcpp::QoS(100).reliable());
+    "actions_hub", rclcpp::QoS(100).reliable());
   action_hub_sub_ = create_subscription<plansys2_msgs::msg::ActionExecution>(
-    "/actions_hub", rclcpp::QoS(100).reliable(),
+    "actions_hub", rclcpp::QoS(100).reliable(),
     std::bind(&ActionExecutorClient::action_hub_callback, this, _1));
 
   action_hub_pub_->on_activate();
