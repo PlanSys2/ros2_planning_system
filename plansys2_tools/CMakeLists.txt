@@ -36,7 +36,6 @@ target_link_libraries(logger plansys2_logger)
 
 
 ## RQT Knowledge
-
 set(rqt_plansys2_knowledge_SRCS
   src/rqt_plansys2_knowledge/RQTKnowledge.cpp
   src/rqt_plansys2_knowledge/KnowledgeTree.cpp
@@ -73,25 +72,65 @@ target_link_libraries(
   rqt_plansys2_knowledge
   Qt5::Widgets
 )
-
 ament_target_dependencies(rqt_plansys2_knowledge ${dependencies})
 
+## RQT Performers
+set(rqt_plansys2_performers_SRCS
+  src/rqt_plansys2_performers/RQTPerformers.cpp
+  src/rqt_plansys2_performers/PerformersTree.cpp
+)
+
+set(rqt_plansys2_performers_HDRS
+  include/rqt_plansys2_performers/RQTPerformers.hpp
+  include/rqt_plansys2_performers/PerformersTree.hpp
+)
+
+set(rqt_plansys2_performers_UIS
+  src/rqt_plansys2_performers/rqt_plansys2_performers.ui
+)
+
+set(rqt_plansys2_performers_INCLUDE_DIRECTORIES
+  include
+  ${Qt5Widgets_INCLUDE_DIRS}
+)
+
+qt5_wrap_cpp(rqt_plansys2_performers_MOCS ${rqt_plansys2_performers_HDRS})
+qt5_wrap_ui(rqt_plansys2_performers_UIS_H ${rqt_plansys2_performers_UIS})
+
+include_directories(
+  ${rqt_plansys2_performers_INCLUDE_DIRECTORIES}
+)
+
+add_library(rqt_plansys2_performers SHARED
+  ${rqt_plansys2_performers_SRCS}
+  ${rqt_plansys2_performers_MOCS}
+  ${rqt_plansys2_performers_UIS_H}
+)
+
+target_link_libraries(
+  rqt_plansys2_performers
+  Qt5::Widgets
+)
+ament_target_dependencies(rqt_plansys2_performers ${dependencies})
 
 
 install(TARGETS
   plansys2_logger logger
   rqt_plansys2_knowledge
-  EXPORT rqt_plansys2_knowledge
+  rqt_plansys2_performers
+  EXPORT rqt_plansys2
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
-install(PROGRAMS scripts/rqt_plansys2_knowledge
+install(PROGRAMS
+  scripts/rqt_plansys2_knowledge
+  scripts/rqt_plansys2_performers
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(FILES plugin.xml
+install(FILES plugin_knowledge.xml plugin_performers.xml
   DESTINATION share/${PROJECT_NAME}
 )
 
@@ -102,7 +141,8 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 endif()
 
-pluginlib_export_plugin_description_file(rqt_gui "plugin.xml")
-ament_export_libraries(rqt_plansys2_knowledge)
+pluginlib_export_plugin_description_file(rqt_gui "plugin_knowledge.xml")
+pluginlib_export_plugin_description_file(rqt_gui "plugin_performers.xml")
+ament_export_libraries(rqt_plansys2)
 
 ament_package()
