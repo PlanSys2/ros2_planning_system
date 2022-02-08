@@ -10,6 +10,9 @@ teleporter_room - room
 )
 
 (:constants
+leia - robot
+lema - robot
+jack john - person
 )
 
 (:predicates
@@ -33,14 +36,24 @@ teleporter_room - room
         (at end(robot_at ?r ?r2))
     )
 )
-(:durative-action talk
-    :parameters (?r - robot ?from ?p - person ?m - message)
+(:durative-action talk_leia
+    :parameters (?from ?p - person ?m - message)
     :duration ( = ?duration 5)
     :condition (and
-        (over all(robot_near_person ?r ?p))
+        (over all(robot_near_person leia ?p))
     )
     :effect (and
-        (at end(robot_talk ?r ?m ?p))
+        (at end(robot_talk leia ?m ?p))
+    )
+)
+(:durative-action talk_lema
+    :parameters (?from ?p - person ?m - message)
+    :duration ( = ?duration 5)
+    :condition (and
+        (over all(robot_near_person lema ?p))
+    )
+    :effect (and
+        (at end(robot_talk lema ?m ?p))
     )
 )
 (:durative-action approach
@@ -54,14 +67,24 @@ teleporter_room - room
         (at end(robot_near_person ?r ?p))
     )
 )
-(:action move_person
-    :parameters (?p - person ?r1 ?r2 - room)
+(:action move_person_john
+    :parameters (?r1 ?r2 - room)
     :precondition (and 
-        (person_at ?p ?r1)
+        (person_at john ?r1)
     )
     :effect (and
-        (person_at ?p ?r2)
-        (not(person_at ?p ?r1))
+        (person_at john ?r2)
+        (not(person_at john ?r1))
+    )
+)
+(:action move_person_jack
+    :parameters (?r1 ?r2 - room)
+    :precondition (and 
+        (person_at jack ?r1)
+    )
+    :effect (and
+        (person_at jack ?r2)
+        (not(person_at jack ?r1))
     )
 )
 )

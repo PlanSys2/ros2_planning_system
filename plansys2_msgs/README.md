@@ -192,6 +192,10 @@ The optional parameter list can be used to retrieve an instantiated plan action.
 
 * Returns the domain types.
 
+[`plansys2_msgs::srv::GetDomainConstants`](../plansys2_msgs/srv/GetDomainConstants.srv)
+
+* Returns the domain constants of a type.
+
 [`plansys2_msgs::srv::GetNodeDetails`](../plansys2_msgs/srv/GetNodeDetails.srv)
 
 * Returns a predicate or function node represented as a ([`plansys2_msgs::msg::Node`](../plansys2_msgs/msg/Node.msg)).

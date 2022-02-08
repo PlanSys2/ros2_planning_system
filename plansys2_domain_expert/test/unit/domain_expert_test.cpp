@@ -118,6 +118,23 @@ TEST(domain_expert, get_name)
   ASSERT_EQ(name, test_name);
 }
 
+TEST(domain_expert, get_domain3)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_constants.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_constants_processed.pddl");
+  std::string domain_str_p((
+      std::istreambuf_iterator<char>(domain_ifs_p)),
+    std::istreambuf_iterator<char>());
+
+  plansys2::DomainExpert domain_expert(domain_str);
+  ASSERT_EQ(domain_expert.getDomain(), domain_str_p);
+}
+
 TEST(domain_expert, get_types)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
@@ -132,6 +149,25 @@ TEST(domain_expert, get_types)
   std::vector<std::string> test_types {"person", "message", "robot", "room", "teleporter_room"};
 
   ASSERT_EQ(types, test_types);
+}
+
+TEST(domain_expert, get_constants)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_constants.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  plansys2::DomainExpert domain_expert(domain_str);
+
+  std::vector<std::string> consts1 = domain_expert.getConstants("robot");
+  std::vector<std::string> consts2 = domain_expert.getConstants("person");
+  std::vector<std::string> test_consts1 {"leia", "lema"};
+  std::vector<std::string> test_consts2 {"jack", "john"};
+
+  ASSERT_EQ(consts1, test_consts1);
+  ASSERT_EQ(consts2, test_consts2);
 }
 
 TEST(domain_expert, get_predicates)

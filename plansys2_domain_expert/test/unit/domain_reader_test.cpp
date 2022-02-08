@@ -45,6 +45,11 @@ public:
     return get_types(domain);
   }
 
+  std::string get_constants_test(const std::string & domain)
+  {
+    return get_constants(domain);
+  }
+
   std::string get_predicates_test(const std::string & domain)
   {
     return get_predicates(domain);
@@ -219,6 +224,49 @@ TEST(domain_reader, types)
   ASSERT_EQ(res7, req7_estr);
 }
 
+TEST(domain_reader, constants)
+{
+  DomainReaderTest dr;
+
+  std::string req1_str = "(:constants start - location  robotino - robot)";
+  std::string req1_estr = " start - location  robotino - robot";
+
+  std::string req2_str = "(:constants\nstart end - location robotino - robot\n)";
+  std::string req2_estr = "start end - location robotino - robot";
+
+  std::string req3_str = "(:constants\nstart end - location\nrobotino - robot\n)";
+  std::string req3_estr = "start end - location\nrobotino - robot";
+
+  std::string req4_str = "(:constants\nstart end - location\nrobotino - robot\n) )";
+  std::string req4_estr = "start end - location\nrobotino - robot";
+
+  std::string req5_str = "(:constants\nstart end - location\nrobotino - robot\n";
+  std::string req5_estr = "";
+
+  std::string req6_str = "(:constants )";
+  std::string req6_estr = "";
+
+  std::string req7_str = "";
+  std::string req7_estr = "";
+
+  auto res1 = dr.get_constants_test(req1_str);
+  auto res2 = dr.get_constants_test(req2_str);
+  auto res3 = dr.get_constants_test(req3_str);
+  auto res4 = dr.get_constants_test(req4_str);
+  auto res5 = dr.get_constants_test(req5_str);
+  auto res6 = dr.get_constants_test(req6_str);
+  auto res7 = dr.get_constants_test(req7_str);
+
+  ASSERT_EQ(res1, req1_estr);
+  ASSERT_EQ(res2, req2_estr);
+  ASSERT_EQ(res3, req3_estr);
+  ASSERT_EQ(res4, req4_estr);
+  ASSERT_EQ(res5, req5_estr);
+  ASSERT_EQ(res6, req6_estr);
+  ASSERT_EQ(res7, req7_estr);
+}
+
+
 TEST(domain_reader, predicates)
 {
   DomainReaderTest dr;
@@ -373,6 +421,26 @@ TEST(domain_reader, add_2_domain)
 
   dr.add_domain(domain_str);
   dr.add_domain(domain_str_2);
+
+  ASSERT_EQ(dr.get_joint_domain_test(), domain_str_p);
+}
+
+TEST(domain_reader, add_domain_with_constants)
+{
+  DomainReaderTest dr;
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_constants.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_constants_processed.pddl");
+  std::string domain_str_p((
+      std::istreambuf_iterator<char>(domain_ifs_p)),
+    std::istreambuf_iterator<char>());
+
+  dr.add_domain(domain_str);
 
   ASSERT_EQ(dr.get_joint_domain_test(), domain_str_p);
 }
