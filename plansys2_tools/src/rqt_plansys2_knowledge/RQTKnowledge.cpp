@@ -127,7 +127,7 @@ RQTKnowledge::spin_loop()
       predicate_item->setText(1, QString(predicate.c_str()));
       predicate_item->setBackground(0, Qt::yellow);
       predicate_item->setBackground(1, Qt::yellow);
-      predicate_item->setBackground(3, Qt::yellow);
+      predicate_item->setBackground(2, Qt::yellow);
       knowledge_tree_->addTopLevelItem(predicate_item);
     }
 
