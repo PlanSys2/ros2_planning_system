@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>RqtPlansys2Knowledge</class>
+ <widget class="QWidget" name="RqtPlansys2Knowledge">
+  <property name="windowTitle">
+   <string>RqtPlansys2Knowledge</string>
+  </property>
+  <widget class="QWidget" name="gridLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>10</y>
+     <width>791</width>
+     <height>431</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <!--item row="0" column="0">
+     <widget class="QTreeWidget" name="treeWidget">
+      <column>
+       <property name="text">
+        <string notr="true">1</string>
+       </property>
+      </column>
+     </widget>
+    </item-->
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
