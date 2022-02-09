@@ -63,8 +63,10 @@ void RQTPerformers::initPlugin(qt_gui_cpp::PluginContext & context)
   performers_tree_ = new PerformersTree();
   ui_.gridLayout->addWidget(performers_tree_);
 
-  performers_tree_->setColumnCount(4);
-  performers_tree_->setHeaderLabels({"Performer", "Action", "Status", "Specialized Arguments"});
+  performers_tree_->setColumnCount(5);
+  performers_tree_->setHeaderLabels(
+    {"Performer", "Action", "Status", "Status Recency",
+      "Specialized Arguments"});
 
   controller_spin_timer_ = new QTimer(this);
   connect(controller_spin_timer_, SIGNAL(timeout()), this, SLOT(spin_loop()));
@@ -131,6 +133,14 @@ RQTPerformers::update_performer_row(
       row->setText(2, QString("FAILURE"));
       row->setBackground(2, Qt::red);
       break;
+  }
+
+  auto elapsed = (node_->now() - performer.status_stamp).seconds();
+  row->setText(3, QString::number(elapsed));
+  if (elapsed > 5.0) {
+    row->setBackground(3, Qt::red);
+  } else if (elapsed > 2.0) {
+    row->setBackground(3, Qt::yellow);
   }
 }
 
