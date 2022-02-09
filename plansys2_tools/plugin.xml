@@ -1,0 +1,17 @@
+<library path="rqt_plansys2_knowledge">
+  <class name="rqt_plansys2_knowledge/RQTKnowledge" type="rqt_plansys2_knowledge::RQTKnowledge" base_class_type="rqt_gui_cpp::Plugin">
+    <description>
+      A GUI plugin to view PlanSys2 Knowledge
+    </description>
+    <qtgui>
+      <group>
+        <label>PlanSys2</label>
+        <icon type="theme">applications-accesories</icon>
+        <statustip>PlanSys2 Plugins.</statustip>
+      </group>
+      <label>rqt Knowledge</label>
+      <icon type="theme">utilities-system-monitor</icon>
+      <statustip>A GUI plugin for viewing Knowledge.</statustip>
+    </qtgui>
+  </class>
+</library>

@@ -114,6 +114,90 @@ TEST(planner_expert, generate_plan_good)
   t.join();
 }
 
+
+TEST(planner_expert, generate_plan_with_domain_constants)
+{
+  auto test_node = rclcpp::Node::make_shared("test_node");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_planner");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_constants.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_constants.pddl"});
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(planner_node->get_node_base_interface());
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  std::ifstream problem_1_ifs(pkgpath + "/pddl/problem_simple_constants_1.pddl");
+  std::string problem_1_str((
+      std::istreambuf_iterator<char>(problem_1_ifs)),
+    std::istreambuf_iterator<char>());
+
+  ASSERT_TRUE(problem_client->addProblem(problem_1_str));
+  ASSERT_EQ(problem_client->getProblem(), problem_1_str);
+
+  auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
+  ASSERT_TRUE(plan);
+
+
+  problem_client->clearKnowledge();
+
+  std::ifstream problem_2_ifs(pkgpath + "/pddl/problem_simple_constants_2.pddl");
+  std::string problem_2_str((
+      std::istreambuf_iterator<char>(problem_2_ifs)),
+    std::istreambuf_iterator<char>());
+
+  ASSERT_TRUE(problem_client->addProblem(problem_2_str));
+  ASSERT_NE(problem_client->getProblem(), problem_2_str);
+  ASSERT_NE(problem_1_str, problem_2_str);
+
+  plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
+  ASSERT_TRUE(plan);
+
+
+  finish = true;
+  t.join();
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

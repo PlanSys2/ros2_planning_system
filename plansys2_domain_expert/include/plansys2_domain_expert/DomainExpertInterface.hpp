@@ -49,6 +49,13 @@ public:
    */
   virtual std::vector<std::string> getTypes() = 0;
 
+  /// Get the details of a constants existing for a type.
+  /**
+   * \param[in] predicate The name of the type.
+   * \return A list of constants names for the passed type
+   */
+  virtual std::vector<std::string> getConstants(const std::string & type) = 0;
+
   /// Get the predicates existing in the domain.
   /**
    * \return The vector containing the name of the predicates.

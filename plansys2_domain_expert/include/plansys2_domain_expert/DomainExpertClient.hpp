@@ -30,6 +30,7 @@
 #include "plansys2_msgs/srv/get_domain.hpp"
 #include "plansys2_msgs/srv/get_domain_name.hpp"
 #include "plansys2_msgs/srv/get_domain_types.hpp"
+#include "plansys2_msgs/srv/get_domain_constants.hpp"
 #include "plansys2_msgs/srv/get_domain_actions.hpp"
 #include "plansys2_msgs/srv/get_domain_action_details.hpp"
 #include "plansys2_msgs/srv/get_domain_durative_action_details.hpp"
@@ -64,6 +65,13 @@ public:
    * \return The vector containing the name of the predicates.
    */
   std::vector<std::string> getTypes();
+
+  /// Get the details of a constants existing for a type.
+  /**
+   * \param[in] predicate The name of the type.
+   * \return A list of constants names for the passed type
+   */
+  std::vector<std::string> getConstants(const std::string & type);
 
   /// Get the predicates existing in the domain.
   /**
@@ -137,6 +145,7 @@ private:
   rclcpp::Client<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainName>::SharedPtr get_name_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainTypes>::SharedPtr get_types_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetDomainConstants>::SharedPtr get_constants_client_;
   rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_predicates_client_;
   rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_functions_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_actions_client_;

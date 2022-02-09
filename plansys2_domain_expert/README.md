@@ -20,3 +20,4 @@ The Domain Expert does not change while active, accessing its functionality thro
 - `/domain_expert/get_domain_predicate_details` [[`plansys2_msgs::srv::GetNodeDetails`](../plansys2_msgs/srv/GetNode.srv)]
 - `/domain_expert/get_domain_predicates` [[`plansys2_msgs::srv::GetStates`](../plansys2_msgs/srv/GetStates.srv)]
 - `/domain_expert/get_domain_types` [[`plansys2_msgs::srv::GetDomainTypes`](../plansys2_msgs/srv/GetDomainTypes.srv)]
+- `/domain_expert/get_domain_constants` [[`plansys2_msgs::srv::GetDomainConstants`](../plansys2_msgs/srv/GetDomainConstants.srv)]
