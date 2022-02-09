@@ -1,5 +1,19 @@
-#ifndef BEHAVIOR_TREE__FAILURE_NODES_HPP_
-#define BEHAVIOR_TREE__FAILURE_NODES_HPP_
+// Copyright 2022 Intelligent Robotics Lab
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef BEHAVIOR_TREE__FAILURENODES_HPP_
+#define BEHAVIOR_TREE__FAILURENODES_HPP_
 
 #include <string>
 #include <memory>
@@ -21,14 +35,18 @@ public:
     const BT::NodeConfiguration& conf)
     : plansys2::BtActionNode<Fibonacci>(xml_tag_name,
                                         action_name,
-                                        conf)
+                                        conf),
+      on_tick_run(false)
   {
   }
 
   void on_tick() override
   {
+    on_tick_run = true;
     return_failure_ = true;
   }
+
+  bool on_tick_run;
 };
 
 
@@ -52,10 +70,10 @@ public:
   }
 };
 
-} // namespace plansys2_bt_tests
+}   // namespace plansys2_bt_tests
 
 
 
 
-#endif  // #ifndef BEHAVIOR_TREE__FAILURE_NODES_HPP_
+#endif  // #ifndef BEHAVIOR_TREE__FAILURENODES_HPP_
 
