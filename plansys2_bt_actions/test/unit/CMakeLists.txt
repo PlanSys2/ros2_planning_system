@@ -11,6 +11,11 @@ list(APPEND plugin_libs plansys2_open_gripper_bt_node)
 add_library(plansys2_move_bt_test_node SHARED ../behavior_tree/Move.cpp)
 list(APPEND plugin_libs plansys2_move_bt_test_node)
 
+add_library(plansys2_failure_test_nodes SHARED
+  ../behavior_tree/FailureNodes.cpp
+)
+list(APPEND plugin_libs plansys2_failure_test_nodes)
+
 foreach(bt_plugin ${plugin_libs})
   ament_target_dependencies(${bt_plugin} ${dependencies})
   target_compile_definitions(${bt_plugin} PRIVATE BT_PLUGIN_EXPORT)
