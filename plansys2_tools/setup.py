@@ -11,3 +11,11 @@ d = generate_distutils_setup(
 )
 
 setup(**d)
+
+d2 = generate_distutils_setup(
+    packages=['plansys2_tools'],
+    package_dir={'': 'src'},
+    scripts=['scripts/rqt_plansys2_performers']
+)
+
+setup(**d2)

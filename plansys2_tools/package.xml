@@ -27,6 +27,7 @@
   
   <export>
     <build_type>ament_cmake</build_type>
-    <rqt_gui plugin="${prefix}/plugin.xml"/>
+    <rqt_gui plugin="${prefix}/plugin_knowledge.xml"/>
+    <rqt_gui plugin="${prefix}/plugin_performers.xml"/>
   </export>
 </package>
