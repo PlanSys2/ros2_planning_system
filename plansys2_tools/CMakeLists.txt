@@ -113,11 +113,51 @@ target_link_libraries(
 )
 ament_target_dependencies(rqt_plansys2_performers ${dependencies})
 
+## RQT Plan
+set(rqt_plansys2_plan_SRCS
+  src/rqt_plansys2_plan/RQTPlan.cpp
+  src/rqt_plansys2_plan/PlanTree.cpp
+)
+
+set(rqt_plansys2_plan_HDRS
+  include/rqt_plansys2_plan/RQTPlan.hpp
+  include/rqt_plansys2_plan/PlanTree.hpp
+)
+
+set(rqt_plansys2_plan_UIS
+  src/rqt_plansys2_plan/rqt_plansys2_plan.ui
+)
+
+set(rqt_plansys2_plan_INCLUDE_DIRECTORIES
+  include
+  ${Qt5Widgets_INCLUDE_DIRS}
+)
+
+qt5_wrap_cpp(rqt_plansys2_plan_MOCS ${rqt_plansys2_plan_HDRS})
+qt5_wrap_ui(rqt_plansys2_plan_UIS_H ${rqt_plansys2_plan_UIS})
+
+include_directories(
+  ${rqt_plansys2_plan_INCLUDE_DIRECTORIES}
+)
+
+add_library(rqt_plansys2_plan SHARED
+  ${rqt_plansys2_plan_SRCS}
+  ${rqt_plansys2_plan_MOCS}
+  ${rqt_plansys2_plan_UIS_H}
+)
+
+target_link_libraries(
+  rqt_plansys2_plan
+  Qt5::Widgets
+)
+ament_target_dependencies(rqt_plansys2_plan ${dependencies})
+
 
 install(TARGETS
   plansys2_logger logger
   rqt_plansys2_knowledge
   rqt_plansys2_performers
+  rqt_plansys2_plan
   EXPORT rqt_plansys2
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -127,10 +167,11 @@ install(TARGETS
 install(PROGRAMS
   scripts/rqt_plansys2_knowledge
   scripts/rqt_plansys2_performers
+  scripts/rqt_plansys2_plan
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(FILES plugin_knowledge.xml plugin_performers.xml
+install(FILES plugin_knowledge.xml plugin_performers.xml plugin_plan.xml
   DESTINATION share/${PROJECT_NAME}
 )
 
@@ -143,6 +184,7 @@ endif()
 
 pluginlib_export_plugin_description_file(rqt_gui "plugin_knowledge.xml")
 pluginlib_export_plugin_description_file(rqt_gui "plugin_performers.xml")
+pluginlib_export_plugin_description_file(rqt_gui "plugin_plan.xml")
 ament_export_libraries(rqt_plansys2)
 
 ament_package()

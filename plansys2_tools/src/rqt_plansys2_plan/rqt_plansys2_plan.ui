@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>RqtPlansys2Plan</class>
+ <widget class="QWidget" name="RqtPlansys2Plan">
+  <property name="windowTitle">
+   <string>RqtPlansys2Plan</string>
+  </property>
+  <widget class="QWidget" name="gridLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>10</y>
+     <width>1600</width>
+     <height>431</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

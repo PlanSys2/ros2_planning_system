@@ -1,0 +1,17 @@
+<library path="rqt_plansys2_plan">
+  <class name="rqt_plansys2_plan/RQTPlan" type="rqt_plansys2_plan::RQTPlan" base_class_type="rqt_gui_cpp::Plugin">
+    <description>
+      A GUI plugin to view PlanSys2 Plan
+    </description>
+    <qtgui>
+      <group>
+        <label>PlanSys2</label>
+        <icon type="theme">applications-accesories</icon>
+        <statustip>PlanSys2 Plugins.</statustip>
+      </group>
+      <label>rqt Plan</label>
+      <icon type="theme">utilities-system-monitor</icon>
+      <statustip>A GUI plugin for viewing Plan.</statustip>
+    </qtgui>
+  </class>
+</library>
