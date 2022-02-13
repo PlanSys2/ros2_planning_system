@@ -60,14 +60,18 @@ public:
     const BT::NodeConfiguration& conf)
     : plansys2::BtActionNode<Fibonacci>(xml_tag_name,
                                         action_name,
-                                        conf)
+                                        conf),
+      on_feedback_run(false)
   {
   }
 
   void on_feedback(const std::shared_ptr<const Fibonacci::Feedback>) override
   {
+    on_feedback_run = true;
     return_failure_ = true;
   }
+
+  bool on_feedback_run;
 };
 
 }   // namespace plansys2_bt_tests
