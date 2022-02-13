@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
+#include <memory>
+
 #include "behaviortree_cpp_v3/bt_factory.h"
 
 #include "FailureNodes.hpp"
@@ -19,7 +22,7 @@
 BT_REGISTER_NODES(factory)
 {
   BT::NodeBuilder builder =
-    [](const std::string& name, const BT::NodeConfiguration& config)
+    [](const std::string & name, const BT::NodeConfiguration & config)
     {
       return std::make_unique<plansys2_bt_tests::OnTickFail>(
         name, "move", config);
@@ -29,7 +32,7 @@ BT_REGISTER_NODES(factory)
     "OnTickFail", builder);
 
   builder =
-    [](const std::string& name, const BT::NodeConfiguration& config)
+    [](const std::string & name, const BT::NodeConfiguration & config)
     {
       return std::make_unique<plansys2_bt_tests::OnFeedbackFail>(
         name, "move", config);
@@ -38,4 +41,3 @@ BT_REGISTER_NODES(factory)
   factory.registerBuilder<plansys2_bt_tests::OnFeedbackFail>(
     "OnFeedbackFail", builder);
 }
-

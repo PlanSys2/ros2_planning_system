@@ -185,8 +185,8 @@ TEST(bt_actions, on_feedback_failure)
   config.blackboard = bb;
 
   plansys2_bt_tests::OnFeedbackFail failure_node("OnFeedbackFail",
-                                                 "move",
-                                                 config);
+    "move",
+    config);
 
   rclcpp::Rate rate(10);
 

@@ -30,13 +30,13 @@ class OnTickFail : public plansys2::BtActionNode<test_msgs::action::Fibonacci>
 public:
   using Fibonacci = test_msgs::action::Fibonacci;
   explicit OnTickFail(
-    const std::string& xml_tag_name,
-    const std::string& action_name,
-    const BT::NodeConfiguration& conf)
-    : plansys2::BtActionNode<Fibonacci>(xml_tag_name,
-                                        action_name,
-                                        conf),
-      on_tick_run(false)
+    const std::string & xml_tag_name,
+    const std::string & action_name,
+    const BT::NodeConfiguration & conf)
+  : plansys2::BtActionNode<Fibonacci>(xml_tag_name,
+      action_name,
+      conf),
+    on_tick_run(false)
   {
   }
 
@@ -55,13 +55,13 @@ class OnFeedbackFail : public plansys2::BtActionNode<test_msgs::action::Fibonacc
 public:
   using Fibonacci = test_msgs::action::Fibonacci;
   explicit OnFeedbackFail(
-    const std::string& xml_tag_name,
-    const std::string& action_name,
-    const BT::NodeConfiguration& conf)
-    : plansys2::BtActionNode<Fibonacci>(xml_tag_name,
-                                        action_name,
-                                        conf),
-      on_feedback_run(false)
+    const std::string & xml_tag_name,
+    const std::string & action_name,
+    const BT::NodeConfiguration & conf)
+  : plansys2::BtActionNode<Fibonacci>(xml_tag_name,
+      action_name,
+      conf),
+    on_feedback_run(false)
   {
   }
 
@@ -76,8 +76,4 @@ public:
 
 }   // namespace plansys2_bt_tests
 
-
-
-
-#endif  // #ifndef BEHAVIOR_TREE__FAILURENODES_HPP_
-
+#endif  // BEHAVIOR_TREE__FAILURENODES_HPP_
