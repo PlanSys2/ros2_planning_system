@@ -55,7 +55,6 @@ LoggerNode::LoggerNode()
     "executing_plan", rclcpp::QoS(100).transient_local(),
     std::bind(&LoggerNode::executing_plan_callback, this, _1));
 
-  // get_logger().set_level(rclcpp::Logger::Level::Debug);
 }
 
 void
