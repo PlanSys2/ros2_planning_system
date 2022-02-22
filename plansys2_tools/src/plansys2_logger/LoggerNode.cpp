@@ -54,7 +54,6 @@ LoggerNode::LoggerNode()
   executing_plan_ = create_subscription<plansys2_msgs::msg::Plan>(
     "executing_plan", rclcpp::QoS(100).transient_local(),
     std::bind(&LoggerNode::executing_plan_callback, this, _1));
-
 }
 
 void
