@@ -15,6 +15,7 @@
 
 #include <string>
 #include <memory>
+#include <iomanip>
 
 #include "plansys2_msgs/msg/knowledge.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
@@ -53,8 +54,6 @@ LoggerNode::LoggerNode()
   executing_plan_ = create_subscription<plansys2_msgs::msg::Plan>(
     "executing_plan", rclcpp::QoS(100).transient_local(),
     std::bind(&LoggerNode::executing_plan_callback, this, _1));
-
-  get_logger().set_level(rclcpp::Logger::Level::Debug);
 }
 
 void
