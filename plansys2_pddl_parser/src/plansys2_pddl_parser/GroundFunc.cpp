@@ -1,4 +1,6 @@
 
+#include <iomanip>
+
 #include "plansys2_pddl_parser/Domain.h"
 
 namespace parser { namespace pddl {
@@ -8,7 +10,7 @@ void GroundFunc<double>::PDDLPrint( std::ostream & s, unsigned indent, const Tok
 	tabindent( s, indent );
 	s << "( = ";
 	TypeGround::PDDLPrint( s, 0, ts, d );
-	s << " " << ( double )value << " )";
+	s << " " << std::fixed << std::setprecision(10) << ( double )value << " )";
 }
 
 template <>

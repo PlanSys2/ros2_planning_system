@@ -110,7 +110,7 @@ TEST(problem_expert, add_functions)
     "\tkitchen - room_with_teleporter\n"
     ")\n"
     "( :init\n"
-    "\t( = ( room_distance bedroom kitchen ) 1.23 )\n"
+    "\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n"
     ")\n"
     "( :goal\n"
     "\t( and\n"
@@ -144,8 +144,8 @@ TEST(problem_expert, add_functions)
     "\tkitchen - room_with_teleporter\n"
     ")\n"
     "( :init\n"
-    "\t( = ( room_distance bedroom kitchen ) 1.23 )\n"
-    "\t( = ( room_distance kitchen bedroom ) 2.34 )\n"
+    "\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n"
+    "\t( = ( room_distance kitchen bedroom ) 2.3400000000 )\n"
     ")\n"
     "( :goal\n"
     "\t( and\n"
@@ -166,8 +166,8 @@ TEST(problem_expert, add_functions)
     "\tkitchen - room_with_teleporter\n"
     ")\n"
     "( :init\n"
-    "\t( = ( room_distance bedroom kitchen ) 1.23 )\n"
-    "\t( = ( room_distance kitchen bedroom ) 3.45 )\n"
+    "\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n"
+    "\t( = ( room_distance kitchen bedroom ) 3.4500000000 )\n"
     ")\n"
     "( :goal\n"
     "\t( and\n"
@@ -626,8 +626,8 @@ TEST(problem_expert, add_problem)
     std::string("( define ( problem problem_1 )\n( :domain simple )\n( :objects\n\t") +
     std::string("jack - person\n\tm1 - message\n\tleia - robot\n\tkitchen bedroom - room\n)\n") +
     std::string("( :init\n\t( robot_at leia kitchen )\n\t( person_at jack bedroom )\n\t") +
-    std::string("( = ( room_distance kitchen bedroom ) 10 )\n)\n( :goal\n\t( and\n\t\t") +
-    std::string("( robot_talk leia m1 jack )\n\t)\n)\n)\n"));
+    std::string("( = ( room_distance kitchen bedroom ) 10.0000000000 )\n)\n") +
+    std::string("( :goal\n\t( and\n\t\t( robot_talk leia m1 jack )\n\t)\n)\n)\n"));
 
   ASSERT_TRUE(problem_expert.clearKnowledge());
   ASSERT_EQ(problem_expert.getPredicates().size(), 0);
