@@ -318,7 +318,7 @@ BTBuilder::prune_backwards(GraphNode::Ptr new_node, GraphNode::Ptr node_satisfy)
   auto it = node_satisfy->out_arcs.begin();
   while (it != node_satisfy->out_arcs.end()) {
     if (*it == new_node) {
-      (*it)->in_arcs.erase(*it);
+      (*it)->in_arcs.remove(*it);
       it = node_satisfy->out_arcs.erase(it);
     } else {
       ++it;
@@ -416,8 +416,8 @@ BTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
         prune_backwards(new_node, node_satisfy);
 
         // Create the connections to the parent node
-        new_node->in_arcs.insert(node_satisfy);
-        node_satisfy->out_arcs.insert(new_node);
+        new_node->in_arcs.push_back(node_satisfy);
+        node_satisfy->out_arcs.push_back(new_node);
 
         // Copy the state from the parent node
         new_node->predicates = node_satisfy->predicates;
@@ -449,8 +449,8 @@ BTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
         prune_backwards(new_node, node_satisfy);
 
         // Create the connections to the parent node
-        new_node->in_arcs.insert(node_satisfy);
-        node_satisfy->out_arcs.insert(new_node);
+        new_node->in_arcs.push_back(node_satisfy);
+        node_satisfy->out_arcs.push_back(new_node);
 
         // Copy the state from the parent node
         new_node->predicates = node_satisfy->predicates;
@@ -482,8 +482,8 @@ BTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
         prune_backwards(new_node, node_satisfy);
 
         // Create the connections to the parent node
-        new_node->in_arcs.insert(node_satisfy);
-        node_satisfy->out_arcs.insert(new_node);
+        new_node->in_arcs.push_back(node_satisfy);
+        node_satisfy->out_arcs.push_back(new_node);
 
         // Copy the state from the parent node
         new_node->predicates = node_satisfy->predicates;
