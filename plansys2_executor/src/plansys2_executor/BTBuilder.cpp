@@ -514,8 +514,16 @@ BTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
       functions);
 
     for (const auto & req : at_start_requirements) {
-      std::cerr << "===> [" << parser::pddl::toString(
+      std::cerr << "[ERROR] at_start_requirement not meet: [" << parser::pddl::toString(
         action_sequence.begin()->action->at_start_requirements, req) << "]" << std::endl;
+    }
+    for (const auto & req : over_all_requirements) {
+      std::cerr << "[ERROR] over_all_requirement not meet: [" << parser::pddl::toString(
+        action_sequence.begin()->action->over_all_requirements, req) << "]" << std::endl;
+    }
+    for (const auto & req : at_end_requirements) {
+      std::cerr << "[ERROR] at_end_requirement not meet: [" << parser::pddl::toString(
+        action_sequence.begin()->action->at_end_requirements, req) << "]" << std::endl;
     }
 
     assert(at_start_requirements.empty());

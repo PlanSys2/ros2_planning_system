@@ -78,7 +78,9 @@ protected:
     std::ostringstream & os);
   virtual void process_remove(std::vector<std::string> & command, std::ostringstream & os);
 
-  virtual void execute_plan();
+  virtual void execute_plan(const plansys2_msgs::msg::Plan & plan);
+  virtual void execute_plan(int items = -1);
+  virtual void execute_action(std::vector<std::string> & command);
   virtual void process_run(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_check(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_check_actors(std::vector<std::string> & command, std::ostringstream & os);
