@@ -82,6 +82,7 @@ char * completion_generator(const char * text, int state)
   std::vector<std::string> vocabulary_set{"instance", "predicate", "function", "goal"};
   std::vector<std::string> vocabulary_get{"model", "problem", "domain", "plan"};
   std::vector<std::string> vocabulary_remove{"instance", "predicate", "function", "goal"};
+  std::vector<std::string> vocabulary_run{"action", "num_actions"};
   std::vector<std::string> vocabulary_get_problem{"instances", "predicates", "functions", "goal"};
   std::vector<std::string> vocabulary_get_model{"types", "predicates", "functions", "actions",
     "predicate", "function", "action"};
@@ -108,6 +109,8 @@ char * completion_generator(const char * text, int state)
           current_vocabulary = &vocabulary_get;
         } else if (current_text[0] == "remove") {
           current_vocabulary = &vocabulary_remove;
+        } else if (current_text[0] == "run") {
+          current_vocabulary = &vocabulary_run;
         } else if (current_text[0] == "check") {
           current_vocabulary = &vocabulary_check;
         }
@@ -701,10 +704,8 @@ Terminal::process_remove(std::vector<std::string> & command, std::ostringstream 
 }
 
 void
-Terminal::execute_plan()
+Terminal::execute_plan(int items)
 {
-  rclcpp::Rate loop_rate(5);
-
   auto plan = planner_client_->getPlan(domain_client_->getDomain(), problem_client_->getProblem());
 
   if (!plan.has_value()) {
@@ -712,7 +713,22 @@ Terminal::execute_plan()
     return;
   }
 
-  if (!executor_client_->start_plan_execution(plan.value())) {
+  if (items > 0 && items <= plan.value().items.size()) {
+    plan.value().items.erase(plan.value().items.begin() + items, plan.value().items.end());
+  } else {
+    std::cout << "Can't execute " << items << " actions" << std::endl;
+    return;
+  }
+
+  execute_plan(plan.value());
+}
+
+void
+Terminal::execute_plan(const plansys2_msgs::msg::Plan & plan)
+{
+  rclcpp::Rate loop_rate(5);
+
+  if (!executor_client_->start_plan_execution(plan)) {
     std::cout << "Execution could not start " << std::endl;
     return;
   }
@@ -761,20 +777,59 @@ Terminal::execute_plan()
   if (executor_client_->getResult().value().success) {
     std::cout << "Successful finished " << std::endl;
   } else {
-    std::cout << "Finished with error: " << std::endl;
+    std::cout << "Finished with error(s) " << std::endl;
   }
 }
 
+void
+Terminal::execute_action(std::vector<std::string> & command)
+{
+  std::string complete_action;
+  for (const auto & token : command) {
+    complete_action = complete_action + token + " ";
+  }
+
+  complete_action.pop_back();
+
+  std::cerr << "<[" << complete_action << "]" << std::endl;
+  plansys2_msgs::msg::PlanItem action;
+  action.time = 0.0;
+  action.action = complete_action;
+  action.duration = 1.0;
+
+  plansys2_msgs::msg::Plan single_plan;
+  single_plan.items.push_back(action);
+
+  execute_plan(single_plan);
+}
 
 void
 Terminal::process_run(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 0) {
     execute_plan();
-  }
+  } else {
+    if (command[0] == "action") {
+      pop_front(command);
+      if (!command.empty()) {
+        execute_action(command);
+      }
+    } else if (command[0] == "num_actions") {
+      pop_front(command);
 
-  // ToDo(fmrico): We should be able to run directly an action, for example:
-  // run (move leia entrance dinning)
+      try {
+        int items = std::stoi(command[0]);
+        execute_plan(items);
+      } catch (std::invalid_argument e) {
+        os << e.what() << " with arg: [" << command[0] << "]" << std::endl;
+      }
+    } else {
+      os << "\tUsage: \n\t\trun" << std::endl;
+      os << "\tUsage: \n\t\trun num_actions [number of actions to execute from plan]" <<
+        std::endl;
+      os << "\tUsage: \n\t\trun action [action to execute]" << std::endl;
+    }
+  }
 }
 
 void
