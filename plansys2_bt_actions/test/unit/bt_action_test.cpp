@@ -91,7 +91,7 @@ private:
   {
     auto feedback = std::make_shared<Fibonacci::Feedback>();
     goal_handle->publish_feedback(feedback);
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     auto result = std::make_shared<Fibonacci::Result>();
 
     result->sequence.push_back(4);
