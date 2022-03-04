@@ -42,8 +42,6 @@
 
 #include "gtest/gtest.h"
 
-// force CI to run TODO: remove
-
 using namespace std::placeholders;
 using namespace std::chrono_literals;
 
