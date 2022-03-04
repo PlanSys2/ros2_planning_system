@@ -17,6 +17,8 @@
 #include <memory>
 #include <iostream>
 #include <fstream>
+#include <chrono>
+#include <thread>
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
@@ -87,6 +89,7 @@ private:
   {
     auto feedback = std::make_shared<Fibonacci::Feedback>();
     goal_handle->publish_feedback(feedback);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     auto result = std::make_shared<Fibonacci::Result>();
 
     result->sequence.push_back(4);
