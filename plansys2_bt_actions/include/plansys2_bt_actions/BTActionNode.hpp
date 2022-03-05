@@ -80,7 +80,7 @@ public:
       BT::InputPort<std::string>("server_name", "Action server name"),
       BT::InputPort<unsigned int>(
         "server_timeout",
-        1000,
+        5000,
         "The amount of time to wait for a response from the action server, "
         "in units of milliseconds")
     };
