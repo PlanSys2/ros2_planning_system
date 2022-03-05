@@ -41,7 +41,7 @@ public:
     node_ = config().blackboard->get<typename NodeT::SharedPtr>("node");
 
     // Get the required items from the blackboard
-    server_timeout_ = 1s;
+    server_timeout_ = 5s;
 
     // Initialize the input and output messages
     goal_ = typename ActionT::Goal();
@@ -81,7 +81,7 @@ public:
       BT::InputPort<std::string>("server_name", "Action server name"),
       BT::InputPort<double>(
         "server_timeout",
-        1.0,
+        5.0,
         "The amount of time to wait for a response from the action server, in seconds")
     };
     basic.insert(addition.begin(), addition.end());
@@ -142,12 +142,12 @@ public:
   {
     // first step to be done only at the beginning of the Action
     if (status() == BT::NodeStatus::IDLE) {
-      double server_timeout = 1.0;
+      double server_timeout = 5.0;
       if (!getInput("server_timeout", server_timeout)) {
         RCLCPP_INFO(
           node_->get_logger(),
           "Missing input port [server_timeout], "
-          "using default value of 1s");
+          "using default value of 5s");
       }
       server_timeout_ = std::chrono::milliseconds(static_cast<int>(server_timeout * 1000.0));
 
