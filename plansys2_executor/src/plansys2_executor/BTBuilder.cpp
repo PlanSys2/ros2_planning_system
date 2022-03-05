@@ -220,20 +220,39 @@ BTBuilder::is_parallelizable(
   const plansys2::ActionStamped & action,
   const std::list<GraphNode::Ptr> & ret) const
 {
-  std::vector<plansys2_msgs::msg::Node> action_at_start_requirements;
-  parser::pddl::getPredicates(action_at_start_requirements, action.action->at_start_requirements);
+  std::vector<plansys2_msgs::msg::Node> action_requirements;
+  std::vector<plansys2_msgs::msg::Node> action_effects;
+  parser::pddl::getPredicates(action_requirements, action.action->at_start_requirements);
+  parser::pddl::getPredicates(action_requirements, action.action->over_all_requirements);
+  parser::pddl::getPredicates(action_requirements, action.action->at_end_requirements);
+  parser::pddl::getPredicates(action_effects, action.action->at_start_effects);
+  parser::pddl::getPredicates(action_effects, action.action->at_end_effects);
 
   for (const auto & other : ret) {
-    std::vector<plansys2_msgs::msg::Node> other_over_all_requirements;
-    parser::pddl::getPredicates(
-      other_over_all_requirements,
-      other->action.action->over_all_requirements);
+    std::vector<plansys2_msgs::msg::Node> other_requirements;
+    std::vector<plansys2_msgs::msg::Node> other_effects;
+    parser::pddl::getPredicates(other_requirements, other->action.action->at_start_requirements);
+    parser::pddl::getPredicates(other_requirements, other->action.action->over_all_requirements);
+    parser::pddl::getPredicates(other_requirements, action.action->at_end_requirements);
+    parser::pddl::getPredicates(other_effects, other->action.action->at_start_effects);
+    parser::pddl::getPredicates(other_effects, other->action.action->at_end_effects);
 
-    for (const auto & prev_over_all_req : other_over_all_requirements) {
-      for (const auto & action_at_start_req : action_at_start_requirements) {
-        if (parser::pddl::toString(prev_over_all_req) ==
-          parser::pddl::toString(action_at_start_req) &&
-          prev_over_all_req.negate == action_at_start_req.negate)
+    for (const auto & action_effect : action_effects) {
+      for (const auto & other_requirement : other_requirements) {
+        if (parser::pddl::toString(action_effect) ==
+          parser::pddl::toString(other_requirement) &&
+          action_effect.negate != other_requirement.negate)
+        {
+          return false;
+        }
+      }
+    }
+
+    for (const auto & action_requirement : action_requirements) {
+      for (const auto & other_effect : other_effects) {
+        if (parser::pddl::toString(action_requirement) ==
+          parser::pddl::toString(other_effect) &&
+          action_requirement.negate != other_effect.negate)
         {
           return false;
         }
@@ -354,6 +373,7 @@ BTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
   auto functions = problem_client_->getFunctions();
 
   graph->roots = get_roots(action_sequence, predicates, functions, node_counter);
+  std::cerr << "Roots = " << graph->roots.size() << std::endl;
 
   // Apply root actions
   for (auto & action_node : graph->roots) {
