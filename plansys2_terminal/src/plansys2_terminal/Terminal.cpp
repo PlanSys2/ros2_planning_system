@@ -715,7 +715,7 @@ Terminal::execute_plan(int items)
 
   if (items > 0 && items <= plan.value().items.size()) {
     plan.value().items.erase(plan.value().items.begin() + items, plan.value().items.end());
-  } else {
+  } else if (items != -1) {
     std::cout << "Can't execute " << items << " actions" << std::endl;
     return;
   }
