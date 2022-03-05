@@ -373,7 +373,6 @@ BTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
   auto functions = problem_client_->getFunctions();
 
   graph->roots = get_roots(action_sequence, predicates, functions, node_counter);
-  std::cerr << "Roots = " << graph->roots.size() << std::endl;
 
   // Apply root actions
   for (auto & action_node : graph->roots) {
