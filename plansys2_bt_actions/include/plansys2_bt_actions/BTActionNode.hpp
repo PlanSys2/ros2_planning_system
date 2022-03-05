@@ -70,7 +70,18 @@ public:
 
     // Make sure the server is actually there before continuing
     RCLCPP_INFO(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
-    return action_client_->wait_for_action_server(server_timeout_);
+
+    bool success_waiting = action_client_->wait_for_action_server(server_timeout_);
+
+    if (!success_waiting) {
+      RCLCPP_ERROR(
+        node_->get_logger(),
+        "Timeout (%lf secs) waiting for \"%s\" action server",
+        server_timeout_,
+        action_name.c_str());
+    }
+
+    return success_waiting;
   }
 
   // Any subclass of BtActionNode that accepts parameters must provide a providedPorts method
