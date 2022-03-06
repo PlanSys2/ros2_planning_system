@@ -416,11 +416,13 @@ BTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
         prune_backwards(new_node, node_satisfy);
 
         // Create the connections to the parent node
-        if (std::find(new_node->in_arcs.begin(), new_node->in_arcs.end(), node_satisfy) == new_node->in_arcs.end())
+        if (std::find(new_node->in_arcs.begin(), new_node->in_arcs.end(), node_satisfy) ==
+          new_node->in_arcs.end())
         {
           new_node->in_arcs.push_back(node_satisfy);
         }
-        if (std::find(node_satisfy->out_arcs.begin(), node_satisfy->out_arcs.end(), new_node) == node_satisfy->out_arcs.end())
+        if (std::find(node_satisfy->out_arcs.begin(), node_satisfy->out_arcs.end(), new_node) ==
+          node_satisfy->out_arcs.end())
         {
           node_satisfy->out_arcs.push_back(new_node);
         }
@@ -455,11 +457,13 @@ BTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
         prune_backwards(new_node, node_satisfy);
 
         // Create the connections to the parent node
-        if (std::find(new_node->in_arcs.begin(), new_node->in_arcs.end(), node_satisfy) == new_node->in_arcs.end())
+        if (std::find(new_node->in_arcs.begin(), new_node->in_arcs.end(), node_satisfy) ==
+          new_node->in_arcs.end())
         {
           new_node->in_arcs.push_back(node_satisfy);
         }
-        if (std::find(node_satisfy->out_arcs.begin(), node_satisfy->out_arcs.end(), new_node) == node_satisfy->out_arcs.end())
+        if (std::find(node_satisfy->out_arcs.begin(), node_satisfy->out_arcs.end(), new_node) ==
+          node_satisfy->out_arcs.end())
         {
           node_satisfy->out_arcs.push_back(new_node);
         }
@@ -494,11 +498,13 @@ BTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
         prune_backwards(new_node, node_satisfy);
 
         // Create the connections to the parent node
-        if (std::find(new_node->in_arcs.begin(), new_node->in_arcs.end(), node_satisfy) == new_node->in_arcs.end())
+        if (std::find(new_node->in_arcs.begin(), new_node->in_arcs.end(), node_satisfy) ==
+          new_node->in_arcs.end())
         {
           new_node->in_arcs.push_back(node_satisfy);
         }
-        if (std::find(node_satisfy->out_arcs.begin(), node_satisfy->out_arcs.end(), new_node) == node_satisfy->out_arcs.end())
+        if (std::find(node_satisfy->out_arcs.begin(), node_satisfy->out_arcs.end(), new_node) ==
+          node_satisfy->out_arcs.end())
         {
           node_satisfy->out_arcs.push_back(new_node);
         }
