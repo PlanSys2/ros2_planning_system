@@ -75,6 +75,7 @@ private:
   rclcpp_action::CancelResponse handle_cancel(
     const std::shared_ptr<GoalHandleFibonacci> goal_handle)
   {
+    cancelled_ = true;
     return rclcpp_action::CancelResponse::ACCEPT;
   }
 
@@ -86,12 +87,23 @@ private:
   void execute(const std::shared_ptr<GoalHandleFibonacci> goal_handle)
   {
     auto feedback = std::make_shared<Fibonacci::Feedback>();
-    goal_handle->publish_feedback(feedback);
-    auto result = std::make_shared<Fibonacci::Result>();
 
-    result->sequence.push_back(4);
-    goal_handle->succeed(result);
+    int counter = 0;
+    rclcpp::Rate rate(10);
+    while (rclcpp::ok() && counter++ < 50 && !cancelled_) {  // 5 secs
+      goal_handle->publish_feedback(feedback);
+      rate.sleep();
+    }
+
+    if (!cancelled_) {
+      auto result = std::make_shared<Fibonacci::Result>();
+
+      result->sequence.push_back(4);
+      goal_handle->succeed(result);
+    }
   }
+
+  bool cancelled_ {false};
 };
 
 TEST(bt_actions, load_plugins)

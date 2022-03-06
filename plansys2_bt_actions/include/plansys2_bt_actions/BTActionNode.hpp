@@ -76,8 +76,8 @@ public:
     if (!success_waiting) {
       RCLCPP_ERROR(
         node_->get_logger(),
-        "Timeout (%lf secs) waiting for \"%s\" action server",
-        server_timeout_,
+        "Timeout (%ld secs) waiting for \"%s\" action server",
+        server_timeout_.count() * 1000,
         action_name.c_str());
     }
 
