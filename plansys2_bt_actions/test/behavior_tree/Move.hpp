@@ -36,7 +36,7 @@ public:
     const std::string & action_name,
     const BT::NodeConfiguration & conf);
 
-  void on_tick() override;
+  BT::NodeStatus on_tick() override;
   BT::NodeStatus on_success() override;
 
   static BT::PortsList providedPorts()
