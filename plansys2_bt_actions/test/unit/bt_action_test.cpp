@@ -207,14 +207,6 @@ TEST(bt_actions, on_feedback_failure)
   while (rclcpp::ok() && status == BT::NodeStatus::RUNNING) {
     status = failure_node.tick();
 
-    if (status == BT::NodeStatus::RUNNING) {
-      std::cerr << "RUNNING" << std::endl;
-    } else if (status == BT::NodeStatus::FAILURE) {
-      std::cerr << "FAILURE" << std::endl;
-    } else {
-      std::cerr << status << std::endl;
-    }
-
     rclcpp::spin_some(node);
     rate.sleep();
   }
