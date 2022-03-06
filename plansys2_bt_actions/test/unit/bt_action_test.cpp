@@ -133,7 +133,6 @@ TEST(bt_actions, load_plugins)
 
 TEST(bt_actions, on_tick_failure)
 {
-  std::cerr << "===================== 1" << std::endl;
   auto node = rclcpp::Node::make_shared("test_node");
   auto move_server_node = std::make_shared<MoveServer>();
   move_server_node->start_server();
@@ -156,16 +155,7 @@ TEST(bt_actions, on_tick_failure)
 
   BT::NodeStatus status = BT::NodeStatus::RUNNING;
   while (rclcpp::ok() && status == BT::NodeStatus::RUNNING) {
-    std::cerr << "=====================" << std::endl;
     status = failure_node.tick();
-
-    if (status == BT::NodeStatus::RUNNING) {
-      std::cerr << "RUNNING" << std::endl;
-    } else if (status == BT::NodeStatus::FAILURE) {
-      std::cerr << "FAILURE" << std::endl;
-    } else {
-      std::cerr << status << std::endl;
-    }
 
     rclcpp::spin_some(node);
     rate.sleep();
@@ -180,27 +170,20 @@ TEST(bt_actions, on_tick_failure)
 
 TEST(bt_actions, on_feedback_failure)
 {
-  std::cerr << "===================== 1" << std::endl;
   auto node = rclcpp::Node::make_shared("test_node");
   auto move_server_node = std::make_shared<MoveServer>();
-  std::cerr << "===================== 2" << std::endl;
   move_server_node->start_server();
-  std::cerr << "===================== 3" << std::endl;
 
   bool finished = false;
   std::thread t([&]() {
       while (!finished) {rclcpp::spin_some(move_server_node);}
     });
-  std::cerr << "===================== 4" << std::endl;
-
 
   BT::NodeConfiguration config;
   BT::assignDefaultRemapping<plansys2_bt_tests::OnFeedbackFail>(config);
   auto bb = BT::Blackboard::create();
   bb->set("node", node);
   config.blackboard = bb;
-
-  std::cerr << "===================== 5" << std::endl;
 
   plansys2_bt_tests::OnFeedbackFail failure_node("OnFeedbackFail",
     "move",
@@ -210,16 +193,7 @@ TEST(bt_actions, on_feedback_failure)
 
   BT::NodeStatus status = BT::NodeStatus::RUNNING;
   while (rclcpp::ok() && status == BT::NodeStatus::RUNNING) {
-    std::cerr << "=====================" << std::endl;
     status = failure_node.tick();
-
-    if (status == BT::NodeStatus::RUNNING) {
-      std::cerr << "RUNNING" << std::endl;
-    } else if (status == BT::NodeStatus::FAILURE) {
-      std::cerr << "FAILURE" << std::endl;
-    } else {
-      std::cerr << status << std::endl;
-    }
 
     rclcpp::spin_some(node);
     rate.sleep();
