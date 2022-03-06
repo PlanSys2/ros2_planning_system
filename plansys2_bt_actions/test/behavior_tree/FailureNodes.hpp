@@ -40,10 +40,10 @@ public:
   {
   }
 
-  void on_tick() override
+  BT::NodeStatus on_tick() override
   {
     on_tick_run = true;
-    return_failure_ = true;
+    return BT::NodeStatus::FAILURE;
   }
 
   bool on_tick_run;
@@ -65,13 +65,23 @@ public:
   {
   }
 
+  BT::NodeStatus on_tick() override
+  {
+    if (return_failure) {
+      return BT::NodeStatus::FAILURE;
+    } else {
+      return BT::NodeStatus::RUNNING;
+    }
+  }
+
   void on_feedback(const std::shared_ptr<const Fibonacci::Feedback>) override
   {
     on_feedback_run = true;
-    return_failure_ = true;
+    return_failure = true;
   }
 
   bool on_feedback_run;
+  bool return_failure {false};
 };
 
 }   // namespace plansys2_bt_tests

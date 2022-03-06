@@ -61,23 +61,27 @@ Move::Move(
   }
 }
 
-void
+BT::NodeStatus
 Move::on_tick()
 {
-  std::string goal;
-  getInput<std::string>("goal", goal);
+  if (status() == BT::NodeStatus::IDLE) {
+    std::string goal;
+    getInput<std::string>("goal", goal);
 
-  geometry_msgs::msg::Pose2D pose2nav;
-  if (waypoints_.find(goal) != waypoints_.end()) {
-    pose2nav = waypoints_[goal];
-  } else {
-    std::cerr << "No coordinate for waypoint [" << goal << "]" << std::endl;
+    geometry_msgs::msg::Pose2D pose2nav;
+    if (waypoints_.find(goal) != waypoints_.end()) {
+      pose2nav = waypoints_[goal];
+    } else {
+      std::cerr << "No coordinate for waypoint [" << goal << "]" << std::endl;
+    }
+
+    int order_to = 10;
+    goal_.order = order_to;
+
+    setOutput("goal_reached", 0);
   }
 
-  int order_to = 10;
-  goal_.order = order_to;
-
-  setOutput("goal_reached", 0);
+  return BT::NodeStatus::RUNNING;
 }
 
 BT::NodeStatus
