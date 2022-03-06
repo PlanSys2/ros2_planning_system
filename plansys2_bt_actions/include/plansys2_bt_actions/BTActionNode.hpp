@@ -71,9 +71,7 @@ public:
     // Make sure the server is actually there before continuing
     RCLCPP_INFO(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
 
-    std::cerr << "=== 1" << std::endl;
     bool success_waiting = action_client_->wait_for_action_server(server_timeout_);
-    std::cerr << "=== 2" << std::endl;
 
     if (!success_waiting) {
       RCLCPP_ERROR(
@@ -82,9 +80,8 @@ public:
         server_timeout_,
         action_name.c_str());
     }
-    std::cerr << "=== 3" << std::endl;
 
-    return true;  // success_waiting;
+    return success_waiting;
   }
 
   // Any subclass of BtActionNode that accepts parameters must provide a providedPorts method
