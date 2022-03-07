@@ -1,4 +1,4 @@
-ament_add_gtest(executor_test executor_test.cpp)
+ament_add_gtest(executor_test executor_test.cpp TIMEOUT 300)
 target_compile_definitions(executor_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 target_link_libraries(executor_test ${PROJECT_NAME})
 

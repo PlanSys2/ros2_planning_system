@@ -57,8 +57,8 @@ struct GraphNode
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
 
-  std::set<GraphNode::Ptr> in_arcs;
-  std::set<GraphNode::Ptr> out_arcs;
+  std::list<GraphNode::Ptr> in_arcs;
+  std::list<GraphNode::Ptr> out_arcs;
 };
 
 struct Graph
