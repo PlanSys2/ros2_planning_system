@@ -606,14 +606,14 @@ Terminal::process_remove_instance(std::vector<std::string> & command, std::ostri
 void
 Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostringstream & os)
 {
+		const std::string rem_pred_cmd =  "\tUsage: \n\t\tremove predicate (predicate)";
   if (command.size() > 0) {
     plansys2::Predicate predicate;
     predicate.node_type = plansys2_msgs::msg::Node::PREDICATE;
     predicate.name = command[0];
 
     if (predicate.name.front() != '(') {
-      os << "\tUsage: \n\t\tremove predicate (predicate)" <<
-        std::endl;
+      os << rem_pred_cmd << std::endl;
     }
 
     predicate.name.erase(0, 1);  // Remove first )
@@ -625,20 +625,18 @@ Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostr
     }
 
     if (predicate.parameters.back().name.back() != ')') {
-      os << "\tUsage: \n\t\tremove predicate (predicate)" <<
-        std::endl;
+      os << rem_pred_cmd << std::endl;
       return;
     }
 
     predicate.parameters.back().name.pop_back();  // Remove last (
 
     if (!problem_client_->removePredicate(predicate)) {
-      os << "Could not remove the predicate [" << parser::pddl::toString(predicate) << "]" <<
-        std::endl;
+      os << "Could not remove the predicate [" << parser::pddl::toString(predicate) << "]"
+									<< std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\remove predicate [name] [instance1] [instance2] ...[instaceN]" <<
-      std::endl;
+    os << rem_pred_cmd << std::endl;
   }
 }
 
@@ -892,6 +890,116 @@ Terminal::process_check(std::vector<std::string> & command, std::ostringstream &
 }
 
 void
+Terminal::process_help(std::vector<std::string> & command, std::ostringstream & os)
+{
+		std::ostringstream cmd_set;
+		cmd_set << "\t set instance <object> <type>" << std::endl
+										<< "\t set predicate <predicate>" << std::endl
+										<< "\t set function (= <function> <value>)" << std::endl
+										<< "\t set goal <goal_formula>" << std::endl;
+		std::ostringstream cmd_get;
+		cmd_get << "\t get model   types | predicates | functions | actions |"<< std::endl
+										<< "\t             predicate <predicate_name> | function <function_name> |"<< std::endl
+										<< "\t             action <action_name> " << std::endl
+										<< "\t get problem  instances | predicates | functions | goal " << std::endl
+										<< "\t get domain" << std::endl
+										<< "\t get plan" << std::endl;
+		std::ostringstream cmd_rem;
+		cmd_rem << "\t remove instance <object>" << std::endl
+										<< "\t remove predicate <predicate>" << std::endl
+										<< "\t remove function <function>" << std::endl
+										<< "\t remove goal" << std::endl;
+
+		std::ostringstream cmd_run;
+		cmd_run << "\t run [ action | action_num ]"<< std::endl;
+
+		std::ostringstream cmd_check;
+		cmd_check << "\t check [actors]" << std::endl;
+
+		std::ostringstream cmd_load;
+		cmd_load << "\t load <file_name> [0|1]" << std::endl;
+
+		std::ostringstream cmd_help;
+		cmd_help << "\t help|? [ set | get | remove | run | check | load | quit | help | ? ]" << std::endl;
+
+		std::map<std::string,std::string> cmds;
+		cmds.insert(std::pair<std::string,std::string>("set", cmd_set.str()));
+		cmds.insert(std::pair<std::string,std::string>("get", cmd_get.str()));
+		cmds.insert(std::pair<std::string,std::string>("remove", cmd_rem.str()));
+		cmds.insert(std::pair<std::string,std::string>("run", cmd_run.str()));
+		cmds.insert(std::pair<std::string,std::string>("check", cmd_run.str()));
+		cmds.insert(std::pair<std::string,std::string>("load", cmd_load.str()));
+		cmds.insert(std::pair<std::string,std::string>("quit", std::string("")));
+		cmds.insert(std::pair<std::string,std::string>("help", cmd_help.str()));
+		cmds.insert(std::pair<std::string,std::string>("?", cmd_help.str()));
+
+  if (command.empty()) {
+				os << "The list of available commands is the following:" << std::endl;
+				for (auto it1 = cmds.begin(); it1 != cmds.end(); it1++) {
+						os << it1->first << std::endl
+									<< it1->second << std::endl;
+				}
+				return;
+  }
+
+		const std::string c = command[0];
+		auto cmd = cmds.find(c);
+		if (cmd != cmds.end()) {
+				os << cmd->first << std::endl;
+				os << cmd->second << std::endl;
+				return;
+		}
+		os << "Command \"" << command[0] << "\" command not found" << std::endl;
+		return;
+}
+
+bool
+Terminal::process_load(std::vector<std::string> & command, std::ostringstream & os)
+{
+		const std::string cmd_help = "\tUsage: \n\t\tload <filename> [0|1]";
+
+  if (command.empty() || command.size() > 2 ||
+						command[0].empty()) {
+				os << cmd_help << std::endl;
+				return false;
+		}
+
+		std::string cmdfile = command[0];
+		bool do_echo = false;
+		if (command.size() == 2) {
+				if (command[1] == "0") {
+						do_echo = false;
+				} else if (command[1] == "1") {
+						do_echo = true;
+				} else {
+						os << cmd_help << std::endl;
+						return false;
+				}
+		}
+
+		std::ifstream cmd_ifs(cmdfile, std::ifstream::in);
+		if (cmd_ifs.fail()) {
+				os << "\tFailing to open file \"" << cmdfile << "\"" << std::endl;
+				return false;
+		}
+
+		finish_parsing = false;
+		std::string ln;
+  while (!finish_parsing &&
+									std::getline(cmd_ifs, ln, '\n')) {
+				clean_command(ln);
+				std::ostringstream os;
+				if (do_echo) os << ln << std::endl;
+				process_command(ln, os);
+				std::cout << os.str();
+		}
+
+		cmd_ifs.close();
+
+		return true;
+}
+
+void
 Terminal::process_command(std::string & command, std::ostringstream & os)
 {
   std::vector<std::string> tokens = tokenize(command);
@@ -915,6 +1023,16 @@ Terminal::process_command(std::string & command, std::ostringstream & os)
   } else if (tokens[0] == "check") {
     pop_front(tokens);
     process_check(tokens, os);
+		} else if (tokens[0] == "help" ||
+													tokens[0] == "?") {
+		  pop_front(tokens);
+				process_help(tokens, os);
+		} else if (tokens[0] == "load") {
+				pop_front(tokens);
+				bool res = process_load(tokens, os);
+				finish_parsing = true;
+		} else if (tokens[0] == "quit") {
+				finish_parsing = true;
   } else {
     os << "Command not found" << std::endl;
   }

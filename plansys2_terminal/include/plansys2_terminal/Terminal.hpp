@@ -87,6 +87,10 @@ protected:
 
   virtual void process_command(std::string & command, std::ostringstream & os);
 
+		virtual bool process_load(std::vector<std::string> & command, std::ostringstream & os);
+
+		virtual void process_help(std::vector<std::string> & command, std::ostringstream & os);
+
 private:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
@@ -94,6 +98,7 @@ private:
   std::shared_ptr<plansys2::ExecutorClient> executor_client_;
 
   std::string problem_file_name_;
+		bool finish_parsing = false;
 };
 
 }  // namespace plansys2_terminal
