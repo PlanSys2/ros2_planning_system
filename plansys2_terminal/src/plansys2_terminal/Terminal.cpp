@@ -82,7 +82,7 @@ char * completion_generator(const char * text, int state)
   std::vector<std::string> vocabulary_set{"instance", "predicate", "function", "goal"};
   std::vector<std::string> vocabulary_get{"model", "problem", "domain", "plan"};
   std::vector<std::string> vocabulary_remove{"instance", "predicate", "function", "goal"};
-  std::vector<std::string> vocabulary_run{"action", "num_actions"};
+  std::vector<std::string> vocabulary_run{"action", "num_actions", "planfrom"};
   std::vector<std::string> vocabulary_get_problem{"instances", "predicates", "functions", "goal"};
   std::vector<std::string> vocabulary_get_model{"types", "predicates", "functions", "actions",
     "predicate", "function", "action"};
@@ -156,6 +156,52 @@ char ** completer(const char * text, int start, int end)
   return rl_completion_matches(text, completion_generator);
 }
 // LCOV_EXCL_STOP
+
+std::optional<plansys2_msgs::msg::Plan>
+parse_plan(const std::string planfile)
+{
+		std::ifstream plan_file(planfile, std::ifstream::in);
+		if (plan_file.fail()) {
+				std::cerr << "Unable to open plan file \"" << planfile
+													<< "\" for reading!" << std::endl;
+				return {};
+		}
+
+		plansys2_msgs::msg::Plan ret;
+  if (plan_file.is_open()) {
+				std::string line;
+    while (getline(plan_file, line)) {
+      plansys2_msgs::msg::PlanItem item;
+      size_t colon_pos = line.find(":");
+      size_t colon_opar = line.find("(");
+      size_t colon_cpar = line.find(")");
+      size_t colon_bra = line.find("[");
+
+      std::string time = line.substr(0, colon_pos);
+      std::string action = line.substr(colon_opar, colon_cpar - colon_opar + 1);
+      std::string duration = line.substr(colon_bra + 1);
+      duration.pop_back();
+
+      item.time = std::stof(time);
+      item.action = action;
+      item.duration = std::stof(duration);
+
+      ret.items.push_back(item);
+    }
+    plan_file.close();
+				std::cout << "The plan read from \""<< planfile << "\" is " << std::endl;
+				for (const auto & plan_item : ret.items) {
+						std::cout << plan_item.time << ":\t" << plan_item.action << "\t["
+																<< plan_item.duration << "]" << std::endl;
+				}
+  }
+
+		if (ret.items.empty()) {
+    return {};
+  } else {
+    return ret;
+  }
+}
 
 
 Terminal::Terminal()
@@ -447,8 +493,8 @@ Terminal::process_get(std::vector<std::string> & command, std::ostringstream & o
       if (plan) {
         os << "plan: " << std::endl;
         for (const auto & plan_item : plan.value().items) {
-          os << plan_item.time << "\t" << plan_item.action << "\t" <<
-            plan_item.duration << std::endl;
+          os << plan_item.time << ":\t" << plan_item.action << "\t[" <<
+            plan_item.duration << "]" << std::endl;
         }
       } else {
         os << "Plan not found" << std::endl;
@@ -821,11 +867,30 @@ Terminal::process_run(std::vector<std::string> & command, std::ostringstream & o
       } catch (std::invalid_argument e) {
         os << e.what() << " with arg: [" << command[0] << "]" << std::endl;
       }
-    } else {
+    } else if (command[0] == "planfrom") {
+						if (command.size() == 2) {
+								std::optional<plansys2_msgs::msg::Plan> plan = parse_plan(command[1]);
+								if (!plan.has_value()) {
+										os << "Plan could not be loaded " << std::endl;
+										return;
+								}
+								try {
+										execute_plan(plan.value());
+								} catch (std::invalid_argument e) {
+										os << e.what() << " with arg: [" << command[0]
+													<< command[1] << "]" << std::endl;
+										return;
+								}
+						}
+						else {
+								os << "\tUsage: \n\t\trun planfrom [planfile]" << std::endl;
+						}
+				} else {
       os << "\tUsage: \n\t\trun" << std::endl;
       os << "\tUsage: \n\t\trun num_actions [number of actions to execute from plan]" <<
         std::endl;
       os << "\tUsage: \n\t\trun action [action to execute]" << std::endl;
+      os << "\tUsage: \n\t\trun planfrom [planfile]" << std::endl;
     }
   }
 }
@@ -911,16 +976,18 @@ Terminal::process_help(std::vector<std::string> & command, std::ostringstream & 
 										<< "\t remove goal" << std::endl;
 
 		std::ostringstream cmd_run;
-		cmd_run << "\t run [ action | action_num ]"<< std::endl;
+		cmd_run << "\t run action <action>" << std::endl
+										<< "\t run num_actions <num>" << std::endl
+										<< "\t run planfrom <planfile>" << std::endl;
 
 		std::ostringstream cmd_check;
 		cmd_check << "\t check [actors]" << std::endl;
 
-		std::ostringstream cmd_load;
-		cmd_load << "\t load <file_name> [0|1]" << std::endl;
+		std::ostringstream cmd_source;
+		cmd_source << "\t source <file_name> [0|1]" << std::endl;
 
 		std::ostringstream cmd_help;
-		cmd_help << "\t help|? [ set | get | remove | run | check | load | quit | help | ? ]" << std::endl;
+		cmd_help << "\t help|? [ set | get | remove | run | check | source | quit | help | ? ]" << std::endl;
 
 		std::map<std::string,std::string> cmds;
 		cmds.insert(std::pair<std::string,std::string>("set", cmd_set.str()));
@@ -928,7 +995,7 @@ Terminal::process_help(std::vector<std::string> & command, std::ostringstream & 
 		cmds.insert(std::pair<std::string,std::string>("remove", cmd_rem.str()));
 		cmds.insert(std::pair<std::string,std::string>("run", cmd_run.str()));
 		cmds.insert(std::pair<std::string,std::string>("check", cmd_run.str()));
-		cmds.insert(std::pair<std::string,std::string>("load", cmd_load.str()));
+		cmds.insert(std::pair<std::string,std::string>("source", cmd_source.str()));
 		cmds.insert(std::pair<std::string,std::string>("quit", std::string("")));
 		cmds.insert(std::pair<std::string,std::string>("help", cmd_help.str()));
 		cmds.insert(std::pair<std::string,std::string>("?", cmd_help.str()));
@@ -953,15 +1020,15 @@ Terminal::process_help(std::vector<std::string> & command, std::ostringstream & 
 		return;
 }
 
-bool
-Terminal::process_load(std::vector<std::string> & command, std::ostringstream & os)
+void
+Terminal::process_source(std::vector<std::string> & command, std::ostringstream & os)
 {
-		const std::string cmd_help = "\tUsage: \n\t\tload <filename> [0|1]";
+		const std::string cmd_help = "\tUsage: \n\t\tsource <filename> [0|1]";
 
   if (command.empty() || command.size() > 2 ||
 						command[0].empty()) {
 				os << cmd_help << std::endl;
-				return false;
+				return;
 		}
 
 		std::string cmdfile = command[0];
@@ -973,14 +1040,14 @@ Terminal::process_load(std::vector<std::string> & command, std::ostringstream & 
 						do_echo = true;
 				} else {
 						os << cmd_help << std::endl;
-						return false;
+						return;
 				}
 		}
 
 		std::ifstream cmd_ifs(cmdfile, std::ifstream::in);
 		if (cmd_ifs.fail()) {
 				os << "\tFailing to open file \"" << cmdfile << "\"" << std::endl;
-				return false;
+				return;
 		}
 
 		finish_parsing = false;
@@ -996,7 +1063,7 @@ Terminal::process_load(std::vector<std::string> & command, std::ostringstream & 
 
 		cmd_ifs.close();
 
-		return true;
+		return;
 }
 
 void
@@ -1027,10 +1094,17 @@ Terminal::process_command(std::string & command, std::ostringstream & os)
 													tokens[0] == "?") {
 		  pop_front(tokens);
 				process_help(tokens, os);
-		} else if (tokens[0] == "load") {
-				pop_front(tokens);
-				bool res = process_load(tokens, os);
-				finish_parsing = true;
+		} else if (tokens[0] == "source") {
+				if (!inside_source) {
+						inside_source = true;
+						pop_front(tokens);
+						process_source(tokens, os);
+						finish_parsing = true;
+						inside_source = false;
+				} else {
+						os << "Nested \"source\" commands not allowed"<< std::endl;
+						finish_parsing = true;
+				}
 		} else if (tokens[0] == "quit") {
 				finish_parsing = true;
   } else {

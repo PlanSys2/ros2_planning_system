@@ -36,6 +36,9 @@ void pop_front(std::vector<std::string> & tokens);
 char * completion_generator(const char * text, int state);
 char ** completer(const char * text, int start, int end);
 
+std::optional<plansys2_msgs::msg::Plan>
+parse_plan(const std::string planfile);
+
 class Terminal : public rclcpp::Node
 {
 public:
@@ -87,7 +90,7 @@ protected:
 
   virtual void process_command(std::string & command, std::ostringstream & os);
 
-		virtual bool process_load(std::vector<std::string> & command, std::ostringstream & os);
+		virtual void process_source(std::vector<std::string> & command, std::ostringstream & os);
 
 		virtual void process_help(std::vector<std::string> & command, std::ostringstream & os);
 
@@ -99,6 +102,7 @@ private:
 
   std::string problem_file_name_;
 		bool finish_parsing = false;
+		bool inside_source = false;
 };
 
 }  // namespace plansys2_terminal
