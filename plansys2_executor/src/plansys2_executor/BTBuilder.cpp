@@ -980,4 +980,53 @@ BTBuilder::print_graph(const plansys2::Graph::Ptr & graph) const
   }
 }
 
+void
+BTBuilder::print_node_csv(const plansys2::GraphNode::Ptr & node, uint32_t root_num) const
+{
+  std::cerr << root_num << ", " <<
+    node->node_num << ", " <<
+    node->level_num << ", " <<
+    parser::pddl::nameActionsToString(node->action.action) << std::endl;
+  for (const auto & out : node->out_arcs) {
+    print_node_csv(out, root_num);
+  }
+}
+
+void
+BTBuilder::print_graph_csv(const plansys2::Graph::Ptr & graph) const
+{
+  uint32_t root_num = 0;
+  for (const auto & root : graph->roots) {
+    print_node_csv(root, root_num);
+    root_num++;
+  }
+}
+
+void
+BTBuilder::get_node_tabular(
+  const plansys2::GraphNode::Ptr & node,
+  uint32_t root_num,
+  std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> & graph) const
+{
+  graph.push_back(
+    std::make_tuple(
+      root_num, node->node_num, node->level_num,
+      parser::pddl::nameActionsToString(node->action.action)));
+  for (const auto & out : node->out_arcs) {
+    get_node_tabular(out, root_num, graph);
+  }
+}
+
+std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>>
+BTBuilder::get_graph_tabular(const plansys2::Graph::Ptr & graph) const
+{
+  std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> graph_tabular;
+  uint32_t root_num = 0;
+  for (const auto & root : graph->roots) {
+    get_node_tabular(root, root_num, graph_tabular);
+    root_num++;
+  }
+  return graph_tabular;
+}
+
 }  // namespace plansys2
