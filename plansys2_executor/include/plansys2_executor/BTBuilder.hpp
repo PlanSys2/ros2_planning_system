@@ -122,6 +122,8 @@ protected:
     std::vector<plansys2::Function> & functions) const;
   bool is_parallelizable(
     const plansys2::ActionStamped & action,
+    const std::vector<plansys2::Predicate> & predicates,
+    const std::vector<plansys2::Function> & functions,
     const std::list<GraphNode::Ptr> & ret) const;
 
   std::string get_flow_tree(

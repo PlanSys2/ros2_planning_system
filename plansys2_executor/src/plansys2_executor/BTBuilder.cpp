@@ -218,46 +218,38 @@ BTBuilder::get_node_satisfy(
 bool
 BTBuilder::is_parallelizable(
   const plansys2::ActionStamped & action,
-  const std::list<GraphNode::Ptr> & ret) const
+  const std::vector<plansys2::Predicate> & predicates,
+  const std::vector<plansys2::Function> & functions,
+  const std::list<GraphNode::Ptr> & nodes) const
 {
-  std::vector<plansys2_msgs::msg::Node> action_requirements;
-  std::vector<plansys2_msgs::msg::Node> action_effects;
-  parser::pddl::getPredicates(action_requirements, action.action->at_start_requirements);
-  parser::pddl::getPredicates(action_requirements, action.action->over_all_requirements);
-  parser::pddl::getPredicates(action_requirements, action.action->at_end_requirements);
-  parser::pddl::getPredicates(action_effects, action.action->at_start_effects);
-  parser::pddl::getPredicates(action_effects, action.action->at_end_effects);
+  // Apply the effects of the new action.
+  auto preds = predicates;
+  auto funcs = functions;
+  apply(action.action->at_start_effects, preds, funcs);
+  apply(action.action->at_end_effects, preds, funcs);
 
-  for (const auto & other : ret) {
-    std::vector<plansys2_msgs::msg::Node> other_requirements;
-    std::vector<plansys2_msgs::msg::Node> other_effects;
-    parser::pddl::getPredicates(other_requirements, other->action.action->at_start_requirements);
-    parser::pddl::getPredicates(other_requirements, other->action.action->over_all_requirements);
-    parser::pddl::getPredicates(other_requirements, action.action->at_end_requirements);
-    parser::pddl::getPredicates(other_effects, other->action.action->at_start_effects);
-    parser::pddl::getPredicates(other_effects, other->action.action->at_end_effects);
-
-    for (const auto & action_effect : action_effects) {
-      for (const auto & other_requirement : other_requirements) {
-        if (parser::pddl::toString(action_effect) ==
-          parser::pddl::toString(other_requirement) &&
-          action_effect.negate != other_requirement.negate)
-        {
-          return false;
-        }
-      }
+  // Check the requirements of the actions in the input set.
+  for (const auto & other : nodes) {
+    if (!(check(other->action.action->at_start_requirements, preds, funcs) &&
+          check(other->action.action->over_all_requirements, preds, funcs) &&
+          check(other->action.action->at_end_requirements, preds, funcs))) {
+      return false;
     }
+  }
 
-    for (const auto & action_requirement : action_requirements) {
-      for (const auto & other_effect : other_effects) {
-        if (parser::pddl::toString(action_requirement) ==
-          parser::pddl::toString(other_effect) &&
-          action_requirement.negate != other_effect.negate)
-        {
-          return false;
-        }
-      }
-    }
+  // Apply the effects of the actions in the input set.
+  preds = predicates;
+  funcs = functions;
+  for (const auto & other : nodes) {
+    apply(other->action.action->at_start_effects, preds, funcs);
+    apply(other->action.action->at_end_effects, preds, funcs);
+  }
+
+  // Check the requirements of the new action.
+  if (!(check(action.action->at_start_requirements, preds, funcs) &&
+        check(action.action->over_all_requirements, preds, funcs) &&
+        check(action.action->at_end_requirements, preds, funcs))) {
+    return false;
   }
 
   return true;
@@ -293,7 +285,7 @@ BTBuilder::get_roots(
   auto it = action_sequence.begin();
   while (it != action_sequence.end()) {
     const auto & action = *it;
-    if (is_action_executable(action, predicates, functions) && is_parallelizable(action, ret)) {
+    if (is_action_executable(action, predicates, functions) && is_parallelizable(action, predicates, functions, ret)) {
       auto new_root = GraphNode::make_shared();
       new_root->action = action;
       new_root->node_num = node_counter++;
