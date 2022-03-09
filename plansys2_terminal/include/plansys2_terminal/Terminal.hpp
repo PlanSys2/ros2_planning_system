@@ -90,9 +90,9 @@ protected:
 
   virtual void process_command(std::string & command, std::ostringstream & os);
 
-		virtual void process_source(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_source(std::vector<std::string> & command, std::ostringstream & os);
 
-		virtual void process_help(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_help(std::vector<std::string> & command, std::ostringstream & os);
 
 private:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
@@ -101,8 +101,8 @@ private:
   std::shared_ptr<plansys2::ExecutorClient> executor_client_;
 
   std::string problem_file_name_;
-		bool finish_parsing = false;
-		bool inside_source = false;
+  bool finish_parsing = false;
+  bool inside_source = false;
 };
 
 }  // namespace plansys2_terminal

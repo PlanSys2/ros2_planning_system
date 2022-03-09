@@ -25,6 +25,7 @@
 #include <sstream>
 #include <fstream>
 #include <map>
+#include <utility>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -160,16 +161,16 @@ char ** completer(const char * text, int start, int end)
 std::optional<plansys2_msgs::msg::Plan>
 parse_plan(const std::string planfile)
 {
-		std::ifstream plan_file(planfile, std::ifstream::in);
-		if (plan_file.fail()) {
-				std::cerr << "Unable to open plan file \"" << planfile
-													<< "\" for reading!" << std::endl;
-				return {};
-		}
+  std::ifstream plan_file(planfile, std::ifstream::in);
+  if (plan_file.fail()) {
+    std::cerr << "Unable to open plan file \"" << planfile <<
+      "\" for reading!" << std::endl;
+    return {};
+  }
 
-		plansys2_msgs::msg::Plan ret;
+  plansys2_msgs::msg::Plan ret;
   if (plan_file.is_open()) {
-				std::string line;
+    std::string line;
     while (getline(plan_file, line)) {
       plansys2_msgs::msg::PlanItem item;
       size_t colon_pos = line.find(":");
@@ -189,14 +190,14 @@ parse_plan(const std::string planfile)
       ret.items.push_back(item);
     }
     plan_file.close();
-				std::cout << "The plan read from \""<< planfile << "\" is " << std::endl;
-				for (const auto & plan_item : ret.items) {
-						std::cout << plan_item.time << ":\t" << plan_item.action << "\t["
-																<< plan_item.duration << "]" << std::endl;
-				}
+    std::cout << "The plan read from \"" << planfile << "\" is " << std::endl;
+    for (const auto & plan_item : ret.items) {
+      std::cout << plan_item.time << ":\t" << plan_item.action <<
+        "\t[" << plan_item.duration << "]" << std::endl;
+    }
   }
 
-		if (ret.items.empty()) {
+  if (ret.items.empty()) {
     return {};
   } else {
     return ret;
@@ -652,7 +653,7 @@ Terminal::process_remove_instance(std::vector<std::string> & command, std::ostri
 void
 Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostringstream & os)
 {
-		const std::string rem_pred_cmd =  "\tUsage: \n\t\tremove predicate (predicate)";
+  const std::string rem_pred_cmd = "\tUsage: \n\t\tremove predicate (predicate)";
   if (command.size() > 0) {
     plansys2::Predicate predicate;
     predicate.node_type = plansys2_msgs::msg::Node::PREDICATE;
@@ -678,8 +679,8 @@ Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostr
     predicate.parameters.back().name.pop_back();  // Remove last (
 
     if (!problem_client_->removePredicate(predicate)) {
-      os << "Could not remove the predicate [" << parser::pddl::toString(predicate) << "]"
-									<< std::endl;
+      os << "Could not remove the predicate [" << parser::pddl::toString(predicate) <<
+        "]" << std::endl;
     }
   } else {
     os << rem_pred_cmd << std::endl;
@@ -868,24 +869,23 @@ Terminal::process_run(std::vector<std::string> & command, std::ostringstream & o
         os << e.what() << " with arg: [" << command[0] << "]" << std::endl;
       }
     } else if (command[0] == "planfrom") {
-						if (command.size() == 2) {
-								std::optional<plansys2_msgs::msg::Plan> plan = parse_plan(command[1]);
-								if (!plan.has_value()) {
-										os << "Plan could not be loaded " << std::endl;
-										return;
-								}
-								try {
-										execute_plan(plan.value());
-								} catch (std::invalid_argument e) {
-										os << e.what() << " with arg: [" << command[0]
-													<< command[1] << "]" << std::endl;
-										return;
-								}
-						}
-						else {
-								os << "\tUsage: \n\t\trun planfrom [planfile]" << std::endl;
-						}
-				} else {
+      if (command.size() == 2) {
+        std::optional<plansys2_msgs::msg::Plan> plan = parse_plan(command[1]);
+        if (!plan.has_value()) {
+          os << "Plan could not be loaded " << std::endl;
+          return;
+        }
+        try {
+          execute_plan(plan.value());
+        } catch (std::invalid_argument e) {
+          os << e.what() << " with arg: [" << command[0] <<
+            command[1] << "]" << std::endl;
+          return;
+        }
+      } else {
+        os << "\tUsage: \n\t\trun planfrom [planfile]" << std::endl;
+      }
+    } else {
       os << "\tUsage: \n\t\trun" << std::endl;
       os << "\tUsage: \n\t\trun num_actions [number of actions to execute from plan]" <<
         std::endl;
@@ -957,113 +957,108 @@ Terminal::process_check(std::vector<std::string> & command, std::ostringstream &
 void
 Terminal::process_help(std::vector<std::string> & command, std::ostringstream & os)
 {
-		std::ostringstream cmd_set;
-		cmd_set << "\t set instance <object> <type>" << std::endl
-										<< "\t set predicate <predicate>" << std::endl
-										<< "\t set function (= <function> <value>)" << std::endl
-										<< "\t set goal <goal_formula>" << std::endl;
-		std::ostringstream cmd_get;
-		cmd_get << "\t get model   types | predicates | functions | actions |"<< std::endl
-										<< "\t             predicate <predicate_name> | function <function_name> |"<< std::endl
-										<< "\t             action <action_name> " << std::endl
-										<< "\t get problem  instances | predicates | functions | goal " << std::endl
-										<< "\t get domain" << std::endl
-										<< "\t get plan" << std::endl;
-		std::ostringstream cmd_rem;
-		cmd_rem << "\t remove instance <object>" << std::endl
-										<< "\t remove predicate <predicate>" << std::endl
-										<< "\t remove function <function>" << std::endl
-										<< "\t remove goal" << std::endl;
+  std::ostringstream cmd_set;
+  cmd_set << "\t set instance <object> <type>" << std::endl <<
+    "\t set predicate <predicate>" << std::endl <<
+    "\t set function (= <function> <value>)" << std::endl <<
+    "\t set goal <goal_formula>" << std::endl;
+  std::ostringstream cmd_get;
+  cmd_get << "\t get model   types | predicates | functions | actions |" << std::endl <<
+    "\t             predicate <predicate_name> | function <function_name> |" << std::endl <<
+    "\t             action <action_name> " << std::endl <<
+    "\t get problem  instances | predicates | functions | goal " << std::endl <<
+    "\t get domain" << std::endl <<
+    "\t get plan" << std::endl;
+  std::ostringstream cmd_rem;
+  cmd_rem << "\t remove instance <object>" << std::endl <<
+    "\t remove predicate <predicate>" << std::endl <<
+    "\t remove function <function>" << std::endl <<
+    "\t remove goal" << std::endl;
 
-		std::ostringstream cmd_run;
-		cmd_run << "\t run action <action>" << std::endl
-										<< "\t run num_actions <num>" << std::endl
-										<< "\t run planfrom <planfile>" << std::endl;
+  std::ostringstream cmd_run;
+  cmd_run << "\t run action <action>" << std::endl <<
+    "\t run num_actions <num>" << std::endl <<
+    "\t run planfrom <planfile>" << std::endl;
 
-		std::ostringstream cmd_check;
-		cmd_check << "\t check [actors]" << std::endl;
+  std::ostringstream cmd_check;
+  cmd_check << "\t check [actors]" << std::endl;
 
-		std::ostringstream cmd_source;
-		cmd_source << "\t source <file_name> [0|1]" << std::endl;
+  std::ostringstream cmd_source;
+  cmd_source << "\t source <file_name> [0|1]" << std::endl;
 
-		std::ostringstream cmd_help;
-		cmd_help << "\t help|? [ set | get | remove | run | check | source | quit | help | ? ]" << std::endl;
+  std::ostringstream cmd_help;
+  cmd_help << "\t help|? [ set | get | remove | run | check |" <<
+    " source | quit | help | ? ]" << std::endl;
 
-		std::map<std::string,std::string> cmds;
-		cmds.insert(std::pair<std::string,std::string>("set", cmd_set.str()));
-		cmds.insert(std::pair<std::string,std::string>("get", cmd_get.str()));
-		cmds.insert(std::pair<std::string,std::string>("remove", cmd_rem.str()));
-		cmds.insert(std::pair<std::string,std::string>("run", cmd_run.str()));
-		cmds.insert(std::pair<std::string,std::string>("check", cmd_run.str()));
-		cmds.insert(std::pair<std::string,std::string>("source", cmd_source.str()));
-		cmds.insert(std::pair<std::string,std::string>("quit", std::string("")));
-		cmds.insert(std::pair<std::string,std::string>("help", cmd_help.str()));
-		cmds.insert(std::pair<std::string,std::string>("?", cmd_help.str()));
+  std::map<std::string, std::string> cmds;
+  cmds.insert(std::pair<std::string, std::string>("set", cmd_set.str()));
+  cmds.insert(std::pair<std::string, std::string>("get", cmd_get.str()));
+  cmds.insert(std::pair<std::string, std::string>("remove", cmd_rem.str()));
+  cmds.insert(std::pair<std::string, std::string>("run", cmd_run.str()));
+  cmds.insert(std::pair<std::string, std::string>("check", cmd_run.str()));
+  cmds.insert(std::pair<std::string, std::string>("source", cmd_source.str()));
+  cmds.insert(std::pair<std::string, std::string>("quit", std::string("")));
+  cmds.insert(std::pair<std::string, std::string>("help", cmd_help.str()));
+  cmds.insert(std::pair<std::string, std::string>("?", cmd_help.str()));
 
   if (command.empty()) {
-				os << "The list of available commands is the following:" << std::endl;
-				for (auto it1 = cmds.begin(); it1 != cmds.end(); it1++) {
-						os << it1->first << std::endl
-									<< it1->second << std::endl;
-				}
-				return;
+    os << "The list of available commands is the following:" << std::endl;
+    for (auto it1 = cmds.begin(); it1 != cmds.end(); it1++) {
+      os << it1->first << std::endl << it1->second << std::endl;
+    }
+    return;
   }
 
-		const std::string c = command[0];
-		auto cmd = cmds.find(c);
-		if (cmd != cmds.end()) {
-				os << cmd->first << std::endl;
-				os << cmd->second << std::endl;
-				return;
-		}
-		os << "Command \"" << command[0] << "\" command not found" << std::endl;
-		return;
+  const std::string c = command[0];
+  auto cmd = cmds.find(c);
+  if (cmd != cmds.end()) {
+    os << cmd->first << std::endl;
+    os << cmd->second << std::endl;
+    return;
+  }
+  os << "Command \"" << command[0] << "\" command not found" << std::endl;
 }
 
 void
 Terminal::process_source(std::vector<std::string> & command, std::ostringstream & os)
 {
-		const std::string cmd_help = "\tUsage: \n\t\tsource <filename> [0|1]";
+  const std::string cmd_help = "\tUsage: \n\t\tsource <filename> [0|1]";
 
-  if (command.empty() || command.size() > 2 ||
-						command[0].empty()) {
-				os << cmd_help << std::endl;
-				return;
-		}
+  if (command.empty() || command.size() > 2 || command[0].empty()) {
+    os << cmd_help << std::endl;
+    return;
+  }
 
-		std::string cmdfile = command[0];
-		bool do_echo = false;
-		if (command.size() == 2) {
-				if (command[1] == "0") {
-						do_echo = false;
-				} else if (command[1] == "1") {
-						do_echo = true;
-				} else {
-						os << cmd_help << std::endl;
-						return;
-				}
-		}
+  std::string cmdfile = command[0];
+  bool do_echo = false;
+  if (command.size() == 2) {
+    if (command[1] == "0") {
+      do_echo = false;
+    } else if (command[1] == "1") {
+      do_echo = true;
+    } else {
+      os << cmd_help << std::endl;
+      return;
+    }
+  }
 
-		std::ifstream cmd_ifs(cmdfile, std::ifstream::in);
-		if (cmd_ifs.fail()) {
-				os << "\tFailing to open file \"" << cmdfile << "\"" << std::endl;
-				return;
-		}
+  std::ifstream cmd_ifs(cmdfile, std::ifstream::in);
+  if (cmd_ifs.fail()) {
+    os << "\tFailing to open file \"" << cmdfile << "\"" << std::endl;
+    return;
+  }
 
-		finish_parsing = false;
-		std::string ln;
-  while (!finish_parsing &&
-									std::getline(cmd_ifs, ln, '\n')) {
-				clean_command(ln);
-				std::ostringstream os;
-				if (do_echo) os << ln << std::endl;
-				process_command(ln, os);
-				std::cout << os.str();
-		}
+  finish_parsing = false;
+  std::string ln;
+  while (!finish_parsing && std::getline(cmd_ifs, ln, '\n')) {
+    clean_command(ln);
+    std::ostringstream os;
+    if (do_echo) {os << ln << std::endl;}
+    process_command(ln, os);
+    std::cout << os.str();
+  }
 
-		cmd_ifs.close();
-
-		return;
+  cmd_ifs.close();
 }
 
 void
@@ -1090,23 +1085,22 @@ Terminal::process_command(std::string & command, std::ostringstream & os)
   } else if (tokens[0] == "check") {
     pop_front(tokens);
     process_check(tokens, os);
-		} else if (tokens[0] == "help" ||
-													tokens[0] == "?") {
-		  pop_front(tokens);
-				process_help(tokens, os);
-		} else if (tokens[0] == "source") {
-				if (!inside_source) {
-						inside_source = true;
-						pop_front(tokens);
-						process_source(tokens, os);
-						finish_parsing = true;
-						inside_source = false;
-				} else {
-						os << "Nested \"source\" commands not allowed"<< std::endl;
-						finish_parsing = true;
-				}
-		} else if (tokens[0] == "quit") {
-				finish_parsing = true;
+  } else if ((tokens[0] == "help") || (tokens[0] == "?")) {
+    pop_front(tokens);
+    process_help(tokens, os);
+  } else if (tokens[0] == "source") {
+    if (!inside_source) {
+      inside_source = true;
+      pop_front(tokens);
+      process_source(tokens, os);
+      finish_parsing = true;
+      inside_source = false;
+    } else {
+      os << "Nested \"source\" commands not allowed" << std::endl;
+      finish_parsing = true;
+    }
+  } else if (tokens[0] == "quit") {
+    finish_parsing = true;
   } else {
     os << "Command not found" << std::endl;
   }

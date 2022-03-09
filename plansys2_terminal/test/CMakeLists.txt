@@ -1,4 +1,4 @@
-ament_add_gtest(terminal_test terminal_test.cpp)
+ament_add_gtest(terminal_test terminal_test.cpp TIMEOUT 120)
 ament_target_dependencies(terminal_test ${dependencies})
 target_link_libraries(terminal_test terminal readline)
 
