@@ -287,9 +287,8 @@ BTBuilder::get_roots(
   auto it = action_sequence.begin();
   while (it != action_sequence.end()) {
     const auto & action = *it;
-    if (is_action_executable(
-        action, predicates,
-        functions) && is_parallelizable(action, predicates, functions, ret))
+    if (is_action_executable(action, predicates, functions) &&
+      is_parallelizable(action, predicates, functions, ret))
     {
       auto new_root = GraphNode::make_shared();
       new_root->action = action;
