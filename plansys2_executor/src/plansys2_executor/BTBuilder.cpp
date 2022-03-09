@@ -231,8 +231,9 @@ BTBuilder::is_parallelizable(
   // Check the requirements of the actions in the input set.
   for (const auto & other : nodes) {
     if (!(check(other->action.action->at_start_requirements, preds, funcs) &&
-          check(other->action.action->over_all_requirements, preds, funcs) &&
-          check(other->action.action->at_end_requirements, preds, funcs))) {
+      check(other->action.action->over_all_requirements, preds, funcs) &&
+      check(other->action.action->at_end_requirements, preds, funcs)))
+    {
       return false;
     }
   }
@@ -247,8 +248,9 @@ BTBuilder::is_parallelizable(
 
   // Check the requirements of the new action.
   if (!(check(action.action->at_start_requirements, preds, funcs) &&
-        check(action.action->over_all_requirements, preds, funcs) &&
-        check(action.action->at_end_requirements, preds, funcs))) {
+    check(action.action->over_all_requirements, preds, funcs) &&
+    check(action.action->at_end_requirements, preds, funcs)))
+  {
     return false;
   }
 
@@ -285,7 +287,10 @@ BTBuilder::get_roots(
   auto it = action_sequence.begin();
   while (it != action_sequence.end()) {
     const auto & action = *it;
-    if (is_action_executable(action, predicates, functions) && is_parallelizable(action, predicates, functions, ret)) {
+    if (is_action_executable(
+        action, predicates,
+        functions) && is_parallelizable(action, predicates, functions, ret))
+    {
       auto new_root = GraphNode::make_shared();
       new_root->action = action;
       new_root->node_num = node_counter++;
