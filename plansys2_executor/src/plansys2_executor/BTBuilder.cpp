@@ -222,10 +222,27 @@ BTBuilder::is_parallelizable(
   const std::vector<plansys2::Function> & functions,
   const std::list<GraphNode::Ptr> & nodes) const
 {
-  // Apply the effects of the new action.
+  // Since we do not know exactly when 2 parallel actions will overlap,
+  // we must check for contradictions at any point in time.
+  // For example, in the case of a unary resource an "at start" effect
+  // may trun on a predicate, but an "at end" effect may turn it off.
+
+  // Apply the "at start" effects of the new action.
   auto preds = predicates;
   auto funcs = functions;
   apply(action.action->at_start_effects, preds, funcs);
+
+  // Check the requirements of the actions in the input set.
+  for (const auto & other : nodes) {
+    if (!(check(other->action.action->at_start_requirements, preds, funcs) &&
+      check(other->action.action->over_all_requirements, preds, funcs) &&
+      check(other->action.action->at_end_requirements, preds, funcs)))
+    {
+      return false;
+    }
+  }
+
+  // Apply the "at end" effects of the new action.
   apply(action.action->at_end_effects, preds, funcs);
 
   // Check the requirements of the actions in the input set.
@@ -238,20 +255,31 @@ BTBuilder::is_parallelizable(
     }
   }
 
-  // Apply the effects of the actions in the input set.
-  preds = predicates;
-  funcs = functions;
+  // Apply the effects of the actions in the input set one at a time.
   for (const auto & other : nodes) {
+    // Apply the "at start" effects of the action.
+    preds = predicates;
+    funcs = functions;
     apply(other->action.action->at_start_effects, preds, funcs);
-    apply(other->action.action->at_end_effects, preds, funcs);
-  }
 
-  // Check the requirements of the new action.
-  if (!(check(action.action->at_start_requirements, preds, funcs) &&
-    check(action.action->over_all_requirements, preds, funcs) &&
-    check(action.action->at_end_requirements, preds, funcs)))
-  {
-    return false;
+    // Check the requirements of the new action.
+    if (!(check(action.action->at_start_requirements, preds, funcs) &&
+      check(action.action->over_all_requirements, preds, funcs) &&
+      check(action.action->at_end_requirements, preds, funcs)))
+    {
+      return false;
+    }
+
+    // Apply the "at end" effects of the action in the input set.
+    apply(other->action.action->at_end_effects, preds, funcs);
+
+    // Check the requirements of the new action.
+    if (!(check(action.action->at_start_requirements, preds, funcs) &&
+      check(action.action->over_all_requirements, preds, funcs) &&
+      check(action.action->at_end_requirements, preds, funcs)))
+    {
+      return false;
+    }
   }
 
   return true;
