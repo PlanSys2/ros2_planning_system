@@ -270,7 +270,7 @@ BTBuilder::is_parallelizable(
       return false;
     }
 
-    // Apply the "at end" effects of the action in the input set.
+    // Apply the "at end" effects of the action.
     apply(other->action.action->at_end_effects, preds, funcs);
 
     // Check the requirements of the new action.
