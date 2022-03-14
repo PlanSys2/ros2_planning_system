@@ -221,9 +221,9 @@ public:
     Terminal::process_run(command, os);
   }
 
-  void process_run_planfrom(std::vector<std::string> & command, std::ostringstream & s)
+  void process_run_planfile(std::vector<std::string> & command, std::ostringstream & s)
   {
-    method_executed_["process_run_planfrom"] = true;
+    method_executed_["process_run_planfile"] = true;
     Terminal::process_run(command, s);
   }
 
@@ -1029,9 +1029,9 @@ TEST_F(TerminalTestCase, source_run_plan)
 
   {
     std::ostringstream os;
-    std::vector<std::string> command = {std::string("planfrom"), plan_file};
-    terminal_node->process_run_planfrom(command, os);
-    ASSERT_TRUE(terminal_node->method_executed_["process_run_planfrom"]);
+    std::vector<std::string> command = {std::string("plan-file"), plan_file};
+    terminal_node->process_run_planfile(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_run_planfile"]);
   }
 
   terminal_node->reset_executions();

@@ -78,15 +78,18 @@ char * completion_generator(const char * text, int state)
   static std::vector<std::string> matches;
   static size_t match_index = 0;
 
-  std::vector<std::string> vocabulary{"get", "set", "remove", "run", "check"};
+  std::vector<std::string> vocabulary{"get", "set", "remove", "run",
+    "check", "source", "help", "?", "quit"};
   std::vector<std::string> vocabulary_check{"actors"};
   std::vector<std::string> vocabulary_set{"instance", "predicate", "function", "goal"};
   std::vector<std::string> vocabulary_get{"model", "problem", "domain", "plan"};
   std::vector<std::string> vocabulary_remove{"instance", "predicate", "function", "goal"};
-  std::vector<std::string> vocabulary_run{"action", "num_actions", "planfrom"};
+  std::vector<std::string> vocabulary_run{"action", "num_actions", "plan-file"};
   std::vector<std::string> vocabulary_get_problem{"instances", "predicates", "functions", "goal"};
   std::vector<std::string> vocabulary_get_model{"types", "predicates", "functions", "actions",
     "predicate", "function", "action"};
+  // The help is initialized with all possible commands in the vocabulary
+  std::vector<std::string> vocabulary_help(vocabulary);
 
   if (state == 0) {
     // During initialization, compute the actual matches for 'text' and keep
@@ -114,6 +117,8 @@ char * completion_generator(const char * text, int state)
           current_vocabulary = &vocabulary_run;
         } else if (current_text[0] == "check") {
           current_vocabulary = &vocabulary_check;
+        } else if ((current_text[0] == "help") || (current_text[0] == "?")) {
+          current_vocabulary = &vocabulary_help;
         }
       } else if (current_text.size() == 3) {
         if (current_text[0] == "get" && current_text[1] == "problem") {
@@ -868,7 +873,7 @@ Terminal::process_run(std::vector<std::string> & command, std::ostringstream & o
       } catch (std::invalid_argument e) {
         os << e.what() << " with arg: [" << command[0] << "]" << std::endl;
       }
-    } else if (command[0] == "planfrom") {
+    } else if (command[0] == "plan-file") {
       if (command.size() == 2) {
         std::optional<plansys2_msgs::msg::Plan> plan = parse_plan(command[1]);
         if (!plan.has_value()) {
@@ -883,14 +888,14 @@ Terminal::process_run(std::vector<std::string> & command, std::ostringstream & o
           return;
         }
       } else {
-        os << "\tUsage: \n\t\trun planfrom [planfile]" << std::endl;
+        os << "\tUsage: \n\t\trun plan-file [planfile]" << std::endl;
       }
     } else {
       os << "\tUsage: \n\t\trun" << std::endl;
       os << "\tUsage: \n\t\trun num_actions [number of actions to execute from plan]" <<
         std::endl;
       os << "\tUsage: \n\t\trun action [action to execute]" << std::endl;
-      os << "\tUsage: \n\t\trun planfrom [planfile]" << std::endl;
+      os << "\tUsage: \n\t\trun plan-file [planfile]" << std::endl;
     }
   }
 }
@@ -978,7 +983,7 @@ Terminal::process_help(std::vector<std::string> & command, std::ostringstream & 
   std::ostringstream cmd_run;
   cmd_run << "\t run action <action>" << std::endl <<
     "\t run num_actions <num>" << std::endl <<
-    "\t run planfrom <planfile>" << std::endl;
+    "\t run plan-file <planfile>" << std::endl;
 
   std::ostringstream cmd_check;
   cmd_check << "\t check [actors]" << std::endl;
