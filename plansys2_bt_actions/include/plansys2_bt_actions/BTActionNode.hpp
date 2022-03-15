@@ -177,7 +177,6 @@ public:
 
     // The following code corresponds to the "RUNNING" loop
     if (rclcpp::ok() && !goal_result_available_) {
-
       auto goal_status = goal_handle_->get_status();
       if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
         goal_status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED))
