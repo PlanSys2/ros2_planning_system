@@ -162,6 +162,17 @@ public:
         return BT::NodeStatus::FAILURE;
       }
 
+      // User defined tick
+      auto user_status = on_tick();
+      if (user_status != BT::NodeStatus::RUNNING) {
+        return user_status;
+      }
+
+      if (!on_new_goal_received()) {
+        return BT::NodeStatus::FAILURE;
+      }
+
+      return BT::NodeStatus::RUNNING;
     }
 
     // The following code corresponds to the "RUNNING" loop
