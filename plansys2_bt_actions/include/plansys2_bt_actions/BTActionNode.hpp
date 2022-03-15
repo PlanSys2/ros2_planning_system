@@ -158,16 +158,10 @@ public:
       server_timeout_ = std::chrono::milliseconds(static_cast<int>(server_timeout * 1000.0));
 
       if (!createActionClient(action_name_)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to create action client");
         return BT::NodeStatus::FAILURE;
       }
 
-      // setting the status to RUNNING to notify the BT Loggers (if any)
-      setStatus(BT::NodeStatus::RUNNING);
-
-      if (!on_new_goal_received()) {
-        cancel_goal();
-        return BT::NodeStatus::FAILURE;
-      }
     }
 
     // The following code corresponds to the "RUNNING" loop
