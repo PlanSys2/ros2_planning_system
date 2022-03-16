@@ -277,7 +277,7 @@ Terminal::run_console()
         clean_command(line_str);
 
         std::ostringstream os;
-        process_command(line_str, os);
+        process_command(line_str, os, false);
         std::cout << os.str();
       }
     }
@@ -1053,26 +1053,27 @@ Terminal::process_source(std::vector<std::string> & command, std::ostringstream 
     return;
   }
 
-  finish_parsing = false;
+  bool finish_parsing = false;
   std::string ln;
   while (!finish_parsing && std::getline(cmd_ifs, ln, '\n')) {
     clean_command(ln);
     std::ostringstream os;
     if (do_echo) {os << ln << std::endl;}
-    process_command(ln, os);
+    finish_parsing = process_command(ln, os, true);
     std::cout << os.str();
   }
 
   cmd_ifs.close();
 }
 
-void
-Terminal::process_command(std::string & command, std::ostringstream & os)
+bool
+Terminal::process_command(std::string & command, std::ostringstream & os, bool inside_source)
 {
+  bool finish_parsing = false;
   std::vector<std::string> tokens = tokenize(command);
 
   if (tokens.empty()) {
-    return;
+    return finish_parsing;
   }
 
   if (tokens[0] == "get") {
@@ -1095,20 +1096,18 @@ Terminal::process_command(std::string & command, std::ostringstream & os)
     process_help(tokens, os);
   } else if (tokens[0] == "source") {
     if (!inside_source) {
-      inside_source = true;
       pop_front(tokens);
       process_source(tokens, os);
-      finish_parsing = true;
-      inside_source = false;
     } else {
       os << "Nested \"source\" commands not allowed" << std::endl;
-      finish_parsing = true;
     }
+    finish_parsing = true;
   } else if (tokens[0] == "quit") {
     finish_parsing = true;
   } else {
     os << "Command not found" << std::endl;
   }
+  return finish_parsing;
 }
 
 }  // namespace plansys2_terminal

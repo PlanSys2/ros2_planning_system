@@ -88,7 +88,11 @@ protected:
   virtual void process_check(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_check_actors(std::vector<std::string> & command, std::ostringstream & os);
 
-  virtual void process_command(std::string & command, std::ostringstream & os);
+  // Returns false if the processed command is violating some
+  // restriction, e.g. there are nested source commands
+  virtual bool process_command(
+    std::string & command, std::ostringstream & os,
+    bool inside_source = false);
 
   virtual void process_source(std::vector<std::string> & command, std::ostringstream & os);
 
@@ -101,8 +105,6 @@ private:
   std::shared_ptr<plansys2::ExecutorClient> executor_client_;
 
   std::string problem_file_name_;
-  bool finish_parsing = false;
-  bool inside_source = false;
 };
 
 }  // namespace plansys2_terminal
