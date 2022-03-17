@@ -899,6 +899,7 @@ std::vector<plansys2_msgs::msg::Tree> getSubtrees(const plansys2_msgs::msg::Tree
     plansys2_msgs::msg::Tree subtree;
     subtree.nodes.push_back(tree.nodes[node_id]);
     subtree.nodes[0].node_id = 0;
+    subtree.nodes[0].children.clear();
     getSubtreeChildren(subtree, tree, node_id, 0);
     subtrees.push_back(subtree);
   }
@@ -912,6 +913,7 @@ void getSubtreeChildren(plansys2_msgs::msg::Tree & subtree, const plansys2_msgs:
     subtree.nodes[subtree_parent].children.push_back(subtree_size);
     subtree.nodes.push_back(tree.nodes[child_id]);
     subtree.nodes.back().node_id = subtree_size;
+    subtree.nodes.back().children.clear();
     getSubtreeChildren(subtree, tree, child_id, subtree_size);
   }
 }
