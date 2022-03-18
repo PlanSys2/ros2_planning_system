@@ -882,7 +882,6 @@ std::vector<uint32_t> getSubtreeIds(const plansys2_msgs::msg::Tree & tree)
     case plansys2_msgs::msg::Node::AND: {
         return tree.nodes.front().children;
       }
-
     default:
       std::cerr << "getSubtreeIds: Error parsing expresion [" << toString(tree) << "]" << std::endl;
   }
