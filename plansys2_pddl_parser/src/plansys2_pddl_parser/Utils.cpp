@@ -14,7 +14,7 @@
 
 #include <regex>
 #include <iostream>
-#include <functional> 
+#include <functional>
 #include "plansys2_pddl_parser/Utils.h"
 
 namespace parser
@@ -146,6 +146,13 @@ std::tuple<uint8_t, int> getExpr(const std::string & input)
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       expr_type = plansys2_msgs::msg::Node::COMP_LT;
+    }
+  }
+
+  if (std::regex_search(input, match, std::regex("="))) {
+    if (static_cast<int>(match.position()) < first) {
+      first = static_cast<int>(match.position());
+      expr_type = plansys2_msgs::msg::Node::COMP_EQ;
     }
   }
 
@@ -514,6 +521,9 @@ std::string toStringExpression(const plansys2_msgs::msg::Tree & tree, uint32_t n
       break;
     case plansys2_msgs::msg::Node::COMP_LT:
       ret = "(< ";
+      break;
+    case plansys2_msgs::msg::Node::COMP_EQ:
+      ret = "(= ";
       break;
     case plansys2_msgs::msg::Node::ARITH_MULT:
       ret = "(* ";
