@@ -92,14 +92,16 @@ protected:
   std::vector<ActionStamped> get_plan_actions(const plansys2_msgs::msg::Plan & plan);
   void prune_backwards(GraphNode::Ptr new_node, GraphNode::Ptr node_satisfy);
   void prune_forward(GraphNode::Ptr current, std::list<GraphNode::Ptr> & used_nodes);
+  void get_state(
+    const GraphNode::Ptr & node,
+    std::list<GraphNode::Ptr> & used_nodes,
+    std::vector<plansys2::Predicate> & predicates,
+    std::vector<plansys2::Function> & functions) const;
 
   bool is_action_executable(
     const ActionStamped & action,
     std::vector<plansys2::Predicate> & predicates,
     std::vector<plansys2::Function> & functions) const;
-  std::pair<std::string, uint8_t> get_base(
-    const plansys2_msgs::msg::Tree & tree,
-    uint32_t node_id = 0);
   std::list<GraphNode::Ptr> get_roots(
     std::vector<plansys2::ActionStamped> & action_sequence,
     std::vector<plansys2::Predicate> & predicates,
@@ -107,17 +109,21 @@ protected:
     int & node_counter);
   GraphNode::Ptr get_node_satisfy(
     const plansys2_msgs::msg::Tree & requirement,
-    uint32_t node_id,
-    const std::list<GraphNode::Ptr> & roots,
+    const Graph::Ptr & graph,
     const GraphNode::Ptr & current);
   GraphNode::Ptr get_node_satisfy(
     const plansys2_msgs::msg::Tree & requirement,
-    uint32_t node_id,
     const GraphNode::Ptr & node,
     const GraphNode::Ptr & current);
+  std::list<GraphNode::Ptr> get_node_contradict(
+    const Graph::Ptr & graph,
+    const GraphNode::Ptr & current);
+  void get_node_contradict(
+    const GraphNode::Ptr & node,
+    const GraphNode::Ptr & current,
+    std::list<GraphNode::Ptr> & parents);
   void remove_existing_requirements(
-    const plansys2_msgs::msg::Tree & tree,
-    std::vector<uint32_t> & requirements,
+    std::vector<plansys2_msgs::msg::Tree> & requirements,
     std::vector<plansys2::Predicate> & predicates,
     std::vector<plansys2::Function> & functions) const;
   bool is_parallelizable(
@@ -160,11 +166,6 @@ protected:
     std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> & graph) const;
   std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> get_graph_tabular(
     const plansys2::Graph::Ptr & graph) const;
-
-  // bool is_predecessor(const PlanItem & op1, const PlanItem & op2);
-  // void add_child(GraphNode & parent, GraphNode & new_child);
-
-  // std::shared_ptr<GraphNode> root_;
 };
 
 }  // namespace plansys2
