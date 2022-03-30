@@ -22,7 +22,6 @@ include_directories(include)
 set(PDDL-PARSER-SOURCES
   src/plansys2_pddl_parser/GroundFunc.cpp
   src/plansys2_pddl_parser/When.cpp
-  src/plansys2_pddl_parser/Equals.cpp
   src/plansys2_pddl_parser/Function.cpp
   src/plansys2_pddl_parser/Expression.cpp
   src/plansys2_pddl_parser/ParamCond.cpp
@@ -60,13 +59,14 @@ install(TARGETS
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
-#if(BUILD_TESTING)
-#  find_package(ament_lint_auto REQUIRED)
-#  ament_lint_auto_find_test_dependencies()
-#
-#  find_package(ament_cmake_gtest REQUIRED)
-#  add_subdirectory(test)
-#endif()
+if(BUILD_TESTING)
+  # find_package(ament_lint_auto REQUIRED)
+  # ament_lint_auto_find_test_dependencies()
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_index_cpp REQUIRED)
+  set(dependencies ${dependencies} ament_index_cpp)
+  add_subdirectory(test)
+endif()
 
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
