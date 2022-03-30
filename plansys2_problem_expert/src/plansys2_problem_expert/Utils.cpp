@@ -200,6 +200,14 @@ std::tuple<bool, bool, double> evaluate(
               return std::make_tuple(true, false, 0);
             }
             break;
+          case plansys2_msgs::msg::Node::COMP_EQ:
+            if (std::get<2>(left) == std::get<2>(right)) {
+              return std::make_tuple(true, true, 0);
+            } else {
+              return std::make_tuple(true, false, 0);
+            }
+            break;
+
           case plansys2_msgs::msg::Node::ARITH_MULT:
             return std::make_tuple(true, false, std::get<2>(left) * std::get<2>(right));
             break;

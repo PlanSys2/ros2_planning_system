@@ -5,7 +5,6 @@
   #include "plansys2_pddl_parser/TemporalAction.h"
   #include "plansys2_pddl_parser/And.h"
   #include "plansys2_pddl_parser/Derived.h"
-  #include "plansys2_pddl_parser/Equals.h"
   #include "plansys2_pddl_parser/Exists.h"
   #include "plansys2_pddl_parser/Forall.h"
   #include "plansys2_pddl_parser/Function.h"
@@ -189,7 +188,7 @@ public:
 		// Relate subtypes and supertypes
 		for ( unsigned i = 0; i < ts.size(); ++i ) {
 			if (std::find(types.types.begin(), types.types.end(), ts.types[i]) == types.types.end()) {
-		
+
 				if ( ts.types[i].size() )
 					getType( ts.types[i] )->insertSubtype( getType( ts[i] ) );
 				else getType( ts[i] );
@@ -494,7 +493,30 @@ public:
 		return 0;
 	}
 
-	// return the index of a constant for a given type
+ // Check whether the given string represents a valid constant in the model
+ bool isConstant( const std::string & name) {
+   bool res = false;
+   for (int t = 0; t < types.size() && !res; t++) {
+     for (int c = 0; c < types[t]->constants.size() && !res; c++) {
+       if (types[t]->constants[c] == name) res = true;
+     }
+   }
+   return res;
+ }
+
+ IntPair constantTypeIdConstId(const std::string & name) {
+   int t, c;
+   bool found = false;
+   for (t = 0; t < types.size() && !found; t++) {
+     for (c = 0; c < types[t]->constants.size() && !found; c++) {
+       if (name == types[t]->constants[c]) found = true;
+     }
+   }
+   if (!found) return IntPair(-1,-1);
+   return IntPair(c-1,t-1);
+ }
+
+ // return the index of a constant for a given type
 	int constantIndex( const std::string & name, const std::string & type ) {
 		return types.get( type )->parseConstant( name ).second;
 	}
@@ -578,7 +600,6 @@ public:
 	virtual Condition * createCondition( Stringreader & f ) {
 		std::string s = f.getToken();
 
-		if ( s == "=" ) return new Equals;
 		if ( s == "and" ) return new And;
 		if ( s == "exists" ) return new Exists;
 		if ( s == "forall" ) return new Forall;
@@ -589,7 +610,7 @@ public:
 		if ( s == "oneof" ) return new Oneof;
 		if ( s == "or" ) return new Or;
 		if ( s == "when" ) return new When;
-		if ( s == ">=" || s == ">" || s == "<=" || s == "<" ) return new CompositeExpression( s );
+		if ( s == "=" || s == ">=" || s == ">" || s == "<=" || s == "<" ) return new CompositeExpression( s );
 
 		int i = preds.index( s );
 		if ( i >= 0 ) return new Ground( preds[i] );
