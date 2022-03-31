@@ -1,5 +1,5 @@
 repositories:
-  cascade_filecycle:
+  cascade_lifecycle:
     type: git
     url: https://github.com/fmrico/cascade_lifecycle.git
     version: galactic-devel
