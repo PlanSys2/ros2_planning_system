@@ -63,6 +63,7 @@ public:
 	}
 
 	void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override {
+  tabindent(s, indent);
 		s << "( " << op << " ";
 		left->PDDLPrint( s, indent, ts, d );
 		s << " ";
@@ -124,8 +125,14 @@ class FunctionExpression : public Expression {
 public:
 
 	ParamCond * fun;
+ std::vector<Expression*> constants;
 
-	FunctionExpression( ParamCond * c ) : fun( c ) {}
+  FunctionExpression( ParamCond * c ) : fun( c ) {
+    constants.clear();
+    constants.resize(c->params.size());
+    std::fill(constants.begin(), constants.end(), nullptr);
+  }
+  FunctionExpression( ParamCond * c, std::vector<Expression*> e) : fun( c ), constants(e) {}
 
 	~FunctionExpression() {
 		delete fun;
@@ -199,7 +206,7 @@ public:
 class DurationExpression : public Expression {
 
 	void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override {
-		s << "?DURATION";
+		s << "?duration";
 	}
 
 	plansys2_msgs::msg::Node::SharedPtr getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override {
@@ -207,7 +214,7 @@ class DurationExpression : public Expression {
 	}
 
 	std::string info() const {
-		return "?DURATION";
+		return "?duration";
 	}
 
 	double evaluate() {
@@ -224,6 +231,79 @@ class DurationExpression : public Expression {
 
 	Condition * copy( Domain & d ) {
 		return new DurationExpression();
+	}
+};
+
+
+class ParamExpression : public Expression {
+
+public:
+
+	int param;
+
+	ParamExpression( int p ) : param( p ) {}
+
+	std::string info() const {
+		std::ostringstream os;
+		os << param;
+		return os.str();
+	}
+
+	void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override {
+		s << ts[param];
+	}
+
+	plansys2_msgs::msg::Node::SharedPtr getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override {
+		throw UnsupportedConstruct("ParamExpression");
+	}
+
+	double evaluate() { return -1; }
+
+	double evaluate( Instance & ins, const StringVec & par ) {
+  return evaluate();
+	}
+
+	IntSet params() {
+		return IntSet();
+	}
+
+	Condition * copy( Domain & d ) {
+		return new ParamExpression( param );
+	}
+};
+
+class ConstExpression : public Expression {
+
+public:
+
+	int constant;
+ int tid;
+  ConstExpression( int c, int t ) : constant( c ), tid (t) {}
+
+	std::string info() const {
+		std::ostringstream os;
+		os << constant << " " << tid;
+		return os.str();
+	}
+
+	void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override;
+
+	plansys2_msgs::msg::Node::SharedPtr getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override {
+		throw UnsupportedConstruct("ConstExpression");
+	}
+
+	double evaluate() { return -1; }
+
+	double evaluate( Instance & ins, const StringVec & par ) {
+  return evaluate();
+	}
+
+	IntSet params() {
+		return IntSet();
+	}
+
+	Condition * copy( Domain & d ) {
+  return new ConstExpression( constant, tid );
 	}
 };
 

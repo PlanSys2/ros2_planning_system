@@ -42,6 +42,7 @@ ActionExecutorClient::ActionExecutorClient(
   double default_rate = 1.0 / std::chrono::duration<double>(rate_).count();
   declare_parameter<double>("rate", default_rate);
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::NOT_READY;
+  status_.status_stamp = now();
   status_.node_name = get_name();
 }
 
@@ -53,17 +54,19 @@ CallbackReturnT
 ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
 {
   status_pub_ = create_publisher<plansys2_msgs::msg::ActionPerformerStatus>(
-    "/performers_status", rclcpp::QoS(100).reliable());
+    "performers_status", rclcpp::QoS(100).reliable());
   status_pub_->on_activate();
 
   hearbeat_pub_ = create_wall_timer(
     1s, [this]() {
+      status_.status_stamp = now();
       status_pub_->publish(status_);
     });
 
   if (!get_parameter("action_name", action_managed_)) {
     RCLCPP_ERROR(get_logger(), "action_name parameter not set");
     status_.state = plansys2_msgs::msg::ActionPerformerStatus::FAILURE;
+    status_.status_stamp = now();
   }
   get_parameter_or<std::vector<std::string>>(
     "specialized_arguments", specialized_arguments_, std::vector<std::string>({}));
@@ -75,14 +78,15 @@ ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
     std::chrono::duration<double>(1.0 / rate));
 
   action_hub_pub_ = create_publisher<plansys2_msgs::msg::ActionExecution>(
-    "/actions_hub", rclcpp::QoS(100).reliable());
+    "actions_hub", rclcpp::QoS(100).reliable());
   action_hub_sub_ = create_subscription<plansys2_msgs::msg::ActionExecution>(
-    "/actions_hub", rclcpp::QoS(100).reliable(),
+    "actions_hub", rclcpp::QoS(100).reliable(),
     std::bind(&ActionExecutorClient::action_hub_callback, this, _1));
 
   action_hub_pub_->on_activate();
 
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::READY;
+  status_.status_stamp = now();
   status_.action = action_managed_;
   status_.specialized_arguments = specialized_arguments_;
 
@@ -93,6 +97,7 @@ CallbackReturnT
 ActionExecutorClient::on_activate(const rclcpp_lifecycle::State & state)
 {
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::RUNNING;
+  status_.status_stamp = now();
   timer_ = create_wall_timer(
     rate_, std::bind(&ActionExecutorClient::do_work, this));
 
@@ -105,6 +110,7 @@ CallbackReturnT
 ActionExecutorClient::on_deactivate(const rclcpp_lifecycle::State & state)
 {
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::READY;
+  status_.status_stamp = now();
   timer_ = nullptr;
 
   return CallbackReturnT::SUCCESS;

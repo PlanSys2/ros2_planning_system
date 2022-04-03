@@ -382,6 +382,8 @@ ProblemExpert::clearKnowledge()
   instances_.clear();
   predicates_.clear();
   functions_.clear();
+  clearGoal();
+
   return true;
 }
 
@@ -604,7 +606,13 @@ ProblemExpert::getProblem()
   problem.name = "problem_1";
 
   for (const auto & instance : instances_) {
-    problem.addObject(instance.name, instance.type);
+    bool is_constant = domain.getType(instance.type)->parseConstant(instance.name).first;
+    if (is_constant) {
+      std::cout << "Skipping adding constant as an problem :object: " << instance.name << " " <<
+        instance.type << std::endl;
+    } else {
+      problem.addObject(instance.name, instance.type);
+    }
   }
 
   for (plansys2_msgs::msg::Node predicate : predicates_) {
@@ -693,6 +701,18 @@ ProblemExpert::addProblem(const std::string & problem_str)
   }
 
   std::cout << "Parsed problem: " << problem << std::endl;
+
+  for (unsigned i = 0; i < domain.types.size(); ++i) {
+    if (domain.types[i]->constants.size() ) {
+      for (unsigned j = 0; j < domain.types[i]->constants.size(); ++j) {
+        plansys2::Instance instance;
+        instance.name = domain.types[i]->constants[j];
+        instance.type = domain.types[i]->name;
+        std::cout << "Adding constant: " << instance.name << " " << instance.type << std::endl;
+        addInstance(instance);
+      }
+    }
+  }
 
   for (unsigned i = 0; i < domain.types.size(); ++i) {
     if (domain.types[i]->objects.size() ) {

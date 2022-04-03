@@ -22,6 +22,7 @@
 #include <map>
 #include <set>
 #include <list>
+#include <tuple>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
@@ -95,20 +96,18 @@ public:
 
   plansys2::GraphNode::Ptr get_node_satisfy(
     const plansys2_msgs::msg::Tree & requirement,
-    uint32_t node_id,
-    const std::list<plansys2::GraphNode::Ptr> & roots,
+    const plansys2::Graph::Ptr & graph,
     const plansys2::GraphNode::Ptr & current)
   {
-    return BTBuilder::get_node_satisfy(requirement, node_id, roots, current);
+    return BTBuilder::get_node_satisfy(requirement, graph, current);
   }
 
   plansys2::GraphNode::Ptr get_node_satisfy(
     const plansys2_msgs::msg::Tree & requirement,
-    uint32_t node_id,
     const plansys2::GraphNode::Ptr & node,
     const plansys2::GraphNode::Ptr & current)
   {
-    return BTBuilder::get_node_satisfy(requirement, node_id, node, current);
+    return BTBuilder::get_node_satisfy(requirement, node, current);
   }
 
 
@@ -117,13 +116,23 @@ public:
     BTBuilder::print_graph(graph);
   }
 
+  void print_graph_csv(const plansys2::Graph::Ptr & graph) const
+  {
+    BTBuilder::print_graph_csv(graph);
+  }
+
+  std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> get_graph_tabular(
+    const plansys2::Graph::Ptr & graph) const
+  {
+    return BTBuilder::get_graph_tabular(graph);
+  }
+
   void remove_existing_requirements(
-    const plansys2_msgs::msg::Tree & tree,
-    std::vector<uint32_t> & requirements,
+    std::vector<plansys2_msgs::msg::Tree> & requirements,
     std::vector<plansys2::Predicate> & predicates,
     std::vector<plansys2::Function> & functions) const
   {
-    BTBuilder::remove_existing_requirements(tree, requirements, predicates, functions);
+    BTBuilder::remove_existing_requirements(requirements, predicates, functions);
   }
 };
 
@@ -497,15 +506,13 @@ TEST(btbuilder_tests, test_plan_2)
   predicates_plus_one.push_back("(is_assembly_zone body_car_zone)");
   plansys2_msgs::msg::Tree tree = parser::pddl::fromPredicates(predicates_plus_one);
 
-  std::vector<uint32_t> check_predicates(predicates_plus_one.size());
-  std::iota(std::begin(check_predicates), std::end(check_predicates), 1);
+  std::vector<plansys2_msgs::msg::Tree> check_predicates = parser::pddl::getSubtrees(tree);
 
-  btbuilder->remove_existing_requirements(tree, check_predicates, predicates, functions);
+  btbuilder->remove_existing_requirements(check_predicates, predicates, functions);
 
   ASSERT_EQ(check_predicates.size(), 1);
   ASSERT_EQ(
-    parser::pddl::toString(
-      tree.nodes[check_predicates.front()]), "(is_assembly_zone body_car_zone)");
+    parser::pddl::toString(check_predicates.front()), "(is_assembly_zone body_car_zone)");
 
 
   ASSERT_EQ(problem_client->getPredicates().size(), predicates.size());
@@ -519,14 +526,6 @@ TEST(btbuilder_tests, test_plan_2)
   ASSERT_EQ(roots.size(), 3u);
   // Apply roots actions
   for (auto & action_node : roots) {
-    action_node->predicates = problem_client->getPredicates();
-    action_node->functions = problem_client->getFunctions();
-    plansys2::apply(
-      action_node->action.action->at_start_effects,
-      action_node->predicates, action_node->functions);
-    plansys2::apply(
-      action_node->action.action->at_end_effects,
-      action_node->predicates, action_node->functions);
     plansys2::apply(
       action_node->action.action->at_start_effects,
       predicates, functions);
@@ -559,7 +558,7 @@ TEST(btbuilder_tests, test_plan_2)
   parser::pddl::fromString(
     tree, "(robot_at robot1 body_car_zone)", false,
     plansys2_msgs::msg::Node::AND);
-  auto node_satisfy_1 = btbuilder->get_node_satisfy(tree, 0, *roots.begin(), nullptr);
+  auto node_satisfy_1 = btbuilder->get_node_satisfy(tree, *roots.begin(), nullptr);
   ASSERT_NE(node_satisfy_1, nullptr);
   ASSERT_EQ(node_satisfy_1->action.action->name, "move");
   ASSERT_EQ(node_satisfy_1->action.action->parameters.size(), 3u);
@@ -569,9 +568,9 @@ TEST(btbuilder_tests, test_plan_2)
 
   auto it = roots.begin();
   it++;
-  ASSERT_EQ(btbuilder->get_node_satisfy(tree, 0, *it, nullptr), nullptr);
+  ASSERT_EQ(btbuilder->get_node_satisfy(tree, *it, nullptr), nullptr);
   it++;
-  ASSERT_EQ(btbuilder->get_node_satisfy(tree, 0, *it, nullptr), nullptr);
+  ASSERT_EQ(btbuilder->get_node_satisfy(tree, *it, nullptr), nullptr);
 
   auto graph = btbuilder->get_graph(plan.value());
   ASSERT_NE(graph, nullptr);
@@ -785,6 +784,230 @@ TEST(btbuilder_tests, test_plan_4)
   std::cerr << bt << std::endl;
 
   // Todo: Test that the BT is correct
+
+  finish = true;
+  t.join();
+}
+
+TEST(btbuilder_tests, test_plan_5)
+{
+  auto test_node = rclcpp::Node::make_shared("test_plan_5");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto planner_node = std::make_shared<plansys2::PlannerNode>();
+
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+
+  auto btbuilder = std::make_shared<BTBuilderTest>(test_node);
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/road_trip_domain.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/road_trip_domain.pddl"});
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(planner_node->get_node_base_interface());
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  std::ifstream problem_ifs(pkgpath + "/pddl/road_trip_problem.pddl");
+  std::string problem_str((
+      std::istreambuf_iterator<char>(problem_ifs)),
+    std::istreambuf_iterator<char>());
+  ASSERT_TRUE(problem_client->addProblem(problem_str));
+
+  auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
+  ASSERT_TRUE(plan);
+
+  auto action_graph = btbuilder->get_graph(plan.value());
+  btbuilder->print_graph_csv(action_graph);
+
+  auto tabulated_graph = btbuilder->get_graph_tabular(action_graph);
+
+  std::ifstream expected_graph_ifs(pkgpath + "/test_data/road_trip_graph.csv");
+
+  std::string line, word, action;
+  std::string whitespace = " \n\r\t\f\v";
+  uint32_t root_num, node_num, level_num;
+  std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> expected_graph;
+
+  while (std::getline(expected_graph_ifs, line)) {
+    std::stringstream ss(line);
+    unsigned i = 0;
+    while (std::getline(ss, word, ',')) {
+      if (i == 0) {
+        root_num = std::stoul(word);
+      }
+      if (i == 1) {
+        node_num = std::stoul(word);
+      }
+      if (i == 2) {
+        level_num = std::stoul(word);
+      }
+      if (i == 3) {
+        action = word;
+        size_t start = action.find_first_not_of(whitespace);
+        action = (start == std::string::npos) ? "" : action.substr(start);
+        size_t end = action.find_last_not_of(whitespace);
+        action = (end == std::string::npos) ? "" : action.substr(0, end + 1);
+      }
+      i++;
+    }
+    expected_graph.push_back(std::make_tuple(root_num, node_num, level_num, action));
+  }
+
+  ASSERT_EQ(tabulated_graph.size(), expected_graph.size());
+  for (size_t i = 0; i < tabulated_graph.size(); i++) {
+    ASSERT_EQ(std::get<0>(tabulated_graph[i]), std::get<0>(expected_graph[i]));
+    ASSERT_EQ(std::get<1>(tabulated_graph[i]), std::get<1>(expected_graph[i]));
+    ASSERT_EQ(std::get<2>(tabulated_graph[i]), std::get<2>(expected_graph[i]));
+    ASSERT_EQ(std::get<3>(tabulated_graph[i]), std::get<3>(expected_graph[i]));
+  }
+
+  finish = true;
+  t.join();
+}
+
+TEST(btbuilder_tests, test_plan_6)
+{
+  auto test_node = rclcpp::Node::make_shared("test_plan_6");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto planner_node = std::make_shared<plansys2::PlannerNode>();
+
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+
+  auto btbuilder = std::make_shared<BTBuilderTest>(test_node);
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/elevator_domain.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/elevator_domain.pddl"});
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(planner_node->get_node_base_interface());
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  std::ifstream problem_ifs(pkgpath + "/pddl/elevator_problem.pddl");
+  std::string problem_str((
+      std::istreambuf_iterator<char>(problem_ifs)),
+    std::istreambuf_iterator<char>());
+  ASSERT_TRUE(problem_client->addProblem(problem_str));
+
+  auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
+  ASSERT_TRUE(plan);
+
+  auto action_graph = btbuilder->get_graph(plan.value());
+  btbuilder->print_graph_csv(action_graph);
+
+  auto tabulated_graph = btbuilder->get_graph_tabular(action_graph);
+
+  std::ifstream expected_graph_ifs(pkgpath + "/test_data/elevator_graph.csv");
+
+  std::string line, word, action;
+  std::string whitespace = " \n\r\t\f\v";
+  uint32_t root_num, node_num, level_num;
+  std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> expected_graph;
+
+  while (std::getline(expected_graph_ifs, line)) {
+    std::stringstream ss(line);
+    unsigned i = 0;
+    while (std::getline(ss, word, ',')) {
+      if (i == 0) {
+        root_num = std::stoul(word);
+      }
+      if (i == 1) {
+        node_num = std::stoul(word);
+      }
+      if (i == 2) {
+        level_num = std::stoul(word);
+      }
+      if (i == 3) {
+        action = word;
+        size_t start = action.find_first_not_of(whitespace);
+        action = (start == std::string::npos) ? "" : action.substr(start);
+        size_t end = action.find_last_not_of(whitespace);
+        action = (end == std::string::npos) ? "" : action.substr(0, end + 1);
+      }
+      i++;
+    }
+    expected_graph.push_back(std::make_tuple(root_num, node_num, level_num, action));
+  }
+
+  ASSERT_EQ(tabulated_graph.size(), expected_graph.size());
+  for (size_t i = 0; i < tabulated_graph.size(); i++) {
+    ASSERT_EQ(std::get<0>(tabulated_graph[i]), std::get<0>(expected_graph[i]));
+    ASSERT_EQ(std::get<1>(tabulated_graph[i]), std::get<1>(expected_graph[i]));
+    ASSERT_EQ(std::get<2>(tabulated_graph[i]), std::get<2>(expected_graph[i]));
+    ASSERT_EQ(std::get<3>(tabulated_graph[i]), std::get<3>(expected_graph[i]));
+  }
 
   finish = true;
   t.join();

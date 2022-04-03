@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plansys2_executor/ExecutorClient.hpp"
-
 #include <optional>
 #include <algorithm>
 #include <string>
 #include <vector>
 #include <memory>
+
+#include "plansys2_executor/ExecutorClient.hpp"
+#include "plansys2_msgs/msg/action_execution_info.hpp"
 
 namespace plansys2
 {
@@ -80,10 +81,53 @@ ExecutorClient::execute_and_check_plan()
 
   switch (result_.code) {
     case rclcpp_action::ResultCode::SUCCEEDED:
-      if (result_.result != nullptr && result_.result->success) {
+      if (result_.result == nullptr) {
+        RCLCPP_WARN(
+          node_->get_logger(), "Plan failed due to a nullptr in the result");
+      } else if (result_.result->success) {
         RCLCPP_INFO(node_->get_logger(), "Plan Succeeded");
       } else {
-        RCLCPP_INFO(node_->get_logger(), "Plan Failed");
+        RCLCPP_ERROR(node_->get_logger(), "Plan Failed");
+        for (auto msg : result_.result->action_execution_status) {
+          switch (msg.status) {
+            case plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED:
+              RCLCPP_WARN_STREAM(
+                node_->get_logger(),
+                "Action: " <<
+                  msg.action_full_name <<
+                  " succeeded with message_status: " <<
+                  msg.message_status);
+              break;
+            case plansys2_msgs::msg::ActionExecutionInfo::FAILED:
+              RCLCPP_ERROR_STREAM(
+                node_->get_logger(),
+                "Action: " <<
+                  msg.action_full_name <<
+                  " failed with message_status: " <<
+                  msg.message_status);
+              break;
+            case plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED:
+              RCLCPP_WARN_STREAM(
+                node_->get_logger(),
+                "Action: " <<
+                  msg.action_full_name <<
+                  " was not executed");
+              break;
+            case plansys2_msgs::msg::ActionExecutionInfo::CANCELLED:
+              RCLCPP_WARN_STREAM(
+                node_->get_logger(),
+                "Action: " <<
+                  msg.action_full_name <<
+                  " was cancelled");
+              break;
+            case plansys2_msgs::msg::ActionExecutionInfo::EXECUTING:
+              RCLCPP_WARN_STREAM(
+                node_->get_logger(),
+                "Action: " <<
+                  msg.action_full_name <<
+                  " was executing");
+          }
+        }
       }
       break;
 

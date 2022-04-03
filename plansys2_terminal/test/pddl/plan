@@ -1,0 +1,6 @@
+ 0.000:   (askcharge leia entrance chargingroom)  [5.000]
+ 5.001:   (charge leia chargingroom)      [5.000]
+10.002:  (move leia chargingroom kitchen)        [5.000]
+15.003:  (move leia kitchen dinning)     [5.000]
+20.004:  (move leia dinning bedroom)     [5.000]
+25.005: (move leia bedroom bathroom)    [5.000]

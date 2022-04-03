@@ -17,6 +17,7 @@
 #include <vector>
 #include <sstream>
 #include <map>
+#include <algorithm>
 
 #include "rclcpp/rclcpp.hpp"
 #include "ament_index_cpp/get_package_share_directory.hpp"
@@ -34,6 +35,48 @@
 #include "plansys2_terminal/Terminal.hpp"
 
 #include "gtest/gtest.h"
+
+using namespace std::chrono_literals;
+
+class ActT : public plansys2::ActionExecutorClient
+{
+public:
+  ActT()
+  : plansys2::ActionExecutorClient("None", 1s)
+  {
+    progress_ = 0.0;
+    name_ = std::string("None");
+  }
+  explicit ActT(const std::string name)
+  : plansys2::ActionExecutorClient(name, 1s)
+  {
+    progress_ = 0.0;
+    name_ = name;
+  }
+
+private:
+  void do_work()
+  {
+    if (progress_ < 1.0) {
+      progress_ += 0.2;
+      send_feedback(progress_, name_ + " running");
+    } else {
+      finish(true, 1.0, name_ + " completed");
+
+      progress_ = 0.0;
+      std::cout << std::endl;
+    }
+
+    std::cout << "\r\e[K" << std::flush;
+    std::cout << "Requesting for " << name_ <<
+      "... [" << std::min(100.0, progress_ * 100.0) << "%]  " <<
+      std::flush;
+  }
+
+  float progress_;
+  std::string name_;
+};
+
 
 class TerminalTestCase : public ::testing::Test
 {
@@ -176,6 +219,18 @@ public:
   {
     method_executed_["process_run"] = true;
     Terminal::process_run(command, os);
+  }
+
+  void process_run_planfile(std::vector<std::string> & command, std::ostringstream & s)
+  {
+    method_executed_["process_run_planfile"] = true;
+    Terminal::process_run(command, s);
+  }
+
+  void process_source(std::vector<std::string> & command, std::ostringstream & s)
+  {
+    method_executed_["process_source"] = true;
+    Terminal::process_source(command, s);
   }
 
   void process_check(std::vector<std::string> & command, std::ostringstream & os)
@@ -765,9 +820,17 @@ TEST_F(TerminalTestCase, check_actors)
   auto charge_actor_1_node = plansys2::ActionExecutorClient::make_shared("charge", 100ms);
 
   move_actor_1_node->set_parameter({"action_name", "move"});
+  move_actor_1_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
   move_actor_2_node->set_parameter({"action_name", "move"});
+  move_actor_2_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
   ask_charge_actor_1_node->set_parameter({"action_name", "askcharge"});
+  ask_charge_actor_1_node->trigger_transition(
+    lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
   charge_actor_1_node->set_parameter({"action_name", "charge"});
+  charge_actor_1_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_terminal");
 
@@ -838,6 +901,166 @@ TEST_F(TerminalTestCase, check_actors)
     "\t[charge] charge\tREADY\n"
     "\t[move_1] move\tREADY\n"
     "\t[move_2] move\tREADY\n");
+
+  exe.cancel();
+  t.join();
+}
+
+TEST_F(TerminalTestCase, source_run_plan)
+{
+  auto test_node = rclcpp::Node::make_shared("terminal_node_test");
+
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto executor_node = std::make_shared<plansys2::ExecutorNode>();
+
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+  using namespace std::chrono_literals;
+
+  auto move_actor_1_node = std::make_shared<ActT>("move");
+  auto ask_charge_actor_1_node = std::make_shared<ActT>("ask_charge");
+  auto charge_actor_1_node = std::make_shared<ActT>("charge");
+
+  move_actor_1_node->set_parameter({"action_name", "move"});
+  move_actor_1_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  ask_charge_actor_1_node->set_parameter({"action_name", "askcharge"});
+  ask_charge_actor_1_node->trigger_transition(
+    lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  charge_actor_1_node->set_parameter({"action_name", "charge"});
+  charge_actor_1_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_terminal");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
+
+  std::string cmd_file = pkgpath + "/pddl/commands";
+  std::string plan_file = pkgpath + "/pddl/plan";
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 16, true);
+  ASSERT_GT(exe.get_number_of_threads(), 15u);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(planner_node->get_node_base_interface());
+  exe.add_node(executor_node->get_node_base_interface());
+
+  exe.add_node(move_actor_1_node->get_node_base_interface());
+  exe.add_node(ask_charge_actor_1_node->get_node_base_interface());
+  exe.add_node(charge_actor_1_node->get_node_base_interface());
+
+  std::thread t([&]() {
+      exe.spin();
+    });
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  move_actor_1_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  ask_charge_actor_1_node->trigger_transition(
+    lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  charge_actor_1_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp_lifecycle::State state = problem_node->trigger_transition(
+    lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  std::string stateLabel = state.label();
+
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 1.0) {
+      rate.sleep();
+    }
+  }
+
+  auto terminal_node = std::make_shared<TerminalTest>();
+  terminal_node->init();
+
+  {
+    std::ostringstream os;
+    // std::vector<std::string> command = {cmd_file, std::string("1")};
+    std::vector<std::string> command = {cmd_file};
+    terminal_node->process_source(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_source"]);
+    ASSERT_EQ(os.str(), "");
+  }
+
+  ASSERT_EQ(problem_client->getInstances().size(), 7);
+  ASSERT_EQ(problem_client->getPredicates().size(), 13);
+  ASSERT_EQ(problem_client->getFunctions().size(), 0);
+
+  {
+    auto ins_1 = problem_client->getInstance("leia");
+    ASSERT_TRUE(ins_1.has_value());
+    ASSERT_EQ(ins_1.value().name, "leia");
+    ASSERT_EQ(ins_1.value().type, "robot");
+  }
+
+  {
+    std::vector<std::string> rooms = {"entrance", "kitchen", "bedroom",
+      "dinning", "bathroom", "chargingroom"};
+    for (auto room_name : rooms) {
+      auto ins_2 = problem_client->getInstance(room_name);
+      ASSERT_TRUE(ins_2.has_value());
+      ASSERT_EQ(ins_2.value().name, room_name);
+      ASSERT_EQ(ins_2.value().type, "room");
+    }
+    terminal_node->reset_executions();
+  }
+
+  ASSERT_EQ(parser::pddl::toString(problem_client->getGoal()), "(and (robot_at leia bathroom))");
+
+  {
+    std::ostringstream os;
+    std::vector<std::string> command = {std::string("plan-file"), plan_file};
+    terminal_node->process_run_planfile(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_run_planfile"]);
+  }
+
+  terminal_node->reset_executions();
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+  executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
 
   exe.cancel();
   t.join();

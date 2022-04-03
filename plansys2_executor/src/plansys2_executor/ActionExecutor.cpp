@@ -32,9 +32,9 @@ ActionExecutor::ActionExecutor(
 : node_(node), state_(IDLE), completion_(0.0)
 {
   action_hub_pub_ = node_->create_publisher<plansys2_msgs::msg::ActionExecution>(
-    "/actions_hub", rclcpp::QoS(100).reliable());
+    "actions_hub", rclcpp::QoS(100).reliable());
   action_hub_sub_ = node_->create_subscription<plansys2_msgs::msg::ActionExecution>(
-    "/actions_hub", rclcpp::QoS(100).reliable(),
+    "actions_hub", rclcpp::QoS(100).reliable(),
     std::bind(&ActionExecutor::action_hub_callback, this, _1));
 
   state_time_ = node_->now();

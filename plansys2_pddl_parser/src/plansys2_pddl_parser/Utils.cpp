@@ -14,7 +14,7 @@
 
 #include <regex>
 #include <iostream>
-#include <functional> 
+#include <functional>
 #include "plansys2_pddl_parser/Utils.h"
 
 namespace parser
@@ -146,6 +146,13 @@ std::tuple<uint8_t, int> getExpr(const std::string & input)
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       expr_type = plansys2_msgs::msg::Node::COMP_LT;
+    }
+  }
+
+  if (std::regex_search(input, match, std::regex("="))) {
+    if (static_cast<int>(match.position()) < first) {
+      first = static_cast<int>(match.position());
+      expr_type = plansys2_msgs::msg::Node::COMP_EQ;
     }
   }
 
@@ -515,6 +522,9 @@ std::string toStringExpression(const plansys2_msgs::msg::Tree & tree, uint32_t n
     case plansys2_msgs::msg::Node::COMP_LT:
       ret = "(< ";
       break;
+    case plansys2_msgs::msg::Node::COMP_EQ:
+      ret = "(= ";
+      break;
     case plansys2_msgs::msg::Node::ARITH_MULT:
       ret = "(* ";
       break;
@@ -882,7 +892,6 @@ std::vector<uint32_t> getSubtreeIds(const plansys2_msgs::msg::Tree & tree)
     case plansys2_msgs::msg::Node::AND: {
         return tree.nodes.front().children;
       }
-
     default:
       std::cerr << "getSubtreeIds: Error parsing expresion [" << toString(tree) << "]" << std::endl;
   }
@@ -899,6 +908,7 @@ std::vector<plansys2_msgs::msg::Tree> getSubtrees(const plansys2_msgs::msg::Tree
     plansys2_msgs::msg::Tree subtree;
     subtree.nodes.push_back(tree.nodes[node_id]);
     subtree.nodes[0].node_id = 0;
+    subtree.nodes[0].children.clear();
     getSubtreeChildren(subtree, tree, node_id, 0);
     subtrees.push_back(subtree);
   }
@@ -912,6 +922,7 @@ void getSubtreeChildren(plansys2_msgs::msg::Tree & subtree, const plansys2_msgs:
     subtree.nodes[subtree_parent].children.push_back(subtree_size);
     subtree.nodes.push_back(tree.nodes[child_id]);
     subtree.nodes.back().node_id = subtree_size;
+    subtree.nodes.back().children.clear();
     getSubtreeChildren(subtree, tree, child_id, subtree_size);
   }
 }
