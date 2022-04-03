@@ -6,8 +6,6 @@ Forthcoming
 -----------
 * Fixed compilation of main (working on galactic) to compile also on foxy
 * RQT Plan viewer
-  PlanSys2 Tools: Performer Viewer
-  PlanSys2 Tools: Knowledge Viewer
 * Logger tool - performers and plan
 * Logger tool - knowledge, info and action hub
 * Contributors: Francisco Martín Rico, Jake Keller, Marco Roveri
