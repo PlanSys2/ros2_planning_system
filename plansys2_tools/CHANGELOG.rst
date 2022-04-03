@@ -2,6 +2,11 @@
 Changelog for package plansys2_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Qt5 dependencies
+* Contributors: Francisco Martín Rico
+
 2.0.2 (2022-04-03)
 ------------------
 * Fixed compilation of main (working on galactic) to compile also on foxy

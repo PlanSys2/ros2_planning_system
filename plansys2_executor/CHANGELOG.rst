@@ -2,6 +2,9 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.0.2 (2022-04-03)
 ------------------
 * Use apply and check method to create action graph

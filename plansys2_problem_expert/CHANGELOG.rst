@@ -2,6 +2,12 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix conflicts
+* Qt5 dependencies
+* Contributors: Francisco Martín Rico
+
 2.0.2 (2022-04-03)
 ------------------
 * Full supportr for (= _ _) PDDL constraints, added possibility to refer to constants, added initial test cases
