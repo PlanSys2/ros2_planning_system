@@ -2,6 +2,15 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Full supportr for (= _ _) PDDL constraints, added possibility to refer to constants, added initial test cases
+* Add Status recency in performers
+* Pddl domain (:constants ) handling and planning
+* [domain_expert] GetDomainConstants service and tests
+* [msgs] GetDomainConstants srv
+* Contributors: Francisco Martín Rico, Jake Keller, Josh Zapf, Marco Roveri, Mostafa Gomaa
+
 2.0.1 (2022-02-03)
 ------------------
 * get-domain-name: Added service for retrieving domain name. Concatenating domain names when using multiple domains.

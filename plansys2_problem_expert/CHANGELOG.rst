@@ -2,6 +2,15 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Full supportr for (= _ _) PDDL constraints, added possibility to refer to constants, added initial test cases
+* set_decimal_precision: Use std::setprecision to avoid incompatible scientific notation.
+* [problem_expert] clearGoal on clearing knowledge
+* [problem_expert] test constants parsing as part of problem
+* [problem_expert] add constants as instances while parsing problem.pddl
+* Contributors: Francisco Martín Rico, Jake Keller, Josh Zapf, Marco Roveri, Mostafa Gomaa
+
 2.0.1 (2022-02-03)
 ------------------
 * Update deprecated APIs in launchers and parameters

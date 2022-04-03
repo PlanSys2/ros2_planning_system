@@ -2,6 +2,18 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* action-graph-fix: Reverting timeout modification for bt_action_test.
+* Refactor BTActionNode (`#197 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/197>`_)
+* action-test-fix: Setting TIMEOUT value to 300 for bt_action_test.
+  Increase default server tiemout
+* Replace runtime errors w/ BT::NodeStatus::FAILURE
+* Add on_feedback method
+* Fix issue if child classes override providedPorts
+* Add (optional) server timeout to BtActionNode
+* Contributors: Francisco Martín Rico, Jake Keller, Josh Zapf
+
 2.0.1 (2022-02-03)
 ------------------
 * Update deprecated APIs in launchers and parameters

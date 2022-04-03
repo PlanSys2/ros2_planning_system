@@ -2,6 +2,16 @@
 Changelog for package plansys2_pddl_parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Full supportr for (= _ _) PDDL constraints, added possibility to refer to constants, added initial test cases
+* fix-getSubtrees: Removing empty line.
+* fix-getSubtrees: Fixing bug in getSubtrees function in Utils.cpp.
+* set_decimal_precision: Use std::setprecision to avoid incompatible scientific notation.
+* [pddl_parser] ground constants also when no replace values
+* [pddl_parser] account for pddl-constants while replacing ground params
+* Contributors: Francisco Martín Rico, Jake Keller, Josh Zapf, Marco Roveri, Mostafa Gomaa
+
 2.0.1 (2022-02-03)
 ------------------
 * remove-invalid-goals: Removing invalid goals when instances are removed. Keep track of update time in problem expert.

@@ -2,6 +2,35 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use apply and check method to create action graph
+* plan-to-action-graph-mod: Using apply and check method to search for causal links.
+* generalize-is-parallelizable: Cleaning up comments a bit.
+* generalize-is-parallelizable: Checking for contradictions at any point in time in the is_parallelizable function.
+* generalize-is-parallelizable: Improving human readability.
+* generalize-is-parallelizable: Applying ament uncrustify.
+* generalize-is-parallelizable: Generalizing the is_parallelizable function in BTBuilder so that the functions will also be checked.
+* action-graph-test: Adding unit test to verify action graph generation.
+* action-graph-fix: Using std::list to create action graph rather than …
+* action-graph-fix: Shortening line lengths to <100 characters. Applying ament uncrustify.
+* action-graph-fix: Checking for existing link before adding one when creating action graph.
+* Check all reqs and effect for roots
+* action-graph-fix: Setting executor_test TIMEOUT value to 300.
+* Add options to run command in plansys2 Terminal
+* Change runtime failures to BT::NodeStatus::FAILURE, add logging info to ExecutorClient
+* Add options to run command
+* action-graph-fix: Using std::list to create action graph rather than std::set. A std::set does not maintain insertion order, whereas a std::list does. Maintaining insertion order guarantees that graph traversal follows the same path as graph creation.
+* action-graph-test: Adding unit test to verify action graph generation.
+* Add Status recency in performers
+* Remove unnecessary node pointer
+* Merge branch 'IntelligentRoboticsLabs:master' into master
+* Logger tool - performers and plan
+* Logger tool - knowledge, info and action hub
+* Elevate failure logging from INFO to WARN/ERROR
+* Add action failure details to ExecutorClient
+* Contributors: Francisco Martín Rico, Jake Keller, Josh Zapf
+
 2.0.1 (2022-02-03)
 ------------------
 * Update deprecated APIs in launchers and parameters

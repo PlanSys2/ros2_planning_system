@@ -2,6 +2,11 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [planner] test constants and problem file generation
+* Contributors: Francisco Martín Rico, Jake Keller, Mostafa Gomaa
+
 2.0.1 (2022-02-03)
 ------------------
 * Update deprecated APIs in launchers and parameters

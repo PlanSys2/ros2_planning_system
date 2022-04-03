@@ -2,6 +2,16 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#139 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/139>`_ from MostafaGomaa/constants_params_handling
+* [problem_expert] clearGoal on clearing knowledge
+* [domain_expert] GetDomainConstants service and tests
+* [domain_expert] test domain_reader constants
+* [domain_expert] adapt tests, add constants to existing domain_processed
+* [domain_expert] DomainReader, Extract "(:constants )" string from domain_str
+* Contributors: Francisco Martín Rico, Jake Keller, Mostafa Gomaa
+
 2.0.1 (2022-02-03)
 ------------------
 * Update deprecated APIs in launchers and parameters

@@ -2,6 +2,18 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Made latest modifications reentrant without the use of global variables
+* Renamed planfrom to plan-file, added help for help
+* Added tests for source and run planfrom, cleaned code to have all the test to pass
+* Fixed recursive load, added command run planfrom to read a plan from file and execute it
+* Initial preliminary support for help and load new commands
+* Fix run entire plan
+* Add options to run command
+* Add action failure details to ExecutorClient
+* Contributors: Francisco Martín Rico, Jake Keller, Josh Zapf, Marco Roveri
+
 2.0.1 (2022-02-03)
 ------------------
 * Translate error message to English
