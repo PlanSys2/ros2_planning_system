@@ -2,8 +2,8 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.2 (2022-04-03)
+------------------
 * Use apply and check method to create action graph
 * plan-to-action-graph-mod: Using apply and check method to search for causal links.
 * generalize-is-parallelizable: Cleaning up comments a bit.

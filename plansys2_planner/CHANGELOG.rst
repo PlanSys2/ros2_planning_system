@@ -2,8 +2,8 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.2 (2022-04-03)
+------------------
 * test constants and problem file generation
 * Contributors: Francisco Martín Rico, Jake Keller, Mostafa Gomaa
 

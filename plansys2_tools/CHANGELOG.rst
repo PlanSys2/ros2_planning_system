@@ -2,8 +2,8 @@
 Changelog for package plansys2_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.2 (2022-04-03)
+------------------
 * Fixed compilation of main (working on galactic) to compile also on foxy
 * RQT Plan viewer
 * Logger tool - performers and plan

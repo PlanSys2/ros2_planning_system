@@ -2,8 +2,8 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.2 (2022-04-03)
+------------------
 * Made latest modifications reentrant without the use of global variables
 * Renamed planfrom to plan-file, added help for help
 * Added tests for source and run planfrom, cleaned code to have all the test to pass

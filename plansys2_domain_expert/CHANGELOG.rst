@@ -2,8 +2,8 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.2 (2022-04-03)
+------------------
 * Merge pull request `#139 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/139>`_ from MostafaGomaa/constants_params_handling
 * [problem_expert] clearGoal on clearing knowledge
 * [domain_expert] GetDomainConstants service and tests

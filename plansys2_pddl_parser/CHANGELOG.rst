@@ -2,8 +2,8 @@
 Changelog for package plansys2_pddl_parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.2 (2022-04-03)
+------------------
 * Full supportr for (= _ _) PDDL constraints, added possibility to refer to constants, added initial test cases
 * fix-getSubtrees: Removing empty line.
 * fix-getSubtrees: Fixing bug in getSubtrees function in Utils.cpp.
