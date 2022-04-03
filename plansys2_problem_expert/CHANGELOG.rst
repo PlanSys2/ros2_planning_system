@@ -2,8 +2,8 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.3 (2022-04-03)
+------------------
 * Fix conflicts
 * Qt5 dependencies
 * Contributors: Francisco Martín Rico
