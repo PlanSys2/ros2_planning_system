@@ -839,7 +839,6 @@ ActionExecutor::Status BTBuilder::get_action_status(
   ActionStamped action_stamped,
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map)
 {
-  std::shared_ptr<plansys2_msgs::msg::DurativeAction> action = action_stamped.action;
   auto index = "(" + parser::pddl::nameActionsToString(action_stamped.action) + "):" +
     std::to_string(static_cast<int>(action_stamped.time * 1000));
   if ((*action_map)[index].action_executor) {
