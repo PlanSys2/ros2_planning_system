@@ -7,11 +7,14 @@ void FunctionExpression::PDDLPrint( std::ostream & s, unsigned indent, const Tok
 	ParamCond * c = d.funcs[d.funcs.index( fun->name )];
 
 	s << "( " << fun->name;
-	IntVec v( c->params.size() );
-	for ( unsigned i = 0; i < v.size(); ++i ) {
+ unsigned int psize = c->params.size();
+	for ( unsigned i = 0; i < psize; ++i ) {
 		if ( ts.size() && fun->params[i] >= 0 && (unsigned)fun->params[i] < ts.size() ) s << " " << ts[fun->params[i]];
 		else if (fun->params[i] >= 0 && (unsigned)fun->params[i] >= ts.size()) s << " ?" << fun->params[i];
-		else s << " " << d.types[c->params[i]]->object( fun->params[i] ).first;
+		else {
+    // It is a constant parameter for the function
+    s << " "; constants[i]->PDDLPrint(s, indent, ts, d);
+  }
 	}
 	s << " )";
 }
@@ -55,6 +58,11 @@ double FunctionExpression::evaluate( Instance & ins, const StringVec & par ) {
 	return 1;
 }
 
+
+void ConstExpression::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
+		s << d.types[tid]->constants[constant];
+	}
+
 Expression * createExpression( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
 
@@ -63,34 +71,90 @@ Expression * createExpression( Stringreader & f, TokenStruct< std::string > & ts
 		f.next();
 		std::string s = f.getToken();
 		if ( s == "+" || s == "-" || s == "*" || s == "/" ) {
+   // It is a composite expression
 			CompositeExpression * ce = new CompositeExpression( s );
 			ce->parse( f, ts, d );
 			return ce;
-		}
-		else {
+		}	else {
+   // It is a function expression
 			f.c -= s.size();
 			Function * fun = d.funcs.get( f.getToken( d.funcs ) );
-			ParamCond * c = new Lifted( fun );
+			ParamCond * p = new Lifted( fun );
+   std::vector<Expression *> c(fun->params.size());
+   std::fill(c.begin(), c.end(), nullptr);
 			for ( unsigned i = 0; i < fun->params.size(); ++i ) {
-				f.next();
-				c->params[i] = ts.index( f.getToken( ts ) );
+    f.next();
+    std::string s = f.getToken();
+    if (d.isConstant(s)) {
+      p->params[i] = -1;
+      IntPair ct = d.constantTypeIdConstId(s);
+      c[i] = new ConstExpression(ct.first, ct.second);
+    } else if (ts.index(s) >= 0) {
+      p->params[i] = ts.index( s );
+    } else {
+      f.tokenExit(s);
+    }
 			}
 			f.next();
 			f.assert_token( ")" );
-			return new FunctionExpression( c );
+			return new FunctionExpression( p, c );
 		}
-	}
-	else if ( f.getChar() == '?' ) {  // just support duration if starts with ?
-		f.assert_token( "?duration" );
-		return new DurationExpression();
-	}
-	else {
-		double d;
-		std::string s = f.getToken();
-		std::istringstream is( s );
-		is >> d;
-		return new ValueExpression( d );
-	}
+	}	else if ( f.getChar() == '?' ) {
+   // It is a parameter variable
+   std::string s = f.getToken();
+
+   int k = ts.index( s );
+   if ( k >= 0) {
+     // It is a parameter variable
+     return new ParamExpression( k );
+   } else if (s == "?duration") {
+     // It is a ?duration expression
+     return new DurationExpression();
+   } else {
+     // Neither a known parameter variable nor ?duration
+     f.tokenExit(s);
+     return nullptr;
+   }
+ } else {
+   std::string s = f.getToken();
+
+   if ( d.isConstant(s) ) {
+     // It is a constant!
+     IntPair ct = d.constantTypeIdConstId(s);
+     return new ConstExpression(ct.first, ct.second);
+   } else if (s == "#t") {
+     // This construct is used in PDDL+ to model continuous evolution
+     // of some function within processes
+     std::ostringstream os;
+     os << "\"" << s << "\" is supported only in PDDL+," <<
+         "and not supported by Plansys2" << std::endl;
+     f.printLine();
+     std::cout << os.str();
+     throw new std::runtime_error(os.str());
+     return nullptr;
+   } else {
+     // It is expected to be a number!
+     double d;
+     try {
+       d = std::stod(s);
+     } catch (const std::invalid_argument &) {
+       std::ostringstream os;
+       os << "Expected a number, found \"" << s << "\"" << std::endl;
+       f.printLine();
+       std::cout << os.str();
+       throw new std::runtime_error(os.str());
+     } catch (const std::out_of_range &) {
+       std::ostringstream os;
+       os << "Expected a number, found \"" << s << "\"" << std::endl <<
+           "and it goes out of range" << std::endl;
+       f.printLine();
+       std::cout << os.str();
+       throw new std::runtime_error(os.str());
+     }
+     return new ValueExpression( d );
+   }
+ }
 }
 
-} }
+}
+}

@@ -36,6 +36,9 @@ void pop_front(std::vector<std::string> & tokens);
 char * completion_generator(const char * text, int state);
 char ** completer(const char * text, int start, int end);
 
+std::optional<plansys2_msgs::msg::Plan>
+parse_plan(const std::string planfile);
+
 class Terminal : public rclcpp::Node
 {
 public:
@@ -85,7 +88,15 @@ protected:
   virtual void process_check(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_check_actors(std::vector<std::string> & command, std::ostringstream & os);
 
-  virtual void process_command(std::string & command, std::ostringstream & os);
+  // Returns false if the processed command is violating some
+  // restriction, e.g. there are nested source commands
+  virtual bool process_command(
+    std::string & command, std::ostringstream & os,
+    bool inside_source = false);
+
+  virtual void process_source(std::vector<std::string> & command, std::ostringstream & os);
+
+  virtual void process_help(std::vector<std::string> & command, std::ostringstream & os);
 
 private:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
