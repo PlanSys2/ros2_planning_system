@@ -659,7 +659,7 @@ BTBuilder::get_node_dotgraph(
     "\"";
   ss << "labeljust=c,style=filled";
 
-  auto status = get_action_status(node->action.action, action_map);
+  auto status = get_action_status(node->action, action_map);
   switch (status) {
     case ActionExecutor::RUNNING:
       ss << ",color=blue,fillcolor=skyblue";
@@ -684,17 +684,16 @@ BTBuilder::get_node_dotgraph(
 }
 
 ActionExecutor::Status BTBuilder::get_action_status(
-  std::shared_ptr<plansys2_msgs::msg::DurativeAction> action,
+  ActionStamped action_stamped,
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map)
 {
-  for (const auto & action_pair : *action_map) {
-    if (parser::pddl::nameActionsToString(action_pair.second.durative_action_info) ==
-      parser::pddl::nameActionsToString(action))
-    {
-      return action_pair.second.action_executor->get_internal_status();
-    }
+  auto index = "(" + parser::pddl::nameActionsToString(action_stamped.action) + "):" +
+    std::to_string(static_cast<int>(action_stamped.time * 1000));
+  if ((*action_map)[index].action_executor) {
+    return (*action_map)[index].action_executor->get_internal_status();
+  } else {
+    return ActionExecutor::IDLE;
   }
-  return ActionExecutor::IDLE;
 }
 
 void BTBuilder::addDotGraphLegend(
