@@ -101,7 +101,7 @@ ActionExecutorClient::on_activate(const rclcpp_lifecycle::State & state)
   timer_ = create_wall_timer(
     rate_, std::bind(&ActionExecutorClient::do_work, this));
 
-  do_work();
+//  do_work();
 
   return CallbackReturnT::SUCCESS;
 }
