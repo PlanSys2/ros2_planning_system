@@ -106,9 +106,10 @@ public:
   }
 
   // Derived classes can override any of the following methods to hook into the
-  // processing for the action: on_tick, on_wait_for_result, and on_success
+  // processing for the action: on_tick, and on_success
 
   // Could do dynamic checks, such as getting updates to values on the blackboard
+  // Can also update variable goal_updated_ to request a new goal
   virtual BT::NodeStatus on_tick()
   {
     return BT::NodeStatus::RUNNING;
@@ -118,12 +119,6 @@ public:
   // goal, or cancel the goal
   virtual void on_feedback(
     const std::shared_ptr<const typename ActionT::Feedback> feedback)
-  {
-  }
-
-  // There can be many loop iterations per tick. Any opportunity to do something after
-  // a timeout waiting for a result that hasn't been received yet
-  virtual void on_wait_for_result()
   {
   }
 
@@ -163,23 +158,25 @@ public:
       server_timeout_ = std::chrono::milliseconds(static_cast<int>(server_timeout * 1000.0));
 
       if (!createActionClient(action_name_)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to create action client");
         return BT::NodeStatus::FAILURE;
       }
 
-      // setting the status to RUNNING to notify the BT Loggers (if any)
-      setStatus(BT::NodeStatus::RUNNING);
+      // User defined tick
+      auto user_status = on_tick();
+      if (user_status != BT::NodeStatus::RUNNING) {
+        return user_status;
+      }
 
       if (!on_new_goal_received()) {
-        cancel_goal();
         return BT::NodeStatus::FAILURE;
       }
+
+      return BT::NodeStatus::RUNNING;
     }
 
     // The following code corresponds to the "RUNNING" loop
     if (rclcpp::ok() && !goal_result_available_) {
-      // user defined callback. May modify the value of "goal_updated_"
-      on_wait_for_result();
-
       auto goal_status = goal_handle_->get_status();
       if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
         goal_status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED))
