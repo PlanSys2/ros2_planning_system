@@ -543,7 +543,7 @@ Terminal::process_set_predicate(std::vector<std::string> & command, std::ostring
       return;
     }
 
-    predicate.name.erase(0, 1);  // Remove first )
+    predicate.name.erase(0, 1);  // Remove first (
 
     pop_front(command);
     while (!command.empty()) {
@@ -551,12 +551,18 @@ Terminal::process_set_predicate(std::vector<std::string> & command, std::ostring
       pop_front(command);
     }
 
-    if (predicate.parameters.back().name.back() != ')') {
+    if (predicate.parameters.size() != 0 &&
+      predicate.parameters.back().name.back() != ')')
+    {
       os << "\tUsage: \n\t\tset predicate (predicate)" << std::endl;
       return;
     }
 
-    predicate.parameters.back().name.pop_back();  // Remove last (
+    if (predicate.parameters.size() != 0) {
+      predicate.parameters.back().name.pop_back();  // Remove last )
+    } else {
+      predicate.name.pop_back();  // Remove last )
+    }
 
     if (!problem_client_->addPredicate(predicate)) {
       os << "Could not add the predicate [" << parser::pddl::toString(predicate) << "]" <<
