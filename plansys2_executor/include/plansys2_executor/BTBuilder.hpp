@@ -136,7 +136,7 @@ protected:
     GraphNode::Ptr node,
     std::list<std::string> & used_nodes,
     int level = 0);
-  std::string get_flow_dotgraph(GraphNode::Ptr node, int level = 0);
+  void get_flow_dotgraph(GraphNode::Ptr node, std::set<std::string> & edges);
   std::string get_node_dotgraph(
     GraphNode::Ptr node, std::shared_ptr<std::map<std::string,
     ActionExecutionInfo>> action_map, int level = 0);

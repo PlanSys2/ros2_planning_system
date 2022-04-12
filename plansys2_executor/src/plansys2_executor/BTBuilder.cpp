@@ -66,8 +66,7 @@ BTBuilder::is_action_executable(
   std::vector<plansys2::Function> & functions) const
 {
   return check(action.action->at_start_requirements, predicates, functions) &&
-         check(action.action->over_all_requirements, predicates, functions) &&
-         check(action.action->at_end_requirements, predicates, functions);
+         check(action.action->over_all_requirements, predicates, functions);
 }
 
 GraphNode::Ptr
@@ -130,7 +129,6 @@ BTBuilder::get_node_contradict(
   if (is_action_executable(current->action, predicates, functions)) {
     // Apply the effects
     apply(current->action.action->at_start_effects, predicates, functions);
-    apply(current->action.action->at_end_effects, predicates, functions);
 
     // Look for a contradiction
     if (!is_action_executable(node->action, predicates, functions)) {
@@ -151,25 +149,10 @@ BTBuilder::is_parallelizable(
   const std::vector<plansys2::Function> & functions,
   const std::list<GraphNode::Ptr> & nodes) const
 {
-  // Since we do not know exactly when 2 parallel actions will overlap,
-  // we must check for contradictions at any point in time.
-  // For example, in the case of a unary resource an "at start" effect
-  // may trun on a predicate, but an "at end" effect may turn it off.
-
   // Apply the "at start" effects of the new action.
   auto preds = predicates;
   auto funcs = functions;
   apply(action.action->at_start_effects, preds, funcs);
-
-  // Check the requirements of the actions in the input set.
-  for (const auto & other : nodes) {
-    if (!is_action_executable(other->action, preds, funcs)) {
-      return false;
-    }
-  }
-
-  // Apply the "at end" effects of the new action.
-  apply(action.action->at_end_effects, preds, funcs);
 
   // Check the requirements of the actions in the input set.
   for (const auto & other : nodes) {
@@ -184,14 +167,6 @@ BTBuilder::is_parallelizable(
     preds = predicates;
     funcs = functions;
     apply(other->action.action->at_start_effects, preds, funcs);
-
-    // Check the requirements of the new action.
-    if (!is_action_executable(action, preds, funcs)) {
-      return false;
-    }
-
-    // Apply the "at end" effects of the action.
-    apply(other->action.action->at_end_effects, preds, funcs);
 
     // Check the requirements of the new action.
     if (!is_action_executable(action, preds, funcs)) {
@@ -292,7 +267,7 @@ BTBuilder::prune_backwards(GraphNode::Ptr new_node, GraphNode::Ptr node_satisfy)
   auto it = node_satisfy->out_arcs.begin();
   while (it != node_satisfy->out_arcs.end()) {
     if (*it == new_node) {
-      (*it)->in_arcs.remove(*it);
+      new_node->in_arcs.remove(node_satisfy);
       it = node_satisfy->out_arcs.erase(it);
     } else {
       ++it;
@@ -448,10 +423,6 @@ BTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
     action_sequence.erase(action_sequence.begin());
   }
 
-  std::list<GraphNode::Ptr> used_nodes;
-  for (auto & root : graph->roots) {
-    prune_forward(root, used_nodes);
-  }
   return graph;
 }
 
@@ -459,6 +430,11 @@ std::string
 BTBuilder::get_tree(const plansys2_msgs::msg::Plan & current_plan)
 {
   auto action_graph = get_graph(current_plan);
+
+  std::list<GraphNode::Ptr> used_actions;
+  for (auto & root : action_graph->roots) {
+    prune_forward(root, used_actions);
+  }
 
   std::string bt_plan;
 
@@ -566,10 +542,15 @@ BTBuilder::get_dotgraph(
     }
   }
 
-  tab_level = 1;
   // define the edges
+  std::set<std::string> edges;
   for (const auto & graph_root : action_graph->roots) {
-    ss << get_flow_dotgraph(graph_root, tab_level);
+    get_flow_dotgraph(graph_root, edges);
+  }
+
+  tab_level = 1;
+  for (const auto & edge : edges) {
+    ss << t(tab_level) << edge;
   }
 
   if (enable_legend) {
@@ -632,20 +613,17 @@ BTBuilder::get_flow_tree(
   return ret;
 }
 
-std::string
+void
 BTBuilder::get_flow_dotgraph(
   GraphNode::Ptr node,
-  int level)
+  std::set<std::string> & edges)
 {
-  std::stringstream ss;
-
-  for (const auto & child_node : node->out_arcs) {
-    ss << t(level);
-    ss << node->node_num << "->" << child_node->node_num << ";\n";
-    ss << get_flow_dotgraph(child_node, level);
+  for (const auto & arc : node->out_arcs) {
+    std::string edge = std::to_string(node->node_num) + "->" + std::to_string(arc->node_num) +
+      ";\n";
+    edges.insert(edge);
+    get_flow_dotgraph(arc, edges);
   }
-
-  return ss.str();
 }
 
 std::string
@@ -854,10 +832,14 @@ BTBuilder::print_graph(const plansys2::Graph::Ptr & graph) const
 void
 BTBuilder::print_node_csv(const plansys2::GraphNode::Ptr & node, uint32_t root_num) const
 {
-  std::cerr << root_num << ", " <<
-    node->node_num << ", " <<
-    node->level_num << ", " <<
-    parser::pddl::nameActionsToString(node->action.action) << std::endl;
+  std::string out_str = std::to_string(root_num) + ", " +
+    std::to_string(node->node_num) + ", " +
+    std::to_string(node->level_num) + ", " +
+    parser::pddl::nameActionsToString(node->action.action);
+  for (const auto & arc : node->out_arcs) {
+    out_str = out_str + ", " + parser::pddl::nameActionsToString(arc->action.action);
+  }
+  std::cerr << out_str << std::endl;
   for (const auto & out : node->out_arcs) {
     print_node_csv(out, root_num);
   }
