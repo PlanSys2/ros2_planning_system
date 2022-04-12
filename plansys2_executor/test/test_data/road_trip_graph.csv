@@ -1,8 +1,8 @@
-0, 0, 0, move herbie wp0 wp1
-0, 1, 1, visit herbie wp1
-0, 2, 2, move herbie wp1 rp0
-0, 3, 3, refuel herbie rp0
-0, 4, 4, move herbie rp0 wp3
-0, 5, 5, visit herbie wp3
-0, 6, 6, move herbie wp3 wp2
+0, 0, 0, move herbie wp0 wp1, visit herbie wp1
+0, 1, 1, visit herbie wp1, move herbie wp1 rp0
+0, 2, 2, move herbie wp1 rp0, refuel herbie rp0
+0, 3, 3, refuel herbie rp0, move herbie rp0 wp3
+0, 4, 4, move herbie rp0 wp3, visit herbie wp3
+0, 5, 5, visit herbie wp3, move herbie wp3 wp2
+0, 6, 6, move herbie wp3 wp2, visit herbie wp2
 0, 7, 7, visit herbie wp2
