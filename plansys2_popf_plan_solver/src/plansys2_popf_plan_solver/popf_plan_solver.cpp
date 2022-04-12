@@ -69,7 +69,7 @@ POPFPlanSolver::getPlan(
     ("ros2 run popf popf " +
     lc_node_->get_parameter(parameter_name_).value_to_string() +
     " /tmp/" + node_namespace + "/domain.pddl /tmp/" + node_namespace +
-    "/problem.pddl > /tmp/" + node_namespace + "/plan").c_str())
+    "/problem.pddl > /tmp/" + node_namespace + "/plan").c_str());
   
   if (status != 0){
       return {};
