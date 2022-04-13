@@ -108,9 +108,6 @@ TEST(problem_expert, wait_overall_req_test)
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
   (*action_map)["(move robot1 wheels_zone assembly_zone):5"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].action_executor =
-    plansys2::ActionExecutor::make_shared(
-    "(move robot1 wheels_zone assembly_zone)", test_lc_node);
   (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info =
     domain_client->getDurativeAction(
     plansys2::get_action_name("(move robot1 wheels_zone assembly_zone)"),
