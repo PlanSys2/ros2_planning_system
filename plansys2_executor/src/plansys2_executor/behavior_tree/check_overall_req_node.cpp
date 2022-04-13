@@ -46,7 +46,7 @@ CheckOverAllReq::tick()
 
   auto reqs = (*action_map_)[action].durative_action_info->over_all_requirements;
 
-  if (!check(reqs, problem_client_)) {
+  if (!(*action_map_)[action].action_executor->is_finished() && !check(reqs, problem_client_)) {
     (*action_map_)[action].execution_error_info = "Error checking over all requirements";
 
     RCLCPP_ERROR_STREAM(
