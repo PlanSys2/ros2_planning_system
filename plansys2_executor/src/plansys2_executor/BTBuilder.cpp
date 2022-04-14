@@ -385,13 +385,6 @@ BTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
       }
     }
 
-    remove_existing_requirements(requirements, predicates, functions);
-    for (const auto & req : requirements) {
-      std::cerr << "[ERROR] requirement not met: [" <<
-        parser::pddl::toString(req) << "]" << std::endl;
-    }
-    assert(requirements.empty());
-
     // Look for contradicting parallel actions
     // A1 and A2 cannot run in parallel if the effects of A1 contradict the requirements of A2
     auto contradictions = get_node_contradict(graph, new_node);
@@ -414,11 +407,20 @@ BTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
     // Compute the state up to the new node
     // The effects of the new node are not applied
     std::list<GraphNode::Ptr> used_nodes;
-    auto preds_temp = problem_client_->getPredicates();
-    auto funcs_temp = problem_client_->getFunctions();
-    get_state(new_node, used_nodes, preds_temp, funcs_temp);
-    new_node->predicates = preds_temp;
-    new_node->functions = funcs_temp;
+    predicates = problem_client_->getPredicates();
+    functions = problem_client_->getFunctions();
+    get_state(new_node, used_nodes, predicates, functions);
+    new_node->predicates = predicates;
+    new_node->functions = functions;
+
+    // Check any requirements that do not have satisfying nodes.
+    // These should be satisfied by the initial state.
+    remove_existing_requirements(requirements, predicates, functions);
+    for (const auto & req : requirements) {
+      std::cerr << "[ERROR] requirement not met: [" <<
+        parser::pddl::toString(req) << "]" << std::endl;
+    }
+    assert(requirements.empty());
 
     action_sequence.erase(action_sequence.begin());
   }
