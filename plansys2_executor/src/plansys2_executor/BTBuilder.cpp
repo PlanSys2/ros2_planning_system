@@ -414,11 +414,11 @@ BTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
     // Compute the state up to the new node
     // The effects of the new node are not applied
     std::list<GraphNode::Ptr> used_nodes;
-    auto predicates = problem_client_->getPredicates();
-    auto functions = problem_client_->getFunctions();
-    get_state(new_node, used_nodes, predicates, functions);
-    new_node->predicates = predicates;
-    new_node->functions = functions;
+    auto preds_temp = problem_client_->getPredicates();
+    auto funcs_temp = problem_client_->getFunctions();
+    get_state(new_node, used_nodes, preds_temp, funcs_temp);
+    new_node->predicates = preds_temp;
+    new_node->functions = funcs_temp;
 
     action_sequence.erase(action_sequence.begin());
   }
