@@ -3,14 +3,18 @@
 <package format="3">
   <name>plansys2_tools</name>
   <version>2.0.1</version>
-  
+
   <description>A set of tools for monitoring ROS2 Planning System</description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
- 
+
   <license>Apache License, Version 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <build_depend>qtbase5-dev</build_depend>
+  <build_depend>qtbase5-dev-tools</build_depend>
+  <build_depend>libqt5widgets5</build_depend>
 
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
@@ -19,12 +23,11 @@
   <depend>rqt_gui_cpp</depend>
   <depend>qt_gui_cpp</depend>
   <depend>plansys2_problem_expert</depend>
-
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_index_cpp</test_depend>
-  
+
   <export>
     <build_type>ament_cmake</build_type>
     <rqt_gui plugin="${prefix}/plugin_knowledge.xml"/>
