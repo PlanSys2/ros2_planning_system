@@ -2,6 +2,9 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.0.5 (2022-05-03)
 ------------------
 * Fix ROS2 Buildfarm error due to Threads
