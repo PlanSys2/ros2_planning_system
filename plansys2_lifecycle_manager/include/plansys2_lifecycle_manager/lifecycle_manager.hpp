@@ -18,7 +18,6 @@
 #include <chrono>
 #include <memory>
 #include <string>
-#include <thread>
 #include <map>
 
 #include "lifecycle_msgs/msg/state.hpp"

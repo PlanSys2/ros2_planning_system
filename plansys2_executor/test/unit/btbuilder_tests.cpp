@@ -17,7 +17,6 @@
 #include <regex>
 #include <iostream>
 #include <memory>
-#include <thread>
 #include <fstream>
 #include <map>
 #include <set>

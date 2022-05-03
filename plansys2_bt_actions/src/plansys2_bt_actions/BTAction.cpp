@@ -60,7 +60,9 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
     factory_.registerFromPlugin(loader.getOSName(plugin));
   }
 
-  auto node = rclcpp::Node::make_shared(std::string(get_name()) + "_aux");
+  auto options = rclcpp::NodeOptions().arguments(
+    {"--ros-args", "-r", std::string("__node:=") + get_name() + "_bb_node"});
+  auto node = rclcpp::Node::make_shared("_", options);
   blackboard_ = BT::Blackboard::create();
   blackboard_->set("node", node);
 
