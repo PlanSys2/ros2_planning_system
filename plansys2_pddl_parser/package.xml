@@ -24,6 +24,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>rclcpp</depend>
   <depend>plansys2_msgs</depend>
   <depend>std_msgs</depend>
 
