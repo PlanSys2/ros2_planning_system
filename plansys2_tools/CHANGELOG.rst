@@ -2,8 +2,8 @@
 Changelog for package plansys2_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.4 (2022-05-03)
+------------------
 * Fix version
 * Fix ROS2 Buildfarm error due to Threads
 * Adding missing build dependencies

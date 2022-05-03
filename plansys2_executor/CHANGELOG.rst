@@ -2,8 +2,8 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.4 (2022-05-03)
+------------------
 * Fix version
 * Merge pull request `#223 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/223>`_ from IntelligentRoboticsLabs/fix_threads_buildfarm
   Fix threads buildfarm

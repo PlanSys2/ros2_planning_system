@@ -2,8 +2,8 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.4 (2022-05-03)
+------------------
 * Merge branch 'IntelligentRoboticsLabs:master' into master
 * Contributors: Jake Keller
 
