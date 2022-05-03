@@ -2,8 +2,8 @@
 Changelog for package plansys2_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.5 (2022-05-03)
+------------------
 * Fix package dep
 * Contributors: Francisco Martín Rico, Jake Keller, Marco Roveri
 
