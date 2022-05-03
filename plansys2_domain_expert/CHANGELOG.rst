@@ -2,6 +2,11 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix ROS2 Buildfarm error due to Threads
+* Contributors: Francisco Martín Rico
+
 2.0.4 (2022-05-03)
 ------------------
 * Fix version

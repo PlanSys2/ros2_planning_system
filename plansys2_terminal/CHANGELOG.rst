@@ -2,6 +2,11 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix ROS2 Buildfarm error due to Threads
+* Contributors: Francisco Martín Rico, Jake Keller, Marco Roveri
+
 2.0.4 (2022-05-03)
 ------------------
 * Fix version
