@@ -2,8 +2,8 @@
 Changelog for package plansys2_pddl_parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.6 (2022-05-03)
+------------------
 * Fix deps
 * Contributors: Francisco Martín Rico
 
