@@ -2,6 +2,17 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix version
+* Fix ROS2 Buildfarm error due to Threads
+* Merge branch 'IntelligentRoboticsLabs:master' into master
+* Merge pull request `#213 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/213>`_ from roveri-marco/fix_issue_predicate_no_args_in_terminal
+  Fix for issue `#212 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/212>`_ - predicate with no args
+* Fix for issue `#212 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/212>`_ - predicate with no args
+* Merge branch 'IntelligentRoboticsLabs:master' into master
+* Contributors: Francisco Martín Rico, Jake Keller, Marco Roveri
+
 2.0.3 (2022-04-03)
 ------------------
 

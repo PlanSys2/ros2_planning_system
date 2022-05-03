@@ -2,6 +2,36 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix version
+* Merge pull request `#223 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/223>`_ from IntelligentRoboticsLabs/fix_threads_buildfarm
+  Fix threads buildfarm
+* Fix ROS2 Buildfarm error due to Threads
+* Merge pull request `#217 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/217>`_ from jjzapf/check-action-finished
+  Check action finished
+* check-action-finished: Putting leftover requirement check after state update in get_graph function.
+* check-action-finished: Use distinct names for temporary predicate/function variables inside of while loop.
+* check-action-finished: Reverting previous changes. Adding checks to WaitAction node to verify that action has finished.
+* check-action-finished: Fixing problem_expert.wait_overall_req_test in plansys2_executor/bt_node_test.cpp.
+* check-action-finished: Do not declare failure in check_overall_req_node if action has already finished.
+* Merge pull request `#209 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/209>`_ from sarcasticnature/master
+  Improvements on recent BtActionNode changes
+* Merge pull request `#216 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/216>`_ from jjzapf/action-graph-bug-fix
+  Plan-to-Action Graph Bug Fix
+* action-graph-bug-fix: Not applying at end effects when testing if actions can be run in parallel. Fixing bug in prune_backwards function.
+* Update unit tests to match changes
+* Remove extra do_work() call in on_activate()
+  do_work() may call the function finish(), which will fail to deactivate
+  the node if it is still in the on_activate callback.
+* Merge branch 'IntelligentRoboticsLabs:master' into master
+* Merge pull request `#208 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/208>`_ from xydesa/plan-dotgraph-bug
+  Plan dotgraph color bug
+* Merge branch 'IntelligentRoboticsLabs:master' into master
+* Removing unused variable.
+* More accurately getting the status of an action by including the action's start time in the index for coloring the dotgraph.
+* Contributors: Alexander Xydes, Francisco Martín Rico, Jake Keller, Josh Zapf
+
 2.0.3 (2022-04-03)
 ------------------
 

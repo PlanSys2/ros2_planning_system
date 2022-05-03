@@ -2,6 +2,30 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix version
+* Fix ROS2 Buildfarm error due to Threads
+* Update unit tests to match changes
+* Update node name remapping to new syntax
+* Update node name remapping to new syntax
+* Merge branch 'origin/unique-node-names'
+* Remap BB node name in source using NodeOptions
+* Remove empty line to make cpplint happy
+* Remove swap file
+* Handle on_tick() during the first tick
+* Remove holdover code from pre-refactor
+  We should not set running explicity here as the user defined on_tick()
+  would have no way to know that it is the first tick.
+  The status will be set implicity by the parent class's execute_tick()
+  method.
+  Because the on_tick() method has been moved, a goal is no longer being
+  set in the first block of code, making the first call to
+  on_new_goal_received() errant.
+* Remove on_wait_for_result
+  The function is redundant now that on_tick() is called every tick
+* Contributors: Francisco Martín Rico, Jake Keller
+
 2.0.3 (2022-04-03)
 ------------------
 

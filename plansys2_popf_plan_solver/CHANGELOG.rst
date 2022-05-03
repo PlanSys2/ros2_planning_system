@@ -2,6 +2,12 @@
 Changelog for package plansys2_popf_plan_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix version
+* Fix ROS2 Buildfarm error due to Threads
+* Contributors: Francisco Martín Rico
+
 2.0.3 (2022-04-03)
 ------------------
 

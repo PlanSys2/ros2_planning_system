@@ -2,6 +2,13 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix version
+* Fix ROS2 Buildfarm error due to Threads
+* Merge branch 'IntelligentRoboticsLabs:master' into master
+* Contributors: Francisco Martín Rico, Jake Keller
+
 2.0.3 (2022-04-03)
 ------------------
 * Fix conflicts
