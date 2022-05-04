@@ -2,6 +2,14 @@
 Changelog for package plansys2_pddl_parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add missing dependency
+* Contributors: Francisco Martín Rico
+
+* Add missing dependency
+* Contributors: Francisco Martín Rico
+
 2.0.7 (2022-05-04)
 ------------------
 * Add missing dependency

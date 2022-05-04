@@ -2,6 +2,11 @@
 Changelog for package plansys2_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add missing dependency
+* Contributors: Francisco Martín Rico
+
 2.0.7 (2022-05-04)
 ------------------
 
