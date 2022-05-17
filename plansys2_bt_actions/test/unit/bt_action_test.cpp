@@ -234,6 +234,8 @@ TEST(bt_actions, bt_action)
   bt_action->set_parameter(rclcpp::Parameter("action_name", "assemble"));
   bt_action->set_parameter(rclcpp::Parameter("bt_xml_file", xml_file));
   bt_action->set_parameter(rclcpp::Parameter("plugins", plugins));
+  bt_action->set_parameter(rclcpp::Parameter("bt_file_logging", true));
+  bt_action->set_parameter(rclcpp::Parameter("bt_minitrace_logging", true));
 
   bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 

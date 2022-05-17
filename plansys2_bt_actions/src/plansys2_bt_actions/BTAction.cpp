@@ -13,10 +13,14 @@
 // limitations under the License.
 
 #include <optional>
+#include <filesystem>
+#include <iomanip>
 #include <algorithm>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <memory>
+#include <chrono>
 
 #include "behaviortree_cpp_v3/utils/shared_library.h"
 #include "plansys2_bt_actions/BTAction.hpp"
@@ -32,6 +36,8 @@ BTAction::BTAction(
   declare_parameter<std::string>("bt_xml_file", "");
   declare_parameter<std::vector<std::string>>(
     "plugins", std::vector<std::string>({}));
+  declare_parameter<bool>("bt_file_logging", false);
+  declare_parameter<bool>("bt_minitrace_logging", false);
 #ifdef ZMQ_FOUND
   declare_parameter<bool>("enable_groot_monitoring", true);
   declare_parameter<int>("publisher_port", -1);
@@ -84,6 +90,34 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
   for (int i = 0; i < get_arguments().size(); i++) {
     std::string argname = "arg" + std::to_string(i);
     blackboard_->set(argname, get_arguments()[i]);
+  }
+
+  if (get_parameter("bt_file_logging").as_bool() ||
+    get_parameter("bt_minitrace_logging").as_bool())
+  {
+    auto temp_path = std::filesystem::temp_directory_path();
+    std::filesystem::path node_name_path = get_name();
+    std::filesystem::create_directories(temp_path / node_name_path);
+
+    auto now_time_t =
+      std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::stringstream filename;
+    filename << "/tmp/" << get_name() << "/bt_trace_";
+    filename << std::put_time(std::localtime(&now_time_t), "%Y_%m_%d__%H_%M_%S");
+
+    if (get_parameter("bt_file_logging").as_bool()) {
+      std::string filename_extension = filename.str() + ".fbl";
+      RCLCPP_WARN_STREAM(get_logger(), filename.str());
+      bt_file_logger_ =
+        std::make_unique<BT::FileLogger>(tree_, filename_extension.c_str());
+    }
+
+    if (get_parameter("bt_minitrace_logging").as_bool()) {
+      std::string filename_extension = filename.str() + ".json";
+      RCLCPP_WARN_STREAM(get_logger(), filename.str());
+      bt_minitrace_logger_ =
+        std::make_unique<BT::MinitraceLogger>(tree_, filename_extension.c_str());
+    }
   }
 
 #ifdef ZMQ_FOUND
