@@ -164,18 +164,29 @@ void
 BTAction::do_work()
 {
   if (!finished_) {
-    auto result = tree_.rootNode()->executeTick();
+    BT::NodeStatus result;
+    try {
+      result = tree_.rootNode()->executeTick();
+    } catch (BT::LogicError e) {
+      RCLCPP_ERROR_STREAM(get_logger(), e.what());
+      finish(false, 0.0, "BTAction behavior tree threw a BT::LogicError");
+    } catch (BT::RuntimeError e) {
+      RCLCPP_ERROR_STREAM(get_logger(), e.what());
+      finish(false, 0.0, "BTAction behavior tree threw a BT::RuntimeError");
+    } catch (std::exception e) {
+      finish(false, 0.0, "BTAction behavior tree threw an unknown exception");
+    }
 
     switch (result) {
       case BT::NodeStatus::SUCCESS:
-        finish(true, 1.0, "Action completed");
+        finish(true, 1.0, "BTAction behavior tree returned SUCCESS");
         finished_ = true;
         break;
       case BT::NodeStatus::RUNNING:
-        send_feedback(0.0, "Action running");
+        send_feedback(0.0, "BTAction behavior tree returned RUNNING");
         break;
       case BT::NodeStatus::FAILURE:
-        finish(false, 1.0, "Action failed");
+        finish(false, 1.0, "BTAction behavior tree returned FAILURE");
         finished_ = true;
         break;
     }
