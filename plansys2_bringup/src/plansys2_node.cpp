@@ -59,12 +59,14 @@ int main(int argc, char ** argv)
     exe.add_node(manager_node.second);
   }
 
-  std::shared_future<void> script = std::async(
+  std::shared_future<bool> script = std::async(
     std::launch::async,
     std::bind(plansys2::startup_script, manager_nodes));
   exe.spin_until_future_complete(script);
 
-  exe.spin();
+  if (script.get()) {
+    exe.spin();
+  }
 
   rclcpp::shutdown();
 

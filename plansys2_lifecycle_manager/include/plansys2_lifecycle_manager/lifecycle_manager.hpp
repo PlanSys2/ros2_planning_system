@@ -68,7 +68,7 @@ private:
   std::string managed_node_;
 };
 
-void
+bool
 startup_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes);
 
 }  // namespace plansys2

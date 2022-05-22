@@ -116,7 +116,7 @@ TEST(lifecycle_manager, lf_script)
       while (!finish) {exe.spin_some();}
     });
 
-  std::shared_future<void> script = std::async(
+  std::shared_future<bool> script = std::async(
     std::launch::async,
     std::bind(plansys2::startup_script, manager_nodes));
 

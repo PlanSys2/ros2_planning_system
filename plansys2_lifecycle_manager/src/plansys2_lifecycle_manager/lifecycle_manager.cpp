@@ -120,7 +120,7 @@ LifecycleServiceClient::change_state(std::uint8_t transition, std::chrono::secon
   }
 }
 
-void
+bool
 startup_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes)
 {
   // configure domain_expert
@@ -128,7 +128,7 @@ startup_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & 
     if (!manager_nodes["domain_expert"]->change_state(
         lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE))
     {
-      return;
+      return false;
     }
 
     while (manager_nodes["domain_expert"]->get_state() !=
@@ -143,7 +143,7 @@ startup_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & 
     if (!manager_nodes["problem_expert"]->change_state(
         lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE))
     {
-      return;
+      return false;
     }
 
     while (manager_nodes["problem_expert"]->get_state() !=
@@ -158,7 +158,7 @@ startup_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & 
     if (!manager_nodes["planner"]->change_state(
         lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE))
     {
-      return;
+      return false;
     }
 
     while (manager_nodes["planner"]->get_state() !=
@@ -173,7 +173,7 @@ startup_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & 
     if (!manager_nodes["executor"]->change_state(
         lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE))
     {
-      return;
+      return false;
     }
 
     while (manager_nodes["executor"]->get_state() !=
@@ -186,41 +186,42 @@ startup_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & 
   // activate
   {
     if (!rclcpp::ok()) {
-      return;
+      return false;
     }
     if (!manager_nodes["domain_expert"]->change_state(
         lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
     {
-      return;
+      return false;
     }
     if (!manager_nodes["problem_expert"]->change_state(
         lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
     {
-      return;
+      return false;
     }
     if (!manager_nodes["planner"]->change_state(
         lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
     {
-      return;
+      return false;
     }
     if (!manager_nodes["executor"]->change_state(
         lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
     {
-      return;
+      return false;
     }
     if (!manager_nodes["domain_expert"]->get_state()) {
-      return;
+      return false;
     }
     if (!manager_nodes["problem_expert"]->get_state()) {
-      return;
+      return false;
     }
     if (!manager_nodes["planner"]->get_state()) {
-      return;
+      return false;
     }
     if (!manager_nodes["executor"]->get_state()) {
-      return;
+      return false;
     }
   }
+  return true;
 }
 
 }  // namespace plansys2
