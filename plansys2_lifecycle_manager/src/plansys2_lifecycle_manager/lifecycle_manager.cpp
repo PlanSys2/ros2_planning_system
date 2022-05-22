@@ -121,7 +121,7 @@ LifecycleServiceClient::change_state(std::uint8_t transition, std::chrono::secon
 }
 
 bool
-startup_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes)
+startup_function(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes)
 {
   // configure domain_expert
   {

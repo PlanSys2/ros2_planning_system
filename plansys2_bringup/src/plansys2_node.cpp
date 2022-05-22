@@ -59,13 +59,17 @@ int main(int argc, char ** argv)
     exe.add_node(manager_node.second);
   }
 
-  std::shared_future<bool> script = std::async(
+  std::shared_future<bool> startup_future = std::async(
     std::launch::async,
-    std::bind(plansys2::startup_script, manager_nodes));
-  exe.spin_until_future_complete(script);
+    std::bind(plansys2::startup_function, manager_nodes));
+  exe.spin_until_future_complete(startup_future);
 
-  if (script.get()) {
+  if (startup_future.get()) {
     exe.spin();
+  } else {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("plansys2_bringup"),
+      "Failed to start plansys2!");
   }
 
   rclcpp::shutdown();
