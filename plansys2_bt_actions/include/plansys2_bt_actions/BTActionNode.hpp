@@ -100,7 +100,7 @@ public:
     return basic;
   }
 
-  static BT::PortsList providedPorts()
+  static virtual BT::PortsList providedPorts()
   {
     return providedBasicPorts({});
   }
