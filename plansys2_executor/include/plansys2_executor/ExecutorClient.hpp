@@ -63,7 +63,7 @@ private:
 
   bool goal_result_available_{false};
 
-  bool executing_plan_;
+  bool executing_plan_{false};
 
   void result_callback(const GoalHandleExecutePlan::WrappedResult & result);
   void feedback_callback(
