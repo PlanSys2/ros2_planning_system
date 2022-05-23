@@ -280,6 +280,10 @@ protected:
         on_feedback(feedback);
       };
 
+    RCLCPP_INFO(
+      node_->get_logger(),
+      "Sending goal to action server %s",
+      action_name_.c_str());
     auto future_goal_handle = action_client_->async_send_goal(goal_, send_goal_options);
 
     if (rclcpp::spin_until_future_complete(
