@@ -40,6 +40,17 @@ ExecutorClient::ExecutorClient()
   get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("executor/get_plan");
 }
 
+ExecutorClient::ExecutorClient(const std::string & node_name)
+{
+  node_ = rclcpp::Node::make_shared(node_name);
+
+  createActionClient();
+
+  get_ordered_sub_goals_client_ = node_->create_client<plansys2_msgs::srv::GetOrderedSubGoals>(
+    "executor/get_ordered_sub_goals");
+  get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("executor/get_plan");
+}
+
 void
 ExecutorClient::createActionClient()
 {
