@@ -66,13 +66,13 @@ int main(int argc, char ** argv)
 
   if (startup_future.get()) {
     exe.spin();
+    rclcpp::shutdown();
+    return 0;
   } else {
     RCLCPP_ERROR(
       rclcpp::get_logger("plansys2_bringup"),
       "Failed to start plansys2!");
+    rclcpp::shutdown();
+    return -1;
   }
-
-  rclcpp::shutdown();
-
-  return 0;
 }

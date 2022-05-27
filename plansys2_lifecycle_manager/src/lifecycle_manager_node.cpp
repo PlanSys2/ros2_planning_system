@@ -52,6 +52,8 @@ int main(int argc, char ** argv)
     RCLCPP_ERROR(
       rclcpp::get_logger("plansys2_lifecycle_manager"),
       "Failed to start plansys2!");
+    rclcpp::shutdown();
+    return -1;
   }
 
   rclcpp::shutdown();
