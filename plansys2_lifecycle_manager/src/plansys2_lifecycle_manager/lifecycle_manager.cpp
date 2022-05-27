@@ -122,8 +122,8 @@ LifecycleServiceClient::change_state(std::uint8_t transition, std::chrono::secon
 
 bool
 startup_function(
-    std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes,
-    std::chrono::seconds timeout)
+  std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes,
+  std::chrono::seconds timeout)
 {
   // configure domain_expert
   {
