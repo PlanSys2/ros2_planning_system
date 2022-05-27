@@ -121,12 +121,15 @@ LifecycleServiceClient::change_state(std::uint8_t transition, std::chrono::secon
 }
 
 bool
-startup_function(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes)
+startup_function(
+    std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes,
+    std::chrono::seconds timeout)
 {
   // configure domain_expert
   {
     if (!manager_nodes["domain_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE))
+        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
+        timeout))
     {
       return false;
     }
@@ -141,7 +144,8 @@ startup_function(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> 
   // configure problem_expert
   {
     if (!manager_nodes["problem_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE))
+        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
+        timeout))
     {
       return false;
     }
@@ -156,7 +160,8 @@ startup_function(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> 
   // configure planner
   {
     if (!manager_nodes["planner"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE))
+        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
+        timeout))
     {
       return false;
     }
@@ -171,7 +176,8 @@ startup_function(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> 
   // configure executor
   {
     if (!manager_nodes["executor"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE))
+        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
+        timeout))
     {
       return false;
     }
@@ -189,22 +195,26 @@ startup_function(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> 
       return false;
     }
     if (!manager_nodes["domain_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
+        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
+        timeout))
     {
       return false;
     }
     if (!manager_nodes["problem_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
+        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
+        timeout))
     {
       return false;
     }
     if (!manager_nodes["planner"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
+        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
+        timeout))
     {
       return false;
     }
     if (!manager_nodes["executor"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
+        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
+        timeout))
     {
       return false;
     }

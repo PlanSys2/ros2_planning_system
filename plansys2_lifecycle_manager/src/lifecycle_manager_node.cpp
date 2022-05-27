@@ -1,4 +1,4 @@
-// Copyright 2016 Open Source Robotics Foundation, Inc.
+
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ int main(int argc, char ** argv)
 
   std::shared_future<bool> startup_future = std::async(
     std::launch::async,
-    std::bind(plansys2::startup_function, manager_nodes));
+    std::bind(plansys2::startup_function, manager_nodes, std::chrono::seconds(5)));
   exe.spin_until_future_complete(startup_future);
 
   if (!startup_future.get()) {
