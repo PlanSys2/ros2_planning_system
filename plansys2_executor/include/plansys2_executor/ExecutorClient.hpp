@@ -39,7 +39,7 @@ public:
   using GoalHandleExecutePlan = rclcpp_action::ClientGoalHandle<ExecutePlan>;
 
   ExecutorClient();
-  explicit ExecutorClient(const std::string & node_name);  // I added this
+  explicit ExecutorClient(const std::string & node_name);
 
   bool start_plan_execution(const plansys2_msgs::msg::Plan & plan);
   bool execute_and_check_plan();
