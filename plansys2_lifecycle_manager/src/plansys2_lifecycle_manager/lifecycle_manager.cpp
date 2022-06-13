@@ -15,7 +15,6 @@
 #include <chrono>
 #include <memory>
 #include <string>
-#include <thread>
 #include <map>
 
 #include "lifecycle_msgs/msg/state.hpp"
@@ -121,15 +120,18 @@ LifecycleServiceClient::change_state(std::uint8_t transition, std::chrono::secon
   }
 }
 
-void
-startup_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes)
+bool
+startup_function(
+  std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes,
+  std::chrono::seconds timeout)
 {
   // configure domain_expert
   {
     if (!manager_nodes["domain_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE))
+        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
+        timeout))
     {
-      return;
+      return false;
     }
 
     while (manager_nodes["domain_expert"]->get_state() !=
@@ -142,9 +144,10 @@ startup_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & 
   // configure problem_expert
   {
     if (!manager_nodes["problem_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE))
+        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
+        timeout))
     {
-      return;
+      return false;
     }
 
     while (manager_nodes["problem_expert"]->get_state() !=
@@ -157,9 +160,10 @@ startup_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & 
   // configure planner
   {
     if (!manager_nodes["planner"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE))
+        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
+        timeout))
     {
-      return;
+      return false;
     }
 
     while (manager_nodes["planner"]->get_state() !=
@@ -172,9 +176,10 @@ startup_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & 
   // configure executor
   {
     if (!manager_nodes["executor"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE))
+        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
+        timeout))
     {
-      return;
+      return false;
     }
 
     while (manager_nodes["executor"]->get_state() !=
@@ -187,41 +192,46 @@ startup_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & 
   // activate
   {
     if (!rclcpp::ok()) {
-      return;
+      return false;
     }
     if (!manager_nodes["domain_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
+        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
+        timeout))
     {
-      return;
+      return false;
     }
     if (!manager_nodes["problem_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
+        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
+        timeout))
     {
-      return;
+      return false;
     }
     if (!manager_nodes["planner"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
+        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
+        timeout))
     {
-      return;
+      return false;
     }
     if (!manager_nodes["executor"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE))
+        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
+        timeout))
     {
-      return;
+      return false;
     }
     if (!manager_nodes["domain_expert"]->get_state()) {
-      return;
+      return false;
     }
     if (!manager_nodes["problem_expert"]->get_state()) {
-      return;
+      return false;
     }
     if (!manager_nodes["planner"]->get_state()) {
-      return;
+      return false;
     }
     if (!manager_nodes["executor"]->get_state()) {
-      return;
+      return false;
     }
   }
+  return true;
 }
 
 }  // namespace plansys2

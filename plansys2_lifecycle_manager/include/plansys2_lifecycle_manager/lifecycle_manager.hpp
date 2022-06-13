@@ -18,7 +18,6 @@
 #include <chrono>
 #include <memory>
 #include <string>
-#include <thread>
 #include <map>
 
 #include "lifecycle_msgs/msg/state.hpp"
@@ -69,8 +68,10 @@ private:
   std::string managed_node_;
 };
 
-void
-startup_script(std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes);
+bool
+startup_function(
+  std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes,
+  std::chrono::seconds timeout);
 
 }  // namespace plansys2
 

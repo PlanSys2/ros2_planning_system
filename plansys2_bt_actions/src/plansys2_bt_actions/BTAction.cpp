@@ -13,10 +13,14 @@
 // limitations under the License.
 
 #include <optional>
+#include <filesystem>
+#include <iomanip>
 #include <algorithm>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <memory>
+#include <chrono>
 
 #include "behaviortree_cpp_v3/utils/shared_library.h"
 #include "plansys2_bt_actions/BTAction.hpp"
@@ -32,6 +36,8 @@ BTAction::BTAction(
   declare_parameter<std::string>("bt_xml_file", "");
   declare_parameter<std::vector<std::string>>(
     "plugins", std::vector<std::string>({}));
+  declare_parameter<bool>("bt_file_logging", false);
+  declare_parameter<bool>("bt_minitrace_logging", false);
 #ifdef ZMQ_FOUND
   declare_parameter<bool>("enable_groot_monitoring", true);
   declare_parameter<int>("publisher_port", -1);
@@ -86,6 +92,34 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
     blackboard_->set(argname, get_arguments()[i]);
   }
 
+  if (get_parameter("bt_file_logging").as_bool() ||
+    get_parameter("bt_minitrace_logging").as_bool())
+  {
+    auto temp_path = std::filesystem::temp_directory_path();
+    std::filesystem::path node_name_path = get_name();
+    std::filesystem::create_directories(temp_path / node_name_path);
+
+    auto now_time_t =
+      std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::stringstream filename;
+    filename << "/tmp/" << get_name() << "/bt_trace_";
+    filename << std::put_time(std::localtime(&now_time_t), "%Y_%m_%d__%H_%M_%S");
+
+    if (get_parameter("bt_file_logging").as_bool()) {
+      std::string filename_extension = filename.str() + ".fbl";
+      RCLCPP_WARN_STREAM(get_logger(), filename.str());
+      bt_file_logger_ =
+        std::make_unique<BT::FileLogger>(tree_, filename_extension.c_str());
+    }
+
+    if (get_parameter("bt_minitrace_logging").as_bool()) {
+      std::string filename_extension = filename.str() + ".json";
+      RCLCPP_WARN_STREAM(get_logger(), filename.str());
+      bt_minitrace_logger_ =
+        std::make_unique<BT::MinitraceLogger>(tree_, filename_extension.c_str());
+    }
+  }
+
 #ifdef ZMQ_FOUND
   int publisher_port = get_parameter("publisher_port").as_int();
   int server_port = get_parameter("server_port").as_int();
@@ -130,18 +164,29 @@ void
 BTAction::do_work()
 {
   if (!finished_) {
-    auto result = tree_.rootNode()->executeTick();
+    BT::NodeStatus result;
+    try {
+      result = tree_.rootNode()->executeTick();
+    } catch (BT::LogicError e) {
+      RCLCPP_ERROR_STREAM(get_logger(), e.what());
+      finish(false, 0.0, "BTAction behavior tree threw a BT::LogicError");
+    } catch (BT::RuntimeError e) {
+      RCLCPP_ERROR_STREAM(get_logger(), e.what());
+      finish(false, 0.0, "BTAction behavior tree threw a BT::RuntimeError");
+    } catch (std::exception e) {
+      finish(false, 0.0, "BTAction behavior tree threw an unknown exception");
+    }
 
     switch (result) {
       case BT::NodeStatus::SUCCESS:
-        finish(true, 1.0, "Action completed");
+        finish(true, 1.0, "BTAction behavior tree returned SUCCESS");
         finished_ = true;
         break;
       case BT::NodeStatus::RUNNING:
-        send_feedback(0.0, "Action running");
+        send_feedback(0.0, "BTAction behavior tree returned RUNNING");
         break;
       case BT::NodeStatus::FAILURE:
-        finish(false, 1.0, "Action failed");
+        finish(false, 1.0, "BTAction behavior tree returned FAILURE");
         finished_ = true;
         break;
     }

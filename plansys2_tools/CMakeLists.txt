@@ -1,8 +1,6 @@
 project(plansys2_tools)
 cmake_minimum_required(VERSION 3.5)
 
-find_package(Threads REQUIRED)
-
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(plansys2_msgs REQUIRED)
@@ -13,7 +11,6 @@ find_package(plansys2_problem_expert REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_BUILD_TYPE DEBUG)
 
 set(dependencies
   rclcpp
