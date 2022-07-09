@@ -22,13 +22,12 @@
 #include <QMessageBox>
 #include <QPainter>
 #include <QCheckBox>
-
-#include <pluginlib/class_list_macros.hpp>
-
 #include <algorithm>
 #include <memory>
 #include <utility>
 #include <string>
+
+#include <pluginlib/class_list_macros.hpp>
 
 #include "rqt_plansys2_knowledge/RQTKnowledge.hpp"
 #include "rqt_plansys2_knowledge/KnowledgeTree.hpp"

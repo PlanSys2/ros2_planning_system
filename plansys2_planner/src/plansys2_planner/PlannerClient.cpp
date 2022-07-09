@@ -57,13 +57,15 @@ PlannerClient::getPlan(
     return {};
   }
 
-  if (future_result.get()->success) {
-    return future_result.get()->plan;
+  auto result = *future_result.get();
+
+  if (result.success) {
+    return result.plan;
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
       get_plan_client_->get_service_name() << ": " <<
-        future_result.get()->error_info);
+        result.error_info);
     return {};
   }
 }

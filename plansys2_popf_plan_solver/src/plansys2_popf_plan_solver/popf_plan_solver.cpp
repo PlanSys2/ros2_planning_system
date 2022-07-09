@@ -109,8 +109,8 @@ POPFPlanSolver::getPlan(
   }
 }
 
-std::string
-POPFPlanSolver::check_domain(
+bool
+POPFPlanSolver::is_valid_domain(
   const std::string & domain,
   const std::string & node_namespace)
 {
@@ -135,7 +135,7 @@ POPFPlanSolver::check_domain(
   std::string result((std::istreambuf_iterator<char>(plan_file)),
     std::istreambuf_iterator<char>());
 
-  return result;
+  return result.find("Solution Found") != result.npos;
 }
 
 }  // namespace plansys2

@@ -81,7 +81,9 @@ DomainExpertClient::getName()
     return ret;
   }
 
-  ret = future_result.get()->name;
+  auto result = *future_result.get();
+
+  ret = result.name;
 
   return ret;
 }
@@ -111,7 +113,9 @@ DomainExpertClient::getTypes()
     return ret;
   }
 
-  ret = future_result.get()->types;
+  auto result = *future_result.get();
+
+  ret = result.types;
 
   return ret;
 }
@@ -141,7 +145,9 @@ DomainExpertClient::getConstants(const std::string & type)
     return ret;
   }
 
-  ret = future_result.get()->constants;
+  auto result = *future_result.get();
+
+  ret = result.constants;
 
   return ret;
 }
@@ -171,8 +177,10 @@ DomainExpertClient::getPredicates()
     return ret;
   }
 
+  auto result = *future_result.get();
+
   ret = plansys2::convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(
-    future_result.get()->states);
+    result.states);
 
   return ret;
 }
@@ -202,13 +210,15 @@ DomainExpertClient::getPredicate(const std::string & predicate)
     return {};
   }
 
-  if (future_result.get()->success) {
-    return future_result.get()->node;
+  auto result = *future_result.get();
+
+  if (result.success) {
+    return result.node;
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
       get_predicate_details_client_->get_service_name() << ": " <<
-        future_result.get()->error_info);
+        result.error_info);
     return {};
   }
   return {};
@@ -239,8 +249,10 @@ DomainExpertClient::getFunctions()
     return ret;
   }
 
+  auto result = *future_result.get();
+
   ret = plansys2::convertVector<plansys2::Function, plansys2_msgs::msg::Node>(
-    future_result.get()->states);
+    result.states);
 
   return ret;
 }
@@ -270,13 +282,15 @@ DomainExpertClient::getFunction(const std::string & function)
     return {};
   }
 
-  if (future_result.get()->success) {
-    return future_result.get()->node;
+  auto result = *future_result.get();
+
+  if (result.success) {
+    return result.node;
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
       get_function_details_client_->get_service_name() << ": " <<
-        future_result.get()->error_info);
+        result.error_info);
     return {};
   }
   return {};
@@ -307,8 +321,10 @@ DomainExpertClient::getActions()
     return ret;
   }
 
-  for (size_t i = 0; i < future_result.get()->actions.size(); i++) {
-    ret.push_back(future_result.get()->actions[i]);
+  auto result = *future_result.get();
+
+  for (size_t i = 0; i < result.actions.size(); i++) {
+    ret.push_back(result.actions[i]);
   }
 
   return ret;
@@ -342,13 +358,16 @@ DomainExpertClient::getAction(
     return {};
   }
 
-  if (future_result.get()->success) {
-    return std::make_shared<plansys2_msgs::msg::Action>(future_result.get()->action);
+  auto result = *future_result.get();
+
+
+  if (result.success) {
+    return std::make_shared<plansys2_msgs::msg::Action>(result.action);
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
       get_action_details_client_->get_service_name() << ": " <<
-        future_result.get()->error_info);
+        result.error_info);
     return {};
   }
 }
@@ -378,8 +397,10 @@ DomainExpertClient::getDurativeActions()
     return ret;
   }
 
-  for (size_t i = 0; i < future_result.get()->actions.size(); i++) {
-    ret.push_back(future_result.get()->actions[i]);
+  auto result = *future_result.get();
+
+  for (size_t i = 0; i < result.actions.size(); i++) {
+    ret.push_back(result.actions[i]);
   }
 
   return ret;
@@ -413,14 +434,16 @@ DomainExpertClient::getDurativeAction(
     return nullptr;
   }
 
-  if (future_result.get()->success) {
+  auto result = *future_result.get();
+
+  if (result.success) {
     return std::make_shared<plansys2_msgs::msg::DurativeAction>(
-      future_result.get()->durative_action);
+      result.durative_action);
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
       get_durative_action_details_client_->get_service_name() << ": " <<
-        future_result.get()->error_info);
+        result.error_info);
     return nullptr;
   }
 }
@@ -450,7 +473,9 @@ DomainExpertClient::getDomain()
     return ret;
   }
 
-  ret = future_result.get()->domain;
+  auto result = *future_result.get();
+
+  ret = result.domain;
 
   return ret;
 }
