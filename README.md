@@ -37,7 +37,7 @@ Please, cite us if you use PlanSys2 in your reseach:
 We want to invite you to contribute to this Open Source project !!
 
 
-**Visit the [Web Page](http://intelligentroboticslab.gsyc.urjc.es/ros2_planning_system.github.io/) for tutorials, videos and more!!**
+**Visit the [Web Page](https://plansys2.github.io) for tutorials, videos and more!!**
 
 
 <img src="plansys2_docs/plansys2_logo.png" alt="drawing" width="200"/>
