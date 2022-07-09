@@ -66,6 +66,8 @@ LifecycleServiceClient::get_state(std::chrono::seconds time_out)
   // Let's wait until we have the answer from the node.
   // If the request times out, we return an unknown state.
   auto future_status = wait_for_result(future_result, time_out);
+  auto state = future_result.get();
+
   if (future_status != std::future_status::ready) {
     RCLCPP_ERROR(
       get_logger(), "Server time out while getting current state for node %s",
@@ -73,11 +75,11 @@ LifecycleServiceClient::get_state(std::chrono::seconds time_out)
     return lifecycle_msgs::msg::State::PRIMARY_STATE_UNKNOWN;
   }
   // We have an succesful answer. So let's print the current state.
-  if (future_result.get()) {
+  if (state != nullptr) {
     RCLCPP_INFO(
       get_logger(), "Node %s has current state %s.",
-      get_name(), future_result.get()->current_state.label.c_str());
-    return future_result.get()->current_state.id;
+      get_name(), state->current_state.label.c_str());
+    return state->current_state.id;
   } else {
     RCLCPP_ERROR(
       get_logger(), "Failed to get current state for node %s", managed_node_.c_str());
