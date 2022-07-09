@@ -90,9 +90,9 @@ TEST(popf_plan_solver, check_1_ok_domain)
   auto planner = std::make_shared<plansys2::POPFPlanSolver>();
   planner->configure(node, "POPF");
 
-  auto result = planner->check_domain(domain_str, "check_1_ok_domain");
+  bool result = planner->is_valid_domain(domain_str, "check_1_ok_domain");
 
-  ASSERT_TRUE(result.empty());
+  ASSERT_TRUE(result);
 }
 
 
@@ -108,12 +108,12 @@ TEST(popf_plan_solver, check_2_error_domain)
   auto planner = std::make_shared<plansys2::POPFPlanSolver>();
   planner->configure(node, "POPF");
 
-  auto result = planner->check_domain(domain_str, "check_2_error_domain");
+  bool result = planner->is_valid_domain(domain_str, "check_2_error_domain");
 
-  ASSERT_FALSE(result.empty());
+  ASSERT_FALSE(result);
 }
 
-/*
+
 TEST(popf_plan_solver, generate_plan_unsolvable)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver");
@@ -156,7 +156,7 @@ TEST(popf_plan_solver, generate_plan_error)
   auto plan = planner->getPlan(domain_str, problem_str);
 
   ASSERT_FALSE(plan);
-}*/
+}
 
 int main(int argc, char ** argv)
 {

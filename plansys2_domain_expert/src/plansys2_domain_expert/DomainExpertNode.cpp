@@ -116,9 +116,9 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   auto planner = std::make_shared<plansys2::POPFPlanSolver>();
   domain_expert_ = std::make_shared<DomainExpert>(domain_str);
 
-  std::string check = planner->check_domain(domain_expert_->getDomain(), get_namespace());
-  if (!check.empty()) {
-    RCLCPP_ERROR_STREAM(get_logger(), "PDDL syntax error: \n" << check);
+  bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
+  if (!check_valid) {
+    RCLCPP_ERROR_STREAM(get_logger(), "PDDL syntax error");
     return CallbackReturnT::FAILURE;
   }
 
@@ -129,10 +129,10 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
       std::istreambuf_iterator<char>());
     domain_expert_->extendDomain(domain_str);
 
-    std::string check = planner->check_domain(domain_expert_->getDomain(), get_namespace());
+    bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
 
-    if (!check.empty()) {
-      RCLCPP_ERROR_STREAM(get_logger(), "PDDL syntax error: \n" << check);
+    if (!check_valid) {
+      RCLCPP_ERROR_STREAM(get_logger(), "PDDL syntax error");
       return CallbackReturnT::FAILURE;
     }
   }
