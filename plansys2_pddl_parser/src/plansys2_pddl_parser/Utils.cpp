@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <regex>
+#include <limits>
 #include <iostream>
 #include <functional>
 #include "plansys2_pddl_parser/Utils.h"
