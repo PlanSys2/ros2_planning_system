@@ -251,13 +251,15 @@ std::vector<plansys2_msgs::msg::Tree> ExecutorClient::getOrderedSubGoals()
     return ret;
   }
 
-  if (future_result.get()->success) {
-    ret = future_result.get()->sub_goals;
+  auto result = *future_result.get();
+
+  if (result.success) {
+    ret = result.sub_goals;
   } else {
     RCLCPP_INFO_STREAM(
       node_->get_logger(),
       get_ordered_sub_goals_client_->get_service_name() << ": " <<
-        future_result.get()->error_info);
+        result.error_info);
   }
 
   return ret;
@@ -285,13 +287,15 @@ std::optional<plansys2_msgs::msg::Plan> ExecutorClient::getPlan()
     return {};
   }
 
-  if (future_result.get()->success) {
-    return future_result.get()->plan;
+  auto result = *future_result.get();
+
+  if (result.success) {
+    return result.plan;
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
       get_plan_client_->get_service_name() << ": " <<
-        future_result.get()->error_info);
+        result.error_info);
     return {};
   }
 }

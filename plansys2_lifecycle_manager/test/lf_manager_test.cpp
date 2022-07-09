@@ -52,7 +52,7 @@ TEST(lifecycle_manager, lf_client)
     lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
   ASSERT_EQ(client_node->get_state(1s), lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
 
-  /*ASSERT_FALSE(client_node->change_state(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE));
+  ASSERT_FALSE(client_node->change_state(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE));
 
   ASSERT_TRUE(client_node->change_state(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE));
   ASSERT_EQ(client_node->get_state(1s), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
@@ -62,7 +62,7 @@ TEST(lifecycle_manager, lf_client)
 
   ASSERT_TRUE(client_node->change_state(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE));
   ASSERT_EQ(client_node->get_state(1s), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
-*/
+
   finish = true;
   t.join();
 }
