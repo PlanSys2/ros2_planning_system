@@ -2,8 +2,8 @@ repositories:
   cascade_lifecycle:
     type: git
     url: https://github.com/fmrico/cascade_lifecycle.git
-    version: galactic-devel
+    version: humble-devel
   popf:
     type: git
     url: https://github.com/fmrico/popf.git
-    version: galactic-devel
+    version: humble-devel
