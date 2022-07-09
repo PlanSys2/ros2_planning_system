@@ -1,12 +1,12 @@
-name: master
+name: humble-devel
 
 on:
   pull_request:
     branches:
-      - master
+      - humble-devel
   push:
     branches:
-      - master
+      - humble-devel
       
 jobs:
   build-and-test:
