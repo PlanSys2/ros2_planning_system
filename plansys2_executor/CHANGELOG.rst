@@ -2,6 +2,89 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.8 (2022-05-04)
+------------------
+
+2.0.7 (2022-05-04)
+------------------
+
+2.0.6 (2022-05-03)
+------------------
+
+2.0.5 (2022-05-03)
+------------------
+
+2.0.4 (2022-05-03)
+------------------
+* Fix version
+* Merge pull request `#223 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/223>`_ from IntelligentRoboticsLabs/fix_threads_buildfarm
+  Fix threads buildfarm
+* Fix ROS2 Buildfarm error due to Threads
+* Merge pull request `#217 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/217>`_ from jjzapf/check-action-finished
+  Check action finished
+* check-action-finished: Putting leftover requirement check after state update in get_graph function.
+* check-action-finished: Use distinct names for temporary predicate/function variables inside of while loop.
+* check-action-finished: Reverting previous changes. Adding checks to WaitAction node to verify that action has finished.
+* check-action-finished: Fixing problem_expert.wait_overall_req_test in plansys2_executor/bt_node_test.cpp.
+* check-action-finished: Do not declare failure in check_overall_req_node if action has already finished.
+* Merge pull request `#209 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/209>`_ from sarcasticnature/master
+  Improvements on recent BtActionNode changes
+* Merge pull request `#216 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/216>`_ from jjzapf/action-graph-bug-fix
+  Plan-to-Action Graph Bug Fix
+* action-graph-bug-fix: Not applying at end effects when testing if actions can be run in parallel. Fixing bug in prune_backwards function.
+* Update unit tests to match changes
+* Remove extra do_work() call in on_activate()
+  do_work() may call the function finish(), which will fail to deactivate
+  the node if it is still in the on_activate callback.
+* Merge branch 'IntelligentRoboticsLabs:master' into master
+* Merge pull request `#208 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/208>`_ from xydesa/plan-dotgraph-bug
+  Plan dotgraph color bug
+* Merge branch 'IntelligentRoboticsLabs:master' into master
+* Removing unused variable.
+* More accurately getting the status of an action by including the action's start time in the index for coloring the dotgraph.
+* Contributors: Alexander Xydes, Francisco Martín Rico, Jake Keller, Josh Zapf
+
+2.0.3 (2022-04-03)
+------------------
+
+2.0.2 (2022-04-03)
+------------------
+* Use apply and check method to create action graph
+* plan-to-action-graph-mod: Using apply and check method to search for causal links.
+* generalize-is-parallelizable: Cleaning up comments a bit.
+* generalize-is-parallelizable: Checking for contradictions at any point in time in the is_parallelizable function.
+* generalize-is-parallelizable: Improving human readability.
+* generalize-is-parallelizable: Applying ament uncrustify.
+* generalize-is-parallelizable: Generalizing the is_parallelizable function in BTBuilder so that the functions will also be checked.
+* action-graph-test: Adding unit test to verify action graph generation.
+* action-graph-fix: Using std::list to create action graph rather than …
+* action-graph-fix: Shortening line lengths to <100 characters. Applying ament uncrustify.
+* action-graph-fix: Checking for existing link before adding one when creating action graph.
+* Check all reqs and effect for roots
+* action-graph-fix: Setting executor_test TIMEOUT value to 300.
+* Add options to run command in plansys2 Terminal
+* Change runtime failures to BT::NodeStatus::FAILURE, add logging info to ExecutorClient
+* Add options to run command
+* action-graph-fix: Using std::list to create action graph rather than std::set. A std::set does not maintain insertion order, whereas a std::list does. Maintaining insertion order guarantees that graph traversal follows the same path as graph creation.
+* action-graph-test: Adding unit test to verify action graph generation.
+* Add Status recency in performers
+* Remove unnecessary node pointer
+* Merge branch 'IntelligentRoboticsLabs:master' into master
+* Logger tool - performers and plan
+* Logger tool - knowledge, info and action hub
+* Elevate failure logging from INFO to WARN/ERROR
+* Add action failure details to ExecutorClient
+* Contributors: Francisco Martín Rico, Jake Keller, Josh Zapf
+
+2.0.1 (2022-02-03)
+------------------
+* Update deprecated APIs in launchers and parameters
+* Update launcher param names
+* Improve debug info
+* remove-invalid-goals: Removing invalid goals when instances are removed. Keep track of update time in problem expert.
+* Merge galactic-devel
+* Contributors: Francisco Martín Rico, Josh Zapf
+
 2.0.0 (2021-07-04)
 ------------------
 * Fix default param

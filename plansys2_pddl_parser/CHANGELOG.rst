@@ -2,6 +2,55 @@
 Changelog for package plansys2_pddl_parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.8 (2022-05-04)
+------------------
+* Add missing dependency
+* Contributors: Francisco Martín Rico
+
+* Add missing dependency
+* Contributors: Francisco Martín Rico
+
+2.0.7 (2022-05-04)
+------------------
+* Add missing dependency
+* Contributors: Francisco Martín Rico
+
+2.0.6 (2022-05-03)
+------------------
+* Fix deps
+* Contributors: Francisco Martín Rico
+
+2.0.5 (2022-05-03)
+------------------
+* Fix ROS2 Buildfarm error due to Threads
+* Contributors: Francisco Martín Rico, Jake Keller
+
+2.0.4 (2022-05-03)
+------------------
+* Fix version
+* Fix ROS2 Buildfarm error due to Threads
+* Merge branch 'IntelligentRoboticsLabs:master' into master
+* Contributors: Francisco Martín Rico, Jake Keller
+
+2.0.3 (2022-04-03)
+------------------
+
+2.0.2 (2022-04-03)
+------------------
+* Full supportr for (= _ _) PDDL constraints, added possibility to refer to constants, added initial test cases
+* fix-getSubtrees: Removing empty line.
+* fix-getSubtrees: Fixing bug in getSubtrees function in Utils.cpp.
+* set_decimal_precision: Use std::setprecision to avoid incompatible scientific notation.
+* [pddl_parser] ground constants also when no replace values
+* [pddl_parser] account for pddl-constants while replacing ground params
+* Contributors: Francisco Martín Rico, Jake Keller, Josh Zapf, Marco Roveri, Mostafa Gomaa
+
+2.0.1 (2022-02-03)
+------------------
+* remove-invalid-goals: Removing invalid goals when instances are removed. Keep track of update time in problem expert.
+* Merge galactic-devel
+* Contributors: Francisco Martín Rico, Josh Zapf
+
 2.0.0 (2021-07-04)
 ------------------
 

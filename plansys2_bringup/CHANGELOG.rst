@@ -2,6 +2,37 @@
 Changelog for package plansys2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.8 (2022-05-04)
+------------------
+
+2.0.7 (2022-05-04)
+------------------
+
+2.0.6 (2022-05-03)
+------------------
+
+2.0.5 (2022-05-03)
+------------------
+
+2.0.4 (2022-05-03)
+------------------
+* Fix version
+* Fix ROS2 Buildfarm error due to Threads
+* Contributors: Francisco Martín Rico
+
+2.0.3 (2022-04-03)
+------------------
+
+2.0.2 (2022-04-03)
+------------------
+
+2.0.1 (2022-02-03)
+------------------
+* Update deprecated APIs in launchers and parameters
+* Update launcher param names
+* Merge galactic-devel
+* Contributors: Francisco Martín Rico
+
 2.0.0 (2021-07-04)
 ------------------
 * Compile for ROS2 Galactic

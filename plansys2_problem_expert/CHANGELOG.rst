@@ -2,6 +2,51 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.8 (2022-05-04)
+------------------
+
+2.0.7 (2022-05-04)
+------------------
+
+2.0.6 (2022-05-03)
+------------------
+
+2.0.5 (2022-05-03)
+------------------
+* Fix ROS2 Buildfarm error due to Threads
+* Contributors: Francisco Martín Rico, Jake Keller
+
+2.0.4 (2022-05-03)
+------------------
+* Fix version
+* Fix ROS2 Buildfarm error due to Threads
+* Merge branch 'IntelligentRoboticsLabs:master' into master
+* Contributors: Francisco Martín Rico, Jake Keller
+
+2.0.3 (2022-04-03)
+------------------
+* Fix conflicts
+* Qt5 dependencies
+* Contributors: Francisco Martín Rico
+
+2.0.2 (2022-04-03)
+------------------
+* Full supportr for (= _ _) PDDL constraints, added possibility to refer to constants, added initial test cases
+* set_decimal_precision: Use std::setprecision to avoid incompatible scientific notation.
+* [problem_expert] clearGoal on clearing knowledge
+* [problem_expert] test constants parsing as part of problem
+* [problem_expert] add constants as instances while parsing problem.pddl
+* Contributors: Francisco Martín Rico, Jake Keller, Josh Zapf, Marco Roveri, Mostafa Gomaa
+
+2.0.1 (2022-02-03)
+------------------
+* Update deprecated APIs in launchers and parameters
+* get-domain-name: Added service for retrieving domain name. Concatenating domain names when using multiple domains.
+* Update launcher param names
+* remove-invalid-goals: Removing invalid goals when instances are removed. Keep track of update time in problem expert.
+* Merge galactic-devel
+* Contributors: Francisco Martín Rico, Josh Zapf
+
 2.0.0 (2021-07-04)
 ------------------
 * Compile for ROS2 Galactic

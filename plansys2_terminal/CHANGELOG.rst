@@ -2,6 +2,52 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.8 (2022-05-04)
+------------------
+
+2.0.7 (2022-05-04)
+------------------
+
+2.0.6 (2022-05-03)
+------------------
+
+2.0.5 (2022-05-03)
+------------------
+* Fix ROS2 Buildfarm error due to Threads
+* Contributors: Francisco Martín Rico, Jake Keller, Marco Roveri
+
+2.0.4 (2022-05-03)
+------------------
+* Fix version
+* Fix ROS2 Buildfarm error due to Threads
+* Merge branch 'IntelligentRoboticsLabs:master' into master
+* Merge pull request `#213 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/213>`_ from roveri-marco/fix_issue_predicate_no_args_in_terminal
+  Fix for issue `#212 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/212>`_ - predicate with no args
+* Fix for issue `#212 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/212>`_ - predicate with no args
+* Merge branch 'IntelligentRoboticsLabs:master' into master
+* Contributors: Francisco Martín Rico, Jake Keller, Marco Roveri
+
+2.0.3 (2022-04-03)
+------------------
+
+2.0.2 (2022-04-03)
+------------------
+* Made latest modifications reentrant without the use of global variables
+* Renamed planfrom to plan-file, added help for help
+* Added tests for source and run planfrom, cleaned code to have all the test to pass
+* Fixed recursive load, added command run planfrom to read a plan from file and execute it
+* Initial preliminary support for help and load new commands
+* Fix run entire plan
+* Add options to run command
+* Add action failure details to ExecutorClient
+* Contributors: Francisco Martín Rico, Jake Keller, Josh Zapf, Marco Roveri
+
+2.0.1 (2022-02-03)
+------------------
+* Translate error message to English
+* Merge galactic-devel
+* Contributors: Francisco Martín Rico, Ricardo Marques
+
 2.0.0 (2021-07-04)
 ------------------
 * Fix compile issues for galactic

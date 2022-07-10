@@ -2,6 +2,48 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.8 (2022-05-04)
+------------------
+
+2.0.7 (2022-05-04)
+------------------
+
+2.0.6 (2022-05-03)
+------------------
+
+2.0.5 (2022-05-03)
+------------------
+* Fix ROS2 Buildfarm error due to Threads
+* Contributors: Francisco Martín Rico
+
+2.0.4 (2022-05-03)
+------------------
+* Fix version
+* Fix ROS2 Buildfarm error due to Threads
+* Contributors: Francisco Martín Rico
+
+2.0.3 (2022-04-03)
+------------------
+
+2.0.2 (2022-04-03)
+------------------
+* Merge pull request `#139 <https://github.com/IntelligentRoboticsLabs/ros2_planning_system/issues/139>`_ from MostafaGomaa/constants_params_handling
+* [problem_expert] clearGoal on clearing knowledge
+* [domain_expert] GetDomainConstants service and tests
+* [domain_expert] test domain_reader constants
+* [domain_expert] adapt tests, add constants to existing domain_processed
+* [domain_expert] DomainReader, Extract "(:constants )" string from domain_str
+* Contributors: Francisco Martín Rico, Jake Keller, Mostafa Gomaa
+
+2.0.1 (2022-02-03)
+------------------
+* Update deprecated APIs in launchers and parameters
+* get-domain-name: Adding unit test for GetDomainName service.
+* get-domain-name: Added service for retrieving domain name. Concatenating domain names when using multiple domains.
+* Update launcher param names
+* Merge galactic-devel
+* Contributors: Francisco Martín Rico, Josh Zapf
+
 2.0.0 (2021-07-04)
 ------------------
 * Compile for ROS2 Galactic
