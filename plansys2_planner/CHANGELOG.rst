@@ -2,6 +2,12 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Humble Upgrade
+* Fix possible bug https://github.com/ros2/rclcpp/issues/1968
+* Contributors: Francisco Martín Rico
+
 2.0.8 (2022-05-04)
 ------------------
 

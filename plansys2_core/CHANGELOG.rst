@@ -2,6 +2,9 @@
 Changelog for package plansys2_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.0.8 (2022-05-04)
 ------------------
 * Add missing dependency

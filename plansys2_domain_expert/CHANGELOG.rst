@@ -2,6 +2,13 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Humble Upgrade
+* Fix possible bug https://github.com/ros2/rclcpp/issues/1968
+* Update popf checker interface
+* Contributors: Francisco Martín Rico
+
 2.0.8 (2022-05-04)
 ------------------
 
