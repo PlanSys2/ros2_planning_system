@@ -2,8 +2,8 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.9 (2022-07-10)
+------------------
 * Add BT logging, Tree execution try/catch, and README
 * Add try/catch to BT execution in BTAction
 * log INFO in BtActionNode when sending action goal

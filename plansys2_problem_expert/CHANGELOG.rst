@@ -2,8 +2,8 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.9 (2022-07-10)
+------------------
 * Humble Upgrade
 * Fix possible bug https://github.com/ros2/rclcpp/issues/1968
 * Contributors: Francisco Martín Rico

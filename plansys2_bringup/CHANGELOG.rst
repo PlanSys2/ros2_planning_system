@@ -2,8 +2,8 @@
 Changelog for package plansys2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.9 (2022-07-10)
+------------------
 * Expose lifecyclemanager timeout as a parameter, other misc fixes/features
 * Change bringup node to return an error on failure
 * Add timeout to startup_function
