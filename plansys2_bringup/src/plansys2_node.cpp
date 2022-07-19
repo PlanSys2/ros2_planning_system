@@ -64,15 +64,15 @@ int main(int argc, char ** argv)
     std::bind(plansys2::startup_function, manager_nodes, std::chrono::seconds(5)));
   exe.spin_until_future_complete(startup_future);
 
-  if (startup_future.get()) {
-    exe.spin();
-    rclcpp::shutdown();
-    return 0;
-  } else {
+  if (!startup_future.get()) {
     RCLCPP_ERROR(
       rclcpp::get_logger("plansys2_bringup"),
       "Failed to start plansys2!");
     rclcpp::shutdown();
     return -1;
   }
+
+  exe.spin();
+  rclcpp::shutdown();
+  return 0;
 }
