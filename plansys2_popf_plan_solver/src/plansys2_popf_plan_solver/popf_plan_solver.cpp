@@ -150,8 +150,9 @@ POPFPlanSolver::is_valid_domain(
 
   std::string result((std::istreambuf_iterator<char>(plan_file)),
     std::istreambuf_iterator<char>());
+  std::transform(result.begin(), result.end(), result.begin(), ::tolower);//result output plan to lower case
 
-  return result.find("Solution Found") != result.npos;
+  return result.find("error") == result.npos;//no "error" string in output from the planner -> domain valid
 }
 
 }  // namespace plansys2
