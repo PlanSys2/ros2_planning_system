@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
+#include <algorithm>
 
 #include "plansys2_msgs/msg/plan_item.hpp"
 #include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
@@ -150,9 +151,11 @@ POPFPlanSolver::is_valid_domain(
 
   std::string result((std::istreambuf_iterator<char>(plan_file)),
     std::istreambuf_iterator<char>());
-  std::transform(result.begin(), result.end(), result.begin(), ::tolower);//result output plan to lower case
+  // result output plan to lower case
+  std::transform(result.begin(), result.end(), result.begin(), ::tolower);
 
-  return result.find("error") == result.npos;//no "error" string in output from the planner -> domain valid
+  // no "error" string in output from the planner -> domain valid
+  return result.find("error") == result.npos;
 }
 
 }  // namespace plansys2
