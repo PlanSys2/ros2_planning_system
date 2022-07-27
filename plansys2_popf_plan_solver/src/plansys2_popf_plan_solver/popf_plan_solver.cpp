@@ -151,7 +151,7 @@ POPFPlanSolver::is_valid_domain(
   std::string result((std::istreambuf_iterator<char>(plan_file)),
     std::istreambuf_iterator<char>());
 
-  return result.find("Solution Found") != result.npos;
+  return result.empty();
 }
 
 }  // namespace plansys2
