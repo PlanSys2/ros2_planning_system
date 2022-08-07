@@ -120,6 +120,7 @@ public:
   virtual void on_feedback(
     const std::shared_ptr<const typename ActionT::Feedback> feedback)
   {
+    (void)feedback;
   }
 
   // Called upon successful completion of the action. A derived class can override this
