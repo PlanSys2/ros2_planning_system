@@ -39,6 +39,7 @@ public:
   using GoalHandleExecutePlan = rclcpp_action::ClientGoalHandle<ExecutePlan>;
 
   ExecutorClient();
+  explicit ExecutorClient(const std::string & node_name);
 
   bool start_plan_execution(const plansys2_msgs::msg::Plan & plan);
   bool execute_and_check_plan();
@@ -63,7 +64,7 @@ private:
 
   bool goal_result_available_{false};
 
-  bool executing_plan_;
+  bool executing_plan_{false};
 
   void result_callback(const GoalHandleExecutePlan::WrappedResult & result);
   void feedback_callback(

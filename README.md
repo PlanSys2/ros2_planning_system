@@ -14,6 +14,10 @@ Status](https://github.com/IntelligentRoboticsLabs/ros2_planning_system/workflow
 Status](https://github.com/IntelligentRoboticsLabs/ros2_planning_system/workflows/galactic-devel/badge.svg)](https://github.com/IntelligentRoboticsLabs/ros2_planning_system)
 [![codecov](https://codecov.io/gh/IntelligentRoboticsLabs/ros2_planning_system/galactic-devel/graph/badge.svg)](https://codecov.io/gh/IntelligentRoboticsLabs/ros2_planning_system)
 
+[![GitHub Action
+Status](https://github.com/IntelligentRoboticsLabs/ros2_planning_system/workflows/humble-devel/badge.svg)](https://github.com/IntelligentRoboticsLabs/ros2_planning_system)
+[![codecov](https://codecov.io/gh/IntelligentRoboticsLabs/ros2_planning_system/humble-devel/graph/badge.svg)](https://codecov.io/gh/IntelligentRoboticsLabs/ros2_planning_system)
+
 
 ROS2 Planning System (**plansys2** in short) is a project whose objective is to provide Robotics developers with a reliable, simple, and efficient PDDL-based planning system. It is implemented in ROS2, applying the latest concepts developed in this currently de-facto standard in Robotics.
 
@@ -37,7 +41,7 @@ Please, cite us if you use PlanSys2 in your reseach:
 We want to invite you to contribute to this Open Source project !!
 
 
-**Visit the [Web Page](http://intelligentroboticslab.gsyc.urjc.es/ros2_planning_system.github.io/) for tutorials, videos and more!!**
+**Visit the [Web Page](https://plansys2.github.io) for tutorials, videos and more!!**
 
 
 <img src="plansys2_docs/plansys2_logo.png" alt="drawing" width="200"/>

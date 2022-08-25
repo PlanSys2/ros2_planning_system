@@ -67,7 +67,7 @@ TEST(lifecycle_manager, lf_client)
   t.join();
 }
 
-TEST(lifecycle_manager, lf_script)
+TEST(lifecycle_manager, lf_startup)
 {
   auto de_node = rclcpp_lifecycle::LifecycleNode::make_shared("domain_expert");
   auto pe_node = rclcpp_lifecycle::LifecycleNode::make_shared("problem_expert");
@@ -116,11 +116,11 @@ TEST(lifecycle_manager, lf_script)
       while (!finish) {exe.spin_some();}
     });
 
-  std::shared_future<void> script = std::async(
+  std::shared_future<bool> startup_future = std::async(
     std::launch::async,
-    std::bind(plansys2::startup_script, manager_nodes));
+    std::bind(plansys2::startup_function, manager_nodes, std::chrono::seconds(3)));
 
-  script.wait();
+  startup_future.wait();
 
   ASSERT_EQ(
     de_node->get_current_state().id(),
