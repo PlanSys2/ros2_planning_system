@@ -641,20 +641,8 @@ ProblemExpert::getProblem()
     problem.addInit(function.name, function.value, v);
   }
 
-  std::vector<plansys2_msgs::msg::Node> predicates;
-  parser::pddl::getPredicates(predicates, goal_);
-
-  for (auto predicate : predicates) {
-    StringVec v;
-
-    for (size_t i = 0; i < predicate.parameters.size(); i++) {
-      v.push_back(predicate.parameters[i].name);
-    }
-
-    std::transform(predicate.name.begin(), predicate.name.end(), predicate.name.begin(), ::tolower);
-
-    problem.addGoal(predicate.name, v);
-  }
+  const std::string gs = parser::pddl::toString(goal_);
+  problem.addGoal(gs);
 
   std::ostringstream stream;
   stream << problem;
@@ -759,19 +747,8 @@ ProblemExpert::addProblem(const std::string & problem_str)
     }
   }
 
-  plansys2_msgs::msg::Node node;
-  node.node_type = plansys2_msgs::msg::Node::AND;
-  node.node_id = 0;
-  node.negate = false;
-
   plansys2_msgs::msg::Tree goal;
-  goal.nodes.push_back(node);
-  for (auto ground : problem.goal) {
-    auto goal_node = ground->getTree(goal, domain);
-    std::cout << "Adding goal node: " <<
-      parser::pddl::toString(goal, goal_node->node_id) << std::endl;
-    goal.nodes[0].children.push_back(goal_node->node_id);
-  }
+  auto node = problem.goal->getTree(goal, domain);
   std::cout << "Adding Goal: " << parser::pddl::toString(goal) << std::endl;
   setGoal(goal);
 
