@@ -52,6 +52,9 @@
 #include "lifecycle_msgs/msg/state.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 
+#include "pluginlib/class_loader.hpp"
+#include "pluginlib/class_list_macros.hpp"
+
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -415,8 +418,18 @@ TEST(executor, action_executor)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  plansys2::BTBuilder exec_tree(test_node);
-  auto tree_str = exec_tree.get_tree(plan.value());
+
+  std::shared_ptr<plansys2::BTBuilder> bt_builder;
+  pluginlib::ClassLoader<plansys2::BTBuilder> bt_builder_loader("plansys2_executor",
+    "plansys2::BTBuilder");
+  try {
+    bt_builder = bt_builder_loader.createSharedInstance("plansys2::SimpleBTBuilder");
+  } catch (pluginlib::PluginlibException & ex) {
+    std::cerr << "pluginlib error: " << std::string(ex.what()) << std::endl;
+  }
+
+  bt_builder->initialize();
+  auto tree_str = bt_builder->get_tree(plan.value());
 
   finish = true;
   t.join();
@@ -1565,6 +1578,7 @@ TEST(executor, action_timeout)
   executor_node->set_parameter(
     {"default_action_bt_xml_filename",
       pkgpath + "/test_behavior_trees/test_action_timeout_bt.xml"});
+  executor_node->set_parameter({"bt_builder_plugin", "SimpleBTBuilder"});
   executor_node->set_parameter({"action_timeouts.actions", std::vector<std::string>({"move"})});
   // have to declare because the actions vector above was not available at node creation
   executor_node->declare_parameter<double>(

@@ -24,6 +24,7 @@
   <depend>plansys2_domain_expert</depend>
   <depend>plansys2_problem_expert</depend>
   <depend>plansys2_planner</depend>
+  <depend>pluginlib</depend>
   <depend>behaviortree_cpp_v3</depend>
   <depend>std_msgs</depend>
   <depend>libzmq3-dev</depend>
@@ -36,5 +37,6 @@
 
   <export>
     <build_type>ament_cmake</build_type>
+    <plansys2_executor plugin="${prefix}/plugins.xml" />
   </export>
 </package>

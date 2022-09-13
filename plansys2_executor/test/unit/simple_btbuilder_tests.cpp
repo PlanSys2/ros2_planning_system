@@ -27,11 +27,11 @@
 
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
+#include "plansys2_executor/bt_builder_plugins/simple_bt_builder.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_planner/PlannerNode.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
-#include "plansys2_executor/BTBuilder.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
 
 #include "plansys2_executor/ActionExecutor.hpp"
@@ -55,20 +55,20 @@
 
 #include "gtest/gtest.h"
 
-class BTBuilderTest : public plansys2::BTBuilder
+class SimpleBTBuilderTest : public plansys2::SimpleBTBuilder
 {
 public:
-  explicit BTBuilderTest(rclcpp::Node::SharedPtr node)
-  : BTBuilder(node) {}
+  SimpleBTBuilderTest()
+  : SimpleBTBuilder() {}
 
   std::string get_tree(const plansys2_msgs::msg::Plan & current_plan)
   {
-    return BTBuilder::get_tree(current_plan);
+    return SimpleBTBuilder::get_tree(current_plan);
   }
 
   std::vector<plansys2::ActionStamped> get_plan_actions(const plansys2_msgs::msg::Plan & plan)
   {
-    return BTBuilder::get_plan_actions(plan);
+    return SimpleBTBuilder::get_plan_actions(plan);
   }
 
   bool is_action_executable(
@@ -76,12 +76,12 @@ public:
     std::vector<plansys2::Predicate> & predicates,
     std::vector<plansys2::Function> & functions) const
   {
-    return BTBuilder::is_action_executable(action, predicates, functions);
+    return SimpleBTBuilder::is_action_executable(action, predicates, functions);
   }
 
   plansys2::Graph::Ptr get_graph(const plansys2_msgs::msg::Plan & current_plan)
   {
-    return BTBuilder::get_graph(current_plan);
+    return SimpleBTBuilder::get_graph(current_plan);
   }
 
   std::list<plansys2::GraphNode::Ptr> get_roots(
@@ -90,7 +90,7 @@ public:
     std::vector<plansys2::Function> & functions,
     int & node_counter)
   {
-    return BTBuilder::get_roots(action_sequence, predicates, functions, node_counter);
+    return SimpleBTBuilder::get_roots(action_sequence, predicates, functions, node_counter);
   }
 
   plansys2::GraphNode::Ptr get_node_satisfy(
@@ -98,7 +98,7 @@ public:
     const plansys2::Graph::Ptr & graph,
     const plansys2::GraphNode::Ptr & current)
   {
-    return BTBuilder::get_node_satisfy(requirement, graph, current);
+    return SimpleBTBuilder::get_node_satisfy(requirement, graph, current);
   }
 
   plansys2::GraphNode::Ptr get_node_satisfy(
@@ -106,24 +106,24 @@ public:
     const plansys2::GraphNode::Ptr & node,
     const plansys2::GraphNode::Ptr & current)
   {
-    return BTBuilder::get_node_satisfy(requirement, node, current);
+    return SimpleBTBuilder::get_node_satisfy(requirement, node, current);
   }
 
 
   void print_graph(const plansys2::Graph::Ptr & graph) const
   {
-    BTBuilder::print_graph(graph);
+    SimpleBTBuilder::print_graph(graph);
   }
 
   void print_graph_csv(const plansys2::Graph::Ptr & graph) const
   {
-    BTBuilder::print_graph_csv(graph);
+    SimpleBTBuilder::print_graph_csv(graph);
   }
 
   std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> get_graph_tabular(
     const plansys2::Graph::Ptr & graph) const
   {
-    return BTBuilder::get_graph_tabular(graph);
+    return SimpleBTBuilder::get_graph_tabular(graph);
   }
 
   void remove_existing_requirements(
@@ -131,11 +131,11 @@ public:
     std::vector<plansys2::Predicate> & predicates,
     std::vector<plansys2::Function> & functions) const
   {
-    BTBuilder::remove_existing_requirements(requirements, predicates, functions);
+    SimpleBTBuilder::remove_existing_requirements(requirements, predicates, functions);
   }
 };
 
-TEST(btbuilder_tests, test_plan_1)
+TEST(simple_btbuilder_tests, test_plan_1)
 {
   auto test_node = rclcpp::Node::make_shared("test_plan_1");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
@@ -146,7 +146,7 @@ TEST(btbuilder_tests, test_plan_1)
   auto planner_client = std::make_shared<plansys2::PlannerClient>();
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
-  auto btbuilder = std::make_shared<BTBuilderTest>(test_node);
+  auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -374,7 +374,7 @@ TEST(btbuilder_tests, test_plan_1)
 }
 
 
-TEST(btbuilder_tests, test_plan_2)
+TEST(simple_btbuilder_tests, test_plan_2)
 {
   auto test_node = rclcpp::Node::make_shared("test_plan_2");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
@@ -385,7 +385,7 @@ TEST(btbuilder_tests, test_plan_2)
   auto planner_client = std::make_shared<plansys2::PlannerClient>();
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
-  auto btbuilder = std::make_shared<BTBuilderTest>(test_node);
+  auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -580,7 +580,7 @@ TEST(btbuilder_tests, test_plan_2)
   t.join();
 }
 
-TEST(btbuilder_tests, test_plan_3)
+TEST(simple_btbuilder_tests, test_plan_3)
 {
   auto test_node = rclcpp::Node::make_shared("test_plan_3");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
@@ -591,7 +591,7 @@ TEST(btbuilder_tests, test_plan_3)
   auto planner_client = std::make_shared<plansys2::PlannerClient>();
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
-  auto btbuilder = std::make_shared<BTBuilderTest>(test_node);
+  auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -671,7 +671,7 @@ TEST(btbuilder_tests, test_plan_3)
   t.join();
 }
 
-TEST(btbuilder_tests, test_plan_4)
+TEST(simple_btbuilder_tests, test_plan_4)
 {
   auto test_node = rclcpp::Node::make_shared("test_plan_4");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
@@ -682,7 +682,7 @@ TEST(btbuilder_tests, test_plan_4)
   auto planner_client = std::make_shared<plansys2::PlannerClient>();
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
-  auto btbuilder = std::make_shared<BTBuilderTest>(test_node);
+  auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -788,7 +788,7 @@ TEST(btbuilder_tests, test_plan_4)
   t.join();
 }
 
-TEST(btbuilder_tests, test_plan_5)
+TEST(simple_btbuilder_tests, test_plan_5)
 {
   auto test_node = rclcpp::Node::make_shared("test_plan_5");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
@@ -799,7 +799,7 @@ TEST(btbuilder_tests, test_plan_5)
   auto planner_client = std::make_shared<plansys2::PlannerClient>();
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
-  auto btbuilder = std::make_shared<BTBuilderTest>(test_node);
+  auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
@@ -900,7 +900,7 @@ TEST(btbuilder_tests, test_plan_5)
   t.join();
 }
 
-TEST(btbuilder_tests, test_plan_6)
+TEST(simple_btbuilder_tests, test_plan_6)
 {
   auto test_node = rclcpp::Node::make_shared("test_plan_6");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
@@ -911,7 +911,7 @@ TEST(btbuilder_tests, test_plan_6)
   auto planner_client = std::make_shared<plansys2::PlannerClient>();
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
-  auto btbuilder = std::make_shared<BTBuilderTest>(test_node);
+  auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 

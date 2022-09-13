@@ -46,6 +46,7 @@
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_action_node.hpp"
+#include "plansys2_executor/behavior_tree/check_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
@@ -60,11 +61,16 @@ using ExecutePlan = plansys2_msgs::action::ExecutePlan;
 using namespace std::chrono_literals;
 
 ExecutorNode::ExecutorNode()
-: rclcpp_lifecycle::LifecycleNode("executor")
+: rclcpp_lifecycle::LifecycleNode("executor"),
+  bt_builder_loader_("plansys2_executor", "plansys2::BTBuilder")
 {
   using namespace std::placeholders;
 
   this->declare_parameter<std::string>("default_action_bt_xml_filename", "");
+  this->declare_parameter<std::string>("default_start_action_bt_xml_filename", "");
+  this->declare_parameter<std::string>("default_end_action_bt_xml_filename", "");
+  this->declare_parameter<std::string>("bt_builder_plugin", "");
+  this->declare_parameter<int>("action_time_precision", 3);
   this->declare_parameter<bool>("enable_dotgraph_legend", true);
   this->declare_parameter<bool>("print_graph", false);
   this->declare_parameter("action_timeouts.actions", std::vector<std::string>{});
@@ -125,14 +131,50 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
       "/behavior_trees/plansys2_action_bt.xml";
   }
 
-  std::ifstream ifs(default_action_bt_xml_filename);
-  if (!ifs) {
+  std::ifstream action_bt_ifs(default_action_bt_xml_filename);
+  if (!action_bt_ifs) {
     RCLCPP_ERROR_STREAM(get_logger(), "Error openning [" << default_action_bt_xml_filename << "]");
     return CallbackReturnT::FAILURE;
   }
 
   action_bt_xml_.assign(
-    std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+    std::istreambuf_iterator<char>(action_bt_ifs), std::istreambuf_iterator<char>());
+
+  auto default_start_action_bt_xml_filename =
+    this->get_parameter("default_start_action_bt_xml_filename").as_string();
+  if (default_start_action_bt_xml_filename.empty()) {
+    default_start_action_bt_xml_filename =
+      ament_index_cpp::get_package_share_directory("plansys2_executor") +
+      "/behavior_trees/plansys2_start_action_bt.xml";
+  }
+
+  std::ifstream start_action_bt_ifs(default_start_action_bt_xml_filename);
+  if (!start_action_bt_ifs) {
+    RCLCPP_ERROR_STREAM(
+      get_logger(), "Error openning [" << default_start_action_bt_xml_filename << "]");
+    return CallbackReturnT::FAILURE;
+  }
+
+  start_action_bt_xml_.assign(
+    std::istreambuf_iterator<char>(start_action_bt_ifs), std::istreambuf_iterator<char>());
+
+  auto default_end_action_bt_xml_filename =
+    this->get_parameter("default_end_action_bt_xml_filename").as_string();
+  if (default_end_action_bt_xml_filename.empty()) {
+    default_end_action_bt_xml_filename =
+      ament_index_cpp::get_package_share_directory("plansys2_executor") +
+      "/behavior_trees/plansys2_end_action_bt.xml";
+  }
+
+  std::ifstream end_action_bt_ifs(default_end_action_bt_xml_filename);
+  if (!end_action_bt_ifs) {
+    RCLCPP_ERROR_STREAM(
+      get_logger(), "Error openning [" << default_end_action_bt_xml_filename << "]");
+    return CallbackReturnT::FAILURE;
+  }
+
+  end_action_bt_xml_.assign(
+    std::istreambuf_iterator<char>(end_action_bt_ifs), std::istreambuf_iterator<char>());
 
   dotgraph_pub_ = this->create_publisher<std_msgs::msg::String>("dot_graph", 1);
   execution_info_pub_ = create_publisher<plansys2_msgs::msg::ActionExecutionInfo>(
@@ -140,7 +182,6 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   executing_plan_pub_ = create_publisher<plansys2_msgs::msg::Plan>(
     "executing_plan", rclcpp::QoS(100).transient_local());
 
-  aux_node_ = std::make_shared<rclcpp::Node>("executor_helper");
   domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
   planner_client_ = std::make_shared<plansys2::PlannerClient>();
@@ -330,7 +371,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   auto action_timeout_actions = this->get_parameter("action_timeouts.actions").as_string_array();
 
   for (const auto & plan_item : current_plan_.value().items) {
-    auto index = plan_item.action + ":" + std::to_string(static_cast<int>(plan_item.time * 1000));
+    auto index = BTBuilder::to_action_id(plan_item, 3);
 
     (*action_map)[index] = ActionExecutionInfo();
     (*action_map)[index].action_executor =
@@ -353,9 +394,27 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
       get_logger(), "Action %s timeout percentage %f", action_name.c_str(),
       (*action_map)[index].duration_overrun_percentage);
   }
+
   ordered_sub_goals_ = getOrderedSubGoals();
 
-  BTBuilder bt_builder(aux_node_, action_bt_xml_);
+  auto bt_builder_plugin = this->get_parameter("bt_builder_plugin").as_string();
+  if (bt_builder_plugin.empty()) {
+    bt_builder_plugin = "STNBTBuilder";
+  }
+
+  std::shared_ptr<plansys2::BTBuilder> bt_builder;
+  try {
+    bt_builder = bt_builder_loader_.createSharedInstance("plansys2::" + bt_builder_plugin);
+  } catch (pluginlib::PluginlibException & ex) {
+    RCLCPP_ERROR(get_logger(), "pluginlib error: %s", ex.what());
+  }
+
+  if (bt_builder_plugin == "SimpleBTBuilder") {
+    bt_builder->initialize(action_bt_xml_);
+  } else if (bt_builder_plugin == "STNBTBuilder") {
+    auto precision = this->get_parameter("action_time_precision").as_int();
+    bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
+  }
   auto blackboard = BT::Blackboard::create();
 
   blackboard->set("action_map", action_map);
@@ -366,6 +425,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<ExecuteAction>("ExecuteAction");
   factory.registerNodeType<WaitAction>("WaitAction");
+  factory.registerNodeType<CheckAction>("CheckAction");
   factory.registerNodeType<CheckOverAllReq>("CheckOverAllReq");
   factory.registerNodeType<WaitAtStartReq>("WaitAtStartReq");
   factory.registerNodeType<CheckAtEndReq>("CheckAtEndReq");
@@ -373,13 +433,11 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
 
-  auto bt_xml_tree = bt_builder.get_tree(current_plan_.value());
-  auto action_graph = bt_builder.get_graph(current_plan_.value());
+  auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
   std_msgs::msg::String dotgraph_msg;
-  dotgraph_msg.data =
-    bt_builder.get_dotgraph(
-    action_graph, action_map, this->get_parameter(
-      "enable_dotgraph_legend").as_bool(), this->get_parameter("print_graph").as_bool());
+  dotgraph_msg.data = bt_builder->get_dotgraph(
+    action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
+    this->get_parameter("print_graph").as_bool());
   dotgraph_pub_->publish(dotgraph_msg);
 
   std::filesystem::path tp = std::filesystem::temp_directory_path();
@@ -420,7 +478,6 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     });
 
   rclcpp::Rate rate(10);
-  auto start = now();
   auto status = BT::NodeStatus::RUNNING;
 
   while (status == BT::NodeStatus::RUNNING && !cancel_plan_requested_) {
@@ -434,10 +491,8 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     feedback->action_execution_status = get_feedback_info(action_map);
     goal_handle->publish_feedback(feedback);
 
-    dotgraph_msg.data =
-      bt_builder.get_dotgraph(
-      action_graph, action_map, this->get_parameter(
-        "enable_dotgraph_legend").as_bool());
+    dotgraph_msg.data = bt_builder->get_dotgraph(
+      action_map, this->get_parameter("enable_dotgraph_legend").as_bool());
     dotgraph_pub_->publish(dotgraph_msg);
 
     rate.sleep();
@@ -452,10 +507,8 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     RCLCPP_ERROR(get_logger(), "Executor BT finished with FAILURE state");
   }
 
-  dotgraph_msg.data =
-    bt_builder.get_dotgraph(
-    action_graph, action_map, this->get_parameter(
-      "enable_dotgraph_legend").as_bool());
+  dotgraph_msg.data = bt_builder->get_dotgraph(
+    action_map, this->get_parameter("enable_dotgraph_legend").as_bool());
   dotgraph_pub_->publish(dotgraph_msg);
 
   result->success = status == BT::NodeStatus::SUCCESS;
@@ -500,8 +553,12 @@ ExecutorNode::get_feedback_info(
   }
 
   for (const auto & action : *action_map) {
-    plansys2_msgs::msg::ActionExecutionInfo info;
+    if (!action.second.action_executor) {
+      RCLCPP_WARN(get_logger(), "Action executor does not exist for %s. Skipping", action.first);
+      continue;
+    }
 
+    plansys2_msgs::msg::ActionExecutionInfo info;
     switch (action.second.action_executor->get_internal_status()) {
       case ActionExecutor::IDLE:
       case ActionExecutor::DEALING:
