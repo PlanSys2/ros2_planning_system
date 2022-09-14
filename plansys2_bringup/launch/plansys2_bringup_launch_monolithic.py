@@ -72,7 +72,7 @@ def generate_launch_description():
 
     declare_bt_builder_plugin_cmd = DeclareLaunchArgument(
         "bt_builder_plugin",
-        default_value="STNBTBuilder",
+        default_value="SimpleBTBuilder",
         description="Behavior tree builder plugin.",
     )
 

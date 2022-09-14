@@ -399,7 +399,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   auto bt_builder_plugin = this->get_parameter("bt_builder_plugin").as_string();
   if (bt_builder_plugin.empty()) {
-    bt_builder_plugin = "STNBTBuilder";
+    bt_builder_plugin = "SimpleBTBuilder";
   }
 
   std::shared_ptr<plansys2::BTBuilder> bt_builder;
