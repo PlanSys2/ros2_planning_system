@@ -39,7 +39,8 @@ TEST(problem_expert, addget_instances)
   plansys2::ProblemExpert problem_expert(domain_expert);
 
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("Paco", "person")));
-  ASSERT_FALSE(problem_expert.addInstance(parser::pddl::fromStringParam("Paco", "person")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("Paco", "person")));
+  ASSERT_FALSE(problem_expert.addInstance(parser::pddl::fromStringParam("Paco", "room")));
   ASSERT_FALSE(
     problem_expert.addInstance(
       parser::pddl::fromStringParam(
