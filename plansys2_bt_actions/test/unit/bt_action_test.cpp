@@ -167,7 +167,7 @@ TEST(bt_actions, on_tick_failure)
 
   BT::NodeStatus status = BT::NodeStatus::RUNNING;
   while (rclcpp::ok() && status == BT::NodeStatus::RUNNING) {
-    status = failure_node.tick();
+    status = failure_node.executeTick();
 
     rclcpp::spin_some(node);
     rate.sleep();
@@ -205,7 +205,7 @@ TEST(bt_actions, on_feedback_failure)
 
   BT::NodeStatus status = BT::NodeStatus::RUNNING;
   while (rclcpp::ok() && status == BT::NodeStatus::RUNNING) {
-    status = failure_node.tick();
+    status = failure_node.executeTick();
 
     rclcpp::spin_some(node);
     rate.sleep();

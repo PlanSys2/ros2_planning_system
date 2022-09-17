@@ -85,7 +85,15 @@ BTAction::on_cleanup(const rclcpp_lifecycle::State & previous_state)
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
 {
-  tree_ = factory_.createTreeFromFile(bt_xml_file_, blackboard_);
+  try {
+    tree_ = factory_.createTreeFromFile(bt_xml_file_, blackboard_);
+  } catch (const std::exception & ex) {
+    RCLCPP_ERROR_STREAM(
+      get_logger(),
+      "Failed to create BT with exception: " << ex.what());
+    RCLCPP_ERROR(get_logger(), "Transition to activate failed");
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
+  }
 
   for (int i = 0; i < get_arguments().size(); i++) {
     std::string argname = "arg" + std::to_string(i);
@@ -107,14 +115,18 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
 
     if (get_parameter("bt_file_logging").as_bool()) {
       std::string filename_extension = filename.str() + ".fbl";
-      RCLCPP_WARN_STREAM(get_logger(), filename.str());
+      RCLCPP_INFO_STREAM(
+        get_logger(),
+        "Logging to file: " << filename_extension);
       bt_file_logger_ =
         std::make_unique<BT::FileLogger>(tree_, filename_extension.c_str());
     }
 
     if (get_parameter("bt_minitrace_logging").as_bool()) {
       std::string filename_extension = filename.str() + ".json";
-      RCLCPP_WARN_STREAM(get_logger(), filename.str());
+      RCLCPP_INFO_STREAM(
+        get_logger(),
+        "Logging to file: " << filename_extension);
       bt_minitrace_logger_ =
         std::make_unique<BT::MinitraceLogger>(tree_, filename_extension.c_str());
     }
@@ -155,6 +167,8 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 BTAction::on_deactivate(const rclcpp_lifecycle::State & previous_state)
 {
   publisher_zmq_.reset();
+  bt_minitrace_logger_.reset();
+  bt_file_logger_.reset();
   tree_.haltTree();
 
   return ActionExecutorClient::on_deactivate(previous_state);
