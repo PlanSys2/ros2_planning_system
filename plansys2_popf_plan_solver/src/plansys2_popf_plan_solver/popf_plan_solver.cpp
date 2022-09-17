@@ -152,18 +152,22 @@ POPFPlanSolver::is_valid_domain(
     return false;
   }
 
+  std::string line;
   std::ifstream plan_file(temp_dir.string() + "/check.out");
+  bool solution = false;
 
-  if (!plan_file) {
-    return false;
+  if (plan_file && plan_file.is_open()) {
+    while (getline(plan_file, line)) {
+      if (!solution) {
+        if (line.find("Solution Found") != std::string::npos) {
+          solution = true;
+        }
+      }
+    }
+    plan_file.close();
   }
 
-  std::string result((std::istreambuf_iterator<char>(plan_file)),
-    std::istreambuf_iterator<char>());
-
-  // Note: given the problem provided, popf is expected to produce no output
-  // given a good domain file (for some reason)
-  return result.empty();
+  return solution;
 }
 
 }  // namespace plansys2
