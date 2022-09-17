@@ -41,14 +41,13 @@ ProblemExpert::ProblemExpert(std::shared_ptr<DomainExpert> & domain_expert)
 bool
 ProblemExpert::addInstance(const plansys2::Instance & instance)
 {
-  if (!isValidType(instance.type)) {
+  if (!isValidType(instance.type))
     return false;
-  } else if (existInstance(instance.name)) {
-    return false;
-  } else {
+
+  if (!existInstance(instance.name))
     instances_.push_back(instance);
+
     return true;
-  }
 }
 
 std::vector<plansys2::Instance>
