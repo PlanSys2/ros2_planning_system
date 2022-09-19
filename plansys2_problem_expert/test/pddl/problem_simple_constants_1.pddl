@@ -11,6 +11,5 @@
 ( :goal
 	( and
 		( robot_talk leia m1 jack )
-	)
-)
+	))
 )

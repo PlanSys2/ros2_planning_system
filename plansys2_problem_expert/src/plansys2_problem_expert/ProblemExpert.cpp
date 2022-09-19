@@ -608,7 +608,7 @@ ProblemExpert::getProblem()
   for (const auto & instance : instances_) {
     bool is_constant = domain.getType(instance.type)->parseConstant(instance.name).first;
     if (is_constant) {
-      std::cout << "Skipping adding constant as an problem :object: " << instance.name << " " <<
+      std::cout << "Skipping adding constant to problem :object: " << instance.name << " " <<
         instance.type << std::endl;
     } else {
       problem.addObject(instance.name, instance.type);
@@ -750,7 +750,11 @@ ProblemExpert::addProblem(const std::string & problem_str)
   plansys2_msgs::msg::Tree goal;
   auto node = problem.goal->getTree(goal, domain);
   std::cout << "Adding Goal: " << parser::pddl::toString(goal) << std::endl;
-  setGoal(goal);
+  if (setGoal(goal)) {
+    std::cout << "Goal insertion ok" << std::endl;
+  } else {
+    std::cout << "Goal insertion failed" << std::endl;
+  }
 
   return true;
 }

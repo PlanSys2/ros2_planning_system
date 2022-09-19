@@ -11,7 +11,7 @@ public:
 	Domain &d;
 	std::string name;
  GroundVec init; // initial state
- Condition * goal; // Goal condition
+ Condition * goal = nullptr; // Goal condition
  TokenStruct< std::string > ts;
 	bool metric;
 
@@ -25,7 +25,7 @@ public:
 	virtual ~Instance() {
 		for ( unsigned i = 0; i < init.size(); ++i )
 			delete init[i];
-  delete goal;
+  if (nullptr != goal) delete goal;
 	}
 
 	void parse( const std::string &s) {
@@ -210,7 +210,12 @@ public:
   // ....)", and an additional left ")" parenthesis for the part
   // outside. Alternatively, one can define another parseGoal function
   // that does not require these two additional characters.
-  std::string ss = s + "))";
+  std::string ss = "";
+  if (0 == s.length()) {
+    ss = "(and ) ))";
+  } else {
+    ss = s + "))";
+  }
   Stringreader f( ss );
   parseGoal( f );
  }
@@ -239,7 +244,7 @@ public:
 		stream << ")\n";
 
 		stream << "( :goal\n";
-  goal->PDDLPrint(stream, 1, ts, d);
+  if (nullptr != goal) goal->PDDLPrint(stream, 1, TokenStruct< std::string >(), d);
 		stream << ")\n";
 
 		if ( metric ) {
