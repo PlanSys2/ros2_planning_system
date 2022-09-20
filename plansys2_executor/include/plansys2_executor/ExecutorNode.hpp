@@ -24,6 +24,7 @@
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/BTBuilder.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
@@ -38,6 +39,9 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp_lifecycle/lifecycle_publisher.hpp"
+
+#include "pluginlib/class_loader.hpp"
+#include "pluginlib/class_list_macros.hpp"
 
 namespace plansys2
 {
@@ -71,13 +75,15 @@ public:
 
 protected:
   rclcpp::Node::SharedPtr node_;
-  rclcpp::Node::SharedPtr aux_node_;
 
   bool cancel_plan_requested_;
   std::optional<plansys2_msgs::msg::Plan> current_plan_;
   std::optional<std::vector<plansys2_msgs::msg::Tree>> ordered_sub_goals_;
 
   std::string action_bt_xml_;
+  std::string start_action_bt_xml_;
+  std::string end_action_bt_xml_;
+  pluginlib::ClassLoader<plansys2::BTBuilder> bt_builder_loader_;
 
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;

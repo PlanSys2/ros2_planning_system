@@ -1,12 +1,9 @@
 <Sequence name="ACTION_ID">
-WAIT_PREV_ACTIONS
-  <WaitAtStartReq action="ACTION_ID"/>
-  <ApplyAtStartEffect action="ACTION_ID"/>
   <ReactiveSequence name="ACTION_ID">
-    <CheckTimeout action="ACTION_ID"/>
     <CheckOverAllReq action="ACTION_ID"/>
     <ExecuteAction action="ACTION_ID"/>
   </ReactiveSequence>
+CHECK_PREV_ACTIONS
   <CheckAtEndReq action="ACTION_ID"/>
   <ApplyAtEndEffect action="ACTION_ID"/>
 </Sequence>
