@@ -103,11 +103,11 @@ TEST(problem_expert, add_functions)
 
   ASSERT_EQ(
     problem_expert.getProblem(),
-    std::string("( define ( problem problem_1 )\n( :domain simple )\n")+
+    std::string("( define ( problem problem_1 )\n( :domain simple )\n") +
     std::string("( :objects\n\tbedroom - room\n\tkitchen - room_with_teleporter\n)\n") +
     std::string("( :init\n\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n)\n") +
     std::string("( :goal\n\t( and\n\t))\n)\n")
-    );
+  );
 
   plansys2_msgs::msg::Node function_2;
   function_2.node_type = plansys2_msgs::msg::Node::FUNCTION;
@@ -516,7 +516,7 @@ TEST(problem_expert, get_problem)
     std::string("\t( robot_at r2d2 kitchen )\n") +
     std::string("\t( person_at paco bedroom )\n") +
     std::string("\t( person_at paco kitchen )\n)\n") +
-    std::string("( :goal\n\t( and\n\t\t( robot_at r2d2 bedroom )\n\t\t")+
+    std::string("( :goal\n\t( and\n\t\t( robot_at r2d2 bedroom )\n\t\t") +
     std::string("( person_at paco kitchen )\n\t))\n)\n"));
 
   ASSERT_TRUE(problem_expert.clearKnowledge());
