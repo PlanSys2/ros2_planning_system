@@ -88,9 +88,10 @@ public:
 			std::pair< bool, unsigned > pair = type->parseObject( ts[i] );
 			if ( pair.first == false )
 				type->objects.insert( ts[i] );
+   std::cout << "Adding " << ts[i] << " " << pair.first << " " << pair.second << "\n";
 		}
 
-		for ( unsigned i = 0; DOMAIN_DEBUG && i < d.types.size(); ++i ) {
+		for ( unsigned i = 0; !DOMAIN_DEBUG && i < d.types.size(); ++i ) {
 			std::cout << " ";
 			if ( d.typed ) std::cout << " " << d.types[i] << ":";
 			for ( unsigned j = 0; j < d.types[i]->objects.size(); ++j )
@@ -208,7 +209,9 @@ public:
   // In order to invoke the parseGoal, the input string shall also
   // contain an ")" for simulating the right parenthesis of "(goal
   // ....)", and an additional left ")" parenthesis for the part
-  // outside. Alternatively, one can define another parseGoal function
+  // outside. We need to handle also the empty goal case
+  //
+  // Alternatively, one can define another parseGoal function
   // that does not require these two additional characters.
   std::string ss = "";
   if (0 == s.length()) {
@@ -238,13 +241,13 @@ public:
 
 		stream << "( :init\n";
 		for ( unsigned i = 0; i < init.size(); ++i ) {
-			( (TypeGround*)init[i])->PDDLPrint( stream, 1, TokenStruct< std::string >(), d );
+    ((TypeGround*)init[i])->PDDLPrint( stream, 1, TokenStruct< std::string >(), d );
 			stream << "\n";
 		}
 		stream << ")\n";
 
 		stream << "( :goal\n";
-  if (nullptr != goal) goal->PDDLPrint(stream, 1, TokenStruct< std::string >(), d);
+  if (nullptr != goal) goal->PDDLPrint(stream, 1, ts /* TokenStruct< std::string >() */, d);
 		stream << ")\n";
 
 		if ( metric ) {
