@@ -43,12 +43,20 @@ ProblemExpert::addInstance(const plansys2::Instance & instance)
 {
   if (!isValidType(instance.type)) {
     return false;
-  } else if (existInstance(instance.name)) {
-    return false;
-  } else {
-    instances_.push_back(instance);
-    return true;
   }
+
+  std::optional<plansys2::Instance> existing_instance = getInstance(instance.name);
+  bool exist_instance = existing_instance.has_value();
+
+  if (exist_instance && existing_instance.value().type != instance.type) {
+    return false;
+  }
+
+  if (!exist_instance) {
+    instances_.push_back(instance);
+  }
+
+  return true;
 }
 
 std::vector<plansys2::Instance>

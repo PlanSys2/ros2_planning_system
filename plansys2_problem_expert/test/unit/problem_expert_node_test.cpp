@@ -74,7 +74,7 @@ TEST(problem_expert_node, addget_instances)
     });
 
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("Paco", "person")));
-  ASSERT_FALSE(problem_client->addInstance(plansys2::Instance("Paco", "person")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("Paco", "person")));
   ASSERT_FALSE(problem_client->addInstance(plansys2::Instance("Paco", "SCIENTIFIC")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
@@ -87,7 +87,7 @@ TEST(problem_expert_node, addget_instances)
     }
   }
 
-  ASSERT_EQ(knowledge_msg_counter, 3u);
+  ASSERT_EQ(knowledge_msg_counter, 4u);
   ASSERT_EQ(last_knowledge_msg.instances.size(), 3u);
   ASSERT_EQ(last_knowledge_msg.instances[0], "Paco");
   ASSERT_EQ(last_knowledge_msg.instances[1], "bedroom");
@@ -105,7 +105,7 @@ TEST(problem_expert_node, addget_instances)
     }
   }
 
-  ASSERT_EQ(knowledge_msg_counter, 4u);
+  ASSERT_EQ(knowledge_msg_counter, 5u);
   ASSERT_EQ(last_knowledge_msg.instances.size(), 4u);
   ASSERT_EQ(last_knowledge_msg.instances[0], "Paco");
   ASSERT_EQ(last_knowledge_msg.instances[1], "bedroom");
@@ -141,7 +141,7 @@ TEST(problem_expert_node, addget_instances)
     }
   }
 
-  ASSERT_EQ(knowledge_msg_counter, 5u);
+  ASSERT_EQ(knowledge_msg_counter, 6u);
   ASSERT_EQ(last_knowledge_msg.instances.size(), 3u);
   ASSERT_EQ(last_knowledge_msg.instances[0], "bedroom");
   ASSERT_EQ(last_knowledge_msg.instances[1], "kitchen");
@@ -173,7 +173,7 @@ TEST(problem_expert_node, addget_instances)
     }
   }
 
-  ASSERT_EQ(knowledge_msg_counter, 7u);
+  ASSERT_EQ(knowledge_msg_counter, 8u);
   ASSERT_EQ(last_knowledge_msg.instances.size(), 3u);
   ASSERT_EQ(last_knowledge_msg.instances[0], "bedroom");
   ASSERT_EQ(last_knowledge_msg.instances[1], "kitchen");
@@ -193,7 +193,7 @@ TEST(problem_expert_node, addget_instances)
     }
   }
 
-  ASSERT_EQ(knowledge_msg_counter, 8u);
+  ASSERT_EQ(knowledge_msg_counter, 9u);
   ASSERT_EQ(last_knowledge_msg.instances[0], "bedroom");
   ASSERT_EQ(last_knowledge_msg.instances[1], "kitchen");
   ASSERT_EQ(last_knowledge_msg.instances[2], "r2d2");

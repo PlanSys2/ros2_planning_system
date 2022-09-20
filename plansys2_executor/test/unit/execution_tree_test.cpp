@@ -30,18 +30,10 @@
 #include "plansys2_planner/PlannerClient.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
 
+#include "pluginlib/class_loader.hpp"
+#include "pluginlib/class_list_macros.hpp"
+
 #include "rclcpp/rclcpp.hpp"
-
-
-class BTBuilderTest : public plansys2::BTBuilder
-{
-public:
-  explicit BTBuilderTest(
-    rclcpp::Node::SharedPtr node)
-  : BTBuilder(node)
-  {
-  }
-};
 
 
 TEST(executiotest_noden_tree, bt_builder_factory)
@@ -167,8 +159,17 @@ TEST(executiotest_noden_tree, bt_builder_factory)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  BTBuilderTest exec_tree(test_node);
-  auto tree_str = exec_tree.get_tree(plan.value());
+  std::shared_ptr<plansys2::BTBuilder> bt_builder;
+  pluginlib::ClassLoader<plansys2::BTBuilder> bt_builder_loader("plansys2_executor",
+    "plansys2::BTBuilder");
+  try {
+    bt_builder = bt_builder_loader.createSharedInstance("plansys2::SimpleBTBuilder");
+  } catch (pluginlib::PluginlibException & ex) {
+    std::cerr << "pluginlib error: " << std::string(ex.what()) << std::endl;
+  }
+
+  bt_builder->initialize();
+  auto tree_str = bt_builder->get_tree(plan.value());
 
   std::cout << tree_str << std::endl;
   finish = true;
@@ -300,9 +301,17 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  BTBuilderTest exec_tree(test_node);
+  std::shared_ptr<plansys2::BTBuilder> bt_builder;
+  pluginlib::ClassLoader<plansys2::BTBuilder> bt_builder_loader("plansys2_executor",
+    "plansys2::BTBuilder");
+  try {
+    bt_builder = bt_builder_loader.createSharedInstance("plansys2::SimpleBTBuilder");
+  } catch (pluginlib::PluginlibException & ex) {
+    std::cerr << "pluginlib error: " << std::string(ex.what()) << std::endl;
+  }
 
-  auto tree_str = exec_tree.get_tree(plan.value());
+  bt_builder->initialize();
+  auto tree_str = bt_builder->get_tree(plan.value());
 
   finish = true;
   t.join();
@@ -423,9 +432,17 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-  BTBuilderTest exec_tree(test_node);
+  std::shared_ptr<plansys2::BTBuilder> bt_builder;
+  pluginlib::ClassLoader<plansys2::BTBuilder> bt_builder_loader("plansys2_executor",
+    "plansys2::BTBuilder");
+  try {
+    bt_builder = bt_builder_loader.createSharedInstance("plansys2::SimpleBTBuilder");
+  } catch (pluginlib::PluginlibException & ex) {
+    std::cerr << "pluginlib error: " << std::string(ex.what()) << std::endl;
+  }
 
-  auto tree_str = exec_tree.get_tree(plan.value());
+  bt_builder->initialize();
+  auto tree_str = bt_builder->get_tree(plan.value());
 
   finish = true;
   t.join();

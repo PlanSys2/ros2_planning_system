@@ -123,35 +123,51 @@ POPFPlanSolver::is_valid_domain(
   const std::string & node_namespace)
 {
   if (system(nullptr) == 0) {
-    return {};
+    return false;
   }
 
+  std::filesystem::path temp_dir = std::filesystem::temp_directory_path();
   if (node_namespace != "") {
-    mkdir(("/tmp/" + node_namespace).c_str(), ACCESSPERMS);
+    for (auto p : std::filesystem::path(node_namespace) ) {
+      if (p != std::filesystem::current_path().root_directory()) {
+        temp_dir /= p;
+      }
+    }
+    std::filesystem::create_directories(temp_dir);
   }
 
-  std::ofstream domain_out("/tmp/" + node_namespace + "/check_domain.pddl");
+  std::ofstream domain_out(temp_dir.string() + "/check_domain.pddl");
   domain_out << domain;
   domain_out.close();
 
-  std::ofstream problem_out("/tmp/" + node_namespace + "/check_problem.pddl");
+  std::ofstream problem_out(temp_dir.string() + "/check_problem.pddl");
   problem_out << "(define (problem void) (:domain plansys2))";
   problem_out.close();
 
   int status = system(
-    ("ros2 run popf popf /tmp/" + node_namespace + "/check_domain.pddl /tmp/" +
-    node_namespace + "/check_problem.pddl > /tmp/" + node_namespace + "/check.out").c_str());
+    ("ros2 run popf popf " + temp_dir.string() + "/check_domain.pddl " + temp_dir.string() +
+    "/check_problem.pddl > " + temp_dir.string() + "/check.out").c_str());
 
   if (status == -1) {
-    return {};
+    return false;
   }
 
-  std::ifstream plan_file("/tmp/" + node_namespace + "/check.out");
+  std::string line;
+  std::ifstream plan_file(temp_dir.string() + "/check.out");
+  bool solution = false;
 
-  std::string result((std::istreambuf_iterator<char>(plan_file)),
-    std::istreambuf_iterator<char>());
+  if (plan_file && plan_file.is_open()) {
+    while (getline(plan_file, line)) {
+      if (!solution) {
+        if (line.find("Solution Found") != std::string::npos) {
+          solution = true;
+        }
+      }
+    }
+    plan_file.close();
+  }
 
-  return result.find("Solution Found") != result.npos;
+  return solution;
 }
 
 }  // namespace plansys2
