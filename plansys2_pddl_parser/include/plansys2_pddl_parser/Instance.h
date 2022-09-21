@@ -88,10 +88,9 @@ public:
 			std::pair< bool, unsigned > pair = type->parseObject( ts[i] );
 			if ( pair.first == false )
 				type->objects.insert( ts[i] );
-   std::cout << "Adding " << ts[i] << " " << pair.first << " " << pair.second << "\n";
 		}
 
-		for ( unsigned i = 0; !DOMAIN_DEBUG && i < d.types.size(); ++i ) {
+		for ( unsigned i = 0; DOMAIN_DEBUG && i < d.types.size(); ++i ) {
 			std::cout << " ";
 			if ( d.typed ) std::cout << " " << d.types[i] << ":";
 			for ( unsigned j = 0; j < d.types[i]->objects.size(); ++j )
