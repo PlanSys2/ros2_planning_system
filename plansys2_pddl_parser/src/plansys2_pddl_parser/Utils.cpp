@@ -55,7 +55,7 @@ uint8_t getNodeType(const std::string & expr, uint8_t default_node_type)
     }
   }
 
-  if (std::regex_search(expr, match, std::regex("\\(\\s*not"))) {
+  if (std::regex_search(expr, match, std::regex("\\(\\s*not[ (]"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       node_type = plansys2_msgs::msg::Node::NOT;
