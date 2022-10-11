@@ -98,49 +98,21 @@ STNBTBuilder::get_dotgraph(
   ss << t(1) << "node[shape=box];\n";
   ss << t(1) << "rankdir=TB;\n";
 
-  int max_level = 0;
-  int max_node = 0;
-
-  // Perform breadth first search
-  std::queue<std::pair<GraphNode::Ptr, int>> queue;
-  stn_->nodes.front()->visited = true;
-  queue.push(std::make_pair(stn_->nodes.front(), 0));
-
-  int prev_level = -1;
-  while (!queue.empty()) {
-    auto pair = queue.front();
-    auto node = pair.first;
-    auto level = pair.second;
-    if (level != prev_level) {
-      ss << t(1) << "subgraph cluster_" << level << " {\n";
-      auto start_time = node->action.time;
-      if (node->action.type == ActionType::END) {
-        start_time += node->action.duration;
-      }
-      ss << t(2) << "label = \"Time: " << start_time << "\";\n";
-      ss << t(2) << "style = rounded;\n";
-      ss << t(2) << "color = yellow3;\n";
-      ss << t(2) << "bgcolor = lemonchiffon;\n";
-      ss << t(2) << "labeljust = l;\n";
-      max_level = std::max(max_level, level);
+  int node_count = 0;
+  for (const auto node : stn_->nodes) {
+    ss << t(1) << "subgraph cluster_" << node_count << " {\n";
+    auto start_time = node->action.time;
+    if (node->action.type == ActionType::END) {
+      start_time += node->action.duration;
     }
-    max_node = std::max(max_node, node->node_num);
+    ss << t(2) << "label = \"Time: " << start_time << "\";\n";
+    ss << t(2) << "style = rounded;\n";
+    ss << t(2) << "color = yellow3;\n";
+    ss << t(2) << "bgcolor = lemonchiffon;\n";
+    ss << t(2) << "labeljust = l;\n";
     ss << get_node_dotgraph(node, action_map);
     ss << t(1) << "}\n";
-    prev_level = level;
-    queue.pop();
-    for (auto arc : node->output_arcs) {
-      auto child = std::get<0>(arc);
-      if (!child->visited) {
-        child->visited = true;
-        queue.push(std::make_pair(child, level + 1));
-      }
-    }
-  }
-
-  // Reset visited flag.
-  for (auto node : stn_->nodes) {
-    node->visited = false;
+    node_count++;
   }
 
   // define the edges
@@ -154,9 +126,7 @@ STNBTBuilder::get_dotgraph(
   }
 
   if (enable_legend) {
-    max_level++;
-    max_node++;
-    ss << add_dot_graph_legend(max_level, max_node);
+    ss << add_dot_graph_legend(node_count, node_count);
   }
 
   ss << "}";
@@ -188,6 +158,12 @@ STNBTBuilder::build_stn(const plansys2_msgs::msg::Plan & plan) const
       auto previous = get_nodes(parent.second, stn);
       for (auto & n : current) {
         for (auto & h : previous) {
+          if (h->action.time == n->action.time) {
+            if (h->action.expression == n->action.expression) {
+              // No self-referencing edges are allowed in an STN.
+              continue;
+            }
+          }
           prune_paths(n, h);
           if (!check_paths(n, h)) {
             h->output_arcs.insert(std::make_tuple(n, 0, std::numeric_limits<float>::infinity()));
@@ -353,6 +329,7 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
   simple_plan.insert(std::make_pair(-1, init_action));
 
   // Add the snap actions
+  int max_time = -1;
   for (auto action : action_sequence) {
     auto time = to_int_time(action.time, action_time_precision_ + 1);
     auto duration = to_int_time(action.duration, action_time_precision_ + 1);
@@ -360,7 +337,18 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
     simple_plan.insert(std::make_pair(time, action));
     action.type = ActionType::END;
     simple_plan.insert(std::make_pair(time + duration, action));
+    max_time = std::max(max_time, time + duration);
   }
+
+  // Add an action to represent the goal
+  auto goal = problem_client_->getGoal();
+  plansys2_msgs::msg::Tree * goal_tree = &goal;
+
+  ActionStamped goal_action;
+  goal_action.action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
+  goal_action.action->at_start_requirements = *goal_tree;
+  goal_action.type = ActionType::GOAL;
+  simple_plan.insert(std::make_pair(max_time, goal_action));
 
   // Create the overall actions
   std::vector<std::pair<int, ActionStamped>> overall_actions;
@@ -467,7 +455,7 @@ STNBTBuilder::from_state(
 std::vector<GraphNode::Ptr>
 STNBTBuilder::get_nodes(
   const ActionStamped & action,
-  const Graph::Ptr & graph) const
+  const Graph::Ptr graph) const
 {
   std::vector<GraphNode::Ptr> ret;
 
@@ -480,6 +468,19 @@ STNBTBuilder::get_nodes(
       ret.push_back(*it);
     } else {
       std::cerr << "get_nodes: Could not find initial state node" << std::endl;
+    }
+    return ret;
+  }
+
+  if (action.type == ActionType::GOAL) {
+    auto it = std::find_if(
+      graph->nodes.begin(), graph->nodes.end(), [&](GraphNode::Ptr node) {
+        return node->action.type == ActionType::GOAL;
+      });
+    if (it != graph->nodes.end()) {
+      ret.push_back(*it);
+    } else {
+      std::cerr << "get_nodes: Could not find goal node" << std::endl;
     }
     return ret;
   }
@@ -863,7 +864,7 @@ STNBTBuilder::get_intersection(
 plansys2_msgs::msg::Tree
 STNBTBuilder::get_conditions(const ActionStamped & action) const
 {
-  if (action.type == ActionType::START) {
+  if (action.type == ActionType::START || action.type == ActionType::GOAL) {
     return action.action->at_start_requirements;
   } else if (action.type == ActionType::OVERALL) {
     return action.action->over_all_requirements;
@@ -879,7 +880,7 @@ STNBTBuilder::get_effects(const ActionStamped & action) const
 {
   if (action.type == ActionType::START) {
     return action.action->at_start_effects;
-  } else if (action.type == ActionType::INIT || action.type == ActionType::END) {
+  } else if (action.type == ActionType::END || action.type == ActionType::INIT) {
     return action.action->at_end_effects;
   }
 
@@ -1217,20 +1218,32 @@ STNBTBuilder::add_dot_graph_legend(
 }
 
 void
-STNBTBuilder::print_graph(const plansys2::Graph::Ptr & graph) const
+STNBTBuilder::print_graph(const plansys2::Graph::Ptr graph) const
 {
   print_node(graph->nodes.front(), 0);
 }
 
 void
-STNBTBuilder::print_node(const plansys2::GraphNode::Ptr & node, int level) const
+STNBTBuilder::print_node(const plansys2::GraphNode::Ptr node, int level) const
 {
-  std::cerr << t(level) << "[" << node->action.time << "]";
-  std::cerr << " " << node->action.action->name;
+  std::cerr << t(level) << "(" << node->node_num << ") ";
+  if (node->action.type == ActionType::START) {
+    std::cerr << node->action.time;
+  } else {
+    std::cerr << node->action.time + node->action.duration;
+  }
+  std::cerr << ": (" << node->action.action->name;
   for (const auto & param : node->action.action->parameters) {
     std::cerr << " " << param.name;
   }
-  std::cerr << " " << to_string(node->action.type) << std::endl;
+  std::cerr << ")_" << to_string(node->action.type);
+  std::cerr << "  [" << node->action.duration << "]";
+  for (const auto & arc : node->output_arcs) {
+    auto lower = std::get<1>(arc);
+    auto upper = std::get<2>(arc);
+    std::cerr << " [" << lower << ", " << upper << "]";
+  }
+  std::cerr << std::endl;
 
   for (const auto & arc : node->output_arcs) {
     auto child = std::get<0>(arc);

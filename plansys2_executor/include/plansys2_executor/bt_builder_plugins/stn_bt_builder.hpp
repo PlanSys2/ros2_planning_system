@@ -45,14 +45,13 @@ struct GraphNode
   static Ptr make_shared(int id) {return std::make_shared<GraphNode>(id);}
 
   int node_num;
-  bool visited;
   ActionStamped action;
 
   std::set<std::tuple<GraphNode::Ptr, double, double>> input_arcs;
   std::set<std::tuple<GraphNode::Ptr, double, double>> output_arcs;
 
   explicit GraphNode(int id)
-  : node_num(id), visited(false) {}
+  : node_num(id) {}
 };
 
 struct Graph
@@ -100,7 +99,7 @@ protected:
 
   std::vector<GraphNode::Ptr> get_nodes(
     const ActionStamped & action,
-    const Graph::Ptr & graph) const;
+    const Graph::Ptr graph) const;
 
   bool is_match(
     const GraphNode::Ptr node,
@@ -166,8 +165,8 @@ protected:
   std::string add_dot_graph_legend(
     int level_counter,
     int node_counter);
-  void print_graph(const plansys2::Graph::Ptr & graph) const;
-  void print_node(const GraphNode::Ptr & node, int level) const;
+  void print_graph(const plansys2::Graph::Ptr graph) const;
+  void print_node(const GraphNode::Ptr node, int level) const;
 
   void replace(std::string & str, const std::string & from, const std::string & to) const;
 

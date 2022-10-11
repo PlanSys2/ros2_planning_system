@@ -20,6 +20,7 @@ find_package(plansys2_planner REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 
 find_package(ZMQ)
 if(ZMQ_FOUND)
@@ -47,6 +48,7 @@ set(dependencies
     pluginlib
     behaviortree_cpp_v3
     std_msgs
+    std_srvs
 )
 
 include_directories(include ${ZMQ_INCLUDE_DIRS})
@@ -56,6 +58,7 @@ set(EXECUTOR_SOURCES
   src/plansys2_executor/ActionExecutor.cpp
   src/plansys2_executor/ActionExecutorClient.cpp
   src/plansys2_executor/ExecutorNode.cpp
+  src/plansys2_executor/ComputeBT.cpp
   src/plansys2_executor/behavior_tree/execute_action_node.cpp
   src/plansys2_executor/behavior_tree/wait_action_node.cpp
   src/plansys2_executor/behavior_tree/check_action_node.cpp
@@ -78,6 +81,12 @@ add_executable(executor_node
 ament_target_dependencies(executor_node ${dependencies})
 target_link_libraries(executor_node ${PROJECT_NAME})
 
+add_executable(compute_bt
+  src/compute_bt.cpp
+)
+ament_target_dependencies(compute_bt ${dependencies})
+target_link_libraries(compute_bt ${PROJECT_NAME})
+
 install(DIRECTORY include/
   DESTINATION include/
 )
@@ -96,6 +105,7 @@ install(TARGETS
   ${PROJECT_NAME}
   bt_builder_plugins
   executor_node
+  compute_bt
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
