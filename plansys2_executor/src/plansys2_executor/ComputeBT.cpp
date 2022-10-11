@@ -12,14 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <chrono>
 #include <filesystem>
+
+#include <chrono>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <memory>
 #include <sstream>
+#include <string>
 #include <thread>
-
-#include <eigen3/Eigen/Dense>
+#include <vector>
 
 #include "plansys2_executor/ComputeBT.hpp"
 

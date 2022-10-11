@@ -15,6 +15,11 @@
 #ifndef PLANSYS2_EXECUTOR__COMPUTEBT_HPP_
 #define PLANSYS2_EXECUTOR__COMPUTEBT_HPP_
 
+#include <std_srvs/srv/trigger.hpp>
+
+#include <memory>
+#include <string>
+
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
@@ -30,8 +35,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp_lifecycle/lifecycle_publisher.hpp"
-
-#include <std_srvs/srv/trigger.hpp>
 
 #include "pluginlib/class_loader.hpp"
 #include "pluginlib/class_list_macros.hpp"
@@ -84,4 +87,4 @@ private:
 
 }  // namespace plansys2
 
-#endif  // PLANSYS2_EXECUTOR__COMPUTE_HPP_
+#endif  // PLANSYS2_EXECUTOR__COMPUTEBT_HPP_

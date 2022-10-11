@@ -34,7 +34,7 @@ from launch_ros.substitutions import ExecutableInPackage
 def generate_launch_description():
     use_groot = LaunchConfiguration("use_groot")
     use_rqt_dotgraph = LaunchConfiguration("use_rqt_dotgraph")
-    
+
     namespace = LaunchConfiguration('namespace')
     action_bt_file = LaunchConfiguration('action_bt_file')
     start_action_bt_file = LaunchConfiguration('start_action_bt_file')
@@ -102,7 +102,7 @@ def generate_launch_description():
           'pddl', 'road_trip_problem.pddl'),
         description="PDDL domain file.",
     )
-    
+
     # Specify the actions
     start_groot_cmd = ExecuteProcess(
         condition=IfCondition(use_groot),
@@ -112,7 +112,7 @@ def generate_launch_description():
             "monitor",
         ],
     )
-    
+
     start_plan_viewer_cmd = Node(
         package="rqt_dotgraph",
         executable="rqt_dotgraph",
@@ -128,7 +128,7 @@ def generate_launch_description():
         ],
         arguments=["--ros-args", "--log-level", "WARN"],
     )
-    
+
     compute_bt_cmd = Node(
         package='plansys2_executor',
         executable='compute_bt',
@@ -168,7 +168,7 @@ def generate_launch_description():
 
     # Add required actions
     ld.add_action(compute_bt_cmd)
-    
+
     # Add conditioned actions
     ld.add_action(visualization_group_cmd)
 
