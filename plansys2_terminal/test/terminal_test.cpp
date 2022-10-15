@@ -968,10 +968,20 @@ TEST_F(TerminalTestCase, source_run_plan)
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
+    while ((test_node->now() - start).seconds() < 1.5) {
       rate.sleep();
     }
   }
+
+  ASSERT_EQ(
+    move_actor_1_node->get_current_state().id(),
+    lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
+  ASSERT_EQ(
+    ask_charge_actor_1_node->get_current_state().id(),
+    lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
+  ASSERT_EQ(
+    charge_actor_1_node->get_current_state().id(),
+    lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
@@ -985,7 +995,7 @@ TEST_F(TerminalTestCase, source_run_plan)
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 1.0) {
+    while ((test_node->now() - start).seconds() < 2.0) {
       rate.sleep();
     }
   }
@@ -1044,7 +1054,7 @@ TEST_F(TerminalTestCase, source_run_plan)
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
+    while ((test_node->now() - start).seconds() < 1.5) {
       rate.sleep();
     }
   }
@@ -1057,7 +1067,7 @@ TEST_F(TerminalTestCase, source_run_plan)
   {
     rclcpp::Rate rate(10);
     auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
+    while ((test_node->now() - start).seconds() < 1.5) {
       rate.sleep();
     }
   }
