@@ -41,21 +41,21 @@ uint8_t getNodeType(const std::string & expr, uint8_t default_node_type)
   std::smatch match;
   int first = std::numeric_limits<int>::max();
 
-  if (std::regex_search(expr, match, std::regex("\\(\\s*and"))) {
+  if (std::regex_search(expr, match, std::regex("\\(\\s*and[ (]"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       node_type = plansys2_msgs::msg::Node::AND;
     }
   }
 
-  if (std::regex_search(expr, match, std::regex("\\(\\s*or"))) {
+  if (std::regex_search(expr, match, std::regex("\\(\\s*or[ (]"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       node_type = plansys2_msgs::msg::Node::OR;
     }
   }
 
-  if (std::regex_search(expr, match, std::regex("\\(\\s*not"))) {
+  if (std::regex_search(expr, match, std::regex("\\(\\s*not[ (]"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       node_type = plansys2_msgs::msg::Node::NOT;
