@@ -15,8 +15,6 @@
 #ifndef PLANSYS2_EXECUTOR__COMPUTEBT_HPP_
 #define PLANSYS2_EXECUTOR__COMPUTEBT_HPP_
 
-#include <std_srvs/srv/trigger.hpp>
-
 #include <memory>
 #include <string>
 
@@ -31,6 +29,8 @@
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
+
+#include "std_srvs/srv/trigger.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
