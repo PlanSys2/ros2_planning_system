@@ -17,6 +17,9 @@
 
 #include <string>
 #include <vector>
+#include <queue>
+
+#include "plansys2_msgs/msg/plan_item.hpp"
 
 namespace plansys2
 {
@@ -43,6 +46,18 @@ std::string substr_without_empty_lines(
  * @return a pddl string without comments
  */
 std::string remove_comments(const std::string & pddl);
+
+
+struct PlanNode {
+    plansys2_msgs::msg::PlanItem item;
+    std::shared_ptr<PlanNode> true_node;
+    std::shared_ptr<PlanNode> false_node;
+};
+
+void encode_plan(const std::shared_ptr<PlanNode>& root, std::vector<int>& struc, std::vector<plansys2_msgs::msg::PlanItem> &data);
+
+std::shared_ptr<PlanNode> decode_plan(std::vector<int>& struc, std::vector<plansys2_msgs::msg::PlanItem> &data);
+std::shared_ptr<PlanNode> decode_plan(std::queue<int>& struc, std::queue<plansys2_msgs::msg::PlanItem> &data);
 
 }  // namespace plansys2
 

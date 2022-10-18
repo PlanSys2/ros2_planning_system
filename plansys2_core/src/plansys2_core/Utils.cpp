@@ -14,9 +14,9 @@
 
 #include <string>
 #include <sstream>
-#include <vector>
 
 #include "plansys2_core/Utils.hpp"
+
 
 namespace plansys2
 {
@@ -87,4 +87,46 @@ std::string remove_comments(const std::string & pddl)
   }
   return std::string(uncomment.str());
 }
+
+    void encode_plan(const std::shared_ptr<PlanNode>& root, std::vector<int>& struc, std::vector<plansys2_msgs::msg::PlanItem> &data){
+        if(root == nullptr){
+            struc.push_back(0);
+            return;
+        }
+        struc.push_back(1);
+        data.push_back(root->item);
+        encode_plan(root->true_node, struc, data);
+        encode_plan(root->false_node, struc, data);
+    }
+
+    std::shared_ptr<PlanNode> decode_plan(std::vector<int>& struc, std::vector<plansys2_msgs::msg::PlanItem> &data){
+        std::queue<int> struc_queue;
+        std::queue<plansys2_msgs::msg::PlanItem> data_queue;
+        for (const auto& e: data)
+            data_queue.push(e);
+
+        for (const auto& e: struc)
+            struc_queue.push(e);
+
+        return decode_plan(struc_queue, data_queue);
+    }
+
+    std::shared_ptr<PlanNode> decode_plan(std::queue<int>& struc, std::queue<plansys2_msgs::msg::PlanItem> &data){
+        if(struc.empty())
+            return nullptr;
+        bool b = struc.front();
+        struc.pop();
+        if(b == 1){
+            plansys2_msgs::msg::PlanItem key = data.front();
+            data.pop();
+            auto root = std::make_shared<PlanNode>();
+            root->item = key;
+            root->true_node = decode_plan(struc, data);
+            root->false_node = decode_plan(struc, data);
+            return root;
+        }
+        return nullptr;
+    }
+
+
 }  // namespace plansys2
