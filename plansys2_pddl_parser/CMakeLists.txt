@@ -18,25 +18,26 @@ set(dependencies
 include_directories(include)
 
 set(PDDL-PARSER-SOURCES
-  src/plansys2_pddl_parser/GroundFunc.cpp
-  src/plansys2_pddl_parser/When.cpp
-  src/plansys2_pddl_parser/Function.cpp
-  src/plansys2_pddl_parser/Expression.cpp
-  src/plansys2_pddl_parser/ParamCond.cpp
   src/plansys2_pddl_parser/Action.cpp
-  src/plansys2_pddl_parser/TemporalAction.cpp
-  src/plansys2_pddl_parser/Or.cpp
-  src/plansys2_pddl_parser/Exists.cpp
-  src/plansys2_pddl_parser/Not.cpp
-  src/plansys2_pddl_parser/Derived.cpp
   src/plansys2_pddl_parser/And.cpp
-  src/plansys2_pddl_parser/Lifted.cpp
+  src/plansys2_pddl_parser/Derived.cpp
+  src/plansys2_pddl_parser/Exists.cpp
+  src/plansys2_pddl_parser/Expression.cpp
   src/plansys2_pddl_parser/Forall.cpp
-  src/plansys2_pddl_parser/Oneof.cpp
+  src/plansys2_pddl_parser/Function.cpp
   src/plansys2_pddl_parser/FunctionModifier.cpp
   src/plansys2_pddl_parser/Ground.cpp
-  src/plansys2_pddl_parser/Utils.cpp
+  src/plansys2_pddl_parser/GroundFunc.cpp
+  src/plansys2_pddl_parser/Lifted.cpp
+  src/plansys2_pddl_parser/Not.cpp
+  src/plansys2_pddl_parser/Oneof.cpp
+  src/plansys2_pddl_parser/Or.cpp
+  src/plansys2_pddl_parser/ParamCond.cpp
+  src/plansys2_pddl_parser/TemporalAction.cpp
   src/plansys2_pddl_parser/TypeGround.cpp
+  src/plansys2_pddl_parser/Unknown.cpp
+  src/plansys2_pddl_parser/Utils.cpp
+  src/plansys2_pddl_parser/When.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${PDDL-PARSER-SOURCES})

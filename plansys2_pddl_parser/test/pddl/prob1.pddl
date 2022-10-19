@@ -11,6 +11,9 @@
 
 (:init
     (connected entrance dinning)
+    (unknown (robot_at bot entrance))
+    (unknown (robot_at bot kitchen))
+    (oneof (robot_at bot entrance) (robot_at bot kitchen))
     (connected dinning entrance)
     (connected dinning kitchen)
     (connected kitchen dinning)
@@ -21,7 +24,6 @@
     (connected chargingroom kitchen)
     (connected kitchen chargingroom)
     (charging_point_at chargingroom)
-    (robot_at bot entrance)
     (robot_at rob1 entrance)
     (= (battery_level bot) 90)
     (= (battery_level rob1) 100)

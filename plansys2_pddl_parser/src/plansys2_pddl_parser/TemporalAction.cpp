@@ -43,6 +43,14 @@ void TemporalAction::PDDLPrint( std::ostream & s, unsigned indent, const TokenSt
 	printCondition( s, astruct, d, "at end", eff_e );
 	s << "\t)\n";
 
+     if (observe){
+         s << "  :observe\n";
+         s << "\t( and\n";
+         printCondition( s, astruct, d, "", (And *)observe );
+         s << "\t)\n";
+     }
+
+
 	s << ")\n";
 }
 
@@ -172,6 +180,13 @@ void TemporalAction::parse( Stringreader & f, TokenStruct< std::string > & ts, D
 	else ++f.c;
 
 	f.next();
+    s = f.getToken();
+    if ( s == ":observe" ) {
+        f.next();
+        observe = new And;
+        parseCondition(f, astruct, d, (And *)observe );
+    }
+
 	f.assert_token( ")" );
 }
 

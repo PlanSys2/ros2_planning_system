@@ -10,6 +10,7 @@
     (connected ?ro1 ?ro2 - room)
     (battery_full ?r - robot)
     (charging_point_at ?ro - room)
+    (location_known ?r - robot)
 )
 
 (:constants
@@ -57,5 +58,14 @@
          (at end(battery_full ?r))
     )
 )
+
+(:durative-action find_location
+    :parameters (?r - robot ?ro - room)
+    :duration ( = ?duration 20)
+    :condition (and (at start (not (location_known ?r))))
+    :effect (and (at end (location_known ?r)))
+    :observe (robot_at ?r ?ro)
+)
+
 
 )

@@ -10,7 +10,8 @@ public:
 	Domain &d;
 	std::string name;
 	GroundVec init, goal; // initial and goal states
-	
+	std::vector<Unknown> init_unknown; // initial and goal states
+
 	bool metric;
 
 	Instance( Domain & dom ) : d( dom ), metric( false ) {}
@@ -112,10 +113,30 @@ public:
 		v.push_back( c );
 	}
 
+    virtual void parseUnknown( Stringreader & f, std::vector<Unknown>& init_unknown) {
+        std::string unk = f.getToken();
+        f.next();
+        auto f_copy = f;
+        f_copy.assert_token( "(" );
+        TokenStruct< std::string > astruct = f_copy.parseTypedList( true, d.types );
+        GroundVec init2;
+        init_unknown.push_back(Unknown());
+        init_unknown.back().parse(f, astruct, d);
+//        parseGround( f, init2);
+//        std::string s = f.getToken();
+//        std::string s2 = f.getToken();
+//        f.assert_token( ")" );
+//        f.assert_token( ")" );
+    }
+
 	void parseInit( Stringreader & f ) {
 		for ( f.next(); f.getChar() != ')'; f.next() ) {
 			f.assert_token( "(" );
-			parseGround( f, init );
+            if (f.checkNext("unknown")){
+                parseUnknown(f, init_unknown);
+            } else{
+                parseGround( f, init );
+            }
 		}
 		++f.c;
 

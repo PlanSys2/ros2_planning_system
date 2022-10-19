@@ -121,7 +121,7 @@ public:
 	template < typename T >
 	std::string getToken( const TokenStruct< T > & ts ) {
 		std::string t = getToken();
-		if ( ts.index( t ) < 0 )
+		if ( ts.index( t ) < 0)
 			tokenExit( t );
 		return t;
 	}
@@ -198,6 +198,18 @@ public:
 
 		return out;
 	}
+
+    // check if the expected string is next
+    bool checkNext( const std::string & u ) {
+        if (u.size() + c >= s.size()){
+            return false;
+        }
+        bool all_equal = true;
+        for ( unsigned i = 0; i < u.size(); ++i ) {
+            all_equal &= u[i] == s[c + i];
+        }
+        return all_equal;
+    }
 
 };
 
