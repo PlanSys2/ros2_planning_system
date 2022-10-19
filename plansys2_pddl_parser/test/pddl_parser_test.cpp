@@ -58,18 +58,18 @@ TEST(PDDLParserTestCase, pddl_parser)
   // Read domain and instance
   bool okparse = false;
   bool okprint = false;
-//  try {
+  try {
     parser::pddl::Domain domain( domain_str );
     parser::pddl::Instance instance( domain, instance_str );
     okparse = true;
-//    try {
+    try {
       std::cout << domain << std::endl;
       std::cout << instance << std::endl;
       okprint = true;
-//    } catch (std::runtime_error e) {
-//    }
-//  } catch (std::runtime_error e) {
-//  }
+    } catch (std::runtime_error e) {
+    }
+  } catch (std::runtime_error e) {
+  }
   ASSERT_TRUE(okparse);
   ASSERT_TRUE(okprint);
 }

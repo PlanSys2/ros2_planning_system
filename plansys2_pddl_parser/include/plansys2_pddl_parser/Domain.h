@@ -611,6 +611,7 @@ public:
 		if ( s == "oneof" ) return new Oneof;
 		if ( s == "or" ) return new Or;
 		if ( s == "when" ) return new When;
+		if ( s == "unkown" ) return new Unknown;
 		if ( s == "=" || s == ">=" || s == ">" || s == "<=" || s == "<" ) return new CompositeExpression( s );
 
 		int i = preds.index( s );

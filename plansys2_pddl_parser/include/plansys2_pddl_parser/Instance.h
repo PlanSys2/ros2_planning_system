@@ -10,7 +10,7 @@ public:
 	Domain &d;
 	std::string name;
 	GroundVec init, goal; // initial and goal states
-	std::vector<Unknown> init_unknown; // initial and goal states
+	std::vector<Condition*> init_cond; // initial and goal states
 
 	bool metric;
 
@@ -76,13 +76,13 @@ public:
 	}
 
 	void parseObjects( Stringreader & f ) {
-		TokenStruct< std::string > ts = f.parseTypedList( true, d.types );
+		objects_ts = f.parseTypedList( true, d.types );
 
-		for ( unsigned i = 0; i < ts.size(); ++i ) {
-			Type * type = d.getType( ts.types[i] );
-			std::pair< bool, unsigned > pair = type->parseObject( ts[i] );
+		for ( unsigned i = 0; i < objects_ts.size(); ++i ) {
+			Type * type = d.getType( objects_ts.types[i] );
+			std::pair< bool, unsigned > pair = type->parseObject( objects_ts[i] );
 			if ( pair.first == false )
-				type->objects.insert( ts[i] );
+				type->objects.insert( objects_ts[i] );
 		}
 
 		for ( unsigned i = 0; DOMAIN_DEBUG && i < d.types.size(); ++i ) {
@@ -94,46 +94,61 @@ public:
 		}
 	}
 
+    virtual void parseGroundFunc( Stringreader & f, TypeGround *& c) {
+        f.assert_token( "=" );
+        f.assert_token( "(" );
+
+        std::string s = f.getToken();
+        int i = d.funcs.index( s );
+        if ( i < 0 ) f.tokenExit( s );
+
+        if ( d.funcs[i]->returnType < 0 ){
+            c = new GroundFunc< double >( d.funcs[i] );
+        } else {
+            c = new GroundFunc< int >( d.funcs[i] );
+        }
+    }
+
+    virtual void parseUnknownGround(Stringreader & f, Condition *& c) {
+        auto s = f.getToken();
+        c = new Unknown();
+    }
+
+    virtual void parseOneOf(Stringreader & f, Condition *& c) {
+        auto s = f.getToken();
+        c = new Oneof();
+    }
+
+    virtual void  parseConditional(Stringreader & f, std::vector<Condition*> & v ) {
+        Condition * c = 0;
+        if (f.checkNext("unknown")){
+            parseUnknownGround(f, c);
+        } else if (f.checkNext("oneof")){
+            parseOneOf(f, c);
+        } else {
+            throw UnknownToken(f.getToken());
+        }
+        c->parse(f, objects_ts, d );
+        v.push_back( c );
+    }
 
 	virtual void parseGround( Stringreader & f, GroundVec & v ) {
 		TypeGround * c = 0;
 		if ( f.getChar() == '=') {
-			f.assert_token( "=" );
-			f.assert_token( "(" );
-
-			std::string s = f.getToken();
-			int i = d.funcs.index( s );
-			if ( i < 0 ) f.tokenExit( s );
-			
-			if ( d.funcs[i]->returnType < 0 ) c = new GroundFunc< double >( d.funcs[i] );
-			else c = new GroundFunc< int >( d.funcs[i] );
-		}
-		else c = new TypeGround( d.preds.get( f.getToken( d.preds ) ) );
-		c->parse( f, d.types[0]->constants, d );
+            parseGroundFunc(f, c);
+		}  else {
+            // parseTypeGround
+            c = new TypeGround( d.preds.get( f.getToken( d.preds ) ) );
+        }
+        c->parse( f, d.types[0]->constants, d );
 		v.push_back( c );
 	}
-
-    virtual void parseUnknown( Stringreader & f, std::vector<Unknown>& init_unknown) {
-        std::string unk = f.getToken();
-        f.next();
-        auto f_copy = f;
-        f_copy.assert_token( "(" );
-        TokenStruct< std::string > astruct = f_copy.parseTypedList( true, d.types );
-        GroundVec init2;
-        init_unknown.push_back(Unknown());
-        init_unknown.back().parse(f, astruct, d);
-//        parseGround( f, init2);
-//        std::string s = f.getToken();
-//        std::string s2 = f.getToken();
-//        f.assert_token( ")" );
-//        f.assert_token( ")" );
-    }
 
 	void parseInit( Stringreader & f ) {
 		for ( f.next(); f.getChar() != ')'; f.next() ) {
 			f.assert_token( "(" );
-            if (f.checkNext("unknown")){
-                parseUnknown(f, init_unknown);
+            if (f.checkNext("unknown") || f.checkNext("oneof")){
+                parseConditional(f, init_cond);
             } else{
                 parseGround( f, init );
             }
@@ -250,6 +265,10 @@ public:
 			( (TypeGround*)init[i])->PDDLPrint( stream, 1, TokenStruct< std::string >(), d );
 			stream << "\n";
 		}
+        for ( unsigned i = 0; i < init_cond.size(); ++i ) {
+            ( (Condition*)init_cond[i])->PDDLPrint( stream, 1, TokenStruct< std::string >(), d );
+            stream << "\n";
+        }
 		stream << ")\n";
 
 		stream << "( :goal\n";
@@ -272,6 +291,9 @@ public:
 		return stream;
 	}
 
-};
+    private:
+        TokenStruct< std::string > objects_ts;
+
+        };
 
 } } // namespaces

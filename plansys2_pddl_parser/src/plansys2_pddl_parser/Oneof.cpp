@@ -21,7 +21,8 @@ plansys2_msgs::msg::Node::SharedPtr Oneof::getTree( plansys2_msgs::msg::Tree & t
 void Oneof::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	for ( f.next(); f.getChar() != ')'; f.next() ) {
 		f.assert_token( "(" );
-		Condition * condition = d.createCondition( f );
+//		Condition * condition = d.createCondition( f );
+		Condition * condition = new TypeGround(d.preds.get( f.getToken( d.preds ) ) );
 		condition->parse( f, ts, d );
 		conds.push_back( condition );
 	}

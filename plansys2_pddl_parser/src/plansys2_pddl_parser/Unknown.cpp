@@ -3,29 +3,26 @@
 
 namespace parser { namespace pddl {
 
-void Unknown::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
-	tabindent( s, indent );
-	s << "( Unknown\n";
-	for ( unsigned i = 0; i < conds.size(); ++i ) {
-		conds[i]->PDDLPrint( s, indent + 1, ts, d );
-		s << "\n";
-	}
-	tabindent( s, indent );
-	s << ")";
-}
+        void Unknown::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
+            tabindent( s, indent );
+            s << "( unknown ";
+            conds[0]->PDDLPrint( s, 0, ts, d );
+            tabindent( s, indent );
+            s << ")";
+        }
 
-plansys2_msgs::msg::Node::SharedPtr Unknown::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
-    throw UnsupportedConstruct("Unknown");
-}
+        plansys2_msgs::msg::Node::SharedPtr Unknown::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+            throw UnsupportedConstruct("Unknown");
+        }
 
-void Unknown::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
-	for ( f.next(); f.getChar() != ')'; f.next() ) {
-		f.assert_token( "(" );
-		Condition * condition = d.createCondition( f );
-		condition->parse( f, ts, d );
-		conds.push_back( condition );
-	}
-	++f.c;
-}
+        void Unknown::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
+            f.next();
+            f.assert_token( "(" );
+            Condition * condition = new TypeGround(d.preds.get( f.getToken( d.preds ) ) );
+            condition->parse( f, ts, d );
+            conds.push_back( condition );
 
-} } // namespaces
+            f.assert_token(")");
+        }
+
+    } } // namespaces
