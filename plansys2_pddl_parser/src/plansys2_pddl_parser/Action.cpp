@@ -14,15 +14,24 @@ namespace parser {
 
       printParams(0, s, astruct, d);
 
-      s << "  :precondition\n";
-      if (pre) pre->PDDLPrint(s, 1, astruct, d);
-      else s << "\t()";
-      s << "\n";
 
-      s << "  :effect\n";
-      if (eff) eff->PDDLPrint(s, 1, astruct, d);
-      else s << "\t()";
-      s << "\n";
+      if (pre){
+        s << "  :precondition\n";
+        pre->PDDLPrint(s, 1, astruct, d);
+      }
+//      else s << "\t()";
+
+
+
+      if (eff) {
+        s << "  :effect\n";
+        eff->PDDLPrint(s, 1, astruct, d);
+      }
+
+      if (observe) {
+        s << "  :observe";
+        observe->PDDLPrint(s, 1, astruct, d);
+      }
 
       s << ")\n";
     }
@@ -46,7 +55,7 @@ namespace parser {
       f.next();
       f.assert_token(":");
       std::string s = f.getToken();
-      if (s == "precondition") {
+      if (s == "precondition" || s == "condition") {
         f.next();
         f.assert_token("(");
         if (f.getChar() != ')') {

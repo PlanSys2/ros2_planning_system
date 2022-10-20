@@ -1,37 +1,52 @@
-(define (domain blocksworld)
-(:requirements :strips :typing :disjunctive-preconditions)
-(:types block)
-(:predicates (clear ?x - block)
-             (on-table ?x - block)
-             (on ?x ?y - block)
+(define (problem three-block)
+(:domain blocksworld)
+(:objects b1 b2 b3 - block)
+(:init
+(on-table b1)
+(clear b1)
+(unknown (on-table b3))
+(unknown (clear b3))
+(unknown (on b3 b2))
+(unknown (on-table b2))
+(unknown (clear b2))
+(unknown (on b2 b3))
+(or
+(not (on b3 b2))
+(not (on b2 b3))
+)
+(or
+(not (on b2 b3))
+(not (on b3 b2))
+)
+(oneof
+(clear b3)
+(clear b2)
+)
+(oneof
+(on-table b3)
+(on-table b2)
+)
+(oneof
+(on-table b3)
+(on b3 b2)
+)
+(oneof
+(on-table b2)
+(on b2 b3)
+)
+(oneof
+(clear b3)
+(on b2 b3)
+)
+(oneof
+(clear b2)
+(on b3 b2)
+)
+)
+(:goal
+(and
+(on b2 b1)
+(on b3 b2))
+)
 )
 
-  (:action senseON
-   :parameters (?b1 ?b2)
-   :observe (on ?b1 ?b2))
-
-  (:action senseCLEAR
-   :parameters (?b1)
-   :observe (clear ?b1))
-
-  (:action senseONTABLE
-   :parameters (?b1)
-   :observe (on-table ?b1))
-
-(:action move-b-to-b
-  :parameters (?bm ?bf ?bt)
-  :precondition (and (clear ?bm) (clear ?bt) (on ?bm ?bf))
-  :effect (and (not (clear ?bt)) (not (on ?bm ?bf))
-               (on ?bm ?bt) (clear ?bf)))
-
-(:action move-to-t
-  :parameters (?b ?bf)
-  :precondition (and (clear ?b) (on ?b ?bf))
-  :effect (and (on-table ?b) (not (on ?b ?bf)) (clear ?bf))
-  )
-
-(:action move-t-to-b
-  :parameters (?bm ?bt)
-  :precondition (and (clear ?bm) (clear ?bt) (on-table ?bm))
-  :effect (and (not (clear ?bt)) (not (on-table ?bm))
-               (on ?bm ?bt))))

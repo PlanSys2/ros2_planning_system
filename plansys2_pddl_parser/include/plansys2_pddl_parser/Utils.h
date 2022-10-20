@@ -94,6 +94,10 @@ std::string toStringAnd(const plansys2_msgs::msg::Tree & tree, uint32_t node_id,
 
 std::string toStringOr(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
 
+std::string toStringUnknown(const plansys2_msgs::msg::Tree & tree, uint32_t node_id);
+
+std::string toStringOneOf(const plansys2_msgs::msg::Tree & tree, uint32_t node_id);
+
 std::string toStringNot(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
 
 std::string toStringExpression(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);

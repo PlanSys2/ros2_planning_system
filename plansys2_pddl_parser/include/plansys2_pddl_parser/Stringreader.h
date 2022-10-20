@@ -201,7 +201,7 @@ public:
 
     // check if the expected string is next
     bool checkNext( const std::string & u ) {
-        if (u.size() + c >= s.size()){
+        if (u.size() + c > s.size()){
             return false;
         }
         bool all_equal = true;

@@ -26,12 +26,14 @@
 #include "plansys2_msgs/msg/tree.hpp"
 
 #include "plansys2_pddl_parser/Utils.h"
+#include "plansys2_pddl_parser/Condition.h"
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
 
 namespace plansys2
 {
   using PredicateSet = std::unordered_set<plansys2::Predicate, PredicateHashFunction>;
+  using ConditionPair = std::pair<parser::pddl::Condition*, parser::pddl::Condition*>;
 
 class ProblemExpert : public ProblemExpertInterface
 {
@@ -61,7 +63,11 @@ public:
   std::optional<PredicateSet> getOneOfPredicate(const PredicateSet  & predicate_set);
   bool existOneOfPredicate(const PredicateSet & predicate_set);
 
-
+  std::vector<std::string> getOrPredicates();
+  bool addOrPredicate(const std::string & cond);
+  bool removeOrPredicate(const std::string & cond);
+  std::optional<std::string> getOrPredicate(const std::string & cond);
+  bool existOrPredicate(const std::string & cond);
 
   std::vector<plansys2::Function> getFunctions();
   bool addFunction(const plansys2::Function & function);
@@ -105,6 +111,7 @@ private:
   std::vector<plansys2::Function> functions_;
   std::vector<plansys2::Predicate> unknown_predicates_;
   std::vector<PredicateSet> oneof_predicates_;
+  std::vector<std::string> or_conditions_;
   plansys2::Goal goal_;
 
   std::shared_ptr<DomainExpert> domain_expert_;

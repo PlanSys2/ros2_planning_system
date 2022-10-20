@@ -119,12 +119,19 @@ namespace parser {
         c = new Oneof();
       }
 
+      virtual void parseOr(Stringreader &f, Condition *&c) {
+        auto s = f.getToken();
+        c = new Or();
+      }
+
       virtual void parseConditional(Stringreader &f, std::vector<Condition *> &v) {
         Condition *c = 0;
         if (f.checkNext("unknown")) {
           parseUnknownGround(f, c);
         } else if (f.checkNext("oneof")) {
           parseOneOf(f, c);
+        } else if (f.checkNext("or")) {
+          parseOr(f, c);
         } else {
           throw UnknownToken(f.getToken());
         }
@@ -147,7 +154,7 @@ namespace parser {
       void parseInit(Stringreader &f) {
         for (f.next(); f.getChar() != ')'; f.next()) {
           f.assert_token("(");
-          if (f.checkNext("unknown") || f.checkNext("oneof")) {
+          if (f.checkNext("unknown") || f.checkNext("oneof") || f.checkNext("or")) {
             parseConditional(f, init_cond);
           } else {
             parseGround(f, init);
@@ -262,6 +269,31 @@ namespace parser {
         }
         init_cond.push_back(oneof);
       }
+
+//      // add an unknown predicate to the initial state
+//      void addInitOr(const std::pair<std::string,std::string> &names, const std::pair<StringVec,StringVec> &vecs = {}) {
+//        auto or_ = new Or();
+//        TypeGround *tg1 = new TypeGround(d.preds.get(names.first));
+//        tg1->insert(d, vecs.first);
+//        TypeGround *tg2 = new TypeGround(d.preds.get(names.second));
+//        tg2->insert(d, vecs.second);
+//        or_->addConditions(tg1, tg2);
+//        init_cond.push_back(or_);
+//      }
+
+      // add an unknown predicate to the initial state
+      void addInitOr(const std::string & or_cond) {
+//        auto or_ = new Or();
+//        plansys2_msgs::msg::Tree tree;
+//        parser::pddl::fromString(tree, or_cond);
+//        TypeGround *tg1 = new TypeGround(d.preds.get(names.first));
+//        tg1->insert(d, vecs.first);
+//        TypeGround *tg2 = new TypeGround(d.preds.get(names.second));
+//        tg2->insert(d, vecs.second);
+//        or_->addConditions(or_cond.first, or_cond.second);
+//        init_cond.push_back(or_);
+      }
+
 
       friend std::ostream &operator<<(std::ostream &os, const Instance &o) { return o.print(os); }
 

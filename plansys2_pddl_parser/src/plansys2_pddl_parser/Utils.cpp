@@ -339,6 +339,12 @@ namespace parser {
         case plansys2_msgs::msg::Node::NOT:
           ret = toStringNot(tree, node_id, negate);
           break;
+        case plansys2_msgs::msg::Node::UNKNOWN:
+          ret = toStringUnknown(tree, node_id);
+          break;
+        case plansys2_msgs::msg::Node::ONE_OF:
+          ret = toStringOneOf(tree, node_id);
+          break;
         case plansys2_msgs::msg::Node::EXPRESSION:
           ret = toStringExpression(tree, node_id, negate);
           break;
@@ -461,6 +467,44 @@ namespace parser {
 
       for (auto child_id: tree.nodes[node_id].children) {
         ret += toString(tree, child_id, negate);
+      }
+      ret += ")";
+
+      return ret;
+    }
+
+    std::string toStringOneOf(const plansys2_msgs::msg::Tree &tree, uint32_t node_id) {
+      if (node_id >= tree.nodes.size()) {
+        return {};
+      }
+
+      if (tree.nodes[node_id].children.empty()) {
+        return {};
+      }
+
+      std::string ret = "(oneof ";
+
+      for (auto child_id: tree.nodes[node_id].children) {
+        ret += toString(tree, child_id);
+      }
+      ret += ")";
+
+      return ret;
+    }
+
+    std::string toStringUnknown(const plansys2_msgs::msg::Tree &tree, uint32_t node_id) {
+      if (node_id >= tree.nodes.size()) {
+        return {};
+      }
+
+      if (tree.nodes[node_id].children.empty()) {
+        return {};
+      }
+
+      std::string ret = "(unknown ";
+
+      for (auto child_id: tree.nodes[node_id].children) {
+        ret += toString(tree, child_id);
       }
       ret += ")";
 

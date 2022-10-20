@@ -894,6 +894,84 @@ TEST(problem_expert, add_problem_with_constants) {
   ASSERT_EQ(problem_expert.getProblem(), problem_1_str);
 }
 
+TEST(problem_expert, add_problem_observe) {
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_blocks_observe.pddl");
+  std::string domain_str((
+                             std::istreambuf_iterator<char>(domain_ifs)),
+                         std::istreambuf_iterator<char>());
+
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  std::ifstream problem_1_ifs(pkgpath + "/pddl/problem_blocks_observe.pddl");
+  std::string problem_1_str((
+                                std::istreambuf_iterator<char>(problem_1_ifs)),
+                            std::istreambuf_iterator<char>());
+  ASSERT_TRUE(problem_expert.addProblem(problem_1_str));
+
+//  ASSERT_TRUE(problem_expert.isValidType("robot"));
+//  ASSERT_TRUE(problem_expert.isValidType("person"));
+//  ASSERT_TRUE(problem_expert.isValidType("room"));
+//  ASSERT_TRUE(problem_expert.isValidType("teleporter_room"));
+//  ASSERT_TRUE(problem_expert.isValidType("message"));
+//
+//  ASSERT_EQ(problem_expert.getInstances().size(), 7);
+//  ASSERT_EQ(problem_expert.getPredicates().size(), 2);
+//  ASSERT_EQ(problem_expert.getFunctions().size(), 0);
+//
+//  ASSERT_TRUE(problem_expert.existInstance("leia"));
+//  ASSERT_TRUE(problem_expert.existInstance("lema"));
+//  ASSERT_TRUE(problem_expert.existInstance("jack"));
+//  ASSERT_TRUE(problem_expert.existInstance("john"));
+//  ASSERT_TRUE(problem_expert.existInstance("kitchen"));
+//  ASSERT_TRUE(problem_expert.existInstance("bedroom"));
+//  ASSERT_TRUE(problem_expert.existInstance("m1"));
+//
+//  ASSERT_FALSE(problem_expert.existInstance("r2d2"));
+//  ASSERT_FALSE(problem_expert.existInstance("hallway"));
+//  ASSERT_FALSE(problem_expert.existInstance("m2"));
+//
+//  ASSERT_TRUE(
+//      problem_expert.existPredicate(
+//          parser::pddl::fromStringPredicate(
+//              "(robot_at leia kitchen)")));
+//  ASSERT_TRUE(
+//      problem_expert.existPredicate(
+//          parser::pddl::fromStringPredicate(
+//              "(person_at jack bedroom)")));
+//
+//  ASSERT_EQ(parser::pddl::toString(problem_expert.getGoal()), "(and (robot_talk leia m1 jack))");
+//
+//  ASSERT_EQ(
+//      problem_expert.getProblem(),
+//      std::string("( define ( problem problem_1 )\n( :domain plansys2 )\n") +
+//      std::string("( :objects\n\tm1 - message\n\tkitchen bedroom - room\n)\n") +
+//      std::string("( :init\n\t( robot_at leia kitchen )\n\t( person_at jack bedroom )\n)\n") +
+//      std::string("( :goal\n\t( and\n\t\t") +
+//      std::string("( robot_talk leia m1 jack )\n\t)\n)\n)\n"));
+//
+//  ASSERT_TRUE(problem_expert.clearKnowledge());
+//  ASSERT_EQ(problem_expert.getPredicates().size(), 0);
+//  ASSERT_EQ(problem_expert.getFunctions().size(), 0);
+//  ASSERT_EQ(problem_expert.getInstances().size(), 0);
+//  ASSERT_EQ(
+//      problem_expert.getProblem(),
+//      std::string("( define ( problem problem_1 )\n( :domain plansys2 )\n") +
+//      std::string("( :objects\n)\n( :init\n)\n( :goal\n\t( and\n\t)\n)\n)\n"));
+//
+//
+//  std::ifstream problem_2_ifs(pkgpath + "/pddl/problem_simple_constants_2.pddl");
+//  std::string problem_2_str((
+//                                std::istreambuf_iterator<char>(problem_2_ifs)),
+//                            std::istreambuf_iterator<char>());
+//  ASSERT_TRUE(problem_expert.addProblem(problem_2_str));
+//
+//  ASSERT_NE(problem_1_str, problem_2_str);
+//  ASSERT_NE(problem_expert.getProblem(), problem_2_str);
+//  ASSERT_EQ(problem_expert.getProblem(), problem_1_str);
+}
+
 TEST(problem_expert, is_goal_satisfied) {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
