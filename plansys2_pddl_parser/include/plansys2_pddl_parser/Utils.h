@@ -38,7 +38,7 @@ std::string getReducedString(const std::string & expr);
  * \param[in] input The input string
  * \return The node type
  */
-uint8_t getNodeType(const std::string & expr, uint8_t def = plansys2_msgs::msg::Node::UNKNOWN);
+uint8_t getNodeType(const std::string & expr, uint8_t def = plansys2_msgs::msg::Node::NONE);
 
 /// Returns expression type and start position of an expression in a string
 /**
@@ -109,9 +109,9 @@ std::string toStringFunctionModifier(const plansys2_msgs::msg::Tree & tree, uint
  * \param[in] construct A string containing the associated PDDL constructs
  * \return A smart pointer to the node created
 */
-plansys2_msgs::msg::Node::SharedPtr fromString(plansys2_msgs::msg::Tree & tree, const std::string & expr, bool negate = false, uint8_t parent = plansys2_msgs::msg::Node::UNKNOWN);
+plansys2_msgs::msg::Node::SharedPtr fromString(plansys2_msgs::msg::Tree & tree, const std::string & expr, bool negate = false, uint8_t parent = plansys2_msgs::msg::Node::NONE);
 
-plansys2_msgs::msg::Tree fromString(const std::string & expr, bool negate = false, uint8_t parent = plansys2_msgs::msg::Node::UNKNOWN);
+plansys2_msgs::msg::Tree fromString(const std::string & expr, bool negate = false, uint8_t parent = plansys2_msgs::msg::Node::NONE);
 
 plansys2_msgs::msg::Node fromStringPredicate(const std::string & predicate);
 

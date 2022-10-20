@@ -500,7 +500,7 @@ TEST(utils, evaluate_expression_invalid)
   // Unknown expression type
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(test_tree, "(> (vx) 0)", false, plansys2_msgs::msg::Node::AND);
-  test_tree.nodes[0].expression_type = plansys2_msgs::msg::Node::UNKNOWN;
+  test_tree.nodes[0].expression_type = plansys2_msgs::msg::Node::NONE;
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree, predicates, functions),
@@ -746,7 +746,7 @@ TEST(utils, evaluate_function_mod_invalid)
   parser::pddl::fromString(
     test_tree, "(assign (vx) 3.0)", false,
     plansys2_msgs::msg::Node::EXPRESSION);
-  test_tree.nodes[0].node_type = plansys2_msgs::msg::Node::UNKNOWN;
+  test_tree.nodes[0].node_type = plansys2_msgs::msg::Node::NONE;
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree, predicates, functions),
@@ -839,7 +839,7 @@ TEST(utils, evaluate_invalid)
     std::make_tuple(true, true, 0));
 
   parser::pddl::fromString(test_tree, "(patrolled wp1)", false, plansys2_msgs::msg::Node::AND);
-  test_tree.nodes.front().node_type = plansys2_msgs::msg::Node::UNKNOWN;
+  test_tree.nodes.front().node_type = plansys2_msgs::msg::Node::NONE;
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree, problem_client, predicates, functions),

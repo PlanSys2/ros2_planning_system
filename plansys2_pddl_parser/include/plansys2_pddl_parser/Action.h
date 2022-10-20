@@ -12,29 +12,32 @@ class Action : public ParamCond {
 
 public:
 
-	Condition *pre, *eff;
+	Condition *pre, *eff, *observe;
 
 	Action( const std::string & s )
-		: ParamCond( s ), pre( 0 ), eff( 0 ) {}
+		: ParamCond( s ), pre( 0 ), eff( 0 ), observe( 0 ) {}
 
 	Action( ParamCond * c )
-		: ParamCond( c ), pre( 0 ), eff( 0 ) {}
+		: ParamCond( c ), pre( 0 ), eff( 0 ), observe( 0 ) {}
 
 	Action( const Action * a, Domain & d )
-		: ParamCond( a ), pre( 0 ), eff( 0 ) {
+		: ParamCond( a ), pre( 0 ), eff( 0 ), observe( 0 ) {
 		if ( a->pre ) pre = a->pre->copy( d );
 		if ( a->eff ) eff = a->eff->copy( d );
+		if ( a->observe ) observe = a->observe->copy( d );
 	}
 
 	virtual ~Action() {
 		if ( pre ) delete pre;
 		if ( eff ) delete eff;
+		if ( observe ) delete observe;
 	}
 
 	void print( std::ostream & s ) const {
 		s << name << params << "\n";
 		s << "Pre: " << pre;
 		if ( eff ) s << "Eff: " << eff;
+		if ( observe ) s << "Obs: " << observe;
 	}
 
 	virtual double duration() {
@@ -54,6 +57,7 @@ public:
 	void addParams( const IntVec & v ) {
 		if ( pre ) pre->addParams( params.size(), v.size() );
 		if ( eff ) eff->addParams( params.size(), v.size() );
+		if ( observe ) observe->addParams( params.size(), v.size() );
 		params.insert( params.end(), v.begin(), v.end() );
 	}
 

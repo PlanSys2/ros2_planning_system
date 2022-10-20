@@ -304,8 +304,12 @@ std::tuple<bool, bool, double> evaluate(
         return std::make_tuple(true, true, tree.nodes[node_id].value);
       }
 
+//    case plansys2_msgs::msg::Node::UNKNOWN: {
+//          return std::make_tuple(true, true, 0);
+//    }
+
     default:
-      std::cerr << "evaluate: Error parsing expresion [" <<
+      std::cerr << "evaluate: Error parsing expression [" <<
         parser::pddl::toString(tree, node_id) << "]" << std::endl;
   }
 

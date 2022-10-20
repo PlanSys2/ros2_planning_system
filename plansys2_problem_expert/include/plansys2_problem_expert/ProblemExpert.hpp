@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <unordered_set>
 
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/param.hpp"
@@ -30,6 +31,7 @@
 
 namespace plansys2
 {
+  using PredicateSet = std::unordered_set<plansys2::Predicate, PredicateHashFunction>;
 
 class ProblemExpert : public ProblemExpertInterface
 {
@@ -46,6 +48,20 @@ public:
   bool removePredicate(const plansys2::Predicate & predicate);
   bool existPredicate(const plansys2::Predicate & predicate);
   std::optional<plansys2::Predicate> getPredicate(const std::string & expr);
+
+  std::vector<plansys2::Predicate> getUnknownPredicates();
+  bool addUnknownPredicate(const plansys2::Predicate & predicate);
+  bool removeUnknownPredicate(const plansys2::Predicate & predicate);
+  std::optional<plansys2::Predicate> getUnknownPredicate(const std::string & expr);
+  bool existUnknownPredicate(const plansys2::Predicate & predicate);
+
+  std::vector<PredicateSet> getOneOfPredicates();
+  bool addOneOfPredicate(const PredicateSet & predicate_set);
+  bool removeOneOfPredicate(const PredicateSet & predicate_set);
+  std::optional<PredicateSet> getOneOfPredicate(const PredicateSet  & predicate_set);
+  bool existOneOfPredicate(const PredicateSet & predicate_set);
+
+
 
   std::vector<plansys2::Function> getFunctions();
   bool addFunction(const plansys2::Function & function);
@@ -87,6 +103,8 @@ private:
   std::vector<plansys2::Instance> instances_;
   std::vector<plansys2::Predicate> predicates_;
   std::vector<plansys2::Function> functions_;
+  std::vector<plansys2::Predicate> unknown_predicates_;
+  std::vector<PredicateSet> oneof_predicates_;
   plansys2::Goal goal_;
 
   std::shared_ptr<DomainExpert> domain_expert_;

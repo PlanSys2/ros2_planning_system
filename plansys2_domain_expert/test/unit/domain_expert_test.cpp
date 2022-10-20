@@ -293,6 +293,35 @@ TEST(domain_expert, get_actions)
   ASSERT_EQ(durative_actions[2], "approach");
 }
 
+TEST(domain_expert, get_actions_observe)
+{
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+    std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_observe.pddl");
+    std::string domain_str((
+                                   std::istreambuf_iterator<char>(domain_ifs)),
+                           std::istreambuf_iterator<char>());
+
+    plansys2::DomainExpert domain_expert(domain_str);
+
+    auto actions = domain_expert.getActions();
+    ASSERT_EQ(actions.size(), 2);
+    ASSERT_EQ(actions[0], "move_person");
+    ASSERT_EQ(actions[1], "find_person");
+
+    auto durative_actions = domain_expert.getDurativeActions();
+    ASSERT_EQ(durative_actions.size(), 4);
+    ASSERT_EQ(durative_actions[0], "move");
+    ASSERT_EQ(durative_actions[1], "talk");
+    ASSERT_EQ(durative_actions[2], "approach");
+    ASSERT_EQ(durative_actions[3], "find_person_durative");
+
+    auto find_person_durative = domain_expert.getDurativeAction("find_person_durative", {});
+    ASSERT_EQ(find_person_durative->observe.nodes.size(), 2);
+    auto find_person = domain_expert.getAction("find_person", {});
+    ASSERT_EQ(find_person->observe.nodes.size(), 2);
+
+}
+
 
 TEST(domain_expert, get_action_params)
 {

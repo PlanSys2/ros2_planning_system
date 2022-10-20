@@ -63,7 +63,12 @@
     :parameters (?r - robot ?ro - room)
     :duration ( = ?duration 20)
     :condition (and (at start (not (location_known ?r))))
-    :effect (and (at end (location_known ?r)))
+    :observe (robot_at ?r ?ro)
+)
+
+(:action find_location_action
+    :parameters (?r - robot ?ro - room)
+    :precondition (and (not (location_known ?r)) )
     :observe (robot_at ?r ?ro)
 )
 

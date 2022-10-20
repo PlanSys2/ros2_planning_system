@@ -18,17 +18,16 @@ public:
 
 	Expression * durationExpr;
 	// pre_s and eff_s inherited from Action
-	And *pre_o, *pre_e, *eff_e, *observe;
+	And *pre_o, *pre_e, *eff_e;
 
 	TemporalAction( const std::string & s )
-		: Action( s ), durationExpr( 0 ), pre_o( 0 ), pre_e( 0 ), eff_e( 0 ), observe( 0 ) {}
+		: Action( s ), durationExpr( 0 ), pre_o( 0 ), pre_e( 0 ), eff_e( 0 ) {}
 
 	~TemporalAction() {
 		if ( durationExpr ) delete durationExpr;
 		if ( pre_o ) delete pre_o;
 		if ( pre_e ) delete pre_e;
 		if ( eff_e ) delete eff_e;
-		if ( observe ) delete observe;
 	}
 
 	void print( std::ostream & s ) const {

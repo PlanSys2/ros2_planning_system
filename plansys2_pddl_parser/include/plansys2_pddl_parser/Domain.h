@@ -135,7 +135,7 @@ public:
 		else if ( s == "non-deterministic" ) nondet = true;
 		else if ( s == "universal-preconditions" ) universal = true;
 		else if ( s == "fluents" ) fluents = true;
-		else if ( s == "disjuntive-preconditions" ) disj = true;
+		else if ( s == "disjunctive-preconditions" ) disj = true;
 		else if ( s == "derived-predicates" ) derivedpred = true;
 		else return false; // Unknown requirement
 

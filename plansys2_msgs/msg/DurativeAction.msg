@@ -6,3 +6,4 @@ plansys2_msgs/Tree over_all_requirements
 plansys2_msgs/Tree at_end_requirements
 plansys2_msgs/Tree at_start_effects
 plansys2_msgs/Tree at_end_effects
+plansys2_msgs/Tree observe
