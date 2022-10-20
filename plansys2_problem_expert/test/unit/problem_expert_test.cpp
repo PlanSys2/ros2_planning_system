@@ -651,7 +651,7 @@ TEST(problem_expert, get_problem) {
 
 TEST(problem_expert, get_problem_observe) {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/problem_blocks_observe.pddl");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_blocks_observe.pddl");
   std::string domain_str((
                              std::istreambuf_iterator<char>(domain_ifs)),
                          std::istreambuf_iterator<char>());
@@ -695,7 +695,18 @@ TEST(problem_expert, get_problem_observe) {
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("b2", "block")));
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("b3", "block")));
 
-  problem_expert.addOneOfPredicate({on_b2_b3, on_table_b2});
+  ASSERT_TRUE(problem_expert.addOneOfPredicate({on_b2_b3, on_table_b2}));
+
+  auto or_cond = plansys2::Or("(or (on b2 b3) (on b3 b2))");
+  ASSERT_TRUE(problem_expert.addOrCondition(or_cond));
+  ASSERT_TRUE(problem_expert.removeOrCondition(or_cond));
+  ASSERT_TRUE(problem_expert.addOrCondition(or_cond));
+
+  auto or_cond2 = plansys2::Or("(or (not (clear b1)) (clear b1))");
+  ASSERT_TRUE(problem_expert.addOrCondition(or_cond2));
+  ASSERT_TRUE(problem_expert.removeOrCondition(or_cond2));
+  ASSERT_TRUE(problem_expert.addOrCondition(or_cond2));
+
   ASSERT_EQ(problem_expert.getOneOfPredicates().size(), 1);
   ASSERT_EQ(problem_expert.getOneOfPredicates().front().size(), 2);
   ASSERT_TRUE(problem_expert.getOneOfPredicate({on_b2_b3, on_table_b2}) );
@@ -715,13 +726,13 @@ TEST(problem_expert, get_problem_observe) {
   parser::pddl::fromString(goal, "(and (on b1 b2))");
   ASSERT_TRUE(problem_expert.setGoal(goal));
 
-  auto tmp = std::string("( define ( problem problem_1 )\n( :domain blocksworld )\n( :objects\n\tb1 b2 b3 - block\n)")
-             + std::string(
-      "\n( :init\n\t( on-table b1 )\n\t( clear b1 )\n\t( on-table b3 )\n\t( unknown ( on-table b2 )\t)\n")
-             + std::string(
-      "\t( unknown ( on b2 b3 )\t)\n\t( oneof\n\t\t( on-table b2 )\n\t\t( on b2 b3 )\n\t)\n)\n( :goal\n\t( and\n")
-             + std::string("\t\t( on b1 b2 )\n\t)\n)\n)\n");
-  ASSERT_EQ(problem_expert.getProblem(), tmp);
+  auto tmp = std::string("( define ( problem problem_1 )\n( :domain blocksworld )\n( :objects\n\tb1 b2 b3 ") +
+    std::string("- block\n)\n( :init\n\t( on-table b1 )\n\t( clear b1 )\n\t( on-table b3 )\n\t( unknown ( on-table ") +
+    std::string("b2 )\t)\n\t( unknown ( on b2 b3 )\t)\n\t( oneof\n\t\t( on-table b2 )\n\t\t( on b2 b3 )\n\t)\n\t( or") +
+    std::string("\n\t\t( on b2 b3 )\n\t\t( on b3 b2 )\n\t)\n\t( or\n\t\t( not ( clear b1 ) )\n\t\t( clear b1 )\n\t)\n)\n( :goal\n\t( and\n\t\t( on b1 b2 )\n\t)\n)\n)\n");
+  auto problem_str = problem_expert.getProblem();
+  std::cout << problem_str;
+  ASSERT_EQ(problem_str, tmp);
 
   ASSERT_TRUE(problem_expert.clearKnowledge());
   ASSERT_EQ(problem_expert.getPredicates().size(), 0);
@@ -910,66 +921,50 @@ TEST(problem_expert, add_problem_observe) {
                             std::istreambuf_iterator<char>());
   ASSERT_TRUE(problem_expert.addProblem(problem_1_str));
 
-//  ASSERT_TRUE(problem_expert.isValidType("robot"));
-//  ASSERT_TRUE(problem_expert.isValidType("person"));
-//  ASSERT_TRUE(problem_expert.isValidType("room"));
-//  ASSERT_TRUE(problem_expert.isValidType("teleporter_room"));
-//  ASSERT_TRUE(problem_expert.isValidType("message"));
-//
-//  ASSERT_EQ(problem_expert.getInstances().size(), 7);
-//  ASSERT_EQ(problem_expert.getPredicates().size(), 2);
-//  ASSERT_EQ(problem_expert.getFunctions().size(), 0);
-//
-//  ASSERT_TRUE(problem_expert.existInstance("leia"));
-//  ASSERT_TRUE(problem_expert.existInstance("lema"));
-//  ASSERT_TRUE(problem_expert.existInstance("jack"));
-//  ASSERT_TRUE(problem_expert.existInstance("john"));
-//  ASSERT_TRUE(problem_expert.existInstance("kitchen"));
-//  ASSERT_TRUE(problem_expert.existInstance("bedroom"));
-//  ASSERT_TRUE(problem_expert.existInstance("m1"));
-//
-//  ASSERT_FALSE(problem_expert.existInstance("r2d2"));
-//  ASSERT_FALSE(problem_expert.existInstance("hallway"));
-//  ASSERT_FALSE(problem_expert.existInstance("m2"));
-//
-//  ASSERT_TRUE(
-//      problem_expert.existPredicate(
-//          parser::pddl::fromStringPredicate(
-//              "(robot_at leia kitchen)")));
-//  ASSERT_TRUE(
-//      problem_expert.existPredicate(
-//          parser::pddl::fromStringPredicate(
-//              "(person_at jack bedroom)")));
-//
-//  ASSERT_EQ(parser::pddl::toString(problem_expert.getGoal()), "(and (robot_talk leia m1 jack))");
-//
-//  ASSERT_EQ(
-//      problem_expert.getProblem(),
-//      std::string("( define ( problem problem_1 )\n( :domain plansys2 )\n") +
-//      std::string("( :objects\n\tm1 - message\n\tkitchen bedroom - room\n)\n") +
-//      std::string("( :init\n\t( robot_at leia kitchen )\n\t( person_at jack bedroom )\n)\n") +
-//      std::string("( :goal\n\t( and\n\t\t") +
-//      std::string("( robot_talk leia m1 jack )\n\t)\n)\n)\n"));
-//
-//  ASSERT_TRUE(problem_expert.clearKnowledge());
-//  ASSERT_EQ(problem_expert.getPredicates().size(), 0);
-//  ASSERT_EQ(problem_expert.getFunctions().size(), 0);
-//  ASSERT_EQ(problem_expert.getInstances().size(), 0);
-//  ASSERT_EQ(
-//      problem_expert.getProblem(),
-//      std::string("( define ( problem problem_1 )\n( :domain plansys2 )\n") +
-//      std::string("( :objects\n)\n( :init\n)\n( :goal\n\t( and\n\t)\n)\n)\n"));
-//
-//
-//  std::ifstream problem_2_ifs(pkgpath + "/pddl/problem_simple_constants_2.pddl");
-//  std::string problem_2_str((
-//                                std::istreambuf_iterator<char>(problem_2_ifs)),
-//                            std::istreambuf_iterator<char>());
-//  ASSERT_TRUE(problem_expert.addProblem(problem_2_str));
-//
-//  ASSERT_NE(problem_1_str, problem_2_str);
-//  ASSERT_NE(problem_expert.getProblem(), problem_2_str);
-//  ASSERT_EQ(problem_expert.getProblem(), problem_1_str);
+  ASSERT_TRUE(problem_expert.isValidType("block"));
+
+  ASSERT_EQ(problem_expert.getInstances().size(), 3);
+  ASSERT_EQ(problem_expert.getPredicates().size(), 2);
+  ASSERT_EQ(problem_expert.getFunctions().size(), 0);
+  ASSERT_EQ(problem_expert.getUnknownPredicates().size(), 6);
+  ASSERT_EQ(problem_expert.getOneOfPredicates().size(), 6);
+  ASSERT_EQ(problem_expert.getOrCondition().size(), 2);
+
+  ASSERT_TRUE(problem_expert.existInstance("b1"));
+  ASSERT_TRUE(problem_expert.existInstance("b2"));
+  ASSERT_TRUE(problem_expert.existInstance("b3"));
+
+  ASSERT_TRUE(
+      problem_expert.existPredicate(
+          parser::pddl::fromStringPredicate(
+              "(on-table b1)")));
+  ASSERT_TRUE(
+      problem_expert.existPredicate(
+          parser::pddl::fromStringPredicate(
+              "(clear b1)")));
+
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getGoal()), "(and (on b2 b1)(on b3 b2))");
+
+  auto tmp1 = problem_expert.getProblem();
+  std::cout << tmp1;
+  auto tmp2 =  std::string("( define ( problem problem_1 )\n( :domain blocksworld )\n( :objects\n\tb1 b2 b3") +
+               std::string(" - block\n)\n( :init\n\t( on-table b1 )\n\t( clear b1 )\n\t( unknown ( on-table ") +
+               std::string("b3 )\t)\n\t( unknown ( clear b3 )\t)\n\t( unknown ( on b3 b2 )\t)\n\t( unknown ") +
+               std::string("( on-table b2 )\t)\n\t( unknown ( clear b2 )\t)\n\t( unknown ( on b2 b3 )\t)\n\t") +
+               std::string("( oneof\n\t\t( clear b2 )\n\t\t( clear b3 )\n\t)\n\t( oneof\n\t\t( on-table b2 )") +
+               std::string("\n\t\t( on-table b3 )\n\t)\n\t( oneof\n\t\t( on b3 b2 )\n\t\t( on-table b3 )\n\t)") +
+               std::string("\n\t( oneof\n\t\t( on b2 b3 )\n\t\t( on-table b2 )\n\t)\n\t( oneof\n\t\t( on b2 b3") +
+               std::string(" )\n\t\t( clear b3 )\n\t)\n\t( oneof\n\t\t( on b3 b2 )\n\t\t( clear b2 )\n\t)\n\t( ") +
+               std::string("or\n\t\t( not ( on b3 b2 ) )\n\t\t( not ( on b2 b3 ) )\n\t)\n\t( or\n\t\t( not ( on ") +
+               std::string("b2 b3 ) )\n\t\t( not ( on b3 b2 ) )\n\t)\n)\n( :goal\n\t( and\n\t\t( on b2 b1 )\n\t\t( on b3 b2 )\n\t)\n)\n)\n");
+  ASSERT_EQ(tmp1, tmp2);
+
+  ASSERT_TRUE(problem_expert.clearKnowledge());
+  ASSERT_EQ(
+      problem_expert.getProblem(),
+      std::string("( define ( problem problem_1 )\n( :domain blocksworld )\n") +
+      std::string("( :objects\n)\n( :init\n)\n( :goal\n\t( and\n\t)\n)\n)\n"));
+
 }
 
 TEST(problem_expert, is_goal_satisfied) {

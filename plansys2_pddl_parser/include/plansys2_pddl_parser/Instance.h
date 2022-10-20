@@ -270,28 +270,26 @@ namespace parser {
         init_cond.push_back(oneof);
       }
 
-//      // add an unknown predicate to the initial state
-//      void addInitOr(const std::pair<std::string,std::string> &names, const std::pair<StringVec,StringVec> &vecs = {}) {
-//        auto or_ = new Or();
-//        TypeGround *tg1 = new TypeGround(d.preds.get(names.first));
-//        tg1->insert(d, vecs.first);
-//        TypeGround *tg2 = new TypeGround(d.preds.get(names.second));
-//        tg2->insert(d, vecs.second);
-//        or_->addConditions(tg1, tg2);
-//        init_cond.push_back(or_);
-//      }
 
       // add an unknown predicate to the initial state
-      void addInitOr(const std::string & or_cond) {
-//        auto or_ = new Or();
-//        plansys2_msgs::msg::Tree tree;
-//        parser::pddl::fromString(tree, or_cond);
-//        TypeGround *tg1 = new TypeGround(d.preds.get(names.first));
-//        tg1->insert(d, vecs.first);
-//        TypeGround *tg2 = new TypeGround(d.preds.get(names.second));
-//        tg2->insert(d, vecs.second);
-//        or_->addConditions(or_cond.first, or_cond.second);
-//        init_cond.push_back(or_);
+      void addInitOr(const std::pair<std::string,std::string> &names, const std::pair<StringVec,StringVec> &vecs ={}, const std::pair<bool,bool> negates={}) {
+        auto or_ = new Or();
+        TypeGround *tg1 = new TypeGround(d.preds.get(names.first));
+        tg1->insert(d, vecs.first);
+        TypeGround *tg2 = new TypeGround(d.preds.get(names.second));
+        tg2->insert(d, vecs.second);
+        Condition* cond1 = tg1;
+        if (negates.first){
+          cond1 = new Not(tg1);
+        }
+        Condition* cond2 = tg2;
+        if (negates.second){
+          cond2 = new Not(tg2);
+        }
+
+        or_->first = cond1;
+        or_->second = cond2;
+        init_cond.push_back(or_);
       }
 
 

@@ -25,6 +25,8 @@ void Or::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::s
 plansys2_msgs::msg::Node::SharedPtr Or::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
   plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
   node->node_type = plansys2_msgs::msg::Node::OR;
+  node->node_id = tree.nodes.size();
+  tree.nodes.push_back(*node);
 
   plansys2_msgs::msg::Node::SharedPtr child1 = first->getTree(tree, d, replace);
   node->children.push_back(child1->node_id);
@@ -32,8 +34,8 @@ plansys2_msgs::msg::Node::SharedPtr Or::getTree( plansys2_msgs::msg::Tree & tree
   plansys2_msgs::msg::Node::SharedPtr child2 = second->getTree(tree, d, replace);
   node->children.push_back(child2->node_id);
 
-  node->node_id = tree.nodes.size();
-  tree.nodes.push_back(*node);
+  tree.nodes[node->node_id] = *node;
+
   return node;
 }
 

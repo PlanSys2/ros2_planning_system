@@ -49,10 +49,10 @@ public:
   : plansys2_msgs::msg::Node(pred) {}
   // Match both first and last names in case
   // of collisions.
-  bool operator==(const Predicate& p) const
-  {
-    return parser::pddl::checkNodeEquality(*this, p);
-  }
+//  bool operator==(const Predicate& p) const
+//  {
+//    return parser::pddl::checkNodeEquality(*this, p);
+//  }
 };
 class PredicateHashFunction {
 public:
@@ -85,6 +85,17 @@ public:
   : plansys2_msgs::msg::Tree(parser::pddl::fromString(goal)) {}
   Goal(const plansys2_msgs::msg::Tree & goal)  // NOLINT(runtime/explicit)
   : plansys2_msgs::msg::Tree(goal) {}
+};
+
+class Or : public plansys2_msgs::msg::Tree
+{
+public:
+  Or()
+      : plansys2_msgs::msg::Tree() {}
+  explicit Or(const std::string & or_condition)
+      : plansys2_msgs::msg::Tree(parser::pddl::fromString(or_condition)) {}
+  Or(const plansys2_msgs::msg::Tree & or_condition)  // NOLINT(runtime/explicit)
+      : plansys2_msgs::msg::Tree(or_condition) {}
 };
 
 template<class toT, class fromT>

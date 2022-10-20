@@ -44,11 +44,6 @@ public:
 		second->addParams( m, n );
 	}
 
-  void addConditions( Condition * cond1, Condition * cond2) {
-    first = cond1;
-    second =  cond2;
-  }
-
 	Condition * copy( Domain & d ) {
 		return new Or( this, d );
 	}

@@ -977,8 +977,7 @@ namespace parser {
           break;
         case plansys2_msgs::msg::Node::PREDICATE:
           plansys2_msgs::msg::Node pred = tree.nodes[node_id];
-          if (std::find_if(predicates.begin(), predicates.end(),
-                           std::bind(&checkNodeEquality, std::placeholders::_1, pred)) == predicates.end()) {
+          if (std::find_if(predicates.begin(), predicates.end(),[pred](const plansys2_msgs::msg::Node & p1){ return p1==pred;} ) == predicates.end()) {
             pred.negate = negate;
             predicates.push_back(pred);
           }

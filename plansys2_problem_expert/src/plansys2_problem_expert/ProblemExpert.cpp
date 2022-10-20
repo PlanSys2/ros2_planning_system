@@ -344,17 +344,17 @@ namespace plansys2 {
   }
 
 
-  std::vector<std::string> ProblemExpert::getOrPredicates() {
+  std::vector<plansys2::Or> ProblemExpert::getOrCondition() {
     return or_conditions_;
   }
 
   bool
-  ProblemExpert::addOrPredicate(const std::string &cond) {
+  ProblemExpert::addOrCondition(const plansys2::Or &cond) {
 
-    if (!existOrPredicate(cond)) {
-//      if (!isValidPredicate(pair.first) || !isValidPredicate(pair.second)) {
-//        return false;
-//      }
+    if (!existOrCondition(cond)) {
+      if (!isValidOr(cond)) {
+        return false;
+      }
       or_conditions_.push_back(cond);
       return true;
     } else {
@@ -363,13 +363,13 @@ namespace plansys2 {
   }
 
   bool
-  ProblemExpert::removeOrPredicate(const std::string &cond) {
+  ProblemExpert::removeOrCondition(const plansys2::Or &cond) {
     bool found = false;
     int i = 0;
-//
-//    if (!isValidPredicate(pair.first) || !isValidPredicate(pair.second)) {
-//      return false;
-//    }
+
+    if (!isValidOr(cond)) {
+      return false;
+    }
 
 
     while (!found && i < or_conditions_.size()) {
@@ -383,28 +383,8 @@ namespace plansys2 {
     return true;
   }
 
-  std::optional<std::string>
-  ProblemExpert::getOrPredicate(const std::string &cond) {
-
-    bool found = false;
-    size_t i = 0;
-    while (i < or_conditions_.size() && !found) {
-      if (or_conditions_[i] == cond) {
-        found = true;
-        break;
-      }
-      i++;
-    }
-
-    if (found) {
-      return or_conditions_[i];
-    } else {
-      return {};
-    }
-  }
-
   bool
-  ProblemExpert::existOrPredicate(const std::string &cond) {
+  ProblemExpert::existOrCondition(const plansys2::Or &cond) {
     bool found = false;
     int i = 0;
 
@@ -417,6 +397,11 @@ namespace plansys2 {
     }
 
     return found;
+  }
+
+  bool
+  ProblemExpert::isValidOr(const plansys2::Goal &cond) {
+    return checkPredicateTreeTypes(cond, domain_expert_);
   }
 
 
@@ -891,7 +876,23 @@ namespace plansys2 {
 
 
     for (auto or_condition: or_conditions_) {
-      problem.addInitOr(or_condition);
+      std::vector<plansys2_msgs::msg::Node> predicates;
+      parser::pddl::getPredicates(predicates, or_condition, 0);
+      std::vector<StringVec> vecs;
+      std::vector<std::string> names;
+      std::vector<bool> negates;
+      for (auto predicate: predicates) {
+        StringVec v;
+        for (size_t i = 0; i < predicate.parameters.size(); i++) {
+          v.push_back(predicate.parameters[i].name);
+        }
+        std::transform(predicate.name.begin(), predicate.name.end(), predicate.name.begin(), ::tolower);
+
+        names.push_back(predicate.name);
+        vecs.push_back(v);
+        negates.push_back(predicate.negate);
+      }
+      problem.addInitOr({names[0], names[1]}, {vecs[0], vecs[1]}, {negates[0], negates[1]});
     }
 
     std::vector<plansys2_msgs::msg::Node> predicates;
@@ -1047,26 +1048,15 @@ namespace plansys2 {
           break;
         }
         case plansys2_msgs::msg::Node::OR: {
-//          auto tmp(*tree_node);
-//          auto left = tree.nodes[tmp.children[0]];
-//          auto  right = tree.nodes[tmp.children[1]];
-//          auto tg1 = new parser::pddl::TypeGround(domain.preds.get(left.name));
-//          std::vector<std::string> vec_left;
-//          for (auto p : left.parameters) vec_left.push_back(p.name);
-//          std::vector<std::string> vec_right;
-//          for (auto p : right.parameters) vec_right.push_back(p.name);
-//          tg1->insert(domain, vec_left);
-//          auto  *tg2 = new parser::pddl::TypeGround(domain.preds.get(right.name));
-//          tg2->insert(domain, vec_right);
-//          auto parser::pddl::toString
+          plansys2_msgs::msg::Tree or_tree;
+          auto or_node = cond->getTree(or_tree, domain);
 
-          std::cout << "Adding or: " <<
-                    parser::pddl::toString(tree, tree_node->node_id) << std::endl;
-          if (!addOrPredicate(parser::pddl::toString(tree, tree_node->node_id))) {
-            std::cerr << "Failed to add or : " << parser::pddl::toString(
-                tree,
-                tree_node->node_id) <<
-                      std::endl;
+          std::cout << "Adding or node: " <<
+                    parser::pddl::toString(or_tree, or_node->node_id) << std::endl;
+//          or_tree.nodes[0].children.push_back(or_node->node_id);
+          if (!addOrCondition(or_tree)) {
+            std::cerr << "Failed to add or : " <<
+            parser::pddl::toString(or_tree, or_node->node_id)  << std::endl;
           }
           break;
         }

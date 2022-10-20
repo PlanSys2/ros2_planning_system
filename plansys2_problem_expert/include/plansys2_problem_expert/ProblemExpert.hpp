@@ -63,11 +63,10 @@ public:
   std::optional<PredicateSet> getOneOfPredicate(const PredicateSet  & predicate_set);
   bool existOneOfPredicate(const PredicateSet & predicate_set);
 
-  std::vector<std::string> getOrPredicates();
-  bool addOrPredicate(const std::string & cond);
-  bool removeOrPredicate(const std::string & cond);
-  std::optional<std::string> getOrPredicate(const std::string & cond);
-  bool existOrPredicate(const std::string & cond);
+  std::vector<plansys2::Or> getOrCondition();
+  bool addOrCondition(const plansys2::Or & cond);
+  bool removeOrCondition(const plansys2::Or & cond);
+  bool existOrCondition(const plansys2::Or & cond);
 
   std::vector<plansys2::Function> getFunctions();
   bool addFunction(const plansys2::Function & function);
@@ -91,6 +90,7 @@ public:
   bool isValidPredicate(const plansys2::Predicate & predicate);
   bool isValidFunction(const plansys2::Function & function);
   bool isValidGoal(const plansys2::Goal & goal);
+  bool isValidOr(const plansys2::Goal &cond);
 
 private:
   bool checkPredicateTreeTypes(
@@ -111,7 +111,7 @@ private:
   std::vector<plansys2::Function> functions_;
   std::vector<plansys2::Predicate> unknown_predicates_;
   std::vector<PredicateSet> oneof_predicates_;
-  std::vector<std::string> or_conditions_;
+  std::vector<plansys2::Or> or_conditions_;
   plansys2::Goal goal_;
 
   std::shared_ptr<DomainExpert> domain_expert_;
