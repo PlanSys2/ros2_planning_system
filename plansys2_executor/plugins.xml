@@ -6,5 +6,8 @@
     <class type="plansys2::STNBTBuilder" base_class_type="plansys2::BTBuilder">
       <description></description>
     </class>
+    <class type="plansys2::ContingentBTBuilder" base_class_type="plansys2::BTBuilder">
+      <description></description>
+    </class>
   </library>
 </class_libraries>

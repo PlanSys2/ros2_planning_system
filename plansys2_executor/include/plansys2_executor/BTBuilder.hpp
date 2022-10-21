@@ -90,6 +90,14 @@ public:
     }
   }
 
+  void replace(std::string & str, const std::string & from, const std::string & to)
+  {
+    size_t start_pos = std::string::npos;
+    while ((start_pos = str.find(from)) != std::string::npos) {
+      str.replace(start_pos, from.length(), to);
+    }
+  }
+
   static std::string to_action_id(const plansys2_msgs::msg::PlanItem & item, int precision)
   {
     return item.action + ":" + std::to_string(to_int_time(item.time, precision));

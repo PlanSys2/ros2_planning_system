@@ -87,6 +87,18 @@ std::string remove_comments(const std::string & pddl)
   }
   return std::string(uncomment.str());
 }
+  plansys2_msgs::msg::Plan encode_plan(const std::shared_ptr<PlanNode>& root){
+    plansys2_msgs::msg::Plan plan;
+    internal::encode_plan(root, plan.structure, plan.items);
+    return plan;
+  }
+
+  std::shared_ptr<PlanNode> decode_plan(const plansys2_msgs::msg::Plan &plan){
+    plansys2_msgs::msg::Plan plan_copy = plan;
+    return internal::decode_plan(plan_copy .structure, plan_copy .items);
+  }
+
+  namespace internal{
 
     void encode_plan(const std::shared_ptr<PlanNode>& root, std::vector<int>& struc, std::vector<plansys2_msgs::msg::PlanItem> &data){
         if(root == nullptr){
@@ -96,7 +108,11 @@ std::string remove_comments(const std::string & pddl)
         struc.push_back(1);
         data.push_back(root->item);
         encode_plan(root->true_node, struc, data);
-        encode_plan(root->false_node, struc, data);
+        if (root->true_node != root->false_node){
+          encode_plan(root->false_node, struc, data);
+        } else{
+          encode_plan(nullptr, struc, data);
+        }
     }
 
     std::shared_ptr<PlanNode> decode_plan(std::vector<int>& struc, std::vector<plansys2_msgs::msg::PlanItem> &data){
@@ -127,6 +143,7 @@ std::string remove_comments(const std::string & pddl)
         }
         return nullptr;
     }
+}
 
 
 }  // namespace plansys2

@@ -21,6 +21,12 @@ target_compile_definitions(simple_btbuilder_tests
 target_link_libraries(simple_btbuilder_tests ${PROJECT_NAME} bt_builder_plugins)
 ament_target_dependencies(simple_btbuilder_tests ${dependencies})
 
+ament_add_gtest(contingent_btbuilder_tests contingent_btbuilder_tests.cpp)
+target_compile_definitions(contingent_btbuilder_tests
+        PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(contingent_btbuilder_tests ${PROJECT_NAME} bt_builder_plugins)
+ament_target_dependencies(contingent_btbuilder_tests ${dependencies})
+
 ament_add_gtest(bt_node_test bt_node_test.cpp)
 target_compile_definitions(bt_node_test
   PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")

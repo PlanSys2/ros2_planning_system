@@ -84,40 +84,57 @@ DomainReader::get_joint_domain() const
   }
   ret += ")\n\n";
 
-  ret += "(:types\n";
+  std::string types;
   for (auto & domain : domains_) {
     if (!domain.types.empty()) {
-      ret += domain.types + "\n";
+      types += domain.types + "\n";
     }
   }
-  ret += ")\n\n";
+  if (!types.empty()) {
+    ret += "(:types\n";
+    ret += types;
+    ret += ")\n\n";
+  }
 
-  ret += "(:constants\n";
+  std::string constants;
   for (const auto & domain : domains_) {
     if (!domain.constants.empty()) {
-      ret += domain.constants + "\n";
+      constants += domain.constants + "\n";
     }
   }
-  ret += ")\n\n";
+  if (!constants.empty()){
+    ret += "(:constants\n";
+    ret += constants;
+    ret += ")\n\n";
+  }
 
-  ret += "(:predicates\n";
+
   std::set<std::string> preds_set;
   for (auto & domain : domains_) {
     std::vector<std::string> preds = tokenize(domain.predicates, "\n");
     preds_set.insert(preds.begin(), preds.end());
   }
+  std::string preds;
   for (auto & pred : preds_set) {
-    ret += pred + "\n";
+    preds += pred + "\n";
   }
-  ret += ")\n\n";
+  if (!preds.empty()) {
+    ret += "(:predicates\n";
+    ret += preds;
+    ret += ")\n\n";
+  }
 
-  ret += "(:functions\n";
+  std::string funcs;
   for (auto & domain : domains_) {
     if (!domain.functions.empty()) {
-      ret += domain.functions + "\n";
+      funcs += domain.functions + "\n";
     }
   }
-  ret += ")\n\n";
+  if (!funcs.empty()){
+    ret += "(:functions\n";
+    ret += funcs;
+    ret += ")\n\n";
+  }
 
   for (auto & domain : domains_) {
     for (auto & action : domain.actions) {

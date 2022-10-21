@@ -448,6 +448,104 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
   t.join();
 }
 
+
+
+TEST(executiotest_noden_tree, bt_builder_factory_contingent)
+{
+  auto test_node = rclcpp::Node::make_shared("get_action_from_string");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_blocks_observe.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_blocks_observe.pddl"});
+  std::vector<std::string> planner_plugins ={"CFF"};
+  planner_node->set_parameter({"plan_solver_plugins", planner_plugins });
+  planner_node->declare_parameter("CFF.plugin", "");
+  planner_node->set_parameter({"CFF.plugin", "plansys2/CFFPlanSolver"});
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(planner_node->get_node_base_interface());
+
+  bool finish = false;
+  std::thread t([&]() {
+    while (!finish) {exe.spin_some();}
+  });
+
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+  std::ifstream problem_1_ifs(pkgpath + "/pddl/problem_blocks_observe.pddl");
+  std::string problem_1_str((
+                                std::istreambuf_iterator<char>(problem_1_ifs)),
+                            std::istreambuf_iterator<char>());
+  ASSERT_TRUE(problem_client->addProblem(problem_1_str));
+
+  ASSERT_EQ(problem_client->getInstances().size(), 3);
+  ASSERT_EQ(problem_client->getPredicates().size(), 2);
+  ASSERT_EQ(problem_client->getFunctions().size(), 0);
+  ASSERT_EQ(problem_client->getConditionals().size(), 14);
+
+  ASSERT_TRUE(
+      problem_client->existPredicate(
+          parser::pddl::fromStringPredicate(
+              "(ontable b1)")));
+  ASSERT_TRUE(
+      problem_client->existPredicate(
+          parser::pddl::fromStringPredicate(
+              "(clear b1)")));
+
+  ASSERT_EQ(parser::pddl::toString(problem_client->getGoal()), "(and (on b2 b1)(on b3 b2))");
+
+  auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
+  ASSERT_TRUE(plan);
+
+  std::shared_ptr<plansys2::BTBuilder> bt_builder;
+  pluginlib::ClassLoader<plansys2::BTBuilder> bt_builder_loader("plansys2_executor",
+                                                                "plansys2::BTBuilder");
+  try {
+    bt_builder = bt_builder_loader.createSharedInstance("plansys2::ContingentBTBuilder");
+  } catch (pluginlib::PluginlibException & ex) {
+    std::cerr << "pluginlib error: " << std::string(ex.what()) << std::endl;
+  }
+
+  bt_builder->initialize();
+  auto tree_str = bt_builder->get_tree(plan.value());
+
+  finish = true;
+  t.join();
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

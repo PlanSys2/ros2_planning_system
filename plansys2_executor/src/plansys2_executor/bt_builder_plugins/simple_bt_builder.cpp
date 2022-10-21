@@ -49,7 +49,7 @@ SimpleBTBuilder::initialize(
   } else {
     bt_action_ =
       R""""(<Sequence name="ACTION_ID">
-WAIT_PREV_ACTIONS
+  <WaitAtStartReq  action="ACTION_ID"/>
   <ApplyAtStartEffect action="ACTION_ID"/>
   <ReactiveSequence name="ACTION_ID">
     <CheckOverAllReq action="ACTION_ID"/>
@@ -740,14 +740,6 @@ SimpleBTBuilder::t(int level)
     ret = ret + "  ";
   }
   return ret;
-}
-
-void replace(std::string & str, const std::string & from, const std::string & to)
-{
-  size_t start_pos = std::string::npos;
-  while ((start_pos = str.find(from)) != std::string::npos) {
-    str.replace(start_pos, from.length(), to);
-  }
 }
 
 std::string
