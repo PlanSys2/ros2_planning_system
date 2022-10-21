@@ -19,25 +19,28 @@
 
 #include "plansys2_problem_expert/ProblemExpert.hpp"
 
-#include "std_msgs/msg/string.hpp"
-#include "std_msgs/msg/empty.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_msgs/msg/knowledge.hpp"
-#include "plansys2_msgs/srv/affect_node.hpp"
-#include "plansys2_msgs/srv/affect_param.hpp"
 #include "plansys2_msgs/srv/add_problem.hpp"
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
+#include "plansys2_msgs/srv/affect_conditional.hpp"
+#include "plansys2_msgs/srv/affect_node.hpp"
+#include "plansys2_msgs/srv/affect_param.hpp"
+#include "plansys2_msgs/srv/clear_problem_knowledge.hpp"
+#include "plansys2_msgs/srv/exist_conditional.hpp"
 #include "plansys2_msgs/srv/exist_node.hpp"
+#include "plansys2_msgs/srv/get_conditionals.hpp"
+#include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_msgs/srv/get_problem.hpp"
 #include "plansys2_msgs/srv/get_problem_goal.hpp"
 #include "plansys2_msgs/srv/get_problem_instance_details.hpp"
 #include "plansys2_msgs/srv/get_problem_instances.hpp"
-#include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_msgs/srv/get_states.hpp"
 #include "plansys2_msgs/srv/is_problem_goal_satisfied.hpp"
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
-#include "plansys2_msgs/srv/clear_problem_knowledge.hpp"
+#include "std_msgs/msg/empty.hpp"
+#include "std_msgs/msg/string.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -82,6 +85,11 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::AffectNode::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::AffectNode::Response> response);
 
+  void add_problem_conditional_service_callback(
+      const std::shared_ptr<rmw_request_id_t> request_header,
+      const std::shared_ptr<plansys2_msgs::srv::AffectConditional::Request> request,
+      const std::shared_ptr<plansys2_msgs::srv::AffectConditional::Response> response);
+
   void add_problem_function_service_callback(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::AffectNode::Request> request,
@@ -111,6 +119,11 @@ public:
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::GetStates::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::GetStates::Response> response);
+
+  void get_problem_conditionals_service_callback(
+      const std::shared_ptr<rmw_request_id_t> request_header,
+      const std::shared_ptr<plansys2_msgs::srv::GetConditionals::Request> request,
+      const std::shared_ptr<plansys2_msgs::srv::GetConditionals::Response> response);
 
   void get_problem_function_details_service_callback(
     const std::shared_ptr<rmw_request_id_t> request_header,
@@ -152,6 +165,11 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::AffectNode::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::AffectNode::Response> response);
 
+  void remove_problem_conditional_service_callback(
+      const std::shared_ptr<rmw_request_id_t> request_header,
+      const std::shared_ptr<plansys2_msgs::srv::AffectConditional::Request> request,
+      const std::shared_ptr<plansys2_msgs::srv::AffectConditional::Response> response);
+
   void remove_problem_function_service_callback(
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::AffectNode::Request> request,
@@ -161,6 +179,11 @@ public:
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::ExistNode::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::ExistNode::Response> response);
+
+  void exist_problem_conditional_service_callback(
+      const std::shared_ptr<rmw_request_id_t> request_header,
+      const std::shared_ptr<plansys2_msgs::srv::ExistConditional::Request> request,
+      const std::shared_ptr<plansys2_msgs::srv::ExistConditional::Response> response);
 
   void exist_problem_function_service_callback(
     const std::shared_ptr<rmw_request_id_t> request_header,
@@ -183,6 +206,8 @@ private:
     add_problem_instance_service_;
   rclcpp::Service<plansys2_msgs::srv::AffectNode>::SharedPtr
     add_problem_predicate_service_;
+  rclcpp::Service<plansys2_msgs::srv::AffectConditional>::SharedPtr
+      add_problem_conditional_service_;
   rclcpp::Service<plansys2_msgs::srv::AffectNode>::SharedPtr
     add_problem_function_service_;
   rclcpp::Service<plansys2_msgs::srv::GetProblemGoal>::SharedPtr
@@ -195,6 +220,8 @@ private:
     get_problem_predicate_details_service_;
   rclcpp::Service<plansys2_msgs::srv::GetStates>::SharedPtr
     get_problem_predicates_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetConditionals>::SharedPtr
+      get_problem_conditionals_service_;
   rclcpp::Service<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
     get_problem_function_details_service_;
   rclcpp::Service<plansys2_msgs::srv::GetStates>::SharedPtr
@@ -211,10 +238,14 @@ private:
     remove_problem_instance_service_;
   rclcpp::Service<plansys2_msgs::srv::AffectNode>::SharedPtr
     remove_problem_predicate_service_;
+  rclcpp::Service<plansys2_msgs::srv::AffectConditional>::SharedPtr
+      remove_problem_conditional_service_;
   rclcpp::Service<plansys2_msgs::srv::AffectNode>::SharedPtr
     remove_problem_function_service_;
   rclcpp::Service<plansys2_msgs::srv::ExistNode>::SharedPtr
     exist_problem_predicate_service_;
+  rclcpp::Service<plansys2_msgs::srv::ExistConditional>::SharedPtr
+      exist_problem_conditional_service_;
   rclcpp::Service<plansys2_msgs::srv::ExistNode>::SharedPtr
     exist_problem_function_service_;
   rclcpp::Service<plansys2_msgs::srv::AffectNode>::SharedPtr

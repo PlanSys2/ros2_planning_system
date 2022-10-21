@@ -27,18 +27,21 @@
 #include "plansys2_msgs/msg/tree.hpp"
 #include "plansys2_msgs/srv/add_problem.hpp"
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
+#include "plansys2_msgs/srv/affect_conditional.hpp"
 #include "plansys2_msgs/srv/affect_node.hpp"
 #include "plansys2_msgs/srv/affect_param.hpp"
+#include "plansys2_msgs/srv/clear_problem_knowledge.hpp"
+#include "plansys2_msgs/srv/exist_conditional.hpp"
 #include "plansys2_msgs/srv/exist_node.hpp"
+#include "plansys2_msgs/srv/get_conditionals.hpp"
+#include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_msgs/srv/get_problem.hpp"
 #include "plansys2_msgs/srv/get_problem_goal.hpp"
 #include "plansys2_msgs/srv/get_problem_instance_details.hpp"
 #include "plansys2_msgs/srv/get_problem_instances.hpp"
-#include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_msgs/srv/get_states.hpp"
 #include "plansys2_msgs/srv/is_problem_goal_satisfied.hpp"
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
-#include "plansys2_msgs/srv/clear_problem_knowledge.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -60,6 +63,11 @@ public:
   bool removePredicate(const plansys2::Predicate & predicate);
   bool existPredicate(const plansys2::Predicate & predicate);
   std::optional<plansys2::Predicate> getPredicate(const std::string & predicate);
+
+  std::vector<plansys2_msgs::msg::Tree> getConditionals();
+  bool addConditional(const plansys2_msgs::msg::Tree & condition);
+  bool removeConditional(const plansys2_msgs::msg::Tree & condition);
+  bool existConditional(const plansys2_msgs::msg::Tree & condition);
 
   std::vector<plansys2::Function> getFunctions();
   bool addFunction(const plansys2::Function & function);
@@ -89,6 +97,8 @@ private:
     add_problem_instance_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
     add_problem_predicate_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectConditional>::SharedPtr
+      add_problem_conditional_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
     add_problem_function_client_;
   rclcpp::Client<plansys2_msgs::srv::GetProblemGoal>::SharedPtr
@@ -101,6 +111,8 @@ private:
     get_problem_predicate_details_client_;
   rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr
     get_problem_predicates_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetConditionals>::SharedPtr
+      get_problem_conditionals_client_;
   rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
     get_problem_function_details_client_;
   rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr
@@ -115,10 +127,14 @@ private:
     remove_problem_instance_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
     remove_problem_predicate_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectConditional>::SharedPtr
+      remove_problem_conditional_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
     remove_problem_function_client_;
   rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr
     exist_problem_predicate_client_;
+  rclcpp::Client<plansys2_msgs::srv::ExistConditional>::SharedPtr
+      exist_problem_conditional_client_;
   rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr
     exist_problem_function_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr

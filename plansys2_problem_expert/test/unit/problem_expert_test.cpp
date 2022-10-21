@@ -358,30 +358,15 @@ TEST(problem_expert, addget_unknown_predicates) {
   ASSERT_EQ(on_table_b3.parameters[1].name, "bedroom");
   ASSERT_EQ(on_table_b3.parameters[1].type, "room");
 
-  plansys2_msgs::msg::Node predicate_2;
-  predicate_2.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  predicate_2.name = "robot_at";
-  predicate_2.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
-  predicate_2.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
-
   plansys2_msgs::msg::Node predicate_3;
   predicate_3.node_type = plansys2_msgs::msg::Node::PREDICATE;
   predicate_3.name = "person_at";
   predicate_3.parameters.push_back(parser::pddl::fromStringParam("paco", "person"));
   predicate_3.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
 
-  plansys2_msgs::msg::Node predicate_4;
-  predicate_4.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  predicate_4.name = "person_at";
-  predicate_4.parameters.push_back(parser::pddl::fromStringParam("paco", "person"));
-  predicate_4.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
-
-  ASSERT_EQ(predicate_4.name, "person_at");
-  ASSERT_EQ(predicate_4.parameters.size(), 2);
-  ASSERT_EQ(predicate_4.parameters[0].name, "paco");
-  ASSERT_EQ(predicate_4.parameters[0].type, "person");
-  ASSERT_EQ(predicate_4.parameters[1].name, "kitchen");
-  ASSERT_EQ(predicate_4.parameters[1].type, "room");
+  auto unknown_1 = parser::pddl::fromString("(unknown (robot_at r2d2 kitchen))");
+  auto oneof_1 = parser::pddl::fromString("(oneof (person_at paco kitchen) (person_at paco bedroom))");
+  auto or_1 = parser::pddl::fromString("(or (person_at paco kitchen) (person_at paco bedroom))");
 
 
   plansys2_msgs::msg::Node predicate_5_invalid;
@@ -404,39 +389,25 @@ TEST(problem_expert, addget_unknown_predicates) {
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("kitchen", "room")));
 
   std::vector<plansys2::Predicate> predicates = problem_expert.getPredicates();
-  std::vector<plansys2::Predicate> unknown_predicates = problem_expert.getUnknownPredicates();
   ASSERT_TRUE(predicates.empty());
-  ASSERT_TRUE(unknown_predicates.empty());
 
   ASSERT_TRUE(problem_expert.addPredicate(on_table_b3));
   ASSERT_TRUE(problem_expert.addPredicate(on_table_b3));
   ASSERT_TRUE(problem_expert.addPredicate(predicate_3));
-  ASSERT_TRUE(problem_expert.addUnknownPredicate(predicate_2));
-  ASSERT_TRUE(problem_expert.addUnknownPredicate(predicate_4));
-  ASSERT_TRUE(problem_expert.addUnknownPredicate(predicate_4));
-  ASSERT_FALSE(problem_expert.addUnknownPredicate(predicate_5_invalid));
-  ASSERT_FALSE(problem_expert.addUnknownPredicate(predicate_6_invalid));
-  ASSERT_FALSE(problem_expert.addUnknownPredicate(predicate_6_invalid));
+  ASSERT_TRUE(problem_expert.addConditional(unknown_1));
+  ASSERT_TRUE(problem_expert.addConditional(oneof_1));
+  ASSERT_TRUE(problem_expert.addConditional(oneof_1));
+  ASSERT_TRUE(problem_expert.addConditional(or_1));
 
   predicates = problem_expert.getPredicates();
-  unknown_predicates = problem_expert.getUnknownPredicates();
+  auto conditionals = problem_expert.getConditionals();
   ASSERT_EQ(predicates.size(), 2);
-  ASSERT_EQ(predicates.size(), 2);
+  ASSERT_EQ(conditionals.size(), 3);
 
-  auto pred_2 = problem_expert.getUnknownPredicate("(robot_at r2d2 kitchen)");
-  ASSERT_TRUE(pred_2);
-  ASSERT_EQ(pred_2.value().name, "robot_at");
-  ASSERT_EQ(pred_2.value().parameters.size(), 2);
-  ASSERT_EQ(pred_2.value().parameters[0].name, "r2d2");
-  ASSERT_EQ(pred_2.value().parameters[0].type, "robot");
-  ASSERT_EQ(pred_2.value().parameters[1].name, "kitchen");
-  ASSERT_EQ(pred_2.value().parameters[1].type, "room");
-
-  ASSERT_FALSE(problem_expert.removeUnknownPredicate(predicate_5_invalid));
-  ASSERT_FALSE(problem_expert.removeUnknownPredicate(predicate_6_invalid));
-  ASSERT_TRUE(problem_expert.removeUnknownPredicate(predicate_4));
-  ASSERT_TRUE(problem_expert.removeUnknownPredicate(predicate_2));
-  ASSERT_TRUE(problem_expert.removeUnknownPredicate(on_table_b3));
+  ASSERT_TRUE(problem_expert.removeConditional(unknown_1));
+  ASSERT_TRUE(problem_expert.removeConditional(oneof_1));
+  ASSERT_TRUE(problem_expert.removeConditional(oneof_1));
+  ASSERT_TRUE(problem_expert.removeConditional(or_1));
 
 }
 
@@ -661,7 +632,7 @@ TEST(problem_expert, get_problem_observe) {
 
   plansys2_msgs::msg::Node on_table_b1;
   on_table_b1.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  on_table_b1.name = "on-table";
+  on_table_b1.name = "ontable";
   on_table_b1.parameters.push_back(parser::pddl::fromStringParam("b1", "block"));
 
   plansys2_msgs::msg::Node clear_b1;
@@ -671,64 +642,50 @@ TEST(problem_expert, get_problem_observe) {
 
   plansys2_msgs::msg::Node on_table_b3;
   on_table_b3.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  on_table_b3.name = "on-table";
+  on_table_b3.name = "ontable";
   on_table_b3.parameters.push_back(parser::pddl::fromStringParam("b3", "block"));
 
   plansys2_msgs::msg::Node clear_b2;
   clear_b2.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  clear_b2.name = "on-table";
+  clear_b2.name = "clear";
   clear_b2.parameters.push_back(parser::pddl::fromStringParam("b2", "block"));
-
-  plansys2_msgs::msg::Node on_table_b2;
-  on_table_b2.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  on_table_b2.name = "on-table";
-  on_table_b2.parameters.push_back(parser::pddl::fromStringParam("b2", "block"));
-
-  plansys2_msgs::msg::Node on_b2_b3;
-  on_b2_b3.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  on_b2_b3.name = "on";
-  on_b2_b3.parameters.push_back(parser::pddl::fromStringParam("b2", "block"));
-  on_b2_b3.parameters.push_back(parser::pddl::fromStringParam("b3", "block"));
-
 
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("b1", "block")));
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("b2", "block")));
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("b3", "block")));
 
-  ASSERT_TRUE(problem_expert.addOneOfPredicate({on_b2_b3, on_table_b2}));
+  auto unknown_cond_1 = plansys2::Unknown("(unknown (ontable b2))");
+  auto unknown_cond_2 = plansys2::Unknown("(unknown (on b2 b3))");
+  ASSERT_TRUE(problem_expert.addConditional(unknown_cond_1));
+  ASSERT_TRUE(problem_expert.addConditional(unknown_cond_2));
+
+  auto oneof_cond = plansys2::OneOf("(oneof (ontable b2) (on b2 b3))");
+  ASSERT_TRUE(problem_expert.addConditional(oneof_cond));
 
   auto or_cond = plansys2::Or("(or (on b2 b3) (on b3 b2))");
-  ASSERT_TRUE(problem_expert.addOrCondition(or_cond));
-  ASSERT_TRUE(problem_expert.removeOrCondition(or_cond));
-  ASSERT_TRUE(problem_expert.addOrCondition(or_cond));
+  ASSERT_TRUE(problem_expert.addConditional(or_cond));
+  ASSERT_TRUE(problem_expert.removeConditional(or_cond));
+  ASSERT_TRUE(problem_expert.addConditional(or_cond));
 
   auto or_cond2 = plansys2::Or("(or (not (clear b1)) (clear b1))");
-  ASSERT_TRUE(problem_expert.addOrCondition(or_cond2));
-  ASSERT_TRUE(problem_expert.removeOrCondition(or_cond2));
-  ASSERT_TRUE(problem_expert.addOrCondition(or_cond2));
-
-  ASSERT_EQ(problem_expert.getOneOfPredicates().size(), 1);
-  ASSERT_EQ(problem_expert.getOneOfPredicates().front().size(), 2);
-  ASSERT_TRUE(problem_expert.getOneOfPredicate({on_b2_b3, on_table_b2}) );
-  ASSERT_FALSE(problem_expert.getOneOfPredicate({on_b2_b3 }) );
-  ASSERT_TRUE(problem_expert.addOneOfPredicate({on_b2_b3 }) );
-  ASSERT_EQ(problem_expert.getOneOfPredicates().size(), 2);
-  ASSERT_TRUE(problem_expert.removeOneOfPredicate({on_b2_b3 }) );
-
+  ASSERT_TRUE(problem_expert.addConditional(or_cond2));
+  ASSERT_TRUE(problem_expert.removeConditional(or_cond2));
+  ASSERT_TRUE(problem_expert.addConditional(or_cond2));
+  ASSERT_TRUE(problem_expert.addConditional(or_cond2));
   ASSERT_TRUE(problem_expert.addPredicate(on_table_b1));
   ASSERT_TRUE(problem_expert.addPredicate(clear_b1));
   ASSERT_TRUE(problem_expert.addPredicate(on_table_b3));
   ASSERT_TRUE(problem_expert.addPredicate(clear_b2));
-  ASSERT_TRUE(problem_expert.addUnknownPredicate(on_table_b2));
-  ASSERT_TRUE(problem_expert.addUnknownPredicate(on_b2_b3));
+  ASSERT_TRUE(problem_expert.removePredicate(clear_b2));
 
   plansys2_msgs::msg::Tree goal;
   parser::pddl::fromString(goal, "(and (on b1 b2))");
   ASSERT_TRUE(problem_expert.setGoal(goal));
 
+
   auto tmp = std::string("( define ( problem problem_1 )\n( :domain blocksworld )\n( :objects\n\tb1 b2 b3 ") +
-    std::string("- block\n)\n( :init\n\t( on-table b1 )\n\t( clear b1 )\n\t( on-table b3 )\n\t( unknown ( on-table ") +
-    std::string("b2 )\t)\n\t( unknown ( on b2 b3 )\t)\n\t( oneof\n\t\t( on-table b2 )\n\t\t( on b2 b3 )\n\t)\n\t( or") +
+    std::string("- block\n)\n( :init\n\t( ontable b1 )\n\t( clear b1 )\n\t( ontable b3 )\n\t( unknown ( ontable ") +
+    std::string("b2 )\t)\n\t( unknown ( on b2 b3 )\t)\n\t( oneof\n\t\t( ontable b2 )\n\t\t( on b2 b3 )\n\t)\n\t( or") +
     std::string("\n\t\t( on b2 b3 )\n\t\t( on b3 b2 )\n\t)\n\t( or\n\t\t( not ( clear b1 ) )\n\t\t( clear b1 )\n\t)\n)\n( :goal\n\t( and\n\t\t( on b1 b2 )\n\t)\n)\n)\n");
   auto problem_str = problem_expert.getProblem();
   std::cout << problem_str;
@@ -738,8 +695,8 @@ TEST(problem_expert, get_problem_observe) {
   ASSERT_EQ(problem_expert.getPredicates().size(), 0);
   ASSERT_EQ(problem_expert.getFunctions().size(), 0);
   ASSERT_EQ(problem_expert.getInstances().size(), 0);
-  ASSERT_EQ(problem_expert.getUnknownPredicates().size(), 0);
-  ASSERT_EQ(problem_expert.getOneOfPredicates().size(), 0);
+  ASSERT_EQ(problem_expert.getConditionals().size(), 0);
+
 }
 
 TEST(problem_expert, add_problem) {
@@ -926,9 +883,7 @@ TEST(problem_expert, add_problem_observe) {
   ASSERT_EQ(problem_expert.getInstances().size(), 3);
   ASSERT_EQ(problem_expert.getPredicates().size(), 2);
   ASSERT_EQ(problem_expert.getFunctions().size(), 0);
-  ASSERT_EQ(problem_expert.getUnknownPredicates().size(), 6);
-  ASSERT_EQ(problem_expert.getOneOfPredicates().size(), 6);
-  ASSERT_EQ(problem_expert.getOrCondition().size(), 2);
+  ASSERT_EQ(problem_expert.getConditionals().size(), 14);
 
   ASSERT_TRUE(problem_expert.existInstance("b1"));
   ASSERT_TRUE(problem_expert.existInstance("b2"));
@@ -937,7 +892,7 @@ TEST(problem_expert, add_problem_observe) {
   ASSERT_TRUE(
       problem_expert.existPredicate(
           parser::pddl::fromStringPredicate(
-              "(on-table b1)")));
+              "(ontable b1)")));
   ASSERT_TRUE(
       problem_expert.existPredicate(
           parser::pddl::fromStringPredicate(
@@ -947,23 +902,23 @@ TEST(problem_expert, add_problem_observe) {
 
   auto tmp1 = problem_expert.getProblem();
   std::cout << tmp1;
-  auto tmp2 =  std::string("( define ( problem problem_1 )\n( :domain blocksworld )\n( :objects\n\tb1 b2 b3") +
-               std::string(" - block\n)\n( :init\n\t( on-table b1 )\n\t( clear b1 )\n\t( unknown ( on-table ") +
-               std::string("b3 )\t)\n\t( unknown ( clear b3 )\t)\n\t( unknown ( on b3 b2 )\t)\n\t( unknown ") +
-               std::string("( on-table b2 )\t)\n\t( unknown ( clear b2 )\t)\n\t( unknown ( on b2 b3 )\t)\n\t") +
-               std::string("( oneof\n\t\t( clear b2 )\n\t\t( clear b3 )\n\t)\n\t( oneof\n\t\t( on-table b2 )") +
-               std::string("\n\t\t( on-table b3 )\n\t)\n\t( oneof\n\t\t( on b3 b2 )\n\t\t( on-table b3 )\n\t)") +
-               std::string("\n\t( oneof\n\t\t( on b2 b3 )\n\t\t( on-table b2 )\n\t)\n\t( oneof\n\t\t( on b2 b3") +
-               std::string(" )\n\t\t( clear b3 )\n\t)\n\t( oneof\n\t\t( on b3 b2 )\n\t\t( clear b2 )\n\t)\n\t( ") +
-               std::string("or\n\t\t( not ( on b3 b2 ) )\n\t\t( not ( on b2 b3 ) )\n\t)\n\t( or\n\t\t( not ( on ") +
-               std::string("b2 b3 ) )\n\t\t( not ( on b3 b2 ) )\n\t)\n)\n( :goal\n\t( and\n\t\t( on b2 b1 )\n\t\t( on b3 b2 )\n\t)\n)\n)\n");
+  auto tmp2 =  std::string("( define ( problem problem_1 )\n( :domain blocksworld )\n( :objects\n\tb1 b2 b3 - block\n)") +
+  std::string("\n( :init\n\t( ontable b1 )\n\t( clear b1 )\n\t( unknown ( ontable b3 )\t)\n\t( unknown ( clear b3 )") +
+  std::string("\t)\n\t( unknown ( on b3 b2 )\t)\n\t( unknown ( ontable b2 )\t)\n\t( unknown ( clear b2 )\t)\n\t( ") +
+  std::string("unknown ( on b2 b3 )\t)\n\t( or\n\t\t( not ( on b3 b2 ) )\n\t\t( not ( on b2 b3 ) )\n\t)\n\t( ") +
+  std::string("or\n\t\t( not ( on b2 b3 ) )\n\t\t( not ( on b3 b2 ) )\n\t)\n\t( oneof\n\t\t( clear b3 )") +
+  std::string("\n\t\t( clear b2 )\n\t)\n\t( oneof\n\t\t( ontable b3 )\n\t\t( ontable b2 )\n\t)\n\t( oneof") +
+  std::string("\n\t\t( ontable b3 )\n\t\t( on b3 b2 )\n\t)\n\t( oneof\n\t\t( ontable b2 )\n\t\t( on b2 b3 ") +
+  std::string(")\n\t)\n\t( oneof\n\t\t( clear b3 )\n\t\t( on b2 b3 )\n\t)\n\t( oneof\n\t\t( clear b2 )\n") +
+  std::string("\t\t( on b3 b2 )\n\t)\n)\n( :goal\n\t( and\n\t\t( on b2 b1 )\n\t\t( on b3 b2 )\n\t)\n)\n)\n");
+
   ASSERT_EQ(tmp1, tmp2);
 
   ASSERT_TRUE(problem_expert.clearKnowledge());
   ASSERT_EQ(
-      problem_expert.getProblem(),
-      std::string("( define ( problem problem_1 )\n( :domain blocksworld )\n") +
-      std::string("( :objects\n)\n( :init\n)\n( :goal\n\t( and\n\t)\n)\n)\n"));
+  problem_expert.getProblem(),
+  std::string("( define ( problem problem_1 )\n( :domain blocksworld )\n") +
+  std::string("( :objects\n)\n( :init\n)\n( :goal\n\t( and\n\t)\n)\n)\n"));
 
 }
 

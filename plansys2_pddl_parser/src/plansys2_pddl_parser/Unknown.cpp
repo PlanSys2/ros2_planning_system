@@ -13,12 +13,14 @@ namespace parser { namespace pddl {
 
         plansys2_msgs::msg::Node::SharedPtr Unknown::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
             plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+            node->node_id = tree.nodes.size();
+            tree.nodes.push_back(*node);
+
             auto child = conds[0]->getTree(tree, d, replace);
             node->children.push_back(child->node_id);
             node->node_type = plansys2_msgs::msg::Node::UNKNOWN;
 
-            node->node_id = tree.nodes.size();
-            tree.nodes.push_back(*node);
+            tree.nodes[node->node_id] = *node;
             return node;
         }
 

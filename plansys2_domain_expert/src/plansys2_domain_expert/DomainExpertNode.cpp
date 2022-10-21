@@ -113,14 +113,15 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
 
-  auto planner = std::make_shared<plansys2::POPFPlanSolver>();
   domain_expert_ = std::make_shared<DomainExpert>(domain_str);
 
-  bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
-  if (!check_valid) {
-    RCLCPP_ERROR_STREAM(get_logger(), "PDDL syntax error");
-    return CallbackReturnT::FAILURE;
-  }
+  // TODO PDDL syntax should be checked by domain or planner plugin, not default planner
+//  auto planner = std::make_shared<plansys2::POPFPlanSolver>();
+//  bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
+//  if (!check_valid) {
+//    RCLCPP_ERROR_STREAM(get_logger(), "PDDL syntax error");
+//    return CallbackReturnT::FAILURE;
+//  }
 
   for (size_t i = 1; i < model_files.size(); i++) {
     std::ifstream domain_ifs(model_files[i]);
@@ -129,12 +130,14 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
       std::istreambuf_iterator<char>());
     domain_expert_->extendDomain(domain_str);
 
-    bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
+  // TODO PDDL syntax should be checked by domain or planner plugin, not default planner
 
-    if (!check_valid) {
-      RCLCPP_ERROR_STREAM(get_logger(), "PDDL syntax error");
-      return CallbackReturnT::FAILURE;
-    }
+//    bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
+//
+//    if (!check_valid) {
+//      RCLCPP_ERROR_STREAM(get_logger(), "PDDL syntax error");
+//      return CallbackReturnT::FAILURE;
+//    }
   }
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());

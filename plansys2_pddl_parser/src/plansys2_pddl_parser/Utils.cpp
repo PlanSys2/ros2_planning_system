@@ -59,6 +59,20 @@ namespace parser {
         }
       }
 
+      if (std::regex_search(expr, match, std::regex("\\(\\s*unknown[ (]"))) {
+        if (static_cast<int>(match.position()) < first) {
+          first = static_cast<int>(match.position());
+          node_type = plansys2_msgs::msg::Node::UNKNOWN;
+        }
+      }
+
+      if (std::regex_search(expr, match, std::regex("\\(\\s*oneof[ (]"))) {
+        if (static_cast<int>(match.position()) < first) {
+          first = static_cast<int>(match.position());
+          node_type = plansys2_msgs::msg::Node::ONE_OF;
+        }
+      }
+
       std::tuple<uint8_t, int> modifier_search_result = getFunMod(expr);
       if (std::get<0>(modifier_search_result) != plansys2_msgs::msg::Node::NONE) {
         if (std::get<1>(modifier_search_result) < first) {
@@ -628,6 +642,12 @@ namespace parser {
         case plansys2_msgs::msg::Node::NOT:
           default_node_type = plansys2_msgs::msg::Node::PREDICATE;
           break;
+        case plansys2_msgs::msg::Node::ONE_OF:
+          default_node_type = plansys2_msgs::msg::Node::PREDICATE;
+          break;
+        case plansys2_msgs::msg::Node::UNKNOWN:
+          default_node_type = plansys2_msgs::msg::Node::PREDICATE;
+          break;
         case plansys2_msgs::msg::Node::EXPRESSION:
           default_node_type = plansys2_msgs::msg::Node::FUNCTION;
           break;
@@ -744,6 +764,38 @@ namespace parser {
           node->value = std::stod(wexpr);
           node->negate = negate;
           tree.nodes.push_back(*node);
+
+          return node;
+        }
+        case plansys2_msgs::msg::Node::ONE_OF: {
+          auto node = std::make_shared<plansys2_msgs::msg::Node>();
+          node->node_type = node_type;
+          node->node_id = tree.nodes.size();
+          node->negate = negate;
+          tree.nodes.push_back(*node);
+
+          std::vector<std::string> subexprs = getSubExpr(wexpr);
+
+          for (const auto &e: subexprs) {
+            auto child = fromString(tree, e, negate, node_type);
+            tree.nodes[node->node_id].children.push_back(child->node_id);
+          }
+
+          return node;
+        }
+        case plansys2_msgs::msg::Node::UNKNOWN: {
+          auto node = std::make_shared<plansys2_msgs::msg::Node>();
+          node->node_type = node_type;
+          node->node_id = tree.nodes.size();
+          node->negate = negate;
+          tree.nodes.push_back(*node);
+
+          std::vector<std::string> subexprs = getSubExpr(wexpr);
+
+          for (const auto &e: subexprs) {
+            auto child = fromString(tree, e, negate, node_type);
+            tree.nodes[node->node_id].children.push_back(child->node_id);
+          }
 
           return node;
         }
@@ -969,6 +1021,16 @@ namespace parser {
           break;
         case plansys2_msgs::msg::Node::NOT:
           getPredicates(predicates, tree, tree.nodes[node_id].children[0], !negate);
+          break;
+        case plansys2_msgs::msg::Node::UNKNOWN:
+          for (auto child_id: tree.nodes[node_id].children) {
+            getPredicates(predicates, tree, child_id, negate);
+          }
+          break;
+        case plansys2_msgs::msg::Node::ONE_OF:
+          for (auto child_id: tree.nodes[node_id].children) {
+            getPredicates(predicates, tree, child_id, negate);
+          }
           break;
         case plansys2_msgs::msg::Node::ACTION:
           for (auto child_id: tree.nodes[node_id].children) {

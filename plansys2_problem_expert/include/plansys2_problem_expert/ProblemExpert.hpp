@@ -51,22 +51,10 @@ public:
   bool existPredicate(const plansys2::Predicate & predicate);
   std::optional<plansys2::Predicate> getPredicate(const std::string & expr);
 
-  std::vector<plansys2::Predicate> getUnknownPredicates();
-  bool addUnknownPredicate(const plansys2::Predicate & predicate);
-  bool removeUnknownPredicate(const plansys2::Predicate & predicate);
-  std::optional<plansys2::Predicate> getUnknownPredicate(const std::string & expr);
-  bool existUnknownPredicate(const plansys2::Predicate & predicate);
-
-  std::vector<PredicateSet> getOneOfPredicates();
-  bool addOneOfPredicate(const PredicateSet & predicate_set);
-  bool removeOneOfPredicate(const PredicateSet & predicate_set);
-  std::optional<PredicateSet> getOneOfPredicate(const PredicateSet  & predicate_set);
-  bool existOneOfPredicate(const PredicateSet & predicate_set);
-
-  std::vector<plansys2::Or> getOrCondition();
-  bool addOrCondition(const plansys2::Or & cond);
-  bool removeOrCondition(const plansys2::Or & cond);
-  bool existOrCondition(const plansys2::Or & cond);
+  std::vector<plansys2_msgs::msg::Tree> getConditionals();
+  bool addConditional(const plansys2_msgs::msg::Tree & condition);
+  bool removeConditional(const plansys2_msgs::msg::Tree & condition);
+  bool existConditional(const plansys2_msgs::msg::Tree & condition);
 
   std::vector<plansys2::Function> getFunctions();
   bool addFunction(const plansys2::Function & function);
@@ -90,7 +78,7 @@ public:
   bool isValidPredicate(const plansys2::Predicate & predicate);
   bool isValidFunction(const plansys2::Function & function);
   bool isValidGoal(const plansys2::Goal & goal);
-  bool isValidOr(const plansys2::Goal &cond);
+  bool isValidCondition(const plansys2_msgs::msg::Tree &cond);
 
 private:
   bool checkPredicateTreeTypes(
@@ -109,9 +97,10 @@ private:
   std::vector<plansys2::Instance> instances_;
   std::vector<plansys2::Predicate> predicates_;
   std::vector<plansys2::Function> functions_;
-  std::vector<plansys2::Predicate> unknown_predicates_;
-  std::vector<PredicateSet> oneof_predicates_;
-  std::vector<plansys2::Or> or_conditions_;
+  std::vector<plansys2_msgs::msg::Tree> conditionals_;
+//  std::vector<plansys2::Predicate> unknown_predicates_;
+//  std::vector<PredicateSet> oneof_predicates_;
+//  std::vector<plansys2::Or> or_conditions_;
   plansys2::Goal goal_;
 
   std::shared_ptr<DomainExpert> domain_expert_;

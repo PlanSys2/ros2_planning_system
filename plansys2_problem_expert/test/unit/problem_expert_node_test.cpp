@@ -690,6 +690,81 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
   t.join();
 }
 
+
+TEST(problem_expert_node, addget_conditionals)
+{
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto test_node_2 = rclcpp::Node::make_shared("test_problem_expert_node_2");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_blocks_observe.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_blocks_observe.pddl"});
+
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(test_node_2->get_node_base_interface());
+
+  plansys2_msgs::msg::Knowledge last_knowledge_msg;
+  int knowledge_msg_counter = 0;
+  auto knowledge_sub = test_node_2->create_subscription<plansys2_msgs::msg::Knowledge>(
+      "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
+      [&last_knowledge_msg, &knowledge_msg_counter]
+          (const plansys2_msgs::msg::Knowledge::SharedPtr msg) {
+        last_knowledge_msg = *msg;
+        knowledge_msg_counter++;
+      });
+
+  bool finish = false;
+  std::thread t([&]() {
+    while (!finish) {exe.spin_some();}
+  });
+
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("b1", "block")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("b2", "block")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("b3", "block")));
+
+  auto unknown_cond_1 = plansys2::Unknown("(unknown (ontable b2))");
+  auto unknown_cond_2 = plansys2::Unknown("(unknown (on b2 b3))");
+  auto oneof_cond = plansys2::OneOf("(oneof (ontable b2) (on b2 b3))");
+  auto or_cond = plansys2::Or("(or (on b2 b3) (on b3 b2))");
+  auto or_cond2 = plansys2::Or("(or (not (clear b1)) (clear b1))");
+
+  ASSERT_TRUE(problem_client->addConditional(unknown_cond_1));
+  ASSERT_TRUE(problem_client->addConditional(unknown_cond_2));
+  ASSERT_TRUE(problem_client->addConditional(oneof_cond));
+  ASSERT_TRUE(problem_client->addConditional(or_cond));
+  ASSERT_TRUE(problem_client->addConditional(or_cond2));
+
+  ASSERT_EQ(problem_client->getConditionals().size(), 5);
+  std::cout << problem_client->getProblem() << std::endl;
+
+  ASSERT_TRUE(problem_client->removeConditional(unknown_cond_1));
+  ASSERT_TRUE(problem_client->removeConditional(unknown_cond_2));
+  ASSERT_TRUE(problem_client->removeConditional(oneof_cond));
+  ASSERT_TRUE(problem_client->removeConditional(or_cond));
+  ASSERT_TRUE(problem_client->removeConditional(or_cond2));
+
+  ASSERT_EQ(problem_client->getConditionals().size(), 0);
+
+
+  finish = true;
+  t.join();
+}
+
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

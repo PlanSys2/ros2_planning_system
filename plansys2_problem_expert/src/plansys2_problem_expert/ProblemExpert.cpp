@@ -109,9 +109,6 @@ namespace plansys2 {
 
   bool
   ProblemExpert::addPredicate(const plansys2::Predicate &predicate) {
-    if (existUnknownPredicate(predicate)) {
-      removeUnknownPredicate(predicate);
-    }
 
     if (!existPredicate(predicate)) {
       if (isValidPredicate(predicate)) {
@@ -129,7 +126,6 @@ namespace plansys2 {
   ProblemExpert::removePredicate(const plansys2::Predicate &predicate) {
     bool found = false;
     int i = 0;
-    removeUnknownPredicate(predicate);
 
     if (!isValidPredicate(predicate)) {  // if predicate is not valid, error
       return false;
@@ -183,20 +179,16 @@ namespace plansys2 {
   }
 
 
-  std::vector<plansys2::Predicate>
-  ProblemExpert::getUnknownPredicates() {
-    return unknown_predicates_;
+  std::vector<plansys2_msgs::msg::Tree>
+  ProblemExpert::getConditionals() {
+    return conditionals_;
   }
 
   bool
-  ProblemExpert::addUnknownPredicate(const plansys2::Predicate &predicate) {
-    if (existPredicate(predicate)) {
-      removePredicate(predicate);
-    }
-
-    if (!existUnknownPredicate(predicate)) {
-      if (isValidPredicate(predicate)) {
-        unknown_predicates_.push_back(predicate);
+  ProblemExpert::addConditional(const plansys2_msgs::msg::Tree &condition) {
+    if (!existConditional(condition)) {
+      if (isValidCondition(condition)) {
+        conditionals_.push_back(condition);
         return true;
       } else {
         return false;
@@ -207,203 +199,21 @@ namespace plansys2 {
   }
 
   bool
-  ProblemExpert::removeUnknownPredicate(const plansys2::Predicate &predicate) {
-    bool found = false;
-    int i = 0;
-
-    if (!isValidPredicate(predicate)) {  // if predicate is not valid, error
+  ProblemExpert::removeConditional(const plansys2_msgs::msg::Tree &condition) {
+    if (!isValidCondition(condition)) {  // if predicate is not valid, error
       return false;
     }
-    while (!found && i < unknown_predicates_.size()) {
-      if (parser::pddl::checkNodeEquality(unknown_predicates_[i], predicate)) {
-        found = true;
-        unknown_predicates_.erase(unknown_predicates_.begin() + i);
-      }
-      i++;
+    auto it = std::find(conditionals_.begin(), conditionals_.end(), condition);
+    if (it != conditionals_.end()){
+      conditionals_.erase(it);
     }
-
-    return true;
-  }
-
-  std::optional<plansys2::Predicate>
-  ProblemExpert::getUnknownPredicate(const std::string &expr) {
-    plansys2::Predicate ret;
-    plansys2::Predicate pred = parser::pddl::fromStringPredicate(expr);
-
-    bool found = false;
-    size_t i = 0;
-    while (i < unknown_predicates_.size() && !found) {
-      if (parser::pddl::checkNodeEquality(unknown_predicates_[i], pred)) {
-        found = true;
-        ret = unknown_predicates_[i];
-      }
-      i++;
-    }
-
-    if (found) {
-      return ret;
-    } else {
-      return {};
-    }
-  }
-
-  bool
-  ProblemExpert::existUnknownPredicate(const plansys2::Predicate &predicate) {
-    bool found = false;
-    int i = 0;
-
-    while (!found && i < unknown_predicates_.size()) {
-      if (parser::pddl::checkNodeEquality(unknown_predicates_[i], predicate)) {
-        found = true;
-      }
-      i++;
-    }
-
-    return found;
-  }
-
-
-  std::vector<PredicateSet>
-  ProblemExpert::getOneOfPredicates() {
-    return oneof_predicates_;
-  }
-
-  bool
-  ProblemExpert::addOneOfPredicate(const PredicateSet &predicate_set) {
-
-    if (!existOneOfPredicate(predicate_set)) {
-      for (const auto &pred: predicate_set) {
-        if (!isValidPredicate(pred)) {
-          return false;
-        }
-      }
-      oneof_predicates_.push_back(predicate_set);
-      return true;
-    } else {
-      return true;
-    }
-  }
-
-  bool
-  ProblemExpert::removeOneOfPredicate(const PredicateSet &predicate_set) {
-    bool found = false;
-    int i = 0;
-
-    for (const auto &pred: predicate_set) {
-      if (!isValidPredicate(pred)) {
-        return false;
-      }
-    }
-    while (!found && i < oneof_predicates_.size()) {
-
-      if (oneof_predicates_[i] == predicate_set) {
-        found = true;
-        oneof_predicates_.erase(oneof_predicates_.begin() + i);
-      }
-
-      i++;
-    }
-
-    return true;
-  }
-
-  std::optional<PredicateSet>
-  ProblemExpert::getOneOfPredicate(const PredicateSet &pred_set) {
-
-    bool found = false;
-    size_t i = 0;
-    while (i < oneof_predicates_.size() && !found) {
-      if (oneof_predicates_[i] == pred_set) {
-        found = true;
-        break;
-      }
-      i++;
-    }
-
-    if (found) {
-      return oneof_predicates_[i];
-    } else {
-      return {};
-    }
-  }
-
-  bool
-  ProblemExpert::existOneOfPredicate(const PredicateSet &predicate) {
-    bool found = false;
-    int i = 0;
-
-    while (!found && i < oneof_predicates_.size()) {
-      if (oneof_predicates_[i] == predicate) {
-        found = true;
-        break;
-      }
-      i++;
-    }
-
-    return found;
-  }
-
-
-  std::vector<plansys2::Or> ProblemExpert::getOrCondition() {
-    return or_conditions_;
-  }
-
-  bool
-  ProblemExpert::addOrCondition(const plansys2::Or &cond) {
-
-    if (!existOrCondition(cond)) {
-      if (!isValidOr(cond)) {
-        return false;
-      }
-      or_conditions_.push_back(cond);
-      return true;
-    } else {
-      return true;
-    }
-  }
-
-  bool
-  ProblemExpert::removeOrCondition(const plansys2::Or &cond) {
-    bool found = false;
-    int i = 0;
-
-    if (!isValidOr(cond)) {
-      return false;
-    }
-
-
-    while (!found && i < or_conditions_.size()) {
-      if (or_conditions_[i] == cond) {
-        found = true;
-        or_conditions_.erase(or_conditions_.begin() + i);
-      }
-      i++;
-    }
-
     return true;
   }
 
   bool
-  ProblemExpert::existOrCondition(const plansys2::Or &cond) {
-    bool found = false;
-    int i = 0;
-
-    while (!found && i < or_conditions_.size()) {
-      if (or_conditions_[i] == cond) {
-        found = true;
-        break;
-      }
-      i++;
-    }
-
-    return found;
+  ProblemExpert::existConditional(const plansys2_msgs::msg::Tree &condition) {
+    return std::find(conditionals_.begin(), conditionals_.end(), condition) != conditionals_.end();
   }
-
-  bool
-  ProblemExpert::isValidOr(const plansys2::Goal &cond) {
-    return checkPredicateTreeTypes(cond, domain_expert_);
-  }
-
 
   std::vector<plansys2::Function>
   ProblemExpert::getFunctions() {
@@ -606,9 +416,7 @@ namespace plansys2 {
     instances_.clear();
     predicates_.clear();
     functions_.clear();
-    unknown_predicates_.clear();
-    oneof_predicates_.clear();
-    or_conditions_.clear();
+    conditionals_.clear();
     clearGoal();
 
     return true;
@@ -729,6 +537,10 @@ namespace plansys2 {
     return checkPredicateTreeTypes(goal, domain_expert_);
   }
 
+  bool ProblemExpert::isValidCondition(const plansys2_msgs::msg::Tree &cond) {
+    return checkPredicateTreeTypes(cond, domain_expert_);
+  }
+
   bool
   ProblemExpert::checkPredicateTreeTypes(
       const plansys2_msgs::msg::Tree &tree,
@@ -759,6 +571,19 @@ namespace plansys2 {
 
       case plansys2_msgs::msg::Node::NOT: {
         return checkPredicateTreeTypes(tree, domain_expert, tree.nodes[node_id].children[0]);
+      }
+
+      case plansys2_msgs::msg::Node::UNKNOWN: {
+        return tree.nodes[node_id].children.size()==1 && checkPredicateTreeTypes(tree, domain_expert, tree.nodes[node_id].children[0]);
+      }
+
+      case plansys2_msgs::msg::Node::ONE_OF: {
+        bool ret = true;
+
+        for (auto &child_id: tree.nodes[node_id].children) {
+          ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id);
+        }
+        return ret;
       }
 
       case plansys2_msgs::msg::Node::PREDICATE: {
@@ -830,16 +655,64 @@ namespace plansys2 {
       problem.addInit(predicate.name, v);
     }
 
-    for (plansys2_msgs::msg::Node predicate: unknown_predicates_) {
-      StringVec v;
+    for (auto cond: conditionals_) {
+      auto root_node = cond.nodes[0];
+      std::vector<plansys2_msgs::msg::Node> predicates;
+      parser::pddl::getPredicates(predicates, cond, 0);
+      switch (root_node.node_type) {
+        case plansys2_msgs::msg::Node::UNKNOWN: {
+          auto predicate = predicates[0];
+          StringVec v;
+          for (size_t i = 0; i < predicate.parameters.size(); i++) {
+            v.push_back(predicate.parameters[i].name);
+          }
+          std::transform(predicate.name.begin(), predicate.name.end(), predicate.name.begin(), ::tolower);
+          problem.addInitUnknown(predicate.name, v);
+          break;
+        }
+        case plansys2_msgs::msg::Node::ONE_OF: {
+          std::vector<StringVec> v_vecs;
+          std::vector<std::string> names;
+          for (plansys2_msgs::msg::Node predicate: predicates) {
+            StringVec v;
+            for (size_t i = 0; i < predicate.parameters.size(); i++) {
+              v.push_back(predicate.parameters[i].name);
+            }
+            v_vecs.push_back(v);
 
-      for (size_t i = 0; i < predicate.parameters.size(); i++) {
-        v.push_back(predicate.parameters[i].name);
+            std::transform(
+                predicate.name.begin(), predicate.name.end(),
+                predicate.name.begin(), ::tolower);
+            names.push_back(predicate.name);
+          }
+          problem.addInitOneOf(names, v_vecs);
+          break;
+        }
+        case plansys2_msgs::msg::Node::OR: {
+          std::vector<StringVec> vecs;
+          std::vector<std::string> names;
+          std::vector<bool> negates;
+          for (auto predicate: predicates) {
+            StringVec v;
+            for (size_t i = 0; i < predicate.parameters.size(); i++) {
+              v.push_back(predicate.parameters[i].name);
+            }
+            std::transform(predicate.name.begin(), predicate.name.end(), predicate.name.begin(), ::tolower);
+
+            names.push_back(predicate.name);
+            vecs.push_back(v);
+            negates.push_back(predicate.negate);
+          }
+          problem.addInitOr({names[0], names[1]}, {vecs[0], vecs[1]}, {negates[0], negates[1]});
+          break;
+        }
+        default: {
+          std::cerr << "Failed to add conditional node " << std::endl;
+          break;
+        }
       }
 
-      std::transform(predicate.name.begin(), predicate.name.end(), predicate.name.begin(), ::tolower);
 
-      problem.addInitUnknown(predicate.name, v);
     }
 
     for (plansys2_msgs::msg::Node function: functions_) {
@@ -855,45 +728,15 @@ namespace plansys2 {
 
       problem.addInit(function.name, function.value, v);
     }
-
-    for (const auto &oneof_predicate: oneof_predicates_) {
-      std::vector<StringVec> v_vecs;
-      std::vector<std::string> names;
-      for (plansys2_msgs::msg::Node predicate: oneof_predicate) {
-        StringVec v;
-        for (size_t i = 0; i < predicate.parameters.size(); i++) {
-          v.push_back(predicate.parameters[i].name);
-        }
-        v_vecs.push_back(v);
-
-        std::transform(
-            predicate.name.begin(), predicate.name.end(),
-            predicate.name.begin(), ::tolower);
-        names.push_back(predicate.name);
-      }
-      problem.addInitOneOf(names, v_vecs);
-    }
+//
+//    for (const auto &oneof_predicate: oneof_predicates_) {
+//
+//    }
 
 
-    for (auto or_condition: or_conditions_) {
-      std::vector<plansys2_msgs::msg::Node> predicates;
-      parser::pddl::getPredicates(predicates, or_condition, 0);
-      std::vector<StringVec> vecs;
-      std::vector<std::string> names;
-      std::vector<bool> negates;
-      for (auto predicate: predicates) {
-        StringVec v;
-        for (size_t i = 0; i < predicate.parameters.size(); i++) {
-          v.push_back(predicate.parameters[i].name);
-        }
-        std::transform(predicate.name.begin(), predicate.name.end(), predicate.name.begin(), ::tolower);
-
-        names.push_back(predicate.name);
-        vecs.push_back(v);
-        negates.push_back(predicate.negate);
-      }
-      problem.addInitOr({names[0], names[1]}, {vecs[0], vecs[1]}, {negates[0], negates[1]});
-    }
+//    for (auto or_condition: or_conditions_) {
+//
+//    }
 
     std::vector<plansys2_msgs::msg::Node> predicates;
     parser::pddl::getPredicates(predicates, goal_);
@@ -979,8 +822,8 @@ namespace plansys2 {
       }
     }
 
-    plansys2_msgs::msg::Tree tree;
     for (auto ground: problem.init) {
+      plansys2_msgs::msg::Tree tree;
       auto tree_node = ground->getTree(tree, domain);
       switch (tree_node->node_type) {
         case plansys2_msgs::msg::Node::PREDICATE: {
@@ -1014,15 +857,13 @@ namespace plansys2 {
 
 
     for (auto cond: problem.init_cond) {
+      plansys2_msgs::msg::Tree tree;
       auto tree_node = cond->getTree(tree, domain);
       switch (tree_node->node_type) {
         case plansys2_msgs::msg::Node::UNKNOWN: {
           auto tmp(*tree_node);
-
-          plansys2::Predicate pred_node = tree.nodes[tmp.children[0]];
-          std::cout << "Adding unknown predicate: " <<
-                    parser::pddl::toString(tree, tree_node->node_id) << std::endl;
-          if (!addUnknownPredicate(pred_node)) {
+          std::cout << "Adding unknown predicate: " << parser::pddl::toString(tree, tree_node->node_id) << std::endl;
+          if (!addConditional(tree)) {
             std::cerr << "Failed to add unknown predicate: " << parser::pddl::toString(
                 tree,
                 tree_node->node_id) <<
@@ -1031,15 +872,9 @@ namespace plansys2 {
           break;
         }
         case plansys2_msgs::msg::Node::ONE_OF: {
-          PredicateSet pred_set;
           auto tmp(*tree_node);
-          for (auto ind: tmp.children) {
-            pred_set.insert(tree.nodes[ind]);
-          }
-
-          std::cout << "Adding oneof: " <<
-                    parser::pddl::toString(tree, tree_node->node_id) << std::endl;
-          if (!addOneOfPredicate(pred_set)) {
+          std::cout << "Adding oneof: " << parser::pddl::toString(tree, tree_node->node_id) << std::endl;
+          if (!addConditional(tree)) {
             std::cerr << "Failed to add oneof : " << parser::pddl::toString(
                 tree,
                 tree_node->node_id) <<
@@ -1050,13 +885,10 @@ namespace plansys2 {
         case plansys2_msgs::msg::Node::OR: {
           plansys2_msgs::msg::Tree or_tree;
           auto or_node = cond->getTree(or_tree, domain);
-
-          std::cout << "Adding or node: " <<
-                    parser::pddl::toString(or_tree, or_node->node_id) << std::endl;
-//          or_tree.nodes[0].children.push_back(or_node->node_id);
-          if (!addOrCondition(or_tree)) {
+          std::cout << "Adding or node: " << parser::pddl::toString(or_tree, or_node->node_id) << std::endl;
+          if (!addConditional(tree)) {
             std::cerr << "Failed to add or : " <<
-            parser::pddl::toString(or_tree, or_node->node_id)  << std::endl;
+                      parser::pddl::toString(or_tree, or_node->node_id) << std::endl;
           }
           break;
         }

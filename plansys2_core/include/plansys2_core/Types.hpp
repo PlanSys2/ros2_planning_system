@@ -98,6 +98,28 @@ public:
       : plansys2_msgs::msg::Tree(or_condition) {}
 };
 
+class OneOf : public plansys2_msgs::msg::Tree
+{
+public:
+  OneOf()
+      : plansys2_msgs::msg::Tree() {}
+  explicit OneOf(const std::string & condition)
+      : plansys2_msgs::msg::Tree(parser::pddl::fromString(condition)) {}
+  OneOf(const plansys2_msgs::msg::Tree & condition)  // NOLINT(runtime/explicit)
+      : plansys2_msgs::msg::Tree(condition) {}
+};
+
+class Unknown : public plansys2_msgs::msg::Tree
+{
+public:
+  Unknown()
+      : plansys2_msgs::msg::Tree() {}
+  explicit Unknown(const std::string & condition)
+      : plansys2_msgs::msg::Tree(parser::pddl::fromString(condition)) {}
+  Unknown(const plansys2_msgs::msg::Tree & condition)  // NOLINT(runtime/explicit)
+      : plansys2_msgs::msg::Tree(condition) {}
+};
+
 template<class toT, class fromT>
 std::vector<toT>
 convertVector(const std::vector<fromT> & in_vector)
