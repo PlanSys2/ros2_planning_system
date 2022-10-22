@@ -44,15 +44,16 @@
 #include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
 #endif
 
+#include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
+#include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
+#include "plansys2_executor/behavior_tree/check_action_node.hpp"
+#include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
+#include "plansys2_executor/behavior_tree/check_observation_node.hpp"
+#include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
+#include "plansys2_executor/behavior_tree/check_timeout_node.hpp"
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_action_node.hpp"
-#include "plansys2_executor/behavior_tree/check_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
-#include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
-#include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
-#include "plansys2_executor/behavior_tree/check_timeout_node.hpp"
-#include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
-#include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
 
 namespace plansys2
 {
@@ -373,26 +374,52 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   for (const auto & plan_item : current_plan_.value().items) {
     auto index = BTBuilder::to_action_id(plan_item, 3);
 
-    (*action_map)[index] = ActionExecutionInfo();
-    (*action_map)[index].action_executor =
-      ActionExecutor::make_shared(plan_item.action, shared_from_this());
-    (*action_map)[index].durative_action_info =
-      domain_client_->getDurativeAction(
-      get_action_name(plan_item.action), get_action_params(plan_item.action));
-
-    (*action_map)[index].duration = plan_item.duration;
-    std::string action_name = (*action_map)[index].durative_action_info->name;
-    if (std::find(
-        action_timeout_actions.begin(), action_timeout_actions.end(),
-        action_name) != action_timeout_actions.end() &&
-      this->has_parameter("action_timeouts." + action_name + ".duration_overrun_percentage"))
-    {
-      (*action_map)[index].duration_overrun_percentage = this->get_parameter(
-        "action_timeouts." + action_name + ".duration_overrun_percentage").as_double();
+    auto durative_action_info = domain_client_->getDurativeAction(get_action_name(plan_item.action), get_action_params(plan_item.action));
+    if (durative_action_info){
+      (*action_map)[index] = ActionExecutionInfo();
+      (*action_map)[index].action_executor =
+          ActionExecutor::make_shared(plan_item.action, shared_from_this());
+      (*action_map)[index].durative_action_info = durative_action_info;
+      (*action_map)[index].duration = plan_item.duration;
+      std::string action_name = (*action_map)[index].durative_action_info->name;
+      if (std::find(
+          action_timeout_actions.begin(), action_timeout_actions.end(),
+          action_name) != action_timeout_actions.end() &&
+          this->has_parameter("action_timeouts." + action_name + ".duration_overrun_percentage"))
+      {
+        (*action_map)[index].duration_overrun_percentage = this->get_parameter(
+            "action_timeouts." + action_name + ".duration_overrun_percentage").as_double();
+      }
+      RCLCPP_INFO(
+          get_logger(), "Action %s timeout percentage %f", action_name.c_str(),
+          (*action_map)[index].duration_overrun_percentage);
     }
-    RCLCPP_INFO(
-      get_logger(), "Action %s timeout percentage %f", action_name.c_str(),
-      (*action_map)[index].duration_overrun_percentage);
+
+    auto action_info = domain_client_->getAction(get_action_name(plan_item.action), get_action_params(plan_item.action));
+    if (action_info) { // TODO support both action types??
+      (*action_map)[index] = ActionExecutionInfo();
+      (*action_map)[index].action_executor =
+          ActionExecutor::make_shared(plan_item.action, shared_from_this());
+      (*action_map)[index].durative_action_info->name = action_info->name;
+      (*action_map)[index].durative_action_info->parameters = action_info->parameters;
+      (*action_map)[index].durative_action_info->observe = action_info->observe;
+      (*action_map)[index].durative_action_info->at_start_requirements = action_info->preconditions;
+      (*action_map)[index].durative_action_info->at_end_effects = action_info->effects;
+      (*action_map)[index].duration = plan_item.duration;
+      std::string action_name = action_info->name;
+      if (std::find(
+          action_timeout_actions.begin(), action_timeout_actions.end(),
+          action_name) != action_timeout_actions.end() &&
+          this->has_parameter("action_timeouts." + action_name + ".duration_overrun_percentage"))
+      {
+        (*action_map)[index].duration_overrun_percentage = this->get_parameter(
+            "action_timeouts." + action_name + ".duration_overrun_percentage").as_double();
+      }
+      RCLCPP_INFO(
+          get_logger(), "Action %s timeout percentage %f", action_name.c_str(),
+          (*action_map)[index].duration_overrun_percentage);
+    }
+
   }
 
   ordered_sub_goals_ = getOrderedSubGoals();
@@ -414,6 +441,8 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   } else if (bt_builder_plugin == "STNBTBuilder") {
     auto precision = this->get_parameter("action_time_precision").as_int();
     bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
+  } else if (bt_builder_plugin == "ContingentBTBuilder") {
+    bt_builder->initialize();
   }
   auto blackboard = BT::Blackboard::create();
 
@@ -423,15 +452,16 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   blackboard->set("problem_client", problem_client_);
 
   BT::BehaviorTreeFactory factory;
+  factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
+  factory.registerNodeType<ApplyAtStartEffect>("ApplyAtStartEffect");
+  factory.registerNodeType<CheckAction>("CheckAction");
+  factory.registerNodeType<CheckAtEndReq>("CheckAtEndReq");
+  factory.registerNodeType<CheckObservation>("CheckObservation");
+  factory.registerNodeType<CheckOverAllReq>("CheckOverAllReq");
+  factory.registerNodeType<CheckTimeout>("CheckTimeout");
   factory.registerNodeType<ExecuteAction>("ExecuteAction");
   factory.registerNodeType<WaitAction>("WaitAction");
-  factory.registerNodeType<CheckAction>("CheckAction");
-  factory.registerNodeType<CheckOverAllReq>("CheckOverAllReq");
   factory.registerNodeType<WaitAtStartReq>("WaitAtStartReq");
-  factory.registerNodeType<CheckAtEndReq>("CheckAtEndReq");
-  factory.registerNodeType<ApplyAtStartEffect>("ApplyAtStartEffect");
-  factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
-  factory.registerNodeType<CheckTimeout>("CheckTimeout");
 
   auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
   std_msgs::msg::String dotgraph_msg;

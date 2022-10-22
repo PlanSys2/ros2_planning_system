@@ -1,0 +1,76 @@
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <Fallback>
+      <Sequence>
+        <Sequence name="(senseontable b3):0">
+          <WaitAtStartReq action="(senseontable b3):0"/>
+          <ReactiveSequence name="(senseontable b3):0">
+            <CheckOverAllReq action="(senseontable b3):0"/>
+            <ExecuteAction action="(senseontable b3):0"/>
+          </ReactiveSequence>
+          <CheckObservation action="(senseontable b3):0" expect="true"/>
+        </Sequence>
+        <Sequence name="(move-b-to-b b2 b3 b1):1000">
+          <WaitAtStartReq action="(move-b-to-b b2 b3 b1):1000"/>
+          <ApplyAtStartEffect action="(move-b-to-b b2 b3 b1):1000"/>
+          <ReactiveSequence name="(move-b-to-b b2 b3 b1):1000">
+            <CheckOverAllReq action="(move-b-to-b b2 b3 b1):1000"/>
+            <ExecuteAction action="(move-b-to-b b2 b3 b1):1000"/>
+          </ReactiveSequence>
+          <CheckAtEndReq action="(move-b-to-b b2 b3 b1):1000"/>
+          <ApplyAtEndEffect action="(move-b-to-b b2 b3 b1):1000"/>
+        </Sequence>
+        <Sequence name="(move-t-to-b b3 b2):2000">
+          <WaitAtStartReq action="(move-t-to-b b3 b2):2000"/>
+          <ApplyAtStartEffect action="(move-t-to-b b3 b2):2000"/>
+          <ReactiveSequence name="(move-t-to-b b3 b2):2000">
+            <CheckOverAllReq action="(move-t-to-b b3 b2):2000"/>
+            <ExecuteAction action="(move-t-to-b b3 b2):2000"/>
+          </ReactiveSequence>
+          <CheckAtEndReq action="(move-t-to-b b3 b2):2000"/>
+          <ApplyAtEndEffect action="(move-t-to-b b3 b2):2000"/>
+        </Sequence>
+      </Sequence>
+      <Sequence>
+        <Sequence name="(senseontable b3):0">
+          <WaitAtStartReq action="(senseontable b3):0"/>
+          <ReactiveSequence name="(senseontable b3):0">
+            <CheckOverAllReq action="(senseontable b3):0"/>
+            <ExecuteAction action="(senseontable b3):0"/>
+          </ReactiveSequence>
+          <CheckObservation action="(senseontable b3):0" expect="false"/>
+        </Sequence>
+        <Sequence name="(move-to-t b3 b2):1000">
+          <WaitAtStartReq action="(move-to-t b3 b2):1000"/>
+          <ApplyAtStartEffect action="(move-to-t b3 b2):1000"/>
+          <ReactiveSequence name="(move-to-t b3 b2):1000">
+            <CheckOverAllReq action="(move-to-t b3 b2):1000"/>
+            <ExecuteAction action="(move-to-t b3 b2):1000"/>
+          </ReactiveSequence>
+          <CheckAtEndReq action="(move-to-t b3 b2):1000"/>
+          <ApplyAtEndEffect action="(move-to-t b3 b2):1000"/>
+        </Sequence>
+        <Sequence name="(move-t-to-b b2 b1):2000">
+          <WaitAtStartReq action="(move-t-to-b b2 b1):2000"/>
+          <ApplyAtStartEffect action="(move-t-to-b b2 b1):2000"/>
+          <ReactiveSequence name="(move-t-to-b b2 b1):2000">
+            <CheckOverAllReq action="(move-t-to-b b2 b1):2000"/>
+            <ExecuteAction action="(move-t-to-b b2 b1):2000"/>
+          </ReactiveSequence>
+          <CheckAtEndReq action="(move-t-to-b b2 b1):2000"/>
+          <ApplyAtEndEffect action="(move-t-to-b b2 b1):2000"/>
+        </Sequence>
+        <Sequence name="(move-t-to-b b3 b2):3000">
+          <WaitAtStartReq action="(move-t-to-b b3 b2):3000"/>
+          <ApplyAtStartEffect action="(move-t-to-b b3 b2):3000"/>
+          <ReactiveSequence name="(move-t-to-b b3 b2):3000">
+            <CheckOverAllReq action="(move-t-to-b b3 b2):3000"/>
+            <ExecuteAction action="(move-t-to-b b3 b2):3000"/>
+          </ReactiveSequence>
+          <CheckAtEndReq action="(move-t-to-b b3 b2):3000"/>
+          <ApplyAtEndEffect action="(move-t-to-b b3 b2):3000"/>
+        </Sequence>
+      </Sequence>
+    </Fallback>
+  </BehaviorTree>
+</root>

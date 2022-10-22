@@ -57,13 +57,21 @@ TEST(simple_btbuilder_tests, test_tree_builder) {
   auto plan = planner->getPlan(domain->getDomain(), problem->getProblem());
   ASSERT_TRUE(plan);
 
-  auto btbuilder = std::make_shared<plansys2::ContingentBTBuilder>();
+  pluginlib::ClassLoader<plansys2::BTBuilder> btbuilder_loader("plansys2_executor", "plansys2::BTBuilder");
+  auto btbuilder = btbuilder_loader.createUniqueInstance("plansys2::ContingentBTBuilder");
 
+  btbuilder->initialize();
   auto tree = btbuilder->get_tree(plan.value());
-  std::cout << tree << std::endl;
+//  std::cout << tree << std::endl;
+  std::ifstream expected_tree_ifs(pkgpath + "/test_behavior_trees/test_contingent_bt.xml");
+  std::string expected_tree((std::istreambuf_iterator<char>(expected_tree_ifs)),
+                          std::istreambuf_iterator<char>());
+
+  ASSERT_EQ(expected_tree, tree);
 
 }
 
+//TODO need to add graphviz test
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

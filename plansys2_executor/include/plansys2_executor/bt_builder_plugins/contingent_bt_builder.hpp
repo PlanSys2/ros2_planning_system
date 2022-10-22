@@ -31,6 +31,7 @@
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
 #include "plansys2_core/Types.hpp"
+#include "plansys2_core/Utils.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
 #include "plansys2_msgs/msg/plan.hpp"
 
@@ -74,6 +75,9 @@ namespace plansys2 {
         int precision = 3);
 
     std::string get_tree(const plansys2_msgs::msg::Plan &current_plan);
+    void get_sub_tree(const std::shared_ptr<plansys2::PlanNode> &root, const  std::string& indents, std::string& tree);
+    void add_action_sequence(const plansys2_msgs::msg::PlanItem &item, const  std::string& indents, std::string& tree);
+    void add_observe_action_sequence(bool observe_result, const plansys2_msgs::msg::PlanItem &item, const  std::string& indents, std::string& tree);
 
     std::string get_dotgraph(
         std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,

@@ -47,7 +47,6 @@ namespace plansys2 {
     } else {
       bt_action_ =
           R""""(<Sequence name="ACTION_ID">
-            WAIT_PREV_ACTIONS
             <ApplyAtStartEffect action="ACTION_ID"/>
             <ReactiveSequence name="ACTION_ID">
               <CheckOverAllReq action="ACTION_ID"/>
@@ -60,12 +59,83 @@ namespace plansys2 {
     }
   }
 
+  void ContingentBTBuilder::add_observe_action_sequence(bool observe_result, const plansys2_msgs::msg::PlanItem &item,
+                                                        const std::string &indents, std::string &tree) {
+    std::string indent = "  ";
+    const std::string action_id = item.action + ":" + std::to_string(static_cast<int>(item.time * 1000));
+    tree += indents +"<Sequence name=\"" + action_id + "\">\n";
+    auto indents_indented = indents + indent;
+    tree += indents_indented +"<WaitAtStartReq action=\"" + action_id + "\"/>\n";
+    tree += indents_indented +"<ReactiveSequence name=\"" + action_id + "\">\n";
+    tree += indents_indented + indent + "<CheckOverAllReq action=\"" + action_id + "\"/>\n";
+    tree += indents_indented + indent + "<ExecuteAction action=\"" + action_id + "\"/>\n";
+    tree += indents_indented +"</ReactiveSequence>\n";
+    if (observe_result){
+      tree += indents_indented +"<CheckObservation action=\"" + action_id + "\" expect=\"true\"/>\n";
+    } else{
+      tree += indents_indented +"<CheckObservation action=\"" + action_id + "\" expect=\"false\"/>\n";
+    }
+    tree += indents + "</Sequence>\n";
+  }
+
+  void ContingentBTBuilder::add_action_sequence(const plansys2_msgs::msg::PlanItem &item,
+                                                const std::string &indents, std::string &tree) {
+    std::string indent = "  ";
+    const std::string action_id = item.action + ":" + std::to_string(static_cast<int>(item.time * 1000));
+    tree += indents +"<Sequence name=\"" + action_id + "\">\n";
+    auto indents_indented = indents + indent;
+    tree += indents_indented +"<WaitAtStartReq action=\"" + action_id + "\"/>\n";
+    tree += indents_indented +"<ApplyAtStartEffect action=\"" + action_id + "\"/>\n";
+    tree += indents_indented +"<ReactiveSequence name=\"" + action_id + "\">\n";
+    tree += indents_indented + indent + "<CheckOverAllReq action=\"" + action_id + "\"/>\n";
+    tree += indents_indented + indent + "<ExecuteAction action=\"" + action_id + "\"/>\n";
+    tree += indents_indented +"</ReactiveSequence>\n";
+    tree += indents_indented +"<CheckAtEndReq action=\"" + action_id + "\"/>\n";
+    tree += indents_indented +"<ApplyAtEndEffect action=\"" + action_id + "\"/>\n";
+    tree += indents + "</Sequence>\n";
+
+  }
+
+
+  void ContingentBTBuilder::get_sub_tree(const std::shared_ptr<plansys2::PlanNode> &root, const std::string &indents,
+                                         std::string &tree) {
+    if (root == nullptr) {
+      return;
+    }
+    std::string indent = "  ";
+    if (root->false_node) {
+      tree += indents + "<Fallback>\n";
+      auto indents_indented = indents + indent;
+
+      tree += indents_indented + "<Sequence>\n";
+      add_observe_action_sequence(true, root->item, indents_indented + indent, tree);
+      get_sub_tree(root->true_node, indents_indented + indent, tree);
+      tree += indents_indented + "</Sequence>\n";
+
+      tree += indents_indented + "<Sequence>\n";
+      add_observe_action_sequence(false, root->item, indents_indented + indent, tree);
+      get_sub_tree(root->false_node, indents_indented + indent, tree);
+      tree += indents_indented + "</Sequence>\n";
+
+      tree += indents + "</Fallback>\n";
+
+    } else {
+      add_action_sequence(root->item, indents, tree);
+      get_sub_tree(root->true_node, indents, tree);
+    }
+
+  }
+
   std::string
   ContingentBTBuilder::get_tree(const plansys2_msgs::msg::Plan &current_plan) {
     auto graph = plansys2::decode_plan(current_plan);
-    for (auto item: current_plan.items) {
-      bt_ += item.action + "\n";
-    }
+
+    bt_ = std::string("<root main_tree_to_execute=\"MainTree\">\n") +
+          t(1) + "<BehaviorTree ID=\"MainTree\">\n";
+
+    get_sub_tree(graph, "    ", bt_);
+
+    bt_ = bt_ + t(1) + "</BehaviorTree>\n</root>\n";
 
     return bt_;
   }
@@ -184,16 +254,14 @@ namespace plansys2 {
   void
   ContingentBTBuilder::get_flow_dotgraph(
       GraphNode::Ptr node,
-      std::set<std::string> & edges)
-  {
-    for (const auto & arc : node->out_arcs) {
+      std::set<std::string> &edges) {
+    for (const auto &arc: node->out_arcs) {
       std::string edge = std::to_string(node->node_num) + "->" + std::to_string(arc->node_num) +
                          ";\n";
       edges.insert(edge);
       get_flow_dotgraph(arc, edges);
     }
   }
-
 
 
   std::string
