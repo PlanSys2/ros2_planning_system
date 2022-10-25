@@ -352,7 +352,7 @@ DomainExpertClient::getAction(
 
   auto future_result = get_action_details_client_->async_send_request(request);
 
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(10000000)) !=
     rclcpp::FutureReturnCode::SUCCESS)
   {
     return {};

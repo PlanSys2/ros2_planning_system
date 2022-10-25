@@ -62,18 +62,22 @@ namespace plansys2 {
   void ContingentBTBuilder::add_observe_action_sequence(bool observe_result, const plansys2_msgs::msg::PlanItem &item,
                                                         const std::string &indents, std::string &tree) {
     std::string indent = "  ";
+    auto tmp = domain_client_->getAction(get_action_name(item.action), get_action_params(item.action));
+    apply(tmp->observe, problem_client_, 0);
+    const std::string observe_expr = parser::pddl::toStringPredicate(tmp->observe, 1, false);
     const std::string action_id = item.action + ":" + std::to_string(static_cast<int>(item.time * 1000));
     tree += indents +"<Sequence name=\"" + action_id + "\">\n";
     auto indents_indented = indents + indent;
+    if (observe_result){
     tree += indents_indented +"<WaitAtStartReq action=\"" + action_id + "\"/>\n";
     tree += indents_indented +"<ReactiveSequence name=\"" + action_id + "\">\n";
     tree += indents_indented + indent + "<CheckOverAllReq action=\"" + action_id + "\"/>\n";
     tree += indents_indented + indent + "<ExecuteAction action=\"" + action_id + "\"/>\n";
     tree += indents_indented +"</ReactiveSequence>\n";
-    if (observe_result){
-      tree += indents_indented +"<CheckObservation action=\"" + action_id + "\" expect=\"true\"/>\n";
+
+      tree += indents_indented +"<ApplyObservation observe=\"" + observe_expr + "\" value=\"true\"/>\n";
     } else{
-      tree += indents_indented +"<CheckObservation action=\"" + action_id + "\" expect=\"false\"/>\n";
+      tree += indents_indented +"<ApplyObservation observe=\"" + observe_expr + "\" value=\"false\"/>\n";
     }
     tree += indents + "</Sequence>\n";
   }

@@ -48,7 +48,7 @@
 #include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/check_action_node.hpp"
 #include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
-#include "plansys2_executor/behavior_tree/check_observation_node.hpp"
+#include "plansys2_executor/behavior_tree/apply_observation_node.hpp"
 #include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_timeout_node.hpp"
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
@@ -456,7 +456,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtStartEffect>("ApplyAtStartEffect");
   factory.registerNodeType<CheckAction>("CheckAction");
   factory.registerNodeType<CheckAtEndReq>("CheckAtEndReq");
-  factory.registerNodeType<CheckObservation>("CheckObservation");
+  factory.registerNodeType<ApplyObservation>("ApplyObservation");
   factory.registerNodeType<CheckOverAllReq>("CheckOverAllReq");
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
   factory.registerNodeType<ExecuteAction>("ExecuteAction");

@@ -745,7 +745,7 @@ ProblemExpertNode::remove_problem_conditional_service_callback(const std::shared
       update_pub_->publish(std_msgs::msg::Empty());
       knowledge_pub_->publish(*get_knowledge_as_msg());
     } else {
-      response->error_info = "Error removing predicate";
+      response->error_info = "Error removing conditional";
     }
   }
 }

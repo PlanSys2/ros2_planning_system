@@ -43,7 +43,7 @@
 #include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
-#include "plansys2_executor/behavior_tree/check_observation_node.hpp"
+#include "plansys2_executor/behavior_tree/apply_observation_node.hpp"
 #include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_action_node.hpp"
@@ -681,30 +681,28 @@ TEST(problem_expert, check_observation_test) {
       rate.sleep();
     }
   }
-  try {
-    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("b3", "block")));
 
-  } catch (std::exception &e) {
-    std::cerr << e.what() << std::endl;
-  }
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("b3", "block")));
+  ASSERT_TRUE(problem_client->addConditional(plansys2::Unknown("(unknown (ontable b3))")));
+  ASSERT_EQ(problem_client->getConditionals().size(), 1);
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
-  (*action_map)["(senseontable b3):0"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(senseontable b3):0"].durative_action_info = std::make_shared<plansys2_msgs::msg::DurativeAction>();
-  (*action_map)["(senseontable b3):0"].durative_action_info->name = "senseontable";
-  (*action_map)["(senseontable b3):0"].durative_action_info->observe = parser::pddl::fromString("(and (ontable b3))");
+//  (*action_map)["(senseontable b3):0"] = plansys2::ActionExecutionInfo();
+//  (*action_map)["(senseontable b3):0"].durative_action_info = std::make_shared<plansys2_msgs::msg::DurativeAction>();
+//  (*action_map)["(senseontable b3):0"].durative_action_info->name = "senseontable";
+//  (*action_map)["(senseontable b3):0"].durative_action_info->observe = parser::pddl::fromString("(and (ontable b3))");
 
 
   std::string bt_xml_tree =
-      R"(
+      R"""(
     <root main_tree_to_execute = "MainTree" >
       <BehaviorTree ID="MainTree">
         <Sequence name="(senseontable b3):0">
-          <CheckObservation action="(senseontable b3):0" expect="true"/>
+          <ApplyObservation observe="(ontable b3)" value="true"/>
         </Sequence>
       </BehaviorTree>
     </root>
-  )";
+  )""";
 
   auto blackboard = BT::Blackboard::create();
 
@@ -715,24 +713,14 @@ TEST(problem_expert, check_observation_test) {
 
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
-  factory.registerNodeType<plansys2::CheckObservation>("CheckObservation");
-
+  factory.registerNodeType<plansys2::ApplyObservation>("ApplyObservation");
 
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
   auto status = tree.tickRoot();
-  ASSERT_EQ(status, BT::NodeStatus::FAILURE);
-
-  std::string predicate = "(ontable b3)";
-  try {
-    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(predicate)));
-  } catch (std::exception &e) {
-    std::cerr << e.what() << std::endl;
-  }
-
-  auto tree2 = factory.createTreeFromText(bt_xml_tree, blackboard);
-  status = tree.tickRoot();
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
-
+  ASSERT_EQ(problem_client->getConditionals().size(), 0);
+  ASSERT_EQ(problem_client->getPredicates().size(), 1);
+  ASSERT_TRUE(problem_client->getPredicate("(ontable b3)"));
 
   finish = true;
   t.join();

@@ -60,7 +60,7 @@ set(EXECUTOR_SOURCES
   src/plansys2_executor/behavior_tree/apply_atstart_effect_node.cpp
   src/plansys2_executor/behavior_tree/check_action_node.cpp
   src/plansys2_executor/behavior_tree/check_atend_req_node.cpp
-  src/plansys2_executor/behavior_tree/check_observation_node.cpp
+  src/plansys2_executor/behavior_tree/apply_observation_node.cpp
   src/plansys2_executor/behavior_tree/check_overall_req_node.cpp
   src/plansys2_executor/behavior_tree/check_timeout_node.cpp
   src/plansys2_executor/behavior_tree/execute_action_node.cpp

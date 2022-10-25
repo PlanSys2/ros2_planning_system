@@ -31,10 +31,10 @@
 namespace plansys2
 {
 
-  class CheckObservation : public BT::ActionNodeBase
+  class ApplyObservation : public BT::ActionNodeBase
   {
   public:
-    CheckObservation(
+    ApplyObservation(
         const std::string & xml_tag_name,
         const BT::NodeConfiguration & conf);
 
@@ -45,8 +45,8 @@ namespace plansys2
     {
       return BT::PortsList(
           {
-              BT::InputPort<std::string>("action", "Action whose at end reqs must stop"),
-              BT::InputPort<std::string>("expect", R"(Expected result of observe, either "true" or "false")"),
+              BT::InputPort<std::string>("value", "Value from observation"),
+              BT::InputPort<std::string>("observe", "Observation predicate"),
           });
     }
 

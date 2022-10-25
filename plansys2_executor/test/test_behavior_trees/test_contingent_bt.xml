@@ -2,13 +2,13 @@
   <BehaviorTree ID="MainTree">
     <Fallback>
       <Sequence>
-        <Sequence name="(senseontable b3):0">
-          <WaitAtStartReq action="(senseontable b3):0"/>
-          <ReactiveSequence name="(senseontable b3):0">
-            <CheckOverAllReq action="(senseontable b3):0"/>
-            <ExecuteAction action="(senseontable b3):0"/>
+        <Sequence name="(senseon b2 b3):0">
+          <WaitAtStartReq action="(senseon b2 b3):0"/>
+          <ReactiveSequence name="(senseon b2 b3):0">
+            <CheckOverAllReq action="(senseon b2 b3):0"/>
+            <ExecuteAction action="(senseon b2 b3):0"/>
           </ReactiveSequence>
-          <CheckObservation action="(senseontable b3):0" expect="true"/>
+          <ApplyObservation observe="(on b2 b3)" value="true"/>
         </Sequence>
         <Sequence name="(move-b-to-b b2 b3 b1):1000">
           <WaitAtStartReq action="(move-b-to-b b2 b3 b1):1000"/>
@@ -32,13 +32,8 @@
         </Sequence>
       </Sequence>
       <Sequence>
-        <Sequence name="(senseontable b3):0">
-          <WaitAtStartReq action="(senseontable b3):0"/>
-          <ReactiveSequence name="(senseontable b3):0">
-            <CheckOverAllReq action="(senseontable b3):0"/>
-            <ExecuteAction action="(senseontable b3):0"/>
-          </ReactiveSequence>
-          <CheckObservation action="(senseontable b3):0" expect="false"/>
+        <Sequence name="(senseon b2 b3):0">
+          <ApplyObservation observe="(on b2 b3)" value="false"/>
         </Sequence>
         <Sequence name="(move-to-t b3 b2):1000">
           <WaitAtStartReq action="(move-to-t b3 b2):1000"/>

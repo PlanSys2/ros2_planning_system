@@ -45,8 +45,7 @@ public:
 
   using Ptr = std::shared_ptr<ActionExecutor>;
   static Ptr make_shared(
-    const std::string & action,
-    rclcpp_lifecycle::LifecycleNode::SharedPtr node)
+    const std::string & action, rclcpp_lifecycle::LifecycleNode::SharedPtr node)
   {
     return std::make_shared<ActionExecutor>(action, node);
   }

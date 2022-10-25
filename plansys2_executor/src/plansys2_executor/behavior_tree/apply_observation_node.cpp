@@ -16,16 +16,14 @@
 #include <map>
 #include <memory>
 
-#include "plansys2_executor/behavior_tree/check_observation_node.hpp"
+#include "plansys2_executor/behavior_tree/apply_observation_node.hpp"
 
-namespace plansys2
-{
+namespace plansys2 {
 
-  CheckObservation::CheckObservation(
-      const std::string & xml_tag_name,
-      const BT::NodeConfiguration & conf)
-      : ActionNodeBase(xml_tag_name, conf)
-  {
+  ApplyObservation::ApplyObservation(
+      const std::string &xml_tag_name,
+      const BT::NodeConfiguration &conf)
+      : ActionNodeBase(xml_tag_name, conf) {
     action_map_ =
         config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
             "action_map");
@@ -35,24 +33,22 @@ namespace plansys2
             "problem_client");
   }
 
-  BT::NodeStatus
-  CheckObservation::tick()
-  {
-    std::string action;
-    std::string expected_result;
+  BT::NodeStatus ApplyObservation::tick() {
+    std::string value;
+    std::string observe;
+    getInput("observe", observe);
+    getInput("value", value);
 
-    getInput("action", action);
-    getInput("expect", expected_result);
-
-    auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
-
-    auto reqs = (*action_map_)[action].durative_action_info->observe;
-
-    if (check(reqs, problem_client_) && expected_result == "true") {
-      return BT::NodeStatus::SUCCESS;
+    problem_client_->removeConditional(Unknown("(unknown " + observe + ")"));
+    auto observe_pred = parser::pddl::fromStringPredicate(observe);
+    if (value == "true") {
+      problem_client_->addPredicate(observe_pred);
     } else {
-      return BT::NodeStatus::FAILURE;
+      // do nothing
     }
+
+    return BT::NodeStatus::SUCCESS;
+
   }
 
 }  // namespace plansys2
