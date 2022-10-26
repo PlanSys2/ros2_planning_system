@@ -72,5 +72,11 @@
     :observe (robot_at ?r ?ro)
 )
 
+(:action forget_all
+    :parameters (?r - robot)
+    :precondition ()
+    :effect (and (forall (?r - robot) (not (location_known ?r) ) ) )
+)
+
 
 )
