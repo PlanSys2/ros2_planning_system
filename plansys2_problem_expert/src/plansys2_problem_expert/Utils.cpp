@@ -82,7 +82,11 @@ std::tuple<bool, bool, double> evaluate(
           while (tree_pred.nodes[ind].node_type != plansys2_msgs::msg::Node::PREDICATE){
             ind = tree_pred.nodes[ind].children[0];
           }
-         tree_pred.nodes[ind].parameters[0].name = instance_name;
+          for (auto& param : tree_pred.nodes[ind].parameters){
+            if (param.type == params[0].type){
+              param.name = instance_name;
+            }
+          }
           for_all_predicates.push_back(tree_pred);
       }
 

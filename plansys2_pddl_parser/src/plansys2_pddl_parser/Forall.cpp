@@ -24,8 +24,6 @@ void Forall::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 }
 
 plansys2_msgs::msg::Node::SharedPtr Forall::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
-//    throw UnsupportedConstruct("Forall");
-
   plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
   node->node_type = plansys2_msgs::msg::Node::FOR_ALL;
   node->node_id = tree.nodes.size();
@@ -39,8 +37,11 @@ plansys2_msgs::msg::Node::SharedPtr Forall::getTree( plansys2_msgs::msg::Tree & 
     d.types[p]->getSubTypesNames(param.sub_types);
     node->parameters.push_back(param);
   }
-
-  plansys2_msgs::msg::Node::SharedPtr child = cond->getTree(tree, d, {});
+  auto tmp = replace;
+  std::stringstream ss;
+  ss << "?" << replace.size();
+  tmp.push_back(ss.str());
+  plansys2_msgs::msg::Node::SharedPtr child = cond->getTree(tree, d, tmp);
   node->children.push_back(child->node_id);
 
   tree.nodes[node->node_id] = *node;

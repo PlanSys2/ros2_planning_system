@@ -553,8 +553,10 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   size_t i = 0;
   while (i < result->action_execution_status.size() && result->success) {
-    if (result->action_execution_status[i].status !=
-      plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED)
+    if (result->action_execution_status[i].status ==
+      plansys2_msgs::msg::ActionExecutionInfo::FAILED ||
+        result->action_execution_status[i].status ==
+        plansys2_msgs::msg::ActionExecutionInfo::CANCELLED)
     {
       result->success = false;
     }
