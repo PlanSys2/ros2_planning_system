@@ -51,7 +51,7 @@ PlannerClient::getPlan(
 
   auto future_result = get_plan_client_->async_send_request(request);
 
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(15)) !=
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(30)) !=
     rclcpp::FutureReturnCode::SUCCESS)
   {
     return {};

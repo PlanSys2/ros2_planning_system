@@ -286,11 +286,18 @@ ExecutorNode::getOrderedSubGoals()
   }
 
   for (const auto & plan_item : current_plan_.value().items) {
-    std::shared_ptr<plansys2_msgs::msg::DurativeAction> action =
-      domain_client_->getDurativeAction(
+    std::shared_ptr<plansys2_msgs::msg::DurativeAction> durative_action =
+    domain_client_->getDurativeAction(
+    get_action_name(plan_item.action), get_action_params(plan_item.action));
+    if (durative_action){
+      apply(durative_action->at_start_effects, local_predicates, local_functions);
+      apply(durative_action->at_end_effects, local_predicates, local_functions);
+    } else{
+      std::shared_ptr<plansys2_msgs::msg::Action> action = domain_client_->getAction(
       get_action_name(plan_item.action), get_action_params(plan_item.action));
-    apply(action->at_start_effects, local_predicates, local_functions);
-    apply(action->at_end_effects, local_predicates, local_functions);
+      apply(action->effects, local_predicates, local_functions);
+    }
+
 
     for (auto it = unordered_subgoals.begin(); it != unordered_subgoals.end(); ) {
       if (check(goal, local_predicates, local_functions, *it)) {
@@ -398,8 +405,8 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     auto action_info = domain_client_->getAction(get_action_name(plan_item.action), get_action_params(plan_item.action));
     if (action_info) { // TODO support both action types??
       (*action_map)[index] = ActionExecutionInfo();
-      (*action_map)[index].action_executor =
-          ActionExecutor::make_shared(plan_item.action, shared_from_this());
+      (*action_map)[index].action_executor = ActionExecutor::make_shared(plan_item.action, shared_from_this());
+      (*action_map)[index].durative_action_info = std::make_shared<plansys2_msgs::msg::DurativeAction>();
       (*action_map)[index].durative_action_info->name = action_info->name;
       (*action_map)[index].durative_action_info->parameters = action_info->parameters;
       (*action_map)[index].durative_action_info->observe = action_info->observe;

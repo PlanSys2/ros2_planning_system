@@ -304,9 +304,13 @@ TEST(domain_expert, get_actions_observe)
     plansys2::DomainExpert domain_expert(domain_str);
 
     auto actions = domain_expert.getActions();
-    ASSERT_EQ(actions.size(), 2);
+    ASSERT_EQ(actions.size(), 3);
     ASSERT_EQ(actions[0], "move_person");
     ASSERT_EQ(actions[1], "find_person");
+    ASSERT_EQ(actions[2], "forget_all");
+    auto for_all_action = domain_expert.getAction("forget_all");
+    // TODO should parser::pddl::toString be tested fo forall?
+    //   ASSERT_EQ(parser::pddl::toString(for_all_action->effects), "(and (forall (?1) (not (person_location_unknown ?1) ) ) )");
 
     auto durative_actions = domain_expert.getDurativeActions();
     ASSERT_EQ(durative_actions.size(), 4);

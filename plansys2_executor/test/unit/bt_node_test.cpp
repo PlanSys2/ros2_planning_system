@@ -682,23 +682,38 @@ TEST(problem_expert, check_observation_test) {
     }
   }
 
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("b1", "block")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("b2", "block")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("b3", "block")));
   ASSERT_TRUE(problem_client->addConditional(plansys2::Unknown("(unknown (ontable b3))")));
   ASSERT_EQ(problem_client->getConditionals().size(), 1);
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
-//  (*action_map)["(senseontable b3):0"] = plansys2::ActionExecutionInfo();
-//  (*action_map)["(senseontable b3):0"].durative_action_info = std::make_shared<plansys2_msgs::msg::DurativeAction>();
-//  (*action_map)["(senseontable b3):0"].durative_action_info->name = "senseontable";
-//  (*action_map)["(senseontable b3):0"].durative_action_info->observe = parser::pddl::fromString("(and (ontable b3))");
+  (*action_map)["(move_all_blocks ):5"] = plansys2::ActionExecutionInfo();
+  (*action_map)["(move_all_blocks ):5"].at_end_effects_applied = false;
+  (*action_map)["(move_all_blocks ):5"].durative_action_info = std::make_shared<plansys2_msgs::msg::DurativeAction>();
+  auto for_all_action = domain_client->getAction("move_all_blocks");
+  (*action_map)["(move_all_blocks ):5"].durative_action_info->name = for_all_action->name;
+  (*action_map)["(move_all_blocks ):5"].durative_action_info->at_end_effects = for_all_action->effects;
 
 
-  std::string bt_xml_tree =
+  std::string bt_xml_tree_observe =
       R"""(
     <root main_tree_to_execute = "MainTree" >
       <BehaviorTree ID="MainTree">
         <Sequence name="(senseontable b3):0">
           <ApplyObservation observe="(ontable b3)" value="true"/>
+        </Sequence>
+      </BehaviorTree>
+    </root>
+  )""";
+
+  std::string bt_xml_tree_forall =
+      R"""(
+    <root main_tree_to_execute = "MainTree" >
+      <BehaviorTree ID="MainTree">
+        <Sequence name="root_sequence">
+          <ApplyAtEndEffect action="(move_all_blocks ):5"/>
         </Sequence>
       </BehaviorTree>
     </root>
@@ -714,13 +729,23 @@ TEST(problem_expert, check_observation_test) {
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyObservation>("ApplyObservation");
+  factory.registerNodeType<plansys2::ApplyAtEndEffect>("ApplyAtEndEffect");
 
-  auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
-  auto status = tree.tickRoot();
-  ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+  auto tree_observe = factory.createTreeFromText(bt_xml_tree_observe, blackboard);
+  auto status_observe = tree_observe.tickRoot();
+  ASSERT_EQ(status_observe, BT::NodeStatus::SUCCESS);
   ASSERT_EQ(problem_client->getConditionals().size(), 0);
   ASSERT_EQ(problem_client->getPredicates().size(), 1);
   ASSERT_TRUE(problem_client->getPredicate("(ontable b3)"));
+
+  ASSERT_TRUE(problem_client->removePredicate(plansys2::Predicate("(ontable b3)")));
+  auto tree_forall = factory.createTreeFromText(bt_xml_tree_forall, blackboard);
+  ASSERT_FALSE(problem_client->getPredicate("(ontable b3)"));
+  auto status_forall = tree_forall.tickRoot();
+  ASSERT_EQ(status_forall, BT::NodeStatus::SUCCESS);
+  ASSERT_TRUE(problem_client->getPredicate("(ontable b3)"));
+  ASSERT_TRUE(problem_client->getPredicate("(ontable b2)"));
+  ASSERT_TRUE(problem_client->getPredicate("(ontable b1)"));
 
   finish = true;
   t.join();

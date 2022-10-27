@@ -18,20 +18,29 @@
    :parameters (?b1 - block)
    :observe (ontable ?b1))
 
-(:action move-b-to-b
+(:action move_b_to_b
   :parameters (?bm ?bf ?bt - block)
   :precondition (and (clear ?bm) (clear ?bt) (on ?bm ?bf))
   :effect (and (not (clear ?bt)) (not (on ?bm ?bf))
                (on ?bm ?bt) (clear ?bf)))
 
-(:action move-to-t
+(:action move_to_t
   :parameters (?b ?bf - block)
   :precondition (and (clear ?b) (on ?b ?bf))
   :effect (and (ontable ?b) (not (on ?b ?bf)) (clear ?bf))
   )
 
-(:action move-t-to-b
+(:action move_t_to_b
   :parameters (?bm ?bt - block)
   :precondition (and (clear ?bm) (clear ?bt) (ontable ?bm))
   :effect (and (not (clear ?bt)) (not (ontable ?bm))
                (on ?bm ?bt))))
+
+(:action move_all_blocks
+  :parameters ()
+  :precondition ()
+  :effect (and (forall (?b - block)
+               			  (ontable ?b)
+                )
+          )
+)

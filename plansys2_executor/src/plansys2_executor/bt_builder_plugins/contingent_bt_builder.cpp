@@ -136,9 +136,11 @@ namespace plansys2 {
 
     bt_ = std::string("<root main_tree_to_execute=\"MainTree\">\n") +
           t(1) + "<BehaviorTree ID=\"MainTree\">\n";
+    bt_ += t(1) + t(1)+ "<Sequence name=\"root_sequence\">\n";
 
-    get_sub_tree(graph, "    ", bt_);
+    get_sub_tree(graph, "      ", bt_);
 
+    bt_ += t(1) + t(1)+"</Sequence>\n";
     bt_ = bt_ + t(1) + "</BehaviorTree>\n</root>\n";
 
     return bt_;
@@ -151,6 +153,8 @@ namespace plansys2 {
       bool enable_legend,
       bool enable_print_graph) {
 
+
+    return ""; // TODO need to implement
 
     // create xdot graph
     std::stringstream ss;
@@ -178,6 +182,7 @@ namespace plansys2 {
     ss << "bgcolor = lemonchiffon;\n";
     ss << t(tab_level);
     ss << "labeljust = l;\n";
+
 
     tab_level = 3;
     for (auto &node: graph_->roots) {

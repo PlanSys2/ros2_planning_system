@@ -47,6 +47,22 @@ namespace parser {
         plansys2_msgs::msg::Node::SharedPtr child = observe->getTree(tree, d, replace);
         tree.nodes[node->node_id].children.push_back(child->node_id);
       }
+      if (pre) {
+        plansys2_msgs::msg::Node::SharedPtr child = pre->getTree(tree, d, replace);
+        tree.nodes[node->node_id].children.push_back(child->node_id);
+      }
+      if (eff) {
+        plansys2_msgs::msg::Node::SharedPtr child = eff->getTree(tree, d, replace);
+        tree.nodes[node->node_id].children.push_back(child->node_id);
+      }
+      for (unsigned j = 0; j < params.size(); j++) {
+        plansys2_msgs::msg::Param param;
+        auto p  = params[j];
+        param.name = "?" + d.types[p]->getName() + std::to_string(j);
+        param.type = d.types[p]->name;
+        d.types[p]->getSubTypesNames(param.sub_types);
+        node->parameters.push_back(param);
+      }
 
       return node;
     }

@@ -89,4 +89,10 @@ teleporter_room - room
     :observe (person_at ?p ?ro)
 )
 
+(:action forget_all
+    :parameters (?p - person)
+    :precondition ()
+    :effect (and (forall (?p - person) (not (person_location_unknown ?p) ) ) )
+)
+
 );; end Domain ;;;;;;;;;;;;;;;;;;;;;;;;

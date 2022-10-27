@@ -13,24 +13,25 @@ uint8 FUNCTION_MODIFIER = 8
 uint8 NUMBER = 9
 uint8 UNKNOWN = 10
 uint8 ONE_OF = 11
+uint8 FOR_ALL = 12
 
 # Expression types
-uint8 COMP_EQ = 12
-uint8 COMP_GE = 13
-uint8 COMP_GT = 14
-uint8 COMP_LE = 15
-uint8 COMP_LT = 16
-uint8 ARITH_MULT = 17
-uint8 ARITH_DIV = 18
-uint8 ARITH_ADD = 19
-uint8 ARITH_SUB = 20
+uint8 COMP_EQ = 13
+uint8 COMP_GE = 14
+uint8 COMP_GT = 15
+uint8 COMP_LE = 16
+uint8 COMP_LT = 17
+uint8 ARITH_MULT = 18
+uint8 ARITH_DIV = 19
+uint8 ARITH_ADD = 20
+uint8 ARITH_SUB = 21
 
 # Function modifier types
-uint8 ASSIGN = 21
-uint8 INCREASE = 22
-uint8 DECREASE = 23
-uint8 SCALE_UP = 24
-uint8 SCALE_DOWN = 25
+uint8 ASSIGN = 22
+uint8 INCREASE = 23
+uint8 DECREASE = 24
+uint8 SCALE_UP = 25
+uint8 SCALE_DOWN = 26
 
 uint8 node_type
 uint8 expression_type
