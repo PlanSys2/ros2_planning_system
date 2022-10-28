@@ -146,6 +146,7 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
       if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE &&
         msg->node_id == get_name())
       {
+        commited_ = false;
         trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
       }
       break;
@@ -228,6 +229,7 @@ ActionExecutorClient::finish(bool success, float completion, const std::string &
   msg_resp.completion = completion;
   msg_resp.status = status;
   msg_resp.success = success;
+  commited_ = false;
 
   action_hub_pub_->publish(msg_resp);
 }

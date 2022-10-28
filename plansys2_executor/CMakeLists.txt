@@ -56,6 +56,8 @@ set(EXECUTOR_SOURCES
   src/plansys2_executor/ActionExecutorClient.cpp
   src/plansys2_executor/ExecutorClient.cpp
   src/plansys2_executor/ExecutorNode.cpp
+  src/plansys2_executor/ExecutorNodeBase.cpp
+  src/plansys2_executor/ExecutorNodeContingent.cpp
   src/plansys2_executor/behavior_tree/apply_atend_effect_node.cpp
   src/plansys2_executor/behavior_tree/apply_atstart_effect_node.cpp
   src/plansys2_executor/behavior_tree/check_action_node.cpp

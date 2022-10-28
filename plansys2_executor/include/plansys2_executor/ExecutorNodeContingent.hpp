@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_EXECUTOR__EXECUTORNODE_HPP_
-#define PLANSYS2_EXECUTOR__EXECUTORNODE_HPP_
+#ifndef PLANSYS2_EXECUTOR__EXECUTORNODECONTINGENT_HPP_
+#define PLANSYS2_EXECUTOR__EXECUTORNODECONTINGENT_HPP_
 
 #include <filesystem>
 
@@ -60,36 +60,24 @@
 
 #include "ExecutorNodeBase.hpp"
 
-namespace plansys2
-{
+namespace plansys2 {
 
-class ExecutorNode : public ExecutorNodeBase
-{
-public:
-  using ExecutePlan = plansys2_msgs::action::ExecutePlan;
-  using GoalHandleExecutePlan = rclcpp_action::ServerGoalHandle<ExecutePlan>;
-  using CallbackReturnT =
-    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+  class ExecutorNodeContingent : public ExecutorNodeBase {
+  public:
+    using ExecutePlan = plansys2_msgs::action::ExecutePlan;
+    using GoalHandleExecutePlan = rclcpp_action::ServerGoalHandle<ExecutePlan>;
 
-  ExecutorNode();
+    ExecutorNodeContingent();
 
-  void get_ordered_sub_goals_service_callback(
-    const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<plansys2_msgs::srv::GetOrderedSubGoals::Request> request,
-    const std::shared_ptr<plansys2_msgs::srv::GetOrderedSubGoals::Response> response);
+  protected:
 
-protected:
-  std::optional<std::vector<plansys2_msgs::msg::Tree>> ordered_sub_goals_;
-  rclcpp::Service<plansys2_msgs::srv::GetOrderedSubGoals>::SharedPtr get_ordered_sub_goals_service_;
+    void execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle) override;
 
+    rclcpp_action::GoalResponse
+    handle_goal(const rclcpp_action::GoalUUID &uuid, std::shared_ptr<const ExecutePlan::Goal> goal) override;
 
-  std::optional<std::vector<plansys2_msgs::msg::Tree>> getOrderedSubGoals();
-
-  void execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle) override;
- rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const ExecutePlan::Goal> goal) override;
-
-};
+  };
 
 }  // namespace plansys2
 
-#endif  // PLANSYS2_EXECUTOR__EXECUTORNODE_HPP_
+#endif  // PLANSYS2_EXECUTOR__EXECUTORNODECONTINGENT_HPP_

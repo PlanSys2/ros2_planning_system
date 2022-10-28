@@ -16,6 +16,7 @@
 #include <memory>
 #include <string>
 #include <map>
+#include <plansys2_executor/ExecutorNodeContingent.hpp>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -37,7 +38,21 @@ int main(int argc, char ** argv)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
-  auto executor_node = std::make_shared<plansys2::ExecutorNode>();
+
+  auto parameter_node = std::make_shared<rclcpp::Node>("executor");
+  parameter_node->declare_parameter("executor_type", "default_executor");
+  std::string executor_name;
+  parameter_node->get_parameter("executor_type", executor_name);
+  std::shared_ptr<plansys2::ExecutorNodeBase> executor_node;
+  if (executor_name == "default_executor") {
+    executor_node = std::make_shared<plansys2::ExecutorNode>();
+  } else if (executor_name == "contingent_executor") {
+    executor_node = std::make_shared<plansys2::ExecutorNodeContingent>();
+  } else {
+    RCLCPP_ERROR(rclcpp::get_logger("executor_node"), "Unknown executor type %s", executor_name.c_str());
+    rclcpp::shutdown();
+    return -1;
+  }
 
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());

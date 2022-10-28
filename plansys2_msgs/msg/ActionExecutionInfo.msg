@@ -4,7 +4,7 @@ int8 FAILED=3
 int8 SUCCEEDED=4
 int8 CANCELLED=5
 
-int8 status
+int8 statusn
 
 builtin_interfaces/Time start_stamp
 builtin_interfaces/Time status_stamp
