@@ -32,7 +32,7 @@ int main(int argc, char ** argv)
 
   rclcpp::init(argc, argv);
 
-  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 16);
 
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
@@ -61,7 +61,7 @@ int main(int argc, char ** argv)
 
   std::shared_future<bool> startup_future = std::async(
     std::launch::async,
-    std::bind(plansys2::startup_function, manager_nodes, std::chrono::seconds(5)));
+    std::bind(plansys2::startup_function, manager_nodes, std::chrono::seconds(30)));
   exe.spin_until_future_complete(startup_future);
 
   if (!startup_future.get()) {

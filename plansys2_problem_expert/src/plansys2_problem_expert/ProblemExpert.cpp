@@ -188,7 +188,11 @@ namespace plansys2 {
   ProblemExpert::addConditional(const plansys2_msgs::msg::Tree &condition) {
     if (!existConditional(condition)) {
       if (isValidCondition(condition)) {
-        conditionals_.push_back(condition);
+        if (condition.nodes[0].node_type == plansys2_msgs::msg::Node::ONE_OF && condition.nodes[0].children.size()==1){
+          addPredicate(condition.nodes[1]);
+        } else{
+          conditionals_.push_back(condition);
+        }
         return true;
       } else {
         return false;
@@ -203,9 +207,43 @@ namespace plansys2 {
     if (!isValidCondition(condition)) {  // if predicate is not valid, error
       return false;
     }
-    auto it = std::find(conditionals_.begin(), conditionals_.end(), condition);
+    auto it = std::find_if(conditionals_.begin(), conditionals_.end(), [&condition] (const auto &ele) { return parser::pddl::checkTreeEquality(ele, condition); });
     if (it != conditionals_.end()){
       conditionals_.erase(it);
+
+      // TODO refactor to its own function
+      std::vector<plansys2_msgs::msg::Tree> conditionals_to_remove;
+      std::vector<plansys2_msgs::msg::Tree> conditionals_to_add;
+      if (condition.nodes[0].node_type == plansys2_msgs::msg::Node::UNKNOWN){
+        for (auto c : conditionals_){
+          if (c.nodes[0].node_type == plansys2_msgs::msg::Node::ONE_OF){
+            plansys2_msgs::msg::Tree new_one_of;
+            new_one_of.nodes.push_back(c.nodes[0]);
+            new_one_of.nodes[0].children.clear();
+            int num_children = 0;
+            for (auto child_ind : c.nodes[0].children){
+              if (!parser::pddl::checkNodeEquality(c.nodes[child_ind], condition.nodes[1])){
+                new_one_of.nodes.push_back(c.nodes[child_ind]);
+                new_one_of.nodes[0].children.push_back(num_children+1);
+                num_children++;
+              }
+            }
+            conditionals_to_remove.push_back(c);
+            if (num_children > 0){
+              conditionals_to_add.push_back(new_one_of);
+            }
+          }
+        }
+      }
+      for (const auto& c : conditionals_to_remove){
+        removeConditional(c);
+      }
+      for (const auto& c : conditionals_to_add){
+        addConditional(c);
+      }
+
+
+
     }
     return true;
   }

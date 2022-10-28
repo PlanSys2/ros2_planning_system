@@ -551,17 +551,18 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   result->success = status == BT::NodeStatus::SUCCESS;
   result->action_execution_status = get_feedback_info(action_map);
 
-  size_t i = 0;
-  while (i < result->action_execution_status.size() && result->success) {
-    if (result->action_execution_status[i].status ==
-      plansys2_msgs::msg::ActionExecutionInfo::FAILED ||
-        result->action_execution_status[i].status ==
-        plansys2_msgs::msg::ActionExecutionInfo::CANCELLED)
-    {
-      result->success = false;
-    }
-    i++;
-  }
+  // TODO only the output of the BT matters, this doesn't make sense
+  //  size_t i = 0;
+  //  while (i < result->action_execution_status.size() && result->success) {
+  //    if (result->action_execution_status[i].status ==
+  //      plansys2_msgs::msg::ActionExecutionInfo::FAILED ||
+  //        result->action_execution_status[i].status ==
+  //        plansys2_msgs::msg::ActionExecutionInfo::CANCELLED)
+  //    {
+  //      result->success = false;
+  //    }
+  //    i++;
+  //  }
 
   if (rclcpp::ok()) {
     goal_handle->succeed(result);
