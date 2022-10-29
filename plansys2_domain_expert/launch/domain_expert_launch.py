@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2019 Intelligent Robotics Lab
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,30 +21,30 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     # Create the launch configuration variables
-    model_file = LaunchConfiguration('model_file')
-    namespace = LaunchConfiguration('namespace')
-    params_file = LaunchConfiguration('params_file')
+    model_file = LaunchConfiguration("model_file")
+    namespace = LaunchConfiguration("namespace")
+    params_file = LaunchConfiguration("params_file")
 
     declare_model_file_cmd = DeclareLaunchArgument(
-        'model_file',
-        default_value='src/ros2_planning_system/'
-        'plansys2_domain_expert/test/pddl/domain_simple.pddl',
-        description='PDDL Model file')
+        "model_file",
+        default_value="src/ros2_planning_system/"
+        "plansys2_domain_expert/test/pddl/domain_simple.pddl",
+        description="PDDL Model file",
+    )
 
     declare_namespace_cmd = DeclareLaunchArgument(
-        'namespace',
-        default_value='',
-        description='Namespace')
+        "namespace", default_value="", description="Namespace"
+    )
 
     # Specify the actions
     domain_expert_cmd = Node(
-        package='plansys2_domain_expert',
-        executable='domain_expert_node',
-        name='domain_expert',
+        package="plansys2_domain_expert",
+        executable="domain_expert_node",
+        name="domain_expert",
         namespace=namespace,
-        output='screen',
-        parameters=[
-          {'model_file': model_file}, params_file])
+        output="screen",
+        parameters=[{"model_file": model_file}, params_file],
+    )
 
     # Create the launch description and populate
     ld = LaunchDescription()

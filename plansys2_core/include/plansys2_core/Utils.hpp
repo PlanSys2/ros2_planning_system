@@ -20,7 +20,6 @@
 
 namespace plansys2
 {
-
 std::vector<std::string> tokenize(const std::string & string, const std::string & delim);
 
 /**
@@ -32,9 +31,7 @@ std::vector<std::string> tokenize(const std::string & string, const std::string 
  * @return a substring without empty lines
  */
 std::string substr_without_empty_lines(
-  std::string string,
-  std::size_t init_pos,
-  std::size_t end_pos);
+  std::string string, std::size_t init_pos, std::size_t end_pos);
 
 /**
  * @brief remove the comments on a pddl string

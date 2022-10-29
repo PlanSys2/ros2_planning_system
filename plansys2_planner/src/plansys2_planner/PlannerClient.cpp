@@ -14,15 +14,14 @@
 
 #include "plansys2_planner/PlannerClient.hpp"
 
-#include <optional>
 #include <algorithm>
+#include <memory>
+#include <optional>
 #include <string>
 #include <vector>
-#include <memory>
 
 namespace plansys2
 {
-
 PlannerClient::PlannerClient()
 {
   node_ = rclcpp::Node::make_shared("planner_client");
@@ -30,19 +29,16 @@ PlannerClient::PlannerClient()
   get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("planner/get_plan");
 }
 
-std::optional<plansys2_msgs::msg::Plan>
-PlannerClient::getPlan(
-  const std::string & domain, const std::string & problem,
-  const std::string & node_namespace)
+std::optional<plansys2_msgs::msg::Plan> PlannerClient::getPlan(
+  const std::string & domain, const std::string & problem, const std::string & node_namespace)
 {
   while (!get_plan_client_->wait_for_service(std::chrono::seconds(30))) {
     if (!rclcpp::ok()) {
       return {};
     }
     RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_plan_client_->get_service_name() <<
-        " service  client: waiting for service to appear...");
+      node_->get_logger(), get_plan_client_->get_service_name() << " service  client: waiting "
+                                                                   "for service to appear...");
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetPlan::Request>();
@@ -51,9 +47,9 @@ PlannerClient::getPlan(
 
   auto future_result = get_plan_client_->async_send_request(request);
 
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(15)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
-  {
+  if (
+    rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(15)) !=
+    rclcpp::FutureReturnCode::SUCCESS) {
     return {};
   }
 
@@ -63,9 +59,7 @@ PlannerClient::getPlan(
     return result.plan;
   } else {
     RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_plan_client_->get_service_name() << ": " <<
-        result.error_info);
+      node_->get_logger(), get_plan_client_->get_service_name() << ": " << result.error_info);
     return {};
   }
 }

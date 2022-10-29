@@ -19,15 +19,12 @@
 #include <string>
 #include <vector>
 
-#include "plansys2_planner/PlannerInterface.hpp"
-
 #include "plansys2_msgs/srv/get_plan.hpp"
-
+#include "plansys2_planner/PlannerInterface.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace plansys2
 {
-
 class PlannerClient : public PlannerInterface
 {
 public:
@@ -38,8 +35,7 @@ public:
     const std::string & node_namespace = "");
 
 private:
-  rclcpp::Client<plansys2_msgs::srv::GetPlan>::SharedPtr
-    get_plan_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetPlan>::SharedPtr get_plan_client_;
 
   rclcpp::Node::SharedPtr node_;
 };

@@ -41,12 +41,10 @@
 
 namespace plansys2
 {
-
 class ComputeBT : public rclcpp_lifecycle::LifecycleNode
 {
 public:
-  using CallbackReturnT =
-    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+  using CallbackReturnT = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
   ComputeBT();
 

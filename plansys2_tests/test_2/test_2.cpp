@@ -16,19 +16,17 @@
 #include <string>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
-
 #include "gtest/gtest.h"
-#include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_problem_expert/ProblemExpertNode.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_planner/PlannerNode.hpp"
-#include "plansys2_planner/PlannerClient.hpp"
-#include "plansys2_executor/ExecutorNode.hpp"
+#include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
-
-#include "plansys2_tests/test_action_node.hpp"
+#include "plansys2_executor/ExecutorNode.hpp"
+#include "plansys2_planner/PlannerClient.hpp"
+#include "plansys2_planner/PlannerNode.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_problem_expert/ProblemExpertNode.hpp"
 #include "plansys2_tests/execution_logger.hpp"
+#include "plansys2_tests/test_action_node.hpp"
 
 TEST(test_2, test_2)
 {
@@ -67,8 +65,10 @@ TEST(test_2, test_2)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+    while (!finish) {
+      exe.spin_some();
+    }
+  });
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -138,16 +138,10 @@ TEST(test_2, test_2)
 
   ASSERT_TRUE(result.value().success);
 
-  ASSERT_TRUE(
-    execution_logger->sorted(
-  {
-    "(askcharge leia zone_1_1 zone_recharge):0",
-    "(charge leia zone_recharge):1",
-    "(move leia zone_recharge room_2):5002",
-    "(move leia room_2 corridor_1):10003",
-    "(move leia corridor_1 room_1):15004",
-    "(move leia room_1 zone_1_2):20005"
-  }));
+  ASSERT_TRUE(execution_logger->sorted(
+    {"(askcharge leia zone_1_1 zone_recharge):0", "(charge leia zone_recharge):1",
+     "(move leia zone_recharge room_2):5002", "(move leia room_2 corridor_1):10003",
+     "(move leia corridor_1 room_1):15004", "(move leia room_1 zone_1_2):20005"}));
 
   finish = true;
   t.join();

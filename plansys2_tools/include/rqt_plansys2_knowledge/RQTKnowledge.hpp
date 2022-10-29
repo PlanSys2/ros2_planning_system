@@ -15,33 +15,27 @@
 #ifndef RQT_PLANSYS2_KNOWLEDGE__RQTKNOWLEDGE_HPP_
 #define RQT_PLANSYS2_KNOWLEDGE__RQTKNOWLEDGE_HPP_
 
-#include <ui_rqt_plansys2_knowledge.h>
 #include <rqt_gui_cpp/plugin.h>
-
+#include <ui_rqt_plansys2_knowledge.h>
 
 #include <QAction>
 #include <QImage>
 #include <QList>
-#include <QString>
 #include <QSet>
 #include <QSize>
+#include <QString>
 #include <QWidget>
-
 #include <map>
 #include <memory>
 
-#include "rqt_plansys2_knowledge/KnowledgeTree.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-
 #include "plansys2_msgs/msg/knowledge.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "rqt_plansys2_knowledge/KnowledgeTree.hpp"
 
 namespace rqt_plansys2_knowledge
 {
-
-
-class RQTKnowledge
-  : public rqt_gui_cpp::Plugin
+class RQTKnowledge : public rqt_gui_cpp::Plugin
 {
   Q_OBJECT
 

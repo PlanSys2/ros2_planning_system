@@ -12,33 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <fstream>
+#include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-#include <iostream>
-#include <fstream>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
-
 #include "gtest/gtest.h"
-#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
-
-#include "pluginlib/class_loader.hpp"
-#include "pluginlib/class_list_macros.hpp"
 #include "plansys2_core/PlanSolverBase.hpp"
+#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
+#include "pluginlib/class_list_macros.hpp"
+#include "pluginlib/class_loader.hpp"
 
 void test_plan_generation(const std::string & argument = "")
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   std::ifstream problem_ifs(pkgpath + "/pddl/problem_simple_1.pddl");
-  std::string problem_str((
-      std::istreambuf_iterator<char>(problem_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string problem_str(
+    (std::istreambuf_iterator<char>(problem_ifs)), std::istreambuf_iterator<char>());
 
   auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
   auto planner = std::make_shared<plansys2::POPFPlanSolver>();
@@ -54,15 +50,9 @@ void test_plan_generation(const std::string & argument = "")
   ASSERT_EQ(plan.value().items[2].action, "(talk leia jack jack m1)");
 }
 
-TEST(popf_plan_solver, generate_plan_good)
-{
-  test_plan_generation();
-}
+TEST(popf_plan_solver, generate_plan_good) { test_plan_generation(); }
 
-TEST(popf_plan_solver, generate_plan_good_with_argument)
-{
-  test_plan_generation("-e");
-}
+TEST(popf_plan_solver, generate_plan_good_with_argument) { test_plan_generation("-e"); }
 
 TEST(popf_plan_solver, load_popf_plugin)
 {
@@ -82,9 +72,8 @@ TEST(popf_plan_solver, check_1_ok_domain)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_1_ok.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
   auto planner = std::make_shared<plansys2::POPFPlanSolver>();
@@ -95,14 +84,12 @@ TEST(popf_plan_solver, check_1_ok_domain)
   ASSERT_TRUE(result);
 }
 
-
 TEST(popf_plan_solver, check_2_error_domain)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_2_error.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
   auto planner = std::make_shared<plansys2::POPFPlanSolver>();
@@ -113,19 +100,16 @@ TEST(popf_plan_solver, check_2_error_domain)
   ASSERT_FALSE(result);
 }
 
-
 TEST(popf_plan_solver, generate_plan_unsolvable)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   std::ifstream problem_ifs(pkgpath + "/pddl/problem_simple_2.pddl");
-  std::string problem_str((
-      std::istreambuf_iterator<char>(problem_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string problem_str(
+    (std::istreambuf_iterator<char>(problem_ifs)), std::istreambuf_iterator<char>());
 
   auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
   auto planner = std::make_shared<plansys2::POPFPlanSolver>();
@@ -140,14 +124,12 @@ TEST(popf_plan_solver, generate_plan_error)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   std::ifstream problem_ifs(pkgpath + "/pddl/problem_simple_3.pddl");
-  std::string problem_str((
-      std::istreambuf_iterator<char>(problem_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string problem_str(
+    (std::istreambuf_iterator<char>(problem_ifs)), std::istreambuf_iterator<char>());
 
   auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
   auto planner = std::make_shared<plansys2::POPFPlanSolver>();

@@ -13,13 +13,12 @@
 // limitations under the License.
 
 #include <chrono>
+#include <map>
 #include <memory>
 #include <string>
-#include <map>
-
-#include "rclcpp/rclcpp.hpp"
 
 #include "plansys2_lifecycle_manager/lifecycle_manager.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char ** argv)
 {
@@ -28,14 +27,14 @@ int main(int argc, char ** argv)
   rclcpp::init(argc, argv);
 
   std::map<std::string, std::shared_ptr<plansys2::LifecycleServiceClient>> manager_nodes;
-  manager_nodes["domain_expert"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "domain_expert_lc_mngr", "domain_expert");
-  manager_nodes["problem_expert"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "problem_expert_lc_mngr", "problem_expert");
-  manager_nodes["planner"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "planner_lc_mngr", "planner");
-  manager_nodes["executor"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "executor_lc_mngr", "executor");
+  manager_nodes["domain_expert"] =
+    std::make_shared<plansys2::LifecycleServiceClient>("domain_expert_lc_mngr", "domain_expert");
+  manager_nodes["problem_expert"] =
+    std::make_shared<plansys2::LifecycleServiceClient>("problem_expert_lc_mngr", "problem_expert");
+  manager_nodes["planner"] =
+    std::make_shared<plansys2::LifecycleServiceClient>("planner_lc_mngr", "planner");
+  manager_nodes["executor"] =
+    std::make_shared<plansys2::LifecycleServiceClient>("executor_lc_mngr", "executor");
 
   rclcpp::executors::SingleThreadedExecutor exe;
   for (auto & manager_node : manager_nodes) {
@@ -49,9 +48,7 @@ int main(int argc, char ** argv)
   exe.spin_until_future_complete(startup_future);
 
   if (!startup_future.get()) {
-    RCLCPP_ERROR(
-      rclcpp::get_logger("plansys2_lifecycle_manager"),
-      "Failed to start plansys2!");
+    RCLCPP_ERROR(rclcpp::get_logger("plansys2_lifecycle_manager"), "Failed to start plansys2!");
     rclcpp::shutdown();
     return -1;
   }

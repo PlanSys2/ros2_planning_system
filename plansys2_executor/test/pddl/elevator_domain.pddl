@@ -32,7 +32,7 @@
   ;; duration = floor_distance(?cur, ?nxt) / elevator_speed(?lift)
   ;; condition - at start -> ?lift (elevator) is at ?cur (num)
   ;;             over all -> ?nxt (num) is next after ?cur (num)
-  ;; efect - at start -> ?lift (elevator) is NOT at ?cur (num)
+  ;; effect - at start -> ?lift (elevator) is NOT at ?cur (num)
   ;;         at end   -> ?lift (elevator is at ?nxt (num)
   (:durative-action move-up
     :parameters (?lift - elevator ?cur ?nxt - num)
@@ -48,7 +48,7 @@
   ;; duration = floor_distance(?cur, ?nxt) / elevator_speed(?lift)
   ;; condition - at start -> ?lift (elevator) is at ?cur (num)
   ;;             over all -> ?cur (num) is next after ?nxt (num)
-  ;; efect - at start -> ?lift (elevator) is NOT at ?cur (num)
+  ;; effect - at start -> ?lift (elevator) is NOT at ?cur (num)
   ;;         at end   -> ?lift (elevator is at ?nxt (num)
   (:durative-action move-down
     :parameters (?lift - elevator ?cur ?nxt - num)

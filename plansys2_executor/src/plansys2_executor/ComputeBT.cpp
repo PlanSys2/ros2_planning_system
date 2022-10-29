@@ -47,7 +47,6 @@
 
 namespace plansys2
 {
-
 ComputeBT::ComputeBT()
 : rclcpp_lifecycle::LifecycleNode("compute_bt"),
   bt_builder_loader_("plansys2_executor", "plansys2::BTBuilder")
@@ -68,8 +67,7 @@ ComputeBT::ComputeBT()
   auto action_timeouts_actions = this->get_parameter("action_timeouts.actions").as_string_array();
   for (auto action : action_timeouts_actions) {
     this->declare_parameter<double>(
-      "action_timeouts." + action + ".duration_overrun_percentage",
-      0.0);
+      "action_timeouts." + action + ".duration_overrun_percentage", 0.0);
   }
 
 #ifdef ZMQ_FOUND
@@ -80,32 +78,26 @@ ComputeBT::ComputeBT()
 #endif
 
   compute_bt_srv_ = create_service<std_srvs::srv::Trigger>(
-    "compute_bt",
-    std::bind(
-      &ComputeBT::computeBTCallback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    "compute_bt", std::bind(
+                    &ComputeBT::computeBTCallback, this, std::placeholders::_1,
+                    std::placeholders::_2, std::placeholders::_3));
 }
 
-using CallbackReturnT =
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+using CallbackReturnT = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
-CallbackReturnT
-ComputeBT::on_configure(const rclcpp_lifecycle::State & state)
+CallbackReturnT ComputeBT::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
 
-  auto action_bt_xml_filename =
-    this->get_parameter("action_bt_xml_filename").as_string();
+  auto action_bt_xml_filename = this->get_parameter("action_bt_xml_filename").as_string();
   if (action_bt_xml_filename.empty()) {
-    action_bt_xml_filename =
-      ament_index_cpp::get_package_share_directory("plansys2_executor") +
-      "/behavior_trees/plansys2_action_bt.xml";
+    action_bt_xml_filename = ament_index_cpp::get_package_share_directory("plansys2_executor") +
+                             "/behavior_trees/plansys2_action_bt.xml";
   }
 
   std::ifstream action_bt_ifs(action_bt_xml_filename);
   if (!action_bt_ifs) {
-    RCLCPP_ERROR_STREAM(get_logger(), "Error openning [" << action_bt_xml_filename << "]");
+    RCLCPP_ERROR_STREAM(get_logger(), "Error opening [" << action_bt_xml_filename << "]");
     return CallbackReturnT::FAILURE;
   }
 
@@ -122,26 +114,22 @@ ComputeBT::on_configure(const rclcpp_lifecycle::State & state)
 
   std::ifstream start_action_bt_ifs(start_action_bt_xml_filename);
   if (!start_action_bt_ifs) {
-    RCLCPP_ERROR_STREAM(
-      get_logger(), "Error openning [" << start_action_bt_xml_filename << "]");
+    RCLCPP_ERROR_STREAM(get_logger(), "Error opening [" << start_action_bt_xml_filename << "]");
     return CallbackReturnT::FAILURE;
   }
 
   start_action_bt_xml_.assign(
     std::istreambuf_iterator<char>(start_action_bt_ifs), std::istreambuf_iterator<char>());
 
-  auto end_action_bt_xml_filename =
-    this->get_parameter("end_action_bt_xml_filename").as_string();
+  auto end_action_bt_xml_filename = this->get_parameter("end_action_bt_xml_filename").as_string();
   if (end_action_bt_xml_filename.empty()) {
-    end_action_bt_xml_filename =
-      ament_index_cpp::get_package_share_directory("plansys2_executor") +
-      "/behavior_trees/plansys2_end_action_bt.xml";
+    end_action_bt_xml_filename = ament_index_cpp::get_package_share_directory("plansys2_executor") +
+                                 "/behavior_trees/plansys2_end_action_bt.xml";
   }
 
   std::ifstream end_action_bt_ifs(end_action_bt_xml_filename);
   if (!end_action_bt_ifs) {
-    RCLCPP_ERROR_STREAM(
-      get_logger(), "Error openning [" << end_action_bt_xml_filename << "]");
+    RCLCPP_ERROR_STREAM(get_logger(), "Error opening [" << end_action_bt_xml_filename << "]");
     return CallbackReturnT::FAILURE;
   }
 
@@ -162,8 +150,7 @@ ComputeBT::on_configure(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-CallbackReturnT
-ComputeBT::on_activate(const rclcpp_lifecycle::State & state)
+CallbackReturnT ComputeBT::on_activate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Activating...", get_name());
   dotgraph_pub_->on_activate();
@@ -171,8 +158,7 @@ ComputeBT::on_activate(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-CallbackReturnT
-ComputeBT::on_deactivate(const rclcpp_lifecycle::State & state)
+CallbackReturnT ComputeBT::on_deactivate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Deactivating...", get_name());
   dotgraph_pub_->on_deactivate();
@@ -180,8 +166,7 @@ ComputeBT::on_deactivate(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-CallbackReturnT
-ComputeBT::on_cleanup(const rclcpp_lifecycle::State & state)
+CallbackReturnT ComputeBT::on_cleanup(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Cleaning up...", get_name());
   dotgraph_pub_.reset();
@@ -189,8 +174,7 @@ ComputeBT::on_cleanup(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-CallbackReturnT
-ComputeBT::on_shutdown(const rclcpp_lifecycle::State & state)
+CallbackReturnT ComputeBT::on_shutdown(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Shutting down...", get_name());
   dotgraph_pub_.reset();
@@ -198,15 +182,13 @@ ComputeBT::on_shutdown(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-CallbackReturnT
-ComputeBT::on_error(const rclcpp_lifecycle::State & state)
+CallbackReturnT ComputeBT::on_error(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_ERROR(get_logger(), "[%s] Error transition", get_name());
   return CallbackReturnT::SUCCESS;
 }
 
-void
-ComputeBT::computeBTCallback(
+void ComputeBT::computeBTCallback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
   const std::shared_ptr<std_srvs::srv::Trigger::Response> response)
@@ -238,9 +220,10 @@ ComputeBT::computeBTCallback(
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
-
+    while (!finish) {
+      exe.spin_some();
+    }
+  });
 
   domain_node_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -271,19 +254,18 @@ ComputeBT::computeBTCallback(
     (*action_map)[index] = ActionExecutionInfo();
     (*action_map)[index].action_executor =
       ActionExecutor::make_shared(plan_item.action, shared_from_this());
-    (*action_map)[index].durative_action_info =
-      domain_client_->getDurativeAction(
+    (*action_map)[index].durative_action_info = domain_client_->getDurativeAction(
       get_action_name(plan_item.action), get_action_params(plan_item.action));
 
     (*action_map)[index].duration = plan_item.duration;
     std::string action_name = (*action_map)[index].durative_action_info->name;
-    if (std::find(
-        action_timeout_actions.begin(), action_timeout_actions.end(),
-        action_name) != action_timeout_actions.end() &&
-      this->has_parameter("action_timeouts." + action_name + ".duration_overrun_percentage"))
-    {
-      (*action_map)[index].duration_overrun_percentage = this->get_parameter(
-        "action_timeouts." + action_name + ".duration_overrun_percentage").as_double();
+    if (
+      std::find(action_timeout_actions.begin(), action_timeout_actions.end(), action_name) !=
+        action_timeout_actions.end() &&
+      this->has_parameter("action_timeouts." + action_name + ".duration_overrun_percentage")) {
+      (*action_map)[index].duration_overrun_percentage =
+        this->get_parameter("action_timeouts." + action_name + ".duration_overrun_percentage")
+          .as_double();
     }
     RCLCPP_INFO(
       get_logger(), "Action %s timeout percentage %f", action_name.c_str(),
@@ -352,9 +334,7 @@ ComputeBT::computeBTCallback(
       get_name(), publisher_port, server_port, max_msgs_per_second);
     try {
       publisher_zmq.reset(
-        new BT::PublisherZMQ(
-          tree, max_msgs_per_second, publisher_port,
-          server_port));
+        new BT::PublisherZMQ(tree, max_msgs_per_second, publisher_port, server_port));
     } catch (const BT::LogicError & exc) {
       RCLCPP_ERROR(get_logger(), "ZMQ error: %s", exc.what());
     }
@@ -367,8 +347,7 @@ ComputeBT::computeBTCallback(
   response->success = true;
 }
 
-std::string
-ComputeBT::getProblem(const std::string & filename) const
+std::string ComputeBT::getProblem(const std::string & filename) const
 {
   std::string ret;
   std::ifstream file(filename);
@@ -381,8 +360,7 @@ ComputeBT::getProblem(const std::string & filename) const
   return ret;
 }
 
-void
-ComputeBT::savePlan(const plansys2_msgs::msg::Plan & plan, const std::string & filename) const
+void ComputeBT::savePlan(const plansys2_msgs::msg::Plan & plan, const std::string & filename) const
 {
   std::ofstream file(filename + "_plan.pddl");
   if (file.is_open()) {
@@ -395,8 +373,7 @@ ComputeBT::savePlan(const plansys2_msgs::msg::Plan & plan, const std::string & f
   }
 }
 
-void
-ComputeBT::saveBT(const std::string & bt_xml, const std::string & filename) const
+void ComputeBT::saveBT(const std::string & bt_xml, const std::string & filename) const
 {
   std::ofstream file(filename + "_bt.xml");
   if (file.is_open()) {
@@ -407,8 +384,7 @@ ComputeBT::saveBT(const std::string & bt_xml, const std::string & filename) cons
   }
 }
 
-void
-ComputeBT::saveDotGraph(const std::string & dotgraph, const std::string & filename) const
+void ComputeBT::saveDotGraph(const std::string & dotgraph, const std::string & filename) const
 {
   std::ofstream file(filename + "_graph.dot");
   if (file.is_open()) {

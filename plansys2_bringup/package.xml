@@ -3,11 +3,11 @@
 <package format="3">
   <name>plansys2_bringup</name>
   <version>2.0.8</version>
-  
+
   <description>Bringup scripts and configurations for the ROS2 Planning System</description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
- 
+
   <license>Apache License, Version 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

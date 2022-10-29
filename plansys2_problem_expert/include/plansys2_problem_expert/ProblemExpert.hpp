@@ -15,22 +15,20 @@
 #ifndef PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERT_HPP_
 #define PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERT_HPP_
 
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
-#include <memory>
 
+#include "plansys2_domain_expert/DomainExpert.hpp"
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/param.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
-
 #include "plansys2_pddl_parser/Utils.h"
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
-#include "plansys2_domain_expert/DomainExpert.hpp"
 
 namespace plansys2
 {
-
 class ProblemExpert : public ProblemExpertInterface
 {
 public:
@@ -72,16 +70,13 @@ public:
 
 private:
   bool checkPredicateTreeTypes(
-    const plansys2_msgs::msg::Tree & tree,
-    std::shared_ptr<DomainExpert> & domain_expert_,
+    const plansys2_msgs::msg::Tree & tree, std::shared_ptr<DomainExpert> & domain_expert_,
     uint8_t node_id = 0);
 
   void removeInvalidPredicates(
-    std::vector<plansys2::Predicate> & predicates,
-    const plansys2::Instance & instance);
+    std::vector<plansys2::Predicate> & predicates, const plansys2::Instance & instance);
   void removeInvalidFunctions(
-    std::vector<plansys2::Function> & functions,
-    const plansys2::Instance & instance);
+    std::vector<plansys2::Function> & functions, const plansys2::Instance & instance);
   void removeInvalidGoals(const plansys2::Instance & instance);
 
   std::vector<plansys2::Instance> instances_;

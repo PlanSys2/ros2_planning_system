@@ -2,7 +2,7 @@
   (:domain simple)
 
   ;; Instantiate the objects.
-  (:objects 
+  (:objects
     r2d2 - robot
     rm0 rm1 rm2 - room
   )
@@ -22,8 +22,8 @@
   (:goal (and
     (robot_at r2d2 rm2)
   ))
-    
-  (:metric 
+
+  (:metric
     minimize (total-time)
   )
 )

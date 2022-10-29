@@ -12,31 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <iostream>
-
 #include "CloseGripper.hpp"
+
+#include <iostream>
+#include <string>
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
 
 namespace plansys2_bt_tests
 {
-
-CloseGripper::CloseGripper(
-  const std::string & xml_tag_name,
-  const BT::NodeConfiguration & conf)
+CloseGripper::CloseGripper(const std::string & xml_tag_name, const BT::NodeConfiguration & conf)
 : BT::ActionNodeBase(xml_tag_name, conf), counter_(0)
 {
 }
 
-void
-CloseGripper::halt()
-{
-  std::cout << "CloseGripper halt" << std::endl;
-}
+void CloseGripper::halt() { std::cout << "CloseGripper halt" << std::endl; }
 
-BT::NodeStatus
-CloseGripper::tick()
+BT::NodeStatus CloseGripper::tick()
 {
   std::cout << "CloseGripper tick " << counter_ << std::endl;
 

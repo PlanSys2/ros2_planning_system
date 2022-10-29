@@ -12,29 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-#include <QWidget>
 #include <QTreeWidget>
+#include <QWidget>
 
 #include "rqt_plansys2_performers/PerformersTree.hpp"
 
 namespace rqt_plansys2_performers
 {
+PerformersTree::PerformersTree() : QTreeWidget() {}
 
-PerformersTree::PerformersTree()
-: QTreeWidget()
-{
-}
-
-void
-PerformersTree::clearAllItems()
+void PerformersTree::clearAllItems()
 {
   int rows = topLevelItemCount();
 
   while (topLevelItemCount() > 0) {
     rowsAboutToBeRemoved(rootIndex(), 0, 0);
     delete takeTopLevelItem(0);
-    rowsRemoved(rootIndex(), 0, 0);/* code */
+    rowsRemoved(rootIndex(), 0, 0); /* code */
   }
 }
 

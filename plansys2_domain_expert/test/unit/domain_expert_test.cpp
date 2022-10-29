@@ -12,19 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <vector>
-#include <regex>
 #include <iostream>
 #include <memory>
+#include <regex>
+#include <string>
+#include <vector>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
-
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpert.hpp"
-#include "plansys2_pddl_parser/Utils.h"
-
 #include "plansys2_msgs/msg/node.hpp"
+#include "plansys2_pddl_parser/Utils.h"
 
 TEST(domain_expert, get_reduced_string)
 {
@@ -52,17 +50,15 @@ TEST(domain_expert, exist_domain)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_charging.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
   ASSERT_TRUE(domain_expert.existDomain("charging"));
 
   std::ifstream domain_simple_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_simple_str((
-      std::istreambuf_iterator<char>(domain_simple_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_simple_str(
+    (std::istreambuf_iterator<char>(domain_simple_ifs)), std::istreambuf_iterator<char>());
 
   domain_expert.extendDomain(domain_simple_str);
   ASSERT_TRUE(domain_expert.existDomain("plansys2"));
@@ -72,14 +68,12 @@ TEST(domain_expert, get_domain)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_processed.pddl");
-  std::string domain_str_p((
-      std::istreambuf_iterator<char>(domain_ifs_p)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str_p(
+    (std::istreambuf_iterator<char>(domain_ifs_p)), std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
   ASSERT_EQ(domain_expert.getDomain(), domain_str_p);
@@ -89,14 +83,12 @@ TEST(domain_expert, get_domain2)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/factory.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   std::ifstream domain_ifs_p(pkgpath + "/pddl/factory_processed.pddl");
-  std::string domain_str_p((
-      std::istreambuf_iterator<char>(domain_ifs_p)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str_p(
+    (std::istreambuf_iterator<char>(domain_ifs_p)), std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
   ASSERT_EQ(domain_expert.getDomain(), domain_str_p);
@@ -106,9 +98,8 @@ TEST(domain_expert, get_name)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/factory.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
 
@@ -122,14 +113,12 @@ TEST(domain_expert, get_domain3)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_constants.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_constants_processed.pddl");
-  std::string domain_str_p((
-      std::istreambuf_iterator<char>(domain_ifs_p)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str_p(
+    (std::istreambuf_iterator<char>(domain_ifs_p)), std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
   ASSERT_EQ(domain_expert.getDomain(), domain_str_p);
@@ -139,14 +128,13 @@ TEST(domain_expert, get_types)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
 
   std::vector<std::string> types = domain_expert.getTypes();
-  std::vector<std::string> test_types {"person", "message", "robot", "room", "teleporter_room"};
+  std::vector<std::string> test_types{"person", "message", "robot", "room", "teleporter_room"};
 
   ASSERT_EQ(types, test_types);
 }
@@ -155,16 +143,15 @@ TEST(domain_expert, get_constants)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_constants.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
 
   std::vector<std::string> consts1 = domain_expert.getConstants("robot");
   std::vector<std::string> consts2 = domain_expert.getConstants("person");
-  std::vector<std::string> test_consts1 {"leia", "lema"};
-  std::vector<std::string> test_consts2 {"jack", "john"};
+  std::vector<std::string> test_consts1{"leia", "lema"};
+  std::vector<std::string> test_consts2{"jack", "john"};
 
   ASSERT_EQ(consts1, test_consts1);
   ASSERT_EQ(consts2, test_consts2);
@@ -174,15 +161,14 @@ TEST(domain_expert, get_predicates)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
 
   std::vector<plansys2::Predicate> predicates = domain_expert.getPredicates();
-  std::vector<std::string> predicates_types {"person_at", "robot_at", "robot_near_person",
-    "robot_talk"};
+  std::vector<std::string> predicates_types{
+    "person_at", "robot_at", "robot_near_person", "robot_talk"};
 
   ASSERT_EQ(predicates.size(), predicates_types.size());
   for (unsigned i = 0; i < predicates.size(); i++) {
@@ -194,9 +180,8 @@ TEST(domain_expert, get_predicate_params)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
 
@@ -227,15 +212,13 @@ TEST(domain_expert, get_functions)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_charging.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
 
   std::vector<plansys2::Function> functions = domain_expert.getFunctions();
-  std::vector<std::string> functions_types {"speed", "max_range", "state_of_charge",
-    "distance"};
+  std::vector<std::string> functions_types{"speed", "max_range", "state_of_charge", "distance"};
 
   ASSERT_EQ(functions.size(), functions_types.size());
   for (unsigned i = 0; i < functions.size(); i++) {
@@ -247,9 +230,8 @@ TEST(domain_expert, get_function_params)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_charging.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
 
@@ -276,9 +258,8 @@ TEST(domain_expert, get_actions)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
 
@@ -293,14 +274,12 @@ TEST(domain_expert, get_actions)
   ASSERT_EQ(durative_actions[2], "approach");
 }
 
-
 TEST(domain_expert, get_action_params)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
 
@@ -326,43 +305,35 @@ TEST(domain_expert, get_action_params)
   ASSERT_TRUE(parser::pddl::empty(move_action->over_all_requirements));
   ASSERT_TRUE(parser::pddl::empty(move_action->at_end_requirements));
 
-  ASSERT_EQ(
-    parser::pddl::toString(move_action->at_start_requirements),
-    "(and (robot_at ?0 ?1))");
-  ASSERT_EQ(
-    parser::pddl::toString(move_action->at_start_effects),
-    "(and (not (robot_at ?0 ?1)))");
-  ASSERT_EQ(
-    parser::pddl::toString(move_action->at_end_effects),
-    "(and (robot_at ?0 ?2))");
+  ASSERT_EQ(parser::pddl::toString(move_action->at_start_requirements), "(and (robot_at ?0 ?1))");
+  ASSERT_EQ(parser::pddl::toString(move_action->at_start_effects), "(and (not (robot_at ?0 ?1)))");
+  ASSERT_EQ(parser::pddl::toString(move_action->at_end_effects), "(and (robot_at ?0 ?2))");
 }
 
 TEST(domain_expert, multidomain_get_types)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
 
   std::ifstream domain_ext_ifs(pkgpath + "/pddl/domain_simple_ext.pddl");
-  std::string domain_ext_str((
-      std::istreambuf_iterator<char>(domain_ext_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_ext_str(
+    (std::istreambuf_iterator<char>(domain_ext_ifs)), std::istreambuf_iterator<char>());
 
   domain_expert->extendDomain(domain_ext_str);
 
   std::vector<std::string> types = domain_expert->getTypes();
-  std::vector<std::string> test_types {"person", "message", "robot", "room", "teleporter_room",
-    "pickable_object"};
+  std::vector<std::string> test_types{"person", "message",         "robot",
+                                      "room",   "teleporter_room", "pickable_object"};
 
   ASSERT_EQ(types, test_types);
 
   std::vector<plansys2::Predicate> predicates = domain_expert->getPredicates();
-  std::vector<std::string> test_predicates {"object_at_robot", "object_at_room", "person_at",
-    "robot_at", "robot_near_person", "robot_talk"};
+  std::vector<std::string> test_predicates{"object_at_robot", "object_at_room",    "person_at",
+                                           "robot_at",        "robot_near_person", "robot_talk"};
 
   ASSERT_EQ(predicates.size(), test_predicates.size());
   for (unsigned i = 0; i < predicates.size(); i++) {
@@ -370,13 +341,12 @@ TEST(domain_expert, multidomain_get_types)
   }
 
   std::vector<std::string> actions = domain_expert->getActions();
-  std::vector<std::string> test_actions {"move_person"};
+  std::vector<std::string> test_actions{"move_person"};
 
   ASSERT_EQ(actions, test_actions);
 
   std::vector<std::string> dactions = domain_expert->getDurativeActions();
-  std::vector<std::string> test_dactions {"move", "talk", "approach", "pick_object",
-    "place_object"};
+  std::vector<std::string> test_dactions{"move", "talk", "approach", "pick_object", "place_object"};
 
   ASSERT_EQ(dactions, test_dactions);
 }
@@ -385,9 +355,8 @@ TEST(domain_expert, sub_types)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
 
@@ -398,7 +367,7 @@ TEST(domain_expert, sub_types)
     if (durative_action->parameters.size() == 3) {
       ASSERT_EQ(durative_action->parameters[1].type, "room");
 
-      std::vector<std::string> subtypes {"teleporter_room"};
+      std::vector<std::string> subtypes{"teleporter_room"};
       ASSERT_EQ(durative_action->parameters[1].sub_types, subtypes);
     } else {
       FAIL() << "The `move` durative-action is expected to have 2 parameters";
@@ -413,7 +382,7 @@ TEST(domain_expert, sub_types)
     if (predicate.value().parameters.size() == 2) {
       ASSERT_EQ(predicate.value().parameters[1].type, "room");
 
-      std::vector<std::string> subtypes {"teleporter_room"};
+      std::vector<std::string> subtypes{"teleporter_room"};
       ASSERT_EQ(predicate.value().parameters[1].sub_types, subtypes);
     } else {
       FAIL() << "The `robot_at` predicate is expected to have 3 parameters";
@@ -423,13 +392,12 @@ TEST(domain_expert, sub_types)
   }
 
   // Parameter subtypes with as action
-  plansys2_msgs::msg::Action::SharedPtr action =
-    domain_expert.getAction("move_person");
+  plansys2_msgs::msg::Action::SharedPtr action = domain_expert.getAction("move_person");
   if (action) {
     if (action->parameters.size() == 3) {
       ASSERT_EQ(action->parameters[1].type, "room");
 
-      std::vector<std::string> subtypes {"teleporter_room"};
+      std::vector<std::string> subtypes{"teleporter_room"};
       ASSERT_EQ(action->parameters[1].sub_types, subtypes);
     } else {
       FAIL() << "The `move_person` action is expected to have 3 parameters";
@@ -439,20 +407,20 @@ TEST(domain_expert, sub_types)
   }
 
   // Parameter subtypes with as function
-  std::optional<plansys2::Function> function =
-    domain_expert.getFunction("teleportation_time");
+  std::optional<plansys2::Function> function = domain_expert.getFunction("teleportation_time");
   if (function.has_value()) {
     if (function.value().parameters.size() == 2) {
       ASSERT_EQ(function.value().parameters[0].type, "teleporter_room");
       ASSERT_EQ(function.value().parameters[1].type, "room");
 
-      std::vector<std::string> emptySubtypes {};
+      std::vector<std::string> emptySubtypes{};
       ASSERT_EQ(function.value().parameters[0].sub_types, emptySubtypes);
 
-      std::vector<std::string> subtypes {"teleporter_room"};
+      std::vector<std::string> subtypes{"teleporter_room"};
       ASSERT_EQ(function.value().parameters[1].sub_types, subtypes);
     } else {
-      FAIL() << "The `teleportation_time` function is expected to have 2 parameters";
+      FAIL() << "The `teleportation_time` function is expected to have 2 "
+                "parameters";
     }
   } else {
     FAIL() << "No `teleportation_time` function found in the domain";

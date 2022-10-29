@@ -14,7 +14,7 @@
 
   ;; The goal is to have both packages delivered to their destinations:
   (:goal (and
-    (robot_talk leia m1 Jack) 
+    (robot_talk leia m1 Jack)
     )
   )
   )

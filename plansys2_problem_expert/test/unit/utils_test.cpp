@@ -12,30 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <vector>
-#include <memory>
 #include <map>
+#include <memory>
 #include <set>
+#include <string>
 #include <tuple>
+#include <vector>
+
+#include "plansys2_problem_expert/Utils.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
-
 #include "gtest/gtest.h"
-
+#include "plansys2_domain_expert/DomainExpert.hpp"
+#include "plansys2_domain_expert/DomainExpertNode.hpp"
+#include "plansys2_msgs/msg/knowledge.hpp"
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/param.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
-
-#include "plansys2_problem_expert/ProblemExpert.hpp"
-#include "plansys2_domain_expert/DomainExpert.hpp"
-#include "plansys2_domain_expert/DomainExpertNode.hpp"
-#include "plansys2_problem_expert/ProblemExpertNode.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_problem_expert/Utils.hpp"
 #include "plansys2_pddl_parser/Utils.h"
-
-#include "plansys2_msgs/msg/knowledge.hpp"
+#include "plansys2_problem_expert/ProblemExpert.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_problem_expert/ProblemExpertNode.hpp"
 
 TEST(utils, evaluate_and)
 {
@@ -81,8 +78,7 @@ TEST(utils, evaluate_or)
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
-    test_tree, "(or (patrolled wp1) (patrolled wp2))", false,
-    plansys2_msgs::msg::Node::AND);
+    test_tree, "(or (patrolled wp1) (patrolled wp2))", false, plansys2_msgs::msg::Node::AND);
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree, problem_client, predicates, functions, false, true),
@@ -117,8 +113,7 @@ TEST(utils, evaluate_not)
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
-    test_tree, "(not (patrolled wp1))", false,
-    plansys2_msgs::msg::Node::AND);
+    test_tree, "(not (patrolled wp1))", false, plansys2_msgs::msg::Node::AND);
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree, problem_client, predicates, functions, false, true),
@@ -194,8 +189,10 @@ TEST(utils, evaluate_predicate_client)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+    while (!finish) {
+      exe.spin_some();
+    }
+  });
 
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
@@ -210,8 +207,7 @@ TEST(utils, evaluate_predicate_client)
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
-    test_tree, "(is_teleporter_destination bedroom)", false,
-    plansys2_msgs::msg::Node::AND);
+    test_tree, "(is_teleporter_destination bedroom)", false, plansys2_msgs::msg::Node::AND);
 
   ASSERT_FALSE(plansys2::check(test_tree, problem_client));
   ASSERT_TRUE(plansys2::apply(test_tree, problem_client));
@@ -234,18 +230,15 @@ TEST(utils, evaluate_function_use_state)
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
-    test_tree, "(distance wp1 wp2)", false,
-    plansys2_msgs::msg::Node::EXPRESSION);
+    test_tree, "(distance wp1 wp2)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(false, false, 0.0));
+    plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(false, false, 0.0));
 
   functions.push_back(parser::pddl::fromStringFunction("(= (distance wp1 wp2) 1.0)"));
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, false, 1.0));
+    plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, false, 1.0));
 }
 
 TEST(utils, evaluate_expression_ge)
@@ -258,27 +251,19 @@ TEST(utils, evaluate_expression_ge)
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(test_tree, "(>= (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(false, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(false, false, 0));
 
   functions.push_back(parser::pddl::fromStringFunction("(= (vx) 2.9999)"));
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, false, 0));
 
   functions[0].value = 4.0;
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, true, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, true, 0));
 
   functions[0].value = 3.0;
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, true, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, true, 0));
 }
 
 TEST(utils, evaluate_expression_gt)
@@ -290,24 +275,17 @@ TEST(utils, evaluate_expression_gt)
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
-    test_tree, "(> (distance wp1 wp2) 3.0)", false,
-    plansys2_msgs::msg::Node::AND);
+    test_tree, "(> (distance wp1 wp2) 3.0)", false, plansys2_msgs::msg::Node::AND);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(false, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(false, false, 0));
 
   functions.push_back(parser::pddl::fromStringFunction("(= (distance wp1 wp2) 3.0)"));
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, false, 0));
 
   functions[0].value = 3.00001;
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, true, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, true, 0));
 }
 
 TEST(utils, evaluate_expression_le)
@@ -319,30 +297,21 @@ TEST(utils, evaluate_expression_le)
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
-    test_tree, "(<= (vx) -3.0)", false,
-    plansys2_msgs::msg::Node::EXPRESSION);
+    test_tree, "(<= (vx) -3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(false, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(false, false, 0));
 
   functions.push_back(parser::pddl::fromStringFunction("(= (vx) -2.9999)"));
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, false, 0));
 
   functions[0].value = -4.0;
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, true, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, true, 0));
 
   functions[0].value = -3.0;
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, true, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, true, 0));
 }
 
 TEST(utils, evaluate_expression_lt)
@@ -354,24 +323,17 @@ TEST(utils, evaluate_expression_lt)
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
-    test_tree, "(< (distance wp1 wp2) -3.0)", false,
-    plansys2_msgs::msg::Node::AND);
+    test_tree, "(< (distance wp1 wp2) -3.0)", false, plansys2_msgs::msg::Node::AND);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(false, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(false, false, 0));
 
   functions.push_back(parser::pddl::fromStringFunction("(= (distance wp1 wp2) -3.0)"));
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, false, 0));
 
   functions[0].value = -3.00001;
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, true, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, true, 0));
 }
 
 TEST(utils, evaluate_expression_multiply)
@@ -384,21 +346,17 @@ TEST(utils, evaluate_expression_multiply)
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(test_tree, "(* (vx) 3.0)", false, plansys2_msgs::msg::Node::AND);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(false, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(false, false, 0));
 
   functions.push_back(parser::pddl::fromStringFunction("(= (vx) 3.0)"));
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, false, 9.0));
+    plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, false, 9.0));
 
   functions[0].value = -0.001;
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, false, -0.003));
+    plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, false, -0.003));
 }
 
 TEST(utils, evaluate_expression_divide)
@@ -411,29 +369,23 @@ TEST(utils, evaluate_expression_divide)
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(test_tree, "(/ (vx) 3.0)", false, plansys2_msgs::msg::Node::AND);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(false, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(false, false, 0));
 
   functions.push_back(parser::pddl::fromStringFunction("(= (vx) 3.0)"));
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, false, 1.0));
+    plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, false, 1.0));
 
   functions[0].value = -9.0;
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, false, -3.0));
+    plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, false, -3.0));
 
   // Divide by zero
   test_tree.nodes.clear();
   parser::pddl::fromString(test_tree, "(/ (vx) 0)", false, plansys2_msgs::msg::Node::AND);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(false, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(false, false, 0));
 }
 
 TEST(utils, evaluate_expression_add)
@@ -446,21 +398,17 @@ TEST(utils, evaluate_expression_add)
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(test_tree, "(+ (vx) 3.0)", false, plansys2_msgs::msg::Node::AND);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(false, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(false, false, 0));
 
   functions.push_back(parser::pddl::fromStringFunction("(= (vx) 3.0)"));
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, false, 6.0));
+    plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, false, 6.0));
 
   functions[0].value = -0.001;
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, false, 2.999));
+    plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, false, 2.999));
 }
 
 TEST(utils, evaluate_expression_subtract)
@@ -473,21 +421,17 @@ TEST(utils, evaluate_expression_subtract)
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(test_tree, "(- (vx) 3.0)", false, plansys2_msgs::msg::Node::AND);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(false, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(false, false, 0));
 
   functions.push_back(parser::pddl::fromStringFunction("(= (vx) 2.5)"));
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, false, -0.5));
+    plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, false, -0.5));
 
   functions[0].value = -0.001;
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, false, -3.001));
+    plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, false, -3.001));
 }
 
 TEST(utils, evaluate_expression_invalid)
@@ -502,9 +446,7 @@ TEST(utils, evaluate_expression_invalid)
   parser::pddl::fromString(test_tree, "(> (vx) 0)", false, plansys2_msgs::msg::Node::AND);
   test_tree.nodes[0].expression_type = plansys2_msgs::msg::Node::UNKNOWN;
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(false, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(false, false, 0));
 }
 
 TEST(utils, evaluate_expression_invalid_client)
@@ -532,8 +474,10 @@ TEST(utils, evaluate_expression_invalid_client)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+    while (!finish) {
+      exe.spin_some();
+    }
+  });
 
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("leia", "robot")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("Jack", "person")));
@@ -551,12 +495,9 @@ TEST(utils, evaluate_expression_invalid_client)
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
-    test_tree, "(> (room_distance bedroom kitchen) 0)", false,
-    plansys2_msgs::msg::Node::AND);
+    test_tree, "(> (room_distance bedroom kitchen) 0)", false, plansys2_msgs::msg::Node::AND);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, problem_client),
-    std::make_tuple(false, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, problem_client), std::make_tuple(false, false, 0));
 
   {
     rclcpp::Rate rate(10);
@@ -568,12 +509,9 @@ TEST(utils, evaluate_expression_invalid_client)
 
   test_tree.nodes.clear();
   parser::pddl::fromString(
-    test_tree, "(> 0 (room_distance bedroom kitchen))", false,
-    plansys2_msgs::msg::Node::AND);
+    test_tree, "(> 0 (room_distance bedroom kitchen))", false, plansys2_msgs::msg::Node::AND);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, problem_client),
-    std::make_tuple(false, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, problem_client), std::make_tuple(false, false, 0));
 
   finish = true;
   t.join();
@@ -589,76 +527,63 @@ TEST(utils, evaluate_function_mod)
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
-    test_tree, "(assign (vx) 3.0)", false,
-    plansys2_msgs::msg::Node::EXPRESSION);
+    test_tree, "(assign (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
   parser::pddl::getPredicates(predicates_msg, test_tree);
   parser::pddl::getFunctions(functions_msg, test_tree);
 
-  auto predicates = plansys2::convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(
-    predicates_msg);
-  auto functions = plansys2::convertVector<plansys2::Function, plansys2_msgs::msg::Node>(
-    functions_msg);
+  auto predicates =
+    plansys2::convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(predicates_msg);
+  auto functions =
+    plansys2::convertVector<plansys2::Function, plansys2_msgs::msg::Node>(functions_msg);
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(true, false, 3.0));
+    plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(true, false, 3.0));
   ASSERT_EQ(functions[0].value, 0.0);
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions, true),
-    std::make_tuple(true, false, 3.0));
+    plansys2::evaluate(test_tree, predicates, functions, true), std::make_tuple(true, false, 3.0));
   ASSERT_EQ(functions[0].value, 3.0);
 
   test_tree.nodes.clear();
   parser::pddl::fromString(
-    test_tree, "(increase (vx) 3.0)", false,
-    plansys2_msgs::msg::Node::EXPRESSION);
+    test_tree, "(increase (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions, true),
-    std::make_tuple(true, false, 6.0));
+    plansys2::evaluate(test_tree, predicates, functions, true), std::make_tuple(true, false, 6.0));
   ASSERT_EQ(functions[0].value, 6.0);
 
   test_tree.nodes.clear();
   parser::pddl::fromString(
-    test_tree, "(decrease (vx) 3.0)", false,
-    plansys2_msgs::msg::Node::EXPRESSION);
+    test_tree, "(decrease (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions, true),
-    std::make_tuple(true, false, 3.0));
+    plansys2::evaluate(test_tree, predicates, functions, true), std::make_tuple(true, false, 3.0));
   ASSERT_EQ(functions[0].value, 3.0);
 
   test_tree.nodes.clear();
   parser::pddl::fromString(
-    test_tree, "(scale-up (vx) 3.0)", false,
-    plansys2_msgs::msg::Node::EXPRESSION);
+    test_tree, "(scale-up (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions, true),
-    std::make_tuple(true, false, 9.0));
+    plansys2::evaluate(test_tree, predicates, functions, true), std::make_tuple(true, false, 9.0));
   ASSERT_EQ(functions[0].value, 9.0);
 
   test_tree.nodes.clear();
   parser::pddl::fromString(
-    test_tree, "(scale-down (vx) 3.0)", false,
-    plansys2_msgs::msg::Node::EXPRESSION);
+    test_tree, "(scale-down (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions, true),
-    std::make_tuple(true, false, 3.0));
+    plansys2::evaluate(test_tree, predicates, functions, true), std::make_tuple(true, false, 3.0));
   ASSERT_EQ(functions[0].value, 3.0);
 
   // divide by zero
   test_tree.nodes.clear();
   parser::pddl::fromString(
-    test_tree, "(scale-down (vx) 0.0)", false,
-    plansys2_msgs::msg::Node::EXPRESSION);
+    test_tree, "(scale-down (vx) 0.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions, true),
-    std::make_tuple(false, false, 0.0));
+    plansys2::evaluate(test_tree, predicates, functions, true), std::make_tuple(false, false, 0.0));
   ASSERT_EQ(functions[0].value, 3.0);
 }
 
@@ -687,15 +612,15 @@ TEST(utils, evaluate_function_mod_client)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+    while (!finish) {
+      exe.spin_some();
+    }
+  });
 
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
   ASSERT_TRUE(
-    problem_client->addFunction(
-      plansys2::Function(
-        "(= (room_distance bedroom kitchen) 1.0)")));
+    problem_client->addFunction(plansys2::Function("(= (room_distance bedroom kitchen) 1.0)")));
 
   {
     rclcpp::Rate rate(10);
@@ -710,11 +635,9 @@ TEST(utils, evaluate_function_mod_client)
     test_tree, "(assign (room_distance bedroom kitchen) 0)", false,
     plansys2_msgs::msg::Node::EXPRESSION);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, problem_client, true),
-    std::make_tuple(true, false, 0));
-  std::optional<plansys2_msgs::msg::Node> func = problem_client->getFunction(
-    "(room_distance bedroom kitchen)");
+  ASSERT_EQ(plansys2::evaluate(test_tree, problem_client, true), std::make_tuple(true, false, 0));
+  std::optional<plansys2_msgs::msg::Node> func =
+    problem_client->getFunction("(room_distance bedroom kitchen)");
   ASSERT_TRUE(func.has_value());
   ASSERT_EQ(func.value().value, 0.0);
 
@@ -724,8 +647,7 @@ TEST(utils, evaluate_function_mod_client)
     plansys2_msgs::msg::Node::EXPRESSION);
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, problem_client, true),
-    std::make_tuple(true, false, 10.0));
+    plansys2::evaluate(test_tree, problem_client, true), std::make_tuple(true, false, 10.0));
   func = problem_client->getFunction("(room_distance bedroom kitchen)");
   ASSERT_TRUE(func.has_value());
   ASSERT_EQ(func.value().value, 10.0);
@@ -744,13 +666,10 @@ TEST(utils, evaluate_function_mod_invalid)
   // Unknown function modifier type
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
-    test_tree, "(assign (vx) 3.0)", false,
-    plansys2_msgs::msg::Node::EXPRESSION);
+    test_tree, "(assign (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
   test_tree.nodes[0].node_type = plansys2_msgs::msg::Node::UNKNOWN;
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, predicates, functions),
-    std::make_tuple(false, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, predicates, functions), std::make_tuple(false, false, 0));
 }
 
 TEST(utils, evaluate_function_mod_invalid_client)
@@ -778,17 +697,17 @@ TEST(utils, evaluate_function_mod_invalid_client)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+    while (!finish) {
+      exe.spin_some();
+    }
+  });
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
     test_tree, "(assign (room_distance bedroom kitchen) 0)", false,
     plansys2_msgs::msg::Node::EXPRESSION);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, problem_client),
-    std::make_tuple(false, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, problem_client), std::make_tuple(false, false, 0));
 
   {
     rclcpp::Rate rate(10);
@@ -803,9 +722,7 @@ TEST(utils, evaluate_function_mod_invalid_client)
     test_tree, "(assign 0 (room_distance bedroom kitchen))", false,
     plansys2_msgs::msg::Node::EXPRESSION);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, problem_client),
-    std::make_tuple(false, false, 0));
+  ASSERT_EQ(plansys2::evaluate(test_tree, problem_client), std::make_tuple(false, false, 0));
 
   finish = true;
   t.join();
@@ -888,14 +805,17 @@ TEST(utils, get_action_from_string)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+    while (!finish) {
+      exe.spin_some();
+    }
+  });
 
   std::string invalid_action_str = "(invalid r2d2 kitchen bedroom)";
   ASSERT_EQ(
     domain_client->getAction(
       plansys2::get_action_name(invalid_action_str),
-      plansys2::get_action_params(invalid_action_str)), nullptr);
+      plansys2::get_action_params(invalid_action_str)),
+    nullptr);
 
   std::string action_str = "(teleport r2d2 kitchen bedroom)";
 
@@ -911,26 +831,20 @@ TEST(utils, get_action_from_string)
   parser::pddl::fromString(
     test_tree,
     "(and "
-    "(robot_at r2d2 kitchen)(is_teleporter_enabled kitchen)(is_teleporter_destination bedroom))");
+    "(robot_at r2d2 kitchen)(is_teleporter_enabled "
+    "kitchen)(is_teleporter_destination bedroom))");
   expected->preconditions = test_tree;
 
   test_tree.nodes.clear();
-  parser::pddl::fromString(
-    test_tree,
-    "(and (not(robot_at r2d2 kitchen))(robot_at r2d2 bedroom))");
+  parser::pddl::fromString(test_tree, "(and (not(robot_at r2d2 kitchen))(robot_at r2d2 bedroom))");
   expected->effects = test_tree;
-  std::shared_ptr<plansys2_msgs::msg::Action> actual =
-    domain_client->getAction(
-    plansys2::get_action_name(action_str),
-    plansys2::get_action_params(action_str));
+  std::shared_ptr<plansys2_msgs::msg::Action> actual = domain_client->getAction(
+    plansys2::get_action_name(action_str), plansys2::get_action_params(action_str));
 
   ASSERT_EQ(parser::pddl::nameActionsToString(actual), parser::pddl::nameActionsToString(expected));
   ASSERT_EQ(
-    parser::pddl::toString(actual->preconditions),
-    parser::pddl::toString(expected->preconditions));
-  ASSERT_EQ(
-    parser::pddl::toString(actual->effects),
-    parser::pddl::toString(expected->effects));
+    parser::pddl::toString(actual->preconditions), parser::pddl::toString(expected->preconditions));
+  ASSERT_EQ(parser::pddl::toString(actual->effects), parser::pddl::toString(expected->effects));
 
   std::string durative_action_str = "(move r2d2 kitchen bedroom)";
 
@@ -956,8 +870,8 @@ TEST(utils, get_action_from_string)
 
   std::shared_ptr<plansys2_msgs::msg::DurativeAction> durative_actual =
     domain_client->getDurativeAction(
-    plansys2::get_action_name(durative_action_str),
-    plansys2::get_action_params(durative_action_str));
+      plansys2::get_action_name(durative_action_str),
+      plansys2::get_action_params(durative_action_str));
 
   ASSERT_EQ(
     parser::pddl::nameActionsToString(durative_actual),
@@ -992,17 +906,13 @@ TEST(utils, get_action_from_string)
   parser::pddl::fromString(
     overall_expected->over_all_requirements,
     "(and (robot_at leia kitchen) (person_at Jack kitchen))");
-  parser::pddl::fromString(
-    overall_expected->at_end_requirements,
-    "(and (person_at Jack kitchen))");
-  parser::pddl::fromString(
-    overall_expected->at_end_effects,
-    "(and (robot_near_person leia Jack))");
+  parser::pddl::fromString(overall_expected->at_end_requirements, "(and (person_at Jack kitchen))");
+  parser::pddl::fromString(overall_expected->at_end_effects, "(and (robot_near_person leia Jack))");
 
   std::shared_ptr<plansys2_msgs::msg::DurativeAction> overall_actual =
     domain_client->getDurativeAction(
-    plansys2::get_action_name(overall_action_str),
-    plansys2::get_action_params(overall_action_str));
+      plansys2::get_action_name(overall_action_str),
+      plansys2::get_action_params(overall_action_str));
 
   ASSERT_EQ(
     parser::pddl::toString(overall_actual->at_start_requirements),

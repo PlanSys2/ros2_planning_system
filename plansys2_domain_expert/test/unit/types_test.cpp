@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include "gtest/gtest.h"
-#include "plansys2_pddl_parser/Utils.h"
-
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/param.hpp"
+#include "plansys2_pddl_parser/Utils.h"
 
 TEST(domain_types, basic_types)
 {
@@ -99,8 +98,7 @@ TEST(domain_types, predicate_tree_to_string)
   auto or_tree = parser::pddl::fromSubtrees(or_subtrees, plansys2_msgs::msg::Node::OR);
 
   ASSERT_EQ(
-    parser::pddl::toString(
-      *or_tree), "(or (person_at paco bedroom)(person_at paco kitchen))");
+    parser::pddl::toString(*or_tree), "(or (person_at paco bedroom)(person_at paco kitchen))");
 
   std::vector<plansys2_msgs::msg::Tree> and_subtrees;
   and_subtrees.push_back(pn_1);
@@ -110,7 +108,8 @@ TEST(domain_types, predicate_tree_to_string)
 
   ASSERT_EQ(
     parser::pddl::toString(*and_tree), std::string("(and (robot_at r2d2 bedroom)(not ") +
-    std::string("(robot_at r2d2 kitchen))(or (person_at paco bedroom)(person_at paco kitchen)))"));
+                                         std::string("(robot_at r2d2 kitchen))(or (person_at paco "
+                                                     "bedroom)(person_at paco kitchen)))"));
 }
 
 TEST(domain_types, predicate_tree_to_string_2)
@@ -185,8 +184,7 @@ TEST(domain_types, predicate_tree_to_string_2)
   auto or_tree = parser::pddl::fromSubtrees(or_subtrees, plansys2_msgs::msg::Node::OR);
 
   ASSERT_EQ(
-    parser::pddl::toString(
-      *or_tree), "(or (person_at paco bedroom)(person_at paco kitchen))");
+    parser::pddl::toString(*or_tree), "(or (person_at paco bedroom)(person_at paco kitchen))");
 
   std::vector<plansys2_msgs::msg::Tree> and_subtrees;
   and_subtrees.push_back(pn_1);
@@ -196,7 +194,8 @@ TEST(domain_types, predicate_tree_to_string_2)
 
   ASSERT_EQ(
     parser::pddl::toString(*and_tree), std::string("(and (robot_at r2d2 bedroom)") +
-    std::string("(robot_at r2d2 kitchen)(or (person_at paco bedroom)(person_at paco kitchen)))"));
+                                         std::string("(robot_at r2d2 kitchen)(or (person_at paco "
+                                                     "bedroom)(person_at paco kitchen)))"));
 }
 
 TEST(domain_types, predicate_tree_to_string_3)
@@ -271,8 +270,7 @@ TEST(domain_types, predicate_tree_to_string_3)
   auto or_tree = parser::pddl::fromSubtrees(or_subtrees, plansys2_msgs::msg::Node::OR);
 
   ASSERT_EQ(
-    parser::pddl::toString(
-      *or_tree), "(or (person_at paco bedroom)(person_at paco kitchen))");
+    parser::pddl::toString(*or_tree), "(or (person_at paco bedroom)(person_at paco kitchen))");
 
   std::vector<plansys2_msgs::msg::Tree> not_subtrees_3;
   not_subtrees_3.push_back(*or_tree);
@@ -289,18 +287,21 @@ TEST(domain_types, predicate_tree_to_string_3)
   auto and_tree = parser::pddl::fromSubtrees(and_subtrees, plansys2_msgs::msg::Node::AND);
 
   ASSERT_EQ(
-    parser::pddl::toString(*and_tree), std::string("(and (robot_at r2d2 bedroom)") +
-    std::string("(robot_at r2d2 kitchen)(and (not (person_at paco ") +
-    std::string("bedroom))(not (person_at paco kitchen))))"));
+    parser::pddl::toString(*and_tree),
+    std::string("(and (robot_at r2d2 bedroom)") +
+      std::string("(robot_at r2d2 kitchen)(and (not (person_at paco ") +
+      std::string("bedroom))(not (person_at paco kitchen))))"));
 }
 
 TEST(domain_types, predicate_tree_from_string)
 {
-  std::string expresion = std::string("(and (robot_at r2d2 bedroom)(not ") +
-    std::string("(robot_at r2d2 kitchen))(or (person_at paco bedroom)(person_at paco kitchen)))");
+  std::string expression = std::string("(and (robot_at r2d2 bedroom)(not ") +
+                           std::string(
+                             "(robot_at r2d2 kitchen))(or (person_at paco "
+                             "bedroom)(person_at paco kitchen)))");
 
   plansys2_msgs::msg::Tree tree;
-  parser::pddl::fromString(tree, expresion);
+  parser::pddl::fromString(tree, expression);
 
   plansys2_msgs::msg::Node and_node = tree.nodes[0];
   ASSERT_EQ(and_node.node_type, plansys2_msgs::msg::Node::AND);
@@ -324,7 +325,7 @@ TEST(domain_types, predicate_tree_from_string)
   ASSERT_EQ(p2_node.parameters[1].name, "kitchen");
   ASSERT_TRUE(p2_node.negate);
 
-  ASSERT_EQ(parser::pddl::toString(tree), expresion);
+  ASSERT_EQ(parser::pddl::toString(tree), expression);
 
   std::string expresion2 = std::string("(and (person_at ?0 ?2)(not (person_at ?0 ?1)))");
   plansys2_msgs::msg::Tree tree2;
@@ -335,11 +336,11 @@ TEST(domain_types, predicate_tree_from_string)
 
 TEST(domain_types, predicate_tree_from_string_2)
 {
-  std::string expresion = std::string("(not (and (robot_at r2d2 bedroom)") +
-    std::string("(robot_at r2d2 kitchen)))");
+  std::string expression =
+    std::string("(not (and (robot_at r2d2 bedroom)") + std::string("(robot_at r2d2 kitchen)))");
 
   plansys2_msgs::msg::Tree tree;
-  parser::pddl::fromString(tree, expresion);
+  parser::pddl::fromString(tree, expression);
 
   plansys2_msgs::msg::Node not_node = tree.nodes[0];
   ASSERT_EQ(not_node.node_type, plansys2_msgs::msg::Node::NOT);
@@ -364,7 +365,7 @@ TEST(domain_types, predicate_tree_from_string_2)
   ASSERT_TRUE(p2_node.negate);
 
   std::string expresion_eq = std::string("(or (not (robot_at r2d2 bedroom))") +
-    std::string("(not (robot_at r2d2 kitchen)))");
+                             std::string("(not (robot_at r2d2 kitchen)))");
 
   ASSERT_EQ(parser::pddl::toString(tree), expresion_eq);
 
@@ -377,31 +378,33 @@ TEST(domain_types, predicate_tree_from_string_2)
 
 TEST(domain_types, predicate_tree_from_string_3)
 {
-  std::string expresion = std::string("(and (patrolled ro1) (patrolled ro2) (patrolled ro3))");
+  std::string expression = std::string("(and (patrolled ro1) (patrolled ro2) (patrolled ro3))");
   plansys2_msgs::msg::Tree tree;
-  parser::pddl::fromString(tree, expresion);
+  parser::pddl::fromString(tree, expression);
 
   ASSERT_EQ(parser::pddl::toString(tree), "(and (patrolled ro1)(patrolled ro2)(patrolled ro3))");
 }
 
 TEST(domain_types, predicate_tree_from_string_4)
 {
-  std::string expresion = std::string("  (  and (patrolled ro1) (patrolled ro2) (patrolled ro3))");
+  std::string expression = std::string("  (  and (patrolled ro1) (patrolled ro2) (patrolled ro3))");
   plansys2_msgs::msg::Tree tree;
-  parser::pddl::fromString(tree, expresion);
+  parser::pddl::fromString(tree, expression);
 
   ASSERT_EQ(parser::pddl::toString(tree), "(and (patrolled ro1)(patrolled ro2)(patrolled ro3))");
 }
 
 TEST(domain_types, predicate_tree_from_string_negative)
 {
-  std::string expresion = std::string("(and (robot_at r2d2 bedroom)(not ") +
-    std::string("(robot_at r2d2 kitchen))(or (person_at paco bedroom)(person_at paco kitchen)))");
+  std::string expression = std::string("(and (robot_at r2d2 bedroom)(not ") +
+                           std::string(
+                             "(robot_at r2d2 kitchen))(or (person_at paco "
+                             "bedroom)(person_at paco kitchen)))");
 
   plansys2_msgs::msg::Tree tree;
-  parser::pddl::fromString(tree, expresion);
+  parser::pddl::fromString(tree, expression);
 
-  ASSERT_EQ(parser::pddl::toString(tree), expresion);
+  ASSERT_EQ(parser::pddl::toString(tree), expression);
 
   std::string expresion2 = std::string("(and (person_at ?0 ?2)(not (person_at ?0 ?1)))");
   plansys2_msgs::msg::Tree tree2;
@@ -413,7 +416,9 @@ TEST(domain_types, predicate_tree_from_string_negative)
 TEST(domain_types, get_predicates)
 {
   std::string expresion_1 = std::string("(and (robot_at r2d2 bedroom)(not ") +
-    std::string("(robot_at r2d2 kitchen))(or (person_at paco bedroom)(person_at paco kitchen)))");
+                            std::string(
+                              "(robot_at r2d2 kitchen))(or (person_at paco "
+                              "bedroom)(person_at paco kitchen)))");
 
   plansys2_msgs::msg::Tree tree_1;
   parser::pddl::fromString(tree_1, expresion_1);

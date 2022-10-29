@@ -15,12 +15,11 @@
 #ifndef RQT_PLANSYS2_PLAN__PLANTREE_HPP_
 #define RQT_PLANSYS2_PLAN__PLANTREE_HPP_
 
-#include <QWidget>
 #include <QTreeWidget>
+#include <QWidget>
 
 namespace rqt_plansys2_plan
 {
-
 class PlanTree : public QTreeWidget
 {
 public:

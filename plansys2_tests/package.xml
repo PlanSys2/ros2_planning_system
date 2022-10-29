@@ -3,11 +3,11 @@
 <package format="3">
   <name>plansys2_tests</name>
   <version>2.0.8</version>
-  
+
   <description>This package contains the tests package for the ROS2 Planning System</description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
- 
+
   <license>Apache License, Version 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -25,7 +25,7 @@
   <depend>plansys2_planner</depend>
   <depend>plansys2_executor</depend>
   <depend>behaviortree_cpp_v3</depend>
- 
+
   <exec_depend>popf</exec_depend>
 
   <test_depend>ament_lint_common</test_depend>

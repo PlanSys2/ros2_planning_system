@@ -8,7 +8,7 @@ In one terminal run:
 ros2 launch patrol_navigation_example patrol_example_launch.py
 ```
 
-This command launchs plansys2 and the nodes that implements the actions (move and patrol). The navigation param `autostart` is set to `true`, and the amcl is set to the starting position of the robot. This position is `wp_control`. We will use the next waypoints (x, y, yaw):
+This command launches plansys2 and the nodes that implements the actions (move and patrol). The navigation param `autostart` is set to `true`, and the amcl is set to the starting position of the robot. This position is `wp_control`. We will use the next waypoints (x, y, yaw):
 
 - wp_control (-2.0, -4.0, 0.0) - This is the starting point
 - wp1 (0.0, -2.0, 0.0)

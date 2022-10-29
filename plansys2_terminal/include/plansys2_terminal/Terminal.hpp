@@ -15,29 +15,26 @@
 #ifndef PLANSYS2_TERMINAL__TERMINAL_HPP_
 #define PLANSYS2_TERMINAL__TERMINAL_HPP_
 
-#include <vector>
-#include <string>
 #include <memory>
 #include <sstream>
-
-#include "rclcpp/rclcpp.hpp"
+#include <string>
+#include <vector>
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_planner/PlannerClient.hpp"
-#include "plansys2_executor/ExecutorClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/ExecutorClient.hpp"
+#include "plansys2_planner/PlannerClient.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace plansys2_terminal
 {
-
 std::vector<std::string> tokenize(const std::string & text);
 void pop_front(std::vector<std::string> & tokens);
 char * completion_generator(const char * text, int state);
 char ** completer(const char * text, int start, int end);
 
-std::optional<plansys2_msgs::msg::Plan>
-parse_plan(const std::string planfile);
+std::optional<plansys2_msgs::msg::Plan> parse_plan(const std::string planfile);
 
 class Terminal : public rclcpp::Node
 {
@@ -54,14 +51,11 @@ protected:
   virtual void clean_command(std::string & command);
 
   virtual void process_get_model_predicate(
-    std::vector<std::string> & command,
-    std::ostringstream & os);
+    std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_get_model_function(
-    std::vector<std::string> & command,
-    std::ostringstream & os);
+    std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_get_model_action(
-    std::vector<std::string> & command,
-    std::ostringstream & os);
+    std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_get_model(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_get_problem(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_get(std::vector<std::string> & command, std::ostringstream & os);
@@ -74,11 +68,8 @@ protected:
 
   virtual void process_remove_instance(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_remove_predicate(
-    std::vector<std::string> & command,
-    std::ostringstream & os);
-  virtual void process_remove_function(
-    std::vector<std::string> & command,
-    std::ostringstream & os);
+    std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_remove_function(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_remove(std::vector<std::string> & command, std::ostringstream & os);
 
   virtual void execute_plan(const plansys2_msgs::msg::Plan & plan);
@@ -91,8 +82,7 @@ protected:
   // Returns false if the processed command is violating some
   // restriction, e.g. there are nested source commands
   virtual bool process_command(
-    std::string & command, std::ostringstream & os,
-    bool inside_source = false);
+    std::string & command, std::ostringstream & os, bool inside_source = false);
 
   virtual void process_source(std::vector<std::string> & command, std::ostringstream & os);
 

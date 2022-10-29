@@ -12,32 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
+#include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
+
 #include <map>
 #include <memory>
+#include <string>
 #include <tuple>
-
-#include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
 
 namespace plansys2
 {
-
-WaitAtStartReq::WaitAtStartReq(
-  const std::string & xml_tag_name,
-  const BT::NodeConfiguration & conf)
+WaitAtStartReq::WaitAtStartReq(const std::string & xml_tag_name, const BT::NodeConfiguration & conf)
 : ActionNodeBase(xml_tag_name, conf)
 {
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
-    "action_map");
+      "action_map");
 
   problem_client_ =
-    config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
-    "problem_client");
+    config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>("problem_client");
 }
 
-BT::NodeStatus
-WaitAtStartReq::tick()
+BT::NodeStatus WaitAtStartReq::tick()
 {
   std::string action;
   getInput("action", action);
@@ -53,8 +48,9 @@ WaitAtStartReq::tick()
 
     RCLCPP_ERROR_STREAM(
       node->get_logger(),
-      "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-        parser::pddl::toString((*action_map_)[action].durative_action_info->at_start_requirements));
+      "[" << action << "]" << (*action_map_)[action].execution_error_info << ": "
+          << parser::pddl::toString(
+               (*action_map_)[action].durative_action_info->at_start_requirements));
 
     return BT::NodeStatus::RUNNING;
   }
@@ -65,8 +61,9 @@ WaitAtStartReq::tick()
 
     RCLCPP_ERROR_STREAM(
       node->get_logger(),
-      "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-        parser::pddl::toString((*action_map_)[action].durative_action_info->over_all_requirements));
+      "[" << action << "]" << (*action_map_)[action].execution_error_info << ": "
+          << parser::pddl::toString(
+               (*action_map_)[action].durative_action_info->over_all_requirements));
 
     return BT::NodeStatus::RUNNING;
   }

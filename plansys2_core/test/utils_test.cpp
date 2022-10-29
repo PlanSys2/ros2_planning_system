@@ -15,9 +15,9 @@
 #include <string>
 #include <vector>
 
-#include "gtest/gtest.h"
 #include "plansys2_core/Utils.hpp"
 
+#include "gtest/gtest.h"
 
 TEST(domain_expert, functions)
 {

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2019 Intelligent Robotics Lab
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,22 +20,22 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    namespace = LaunchConfiguration('namespace')
-    params_file = LaunchConfiguration('params_file')
+    namespace = LaunchConfiguration("namespace")
+    params_file = LaunchConfiguration("params_file")
 
     declare_namespace_cmd = DeclareLaunchArgument(
-        'namespace',
-        default_value='',
-        description='Namespace')
+        "namespace", default_value="", description="Namespace"
+    )
 
     # Specify the actions
     planner_cmd = Node(
-        package='plansys2_planner',
-        executable='planner_node',
-        name='planner',
+        package="plansys2_planner",
+        executable="planner_node",
+        name="planner",
         namespace=namespace,
-        output='screen',
-        parameters=[params_file])
+        output="screen",
+        parameters=[params_file],
+    )
 
     # Create the launch description and populate
     ld = LaunchDescription()

@@ -16,36 +16,30 @@
 #define PLANSYS2_EXECUTOR__BEHAVIOR_TREE__WAIT_ATSTART_REQ_NODE_HPP_
 
 #include <map>
-#include <string>
 #include <memory>
+#include <string>
 
 #include "behaviortree_cpp_v3/action_node.h"
-
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
-#include "plansys2_problem_expert/Utils.hpp"
-
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_problem_expert/Utils.hpp"
 
 namespace plansys2
 {
-
 class WaitAtStartReq : public BT::ActionNodeBase
 {
 public:
-  WaitAtStartReq(
-    const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf);
+  WaitAtStartReq(const std::string & xml_tag_name, const BT::NodeConfiguration & conf);
 
   void halt() {}
   BT::NodeStatus tick() override;
 
   static BT::PortsList providedPorts()
   {
-    return BT::PortsList(
-      {
-        BT::InputPort<std::string>("action", "Action whose at start reqs must stop"),
-      });
+    return BT::PortsList({
+      BT::InputPort<std::string>("action", "Action whose at start reqs must stop"),
+    });
   }
 
 private:

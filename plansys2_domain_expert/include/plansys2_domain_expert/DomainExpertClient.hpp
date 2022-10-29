@@ -15,38 +15,35 @@
 #ifndef PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTCLIENT_HPP_
 #define PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTCLIENT_HPP_
 
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include "plansys2_core/Types.hpp"
 #include "plansys2_domain_expert/DomainExpertInterface.hpp"
-
 #include "plansys2_msgs/msg/action.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
 #include "plansys2_msgs/msg/node.hpp"
-
 #include "plansys2_msgs/srv/get_domain.hpp"
+#include "plansys2_msgs/srv/get_domain_action_details.hpp"
+#include "plansys2_msgs/srv/get_domain_actions.hpp"
+#include "plansys2_msgs/srv/get_domain_constants.hpp"
+#include "plansys2_msgs/srv/get_domain_durative_action_details.hpp"
 #include "plansys2_msgs/srv/get_domain_name.hpp"
 #include "plansys2_msgs/srv/get_domain_types.hpp"
-#include "plansys2_msgs/srv/get_domain_constants.hpp"
-#include "plansys2_msgs/srv/get_domain_actions.hpp"
-#include "plansys2_msgs/srv/get_domain_action_details.hpp"
-#include "plansys2_msgs/srv/get_domain_durative_action_details.hpp"
 #include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_msgs/srv/get_states.hpp"
-
 #include "rclcpp/rclcpp.hpp"
 
 namespace plansys2
 {
-
-/// DomainExpertClient requests changes or gets information to/from the DomainExpertNode
+/// DomainExpertClient requests changes or gets information to/from the
+/// DomainExpertNode
 /**
  * Any node can create a DomainExpertClient object to requests changes to the
- * DomainExpertNode, or to get information from it. It presents the same interface
- * of the DomainExpert, and hides the complexity of using services.
+ * DomainExpertNode, or to get information from it. It presents the same
+ * interface of the DomainExpert, and hides the complexity of using services.
  */
 class DomainExpertClient : public DomainExpertInterface
 {
@@ -82,8 +79,9 @@ public:
   /// Get the details of a predicate existing in the domain.
   /**
    * \param[in] predicate The name of the predicate.
-   * \return A Predicate object containing the predicate name and its parameters (name and type).
-   *    If the predicate does not exist, the value returned has not value.
+   * \return A Predicate object containing the predicate name and its parameters
+   * (name and type). If the predicate does not exist, the value returned has
+   * not value.
    */
   std::optional<plansys2::Predicate> getPredicate(const std::string & predicate);
 
@@ -96,8 +94,9 @@ public:
   /// Get the details of a function existing in the domain.
   /**
    * \param[in] function The name of the function.
-   * \return A Function object containing the function name and its parameters (name and type).
-   *    If the function does not exist, the value returned has not value.
+   * \return A Function object containing the function name and its parameters
+   * (name and type). If the function does not exist, the value returned has not
+   * value.
    */
   std::optional<plansys2::Function> getFunction(const std::string & function);
 
@@ -110,12 +109,12 @@ public:
   /// Get the details of a regular action existing in the domain.
   /**
    * \param[in] action The name of the action.
-   * \return An Action object containing the action name, parameters, requirements and effects.
-   *    If the action does not exist, the value returned has not value.
+   * \return An Action object containing the action name, parameters,
+   * requirements and effects. If the action does not exist, the value returned
+   * has not value.
    */
   plansys2_msgs::msg::Action::SharedPtr getAction(
-    const std::string & action,
-    const std::vector<std::string> & params = {});
+    const std::string & action, const std::vector<std::string> & params = {});
 
   /// Get the temporal actions existing in the domain.
   /**
@@ -126,14 +125,15 @@ public:
   /// Get the details of a durative action existing in the domain.
   /**
    * \param[in] action The name of the action.
-   * \return A Durative Action object containing the action name, parameters, requirements and
-   *    effects. If the action does not exist, the value returned has not value.
+   * \return A Durative Action object containing the action name, parameters,
+   * requirements and effects. If the action does not exist, the value returned
+   * has not value.
    */
   plansys2_msgs::msg::DurativeAction::SharedPtr getDurativeAction(
-    const std::string & action,
-    const std::vector<std::string> & params = {});
+    const std::string & action, const std::vector<std::string> & params = {});
 
-  /// Get the current domain, ready to be saved to file, or to initialize another domain.
+  /// Get the current domain, ready to be saved to file, or to initialize
+  /// another domain.
   /**
    * \return A string containing the domain.
    */

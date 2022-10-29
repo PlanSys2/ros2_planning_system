@@ -14,94 +14,81 @@
 
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
+#include "lifecycle_msgs/msg/state.hpp"
 #include "plansys2_core/Utils.hpp"
 #include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
-#include "lifecycle_msgs/msg/state.hpp"
-
 namespace plansys2
 {
-
-DomainExpertNode::DomainExpertNode()
-: rclcpp_lifecycle::LifecycleNode("domain_expert")
+DomainExpertNode::DomainExpertNode() : rclcpp_lifecycle::LifecycleNode("domain_expert")
 {
   declare_parameter("model_file", "");
 
   get_name_service_ = create_service<plansys2_msgs::srv::GetDomainName>(
     "domain_expert/get_domain_name",
     std::bind(
-      &DomainExpertNode::get_domain_name_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      &DomainExpertNode::get_domain_name_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
   get_types_service_ = create_service<plansys2_msgs::srv::GetDomainTypes>(
     "domain_expert/get_domain_types",
     std::bind(
-      &DomainExpertNode::get_domain_types_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      &DomainExpertNode::get_domain_types_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
   get_domain_actions_service_ = create_service<plansys2_msgs::srv::GetDomainActions>(
     "domain_expert/get_domain_actions",
     std::bind(
-      &DomainExpertNode::get_domain_actions_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
-  get_domain_action_details_service_ =
-    create_service<plansys2_msgs::srv::GetDomainActionDetails>(
-    "domain_expert/get_domain_action_details", std::bind(
-      &DomainExpertNode::get_domain_action_details_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      &DomainExpertNode::get_domain_actions_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
+  get_domain_action_details_service_ = create_service<plansys2_msgs::srv::GetDomainActionDetails>(
+    "domain_expert/get_domain_action_details",
+    std::bind(
+      &DomainExpertNode::get_domain_action_details_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
   get_domain_durative_actions_service_ = create_service<plansys2_msgs::srv::GetDomainActions>(
     "domain_expert/get_domain_durative_actions",
     std::bind(
-      &DomainExpertNode::get_domain_durative_actions_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      &DomainExpertNode::get_domain_durative_actions_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
   get_domain_durative_action_details_service_ =
     create_service<plansys2_msgs::srv::GetDomainDurativeActionDetails>(
-    "domain_expert/get_domain_durative_action_details", std::bind(
-      &DomainExpertNode::get_domain_durative_action_details_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      "domain_expert/get_domain_durative_action_details",
+      std::bind(
+        &DomainExpertNode::get_domain_durative_action_details_service_callback, this,
+        std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
   get_domain_predicates_service_ = create_service<plansys2_msgs::srv::GetStates>(
-    "domain_expert/get_domain_predicates", std::bind(
-      &DomainExpertNode::get_domain_predicates_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
-  get_domain_predicate_details_service_ =
-    create_service<plansys2_msgs::srv::GetNodeDetails>(
-    "domain_expert/get_domain_predicate_details", std::bind(
-      &DomainExpertNode::get_domain_predicate_details_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    "domain_expert/get_domain_predicates",
+    std::bind(
+      &DomainExpertNode::get_domain_predicates_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
+  get_domain_predicate_details_service_ = create_service<plansys2_msgs::srv::GetNodeDetails>(
+    "domain_expert/get_domain_predicate_details",
+    std::bind(
+      &DomainExpertNode::get_domain_predicate_details_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
   get_domain_functions_service_ = create_service<plansys2_msgs::srv::GetStates>(
-    "domain_expert/get_domain_functions", std::bind(
-      &DomainExpertNode::get_domain_functions_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
-  get_domain_function_details_service_ =
-    create_service<plansys2_msgs::srv::GetNodeDetails>(
-    "domain_expert/get_domain_function_details", std::bind(
-      &DomainExpertNode::get_domain_function_details_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    "domain_expert/get_domain_functions",
+    std::bind(
+      &DomainExpertNode::get_domain_functions_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
+  get_domain_function_details_service_ = create_service<plansys2_msgs::srv::GetNodeDetails>(
+    "domain_expert/get_domain_function_details",
+    std::bind(
+      &DomainExpertNode::get_domain_function_details_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
   get_domain_service_ = create_service<plansys2_msgs::srv::GetDomain>(
-    "domain_expert/get_domain", std::bind(
-      &DomainExpertNode::get_domain_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    "domain_expert/get_domain",
+    std::bind(
+      &DomainExpertNode::get_domain_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
 }
 
+using CallbackReturnT = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
-using CallbackReturnT =
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
-
-CallbackReturnT
-DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
+CallbackReturnT DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
   std::string model_file = get_parameter("model_file").get_value<std::string>();
@@ -109,9 +96,8 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   auto model_files = tokenize(model_file, ":");
 
   std::ifstream domain_ifs(model_files[0]);
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   auto planner = std::make_shared<plansys2::POPFPlanSolver>();
   domain_expert_ = std::make_shared<DomainExpert>(domain_str);
@@ -124,9 +110,8 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
 
   for (size_t i = 1; i < model_files.size(); i++) {
     std::ifstream domain_ifs(model_files[i]);
-    std::string domain_str((
-        std::istreambuf_iterator<char>(domain_ifs)),
-      std::istreambuf_iterator<char>());
+    std::string domain_str(
+      (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
     domain_expert_->extendDomain(domain_str);
 
     bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
@@ -141,8 +126,7 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-CallbackReturnT
-DomainExpertNode::on_activate(const rclcpp_lifecycle::State & state)
+CallbackReturnT DomainExpertNode::on_activate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Activating...", get_name());
   RCLCPP_INFO(get_logger(), "[%s] Activated", get_name());
@@ -150,8 +134,7 @@ DomainExpertNode::on_activate(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-CallbackReturnT
-DomainExpertNode::on_deactivate(const rclcpp_lifecycle::State & state)
+CallbackReturnT DomainExpertNode::on_deactivate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Deactivating...", get_name());
   RCLCPP_INFO(get_logger(), "[%s] Deactivated", get_name());
@@ -159,8 +142,7 @@ DomainExpertNode::on_deactivate(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-CallbackReturnT
-DomainExpertNode::on_cleanup(const rclcpp_lifecycle::State & state)
+CallbackReturnT DomainExpertNode::on_cleanup(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Cleaning up...", get_name());
   RCLCPP_INFO(get_logger(), "[%s] Cleaned up", get_name());
@@ -168,8 +150,7 @@ DomainExpertNode::on_cleanup(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-CallbackReturnT
-DomainExpertNode::on_shutdown(const rclcpp_lifecycle::State & state)
+CallbackReturnT DomainExpertNode::on_shutdown(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Shutting down...", get_name());
   RCLCPP_INFO(get_logger(), "[%s] Shutted down", get_name());
@@ -177,16 +158,14 @@ DomainExpertNode::on_shutdown(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-CallbackReturnT
-DomainExpertNode::on_error(const rclcpp_lifecycle::State & state)
+CallbackReturnT DomainExpertNode::on_error(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_ERROR(get_logger(), "[%s] Error transition", get_name());
 
   return CallbackReturnT::SUCCESS;
 }
 
-void
-DomainExpertNode::get_domain_name_service_callback(
+void DomainExpertNode::get_domain_name_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<plansys2_msgs::srv::GetDomainName::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetDomainName::Response> response)
@@ -201,8 +180,7 @@ DomainExpertNode::get_domain_name_service_callback(
   }
 }
 
-void
-DomainExpertNode::get_domain_types_service_callback(
+void DomainExpertNode::get_domain_types_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<plansys2_msgs::srv::GetDomainTypes::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetDomainTypes::Response> response)
@@ -217,8 +195,7 @@ DomainExpertNode::get_domain_types_service_callback(
   }
 }
 
-void
-DomainExpertNode::get_domain_actions_service_callback(
+void DomainExpertNode::get_domain_actions_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<plansys2_msgs::srv::GetDomainActions::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetDomainActions::Response> response)
@@ -235,8 +212,7 @@ DomainExpertNode::get_domain_actions_service_callback(
   }
 }
 
-void
-DomainExpertNode::get_domain_action_details_service_callback(
+void DomainExpertNode::get_domain_action_details_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<plansys2_msgs::srv::GetDomainActionDetails::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetDomainActionDetails::Response> response)
@@ -260,8 +236,7 @@ DomainExpertNode::get_domain_action_details_service_callback(
   }
 }
 
-void
-DomainExpertNode::get_domain_durative_actions_service_callback(
+void DomainExpertNode::get_domain_durative_actions_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<plansys2_msgs::srv::GetDomainActions::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetDomainActions::Response> response)
@@ -278,8 +253,7 @@ DomainExpertNode::get_domain_durative_actions_service_callback(
   }
 }
 
-void
-DomainExpertNode::get_domain_durative_action_details_service_callback(
+void DomainExpertNode::get_domain_durative_action_details_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<plansys2_msgs::srv::GetDomainDurativeActionDetails::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetDomainDurativeActionDetails::Response> response)
@@ -305,8 +279,7 @@ DomainExpertNode::get_domain_durative_action_details_service_callback(
   }
 }
 
-void
-DomainExpertNode::get_domain_predicates_service_callback(
+void DomainExpertNode::get_domain_predicates_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<plansys2_msgs::srv::GetStates::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetStates::Response> response)
@@ -322,8 +295,7 @@ DomainExpertNode::get_domain_predicates_service_callback(
   }
 }
 
-void
-DomainExpertNode::get_domain_predicate_details_service_callback(
+void DomainExpertNode::get_domain_predicate_details_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<plansys2_msgs::srv::GetNodeDetails::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetNodeDetails::Response> response)
@@ -339,16 +311,14 @@ DomainExpertNode::get_domain_predicate_details_service_callback(
       response->success = true;
     } else {
       RCLCPP_WARN(
-        get_logger(), "Requesting a non-existing predicate [%s]",
-        request->expression.c_str());
+        get_logger(), "Requesting a non-existing predicate [%s]", request->expression.c_str());
       response->success = false;
       response->error_info = "Predicate not found";
     }
   }
 }
 
-void
-DomainExpertNode::get_domain_functions_service_callback(
+void DomainExpertNode::get_domain_functions_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<plansys2_msgs::srv::GetStates::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetStates::Response> response)
@@ -364,8 +334,7 @@ DomainExpertNode::get_domain_functions_service_callback(
   }
 }
 
-void
-DomainExpertNode::get_domain_function_details_service_callback(
+void DomainExpertNode::get_domain_function_details_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<plansys2_msgs::srv::GetNodeDetails::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetNodeDetails::Response> response)
@@ -381,16 +350,14 @@ DomainExpertNode::get_domain_function_details_service_callback(
       response->success = true;
     } else {
       RCLCPP_WARN(
-        get_logger(), "Requesting a non-existing function [%s]",
-        request->expression.c_str());
+        get_logger(), "Requesting a non-existing function [%s]", request->expression.c_str());
       response->success = false;
       response->error_info = "Function not found";
     }
   }
 }
 
-void
-DomainExpertNode::get_domain_service_callback(
+void DomainExpertNode::get_domain_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<plansys2_msgs::srv::GetDomain::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetDomain::Response> response)
@@ -407,6 +374,5 @@ DomainExpertNode::get_domain_service_callback(
     response->domain = stream.str();
   }
 }
-
 
 }  // namespace plansys2

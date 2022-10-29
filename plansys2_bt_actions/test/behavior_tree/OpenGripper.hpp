@@ -22,21 +22,15 @@
 
 namespace plansys2_bt_tests
 {
-
 class OpenGripper : public BT::ActionNodeBase
 {
 public:
-  explicit OpenGripper(
-    const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf);
+  explicit OpenGripper(const std::string & xml_tag_name, const BT::NodeConfiguration & conf);
 
   void halt();
   BT::NodeStatus tick();
 
-  static BT::PortsList providedPorts()
-  {
-    return BT::PortsList({});
-  }
+  static BT::PortsList providedPorts() { return BT::PortsList({}); }
 
 private:
   int counter_;

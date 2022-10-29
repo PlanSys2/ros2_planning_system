@@ -24,17 +24,7 @@
 
 namespace plansys2
 {
-
-enum struct ActionType
-{
-  UNKNOWN,
-  INIT,
-  DURATIVE,
-  START,
-  OVERALL,
-  END,
-  GOAL
-};
+enum struct ActionType { UNKNOWN, INIT, DURATIVE, START, OVERALL, END, GOAL };
 
 struct ActionStamped
 {
@@ -44,8 +34,7 @@ struct ActionStamped
   ActionType type;
   std::shared_ptr<plansys2_msgs::msg::DurativeAction> action;
 
-  ActionStamped()
-  : time(0.0), duration(0.0) {}
+  ActionStamped() : time(0.0), duration(0.0) {}
 };
 
 class BTBuilder
@@ -54,15 +43,13 @@ public:
   using Ptr = std::shared_ptr<plansys2::BTBuilder>;
 
   virtual void initialize(
-    const std::string & bt_action_1 = "",
-    const std::string & bt_action_2 = "",
+    const std::string & bt_action_1 = "", const std::string & bt_action_2 = "",
     int precision = 3) = 0;
 
   virtual std::string get_tree(const plansys2_msgs::msg::Plan & current_plan) = 0;
   virtual std::string get_dotgraph(
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
-    bool enable_legend = false,
-    bool enable_print_graph = false) = 0;
+    bool enable_legend = false, bool enable_print_graph = false) = 0;
 
   static int to_int_time(float time, int power)
   {

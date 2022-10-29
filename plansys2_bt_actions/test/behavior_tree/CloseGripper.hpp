@@ -15,28 +15,22 @@
 #ifndef BEHAVIOR_TREE__CLOSEGRIPPER_HPP_
 #define BEHAVIOR_TREE__CLOSEGRIPPER_HPP_
 
-#include <string>
+#include <behaviortree_cpp_v3/behavior_tree.h>
+#include <behaviortree_cpp_v3/bt_factory.h>
 
-#include "behaviortree_cpp_v3/behavior_tree.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include <string>
 
 namespace plansys2_bt_tests
 {
-
 class CloseGripper : public BT::ActionNodeBase
 {
 public:
-  explicit CloseGripper(
-    const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf);
+  explicit CloseGripper(const std::string & xml_tag_name, const BT::NodeConfiguration & conf);
 
   void halt();
   BT::NodeStatus tick();
 
-  static BT::PortsList providedPorts()
-  {
-    return BT::PortsList({});
-  }
+  static BT::PortsList providedPorts() { return BT::PortsList({}); }
 
 private:
   int counter_;

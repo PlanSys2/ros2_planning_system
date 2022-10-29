@@ -16,20 +16,18 @@
 #include <string>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
-
 #include "gtest/gtest.h"
-#include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_problem_expert/ProblemExpertNode.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_planner/PlannerNode.hpp"
-#include "plansys2_planner/PlannerClient.hpp"
-#include "plansys2_executor/ExecutorNode.hpp"
+#include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
+#include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_pddl_parser/Utils.h"
-
-#include "plansys2_tests/test_action_node.hpp"
+#include "plansys2_planner/PlannerClient.hpp"
+#include "plansys2_planner/PlannerNode.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_problem_expert/ProblemExpertNode.hpp"
 #include "plansys2_tests/execution_logger.hpp"
+#include "plansys2_tests/test_action_node.hpp"
 
 TEST(test_3, test_3)
 {
@@ -81,8 +79,10 @@ TEST(test_3, test_3)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+    while (!finish) {
+      exe.spin_some();
+    }
+  });
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -166,8 +166,7 @@ TEST(test_3, test_3)
   problem_client->addPredicate(plansys2::Predicate("(piece_not_used sterwheel_3)"));
 
   problem_client->setGoal(
-    plansys2::Goal(
-      "(and(car_assembled car1) (car_assembled car2) (car_assembled car3))"));
+    plansys2::Goal("(and(car_assembled car1) (car_assembled car2) (car_assembled car3))"));
 
   auto domain = domain_client->getDomain();
   auto problem = problem_client->getProblem();
@@ -188,95 +187,80 @@ TEST(test_3, test_3)
 
   ASSERT_TRUE(result.value().success);
 
-  ASSERT_TRUE(
-    execution_logger->sorted(
-  {
-    "(move robot1 assembly_zone body_car_zone):0",
+  ASSERT_TRUE(execution_logger->sorted(
+    {"(move robot1 assembly_zone body_car_zone):0",
+     "(transport robot1 body_car_1 body_car_zone assembly_zone):2000",
+     "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 "
+     "car1):5002",
+     "(move robot1 assembly_zone wheels_zone):10003",
+     "(transport robot1 wheel_2 wheels_zone assembly_zone):12004",
+     "(move robot1 assembly_zone sterwheel_zone):15005",
+     "(transport robot1 sterwheel_3 sterwheel_zone assembly_zone):17006",
+     "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 "
+     "car3):20008"}));
+
+  ASSERT_TRUE(execution_logger->sorted(
+    {"(move robot2 assembly_zone sterwheel_zone):0",
+     "(transport robot2 sterwheel_1 sterwheel_zone assembly_zone):2000",
+     "(move robot2 assembly_zone body_car_zone):5002",
+     "(transport robot2 body_car_2 body_car_zone assembly_zone):7003",
+     "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 "
+     "car2):15005"}));
+
+  ASSERT_TRUE(execution_logger->sorted(
+    {"(move robot3 assembly_zone wheels_zone):0",
+     "(transport robot3 wheel_1 wheels_zone assembly_zone):2000",
+     "(move robot3 assembly_zone sterwheel_zone):5002",
+     "(transport robot3 sterwheel_2 sterwheel_zone assembly_zone):7003",
+     "(move robot3 assembly_zone body_car_zone):10004",
+     "(transport robot3 body_car_3 body_car_zone assembly_zone):12005",
+     "(move robot3 assembly_zone wheels_zone):15006",
+     "(transport robot3 wheel_3 wheels_zone assembly_zone):17007"}));
+
+  ASSERT_TRUE(execution_logger->before(
     "(transport robot1 body_car_1 body_car_zone assembly_zone):2000",
-    "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 car1):5002",
-    "(move robot1 assembly_zone wheels_zone):10003",
-    "(transport robot1 wheel_2 wheels_zone assembly_zone):12004",
-    "(move robot1 assembly_zone sterwheel_zone):15005",
-    "(transport robot1 sterwheel_3 sterwheel_zone assembly_zone):17006",
-    "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 car3):20008"
-  }));
+    "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 "
+    "car1):5002"));
 
-  ASSERT_TRUE(
-    execution_logger->sorted(
-  {
-    "(move robot2 assembly_zone sterwheel_zone):0",
+  ASSERT_TRUE(execution_logger->before(
     "(transport robot2 sterwheel_1 sterwheel_zone assembly_zone):2000",
-    "(move robot2 assembly_zone body_car_zone):5002",
-    "(transport robot2 body_car_2 body_car_zone assembly_zone):7003",
-    "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 car2):15005"
-  }));
+    "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 "
+    "car1):5002"));
 
-  ASSERT_TRUE(
-    execution_logger->sorted(
-  {
-    "(move robot3 assembly_zone wheels_zone):0",
+  ASSERT_TRUE(execution_logger->before(
     "(transport robot3 wheel_1 wheels_zone assembly_zone):2000",
-    "(move robot3 assembly_zone sterwheel_zone):5002",
+    "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 "
+    "car1):5002"));
+
+  ASSERT_TRUE(execution_logger->before(
+    "(transport robot1 wheel_2 wheels_zone assembly_zone):12004",
+    "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 "
+    "car2):15005"));
+
+  ASSERT_TRUE(execution_logger->before(
+    "(transport robot2 body_car_2 body_car_zone assembly_zone):7003",
+    "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 "
+    "car2):15005"));
+
+  ASSERT_TRUE(execution_logger->before(
     "(transport robot3 sterwheel_2 sterwheel_zone assembly_zone):7003",
-    "(move robot3 assembly_zone body_car_zone):10004",
+    "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 "
+    "car2):15005"));
+
+  ASSERT_TRUE(execution_logger->before(
+    "(transport robot1 sterwheel_3 sterwheel_zone assembly_zone):17006",
+    "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 "
+    "car3):20008"));
+
+  ASSERT_TRUE(execution_logger->before(
     "(transport robot3 body_car_3 body_car_zone assembly_zone):12005",
-    "(move robot3 assembly_zone wheels_zone):15006",
-    "(transport robot3 wheel_3 wheels_zone assembly_zone):17007"
-  }));
+    "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 "
+    "car3):20008"));
 
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot1 body_car_1 body_car_zone assembly_zone):2000",
-      "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 car1):5002"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot2 sterwheel_1 sterwheel_zone assembly_zone):2000",
-      "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 car1):5002"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot3 wheel_1 wheels_zone assembly_zone):2000",
-      "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 car1):5002"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot1 wheel_2 wheels_zone assembly_zone):12004",
-      "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 car2):15005"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot2 body_car_2 body_car_zone assembly_zone):7003",
-      "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 car2):15005"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot3 sterwheel_2 sterwheel_zone assembly_zone):7003",
-      "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 car2):15005"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot1 sterwheel_3 sterwheel_zone assembly_zone):17006",
-      "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 car3):20008"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot3 body_car_3 body_car_zone assembly_zone):12005",
-      "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 car3):20008"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot3 wheel_3 wheels_zone assembly_zone):17007",
-      "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 car3):20008"
-  ));
+  ASSERT_TRUE(execution_logger->before(
+    "(transport robot3 wheel_3 wheels_zone assembly_zone):17007",
+    "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 "
+    "car3):20008"));
   finish = true;
   t.join();
 }

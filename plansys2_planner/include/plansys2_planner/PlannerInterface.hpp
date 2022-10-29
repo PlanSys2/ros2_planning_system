@@ -22,7 +22,6 @@
 
 namespace plansys2
 {
-
 class PlannerInterface
 {
 public:

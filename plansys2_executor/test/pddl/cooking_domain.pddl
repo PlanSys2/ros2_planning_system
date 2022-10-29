@@ -5,7 +5,7 @@
 (:types
 ingredient
 dish
-zone 
+zone
 robot
 );; end Types ;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -22,11 +22,11 @@ robot
 (is_flour ?i - ingredient)
 (is_sugar ?i - ingredient)
 (is_pasta ?i - ingredient)
-(is_water ?i - ingredient) 
+(is_water ?i - ingredient)
 
-(is_omelette ?d - dish) 
-(is_cake ?d - dish) 
-(is_spaghetti ?d - dish) 
+(is_omelette ?d - dish)
+(is_cake ?d - dish)
+(is_spaghetti ?d - dish)
 
 (is_cooking_zone ?z - zone)
 (is_pantry_zone ?z - zone)

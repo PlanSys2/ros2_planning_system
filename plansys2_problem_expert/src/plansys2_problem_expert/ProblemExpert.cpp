@@ -32,14 +32,12 @@
 
 namespace plansys2
 {
-
 ProblemExpert::ProblemExpert(std::shared_ptr<DomainExpert> & domain_expert)
 : domain_expert_(domain_expert)
 {
 }
 
-bool
-ProblemExpert::addInstance(const plansys2::Instance & instance)
+bool ProblemExpert::addInstance(const plansys2::Instance & instance)
 {
   if (!isValidType(instance.type)) {
     return false;
@@ -59,14 +57,9 @@ ProblemExpert::addInstance(const plansys2::Instance & instance)
   return true;
 }
 
-std::vector<plansys2::Instance>
-ProblemExpert::getInstances()
-{
-  return instances_;
-}
+std::vector<plansys2::Instance> ProblemExpert::getInstances() { return instances_; }
 
-bool
-ProblemExpert::removeInstance(const plansys2::Instance & instance)
+bool ProblemExpert::removeInstance(const plansys2::Instance & instance)
 {
   bool found = false;
   int i = 0;
@@ -86,8 +79,7 @@ ProblemExpert::removeInstance(const plansys2::Instance & instance)
   return found;
 }
 
-std::optional<plansys2::Instance>
-ProblemExpert::getInstance(const std::string & instance_name)
+std::optional<plansys2::Instance> ProblemExpert::getInstance(const std::string & instance_name)
 {
   plansys2::Instance ret;
 
@@ -108,14 +100,9 @@ ProblemExpert::getInstance(const std::string & instance_name)
   }
 }
 
-std::vector<plansys2::Predicate>
-ProblemExpert::getPredicates()
-{
-  return predicates_;
-}
+std::vector<plansys2::Predicate> ProblemExpert::getPredicates() { return predicates_; }
 
-bool
-ProblemExpert::addPredicate(const plansys2::Predicate & predicate)
+bool ProblemExpert::addPredicate(const plansys2::Predicate & predicate)
 {
   if (!existPredicate(predicate)) {
     if (isValidPredicate(predicate)) {
@@ -129,8 +116,7 @@ ProblemExpert::addPredicate(const plansys2::Predicate & predicate)
   }
 }
 
-bool
-ProblemExpert::removePredicate(const plansys2::Predicate & predicate)
+bool ProblemExpert::removePredicate(const plansys2::Predicate & predicate)
 {
   bool found = false;
   int i = 0;
@@ -149,8 +135,7 @@ ProblemExpert::removePredicate(const plansys2::Predicate & predicate)
   return true;
 }
 
-std::optional<plansys2::Predicate>
-ProblemExpert::getPredicate(const std::string & expr)
+std::optional<plansys2::Predicate> ProblemExpert::getPredicate(const std::string & expr)
 {
   plansys2::Predicate ret;
   plansys2::Predicate pred = parser::pddl::fromStringPredicate(expr);
@@ -172,14 +157,9 @@ ProblemExpert::getPredicate(const std::string & expr)
   }
 }
 
-std::vector<plansys2::Function>
-ProblemExpert::getFunctions()
-{
-  return functions_;
-}
+std::vector<plansys2::Function> ProblemExpert::getFunctions() { return functions_; }
 
-bool
-ProblemExpert::addFunction(const plansys2::Function & function)
+bool ProblemExpert::addFunction(const plansys2::Function & function)
 {
   if (!existFunction(function)) {
     if (isValidFunction(function)) {
@@ -193,8 +173,7 @@ ProblemExpert::addFunction(const plansys2::Function & function)
   }
 }
 
-bool
-ProblemExpert::removeFunction(const plansys2::Function & function)
+bool ProblemExpert::removeFunction(const plansys2::Function & function)
 {
   bool found = false;
   int i = 0;
@@ -213,8 +192,7 @@ ProblemExpert::removeFunction(const plansys2::Function & function)
   return true;
 }
 
-bool
-ProblemExpert::updateFunction(const plansys2::Function & function)
+bool ProblemExpert::updateFunction(const plansys2::Function & function)
 {
   if (existFunction(function)) {
     if (isValidFunction(function)) {
@@ -229,8 +207,7 @@ ProblemExpert::updateFunction(const plansys2::Function & function)
   }
 }
 
-std::optional<plansys2::Function>
-ProblemExpert::getFunction(const std::string & expr)
+std::optional<plansys2::Function> ProblemExpert::getFunction(const std::string & expr)
 {
   plansys2::Function ret;
   plansys2::Function func = parser::pddl::fromStringFunction(expr);
@@ -252,35 +229,29 @@ ProblemExpert::getFunction(const std::string & expr)
   }
 }
 
-void
-ProblemExpert::removeInvalidPredicates(
-  std::vector<plansys2::Predicate> & predicates,
-  const plansys2::Instance & instance)
+void ProblemExpert::removeInvalidPredicates(
+  std::vector<plansys2::Predicate> & predicates, const plansys2::Instance & instance)
 {
   for (auto rit = predicates.rbegin(); rit != predicates.rend(); ++rit) {
-    if (std::find_if(
+    if (
+      std::find_if(
         rit->parameters.begin(), rit->parameters.end(),
-        [&](const plansys2_msgs::msg::Param & param) {
-          return param.name == instance.name;
-        }) != rit->parameters.end())
-    {
+        [&](const plansys2_msgs::msg::Param & param) { return param.name == instance.name; }) !=
+      rit->parameters.end()) {
       predicates.erase(std::next(rit).base());
     }
   }
 }
 
-void
-ProblemExpert::removeInvalidFunctions(
-  std::vector<plansys2::Function> & functions,
-  const plansys2::Instance & instance)
+void ProblemExpert::removeInvalidFunctions(
+  std::vector<plansys2::Function> & functions, const plansys2::Instance & instance)
 {
   for (auto rit = functions.rbegin(); rit != functions.rend(); ++rit) {
-    if (std::find_if(
+    if (
+      std::find_if(
         rit->parameters.begin(), rit->parameters.end(),
-        [&](const plansys2_msgs::msg::Param & param) {
-          return param.name == instance.name;
-        }) != rit->parameters.end())
-    {
+        [&](const plansys2_msgs::msg::Param & param) { return param.name == instance.name; }) !=
+      rit->parameters.end()) {
       functions.erase(std::next(rit).base());
     }
   }
@@ -305,12 +276,11 @@ void ProblemExpert::removeInvalidGoals(const plansys2::Instance & instance)
     // Check predicates for removed instance.
     bool params_valid = true;
     for (const auto & predicate : predicates) {
-      if (std::find_if(
+      if (
+        std::find_if(
           predicate.parameters.begin(), predicate.parameters.end(),
-          [&](const plansys2_msgs::msg::Param & param) {
-            return param.name == instance.name;
-          }) != predicate.parameters.end())
-      {
+          [&](const plansys2_msgs::msg::Param & param) { return param.name == instance.name; }) !=
+        predicate.parameters.end()) {
         params_valid = false;
         break;
       }
@@ -329,12 +299,11 @@ void ProblemExpert::removeInvalidGoals(const plansys2::Instance & instance)
     // Check functions for removed instance.
     params_valid = true;
     for (const auto & function : functions) {
-      if (std::find_if(
+      if (
+        std::find_if(
           function.parameters.begin(), function.parameters.end(),
-          [&](const plansys2_msgs::msg::Param & param) {
-            return param.name == instance.name;
-          }) != function.parameters.end())
-      {
+          [&](const plansys2_msgs::msg::Param & param) { return param.name == instance.name; }) !=
+        function.parameters.end()) {
         params_valid = false;
         break;
       }
@@ -355,14 +324,9 @@ void ProblemExpert::removeInvalidGoals(const plansys2::Instance & instance)
   }
 }
 
-plansys2::Goal
-ProblemExpert::getGoal()
-{
-  return goal_;
-}
+plansys2::Goal ProblemExpert::getGoal() { return goal_; }
 
-bool
-ProblemExpert::setGoal(const plansys2::Goal & goal)
+bool ProblemExpert::setGoal(const plansys2::Goal & goal)
 {
   if (isValidGoal(goal)) {
     goal_ = goal;
@@ -377,15 +341,13 @@ bool ProblemExpert::isGoalSatisfied(const plansys2::Goal & goal)
   return check(goal, predicates_, functions_);
 }
 
-bool
-ProblemExpert::clearGoal()
+bool ProblemExpert::clearGoal()
 {
   goal_.nodes.clear();
   return true;
 }
 
-bool
-ProblemExpert::clearKnowledge()
+bool ProblemExpert::clearKnowledge()
 {
   instances_.clear();
   predicates_.clear();
@@ -395,8 +357,7 @@ ProblemExpert::clearKnowledge()
   return true;
 }
 
-bool
-ProblemExpert::isValidType(const std::string & type)
+bool ProblemExpert::isValidType(const std::string & type)
 {
   auto valid_types = domain_expert_->getTypes();
   auto it = std::find(valid_types.begin(), valid_types.end(), type);
@@ -404,8 +365,7 @@ ProblemExpert::isValidType(const std::string & type)
   return it != valid_types.end();
 }
 
-bool
-ProblemExpert::existInstance(const std::string & name)
+bool ProblemExpert::existInstance(const std::string & name)
 {
   bool found = false;
   int i = 0;
@@ -420,8 +380,7 @@ ProblemExpert::existInstance(const std::string & name)
   return found;
 }
 
-bool
-ProblemExpert::existPredicate(const plansys2::Predicate & predicate)
+bool ProblemExpert::existPredicate(const plansys2::Predicate & predicate)
 {
   bool found = false;
   int i = 0;
@@ -436,8 +395,7 @@ ProblemExpert::existPredicate(const plansys2::Predicate & predicate)
   return found;
 }
 
-bool
-ProblemExpert::existFunction(const plansys2::Function & function)
+bool ProblemExpert::existFunction(const plansys2::Function & function)
 {
   bool found = false;
   int i = 0;
@@ -452,8 +410,7 @@ ProblemExpert::existFunction(const plansys2::Function & function)
   return found;
 }
 
-bool
-ProblemExpert::isValidPredicate(const plansys2::Predicate & predicate)
+bool ProblemExpert::isValidPredicate(const plansys2::Predicate & predicate)
 {
   bool valid = false;
 
@@ -489,8 +446,7 @@ ProblemExpert::isValidPredicate(const plansys2::Predicate & predicate)
   return valid;
 }
 
-bool
-ProblemExpert::isValidFunction(const plansys2::Function & function)
+bool ProblemExpert::isValidFunction(const plansys2::Function & function)
 {
   bool valid = false;
 
@@ -526,16 +482,13 @@ ProblemExpert::isValidFunction(const plansys2::Function & function)
   return valid;
 }
 
-bool
-ProblemExpert::isValidGoal(const plansys2::Goal & goal)
+bool ProblemExpert::isValidGoal(const plansys2::Goal & goal)
 {
   return checkPredicateTreeTypes(goal, domain_expert_);
 }
 
-bool
-ProblemExpert::checkPredicateTreeTypes(
-  const plansys2_msgs::msg::Tree & tree,
-  std::shared_ptr<DomainExpert> & domain_expert,
+bool ProblemExpert::checkPredicateTreeTypes(
+  const plansys2_msgs::msg::Tree & tree, std::shared_ptr<DomainExpert> & domain_expert,
   uint8_t node_id)
 {
   if (node_id >= tree.nodes.size()) {
@@ -544,69 +497,68 @@ ProblemExpert::checkPredicateTreeTypes(
 
   switch (tree.nodes[node_id].node_type) {
     case plansys2_msgs::msg::Node::AND: {
-        bool ret = true;
+      bool ret = true;
 
-        for (auto & child_id : tree.nodes[node_id].children) {
-          ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id);
-        }
-        return ret;
+      for (auto & child_id : tree.nodes[node_id].children) {
+        ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id);
       }
+      return ret;
+    }
 
     case plansys2_msgs::msg::Node::OR: {
-        bool ret = true;
+      bool ret = true;
 
-        for (auto & child_id : tree.nodes[node_id].children) {
-          ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id);
-        }
-        return ret;
+      for (auto & child_id : tree.nodes[node_id].children) {
+        ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id);
       }
+      return ret;
+    }
 
     case plansys2_msgs::msg::Node::NOT: {
-        return checkPredicateTreeTypes(tree, domain_expert, tree.nodes[node_id].children[0]);
-      }
+      return checkPredicateTreeTypes(tree, domain_expert, tree.nodes[node_id].children[0]);
+    }
 
     case plansys2_msgs::msg::Node::PREDICATE: {
-        return isValidPredicate(tree.nodes[node_id]);
-      }
+      return isValidPredicate(tree.nodes[node_id]);
+    }
 
     case plansys2_msgs::msg::Node::FUNCTION: {
-        return isValidFunction(tree.nodes[node_id]);
-      }
+      return isValidFunction(tree.nodes[node_id]);
+    }
 
     case plansys2_msgs::msg::Node::EXPRESSION: {
-        bool ret = true;
+      bool ret = true;
 
-        for (auto & child_id : tree.nodes[node_id].children) {
-          ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id);
-        }
-        return ret;
+      for (auto & child_id : tree.nodes[node_id].children) {
+        ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id);
       }
+      return ret;
+    }
 
     case plansys2_msgs::msg::Node::FUNCTION_MODIFIER: {
-        bool ret = true;
+      bool ret = true;
 
-        for (auto & child_id : tree.nodes[node_id].children) {
-          ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id);
-        }
-        return ret;
+      for (auto & child_id : tree.nodes[node_id].children) {
+        ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id);
       }
+      return ret;
+    }
 
     case plansys2_msgs::msg::Node::NUMBER: {
-        return true;
-      }
+      return true;
+    }
 
     default:
       // LCOV_EXCL_START
-      std::cerr << "checkPredicateTreeTypes: Error parsing expresion [" <<
-        parser::pddl::toString(tree, node_id) << "]" << std::endl;
+      std::cerr << "checkPredicateTreeTypes: Error parsing expression ["
+                << parser::pddl::toString(tree, node_id) << "]" << std::endl;
       // LCOV_EXCL_STOP
   }
 
   return false;
 }
 
-std::string
-ProblemExpert::getProblem()
+std::string ProblemExpert::getProblem()
 {
   parser::pddl::Domain domain(domain_expert_->getDomain());
   parser::pddl::Instance problem(domain);
@@ -616,8 +568,8 @@ ProblemExpert::getProblem()
   for (const auto & instance : instances_) {
     bool is_constant = domain.getType(instance.type)->parseConstant(instance.name).first;
     if (is_constant) {
-      std::cout << "Skipping adding constant to problem :object: " << instance.name << " " <<
-        instance.type << std::endl;
+      std::cout << "Skipping adding constant to problem :object: " << instance.name << " "
+                << instance.type << std::endl;
     } else {
       problem.addObject(instance.name, instance.type);
     }
@@ -642,9 +594,7 @@ ProblemExpert::getProblem()
       v.push_back(function.parameters[i].name);
     }
 
-    std::transform(
-      function.name.begin(), function.name.end(),
-      function.name.begin(), ::tolower);
+    std::transform(function.name.begin(), function.name.end(), function.name.begin(), ::tolower);
 
     problem.addInit(function.name, function.value, v);
   }
@@ -657,8 +607,7 @@ ProblemExpert::getProblem()
   return stream.str();
 }
 
-bool
-ProblemExpert::addProblem(const std::string & problem_str)
+bool ProblemExpert::addProblem(const std::string & problem_str)
 {
   if (problem_str.empty()) {
     std::cerr << "Empty problem." << std::endl;
@@ -667,9 +616,9 @@ ProblemExpert::addProblem(const std::string & problem_str)
   parser::pddl::Domain domain(domain_expert_->getDomain());
 
   std::string lc_problem = problem_str;
-  std::transform(
-    problem_str.begin(), problem_str.end(), lc_problem.begin(),
-    [](unsigned char c) {return std::tolower(c);});
+  std::transform(problem_str.begin(), problem_str.end(), lc_problem.begin(), [](unsigned char c) {
+    return std::tolower(c);
+  });
 
   lc_problem = remove_comments(lc_problem);
 
@@ -699,7 +648,7 @@ ProblemExpert::addProblem(const std::string & problem_str)
   std::cout << "Parsed problem: " << problem << std::endl;
 
   for (unsigned i = 0; i < domain.types.size(); ++i) {
-    if (domain.types[i]->constants.size() ) {
+    if (domain.types[i]->constants.size()) {
       for (unsigned j = 0; j < domain.types[i]->constants.size(); ++j) {
         plansys2::Instance instance;
         instance.name = domain.types[i]->constants[j];
@@ -711,7 +660,7 @@ ProblemExpert::addProblem(const std::string & problem_str)
   }
 
   for (unsigned i = 0; i < domain.types.size(); ++i) {
-    if (domain.types[i]->objects.size() ) {
+    if (domain.types[i]->objects.size()) {
       for (unsigned j = 0; j < domain.types[i]->objects.size(); ++j) {
         plansys2::Instance instance;
         instance.name = domain.types[i]->objects[j];
@@ -727,29 +676,23 @@ ProblemExpert::addProblem(const std::string & problem_str)
     auto tree_node = ground->getTree(tree, domain);
     switch (tree_node->node_type) {
       case plansys2_msgs::msg::Node::PREDICATE: {
-          plansys2::Predicate pred_node(*tree_node);
-          std::cout << "Adding predicate: " <<
-            parser::pddl::toString(tree, tree_node->node_id) << std::endl;
-          if (!addPredicate(pred_node)) {
-            std::cerr << "Failed to add predicate: " << parser::pddl::toString(
-              tree,
-              tree_node->node_id) <<
-              std::endl;
-          }
+        plansys2::Predicate pred_node(*tree_node);
+        std::cout << "Adding predicate: " << parser::pddl::toString(tree, tree_node->node_id)
+                  << std::endl;
+        if (!addPredicate(pred_node)) {
+          std::cerr << "Failed to add predicate: "
+                    << parser::pddl::toString(tree, tree_node->node_id) << std::endl;
         }
-        break;
+      } break;
       case plansys2_msgs::msg::Node::FUNCTION: {
-          plansys2::Function func_node(*tree_node);
-          std::cout << "Adding function: " <<
-            parser::pddl::toString(tree, tree_node->node_id) << std::endl;
-          if (!addFunction(func_node)) {
-            std::cerr << "Failed to add function: " << parser::pddl::toString(
-              tree,
-              tree_node->node_id) <<
-              std::endl;
-          }
+        plansys2::Function func_node(*tree_node);
+        std::cout << "Adding function: " << parser::pddl::toString(tree, tree_node->node_id)
+                  << std::endl;
+        if (!addFunction(func_node)) {
+          std::cerr << "Failed to add function: "
+                    << parser::pddl::toString(tree, tree_node->node_id) << std::endl;
         }
-        break;
+      } break;
       default:
         break;
     }

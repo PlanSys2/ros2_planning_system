@@ -29,6 +29,7 @@ target_compile_definitions(plansys2_node PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTI
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+  set(ament_cmake_uncrustify_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
 

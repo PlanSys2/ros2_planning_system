@@ -12,36 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <unistd.h>
+#include "rqt_plansys2_performers/RQTPerformers.hpp"
 
+#include <QCheckBox>
 #include <QDebug>
-#include <QTime>
-#include <QTimer>
-#include <QPushButton>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPainter>
-#include <QCheckBox>
+#include <QPushButton>
+#include <QTime>
+#include <QTimer>
+#include <unistd.h>
+
 #include <algorithm>
 #include <memory>
-#include <utility>
 #include <string>
-
-#include <pluginlib/class_list_macros.hpp>
-#include "rqt_plansys2_performers/RQTPerformers.hpp"
-#include "rqt_plansys2_performers/PerformersTree.hpp"
-
+#include <utility>
 
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "rqt_plansys2_performers/PerformersTree.hpp"
+#include <pluginlib/class_list_macros.hpp>
 
 namespace rqt_plansys2_performers
 {
-
 using std::placeholders::_1;
 
-RQTPerformers::RQTPerformers()
-: rqt_gui_cpp::Plugin(),
-  widget_(0)
+RQTPerformers::RQTPerformers() : rqt_gui_cpp::Plugin(), widget_(0)
 {
   setObjectName("RQTPerformers");
 }
@@ -53,8 +49,7 @@ void RQTPerformers::initPlugin(qt_gui_cpp::PluginContext & context)
 
   if (context.serialNumber() > 1) {
     widget_->setWindowTitle(
-      widget_->windowTitle() + " (" +
-      QString::number(context.serialNumber()) + ")");
+      widget_->windowTitle() + " (" + QString::number(context.serialNumber()) + ")");
   }
   context.addWidget(widget_);
 
@@ -63,8 +58,7 @@ void RQTPerformers::initPlugin(qt_gui_cpp::PluginContext & context)
 
   performers_tree_->setColumnCount(5);
   performers_tree_->setHeaderLabels(
-    {"Performer", "Action", "Status", "Status Recency",
-      "Specialized Arguments"});
+    {"Performer", "Action", "Status", "Status Recency", "Specialized Arguments"});
 
   controller_spin_timer_ = new QTimer(this);
   connect(controller_spin_timer_, SIGNAL(timeout()), this, SLOT(spin_loop()));
@@ -78,27 +72,23 @@ void RQTPerformers::initPlugin(qt_gui_cpp::PluginContext & context)
   problem_ = std::make_shared<plansys2::ProblemExpertClient>();
 }
 
-void RQTPerformers::shutdownPlugin()
-{
-}
+void RQTPerformers::shutdownPlugin() {}
 
-void
-RQTPerformers::performers_callback(plansys2_msgs::msg::ActionPerformerStatus::UniquePtr msg)
+void RQTPerformers::performers_callback(plansys2_msgs::msg::ActionPerformerStatus::UniquePtr msg)
 {
   performers_info_[msg->node_name] = std::move(msg);
   need_update_ = true;
 }
 
-void
-RQTPerformers::saveSettings(
+void RQTPerformers::saveSettings(
   qt_gui_cpp::Settings & plugin_settings, qt_gui_cpp::Settings & instance_settings) const
 {
   (void)plugin_settings;
   (void)instance_settings;
 }
 
-std::optional<QTreeWidgetItem *>
-RQTPerformers::get_performer_line(const std::string & performer_name)
+std::optional<QTreeWidgetItem *> RQTPerformers::get_performer_line(
+  const std::string & performer_name)
 {
   for (int i = 0; i < performers_tree_->topLevelItemCount(); ++i) {
     QTreeWidgetItem * item = performers_tree_->topLevelItem(i);
@@ -110,8 +100,7 @@ RQTPerformers::get_performer_line(const std::string & performer_name)
   return {};
 }
 
-void
-RQTPerformers::update_performer_row(
+void RQTPerformers::update_performer_row(
   QTreeWidgetItem * row, const plansys2_msgs::msg::ActionPerformerStatus & performer)
 {
   switch (performer.state) {
@@ -142,8 +131,7 @@ RQTPerformers::update_performer_row(
   }
 }
 
-void
-RQTPerformers::add_new_row(const plansys2_msgs::msg::ActionPerformerStatus & performer)
+void RQTPerformers::add_new_row(const plansys2_msgs::msg::ActionPerformerStatus & performer)
 {
   auto instance_item = new QTreeWidgetItem();
   instance_item->setText(0, QString(performer.node_name.c_str()));
@@ -161,8 +149,7 @@ RQTPerformers::add_new_row(const plansys2_msgs::msg::ActionPerformerStatus & per
   performers_tree_->addTopLevelItem(instance_item);
 }
 
-void
-RQTPerformers::spin_loop()
+void RQTPerformers::spin_loop()
 {
   if (!need_update_) {
     return;
@@ -181,14 +168,12 @@ RQTPerformers::spin_loop()
   performers_tree_->parentWidget()->repaint();
 }
 
-void
-RQTPerformers::restoreSettings(
+void RQTPerformers::restoreSettings(
   const qt_gui_cpp::Settings & plugin_settings, const qt_gui_cpp::Settings & instance_settings)
 {
   (void)plugin_settings;
   (void)instance_settings;
 }
-
 
 }  // namespace rqt_plansys2_performers
 

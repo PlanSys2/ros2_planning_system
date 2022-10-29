@@ -12,40 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <unistd.h>
+#include "rqt_plansys2_knowledge/RQTKnowledge.hpp"
 
+#include <QCheckBox>
 #include <QDebug>
-#include <QTime>
-#include <QTimer>
-#include <QPushButton>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPainter>
-#include <QCheckBox>
+#include <QPushButton>
+#include <QTime>
+#include <QTimer>
+#include <unistd.h>
+
 #include <algorithm>
 #include <memory>
-#include <utility>
 #include <string>
 
+#include <utility>
+
 #include <pluginlib/class_list_macros.hpp>
-
-#include "rqt_plansys2_knowledge/RQTKnowledge.hpp"
-#include "rqt_plansys2_knowledge/KnowledgeTree.hpp"
-
-
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "rqt_plansys2_knowledge/KnowledgeTree.hpp"
 
 namespace rqt_plansys2_knowledge
 {
-
 using std::placeholders::_1;
 
-RQTKnowledge::RQTKnowledge()
-: rqt_gui_cpp::Plugin(),
-  widget_(0)
-{
-  setObjectName("RQTKnowledge");
-}
+RQTKnowledge::RQTKnowledge() : rqt_gui_cpp::Plugin(), widget_(0) { setObjectName("RQTKnowledge"); }
 
 void RQTKnowledge::initPlugin(qt_gui_cpp::PluginContext & context)
 {
@@ -54,8 +47,7 @@ void RQTKnowledge::initPlugin(qt_gui_cpp::PluginContext & context)
 
   if (context.serialNumber() > 1) {
     widget_->setWindowTitle(
-      widget_->windowTitle() + " (" +
-      QString::number(context.serialNumber()) + ")");
+      widget_->windowTitle() + " (" + QString::number(context.serialNumber()) + ")");
   }
   context.addWidget(widget_);
 
@@ -77,27 +69,22 @@ void RQTKnowledge::initPlugin(qt_gui_cpp::PluginContext & context)
   problem_ = std::make_shared<plansys2::ProblemExpertClient>();
 }
 
-void RQTKnowledge::shutdownPlugin()
-{
-}
+void RQTKnowledge::shutdownPlugin() {}
 
-void
-RQTKnowledge::knowledge_callback(plansys2_msgs::msg::Knowledge::UniquePtr msg)
+void RQTKnowledge::knowledge_callback(plansys2_msgs::msg::Knowledge::UniquePtr msg)
 {
   last_msg_ = std::move(msg);
   need_repaint_ = true;
 }
 
-void
-RQTKnowledge::saveSettings(
+void RQTKnowledge::saveSettings(
   qt_gui_cpp::Settings & plugin_settings, qt_gui_cpp::Settings & instance_settings) const
 {
   (void)plugin_settings;
   (void)instance_settings;
 }
 
-void
-RQTKnowledge::spin_loop()
+void RQTKnowledge::spin_loop()
 {
   if (need_repaint_) {
     knowledge_tree_->clearAllItems();
@@ -168,14 +155,12 @@ RQTKnowledge::spin_loop()
   }
 }
 
-void
-RQTKnowledge::restoreSettings(
+void RQTKnowledge::restoreSettings(
   const qt_gui_cpp::Settings & plugin_settings, const qt_gui_cpp::Settings & instance_settings)
 {
   (void)plugin_settings;
   (void)instance_settings;
 }
-
 
 }  // namespace rqt_plansys2_knowledge
 

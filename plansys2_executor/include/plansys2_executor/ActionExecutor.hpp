@@ -15,38 +15,27 @@
 #ifndef PLANSYS2_EXECUTOR__ACTIONEXECUTOR_HPP_
 #define PLANSYS2_EXECUTOR__ACTIONEXECUTOR_HPP_
 
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
+#include "behaviortree_cpp_v3/behavior_tree.h"
 #include "plansys2_msgs/msg/action_execution.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
-#include "behaviortree_cpp_v3/behavior_tree.h"
-
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 namespace plansys2
 {
-
 class ActionExecutor
 {
 public:
-  enum Status
-  {
-    IDLE,
-    DEALING,
-    RUNNING,
-    SUCCESS,
-    FAILURE,
-    CANCELLED
-  };
+  enum Status { IDLE, DEALING, RUNNING, SUCCESS, FAILURE, CANCELLED };
 
   using Ptr = std::shared_ptr<ActionExecutor>;
   static Ptr make_shared(
-    const std::string & action,
-    rclcpp_lifecycle::LifecycleNode::SharedPtr node)
+    const std::string & action, rclcpp_lifecycle::LifecycleNode::SharedPtr node)
   {
     return std::make_shared<ActionExecutor>(action, node);
   }
@@ -60,17 +49,17 @@ public:
   bool is_finished();
 
   // Methods for debug
-  Status get_internal_status() const {return state_;}
-  void set_internal_status(Status state) {state_ = state;}
-  std::string get_action_name() const {return action_name_;}
-  std::vector<std::string> get_action_params() const {return action_params_;}
+  Status get_internal_status() const { return state_; }
+  void set_internal_status(Status state) { state_ = state; }
+  std::string get_action_name() const { return action_name_; }
+  std::vector<std::string> get_action_params() const { return action_params_; }
   plansys2_msgs::msg::ActionExecution last_msg;
 
-  rclcpp::Time get_start_time() const {return start_execution_;}
-  rclcpp::Time get_status_time() const {return state_time_;}
+  rclcpp::Time get_start_time() const { return start_execution_; }
+  rclcpp::Time get_status_time() const { return state_time_; }
 
-  std::string get_feedback() const {return feedback_;}
-  float get_completion() const {return completion_;}
+  std::string get_feedback() const { return feedback_; }
+  float get_completion() const { return completion_; }
 
 protected:
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;

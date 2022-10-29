@@ -12,31 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <iostream>
-
 #include "OpenGripper.hpp"
+
+#include <iostream>
+#include <string>
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
 
 namespace plansys2_bt_tests
 {
-
-OpenGripper::OpenGripper(
-  const std::string & xml_tag_name,
-  const BT::NodeConfiguration & conf)
+OpenGripper::OpenGripper(const std::string & xml_tag_name, const BT::NodeConfiguration & conf)
 : BT::ActionNodeBase(xml_tag_name, conf), counter_(0)
 {
 }
 
-void
-OpenGripper::halt()
-{
-  std::cout << "OpenGripper halt" << std::endl;
-}
+void OpenGripper::halt() { std::cout << "OpenGripper halt" << std::endl; }
 
-BT::NodeStatus
-OpenGripper::tick()
+BT::NodeStatus OpenGripper::tick()
 {
   std::cout << "OpenGripper tick " << counter_ << std::endl;
 

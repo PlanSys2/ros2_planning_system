@@ -3,11 +3,11 @@
 <package format="3">
   <name>plansys2_popf_plan_solver</name>
   <version>2.0.8</version>
-  
+
   <description>This package contains the PDDL-based Planner module for the ROS2 Planning System</description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
- 
+
   <license>Apache License, Version 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -16,7 +16,7 @@
   <depend>ament_index_cpp</depend>
   <depend>plansys2_core</depend>
   <depend>pluginlib</depend>
-  
+
   <exec_depend>popf</exec_depend>
 
   <test_depend>ament_lint_common</test_depend>

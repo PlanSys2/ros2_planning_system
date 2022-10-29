@@ -15,25 +15,22 @@
 #ifndef BEHAVIOR_TREE__MOVE_HPP_
 #define BEHAVIOR_TREE__MOVE_HPP_
 
-#include <string>
 #include <map>
+#include <string>
 
-#include "geometry_msgs/msg/pose2_d.hpp"
-#include "test_msgs/action/fibonacci.hpp"
-
-#include "plansys2_bt_actions/BTActionNode.hpp"
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
+#include "geometry_msgs/msg/pose2_d.hpp"
+#include "plansys2_bt_actions/BTActionNode.hpp"
+#include "test_msgs/action/fibonacci.hpp"
 
 namespace plansys2_bt_tests
 {
-
 class Move : public plansys2::BtActionNode<test_msgs::action::Fibonacci>
 {
 public:
   explicit Move(
-    const std::string & xml_tag_name,
-    const std::string & action_name,
+    const std::string & xml_tag_name, const std::string & action_name,
     const BT::NodeConfiguration & conf);
 
   BT::NodeStatus on_tick() override;

@@ -36,10 +36,10 @@ The contents of `plansys2_msgs/Node` contains the data relevant to the node as w
     uint8 node_type
     uint8 expression_type
     uint8 modifier_type
-    
+
     uint32 node_id
     uint32[] children
-    
+
     string name
     plansys2_msgs/Param[] parameters
     float64 value
@@ -107,7 +107,7 @@ have a `negate` value opposite that of the `NOT` node's value.
 [`plansys2_msgs::msg::ActionExecution`](../plansys2_msgs/msg/ActionExecution.msg)
 
 * Used to establish a communication protocol between the action executors (implemented as behavior
-trees) and the action executor clients (user provided lifecyle nodes that perform the actions).
+trees) and the action executor clients (user provided lifecycle nodes that perform the actions).
 
 [`plansys2_msgs::msg::ActionExecutionInfo`](../plansys2_msgs/msg/ActionExecutionInfo.msg)
 

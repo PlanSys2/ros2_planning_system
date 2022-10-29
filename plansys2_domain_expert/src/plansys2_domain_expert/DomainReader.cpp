@@ -14,25 +14,20 @@
 
 #include "plansys2_domain_expert/DomainReader.hpp"
 
-#include <string>
-#include <sstream>
-#include <vector>
 #include <algorithm>
 #include <iostream>
 #include <set>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "plansys2_core/Utils.hpp"
 
-
 namespace plansys2
 {
+DomainReader::DomainReader() {}
 
-DomainReader::DomainReader()
-{
-}
-
-void
-DomainReader::add_domain(const std::string & domain)
+void DomainReader::add_domain(const std::string & domain)
 {
   if (domain.empty()) {
     std::cerr << "Empty domain" << std::endl;
@@ -42,9 +37,9 @@ DomainReader::add_domain(const std::string & domain)
   Domain new_domain;
 
   std::string lc_domain = domain;
-  std::transform(
-    domain.begin(), domain.end(), lc_domain.begin(),
-    [](unsigned char c) {return std::tolower(c);});
+  std::transform(domain.begin(), domain.end(), lc_domain.begin(), [](unsigned char c) {
+    return std::tolower(c);
+  });
 
   lc_domain = remove_comments(lc_domain);
 
@@ -59,8 +54,7 @@ DomainReader::add_domain(const std::string & domain)
   domains_.push_back(new_domain);
 }
 
-std::string
-DomainReader::get_joint_domain() const
+std::string DomainReader::get_joint_domain() const
 {
   std::string ret = "(define (domain ";
 
@@ -132,8 +126,7 @@ DomainReader::get_joint_domain() const
   return ret;
 }
 
-int
-DomainReader::get_end_block(const std::string & domain, std::size_t init_pos)
+int DomainReader::get_end_block(const std::string & domain, std::size_t init_pos)
 {
   std::size_t domain_length = domain.length();
 
@@ -158,8 +151,7 @@ DomainReader::get_end_block(const std::string & domain, std::size_t init_pos)
   }
 }
 
-std::string
-DomainReader::get_name(std::string & domain)
+std::string DomainReader::get_name(std::string & domain)
 {
   const std::string pattern("domain");
 
@@ -183,8 +175,7 @@ DomainReader::get_name(std::string & domain)
   }
 }
 
-std::string
-DomainReader::get_requirements(std::string & domain)
+std::string DomainReader::get_requirements(std::string & domain)
 {
   const std::string pattern(":requirements");
 
@@ -207,8 +198,7 @@ DomainReader::get_requirements(std::string & domain)
   }
 }
 
-std::string
-DomainReader::get_types(const std::string & domain)
+std::string DomainReader::get_types(const std::string & domain)
 {
   const std::string pattern(":types");
 
@@ -228,9 +218,7 @@ DomainReader::get_types(const std::string & domain)
   }
 }
 
-
-std::string
-DomainReader::get_constants(const std::string & domain)
+std::string DomainReader::get_constants(const std::string & domain)
 {
   const std::string pattern(":constants");
 
@@ -250,9 +238,7 @@ DomainReader::get_constants(const std::string & domain)
   }
 }
 
-
-std::string
-DomainReader::get_predicates(const std::string & domain)
+std::string DomainReader::get_predicates(const std::string & domain)
 {
   const std::string pattern(":predicates");
 
@@ -272,8 +258,7 @@ DomainReader::get_predicates(const std::string & domain)
   }
 }
 
-std::string
-DomainReader::get_functions(const std::string & domain)
+std::string DomainReader::get_functions(const std::string & domain)
 {
   const std::string pattern(":functions");
 
@@ -293,8 +278,7 @@ DomainReader::get_functions(const std::string & domain)
   }
 }
 
-std::vector<std::string>
-DomainReader::get_actions(const std::string & domain)
+std::vector<std::string> DomainReader::get_actions(const std::string & domain)
 {
   std::vector<std::string> ret;
 
@@ -325,6 +309,5 @@ DomainReader::get_actions(const std::string & domain)
 
   return ret;
 }
-
 
 }  // namespace plansys2
