@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "rqt_plansys2_knowledge/KnowledgeTree.hpp"
-
 #include <QTreeWidget>
 #include <QWidget>
+
+#include "rqt_plansys2_knowledge/KnowledgeTree.hpp"
 
 namespace rqt_plansys2_knowledge
 {

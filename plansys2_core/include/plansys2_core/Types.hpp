@@ -15,13 +15,13 @@
 #ifndef PLANSYS2_CORE__TYPES_HPP_
 #define PLANSYS2_CORE__TYPES_HPP_
 
+#include <string>
+#include <vector>
+
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/param.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
 #include "plansys2_pddl_parser/Utils.h"
-
-#include <string>
-#include <vector>
 
 namespace plansys2
 {

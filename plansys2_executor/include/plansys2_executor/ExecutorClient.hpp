@@ -15,6 +15,11 @@
 #ifndef PLANSYS2_EXECUTOR__EXECUTORCLIENT_HPP_
 #define PLANSYS2_EXECUTOR__EXECUTORCLIENT_HPP_
 
+#include <memory>
+#include <optional>
+#include <string>
+#include <vector>
+
 #include "plansys2_msgs/action/execute_plan.hpp"
 #include "plansys2_msgs/msg/plan.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
@@ -22,11 +27,6 @@
 #include "plansys2_msgs/srv/get_plan.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
-
-#include <memory>
-#include <optional>
-#include <string>
-#include <vector>
 
 namespace plansys2
 {

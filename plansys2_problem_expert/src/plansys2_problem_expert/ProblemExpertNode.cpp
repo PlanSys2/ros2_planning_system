@@ -14,11 +14,11 @@
 
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 
-#include "plansys2_pddl_parser/Utils.h"
-
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "plansys2_pddl_parser/Utils.h"
 
 std::vector<std::string> tokenize(const std::string & string, const std::string & delim)
 {

@@ -15,6 +15,8 @@
 #ifndef PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTNODE_HPP_
 #define PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTNODE_HPP_
 
+#include <memory>
+
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_msgs/msg/knowledge.hpp"
@@ -40,8 +42,6 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "std_msgs/msg/empty.hpp"
 #include "std_msgs/msg/string.hpp"
-
-#include <memory>
 
 namespace plansys2
 {

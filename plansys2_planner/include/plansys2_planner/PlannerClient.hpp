@@ -15,13 +15,13 @@
 #ifndef PLANSYS2_PLANNER__PLANNERCLIENT_HPP_
 #define PLANSYS2_PLANNER__PLANNERCLIENT_HPP_
 
-#include "plansys2_msgs/srv/get_plan.hpp"
-#include "plansys2_planner/PlannerInterface.hpp"
-#include "rclcpp/rclcpp.hpp"
-
 #include <optional>
 #include <string>
 #include <vector>
+
+#include "plansys2_msgs/srv/get_plan.hpp"
+#include "plansys2_planner/PlannerInterface.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace plansys2
 {

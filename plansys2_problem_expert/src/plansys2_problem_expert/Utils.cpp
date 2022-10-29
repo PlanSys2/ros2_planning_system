@@ -14,8 +14,6 @@
 
 #include "plansys2_problem_expert/Utils.hpp"
 
-#include "plansys2_pddl_parser/Utils.h"
-
 #include <map>
 #include <memory>
 #include <set>
@@ -23,6 +21,8 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+
+#include "plansys2_pddl_parser/Utils.h"
 
 namespace plansys2
 {

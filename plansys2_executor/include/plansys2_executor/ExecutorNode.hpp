@@ -15,6 +15,16 @@
 #ifndef PLANSYS2_EXECUTOR__EXECUTORNODE_HPP_
 #define PLANSYS2_EXECUTOR__EXECUTORNODE_HPP_
 
+#include <algorithm>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/blackboard.h"
@@ -28,16 +38,6 @@
 #include "plansys2_msgs/msg/plan.hpp"
 #include "plansys2_pddl_parser/Utils.h"
 #include "plansys2_problem_expert/Utils.hpp"
-
-#include <algorithm>
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
-#include <vector>
 
 #ifdef ZMQ_FOUND
 #include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>

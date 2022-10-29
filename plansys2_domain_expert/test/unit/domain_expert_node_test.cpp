@@ -12,6 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <iostream>
+#include <memory>
+#include <regex>
+#include <string>
+#include <vector>
+
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/state.hpp"
@@ -19,12 +25,6 @@
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
-
-#include <iostream>
-#include <memory>
-#include <regex>
-#include <string>
-#include <vector>
 
 TEST(domain_expert, lifecycle)
 {

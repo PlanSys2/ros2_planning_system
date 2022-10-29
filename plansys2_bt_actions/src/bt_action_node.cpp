@@ -18,7 +18,6 @@
 #include "plansys2_bt_actions/BTAction.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-
 using namespace std::chrono_literals;
 
 int main(int argc, char ** argv)

@@ -15,6 +15,11 @@
 #ifndef PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTCLIENT_HPP_
 #define PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTCLIENT_HPP_
 
+#include <memory>
+#include <optional>
+#include <string>
+#include <vector>
+
 #include "plansys2_core/Types.hpp"
 #include "plansys2_domain_expert/DomainExpertInterface.hpp"
 #include "plansys2_msgs/msg/action.hpp"
@@ -30,11 +35,6 @@
 #include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_msgs/srv/get_states.hpp"
 #include "rclcpp/rclcpp.hpp"
-
-#include <memory>
-#include <optional>
-#include <string>
-#include <vector>
 
 namespace plansys2
 {

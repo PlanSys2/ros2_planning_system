@@ -15,10 +15,10 @@
 #ifndef PLANSYS2_PLANNER__PLANNERINTERFACE_HPP_
 #define PLANSYS2_PLANNER__PLANNERINTERFACE_HPP_
 
-#include "plansys2_msgs/msg/plan.hpp"
-
 #include <optional>
 #include <string>
+
+#include "plansys2_msgs/msg/plan.hpp"
 
 namespace plansys2
 {

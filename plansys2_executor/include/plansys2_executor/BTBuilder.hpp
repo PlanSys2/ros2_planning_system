@@ -15,12 +15,12 @@
 #ifndef PLANSYS2_EXECUTOR__BTBUILDER_HPP_
 #define PLANSYS2_EXECUTOR__BTBUILDER_HPP_
 
-#include "plansys2_executor/ActionExecutor.hpp"
-#include "plansys2_msgs/msg/plan.hpp"
-
 #include <map>
 #include <memory>
 #include <string>
+
+#include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_msgs/msg/plan.hpp"
 
 namespace plansys2
 {

@@ -112,11 +112,6 @@ void ExecutorNodeContingent::execute(const std::shared_ptr<GoalHandleExecutePlan
   factory.registerNodeType<WaitAtStartReq>("WaitAtStartReq");
 
   auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
-  //    std_msgs::msg::String dotgraph_msg;
-  //    dotgraph_msg.data = bt_builder->get_dotgraph(
-  //        action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
-  //        this->get_parameter("print_graph").as_bool());
-  //    dotgraph_pub_->publish(dotgraph_msg);
 
   std::filesystem::path tp = std::filesystem::temp_directory_path();
   std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
@@ -167,11 +162,6 @@ void ExecutorNodeContingent::execute(const std::shared_ptr<GoalHandleExecutePlan
     feedback->action_execution_status = get_feedback_info(action_map);
     goal_handle->publish_feedback(feedback);
 
-    //      dotgraph_msg.data = bt_builder->get_dotgraph(
-    //          action_map,
-    //          this->get_parameter("enable_dotgraph_legend").as_bool());
-    //      dotgraph_pub_->publish(dotgraph_msg);
-
     rate.sleep();
   }
 
@@ -183,11 +173,6 @@ void ExecutorNodeContingent::execute(const std::shared_ptr<GoalHandleExecutePlan
     tree.haltTree();
     RCLCPP_ERROR(get_logger(), "Executor BT finished with FAILURE state");
   }
-
-  //    dotgraph_msg.data = bt_builder->get_dotgraph(
-  //        action_map,
-  //        this->get_parameter("enable_dotgraph_legend").as_bool());
-  //    dotgraph_pub_->publish(dotgraph_msg);
 
   result->success = status == BT::NodeStatus::SUCCESS;
   result->action_execution_status = get_feedback_info(action_map);

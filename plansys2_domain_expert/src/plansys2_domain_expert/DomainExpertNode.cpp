@@ -14,13 +14,13 @@
 
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 
-#include "lifecycle_msgs/msg/state.hpp"
-#include "plansys2_core/Utils.hpp"
-#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
-
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "lifecycle_msgs/msg/state.hpp"
+#include "plansys2_core/Utils.hpp"
+#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 namespace plansys2
 {

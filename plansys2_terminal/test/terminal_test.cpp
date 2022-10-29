@@ -12,7 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plansys2_terminal/Terminal.hpp"
+#include <algorithm>
+#include <map>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
@@ -25,14 +30,8 @@
 #include "plansys2_planner/PlannerNode.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
+#include "plansys2_terminal/Terminal.hpp"
 #include "rclcpp/rclcpp.hpp"
-
-#include <algorithm>
-#include <map>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <vector>
 
 using namespace std::chrono_literals;
 

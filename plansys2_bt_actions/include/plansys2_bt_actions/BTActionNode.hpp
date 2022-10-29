@@ -15,13 +15,13 @@
 #ifndef PLANSYS2_BT_ACTIONS__BTACTIONNODE_HPP_
 #define PLANSYS2_BT_ACTIONS__BTACTIONNODE_HPP_
 
+#include <memory>
+#include <string>
+
 #include "behaviortree_cpp_v3/action_node.h"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
-
-#include <memory>
-#include <string>
 
 namespace plansys2
 {

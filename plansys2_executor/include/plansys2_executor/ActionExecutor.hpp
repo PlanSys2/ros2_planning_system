@@ -15,16 +15,16 @@
 #ifndef PLANSYS2_EXECUTOR__ACTIONEXECUTOR_HPP_
 #define PLANSYS2_EXECUTOR__ACTIONEXECUTOR_HPP_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "plansys2_msgs/msg/action_execution.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
-
-#include <memory>
-#include <string>
-#include <vector>
 
 namespace plansys2
 {

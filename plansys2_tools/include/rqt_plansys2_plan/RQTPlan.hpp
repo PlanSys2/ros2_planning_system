@@ -15,11 +15,8 @@
 #ifndef RQT_PLANSYS2_PLAN__RQTPLAN_HPP_
 #define RQT_PLANSYS2_PLAN__RQTPLAN_HPP_
 
-#include "plansys2_msgs/msg/action_execution.hpp"
-#include "plansys2_msgs/msg/action_execution_info.hpp"
-#include "plansys2_msgs/msg/plan.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "rqt_plansys2_plan/PlanTree.hpp"
+#include <rqt_gui_cpp/plugin.h>
+#include <ui_rqt_plansys2_plan.h>
 
 #include <QAction>
 #include <QImage>
@@ -32,8 +29,11 @@
 #include <memory>
 #include <string>
 
-#include <rqt_gui_cpp/plugin.h>
-#include <ui_rqt_plansys2_plan.h>
+#include "plansys2_msgs/msg/action_execution.hpp"
+#include "plansys2_msgs/msg/action_execution_info.hpp"
+#include "plansys2_msgs/msg/plan.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "rqt_plansys2_plan/PlanTree.hpp"
 
 namespace rqt_plansys2_plan
 {

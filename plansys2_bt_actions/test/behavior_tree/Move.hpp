@@ -15,14 +15,14 @@
 #ifndef BEHAVIOR_TREE__MOVE_HPP_
 #define BEHAVIOR_TREE__MOVE_HPP_
 
+#include <map>
+#include <string>
+
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "geometry_msgs/msg/pose2_d.hpp"
 #include "plansys2_bt_actions/BTActionNode.hpp"
 #include "test_msgs/action/fibonacci.hpp"
-
-#include <map>
-#include <string>
 
 namespace plansys2_bt_tests
 {

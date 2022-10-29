@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
-#include "gtest/gtest.h"
-#include "plansys2_domain_expert/DomainExpert.hpp"
-#include "plansys2_msgs/msg/node.hpp"
-#include "plansys2_pddl_parser/Utils.h"
-
 #include <iostream>
 #include <memory>
 #include <regex>
 #include <string>
 #include <vector>
+
+#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "gtest/gtest.h"
+#include "plansys2_domain_expert/DomainExpert.hpp"
+#include "plansys2_msgs/msg/node.hpp"
+#include "plansys2_pddl_parser/Utils.h"
 
 TEST(domain_expert, get_reduced_string)
 {

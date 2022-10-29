@@ -14,17 +14,17 @@
 
 #include "plansys2_lifecycle_manager/lifecycle_manager.hpp"
 
+#include <chrono>
+#include <map>
+#include <memory>
+#include <string>
+
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "lifecycle_msgs/srv/change_state.hpp"
 #include "lifecycle_msgs/srv/get_state.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rcutils/logging_macros.h"
-
-#include <chrono>
-#include <map>
-#include <memory>
-#include <string>
 
 namespace plansys2
 {

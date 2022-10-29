@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plansys2_lifecycle_manager/lifecycle_manager.hpp"
-#include "rclcpp/rclcpp.hpp"
-
 #include <chrono>
 #include <map>
 #include <memory>
 #include <string>
+
+#include "plansys2_lifecycle_manager/lifecycle_manager.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char ** argv)
 {

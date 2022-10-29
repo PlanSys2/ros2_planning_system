@@ -14,8 +14,6 @@
 
 #include "plansys2_bt_actions/BTAction.hpp"
 
-#include "behaviortree_cpp_v3/utils/shared_library.h"
-
 #include <algorithm>
 #include <chrono>
 #include <filesystem>
@@ -25,6 +23,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "behaviortree_cpp_v3/utils/shared_library.h"
 
 namespace plansys2
 {

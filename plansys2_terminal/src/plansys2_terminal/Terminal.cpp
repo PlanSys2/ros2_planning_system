@@ -14,15 +14,9 @@
 
 #include "plansys2_terminal/Terminal.hpp"
 
-#include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_executor/ActionExecutor.hpp"
-#include "plansys2_executor/ExecutorClient.hpp"
-#include "plansys2_msgs/msg/action_execution.hpp"
-#include "plansys2_msgs/msg/action_performer_status.hpp"
-#include "plansys2_pddl_parser/Utils.h"
-#include "plansys2_planner/PlannerClient.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include <readline/history.h>
+#include <readline/readline.h>
+#include <stdio.h>
 
 #include <fstream>
 #include <list>
@@ -34,9 +28,15 @@
 #include <utility>
 #include <vector>
 
-#include <readline/history.h>
-#include <readline/readline.h>
-#include <stdio.h>
+#include "plansys2_domain_expert/DomainExpertClient.hpp"
+#include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/ExecutorClient.hpp"
+#include "plansys2_msgs/msg/action_execution.hpp"
+#include "plansys2_msgs/msg/action_performer_status.hpp"
+#include "plansys2_pddl_parser/Utils.h"
+#include "plansys2_planner/PlannerClient.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace plansys2_terminal
 {

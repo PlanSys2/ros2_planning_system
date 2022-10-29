@@ -14,10 +14,6 @@
 
 #include "plansys2_executor/bt_builder_plugins/simple_bt_builder.hpp"
 
-#include "plansys2_pddl_parser/Utils.h"
-#include "plansys2_problem_expert/Utils.hpp"
-#include "rclcpp/rclcpp.hpp"
-
 #include <algorithm>
 #include <list>
 #include <map>
@@ -27,6 +23,10 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+
+#include "plansys2_pddl_parser/Utils.h"
+#include "plansys2_problem_expert/Utils.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace plansys2
 {
@@ -44,7 +44,7 @@ void SimpleBTBuilder::initialize(
   } else {
     bt_action_ =
       R""""(<Sequence name="ACTION_ID">
-  <WaitAtStartReq  action="ACTION_ID"/>
+WAIT_PREV_ACTIONS
   <ApplyAtStartEffect action="ACTION_ID"/>
   <ReactiveSequence name="ACTION_ID">
     <CheckOverAllReq action="ACTION_ID"/>

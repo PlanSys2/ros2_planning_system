@@ -1,8 +1,9 @@
 
 #pragma once
-#include "plansys2_pddl_parser/Basic.h"
 
 #include <map>
+
+#include "plansys2_pddl_parser/Basic.h"
 /*
         T is either a pointer or a string
         A token structure stores pointers but does not delete them!

@@ -15,6 +15,11 @@
 #ifndef PLANSYS2_PLANNER__PLANNERNODE_HPP_
 #define PLANSYS2_PLANNER__PLANNERNODE_HPP_
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_core/PlanSolverBase.hpp"
@@ -26,11 +31,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "std_msgs/msg/empty.hpp"
-
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <vector>
 
 namespace plansys2
 {

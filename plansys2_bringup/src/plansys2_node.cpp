@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <chrono>
+#include <map>
+#include <memory>
+#include <string>
+
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_lifecycle_manager/lifecycle_manager.hpp"
 #include "plansys2_planner/PlannerNode.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 #include "rclcpp/rclcpp.hpp"
-
-#include <chrono>
-#include <map>
-#include <memory>
-#include <string>
 
 #include <plansys2_executor/ExecutorNodeContingent.hpp>
 

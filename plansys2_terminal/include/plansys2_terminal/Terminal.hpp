@@ -15,17 +15,17 @@
 #ifndef PLANSYS2_TERMINAL__TERMINAL_HPP_
 #define PLANSYS2_TERMINAL__TERMINAL_HPP_
 
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "rclcpp/rclcpp.hpp"
-
-#include <memory>
-#include <sstream>
-#include <string>
-#include <vector>
 
 namespace plansys2_terminal
 {

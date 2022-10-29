@@ -16,6 +16,7 @@
 
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace plansys2
 {

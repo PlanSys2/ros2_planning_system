@@ -18,7 +18,6 @@
 #include <iostream>
 #include <limits>
 #include <regex>
-#include <set>
 
 namespace parser
 {

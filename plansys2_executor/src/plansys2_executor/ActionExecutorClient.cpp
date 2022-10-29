@@ -14,13 +14,13 @@
 
 #include "plansys2_executor/ActionExecutorClient.hpp"
 
-#include "lifecycle_msgs/msg/state.hpp"
-#include "lifecycle_msgs/msg/transition.hpp"
-#include "plansys2_msgs/msg/action_execution_info.hpp"
-
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "lifecycle_msgs/msg/state.hpp"
+#include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_msgs/msg/action_execution_info.hpp"
 
 namespace plansys2
 {
@@ -90,8 +90,6 @@ CallbackReturnT ActionExecutorClient::on_activate(const rclcpp_lifecycle::State 
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::RUNNING;
   status_.status_stamp = now();
   timer_ = create_wall_timer(rate_, std::bind(&ActionExecutorClient::do_work, this));
-
-  //  do_work();
 
   return CallbackReturnT::SUCCESS;
 }

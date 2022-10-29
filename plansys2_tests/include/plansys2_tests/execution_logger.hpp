@@ -15,13 +15,13 @@
 #ifndef PLANSYS2_TESTS__EXECUTION_LOGGER_HPP_
 #define PLANSYS2_TESTS__EXECUTION_LOGGER_HPP_
 
-#include "plansys2_msgs/msg/action_execution.hpp"
-#include "plansys2_msgs/msg/action_execution_info.hpp"
-#include "rclcpp/rclcpp.hpp"
-
 #include <list>
 #include <memory>
 #include <string>
+
+#include "plansys2_msgs/msg/action_execution.hpp"
+#include "plansys2_msgs/msg/action_execution_info.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace plansys2_tests
 {

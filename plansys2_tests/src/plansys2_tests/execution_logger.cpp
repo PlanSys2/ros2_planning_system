@@ -14,11 +14,11 @@
 
 #include "plansys2_tests/execution_logger.hpp"
 
-#include "rclcpp/rclcpp.hpp"
-
 #include <list>
 #include <string>
 #include <utility>
+
+#include "rclcpp/rclcpp.hpp"
 
 namespace plansys2_tests
 {

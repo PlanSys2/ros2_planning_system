@@ -306,7 +306,7 @@ void ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_han
   result->success = status == BT::NodeStatus::SUCCESS;
   result->action_execution_status = get_feedback_info(action_map);
 
-  // TODO only the output of the BT matters, this doesn't make sense
+  // TODO only the output of the BT matters, this doesn't make sense for contingent case
   //  size_t i = 0;
   //  while (i < result->action_execution_status.size() && result->success) {
   //    if (result->action_execution_status[i].status ==

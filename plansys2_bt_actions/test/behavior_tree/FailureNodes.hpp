@@ -15,11 +15,11 @@
 #ifndef BEHAVIOR_TREE__FAILURENODES_HPP_
 #define BEHAVIOR_TREE__FAILURENODES_HPP_
 
-#include "plansys2_bt_actions/BTActionNode.hpp"
-#include "test_msgs/action/fibonacci.hpp"
-
 #include <memory>
 #include <string>
+
+#include "plansys2_bt_actions/BTActionNode.hpp"
+#include "test_msgs/action/fibonacci.hpp"
 
 namespace plansys2_bt_tests
 {

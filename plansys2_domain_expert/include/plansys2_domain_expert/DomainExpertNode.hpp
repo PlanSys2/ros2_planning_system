@@ -15,6 +15,9 @@
 #ifndef PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTNODE_HPP_
 #define PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTNODE_HPP_
 
+#include <memory>
+#include <optional>
+
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
@@ -29,9 +32,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "std_msgs/msg/string.hpp"
-
-#include <memory>
-#include <optional>
 
 namespace plansys2
 {

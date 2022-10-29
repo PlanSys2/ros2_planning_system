@@ -14,7 +14,8 @@
 
 #include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
-#include "plansys2_msgs/msg/plan_item.hpp"
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -23,8 +24,7 @@
 #include <iostream>
 #include <string>
 
-#include <sys/stat.h>
-#include <sys/types.h>
+#include "plansys2_msgs/msg/plan_item.hpp"
 
 namespace plansys2
 {

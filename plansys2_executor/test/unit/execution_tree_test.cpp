@@ -12,6 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <iostream>
+#include <map>
+#include <memory>
+#include <regex>
+#include <string>
+#include <vector>
+
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
@@ -24,13 +31,6 @@
 #include "pluginlib/class_list_macros.hpp"
 #include "pluginlib/class_loader.hpp"
 #include "rclcpp/rclcpp.hpp"
-
-#include <iostream>
-#include <map>
-#include <memory>
-#include <regex>
-#include <string>
-#include <vector>
 
 TEST(executiotest_noden_tree, bt_builder_factory)
 {

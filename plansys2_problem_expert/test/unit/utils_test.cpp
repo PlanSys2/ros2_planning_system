@@ -12,6 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <tuple>
+#include <vector>
+
 #include "plansys2_problem_expert/Utils.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
@@ -26,13 +33,6 @@
 #include "plansys2_problem_expert/ProblemExpert.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
-
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
-#include <tuple>
-#include <vector>
 
 TEST(utils, evaluate_and)
 {

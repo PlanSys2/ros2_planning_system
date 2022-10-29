@@ -14,12 +14,6 @@
 
 #include "plansys2_problem_expert/ProblemExpert.hpp"
 
-#include "plansys2_core/Types.hpp"
-#include "plansys2_core/Utils.hpp"
-#include "plansys2_pddl_parser/Domain.h"
-#include "plansys2_pddl_parser/Instance.h"
-#include "plansys2_problem_expert/Utils.hpp"
-
 #include <algorithm>
 #include <map>
 #include <memory>
@@ -28,6 +22,12 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include "plansys2_core/Types.hpp"
+#include "plansys2_core/Utils.hpp"
+#include "plansys2_pddl_parser/Domain.h"
+#include "plansys2_pddl_parser/Instance.h"
+#include "plansys2_problem_expert/Utils.hpp"
 
 namespace plansys2
 {
@@ -748,14 +748,6 @@ std::string ProblemExpert::getProblem()
 
     problem.addInit(function.name, function.value, v);
   }
-  //
-  //    for (const auto &oneof_predicate: oneof_predicates_) {
-  //
-  //    }
-
-  //    for (auto or_condition: or_conditions_) {
-  //
-  //    }
 
   std::vector<plansys2_msgs::msg::Node> predicates;
   parser::pddl::getPredicates(predicates, goal_);

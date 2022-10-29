@@ -1,9 +1,9 @@
-#include "plansys2_pddl_parser/Instance.h"
-
 #include <fstream>
 #include <iostream>
 #include <streambuf>
 #include <string>
+
+#include "plansys2_pddl_parser/Instance.h"
 
 using namespace parser::pddl;
 

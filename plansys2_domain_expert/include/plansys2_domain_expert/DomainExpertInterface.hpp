@@ -15,14 +15,14 @@
 #ifndef PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTINTERFACE_HPP_
 #define PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTINTERFACE_HPP_
 
+#include <optional>
+#include <string>
+#include <vector>
+
 #include "plansys2_core/Types.hpp"
 #include "plansys2_msgs/msg/action.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
 #include "plansys2_msgs/msg/node.hpp"
-
-#include <optional>
-#include <string>
-#include <vector>
 
 namespace plansys2
 {

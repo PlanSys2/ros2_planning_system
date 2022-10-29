@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 #include "plansys2_core/PlanSolverBase.hpp"
 #include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 #include "pluginlib/class_list_macros.hpp"
 #include "pluginlib/class_loader.hpp"
-
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
 
 void test_plan_generation(const std::string & argument = "")
 {

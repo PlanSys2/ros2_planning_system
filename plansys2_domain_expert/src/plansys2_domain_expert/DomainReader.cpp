@@ -14,14 +14,14 @@
 
 #include "plansys2_domain_expert/DomainReader.hpp"
 
-#include "plansys2_core/Utils.hpp"
-
 #include <algorithm>
 #include <iostream>
 #include <set>
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "plansys2_core/Utils.hpp"
 
 namespace plansys2
 {

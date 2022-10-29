@@ -65,7 +65,6 @@ void ContingentBTBuilder::add_observe_action_sequence(
   std::string indent = "  ";
   auto tmp =
     domain_client_->getAction(get_action_name(item.action), get_action_params(item.action));
-  //    apply(tmp->observe, problem_client_, 0);
   const std::string observe_expr = parser::pddl::toStringPredicate(tmp->observe, 1, false);
   const std::string action_id =
     item.action + ":" + std::to_string(static_cast<int>(item.time * 1000));

@@ -15,10 +15,8 @@
 #ifndef RQT_PLANSYS2_PERFORMERS__RQTPERFORMERS_HPP_
 #define RQT_PLANSYS2_PERFORMERS__RQTPERFORMERS_HPP_
 
-#include "plansys2_msgs/msg/action_performer_status.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "rqt_plansys2_performers/PerformersTree.hpp"
+#include <rqt_gui_cpp/plugin.h>
+#include <ui_rqt_plansys2_performers.h>
 
 #include <QAction>
 #include <QImage>
@@ -31,8 +29,10 @@
 #include <memory>
 #include <string>
 
-#include <rqt_gui_cpp/plugin.h>
-#include <ui_rqt_plansys2_performers.h>
+#include "plansys2_msgs/msg/action_performer_status.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "rqt_plansys2_performers/PerformersTree.hpp"
 
 namespace rqt_plansys2_performers
 {

@@ -14,16 +14,16 @@
 
 #include "plansys2_logger/LoggerNode.hpp"
 
+#include <iomanip>
+#include <memory>
+#include <string>
+
 #include "plansys2_msgs/msg/action_execution.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 #include "plansys2_msgs/msg/action_performer_status.hpp"
 #include "plansys2_msgs/msg/knowledge.hpp"
 #include "plansys2_msgs/msg/plan.hpp"
 #include "rclcpp/rclcpp.hpp"
-
-#include <iomanip>
-#include <memory>
-#include <string>
 
 namespace plansys2_logger
 {

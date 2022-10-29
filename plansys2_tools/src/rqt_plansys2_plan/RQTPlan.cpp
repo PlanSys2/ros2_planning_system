@@ -14,8 +14,6 @@
 
 #include "rqt_plansys2_plan/RQTPlan.hpp"
 
-#include "rqt_plansys2_plan/PlanTree.hpp"
-
 #include <QCheckBox>
 #include <QDebug>
 #include <QFileDialog>
@@ -24,13 +22,15 @@
 #include <QPushButton>
 #include <QTime>
 #include <QTimer>
+#include <unistd.h>
+
 #include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
 
+#include "rqt_plansys2_plan/PlanTree.hpp"
 #include <pluginlib/class_list_macros.hpp>
-#include <unistd.h>
 
 namespace rqt_plansys2_plan
 {

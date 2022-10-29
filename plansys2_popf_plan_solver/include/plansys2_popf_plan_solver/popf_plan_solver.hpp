@@ -15,11 +15,11 @@
 #ifndef PLANSYS2_POPF_PLAN_SOLVER__POPF_PLAN_SOLVER_HPP_
 #define PLANSYS2_POPF_PLAN_SOLVER__POPF_PLAN_SOLVER_HPP_
 
-#include "plansys2_core/PlanSolverBase.hpp"
-
 #include <memory>
 #include <optional>
 #include <string>
+
+#include "plansys2_core/PlanSolverBase.hpp"
 
 namespace plansys2
 {

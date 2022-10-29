@@ -14,8 +14,6 @@
 
 #include "plansys2_executor/bt_builder_plugins/stn_bt_builder.hpp"
 
-#include "plansys2_problem_expert/Utils.hpp"
-
 #include <algorithm>
 #include <limits>
 #include <map>
@@ -26,6 +24,8 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+
+#include "plansys2_problem_expert/Utils.hpp"
 
 namespace plansys2
 {

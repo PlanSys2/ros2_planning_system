@@ -14,9 +14,6 @@
 
 #include "rqt_plansys2_knowledge/RQTKnowledge.hpp"
 
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "rqt_plansys2_knowledge/KnowledgeTree.hpp"
-
 #include <QCheckBox>
 #include <QDebug>
 #include <QFileDialog>
@@ -25,13 +22,16 @@
 #include <QPushButton>
 #include <QTime>
 #include <QTimer>
+#include <unistd.h>
+
 #include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
 
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "rqt_plansys2_knowledge/KnowledgeTree.hpp"
 #include <pluginlib/class_list_macros.hpp>
-#include <unistd.h>
 
 namespace rqt_plansys2_knowledge
 {

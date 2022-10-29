@@ -14,10 +14,10 @@
 
 #include "plansys2_tests/test_action_node.hpp"
 
+#include <string>
+
 #include "plansys2_executor/ActionExecutorClient.hpp"
 #include "rclcpp/rclcpp.hpp"
-
-#include <string>
 
 namespace plansys2_tests
 {

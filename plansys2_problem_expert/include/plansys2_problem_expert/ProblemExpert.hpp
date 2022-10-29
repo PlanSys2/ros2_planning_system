@@ -15,6 +15,12 @@
 #ifndef PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERT_HPP_
 #define PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERT_HPP_
 
+#include <memory>
+#include <optional>
+#include <string>
+#include <unordered_set>
+#include <vector>
+
 #include "plansys2_domain_expert/DomainExpert.hpp"
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/param.hpp"
@@ -22,12 +28,6 @@
 #include "plansys2_pddl_parser/Condition.h"
 #include "plansys2_pddl_parser/Utils.h"
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
-
-#include <memory>
-#include <optional>
-#include <string>
-#include <unordered_set>
-#include <vector>
 
 namespace plansys2
 {

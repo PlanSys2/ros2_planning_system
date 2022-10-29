@@ -15,14 +15,14 @@
 #ifndef PLANSYS2_LOGGER__LOGGERNODE_HPP_
 #define PLANSYS2_LOGGER__LOGGERNODE_HPP_
 
+#include <memory>
+
 #include "plansys2_msgs/msg/action_execution.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 #include "plansys2_msgs/msg/action_performer_status.hpp"
 #include "plansys2_msgs/msg/knowledge.hpp"
 #include "plansys2_msgs/msg/plan.hpp"
 #include "rclcpp/rclcpp.hpp"
-
-#include <memory>
 
 namespace plansys2_logger
 {

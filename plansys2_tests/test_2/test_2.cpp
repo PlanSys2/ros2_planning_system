@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <memory>
+#include <string>
+
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
@@ -24,9 +27,6 @@
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 #include "plansys2_tests/execution_logger.hpp"
 #include "plansys2_tests/test_action_node.hpp"
-
-#include <memory>
-#include <string>
 
 TEST(test_2, test_2)
 {

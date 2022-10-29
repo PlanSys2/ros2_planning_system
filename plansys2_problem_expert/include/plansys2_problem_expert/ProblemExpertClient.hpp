@@ -15,6 +15,10 @@
 #ifndef PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTCLIENT_HPP_
 #define PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTCLIENT_HPP_
 
+#include <optional>
+#include <string>
+#include <vector>
+
 #include "plansys2_core/Types.hpp"
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/param.hpp"
@@ -38,10 +42,6 @@
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 #include "rclcpp/rclcpp.hpp"
-
-#include <optional>
-#include <string>
-#include <vector>
 
 namespace plansys2
 {

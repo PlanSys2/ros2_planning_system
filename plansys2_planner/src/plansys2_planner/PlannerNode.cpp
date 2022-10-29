@@ -14,13 +14,13 @@
 
 #include "plansys2_planner/PlannerNode.hpp"
 
-#include "lifecycle_msgs/msg/state.hpp"
-#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
-
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <string>
+
+#include "lifecycle_msgs/msg/state.hpp"
+#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 namespace plansys2
 {

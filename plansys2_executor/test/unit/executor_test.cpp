@@ -12,6 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <regex>
+#include <string>
+#include <vector>
+
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/blackboard.h"
@@ -44,14 +52,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
-
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <regex>
-#include <string>
-#include <vector>
 
 TEST(executor, action_executor_api)
 {

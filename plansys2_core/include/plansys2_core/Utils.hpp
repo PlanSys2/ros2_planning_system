@@ -15,12 +15,12 @@
 #ifndef PLANSYS2_CORE__UTILS_HPP_
 #define PLANSYS2_CORE__UTILS_HPP_
 
-#include "plansys2_msgs/msg/plan.hpp"
-#include "plansys2_msgs/msg/plan_item.hpp"
-
 #include <queue>
 #include <string>
 #include <vector>
+
+#include "plansys2_msgs/msg/plan.hpp"
+#include "plansys2_msgs/msg/plan_item.hpp"
 
 namespace plansys2
 {

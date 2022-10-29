@@ -15,10 +15,10 @@
 #ifndef BEHAVIOR_TREE__OPENGRIPPER_HPP_
 #define BEHAVIOR_TREE__OPENGRIPPER_HPP_
 
+#include <string>
+
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
-
-#include <string>
 
 namespace plansys2_bt_tests
 {

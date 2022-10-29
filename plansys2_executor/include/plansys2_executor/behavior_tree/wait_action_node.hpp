@@ -15,13 +15,13 @@
 #ifndef PLANSYS2_EXECUTOR__BEHAVIOR_TREE__WAIT_ACTION_NODE_HPP_
 #define PLANSYS2_EXECUTOR__BEHAVIOR_TREE__WAIT_ACTION_NODE_HPP_
 
-#include "behaviortree_cpp_v3/action_node.h"
-#include "plansys2_executor/ActionExecutor.hpp"
-#include "plansys2_executor/behavior_tree/execute_action_node.hpp"
-
 #include <map>
 #include <memory>
 #include <string>
+
+#include "behaviortree_cpp_v3/action_node.h"
+#include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 
 namespace plansys2
 {

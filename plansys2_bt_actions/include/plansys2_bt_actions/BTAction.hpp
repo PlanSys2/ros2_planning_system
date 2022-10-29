@@ -15,15 +15,15 @@
 #ifndef PLANSYS2_BT_ACTIONS__BTACTION_HPP_
 #define PLANSYS2_BT_ACTIONS__BTACTION_HPP_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_file_logger.h"
 #include "behaviortree_cpp_v3/loggers/bt_minitrace_logger.h"
 #include "behaviortree_cpp_v3/xml_parsing.h"
-
-#include <memory>
-#include <string>
-#include <vector>
 
 #ifdef ZMQ_FOUND
 #include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>

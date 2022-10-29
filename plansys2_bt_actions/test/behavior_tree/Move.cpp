@@ -14,13 +14,13 @@
 
 #include "Move.hpp"
 
-#include "behaviortree_cpp_v3/behavior_tree.h"
-#include "geometry_msgs/msg/pose2_d.hpp"
-
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "behaviortree_cpp_v3/behavior_tree.h"
+#include "geometry_msgs/msg/pose2_d.hpp"
 
 namespace plansys2_bt_tests
 {

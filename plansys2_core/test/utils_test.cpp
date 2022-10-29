@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
+#include <vector>
+
 #include "plansys2_core/Utils.hpp"
 
 #include "gtest/gtest.h"
-
-#include <string>
-#include <vector>
 
 TEST(domain_expert, functions)
 {

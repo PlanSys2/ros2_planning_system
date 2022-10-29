@@ -15,11 +15,11 @@
 #ifndef PLANSYS2_TESTS__TEST_ACTION_NODE_HPP_
 #define PLANSYS2_TESTS__TEST_ACTION_NODE_HPP_
 
-#include "plansys2_executor/ActionExecutorClient.hpp"
-#include "rclcpp/rclcpp.hpp"
-
 #include <memory>
 #include <string>
+
+#include "plansys2_executor/ActionExecutorClient.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace plansys2_tests
 {

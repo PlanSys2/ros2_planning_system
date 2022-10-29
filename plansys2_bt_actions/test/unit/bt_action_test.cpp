@@ -12,6 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "../behavior_tree/CloseGripper.hpp"
 #include "../behavior_tree/FailureNodes.hpp"
 #include "../behavior_tree/Move.hpp"
@@ -27,12 +33,6 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_cascade_lifecycle/rclcpp_cascade_lifecycle.hpp"
 #include "test_msgs/action/fibonacci.hpp"
-
-#include <fstream>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
 
 using namespace std::placeholders;
 using namespace std::chrono_literals;

@@ -15,10 +15,6 @@
 #ifndef PLANSYS2_PROBLEM_EXPERT__UTILS_HPP_
 #define PLANSYS2_PROBLEM_EXPERT__UTILS_HPP_
 
-#include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_msgs/msg/tree.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-
 #include <map>
 #include <memory>
 #include <set>
@@ -26,6 +22,10 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+
+#include "plansys2_domain_expert/DomainExpertClient.hpp"
+#include "plansys2_msgs/msg/tree.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
 
 namespace plansys2
 {

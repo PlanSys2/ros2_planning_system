@@ -15,6 +15,10 @@
 #ifndef PLANSYS2_EXECUTOR__ACTIONEXECUTORCLIENT_HPP_
 #define PLANSYS2_EXECUTOR__ACTIONEXECUTORCLIENT_HPP_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_msgs/msg/action_execution.hpp"
 #include "plansys2_msgs/msg/action_performer_status.hpp"
@@ -22,10 +26,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_cascade_lifecycle/rclcpp_cascade_lifecycle.hpp"
-
-#include <memory>
-#include <string>
-#include <vector>
 
 namespace plansys2
 {

@@ -15,15 +15,15 @@
 #ifndef PLANSYS2_EXECUTOR__BEHAVIOR_TREE__EXECUTE_ACTION_NODE_HPP_
 #define PLANSYS2_EXECUTOR__BEHAVIOR_TREE__EXECUTE_ACTION_NODE_HPP_
 
-#include "behaviortree_cpp_v3/action_node.h"
-#include "plansys2_executor/ActionExecutor.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
-
 #include <map>
 #include <memory>
 #include <random>
 #include <string>
+
+#include "behaviortree_cpp_v3/action_node.h"
+#include "plansys2_executor/ActionExecutor.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 namespace plansys2
 {

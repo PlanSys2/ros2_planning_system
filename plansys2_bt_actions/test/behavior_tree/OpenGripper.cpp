@@ -14,10 +14,10 @@
 
 #include "OpenGripper.hpp"
 
-#include "behaviortree_cpp_v3/behavior_tree.h"
-
 #include <iostream>
 #include <string>
+
+#include "behaviortree_cpp_v3/behavior_tree.h"
 
 namespace plansys2_bt_tests
 {

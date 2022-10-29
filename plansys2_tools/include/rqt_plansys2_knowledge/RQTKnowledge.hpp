@@ -15,10 +15,8 @@
 #ifndef RQT_PLANSYS2_KNOWLEDGE__RQTKNOWLEDGE_HPP_
 #define RQT_PLANSYS2_KNOWLEDGE__RQTKNOWLEDGE_HPP_
 
-#include "plansys2_msgs/msg/knowledge.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "rqt_plansys2_knowledge/KnowledgeTree.hpp"
+#include <rqt_gui_cpp/plugin.h>
+#include <ui_rqt_plansys2_knowledge.h>
 
 #include <QAction>
 #include <QImage>
@@ -30,8 +28,10 @@
 #include <map>
 #include <memory>
 
-#include <rqt_gui_cpp/plugin.h>
-#include <ui_rqt_plansys2_knowledge.h>
+#include "plansys2_msgs/msg/knowledge.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "rqt_plansys2_knowledge/KnowledgeTree.hpp"
 
 namespace rqt_plansys2_knowledge
 {

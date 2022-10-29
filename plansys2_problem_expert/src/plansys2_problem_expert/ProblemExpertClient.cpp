@@ -14,13 +14,13 @@
 
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 
-#include "plansys2_pddl_parser/Utils.h"
-
 #include <algorithm>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
+
+#include "plansys2_pddl_parser/Utils.h"
 
 namespace plansys2
 {
