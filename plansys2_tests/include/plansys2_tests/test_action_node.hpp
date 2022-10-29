@@ -15,17 +15,14 @@
 #ifndef PLANSYS2_TESTS__TEST_ACTION_NODE_HPP_
 #define PLANSYS2_TESTS__TEST_ACTION_NODE_HPP_
 
+#include "plansys2_executor/ActionExecutorClient.hpp"
+#include "rclcpp/rclcpp.hpp"
+
 #include <memory>
 #include <string>
 
-#include "plansys2_executor/ActionExecutorClient.hpp"
-
-#include "rclcpp/rclcpp.hpp"
-
-
 namespace plansys2_tests
 {
-
 using namespace std::chrono_literals;  // NOLINT (build/namespaces)
 
 class TestAction : public plansys2::ActionExecutorClient
@@ -33,8 +30,7 @@ class TestAction : public plansys2::ActionExecutorClient
 public:
   using Ptr = std::shared_ptr<TestAction>;
   static Ptr make_shared(
-    const std::string & action,
-    const std::chrono::seconds & rate = 1s, float increment = 0.4)
+    const std::string & action, const std::chrono::seconds & rate = 1s, float increment = 0.4)
   {
     auto ret = std::make_shared<TestAction>(action, rate, increment);
     ret->set_parameter(rclcpp::Parameter("action_name", action));
@@ -43,9 +39,7 @@ public:
   }
 
   TestAction(
-    const std::string & action_name,
-    const std::chrono::seconds & rate = 1s,
-    float increment = 0.4);
+    const std::string & action_name, const std::chrono::seconds & rate = 1s, float increment = 0.4);
 
 private:
   void do_work();

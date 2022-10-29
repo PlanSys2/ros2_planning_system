@@ -15,28 +15,22 @@
 #ifndef BEHAVIOR_TREE__FAILURENODES_HPP_
 #define BEHAVIOR_TREE__FAILURENODES_HPP_
 
-#include <string>
-#include <memory>
-
+#include "plansys2_bt_actions/BTActionNode.hpp"
 #include "test_msgs/action/fibonacci.hpp"
 
-#include "plansys2_bt_actions/BTActionNode.hpp"
+#include <memory>
+#include <string>
 
 namespace plansys2_bt_tests
 {
-
 class OnTickFail : public plansys2::BtActionNode<test_msgs::action::Fibonacci>
 {
 public:
   using Fibonacci = test_msgs::action::Fibonacci;
   explicit OnTickFail(
-    const std::string & xml_tag_name,
-    const std::string & action_name,
+    const std::string & xml_tag_name, const std::string & action_name,
     const BT::NodeConfiguration & conf)
-  : plansys2::BtActionNode<Fibonacci>(xml_tag_name,
-      action_name,
-      conf),
-    on_tick_run(false)
+  : plansys2::BtActionNode<Fibonacci>(xml_tag_name, action_name, conf), on_tick_run(false)
   {
   }
 
@@ -49,19 +43,14 @@ public:
   bool on_tick_run;
 };
 
-
 class OnFeedbackFail : public plansys2::BtActionNode<test_msgs::action::Fibonacci>
 {
 public:
   using Fibonacci = test_msgs::action::Fibonacci;
   explicit OnFeedbackFail(
-    const std::string & xml_tag_name,
-    const std::string & action_name,
+    const std::string & xml_tag_name, const std::string & action_name,
     const BT::NodeConfiguration & conf)
-  : plansys2::BtActionNode<Fibonacci>(xml_tag_name,
-      action_name,
-      conf),
-    on_feedback_run(false)
+  : plansys2::BtActionNode<Fibonacci>(xml_tag_name, action_name, conf), on_feedback_run(false)
   {
   }
 
@@ -81,9 +70,9 @@ public:
   }
 
   bool on_feedback_run;
-  bool return_failure {false};
+  bool return_failure{false};
 };
 
-}   // namespace plansys2_bt_tests
+}  // namespace plansys2_bt_tests
 
 #endif  // BEHAVIOR_TREE__FAILURENODES_HPP_

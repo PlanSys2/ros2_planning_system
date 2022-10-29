@@ -14,23 +14,17 @@
 
 #include "plansys2_domain_expert/DomainExpert.hpp"
 
-#include <optional>
 #include <algorithm>
+#include <memory>
+#include <optional>
 #include <string>
 #include <vector>
-#include <memory>
-
 
 namespace plansys2
 {
+DomainExpert::DomainExpert(const std::string & domain) { extendDomain(domain); }
 
-DomainExpert::DomainExpert(const std::string & domain)
-{
-  extendDomain(domain);
-}
-
-void
-DomainExpert::extendDomain(const std::string & domain)
+void DomainExpert::extendDomain(const std::string & domain)
 {
   domains_.add_domain(domain);
 
@@ -44,14 +38,9 @@ DomainExpert::extendDomain(const std::string & domain)
   }
 }
 
-std::string
-DomainExpert::getName()
-{
-  return domain_->name;
-}
+std::string DomainExpert::getName() { return domain_->name; }
 
-std::vector<std::string>
-DomainExpert::getTypes()
+std::vector<std::string> DomainExpert::getTypes()
 {
   std::vector<std::string> ret;
   if (domain_->typed) {
@@ -62,16 +51,16 @@ DomainExpert::getTypes()
   return ret;
 }
 
-std::vector<std::string>
-DomainExpert::getConstants(const std::string & type)
+std::vector<std::string> DomainExpert::getConstants(const std::string & type)
 {
-  if (!domain_->typed) {return std::vector<std::string>();}
+  if (!domain_->typed) {
+    return std::vector<std::string>();
+  }
 
   return domain_->getType(type)->constants.tokens;
 }
 
-std::vector<plansys2::Predicate>
-DomainExpert::getPredicates()
+std::vector<plansys2::Predicate> DomainExpert::getPredicates()
 {
   std::vector<plansys2::Predicate> ret;
   for (unsigned i = 0; i < domain_->preds.size(); i++) {
@@ -83,13 +72,11 @@ DomainExpert::getPredicates()
   return ret;
 }
 
-std::optional<plansys2::Predicate>
-DomainExpert::getPredicate(const std::string & predicate)
+std::optional<plansys2::Predicate> DomainExpert::getPredicate(const std::string & predicate)
 {
   std::string predicate_search = predicate;
   std::transform(
-    predicate_search.begin(), predicate_search.end(),
-    predicate_search.begin(), ::tolower);
+    predicate_search.begin(), predicate_search.end(), predicate_search.begin(), ::tolower);
 
   plansys2_msgs::msg::Node ret;
   bool found = false;
@@ -101,8 +88,8 @@ DomainExpert::getPredicate(const std::string & predicate)
       ret.name = predicate_search;
       for (unsigned j = 0; j < domain_->preds[i]->params.size(); j++) {
         plansys2_msgs::msg::Param param;
-        param.name = "?" + domain_->types[domain_->preds[i]->params[j]]->getName() +
-          std::to_string(j);
+        param.name =
+          "?" + domain_->types[domain_->preds[i]->params[j]]->getName() + std::to_string(j);
         param.type = domain_->types[domain_->preds[i]->params[j]]->name;
         domain_->types[domain_->preds[i]->params[j]]->getSubTypesNames(param.sub_types);
         ret.parameters.push_back(param);
@@ -118,8 +105,7 @@ DomainExpert::getPredicate(const std::string & predicate)
   }
 }
 
-std::vector<plansys2::Function>
-DomainExpert::getFunctions()
+std::vector<plansys2::Function> DomainExpert::getFunctions()
 {
   std::vector<plansys2::Function> ret;
   for (unsigned i = 0; i < domain_->funcs.size(); i++) {
@@ -131,13 +117,11 @@ DomainExpert::getFunctions()
   return ret;
 }
 
-std::optional<plansys2::Function>
-DomainExpert::getFunction(const std::string & function)
+std::optional<plansys2::Function> DomainExpert::getFunction(const std::string & function)
 {
   std::string function_search = function;
   std::transform(
-    function_search.begin(), function_search.end(),
-    function_search.begin(), ::tolower);
+    function_search.begin(), function_search.end(), function_search.begin(), ::tolower);
 
   plansys2::Function ret;
   bool found = false;
@@ -149,8 +133,8 @@ DomainExpert::getFunction(const std::string & function)
       ret.name = function_search;
       for (unsigned j = 0; j < domain_->funcs[i]->params.size(); j++) {
         plansys2_msgs::msg::Param param;
-        param.name = "?" + domain_->types[domain_->funcs[i]->params[j]]->getName() +
-          std::to_string(j);
+        param.name =
+          "?" + domain_->types[domain_->funcs[i]->params[j]]->getName() + std::to_string(j);
         param.type = domain_->types[domain_->funcs[i]->params[j]]->name;
         domain_->types[domain_->funcs[i]->params[j]]->getSubTypesNames(param.sub_types);
         ret.parameters.push_back(param);
@@ -166,8 +150,7 @@ DomainExpert::getFunction(const std::string & function)
   }
 }
 
-std::vector<std::string>
-DomainExpert::getActions()
+std::vector<std::string> DomainExpert::getActions()
 {
   std::vector<std::string> ret;
   for (unsigned i = 0; i < domain_->actions.size(); i++) {
@@ -180,13 +163,11 @@ DomainExpert::getActions()
   return ret;
 }
 
-plansys2_msgs::msg::Action::SharedPtr
-DomainExpert::getAction(const std::string & action, const std::vector<std::string> & params)
+plansys2_msgs::msg::Action::SharedPtr DomainExpert::getAction(
+  const std::string & action, const std::vector<std::string> & params)
 {
   std::string action_search = action;
-  std::transform(
-    action_search.begin(), action_search.end(),
-    action_search.begin(), ::tolower);
+  std::transform(action_search.begin(), action_search.end(), action_search.begin(), ::tolower);
 
   auto ret = std::make_shared<plansys2_msgs::msg::Action>();
   bool found = false;
@@ -223,10 +204,10 @@ DomainExpert::getAction(const std::string & action, const std::vector<std::strin
         action_obj->eff->getTree(ret->effects, *domain_, params);
       }
 
-        // Observe
-        if (action_obj->observe) {
-            action_obj->observe->getTree(ret->observe, *domain_, params);
-        }
+      // Observe
+      if (action_obj->observe) {
+        action_obj->observe->getTree(ret->observe, *domain_, params);
+      }
     }
     i++;
   }
@@ -238,8 +219,7 @@ DomainExpert::getAction(const std::string & action, const std::vector<std::strin
   }
 }
 
-std::vector<std::string>
-DomainExpert::getDurativeActions()
+std::vector<std::string> DomainExpert::getDurativeActions()
 {
   std::vector<std::string> ret;
   for (unsigned i = 0; i < domain_->actions.size(); i++) {
@@ -254,13 +234,11 @@ DomainExpert::getDurativeActions()
   return ret;
 }
 
-plansys2_msgs::msg::DurativeAction::SharedPtr
-DomainExpert::getDurativeAction(const std::string & action, const std::vector<std::string> & params)
+plansys2_msgs::msg::DurativeAction::SharedPtr DomainExpert::getDurativeAction(
+  const std::string & action, const std::vector<std::string> & params)
 {
   std::string action_search = action;
-  std::transform(
-    action_search.begin(), action_search.end(),
-    action_search.begin(), ::tolower);
+  std::transform(action_search.begin(), action_search.end(), action_search.begin(), ::tolower);
 
   auto ret = std::make_shared<plansys2_msgs::msg::DurativeAction>();
   bool found = false;
@@ -314,10 +292,10 @@ DomainExpert::getDurativeAction(const std::string & action, const std::vector<st
         action_obj->eff_e->getTree(ret->at_end_effects, *domain_, params);
       }
 
-        // Observe
-        if (action_obj->observe) {
-            action_obj->observe->getTree(ret->observe, *domain_, params);
-        }
+      // Observe
+      if (action_obj->observe) {
+        action_obj->observe->getTree(ret->observe, *domain_, params);
+      }
     }
     i++;
   }
@@ -329,14 +307,9 @@ DomainExpert::getDurativeAction(const std::string & action, const std::vector<st
   }
 }
 
-std::string
-DomainExpert::getDomain()
-{
-  return domains_.get_joint_domain();
-}
+std::string DomainExpert::getDomain() { return domains_.get_joint_domain(); }
 
-bool
-DomainExpert::existDomain(const std::string & domain_name)
+bool DomainExpert::existDomain(const std::string & domain_name)
 {
   for (auto domain : domains_.get_domains()) {
     if (domain_name == domain.name) {

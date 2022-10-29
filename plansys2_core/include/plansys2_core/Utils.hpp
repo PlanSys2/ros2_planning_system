@@ -15,16 +15,15 @@
 #ifndef PLANSYS2_CORE__UTILS_HPP_
 #define PLANSYS2_CORE__UTILS_HPP_
 
+#include "plansys2_msgs/msg/plan.hpp"
+#include "plansys2_msgs/msg/plan_item.hpp"
+
+#include <queue>
 #include <string>
 #include <vector>
-#include <queue>
-
-#include "plansys2_msgs/msg/plan_item.hpp"
-#include "plansys2_msgs/msg/plan.hpp"
 
 namespace plansys2
 {
-
 std::vector<std::string> tokenize(const std::string & string, const std::string & delim);
 
 /**
@@ -36,9 +35,7 @@ std::vector<std::string> tokenize(const std::string & string, const std::string 
  * @return a substring without empty lines
  */
 std::string substr_without_empty_lines(
-  std::string string,
-  std::size_t init_pos,
-  std::size_t end_pos);
+  std::string string, std::size_t init_pos, std::size_t end_pos);
 
 /**
  * @brief remove the comments on a pddl string
@@ -48,25 +45,30 @@ std::string substr_without_empty_lines(
  */
 std::string remove_comments(const std::string & pddl);
 
-
-struct PlanNode {
-    plansys2_msgs::msg::PlanItem item;
-    std::shared_ptr<PlanNode> true_node;
-    std::shared_ptr<PlanNode> false_node;
+struct PlanNode
+{
+  plansys2_msgs::msg::PlanItem item;
+  std::shared_ptr<PlanNode> true_node;
+  std::shared_ptr<PlanNode> false_node;
 };
 
-plansys2_msgs::msg::Plan encode_plan(const std::shared_ptr<PlanNode>& root);
-std::shared_ptr<PlanNode> decode_plan(const plansys2_msgs::msg::Plan &plan);
-namespace internal {
-  void encode_plan(const std::shared_ptr<PlanNode> &root, std::vector<int> &struc,
-                   std::vector<plansys2_msgs::msg::PlanItem> &data);
+plansys2_msgs::msg::Plan encode_plan(const std::shared_ptr<PlanNode> & root);
+std::shared_ptr<PlanNode> decode_plan(const plansys2_msgs::msg::Plan & plan);
+namespace internal
+{
+void encode_plan(
+  const std::shared_ptr<PlanNode> & root, std::vector<int> & data_struct,
+  std::vector<plansys2_msgs::msg::PlanItem> & data);
 
-  std::shared_ptr<PlanNode> decode_plan(std::vector<int> &struc, std::vector<plansys2_msgs::msg::PlanItem> &data);
+std::shared_ptr<PlanNode> decode_plan(
+  std::vector<int> & data_struct, std::vector<plansys2_msgs::msg::PlanItem> & data);
 
-  std::shared_ptr<PlanNode> decode_plan(std::vector<int> &struc, std::vector<plansys2_msgs::msg::PlanItem> &data);
+std::shared_ptr<PlanNode> decode_plan(
+  std::vector<int> & data_struct, std::vector<plansys2_msgs::msg::PlanItem> & data);
 
-  std::shared_ptr<PlanNode> decode_plan(std::queue<int> &struc, std::queue<plansys2_msgs::msg::PlanItem> &data);
-}
+std::shared_ptr<PlanNode> decode_plan(
+  std::queue<int> & data_struct, std::queue<plansys2_msgs::msg::PlanItem> & data);
+}  // namespace internal
 
 }  // namespace plansys2
 

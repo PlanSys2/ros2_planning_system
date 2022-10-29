@@ -15,37 +15,31 @@
 #ifndef PLANSYS2_EXECUTOR__BEHAVIOR_TREE__EXECUTE_ACTION_NODE_HPP_
 #define PLANSYS2_EXECUTOR__BEHAVIOR_TREE__EXECUTE_ACTION_NODE_HPP_
 
-#include <map>
-#include <string>
-#include <memory>
-#include <random>
-
 #include "behaviortree_cpp_v3/action_node.h"
-
 #include "plansys2_executor/ActionExecutor.hpp"
-
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
+#include <map>
+#include <memory>
+#include <random>
+#include <string>
+
 namespace plansys2
 {
-
 class ExecuteAction : public BT::ActionNodeBase
 {
 public:
-  ExecuteAction(
-    const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf);
+  ExecuteAction(const std::string & xml_tag_name, const BT::NodeConfiguration & conf);
 
   void halt();
   BT::NodeStatus tick() override;
 
   static BT::PortsList providedPorts()
   {
-    return BT::PortsList(
-      {
-        BT::InputPort<std::string>("action", "Action to be executed"),
-      });
+    return BT::PortsList({
+      BT::InputPort<std::string>("action", "Action to be executed"),
+    });
   }
 
 private:

@@ -12,39 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
+
+#include "plansys2_msgs/msg/plan_item.hpp"
+
+#include <cstdio>
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <string>
+
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <filesystem>
-#include <string>
-#include <iostream>
-#include <cstdio>
-#include <cstdlib>
-#include <fstream>
-
-#include "plansys2_msgs/msg/plan_item.hpp"
-#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
-
 namespace plansys2
 {
-
-POPFPlanSolver::POPFPlanSolver()
-{
-}
+POPFPlanSolver::POPFPlanSolver() {}
 
 void POPFPlanSolver::configure(
-  rclcpp_lifecycle::LifecycleNode::SharedPtr & lc_node,
-  const std::string & plugin_name)
+  rclcpp_lifecycle::LifecycleNode::SharedPtr & lc_node, const std::string & plugin_name)
 {
   parameter_name_ = plugin_name + ".arguments";
   lc_node_ = lc_node;
   lc_node_->declare_parameter<std::string>(parameter_name_, "");
 }
 
-std::optional<plansys2_msgs::msg::Plan>
-POPFPlanSolver::getPlan(
-  const std::string & domain, const std::string & problem,
-  const std::string & node_namespace)
+std::optional<plansys2_msgs::msg::Plan> POPFPlanSolver::getPlan(
+  const std::string & domain, const std::string & problem, const std::string & node_namespace)
 {
   if (system(nullptr) == 0) {
     return {};
@@ -52,7 +47,7 @@ POPFPlanSolver::getPlan(
 
   if (node_namespace != "") {
     std::filesystem::path tp = std::filesystem::temp_directory_path();
-    for (auto p : std::filesystem::path(node_namespace) ) {
+    for (auto p : std::filesystem::path(node_namespace)) {
       if (p != std::filesystem::current_path().root_directory()) {
         tp /= p;
       }
@@ -69,11 +64,11 @@ POPFPlanSolver::getPlan(
   problem_out << problem;
   problem_out.close();
 
-  int status = system(
-    ("ros2 run popf popf " +
-    lc_node_->get_parameter(parameter_name_).value_to_string() +
-    " /tmp/" + node_namespace + "/domain.pddl /tmp/" + node_namespace +
-    "/problem.pddl > /tmp/" + node_namespace + "/plan").c_str());
+  int status =
+    system(("ros2 run popf popf " + lc_node_->get_parameter(parameter_name_).value_to_string() +
+            " /tmp/" + node_namespace + "/domain.pddl /tmp/" + node_namespace +
+            "/problem.pddl > /tmp/" + node_namespace + "/plan")
+             .c_str());
 
   if (status == -1) {
     return {};
@@ -117,10 +112,7 @@ POPFPlanSolver::getPlan(
   return ret;
 }
 
-bool
-POPFPlanSolver::is_valid_domain(
-  const std::string & domain,
-  const std::string & node_namespace)
+bool POPFPlanSolver::is_valid_domain(const std::string & domain, const std::string & node_namespace)
 {
   if (system(nullptr) == 0) {
     return false;
@@ -128,7 +120,7 @@ POPFPlanSolver::is_valid_domain(
 
   std::filesystem::path temp_dir = std::filesystem::temp_directory_path();
   if (node_namespace != "") {
-    for (auto p : std::filesystem::path(node_namespace) ) {
+    for (auto p : std::filesystem::path(node_namespace)) {
       if (p != std::filesystem::current_path().root_directory()) {
         temp_dir /= p;
       }
@@ -144,9 +136,10 @@ POPFPlanSolver::is_valid_domain(
   problem_out << "(define (problem void) (:domain plansys2))";
   problem_out.close();
 
-  int status = system(
-    ("ros2 run popf popf " + temp_dir.string() + "/check_domain.pddl " + temp_dir.string() +
-    "/check_problem.pddl > " + temp_dir.string() + "/check.out").c_str());
+  int status =
+    system(("ros2 run popf popf " + temp_dir.string() + "/check_domain.pddl " + temp_dir.string() +
+            "/check_problem.pddl > " + temp_dir.string() + "/check.out")
+             .c_str());
 
   if (status == -1) {
     return false;

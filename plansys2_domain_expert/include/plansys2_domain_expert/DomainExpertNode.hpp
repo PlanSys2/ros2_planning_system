@@ -15,38 +15,35 @@
 #ifndef PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTNODE_HPP_
 #define PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTNODE_HPP_
 
-#include <optional>
-#include <memory>
-
-#include "plansys2_domain_expert/DomainExpert.hpp"
-
-#include "std_msgs/msg/string.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_domain_expert/DomainExpert.hpp"
+#include "plansys2_msgs/srv/get_domain.hpp"
+#include "plansys2_msgs/srv/get_domain_action_details.hpp"
+#include "plansys2_msgs/srv/get_domain_actions.hpp"
+#include "plansys2_msgs/srv/get_domain_durative_action_details.hpp"
 #include "plansys2_msgs/srv/get_domain_name.hpp"
 #include "plansys2_msgs/srv/get_domain_types.hpp"
-#include "plansys2_msgs/srv/get_domain_actions.hpp"
-#include "plansys2_msgs/srv/get_domain_action_details.hpp"
-#include "plansys2_msgs/srv/get_domain_durative_action_details.hpp"
-#include "plansys2_msgs/srv/get_domain.hpp"
 #include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_msgs/srv/get_states.hpp"
-
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "std_msgs/msg/string.hpp"
+
+#include <memory>
+#include <optional>
 
 namespace plansys2
 {
-
-/// DomainExpertNode contains a model, and manages the requests from the DomainExpertClient.
+/// DomainExpertNode contains a model, and manages the requests from the
+/// DomainExpertClient.
 class DomainExpertNode : public rclcpp_lifecycle::LifecycleNode
 {
 public:
   /// Create a new DomainExpertNode
   DomainExpertNode();
 
-  using CallbackReturnT =
-    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+  using CallbackReturnT = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
   /// Configures domain by creating a DomainExpert object
   /**
@@ -89,7 +86,6 @@ public:
    * \return Success or Failure
    */
   CallbackReturnT on_error(const rclcpp_lifecycle::State & state);
-
 
   /// Receives the result of the GetDomainName service call
   /**
@@ -224,12 +220,10 @@ private:
     get_domain_durative_actions_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainDurativeActionDetails>::SharedPtr
     get_domain_durative_action_details_service_;
-  rclcpp::Service<plansys2_msgs::srv::GetStates>::SharedPtr
-    get_domain_predicates_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetStates>::SharedPtr get_domain_predicates_service_;
   rclcpp::Service<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
     get_domain_predicate_details_service_;
-  rclcpp::Service<plansys2_msgs::srv::GetStates>::SharedPtr
-    get_domain_functions_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetStates>::SharedPtr get_domain_functions_service_;
   rclcpp::Service<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
     get_domain_function_details_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_service_;

@@ -12,34 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <iostream>
+#include "plansys2_executor/behavior_tree/check_timeout_node.hpp"
+
 #include <iomanip>
-#include <string>
+#include <iostream>
 #include <map>
 #include <memory>
+#include <string>
 #include <tuple>
-
-#include "plansys2_executor/behavior_tree/check_timeout_node.hpp"
 
 namespace plansys2
 {
-
-CheckTimeout::CheckTimeout(
-  const std::string & xml_tag_name,
-  const BT::NodeConfiguration & conf)
+CheckTimeout::CheckTimeout(const std::string & xml_tag_name, const BT::NodeConfiguration & conf)
 : ActionNodeBase(xml_tag_name, conf)
 {
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
-    "action_map");
+      "action_map");
 
   problem_client_ =
-    config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
-    "problem_client");
+    config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>("problem_client");
 }
 
-BT::NodeStatus
-CheckTimeout::tick()
+BT::NodeStatus CheckTimeout::tick()
 {
   std::string action;
   getInput("action", action);
@@ -55,11 +50,11 @@ CheckTimeout::tick()
     if (duration_overrun_percentage >= 0) {
       double max_duration = (1.0 + duration_overrun_percentage / 100.0) * duration;
       auto current_time = std::chrono::high_resolution_clock::now();
-      auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-        current_time - start_);
+      auto elapsed_time =
+        std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_);
       if (elapsed_time > std::chrono::duration<double>(max_duration)) {
-        std::cerr << "Actual duration of " << action << " exceeds max duration (" << std::fixed <<
-          std::setprecision(2) << max_duration << " secs)." << std::endl;
+        std::cerr << "Actual duration of " << action << " exceeds max duration (" << std::fixed
+                  << std::setprecision(2) << max_duration << " secs)." << std::endl;
         return BT::NodeStatus::FAILURE;
       }
     }

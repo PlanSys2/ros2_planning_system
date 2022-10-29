@@ -12,35 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <filesystem>
-
-#include <algorithm>
-#include <string>
-#include <memory>
-#include <iostream>
-#include <fstream>
-#include <map>
-#include <set>
-#include <vector>
-#include <plansys2_executor/ExecutorNodeBase.hpp>
-
-
-#include "plansys2_executor/ExecutorNode.hpp"
-#include "plansys2_executor/ActionExecutor.hpp"
-#include "plansys2_executor/BTBuilder.hpp"
-#include "plansys2_problem_expert/Utils.hpp"
-#include "plansys2_pddl_parser/Utils.h"
-
-#include "lifecycle_msgs/msg/state.hpp"
-#include "plansys2_msgs/msg/action_execution_info.hpp"
-#include "plansys2_msgs/msg/plan.hpp"
-
 #include "ament_index_cpp/get_package_share_directory.hpp"
-
 #include "behaviortree_cpp_v3/behavior_tree.h"
+#include "behaviortree_cpp_v3/blackboard.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/utils/shared_library.h"
-#include "behaviortree_cpp_v3/blackboard.h"
+#include "lifecycle_msgs/msg/state.hpp"
+#include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/BTBuilder.hpp"
+#include "plansys2_executor/ExecutorNode.hpp"
+#include "plansys2_msgs/msg/action_execution_info.hpp"
+#include "plansys2_msgs/msg/plan.hpp"
+#include "plansys2_pddl_parser/Utils.h"
+#include "plansys2_problem_expert/Utils.hpp"
+
+#include <algorithm>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
+
+#include <plansys2_executor/ExecutorNodeBase.hpp>
 
 #ifdef ZMQ_FOUND
 #include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
@@ -48,9 +44,9 @@
 
 #include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
+#include "plansys2_executor/behavior_tree/apply_observation_node.hpp"
 #include "plansys2_executor/behavior_tree/check_action_node.hpp"
 #include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
-#include "plansys2_executor/behavior_tree/apply_observation_node.hpp"
 #include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_timeout_node.hpp"
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
@@ -59,7 +55,6 @@
 
 namespace plansys2
 {
-
 using ExecutePlan = plansys2_msgs::action::ExecutePlan;
 using namespace std::chrono_literals;
 
@@ -77,12 +72,12 @@ ExecutorNodeBase::ExecutorNodeBase()
   this->declare_parameter<bool>("enable_dotgraph_legend", true);
   this->declare_parameter<bool>("print_graph", false);
   this->declare_parameter("action_timeouts.actions", std::vector<std::string>{});
-  // Declaring individual action parameters so they can be queried on the command line
+  // Declaring individual action parameters so they can be queried on the
+  // command line
   auto action_timeouts_actions = this->get_parameter("action_timeouts.actions").as_string_array();
   for (auto action : action_timeouts_actions) {
     this->declare_parameter<double>(
-      "action_timeouts." + action + ".duration_overrun_percentage",
-      0.0);
+      "action_timeouts." + action + ".duration_overrun_percentage", 0.0);
   }
 
 #ifdef ZMQ_FOUND
@@ -93,29 +88,21 @@ ExecutorNodeBase::ExecutorNodeBase()
 #endif
 
   execute_plan_action_server_ = rclcpp_action::create_server<ExecutePlan>(
-    this->get_node_base_interface(),
-    this->get_node_clock_interface(),
-    this->get_node_logging_interface(),
-    this->get_node_waitables_interface(),
-    "execute_plan",
+    this->get_node_base_interface(), this->get_node_clock_interface(),
+    this->get_node_logging_interface(), this->get_node_waitables_interface(), "execute_plan",
     std::bind(&ExecutorNodeBase::handle_goal, this, _1, _2),
     std::bind(&ExecutorNodeBase::handle_cancel, this, _1),
     std::bind(&ExecutorNodeBase::handle_accepted, this, _1));
 
   get_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
-    "executor/get_plan",
-    std::bind(
-      &ExecutorNodeBase::get_plan_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    "executor/get_plan", std::bind(
+                           &ExecutorNodeBase::get_plan_service_callback, this,
+                           std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }
 
+using CallbackReturnT = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
-using CallbackReturnT =
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
-
-CallbackReturnT
-ExecutorNodeBase::on_configure(const rclcpp_lifecycle::State & state)
+CallbackReturnT ExecutorNodeBase::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
 
@@ -129,7 +116,7 @@ ExecutorNodeBase::on_configure(const rclcpp_lifecycle::State & state)
 
   std::ifstream action_bt_ifs(default_action_bt_xml_filename);
   if (!action_bt_ifs) {
-    RCLCPP_ERROR_STREAM(get_logger(), "Error openning [" << default_action_bt_xml_filename << "]");
+    RCLCPP_ERROR_STREAM(get_logger(), "Error opening [" << default_action_bt_xml_filename << "]");
     return CallbackReturnT::FAILURE;
   }
 
@@ -147,7 +134,7 @@ ExecutorNodeBase::on_configure(const rclcpp_lifecycle::State & state)
   std::ifstream start_action_bt_ifs(default_start_action_bt_xml_filename);
   if (!start_action_bt_ifs) {
     RCLCPP_ERROR_STREAM(
-      get_logger(), "Error openning [" << default_start_action_bt_xml_filename << "]");
+      get_logger(), "Error opening [" << default_start_action_bt_xml_filename << "]");
     return CallbackReturnT::FAILURE;
   }
 
@@ -165,7 +152,7 @@ ExecutorNodeBase::on_configure(const rclcpp_lifecycle::State & state)
   std::ifstream end_action_bt_ifs(default_end_action_bt_xml_filename);
   if (!end_action_bt_ifs) {
     RCLCPP_ERROR_STREAM(
-      get_logger(), "Error openning [" << default_end_action_bt_xml_filename << "]");
+      get_logger(), "Error opening [" << default_end_action_bt_xml_filename << "]");
     return CallbackReturnT::FAILURE;
   }
 
@@ -173,8 +160,8 @@ ExecutorNodeBase::on_configure(const rclcpp_lifecycle::State & state)
     std::istreambuf_iterator<char>(end_action_bt_ifs), std::istreambuf_iterator<char>());
 
   dotgraph_pub_ = this->create_publisher<std_msgs::msg::String>("dot_graph", 1);
-  execution_info_pub_ = create_publisher<plansys2_msgs::msg::ActionExecutionInfo>(
-    "action_execution_info", 100);
+  execution_info_pub_ =
+    create_publisher<plansys2_msgs::msg::ActionExecutionInfo>("action_execution_info", 100);
   executing_plan_pub_ = create_publisher<plansys2_msgs::msg::Plan>(
     "executing_plan", rclcpp::QoS(100).transient_local());
 
@@ -186,8 +173,7 @@ ExecutorNodeBase::on_configure(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-CallbackReturnT
-ExecutorNodeBase::on_activate(const rclcpp_lifecycle::State & state)
+CallbackReturnT ExecutorNodeBase::on_activate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Activating...", get_name());
   dotgraph_pub_->on_activate();
@@ -198,8 +184,7 @@ ExecutorNodeBase::on_activate(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-CallbackReturnT
-ExecutorNodeBase::on_deactivate(const rclcpp_lifecycle::State & state)
+CallbackReturnT ExecutorNodeBase::on_deactivate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Deactivating...", get_name());
   dotgraph_pub_->on_deactivate();
@@ -209,8 +194,7 @@ ExecutorNodeBase::on_deactivate(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-CallbackReturnT
-ExecutorNodeBase::on_cleanup(const rclcpp_lifecycle::State & state)
+CallbackReturnT ExecutorNodeBase::on_cleanup(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Cleaning up...", get_name());
   dotgraph_pub_.reset();
@@ -220,8 +204,7 @@ ExecutorNodeBase::on_cleanup(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-CallbackReturnT
-ExecutorNodeBase::on_shutdown(const rclcpp_lifecycle::State & state)
+CallbackReturnT ExecutorNodeBase::on_shutdown(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Shutting down...", get_name());
   dotgraph_pub_.reset();
@@ -231,16 +214,14 @@ ExecutorNodeBase::on_shutdown(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-CallbackReturnT
-ExecutorNodeBase::on_error(const rclcpp_lifecycle::State & state)
+CallbackReturnT ExecutorNodeBase::on_error(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_ERROR(get_logger(), "[%s] Error transition", get_name());
 
   return CallbackReturnT::SUCCESS;
 }
 
-void
-ExecutorNodeBase::get_plan_service_callback(
+void ExecutorNodeBase::get_plan_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<plansys2_msgs::srv::GetPlan::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response)
@@ -254,8 +235,7 @@ ExecutorNodeBase::get_plan_service_callback(
   }
 }
 
-rclcpp_action::CancelResponse
-ExecutorNodeBase::handle_cancel(
+rclcpp_action::CancelResponse ExecutorNodeBase::handle_cancel(
   const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 {
   RCLCPP_DEBUG(this->get_logger(), "Received request to cancel goal");
@@ -265,17 +245,14 @@ ExecutorNodeBase::handle_cancel(
   return rclcpp_action::CancelResponse::ACCEPT;
 }
 
-void
-ExecutorNodeBase::handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
+void ExecutorNodeBase::handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 {
   using namespace std::placeholders;
   std::thread{std::bind(&ExecutorNodeBase::execute, this, _1), goal_handle}.detach();
 }
 
-std::vector<plansys2_msgs::msg::ActionExecutionInfo>
-ExecutorNodeBase::get_feedback_info(
-  std::shared_ptr<std::map<std::string,
-  ActionExecutionInfo>> action_map)
+std::vector<plansys2_msgs::msg::ActionExecutionInfo> ExecutorNodeBase::get_feedback_info(
+  std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map)
 {
   std::vector<plansys2_msgs::msg::ActionExecutionInfo> ret;
 
@@ -285,7 +262,8 @@ ExecutorNodeBase::get_feedback_info(
 
   for (const auto & action : *action_map) {
     if (!action.second.action_executor) {
-      RCLCPP_WARN(get_logger(), "Action executor does not exist for %s. Skipping", action.first.c_str());
+      RCLCPP_WARN(
+        get_logger(), "Action executor does not exist for %s. Skipping", action.first.c_str());
       continue;
     }
 
@@ -326,8 +304,7 @@ ExecutorNodeBase::get_feedback_info(
   return ret;
 }
 
-void
-ExecutorNodeBase::print_execution_info(
+void ExecutorNodeBase::print_execution_info(
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> exec_info)
 {
   fprintf(stderr, "Execution info =====================\n");
@@ -369,11 +346,12 @@ ExecutorNodeBase::print_execution_info(
   }
 }
 
-  rclcpp_action::GoalResponse
-  ExecutorNodeBase::handle_goal(const rclcpp_action::GoalUUID &uuid, std::shared_ptr<const ExecutePlan::Goal> goal) {
-    return rclcpp_action::GoalResponse::REJECT;
-  }
+rclcpp_action::GoalResponse ExecutorNodeBase::handle_goal(
+  const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const ExecutePlan::Goal> goal)
+{
+  return rclcpp_action::GoalResponse::REJECT;
+}
 
-  void ExecutorNodeBase::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle) {}
+void ExecutorNodeBase::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle) {}
 
 }  // namespace plansys2

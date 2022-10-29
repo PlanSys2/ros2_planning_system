@@ -15,26 +15,24 @@
 #ifndef PLANSYS2_BT_ACTIONS__BTACTIONNODE_HPP_
 #define PLANSYS2_BT_ACTIONS__BTACTIONNODE_HPP_
 
+#include "behaviortree_cpp_v3/action_node.h"
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+
 #include <memory>
 #include <string>
 
-#include "behaviortree_cpp_v3/action_node.h"
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
-
 namespace plansys2
 {
-
 using namespace std::chrono_literals;  // NOLINT
 
-template<class ActionT, class NodeT = rclcpp::Node>
+template <class ActionT, class NodeT = rclcpp::Node>
 class BtActionNode : public BT::ActionNodeBase
 {
 public:
   BtActionNode(
-    const std::string & xml_tag_name,
-    const std::string & action_name,
+    const std::string & xml_tag_name, const std::string & action_name,
     const BT::NodeConfiguration & conf)
   : BT::ActionNodeBase(xml_tag_name, conf), action_name_(action_name)
   {
@@ -58,14 +56,13 @@ public:
 
   BtActionNode() = delete;
 
-  virtual ~BtActionNode()
-  {
-  }
+  virtual ~BtActionNode() {}
 
   // Create instance of an action server
   bool createActionClient(const std::string & action_name)
   {
-    // Now that we have the ROS node to use, create the action client for this BT action
+    // Now that we have the ROS node to use, create the action client for this
+    // BT action
     action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name);
 
     // Make sure the server is actually there before continuing
@@ -75,74 +72,55 @@ public:
 
     if (!success_waiting) {
       RCLCPP_ERROR(
-        node_->get_logger(),
-        "Timeout (%ld secs) waiting for \"%s\" action server",
-        server_timeout_.count() * 1000,
-        action_name.c_str());
+        node_->get_logger(), "Timeout (%ld secs) waiting for \"%s\" action server",
+        server_timeout_.count() * 1000, action_name.c_str());
     }
 
     return success_waiting;
   }
 
-  // Any subclass of BtActionNode that accepts parameters must provide a providedPorts method
-  // and call providedBasicPorts in it.
+  // Any subclass of BtActionNode that accepts parameters must provide a
+  // providedPorts method and call providedBasicPorts in it.
   static BT::PortsList providedBasicPorts(BT::PortsList addition)
   {
     BT::PortsList basic = {
       BT::InputPort<std::string>("server_name", "Action server name"),
       BT::InputPort<double>(
-        "server_timeout",
-        5.0,
-        "The amount of time to wait for a response from the action server, in seconds")
-    };
+        "server_timeout", 5.0,
+        "The amount of time to wait for a response from "
+        "the action server, in seconds")};
     basic.insert(addition.begin(), addition.end());
 
     return basic;
   }
 
-  static BT::PortsList providedPorts()
-  {
-    return providedBasicPorts({});
-  }
+  static BT::PortsList providedPorts() { return providedBasicPorts({}); }
 
   // Derived classes can override any of the following methods to hook into the
   // processing for the action: on_tick, and on_success
 
-  // Could do dynamic checks, such as getting updates to values on the blackboard
-  // Can also update variable goal_updated_ to request a new goal
-  virtual BT::NodeStatus on_tick()
-  {
-    return BT::NodeStatus::RUNNING;
-  }
+  // Could do dynamic checks, such as getting updates to values on the
+  // blackboard Can also update variable goal_updated_ to request a new goal
+  virtual BT::NodeStatus on_tick() { return BT::NodeStatus::RUNNING; }
 
   // Provides the opportunity for derived classes to log feedback, update the
   // goal, or cancel the goal
-  virtual void on_feedback(
-    const std::shared_ptr<const typename ActionT::Feedback> feedback)
+  virtual void on_feedback(const std::shared_ptr<const typename ActionT::Feedback> feedback)
   {
     (void)feedback;
   }
 
-  // Called upon successful completion of the action. A derived class can override this
-  // method to put a value on the blackboard, for example.
-  virtual BT::NodeStatus on_success()
-  {
-    return BT::NodeStatus::SUCCESS;
-  }
+  // Called upon successful completion of the action. A derived class can
+  // override this method to put a value on the blackboard, for example.
+  virtual BT::NodeStatus on_success() { return BT::NodeStatus::SUCCESS; }
 
-  // Called when a the action is aborted. By default, the node will return FAILURE.
-  // The user may override it to return another value, instead.
-  virtual BT::NodeStatus on_aborted()
-  {
-    return BT::NodeStatus::FAILURE;
-  }
+  // Called when a the action is aborted. By default, the node will return
+  // FAILURE. The user may override it to return another value, instead.
+  virtual BT::NodeStatus on_aborted() { return BT::NodeStatus::FAILURE; }
 
-  // Called when a the action is cancelled. By default, the node will return SUCCESS.
-  // The user may override it to return another value, instead.
-  virtual BT::NodeStatus on_cancelled()
-  {
-    return BT::NodeStatus::SUCCESS;
-  }
+  // Called when a the action is cancelled. By default, the node will return
+  // SUCCESS. The user may override it to return another value, instead.
+  virtual BT::NodeStatus on_cancelled() { return BT::NodeStatus::SUCCESS; }
 
   // The main override required by a BT action
   BT::NodeStatus tick() override
@@ -179,9 +157,9 @@ public:
     // The following code corresponds to the "RUNNING" loop
     if (rclcpp::ok() && !goal_result_available_) {
       auto goal_status = goal_handle_->get_status();
-      if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
-        goal_status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED))
-      {
+      if (
+        goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
+                          goal_status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED)) {
         goal_updated_ = false;
         if (!on_new_goal_received()) {
           cancel_goal();
@@ -235,13 +213,12 @@ protected:
   void cancel_goal()
   {
     auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
-    if (rclcpp::spin_until_future_complete(
+    if (
+      rclcpp::spin_until_future_complete(
         node_->get_node_base_interface(), future_cancel, server_timeout_) !=
-      rclcpp::FutureReturnCode::SUCCESS)
-    {
+      rclcpp::FutureReturnCode::SUCCESS) {
       RCLCPP_ERROR(
-        node_->get_logger(),
-        "Failed to cancel action server for %s", action_name_.c_str());
+        node_->get_logger(), "Failed to cancel action server for %s", action_name_.c_str());
     }
   }
 
@@ -260,7 +237,6 @@ protected:
            status == action_msgs::msg::GoalStatus::STATUS_EXECUTING;
   }
 
-
   bool on_new_goal_received()
   {
     goal_result_available_ = false;
@@ -268,42 +244,37 @@ protected:
     send_goal_options.result_callback =
       [this](const typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult & result) {
         // TODO(#1652): a work around until rcl_action interface is updated
-        // if goal ids are not matched, the older goal call this callback so ignore the result
-        // if matched, it must be processed (including aborted)
+        // if goal ids are not matched, the older goal call this callback so
+        // ignore the result if matched, it must be processed (including
+        // aborted)
         if (this->goal_handle_->get_goal_id() == result.goal_id) {
           goal_result_available_ = true;
           result_ = result;
         }
       };
     send_goal_options.feedback_callback =
-      [this](typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr,
+      [this](
+        typename rclcpp_action::ClientGoalHandle<ActionT>::SharedPtr,
         const std::shared_ptr<const typename ActionT::Feedback> feedback) {
         on_feedback(feedback);
       };
 
-    RCLCPP_INFO(
-      node_->get_logger(),
-      "Sending goal to action server %s",
-      action_name_.c_str());
+    RCLCPP_INFO(node_->get_logger(), "Sending goal to action server %s", action_name_.c_str());
     auto future_goal_handle = action_client_->async_send_goal(goal_, send_goal_options);
 
-    if (rclcpp::spin_until_future_complete(
+    if (
+      rclcpp::spin_until_future_complete(
         node_->get_node_base_interface(), future_goal_handle, server_timeout_) !=
-      rclcpp::FutureReturnCode::SUCCESS)
-    {
+      rclcpp::FutureReturnCode::SUCCESS) {
       RCLCPP_ERROR(
-        node_->get_logger(),
-        "Failed to send goal to action server %s",
-        action_name_.c_str());
+        node_->get_logger(), "Failed to send goal to action server %s", action_name_.c_str());
       return false;
     }
 
     goal_handle_ = future_goal_handle.get();
     if (!goal_handle_) {
       RCLCPP_ERROR(
-        node_->get_logger(),
-        "Goal was rejected by action server %s",
-        action_name_.c_str());
+        node_->get_logger(), "Goal was rejected by action server %s", action_name_.c_str());
       return false;
     }
 
@@ -313,9 +284,11 @@ protected:
   void increment_recovery_count()
   {
     int recovery_count = 0;
-    config().blackboard->get<int>("number_recoveries", recovery_count);  // NOLINT
+    config().blackboard->get<int>("number_recoveries",
+                                  recovery_count);  // NOLINT
     recovery_count += 1;
-    config().blackboard->set<int>("number_recoveries", recovery_count);  // NOLINT
+    config().blackboard->set<int>("number_recoveries",
+                                  recovery_count);  // NOLINT
   }
 
   std::string action_name_;
@@ -335,7 +308,6 @@ protected:
   // new action goal is sent or canceled
   std::chrono::milliseconds server_timeout_;
 };
-
 
 }  // namespace plansys2
 

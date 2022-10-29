@@ -15,37 +15,31 @@
 #ifndef PLANSYS2_PLANNER__PLANNERNODE_HPP_
 #define PLANSYS2_PLANNER__PLANNERNODE_HPP_
 
-#include <memory>
-#include <unordered_map>
-#include <string>
-#include <vector>
-
-#include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-
-#include "plansys2_core/PlanSolverBase.hpp"
-
-#include "std_msgs/msg/empty.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_core/PlanSolverBase.hpp"
+#include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_msgs/srv/get_plan.hpp"
-
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "pluginlib/class_list_macros.hpp"
+#include "pluginlib/class_loader.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "std_msgs/msg/empty.hpp"
 
-#include "pluginlib/class_loader.hpp"
-#include "pluginlib/class_list_macros.hpp"
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace plansys2
 {
-
 class PlannerNode : public rclcpp_lifecycle::LifecycleNode
 {
 public:
   PlannerNode();
 
-  using CallbackReturnT =
-    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+  using CallbackReturnT = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
   using SolverMap = std::unordered_map<std::string, plansys2::PlanSolverBase::Ptr>;
 
@@ -69,27 +63,23 @@ private:
   std::vector<std::string> solver_ids_;
   std::vector<std::string> solver_types_;
 
-  rclcpp::Service<plansys2_msgs::srv::GetPlan>::SharedPtr
-    get_plan_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetPlan>::SharedPtr get_plan_service_;
 };
 
-template<typename NodeT>
+template <typename NodeT>
 void declare_parameter_if_not_declared(
-  NodeT node,
-  const std::string & param_name,
+  NodeT node, const std::string & param_name,
   const rclcpp::ParameterValue & default_value = rclcpp::ParameterValue(),
   const rcl_interfaces::msg::ParameterDescriptor & parameter_descriptor =
-  rcl_interfaces::msg::ParameterDescriptor())
+    rcl_interfaces::msg::ParameterDescriptor())
 {
   if (!node->has_parameter(param_name)) {
     node->declare_parameter(param_name, default_value, parameter_descriptor);
   }
 }
 
-template<typename NodeT>
-std::string get_plugin_type_param(
-  NodeT node,
-  const std::string & plugin_name)
+template <typename NodeT>
+std::string get_plugin_type_param(NodeT node, const std::string & plugin_name)
 {
   declare_parameter_if_not_declared(node, plugin_name + ".plugin", rclcpp::ParameterValue(""));
   std::string plugin_type;

@@ -15,13 +15,7 @@
 #ifndef PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTCLIENT_HPP_
 #define PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTCLIENT_HPP_
 
-#include <optional>
-#include <string>
-#include <vector>
-
-#include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 #include "plansys2_core/Types.hpp"
-
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/param.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
@@ -42,12 +36,15 @@
 #include "plansys2_msgs/srv/get_states.hpp"
 #include "plansys2_msgs/srv/is_problem_goal_satisfied.hpp"
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
-
+#include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 #include "rclcpp/rclcpp.hpp"
+
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace plansys2
 {
-
 class ProblemExpertClient : public ProblemExpertInterface
 {
 public:
@@ -86,59 +83,39 @@ public:
   std::string getProblem();
   bool addProblem(const std::string & problem_str);
 
-  rclcpp::Time getUpdateTime() const {return update_time_;}
+  rclcpp::Time getUpdateTime() const { return update_time_; }
 
 private:
-  rclcpp::Client<plansys2_msgs::srv::AddProblem>::SharedPtr
-    add_problem_client_;
-  rclcpp::Client<plansys2_msgs::srv::AddProblemGoal>::SharedPtr
-    add_problem_goal_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr
-    add_problem_instance_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
-    add_problem_predicate_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectConditional>::SharedPtr
-      add_problem_conditional_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
-    add_problem_function_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetProblemGoal>::SharedPtr
-    get_problem_goal_client_;
+  rclcpp::Client<plansys2_msgs::srv::AddProblem>::SharedPtr add_problem_client_;
+  rclcpp::Client<plansys2_msgs::srv::AddProblemGoal>::SharedPtr add_problem_goal_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr add_problem_instance_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr add_problem_predicate_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectConditional>::SharedPtr add_problem_conditional_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr add_problem_function_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblemGoal>::SharedPtr get_problem_goal_client_;
   rclcpp::Client<plansys2_msgs::srv::GetProblemInstanceDetails>::SharedPtr
     get_problem_instance_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetProblemInstances>::SharedPtr
-    get_problem_instances_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblemInstances>::SharedPtr get_problem_instances_client_;
   rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
     get_problem_predicate_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr
-    get_problem_predicates_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetConditionals>::SharedPtr
-      get_problem_conditionals_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_problem_predicates_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetConditionals>::SharedPtr get_problem_conditionals_client_;
   rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
     get_problem_function_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr
-    get_problem_functions_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetProblem>::SharedPtr
-    get_problem_client_;
-  rclcpp::Client<plansys2_msgs::srv::RemoveProblemGoal>::SharedPtr
-    remove_problem_goal_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_problem_functions_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblem>::SharedPtr get_problem_client_;
+  rclcpp::Client<plansys2_msgs::srv::RemoveProblemGoal>::SharedPtr remove_problem_goal_client_;
   rclcpp::Client<plansys2_msgs::srv::ClearProblemKnowledge>::SharedPtr
     clear_problem_knowledge_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr
-    remove_problem_instance_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
-    remove_problem_predicate_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr remove_problem_instance_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr remove_problem_predicate_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectConditional>::SharedPtr
-      remove_problem_conditional_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
-    remove_problem_function_client_;
-  rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr
-    exist_problem_predicate_client_;
-  rclcpp::Client<plansys2_msgs::srv::ExistConditional>::SharedPtr
-      exist_problem_conditional_client_;
-  rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr
-    exist_problem_function_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
-    update_problem_function_client_;
+    remove_problem_conditional_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr remove_problem_function_client_;
+  rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr exist_problem_predicate_client_;
+  rclcpp::Client<plansys2_msgs::srv::ExistConditional>::SharedPtr exist_problem_conditional_client_;
+  rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr exist_problem_function_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr update_problem_function_client_;
   rclcpp::Client<plansys2_msgs::srv::IsProblemGoalSatisfied>::SharedPtr
     is_problem_goal_satisfied_client_;
   rclcpp::Node::SharedPtr node_;

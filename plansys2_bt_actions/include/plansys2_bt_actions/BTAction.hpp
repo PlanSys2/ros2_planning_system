@@ -15,15 +15,15 @@
 #ifndef PLANSYS2_BT_ACTIONS__BTACTION_HPP_
 #define PLANSYS2_BT_ACTIONS__BTACTION_HPP_
 
+#include "behaviortree_cpp_v3/behavior_tree.h"
+#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp_v3/loggers/bt_file_logger.h"
+#include "behaviortree_cpp_v3/loggers/bt_minitrace_logger.h"
+#include "behaviortree_cpp_v3/xml_parsing.h"
+
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "behaviortree_cpp_v3/behavior_tree.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/xml_parsing.h"
-#include "behaviortree_cpp_v3/loggers/bt_file_logger.h"
-#include "behaviortree_cpp_v3/loggers/bt_minitrace_logger.h"
 
 #ifdef ZMQ_FOUND
 #include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
@@ -34,29 +34,26 @@
 
 namespace plansys2
 {
-
 class BTAction : public plansys2::ActionExecutorClient
 {
 public:
-  explicit BTAction(
-    const std::string & action,
-    const std::chrono::nanoseconds & rate);
+  explicit BTAction(const std::string & action, const std::chrono::nanoseconds & rate);
 
-  const std::string & getActionName() const {return action_;}
-  const std::string & getBTFile() const {return bt_xml_file_;}
+  const std::string & getActionName() const { return action_; }
+  const std::string & getBTFile() const { return bt_xml_file_; }
 
 protected:
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_configure(const rclcpp_lifecycle::State & previous_state);
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_configure(
+    const rclcpp_lifecycle::State & previous_state);
 
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_cleanup(const rclcpp_lifecycle::State & previous_state);
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_cleanup(
+    const rclcpp_lifecycle::State & previous_state);
 
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_activate(const rclcpp_lifecycle::State & previous_state);
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_activate(
+    const rclcpp_lifecycle::State & previous_state);
 
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_deactivate(const rclcpp_lifecycle::State & previous_state);
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_deactivate(
+    const rclcpp_lifecycle::State & previous_state);
 
   void do_work();
 

@@ -14,10 +14,8 @@
 
 #include "plansys2_executor/ExecutorNode.hpp"
 
-
 namespace plansys2
 {
-
 using ExecutePlan = plansys2_msgs::action::ExecutePlan;
 using namespace std::chrono_literals;
 
@@ -28,13 +26,11 @@ ExecutorNode::ExecutorNode() : ExecutorNodeBase()
   get_ordered_sub_goals_service_ = create_service<plansys2_msgs::srv::GetOrderedSubGoals>(
     "executor/get_ordered_sub_goals",
     std::bind(
-      &ExecutorNode::get_ordered_sub_goals_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      &ExecutorNode::get_ordered_sub_goals_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
 }
 
-void
-ExecutorNode::get_ordered_sub_goals_service_callback(
+void ExecutorNode::get_ordered_sub_goals_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<plansys2_msgs::srv::GetOrderedSubGoals::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetOrderedSubGoals::Response> response)
@@ -48,8 +44,7 @@ ExecutorNode::get_ordered_sub_goals_service_callback(
   }
 }
 
-std::optional<std::vector<plansys2_msgs::msg::Tree>>
-ExecutorNode::getOrderedSubGoals()
+std::optional<std::vector<plansys2_msgs::msg::Tree>> ExecutorNode::getOrderedSubGoals()
 {
   if (!current_plan_.has_value()) {
     return {};
@@ -63,7 +58,7 @@ ExecutorNode::getOrderedSubGoals()
   std::vector<uint32_t> unordered_subgoals = parser::pddl::getSubtreeIds(goal);
 
   // just in case some goals are already satisfied
-  for (auto it = unordered_subgoals.begin(); it != unordered_subgoals.end(); ) {
+  for (auto it = unordered_subgoals.begin(); it != unordered_subgoals.end();) {
     if (check(goal, local_predicates, local_functions, *it)) {
       plansys2_msgs::msg::Tree new_goal;
       parser::pddl::fromString(new_goal, "(and " + parser::pddl::toString(goal, (*it)) + ")");
@@ -76,19 +71,18 @@ ExecutorNode::getOrderedSubGoals()
 
   for (const auto & plan_item : current_plan_.value().items) {
     std::shared_ptr<plansys2_msgs::msg::DurativeAction> durative_action =
-    domain_client_->getDurativeAction(
-    get_action_name(plan_item.action), get_action_params(plan_item.action));
-    if (durative_action){
+      domain_client_->getDurativeAction(
+        get_action_name(plan_item.action), get_action_params(plan_item.action));
+    if (durative_action) {
       apply(durative_action->at_start_effects, local_predicates, local_functions);
       apply(durative_action->at_end_effects, local_predicates, local_functions);
-    } else{
+    } else {
       std::shared_ptr<plansys2_msgs::msg::Action> action = domain_client_->getAction(
-      get_action_name(plan_item.action), get_action_params(plan_item.action));
+        get_action_name(plan_item.action), get_action_params(plan_item.action));
       apply(action->effects, local_predicates, local_functions);
     }
 
-
-    for (auto it = unordered_subgoals.begin(); it != unordered_subgoals.end(); ) {
+    for (auto it = unordered_subgoals.begin(); it != unordered_subgoals.end();) {
       if (check(goal, local_predicates, local_functions, *it)) {
         plansys2_msgs::msg::Tree new_goal;
         parser::pddl::fromString(new_goal, "(and " + parser::pddl::toString(goal, (*it)) + ")");
@@ -103,10 +97,8 @@ ExecutorNode::getOrderedSubGoals()
   return ordered_goals;
 }
 
-rclcpp_action::GoalResponse
-ExecutorNode::handle_goal(
-  const rclcpp_action::GoalUUID & uuid,
-  std::shared_ptr<const ExecutePlan::Goal> goal)
+rclcpp_action::GoalResponse ExecutorNode::handle_goal(
+  const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const ExecutePlan::Goal> goal)
 {
   RCLCPP_DEBUG(this->get_logger(), "Received goal request with order");
 
@@ -116,8 +108,7 @@ ExecutorNode::handle_goal(
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
-void
-ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
+void ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 {
   auto feedback = std::make_shared<ExecutePlan::Feedback>();
   auto result = std::make_shared<ExecutePlan::Result>();
@@ -144,32 +135,36 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   for (const auto & plan_item : current_plan_.value().items) {
     auto index = BTBuilder::to_action_id(plan_item, 3);
 
-    auto durative_action_info = domain_client_->getDurativeAction(get_action_name(plan_item.action), get_action_params(plan_item.action));
-    if (durative_action_info){
+    auto durative_action_info = domain_client_->getDurativeAction(
+      get_action_name(plan_item.action), get_action_params(plan_item.action));
+    if (durative_action_info) {
       (*action_map)[index] = ActionExecutionInfo();
       (*action_map)[index].action_executor =
-          ActionExecutor::make_shared(plan_item.action, shared_from_this());
+        ActionExecutor::make_shared(plan_item.action, shared_from_this());
       (*action_map)[index].durative_action_info = durative_action_info;
       (*action_map)[index].duration = plan_item.duration;
       std::string action_name = (*action_map)[index].durative_action_info->name;
-      if (std::find(
-          action_timeout_actions.begin(), action_timeout_actions.end(),
-          action_name) != action_timeout_actions.end() &&
-          this->has_parameter("action_timeouts." + action_name + ".duration_overrun_percentage"))
-      {
-        (*action_map)[index].duration_overrun_percentage = this->get_parameter(
-            "action_timeouts." + action_name + ".duration_overrun_percentage").as_double();
+      if (
+        std::find(action_timeout_actions.begin(), action_timeout_actions.end(), action_name) !=
+          action_timeout_actions.end() &&
+        this->has_parameter("action_timeouts." + action_name + ".duration_overrun_percentage")) {
+        (*action_map)[index].duration_overrun_percentage =
+          this->get_parameter("action_timeouts." + action_name + ".duration_overrun_percentage")
+            .as_double();
       }
       RCLCPP_INFO(
-          get_logger(), "Action %s timeout percentage %f", action_name.c_str(),
-          (*action_map)[index].duration_overrun_percentage);
+        get_logger(), "Action %s timeout percentage %f", action_name.c_str(),
+        (*action_map)[index].duration_overrun_percentage);
     }
 
-    auto action_info = domain_client_->getAction(get_action_name(plan_item.action), get_action_params(plan_item.action));
-    if (action_info) { // TODO support both action types??
+    auto action_info = domain_client_->getAction(
+      get_action_name(plan_item.action), get_action_params(plan_item.action));
+    if (action_info) {  // TODO support both action types??
       (*action_map)[index] = ActionExecutionInfo();
-      (*action_map)[index].action_executor = ActionExecutor::make_shared(plan_item.action, shared_from_this());
-      (*action_map)[index].durative_action_info = std::make_shared<plansys2_msgs::msg::DurativeAction>();
+      (*action_map)[index].action_executor =
+        ActionExecutor::make_shared(plan_item.action, shared_from_this());
+      (*action_map)[index].durative_action_info =
+        std::make_shared<plansys2_msgs::msg::DurativeAction>();
       (*action_map)[index].durative_action_info->name = action_info->name;
       (*action_map)[index].durative_action_info->parameters = action_info->parameters;
       (*action_map)[index].durative_action_info->observe = action_info->observe;
@@ -177,19 +172,18 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
       (*action_map)[index].durative_action_info->at_end_effects = action_info->effects;
       (*action_map)[index].duration = plan_item.duration;
       std::string action_name = action_info->name;
-      if (std::find(
-          action_timeout_actions.begin(), action_timeout_actions.end(),
-          action_name) != action_timeout_actions.end() &&
-          this->has_parameter("action_timeouts." + action_name + ".duration_overrun_percentage"))
-      {
-        (*action_map)[index].duration_overrun_percentage = this->get_parameter(
-            "action_timeouts." + action_name + ".duration_overrun_percentage").as_double();
+      if (
+        std::find(action_timeout_actions.begin(), action_timeout_actions.end(), action_name) !=
+          action_timeout_actions.end() &&
+        this->has_parameter("action_timeouts." + action_name + ".duration_overrun_percentage")) {
+        (*action_map)[index].duration_overrun_percentage =
+          this->get_parameter("action_timeouts." + action_name + ".duration_overrun_percentage")
+            .as_double();
       }
       RCLCPP_INFO(
-          get_logger(), "Action %s timeout percentage %f", action_name.c_str(),
-          (*action_map)[index].duration_overrun_percentage);
+        get_logger(), "Action %s timeout percentage %f", action_name.c_str(),
+        (*action_map)[index].duration_overrun_percentage);
     }
-
   }
 
   ordered_sub_goals_ = getOrderedSubGoals();
@@ -256,26 +250,24 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   if (this->get_parameter("enable_groot_monitoring").as_bool()) {
     RCLCPP_DEBUG(
       get_logger(),
-      "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
+      "[%s] Groot monitoring: Publisher port: %d, Server port: %d, "
+      "Max msgs per second: %d",
       get_name(), publisher_port, server_port, max_msgs_per_second);
     try {
       publisher_zmq.reset(
-        new BT::PublisherZMQ(
-          tree, max_msgs_per_second, publisher_port,
-          server_port));
+        new BT::PublisherZMQ(tree, max_msgs_per_second, publisher_port, server_port));
     } catch (const BT::LogicError & exc) {
       RCLCPP_ERROR(get_logger(), "ZMQ error: %s", exc.what());
     }
   }
 #endif
 
-  auto info_pub = create_wall_timer(
-    1s, [this, &action_map]() {
-      auto msgs = get_feedback_info(action_map);
-      for (const auto & msg : msgs) {
-        execution_info_pub_->publish(msg);
-      }
-    });
+  auto info_pub = create_wall_timer(1s, [this, &action_map]() {
+    auto msgs = get_feedback_info(action_map);
+    for (const auto & msg : msgs) {
+      execution_info_pub_->publish(msg);
+    }
+  });
 
   rclcpp::Rate rate(10);
   auto status = BT::NodeStatus::RUNNING;
@@ -291,8 +283,8 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     feedback->action_execution_status = get_feedback_info(action_map);
     goal_handle->publish_feedback(feedback);
 
-    dotgraph_msg.data = bt_builder->get_dotgraph(
-      action_map, this->get_parameter("enable_dotgraph_legend").as_bool());
+    dotgraph_msg.data =
+      bt_builder->get_dotgraph(action_map, this->get_parameter("enable_dotgraph_legend").as_bool());
     dotgraph_pub_->publish(dotgraph_msg);
 
     rate.sleep();
@@ -307,8 +299,8 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     RCLCPP_ERROR(get_logger(), "Executor BT finished with FAILURE state");
   }
 
-  dotgraph_msg.data = bt_builder->get_dotgraph(
-    action_map, this->get_parameter("enable_dotgraph_legend").as_bool());
+  dotgraph_msg.data =
+    bt_builder->get_dotgraph(action_map, this->get_parameter("enable_dotgraph_legend").as_bool());
   dotgraph_pub_->publish(dotgraph_msg);
 
   result->success = status == BT::NodeStatus::SUCCESS;
@@ -336,6 +328,5 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     }
   }
 }
-
 
 }  // namespace plansys2

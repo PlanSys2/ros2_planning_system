@@ -15,21 +15,20 @@
 #ifndef PLANSYS2_PROBLEM_EXPERT__UTILS_HPP_
 #define PLANSYS2_PROBLEM_EXPERT__UTILS_HPP_
 
-#include <tuple>
-#include <memory>
-#include <string>
-#include <map>
-#include <vector>
-#include <set>
-#include <utility>
-
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 namespace plansys2
 {
-
 /// Evaluate a PDDL expression represented as a tree.
 /**
  * \param[in] node The root node of the PDDL expression.
@@ -41,50 +40,39 @@ namespace plansys2
  * \param[in] negate Invert the truth value.
  * \return result <- tuple(bool, bool, double)
  *         result(0) true if success
- *         result(1) truth value of boolen expression
+ *         result(1) truth value of boolean expression
  *         result(2) value of numeric expression
  */
 std::tuple<bool, bool, double> evaluate(
   const plansys2_msgs::msg::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
-  std::vector<plansys2::Predicate> & predicates,
-  std::vector<plansys2::Function> & functions,
-  bool apply = false,
-  bool use_state = false,
-  uint8_t node_id = 0,
-  bool negate = false);
+  std::vector<plansys2::Predicate> & predicates, std::vector<plansys2::Function> & functions,
+  bool apply = false, bool use_state = false, uint8_t node_id = 0, bool negate = false);
 
 std::tuple<bool, bool, double> evaluate(
   const plansys2_msgs::msg::Tree & tree,
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
-  bool apply = false,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client, bool apply = false,
   uint32_t node_id = 0);
 
 std::tuple<bool, bool, double> evaluate(
-  const plansys2_msgs::msg::Tree & tree,
-  std::vector<plansys2::Predicate> & predicates,
-  std::vector<plansys2::Function> & functions,
-  bool apply = false,
-  uint32_t node_id = 0);
+  const plansys2_msgs::msg::Tree & tree, std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions, bool apply = false, uint32_t node_id = 0);
 
 /// Check a PDDL expression represented as a tree.
 /**
-* \param[in] node The root node of the PDDL expression.
-* \param[in] problem_client The problem expert client.
-* \return ret Truth value of the PDDL expression.
-*
-* This function calls the evaluate function.
-*/
+ * \param[in] node The root node of the PDDL expression.
+ * \param[in] problem_client The problem expert client.
+ * \return ret Truth value of the PDDL expression.
+ *
+ * This function calls the evaluate function.
+ */
 bool check(
   const plansys2_msgs::msg::Tree & tree,
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
-  uint32_t node_id = 0);
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client, uint32_t node_id = 0);
 
 bool check(
-  const plansys2_msgs::msg::Tree & tree,
-  std::vector<plansys2::Predicate> & predicates,
-  std::vector<plansys2::Function> & functions,
-  uint32_t node_id = 0);
+  const plansys2_msgs::msg::Tree & tree, std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions, uint32_t node_id = 0);
 
 /// Apply a PDDL expression represented as a tree.
 /**
@@ -96,28 +84,25 @@ bool check(
  */
 bool apply(
   const plansys2_msgs::msg::Tree & tree,
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
-  uint32_t node_id = 0);
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client, uint32_t node_id = 0);
 
 bool apply(
-  const plansys2_msgs::msg::Tree & tree,
-  std::vector<plansys2::Predicate> & predicates,
-  std::vector<plansys2::Function> & functions,
-  uint32_t node_id = 0);
+  const plansys2_msgs::msg::Tree & tree, std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions, uint32_t node_id = 0);
 
 /// Parse the action expression and time (optional) from an input string.
 /**
-* \param[in] input The input string.
-* \return result <- pair(string, int)
-*         result(0) The action expression.
-*         result(1) The action start time.
-*
-* The input string can have either of the following formats.
-*   "(<name> <param_1> ... <param_n>)"
-*   "(<name> <param_1> ... <param_n>):<time>"
+ * \param[in] input The input string.
+ * \return result <- pair(string, int)
+ *         result(0) The action expression.
+ *         result(1) The action start time.
+ *
+ * The input string can have either of the following formats.
+ *   "(<name> <param_1> ... <param_n>)"
+ *   "(<name> <param_1> ... <param_n>):<time>"
  * The output action expression will have the following format.
  *   "<name> <param_1> ... <param_n>"
-*/
+ */
 std::pair<std::string, int> parse_action(const std::string & input);
 
 /// Parse the action expression from an input string.

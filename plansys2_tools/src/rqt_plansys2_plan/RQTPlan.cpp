@@ -12,39 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <unistd.h>
+#include "rqt_plansys2_plan/RQTPlan.hpp"
 
+#include "rqt_plansys2_plan/PlanTree.hpp"
+
+#include <QCheckBox>
 #include <QDebug>
-#include <QTime>
-#include <QTimer>
-#include <QPushButton>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPainter>
-#include <QCheckBox>
+#include <QPushButton>
+#include <QTime>
+#include <QTimer>
 #include <algorithm>
 #include <memory>
-#include <utility>
 #include <string>
+#include <utility>
 
 #include <pluginlib/class_list_macros.hpp>
-
-
-#include "rqt_plansys2_plan/RQTPlan.hpp"
-#include "rqt_plansys2_plan/PlanTree.hpp"
-
+#include <unistd.h>
 
 namespace rqt_plansys2_plan
 {
-
 using std::placeholders::_1;
 
-RQTPlan::RQTPlan()
-: rqt_gui_cpp::Plugin(),
-  widget_(0)
-{
-  setObjectName("RQTPlan");
-}
+RQTPlan::RQTPlan() : rqt_gui_cpp::Plugin(), widget_(0) { setObjectName("RQTPlan"); }
 
 void RQTPlan::initPlugin(qt_gui_cpp::PluginContext & context)
 {
@@ -53,8 +45,7 @@ void RQTPlan::initPlugin(qt_gui_cpp::PluginContext & context)
 
   if (context.serialNumber() > 1) {
     widget_->setWindowTitle(
-      widget_->windowTitle() + " (" +
-      QString::number(context.serialNumber()) + ")");
+      widget_->windowTitle() + " (" + QString::number(context.serialNumber()) + ")");
   }
   context.addWidget(widget_);
 
@@ -70,8 +61,7 @@ void RQTPlan::initPlugin(qt_gui_cpp::PluginContext & context)
   controller_spin_timer_->start(100);
 
   action_execution_info_ = node_->create_subscription<plansys2_msgs::msg::ActionExecutionInfo>(
-    "action_execution_info", 100,
-    std::bind(&RQTPlan::execution_info_callback, this, _1));
+    "action_execution_info", 100, std::bind(&RQTPlan::execution_info_callback, this, _1));
 
   executing_plan_ = node_->create_subscription<plansys2_msgs::msg::Plan>(
     "executing_plan", rclcpp::QoS(100).transient_local(),
@@ -81,19 +71,15 @@ void RQTPlan::initPlugin(qt_gui_cpp::PluginContext & context)
   need_update_info_ = false;
 }
 
-void RQTPlan::shutdownPlugin()
-{
-}
+void RQTPlan::shutdownPlugin() {}
 
-void
-RQTPlan::execution_info_callback(plansys2_msgs::msg::ActionExecutionInfo::UniquePtr msg)
+void RQTPlan::execution_info_callback(plansys2_msgs::msg::ActionExecutionInfo::UniquePtr msg)
 {
   plan_info_[msg->action_full_name] = std::move(msg);
   need_update_info_ = true;
 }
 
-void
-RQTPlan::plan_callback(plansys2_msgs::msg::Plan::UniquePtr msg)
+void RQTPlan::plan_callback(plansys2_msgs::msg::Plan::UniquePtr msg)
 {
   plan_ = std::move(msg);
 
@@ -106,16 +92,14 @@ RQTPlan::plan_callback(plansys2_msgs::msg::Plan::UniquePtr msg)
   need_update_plan_ = true;
 }
 
-void
-RQTPlan::saveSettings(
+void RQTPlan::saveSettings(
   qt_gui_cpp::Settings & plugin_settings, qt_gui_cpp::Settings & instance_settings) const
 {
   (void)plugin_settings;
   (void)instance_settings;
 }
 
-std::optional<QTreeWidgetItem *>
-RQTPlan::get_plan_item_row(const std::string & action_full_name)
+std::optional<QTreeWidgetItem *> RQTPlan::get_plan_item_row(const std::string & action_full_name)
 {
   for (int i = 0; i < plan_tree_->topLevelItemCount(); ++i) {
     QTreeWidgetItem * item = plan_tree_->topLevelItem(i);
@@ -127,16 +111,14 @@ RQTPlan::get_plan_item_row(const std::string & action_full_name)
   return {};
 }
 
-void
-RQTPlan::fill_row_info(
+void RQTPlan::fill_row_info(
   QTreeWidgetItem * row, const plansys2_msgs::msg::ActionExecutionInfo & info)
 {
   switch (info.status) {
     case plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED:
       row->setText(1, QString("NOT_EXECUTED"));
       row->setText(
-        4,
-        "0.0 / " + QString::number(rclcpp::Duration(info.duration).seconds(), 'f', 5));
+        4, "0.0 / " + QString::number(rclcpp::Duration(info.duration).seconds(), 'f', 5));
       break;
     case plansys2_msgs::msg::ActionExecutionInfo::EXECUTING:
       row->setText(1, QString("EXECUTING"));
@@ -144,8 +126,8 @@ RQTPlan::fill_row_info(
       row->setText(3, QString(info.message_status.c_str()));
       row->setText(
         4, QString::number(
-          (rclcpp::Time(info.status_stamp) - rclcpp::Time(info.start_stamp)).seconds(), 'f', 5) +
-        " / " + QString::number(rclcpp::Duration(info.duration).seconds(), 'f', 5));
+             (rclcpp::Time(info.status_stamp) - rclcpp::Time(info.start_stamp)).seconds(), 'f', 5) +
+             " / " + QString::number(rclcpp::Duration(info.duration).seconds(), 'f', 5));
       for (int i = 0; i < 5; i++) {
         row->setBackground(i, Qt::darkGreen);
       }
@@ -156,8 +138,8 @@ RQTPlan::fill_row_info(
       row->setText(3, QString(info.message_status.c_str()));
       row->setText(
         4, QString::number(
-          (rclcpp::Time(info.status_stamp) - rclcpp::Time(info.start_stamp)).seconds(), 'f', 5) +
-        " / " + QString::number(rclcpp::Duration(info.duration).seconds(), 'f', 5));
+             (rclcpp::Time(info.status_stamp) - rclcpp::Time(info.start_stamp)).seconds(), 'f', 5) +
+             " / " + QString::number(rclcpp::Duration(info.duration).seconds(), 'f', 5));
       for (int i = 0; i < 5; i++) {
         row->setBackground(i, Qt::red);
       }
@@ -168,8 +150,8 @@ RQTPlan::fill_row_info(
       row->setText(3, QString(info.message_status.c_str()));
       row->setText(
         4, QString::number(
-          (rclcpp::Time(info.status_stamp) - rclcpp::Time(info.start_stamp)).seconds(), 'f', 5) +
-        " / " + QString::number(rclcpp::Duration(info.duration).seconds(), 'f', 5));
+             (rclcpp::Time(info.status_stamp) - rclcpp::Time(info.start_stamp)).seconds(), 'f', 5) +
+             " / " + QString::number(rclcpp::Duration(info.duration).seconds(), 'f', 5));
       for (int i = 0; i < 5; i++) {
         row->setBackground(i, Qt::green);
       }
@@ -180,8 +162,8 @@ RQTPlan::fill_row_info(
       row->setText(3, QString(info.message_status.c_str()));
       row->setText(
         4, QString::number(
-          (rclcpp::Time(info.status_stamp) - rclcpp::Time(info.start_stamp)).seconds(), 'f', 5) +
-        " / " + QString::number(rclcpp::Duration(info.duration).seconds(), 'f', 5));
+             (rclcpp::Time(info.status_stamp) - rclcpp::Time(info.start_stamp)).seconds(), 'f', 5) +
+             " / " + QString::number(rclcpp::Duration(info.duration).seconds(), 'f', 5));
       for (int i = 0; i < 5; i++) {
         row->setBackground(i, Qt::lightGray);
       }
@@ -189,8 +171,7 @@ RQTPlan::fill_row_info(
   }
 }
 
-void
-RQTPlan::spin_loop()
+void RQTPlan::spin_loop()
 {
   if (!need_update_info_ && !need_update_plan_) {
     return;
@@ -203,8 +184,8 @@ RQTPlan::spin_loop()
 
     for (const auto & item : plan_->items) {
       auto plan_item = new QTreeWidgetItem();
-      std::string full_name = item.action + ":" +
-        std::to_string(static_cast<int>(item.time * 1000));
+      std::string full_name =
+        item.action + ":" + std::to_string(static_cast<int>(item.time * 1000));
       plan_item->setText(0, QString(full_name.c_str()));
       plan_tree_->addTopLevelItem(plan_item);
     }
@@ -214,8 +195,8 @@ RQTPlan::spin_loop()
     need_update_info_ = false;
 
     for (const auto & item : plan_->items) {
-      std::string full_name = item.action + ":" +
-        std::to_string(static_cast<int>(item.time * 1000));
+      std::string full_name =
+        item.action + ":" + std::to_string(static_cast<int>(item.time * 1000));
       auto item_row = get_plan_item_row(full_name);
 
       if (item_row.has_value()) {
@@ -228,14 +209,12 @@ RQTPlan::spin_loop()
   plan_tree_->parentWidget()->repaint();
 }
 
-void
-RQTPlan::restoreSettings(
+void RQTPlan::restoreSettings(
   const qt_gui_cpp::Settings & plugin_settings, const qt_gui_cpp::Settings & instance_settings)
 {
   (void)plugin_settings;
   (void)instance_settings;
 }
-
 
 }  // namespace rqt_plansys2_plan
 

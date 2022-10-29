@@ -15,61 +15,54 @@
 #ifndef PLANSYS2_EXECUTOR__EXECUTORNODE_HPP_
 #define PLANSYS2_EXECUTOR__EXECUTORNODE_HPP_
 
-#include <filesystem>
-
-#include <algorithm>
-#include <string>
-#include <memory>
-#include <iostream>
-#include <fstream>
-#include <map>
-#include <set>
-#include <vector>
-
-#include "plansys2_executor/ExecutorNode.hpp"
-#include "plansys2_executor/ActionExecutor.hpp"
-#include "plansys2_executor/BTBuilder.hpp"
-#include "plansys2_problem_expert/Utils.hpp"
-#include "plansys2_pddl_parser/Utils.h"
-
-#include "lifecycle_msgs/msg/state.hpp"
-#include "plansys2_msgs/msg/action_execution_info.hpp"
-#include "plansys2_msgs/msg/plan.hpp"
-
 #include "ament_index_cpp/get_package_share_directory.hpp"
-
 #include "behaviortree_cpp_v3/behavior_tree.h"
+#include "behaviortree_cpp_v3/blackboard.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/utils/shared_library.h"
-#include "behaviortree_cpp_v3/blackboard.h"
+#include "lifecycle_msgs/msg/state.hpp"
+#include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/BTBuilder.hpp"
+#include "plansys2_executor/ExecutorNode.hpp"
+#include "plansys2_msgs/msg/action_execution_info.hpp"
+#include "plansys2_msgs/msg/plan.hpp"
+#include "plansys2_pddl_parser/Utils.h"
+#include "plansys2_problem_expert/Utils.hpp"
+
+#include <algorithm>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 #ifdef ZMQ_FOUND
 #include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
 #endif
 
+#include "ExecutorNodeBase.hpp"
 #include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
+#include "plansys2_executor/behavior_tree/apply_observation_node.hpp"
 #include "plansys2_executor/behavior_tree/check_action_node.hpp"
 #include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
-#include "plansys2_executor/behavior_tree/apply_observation_node.hpp"
 #include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_timeout_node.hpp"
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
 
-#include "ExecutorNodeBase.hpp"
-
 namespace plansys2
 {
-
 class ExecutorNode : public ExecutorNodeBase
 {
 public:
   using ExecutePlan = plansys2_msgs::action::ExecutePlan;
   using GoalHandleExecutePlan = rclcpp_action::ServerGoalHandle<ExecutePlan>;
-  using CallbackReturnT =
-    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+  using CallbackReturnT = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
   ExecutorNode();
 
@@ -82,12 +75,11 @@ protected:
   std::optional<std::vector<plansys2_msgs::msg::Tree>> ordered_sub_goals_;
   rclcpp::Service<plansys2_msgs::srv::GetOrderedSubGoals>::SharedPtr get_ordered_sub_goals_service_;
 
-
   std::optional<std::vector<plansys2_msgs::msg::Tree>> getOrderedSubGoals();
 
   void execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle) override;
- rclcpp_action::GoalResponse handle_goal(const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const ExecutePlan::Goal> goal) override;
-
+  rclcpp_action::GoalResponse handle_goal(
+    const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const ExecutePlan::Goal> goal) override;
 };
 
 }  // namespace plansys2

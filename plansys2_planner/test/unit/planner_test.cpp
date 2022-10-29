@@ -12,29 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <vector>
-#include <memory>
-#include <iostream>
-#include <fstream>
-
 #include "ament_index_cpp/get_package_share_directory.hpp"
-
 #include "gtest/gtest.h"
-#include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
+#include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_msgs/msg/param.h"
 #include "plansys2_pddl_parser/Utils.h"
-#include "plansys2_problem_expert/ProblemExpertNode.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_planner/PlannerNode.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
-
-#include "pluginlib/class_loader.hpp"
+#include "plansys2_planner/PlannerNode.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_problem_expert/ProblemExpertNode.hpp"
 #include "pluginlib/class_list_macros.hpp"
-
+#include "pluginlib/class_loader.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
 
 TEST(planner_expert, generate_plan_good)
 {
@@ -59,9 +55,10 @@ TEST(planner_expert, generate_plan_good)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
-
+    while (!finish) {
+      exe.spin_some();
+    }
+  });
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -97,8 +94,7 @@ TEST(planner_expert, generate_plan_good)
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("corridor", "room")));
 
   std::vector<std::string> predicates = {
-    "(robot_at leia kitchen)",
-    "(person_at francisco bedroom)"};
+    "(robot_at leia kitchen)", "(person_at francisco bedroom)"};
 
   for (const auto & pred : predicates) {
     ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
@@ -113,7 +109,6 @@ TEST(planner_expert, generate_plan_good)
   finish = true;
   t.join();
 }
-
 
 TEST(planner_expert, generate_plan_with_domain_constants)
 {
@@ -138,9 +133,10 @@ TEST(planner_expert, generate_plan_with_domain_constants)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
-
+    while (!finish) {
+      exe.spin_some();
+    }
+  });
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -168,9 +164,8 @@ TEST(planner_expert, generate_plan_with_domain_constants)
   }
 
   std::ifstream problem_1_ifs(pkgpath + "/pddl/problem_simple_constants_1.pddl");
-  std::string problem_1_str((
-      std::istreambuf_iterator<char>(problem_1_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string problem_1_str(
+    (std::istreambuf_iterator<char>(problem_1_ifs)), std::istreambuf_iterator<char>());
 
   ASSERT_TRUE(problem_client->addProblem(problem_1_str));
   ASSERT_EQ(problem_client->getProblem(), problem_1_str);
@@ -178,13 +173,11 @@ TEST(planner_expert, generate_plan_with_domain_constants)
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
 
-
   problem_client->clearKnowledge();
 
   std::ifstream problem_2_ifs(pkgpath + "/pddl/problem_simple_constants_2.pddl");
-  std::string problem_2_str((
-      std::istreambuf_iterator<char>(problem_2_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string problem_2_str(
+    (std::istreambuf_iterator<char>(problem_2_ifs)), std::istreambuf_iterator<char>());
 
   ASSERT_TRUE(problem_client->addProblem(problem_2_str));
   ASSERT_NE(problem_client->getProblem(), problem_2_str);
@@ -192,7 +185,6 @@ TEST(planner_expert, generate_plan_with_domain_constants)
 
   plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
-
 
   finish = true;
   t.join();

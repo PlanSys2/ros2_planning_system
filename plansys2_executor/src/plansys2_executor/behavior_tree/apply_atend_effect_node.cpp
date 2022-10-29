@@ -12,31 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
+#include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
+
 #include <map>
 #include <memory>
-
-#include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
+#include <string>
 
 namespace plansys2
 {
-
 ApplyAtEndEffect::ApplyAtEndEffect(
-  const std::string & xml_tag_name,
-  const BT::NodeConfiguration & conf)
+  const std::string & xml_tag_name, const BT::NodeConfiguration & conf)
 : ActionNodeBase(xml_tag_name, conf)
 {
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
-    "action_map");
+      "action_map");
 
   problem_client_ =
-    config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
-    "problem_client");
+    config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>("problem_client");
 }
 
-BT::NodeStatus
-ApplyAtEndEffect::tick()
+BT::NodeStatus ApplyAtEndEffect::tick()
 {
   std::string action;
   getInput("action", action);

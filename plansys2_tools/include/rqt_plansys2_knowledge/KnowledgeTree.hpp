@@ -15,12 +15,11 @@
 #ifndef RQT_PLANSYS2_KNOWLEDGE__KNOWLEDGETREE_HPP_
 #define RQT_PLANSYS2_KNOWLEDGE__KNOWLEDGETREE_HPP_
 
-#include <QWidget>
 #include <QTreeWidget>
+#include <QWidget>
 
 namespace rqt_plansys2_knowledge
 {
-
 class KnowledgeTree : public QTreeWidget
 {
 public:

@@ -20,7 +20,6 @@
 
 namespace plansys2
 {
-
 struct Domain
 {
   std::string name;
@@ -39,7 +38,7 @@ public:
 
   void add_domain(const std::string & domain);
   std::string get_joint_domain() const;
-  std::vector<Domain> get_domains() {return domains_;}
+  std::vector<Domain> get_domains() { return domains_; }
 
 protected:
   int get_end_block(const std::string & domain, std::size_t init_pos);

@@ -15,37 +15,31 @@
 #ifndef PLANSYS2_EXECUTOR__BEHAVIOR_TREE__APPLY_ATEND_EFFECT_NODE_HPP_
 #define PLANSYS2_EXECUTOR__BEHAVIOR_TREE__APPLY_ATEND_EFFECT_NODE_HPP_
 
-#include <map>
-#include <string>
-#include <memory>
-
 #include "behaviortree_cpp_v3/action_node.h"
-
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/behavior_tree/execute_action_node.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
 
-#include "plansys2_executor/behavior_tree/execute_action_node.hpp"
+#include <map>
+#include <memory>
+#include <string>
 
 namespace plansys2
 {
-
 class ApplyAtEndEffect : public BT::ActionNodeBase
 {
 public:
-  ApplyAtEndEffect(
-    const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf);
+  ApplyAtEndEffect(const std::string & xml_tag_name, const BT::NodeConfiguration & conf);
 
   void halt() {}
   BT::NodeStatus tick() override;
 
   static BT::PortsList providedPorts()
   {
-    return BT::PortsList(
-      {
-        BT::InputPort<std::string>("action", "Action whose at end reqs must stop"),
-      });
+    return BT::PortsList({
+      BT::InputPort<std::string>("action", "Action whose at end reqs must stop"),
+    });
   }
 
 private:

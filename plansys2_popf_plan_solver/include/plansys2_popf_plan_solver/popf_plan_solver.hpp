@@ -15,15 +15,14 @@
 #ifndef PLANSYS2_POPF_PLAN_SOLVER__POPF_PLAN_SOLVER_HPP_
 #define PLANSYS2_POPF_PLAN_SOLVER__POPF_PLAN_SOLVER_HPP_
 
-#include <optional>
-#include <memory>
-#include <string>
-
 #include "plansys2_core/PlanSolverBase.hpp"
+
+#include <memory>
+#include <optional>
+#include <string>
 
 namespace plansys2
 {
-
 class POPFPlanSolver : public PlanSolverBase
 {
 private:
@@ -39,9 +38,7 @@ public:
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace = "");
 
-  bool is_valid_domain(
-    const std::string & domain,
-    const std::string & node_namespace = "");
+  bool is_valid_domain(const std::string & domain, const std::string & node_namespace = "");
 };
 
 }  // namespace plansys2

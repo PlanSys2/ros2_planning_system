@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-
 #include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/ExecutorNodeContingent.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-int main(int argc, char **argv) {
+#include <memory>
+
+int main(int argc, char ** argv)
+{
   rclcpp::init(argc, argv);
 
   auto parameter_node = std::make_shared<rclcpp::Node>("executor");
@@ -31,7 +32,8 @@ int main(int argc, char **argv) {
   } else if (executor_name == "contingent_executor") {
     node = std::make_shared<plansys2::ExecutorNodeContingent>();
   } else {
-    RCLCPP_ERROR(rclcpp::get_logger("executor_node"), "Unknown executor type %s", executor_name.c_str());
+    RCLCPP_ERROR(
+      rclcpp::get_logger("executor_node"), "Unknown executor type %s", executor_name.c_str());
     rclcpp::shutdown();
     return -1;
   }

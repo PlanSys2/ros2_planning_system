@@ -15,106 +15,102 @@
 #ifndef PLANSYS2_EXECUTOR__BT_BUILDER_PLUGINS__CONTINGENT_BT_BUILDER_HPP_
 #define PLANSYS2_EXECUTOR__BT_BUILDER_PLUGINS__CONTINGENT_BT_BUILDER_HPP_
 
-#include <string>
-#include <memory>
-#include <vector>
-#include <set>
-#include <list>
-#include <map>
-#include <utility>
-#include <tuple>
-
-#include "std_msgs/msg/empty.hpp"
-
-#include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_executor/ActionExecutor.hpp"
-#include "plansys2_executor/BTBuilder.hpp"
 #include "plansys2_core/Types.hpp"
 #include "plansys2_core/Utils.hpp"
+#include "plansys2_domain_expert/DomainExpertClient.hpp"
+#include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/BTBuilder.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
 #include "plansys2_msgs/msg/plan.hpp"
-
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
+#include "std_msgs/msg/empty.hpp"
 
-namespace plansys2 {
-  struct GraphNode {
-    using Ptr = std::shared_ptr<GraphNode>;
+#include <list>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
 
-    static Ptr make_shared() { return std::make_shared<GraphNode>(); }
+namespace plansys2
+{
+struct GraphNode
+{
+  using Ptr = std::shared_ptr<GraphNode>;
 
-    ActionStamped action;
-    int node_num;
-    int level_num;
+  static Ptr make_shared() { return std::make_shared<GraphNode>(); }
 
-    std::vector<plansys2::Predicate> predicates;
-    std::vector<plansys2::Function> functions;
+  ActionStamped action;
+  int node_num;
+  int level_num;
 
-    std::list<GraphNode::Ptr> in_arcs;
-    std::list<GraphNode::Ptr> out_arcs;
-  };
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
 
-  struct Graph {
-    using Ptr = std::shared_ptr<Graph>;
+  std::list<GraphNode::Ptr> in_arcs;
+  std::list<GraphNode::Ptr> out_arcs;
+};
 
-    static Ptr make_shared() { return std::make_shared<Graph>(); }
+struct Graph
+{
+  using Ptr = std::shared_ptr<Graph>;
 
-    std::list<GraphNode::Ptr> roots;
-    std::map<float, std::list<GraphNode::Ptr>> levels;
-  };
+  static Ptr make_shared() { return std::make_shared<Graph>(); }
 
+  std::list<GraphNode::Ptr> roots;
+  std::map<float, std::list<GraphNode::Ptr>> levels;
+};
 
-  class ContingentBTBuilder : public BTBuilder {
-  public:
-    ContingentBTBuilder();
+class ContingentBTBuilder : public BTBuilder
+{
+public:
+  ContingentBTBuilder();
 
-    void initialize(
-        const std::string &bt_action_1 = "",
-        const std::string &bt_action_2 = "",
-        int precision = 3);
+  void initialize(
+    const std::string & bt_action_1 = "", const std::string & bt_action_2 = "", int precision = 3);
 
-    std::string get_tree(const plansys2_msgs::msg::Plan &current_plan);
-    void get_sub_tree(const std::shared_ptr<plansys2::PlanNode> &root, const  std::string& indents, std::string& tree);
-    void add_action_sequence(const plansys2_msgs::msg::PlanItem &item, const  std::string& indents, std::string& tree);
-    void add_observe_action_sequence(bool observe_result, const plansys2_msgs::msg::PlanItem &item, const  std::string& indents, std::string& tree);
+  std::string get_tree(const plansys2_msgs::msg::Plan & current_plan);
+  void get_sub_tree(
+    const std::shared_ptr<plansys2::PlanNode> & root, const std::string & indents,
+    std::string & tree);
+  void add_action_sequence(
+    const plansys2_msgs::msg::PlanItem & item, const std::string & indents, std::string & tree);
+  void add_observe_action_sequence(
+    bool observe_result, const plansys2_msgs::msg::PlanItem & item, const std::string & indents,
+    std::string & tree);
 
-    std::string get_dotgraph(
-        std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
-        bool enable_legend = false,
-        bool enable_print_graph = false);
+  std::string get_dotgraph(
+    std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
+    bool enable_legend = false, bool enable_print_graph = false);
 
-  protected:
-    std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
-    std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
+protected:
+  std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 
-    Graph::Ptr graph_;
-    std::string bt_;
-    std::string bt_action_;
+  Graph::Ptr graph_;
+  std::string bt_;
+  std::string bt_action_;
 
-    std::string get_flow_tree(
-        GraphNode::Ptr node,
-        std::list<std::string> & used_nodes,
-        int level = 0);
-    void get_flow_dotgraph(GraphNode::Ptr node, std::set<std::string> & edges);
-    std::string get_node_dotgraph(
-        GraphNode::Ptr node, std::shared_ptr<std::map<std::string,
-        ActionExecutionInfo>> action_map, int level = 0);
+  std::string get_flow_tree(
+    GraphNode::Ptr node, std::list<std::string> & used_nodes, int level = 0);
+  void get_flow_dotgraph(GraphNode::Ptr node, std::set<std::string> & edges);
+  std::string get_node_dotgraph(
+    GraphNode::Ptr node, std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
+    int level = 0);
 
-    ActionExecutor::Status get_action_status(
-        ActionStamped action,
-        std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map);
+  ActionExecutor::Status get_action_status(
+    ActionStamped action, std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map);
 
-    void addDotGraphLegend(
-        std::stringstream &ss, int tab_level, int level_counter,
-        int node_counter);
+  void addDotGraphLegend(
+    std::stringstream & ss, int tab_level, int level_counter, int node_counter);
 
-    std::string t(int level);
-
-  };
+  std::string t(int level);
+};
 
 }  // namespace plansys2
-
-
 
 #endif  // PLANSYS2_EXECUTOR__BT_BUILDER_PLUGINS__SIMPLE_BT_BUILDER_HPP_

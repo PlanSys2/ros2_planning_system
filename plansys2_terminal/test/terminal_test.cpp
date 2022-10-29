@@ -12,43 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <memory>
-#include <string>
-#include <vector>
-#include <sstream>
-#include <map>
-#include <algorithm>
-
-#include "rclcpp/rclcpp.hpp"
-#include "ament_index_cpp/get_package_share_directory.hpp"
-
-#include "plansys2_domain_expert/DomainExpertNode.hpp"
-#include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_problem_expert/ProblemExpertNode.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_planner/PlannerNode.hpp"
-#include "plansys2_planner/PlannerClient.hpp"
-#include "plansys2_executor/ExecutorNode.hpp"
-#include "plansys2_executor/ExecutorClient.hpp"
-#include "plansys2_executor/ActionExecutorClient.hpp"
-
 #include "plansys2_terminal/Terminal.hpp"
 
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
+#include "plansys2_domain_expert/DomainExpertClient.hpp"
+#include "plansys2_domain_expert/DomainExpertNode.hpp"
+#include "plansys2_executor/ActionExecutorClient.hpp"
+#include "plansys2_executor/ExecutorClient.hpp"
+#include "plansys2_executor/ExecutorNode.hpp"
+#include "plansys2_planner/PlannerClient.hpp"
+#include "plansys2_planner/PlannerNode.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_problem_expert/ProblemExpertNode.hpp"
+#include "rclcpp/rclcpp.hpp"
+
+#include <algorithm>
+#include <map>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
 
 using namespace std::chrono_literals;
 
 class ActT : public plansys2::ActionExecutorClient
 {
 public:
-  ActT()
-  : plansys2::ActionExecutorClient("None", 1s)
+  ActT() : plansys2::ActionExecutorClient("None", 1s)
   {
     progress_ = 0.0;
     name_ = std::string("None");
   }
-  explicit ActT(const std::string name)
-  : plansys2::ActionExecutorClient(name, 1s)
+  explicit ActT(const std::string name) : plansys2::ActionExecutorClient(name, 1s)
   {
     progress_ = 0.0;
     name_ = name;
@@ -68,23 +64,18 @@ private:
     }
 
     std::cout << "\r\e[K" << std::flush;
-    std::cout << "Requesting for " << name_ <<
-      "... [" << std::min(100.0, progress_ * 100.0) << "%]  " <<
-      std::flush;
+    std::cout << "Requesting for " << name_ << "... [" << std::min(100.0, progress_ * 100.0)
+              << "%]  " << std::flush;
   }
 
   float progress_;
   std::string name_;
 };
 
-
 class TerminalTestCase : public ::testing::Test
 {
 protected:
-  static void SetUpTestCase()
-  {
-    rclcpp::init(0, nullptr);
-  }
+  static void SetUpTestCase() { rclcpp::init(0, nullptr); }
 };
 
 TEST_F(TerminalTestCase, token_utils)
@@ -285,9 +276,7 @@ TEST_F(TerminalTestCase, load_popf_plugin)
   exe.add_node(planner_node->get_node_base_interface());
   exe.add_node(executor_node->get_node_base_interface());
 
-  std::thread t([&]() {
-      exe.spin();
-    });
+  std::thread t([&]() { exe.spin(); });
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -304,8 +293,8 @@ TEST_F(TerminalTestCase, load_popf_plugin)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  rclcpp_lifecycle::State state = problem_node->trigger_transition(
-    lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  rclcpp_lifecycle::State state =
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   std::string stateLabel = state.label();
 
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
@@ -614,9 +603,7 @@ TEST_F(TerminalTestCase, add_problem)
   exe.add_node(planner_node->get_node_base_interface());
   exe.add_node(executor_node->get_node_base_interface());
 
-  std::thread t([&]() {
-      exe.spin();
-    });
+  std::thread t([&]() { exe.spin(); });
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -633,8 +620,8 @@ TEST_F(TerminalTestCase, add_problem)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  rclcpp_lifecycle::State state = problem_node->trigger_transition(
-    lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  rclcpp_lifecycle::State state =
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   std::string stateLabel = state.label();
 
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
@@ -729,9 +716,7 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
   exe.add_node(planner_node->get_node_base_interface());
   exe.add_node(executor_node->get_node_base_interface());
 
-  std::thread t([&]() {
-      exe.spin();
-    });
+  std::thread t([&]() { exe.spin(); });
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -748,8 +733,8 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  rclcpp_lifecycle::State state = problem_node->trigger_transition(
-    lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  rclcpp_lifecycle::State state =
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   std::string stateLabel = state.label();
 
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
@@ -849,9 +834,7 @@ TEST_F(TerminalTestCase, check_actors)
   exe.add_node(ask_charge_actor_1_node->get_node_base_interface());
   exe.add_node(charge_actor_1_node->get_node_base_interface());
 
-  std::thread t([&]() {
-      exe.spin();
-    });
+  std::thread t([&]() { exe.spin(); });
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -873,8 +856,8 @@ TEST_F(TerminalTestCase, check_actors)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  rclcpp_lifecycle::State state = problem_node->trigger_transition(
-    lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  rclcpp_lifecycle::State state =
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   std::string stateLabel = state.label();
 
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
@@ -951,9 +934,7 @@ TEST_F(TerminalTestCase, source_run_plan)
   exe.add_node(ask_charge_actor_1_node->get_node_base_interface());
   exe.add_node(charge_actor_1_node->get_node_base_interface());
 
-  std::thread t([&]() {
-      exe.spin();
-    });
+  std::thread t([&]() { exe.spin(); });
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -985,8 +966,8 @@ TEST_F(TerminalTestCase, source_run_plan)
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  rclcpp_lifecycle::State state = problem_node->trigger_transition(
-    lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  rclcpp_lifecycle::State state =
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   std::string stateLabel = state.label();
 
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
@@ -1024,8 +1005,8 @@ TEST_F(TerminalTestCase, source_run_plan)
   }
 
   {
-    std::vector<std::string> rooms = {"entrance", "kitchen", "bedroom",
-      "dinning", "bathroom", "chargingroom"};
+    std::vector<std::string> rooms = {"entrance", "kitchen",  "bedroom",
+                                      "dinning",  "bathroom", "chargingroom"};
     for (auto room_name : rooms) {
       auto ins_2 = problem_client->getInstance(room_name);
       ASSERT_TRUE(ins_2.has_value());

@@ -12,23 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "gtest/gtest.h"
+#include "plansys2_domain_expert/DomainExpertClient.hpp"
+#include "plansys2_domain_expert/DomainExpertNode.hpp"
+#include "plansys2_executor/ExecutorClient.hpp"
+#include "plansys2_executor/ExecutorNode.hpp"
+#include "plansys2_planner/PlannerClient.hpp"
+#include "plansys2_planner/PlannerNode.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_problem_expert/ProblemExpertNode.hpp"
+#include "plansys2_tests/execution_logger.hpp"
+#include "plansys2_tests/test_action_node.hpp"
+
 #include <memory>
 #include <string>
-
-#include "ament_index_cpp/get_package_share_directory.hpp"
-
-#include "gtest/gtest.h"
-#include "plansys2_domain_expert/DomainExpertNode.hpp"
-#include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_problem_expert/ProblemExpertNode.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_planner/PlannerNode.hpp"
-#include "plansys2_planner/PlannerClient.hpp"
-#include "plansys2_executor/ExecutorNode.hpp"
-#include "plansys2_executor/ExecutorClient.hpp"
-
-#include "plansys2_tests/test_action_node.hpp"
-#include "plansys2_tests/execution_logger.hpp"
 
 TEST(test_1, test_1)
 {
@@ -67,8 +65,10 @@ TEST(test_1, test_1)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+    while (!finish) {
+      exe.spin_some();
+    }
+  });
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -138,16 +138,10 @@ TEST(test_1, test_1)
 
   ASSERT_TRUE(result.value().success);
 
-  ASSERT_TRUE(
-    execution_logger->sorted(
-  {
-    "(askcharge leia entrance chargingroom):0",
-    "(charge leia chargingroom):1",
-    "(move leia chargingroom kitchen):5002",
-    "(move leia kitchen dinning):10003",
-    "(move leia dinning bedroom):15004",
-    "(move leia bedroom bathroom):20005"
-  }));
+  ASSERT_TRUE(execution_logger->sorted(
+    {"(askcharge leia entrance chargingroom):0", "(charge leia chargingroom):1",
+     "(move leia chargingroom kitchen):5002", "(move leia kitchen dinning):10003",
+     "(move leia dinning bedroom):15004", "(move leia bedroom bathroom):20005"}));
 
   finish = true;
   t.join();

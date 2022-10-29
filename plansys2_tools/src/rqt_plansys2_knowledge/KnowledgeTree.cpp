@@ -12,29 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-#include <QWidget>
-#include <QTreeWidget>
-
 #include "rqt_plansys2_knowledge/KnowledgeTree.hpp"
+
+#include <QTreeWidget>
+#include <QWidget>
 
 namespace rqt_plansys2_knowledge
 {
+KnowledgeTree::KnowledgeTree() : QTreeWidget() {}
 
-KnowledgeTree::KnowledgeTree()
-: QTreeWidget()
-{
-}
-
-void
-KnowledgeTree::clearAllItems()
+void KnowledgeTree::clearAllItems()
 {
   int rows = topLevelItemCount();
 
   while (topLevelItemCount() > 0) {
     rowsAboutToBeRemoved(rootIndex(), 0, 0);
     delete takeTopLevelItem(0);
-    rowsRemoved(rootIndex(), 0, 0);/* code */
+    rowsRemoved(rootIndex(), 0, 0); /* code */
   }
 }
 

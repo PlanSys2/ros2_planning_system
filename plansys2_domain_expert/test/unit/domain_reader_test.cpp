@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <fstream>
-#include <vector>
-
 #include "ament_index_cpp/get_package_share_directory.hpp"
-
 #include "gtest/gtest.h"
-
 #include "plansys2_domain_expert/DomainReader.hpp"
+
+#include <fstream>
+#include <string>
+#include <vector>
 
 class DomainReaderTest : public plansys2::DomainReader
 {
@@ -30,49 +28,25 @@ public:
     return get_end_block(domain, init_pos);
   }
 
-  std::string get_name_test(std::string & domain)
-  {
-    return get_name(domain);
-  }
+  std::string get_name_test(std::string & domain) { return get_name(domain); }
 
-  std::string get_requirements_test(std::string & domain)
-  {
-    return get_requirements(domain);
-  }
+  std::string get_requirements_test(std::string & domain) { return get_requirements(domain); }
 
-  std::string get_types_test(const std::string & domain)
-  {
-    return get_types(domain);
-  }
+  std::string get_types_test(const std::string & domain) { return get_types(domain); }
 
-  std::string get_constants_test(const std::string & domain)
-  {
-    return get_constants(domain);
-  }
+  std::string get_constants_test(const std::string & domain) { return get_constants(domain); }
 
-  std::string get_predicates_test(const std::string & domain)
-  {
-    return get_predicates(domain);
-  }
+  std::string get_predicates_test(const std::string & domain) { return get_predicates(domain); }
 
-  std::string get_functions_test(const std::string & domain)
-  {
-    return get_functions(domain);
-  }
+  std::string get_functions_test(const std::string & domain) { return get_functions(domain); }
   std::vector<std::string> get_actions_test(const std::string & domain)
   {
     return get_actions(domain);
   }
 
-  void add_domain_test(const std::string & domain)
-  {
-    add_domain(domain);
-  }
+  void add_domain_test(const std::string & domain) { add_domain(domain); }
 
-  std::string get_joint_domain_test()
-  {
-    return get_joint_domain();
-  }
+  std::string get_joint_domain_test() { return get_joint_domain(); }
 };
 
 TEST(domain_reader, get_block)
@@ -266,7 +240,6 @@ TEST(domain_reader, constants)
   ASSERT_EQ(res7, req7_estr);
 }
 
-
 TEST(domain_reader, predicates)
 {
   DomainReaderTest dr;
@@ -282,7 +255,6 @@ TEST(domain_reader, predicates)
 
   std::string req4_str = "";
   std::string req4_estr = "";
-
 
   auto res1 = dr.get_predicates_test(req1_str);
   auto res2 = dr.get_predicates_test(req2_str);
@@ -300,11 +272,13 @@ TEST(domain_reader, functions)
   DomainReaderTest dr;
 
   std::string req1_str =
-    "(:functions\n(=(robot_at leia bedroom) 10)\n(=(person_at paco kitchen) 30)\n)";
+    "(:functions\n(=(robot_at leia bedroom) 10)\n(=(person_at paco kitchen) "
+    "30)\n)";
   std::string req1_estr = "(=(robot_at leia bedroom) 10)\n(=(person_at paco kitchen) 30)";
 
   std::string req2_str =
-    "(:functions\n(=(robot_at leia bedroom) 10)\n(=(person_at paco kitchen) 30\n)";
+    "(:functions\n(=(robot_at leia bedroom) 10)\n(=(person_at paco kitchen) "
+    "30\n)";
   std::string req2_estr = "";
 
   std::string req3_str = "(:functions )";
@@ -312,7 +286,6 @@ TEST(domain_reader, functions)
 
   std::string req4_str = "";
   std::string req4_estr = "";
-
 
   auto res1 = dr.get_functions_test(req1_str);
   auto res2 = dr.get_functions_test(req2_str);
@@ -331,25 +304,22 @@ TEST(domain_reader, actions)
 
   std::string req0_str = "(:predicates\n(robot_at leia bedroom) (person_at paco kitchen)\n)";
 
-  std::string req1_str =
-    "(:action\n whatever \n)";
+  std::string req1_str = "(:action\n whatever \n)";
   std::string req1_estr = "(:action\n whatever \n)";
 
-  std::string req2_str =
-    "\n text other (:action\n whatever \n) more text";
+  std::string req2_str = "\n text other (:action\n whatever \n) more text";
   std::string req2_estr = "(:action\n whatever \n)";
 
   std::string req3_str = std::string("((:types type1 type2)\n(:action\n   whatever\n) \n") +
-    std::string("(:durative-action\n  whatever\n)");
+                         std::string("(:durative-action\n  whatever\n)");
   std::string req3_1_estr = "(:action\n   whatever\n)";
   std::string req3_2_estr = "(:durative-action\n  whatever\n)";
 
   std::string req4_str = std::string("((:types type1 type2)\n(:action\n   whatever\n) \n") +
-    std::string("(:durative-action\n  whatever\n");
+                         std::string("(:durative-action\n  whatever\n");
   std::string req4_1_estr = "(:action\n   whatever\n)";
 
   std::string req5_str = std::string("");
-
 
   auto res0 = dr.get_actions_test(req0_str);
   auto res1 = dr.get_actions_test(req1_str);
@@ -384,14 +354,12 @@ TEST(domain_reader, add_domain)
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_processed.pddl");
-  std::string domain_str_p((
-      std::istreambuf_iterator<char>(domain_ifs_p)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str_p(
+    (std::istreambuf_iterator<char>(domain_ifs_p)), std::istreambuf_iterator<char>());
 
   dr.add_domain(domain_str);
 
@@ -404,20 +372,16 @@ TEST(domain_reader, add_2_domain)
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   std::ifstream domain_ifs_2(pkgpath + "/pddl/domain_simple_ext.pddl");
-  std::string domain_str_2((
-      std::istreambuf_iterator<char>(domain_ifs_2)),
-    std::istreambuf_iterator<char>());
-
+  std::string domain_str_2(
+    (std::istreambuf_iterator<char>(domain_ifs_2)), std::istreambuf_iterator<char>());
 
   std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_combined_processed.pddl");
-  std::string domain_str_p((
-      std::istreambuf_iterator<char>(domain_ifs_p)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str_p(
+    (std::istreambuf_iterator<char>(domain_ifs_p)), std::istreambuf_iterator<char>());
 
   dr.add_domain(domain_str);
   dr.add_domain(domain_str_2);
@@ -431,14 +395,12 @@ TEST(domain_reader, add_domain_with_constants)
 
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_constants.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
 
   std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_constants_processed.pddl");
-  std::string domain_str_p((
-      std::istreambuf_iterator<char>(domain_ifs_p)),
-    std::istreambuf_iterator<char>());
+  std::string domain_str_p(
+    (std::istreambuf_iterator<char>(domain_ifs_p)), std::istreambuf_iterator<char>());
 
   dr.add_domain(domain_str);
 

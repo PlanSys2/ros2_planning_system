@@ -15,35 +15,29 @@
 #ifndef RQT_PLANSYS2_PLAN__RQTPLAN_HPP_
 #define RQT_PLANSYS2_PLAN__RQTPLAN_HPP_
 
-#include <ui_rqt_plansys2_plan.h>
-#include <rqt_gui_cpp/plugin.h>
-
+#include "plansys2_msgs/msg/action_execution.hpp"
+#include "plansys2_msgs/msg/action_execution_info.hpp"
+#include "plansys2_msgs/msg/plan.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "rqt_plansys2_plan/PlanTree.hpp"
 
 #include <QAction>
 #include <QImage>
 #include <QList>
-#include <QString>
 #include <QSet>
 #include <QSize>
+#include <QString>
 #include <QWidget>
-
 #include <map>
 #include <memory>
 #include <string>
 
-#include "rqt_plansys2_plan/PlanTree.hpp"
-
-#include "plansys2_msgs/msg/plan.hpp"
-#include "plansys2_msgs/msg/action_execution_info.hpp"
-#include "plansys2_msgs/msg/action_execution.hpp"
-
-#include "rclcpp/rclcpp.hpp"
+#include <rqt_gui_cpp/plugin.h>
+#include <ui_rqt_plansys2_plan.h>
 
 namespace rqt_plansys2_plan
 {
-
-class RQTPlan
-  : public rqt_gui_cpp::Plugin
+class RQTPlan : public rqt_gui_cpp::Plugin
 {
   Q_OBJECT
 
@@ -80,8 +74,7 @@ private:
   void plan_callback(plansys2_msgs::msg::Plan::UniquePtr msg);
 
   std::optional<QTreeWidgetItem *> get_plan_item_row(const std::string & action_full_name);
-  void fill_row_info(
-    QTreeWidgetItem * row, const plansys2_msgs::msg::ActionExecutionInfo & info);
+  void fill_row_info(QTreeWidgetItem * row, const plansys2_msgs::msg::ActionExecutionInfo & info);
 };
 
 }  // namespace rqt_plansys2_plan

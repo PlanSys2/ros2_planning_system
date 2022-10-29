@@ -15,27 +15,21 @@
 #ifndef PLANSYS2_TESTS__EXECUTION_LOGGER_HPP_
 #define PLANSYS2_TESTS__EXECUTION_LOGGER_HPP_
 
+#include "plansys2_msgs/msg/action_execution.hpp"
+#include "plansys2_msgs/msg/action_execution_info.hpp"
+#include "rclcpp/rclcpp.hpp"
+
 #include <list>
 #include <memory>
 #include <string>
 
-#include "plansys2_msgs/msg/action_execution_info.hpp"
-#include "plansys2_msgs/msg/action_execution.hpp"
-
-#include "rclcpp/rclcpp.hpp"
-
-
 namespace plansys2_tests
 {
-
 class ExecutionLogger : public rclcpp::Node
 {
 public:
   using Ptr = std::shared_ptr<ExecutionLogger>;
-  static Ptr make_shared()
-  {
-    return std::make_shared<ExecutionLogger>();
-  }
+  static Ptr make_shared() { return std::make_shared<ExecutionLogger>(); }
 
   ExecutionLogger();
 

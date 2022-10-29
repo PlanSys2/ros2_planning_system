@@ -12,33 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <vector>
-#include <memory>
-#include <iostream>
-#include <fstream>
-
+#include "../behavior_tree/CloseGripper.hpp"
+#include "../behavior_tree/FailureNodes.hpp"
+#include "../behavior_tree/Move.hpp"
+#include "../behavior_tree/OpenGripper.hpp"
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/utils/shared_library.h"
-
-#include "../behavior_tree/OpenGripper.hpp"
-#include "../behavior_tree/CloseGripper.hpp"
-#include "../behavior_tree/Move.hpp"
-#include "../behavior_tree/FailureNodes.hpp"
-
-#include "plansys2_executor/ActionExecutor.hpp"
-
-#include "test_msgs/action/fibonacci.hpp"
-#include "ament_index_cpp/get_package_share_directory.hpp"
-
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_cascade_lifecycle/rclcpp_cascade_lifecycle.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
-
-#include "plansys2_bt_actions/BTAction.hpp"
-
 #include "gtest/gtest.h"
+#include "plansys2_bt_actions/BTAction.hpp"
+#include "plansys2_executor/ActionExecutor.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
+#include "rclcpp_cascade_lifecycle/rclcpp_cascade_lifecycle.hpp"
+#include "test_msgs/action/fibonacci.hpp"
+
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
 
 using namespace std::placeholders;
 using namespace std::chrono_literals;
@@ -49,15 +43,12 @@ class MoveServer : public rclcpp::Node
   using GoalHandleFibonacci = rclcpp_action::ServerGoalHandle<Fibonacci>;
 
 public:
-  MoveServer()
-  : Node("move_server") {}
+  MoveServer() : Node("move_server") {}
 
   void start_server()
   {
     move_action_server_ = rclcpp_action::create_server<Fibonacci>(
-      shared_from_this(),
-      "move",
-      std::bind(&MoveServer::handle_goal, this, _1, _2),
+      shared_from_this(), "move", std::bind(&MoveServer::handle_goal, this, _1, _2),
       std::bind(&MoveServer::handle_cancel, this, _1),
       std::bind(&MoveServer::handle_accepted, this, _1));
   }
@@ -66,8 +57,7 @@ private:
   rclcpp_action::Server<Fibonacci>::SharedPtr move_action_server_;
 
   rclcpp_action::GoalResponse handle_goal(
-    const rclcpp_action::GoalUUID & uuid,
-    std::shared_ptr<const Fibonacci::Goal> goal)
+    const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const Fibonacci::Goal> goal)
   {
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   }
@@ -103,7 +93,7 @@ private:
     }
   }
 
-  bool cancelled_ {false};
+  bool cancelled_{false};
 };
 
 TEST(bt_actions, load_plugins)
@@ -114,8 +104,10 @@ TEST(bt_actions, load_plugins)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {rclcpp::spin_some(move_server_node);}
-    });
+    while (!finish) {
+      rclcpp::spin_some(move_server_node);
+    }
+  });
 
   BT::BehaviorTreeFactory factory;
   BT::SharedLibrary loader;
@@ -151,9 +143,10 @@ TEST(bt_actions, on_tick_failure)
 
   bool finished = false;
   std::thread t([&]() {
-      while (!finished) {rclcpp::spin_some(move_server_node);}
-    });
-
+    while (!finished) {
+      rclcpp::spin_some(move_server_node);
+    }
+  });
 
   BT::NodeConfiguration config;
   BT::assignDefaultRemapping<plansys2_bt_tests::OnTickFail>(config);
@@ -188,8 +181,10 @@ TEST(bt_actions, on_feedback_failure)
 
   bool finished = false;
   std::thread t([&]() {
-      while (!finished) {rclcpp::spin_some(move_server_node);}
-    });
+    while (!finished) {
+      rclcpp::spin_some(move_server_node);
+    }
+  });
 
   BT::NodeConfiguration config;
   BT::assignDefaultRemapping<plansys2_bt_tests::OnFeedbackFail>(config);
@@ -197,9 +192,7 @@ TEST(bt_actions, on_feedback_failure)
   bb->set("node", node);
   config.blackboard = bb;
 
-  plansys2_bt_tests::OnFeedbackFail failure_node("OnFeedbackFail",
-    "move",
-    config);
+  plansys2_bt_tests::OnFeedbackFail failure_node("OnFeedbackFail", "move", config);
 
   rclcpp::Rate rate(10);
 
@@ -250,7 +243,7 @@ TEST(bt_actions, bt_action)
   }
 
   auto start = lc_node->now();
-  while ( (lc_node->now() - start).seconds() < 2) {
+  while ((lc_node->now() - start).seconds() < 2) {
     exe.spin_some();
   }
 }
@@ -288,8 +281,10 @@ TEST(bt_actions, cancel_bt_action)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+    while (!finish) {
+      exe.spin_some();
+    }
+  });
 
   ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::IDLE);
   ASSERT_EQ(

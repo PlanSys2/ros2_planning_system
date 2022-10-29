@@ -15,12 +15,11 @@
 #ifndef RQT_PLANSYS2_PERFORMERS__PERFORMERSTREE_HPP_
 #define RQT_PLANSYS2_PERFORMERS__PERFORMERSTREE_HPP_
 
-#include <QWidget>
 #include <QTreeWidget>
+#include <QWidget>
 
 namespace rqt_plansys2_performers
 {
-
 class PerformersTree : public QTreeWidget
 {
 public:
