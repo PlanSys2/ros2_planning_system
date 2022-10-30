@@ -1,3 +1,4 @@
+#include "plansys2_pddl_parser/Unknown.h"
 
 #include "plansys2_pddl_parser/Domain.h"
 

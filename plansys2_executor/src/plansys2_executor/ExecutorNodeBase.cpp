@@ -12,6 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/blackboard.h"
@@ -25,16 +35,6 @@
 #include "plansys2_msgs/msg/plan.hpp"
 #include "plansys2_pddl_parser/Utils.h"
 #include "plansys2_problem_expert/Utils.hpp"
-
-#include <algorithm>
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
-#include <vector>
 
 #include <plansys2_executor/ExecutorNodeBase.hpp>
 

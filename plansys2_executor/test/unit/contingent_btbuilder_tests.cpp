@@ -12,14 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
-#include "gtest/gtest.h"
-#include "plansys2_domain_expert/DomainExpertNode.hpp"
-#include "plansys2_executor/bt_builder_plugins/contingent_bt_builder.hpp"
-#include "plansys2_planner/PlannerNode.hpp"
-#include "plansys2_problem_expert/ProblemExpertNode.hpp"
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
-
 #include <fstream>
 #include <iostream>
 #include <list>
@@ -30,6 +22,14 @@
 #include <string>
 #include <tuple>
 #include <vector>
+
+#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "gtest/gtest.h"
+#include "plansys2_domain_expert/DomainExpertNode.hpp"
+#include "plansys2_executor/bt_builder_plugins/contingent_bt_builder.hpp"
+#include "plansys2_planner/PlannerNode.hpp"
+#include "plansys2_problem_expert/ProblemExpertNode.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 TEST(simple_btbuilder_tests, test_tree_builder)
 {

@@ -15,6 +15,15 @@
 #ifndef PLANSYS2_EXECUTOR__BT_BUILDER_PLUGINS__CONTINGENT_BT_BUILDER_HPP_
 #define PLANSYS2_EXECUTOR__BT_BUILDER_PLUGINS__CONTINGENT_BT_BUILDER_HPP_
 
+#include <list>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
+
 #include "plansys2_core/Types.hpp"
 #include "plansys2_core/Utils.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
@@ -26,15 +35,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "std_msgs/msg/empty.hpp"
-
-#include <list>
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
-#include <tuple>
-#include <utility>
-#include <vector>
 
 namespace plansys2
 {
