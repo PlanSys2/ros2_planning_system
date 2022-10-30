@@ -53,10 +53,12 @@ void TemporalAction::PDDLPrint(
   printCondition(s, astruct, d, "at end", eff_e);
   s << "\t)\n";
 
-  s << "  :observe\n";
-  s << "\t( ";
-  printCondition(s, astruct, d, "", (And *)observe);
-  s << "\t)\n";
+  if (observe) {
+    s << "  :observe\n";
+    s << "\t( ";
+    printCondition(s, astruct, d, "", (And *)observe);
+    s << "\t)\n";
+  }
 
   s << ")\n";
 }

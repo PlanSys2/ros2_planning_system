@@ -18,7 +18,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "plansys2_domain_expert/DomainExpert.hpp"
@@ -31,9 +30,6 @@
 
 namespace plansys2
 {
-using PredicateSet = std::unordered_set<plansys2::Predicate, PredicateHashFunction>;
-using ConditionPair = std::pair<parser::pddl::Condition *, parser::pddl::Condition *>;
-
 class ProblemExpert : public ProblemExpertInterface
 {
 public:
@@ -94,9 +90,6 @@ private:
   std::vector<plansys2::Predicate> predicates_;
   std::vector<plansys2::Function> functions_;
   std::vector<plansys2_msgs::msg::Tree> conditionals_;
-  //  std::vector<plansys2::Predicate> unknown_predicates_;
-  //  std::vector<PredicateSet> oneof_predicates_;
-  //  std::vector<plansys2::Or> or_conditions_;
   plansys2::Goal goal_;
 
   std::shared_ptr<DomainExpert> domain_expert_;

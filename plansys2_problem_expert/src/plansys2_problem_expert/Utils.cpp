@@ -26,9 +26,6 @@
 
 namespace plansys2
 {
-// returns a 3-tuple (success, truth_value, 0). success is a bool indicating
-// whether or not the expression was evaluated correctly. truth_value indicates
-// the result of the evaluation.
 std::tuple<bool, bool, double> evaluate(
   const plansys2_msgs::msg::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
@@ -328,10 +325,6 @@ std::tuple<bool, bool, double> evaluate(
     case plansys2_msgs::msg::Node::NUMBER: {
       return std::make_tuple(true, true, tree.nodes[node_id].value);
     }
-
-      //    case plansys2_msgs::msg::Node::UNKNOWN: {
-      //          return std::make_tuple(true, true, 0);
-      //    }
 
     default:
       std::cerr << "evaluate: Error parsing expression [" << parser::pddl::toString(tree, node_id)

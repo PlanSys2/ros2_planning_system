@@ -156,21 +156,6 @@ std::optional<plansys2::Predicate> ProblemExpert::getPredicate(const std::string
   }
 }
 
-bool ProblemExpert::existPredicate(const plansys2::Predicate & predicate)
-{
-  bool found = false;
-  int i = 0;
-
-  while (!found && i < predicates_.size()) {
-    if (parser::pddl::checkNodeEquality(predicates_[i], predicate)) {
-      found = true;
-    }
-    i++;
-  }
-
-  return found;
-}
-
 std::vector<plansys2_msgs::msg::Tree> ProblemExpert::getConditionals() { return conditionals_; }
 
 bool ProblemExpert::addConditional(const plansys2_msgs::msg::Tree & condition)
@@ -195,7 +180,7 @@ bool ProblemExpert::addConditional(const plansys2_msgs::msg::Tree & condition)
 
 bool ProblemExpert::removeConditional(const plansys2_msgs::msg::Tree & condition)
 {
-  if (!isValidCondition(condition)) {  // if predicate is not valid, error
+  if (!isValidCondition(condition)) {  // if conditional is not valid, error
     return false;
   }
   auto it = std::find_if(
@@ -257,6 +242,21 @@ bool ProblemExpert::addFunction(const plansys2::Function & function)
   } else {
     return updateFunction(function);
   }
+}
+
+bool ProblemExpert::existPredicate(const plansys2::Predicate & predicate)
+{
+  bool found = false;
+  int i = 0;
+
+  while (!found && i < predicates_.size()) {
+    if (parser::pddl::checkNodeEquality(predicates_[i], predicate)) {
+      found = true;
+    }
+    i++;
+  }
+
+  return found;
 }
 
 bool ProblemExpert::removeFunction(const plansys2::Function & function)

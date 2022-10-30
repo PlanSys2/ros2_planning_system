@@ -189,18 +189,18 @@ TEST(problem_expert, addget_predicates)
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  plansys2_msgs::msg::Node on_table_b3;
-  on_table_b3.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  on_table_b3.name = "robot_at";
-  on_table_b3.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
-  on_table_b3.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
+  plansys2_msgs::msg::Node predicate_1;
+  predicate_1.node_type = plansys2_msgs::msg::Node::PREDICATE;
+  predicate_1.name = "robot_at";
+  predicate_1.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
+  predicate_1.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
 
-  ASSERT_EQ(on_table_b3.name, "robot_at");
-  ASSERT_EQ(on_table_b3.parameters.size(), 2);
-  ASSERT_EQ(on_table_b3.parameters[0].name, "r2d2");
-  ASSERT_EQ(on_table_b3.parameters[0].type, "robot");
-  ASSERT_EQ(on_table_b3.parameters[1].name, "bedroom");
-  ASSERT_EQ(on_table_b3.parameters[1].type, "room");
+  ASSERT_EQ(predicate_1.name, "robot_at");
+  ASSERT_EQ(predicate_1.parameters.size(), 2);
+  ASSERT_EQ(predicate_1.parameters[0].name, "r2d2");
+  ASSERT_EQ(predicate_1.parameters[0].type, "robot");
+  ASSERT_EQ(predicate_1.parameters[1].name, "bedroom");
+  ASSERT_EQ(predicate_1.parameters[1].type, "room");
 
   plansys2_msgs::msg::Node predicate_2;
   predicate_2.node_type = plansys2_msgs::msg::Node::PREDICATE;
@@ -249,10 +249,10 @@ TEST(problem_expert, addget_predicates)
   std::vector<plansys2::Predicate> predicates = problem_expert.getPredicates();
   ASSERT_TRUE(predicates.empty());
 
-  ASSERT_TRUE(problem_expert.addPredicate(on_table_b3));
+  ASSERT_TRUE(problem_expert.addPredicate(predicate_1));
   predicates = problem_expert.getPredicates();
   ASSERT_FALSE(predicates.empty());
-  ASSERT_TRUE(problem_expert.addPredicate(on_table_b3));
+  ASSERT_TRUE(problem_expert.addPredicate(predicate_1));
   ASSERT_TRUE(problem_expert.addPredicate(predicate_2));
   ASSERT_TRUE(problem_expert.addPredicate(predicate_3));
   ASSERT_TRUE(problem_expert.addPredicate(predicate_4));
@@ -542,11 +542,11 @@ TEST(problem_expert, get_problem)
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  plansys2_msgs::msg::Node on_table_b3;
-  on_table_b3.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  on_table_b3.name = "robot_at";
-  on_table_b3.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
-  on_table_b3.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
+  plansys2_msgs::msg::Node predicate_1;
+  predicate_1.node_type = plansys2_msgs::msg::Node::PREDICATE;
+  predicate_1.name = "robot_at";
+  predicate_1.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
+  predicate_1.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
 
   plansys2_msgs::msg::Node predicate_2;
   predicate_2.node_type = plansys2_msgs::msg::Node::PREDICATE;
@@ -571,7 +571,7 @@ TEST(problem_expert, get_problem)
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room")));
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("kitchen", "room")));
 
-  ASSERT_TRUE(problem_expert.addPredicate(on_table_b3));
+  ASSERT_TRUE(problem_expert.addPredicate(predicate_1));
   ASSERT_TRUE(problem_expert.addPredicate(predicate_2));
   ASSERT_TRUE(problem_expert.addPredicate(predicate_3));
   ASSERT_TRUE(problem_expert.addPredicate(predicate_4));

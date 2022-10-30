@@ -802,6 +802,7 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
 
       return node;
     }
+    // LCOV_EXCL_START
     case plansys2_msgs::msg::Node::ONE_OF: {
       auto node = std::make_shared<plansys2_msgs::msg::Node>();
       node->node_type = node_type;
@@ -834,7 +835,6 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
 
       return node;
     }
-      // LCOV_EXCL_START
     default:
       std::cerr << "fromString: Error parsing expression [" << wexpr << "]" << std::endl;
       // LCOV_EXCL_STOP
@@ -868,7 +868,7 @@ plansys2_msgs::msg::Node fromStringPredicate(const std::string & predicate)
   tokens[0].erase(0, 1);
   if (
     tokens[0].at(tokens[0].size() - 1) ==
-    ')') {  // TODO this is needed when there are no parameters
+    ')') {  // TODO this is a hack needed when there are zero parameters
     tokens[0].erase(tokens[0].size() - 1, 1);
   }
   ret.name = tokens[0];

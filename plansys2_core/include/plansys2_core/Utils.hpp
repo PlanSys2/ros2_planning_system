@@ -52,7 +52,20 @@ struct PlanNode
   std::shared_ptr<PlanNode> false_node;
 };
 
+/**
+ * @brief convert PlanNode tree to plan message
+ *
+ * @param root of PlanNode tree
+ * @return plan message
+ */
 plansys2_msgs::msg::Plan encode_plan(const std::shared_ptr<PlanNode> & root);
+
+/**
+ * @brief convert plan message to PlanNode tree
+ *
+ * @param plan message
+ * @return root of PlanNode tree
+ */
 std::shared_ptr<PlanNode> decode_plan(const plansys2_msgs::msg::Plan & plan);
 namespace internal
 {

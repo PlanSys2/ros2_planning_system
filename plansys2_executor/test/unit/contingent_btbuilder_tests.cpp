@@ -1,4 +1,4 @@
-// Copyright 2019 Intelligent Robotics Lab
+// Copyright 2022 Intelligent Robotics Lab
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -84,8 +84,6 @@ TEST(simple_btbuilder_tests, test_tree_builder)
   finish = true;
   t.join();
 }
-
-// TODO need to add graphviz test
 
 int main(int argc, char ** argv)
 {

@@ -158,7 +158,6 @@ public:
     if (f.getChar() == '=') {
       parseGroundFunc(f, c);
     } else {
-      // parseTypeGround
       c = new TypeGround(d.preds.get(f.getToken(d.preds)));
     }
     c->parse(f, d.types[0]->constants, d);
@@ -282,33 +281,33 @@ public:
   void addInitUnknown(const std::string & name, const StringVec & v = StringVec())
   {
     auto unknown = new Unknown();
-    TypeGround * tg = new TypeGround(d.preds.get(name));
+    auto * tg = new TypeGround(d.preds.get(name));
     tg->insert(d, v);
     unknown->add(tg);
     init_cond.push_back(unknown);
   }
 
-  // add an unknown predicate to the initial state
+  // add one of predicate to the initial state
   void addInitOneOf(const std::vector<std::string> & name, const std::vector<StringVec> & v = {})
   {
-    auto oneof = new Oneof();
+    auto one_of = new Oneof();
     for (int i = 0; i < name.size(); i++) {
-      TypeGround * tg = new TypeGround(d.preds.get(name[i]));
+      auto * tg = new TypeGround(d.preds.get(name[i]));
       tg->insert(d, v[i]);
-      oneof->add(tg);
+      one_of->add(tg);
     }
-    init_cond.push_back(oneof);
+    init_cond.push_back(one_of);
   }
 
-  // add an unknown predicate to the initial state
+  // add an or predicate to the initial state
   void addInitOr(
     const std::pair<std::string, std::string> & names,
     const std::pair<StringVec, StringVec> & vecs = {}, const std::pair<bool, bool> negates = {})
   {
     auto or_ = new Or();
-    TypeGround * tg1 = new TypeGround(d.preds.get(names.first));
+    auto * tg1 = new TypeGround(d.preds.get(names.first));
     tg1->insert(d, vecs.first);
-    TypeGround * tg2 = new TypeGround(d.preds.get(names.second));
+    auto * tg2 = new TypeGround(d.preds.get(names.second));
     tg2->insert(d, vecs.second);
     Condition * cond1 = tg1;
     if (negates.first) {
@@ -325,7 +324,6 @@ public:
   }
 
   friend std::ostream & operator<<(std::ostream & os, const Instance & o) { return o.print(os); }
-
   virtual std::ostream & print(std::ostream & stream) const
   {
     stream << "( define ( problem " << name << " )\n";

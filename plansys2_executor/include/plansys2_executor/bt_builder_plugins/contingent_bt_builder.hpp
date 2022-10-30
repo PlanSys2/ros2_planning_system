@@ -76,12 +76,13 @@ public:
   std::string get_tree(const plansys2_msgs::msg::Plan & current_plan);
   void get_sub_tree(
     const std::shared_ptr<plansys2::PlanNode> & root, const std::string & indents,
-    std::string & tree);
+    std::stringstream & tree);
   void add_action_sequence(
-    const plansys2_msgs::msg::PlanItem & item, const std::string & indents, std::string & tree);
+    const plansys2_msgs::msg::PlanItem & item, const std::string & indents,
+    std::stringstream & tree);
   void add_observe_action_sequence(
     bool observe_result, const plansys2_msgs::msg::PlanItem & item, const std::string & indents,
-    std::string & tree);
+    std::stringstream & tree);
 
   std::string get_dotgraph(
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,

@@ -51,20 +51,6 @@ public:
   : plansys2_msgs::msg::Node(pred)
   {
   }
-  // Match both first and last names in case
-  // of collisions.
-  //  bool operator==(const Predicate& p) const
-  //  {
-  //    return parser::pddl::checkNodeEquality(*this, p);
-  //  }
-};
-class PredicateHashFunction
-{
-public:
-  std::hash<std::string> hasher;
-  // Use sum of lengths of first and last names
-  // as hash function.
-  size_t operator()(const Predicate & p) const { return hasher(p.name) + p.parameters.size(); }
 };
 
 class Function : public plansys2_msgs::msg::Node
