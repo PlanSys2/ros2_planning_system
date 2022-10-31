@@ -2,15 +2,17 @@
 #pragma once
 
 #include "plansys2_pddl_parser/Domain.h"
-
+// #undef DOMAIN_DEBUG
+// #define DOMAIN_DEBUG true
 namespace parser { namespace pddl {
 
 class Instance {
 public:
 	Domain &d;
 	std::string name;
-	GroundVec init, goal; // initial and goal states
-	
+ GroundVec init; // initial state
+ Condition * goal = nullptr; // Goal condition
+ TokenStruct< std::string > ts;
 	bool metric;
 
 	Instance( Domain & dom ) : d( dom ), metric( false ) {}
@@ -23,8 +25,7 @@ public:
 	virtual ~Instance() {
 		for ( unsigned i = 0; i < init.size(); ++i )
 			delete init[i];
-		for ( unsigned i = 0; i < goal.size(); ++i )
-			delete goal[i];
+  if (nullptr != goal) delete goal;
 	}
 
 	void parse( const std::string &s) {
@@ -32,7 +33,7 @@ public:
 		name = f.parseName( "problem" );
 
 		if ( DOMAIN_DEBUG ) std::cout << name << "\n";
-    
+
 		for ( ; f.getChar() != ')'; f.next() ) {
 			f.assert_token( "(" );
 			f.assert_token( ":" );
@@ -75,7 +76,12 @@ public:
 	}
 
 	void parseObjects( Stringreader & f ) {
-		TokenStruct< std::string > ts = f.parseTypedList( true, d.types );
+  // TokenStruct< std::string > ts = f.parseTypedList( true, d.types );
+
+  // We need to populate the global ts with the objects read from the
+  // object construct to ensure a correct reading in other places of
+  // the code.
+  ts = f.parseTypedList( true, d.types );
 
 		for ( unsigned i = 0; i < ts.size(); ++i ) {
 			Type * type = d.getType( ts.types[i] );
@@ -103,7 +109,7 @@ public:
 			std::string s = f.getToken();
 			int i = d.funcs.index( s );
 			if ( i < 0 ) f.tokenExit( s );
-			
+
 			if ( d.funcs[i]->returnType < 0 ) c = new GroundFunc< double >( d.funcs[i] );
 			else c = new GroundFunc< int >( d.funcs[i] );
 		}
@@ -124,25 +130,14 @@ public:
 	}
 
 	virtual void parseGoal( Stringreader & f ) {
-		f.next();
-		f.assert_token( "(" );
-
-		std::string s = f.getToken();
-		if ( s == "and" ) {
-			for ( f.next(); f.getChar() != ')'; f.next() ) {
-				f.assert_token( "(" );
-				parseGround( f, goal );
-			}
-			++f.c;
-			f.next();
-		}
-		else {
-			f.c -= s.size();
-			parseGround( f, goal );
-		}
-		f.assert_token( ")" );
-
-		for ( unsigned i = 0; DOMAIN_DEBUG && i < goal.size(); ++i ) std::cout << "  " << goal[i];
+  f.next();
+  f.assert_token( "(" );
+  if ( f.getChar() != ')' ) {
+    goal = d.createCondition( f );
+    goal->parse( f, ts, d );
+  }
+  f.next();
+  f.assert_token( ")" );
 	}
 
 	// for the moment only parse total-cost/total-time
@@ -165,6 +160,13 @@ public:
 
 	// add an object of a certain type
 	void addObject( const std::string & name, const std::string & type ) {
+  // It is not enough to insert the name as an object of the given
+  // type.  We need also to populate the TS, by insering the object
+  // into the ts with the below two instructions to then inform
+  // further calls to the parser, that there are the objects of the
+  // given type.
+  ts.insert(name);
+  ts.types.insert(ts.types.end(), ts.size(), type);
 		d.getType( type )->objects.insert( name );
 	}
 
@@ -201,13 +203,25 @@ public:
 		init.push_back( tg );
 	}
 
-	// add a fluent to the goal state
-	void addGoal( const std::string & name, const StringVec & v = StringVec() ) {
-		TypeGround * tg = new TypeGround( d.preds.get( name ) );
-		tg->insert( d, v );
-		goal.push_back( tg );
-	}
-	
+ // Add the goal represented by s to the Instance
+ void addGoal(const std::string & s) {
+  // In order to invoke the parseGoal, the input string shall also
+  // contain an ")" for simulating the right parenthesis of "(goal
+  // ....)", and an additional left ")" parenthesis for the part
+  // outside. We need to handle also the empty goal case
+  //
+  // Alternatively, one can define another parseGoal function
+  // that does not require these two additional characters.
+  std::string ss = "";
+  if (0 == s.length()) {
+    ss = "(and ) ))";
+  } else {
+    ss = s + "))";
+  }
+  Stringreader f( ss );
+  parseGoal( f );
+ }
+
 	friend std::ostream& operator<<(std::ostream &os, const Instance& o) { return o.print(os); }
 	virtual std::ostream& print(std::ostream& stream) const {
 		stream << "( define ( problem " << name << " )\n";
@@ -226,18 +240,13 @@ public:
 
 		stream << "( :init\n";
 		for ( unsigned i = 0; i < init.size(); ++i ) {
-			( (TypeGround*)init[i])->PDDLPrint( stream, 1, TokenStruct< std::string >(), d );
+    ((TypeGround*)init[i])->PDDLPrint( stream, 1, TokenStruct< std::string >(), d );
 			stream << "\n";
 		}
 		stream << ")\n";
 
 		stream << "( :goal\n";
-		stream << "\t( and\n";
-		for ( unsigned i = 0; i < goal.size(); ++i ) {
-			( (TypeGround*)goal[i])->PDDLPrint( stream, 2, TokenStruct< std::string >(), d );
-			stream << "\n";
-		}
-		stream << "\t)\n";
+  if (nullptr != goal) goal->PDDLPrint(stream, 1, ts /* TokenStruct< std::string >() */, d);
 		stream << ")\n";
 
 		if ( metric ) {

@@ -1,5 +1,6 @@
 
 #include "plansys2_pddl_parser/Domain.h"
+#include <cassert>
 
 namespace parser { namespace pddl {
 
@@ -10,9 +11,18 @@ void Ground::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	tabindent( s, indent );
 	s << "( " << name;
 	for ( unsigned i = 0; i < params.size(); ++i ) {
-		if ( ts.size() && params[i] >= 0 && (unsigned)params[i] < ts.size() ) s << " " << ts[params[i]];
-		else if (params[i] >= 0 && (unsigned)params[i] >= ts.size()) s << " ?" << params[i]; 
-		else s << " " << d.types[lifted->params[i]]->object( params[i] ).first;
+   if ( false && ts.size() && params[i] >= 0 && (unsigned)params[i] < ts.size() ) {
+     s << " " << ts[params[i]];
+   }	else if (params[i] >= 0 &&
+              d.types[lifted->params[i]]->object( params[i] ).first != std::string("")) {
+     s << " " << d.types[lifted->params[i]]->object( params[i] ).first;
+   } else if (params[i] < 0){
+     int type_idx = lifted->params[i];                // idx of the type of this param [ref: d.type]
+     int constant_idx = (-1 * params[i]) -1;          // idx of the constant value [ref: d.type.constant]
+     s << " " << d.types[type_idx]->constants[constant_idx]; // the actual constant value
+   } else {
+     s << " ?" + std::to_string(params[i]);
+   }
 	}
 	s << " )";
 }
@@ -28,20 +38,20 @@ plansys2_msgs::msg::Node::SharedPtr Ground::getTree( plansys2_msgs::msg::Tree & 
     node->name = name;
     for ( unsigned i = 0; i < params.size(); ++i ) {
         plansys2_msgs::msg::Param param;
-        if (i < replace.size()){
-          if (params[i] >= 0)  // param has a variable value; replace by action-args
-          {
+        if (i < replace.size()) {
+          if (params[i] >= 0) {
+            // param has a variable value; replace by action-args
             param.name = replace[params[i]];
-          }
-           else                // param has a constant value; retrive from domain::type[t_i]::constants[c_i]
-          {
+          } else { // param has a constant value; retrive from domain::type[t_i]::constants[c_i]
             int type_idx = lifted->params[i];            // idx of the type of this param [ref: d.type]
             int constant_idx = (-1 * params[i]) -1;      // idx of the constant value [ref: d.type.constant]
             param.name = d.types[type_idx]->constants[constant_idx]; // the actual constant value
           }
-        } else if (d.types[lifted->params[i]]->objects.size() > params[i]) {
+        } else if (params[i]>= 0 &&
+             d.types[lifted->params[i]]->object( params[i] ).first != std::string("")) {
+          std::pair< std::string, int > c = d.types[lifted->params[i]]->object( params[i] );
           param.name = d.types[lifted->params[i]]->object( params[i] ).first;
-	} else if (params[i] < 0){
+        } else if (params[i] < 0){
             int type_idx = lifted->params[i];            // idx of the type of this param [ref: d.type]
             int constant_idx = (-1 * params[i]) -1;      // idx of the constant value [ref: d.type.constant]
             param.name = d.types[type_idx]->constants[constant_idx]; // the actual constant value
@@ -60,13 +70,21 @@ void Ground::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & 
 	params.resize( lifted->params.size() );
 	for ( unsigned i = 0; i < lifted->params.size(); ++i, f.next() ) {
 		std::string s = f.getToken();
-		int k = ts.index( s );
-		if ( k >= 0 ) params[i] = k;
-		else {
-			std::pair< bool, int > p = d.types[lifted->params[i]]->parseConstant( s );
-			if ( p.first ) params[i] = p.second;
-			else f.tokenExit( s );
-		}
+  std::pair< bool, int > p = d.types[lifted->params[i]]->parseConstant( s );
+  if ( p.first ) {
+    params[i] = p.second;
+  } else {
+    std::pair< bool, unsigned > q = d.types[lifted->params[i]]->parseObject( s );
+    if ( q.first ) {
+      params[i] = q.second;
+    } else {
+      int k = ts.index( s );
+      if ( k >= 0 ) {
+        params[i] = k;
+      }
+      else f.tokenExit(s);
+    }
+  }
 	}
 	f.assert_token( ")" );
 }

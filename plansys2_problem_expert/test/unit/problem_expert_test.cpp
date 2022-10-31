@@ -104,20 +104,11 @@ TEST(problem_expert, add_functions)
 
   ASSERT_EQ(
     problem_expert.getProblem(),
-    "( define ( problem problem_1 )\n"
-    "( :domain simple )\n"
-    "( :objects\n"
-    "\tbedroom - room\n"
-    "\tkitchen - room_with_teleporter\n"
-    ")\n"
-    "( :init\n"
-    "\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n"
-    ")\n"
-    "( :goal\n"
-    "\t( and\n"
-    "\t)\n"
-    ")\n"
-    ")\n");
+    std::string("( define ( problem problem_1 )\n( :domain simple )\n") +
+    std::string("( :objects\n\tbedroom - room\n\tkitchen - room_with_teleporter\n)\n") +
+    std::string("( :init\n\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n)\n") +
+    std::string("( :goal\n\t( and\n\t))\n)\n")
+  );
 
   plansys2_msgs::msg::Node function_2;
   function_2.node_type = plansys2_msgs::msg::Node::FUNCTION;
@@ -138,21 +129,11 @@ TEST(problem_expert, add_functions)
 
   ASSERT_EQ(
     problem_expert.getProblem(),
-    "( define ( problem problem_1 )\n"
-    "( :domain simple )\n"
-    "( :objects\n"
-    "\tbedroom - room\n"
-    "\tkitchen - room_with_teleporter\n"
-    ")\n"
-    "( :init\n"
-    "\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n"
-    "\t( = ( room_distance kitchen bedroom ) 2.3400000000 )\n"
-    ")\n"
-    "( :goal\n"
-    "\t( and\n"
-    "\t)\n"
-    ")\n"
-    ")\n");
+    std::string("( define ( problem problem_1 )\n( :domain simple )\n") +
+    std::string("( :objects\n\tbedroom - room\n\tkitchen - room_with_teleporter\n)\n") +
+    std::string("( :init\n\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n") +
+    std::string("\t( = ( room_distance kitchen bedroom ) 2.3400000000 )\n)\n") +
+    std::string("( :goal\n\t( and\n\t))\n)\n"));
 
   function_2.value = 3.45;
 
@@ -160,21 +141,11 @@ TEST(problem_expert, add_functions)
 
   ASSERT_EQ(
     problem_expert.getProblem(),
-    "( define ( problem problem_1 )\n"
-    "( :domain simple )\n"
-    "( :objects\n"
-    "\tbedroom - room\n"
-    "\tkitchen - room_with_teleporter\n"
-    ")\n"
-    "( :init\n"
-    "\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n"
-    "\t( = ( room_distance kitchen bedroom ) 3.4500000000 )\n"
-    ")\n"
-    "( :goal\n"
-    "\t( and\n"
-    "\t)\n"
-    ")\n"
-    ")\n");
+    std::string("( define ( problem problem_1 )\n( :domain simple )\n") +
+    std::string("( :objects\n\tbedroom - room\n\tkitchen - room_with_teleporter\n)\n") +
+    std::string("( :init\n\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n") +
+    std::string("\t( = ( room_distance kitchen bedroom ) 3.4500000000 )\n)\n") +
+    std::string("( :goal\n\t( and\n\t))\n)\n"));
 
   plansys2_msgs::msg::Node function_3;
   function_3.node_type = plansys2_msgs::msg::Node::FUNCTION;
@@ -539,11 +510,15 @@ TEST(problem_expert, get_problem)
 
   ASSERT_EQ(
     problem_expert.getProblem(),
-    std::string("( define ( problem problem_1 )\n( :domain simple ") +
-    std::string(")\n( :objects\n\tpaco - person\n\tr2d2 - robot\n\tbedroom kitchen - room\n)\n") +
-    std::string("( :init\n\t( robot_at r2d2 bedroom )\n\t( robot_at r2d2 kitchen )\n\t( ") +
-    std::string("person_at paco bedroom )\n\t( person_at paco kitchen )\n)\n( :goal\n\t( ") +
-    std::string("and\n\t\t( robot_at r2d2 bedroom )\n\t\t( person_at paco kitchen )\n\t)\n)\n)\n"));
+    std::string("( define ( problem problem_1 )\n( :domain simple )\n") +
+    std::string("( :objects\n\tpaco - person\n\tr2d2 - robot\n") +
+    std::string("\tbedroom kitchen - room\n)\n") +
+    std::string("( :init\n\t( robot_at r2d2 bedroom )\n") +
+    std::string("\t( robot_at r2d2 kitchen )\n") +
+    std::string("\t( person_at paco bedroom )\n") +
+    std::string("\t( person_at paco kitchen )\n)\n") +
+    std::string("( :goal\n\t( and\n\t\t( robot_at r2d2 bedroom )\n\t\t") +
+    std::string("( person_at paco kitchen )\n\t))\n)\n"));
 
   ASSERT_TRUE(problem_expert.clearKnowledge());
   ASSERT_EQ(problem_expert.getPredicates().size(), 0);
@@ -624,11 +599,16 @@ TEST(problem_expert, add_problem)
 
   ASSERT_EQ(
     problem_expert.getProblem(),
-    std::string("( define ( problem problem_1 )\n( :domain simple )\n( :objects\n\t") +
-    std::string("jack - person\n\tm1 - message\n\tleia - robot\n\tkitchen bedroom - room\n)\n") +
-    std::string("( :init\n\t( robot_at leia kitchen )\n\t( person_at jack bedroom )\n\t") +
-    std::string("( = ( room_distance kitchen bedroom ) 10.0000000000 )\n)\n") +
-    std::string("( :goal\n\t( and\n\t\t( robot_talk leia m1 jack )\n\t)\n)\n)\n"));
+    std::string("( define ( problem problem_1 )\n") +
+    std::string("( :domain simple )\n( :objects\n") +
+    std::string("\tjack - person\n") +
+    std::string("\tm1 - message\n") +
+    std::string("\tleia - robot\n") +
+    std::string("\tkitchen bedroom - room\n)\n") +
+    std::string("( :init\n\t( robot_at leia kitchen )\n") +
+    std::string("\t( person_at jack bedroom )\n") +
+    std::string("\t( = ( room_distance kitchen bedroom ) 10.0000000000 )\n)\n") +
+    std::string("( :goal\n\t( and\n\t\t( robot_talk leia m1 jack )\n\t))\n)\n"));
 
   ASSERT_TRUE(problem_expert.clearKnowledge());
   ASSERT_EQ(problem_expert.getPredicates().size(), 0);
@@ -691,9 +671,9 @@ TEST(problem_expert, add_problem_with_constants)
     problem_expert.getProblem(),
     std::string("( define ( problem problem_1 )\n( :domain plansys2 )\n") +
     std::string("( :objects\n\tm1 - message\n\tkitchen bedroom - room\n)\n") +
-    std::string("( :init\n\t( robot_at leia kitchen )\n\t( person_at jack bedroom )\n)\n") +
-    std::string("( :goal\n\t( and\n\t\t") +
-    std::string("( robot_talk leia m1 jack )\n\t)\n)\n)\n"));
+    std::string("( :init\n\t( robot_at leia kitchen )\n") +
+    std::string("\t( person_at jack bedroom )\n)\n") +
+    std::string("( :goal\n\t( and\n\t\t( robot_talk leia m1 jack )\n\t))\n)\n"));
 
   ASSERT_TRUE(problem_expert.clearKnowledge());
   ASSERT_EQ(problem_expert.getPredicates().size(), 0);
@@ -702,7 +682,7 @@ TEST(problem_expert, add_problem_with_constants)
   ASSERT_EQ(
     problem_expert.getProblem(),
     std::string("( define ( problem problem_1 )\n( :domain plansys2 )\n") +
-    std::string("( :objects\n)\n( :init\n)\n( :goal\n\t( and\n\t)\n)\n)\n"));
+    std::string("( :objects\n)\n( :init\n)\n( :goal\n\t( and\n\t))\n)\n"));
 
 
   std::ifstream problem_2_ifs(pkgpath + "/pddl/problem_simple_constants_2.pddl");
