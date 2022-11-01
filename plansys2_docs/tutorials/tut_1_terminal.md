@@ -91,7 +91,7 @@ And get the plan. This command will not execute the plan. Only will calculate it
 
 ``` plansys2_terminal
 > get plan
-plan: 
+plan:
 0 (askcharge leia entrance chargingroom) 5
 0.001 (charge leia chargingroom) 5
 5.002 (move leia chargingroom kitchen) 5

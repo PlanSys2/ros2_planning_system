@@ -104,7 +104,7 @@ room zone corridor - place
 	leia - robot
 	room_1 room_2 - room
   corridor_1 - corridor
-  zone_1_1 zone_1_2 zone_recharge - zone 
+  zone_1_1 zone_1_2 zone_recharge - zone
 )
 ( :init
 	( connected room_1 corridor_1 )
@@ -140,4 +140,3 @@ room zone corridor - place
 20.005: (move leia room_1 zone_1_2)  [5.000]
 
 ```
-

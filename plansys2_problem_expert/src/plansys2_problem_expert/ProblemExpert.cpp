@@ -659,8 +659,8 @@ std::string ProblemExpert::getProblem()
   for (const auto & instance : instances_) {
     bool is_constant = domain.getType(instance.type)->parseConstant(instance.name).first;
     if (is_constant) {
-      std::cout << "Skipping adding constant to problem :object: " << instance.name << " " <<
-                instance.type << std::endl;
+      std::cout << "Skipping adding constant to problem :object: " << instance.name << " "
+                << instance.type << std::endl;
     } else {
       problem.addObject(instance.name, instance.type);
     }

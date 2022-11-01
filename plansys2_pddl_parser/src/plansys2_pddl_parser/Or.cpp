@@ -28,7 +28,9 @@ void Or::PDDLPrint(
   s << ")";
 }
 
-plansys2_msgs::msg::Node::SharedPtr Or::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace ) const {
+plansys2_msgs::msg::Node::SharedPtr Or::getTree(
+  plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace) const
+{
   plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
   node->node_type = plansys2_msgs::msg::Node::OR;
   node->node_id = tree.nodes.size();

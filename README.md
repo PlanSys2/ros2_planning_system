@@ -25,9 +25,9 @@ This project is the result of several years of experience in the development of 
 
 We hope that this software helps to include planning in more Robotics projects, offering simple and powerful software to generate intelligent behaviors for robots.
 
-Please, cite us if you use PlanSys2 in your reseach:
+Please, cite us if you use PlanSys2 in your research:
 
-``` 
+```
 @INPROCEEDINGS
  {PlanSys2,
     author    = "Francisco Mart{\'{\i}}n and Jonatan Gin{\'{e}}s and Francisco J. Rodr{\'{i}}guez and Vicente Matell{\'{a}}n",

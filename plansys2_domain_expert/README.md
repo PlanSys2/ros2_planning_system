@@ -1,6 +1,6 @@
 # Domain Expert
 
-The Domain Expert module is responsible for maintaining the PDDL domain. 
+The Domain Expert module is responsible for maintaining the PDDL domain.
 
 The main class is [`plansys2::DomainExpertNode`](include/plansys2_domain_expert/DomainExpertNode.hpp), which is instantiated from [`DomainExpertNode.cpp`](src/DomainExpertNode.cpp). `plansys2::DomainExpertNode` is a `rclcpp_lifecycle::LifecycleNode` and in its configuration phase reads the `model_file` parameter, which contains the .pddl file from which to read the model.
 

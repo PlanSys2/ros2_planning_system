@@ -2,7 +2,7 @@
 (:requirements :adl :durative-actions :fluents :strips :typing )
 
 (:types
-person  - object 
+person  - object
 message - object
 robot   - object
 room    - object
@@ -69,7 +69,7 @@ jack john - person
 )
 (:action move_person_john
     :parameters (?r1 ?r2 - room)
-    :precondition (and 
+    :precondition (and
         (person_at john ?r1)
     )
     :effect (and
@@ -79,7 +79,7 @@ jack john - person
 )
 (:action move_person_jack
     :parameters (?r1 ?r2 - room)
-    :precondition (and 
+    :precondition (and
         (person_at jack ?r1)
     )
     :effect (and

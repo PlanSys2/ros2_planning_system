@@ -35,7 +35,7 @@
   ;; condition - at start -> ?wp1 (waypoint) is connected to ?wp2 (waypoint)
   ;;             at start -> ?r (robot) is at ?wp1 (waypoint)
   ;;             at start -> state_of_charge(?r) >= distance(?wp1, ?wp2) / max_range(?r)
-  ;; efect - at start -> ?r (robot) is NOT at ?wp1 (waypoint)
+  ;; effect - at start -> ?r (robot) is NOT at ?wp1 (waypoint)
   ;;         at start -> state_of_charge(?r) -= distance(?wp1, ?wp2) / max_range(?r)
   ;;         at end   -> ?r (robot) is at ?wp2 (waypoint)
   (:durative-action move
@@ -55,7 +55,7 @@
   ;; Patrol ?wp (waypoint) with ?r (robot).
   ;; duration = 5
   ;; condition - at start -> ?r (robot) is at ?wp (waypoint)
-  ;; efect - at end -> ?wp (waypoint) has been patrolled
+  ;; effect - at end -> ?wp (waypoint) has been patrolled
   (:durative-action patrol
     :parameters (?r - robot ?wp - waypoint)
     :duration (= ?duration 5)
@@ -67,7 +67,7 @@
   ;; duration = 5
   ;; condition - at start -> ?r (robot) is at ?wp (waypoint)
   ;;             at start -> ?wp (waypoint) has a charger
-  ;; efect - at end -> state_of_charge(?r) = 100
+  ;; effect - at end -> state_of_charge(?r) = 100
   (:durative-action charge
     :parameters (?r - robot ?wp - waypoint)
     :duration (= ?duration 5)

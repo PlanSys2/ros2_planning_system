@@ -170,7 +170,7 @@ Changelog for package plansys2_domain_expert
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * Setting CI
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
-* Change to lowercasegit 
+* Change to lowercasegit
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>
 * First version of planner complete
   Signed-off-by: Francisco Martin Rico <fmrico@gmail.com>

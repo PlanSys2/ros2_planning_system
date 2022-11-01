@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2019 Intelligent Robotics Lab
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,38 +24,46 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    namespace = LaunchConfiguration('namespace')
-    params_file = LaunchConfiguration('params_file')
-    action_bt_file = LaunchConfiguration('action_bt_file')
-    start_action_bt_file = LaunchConfiguration('start_action_bt_file')
-    end_action_bt_file = LaunchConfiguration('end_action_bt_file')
+    namespace = LaunchConfiguration("namespace")
+    params_file = LaunchConfiguration("params_file")
+    action_bt_file = LaunchConfiguration("action_bt_file")
+    start_action_bt_file = LaunchConfiguration("start_action_bt_file")
+    end_action_bt_file = LaunchConfiguration("end_action_bt_file")
     bt_builder_plugin = LaunchConfiguration("bt_builder_plugin")
 
     declare_namespace_cmd = DeclareLaunchArgument(
-        'namespace',
-        default_value='',
-        description='Namespace')
+        "namespace", default_value="", description="Namespace"
+    )
 
     declare_action_bt_file_cmd = DeclareLaunchArgument(
-        'action_bt_file',
+        "action_bt_file",
         default_value=os.path.join(
-          get_package_share_directory('plansys2_executor'),
-          'behavior_trees', 'plansys2_action_bt.xml'),
-        description='BT representing a PDDL action')
+            get_package_share_directory("plansys2_executor"),
+            "behavior_trees",
+            "plansys2_action_bt.xml",
+        ),
+        description="BT representing a PDDL action",
+    )
 
     declare_start_action_bt_file_cmd = DeclareLaunchArgument(
-        'start_action_bt_file',
+        "start_action_bt_file",
         default_value=os.path.join(
-          get_package_share_directory('plansys2_executor'),
-          'behavior_trees', 'plansys2_start_action_bt.xml'),
-        description='BT representing a PDDL start action')
+            get_package_share_directory("plansys2_executor"),
+            "behavior_trees",
+            "plansys2_start_action_bt.xml",
+        ),
+        description="BT representing a PDDL start action",
+    )
 
     declare_end_action_bt_file_cmd = DeclareLaunchArgument(
-        'end_action_bt_file',
+        "end_action_bt_file",
         default_value=os.path.join(
-          get_package_share_directory('plansys2_executor'),
-          'behavior_trees', 'plansys2_end_action_bt.xml'),
-        description='BT representing a PDDL end action')
+            get_package_share_directory("plansys2_executor"),
+            "behavior_trees",
+            "plansys2_end_action_bt.xml",
+        ),
+        description="BT representing a PDDL end action",
+    )
 
     declare_bt_builder_plugin_cmd = DeclareLaunchArgument(
         "bt_builder_plugin",
@@ -64,18 +73,19 @@ def generate_launch_description():
 
     # Specify the actions
     executor_cmd = Node(
-        package='plansys2_executor',
-        executable='executor_node',
-        name='executor',
+        package="plansys2_executor",
+        executable="executor_node",
+        name="executor",
         namespace=namespace,
-        output='screen',
+        output="screen",
         parameters=[
-          {'default_action_bt_xml_filename': action_bt_file},
-          {'default_start_action_bt_xml_filename': start_action_bt_file},
-          {'default_end_action_bt_xml_filename': end_action_bt_file},
-          {'bt_builder_plugin': bt_builder_plugin},
-          params_file
-        ])
+            {"default_action_bt_xml_filename": action_bt_file},
+            {"default_start_action_bt_xml_filename": start_action_bt_file},
+            {"default_end_action_bt_xml_filename": end_action_bt_file},
+            {"bt_builder_plugin": bt_builder_plugin},
+            params_file,
+        ],
+    )
 
     # Create the launch description and populate
     ld = LaunchDescription()

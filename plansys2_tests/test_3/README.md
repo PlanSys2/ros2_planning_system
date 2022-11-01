@@ -209,4 +209,3 @@ car
 20.008: (assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 car3)  [5.000]
 
 ```
-

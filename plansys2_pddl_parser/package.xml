@@ -3,9 +3,9 @@
 <package format="3">
   <name>plansys2_pddl_parser</name>
   <version>2.0.8</version>
-  
+
   <description>This package contains a library for parsing PDDL domains and problems.
-  
+
     This package derives from the work of Anders Jonsson, contained in https://github.com/wisdompoet/universal-pddl-parser.git
     with many modifications by Francisco Martin:
       * ROS2 packaging
@@ -16,7 +16,7 @@
   </description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
- 
+
   <license>Apache License, Version 2.0</license>
 
   <author>Anders Jonsson</author>

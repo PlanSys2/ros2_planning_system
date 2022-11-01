@@ -3,7 +3,7 @@
 
 ;; Types ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (:types
-person  - object 
+person  - object
 message - object
 ; This bracket inside a comment, is here for testing purpose :-)
 robot   - object
@@ -81,7 +81,7 @@ jack john - person
 
 (:action move_person_john
     :parameters (?r1 ?r2 - room)
-    :precondition (and 
+    :precondition (and
         (person_at john ?r1)
     )
     :effect (and
@@ -93,7 +93,7 @@ jack john - person
 
 (:action move_person_jack
     :parameters (?r1 ?r2 - room)
-    :precondition (and 
+    :precondition (and
         (person_at jack ?r1)
     )
     :effect (and
