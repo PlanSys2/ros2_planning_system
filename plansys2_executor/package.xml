@@ -27,6 +27,7 @@
   <depend>pluginlib</depend>
   <depend>behaviortree_cpp_v3</depend>
   <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
   <depend>libzmq3-dev</depend>
 
   <exec_depend>popf</exec_depend>
