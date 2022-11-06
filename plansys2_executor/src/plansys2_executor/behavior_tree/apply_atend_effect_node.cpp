@@ -45,6 +45,7 @@ ApplyAtEndEffect::tick()
 
   if (!(*action_map_)[action].at_end_effects_applied) {
     (*action_map_)[action].at_end_effects_applied = true;
+    (*action_map_)[action].at_end_effects_applied_time = (*action_map_)[action].action_executor->get_current_time();
     apply(effect, problem_client_, 0);
   }
 

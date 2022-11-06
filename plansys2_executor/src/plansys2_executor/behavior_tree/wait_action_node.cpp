@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <sstream>
 #include <string>
 #include <map>
 #include <memory>
@@ -34,8 +35,20 @@ WaitAction::WaitAction(
 BT::NodeStatus
 WaitAction::tick()
 {
-  std::string action;
-  getInput("action", action);
+  std::string xml_action;
+  getInput("action", xml_action);
+
+  std::istringstream iss(xml_action);
+  std::vector<std::string> tokens{std::istream_iterator<std::string>{iss},
+                                  std::istream_iterator<std::string>{}};
+
+  if (tokens.size() < 3) {
+    return BT::NodeStatus::RUNNING;
+  }
+
+  auto action = tokens[0];
+  auto lower = std::stod(tokens[1]);
+  auto upper = std::stod(tokens[2]);
 
   if ((*action_map_).find(action) == (*action_map_).end()) {
     return BT::NodeStatus::RUNNING;  // Not started yet
@@ -46,7 +59,13 @@ WaitAction::tick()
     (*action_map_)[action].at_start_effects_applied &&
     (*action_map_)[action].at_end_effects_applied)
   {
-    return BT::NodeStatus::SUCCESS;
+    auto start_time = (*action_map_)[action].action_executor->get_start_time();
+    auto current_time = (*action_map_)[action].action_executor->get_current_time();
+    auto dt = current_time.seconds() - start_time.seconds();
+    if (dt >= lower && dt < upper) {
+      return BT::NodeStatus::SUCCESS;
+    }
+    return BT::NodeStatus::RUNNING;
   } else {
     return BT::NodeStatus::RUNNING;
   }

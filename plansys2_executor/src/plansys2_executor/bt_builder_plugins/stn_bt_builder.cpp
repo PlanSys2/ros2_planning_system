@@ -185,7 +185,7 @@ STNBTBuilder::build_bt(const Graph::Ptr stn) const
 
   auto bt = std::string("<root main_tree_to_execute=\"MainTree\">\n") + t(1) +
     "<BehaviorTree ID=\"MainTree\">\n";
-  bt = bt + get_flow(root, root, used, 1);
+  bt = bt + get_flow(root, used, 1);
   bt = bt + t(1) + "</BehaviorTree>\n</root>\n";
 
   return bt;
@@ -896,16 +896,21 @@ STNBTBuilder::prune_paths(GraphNode::Ptr current, GraphNode::Ptr previous) const
   }
 
   // Don't remove the link between the start and end node
-  if (previous->action.time == current->action.time) {
-    if (previous->action.expression == current->action.expression) {
-      if (previous->action.type != ActionType::START) {
-        std::cerr << "prune_paths: Expected previous action to be of type START" << std::endl;
-      }
-      if (current->action.type != ActionType::END) {
-        std::cerr << "prune_paths: Expected current action to be of type END" << std::endl;
-      }
-      return;
+  if (previous->action.type != ActionType::INIT &&
+      current->action.type != ActionType::GOAL &&
+      previous->action.time == current->action.time &&
+      previous->action.expression == current->action.expression) {
+    if (previous->action.type != ActionType::START) {
+      std::cerr << "prune_paths: Expected previous action type is START. ";
+      std::cerr << "Actual previous action type is ";
+      std::cerr << to_string(previous->action.type) << std::endl;
     }
+    if (current->action.type != ActionType::END) {
+      std::cerr << "prune_paths: Expected current action type is END. ";
+      std::cerr << "Actual current action type is ";
+      std::cerr << to_string(current->action.type) << std::endl;
+    }
+    return;
   }
 
   auto it = previous->output_arcs.begin();
@@ -952,7 +957,6 @@ STNBTBuilder::check_paths(GraphNode::Ptr current, GraphNode::Ptr previous) const
 std::string
 STNBTBuilder::get_flow(
   const GraphNode::Ptr node,
-  const GraphNode::Ptr parent,
   std::set<GraphNode::Ptr> & used,
   const int & level) const
 {
@@ -967,10 +971,18 @@ STNBTBuilder::get_flow(
 
   if (node->output_arcs.size() == 0) {
     if (node->action.type == ActionType::END) {
-      return end_execution_block(node, parent, l);
+      return end_execution_block(node, l);
     }
-    std::cerr << "get_flow: Unexpected action type" << std::endl;
+    if (node->action.type != ActionType::GOAL) {
+      std::cerr << "get_flow: Unexpected action type" << std::endl;
+    }
     return {};
+  } else if (node->output_arcs.size() == 1) {
+    const auto child = std::get<0>(*node->output_arcs.begin());
+    if (node->action.type == ActionType::END &&
+        child->action.type == ActionType::GOAL) {
+      return end_execution_block(node, l);
+    }
   }
 
   std::string flow;
@@ -980,9 +992,9 @@ STNBTBuilder::get_flow(
   }
 
   if (node->action.type == ActionType::START) {
-    flow = flow + start_execution_block(node, parent, l + 1);
+    flow = flow + start_execution_block(node, l + 1);
   } else if (node->action.type == ActionType::END) {
-    flow = flow + end_execution_block(node, parent, l + 1);
+    flow = flow + end_execution_block(node, l + 1);
   }
 
   int n = 0;
@@ -1000,7 +1012,7 @@ STNBTBuilder::get_flow(
       std::bind(&STNBTBuilder::is_end, this, std::placeholders::_1, node->action));
     if (end_action != node->output_arcs.end()) {
       const auto & next = std::get<0>(*end_action);
-      flow = flow + get_flow(next, node, used, l + n + 1);
+      flow = flow + get_flow(next, used, l + n + 1);
     }
   }
 
@@ -1008,7 +1020,7 @@ STNBTBuilder::get_flow(
   for (const auto & child : node->output_arcs) {
     if (!is_end(child, node->action)) {
       const auto & next = std::get<0>(child);
-      flow = flow + get_flow(next, node, used, l + n + 1);
+      flow = flow + get_flow(next, used, l + n + 1);
     }
   }
 
@@ -1026,7 +1038,6 @@ STNBTBuilder::get_flow(
 std::string
 STNBTBuilder::start_execution_block(
   const GraphNode::Ptr node,
-  const GraphNode::Ptr parent,
   const int & l) const
 {
   std::string ret;
@@ -1036,10 +1047,11 @@ STNBTBuilder::start_execution_block(
   std::string wait_actions;
   for (const auto & prev : node->input_arcs) {
     const auto & prev_node = std::get<0>(prev);
-    if (prev_node != parent) {
-      wait_actions = wait_actions + t(1) + "<WaitAction action=\"" +
-        to_action_id(prev_node->action, action_time_precision_) + "\"/>";
-    }
+    auto lower = std::get<1>(prev);
+    auto upper = std::get<2>(prev);
+    wait_actions = wait_actions + t(1) + "<WaitAction action=\"" +
+      to_action_id(prev_node->action, action_time_precision_) + " " +
+      std::to_string(lower) + " " + std::to_string(upper) + "\"/>";
 
     if (prev != *node->input_arcs.rbegin()) {
       wait_actions = wait_actions + "\n";
@@ -1062,7 +1074,6 @@ STNBTBuilder::start_execution_block(
 std::string
 STNBTBuilder::end_execution_block(
   const GraphNode::Ptr node,
-  const GraphNode::Ptr parent,
   const int & l) const
 {
   std::string ret;
@@ -1072,10 +1083,11 @@ STNBTBuilder::end_execution_block(
   std::string check_actions;
   for (const auto & prev : node->input_arcs) {
     const auto & prev_node = std::get<0>(prev);
-    if (prev_node != parent) {
-      check_actions = check_actions + t(1) + "<CheckAction action=\"" +
-        to_action_id(prev_node->action, action_time_precision_) + "\"/>";
-    }
+    auto lower = std::get<1>(prev);
+    auto upper = std::get<2>(prev);
+    check_actions = check_actions + t(1) + "<CheckAction action=\"" +
+      to_action_id(prev_node->action, action_time_precision_) + " " +
+      std::to_string(lower) + " " + std::to_string(upper) + "\"/>";
 
     if (prev != *node->input_arcs.rbegin()) {
       check_actions = check_actions + "\n";

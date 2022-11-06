@@ -370,6 +370,12 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
   auto action_timeout_actions = this->get_parameter("action_timeouts.actions").as_string_array();
 
+  (*action_map)[":0"] = ActionExecutionInfo();
+  (*action_map)[":0"].action_executor = ActionExecutor::make_shared("(INIT)", shared_from_this());
+  (*action_map)[":0"].action_executor->set_internal_status(ActionExecutor::Status::SUCCESS);
+  (*action_map)[":0"].at_start_effects_applied = true;
+  (*action_map)[":0"].at_end_effects_applied = true;
+
   for (const auto & plan_item : current_plan_.value().items) {
     auto index = BTBuilder::to_action_id(plan_item, 3);
 

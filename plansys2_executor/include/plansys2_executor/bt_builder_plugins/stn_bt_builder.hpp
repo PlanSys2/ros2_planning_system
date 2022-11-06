@@ -140,17 +140,14 @@ protected:
 
   std::string get_flow(
     const GraphNode::Ptr node,
-    const GraphNode::Ptr parent,
     std::set<GraphNode::Ptr> & used,
     const int & level) const;
 
   std::string start_execution_block(
     const GraphNode::Ptr node,
-    const GraphNode::Ptr parent,
     const int & l) const;
   std::string end_execution_block(
     const GraphNode::Ptr node,
-    const GraphNode::Ptr parent,
     const int & l) const;
 
   void get_flow_dotgraph(

@@ -117,7 +117,7 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   domain_expert_ = std::make_shared<DomainExpert>(domain_str);
 
   bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
-  if (!check_valid) {
+  if (check_valid) {
     RCLCPP_ERROR_STREAM(get_logger(), "PDDL syntax error");
     return CallbackReturnT::FAILURE;
   }
@@ -131,7 +131,7 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
 
     bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
 
-    if (!check_valid) {
+    if (check_valid) {
       RCLCPP_ERROR_STREAM(get_logger(), "PDDL syntax error");
       return CallbackReturnT::FAILURE;
     }
