@@ -76,6 +76,7 @@ std::string
 STNBTBuilder::get_tree(const plansys2_msgs::msg::Plan & plan)
 {
   stn_ = build_stn(plan);
+  propagate(stn_);
   auto bt = build_bt(stn_);
   return bt;
 }
@@ -175,6 +176,75 @@ STNBTBuilder::build_stn(const plansys2_msgs::msg::Plan & plan) const
   }
 
   return stn;
+}
+
+void
+STNBTBuilder::propagate(const Graph::Ptr stn)
+{
+  // Compute the distance matrix.
+  Eigen::MatrixXf dist = get_distance_matrix(stn);
+
+  // Check if STN is consistent.
+  for (size_t i = 0; i < dist.rows(); i++) {
+    if (dist(i,i) < 0) {
+      std::cerr << "STN is not consistent!" << std::endl;
+      return;
+    }
+  }
+
+  std::cerr << dist << std::endl;
+
+//  for (auto & node : stn->nodes) {
+//    node->input_arcs.clear();
+//    node->output_arcs.clear();
+//  }
+
+//  for (size_t i = 0; i < dist.rows(); i++) {
+//    auto node_i = *std::next(stn->nodes.begin(), i);
+//    for (size_t j = 0; j < dist.rows(); j++) {
+//      auto node_j = *std::next(stn->nodes.begin(), j);
+//      if (i < j) {
+
+//      } else if (i > j) {
+
+//      }
+//    }
+//  }
+
+  // Update the STN.
+  for (auto node : stn->nodes) {
+    // Create a set to hold the updated output arcs.
+    std::set<std::tuple<GraphNode::Ptr, double, double>> new_output_arcs;
+
+    // Iterate over the output arcs.
+    auto row = node->node_num;
+    for (auto arc : node->output_arcs) {
+      auto child = std::get<0>(arc);
+      auto col = child->node_num;
+
+      // Save the updated output arc.
+      new_output_arcs.insert(std::make_tuple(child, -dist(col, row), dist(row,col)));
+
+      // Find the corresponding input arc.
+      std::tuple<GraphNode::Ptr, double, double> input_arc;
+      std::set<std::tuple<GraphNode::Ptr, double, double>>::iterator iter;
+      iter = child->input_arcs.find(std::make_tuple(node, std::get<1>(arc), std::get<2>(arc)));
+      if (iter != child->input_arcs.end())
+      {
+        input_arc = *iter;
+      } else {
+        std::cerr << "Input arc not found!" << std::endl;
+      }
+
+      // Erase the existing child input arc.
+      child->input_arcs.erase(input_arc);
+
+      // Insert the updated child input arc.
+      child->input_arcs.insert(std::make_tuple(child, -dist(col, row), dist(row,col)));
+    }
+    // Replace the output arcs.
+    node->output_arcs = new_output_arcs;
+  }
 }
 
 std::string
@@ -952,6 +1022,48 @@ STNBTBuilder::check_paths(GraphNode::Ptr current, GraphNode::Ptr previous) const
   }
 
   return false;
+}
+
+Eigen::MatrixXf
+STNBTBuilder::get_distance_matrix(const Graph::Ptr stn) const
+{
+  // Initialize the distance matrix as infinity.
+  Eigen::MatrixXf dist = std::numeric_limits<float>::infinity() *
+    Eigen::MatrixXf::Ones(stn->nodes.size(), stn->nodes.size());
+
+  // Extract the distances imposed by the STN.
+  for (const auto node : stn->nodes) {
+    auto row = node->node_num;
+    for (const auto arc : node->output_arcs) {
+      auto child = std::get<0>(arc);
+      auto col = child->node_num;
+      dist(row, col) = std::get<2>(arc);
+      dist(col, row) = -std::get<1>(arc);
+    }
+  }
+
+  // Solve the all-pairs shortest path problem.
+  floyd_warshall(dist);
+
+  return dist;
+}
+
+void
+STNBTBuilder::floyd_warshall(Eigen::MatrixXf & dist) const
+{
+  for (size_t k = 0; k < dist.rows(); k++) {
+    for (size_t i = 0; i < dist.rows(); i++) {
+      for (size_t j = 0; j < dist.rows(); j++) {
+        if (dist(i,k) == std::numeric_limits<float>::infinity() ||
+            dist(k,j) == std::numeric_limits<float>::infinity()) {
+          continue;
+        }
+        if (dist(i,j) > (dist(i,k) + dist(k,j))) {
+          dist(i,j) = dist(i,k) + dist(k,j);
+        }
+      }
+    }
+  }
 }
 
 std::string

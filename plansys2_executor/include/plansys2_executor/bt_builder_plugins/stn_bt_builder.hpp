@@ -24,6 +24,8 @@
 #include <utility>
 #include <vector>
 
+#include <eigen3/Eigen/Dense>
+
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
@@ -79,6 +81,7 @@ public:
 
 protected:
   Graph::Ptr build_stn(const plansys2_msgs::msg::Plan & plan) const;
+  void propagate(const Graph::Ptr stn);
   std::string build_bt(const Graph::Ptr stn) const;
 
   Graph::Ptr init_graph(const plansys2_msgs::msg::Plan & plan) const;
@@ -137,6 +140,9 @@ protected:
 
   void prune_paths(GraphNode::Ptr current, GraphNode::Ptr previous) const;
   bool check_paths(GraphNode::Ptr current, GraphNode::Ptr previous) const;
+
+  Eigen::MatrixXf get_distance_matrix(const Graph::Ptr stn) const;
+  void floyd_warshall(Eigen::MatrixXf & dist) const;
 
   std::string get_flow(
     const GraphNode::Ptr node,

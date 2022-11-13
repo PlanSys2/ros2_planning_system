@@ -34,6 +34,7 @@ WaitAction::WaitAction(
 BT::NodeStatus
 WaitAction::tick()
 {
+  std::cerr << "*** *** Entering WaitAction *** ***" << std::endl;
   std::string xml_action;
   getInput("action", xml_action);
 
@@ -87,6 +88,7 @@ WaitAction::tick()
     std::cerr << "*** *** WaitAction: " << child_id << " TIME BOUND VIOLATION *** ***" << std::endl;
     return BT::NodeStatus::RUNNING;
   } else {
+    std::cerr << "*** *** WHY ARE WE GOING HERE? *** ***" << std::endl;
     return BT::NodeStatus::RUNNING;
   }
 }
