@@ -54,8 +54,10 @@ CheckAtEndReq::tick()
       "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
         parser::pddl::toString((*action_map_)[action].durative_action_info->at_end_requirements));
 
+    std::cerr << "*** *** CheckAtEndReq: " << action << " FAILURE *** ***" << std::endl;
     return BT::NodeStatus::FAILURE;
   } else {
+    std::cerr << "*** *** CheckAtEndReq: " << action << " SUCCESS *** ***" << std::endl;
     return BT::NodeStatus::SUCCESS;
   }
 }

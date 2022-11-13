@@ -54,8 +54,10 @@ CheckOverAllReq::tick()
       "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
         parser::pddl::toString((*action_map_)[action].durative_action_info->over_all_requirements));
 
+    std::cerr << "*** *** CheckOverAllReq: " << action << " FAILURE *** ***" << std::endl;
     return BT::NodeStatus::FAILURE;
   } else {
+    std::cerr << "*** *** CheckOverAllReq: " << action << " SUCCESS *** ***" << std::endl;
     return BT::NodeStatus::SUCCESS;
   }
 }

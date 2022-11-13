@@ -49,6 +49,7 @@ ApplyAtStartEffect::tick()
     apply(effect, problem_client_, 0);
   }
 
+  std::cerr << "*** *** ApplyAtStartEffect: " << action << " SUCCESS *** ***" << std::endl;
   return BT::NodeStatus::SUCCESS;
 }
 

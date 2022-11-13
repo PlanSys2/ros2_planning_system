@@ -1050,7 +1050,10 @@ STNBTBuilder::start_execution_block(
     auto lower = std::get<1>(prev);
     auto upper = std::get<2>(prev);
     wait_actions = wait_actions + t(1) + "<WaitAction action=\"" +
+      to_action_id(node->action, action_time_precision_) + " " +
+      to_string(node->action.type) + " " +
       to_action_id(prev_node->action, action_time_precision_) + " " +
+      to_string(prev_node->action.type) + " " +
       std::to_string(lower) + " " + std::to_string(upper) + "\"/>";
 
     if (prev != *node->input_arcs.rbegin()) {
@@ -1086,7 +1089,10 @@ STNBTBuilder::end_execution_block(
     auto lower = std::get<1>(prev);
     auto upper = std::get<2>(prev);
     check_actions = check_actions + t(1) + "<CheckAction action=\"" +
+      to_action_id(node->action, action_time_precision_) + " " +
+      to_string(node->action.type) + " " +
       to_action_id(prev_node->action, action_time_precision_) + " " +
+      to_string(prev_node->action.type) + " " +
       std::to_string(lower) + " " + std::to_string(upper) + "\"/>";
 
     if (prev != *node->input_arcs.rbegin()) {

@@ -38,33 +38,53 @@ CheckAction::tick()
   std::string xml_action;
   getInput("action", xml_action);
 
-  std::istringstream iss(xml_action);
-  std::vector<std::string> tokens{std::istream_iterator<std::string>{iss},
-                                  std::istream_iterator<std::string>{}};
+  auto p1 = xml_action.find(':') + 1;      // child time
+  auto p2 = xml_action.find(' ', p1) + 1;  // child type
+  auto p3 = xml_action.find(' ', p2) + 1;  // parent expression
+  auto p4 = xml_action.find(':', p3) + 1;  // parent time
+  auto p5 = xml_action.find(' ', p4) + 1;  // parent type
+  auto p6 = xml_action.find(' ', p5) + 1;  // lower bound
+  auto p7 = xml_action.find(' ', p6) + 1;  // upper bound
 
-  if (tokens.size() < 3) {
-    return BT::NodeStatus::RUNNING;
-  }
+  auto child_id = xml_action.substr(0, p2 - 1);
+  auto child_type = xml_action.substr(p2, p3 - p2 - 1);
+  auto parent_id = xml_action.substr(p3, p5 - p3 - 1);
+  auto parent_type = xml_action.substr(p5, p6 - p5 - 1);
+  auto lower_str = xml_action.substr(p6, p7 - p6 - 1);
+  auto upper_str = xml_action.substr(p7);
+  auto lower = std::stod(lower_str);
+  auto upper = std::stod(upper_str);
 
-  auto action = tokens[0];
-  auto lower = std::stod(tokens[1]);
-  auto upper = std::stod(tokens[2]);
-
-  if ((*action_map_).find(action) == (*action_map_).end()) {
+  if ((*action_map_).find(parent_id) == (*action_map_).end()) {
     return BT::NodeStatus::RUNNING;  // Not started yet
   }
 
-  if ((*action_map_)[action].action_executor != nullptr &&
-    (*action_map_)[action].action_executor->is_finished() &&
-    (*action_map_)[action].at_start_effects_applied &&
-    (*action_map_)[action].at_end_effects_applied)
+  if ((*action_map_)[parent_id].action_executor == nullptr) {
+    return BT::NodeStatus::RUNNING;
+  }
+
+  if ((parent_type == "START" && (*action_map_)[parent_id].at_start_effects_applied) ||
+      (parent_type == "END") && (*action_map_)[parent_id].at_end_effects_applied &&
+                                (*action_map_)[parent_id].action_executor->is_finished())
   {
-    auto start_time = (*action_map_)[action].action_executor->get_start_time();
-    auto current_time = (*action_map_)[action].action_executor->get_current_time();
-    auto dt = current_time.seconds() - start_time.seconds();
-    if (dt >= lower && dt < upper) {
+    if ((parent_id == child_id) && parent_type == "START" && child_type == "END") {
+      std::cerr << "*** *** CheckAction: " << child_id << " SUCCESS *** ***" << std::endl;
       return BT::NodeStatus::SUCCESS;
     }
+
+    auto parent_time = (*action_map_)[parent_id].at_start_effects_applied_time;
+    if (parent_type == "END") {
+      parent_time = (*action_map_)[parent_id].at_end_effects_applied_time;
+    }
+    auto current_time = (*action_map_)[parent_id].action_executor->get_current_time();
+    auto dt = current_time.seconds() - parent_time.seconds();
+
+    if (dt >= lower && dt < upper) {
+      std::cerr << "*** *** CheckAction: " << child_id << " SUCCESS *** ***" << std::endl;
+      return BT::NodeStatus::SUCCESS;
+    }
+
+    std::cerr << "*** *** CheckAction: " << child_id << " TIME BOUND VIOLATION *** ***" << std::endl;
     return BT::NodeStatus::FAILURE;
   } else {
     return BT::NodeStatus::RUNNING;

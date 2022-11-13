@@ -49,6 +49,7 @@ ApplyAtEndEffect::tick()
     apply(effect, problem_client_, 0);
   }
 
+  std::cerr << "*** *** ApplyAtEndEffect: " << action << " SUCCESS *** ***" << std::endl;
   return BT::NodeStatus::SUCCESS;
 }
 
