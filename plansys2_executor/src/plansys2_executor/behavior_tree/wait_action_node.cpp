@@ -89,6 +89,25 @@ WaitAction::tick()
     return BT::NodeStatus::RUNNING;
   } else {
     std::cerr << "*** *** WHY ARE WE GOING HERE? *** ***" << std::endl;
+    std::cerr << "xml_action: " << xml_action << std::endl;
+    std::cerr << "child_id: " << child_id << std::endl;
+    std::cerr << "child_type: " << child_type << std::endl;
+    std::cerr << "parent_id: " << parent_id << std::endl;
+    std::cerr << "parent_type: " << parent_type << std::endl;
+    if (parent_type == "START") {
+      if ((*action_map_)[parent_id].at_start_effects_applied) {
+        std::cerr << "AT START EFFECTS APPLIED" << std::endl;
+      } else {
+        std::cerr << "AT START EFFECTS NOT APPLIED" << std::endl;
+      }
+    }
+    if (parent_type == "END") {
+      if ((*action_map_)[parent_id].at_end_effects_applied) {
+        std::cerr << "AT END EFFECTS APPLIED" << std::endl;
+      } else {
+        std::cerr << "AT END EFFECTS NOT APPLIED" << std::endl;
+      }
+    }
     return BT::NodeStatus::RUNNING;
   }
 }

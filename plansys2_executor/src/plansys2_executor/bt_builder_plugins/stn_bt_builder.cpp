@@ -194,23 +194,6 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
 
   std::cerr << dist << std::endl;
 
-//  for (auto & node : stn->nodes) {
-//    node->input_arcs.clear();
-//    node->output_arcs.clear();
-//  }
-
-//  for (size_t i = 0; i < dist.rows(); i++) {
-//    auto node_i = *std::next(stn->nodes.begin(), i);
-//    for (size_t j = 0; j < dist.rows(); j++) {
-//      auto node_j = *std::next(stn->nodes.begin(), j);
-//      if (i < j) {
-
-//      } else if (i > j) {
-
-//      }
-//    }
-//  }
-
   // Update the STN.
   for (auto node : stn->nodes) {
     // Create a set to hold the updated output arcs.
@@ -240,7 +223,7 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
       child->input_arcs.erase(input_arc);
 
       // Insert the updated child input arc.
-      child->input_arcs.insert(std::make_tuple(child, -dist(col, row), dist(row,col)));
+      child->input_arcs.insert(std::make_tuple(node, -dist(col, row), dist(row,col)));
     }
     // Replace the output arcs.
     node->output_arcs = new_output_arcs;
@@ -1155,6 +1138,7 @@ STNBTBuilder::start_execution_block(
   std::string ret;
   std::string ret_aux = bt_start_action_;
   const std::string action_id = to_action_id(node->action, action_time_precision_);
+  const std::string action_type = to_string(node->action.type);
 
   std::string wait_actions;
   for (const auto & prev : node->input_arcs) {
@@ -1162,8 +1146,7 @@ STNBTBuilder::start_execution_block(
     auto lower = std::get<1>(prev);
     auto upper = std::get<2>(prev);
     wait_actions = wait_actions + t(1) + "<WaitAction action=\"" +
-      to_action_id(node->action, action_time_precision_) + " " +
-      to_string(node->action.type) + " " +
+      action_id + " " + action_type + " " +
       to_action_id(prev_node->action, action_time_precision_) + " " +
       to_string(prev_node->action.type) + " " +
       std::to_string(lower) + " " + std::to_string(upper) + "\"/>";
@@ -1194,6 +1177,7 @@ STNBTBuilder::end_execution_block(
   std::string ret;
   std::string ret_aux = bt_end_action_;
   const std::string action_id = to_action_id(node->action, action_time_precision_);
+  const std::string action_type = to_string(node->action.type);
 
   std::string check_actions;
   for (const auto & prev : node->input_arcs) {
@@ -1201,8 +1185,7 @@ STNBTBuilder::end_execution_block(
     auto lower = std::get<1>(prev);
     auto upper = std::get<2>(prev);
     check_actions = check_actions + t(1) + "<CheckAction action=\"" +
-      to_action_id(node->action, action_time_precision_) + " " +
-      to_string(node->action.type) + " " +
+      action_id + " " + action_type + " " +
       to_action_id(prev_node->action, action_time_precision_) + " " +
       to_string(prev_node->action.type) + " " +
       std::to_string(lower) + " " + std::to_string(upper) + "\"/>";
