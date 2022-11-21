@@ -109,8 +109,10 @@ struct ActionExecutionInfo
   std::shared_ptr<ActionExecutor> action_executor = {nullptr};
   bool at_start_effects_applied = {false};
   bool at_end_effects_applied = {false};
-  rclcpp::Time at_start_effects_applied_time;
-  rclcpp::Time at_end_effects_applied_time;
+//  rclcpp::Time at_start_effects_applied_time;
+//  rclcpp::Time at_end_effects_applied_time;
+  double at_start_effects_applied_time;
+  double at_end_effects_applied_time;
   std::shared_ptr<plansys2_msgs::msg::DurativeAction> durative_action_info = {nullptr};
   std::string execution_error_info;
   double duration;

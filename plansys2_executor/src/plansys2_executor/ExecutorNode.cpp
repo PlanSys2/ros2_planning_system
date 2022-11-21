@@ -424,6 +424,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   auto blackboard = BT::Blackboard::create();
 
   blackboard->set("action_map", action_map);
+  blackboard->set("action_graph", bt_builder->get_graph());
   blackboard->set("node", shared_from_this());
   blackboard->set("domain_client", domain_client_);
   blackboard->set("problem_client", problem_client_);
@@ -440,6 +441,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
 
   auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
+  std::cerr << bt_xml_tree << std::endl;
   std_msgs::msg::String dotgraph_msg;
   dotgraph_msg.data = bt_builder->get_dotgraph(
     action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),

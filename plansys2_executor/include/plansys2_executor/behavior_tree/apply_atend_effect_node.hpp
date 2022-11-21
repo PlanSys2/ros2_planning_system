@@ -19,6 +19,8 @@
 #include <string>
 #include <memory>
 
+#include <eigen3/Eigen/Dense>
+
 #include "behaviortree_cpp_v3/action_node.h"
 
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
@@ -26,6 +28,7 @@
 #include "plansys2_problem_expert/Utils.hpp"
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
+#include "plansys2_executor/BTBuilder.hpp"
 
 namespace plansys2
 {
@@ -49,7 +52,12 @@ public:
   }
 
 private:
+  void propagate(const Graph::Ptr stn);
+  Eigen::MatrixXf get_distance_matrix(const Graph::Ptr stn) const;
+  void floyd_warshall(Eigen::MatrixXf & dist) const;
+
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
+  Graph::Ptr action_graph_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 };
 

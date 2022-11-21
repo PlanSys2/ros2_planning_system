@@ -29,12 +29,12 @@ WaitAction::WaitAction(
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
     "action_map");
+  action_graph_ = config().blackboard->get<Graph::Ptr>("action_graph");
 }
 
 BT::NodeStatus
 WaitAction::tick()
 {
-  std::cerr << "*** *** Entering WaitAction *** ***" << std::endl;
   std::string xml_action;
   getInput("action", xml_action);
 
@@ -56,10 +56,14 @@ WaitAction::tick()
   auto upper = std::stod(upper_str);
 
   if ((*action_map_).find(parent_id) == (*action_map_).end()) {
+//    std::cerr << "*** *** WaitAction *** ***" << std::endl;
+//    std::cerr << "Parent not found in action map" << std::endl;
     return BT::NodeStatus::RUNNING;  // Not started yet
   }
 
   if ((*action_map_)[parent_id].action_executor == nullptr) {
+//    std::cerr << "*** *** WaitAction *** ***" << std::endl;
+//    std::cerr << "Parent in nullptr" << std::endl;
     return BT::NodeStatus::RUNNING;
   }
 
@@ -69,7 +73,13 @@ WaitAction::tick()
                                (*action_map_)[parent_id].action_executor->is_finished()))
   {
     if ((parent_id == child_id) && parent_type == "START" && child_type == "END") {
-      std::cerr << "*** *** WaitAction: " << child_id << " SUCCESS *** ***" << std::endl;
+//      std::cerr << "*** *** WaitAction *** ***" << std::endl;
+//      std::cerr << "xml_action: " << xml_action << std::endl;
+//      std::cerr << "child_id: " << child_id << std::endl;
+//      std::cerr << "child_type: " << child_type << std::endl;
+//      std::cerr << "parent_id: " << parent_id << std::endl;
+//      std::cerr << "parent_type: " << parent_type << std::endl;
+//      std::cerr << "SUCCESS" << std::endl;
       return BT::NodeStatus::SUCCESS;
     }
 
@@ -78,36 +88,62 @@ WaitAction::tick()
       parent_time = (*action_map_)[parent_id].at_end_effects_applied_time;
     }
     auto current_time = (*action_map_)[parent_id].action_executor->get_current_time();
-    auto dt = current_time.seconds() - parent_time.seconds();
+    auto start_time = (*action_map_)[parent_id].action_executor->get_start_time();
+    auto time_from_start = current_time.seconds() - start_time.seconds();
+    auto dt = time_from_start - parent_time;
+
+//    current > parent + lower;
+//    current < parent + upper;
 
     if (dt >= lower && dt < upper) {
-      std::cerr << "*** *** WaitAction: " << child_id << " " << lower << " " << upper << " SUCCESS *** ***" << std::endl;
+//      std::cerr << "*** *** WaitAction *** ***" << std::endl;
+//      std::cerr << "xml_action: " << xml_action << std::endl;
+//      std::cerr << "child_id: " << child_id << std::endl;
+//      std::cerr << "child_type: " << child_type << std::endl;
+//      std::cerr << "parent_id: " << parent_id << std::endl;
+//      std::cerr << "parent_type: " << parent_type << std::endl;
+//      std::cerr << "parent_time: " << parent_time << std::endl;
+//      std::cerr << "lower: " << parent_time + lower << std::endl;
+//      std::cerr << "upper: " << parent_time + upper << std::endl;
+//      std::cerr << "time_from_start: " << time_from_start << std::endl;
+//      std::cerr << "SUCCESS" << std::endl;
       return BT::NodeStatus::SUCCESS;
     }
 
-    std::cerr << "*** *** WaitAction: " << child_id << " TIME BOUND VIOLATION *** ***" << std::endl;
+//    std::cerr << "*** *** WaitAction *** ***" << std::endl;
+//    std::cerr << "xml_action: " << xml_action << std::endl;
+//    std::cerr << "child_id: " << child_id << std::endl;
+//    std::cerr << "child_type: " << child_type << std::endl;
+//    std::cerr << "parent_id: " << parent_id << std::endl;
+//    std::cerr << "parent_type: " << parent_type << std::endl;
+//    std::cerr << "parent_time: " << parent_time << std::endl;
+//    std::cerr << "lower: " << parent_time + lower << std::endl;
+//    std::cerr << "upper: " << parent_time + upper << std::endl;
+//    std::cerr << "time_from_start: " << time_from_start << std::endl;
+//    std::cerr << "RUNNING" << std::endl;
     return BT::NodeStatus::RUNNING;
   } else {
-    std::cerr << "*** *** WHY ARE WE GOING HERE? *** ***" << std::endl;
-    std::cerr << "xml_action: " << xml_action << std::endl;
-    std::cerr << "child_id: " << child_id << std::endl;
-    std::cerr << "child_type: " << child_type << std::endl;
-    std::cerr << "parent_id: " << parent_id << std::endl;
-    std::cerr << "parent_type: " << parent_type << std::endl;
-    if (parent_type == "START") {
-      if ((*action_map_)[parent_id].at_start_effects_applied) {
-        std::cerr << "AT START EFFECTS APPLIED" << std::endl;
-      } else {
-        std::cerr << "AT START EFFECTS NOT APPLIED" << std::endl;
-      }
-    }
-    if (parent_type == "END") {
-      if ((*action_map_)[parent_id].at_end_effects_applied) {
-        std::cerr << "AT END EFFECTS APPLIED" << std::endl;
-      } else {
-        std::cerr << "AT END EFFECTS NOT APPLIED" << std::endl;
-      }
-    }
+//    std::cerr << "*** *** WaitAction *** ***" << std::endl;
+//    std::cerr << "xml_action: " << xml_action << std::endl;
+//    std::cerr << "child_id: " << child_id << std::endl;
+//    std::cerr << "child_type: " << child_type << std::endl;
+//    std::cerr << "parent_id: " << parent_id << std::endl;
+//    std::cerr << "parent_type: " << parent_type << std::endl;
+//    if (parent_type == "START") {
+//      if ((*action_map_)[parent_id].at_start_effects_applied) {
+//        std::cerr << "AT START EFFECTS APPLIED" << std::endl;
+//      } else {
+//        std::cerr << "AT START EFFECTS NOT APPLIED" << std::endl;
+//      }
+//    }
+//    if (parent_type == "END") {
+//      if ((*action_map_)[parent_id].at_end_effects_applied) {
+//        std::cerr << "AT END EFFECTS APPLIED" << std::endl;
+//      } else {
+//        std::cerr << "AT END EFFECTS NOT APPLIED" << std::endl;
+//      }
+//    }
+//    std::cerr << "RUNNING" << std::endl;
     return BT::NodeStatus::RUNNING;
   }
 }

@@ -77,7 +77,9 @@ CheckAction::tick()
       parent_time = (*action_map_)[parent_id].at_end_effects_applied_time;
     }
     auto current_time = (*action_map_)[parent_id].action_executor->get_current_time();
-    auto dt = current_time.seconds() - parent_time.seconds();
+    auto start_time = (*action_map_)[parent_id].action_executor->get_start_time();
+    auto time_from_start = current_time.seconds() - start_time.seconds();
+    auto dt = time_from_start - parent_time;
 
     if (dt >= lower && dt < upper) {
       std::cerr << "*** *** CheckAction: " << child_id << " SUCCESS *** ***" << std::endl;
