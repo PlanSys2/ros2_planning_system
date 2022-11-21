@@ -68,7 +68,7 @@ CheckAction::tick()
                                 (*action_map_)[parent_id].action_executor->is_finished())
   {
     if ((parent_id == child_id) && parent_type == "START" && child_type == "END") {
-      std::cerr << "*** *** CheckAction: " << child_id << " SUCCESS *** ***" << std::endl;
+      std::cerr << "CheckAction: " << xml_action << " SUCCESS 1" << std::endl;
       return BT::NodeStatus::SUCCESS;
     }
 
@@ -82,11 +82,11 @@ CheckAction::tick()
     auto dt = time_from_start - parent_time;
 
     if (dt >= lower && dt < upper) {
-      std::cerr << "*** *** CheckAction: " << child_id << " SUCCESS *** ***" << std::endl;
+      std::cerr << "CheckAction: " << xml_action << " SUCCESS 2" << std::endl;
       return BT::NodeStatus::SUCCESS;
     }
 
-    std::cerr << "*** *** CheckAction: " << child_id << " TIME BOUND VIOLATION *** ***" << std::endl;
+    std::cerr << "CheckAction: " << xml_action << " TIME BOUND VIOLATION" << std::endl;
     return BT::NodeStatus::FAILURE;
   } else {
     return BT::NodeStatus::RUNNING;

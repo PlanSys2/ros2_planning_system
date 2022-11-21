@@ -56,14 +56,10 @@ WaitAction::tick()
   auto upper = std::stod(upper_str);
 
   if ((*action_map_).find(parent_id) == (*action_map_).end()) {
-//    std::cerr << "*** *** WaitAction *** ***" << std::endl;
-//    std::cerr << "Parent not found in action map" << std::endl;
     return BT::NodeStatus::RUNNING;  // Not started yet
   }
 
   if ((*action_map_)[parent_id].action_executor == nullptr) {
-//    std::cerr << "*** *** WaitAction *** ***" << std::endl;
-//    std::cerr << "Parent in nullptr" << std::endl;
     return BT::NodeStatus::RUNNING;
   }
 
@@ -80,6 +76,7 @@ WaitAction::tick()
 //      std::cerr << "parent_id: " << parent_id << std::endl;
 //      std::cerr << "parent_type: " << parent_type << std::endl;
 //      std::cerr << "SUCCESS" << std::endl;
+      std::cerr << "WaitAction: " << xml_action << " SUCCESS 1" << std::endl;
       return BT::NodeStatus::SUCCESS;
     }
 
@@ -91,9 +88,6 @@ WaitAction::tick()
     auto start_time = (*action_map_)[parent_id].action_executor->get_start_time();
     auto time_from_start = current_time.seconds() - start_time.seconds();
     auto dt = time_from_start - parent_time;
-
-//    current > parent + lower;
-//    current < parent + upper;
 
     if (dt >= lower && dt < upper) {
 //      std::cerr << "*** *** WaitAction *** ***" << std::endl;
@@ -107,6 +101,7 @@ WaitAction::tick()
 //      std::cerr << "upper: " << parent_time + upper << std::endl;
 //      std::cerr << "time_from_start: " << time_from_start << std::endl;
 //      std::cerr << "SUCCESS" << std::endl;
+      std::cerr << "WaitAction: " << xml_action << " SUCCESS 2" << std::endl;
       return BT::NodeStatus::SUCCESS;
     }
 

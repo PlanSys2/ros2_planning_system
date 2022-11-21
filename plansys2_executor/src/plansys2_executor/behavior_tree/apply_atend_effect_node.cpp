@@ -51,11 +51,10 @@ ApplyAtEndEffect::tick()
     auto start_time = (*action_map_)[action].action_executor->get_start_time();
     auto time_from_start = current_time.seconds() - start_time.seconds();
     (*action_map_)[action].at_end_effects_applied_time = time_from_start;
-    std::cerr << "*** *** ApplyAtEndEffect: " << action << " at time " << time_from_start << " *** ***" << std::endl;
+    std::cerr << "ApplyAtEndEffect: " << action << " at time " << time_from_start << " SUCCESS" << std::endl;
     apply(effect, problem_client_, 0);
   }
 
-  std::cerr << "*** *** ApplyAtEndEffect: " << action << " SUCCESS *** ***" << std::endl;
   return BT::NodeStatus::SUCCESS;
 }
 

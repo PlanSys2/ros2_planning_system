@@ -71,7 +71,7 @@ WaitAtStartReq::tick()
 //    return BT::NodeStatus::RUNNING;
 //  }
 
-//  std::cerr << "*** *** WaitAtStartReq: " << action << " SUCCESS *** ***" << std::endl;
+  std::cerr << "WaitAtStartReq: " << action << " SUCCESS" << std::endl;
   return BT::NodeStatus::SUCCESS;
 }
 

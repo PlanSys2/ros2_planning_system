@@ -51,7 +51,7 @@ ApplyAtStartEffect::tick()
     auto start_time = (*action_map_)[action].action_executor->get_start_time();
     auto time_from_start = current_time.seconds() - start_time.seconds();
     (*action_map_)[action].at_start_effects_applied_time = time_from_start;
-    std::cerr << "*** *** ApplyAtStartEffect: " << action << " at time " << time_from_start << " *** ***" << std::endl;
+    std::cerr << "ApplyAtStartEffect: " << action << " at time " << time_from_start << " SUCCESS" << std::endl;
     apply(effect, problem_client_, 0);
   }
 
