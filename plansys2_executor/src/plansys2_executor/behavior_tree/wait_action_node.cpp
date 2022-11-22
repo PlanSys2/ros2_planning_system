@@ -63,9 +63,9 @@ WaitAction::tick()
   }
 
   if (parent_type == "INIT" ||
-      (parent_type == "START" && (*action_map_)[parent_id].at_start_effects_applied) ||
-      (parent_type == "END" && (*action_map_)[parent_id].at_end_effects_applied &&
-                               (*action_map_)[parent_id].action_executor->is_finished()))
+    (parent_type == "START" && (*action_map_)[parent_id].at_start_effects_applied) ||
+    (parent_type == "END" && (*action_map_)[parent_id].at_end_effects_applied &&
+    (*action_map_)[parent_id].action_executor->is_finished()))
   {
     if ((parent_id == child_id) && parent_type == "START" && child_type == "END") {
       return BT::NodeStatus::SUCCESS;

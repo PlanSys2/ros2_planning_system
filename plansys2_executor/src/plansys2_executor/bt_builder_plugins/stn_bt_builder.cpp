@@ -186,7 +186,7 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
 
   // Check if STN is consistent.
   for (size_t i = 0; i < dist.rows(); i++) {
-    if (dist(i,i) < 0) {
+    if (dist(i, i) < 0) {
       std::cerr << "STN is not consistent!" << std::endl;
       return;
     }
@@ -204,14 +204,13 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
       auto col = child->node_num;
 
       // Save the updated output arc.
-      new_output_arcs.insert(std::make_tuple(child, -dist(col, row), dist(row,col)));
+      new_output_arcs.insert(std::make_tuple(child, -dist(col, row), dist(row, col)));
 
       // Find the corresponding input arc.
       std::tuple<GraphNode::Ptr, double, double> input_arc;
       std::set<std::tuple<GraphNode::Ptr, double, double>>::iterator iter;
       iter = child->input_arcs.find(std::make_tuple(node, std::get<1>(arc), std::get<2>(arc)));
-      if (iter != child->input_arcs.end())
-      {
+      if (iter != child->input_arcs.end()) {
         input_arc = *iter;
       } else {
         std::cerr << "Input arc not found!" << std::endl;
@@ -221,7 +220,7 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
       child->input_arcs.erase(input_arc);
 
       // Insert the updated child input arc.
-      child->input_arcs.insert(std::make_tuple(node, -dist(col, row), dist(row,col)));
+      child->input_arcs.insert(std::make_tuple(node, -dist(col, row), dist(row, col)));
     }
     // Replace the output arcs.
     node->output_arcs = new_output_arcs;
@@ -948,9 +947,10 @@ STNBTBuilder::prune_paths(GraphNode::Ptr current, GraphNode::Ptr previous) const
 
   // Don't remove the link between the start and end node
   if (previous->action.type != ActionType::INIT &&
-      current->action.type != ActionType::GOAL &&
-      previous->action.time == current->action.time &&
-      previous->action.expression == current->action.expression) {
+    current->action.type != ActionType::GOAL &&
+    previous->action.time == current->action.time &&
+    previous->action.expression == current->action.expression)
+  {
     if (previous->action.type != ActionType::START) {
       std::cerr << "prune_paths: Expected previous action type is START. ";
       std::cerr << "Actual previous action type is ";
@@ -1035,12 +1035,13 @@ STNBTBuilder::floyd_warshall(Eigen::MatrixXf & dist) const
   for (size_t k = 0; k < dist.rows(); k++) {
     for (size_t i = 0; i < dist.rows(); i++) {
       for (size_t j = 0; j < dist.rows(); j++) {
-        if (dist(i,k) == std::numeric_limits<float>::infinity() ||
-            dist(k,j) == std::numeric_limits<float>::infinity()) {
+        if (dist(i, k) == std::numeric_limits<float>::infinity() ||
+          dist(k, j) == std::numeric_limits<float>::infinity())
+        {
           continue;
         }
-        if (dist(i,j) > (dist(i,k) + dist(k,j))) {
-          dist(i,j) = dist(i,k) + dist(k,j);
+        if (dist(i, j) > (dist(i, k) + dist(k, j))) {
+          dist(i, j) = dist(i, k) + dist(k, j);
         }
       }
     }
@@ -1065,11 +1066,18 @@ STNBTBuilder::get_flow(
       });
     auto lower = std::get<1>(*in);
     auto upper = std::get<2>(*in);
+
+    std::string parent_id;
+    std::string parent_type;
+    if (prev_node) {
+      parent_id = to_action_id(prev_node->action, action_time_precision_);
+      parent_type = to_string(prev_node->action.type);
+    }
+
     return t(l) + "<WaitAction action=\"" +
-      action_id + " " + to_string(node->action.type) + " " +
-      to_action_id(prev_node->action, action_time_precision_) + " " +
-      to_string(prev_node->action.type) + " " +
-      std::to_string(lower) + " " + std::to_string(upper) + "\"/>\n";
+           action_id + " " + to_string(node->action.type) + " " +
+           parent_id + " " + parent_type + " " +
+           std::to_string(lower) + " " + std::to_string(upper) + "\"/>\n";
   }
 
   used.insert(node);
@@ -1085,7 +1093,8 @@ STNBTBuilder::get_flow(
   } else if (node->output_arcs.size() == 1) {
     const auto child = std::get<0>(*node->output_arcs.begin());
     if (node->action.type == ActionType::END &&
-        child->action.type == ActionType::GOAL) {
+      child->action.type == ActionType::GOAL)
+    {
       return end_execution_block(node, l);
     }
   }
