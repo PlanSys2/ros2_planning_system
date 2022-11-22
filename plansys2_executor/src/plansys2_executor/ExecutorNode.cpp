@@ -441,86 +441,9 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
 
   auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
-
-  bt_xml_tree =
-R""""(<root main_tree_to_execute="MainTree">
-  <BehaviorTree ID="MainTree">
-    <Parallel success_threshold="2" failure_threshold="1">
-      <Sequence name="(light_match m2):2002">
-        <Sequence name="(light_match m2):2002">
-          <WaitAction action="(light_match m2):2002 START :0 INIT 2.000000 inf"/>
-          <WaitAtStartReq action="(light_match m2):2002"/>
-          <ApplyAtStartEffect action="(light_match m2):2002"/>
-        </Sequence>
-        <Parallel success_threshold="2" failure_threshold="1">
-          <Sequence name="(light_match m2):2002">
-            <ReactiveSequence name="(light_match m2):2002">
-              <CheckOverAllReq action="(light_match m2):2002"/>
-              <ExecuteAction action="(light_match m2):2002"/>
-            </ReactiveSequence>
-            <CheckAction action="(light_match m2):2002 END (light_match m2):2002 START 8.000000 8.000000"/>
-            <CheckAction action="(light_match m2):2002 END (mend_fuse f2 m2):5002 END 0.000000 3.000000"/>
-            <CheckAtEndReq action="(light_match m2):2002"/>
-            <ApplyAtEndEffect action="(light_match m2):2002"/>
-          </Sequence>
-          <Sequence name="(mend_fuse f2 m2):5002">
-            <Sequence name="(mend_fuse f2 m2):5002">
-              <WaitAction action="(mend_fuse f2 m2):5002 START (mend_fuse f1 m1):1 END 0.000000 inf"/>
-              <WaitAction action="(mend_fuse f2 m2):5002 START (light_match m2):2002 START 0.000000 3.000000"/>
-              <WaitAtStartReq action="(mend_fuse f2 m2):5002"/>
-              <ApplyAtStartEffect action="(mend_fuse f2 m2):5002"/>
-            </Sequence>
-            <Sequence name="(mend_fuse f2 m2):5002">
-              <ReactiveSequence name="(mend_fuse f2 m2):5002">
-                <CheckOverAllReq action="(mend_fuse f2 m2):5002"/>
-                <ExecuteAction action="(mend_fuse f2 m2):5002"/>
-              </ReactiveSequence>
-              <CheckAction action="(mend_fuse f2 m2):5002 END (mend_fuse f2 m2):5002 START 5.000000 5.000000"/>
-              <CheckAtEndReq action="(mend_fuse f2 m2):5002"/>
-              <ApplyAtEndEffect action="(mend_fuse f2 m2):5002"/>
-            </Sequence>
-          </Sequence>
-        </Parallel>
-      </Sequence>
-      <Sequence name="(light_match m1):0">
-        <Sequence name="(light_match m1):0">
-          <WaitAction action="(light_match m1):0 START :0 INIT 0.000000 inf"/>
-          <WaitAtStartReq action="(light_match m1):0"/>
-          <ApplyAtStartEffect action="(light_match m1):0"/>
-        </Sequence>
-        <Parallel success_threshold="2" failure_threshold="1">
-          <Sequence name="(light_match m1):0">
-            <ReactiveSequence name="(light_match m1):0">
-              <CheckOverAllReq action="(light_match m1):0"/>
-              <ExecuteAction action="(light_match m1):0"/>
-            </ReactiveSequence>
-            <CheckAction action="(light_match m1):0 END (mend_fuse f1 m1):1 END 0.000000 3.000000"/>
-            <CheckAction action="(light_match m1):0 END (light_match m1):0 START 8.000000 8.000000"/>
-            <CheckAtEndReq action="(light_match m1):0"/>
-            <ApplyAtEndEffect action="(light_match m1):0"/>
-          </Sequence>
-          <Sequence name="(mend_fuse f1 m1):1">
-            <Sequence name="(mend_fuse f1 m1):1">
-              <WaitAction action="(mend_fuse f1 m1):1 START (light_match m1):0 START 0.000000 3.000000"/>
-              <WaitAtStartReq action="(mend_fuse f1 m1):1"/>
-              <ApplyAtStartEffect action="(mend_fuse f1 m1):1"/>
-            </Sequence>
-            <Sequence name="(mend_fuse f1 m1):1">
-              <ReactiveSequence name="(mend_fuse f1 m1):1">
-                <CheckOverAllReq action="(mend_fuse f1 m1):1"/>
-                <ExecuteAction action="(mend_fuse f1 m1):1"/>
-              </ReactiveSequence>
-              <CheckAction action="(mend_fuse f1 m1):1 END (mend_fuse f1 m1):1 START 5.000000 5.000000"/>
-              <CheckAtEndReq action="(mend_fuse f1 m1):1"/>
-              <ApplyAtEndEffect action="(mend_fuse f1 m1):1"/>
-            </Sequence>
-          </Sequence>
-        </Parallel>
-      </Sequence>
-    </Parallel>
-  </BehaviorTree>
-</root>
-)"""";
+  if (false) {
+    bt_xml_tree = get_modified_bt();
+  }
 
   std::cerr << bt_xml_tree << std::endl;
   std_msgs::msg::String dotgraph_msg;
@@ -725,6 +648,91 @@ ExecutorNode::print_execution_info(
       fprintf(stderr, "\tAt end effects NOT applied\n");
     }
   }
+}
+
+std::string
+ExecutorNode::get_modified_bt()
+{
+  std::string bt_xml_tree =
+  R""""(<root main_tree_to_execute="MainTree">
+    <BehaviorTree ID="MainTree">
+      <Parallel success_threshold="2" failure_threshold="1">
+        <Sequence name="(light_match m2):2002">
+          <Sequence name="(light_match m2):2002">
+            <WaitAction action="(light_match m2):2002 START :0 INIT 2.000000 inf"/>
+            <WaitAtStartReq action="(light_match m2):2002"/>
+            <ApplyAtStartEffect action="(light_match m2):2002"/>
+          </Sequence>
+          <Parallel success_threshold="2" failure_threshold="1">
+            <Sequence name="(light_match m2):2002">
+              <ReactiveSequence name="(light_match m2):2002">
+                <CheckOverAllReq action="(light_match m2):2002"/>
+                <ExecuteAction action="(light_match m2):2002"/>
+              </ReactiveSequence>
+              <CheckAction action="(light_match m2):2002 END (light_match m2):2002 START 8.000000 8.000000"/>
+              <CheckAction action="(light_match m2):2002 END (mend_fuse f2 m2):5002 END 0.000000 3.000000"/>
+              <CheckAtEndReq action="(light_match m2):2002"/>
+              <ApplyAtEndEffect action="(light_match m2):2002"/>
+            </Sequence>
+            <Sequence name="(mend_fuse f2 m2):5002">
+              <Sequence name="(mend_fuse f2 m2):5002">
+                <WaitAction action="(mend_fuse f2 m2):5002 START (mend_fuse f1 m1):1 END 0.000000 inf"/>
+                <WaitAction action="(mend_fuse f2 m2):5002 START (light_match m2):2002 START 0.000000 3.000000"/>
+                <WaitAtStartReq action="(mend_fuse f2 m2):5002"/>
+                <ApplyAtStartEffect action="(mend_fuse f2 m2):5002"/>
+              </Sequence>
+              <Sequence name="(mend_fuse f2 m2):5002">
+                <ReactiveSequence name="(mend_fuse f2 m2):5002">
+                  <CheckOverAllReq action="(mend_fuse f2 m2):5002"/>
+                  <ExecuteAction action="(mend_fuse f2 m2):5002"/>
+                </ReactiveSequence>
+                <CheckAction action="(mend_fuse f2 m2):5002 END (mend_fuse f2 m2):5002 START 5.000000 5.000000"/>
+                <CheckAtEndReq action="(mend_fuse f2 m2):5002"/>
+                <ApplyAtEndEffect action="(mend_fuse f2 m2):5002"/>
+              </Sequence>
+            </Sequence>
+          </Parallel>
+        </Sequence>
+        <Sequence name="(light_match m1):0">
+          <Sequence name="(light_match m1):0">
+            <WaitAction action="(light_match m1):0 START :0 INIT 0.000000 inf"/>
+            <WaitAtStartReq action="(light_match m1):0"/>
+            <ApplyAtStartEffect action="(light_match m1):0"/>
+          </Sequence>
+          <Parallel success_threshold="2" failure_threshold="1">
+            <Sequence name="(light_match m1):0">
+              <ReactiveSequence name="(light_match m1):0">
+                <CheckOverAllReq action="(light_match m1):0"/>
+                <ExecuteAction action="(light_match m1):0"/>
+              </ReactiveSequence>
+              <CheckAction action="(light_match m1):0 END (mend_fuse f1 m1):1 END 0.000000 3.000000"/>
+              <CheckAction action="(light_match m1):0 END (light_match m1):0 START 8.000000 8.000000"/>
+              <CheckAtEndReq action="(light_match m1):0"/>
+              <ApplyAtEndEffect action="(light_match m1):0"/>
+            </Sequence>
+            <Sequence name="(mend_fuse f1 m1):1">
+              <Sequence name="(mend_fuse f1 m1):1">
+                <WaitAction action="(mend_fuse f1 m1):1 START (light_match m1):0 START 0.000000 3.000000"/>
+                <WaitAtStartReq action="(mend_fuse f1 m1):1"/>
+                <ApplyAtStartEffect action="(mend_fuse f1 m1):1"/>
+              </Sequence>
+              <Sequence name="(mend_fuse f1 m1):1">
+                <ReactiveSequence name="(mend_fuse f1 m1):1">
+                  <CheckOverAllReq action="(mend_fuse f1 m1):1"/>
+                  <ExecuteAction action="(mend_fuse f1 m1):1"/>
+                </ReactiveSequence>
+                <CheckAction action="(mend_fuse f1 m1):1 END (mend_fuse f1 m1):1 START 5.000000 5.000000"/>
+                <CheckAtEndReq action="(mend_fuse f1 m1):1"/>
+                <ApplyAtEndEffect action="(mend_fuse f1 m1):1"/>
+              </Sequence>
+            </Sequence>
+          </Parallel>
+        </Sequence>
+      </Parallel>
+    </BehaviorTree>
+  </root>
+  )"""";
+  return bt_xml_tree;
 }
 
 }  // namespace plansys2

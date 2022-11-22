@@ -56,10 +56,12 @@ WaitAction::tick()
   auto upper = std::stod(upper_str);
 
   if ((*action_map_).find(parent_id) == (*action_map_).end()) {
+    std::cerr << "WaitAction: " << xml_action << " RUNNING 1" << std::endl;
     return BT::NodeStatus::RUNNING;  // Not started yet
   }
 
   if ((*action_map_)[parent_id].action_executor == nullptr) {
+    std::cerr << "WaitAction: " << xml_action << " RUNNING 2" << std::endl;
     return BT::NodeStatus::RUNNING;
   }
 
@@ -115,7 +117,7 @@ WaitAction::tick()
 //    std::cerr << "lower: " << parent_time + lower << std::endl;
 //    std::cerr << "upper: " << parent_time + upper << std::endl;
 //    std::cerr << "time_from_start: " << time_from_start << std::endl;
-//    std::cerr << "RUNNING" << std::endl;
+    std::cerr << "WaitAction: " << xml_action << " RUNNING 3" << std::endl;
     return BT::NodeStatus::RUNNING;
   } else {
 //    std::cerr << "*** *** WaitAction *** ***" << std::endl;
@@ -138,7 +140,7 @@ WaitAction::tick()
 //        std::cerr << "AT END EFFECTS NOT APPLIED" << std::endl;
 //      }
 //    }
-//    std::cerr << "RUNNING" << std::endl;
+    std::cerr << "WaitAction: " << xml_action << " RUNNING 4" << std::endl;
     return BT::NodeStatus::RUNNING;
   }
 }

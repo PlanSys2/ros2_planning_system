@@ -118,6 +118,8 @@ protected:
 
   void print_execution_info(
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> exec_info);
+
+  std::string get_modified_bt();
 };
 
 }  // namespace plansys2

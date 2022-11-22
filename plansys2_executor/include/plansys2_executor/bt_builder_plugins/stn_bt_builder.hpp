@@ -124,6 +124,7 @@ protected:
 
   std::string get_flow(
     const Node::Ptr node,
+    const Node::Ptr prev_node,
     std::set<Node::Ptr> & used,
     const int & level) const;
 

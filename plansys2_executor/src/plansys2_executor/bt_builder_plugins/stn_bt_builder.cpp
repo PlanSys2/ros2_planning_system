@@ -77,6 +77,7 @@ STNBTBuilder::get_tree(const plansys2_msgs::msg::Plan & plan)
 {
   stn_ = build_stn(plan);
   propagate(stn_);
+  print_graph(stn_);
   auto bt = build_bt(stn_);
   return bt;
 }
@@ -238,7 +239,7 @@ STNBTBuilder::build_bt(const Graph::Ptr stn) const
 
   auto bt = std::string("<root main_tree_to_execute=\"MainTree\">\n") + t(1) +
     "<BehaviorTree ID=\"MainTree\">\n";
-  bt = bt + get_flow(root, used, 1);
+  bt = bt + get_flow(root, nullptr, used, 1);
   bt = bt + t(1) + "</BehaviorTree>\n</root>\n";
 
   return bt;
@@ -1052,6 +1053,7 @@ STNBTBuilder::floyd_warshall(Eigen::MatrixXf & dist) const
 std::string
 STNBTBuilder::get_flow(
   const Node::Ptr node,
+  const Node::Ptr prev_node,
   std::set<Node::Ptr> & used,
   const int & level) const
 {
@@ -1059,7 +1061,18 @@ STNBTBuilder::get_flow(
   const auto action_id = to_action_id(node->action, action_time_precision_);
 
   if (used.find(node) != used.end()) {
-    return t(l) + "<WaitAction action=\"" + action_id + "\"/>\n";
+    auto in = std::find_if(
+      node->input_arcs.begin(), node->input_arcs.end(),
+      [&](std::tuple<Node::Ptr, double, double> arc) {
+        return std::get<0>(arc) == prev_node;
+      });
+    auto lower = std::get<1>(*in);
+    auto upper = std::get<2>(*in);
+    return t(l) + "<WaitAction action=\"" +
+      action_id + " " + to_string(node->action.type) + " " +
+      to_action_id(prev_node->action, action_time_precision_) + " " +
+      to_string(prev_node->action.type) + " " +
+      std::to_string(lower) + " " + std::to_string(upper) + "\"/>\n";
   }
 
   used.insert(node);
@@ -1092,50 +1105,54 @@ STNBTBuilder::get_flow(
     flow = flow + end_execution_block(node, l + 1);
   }
 
-  int n = 0;
-  if (node->output_arcs.size() > 1) {
-    std::cerr << node->action.expression;
-    std::cerr << " " << to_string(node->action.type) << std::endl;
-    bool found_goal = false;
+  auto num_output_arcs = node->output_arcs.size();
+  if (num_output_arcs > 1) {
     for (const auto arc : node->output_arcs) {
       auto child = std::get<0>(arc);
-      std::cerr << "  " << child->action.expression;
-      std::cerr << " " << to_string(child->action.type) << std::endl;
       if (child->action.type == ActionType::GOAL) {
-        found_goal = true;
+        num_output_arcs = num_output_arcs - 1;
+        break;
       }
     }
-    int threshold = node->output_arcs.size();
-    if (found_goal) {
-      threshold--;
-    }
+  }
+
+  int n = 0;
+  if (num_output_arcs > 1) {
     flow = flow + t(l + 1) +
-      "<Parallel success_threshold=\"" + std::to_string(threshold) /*std::to_string(node->output_arcs.size())*/ +
+      "<Parallel success_threshold=\"" + std::to_string(num_output_arcs) +
       "\" failure_threshold=\"1\">\n";
     n = 1;
   }
 
   // Visit the end action first
+  auto end_action_arc = node->output_arcs.end();
   if (node->action.type == ActionType::START) {
-    auto end_action = std::find_if(
+    end_action_arc = std::find_if(
       node->output_arcs.begin(), node->output_arcs.end(),
       std::bind(&STNBTBuilder::is_end, this, std::placeholders::_1, node->action));
-    if (end_action != node->output_arcs.end()) {
-      const auto & next = std::get<0>(*end_action);
-      flow = flow + get_flow(next, used, l + n + 1);
+    if (end_action_arc != node->output_arcs.end()) {
+      const auto & next = std::get<0>(*end_action_arc);
+      flow = flow + get_flow(next, node, used, l + n + 1);
     }
   }
 
   // Visit the rest of the output arcs
   for (const auto & child : node->output_arcs) {
     auto child_node = std::get<0>(child);
-    if (!is_end(child, node->action) && child_node->action.type != ActionType::GOAL) {
+    if (end_action_arc != node->output_arcs.end()) {
+      const auto & end_node = std::get<0>(*end_action_arc);
+      if (child_node == end_node) {
+        continue;
+      }
+    }
+//    if (!is_end(child, node->action) && child_node->action.type != ActionType::GOAL) {
+    if (child_node->action.type != ActionType::GOAL) {
       const auto & next = std::get<0>(child);
-      flow = flow + get_flow(next, used, l + n + 1);
+      flow = flow + get_flow(next, node, used, l + n + 1);
     }
   }
 
-  if (node->output_arcs.size() > 1) {
+  if (num_output_arcs > 1) {
     flow = flow + t(l + 1) + "</Parallel>\n";
   }
 

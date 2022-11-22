@@ -57,6 +57,7 @@ CheckAtEndReq::tick()
     std::cerr << "CheckAtEndReq: " << action << " FAILURE" << std::endl;
     return BT::NodeStatus::FAILURE;
   } else {
+    std::cerr << "CheckAtEndReq: " << action << " SUCCESS" << std::endl;
     return BT::NodeStatus::SUCCESS;
   }
 }
