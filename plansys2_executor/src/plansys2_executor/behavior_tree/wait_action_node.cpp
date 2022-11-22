@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <map>
 #include <string>
+#include <map>
 #include <memory>
 
 #include "plansys2_executor/behavior_tree/wait_action_node.hpp"

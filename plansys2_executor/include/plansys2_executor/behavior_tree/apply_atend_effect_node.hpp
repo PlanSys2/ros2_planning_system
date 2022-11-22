@@ -19,8 +19,6 @@
 #include <string>
 #include <memory>
 
-#include <eigen3/Eigen/Dense>
-
 #include "behaviortree_cpp_v3/action_node.h"
 
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"

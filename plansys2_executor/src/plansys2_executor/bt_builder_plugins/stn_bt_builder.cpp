@@ -77,7 +77,6 @@ STNBTBuilder::get_tree(const plansys2_msgs::msg::Plan & plan)
 {
   stn_ = build_stn(plan);
   propagate(stn_);
-  print_graph(stn_);
   auto bt = build_bt(stn_);
   return bt;
 }
@@ -192,8 +191,6 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
       return;
     }
   }
-
-  std::cerr << dist << std::endl;
 
   // Update the STN.
   for (auto node : stn->nodes) {
@@ -1140,12 +1137,10 @@ STNBTBuilder::get_flow(
   for (const auto & child : node->output_arcs) {
     auto child_node = std::get<0>(child);
     if (end_action_arc != node->output_arcs.end()) {
-      const auto & end_node = std::get<0>(*end_action_arc);
-      if (child_node == end_node) {
+      if (child_node == std::get<0>(*end_action_arc)) {
         continue;
       }
     }
-//    if (!is_end(child, node->action) && child_node->action.type != ActionType::GOAL) {
     if (child_node->action.type != ActionType::GOAL) {
       const auto & next = std::get<0>(child);
       flow = flow + get_flow(next, node, used, l + n + 1);

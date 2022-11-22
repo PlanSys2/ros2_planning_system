@@ -45,7 +45,6 @@ WaitAtStartReq::tick()
   auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 
   auto reqs_as = (*action_map_)[action].durative_action_info->at_start_requirements;
-//  auto reqs_oa = (*action_map_)[action].durative_action_info->over_all_requirements;
 
   bool check_as = check(reqs_as, problem_client_);
   if (!check_as) {
@@ -59,19 +58,6 @@ WaitAtStartReq::tick()
     return BT::NodeStatus::RUNNING;
   }
 
-//  bool check_oa = check(reqs_oa, problem_client_);
-//  if (!check_oa) {
-//    (*action_map_)[action].execution_error_info = "Error checking over all reqs";
-
-//    RCLCPP_ERROR_STREAM(
-//      node->get_logger(),
-//      "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-//        parser::pddl::toString((*action_map_)[action].durative_action_info->over_all_requirements));
-
-//    return BT::NodeStatus::RUNNING;
-//  }
-
-  std::cerr << "WaitAtStartReq: " << action << " SUCCESS" << std::endl;
   return BT::NodeStatus::SUCCESS;
 }
 

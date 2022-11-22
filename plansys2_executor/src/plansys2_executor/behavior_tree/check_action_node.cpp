@@ -30,6 +30,7 @@ CheckAction::CheckAction(
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
     "action_map");
+  node_ = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 }
 
 BT::NodeStatus
@@ -84,13 +85,14 @@ CheckAction::tick()
       return BT::NodeStatus::SUCCESS;
     }
 
-    std::string error_msg = std::string("CheckAction: TIME BOUND VIOLATION\n") +
+    std::string error_msg = std::string("CheckAction -- TIME BOUND VIOLATION\n") +
       "  parent: " + parent_id + " " + parent_type + "\n" +
       "  child: " + child_id + " " + child_type + "\n" +
       "  lower: " + std::to_string(parent_time + lower) + "\n" +
       "  upper: " + std::to_string(parent_time + upper) + "\n" +
       "  actual: " + std::to_string(time_from_start) + "\n";
-    std::cerr << error_msg;
+    RCLCPP_ERROR(node_->get_logger(), error_msg);
+
     return BT::NodeStatus::FAILURE;
   } else {
     return BT::NodeStatus::RUNNING;
