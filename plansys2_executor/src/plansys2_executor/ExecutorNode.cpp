@@ -424,7 +424,6 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   auto blackboard = BT::Blackboard::create();
 
   blackboard->set("action_map", action_map);
-  blackboard->set("action_graph", bt_builder->get_graph());
   blackboard->set("node", shared_from_this());
   blackboard->set("domain_client", domain_client_);
   blackboard->set("problem_client", problem_client_);
