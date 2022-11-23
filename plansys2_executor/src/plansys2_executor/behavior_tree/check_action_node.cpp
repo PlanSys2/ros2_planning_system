@@ -91,7 +91,7 @@ CheckAction::tick()
       "  lower: " + std::to_string(parent_time + lower) + "\n" +
       "  upper: " + std::to_string(parent_time + upper) + "\n" +
       "  actual: " + std::to_string(time_from_start) + "\n";
-    RCLCPP_ERROR(node_->get_logger(), error_msg);
+    RCLCPP_ERROR(node_->get_logger(), "%s", error_msg.c_str());
 
     return BT::NodeStatus::FAILURE;
   } else {
