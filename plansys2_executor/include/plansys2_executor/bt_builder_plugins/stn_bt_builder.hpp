@@ -15,6 +15,8 @@
 #ifndef PLANSYS2_EXECUTOR__BT_BUILDER_PLUGINS__STN_BT_BUILDER_HPP_
 #define PLANSYS2_EXECUTOR__BT_BUILDER_PLUGINS__STN_BT_BUILDER_HPP_
 
+#include <eigen3/Eigen/Dense>
+
 #include <list>
 #include <map>
 #include <memory>
@@ -23,8 +25,6 @@
 #include <tuple>
 #include <utility>
 #include <vector>
-
-#include <eigen3/Eigen/Dense>
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
