@@ -33,6 +33,8 @@ ApplyAtEndEffect::ApplyAtEndEffect(
   problem_client_ =
     config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
     "problem_client");
+
+  node_ = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 }
 
 BT::NodeStatus
@@ -45,7 +47,7 @@ ApplyAtEndEffect::tick()
 
   if (!(*action_map_)[action].at_end_effects_applied) {
     (*action_map_)[action].at_end_effects_applied = true;
-    auto current_time = (*action_map_)[action].action_executor->get_current_time();
+    auto current_time = node_->now();
     auto start_time = (*action_map_)[action].action_executor->get_start_time();
     auto time_from_start = current_time.seconds() - start_time.seconds();
     (*action_map_)[action].at_end_effects_applied_time = time_from_start;

@@ -66,7 +66,6 @@ public:
   std::vector<std::string> get_action_params() const {return action_params_;}
   plansys2_msgs::msg::ActionExecution last_msg;
 
-  rclcpp::Time get_current_time() const {return node_->now();}
   rclcpp::Time get_start_time() const {return start_execution_;}
   rclcpp::Time get_status_time() const {return state_time_;}
 

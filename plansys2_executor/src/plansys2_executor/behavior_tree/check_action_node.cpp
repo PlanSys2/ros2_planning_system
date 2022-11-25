@@ -76,7 +76,7 @@ CheckAction::tick()
     if (parent_type == "END") {
       parent_time = (*action_map_)[parent_id].at_end_effects_applied_time;
     }
-    auto current_time = (*action_map_)[parent_id].action_executor->get_current_time();
+    auto current_time = node_->now();
     auto start_time = (*action_map_)[parent_id].action_executor->get_start_time();
     auto time_from_start = current_time.seconds() - start_time.seconds();
     auto dt = time_from_start - parent_time;
