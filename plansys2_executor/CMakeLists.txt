@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.5)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+find_package(Eigen3 REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
@@ -33,6 +34,7 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 
 set(dependencies
+    Eigen3
     rclcpp
     rclcpp_lifecycle
     lifecycle_msgs
