@@ -554,7 +554,8 @@ ExecutorNode::get_feedback_info(
 
   for (const auto & action : *action_map) {
     if (!action.second.action_executor) {
-      RCLCPP_WARN(get_logger(), "Action executor does not exist for %s. Skipping", action.first);
+      RCLCPP_WARN(
+        get_logger(), "Action executor does not exist for %s. Skipping", action.first.c_str());
       continue;
     }
 
