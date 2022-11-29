@@ -69,6 +69,7 @@ SimpleBTBuilder::is_action_executable(
   std::vector<plansys2::Function> & functions) const
 {
   return check(action.action->at_start_requirements, predicates, functions) &&
+         check(action.action->at_end_requirements, predicates, functions) &&
          check(action.action->over_all_requirements, predicates, functions);
 }
 
