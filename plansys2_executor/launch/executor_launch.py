@@ -28,7 +28,7 @@ def generate_launch_description():
     action_bt_file = LaunchConfiguration('action_bt_file')
     start_action_bt_file = LaunchConfiguration('start_action_bt_file')
     end_action_bt_file = LaunchConfiguration('end_action_bt_file')
-    bt_builder_plugin = LaunchConfiguration("bt_builder_plugin")
+    bt_builder_plugin = LaunchConfiguration('bt_builder_plugin')
 
     declare_namespace_cmd = DeclareLaunchArgument(
         'namespace',
@@ -57,9 +57,9 @@ def generate_launch_description():
         description='BT representing a PDDL end action')
 
     declare_bt_builder_plugin_cmd = DeclareLaunchArgument(
-        "bt_builder_plugin",
-        default_value="SimpleBTBuilder",
-        description="Behavior tree builder plugin.",
+        'bt_builder_plugin',
+        default_value='SimpleBTBuilder',
+        description='Behavior tree builder plugin.',
     )
 
     # Specify the actions

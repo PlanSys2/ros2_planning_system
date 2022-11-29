@@ -32,27 +32,27 @@ from launch_ros.substitutions import ExecutableInPackage
 
 
 def generate_launch_description():
-    use_groot = LaunchConfiguration("use_groot")
-    use_rqt_dotgraph = LaunchConfiguration("use_rqt_dotgraph")
+    use_groot = LaunchConfiguration('use_groot')
+    use_rqt_dotgraph = LaunchConfiguration('use_rqt_dotgraph')
 
     namespace = LaunchConfiguration('namespace')
     action_bt_file = LaunchConfiguration('action_bt_file')
     start_action_bt_file = LaunchConfiguration('start_action_bt_file')
     end_action_bt_file = LaunchConfiguration('end_action_bt_file')
-    bt_builder_plugin = LaunchConfiguration("bt_builder_plugin")
-    domain = LaunchConfiguration("domain")
-    problem = LaunchConfiguration("problem")
+    bt_builder_plugin = LaunchConfiguration('bt_builder_plugin')
+    domain = LaunchConfiguration('domain')
+    problem = LaunchConfiguration('problem')
 
     declare_use_groot_cmd = DeclareLaunchArgument(
-        "use_groot",
-        default_value="False",
-        description="Whether to start groot"
+        'use_groot',
+        default_value='False',
+        description='Whether to start groot'
     )
 
     declare_use_rqt_dotgraph_cmd = DeclareLaunchArgument(
-        "use_rqt_dotgraph",
-        default_value="True",
-        description="Whether to start rqt_dotgraph",
+        'use_rqt_dotgraph',
+        default_value='True',
+        description='Whether to start rqt_dotgraph',
     )
 
     declare_namespace_cmd = DeclareLaunchArgument(
@@ -82,51 +82,51 @@ def generate_launch_description():
         description='BT representing a PDDL end action')
 
     declare_bt_builder_plugin_cmd = DeclareLaunchArgument(
-        "bt_builder_plugin",
-        default_value="STNBTBuilder",
-        description="Behavior tree builder plugin.",
+        'bt_builder_plugin',
+        default_value='STNBTBuilder',
+        description='Behavior tree builder plugin.',
     )
 
     declare_domain_cmd = DeclareLaunchArgument(
-        "domain",
+        'domain',
         default_value=os.path.join(
           get_package_share_directory('plansys2_executor'),
           'pddl', 'road_trip_domain.pddl'),
-        description="PDDL domain file.",
+        description='PDDL domain file.',
     )
 
     declare_problem_cmd = DeclareLaunchArgument(
-        "problem",
+        'problem',
         default_value=os.path.join(
           get_package_share_directory('plansys2_executor'),
           'pddl', 'road_trip_problem.pddl'),
-        description="PDDL domain file.",
+        description='PDDL domain file.',
     )
 
     # Specify the actions
     start_groot_cmd = ExecuteProcess(
         condition=IfCondition(use_groot),
         cmd=[
-            ExecutableInPackage("Groot", "groot"),
-            "--mode",
-            "monitor",
+            ExecutableInPackage('Groot', 'groot'),
+            '--mode',
+            'monitor',
         ],
     )
 
     start_plan_viewer_cmd = Node(
-        package="rqt_dotgraph",
-        executable="rqt_dotgraph",
-        name="plan_viewer",
+        package='rqt_dotgraph',
+        executable='rqt_dotgraph',
+        name='plan_viewer',
         condition=IfCondition(use_rqt_dotgraph),
-        output="screen",
+        output='screen',
         parameters=[
-            {"title": "Plan Viewer"},
-            {"use_sim_time": False},
+            {'title': 'Plan Viewer'},
+            {'use_sim_time': False},
         ],
         remappings=[
-            ("dot_graph", "/ai_planning/plan_dotgraph"),
+            ('dot_graph', '/ai_planning/plan_dotgraph'),
         ],
-        arguments=["--ros-args", "--log-level", "WARN"],
+        arguments=['--ros-args', '--log-level', 'WARN'],
     )
 
     compute_bt_cmd = Node(
@@ -146,7 +146,7 @@ def generate_launch_description():
 
     visualization_group_cmd = GroupAction(
         [
-            PushRosNamespace(namespace="visualization"),
+            PushRosNamespace(namespace='visualization'),
             start_groot_cmd,
             start_plan_viewer_cmd,
         ]
