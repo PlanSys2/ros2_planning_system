@@ -31,9 +31,9 @@ def generate_launch_description():
     namespace = LaunchConfiguration('namespace')
     params_file = LaunchConfiguration('params_file')
     action_bt_file = LaunchConfiguration('action_bt_file')
-    start_action_bt_file = LaunchConfiguration("start_action_bt_file")
-    end_action_bt_file = LaunchConfiguration("end_action_bt_file")
-    bt_builder_plugin = LaunchConfiguration("bt_builder_plugin")
+    start_action_bt_file = LaunchConfiguration('start_action_bt_file')
+    end_action_bt_file = LaunchConfiguration('end_action_bt_file')
+    bt_builder_plugin = LaunchConfiguration('bt_builder_plugin')
 
     declare_model_file_cmd = DeclareLaunchArgument(
         'model_file',
@@ -71,9 +71,9 @@ def generate_launch_description():
         description='BT representing a PDDL end action')
 
     declare_bt_builder_plugin_cmd = DeclareLaunchArgument(
-        "bt_builder_plugin",
-        default_value="SimpleBTBuilder",
-        description="Behavior tree builder plugin.",
+        'bt_builder_plugin',
+        default_value='SimpleBTBuilder',
+        description='Behavior tree builder plugin.',
     )
 
     plansys2_node_cmd = Node(

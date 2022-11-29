@@ -28,7 +28,7 @@ namespace plansys2
 
 using namespace std::chrono_literals;  // NOLINT
 
-template<class ActionT, class NodeT = rclcpp::Node>
+template<class ActionT>
 class BtActionNode : public BT::ActionNodeBase
 {
 public:
@@ -38,7 +38,7 @@ public:
     const BT::NodeConfiguration & conf)
   : BT::ActionNodeBase(xml_tag_name, conf), action_name_(action_name)
   {
-    node_ = config().blackboard->get<typename NodeT::SharedPtr>("node");
+    node_ = rclcpp::Node::make_shared(action_name_ + "bta");
 
     // Get the required items from the blackboard
     server_timeout_ = 5s;
@@ -189,7 +189,7 @@ public:
         }
       }
 
-      rclcpp::spin_some(node_->get_node_base_interface());
+      rclcpp::spin_some(node_);
 
       // User defined tick
       auto user_status = on_tick();
@@ -236,7 +236,7 @@ protected:
   {
     auto future_cancel = action_client_->async_cancel_goal(goal_handle_);
     if (rclcpp::spin_until_future_complete(
-        node_->get_node_base_interface(), future_cancel, server_timeout_) !=
+        node_, future_cancel, server_timeout_) !=
       rclcpp::FutureReturnCode::SUCCESS)
     {
       RCLCPP_ERROR(
@@ -252,7 +252,7 @@ protected:
       return false;
     }
 
-    rclcpp::spin_some(node_->get_node_base_interface());
+    rclcpp::spin_some(node_);
     auto status = goal_handle_->get_status();
 
     // Check if the goal is still executing
@@ -288,7 +288,7 @@ protected:
     auto future_goal_handle = action_client_->async_send_goal(goal_, send_goal_options);
 
     if (rclcpp::spin_until_future_complete(
-        node_->get_node_base_interface(), future_goal_handle, server_timeout_) !=
+        node_, future_goal_handle, server_timeout_) !=
       rclcpp::FutureReturnCode::SUCCESS)
     {
       RCLCPP_ERROR(
@@ -329,7 +329,7 @@ protected:
   typename rclcpp_action::ClientGoalHandle<ActionT>::WrappedResult result_;
 
   // The node that will be used for any ROS operations
-  typename NodeT::SharedPtr node_;
+  rclcpp::Node::SharedPtr node_;
 
   // The timeout value while waiting for response from a server when a
   // new action goal is sent or canceled
