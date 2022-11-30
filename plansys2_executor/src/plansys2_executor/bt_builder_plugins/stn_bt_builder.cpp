@@ -1080,7 +1080,18 @@ STNBTBuilder::get_flow(
            std::to_string(lower) + " " + std::to_string(upper) + "\"/>\n";
   }
 
-  used.insert(node);
+  bool is_special = false;
+  if (node->action.type == ActionType::END) {
+    auto t_1 = to_int_time(node->action.time, action_time_precision_ + 1);
+    auto t_2 = to_int_time(prev_node->action.time, action_time_precision_ + 1);
+    if (prev_node->action.type != ActionType::START || (t_1 != t_2) || (node->action.expression != prev_node->action.expression)) {
+      is_special = true;
+    }
+  }
+
+  if (!is_special) {
+    used.insert(node);
+  }
 
   if (node->output_arcs.size() == 0) {
     if (node->action.type == ActionType::END) {
@@ -1108,7 +1119,31 @@ STNBTBuilder::get_flow(
   if (node->action.type == ActionType::START) {
     flow = flow + start_execution_block(node, l + 1);
   } else if (node->action.type == ActionType::END) {
-    flow = flow + end_execution_block(node, l + 1);
+    auto t_1 = to_int_time(node->action.time, action_time_precision_ + 1);
+    auto t_2 = to_int_time(prev_node->action.time, action_time_precision_ + 1);
+    if (prev_node->action.type == ActionType::START && (t_1 == t_2) && (node->action.expression == prev_node->action.expression)) {
+      flow = flow + end_execution_block(node, l + 1);
+    } else {
+      auto in = std::find_if(
+        node->input_arcs.begin(), node->input_arcs.end(),
+        [&](std::tuple<GraphNode::Ptr, double, double> arc) {
+          return std::get<0>(arc) == prev_node;
+        });
+      auto lower = std::get<1>(*in);
+      auto upper = std::get<2>(*in);
+
+      std::string parent_id;
+      std::string parent_type;
+      if (prev_node) {
+        parent_id = to_action_id(prev_node->action, action_time_precision_);
+        parent_type = to_string(prev_node->action.type);
+      }
+
+      flow = flow + t(l+1) + "<WaitAction action=\"" +
+             action_id + " " + to_string(node->action.type) + " " +
+             parent_id + " " + parent_type + " " +
+             std::to_string(lower) + " " + std::to_string(upper) + "\"/>\n";
+    }
   }
 
   auto num_output_arcs = node->output_arcs.size();
