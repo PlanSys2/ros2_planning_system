@@ -33,7 +33,7 @@ POPFPlanSolver::POPFPlanSolver()
 }
 
 void POPFPlanSolver::configure(
-  rclcpp_lifecycle::LifecycleNode::SharedPtr & lc_node,
+  rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node,
   const std::string & plugin_name)
 {
   parameter_name_ = plugin_name + ".arguments";

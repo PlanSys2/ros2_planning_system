@@ -34,7 +34,7 @@ public:
 
   PlanSolverBase() {}
 
-  virtual void configure(rclcpp_lifecycle::LifecycleNode::SharedPtr &, const std::string &) {}
+  virtual void configure(rclcpp_lifecycle::LifecycleNode::SharedPtr, const std::string &) {}
 
   virtual std::optional<plansys2_msgs::msg::Plan> getPlan(
     const std::string & domain, const std::string & problem,
