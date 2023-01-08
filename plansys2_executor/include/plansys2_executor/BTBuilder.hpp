@@ -82,6 +82,7 @@ public:
     int precision = 3) = 0;
 
   virtual std::string get_tree(const plansys2_msgs::msg::Plan & current_plan) = 0;
+  virtual Graph::Ptr get_graph() = 0;
   virtual std::string get_dotgraph(
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
     bool enable_legend = false,

@@ -421,9 +421,23 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     auto precision = this->get_parameter("action_time_precision").as_int();
     bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
   }
-  auto blackboard = BT::Blackboard::create();
 
+  auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
+  auto action_graph = bt_builder->get_graph();
+  std_msgs::msg::String dotgraph_msg;
+  dotgraph_msg.data = bt_builder->get_dotgraph(
+    action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
+    this->get_parameter("print_graph").as_bool());
+  dotgraph_pub_->publish(dotgraph_msg);
+
+  std::filesystem::path tp = std::filesystem::temp_directory_path();
+  std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
+  out << bt_xml_tree;
+  out.close();
+
+  auto blackboard = BT::Blackboard::create();
   blackboard->set("action_map", action_map);
+  blackboard->set("action_graph", action_graph);
   blackboard->set("node", shared_from_this());
   blackboard->set("domain_client", domain_client_);
   blackboard->set("problem_client", problem_client_);
@@ -438,18 +452,6 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtStartEffect>("ApplyAtStartEffect");
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
-
-  auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
-  std_msgs::msg::String dotgraph_msg;
-  dotgraph_msg.data = bt_builder->get_dotgraph(
-    action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
-    this->get_parameter("print_graph").as_bool());
-  dotgraph_pub_->publish(dotgraph_msg);
-
-  std::filesystem::path tp = std::filesystem::temp_directory_path();
-  std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
-  out << bt_xml_tree;
-  out.close();
 
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
@@ -491,7 +493,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
       status = tree.tickRoot();
     } catch (std::exception & e) {
       std::cerr << e.what() << std::endl;
-      status == BT::NodeStatus::FAILURE;
+      status = BT::NodeStatus::FAILURE;
     }
 
     feedback->action_execution_status = get_feedback_info(action_map);

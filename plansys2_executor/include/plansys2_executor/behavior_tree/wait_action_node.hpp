@@ -26,6 +26,8 @@
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 
+#include "plansys2_executor/BTBuilder.hpp"
+
 namespace plansys2
 {
 
@@ -48,7 +50,10 @@ public:
   }
 
 private:
+  Node::Ptr get_node(const std::string & node_id, const std::string & node_type);
+
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
+  Graph::Ptr action_graph_;
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
 };
 

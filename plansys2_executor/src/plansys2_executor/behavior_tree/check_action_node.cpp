@@ -30,6 +30,7 @@ CheckAction::CheckAction(
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
     "action_map");
+  action_graph_ = config().blackboard->get<Graph::Ptr>("action_graph");
   node_ = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 }
 
@@ -81,6 +82,20 @@ CheckAction::tick()
     auto time_from_start = current_time.seconds() - start_time.seconds();
     auto dt = time_from_start - parent_time;
 
+    if (action_graph_) {
+      Node::Ptr child_node = get_node(child_id, child_type);
+      Node::Ptr parent_node = get_node(parent_id, parent_type);
+
+      auto in = std::find_if(
+        child_node->input_arcs.begin(), child_node->input_arcs.end(),
+        [&](std::tuple<Node::Ptr, double, double> arc) {
+          return std::get<0>(arc) == parent_node;
+        });
+
+      lower = std::get<1>(*in);
+      upper = std::get<2>(*in);
+    }
+
     if (dt >= lower && dt < upper) {
       return BT::NodeStatus::SUCCESS;
     }
@@ -97,6 +112,19 @@ CheckAction::tick()
   } else {
     return BT::NodeStatus::RUNNING;
   }
+}
+
+Node::Ptr
+CheckAction::get_node(const std::string & node_id, const std::string & node_type)
+{
+  auto it = std::find_if(
+    action_graph_->nodes.begin(), action_graph_->nodes.end(),
+    [&](Node::Ptr n) {
+      auto n_id = BTBuilder::to_action_id(n->action, 3);
+      auto n_type = BTBuilder::to_string(n->action.type);
+      return n_id == node_id && n_type == node_type;
+    });
+  return *it;
 }
 
 }  // namespace plansys2
