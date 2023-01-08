@@ -195,7 +195,7 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
   // Update the STN.
   for (auto node : stn->nodes) {
     // Create a set to hold the updated output arcs.
-    std::set<std::tuple<GraphNode::Ptr, double, double>> new_output_arcs;
+    std::set<std::tuple<Node::Ptr, double, double>> new_output_arcs;
 
     // Iterate over the output arcs.
     auto row = node->node_num;
@@ -207,8 +207,8 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
       new_output_arcs.insert(std::make_tuple(child, -dist(col, row), dist(row, col)));
 
       // Find the corresponding input arc.
-      std::tuple<GraphNode::Ptr, double, double> input_arc;
-      std::set<std::tuple<GraphNode::Ptr, double, double>>::iterator iter;
+      std::tuple<Node::Ptr, double, double> input_arc;
+      std::set<std::tuple<Node::Ptr, double, double>>::iterator iter;
       iter = child->input_arcs.find(std::make_tuple(node, std::get<1>(arc), std::get<2>(arc)));
       if (iter != child->input_arcs.end()) {
         input_arc = *iter;
@@ -230,7 +230,7 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
 std::string
 STNBTBuilder::build_bt(const Graph::Ptr stn) const
 {
-  std::set<GraphNode::Ptr> used;
+  std::set<Node::Ptr> used;
   const auto & root = stn->nodes.front();
 
   auto bt = std::string("<root main_tree_to_execute=\"MainTree\">\n") + t(1) +
@@ -252,7 +252,7 @@ STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
   auto functions = problem_client_->getFunctions();
 
   int node_cnt = 0;
-  auto init_node = GraphNode::make_shared(node_cnt++);
+  auto init_node = Node::make_shared(node_cnt++);
   init_node->action.action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
   init_node->action.action->at_end_effects = from_state(predicates, functions);
   init_node->action.type = ActionType::INIT;
@@ -260,11 +260,11 @@ STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
 
   // Add nodes for the start and end snap actions
   for (const auto & action : action_sequence) {
-    auto start_node = GraphNode::make_shared(node_cnt++);
+    auto start_node = Node::make_shared(node_cnt++);
     start_node->action = action;
     start_node->action.type = ActionType::START;
 
-    auto end_node = GraphNode::make_shared(node_cnt++);
+    auto end_node = Node::make_shared(node_cnt++);
     end_node->action = action;
     end_node->action.type = ActionType::END;
 
@@ -279,7 +279,7 @@ STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
   auto goal = problem_client_->getGoal();
   plansys2_msgs::msg::Tree * goal_tree = &goal;
 
-  auto goal_node = GraphNode::make_shared(node_cnt++);
+  auto goal_node = Node::make_shared(node_cnt++);
   goal_node->action.action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
   goal_node->action.action->at_start_requirements = *goal_tree;
   goal_node->action.type = ActionType::GOAL;
@@ -502,16 +502,16 @@ STNBTBuilder::from_state(
   return tree;
 }
 
-std::vector<GraphNode::Ptr>
+std::vector<Node::Ptr>
 STNBTBuilder::get_nodes(
   const ActionStamped & action,
   const Graph::Ptr graph) const
 {
-  std::vector<GraphNode::Ptr> ret;
+  std::vector<Node::Ptr> ret;
 
   if (action.type == ActionType::INIT) {
     auto it = std::find_if(
-      graph->nodes.begin(), graph->nodes.end(), [&](GraphNode::Ptr node) {
+      graph->nodes.begin(), graph->nodes.end(), [&](Node::Ptr node) {
         return node->action.type == ActionType::INIT;
       });
     if (it != graph->nodes.end()) {
@@ -524,7 +524,7 @@ STNBTBuilder::get_nodes(
 
   if (action.type == ActionType::GOAL) {
     auto it = std::find_if(
-      graph->nodes.begin(), graph->nodes.end(), [&](GraphNode::Ptr node) {
+      graph->nodes.begin(), graph->nodes.end(), [&](Node::Ptr node) {
         return node->action.type == ActionType::GOAL;
       });
     if (it != graph->nodes.end()) {
@@ -535,14 +535,14 @@ STNBTBuilder::get_nodes(
     return ret;
   }
 
-  std::vector<GraphNode::Ptr> matches;
+  std::vector<Node::Ptr> matches;
   std::copy_if(
     graph->nodes.begin(), graph->nodes.end(), std::back_inserter(matches),
     std::bind(&STNBTBuilder::is_match, this, std::placeholders::_1, action));
 
   if (action.type == ActionType::START || action.type == ActionType::OVERALL) {
     auto it = std::find_if(
-      matches.begin(), matches.end(), [&](GraphNode::Ptr node) {
+      matches.begin(), matches.end(), [&](Node::Ptr node) {
         return node->action.type == ActionType::START;
       });
     if (it != matches.end()) {
@@ -554,7 +554,7 @@ STNBTBuilder::get_nodes(
 
   if (action.type == ActionType::END || action.type == ActionType::OVERALL) {
     auto it = std::find_if(
-      matches.begin(), matches.end(), [&](GraphNode::Ptr node) {
+      matches.begin(), matches.end(), [&](Node::Ptr node) {
         return node->action.type == ActionType::END;
       });
     if (it != matches.end()) {
@@ -573,7 +573,7 @@ STNBTBuilder::get_nodes(
 
 bool
 STNBTBuilder::is_match(
-  const GraphNode::Ptr node,
+  const Node::Ptr node,
   const ActionStamped & action) const
 {
   auto t_1 = to_int_time(node->action.time, action_time_precision_ + 1);
@@ -938,7 +938,7 @@ STNBTBuilder::get_effects(const ActionStamped & action) const
 }
 
 void
-STNBTBuilder::prune_paths(GraphNode::Ptr current, GraphNode::Ptr previous) const
+STNBTBuilder::prune_paths(Node::Ptr current, Node::Ptr previous) const
 {
   // Traverse the graph from the previous node to the root
   for (auto & in : previous->input_arcs) {
@@ -971,7 +971,7 @@ STNBTBuilder::prune_paths(GraphNode::Ptr current, GraphNode::Ptr previous) const
       // Find the corresponding input link
       auto in = std::find_if(
         current->input_arcs.begin(), current->input_arcs.end(),
-        [&](std::tuple<GraphNode::Ptr, double, double> arc) {
+        [&](std::tuple<Node::Ptr, double, double> arc) {
           return std::get<0>(arc) == previous;
         });
       // Remove the output and input links
@@ -988,7 +988,7 @@ STNBTBuilder::prune_paths(GraphNode::Ptr current, GraphNode::Ptr previous) const
 }
 
 bool
-STNBTBuilder::check_paths(GraphNode::Ptr current, GraphNode::Ptr previous) const
+STNBTBuilder::check_paths(Node::Ptr current, Node::Ptr previous) const
 {
   // Traverse the graph from the current node to the root
   for (auto & in : current->input_arcs) {
@@ -1050,9 +1050,9 @@ STNBTBuilder::floyd_warshall(Eigen::MatrixXf & dist) const
 
 std::string
 STNBTBuilder::get_flow(
-  const GraphNode::Ptr node,
-  const GraphNode::Ptr prev_node,
-  std::set<GraphNode::Ptr> & used,
+  const Node::Ptr node,
+  const Node::Ptr prev_node,
+  std::set<Node::Ptr> & used,
   const int & level) const
 {
   int l = level;
@@ -1061,7 +1061,7 @@ STNBTBuilder::get_flow(
   if (used.find(node) != used.end()) {
     auto in = std::find_if(
       node->input_arcs.begin(), node->input_arcs.end(),
-      [&](std::tuple<GraphNode::Ptr, double, double> arc) {
+      [&](std::tuple<Node::Ptr, double, double> arc) {
         return std::get<0>(arc) == prev_node;
       });
     auto lower = std::get<1>(*in);
@@ -1126,7 +1126,7 @@ STNBTBuilder::get_flow(
     } else {
       auto in = std::find_if(
         node->input_arcs.begin(), node->input_arcs.end(),
-        [&](std::tuple<GraphNode::Ptr, double, double> arc) {
+        [&](std::tuple<Node::Ptr, double, double> arc) {
           return std::get<0>(arc) == prev_node;
         });
       auto lower = std::get<1>(*in);
@@ -1204,7 +1204,7 @@ STNBTBuilder::get_flow(
 
 std::string
 STNBTBuilder::start_execution_block(
-  const GraphNode::Ptr node,
+  const Node::Ptr node,
   const int & l) const
 {
   std::string ret;
@@ -1243,7 +1243,7 @@ STNBTBuilder::start_execution_block(
 
 std::string
 STNBTBuilder::end_execution_block(
-  const GraphNode::Ptr node,
+  const Node::Ptr node,
   const int & l) const
 {
   std::string ret;
@@ -1282,7 +1282,7 @@ STNBTBuilder::end_execution_block(
 
 void
 STNBTBuilder::get_flow_dotgraph(
-  GraphNode::Ptr node,
+  Node::Ptr node,
   std::set<std::string> & edges)
 {
   for (const auto & arc : node->output_arcs) {
@@ -1296,7 +1296,7 @@ STNBTBuilder::get_flow_dotgraph(
 
 std::string
 STNBTBuilder::get_node_dotgraph(
-  GraphNode::Ptr node,
+  Node::Ptr node,
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map)
 {
   std::stringstream ss;
@@ -1409,7 +1409,7 @@ STNBTBuilder::print_graph(const plansys2::Graph::Ptr graph) const
 }
 
 void
-STNBTBuilder::print_node(const plansys2::GraphNode::Ptr node, int level) const
+STNBTBuilder::print_node(const plansys2::Node::Ptr node, int level) const
 {
   std::cerr << t(level) << "(" << node->node_num << ") ";
   if (node->action.type == ActionType::START) {
@@ -1450,7 +1450,7 @@ STNBTBuilder::replace(
 
 bool
 STNBTBuilder::is_end(
-  const std::tuple<GraphNode::Ptr, double, double> & edge,
+  const std::tuple<Node::Ptr, double, double> & edge,
   const ActionStamped & action) const
 {
   const auto & node = std::get<0>(edge);

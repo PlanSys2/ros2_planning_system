@@ -79,12 +79,12 @@ public:
     return SimpleBTBuilder::is_action_executable(action, predicates, functions);
   }
 
-  plansys2::Graph::Ptr get_graph(const plansys2_msgs::msg::Plan & current_plan)
+  plansys2::ActionGraph::Ptr get_graph(const plansys2_msgs::msg::Plan & current_plan)
   {
     return SimpleBTBuilder::get_graph(current_plan);
   }
 
-  std::list<plansys2::GraphNode::Ptr> get_roots(
+  std::list<plansys2::ActionNode::Ptr> get_roots(
     std::vector<plansys2::ActionStamped> & action_sequence,
     std::vector<plansys2::Predicate> & predicates,
     std::vector<plansys2::Function> & functions,
@@ -93,35 +93,35 @@ public:
     return SimpleBTBuilder::get_roots(action_sequence, predicates, functions, node_counter);
   }
 
-  plansys2::GraphNode::Ptr get_node_satisfy(
+  plansys2::ActionNode::Ptr get_node_satisfy(
     const plansys2_msgs::msg::Tree & requirement,
-    const plansys2::Graph::Ptr & graph,
-    const plansys2::GraphNode::Ptr & current)
+    const plansys2::ActionGraph::Ptr & graph,
+    const plansys2::ActionNode::Ptr & current)
   {
     return SimpleBTBuilder::get_node_satisfy(requirement, graph, current);
   }
 
-  plansys2::GraphNode::Ptr get_node_satisfy(
+  plansys2::ActionNode::Ptr get_node_satisfy(
     const plansys2_msgs::msg::Tree & requirement,
-    const plansys2::GraphNode::Ptr & node,
-    const plansys2::GraphNode::Ptr & current)
+    const plansys2::ActionNode::Ptr & node,
+    const plansys2::ActionNode::Ptr & current)
   {
     return SimpleBTBuilder::get_node_satisfy(requirement, node, current);
   }
 
 
-  void print_graph(const plansys2::Graph::Ptr & graph) const
+  void print_graph(const plansys2::ActionGraph::Ptr & graph) const
   {
     SimpleBTBuilder::print_graph(graph);
   }
 
-  void print_graph_csv(const plansys2::Graph::Ptr & graph) const
+  void print_graph_csv(const plansys2::ActionGraph::Ptr & graph) const
   {
     SimpleBTBuilder::print_graph_csv(graph);
   }
 
   std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> get_graph_tabular(
-    const plansys2::Graph::Ptr & graph) const
+    const plansys2::ActionGraph::Ptr & graph) const
   {
     return SimpleBTBuilder::get_graph_tabular(graph);
   }
