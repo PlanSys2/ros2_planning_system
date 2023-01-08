@@ -5,3 +5,7 @@ planner:
       plugin: "plansys2/POPFPlanSolver"
     TFD:
       plugin: "plansys2/TFDPlanSolver"
+executor:
+  ros__parameters:
+    bt_builder_plugin: "SimpleBTBuilder"
+    # bt_builder_plugin: "STNBTBuilder"
