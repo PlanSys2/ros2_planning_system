@@ -76,6 +76,7 @@ public:
 
   std::string get_tree(const plansys2_msgs::msg::Plan & current_plan);
   Graph::Ptr get_graph() {return nullptr;}
+  void propagate(Graph::Ptr) {return;}
   std::string get_dotgraph(
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
     bool enable_legend = false,

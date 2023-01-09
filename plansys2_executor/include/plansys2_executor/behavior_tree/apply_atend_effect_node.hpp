@@ -23,6 +23,7 @@
 
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/BTBuilder.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
@@ -49,7 +50,11 @@ public:
   }
 
 private:
+  Node::Ptr get_node(const std::string & node_id, ActionType node_type);
+
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
+  Graph::Ptr action_graph_;
+  std::shared_ptr<plansys2::BTBuilder> bt_builder_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
 };
