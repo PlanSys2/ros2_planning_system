@@ -67,6 +67,7 @@ public:
   plansys2_msgs::msg::ActionExecution last_msg;
 
   rclcpp::Time get_start_time() const {return start_execution_;}
+  rclcpp::Time get_current_time() const {return node_->now();}
   rclcpp::Time get_status_time() const {return state_time_;}
 
   std::string get_feedback() const {return feedback_;}
@@ -108,8 +109,10 @@ struct ActionExecutionInfo
   std::shared_ptr<ActionExecutor> action_executor = {nullptr};
   bool at_start_effects_applied = {false};
   bool at_end_effects_applied = {false};
-  double at_start_effects_applied_time;
-  double at_end_effects_applied_time;
+  // double at_start_effects_applied_time;
+  // double at_end_effects_applied_time;
+  rclcpp::Time at_start_effects_applied_time;
+  rclcpp::Time at_end_effects_applied_time;
   std::shared_ptr<plansys2_msgs::msg::DurativeAction> durative_action_info = {nullptr};
   std::string execution_error_info;
   double duration;

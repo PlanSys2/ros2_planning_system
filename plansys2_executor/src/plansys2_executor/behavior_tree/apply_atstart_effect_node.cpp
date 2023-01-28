@@ -52,9 +52,10 @@ ApplyAtStartEffect::tick()
   if (!(*action_map_)[action].at_start_effects_applied) {
     (*action_map_)[action].at_start_effects_applied = true;
     auto current_time = node_->now();
-    auto start_time = (*action_map_)[action].action_executor->get_start_time();
-    auto time_from_start = current_time.seconds() - start_time.seconds();
-    (*action_map_)[action].at_start_effects_applied_time = time_from_start;
+//    auto start_time = (*action_map_)[action].action_executor->get_start_time();
+//    auto time_from_start = current_time.seconds() - start_time.seconds();
+//    (*action_map_)[action].at_start_effects_applied_time = time_from_start;
+    (*action_map_)[action].at_start_effects_applied_time = current_time;
     apply(effect, problem_client_, 0);
 
     // Update the child input links.
@@ -65,14 +66,24 @@ ApplyAtStartEffect::tick()
       auto parent = std::get<0>(arc);
       auto parent_id = BTBuilder::to_action_id(parent->action, 3);
 
-      double applied_time = 0.0;
+//      start_time = (*action_map_)[parent_id].action_executor->get_start_time();
+//      current_time = (*action_map_)[parent_id].action_executor->get_current_time();
+//      time_from_start = current_time.seconds() - start_time.seconds();
+
+//      double applied_time = 0.0;
+//      if (parent->action.type == ActionType::START) {
+//        applied_time = (*action_map_)[parent_id].at_start_effects_applied_time;
+//      } else if (parent->action.type == ActionType::END) {
+//        applied_time = (*action_map_)[parent_id].at_end_effects_applied_time;
+//      }
+
+      auto parent_time = (*action_map_)[parent_id].at_end_effects_applied_time;
       if (parent->action.type == ActionType::START) {
-        applied_time = (*action_map_)[parent_id].at_start_effects_applied_time;
-      } else if (parent->action.type == ActionType::END) {
-        applied_time = (*action_map_)[parent_id].at_end_effects_applied_time;
+        parent_time = (*action_map_)[parent_id].at_start_effects_applied_time;
       }
 
-      double actual_time = current_time.seconds() - applied_time;
+//      double actual_time = time_from_start - applied_time;
+      double actual_time = current_time.seconds() - parent_time.seconds();
       input_arcs.insert(std::make_tuple(parent, actual_time, actual_time));
 
       // Update the parent output link.
@@ -91,6 +102,7 @@ ApplyAtStartEffect::tick()
   }
 
   // Propagate the time bounds.
+  std::cerr << "*** DO PROPAGATION ***" << std::endl;
   bt_builder_->propagate(action_graph_);
 
   return BT::NodeStatus::SUCCESS;

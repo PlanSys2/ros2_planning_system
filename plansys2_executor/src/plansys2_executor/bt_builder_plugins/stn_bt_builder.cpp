@@ -183,6 +183,8 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
 {
   // Compute the distance matrix.
   Eigen::MatrixXf dist = get_distance_matrix(stn);
+  std::cerr << dist << std::endl;
+  std::cerr << "*** *** ***" << std::endl;
 
   // Check if STN is consistent.
   for (size_t i = 0; i < dist.rows(); i++) {
@@ -191,6 +193,7 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
       return;
     }
   }
+  std::cerr << "STN is consistent." << std::endl;
 
   // Update the STN.
   for (auto node : stn->nodes) {
@@ -225,6 +228,7 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
     // Replace the output arcs.
     node->output_arcs = new_output_arcs;
   }
+  std::cerr << "STN has been updated." << std::endl;
 }
 
 std::string

@@ -73,14 +73,15 @@ CheckAction::tick()
       return BT::NodeStatus::SUCCESS;
     }
 
-    auto parent_time = (*action_map_)[parent_id].at_start_effects_applied_time;
-    if (parent_type == "END") {
-      parent_time = (*action_map_)[parent_id].at_end_effects_applied_time;
+    auto parent_time = (*action_map_)[parent_id].at_end_effects_applied_time;
+    if (parent_type == "START") {
+      parent_time = (*action_map_)[parent_id].at_start_effects_applied_time;
     }
     auto current_time = node_->now();
-    auto start_time = (*action_map_)[parent_id].action_executor->get_start_time();
-    auto time_from_start = current_time.seconds() - start_time.seconds();
-    auto dt = time_from_start - parent_time;
+//    auto start_time = (*action_map_)[parent_id].action_executor->get_start_time();
+//    auto time_from_start = current_time.seconds() - start_time.seconds();
+//    auto dt = time_from_start - parent_time;
+    auto dt = current_time.seconds() - parent_time.seconds();
 
     if (action_graph_) {
       Node::Ptr child_node = get_node(child_id, child_type);
@@ -100,12 +101,18 @@ CheckAction::tick()
       return BT::NodeStatus::SUCCESS;
     }
 
+//    std::string error_msg = std::string("CheckAction -- TIME BOUND VIOLATION\n") +
+//      "  parent: " + parent_id + " " + parent_type + "\n" +
+//      "  child: " + child_id + " " + child_type + "\n" +
+//      "  lower: " + std::to_string(parent_time + lower) + "\n" +
+//      "  upper: " + std::to_string(parent_time + upper) + "\n" +
+//      "  actual: " + std::to_string(time_from_start) + "\n";
     std::string error_msg = std::string("CheckAction -- TIME BOUND VIOLATION\n") +
       "  parent: " + parent_id + " " + parent_type + "\n" +
       "  child: " + child_id + " " + child_type + "\n" +
-      "  lower: " + std::to_string(parent_time + lower) + "\n" +
-      "  upper: " + std::to_string(parent_time + upper) + "\n" +
-      "  actual: " + std::to_string(time_from_start) + "\n";
+      "  lower: " + std::to_string(parent_time.seconds() + lower) + "\n" +
+      "  upper: " + std::to_string(parent_time.seconds() + upper) + "\n" +
+      "  actual: " + std::to_string(dt) + "\n";
     RCLCPP_ERROR(node_->get_logger(), "%s", error_msg.c_str());
 
     return BT::NodeStatus::FAILURE;
