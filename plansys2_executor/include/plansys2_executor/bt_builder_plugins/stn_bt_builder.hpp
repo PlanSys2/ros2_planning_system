@@ -52,7 +52,7 @@ public:
 
   std::string get_tree(const plansys2_msgs::msg::Plan & current_plan);
   Graph::Ptr get_graph() {return stn_;}
-  void propagate(const Graph::Ptr stn);
+  bool propagate(const Graph::Ptr stn);
   std::string get_dotgraph(
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
     bool enable_legend = false,
@@ -119,8 +119,8 @@ protected:
   void prune_paths(Node::Ptr current, Node::Ptr previous) const;
   bool check_paths(Node::Ptr current, Node::Ptr previous) const;
 
-  Eigen::MatrixXf get_distance_matrix(const Graph::Ptr stn) const;
-  void floyd_warshall(Eigen::MatrixXf & dist) const;
+  Eigen::MatrixXd get_distance_matrix(const Graph::Ptr stn) const;
+  void floyd_warshall(Eigen::MatrixXd & dist) const;
 
   std::string get_flow(
     const Node::Ptr node,

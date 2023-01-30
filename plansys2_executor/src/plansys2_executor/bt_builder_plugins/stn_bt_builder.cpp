@@ -76,7 +76,11 @@ std::string
 STNBTBuilder::get_tree(const plansys2_msgs::msg::Plan & plan)
 {
   stn_ = build_stn(plan);
-  propagate(stn_);
+
+  if (!propagate(stn_)) {
+    return {};
+  }
+
   auto bt = build_bt(stn_);
   return bt;
 }
@@ -167,8 +171,8 @@ STNBTBuilder::build_stn(const plansys2_msgs::msg::Plan & plan) const
           }
           prune_paths(n, h);
           if (!check_paths(n, h)) {
-            h->output_arcs.insert(std::make_tuple(n, 0, std::numeric_limits<float>::infinity()));
-            n->input_arcs.insert(std::make_tuple(h, 0, std::numeric_limits<float>::infinity()));
+            h->output_arcs.insert(std::make_tuple(n, 0, std::numeric_limits<double>::infinity()));
+            n->input_arcs.insert(std::make_tuple(h, 0, std::numeric_limits<double>::infinity()));
           }
         }
       }
@@ -178,22 +182,19 @@ STNBTBuilder::build_stn(const plansys2_msgs::msg::Plan & plan) const
   return stn;
 }
 
-void
+bool
 STNBTBuilder::propagate(const Graph::Ptr stn)
 {
   // Compute the distance matrix.
-  Eigen::MatrixXf dist = get_distance_matrix(stn);
-  std::cerr << dist << std::endl;
-  std::cerr << "*** *** ***" << std::endl;
+  Eigen::MatrixXd dist = get_distance_matrix(stn);
 
   // Check if STN is consistent.
   for (size_t i = 0; i < dist.rows(); i++) {
     if (dist(i, i) < 0) {
       std::cerr << "STN is not consistent!" << std::endl;
-      return;
+      return false;
     }
   }
-  std::cerr << "STN is consistent." << std::endl;
 
   // Update the STN.
   for (auto node : stn->nodes) {
@@ -228,7 +229,8 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
     // Replace the output arcs.
     node->output_arcs = new_output_arcs;
   }
-  std::cerr << "STN has been updated." << std::endl;
+
+  return true;
 }
 
 std::string
@@ -593,7 +595,27 @@ STNBTBuilder::get_parents(
   const std::map<int, StateVec> & states) const
 {
   auto parents = get_satisfy(action, plan, happenings, states);
+
+  for (const auto & parent : parents) {
+    if (to_action_id(parent.second, action_time_precision_) == "(mend_fuse f1 m1):1" &&
+        to_action_id(action.second, action_time_precision_) == "(light_match m1):0") {
+      std::cerr << "*** GET SATISFY ***" << std::endl;
+      std::cerr << "parent: " << to_action_id(parent.second, action_time_precision_) << " -> ";
+      std::cerr << "child: " << to_action_id(action.second, action_time_precision_) << std::endl;
+    }
+  }
+
   auto threats = get_threat(action, plan, happenings, states);
+
+  for (const auto & parent : threats) {
+    if (to_action_id(parent.second, action_time_precision_) == "(mend_fuse f1 m1):1" &&
+        to_action_id(action.second, action_time_precision_) == "(light_match m1):0") {
+      std::cerr << "*** GET THREAT ***" << std::endl;
+      std::cerr << "parent: " << to_action_id(parent.second, action_time_precision_) << " -> ";
+      std::cerr << "child: " << to_action_id(action.second, action_time_precision_) << std::endl;
+    }
+  }
+
   parents.insert(std::end(parents), std::begin(threats), std::end(threats));
 
   return parents;
@@ -1009,12 +1031,13 @@ STNBTBuilder::check_paths(Node::Ptr current, Node::Ptr previous) const
   return false;
 }
 
-Eigen::MatrixXf
+Eigen::MatrixXd
 STNBTBuilder::get_distance_matrix(const Graph::Ptr stn) const
 {
   // Initialize the distance matrix as infinity.
-  Eigen::MatrixXf dist = std::numeric_limits<float>::infinity() *
-    Eigen::MatrixXf::Ones(stn->nodes.size(), stn->nodes.size());
+  Eigen::MatrixXd dist = std::numeric_limits<double>::infinity() *
+    Eigen::MatrixXd::Ones(stn->nodes.size(), stn->nodes.size());
+  dist.triangularView<Eigen::Lower>().fill(0.0);
 
   // Extract the distances imposed by the STN.
   for (const auto node : stn->nodes) {
@@ -1024,8 +1047,24 @@ STNBTBuilder::get_distance_matrix(const Graph::Ptr stn) const
       auto col = child->node_num;
       dist(row, col) = std::get<2>(arc);
       dist(col, row) = -std::get<1>(arc);
+
+      if ((-std::get<1>(arc) <= std::get<2>(arc) && col < row) ||
+          (-std::get<1>(arc) > std::get<2>(arc) && row < col)) {
+        std::string error_msg = std::string("lower -> dist(") + std::to_string(col) +
+          ", " + std::to_string(row) + ") = " + std::to_string(-dist(col,row)) +
+          "  upper -> dist(" + std::to_string(row) + ", " + std::to_string(col) +
+          ") = " + std::to_string(dist(row, col)) + "\n" +
+          "  parent " + std::to_string(node->node_num) + ": " +
+          to_action_id(node->action, action_time_precision_) +
+          "  child " + std::to_string(child->node_num) + ": " +
+          to_action_id(child->action, action_time_precision_) + "\n" +
+          "... ... ...\n";
+        std::cerr << error_msg;
+      }
     }
   }
+
+  std::cerr << dist << std::endl;
 
   // Solve the all-pairs shortest path problem.
   floyd_warshall(dist);
@@ -1034,13 +1073,13 @@ STNBTBuilder::get_distance_matrix(const Graph::Ptr stn) const
 }
 
 void
-STNBTBuilder::floyd_warshall(Eigen::MatrixXf & dist) const
+STNBTBuilder::floyd_warshall(Eigen::MatrixXd & dist) const
 {
   for (size_t k = 0; k < dist.rows(); k++) {
     for (size_t i = 0; i < dist.rows(); i++) {
       for (size_t j = 0; j < dist.rows(); j++) {
-        if (dist(i, k) == std::numeric_limits<float>::infinity() ||
-          dist(k, j) == std::numeric_limits<float>::infinity())
+        if (dist(i, k) == std::numeric_limits<double>::infinity() ||
+          dist(k, j) == std::numeric_limits<double>::infinity())
         {
           continue;
         }
@@ -1063,14 +1102,6 @@ STNBTBuilder::get_flow(
   const auto action_id = to_action_id(node->action, action_time_precision_);
 
   if (used.find(node) != used.end()) {
-    auto in = std::find_if(
-      node->input_arcs.begin(), node->input_arcs.end(),
-      [&](std::tuple<Node::Ptr, double, double> arc) {
-        return std::get<0>(arc) == prev_node;
-      });
-    auto lower = std::get<1>(*in);
-    auto upper = std::get<2>(*in);
-
     std::string parent_id;
     std::string parent_type;
     if (prev_node) {
@@ -1080,8 +1111,7 @@ STNBTBuilder::get_flow(
 
     return t(l) + "<WaitAction action=\"" +
            action_id + " " + to_string(node->action.type) + " " +
-           parent_id + " " + parent_type + " " +
-           std::to_string(lower) + " " + std::to_string(upper) + "\"/>\n";
+           parent_id + " " + parent_type + "\"/>\n";
   }
 
   bool is_special = false;
@@ -1128,14 +1158,6 @@ STNBTBuilder::get_flow(
     if (prev_node->action.type == ActionType::START && (t_1 == t_2) && (node->action.expression == prev_node->action.expression)) {
       flow = flow + end_execution_block(node, l + 1);
     } else {
-      auto in = std::find_if(
-        node->input_arcs.begin(), node->input_arcs.end(),
-        [&](std::tuple<Node::Ptr, double, double> arc) {
-          return std::get<0>(arc) == prev_node;
-        });
-      auto lower = std::get<1>(*in);
-      auto upper = std::get<2>(*in);
-
       std::string parent_id;
       std::string parent_type;
       if (prev_node) {
@@ -1145,8 +1167,7 @@ STNBTBuilder::get_flow(
 
       flow = flow + t(l+1) + "<WaitAction action=\"" +
              action_id + " " + to_string(node->action.type) + " " +
-             parent_id + " " + parent_type + " " +
-             std::to_string(lower) + " " + std::to_string(upper) + "\"/>\n";
+             parent_id + " " + parent_type + "\"/>\n";
     }
   }
 
@@ -1219,13 +1240,10 @@ STNBTBuilder::start_execution_block(
   std::string wait_actions;
   for (const auto & prev : node->input_arcs) {
     const auto & prev_node = std::get<0>(prev);
-    auto lower = std::get<1>(prev);
-    auto upper = std::get<2>(prev);
     wait_actions = wait_actions + t(1) + "<WaitAction action=\"" +
       action_id + " " + action_type + " " +
       to_action_id(prev_node->action, action_time_precision_) + " " +
-      to_string(prev_node->action.type) + " " +
-      std::to_string(lower) + " " + std::to_string(upper) + "\"/>";
+      to_string(prev_node->action.type) + "\"/>";
 
     if (prev != *node->input_arcs.rbegin()) {
       wait_actions = wait_actions + "\n";
@@ -1258,13 +1276,10 @@ STNBTBuilder::end_execution_block(
   std::string check_actions;
   for (const auto & prev : node->input_arcs) {
     const auto & prev_node = std::get<0>(prev);
-    auto lower = std::get<1>(prev);
-    auto upper = std::get<2>(prev);
     check_actions = check_actions + t(1) + "<CheckAction action=\"" +
       action_id + " " + action_type + " " +
       to_action_id(prev_node->action, action_time_precision_) + " " +
-      to_string(prev_node->action.type) + " " +
-      std::to_string(lower) + " " + std::to_string(upper) + "\"/>";
+      to_string(prev_node->action.type) + "\"/>";
 
     if (prev != *node->input_arcs.rbegin()) {
       check_actions = check_actions + "\n";

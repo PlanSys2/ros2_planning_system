@@ -423,6 +423,11 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   }
 
   auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
+  if (bt_xml_tree.empty()) {
+    RCLCPP_ERROR(get_logger(), "Error computing behavior tree!");
+    return;
+  }
+
   auto action_graph = bt_builder->get_graph();
   std_msgs::msg::String dotgraph_msg;
   dotgraph_msg.data = bt_builder->get_dotgraph(
@@ -430,14 +435,10 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     this->get_parameter("print_graph").as_bool());
   dotgraph_pub_->publish(dotgraph_msg);
 
-  std::cerr << "*** BT constructed ***" << std::endl;
-
   std::filesystem::path tp = std::filesystem::temp_directory_path();
   std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
   out << bt_xml_tree;
   out.close();
-
-  std::cerr << "*** A ***" << std::endl;
 
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<ExecuteAction>("ExecuteAction");
@@ -450,12 +451,8 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
 
-  std::cerr << "*** B ***" << std::endl;
-
   (*action_map)[":0"].at_start_effects_applied_time = now();
   (*action_map)[":0"].at_end_effects_applied_time = now();
-
-  std::cerr << "*** C ***" << std::endl;
 
   auto blackboard = BT::Blackboard::create();
   blackboard->set("action_map", action_map);
@@ -465,11 +462,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   blackboard->set("problem_client", problem_client_);
   blackboard->set("bt_builder", bt_builder);
 
-  std::cerr << "*** D ***" << std::endl;
-
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
-
-  std::cerr << "*** E ***" << std::endl;
 
 #ifdef ZMQ_FOUND
   unsigned int publisher_port = this->get_parameter("publisher_port").as_int();
@@ -493,8 +486,6 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   }
 #endif
 
-  std::cerr << "*** F ***" << std::endl;
-
   auto info_pub = create_wall_timer(
     1s, [this, &action_map]() {
       auto msgs = get_feedback_info(action_map);
@@ -503,12 +494,9 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
       }
     });
 
-  std::cerr << "*** G ***" << std::endl;
-
   rclcpp::Rate rate(10);
   auto status = BT::NodeStatus::RUNNING;
 
-  std::cerr << "*** Tick Root ***" << std::endl;
   while (status == BT::NodeStatus::RUNNING && !cancel_plan_requested_) {
     try {
       status = tree.tickRoot();

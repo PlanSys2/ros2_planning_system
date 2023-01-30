@@ -52,9 +52,6 @@ ApplyAtEndEffect::tick()
   if (!(*action_map_)[action].at_end_effects_applied) {
     (*action_map_)[action].at_end_effects_applied = true;
     auto current_time = node_->now();
-//    auto start_time = (*action_map_)[action].action_executor->get_start_time();
-//    auto time_from_start = current_time.seconds() - start_time.seconds();
-//    (*action_map_)[action].at_end_effects_applied_time = time_from_start;
     (*action_map_)[action].at_end_effects_applied_time = current_time;
     apply(effect, problem_client_, 0);
 
@@ -66,23 +63,11 @@ ApplyAtEndEffect::tick()
       auto parent = std::get<0>(arc);
       auto parent_id = BTBuilder::to_action_id(parent->action, 3);
 
-//      start_time = (*action_map_)[parent_id].action_executor->get_start_time();
-//      current_time = (*action_map_)[parent_id].action_executor->get_current_time();
-//      time_from_start = current_time.seconds() - start_time.seconds();
-
-//      double applied_time = 0.0;
-//      if (parent->action.type == ActionType::START) {
-//        applied_time = (*action_map_)[parent_id].at_start_effects_applied_time;
-//      } else if (parent->action.type == ActionType::END) {
-//        applied_time = (*action_map_)[parent_id].at_end_effects_applied_time;
-//      }
-
       auto parent_time = (*action_map_)[parent_id].at_end_effects_applied_time;
       if (parent->action.type == ActionType::START) {
         parent_time = (*action_map_)[parent_id].at_start_effects_applied_time;
       }
 
-//      double actual_time = time_from_start - applied_time;
       double actual_time = current_time.seconds() - parent_time.seconds();
       input_arcs.insert(std::make_tuple(parent, actual_time, actual_time));
 
@@ -99,10 +84,20 @@ ApplyAtEndEffect::tick()
 
     child->input_arcs.clear();
     child->input_arcs = input_arcs;
-  }
 
-  // Propagate the time bounds.
-  bt_builder_->propagate(action_graph_);
+    rclcpp::Time start_time = (*action_map_)[":0"].at_end_effects_applied_time;
+    double time_from_start = current_time.seconds() - start_time.seconds();
+
+    std::string error_msg = std::string("ApplyAtEndEffect\n") +
+      "  child: " + action + " END" + "\n" +
+      "  time: " + std::to_string(time_from_start) + "\n";
+    RCLCPP_ERROR(node_->get_logger(), "%s", error_msg.c_str());
+
+    // Propagate the time bounds.
+    if (!bt_builder_->propagate(action_graph_)) {
+      return BT::NodeStatus::FAILURE;
+    }
+  }
 
   return BT::NodeStatus::SUCCESS;
 }

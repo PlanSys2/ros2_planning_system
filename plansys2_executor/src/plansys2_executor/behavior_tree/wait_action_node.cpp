@@ -45,17 +45,11 @@ WaitAction::tick()
   auto p3 = xml_action.find(' ', p2) + 1;  // parent expression
   auto p4 = xml_action.find(':', p3) + 1;  // parent time
   auto p5 = xml_action.find(' ', p4) + 1;  // parent type
-  auto p6 = xml_action.find(' ', p5) + 1;  // lower bound
-  auto p7 = xml_action.find(' ', p6) + 1;  // upper bound
 
   auto child_id = xml_action.substr(0, p2 - 1);
   auto child_type = xml_action.substr(p2, p3 - p2 - 1);
   auto parent_id = xml_action.substr(p3, p5 - p3 - 1);
-  auto parent_type = xml_action.substr(p5, p6 - p5 - 1);
-  auto lower_str = xml_action.substr(p6, p7 - p6 - 1);
-  auto upper_str = xml_action.substr(p7);
-  auto lower = std::stod(lower_str);
-  auto upper = std::stod(upper_str);
+  auto parent_type = xml_action.substr(p5);
 
   if ((*action_map_).find(parent_id) == (*action_map_).end()) {
     return BT::NodeStatus::RUNNING;  // Not started yet
@@ -79,11 +73,10 @@ WaitAction::tick()
       parent_time = (*action_map_)[parent_id].at_start_effects_applied_time;
     }
     auto current_time = node_->now();
-//    auto start_time = (*action_map_)[parent_id].action_executor->get_start_time();
-//    auto time_from_start = current_time.seconds() - start_time.seconds();
-//    auto dt = time_from_start - parent_time;
     auto dt = current_time.seconds() - parent_time.seconds();
 
+    double lower = 0.0;
+    double upper = std::numeric_limits<double>::infinity();
     if (action_graph_) {
       Node::Ptr child_node = get_node(child_id, child_type);
       Node::Ptr parent_node = get_node(parent_id, parent_type);
@@ -105,11 +98,18 @@ WaitAction::tick()
         lower = 0.99 * lower + 0.01 * upper;
       }
     }
-//    std::cerr << parent_id << " -> " << child_id << " : (" << lower << ", " << upper << ")" << std::endl;
 
     if (dt >= lower && dt < upper) {
       return BT::NodeStatus::SUCCESS;
     }
+
+    std::string error_msg = std::string("WaitAction -- TIME BOUND NOT SATISFIED\n") +
+      "  parent: " + parent_id + " " + parent_type + "\n" +
+      "  child: " + child_id + " " + child_type + "\n" +
+      "  lower: " + std::to_string(lower) + "\n" +
+      "  upper: " + std::to_string(upper) + "\n" +
+      "  actual: " + std::to_string(dt) + "\n";
+    RCLCPP_ERROR(node_->get_logger(), "%s", error_msg.c_str());
 
     return BT::NodeStatus::RUNNING;
   } else {
