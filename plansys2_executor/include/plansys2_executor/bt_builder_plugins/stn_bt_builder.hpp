@@ -158,6 +158,14 @@ protected:
 
   std::string t(const int & level) const;
 
+  void print_message(
+    const std::string & label,
+    int row,
+    int col,
+    double value,
+    const Node::Ptr parent,
+    const Node::Ptr child) const;
+
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 

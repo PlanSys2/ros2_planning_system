@@ -191,7 +191,10 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
   // Check if STN is consistent.
   for (size_t i = 0; i < dist.rows(); i++) {
     if (dist(i, i) < 0) {
-      std::cerr << "STN is not consistent!" << std::endl;
+      std::string error_msg = std::string("dist(") + std::to_string(i) +
+        ", " + std::to_string(i) + ") = " + std::to_string(dist(i,i)) + "\n" +
+        "STN is not consistent!\n";
+      std::cerr << error_msg;
       return false;
     }
   }
@@ -199,35 +202,39 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
   // Update the STN.
   for (auto node : stn->nodes) {
     // Create a set to hold the updated output arcs.
-    std::set<std::tuple<Node::Ptr, double, double>> new_output_arcs;
+    std::set<std::tuple<Node::Ptr, double, double>> output_arcs;
 
     // Iterate over the output arcs.
     auto row = node->node_num;
-    for (auto arc : node->output_arcs) {
-      auto child = std::get<0>(arc);
+    for (auto arc_out : node->output_arcs) {
+      auto child = std::get<0>(arc_out);
       auto col = child->node_num;
 
-      // Save the updated output arc.
-      new_output_arcs.insert(std::make_tuple(child, -dist(col, row), dist(row, col)));
-
-      // Find the corresponding input arc.
-      std::tuple<Node::Ptr, double, double> input_arc;
-      std::set<std::tuple<Node::Ptr, double, double>>::iterator iter;
-      iter = child->input_arcs.find(std::make_tuple(node, std::get<1>(arc), std::get<2>(arc)));
-      if (iter != child->input_arcs.end()) {
-        input_arc = *iter;
-      } else {
-        std::cerr << "Input arc not found!" << std::endl;
+      // Get the new lower and upper bounds.
+      auto upper = dist(row, col);
+      auto lower = -dist(col, row);
+      if (row > col) {
+        lower = -dist(row, col);
+        upper = dist(col, row);
       }
 
-      // Erase the existing child input arc.
-      child->input_arcs.erase(input_arc);
+      // Save the updated output arc.
+      output_arcs.insert(std::make_tuple(child, lower, upper));
 
-      // Insert the updated child input arc.
-      child->input_arcs.insert(std::make_tuple(node, -dist(col, row), dist(row, col)));
+      // Find the child input arc.
+      auto it = std::find_if(
+        child->input_arcs.begin(), child->input_arcs.end(),
+        [&](std::tuple<Node::Ptr, double, double> arc_in) {
+          return std::get<0>(arc_in) == node;
+      });
+
+      child->input_arcs.erase(*it);
+      child->input_arcs.insert(std::make_tuple(node, lower, upper));
     }
+
     // Replace the output arcs.
-    node->output_arcs = new_output_arcs;
+    node->output_arcs.clear();
+    node->output_arcs = output_arcs;
   }
 
   return true;
@@ -1045,31 +1052,53 @@ STNBTBuilder::get_distance_matrix(const Graph::Ptr stn) const
     for (const auto arc : node->output_arcs) {
       auto child = std::get<0>(arc);
       auto col = child->node_num;
-      dist(row, col) = std::get<2>(arc);
-      dist(col, row) = -std::get<1>(arc);
-
-      if ((-std::get<1>(arc) <= std::get<2>(arc) && col < row) ||
-          (-std::get<1>(arc) > std::get<2>(arc) && row < col)) {
-        std::string error_msg = std::string("lower -> dist(") + std::to_string(col) +
-          ", " + std::to_string(row) + ") = " + std::to_string(-dist(col,row)) +
-          "  upper -> dist(" + std::to_string(row) + ", " + std::to_string(col) +
-          ") = " + std::to_string(dist(row, col)) + "\n" +
-          "  parent " + std::to_string(node->node_num) + ": " +
-          to_action_id(node->action, action_time_precision_) +
-          "  child " + std::to_string(child->node_num) + ": " +
-          to_action_id(child->action, action_time_precision_) + "\n" +
-          "... ... ...\n";
-        std::cerr << error_msg;
+      if (row < col) {
+        dist(row, col) = std::get<2>(arc);
+        dist(col, row) = -std::get<1>(arc);
+        if (dist(col, row) > dist(row, col)) {
+          print_message("lower", col, row, dist(col, row), node, child);
+          print_message("upper", row, col, dist(row, col), node, child);
+          std::cerr << "... ... ..." << std::endl;
+        }
+      } else {
+        dist(row, col) = -std::get<1>(arc);
+        dist(col, row) = std::get<2>(arc);
+        if (dist(row, col) > dist(col, row)) {
+          print_message("lower", row, col, dist(row, col), node, child);
+          print_message("upper", col, row, dist(col, row), node, child);
+          std::cerr << "... ... ..." << std::endl;
+        }
       }
     }
   }
 
-  std::cerr << dist << std::endl;
+//  std::cerr << "Extracting distance matrix ..." << std::endl;
+//  std::cerr << dist << std::endl;
+//  std::cerr << "Applying Floyd-Warshall algorithm ..." << std::endl;
 
   // Solve the all-pairs shortest path problem.
   floyd_warshall(dist);
 
+//  std::cerr << dist << std::endl;
+
   return dist;
+}
+
+void
+STNBTBuilder::print_message(
+  const std::string & label,
+  int row,
+  int col,
+  double value,
+  const Node::Ptr parent,
+  const Node::Ptr child) const
+{
+  std::string error_msg = label +
+    " dist(" + std::to_string(row) + ", " + std::to_string(col) + ") = " +
+    std::to_string(value) +
+    " parent " + std::to_string(parent->node_num) + ": " + to_action_id(parent->action, action_time_precision_) + " " + to_string(parent->action.type) +
+    " -> child " + std::to_string(child->node_num) + ": " + to_action_id(child->action, action_time_precision_) + " " + to_string(child->action.type) + "\n";
+  std::cerr << error_msg;
 }
 
 void

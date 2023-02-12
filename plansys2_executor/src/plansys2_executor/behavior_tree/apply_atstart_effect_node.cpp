@@ -55,6 +55,9 @@ ApplyAtStartEffect::tick()
     (*action_map_)[action].at_start_effects_applied_time = current_time;
     apply(effect, problem_client_, 0);
 
+//    Eigen::MatrixXd dist = get_distance_matrix(action_graph_);
+//    std::cerr << dist << std::endl;
+
     // Update the child input links.
     Node::Ptr child = get_node(action, ActionType::START);
     std::set<std::tuple<Node::Ptr, double, double>> input_arcs;
@@ -85,11 +88,14 @@ ApplyAtStartEffect::tick()
     child->input_arcs.clear();
     child->input_arcs = input_arcs;
 
+//    dist = get_distance_matrix(action_graph_);
+//    std::cerr << dist << std::endl;
+
     rclcpp::Time start_time = (*action_map_)[":0"].at_end_effects_applied_time;
     double time_from_start = current_time.seconds() - start_time.seconds();
 
     std::string error_msg = std::string("ApplyAtStartEffect\n") +
-      "  child: " + action + " END" + "\n" +
+      "  child: " + action + " START" + "\n" +
       "  time: " + std::to_string(time_from_start) + "\n";
     RCLCPP_ERROR(node_->get_logger(), "%s", error_msg.c_str());
 
@@ -112,6 +118,33 @@ ApplyAtStartEffect::get_node(const std::string & node_id, ActionType node_type)
       return n_id == node_id && n->action.type == node_type;
     });
   return *it;
+}
+
+Eigen::MatrixXd
+ApplyAtStartEffect::get_distance_matrix(const Graph::Ptr stn) const
+{
+  std::cerr << "*** AT START EFFECT - GET DISTANCE MATRIX ***" << std::endl;
+  // Initialize the distance matrix as infinity.
+  Eigen::MatrixXd dist = std::numeric_limits<double>::infinity() *
+    Eigen::MatrixXd::Ones(stn->nodes.size(), stn->nodes.size());
+  dist.triangularView<Eigen::Lower>().fill(0.0);
+
+  // Extract the distances imposed by the STN.
+  for (const auto node : stn->nodes) {
+    auto row = node->node_num;
+    for (const auto arc : node->output_arcs) {
+      auto child = std::get<0>(arc);
+      auto col = child->node_num;
+      if (row < col) {
+        dist(row, col) = std::get<2>(arc);
+        dist(col, row) = -std::get<1>(arc);
+      } else {
+        dist(row, col) = -std::get<1>(arc);
+        dist(col, row) = std::get<2>(arc);
+      }
+    }
+  }
+  return dist;
 }
 
 }  // namespace plansys2

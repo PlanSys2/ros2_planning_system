@@ -81,23 +81,29 @@ WaitAction::tick()
       Node::Ptr child_node = get_node(child_id, child_type);
       Node::Ptr parent_node = get_node(parent_id, parent_type);
 
-      auto in = std::find_if(
-        child_node->input_arcs.begin(), child_node->input_arcs.end(),
+//      auto in = std::find_if(
+//        child_node->input_arcs.begin(), child_node->input_arcs.end(),
+//        [&](std::tuple<Node::Ptr, double, double> arc) {
+//          return std::get<0>(arc) == parent_node;
+//        });
+
+      auto out = std::find_if(
+        parent_node->output_arcs.begin(), parent_node->output_arcs.end(),
         [&](std::tuple<Node::Ptr, double, double> arc) {
-          return std::get<0>(arc) == parent_node;
+          return std::get<0>(arc) == child_node;
         });
 
-      lower = std::get<1>(*in);
-      upper = std::get<2>(*in);
+      lower = std::get<1>(*out);
+      upper = std::get<2>(*out);
     }
 
-    if (parent_type != "INIT") {
-      if (isinf(upper)) {
-        lower += 0.01;
-      } else {
-        lower = 0.99 * lower + 0.01 * upper;
-      }
-    }
+//    if (parent_type != "INIT") {
+//      if (isinf(upper)) {
+//        lower += 0.01;
+//      } else {
+//        lower = 0.99 * lower + 0.01 * upper;
+//      }
+//    }
 
     if (dt >= lower && dt < upper) {
       return BT::NodeStatus::SUCCESS;
