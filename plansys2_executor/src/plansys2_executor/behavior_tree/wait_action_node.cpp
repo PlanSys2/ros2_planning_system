@@ -109,13 +109,13 @@ WaitAction::tick()
       return BT::NodeStatus::SUCCESS;
     }
 
-    std::string error_msg = std::string("WaitAction -- TIME BOUND NOT SATISFIED\n") +
-      "  parent: " + parent_id + " " + parent_type + "\n" +
-      "  child: " + child_id + " " + child_type + "\n" +
-      "  lower: " + std::to_string(lower) + "\n" +
-      "  upper: " + std::to_string(upper) + "\n" +
-      "  actual: " + std::to_string(dt) + "\n";
-    RCLCPP_ERROR(node_->get_logger(), "%s", error_msg.c_str());
+//    std::string error_msg = std::string("WaitAction -- TIME BOUND NOT SATISFIED\n") +
+//      "  parent: " + parent_id + " " + parent_type + "\n" +
+//      "  child: " + child_id + " " + child_type + "\n" +
+//      "  lower: " + std::to_string(lower) + "\n" +
+//      "  upper: " + std::to_string(upper) + "\n" +
+//      "  actual: " + std::to_string(dt) + "\n";
+//    RCLCPP_ERROR(node_->get_logger(), "%s", error_msg.c_str());
 
     return BT::NodeStatus::RUNNING;
   } else {

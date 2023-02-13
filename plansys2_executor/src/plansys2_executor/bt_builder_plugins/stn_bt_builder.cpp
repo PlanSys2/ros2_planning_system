@@ -237,6 +237,24 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
     node->output_arcs = output_arcs;
   }
 
+//  for (const auto node : stn->nodes) {
+//    auto row = node->node_num;
+//    for (const auto arc : node->output_arcs) {
+//      auto child = std::get<0>(arc);
+//      auto col = child->node_num;
+//      if (row < col) {
+//        print_message("lower", col, row, dist(col, row), node, child);
+//        print_message("upper", row, col, dist(row, col), node, child);
+//        std::cerr << "... ... ..." << std::endl;
+//      } else {
+//        print_message("lower", row, col, dist(row, col), node, child);
+//        print_message("upper", col, row, dist(col, row), node, child);
+//        std::cerr << "... ... ..." << std::endl;
+//      }
+//    }
+//  }
+//  std::cerr << "... ... ..." << std::endl;
+
   return true;
 }
 
@@ -1044,7 +1062,12 @@ STNBTBuilder::get_distance_matrix(const Graph::Ptr stn) const
   // Initialize the distance matrix as infinity.
   Eigen::MatrixXd dist = std::numeric_limits<double>::infinity() *
     Eigen::MatrixXd::Ones(stn->nodes.size(), stn->nodes.size());
-  dist.triangularView<Eigen::Lower>().fill(0.0);
+  for (int i = 0; i < dist.rows(); i++) {
+    dist(i, i) = 0.0;
+  }
+  // dist.triangularView<Eigen::Lower>().fill(0.0);
+
+  std::cerr << "Extracting distance matrix ..." << std::endl;
 
   // Extract the distances imposed by the STN.
   for (const auto node : stn->nodes) {
@@ -1052,34 +1075,40 @@ STNBTBuilder::get_distance_matrix(const Graph::Ptr stn) const
     for (const auto arc : node->output_arcs) {
       auto child = std::get<0>(arc);
       auto col = child->node_num;
+
+      std::string error_msg = std::string("parent [") + std::to_string(node->node_num) + ": " +
+        to_action_id(node->action, action_time_precision_) + " " + to_string(node->action.type) +
+        "] -> child [" + std::to_string(child->node_num) + ": " +
+        to_action_id(child->action, action_time_precision_) + " " + to_string(child->action.type) + "]";
+
       if (row < col) {
         dist(row, col) = std::get<2>(arc);
         dist(col, row) = -std::get<1>(arc);
-        if (dist(col, row) > dist(row, col)) {
-          print_message("lower", col, row, dist(col, row), node, child);
-          print_message("upper", row, col, dist(row, col), node, child);
-          std::cerr << "... ... ..." << std::endl;
-        }
+
+        error_msg = error_msg + " lower dist(" + std::to_string(col) + ", " +
+          std::to_string(row) + ") = " + std::to_string(dist(col, row)) +
+          " upper dist(" + std::to_string(row) + ", " +
+          std::to_string(col) + ") = " + std::to_string(dist(row, col));
       } else {
         dist(row, col) = -std::get<1>(arc);
         dist(col, row) = std::get<2>(arc);
-        if (dist(row, col) > dist(col, row)) {
-          print_message("lower", row, col, dist(row, col), node, child);
-          print_message("upper", col, row, dist(col, row), node, child);
-          std::cerr << "... ... ..." << std::endl;
-        }
+
+        error_msg = error_msg + " lower dist(" + std::to_string(row) + ", " +
+          std::to_string(col) + ") = " + std::to_string(dist(row, col)) +
+          " upper dist(" + std::to_string(col) + ", " +
+          std::to_string(row) + ") = " + std::to_string(dist(col, row));
       }
+      std::cerr << error_msg << std::endl;
     }
   }
 
-//  std::cerr << "Extracting distance matrix ..." << std::endl;
-//  std::cerr << dist << std::endl;
-//  std::cerr << "Applying Floyd-Warshall algorithm ..." << std::endl;
+  std::cerr << dist << std::endl;
 
   // Solve the all-pairs shortest path problem.
   floyd_warshall(dist);
 
-//  std::cerr << dist << std::endl;
+  std::cerr << "Applying Floyd-Warshall algorithm ..." << std::endl;
+  std::cerr << dist << std::endl;
 
   return dist;
 }
@@ -1095,9 +1124,7 @@ STNBTBuilder::print_message(
 {
   std::string error_msg = label +
     " dist(" + std::to_string(row) + ", " + std::to_string(col) + ") = " +
-    std::to_string(value) +
-    " parent " + std::to_string(parent->node_num) + ": " + to_action_id(parent->action, action_time_precision_) + " " + to_string(parent->action.type) +
-    " -> child " + std::to_string(child->node_num) + ": " + to_action_id(child->action, action_time_precision_) + " " + to_string(child->action.type) + "\n";
+    std::to_string(value);
   std::cerr << error_msg;
 }
 
