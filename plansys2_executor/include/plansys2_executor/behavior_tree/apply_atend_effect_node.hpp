@@ -53,7 +53,6 @@ public:
 
 private:
   Node::Ptr get_node(const std::string & node_id, ActionType node_type);
-  Eigen::MatrixXd get_distance_matrix(const Graph::Ptr stn) const;
 
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
   Graph::Ptr action_graph_;

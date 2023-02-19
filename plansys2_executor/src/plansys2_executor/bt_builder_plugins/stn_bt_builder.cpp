@@ -171,8 +171,16 @@ STNBTBuilder::build_stn(const plansys2_msgs::msg::Plan & plan) const
           }
           prune_paths(n, h);
           if (!check_paths(n, h)) {
-            h->output_arcs.insert(std::make_tuple(n, 0, std::numeric_limits<double>::infinity()));
-            n->input_arcs.insert(std::make_tuple(h, 0, std::numeric_limits<double>::infinity()));
+            auto t_h = h->action.time;
+            auto t_n = n->action.time;
+            if (h->action.type == ActionType::END) {
+              t_h += h->action.duration;
+            }
+            if (n->action.type == ActionType::END) {
+              t_n += n->action.duration;
+            }
+            h->output_arcs.insert(std::make_tuple(n, t_n - t_h, std::numeric_limits<double>::infinity()));
+            n->input_arcs.insert(std::make_tuple(h, t_n - t_h, std::numeric_limits<double>::infinity()));
           }
         }
       }
