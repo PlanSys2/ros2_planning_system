@@ -545,7 +545,11 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   }
 
   if (rclcpp::ok()) {
-    goal_handle->succeed(result);
+    if (cancel_plan_requested_) {
+      goal_handle->canceled(result);
+    } else {
+      goal_handle->succeed(result);
+    }
     if (result->success) {
       RCLCPP_INFO(this->get_logger(), "Plan Succeeded");
     } else {
