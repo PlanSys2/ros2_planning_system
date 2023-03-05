@@ -95,15 +95,17 @@ WaitAction::tick()
 
       lower = std::get<1>(*out);
       upper = std::get<2>(*out);
-    }
 
-//    if (parent_type != "INIT") {
-//      if (isinf(upper)) {
-//        lower += 0.01;
-//      } else {
-//        lower = 0.99 * lower + 0.01 * upper;
+//      if (child_node->action.type == ActionType::START) {
+//        if (lower > 1e-3) {
+//          if (isinf(upper)) {
+//            lower += 0.1;
+//          } else {
+//            lower = 0.8 * lower + 0.2 * upper;
+//          }
+//        }
 //      }
-//    }
+    }
 
     if (dt >= lower && dt < upper) {
       return BT::NodeStatus::SUCCESS;

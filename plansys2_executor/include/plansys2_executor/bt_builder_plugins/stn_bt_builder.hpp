@@ -149,6 +149,7 @@ protected:
     int node_counter);
   void print_graph(const plansys2::Graph::Ptr graph) const;
   void print_node(const Node::Ptr node, int level) const;
+  void print_arcs(const plansys2::Graph::Ptr graph) const;
 
   void replace(std::string & str, const std::string & from, const std::string & to) const;
 

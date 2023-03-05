@@ -171,16 +171,20 @@ STNBTBuilder::build_stn(const plansys2_msgs::msg::Plan & plan) const
           }
           prune_paths(n, h);
           if (!check_paths(n, h)) {
-            auto t_h = h->action.time;
-            auto t_n = n->action.time;
-            if (h->action.type == ActionType::END) {
-              t_h += h->action.duration;
-            }
-            if (n->action.type == ActionType::END) {
-              t_n += n->action.duration;
-            }
-            h->output_arcs.insert(std::make_tuple(n, t_n - t_h, std::numeric_limits<double>::infinity()));
-            n->input_arcs.insert(std::make_tuple(h, t_n - t_h, std::numeric_limits<double>::infinity()));
+//            auto t_h = h->action.time;
+//            auto t_n = n->action.time;
+//            if (h->action.type == ActionType::END) {
+//              t_h += h->action.duration;
+//            }
+//            if (n->action.type == ActionType::END) {
+//              t_n += n->action.duration;
+//            }
+//            float lower = t_n - t_h;
+//            if (n->action.type == ActionType::GOAL) {
+//              lower = 0.0;
+//            }
+            h->output_arcs.insert(std::make_tuple(n, 0.0, std::numeric_limits<double>::infinity()));
+            n->input_arcs.insert(std::make_tuple(h, 0.0, std::numeric_limits<double>::infinity()));
           }
         }
       }
@@ -193,6 +197,10 @@ STNBTBuilder::build_stn(const plansys2_msgs::msg::Plan & plan) const
 bool
 STNBTBuilder::propagate(const Graph::Ptr stn)
 {
+  std::cerr << "Initial STN ..." << std::endl;
+  print_arcs(stn);
+  std::cerr << "... ... ..." << std::endl;
+
   // Compute the distance matrix.
   Eigen::MatrixXd dist = get_distance_matrix(stn);
 
@@ -209,11 +217,12 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
 
   // Update the STN.
   for (auto node : stn->nodes) {
+    int row = node->node_num;
+
     // Create a set to hold the updated output arcs.
     std::set<std::tuple<Node::Ptr, double, double>> output_arcs;
 
     // Iterate over the output arcs.
-    auto row = node->node_num;
     for (auto arc_out : node->output_arcs) {
       auto child = std::get<0>(arc_out);
       auto col = child->node_num;
@@ -221,10 +230,6 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
       // Get the new lower and upper bounds.
       auto upper = dist(row, col);
       auto lower = -dist(col, row);
-      if (row > col) {
-        lower = -dist(row, col);
-        upper = dist(col, row);
-      }
 
       // Save the updated output arc.
       output_arcs.insert(std::make_tuple(child, lower, upper));
@@ -245,23 +250,9 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
     node->output_arcs = output_arcs;
   }
 
-//  for (const auto node : stn->nodes) {
-//    auto row = node->node_num;
-//    for (const auto arc : node->output_arcs) {
-//      auto child = std::get<0>(arc);
-//      auto col = child->node_num;
-//      if (row < col) {
-//        print_message("lower", col, row, dist(col, row), node, child);
-//        print_message("upper", row, col, dist(row, col), node, child);
-//        std::cerr << "... ... ..." << std::endl;
-//      } else {
-//        print_message("lower", row, col, dist(row, col), node, child);
-//        print_message("upper", col, row, dist(col, row), node, child);
-//        std::cerr << "... ... ..." << std::endl;
-//      }
-//    }
-//  }
-//  std::cerr << "... ... ..." << std::endl;
+  std::cerr << "Updated STN ..." << std::endl;
+  print_arcs(stn);
+  std::cerr << "... ... ..." << std::endl;
 
   return true;
 }
@@ -628,26 +619,7 @@ STNBTBuilder::get_parents(
   const std::map<int, StateVec> & states) const
 {
   auto parents = get_satisfy(action, plan, happenings, states);
-
-  for (const auto & parent : parents) {
-    if (to_action_id(parent.second, action_time_precision_) == "(mend_fuse f1 m1):1" &&
-        to_action_id(action.second, action_time_precision_) == "(light_match m1):0") {
-      std::cerr << "*** GET SATISFY ***" << std::endl;
-      std::cerr << "parent: " << to_action_id(parent.second, action_time_precision_) << " -> ";
-      std::cerr << "child: " << to_action_id(action.second, action_time_precision_) << std::endl;
-    }
-  }
-
   auto threats = get_threat(action, plan, happenings, states);
-
-  for (const auto & parent : threats) {
-    if (to_action_id(parent.second, action_time_precision_) == "(mend_fuse f1 m1):1" &&
-        to_action_id(action.second, action_time_precision_) == "(light_match m1):0") {
-      std::cerr << "*** GET THREAT ***" << std::endl;
-      std::cerr << "parent: " << to_action_id(parent.second, action_time_precision_) << " -> ";
-      std::cerr << "child: " << to_action_id(action.second, action_time_precision_) << std::endl;
-    }
-  }
 
   parents.insert(std::end(parents), std::begin(threats), std::end(threats));
 
@@ -1073,50 +1045,25 @@ STNBTBuilder::get_distance_matrix(const Graph::Ptr stn) const
   for (int i = 0; i < dist.rows(); i++) {
     dist(i, i) = 0.0;
   }
-  // dist.triangularView<Eigen::Lower>().fill(0.0);
-
-  std::cerr << "Extracting distance matrix ..." << std::endl;
 
   // Extract the distances imposed by the STN.
   for (const auto node : stn->nodes) {
-    auto row = node->node_num;
+    int row = node->node_num;
     for (const auto arc : node->output_arcs) {
       auto child = std::get<0>(arc);
-      auto col = child->node_num;
-
-      std::string error_msg = std::string("parent [") + std::to_string(node->node_num) + ": " +
-        to_action_id(node->action, action_time_precision_) + " " + to_string(node->action.type) +
-        "] -> child [" + std::to_string(child->node_num) + ": " +
-        to_action_id(child->action, action_time_precision_) + " " + to_string(child->action.type) + "]";
-
-      if (row < col) {
-        dist(row, col) = std::get<2>(arc);
-        dist(col, row) = -std::get<1>(arc);
-
-        error_msg = error_msg + " lower dist(" + std::to_string(col) + ", " +
-          std::to_string(row) + ") = " + std::to_string(dist(col, row)) +
-          " upper dist(" + std::to_string(row) + ", " +
-          std::to_string(col) + ") = " + std::to_string(dist(row, col));
-      } else {
-        dist(row, col) = -std::get<1>(arc);
-        dist(col, row) = std::get<2>(arc);
-
-        error_msg = error_msg + " lower dist(" + std::to_string(row) + ", " +
-          std::to_string(col) + ") = " + std::to_string(dist(row, col)) +
-          " upper dist(" + std::to_string(col) + ", " +
-          std::to_string(row) + ") = " + std::to_string(dist(col, row));
-      }
-      std::cerr << error_msg << std::endl;
+      int col = child->node_num;
+      dist(row, col) = std::get<2>(arc);
+      dist(col, row) = -std::get<1>(arc);
     }
   }
 
-  std::cerr << dist << std::endl;
-
   // Solve the all-pairs shortest path problem.
-  floyd_warshall(dist);
-
-  std::cerr << "Applying Floyd-Warshall algorithm ..." << std::endl;
   std::cerr << dist << std::endl;
+  std::cerr << "... ... ..." << std::endl;
+  std::cerr << "Applying Floyd-Warshal ..." << std::endl;
+  floyd_warshall(dist);
+  std::cerr << dist << std::endl;
+  std::cerr << "... ... ..." << std::endl;
 
   return dist;
 }
@@ -1516,6 +1463,32 @@ STNBTBuilder::print_node(const plansys2::Node::Ptr node, int level) const
   for (const auto & arc : node->output_arcs) {
     auto child = std::get<0>(arc);
     print_node(child, level + 1);
+  }
+}
+
+void
+STNBTBuilder::print_arcs(const plansys2::Graph::Ptr graph) const
+{
+  for (const auto node : graph->nodes) {
+    int row = node->node_num;
+    for (const auto arc : node->output_arcs) {
+      auto child = std::get<0>(arc);
+      int col = child->node_num;
+
+      std::string error_msg = std::to_string(node->node_num) +
+        " -> " +
+        std::to_string(child->node_num) +
+        " : "  +
+        to_action_id(node->action, action_time_precision_) + "_" + to_string(node->action.type) +
+        " -> " +
+        to_action_id(child->action, action_time_precision_) + "_" + to_string(child->action.type) +
+        " : " +
+        "upper = dist(" + std::to_string(row) + ", " + std::to_string(col) + ") = " + std::to_string(std::get<2>(arc)) +
+        ", " +
+        "lower = dist(" + std::to_string(col) + ", " + std::to_string(row) + ") = " + std::to_string(-1.0 * std::get<1>(arc));
+
+      std::cerr << error_msg << std::endl;
+    }
   }
 }
 

@@ -85,8 +85,8 @@ ApplyAtEndEffect::tick()
     child->input_arcs.clear();
     child->input_arcs = input_arcs;
 
-    rclcpp::Time start_time = (*action_map_)[":0"].at_end_effects_applied_time;
-    double time_from_start = current_time.seconds() - start_time.seconds();
+//    rclcpp::Time start_time = (*action_map_)[":0"].at_end_effects_applied_time;
+//    double time_from_start = current_time.seconds() - start_time.seconds();
 
 //    std::string error_msg = std::string("ApplyAtEndEffect\n") +
 //      "  child: " + action + " END" + "\n" +
