@@ -426,7 +426,12 @@ SimpleBTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
       std::cerr << "[ERROR] requirement not met: [" <<
         parser::pddl::toString(req) << "]" << std::endl;
     }
-    assert(requirements.empty());
+
+    // Return and empyt graph to fail the serveice call
+    if(!requirements.empty())
+    {
+      return nullptr;
+    }
 
     action_sequence.erase(action_sequence.begin());
   }
@@ -438,6 +443,12 @@ std::string
 SimpleBTBuilder::get_tree(const plansys2_msgs::msg::Plan & current_plan)
 {
   graph_ = get_graph(current_plan);
+
+  // If graph was not generated, return an empty string.
+  // This can be used to fails the serveice call
+  if (!graph_) {
+    return "";
+  }
 
   std::list<ActionNode::Ptr> used_actions;
   for (auto & root : graph_->roots) {
