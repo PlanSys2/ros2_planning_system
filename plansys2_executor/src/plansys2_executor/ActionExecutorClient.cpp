@@ -67,7 +67,10 @@ ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
     RCLCPP_ERROR(get_logger(), "action_name parameter not set");
     status_.state = plansys2_msgs::msg::ActionPerformerStatus::FAILURE;
     status_.status_stamp = now();
+
+    return CallbackReturnT::FAILURE;
   }
+
   get_parameter_or<std::vector<std::string>>(
     "specialized_arguments", specialized_arguments_, std::vector<std::string>({}));
 

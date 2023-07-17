@@ -51,12 +51,20 @@ std::vector<std::string> tokenize(const std::string & text)
     return {};
   }
 
-  std::vector<std::string> ret;
+  std::string text_wo_nlines = text;
   size_t start = 0, end = 0;
-
   while (end != std::string::npos) {
-    end = text.find(" ", start);
-    ret.push_back(text.substr(start, (end == std::string::npos) ? std::string::npos : end - start));
+    end = text_wo_nlines.find("\n", start);
+    text_wo_nlines =
+      text_wo_nlines.substr(0, (end == std::string::npos) ? std::string::npos : end);
+  }
+
+  std::vector<std::string> ret;
+  start = 0, end = 0;
+  while (end != std::string::npos) {
+    end = text_wo_nlines.find(" ", start);
+    ret.push_back(
+      text_wo_nlines.substr(start, (end == std::string::npos) ? std::string::npos : end - start));
     start = ((end > (std::string::npos - 1)) ? std::string::npos : end + 1);
   }
   return ret;
