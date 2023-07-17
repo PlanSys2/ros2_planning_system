@@ -2,6 +2,12 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge remote-tracking branch 'origin/humble-devel'
+* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
+* Contributors: Francisco Martín Rico, Marco Roveri
+
 2.0.9 (2022-07-10)
 ------------------
 

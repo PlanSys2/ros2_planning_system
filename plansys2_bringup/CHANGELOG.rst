@@ -2,6 +2,24 @@
 Changelog for package plansys2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#251 <https://github.com/PlanSys2/ros2_planning_system/issues/251>`_ from PlanSys2/fix_bt_node
+  Fix bt node
+* Change double quotes for simple ones (linter)
+* Make explicit which BTCreator is being used
+* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
+* Merge pull request `#240 <https://github.com/PlanSys2/ros2_planning_system/issues/240>`_ from jjzapf/bt-builder-plugins
+  New BT Builder and Plugin Interface
+* bt-builder-plugins: Setting default BT builder plugin to SimpleBTBuilder.
+* bt-builder-plugins: Creating BT builder plugin interface. Moving current BT builder to plugin named SimpleBTBuilder. Adding new and improved STN-based BT builder plugin named STNBTBuilder.
+* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
+* Merge pull request `#215 <https://github.com/PlanSys2/ros2_planning_system/issues/215>`_ from Splinter1984/master
+  add system status check
+* revert if statement
+* Merge remote-tracking branch 'upstream/master'
+* Contributors: Francisco Martín Rico, Josh Zapf, Marco Roveri, Splinter1984
+
 2.0.9 (2022-07-10)
 ------------------
 * Expose lifecyclemanager timeout as a parameter, other misc fixes/features
