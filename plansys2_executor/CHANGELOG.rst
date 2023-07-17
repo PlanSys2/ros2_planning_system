@@ -2,6 +2,16 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.9 (2022-07-10)
+------------------
+* Humble Upgrade
+* Fix possible bug https://github.com/ros2/rclcpp/issues/1968
+* Expose lifecyclemanager timeout as a parameter, other misc fixes/features
+* Linters are explicit
+* Add ctor to ExecutorClient for varying node name
+* Fix uninitialized variable in ExecutorClient
+* Contributors: Francisco Martín Rico, Jake Keller
+
 2.0.8 (2022-05-04)
 ------------------
 

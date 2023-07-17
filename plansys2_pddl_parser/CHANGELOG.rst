@@ -2,6 +2,12 @@
 Changelog for package plansys2_pddl_parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.9 (2022-07-10)
+------------------
+* Humble Upgrade
+* Update popf checker interface
+* Contributors: Francisco Martín Rico
+
 2.0.8 (2022-05-04)
 ------------------
 * Add missing dependency
