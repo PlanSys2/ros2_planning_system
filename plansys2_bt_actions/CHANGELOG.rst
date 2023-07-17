@@ -2,8 +2,8 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.10 (2023-07-17)
+-------------------
 * Merge pull request `#251 <https://github.com/PlanSys2/ros2_planning_system/issues/251>`_ from PlanSys2/fix_bt_node
   Fix bt node
 * Insert in blackboard the action ROS 2 Node

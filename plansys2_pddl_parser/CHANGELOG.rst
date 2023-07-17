@@ -2,8 +2,8 @@
 Changelog for package plansys2_pddl_parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.10 (2023-07-17)
+-------------------
 * Merge remote-tracking branch 'origin/humble-devel'
 * Merge pull request `#238 <https://github.com/PlanSys2/ros2_planning_system/issues/238>`_ from roveri-marco/fix_goal_structure_issue_205
   Fix goal structure issue 205

@@ -2,8 +2,8 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.10 (2023-07-17)
+-------------------
 * Merge remote-tracking branch 'origin/humble-devel'
 * Merge pull request `#252 <https://github.com/PlanSys2/ros2_planning_system/issues/252>`_ from PlanSys2/check_at_end
   Check at end reqs in bt builder

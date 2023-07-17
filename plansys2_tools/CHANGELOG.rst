@@ -2,8 +2,8 @@
 Changelog for package plansys2_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.10 (2023-07-17)
+-------------------
 * Merge remote-tracking branch 'origin/humble-devel'
 * Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
 * Merge remote-tracking branch 'upstream/master'

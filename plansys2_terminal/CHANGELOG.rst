@@ -2,8 +2,8 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.10 (2023-07-17)
+-------------------
 * Merge remote-tracking branch 'origin/humble-devel'
 * Merge pull request `#251 <https://github.com/PlanSys2/ros2_planning_system/issues/251>`_ from PlanSys2/fix_bt_node
   Fix bt node
