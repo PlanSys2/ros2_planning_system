@@ -1,12 +1,12 @@
-name: rolling-devel
+name: master
 
 on:
   pull_request:
     branches:
-      - rolling-devel
+      - master
   push:
     branches:
-      - rolling-devel
+      - master
       
 jobs:
   build-and-test:
