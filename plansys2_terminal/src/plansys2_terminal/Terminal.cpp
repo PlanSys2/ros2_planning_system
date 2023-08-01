@@ -254,6 +254,7 @@ void Terminal::add_problem()
   }
 }
 
+
 // LCOV_EXCL_START
 void
 Terminal::run_console()
@@ -269,24 +270,30 @@ Terminal::run_console()
 
   bool finish = false;
   while (!finish) {
-    char * line = readline("> ");
+    char * input_line = readline("> ");
 
-    if (line == NULL || (strcmp(line, "quit") == 0)) {
+    if (input_line == NULL || (strcmp(input_line, "quit") == 0)) {
       finish = true;
-    }
+    } else {
+      std::istringstream iss({std::string(input_line)});
+      std::string line;
 
-    if (strlen(line) > 0) {
-      add_history(line);
+      free(input_line);
 
-      std::string line_str(line);
-      free(line);
+      while (std::getline(iss, line)) {
+        if (!line.empty()) {
+          add_history(line.c_str());
 
-      if (!finish) {
-        clean_command(line_str);
+          std::string line_str(line);
 
-        std::ostringstream os;
-        process_command(line_str, os, false);
-        std::cout << os.str();
+          if (!finish) {
+            clean_command(line_str);
+
+            std::ostringstream os;
+            process_command(line_str, os, false);
+            std::cout << os.str();
+          }
+        }
       }
     }
   }
