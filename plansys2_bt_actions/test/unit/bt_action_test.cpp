@@ -117,11 +117,11 @@ TEST(bt_actions, load_plugins)
 
   bool finish = false;
   std::thread t([&]() {
-     while (!finish) {
-      rclcpp::spin_some(move_server_node);
-      rclcpp::spin_some(node->get_node_base_interface());
-    }
-  });
+      while (!finish) {
+        rclcpp::spin_some(move_server_node);
+        rclcpp::spin_some(node->get_node_base_interface());
+      }
+    });
 
   BT::BehaviorTreeFactory factory;
   BT::SharedLibrary loader;
@@ -157,11 +157,11 @@ TEST(bt_actions, on_tick_failure)
 
   bool finished = false;
   std::thread t([&]() {
-     while (!finished) {
-      rclcpp::spin_some(move_server_node);
-      rclcpp::spin_some(node->get_node_base_interface());
-    }
-  });
+      while (!finished) {
+        rclcpp::spin_some(move_server_node);
+        rclcpp::spin_some(node->get_node_base_interface());
+      }
+    });
 
 
   BT::NodeConfiguration config;
@@ -195,11 +195,11 @@ TEST(bt_actions, on_feedback_failure)
 
   bool finished = false;
   std::thread t([&]() {
-     while (!finished) {
-      rclcpp::spin_some(move_server_node);
-      rclcpp::spin_some(node->get_node_base_interface());
-    }
-  });
+      while (!finished) {
+        rclcpp::spin_some(move_server_node);
+        rclcpp::spin_some(node->get_node_base_interface());
+      }
+    });
 
   BT::NodeConfiguration config;
   BT::assignDefaultRemapping<plansys2_bt_tests::OnFeedbackFail>(config);
