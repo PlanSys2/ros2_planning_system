@@ -32,7 +32,7 @@ Move::Move(
   const BT::NodeConfiguration & conf)
 : plansys2::BtActionNode<test_msgs::action::Fibonacci>(xml_tag_name, action_name, conf)
 {
-  rclcpp::Node::SharedPtr node;
+  rclcpp_lifecycle::LifecycleNode::SharedPtr node;
   config().blackboard->get("node", node);
 
   node->declare_parameter<std::vector<std::string>>(
