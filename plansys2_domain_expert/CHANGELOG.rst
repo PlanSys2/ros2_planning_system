@@ -2,6 +2,9 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.0.10 (2023-07-17)
 -------------------
 * Merge remote-tracking branch 'origin/humble-devel'

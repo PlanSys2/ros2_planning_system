@@ -2,6 +2,11 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Read multiple lines in terminal input
+* Contributors: Francisco Martín Rico
+
 2.0.10 (2023-07-17)
 -------------------
 * Merge remote-tracking branch 'origin/humble-devel'

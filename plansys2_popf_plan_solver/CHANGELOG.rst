@@ -2,6 +2,9 @@
 Changelog for package plansys2_popf_plan_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.0.10 (2023-07-17)
 -------------------
 * Merge remote-tracking branch 'origin/humble-devel'
