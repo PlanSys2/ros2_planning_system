@@ -2,6 +2,18 @@
 Changelog for package plansys2_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge pull request `#254 <https://github.com/PlanSys2/ros2_planning_system/issues/254>`_ from PlanSys2/remove_ptr_refs
+  Remove reference to SharedPtr
+* Remove reference to SharedPtr
+* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
+* Merge remote-tracking branch 'upstream/master'
+* Contributors: Francisco Martín Rico, Marco Roveri, Splinter1984
+
+2.0.9 (2022-07-10)
+------------------
+
 2.0.8 (2022-05-04)
 ------------------
 * Add missing dependency

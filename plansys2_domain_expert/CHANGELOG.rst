@@ -2,6 +2,20 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge remote-tracking branch 'origin/humble-devel'
+* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
+* Merge remote-tracking branch 'upstream/master'
+* Contributors: Francisco Martín Rico, Marco Roveri, Splinter1984
+
+2.0.9 (2022-07-10)
+------------------
+* Humble Upgrade
+* Fix possible bug https://github.com/ros2/rclcpp/issues/1968
+* Update popf checker interface
+* Contributors: Francisco Martín Rico
+
 2.0.8 (2022-05-04)
 ------------------
 

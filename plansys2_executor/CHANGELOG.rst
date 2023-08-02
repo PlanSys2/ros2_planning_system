@@ -2,6 +2,42 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge remote-tracking branch 'origin/humble-devel'
+* Merge pull request `#252 <https://github.com/PlanSys2/ros2_planning_system/issues/252>`_ from PlanSys2/check_at_end
+  Check at end reqs in bt builder
+* Check at end reqs in bt builder
+* Merge pull request `#251 <https://github.com/PlanSys2/ros2_planning_system/issues/251>`_ from PlanSys2/fix_bt_node
+  Fix bt node
+* Change MultiThreaded for SingleThreaded in CI failing tests
+* Change double quotes for simple ones (linter)
+* Insert in blackboard the action ROS 2 Node
+* Merge pull request `#247 <https://github.com/PlanSys2/ros2_planning_system/issues/247>`_ from jjzapf/standalone-bt-builder
+  Standalone BT Builder Service
+* Fixing cpplint warning.
+* Fixing cpplint warnings.
+* Checking for self-referencing edges in STNBTBuilder. Adding standalone compute_bt service.
+* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
+* Merge pull request `#240 <https://github.com/PlanSys2/ros2_planning_system/issues/240>`_ from jjzapf/bt-builder-plugins
+  New BT Builder and Plugin Interface
+* bt-builder-plugins: Setting default BT builder plugin to SimpleBTBuilder.
+* bt-builder-plugins: Creating BT builder plugin interface. Moving current BT builder to plugin named SimpleBTBuilder. Adding new and improved STN-based BT builder plugin named STNBTBuilder.
+* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
+* Merge remote-tracking branch 'upstream/master'
+* Merge branch 'IntelligentRoboticsLabs:master' into master
+* Contributors: Andrianov Roman, Francisco Martín Rico, Josh Zapf, Marco Roveri, Splinter1984
+
+2.0.9 (2022-07-10)
+------------------
+* Humble Upgrade
+* Fix possible bug https://github.com/ros2/rclcpp/issues/1968
+* Expose lifecyclemanager timeout as a parameter, other misc fixes/features
+* Linters are explicit
+* Add ctor to ExecutorClient for varying node name
+* Fix uninitialized variable in ExecutorClient
+* Contributors: Francisco Martín Rico, Jake Keller
+
 2.0.8 (2022-05-04)
 ------------------
 

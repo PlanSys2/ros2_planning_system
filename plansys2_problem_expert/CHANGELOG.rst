@@ -2,6 +2,33 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge remote-tracking branch 'origin/humble-devel'
+* Merge pull request `#238 <https://github.com/PlanSys2/ros2_planning_system/issues/238>`_ from roveri-marco/fix_goal_structure_issue_205
+  Fix goal structure issue 205
+* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
+* Minor changes to the tests to comply with some change in the generated output
+* Fixed some errors and some tests to comply with the revised output
+* Merge branch 'master' into bt-builder-plugins
+* Merge pull request `#242 <https://github.com/PlanSys2/ros2_planning_system/issues/242>`_ from PlanSys2/duplicate_instances
+  Duplicate instances
+* Fix typo
+* Check instance types and associated tests
+* Merge pull request `#235 <https://github.com/PlanSys2/ros2_planning_system/issues/235>`_ from MostafaGomaa/problem_expert/Fix_InvalidInstance
+  [problem_expert] AddInstance successeeds if instance already exists
+* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
+* Fixed support for the complex goal parsing both from the terminal and from file
+* [problem_expert] AddInstance successeeds if instance already exists
+* Merge remote-tracking branch 'upstream/master'
+* Contributors: Francisco Martín Rico, Marco Roveri, Mostafa Gomaa, Splinter1984
+
+2.0.9 (2022-07-10)
+------------------
+* Humble Upgrade
+* Fix possible bug https://github.com/ros2/rclcpp/issues/1968
+* Contributors: Francisco Martín Rico
+
 2.0.8 (2022-05-04)
 ------------------
 

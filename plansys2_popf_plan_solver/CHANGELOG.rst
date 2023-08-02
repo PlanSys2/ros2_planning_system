@@ -2,6 +2,36 @@
 Changelog for package plansys2_popf_plan_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge remote-tracking branch 'origin/humble-devel'
+* Merge pull request `#254 <https://github.com/PlanSys2/ros2_planning_system/issues/254>`_ from PlanSys2/remove_ptr_refs
+  Remove reference to SharedPtr
+* Remove reference to SharedPtr
+* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
+* Merge branch 'master' into bt-builder-plugins
+* Merge pull request `#241 <https://github.com/PlanSys2/ros2_planning_system/issues/241>`_ from PlanSys2/fix_popf_plugin
+  Fix is_valid_domain by parsing out file
+* Fix is_valid_domain by parsing out file
+* Merge pull request `#236 <https://github.com/PlanSys2/ros2_planning_system/issues/236>`_ from sarcasticnature/feature/misc-fixes
+  Fixes for bt_actions and popf_plan_sover
+* bt-builder-plugins: Creating BT builder plugin interface. Moving current BT builder to plugin named SimpleBTBuilder. Adding new and improved STN-based BT builder plugin named STNBTBuilder.
+* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
+* Fix problem in is_valid_domain function
+* Merge pull request `#215 <https://github.com/PlanSys2/ros2_planning_system/issues/215>`_ from Splinter1984/master
+  add system status check
+* add status check into popf_plan_solver
+* Merge remote-tracking branch 'upstream/master'
+* add semicolom
+* add system status check
+* Contributors: Andrianov Roman, Francisco Martín Rico, Jake Keller, Josh Zapf, Marco Roveri, Splinter1984
+
+2.0.9 (2022-07-10)
+------------------
+* Humble Upgrade
+* Update popf checker interface
+* Contributors: Francisco Martín Rico
+
 2.0.8 (2022-05-04)
 ------------------
 
