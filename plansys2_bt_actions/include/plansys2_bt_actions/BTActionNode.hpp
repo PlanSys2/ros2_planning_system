@@ -147,7 +147,6 @@ public:
   // The main override required by a BT action
   BT::NodeStatus tick() override
   {
-    RCLCPP_INFO(node_->get_logger(), "tick %d", state_);
     switch (state_) {
       case IDLE:
         {
