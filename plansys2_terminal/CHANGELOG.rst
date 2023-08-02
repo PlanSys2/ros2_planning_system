@@ -2,8 +2,8 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.11 (2023-08-02)
+-------------------
 * Read multiple lines in terminal input
 * Contributors: Francisco Martín Rico
 

@@ -2,8 +2,8 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.11 (2023-08-02)
+-------------------
 * Fix logger destruction at BTActions
 * Contributors: Francisco Martín Rico
 
