@@ -67,7 +67,8 @@ POPFPlanSolver::getPlan(
     }
     std::filesystem::create_directories(output_dir);
   }
-  RCLCPP_INFO(lc_node_->get_logger(), "Writing planning results to %s.", output_dir.string().c_str());
+  RCLCPP_INFO(
+    lc_node_->get_logger(), "Writing planning results to %s.", output_dir.string().c_str());
 
   plansys2_msgs::msg::Plan ret;
 
@@ -81,7 +82,7 @@ POPFPlanSolver::getPlan(
   problem_out << problem;
   problem_out.close();
 
-  const auto plan_file_path = output_dir / std::filesystem::path("plan"); 
+  const auto plan_file_path = output_dir / std::filesystem::path("plan");
   const auto args = lc_node_->get_parameter(arguments_parameter_name_).value_to_string();
   const int status = system(
     ("ros2 run popf popf " + args + " " +
@@ -151,7 +152,8 @@ POPFPlanSolver::is_valid_domain(
     }
     std::filesystem::create_directories(output_dir);
   }
-  RCLCPP_INFO(lc_node_->get_logger(), "Writing planning results to %s.", output_dir.string().c_str());
+  RCLCPP_INFO(
+    lc_node_->get_logger(), "Writing planning results to %s.", output_dir.string().c_str());
 
   const auto domain_file_path = output_dir / std::filesystem::path("check_domain.pddl");
   std::ofstream domain_out(domain_file_path);
@@ -163,7 +165,7 @@ POPFPlanSolver::is_valid_domain(
   problem_out << "(define (problem void) (:domain plansys2))";
   problem_out.close();
 
-  const auto plan_file_path = output_dir / std::filesystem::path("check.out"); 
+  const auto plan_file_path = output_dir / std::filesystem::path("check.out");
   const int status = system(
     ("ros2 run popf popf " +
     domain_file_path.string() + " " + problem_file_path.string() + " > " + plan_file_path.string())
