@@ -60,7 +60,6 @@ POPFPlanSolver::getPlan(
   );
 
   if (node_namespace != "") {
-    std::filesystem::path tp = std::filesystem::temp_directory_path();
     for (auto p : std::filesystem::path(node_namespace) ) {
       if (p != std::filesystem::current_path().root_directory()) {
         output_dir /= p;

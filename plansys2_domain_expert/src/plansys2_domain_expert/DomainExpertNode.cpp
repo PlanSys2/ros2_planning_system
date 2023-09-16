@@ -114,6 +114,7 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
     std::istreambuf_iterator<char>());
 
   auto planner = std::make_shared<plansys2::POPFPlanSolver>();
+  planner->configure(shared_from_this(), "POPF");
   domain_expert_ = std::make_shared<DomainExpert>(domain_str);
 
   bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
