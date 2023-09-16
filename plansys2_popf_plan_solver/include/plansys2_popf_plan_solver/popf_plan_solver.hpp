@@ -27,7 +27,8 @@ namespace plansys2
 class POPFPlanSolver : public PlanSolverBase
 {
 private:
-  std::string parameter_name_;
+  std::string arguments_parameter_name_;
+  std::string output_dir_parameter_name_;
   rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node_;
 
 public:
