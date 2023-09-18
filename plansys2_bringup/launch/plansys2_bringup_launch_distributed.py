@@ -28,6 +28,7 @@ def generate_launch_description():
 
     # Create the launch configuration variables
     model_file = LaunchConfiguration('model_file')
+    problem_file = LaunchConfiguration('problem_file')
     namespace = LaunchConfiguration('namespace')
     params_file = LaunchConfiguration('params_file')
     action_bt_file = LaunchConfiguration('action_bt_file')
@@ -38,6 +39,10 @@ def generate_launch_description():
     declare_model_file_cmd = DeclareLaunchArgument(
         'model_file',
         description='PDDL Model file')
+
+    declare_problem_file_cmd = DeclareLaunchArgument(
+        'problem_file',
+        description='PDDL Problem file')
 
     declare_namespace_cmd = DeclareLaunchArgument(
         'namespace',
@@ -94,6 +99,7 @@ def generate_launch_description():
             'problem_expert_launch.py')),
         launch_arguments={
           'model_file': model_file,
+          'problem_file': problem_file,
           'namespace': namespace,
           'params_file': params_file
         }.items())
@@ -134,6 +140,7 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     ld.add_action(declare_model_file_cmd)
+    ld.add_action(declare_problem_file_cmd)
     ld.add_action(declare_action_bt_file_cmd)
     ld.add_action(declare_start_action_bt_file_cmd)
     ld.add_action(declare_end_action_bt_file_cmd)
