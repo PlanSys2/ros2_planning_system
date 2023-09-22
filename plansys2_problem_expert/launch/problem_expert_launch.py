@@ -33,8 +33,7 @@ def generate_launch_description():
 
     declare_problem_file_cmd = DeclareLaunchArgument(
         'problem_file',
-        default_value='src/ros2_planning_system/'
-        'plansys2_domain_expert/test/pddl/problem_simple_1.pddl',
+        default_value="",
         description='PDDL Problem file')
 
     declare_namespace_cmd = DeclareLaunchArgument(
