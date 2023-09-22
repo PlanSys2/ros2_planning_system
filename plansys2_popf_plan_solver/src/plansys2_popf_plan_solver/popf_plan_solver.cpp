@@ -153,7 +153,9 @@ POPFPlanSolver::is_valid_domain(
     std::filesystem::create_directories(output_dir);
   }
   RCLCPP_INFO(
-    lc_node_->get_logger(), "Writing planning results to %s.", output_dir.string().c_str());
+    lc_node_->get_logger(), "Writing domain validation results to %s.",
+    output_dir.string().c_str()
+  );
 
   const auto domain_file_path = output_dir / std::filesystem::path("check_domain.pddl");
   std::ofstream domain_out(domain_file_path);

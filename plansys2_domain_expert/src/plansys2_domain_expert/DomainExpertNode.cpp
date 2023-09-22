@@ -108,27 +108,20 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
 
   auto model_files = tokenize(model_file, ":");
 
-  std::ifstream domain_ifs(model_files[0]);
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
-
-  auto planner = std::make_shared<plansys2::POPFPlanSolver>();
+  auto planner = std::make_unique<plansys2::POPFPlanSolver>();
   planner->configure(shared_from_this(), "POPF");
-  domain_expert_ = std::make_shared<DomainExpert>(domain_str);
 
-  bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
-  if (!check_valid) {
-    RCLCPP_ERROR_STREAM(get_logger(), "PDDL syntax error");
-    return CallbackReturnT::FAILURE;
-  }
-
-  for (size_t i = 1; i < model_files.size(); i++) {
+  for (size_t i = 0; i < model_files.size(); i++) {
     std::ifstream domain_ifs(model_files[i]);
     std::string domain_str((
         std::istreambuf_iterator<char>(domain_ifs)),
       std::istreambuf_iterator<char>());
-    domain_expert_->extendDomain(domain_str);
+
+    if (i == 0) {
+      domain_expert_ = std::make_shared<DomainExpert>(domain_str);
+    } else {
+      domain_expert_->extendDomain(domain_str);
+    }
 
     bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
 
