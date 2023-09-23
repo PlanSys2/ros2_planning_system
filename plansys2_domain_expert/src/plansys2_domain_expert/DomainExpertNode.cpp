@@ -95,7 +95,8 @@ DomainExpertNode::DomainExpertNode()
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
 
-  validate_domain_client_ = create_client<plansys2_msgs::srv::ValidateDomain>("planner/validate_domain");
+  validate_domain_client_ = create_client<plansys2_msgs::srv::ValidateDomain>(
+    "planner/validate_domain");
 }
 
 
@@ -107,7 +108,8 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
   const std::string model_file = get_parameter("model_file").get_value<std::string>();
-  const bool validate_using_planner_node = get_parameter("validate_using_planner_node").get_value<bool>();
+  const bool validate_using_planner_node = 
+    get_parameter("validate_using_planner_node").get_value<bool>();
 
   auto model_files = tokenize(model_file, ":");
 
@@ -122,7 +124,7 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
     popf_plan_solver_ = std::make_unique<plansys2::POPFPlanSolver>();
     popf_plan_solver_->configure(shared_from_this(), "POPF");
   }
-  
+
   for (size_t i = 0; i < model_files.size(); i++) {
     std::ifstream domain_ifs(model_files[i]);
     std::string domain_str((
