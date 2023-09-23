@@ -50,7 +50,7 @@ def generate_launch_description():
         output='screen',
         parameters=[{'model_file': model_file},
                     {'problem_file': problem_file},
-            params_file])
+                    params_file])
 
     # Create the launch description and populate
     ld = LaunchDescription()
