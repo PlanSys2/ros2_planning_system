@@ -38,6 +38,13 @@ PlannerNode::PlannerNode()
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
 
+  validate_domain_service_ = create_service<plansys2_msgs::srv::ValidateDomain>(
+    "planner/validate_domain",
+    std::bind(
+      &PlannerNode::validate_domain_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+
   declare_parameter("plan_solver_plugins", default_ids_);
 }
 
@@ -137,14 +144,13 @@ PlannerNode::on_error(const rclcpp_lifecycle::State & state)
   return CallbackReturnT::SUCCESS;
 }
 
-
 void
 PlannerNode::get_plan_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<plansys2_msgs::srv::GetPlan::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response)
 {
-  auto plan = solvers_.begin()->second->getPlan(
+  const auto plan = solvers_.begin()->second->getPlan(
     request->domain, request->problem, get_namespace());
 
   if (plan) {
@@ -153,6 +159,20 @@ PlannerNode::get_plan_service_callback(
   } else {
     response->success = false;
     response->error_info = "Plan not found";
+  }
+}
+
+void
+PlannerNode::validate_domain_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Response> response)
+{
+  response->success = solvers_.begin()->second->isDomainValid(
+    request->domain, get_namespace());
+
+  if (!response->success) {
+    response->error_info = "Domain is not valid";
   }
 }
 
