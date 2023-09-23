@@ -238,6 +238,7 @@ private:
 
   rclcpp::Client<plansys2_msgs::srv::ValidateDomain>::SharedPtr
     validate_domain_client_;
+  rclcpp::Node::SharedPtr validate_domain_node_;
 
   std::unique_ptr<plansys2::POPFPlanSolver> popf_plan_solver_;
 };

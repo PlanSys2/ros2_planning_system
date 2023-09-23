@@ -31,20 +31,6 @@ PlannerNode::PlannerNode()
   default_ids_{},
   default_types_{}
 {
-  get_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
-    "planner/get_plan",
-    std::bind(
-      &PlannerNode::get_plan_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
-
-  validate_domain_service_ = create_service<plansys2_msgs::srv::ValidateDomain>(
-    "planner/validate_domain",
-    std::bind(
-      &PlannerNode::validate_domain_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
-
   declare_parameter("plan_solver_plugins", default_ids_);
 }
 
@@ -96,6 +82,20 @@ PlannerNode::on_configure(const rclcpp_lifecycle::State & state)
       get_logger(), "Created default solver : %s of type %s",
       "POPF", "plansys2/POPFPlanSolver");
   }
+
+  get_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
+    "planner/get_plan",
+    std::bind(
+      &PlannerNode::get_plan_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+
+  validate_domain_service_ = create_service<plansys2_msgs::srv::ValidateDomain>(
+    "planner/validate_domain",
+    std::bind(
+      &PlannerNode::validate_domain_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
