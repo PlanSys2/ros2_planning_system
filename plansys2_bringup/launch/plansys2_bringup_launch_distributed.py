@@ -155,4 +155,4 @@ def generate_launch_description():
     ld.add_action(executor_cmd)
     ld.add_action(lifecycle_manager_cmd)
 
-    return ld    
+    return ld
