@@ -31,6 +31,8 @@ DomainExpertNode::DomainExpertNode()
   declare_parameter("model_file", "");
   declare_parameter("validate_using_planner_node", false);
 
+  validate_domain_callback_group_ = create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+
   get_name_service_ = create_service<plansys2_msgs::srv::GetDomainName>(
     "domain_expert/get_domain_name",
     std::bind(
@@ -111,10 +113,9 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   auto model_files = tokenize(model_file, ":");
 
   if (validate_using_planner_node) {
-    validate_domain_node_ = rclcpp::Node::make_shared("temporary_domain_validation_node");
-    validate_domain_client_ =
-      validate_domain_node_->create_client<plansys2_msgs::srv::ValidateDomain>(
-      "planner/validate_domain");
+    // validate_domain_node_ = rclcpp::Node::make_shared("temporary_domain_validation_node");
+    validate_domain_client_ = create_client<plansys2_msgs::srv::ValidateDomain>(
+      "planner/validate_domain", rmw_qos_profile_services_default, validate_domain_callback_group_);
     while (!validate_domain_client_->wait_for_service(std::chrono::seconds(3))) {
       RCLCPP_INFO_STREAM(
         get_logger(),
@@ -143,10 +144,7 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
       auto request = std::make_shared<plansys2_msgs::srv::ValidateDomain::Request>();
       request->domain = domain_expert_->getDomain();
       auto future_result = validate_domain_client_->async_send_request(std::move(request));
-      if (rclcpp::spin_until_future_complete(
-          validate_domain_node_, future_result,
-          std::chrono::seconds(1)) != rclcpp::FutureReturnCode::SUCCESS)
-      {
+      if (future_result.wait_for(std::chrono::seconds(1)) != std::future_status::ready) {
         RCLCPP_ERROR(
           get_logger(), "Timed out waiting for service: %s",
           validate_domain_client_->get_service_name());
