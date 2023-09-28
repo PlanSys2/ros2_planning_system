@@ -135,7 +135,7 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
   int server_port = get_parameter("server_port").as_int();
   unsigned int max_msgs_per_second = get_parameter("max_msgs_per_second").as_int();
 
-  if (get_parameter("enable_groot_monitoring").as_bool())
+  if (enable_groot_monitoring)
   {
     if (publisher_port <= 0 || server_port <= 0)
     {
