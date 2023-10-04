@@ -50,10 +50,10 @@ WaitAtStartReq::tick()
   if (!check_as) {
     (*action_map_)[action].execution_error_info = "Error checking at start reqs";
 
-//    RCLCPP_ERROR_STREAM(
-//      node->get_logger(),
-//      "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-//        parser::pddl::toString((*action_map_)[action].durative_action_info->at_start_requirements));
+    RCLCPP_ERROR_STREAM(
+      node->get_logger(),
+      "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
+        parser::pddl::toString((*action_map_)[action].durative_action_info->at_start_requirements));
 
     return BT::NodeStatus::RUNNING;
   }

@@ -49,10 +49,10 @@ CheckOverAllReq::tick()
   if (!check(reqs, problem_client_)) {
     (*action_map_)[action].execution_error_info = "Error checking over all requirements";
 
-//    RCLCPP_ERROR_STREAM(
-//      node->get_logger(),
-//      "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-//        parser::pddl::toString((*action_map_)[action].durative_action_info->over_all_requirements));
+    RCLCPP_ERROR_STREAM(
+      node->get_logger(),
+      "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
+        parser::pddl::toString((*action_map_)[action].durative_action_info->over_all_requirements));
 
     return BT::NodeStatus::FAILURE;
   } else {

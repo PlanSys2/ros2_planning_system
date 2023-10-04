@@ -64,9 +64,9 @@ ExecuteAction::tick()
   if (retval == BT::NodeStatus::FAILURE) {
     (*action_map_)[action].execution_error_info = "Error executing the action";
 
-//    RCLCPP_ERROR_STREAM(
-//      node_->get_logger(),
-//      "[" << action << "]" << (*action_map_)[action].execution_error_info);
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      "[" << action << "]" << (*action_map_)[action].execution_error_info);
   }
 
   return retval;

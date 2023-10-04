@@ -81,12 +81,6 @@ WaitAction::tick()
       Node::Ptr child_node = get_node(child_id, child_type);
       Node::Ptr parent_node = get_node(parent_id, parent_type);
 
-//      auto in = std::find_if(
-//        child_node->input_arcs.begin(), child_node->input_arcs.end(),
-//        [&](std::tuple<Node::Ptr, double, double> arc) {
-//          return std::get<0>(arc) == parent_node;
-//        });
-
       auto out = std::find_if(
         parent_node->output_arcs.begin(), parent_node->output_arcs.end(),
         [&](std::tuple<Node::Ptr, double, double> arc) {
@@ -95,29 +89,11 @@ WaitAction::tick()
 
       lower = std::get<1>(*out);
       upper = std::get<2>(*out);
-
-//      if (child_node->action.type == ActionType::START) {
-//        if (lower > 1e-3) {
-//          if (isinf(upper)) {
-//            lower += 0.1;
-//          } else {
-//            lower = 0.8 * lower + 0.2 * upper;
-//          }
-//        }
-//      }
     }
 
     if (dt >= lower && dt < upper) {
       return BT::NodeStatus::SUCCESS;
     }
-
-//    std::string error_msg = std::string("WaitAction -- TIME BOUND NOT SATISFIED\n") +
-//      "  parent: " + parent_id + " " + parent_type + "\n" +
-//      "  child: " + child_id + " " + child_type + "\n" +
-//      "  lower: " + std::to_string(lower) + "\n" +
-//      "  upper: " + std::to_string(upper) + "\n" +
-//      "  actual: " + std::to_string(dt) + "\n";
-//    RCLCPP_ERROR(node_->get_logger(), "%s", error_msg.c_str());
 
     return BT::NodeStatus::RUNNING;
   } else {

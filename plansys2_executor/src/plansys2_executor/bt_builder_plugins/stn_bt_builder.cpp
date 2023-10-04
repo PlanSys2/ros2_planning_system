@@ -171,18 +171,6 @@ STNBTBuilder::build_stn(const plansys2_msgs::msg::Plan & plan) const
           }
           prune_paths(n, h);
           if (!check_paths(n, h)) {
-//            auto t_h = h->action.time;
-//            auto t_n = n->action.time;
-//            if (h->action.type == ActionType::END) {
-//              t_h += h->action.duration;
-//            }
-//            if (n->action.type == ActionType::END) {
-//              t_n += n->action.duration;
-//            }
-//            float lower = t_n - t_h;
-//            if (n->action.type == ActionType::GOAL) {
-//              lower = 0.0;
-//            }
             h->output_arcs.insert(std::make_tuple(n, 0.0, std::numeric_limits<double>::infinity()));
             n->input_arcs.insert(std::make_tuple(h, 0.0, std::numeric_limits<double>::infinity()));
           }
@@ -197,20 +185,12 @@ STNBTBuilder::build_stn(const plansys2_msgs::msg::Plan & plan) const
 bool
 STNBTBuilder::propagate(const Graph::Ptr stn)
 {
-  std::cerr << "Initial STN ..." << std::endl;
-  print_arcs(stn);
-  std::cerr << "... ... ..." << std::endl;
-
   // Compute the distance matrix.
   Eigen::MatrixXd dist = get_distance_matrix(stn);
 
   // Check if STN is consistent.
   for (size_t i = 0; i < dist.rows(); i++) {
     if (dist(i, i) < 0) {
-      std::string error_msg = std::string("dist(") + std::to_string(i) +
-        ", " + std::to_string(i) + ") = " + std::to_string(dist(i,i)) + "\n" +
-        "STN is not consistent!\n";
-      std::cerr << error_msg;
       return false;
     }
   }
@@ -249,10 +229,6 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
     node->output_arcs.clear();
     node->output_arcs = output_arcs;
   }
-
-  std::cerr << "Updated STN ..." << std::endl;
-  print_arcs(stn);
-  std::cerr << "... ... ..." << std::endl;
 
   return true;
 }
@@ -620,7 +596,6 @@ STNBTBuilder::get_parents(
 {
   auto parents = get_satisfy(action, plan, happenings, states);
   auto threats = get_threat(action, plan, happenings, states);
-
   parents.insert(std::end(parents), std::begin(threats), std::end(threats));
 
   return parents;
@@ -1058,29 +1033,9 @@ STNBTBuilder::get_distance_matrix(const Graph::Ptr stn) const
   }
 
   // Solve the all-pairs shortest path problem.
-  std::cerr << dist << std::endl;
-  std::cerr << "... ... ..." << std::endl;
-  std::cerr << "Applying Floyd-Warshal ..." << std::endl;
   floyd_warshall(dist);
-  std::cerr << dist << std::endl;
-  std::cerr << "... ... ..." << std::endl;
 
   return dist;
-}
-
-void
-STNBTBuilder::print_message(
-  const std::string & label,
-  int row,
-  int col,
-  double value,
-  const Node::Ptr parent,
-  const Node::Ptr child) const
-{
-  std::string error_msg = label +
-    " dist(" + std::to_string(row) + ", " + std::to_string(col) + ") = " +
-    std::to_string(value);
-  std::cerr << error_msg;
 }
 
 void
