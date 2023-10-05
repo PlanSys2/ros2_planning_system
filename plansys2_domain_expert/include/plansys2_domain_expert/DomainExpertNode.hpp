@@ -19,6 +19,7 @@
 #include <memory>
 
 #include "plansys2_domain_expert/DomainExpert.hpp"
+#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 #include "std_msgs/msg/string.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
@@ -31,6 +32,7 @@
 #include "plansys2_msgs/srv/get_domain.hpp"
 #include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_msgs/srv/get_states.hpp"
+#include "plansys2_msgs/srv/validate_domain.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -233,6 +235,12 @@ private:
   rclcpp::Service<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
     get_domain_function_details_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_service_;
+
+  rclcpp::Client<plansys2_msgs::srv::ValidateDomain>::SharedPtr
+    validate_domain_client_;
+  rclcpp::CallbackGroup::SharedPtr validate_domain_callback_group_;
+
+  std::unique_ptr<plansys2::POPFPlanSolver> popf_plan_solver_;
 };
 
 }  // namespace plansys2
