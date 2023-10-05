@@ -113,7 +113,6 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   auto model_files = tokenize(model_file, ":");
 
   if (validate_using_planner_node) {
-    // validate_domain_node_ = rclcpp::Node::make_shared("temporary_domain_validation_node");
     validate_domain_client_ = create_client<plansys2_msgs::srv::ValidateDomain>(
       "planner/validate_domain", rmw_qos_profile_services_default, validate_domain_callback_group_);
     while (!validate_domain_client_->wait_for_service(std::chrono::seconds(3))) {
