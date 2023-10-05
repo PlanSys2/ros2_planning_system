@@ -40,7 +40,7 @@ public:
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace = "");
 
-  bool is_valid_domain(
+  bool isDomainValid(
     const std::string & domain,
     const std::string & node_namespace = "");
 };

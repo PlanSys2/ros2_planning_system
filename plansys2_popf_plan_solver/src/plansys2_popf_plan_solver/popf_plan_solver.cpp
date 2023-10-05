@@ -132,7 +132,7 @@ POPFPlanSolver::getPlan(
 }
 
 bool
-POPFPlanSolver::is_valid_domain(
+POPFPlanSolver::isDomainValid(
   const std::string & domain,
   const std::string & node_namespace)
 {

@@ -19,7 +19,6 @@
 #include <vector>
 
 #include "plansys2_core/Utils.hpp"
-#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 
@@ -30,6 +29,9 @@ DomainExpertNode::DomainExpertNode()
 : rclcpp_lifecycle::LifecycleNode("domain_expert")
 {
   declare_parameter("model_file", "");
+  declare_parameter("validate_using_planner_node", false);
+
+  validate_domain_callback_group_ = create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
   get_name_service_ = create_service<plansys2_msgs::srv::GetDomainName>(
     "domain_expert/get_domain_name",
@@ -104,12 +106,26 @@ CallbackReturnT
 DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
-  std::string model_file = get_parameter("model_file").get_value<std::string>();
+  const std::string model_file = get_parameter("model_file").get_value<std::string>();
+  const bool validate_using_planner_node =
+    get_parameter("validate_using_planner_node").get_value<bool>();
 
   auto model_files = tokenize(model_file, ":");
 
-  auto planner = std::make_unique<plansys2::POPFPlanSolver>();
-  planner->configure(shared_from_this(), "POPF");
+  if (validate_using_planner_node) {
+    // validate_domain_node_ = rclcpp::Node::make_shared("temporary_domain_validation_node");
+    validate_domain_client_ = create_client<plansys2_msgs::srv::ValidateDomain>(
+      "planner/validate_domain", rmw_qos_profile_services_default, validate_domain_callback_group_);
+    while (!validate_domain_client_->wait_for_service(std::chrono::seconds(3))) {
+      RCLCPP_INFO_STREAM(
+        get_logger(),
+        validate_domain_client_->get_service_name() <<
+          " service client: waiting for service to appear...");
+    }
+  } else {
+    popf_plan_solver_ = std::make_unique<plansys2::POPFPlanSolver>();
+    popf_plan_solver_->configure(shared_from_this(), "POPF");
+  }
 
   for (size_t i = 0; i < model_files.size(); i++) {
     std::ifstream domain_ifs(model_files[i]);
@@ -123,7 +139,21 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
       domain_expert_->extendDomain(domain_str);
     }
 
-    bool check_valid = planner->is_valid_domain(domain_expert_->getDomain(), get_namespace());
+    bool check_valid = true;
+    if (validate_using_planner_node) {
+      auto request = std::make_shared<plansys2_msgs::srv::ValidateDomain::Request>();
+      request->domain = domain_expert_->getDomain();
+      auto future_result = validate_domain_client_->async_send_request(std::move(request));
+      if (future_result.wait_for(std::chrono::seconds(1)) != std::future_status::ready) {
+        RCLCPP_ERROR(
+          get_logger(), "Timed out waiting for service: %s",
+          validate_domain_client_->get_service_name());
+        return CallbackReturnT::FAILURE;
+      }
+      check_valid = future_result.get()->success;
+    } else {
+      check_valid = popf_plan_solver_->isDomainValid(domain_expert_->getDomain(), get_namespace());
+    }
 
     if (!check_valid) {
       RCLCPP_ERROR_STREAM(get_logger(), "PDDL syntax error");
