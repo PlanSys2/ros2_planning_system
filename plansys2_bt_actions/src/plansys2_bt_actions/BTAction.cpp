@@ -135,60 +135,53 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
   int server_port = get_parameter("server_port").as_int();
   unsigned int max_msgs_per_second = get_parameter("max_msgs_per_second").as_int();
 
-  if (enable_groot_monitoring)
-  {
-    if (publisher_port <= 0 || server_port <= 0)
-    {
+  if (enable_groot_monitoring) {
+    if (publisher_port <= 0 || server_port <= 0) {
       RCLCPP_WARN(
-          get_logger(),
-          "[%s] Groot monitoring ports not provided, disabling Groot monitoring."
-          " publisher port: %d, server port: %d",
-          get_name(), publisher_port, server_port);
+        get_logger(),
+        "[%s] Groot monitoring ports not provided, disabling Groot monitoring."
+        " publisher port: %d, server port: %d",
+        get_name(), publisher_port, server_port);
     } else {
       RCLCPP_DEBUG(
-          get_logger(),
-          "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
-          get_name(), publisher_port, server_port, max_msgs_per_second);
-      try
-      {
+        get_logger(),
+        "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
+        get_name(), publisher_port, server_port, max_msgs_per_second);
+      try {
         publisher_zmq_.reset(
-            new BT::PublisherZMQ(
-                tree_, max_msgs_per_second, publisher_port,
-                server_port));
-      }
-      catch (const BT::LogicError &exc)
-      {
+          new BT::PublisherZMQ(
+            tree_, max_msgs_per_second, publisher_port,
+            server_port));
+      } catch (const BT::LogicError & exc) {
         RCLCPP_ERROR(get_logger(), "ZMQ error: %s", exc.what());
       }
     }
   }
 #endif
 
-    finished_ = false;
-    return ActionExecutorClient::on_activate(previous_state);
-  }
+  finished_ = false;
+  return ActionExecutorClient::on_activate(previous_state);
+}
 
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  BTAction::on_deactivate(const rclcpp_lifecycle::State &previous_state)
-  {
-    publisher_zmq_.reset();
-    bt_minitrace_logger_.reset();
-    bt_file_logger_.reset();
-    tree_.haltTree();
+rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+BTAction::on_deactivate(const rclcpp_lifecycle::State & previous_state)
+{
+  publisher_zmq_.reset();
+  bt_minitrace_logger_.reset();
+  bt_file_logger_.reset();
+  tree_.haltTree();
 
-    return ActionExecutorClient::on_deactivate(previous_state);
-  }
+  return ActionExecutorClient::on_deactivate(previous_state);
+}
 
-  void
-  BTAction::do_work()
-  {
-    if (!finished_)
-    {
-      BT::NodeStatus result;
-      try
-      {
-        result = tree_.rootNode()->executeTick();
-      } catch (BT::LogicError e) {
+void
+BTAction::do_work()
+{
+  if (!finished_) {
+    BT::NodeStatus result;
+    try {
+      result = tree_.rootNode()->executeTick();
+    } catch (BT::LogicError e) {
       RCLCPP_ERROR_STREAM(get_logger(), e.what());
       finish(false, 0.0, "BTAction behavior tree threw a BT::LogicError");
     } catch (BT::RuntimeError e) {
