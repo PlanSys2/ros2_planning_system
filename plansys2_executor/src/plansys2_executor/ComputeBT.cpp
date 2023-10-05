@@ -310,21 +310,20 @@ ComputeBT::computeBTCallback(
     bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
   }
 
-  auto bt_xml = bt_builder->get_tree(plan.value());
-  saveBT(bt_xml, problem_path.stem().u8string());
+  auto bt_xml_tree = bt_builder->get_tree(plan.value());
+  if (bt_xml_tree.empty()) {
+    RCLCPP_ERROR(get_logger(), "Error computing behavior tree!");
+    return;
+  }
+  saveBT(bt_xml_tree, problem_path.stem().u8string());
 
+  auto action_graph = bt_builder->get_graph();
   std_msgs::msg::String dotgraph_msg;
   dotgraph_msg.data = bt_builder->get_dotgraph(
     action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
     this->get_parameter("print_graph").as_bool());
   dotgraph_pub_->publish(dotgraph_msg);
   saveDotGraph(dotgraph_msg.data, problem_path.stem().u8string());
-
-  auto blackboard = BT::Blackboard::create();
-  blackboard->set("action_map", action_map);
-  blackboard->set("node", shared_from_this());
-  blackboard->set("domain_client", domain_client_);
-  blackboard->set("problem_client", problem_client_);
 
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<ExecuteAction>("ExecuteAction");
@@ -337,7 +336,18 @@ ComputeBT::computeBTCallback(
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
 
-  auto tree = factory.createTreeFromText(bt_xml, blackboard);
+  (*action_map)[":0"].at_start_effects_applied_time = now();
+  (*action_map)[":0"].at_end_effects_applied_time = now();
+
+  auto blackboard = BT::Blackboard::create();
+  blackboard->set("action_map", action_map);
+  blackboard->set("action_graph", action_graph);
+  blackboard->set("node", shared_from_this());
+  blackboard->set("domain_client", domain_client_);
+  blackboard->set("problem_client", problem_client_);
+  blackboard->set("bt_builder", bt_builder);
+
+  auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
 #ifdef ZMQ_FOUND
   unsigned int publisher_port = this->get_parameter("publisher_port").as_int();

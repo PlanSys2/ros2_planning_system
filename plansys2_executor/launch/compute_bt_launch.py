@@ -51,7 +51,7 @@ def generate_launch_description():
 
     declare_use_rqt_dotgraph_cmd = DeclareLaunchArgument(
         'use_rqt_dotgraph',
-        default_value='True',
+        default_value='False',
         description='Whether to start rqt_dotgraph',
     )
 

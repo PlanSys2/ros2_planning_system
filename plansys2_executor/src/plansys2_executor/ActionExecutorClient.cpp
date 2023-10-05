@@ -101,6 +101,7 @@ ActionExecutorClient::on_activate(const rclcpp_lifecycle::State & state)
 {
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::RUNNING;
   status_.status_stamp = now();
+  start_time_ = now();
   timer_ = create_wall_timer(
     rate_, std::bind(&ActionExecutorClient::do_work, this));
 

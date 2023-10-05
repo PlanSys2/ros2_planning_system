@@ -48,6 +48,29 @@ struct ActionStamped
   : time(0.0), duration(0.0) {}
 };
 
+struct Node
+{
+  using Ptr = std::shared_ptr<Node>;
+  static Ptr make_shared(int id) {return std::make_shared<Node>(id);}
+
+  int node_num;
+  ActionStamped action;
+
+  std::set<std::tuple<Node::Ptr, double, double>> input_arcs;
+  std::set<std::tuple<Node::Ptr, double, double>> output_arcs;
+
+  explicit Node(int id)
+  : node_num(id) {}
+};
+
+struct Graph
+{
+  using Ptr = std::shared_ptr<Graph>;
+  static Ptr make_shared() {return std::make_shared<Graph>();}
+
+  std::list<Node::Ptr> nodes;
+};
+
 class BTBuilder
 {
 public:
@@ -59,6 +82,8 @@ public:
     int precision = 3) = 0;
 
   virtual std::string get_tree(const plansys2_msgs::msg::Plan & current_plan) = 0;
+  virtual Graph::Ptr get_graph() = 0;
+  virtual bool propagate(Graph::Ptr graph) = 0;
   virtual std::string get_dotgraph(
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
     bool enable_legend = false,

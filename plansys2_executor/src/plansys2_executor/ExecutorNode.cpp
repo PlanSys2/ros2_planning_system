@@ -370,6 +370,12 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
   auto action_timeout_actions = this->get_parameter("action_timeouts.actions").as_string_array();
 
+  (*action_map)[":0"] = ActionExecutionInfo();
+  (*action_map)[":0"].action_executor = ActionExecutor::make_shared("(INIT)", shared_from_this());
+  (*action_map)[":0"].action_executor->set_internal_status(ActionExecutor::Status::SUCCESS);
+  (*action_map)[":0"].at_start_effects_applied = true;
+  (*action_map)[":0"].at_end_effects_applied = true;
+
   for (const auto & plan_item : current_plan_.value().items) {
     auto index = BTBuilder::to_action_id(plan_item, 3);
 
@@ -415,12 +421,24 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
     auto precision = this->get_parameter("action_time_precision").as_int();
     bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
   }
-  auto blackboard = BT::Blackboard::create();
 
-  blackboard->set("action_map", action_map);
-  blackboard->set("node", shared_from_this());
-  blackboard->set("domain_client", domain_client_);
-  blackboard->set("problem_client", problem_client_);
+  auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
+  if (bt_xml_tree.empty()) {
+    RCLCPP_ERROR(get_logger(), "Error computing behavior tree!");
+    return;
+  }
+
+  auto action_graph = bt_builder->get_graph();
+  std_msgs::msg::String dotgraph_msg;
+  dotgraph_msg.data = bt_builder->get_dotgraph(
+    action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
+    this->get_parameter("print_graph").as_bool());
+  dotgraph_pub_->publish(dotgraph_msg);
+
+  std::filesystem::path tp = std::filesystem::temp_directory_path();
+  std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
+  out << bt_xml_tree;
+  out.close();
 
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<ExecuteAction>("ExecuteAction");
@@ -433,17 +451,16 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
 
-  auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
-  std_msgs::msg::String dotgraph_msg;
-  dotgraph_msg.data = bt_builder->get_dotgraph(
-    action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
-    this->get_parameter("print_graph").as_bool());
-  dotgraph_pub_->publish(dotgraph_msg);
+  (*action_map)[":0"].at_start_effects_applied_time = now();
+  (*action_map)[":0"].at_end_effects_applied_time = now();
 
-  std::filesystem::path tp = std::filesystem::temp_directory_path();
-  std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
-  out << bt_xml_tree;
-  out.close();
+  auto blackboard = BT::Blackboard::create();
+  blackboard->set("action_map", action_map);
+  blackboard->set("action_graph", action_graph);
+  blackboard->set("node", shared_from_this());
+  blackboard->set("domain_client", domain_client_);
+  blackboard->set("problem_client", problem_client_);
+  blackboard->set("bt_builder", bt_builder);
 
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
@@ -485,7 +502,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
       status = tree.tickRoot();
     } catch (std::exception & e) {
       std::cerr << e.what() << std::endl;
-      status == BT::NodeStatus::FAILURE;
+      status = BT::NodeStatus::FAILURE;
     }
 
     feedback->action_execution_status = get_feedback_info(action_map);

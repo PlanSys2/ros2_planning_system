@@ -40,10 +40,10 @@
 namespace plansys2
 {
 
-struct GraphNode
+struct ActionNode
 {
-  using Ptr = std::shared_ptr<GraphNode>;
-  static Ptr make_shared() {return std::make_shared<GraphNode>();}
+  using Ptr = std::shared_ptr<ActionNode>;
+  static Ptr make_shared() {return std::make_shared<ActionNode>();}
 
   ActionStamped action;
   int node_num;
@@ -52,17 +52,17 @@ struct GraphNode
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
 
-  std::list<GraphNode::Ptr> in_arcs;
-  std::list<GraphNode::Ptr> out_arcs;
+  std::list<ActionNode::Ptr> in_arcs;
+  std::list<ActionNode::Ptr> out_arcs;
 };
 
-struct Graph
+struct ActionGraph
 {
-  using Ptr = std::shared_ptr<Graph>;
-  static Ptr make_shared() {return std::make_shared<Graph>();}
+  using Ptr = std::shared_ptr<ActionGraph>;
+  static Ptr make_shared() {return std::make_shared<ActionGraph>();}
 
-  std::list<GraphNode::Ptr> roots;
-  std::map<float, std::list<GraphNode::Ptr>> levels;
+  std::list<ActionNode::Ptr> roots;
+  std::map<float, std::list<ActionNode::Ptr>> levels;
 };
 
 class SimpleBTBuilder : public BTBuilder
@@ -75,6 +75,8 @@ public:
     int precision = 3);
 
   std::string get_tree(const plansys2_msgs::msg::Plan & current_plan);
+  Graph::Ptr get_graph() {return nullptr;}
+  bool propagate(Graph::Ptr) {return true;}
   std::string get_dotgraph(
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
     bool enable_legend = false,
@@ -84,18 +86,18 @@ protected:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 
-  Graph::Ptr graph_;
+  ActionGraph::Ptr graph_;
   std::string bt_;
   std::string bt_action_;
 
-  Graph::Ptr get_graph(const plansys2_msgs::msg::Plan & current_plan);
+  ActionGraph::Ptr get_graph(const plansys2_msgs::msg::Plan & current_plan);
 
   std::vector<ActionStamped> get_plan_actions(const plansys2_msgs::msg::Plan & plan);
-  void prune_backwards(GraphNode::Ptr new_node, GraphNode::Ptr node_satisfy);
-  void prune_forward(GraphNode::Ptr current, std::list<GraphNode::Ptr> & used_nodes);
+  void prune_backwards(ActionNode::Ptr new_node, ActionNode::Ptr node_satisfy);
+  void prune_forward(ActionNode::Ptr current, std::list<ActionNode::Ptr> & used_nodes);
   void get_state(
-    const GraphNode::Ptr & node,
-    std::list<GraphNode::Ptr> & used_nodes,
+    const ActionNode::Ptr & node,
+    std::list<ActionNode::Ptr> & used_nodes,
     std::vector<plansys2::Predicate> & predicates,
     std::vector<plansys2::Function> & functions) const;
 
@@ -103,26 +105,26 @@ protected:
     const ActionStamped & action,
     std::vector<plansys2::Predicate> & predicates,
     std::vector<plansys2::Function> & functions) const;
-  std::list<GraphNode::Ptr> get_roots(
+  std::list<ActionNode::Ptr> get_roots(
     std::vector<plansys2::ActionStamped> & action_sequence,
     std::vector<plansys2::Predicate> & predicates,
     std::vector<plansys2::Function> & functions,
     int & node_counter);
-  GraphNode::Ptr get_node_satisfy(
+  ActionNode::Ptr get_node_satisfy(
     const plansys2_msgs::msg::Tree & requirement,
-    const Graph::Ptr & graph,
-    const GraphNode::Ptr & current);
-  GraphNode::Ptr get_node_satisfy(
+    const ActionGraph::Ptr & graph,
+    const ActionNode::Ptr & current);
+  ActionNode::Ptr get_node_satisfy(
     const plansys2_msgs::msg::Tree & requirement,
-    const GraphNode::Ptr & node,
-    const GraphNode::Ptr & current);
-  std::list<GraphNode::Ptr> get_node_contradict(
-    const Graph::Ptr & graph,
-    const GraphNode::Ptr & current);
+    const ActionNode::Ptr & node,
+    const ActionNode::Ptr & current);
+  std::list<ActionNode::Ptr> get_node_contradict(
+    const ActionGraph::Ptr & graph,
+    const ActionNode::Ptr & current);
   void get_node_contradict(
-    const GraphNode::Ptr & node,
-    const GraphNode::Ptr & current,
-    std::list<GraphNode::Ptr> & parents);
+    const ActionNode::Ptr & node,
+    const ActionNode::Ptr & current,
+    std::list<ActionNode::Ptr> & parents);
   void remove_existing_requirements(
     std::vector<plansys2_msgs::msg::Tree> & requirements,
     std::vector<plansys2::Predicate> & predicates,
@@ -131,15 +133,15 @@ protected:
     const plansys2::ActionStamped & action,
     const std::vector<plansys2::Predicate> & predicates,
     const std::vector<plansys2::Function> & functions,
-    const std::list<GraphNode::Ptr> & ret) const;
+    const std::list<ActionNode::Ptr> & ret) const;
 
   std::string get_flow_tree(
-    GraphNode::Ptr node,
+    ActionNode::Ptr node,
     std::list<std::string> & used_nodes,
     int level = 0);
-  void get_flow_dotgraph(GraphNode::Ptr node, std::set<std::string> & edges);
+  void get_flow_dotgraph(ActionNode::Ptr node, std::set<std::string> & edges);
   std::string get_node_dotgraph(
-    GraphNode::Ptr node, std::shared_ptr<std::map<std::string,
+    ActionNode::Ptr node, std::shared_ptr<std::map<std::string,
     ActionExecutionInfo>> action_map, int level = 0);
   ActionExecutor::Status get_action_status(
     ActionStamped action,
@@ -150,23 +152,23 @@ protected:
 
   std::string t(int level);
 
-  std::string execution_block(const GraphNode::Ptr & node, int l);
+  std::string execution_block(const ActionNode::Ptr & node, int l);
   void print_node(
-    const GraphNode::Ptr & node,
+    const ActionNode::Ptr & node,
     int level,
-    std::set<GraphNode::Ptr> & used_nodes) const;
+    std::set<ActionNode::Ptr> & used_nodes) const;
 
-  void print_graph(const plansys2::Graph::Ptr & graph) const;
+  void print_graph(const plansys2::ActionGraph::Ptr & graph) const;
 
-  void print_node_csv(const GraphNode::Ptr & node, uint32_t root_num) const;
-  void print_graph_csv(const plansys2::Graph::Ptr & graph) const;
+  void print_node_csv(const ActionNode::Ptr & node, uint32_t root_num) const;
+  void print_graph_csv(const plansys2::ActionGraph::Ptr & graph) const;
 
   void get_node_tabular(
-    const plansys2::GraphNode::Ptr & node,
+    const plansys2::ActionNode::Ptr & node,
     uint32_t root_num,
     std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> & graph) const;
   std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> get_graph_tabular(
-    const plansys2::Graph::Ptr & graph) const;
+    const plansys2::ActionGraph::Ptr & graph) const;
 };
 
 }  // namespace plansys2
