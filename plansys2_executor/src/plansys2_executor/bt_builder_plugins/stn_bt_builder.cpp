@@ -1084,7 +1084,9 @@ STNBTBuilder::get_flow(
   if (node->action.type == ActionType::END) {
     auto t_1 = to_int_time(node->action.time, action_time_precision_ + 1);
     auto t_2 = to_int_time(prev_node->action.time, action_time_precision_ + 1);
-    if (prev_node->action.type != ActionType::START || (t_1 != t_2) || (node->action.expression != prev_node->action.expression)) {
+    if (prev_node->action.type != ActionType::START || (t_1 != t_2) ||
+      (node->action.expression != prev_node->action.expression))
+    {
       is_special = true;
     }
   }
@@ -1121,7 +1123,9 @@ STNBTBuilder::get_flow(
   } else if (node->action.type == ActionType::END) {
     auto t_1 = to_int_time(node->action.time, action_time_precision_ + 1);
     auto t_2 = to_int_time(prev_node->action.time, action_time_precision_ + 1);
-    if (prev_node->action.type == ActionType::START && (t_1 == t_2) && (node->action.expression == prev_node->action.expression)) {
+    if (prev_node->action.type == ActionType::START && (t_1 == t_2) &&
+      (node->action.expression == prev_node->action.expression))
+    {
       flow = flow + end_execution_block(node, l + 1);
     } else {
       std::string parent_id;
@@ -1132,8 +1136,8 @@ STNBTBuilder::get_flow(
       }
 
       flow = flow + t(l+1) + "<WaitAction action=\"" +
-             action_id + " " + to_string(node->action.type) + " " +
-             parent_id + " " + parent_type + "\"/>\n";
+        action_id + " " + to_string(node->action.type) + " " +
+        parent_id + " " + parent_type + "\"/>\n";
     }
   }
 
@@ -1433,14 +1437,16 @@ STNBTBuilder::print_arcs(const plansys2::Graph::Ptr graph) const
       std::string error_msg = std::to_string(node->node_num) +
         " -> " +
         std::to_string(child->node_num) +
-        " : "  +
+        " : " +
         to_action_id(node->action, action_time_precision_) + "_" + to_string(node->action.type) +
         " -> " +
         to_action_id(child->action, action_time_precision_) + "_" + to_string(child->action.type) +
         " : " +
-        "upper = dist(" + std::to_string(row) + ", " + std::to_string(col) + ") = " + std::to_string(std::get<2>(arc)) +
+        "upper = dist(" + std::to_string(row) + ", " + std::to_string(col) + ") = " +
+        std::to_string(std::get<2>(arc)) +
         ", " +
-        "lower = dist(" + std::to_string(col) + ", " + std::to_string(row) + ") = " + std::to_string(-1.0 * std::get<1>(arc));
+        "lower = dist(" + std::to_string(col) + ", " + std::to_string(row) + ") = " +
+        std::to_string(-1.0 * std::get<1>(arc));
 
       std::cerr << error_msg << std::endl;
     }

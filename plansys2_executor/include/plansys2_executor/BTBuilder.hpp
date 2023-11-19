@@ -16,6 +16,9 @@
 #define PLANSYS2_EXECUTOR__BTBUILDER_HPP_
 
 #include <map>
+#include <set>
+#include <tuple>
+#include <list>
 #include <memory>
 #include <string>
 
