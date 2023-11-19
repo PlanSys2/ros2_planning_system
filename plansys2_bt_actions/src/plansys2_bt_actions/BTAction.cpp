@@ -130,28 +130,31 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
   }
 
 #ifdef ZMQ_FOUND
+  bool enable_groot_monitoring = get_parameter("enable_groot_monitoring").as_bool();
   int publisher_port = get_parameter("publisher_port").as_int();
   int server_port = get_parameter("server_port").as_int();
   unsigned int max_msgs_per_second = get_parameter("max_msgs_per_second").as_int();
 
-  if (publisher_port <= 0 || server_port <= 0) {
-    RCLCPP_WARN(
-      get_logger(),
-      "[%s] Groot monitoring ports not provided, disabling Groot monitoring."
-      " publisher port: %d, server port: %d",
-      get_name(), publisher_port, server_port);
-  } else if (get_parameter("enable_groot_monitoring").as_bool()) {
-    RCLCPP_DEBUG(
-      get_logger(),
-      "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
-      get_name(), publisher_port, server_port, max_msgs_per_second);
-    try {
-      publisher_zmq_.reset(
-        new BT::PublisherZMQ(
-          tree_, max_msgs_per_second, publisher_port,
-          server_port));
-    } catch (const BT::LogicError & exc) {
-      RCLCPP_ERROR(get_logger(), "ZMQ error: %s", exc.what());
+  if (enable_groot_monitoring) {
+    if (publisher_port <= 0 || server_port <= 0) {
+      RCLCPP_WARN(
+        get_logger(),
+        "[%s] Groot monitoring ports not provided, disabling Groot monitoring."
+        " publisher port: %d, server port: %d",
+        get_name(), publisher_port, server_port);
+    } else {
+      RCLCPP_DEBUG(
+        get_logger(),
+        "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
+        get_name(), publisher_port, server_port, max_msgs_per_second);
+      try {
+        publisher_zmq_.reset(
+          new BT::PublisherZMQ(
+            tree_, max_msgs_per_second, publisher_port,
+            server_port));
+      } catch (const BT::LogicError & exc) {
+        RCLCPP_ERROR(get_logger(), "ZMQ error: %s", exc.what());
+      }
     }
   }
 #endif
