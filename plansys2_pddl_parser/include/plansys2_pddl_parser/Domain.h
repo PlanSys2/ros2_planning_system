@@ -314,19 +314,6 @@ public:
 		actions.insert( a );
 	}
 
-	// void parseImply( Stringreader & f ) {
-	// 	if ( !preds.size() ) {
-	// 		std::cout << "Predicates needed before defining derived predicates\n";
-	// 		exit(1);
-	// 	}
-
-	// 	f.next();
-	// 	Imply * d = new Imply;
-	// 	d->parse( f, types[0]->constants, *this );
-
-	// 	if ( DOMAIN_DEBUG ) std::cout << d << "\n";
-	// 	derived.insert( d );
-	// }
 
 	// Return a copy of the type structure, with newly allocated types
 	// This will also copy all constants and objects!
