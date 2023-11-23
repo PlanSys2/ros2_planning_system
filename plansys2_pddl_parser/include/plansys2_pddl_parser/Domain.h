@@ -9,6 +9,7 @@
   #include "plansys2_pddl_parser/Forall.h"
   #include "plansys2_pddl_parser/Function.h"
   #include "plansys2_pddl_parser/GroundFunc.h"
+  #include "plansys2_pddl_parser/Imply.h"
   #include "plansys2_pddl_parser/FunctionModifier.h"
 
   #include "plansys2_pddl_parser/Not.h"
@@ -313,6 +314,19 @@ public:
 		actions.insert( a );
 	}
 
+	// void parseImply( Stringreader & f ) {
+	// 	if ( !preds.size() ) {
+	// 		std::cout << "Predicates needed before defining derived predicates\n";
+	// 		exit(1);
+	// 	}
+
+	// 	f.next();
+	// 	Imply * d = new Imply;
+	// 	d->parse( f, types[0]->constants, *this );
+
+	// 	if ( DOMAIN_DEBUG ) std::cout << d << "\n";
+	// 	derived.insert( d );
+	// }
 
 	// Return a copy of the type structure, with newly allocated types
 	// This will also copy all constants and objects!
@@ -603,6 +617,7 @@ public:
 		if ( s == "and" ) return new And;
 		if ( s == "exists" ) return new Exists;
 		if ( s == "forall" ) return new Forall;
+		if ( s == "imply" ) return new Imply;
 		if ( s == "assign" ) return new Assign;
 		if ( s == "increase" ) return new Increase;
 		if ( s == "decrease" ) return new Decrease;
