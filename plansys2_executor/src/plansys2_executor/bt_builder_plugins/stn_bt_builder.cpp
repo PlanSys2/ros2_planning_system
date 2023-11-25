@@ -219,7 +219,7 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
         child->input_arcs.begin(), child->input_arcs.end(),
         [&](std::tuple<Node::Ptr, double, double> arc_in) {
           return std::get<0>(arc_in) == node;
-      });
+        });
 
       child->input_arcs.erase(*it);
       child->input_arcs.insert(std::make_tuple(node, lower, upper));
@@ -1135,7 +1135,7 @@ STNBTBuilder::get_flow(
         parent_type = to_string(prev_node->action.type);
       }
 
-      flow = flow + t(l+1) + "<WaitAction action=\"" +
+      flow = flow + t(l + 1) + "<WaitAction action=\"" +
         action_id + " " + to_string(node->action.type) + " " +
         parent_id + " " + parent_type + "\"/>\n";
     }

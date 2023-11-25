@@ -55,39 +55,41 @@ ApplyAtEndEffect::tick()
     (*action_map_)[action].at_end_effects_applied_time = current_time;
     apply(effect, problem_client_, 0);
 
-    // Update the child input links.
-    Node::Ptr child = get_node(action, ActionType::END);
-    std::set<std::tuple<Node::Ptr, double, double>> input_arcs;
+    if (action_graph_) {
+      // Update the child input links.
+      Node::Ptr child = get_node(action, ActionType::END);
+      std::set<std::tuple<Node::Ptr, double, double>> input_arcs;
 
-    for (auto & arc : child->input_arcs) {
-      auto parent = std::get<0>(arc);
-      auto parent_id = BTBuilder::to_action_id(parent->action, 3);
+      for (auto & arc : child->input_arcs) {
+        auto parent = std::get<0>(arc);
+        auto parent_id = BTBuilder::to_action_id(parent->action, 3);
 
-      auto parent_time = (*action_map_)[parent_id].at_end_effects_applied_time;
-      if (parent->action.type == ActionType::START) {
-        parent_time = (*action_map_)[parent_id].at_start_effects_applied_time;
+        auto parent_time = (*action_map_)[parent_id].at_end_effects_applied_time;
+        if (parent->action.type == ActionType::START) {
+          parent_time = (*action_map_)[parent_id].at_start_effects_applied_time;
+        }
+
+        double actual_time = current_time.seconds() - parent_time.seconds();
+        input_arcs.insert(std::make_tuple(parent, actual_time, actual_time));
+
+        // Update the parent output link.
+        auto it = std::find_if(
+          parent->output_arcs.begin(), parent->output_arcs.end(),
+          [&](std::tuple<Node::Ptr, double, double> arc) {
+            return std::get<0>(arc) == child;
+          });
+
+        parent->output_arcs.erase(*it);
+        parent->output_arcs.insert(std::make_tuple(child, actual_time, actual_time));
       }
 
-      double actual_time = current_time.seconds() - parent_time.seconds();
-      input_arcs.insert(std::make_tuple(parent, actual_time, actual_time));
+      child->input_arcs.clear();
+      child->input_arcs = input_arcs;
 
-      // Update the parent output link.
-      auto it = std::find_if(
-        parent->output_arcs.begin(), parent->output_arcs.end(),
-        [&](std::tuple<Node::Ptr, double, double> arc) {
-          return std::get<0>(arc) == child;
-        });
-
-      parent->output_arcs.erase(*it);
-      parent->output_arcs.insert(std::make_tuple(child, actual_time, actual_time));
-    }
-
-    child->input_arcs.clear();
-    child->input_arcs = input_arcs;
-
-    // Propagate the time bounds.
-    if (!bt_builder_->propagate(action_graph_)) {
-      return BT::NodeStatus::FAILURE;
+      // Propagate the time bounds.
+      if (!bt_builder_->propagate(action_graph_)) {
+        return BT::NodeStatus::FAILURE;
+      }
     }
   }
 
