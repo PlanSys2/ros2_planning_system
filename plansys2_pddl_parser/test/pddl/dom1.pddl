@@ -58,4 +58,25 @@
     )
 )
 
+(:durative-action action_test3
+    :parameters (?r - robot)
+    :duration ( = ?duration 20)
+    :condition (and
+        (at start
+            (forall
+                (?ro - room)
+                (imply
+                    (robot_at ?r ?ro)
+                    (charging_point_at ?ro)
+                )
+            )
+        )
+        (over all (and (> (battery_level ?r) 1) (< (battery_level ?r) 200)) )
+    )
+    :effect (and
+         (at end (increase (battery_level ?r) (* ?duration 5.0)))
+         (at end (battery_full ?r))
+    )
+)
+
 )
