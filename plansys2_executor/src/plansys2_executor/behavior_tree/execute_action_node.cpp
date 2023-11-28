@@ -52,6 +52,8 @@ ExecuteAction::tick()
   std::string action;
   getInput("action", action);
 
+  auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
+
   size_t delim = action.find(":");
   auto action_expr = action.substr(0, delim);
 
@@ -65,7 +67,7 @@ ExecuteAction::tick()
     (*action_map_)[action].execution_error_info = "Error executing the action";
 
     RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
+      node->get_logger(),
       "[" << action << "]" << (*action_map_)[action].execution_error_info);
   }
 
