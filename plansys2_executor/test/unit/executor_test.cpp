@@ -1271,7 +1271,7 @@ public:
   int cycles_;
 };
 
-/*
+
 TEST(executor, executor_client_ordered_sub_goals)
 {
   auto test_node_1 = rclcpp::Node::make_shared("test_node_1");
@@ -1417,7 +1417,7 @@ TEST(executor, executor_client_ordered_sub_goals)
   finish = true;
   t.join();
 }
-*/
+
 TEST(executor, executor_client_cancel_plan)
 {
   auto test_node_1 = rclcpp::Node::make_shared("test_node_1");

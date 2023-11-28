@@ -418,8 +418,11 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   if (bt_builder_plugin == "SimpleBTBuilder") {
     bt_builder->initialize(action_bt_xml_);
   } else if (bt_builder_plugin == "STNBTBuilder") {
-    auto precision = this->get_parameter("action_time_precision").as_int();
-    bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
+    bt_builder_plugin = "SimpleBTBuilder";
+    bt_builder->initialize(action_bt_xml_);
+    RCLCPP_WARN(get_logger(), "STN disabled until fixed. Using SimpleBTBuilder instead");
+    // auto precision = this->get_parameter("action_time_precision").as_int();
+    // bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
   }
 
   auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());

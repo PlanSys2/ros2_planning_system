@@ -1112,8 +1112,8 @@ TEST_F(TerminalTestCase, source_run_plan)
   {
     std::ostringstream os;
     std::vector<std::string> command = {std::string("plan-file"), plan_file};
-    // terminal_node->process_run_planfile(command, os);
-    // ASSERT_TRUE(terminal_node->method_executed_["process_run_planfile"]);
+    terminal_node->process_run_planfile(command, os);
+    ASSERT_TRUE(terminal_node->method_executed_["process_run_planfile"]);
   }
 
   terminal_node->reset_executions();
