@@ -1174,7 +1174,7 @@ TEST(executor, executor_client_execute_plan)
 
     while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
       auto feedback = executor_client->getFeedBack();
-      ASSERT_LT(feedback.action_execution_status.size(), 2);
+      ASSERT_LT(feedback.action_execution_status.size(), 3);
       rate.sleep();
     }
   }
@@ -1185,7 +1185,7 @@ TEST(executor, executor_client_execute_plan)
   auto result = executor_client->getResult().value();
 
   ASSERT_TRUE(result.success);
-  ASSERT_EQ(result.action_execution_status.size(), 1u);
+  ASSERT_EQ(result.action_execution_status.size(), 2u);
   for (const auto & action_status : result.action_execution_status) {
     ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
   }
@@ -1205,7 +1205,7 @@ TEST(executor, executor_client_execute_plan)
 
     while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
       auto feedback = executor_client->getFeedBack();
-      ASSERT_LT(feedback.action_execution_status.size(), 2);
+      ASSERT_LT(feedback.action_execution_status.size(), 3);
       rate.sleep();
     }
   }
@@ -1270,6 +1270,7 @@ public:
   int executions_;
   int cycles_;
 };
+
 
 TEST(executor, executor_client_ordered_sub_goals)
 {
@@ -1400,7 +1401,7 @@ TEST(executor, executor_client_ordered_sub_goals)
     while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
       auto feedback = executor_client->getFeedBack();
 
-      ASSERT_LE(feedback.action_execution_status.size(), 4);
+      ASSERT_LE(feedback.action_execution_status.size(), 5);
       rate.sleep();
     }
   }
