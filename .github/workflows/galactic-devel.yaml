@@ -33,7 +33,7 @@ jobs:
                 "parallel-workers" : 1
               }
             }
-          vcs-repo-file-url: https://raw.githubusercontent.com/IntelligentRoboticsLabs/ros2_planning_system/master/dependency_repos.repos
+          vcs-repo-file-url: https://raw.githubusercontent.com/IntelligentRoboticsLabs/ros2_planning_system/galactic-devel/dependency_repos.repos
           colcon-mixin-name: coverage-gcc
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
       - name: Codecov
