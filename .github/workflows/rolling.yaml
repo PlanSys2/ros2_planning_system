@@ -1,13 +1,14 @@
-name: master
+name: rolling
 
 on:
   pull_request:
     branches:
-      - master
+      - rolling
   push:
     branches:
-      - master
-      
+      - rolling
+  schedule:
+      - cron: '0 0 * * 6'     
 jobs:
   build-and-test:
     runs-on: ${{ matrix.os }}
@@ -33,7 +34,7 @@ jobs:
                 "parallel-workers" : 1
               }
             }
-          vcs-repo-file-url: https://raw.githubusercontent.com/PlanSys2/ros2_planning_system/master/dependency_repos.repos
+          vcs-repo-file-url: https://raw.githubusercontent.com/PlanSys2/ros2_planning_system/rolling/dependency_repos.repos
           colcon-mixin-name: coverage-gcc
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
       - name: Codecov
