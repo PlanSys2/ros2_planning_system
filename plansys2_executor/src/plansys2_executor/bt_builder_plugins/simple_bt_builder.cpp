@@ -533,7 +533,8 @@ SimpleBTBuilder::get_dotgraph(
 
       tab_level = 2;
       ss << t(tab_level);
-      ss << "label = \"Start: " << level.second.front()->action.time << " s\nDuration: " << level.second.front()->action.duration << " s\";\n";
+      ss << "label = \"Start: " << level.second.front()->action.time << " s\n";
+      ss << "Duration: " << level.second.front()->action.duration << " s\";\n";
       ss << t(tab_level);
       ss << "style = rounded;\n";
       ss << t(tab_level);
