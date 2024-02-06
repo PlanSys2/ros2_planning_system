@@ -13,11 +13,13 @@
 // limitations under the License.
 
 #include <algorithm>
+#include <iostream>
 #include <limits>
 #include <map>
 #include <memory>
 #include <queue>
 #include <set>
+#include <sstream>
 #include <string>
 #include <tuple>
 #include <utility>
