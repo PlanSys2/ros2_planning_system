@@ -15,6 +15,7 @@
 #ifndef PLANSYS2_POPF_PLAN_SOLVER__POPF_PLAN_SOLVER_HPP_
 #define PLANSYS2_POPF_PLAN_SOLVER__POPF_PLAN_SOLVER_HPP_
 
+#include <filesystem>
 #include <optional>
 #include <memory>
 #include <string>
@@ -30,6 +31,8 @@ private:
   std::string arguments_parameter_name_;
   std::string output_dir_parameter_name_;
   rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node_;
+
+  std::optional<std::filesystem::path> create_folders(const std::string & node_namespace);
 
 public:
   POPFPlanSolver();

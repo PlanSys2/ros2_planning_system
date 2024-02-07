@@ -32,6 +32,40 @@ POPFPlanSolver::POPFPlanSolver()
 {
 }
 
+std::optional<std::filesystem::path> POPFPlanSolver::create_folders(const std::string & node_namespace)
+{
+  auto output_dir = lc_node_->get_parameter(output_dir_parameter_name_).value_to_string();
+
+  // Allow usage of the HOME directory with the `~` character, returning if there is an error.
+  const char* home_dir = std::getenv("HOME");
+  if (output_dir[0] == '~' && home_dir)
+  {
+    output_dir.replace(0, 1, home_dir);
+  }
+  else if (!home_dir)
+  {
+    RCLCPP_ERROR(lc_node_->get_logger(), "Invalid use of the ~ character in the path: %s", output_dir.c_str());
+    return std::nullopt;
+  }
+
+  // Create the necessary folders, returning if there is an error.
+  auto output_path = std::filesystem::path(output_dir);
+  if (node_namespace != "") {
+    for (auto p : std::filesystem::path(node_namespace) ) {
+      if (p != std::filesystem::current_path().root_directory()) {
+        output_path /= p;
+      }
+    }
+    try {
+      std::filesystem::create_directories(output_path);
+    } catch (std::filesystem::filesystem_error& err) {
+      RCLCPP_ERROR(lc_node_->get_logger(), "Error writing directories: %s", err.what());
+      return std::nullopt;
+    }
+  }
+  return output_path;
+}
+
 void POPFPlanSolver::configure(
   rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node,
   const std::string & plugin_name)
@@ -55,21 +89,16 @@ POPFPlanSolver::getPlan(
     return {};
   }
 
-  auto output_dir = std::filesystem::path(
-    lc_node_->get_parameter(output_dir_parameter_name_).value_to_string()
-  );
-
-  if (node_namespace != "") {
-    for (auto p : std::filesystem::path(node_namespace) ) {
-      if (p != std::filesystem::current_path().root_directory()) {
-        output_dir /= p;
-      }
-    }
-    std::filesystem::create_directories(output_dir);
+  // Set up the folders
+  const auto output_dir_maybe = create_folders(node_namespace);
+  if (!output_dir_maybe) {
+    return {};
   }
+  const auto& output_dir = output_dir_maybe.value();
   RCLCPP_INFO(
     lc_node_->get_logger(), "Writing planning results to %s.", output_dir.string().c_str());
 
+  // Perform planning
   plansys2_msgs::msg::Plan ret;
 
   const auto domain_file_path = output_dir / std::filesystem::path("domain.pddl");
@@ -140,18 +169,12 @@ POPFPlanSolver::isDomainValid(
     return false;
   }
 
-  auto output_dir = std::filesystem::path(
-    lc_node_->get_parameter(output_dir_parameter_name_).value_to_string()
-  );
-
-  if (node_namespace != "") {
-    for (auto p : std::filesystem::path(node_namespace) ) {
-      if (p != std::filesystem::current_path().root_directory()) {
-        output_dir /= p;
-      }
-    }
-    std::filesystem::create_directories(output_dir);
+  // Set up the folders
+  const auto output_dir_maybe = create_folders(node_namespace);
+  if (!output_dir_maybe) {
+    return {};
   }
+  const auto& output_dir = output_dir_maybe.value();
   RCLCPP_INFO(
     lc_node_->get_logger(), "Writing domain validation results to %s.",
     output_dir.string().c_str()
