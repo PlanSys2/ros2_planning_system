@@ -32,19 +32,19 @@ POPFPlanSolver::POPFPlanSolver()
 {
 }
 
-std::optional<std::filesystem::path> POPFPlanSolver::create_folders(const std::string & node_namespace)
+std::optional<std::filesystem::path>
+POPFPlanSolver::create_folders(const std::string & node_namespace)
 {
   auto output_dir = lc_node_->get_parameter(output_dir_parameter_name_).value_to_string();
 
   // Allow usage of the HOME directory with the `~` character, returning if there is an error.
-  const char* home_dir = std::getenv("HOME");
-  if (output_dir[0] == '~' && home_dir)
-  {
+  const char * home_dir = std::getenv("HOME");
+  if (output_dir[0] == '~' && home_dir) {
     output_dir.replace(0, 1, home_dir);
-  }
-  else if (!home_dir)
-  {
-    RCLCPP_ERROR(lc_node_->get_logger(), "Invalid use of the ~ character in the path: %s", output_dir.c_str());
+  } else if (!home_dir) {
+    RCLCPP_ERROR(
+      lc_node_->get_logger(), "Invalid use of the ~ character in the path: %s", output_dir.c_str()
+    );
     return std::nullopt;
   }
 
@@ -58,7 +58,7 @@ std::optional<std::filesystem::path> POPFPlanSolver::create_folders(const std::s
     }
     try {
       std::filesystem::create_directories(output_path);
-    } catch (std::filesystem::filesystem_error& err) {
+    } catch (std::filesystem::filesystem_error & err) {
       RCLCPP_ERROR(lc_node_->get_logger(), "Error writing directories: %s", err.what());
       return std::nullopt;
     }
@@ -94,7 +94,7 @@ POPFPlanSolver::getPlan(
   if (!output_dir_maybe) {
     return {};
   }
-  const auto& output_dir = output_dir_maybe.value();
+  const auto & output_dir = output_dir_maybe.value();
   RCLCPP_INFO(
     lc_node_->get_logger(), "Writing planning results to %s.", output_dir.string().c_str());
 
@@ -174,12 +174,13 @@ POPFPlanSolver::isDomainValid(
   if (!output_dir_maybe) {
     return {};
   }
-  const auto& output_dir = output_dir_maybe.value();
+  const auto & output_dir = output_dir_maybe.value();
   RCLCPP_INFO(
     lc_node_->get_logger(), "Writing domain validation results to %s.",
     output_dir.string().c_str()
   );
 
+  // Perform domain validation
   const auto domain_file_path = output_dir / std::filesystem::path("check_domain.pddl");
   std::ofstream domain_out(domain_file_path);
   domain_out << domain;
