@@ -32,10 +32,10 @@ private:
   std::string output_dir_parameter_name_;
   rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node_;
 
-  std::optional<std::filesystem::path> create_folders(const std::string & node_namespace);
-
 public:
   POPFPlanSolver();
+
+  std::optional<std::filesystem::path> create_folders(const std::string & node_namespace);
 
   void configure(rclcpp_lifecycle::LifecycleNode::SharedPtr, const std::string &);
 
