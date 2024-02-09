@@ -13,11 +13,13 @@
 // limitations under the License.
 
 #include <algorithm>
+#include <iostream>
 #include <limits>
 #include <map>
 #include <memory>
 #include <queue>
 #include <set>
+#include <sstream>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -97,6 +99,8 @@ STNBTBuilder::get_dotgraph(
 
   // create xdot graph
   std::stringstream ss;
+  ss.setf(std::ios::fixed);
+  ss.precision(2);
   ss << "digraph plan {\n";
 
   // dotgraph formatting options
@@ -107,10 +111,12 @@ STNBTBuilder::get_dotgraph(
   for (const auto node : stn_->nodes) {
     ss << t(1) << "subgraph cluster_" << node_count << " {\n";
     auto start_time = node->action.time;
+    auto duration = node->action.duration;
     if (node->action.type == ActionType::END) {
       start_time += node->action.duration;
+      duration = 0.0;
     }
-    ss << t(2) << "label = \"Time: " << start_time << "\";\n";
+    ss << t(2) << "label = \"Start: " << start_time << "\nDuration: " << duration << " s\";\n";
     ss << t(2) << "style = rounded;\n";
     ss << t(2) << "color = yellow3;\n";
     ss << t(2) << "bgcolor = lemonchiffon;\n";
@@ -1352,7 +1358,7 @@ STNBTBuilder::add_dot_graph_legend(
   ss << t(2);
   ss << "subgraph cluster_" << legend_counter++ << " {\n";
   ss << t(3);
-  ss << "label = \"Plan Timestep (sec): X.X\";\n";
+  ss << "label = \"Plan Action Start (sec): X.X s\n Duration (sec): X.X s\";\n";
   ss << t(3);
   ss << "style = rounded;\n";
   ss << t(3);

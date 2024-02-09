@@ -21,6 +21,8 @@
 #include <tuple>
 #include <map>
 #include <utility>
+#include <iostream>
+#include <sstream>
 
 #include "plansys2_executor/bt_builder_plugins/simple_bt_builder.hpp"
 
@@ -480,6 +482,8 @@ SimpleBTBuilder::get_dotgraph(
 
   // create xdot graph
   std::stringstream ss;
+  ss.setf(std::ios::fixed);
+  ss.precision(2);
   ss << "digraph plan {\n";
 
   int tab_level = 1;
@@ -493,9 +497,14 @@ SimpleBTBuilder::get_dotgraph(
   ss << t(tab_level);
   ss << "subgraph cluster_0 {\n";
 
+  double duration = 0.0;
+  for (auto & node : graph_->roots) {
+    duration += node->action.duration;
+  }
+
   tab_level = 2;
   ss << t(tab_level);
-  ss << "label = \"Time: 0.0\";\n";
+  ss << "label = \"Start: 0.0 s\nDuration: " << duration << " s\";\n";
   ss << t(tab_level);
   ss << "style = rounded;\n";
   ss << t(tab_level);
@@ -524,7 +533,8 @@ SimpleBTBuilder::get_dotgraph(
 
       tab_level = 2;
       ss << t(tab_level);
-      ss << "label = \"Time: " << level.second.front()->action.time << "\";\n";
+      ss << "label = \"Start: " << level.second.front()->action.time << " s\n";
+      ss << "Duration: " << level.second.front()->action.duration << " s\";\n";
       ss << t(tab_level);
       ss << "style = rounded;\n";
       ss << t(tab_level);
@@ -694,7 +704,7 @@ void SimpleBTBuilder::addDotGraphLegend(
   ss << "subgraph cluster_" << legend_counter++ << " {\n";
   tab_level++;
   ss << t(tab_level);
-  ss << "label = \"Plan Timestep (sec): X.X\";\n";
+  ss << "label = \"Plan Action Start (sec): X.X s\n Duration (sec): X.X s\";\n";
   ss << t(tab_level);
   ss << "style = rounded;\n";
   ss << t(tab_level);
