@@ -28,11 +28,10 @@
   <depend>plansys2_problem_expert</depend>
   <depend>plansys2_planner</depend>
   <depend>pluginlib</depend>
-  <depend>behaviortree_cpp_v3</depend>
+  <depend>behaviortree_cpp</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
-  <depend>libzmq3-dev</depend>
-
+  
   <exec_depend>popf</exec_depend>
 
   <test_depend>ament_lint_common</test_depend>

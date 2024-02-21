@@ -24,7 +24,7 @@
   <depend>plansys2_problem_expert</depend>
   <depend>plansys2_planner</depend>
   <depend>plansys2_executor</depend>
-  <depend>behaviortree_cpp_v3</depend>
+  <depend>behaviortree_cpp</depend>
  
   <exec_depend>popf</exec_depend>
 

@@ -16,7 +16,7 @@
   <depend>rclcpp_action</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>plansys2_executor</depend>
-  <depend>behaviortree_cpp_v3</depend>
+  <depend>behaviortree_cpp</depend>
   <depend>action_msgs</depend>
   <depend>libzmq3-dev</depend>
 

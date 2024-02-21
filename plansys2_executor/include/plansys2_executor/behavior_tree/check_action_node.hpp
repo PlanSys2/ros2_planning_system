@@ -20,7 +20,7 @@
 #include <memory>
 
 
-#include "behaviortree_cpp_v3/action_node.h"
+#include "behaviortree_cpp/action_node.h"
 
 #include "plansys2_executor/ActionExecutor.hpp"
 
@@ -36,7 +36,7 @@ class CheckAction : public BT::ActionNodeBase
 public:
   CheckAction(
     const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf);
+    const BT::NodeConfig & conf);
 
   void halt() {}
   BT::NodeStatus tick() override;

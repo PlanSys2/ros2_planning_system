@@ -35,14 +35,10 @@
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
-#include "behaviortree_cpp_v3/behavior_tree.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/utils/shared_library.h"
-#include "behaviortree_cpp_v3/blackboard.h"
-
-#ifdef ZMQ_FOUND
-#include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
-#endif
+#include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/utils/shared_library.h"
+#include "behaviortree_cpp/blackboard.h"
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_action_node.hpp"
@@ -81,13 +77,6 @@ ExecutorNode::ExecutorNode()
       "action_timeouts." + action + ".duration_overrun_percentage",
       0.0);
   }
-
-#ifdef ZMQ_FOUND
-  this->declare_parameter<bool>("enable_groot_monitoring", true);
-  this->declare_parameter<int>("publisher_port", 2666);
-  this->declare_parameter<int>("server_port", 2667);
-  this->declare_parameter<int>("max_msgs_per_second", 25);
-#endif
 
   execute_plan_action_server_ = rclcpp_action::create_server<ExecutePlan>(
     this->get_node_base_interface(),
@@ -467,28 +456,6 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
-#ifdef ZMQ_FOUND
-  unsigned int publisher_port = this->get_parameter("publisher_port").as_int();
-  unsigned int server_port = this->get_parameter("server_port").as_int();
-  unsigned int max_msgs_per_second = this->get_parameter("max_msgs_per_second").as_int();
-
-  std::unique_ptr<BT::PublisherZMQ> publisher_zmq;
-  if (this->get_parameter("enable_groot_monitoring").as_bool()) {
-    RCLCPP_DEBUG(
-      get_logger(),
-      "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
-      get_name(), publisher_port, server_port, max_msgs_per_second);
-    try {
-      publisher_zmq.reset(
-        new BT::PublisherZMQ(
-          tree, max_msgs_per_second, publisher_port,
-          server_port));
-    } catch (const BT::LogicError & exc) {
-      RCLCPP_ERROR(get_logger(), "ZMQ error: %s", exc.what());
-    }
-  }
-#endif
-
   auto info_pub = create_wall_timer(
     1s, [this, &action_map]() {
       auto msgs = get_feedback_info(action_map);
@@ -502,7 +469,7 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 
   while (status == BT::NodeStatus::RUNNING && !cancel_plan_requested_) {
     try {
-      status = tree.tickRoot();
+      status = tree.tickOnce();
     } catch (std::exception & e) {
       std::cerr << e.what() << std::endl;
       status = BT::NodeStatus::FAILURE;
