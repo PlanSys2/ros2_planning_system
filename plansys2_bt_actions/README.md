@@ -20,7 +20,7 @@ Files created by the `.fbl` and minitrace loggers are stored in `/tmp/<node_name
 ### BT node for calling ROS2 action servers
 The `BtActionNode` template class provides a convenient means of calling ROS2 action servers from within a BT.  It takes care of the details of setting up and handling a ROS action client, reducing code duplication and providing a simple API.
 
-The template parameter for the class is the type of ROS action (e.g. `action_tutorials_interfaces::action::Fibonacci`) to be used. The node's constructor takes in three arguments: the XML tag name, the ROS topic for the action server (e.g. `/namepace/server_name`), and a `BT::NodeConfiguration`.  Note that the XML name and `NodeConfiguration` are the same as any other BT.CPP node.
+The template parameter for the class is the type of ROS action (e.g. `action_tutorials_interfaces::action::Fibonacci`) to be used. The node's constructor takes in three arguments: the XML tag name, the ROS topic for the action server (e.g. `/namepace/server_name`), and a `BT::NodeConfig`.  Note that the XML name and `NodeConfig` are the same as any other BT.CPP node.
 
 There are several functions which are provided for the end user to use/implement (some of which are optional).
 1. `static BT::PortsList providedPorts()`: every BT node which uses ports must define this member function.  A default implementation is provided, but you are free to override it if additional ports are desired.  By default, the function returns two input ports: `server_name` (string) and `server_timeout` (double).  These ports can be preserved when overriding using `providedBasicPorts`

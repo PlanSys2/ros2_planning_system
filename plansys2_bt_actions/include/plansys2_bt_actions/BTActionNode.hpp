@@ -18,7 +18,7 @@
 #include <memory>
 #include <string>
 
-#include "behaviortree_cpp_v3/action_node.h"
+#include "behaviortree_cpp/action_node.h"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
@@ -35,10 +35,12 @@ public:
   BtActionNode(
     const std::string & xml_tag_name,
     const std::string & action_name,
-    const BT::NodeConfiguration & conf)
+    const BT::NodeConfig & conf)
   : BT::ActionNodeBase(xml_tag_name, conf), action_name_(action_name)
   {
-    config().blackboard->get("node", node_);
+    if (!config().blackboard->get("node", node_)) {
+      RCLCPP_ERROR(node_->get_logger(), "Failed to get 'node' from the blackboard");
+    }
 
     // Get the required items from the blackboard
     server_timeout_ = 5s;
@@ -95,6 +97,7 @@ public:
         5.0,
         "The amount of time to wait for a response from the action server, in seconds")
     };
+    // The user defined ports are added to the basic ports
     basic.insert(addition.begin(), addition.end());
 
     return basic;
@@ -307,7 +310,7 @@ public:
       cancel_goal();
     }
 
-    setStatus(BT::NodeStatus::IDLE);
+    resetStatus();
   }
 
 protected:

@@ -22,8 +22,8 @@
 #include "test_msgs/action/fibonacci.hpp"
 
 #include "plansys2_bt_actions/BTActionNode.hpp"
-#include "behaviortree_cpp_v3/behavior_tree.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 namespace plansys2_bt_tests
 {
@@ -34,7 +34,7 @@ public:
   explicit Move(
     const std::string & xml_tag_name,
     const std::string & action_name,
-    const BT::NodeConfiguration & conf);
+    const BT::NodeConfig & conf);
 
   BT::NodeStatus on_tick() override;
   BT::NodeStatus on_success() override;

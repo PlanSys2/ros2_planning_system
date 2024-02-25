@@ -32,7 +32,7 @@ public:
   explicit OnTickFail(
     const std::string & xml_tag_name,
     const std::string & action_name,
-    const BT::NodeConfiguration & conf)
+    const BT::NodeConfig & conf)
   : plansys2::BtActionNode<Fibonacci>(xml_tag_name,
       action_name,
       conf),
@@ -57,7 +57,7 @@ public:
   explicit OnFeedbackFail(
     const std::string & xml_tag_name,
     const std::string & action_name,
-    const BT::NodeConfiguration & conf)
+    const BT::NodeConfig & conf)
   : plansys2::BtActionNode<Fibonacci>(xml_tag_name,
       action_name,
       conf),

@@ -26,14 +26,10 @@
 
 #include "plansys2_executor/ComputeBT.hpp"
 
-#include "behaviortree_cpp_v3/behavior_tree.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/utils/shared_library.h"
-#include "behaviortree_cpp_v3/blackboard.h"
-
-#ifdef ZMQ_FOUND
-#include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
-#endif
+#include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/utils/shared_library.h"
+#include "behaviortree_cpp/blackboard.h"
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_action_node.hpp"
@@ -71,13 +67,6 @@ ComputeBT::ComputeBT()
       "action_timeouts." + action + ".duration_overrun_percentage",
       0.0);
   }
-
-#ifdef ZMQ_FOUND
-  this->declare_parameter<bool>("enable_groot_monitoring", true);
-  this->declare_parameter<int>("publisher_port", 2666);
-  this->declare_parameter<int>("server_port", 2667);
-  this->declare_parameter<int>("max_msgs_per_second", 25);
-#endif
 
   compute_bt_srv_ = create_service<std_srvs::srv::Trigger>(
     "compute_bt",
@@ -348,28 +337,6 @@ ComputeBT::computeBTCallback(
   blackboard->set("bt_builder", bt_builder);
 
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
-
-#ifdef ZMQ_FOUND
-  unsigned int publisher_port = this->get_parameter("publisher_port").as_int();
-  unsigned int server_port = this->get_parameter("server_port").as_int();
-  unsigned int max_msgs_per_second = this->get_parameter("max_msgs_per_second").as_int();
-
-  std::unique_ptr<BT::PublisherZMQ> publisher_zmq;
-  if (this->get_parameter("enable_groot_monitoring").as_bool()) {
-    RCLCPP_DEBUG(
-      get_logger(),
-      "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
-      get_name(), publisher_port, server_port, max_msgs_per_second);
-    try {
-      publisher_zmq.reset(
-        new BT::PublisherZMQ(
-          tree, max_msgs_per_second, publisher_port,
-          server_port));
-    } catch (const BT::LogicError & exc) {
-      RCLCPP_ERROR(get_logger(), "ZMQ error: %s", exc.what());
-    }
-  }
-#endif
 
   finish = true;
   t.join();

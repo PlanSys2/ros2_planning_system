@@ -24,7 +24,7 @@ namespace plansys2
 
 CheckAtEndReq::CheckAtEndReq(
   const std::string & xml_tag_name,
-  const BT::NodeConfiguration & conf)
+  const BT::NodeConfig & conf)
 : ActionNodeBase(xml_tag_name, conf)
 {
   action_map_ =
