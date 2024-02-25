@@ -36,6 +36,9 @@ CheckTimeout::CheckTimeout(
   problem_client_ =
     config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
     "problem_client");
+
+  node_ = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
+  start_ = node_->now();
 }
 
 BT::NodeStatus
@@ -44,22 +47,18 @@ CheckTimeout::tick()
   std::string action;
   getInput("action", action);
 
-  if (status() == BT::NodeStatus::IDLE) {
-    start_ = std::chrono::high_resolution_clock::now();
-  }
-  setStatus(BT::NodeStatus::RUNNING);
-
   if ((*action_map_)[action].action_executor != nullptr) {
     double duration = (*action_map_)[action].duration;
     double duration_overrun_percentage = (*action_map_)[action].duration_overrun_percentage;
     if (duration_overrun_percentage >= 0) {
       double max_duration = (1.0 + duration_overrun_percentage / 100.0) * duration;
-      auto current_time = std::chrono::high_resolution_clock::now();
-      auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-        current_time - start_);
-      if (elapsed_time > std::chrono::duration<double>(max_duration)) {
-        std::cerr << "Actual duration of " << action << " exceeds max duration (" << std::fixed <<
-          std::setprecision(2) << max_duration << " secs)." << std::endl;
+      auto current_time = node_->now();
+      auto elapsed_time = (current_time - start_).seconds();
+      if (elapsed_time > max_duration) {
+        RCLCPP_ERROR_STREAM(
+          node_->get_logger(),
+          "Actual duration of " << action << " exceeds max duration (" << std::fixed <<
+            std::setprecision(2) << max_duration << " secs).");
         return BT::NodeStatus::FAILURE;
       }
     }
