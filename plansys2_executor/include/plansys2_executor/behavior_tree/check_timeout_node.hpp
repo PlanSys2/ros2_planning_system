@@ -49,7 +49,8 @@ public:
   }
 
 private:
-  std::chrono::high_resolution_clock::time_point start_;
+  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  rclcpp::Time start_;
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 };
