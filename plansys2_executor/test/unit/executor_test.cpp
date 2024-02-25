@@ -107,7 +107,7 @@ public:
   {
     std::cerr << "MoveAction::on_activate" << std::endl;
     counter_ = 0;
-    start_ = std::chrono::high_resolution_clock::now();
+    start_ = now();
 
     return ActionExecutorClient::on_activate(state);
   }
@@ -120,17 +120,18 @@ public:
     }
 
     cycles_++;
-    auto current_time = std::chrono::high_resolution_clock::now();
-    auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-      current_time - start_);
+    auto current_time = now();
+    auto elapsed_time = (current_time - start_).seconds();
+
+    rclcpp::Rate rate(100);
 
     if (runtime_ > 1e-5) {
-      if (elapsed_time > std::chrono::duration<double>(runtime_)) {
+      if (elapsed_time > runtime_) {
         finish(true, 1.0, "completed");
         executions_++;
       } else {
-        send_feedback((static_cast<double>(elapsed_time.count()) / 1000.0) / runtime_, "running");
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        send_feedback(elapsed_time / runtime_, "running");
+        rate.sleep();
       }
     } else {
       if (counter_++ > 3) {
@@ -146,7 +147,7 @@ public:
   int executions_;
   int cycles_;
   double runtime_;
-  std::chrono::high_resolution_clock::time_point start_;
+  rclcpp::Time start_;
 };
 
 class TransportAction : public plansys2::ActionExecutorClient
@@ -1549,7 +1550,6 @@ TEST(executor, executor_client_cancel_plan)
   finish = true;
   t.join();
 }
-
 
 TEST(executor, action_timeout)
 {
