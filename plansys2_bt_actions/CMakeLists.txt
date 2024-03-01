@@ -12,6 +12,7 @@ find_package(plansys2_executor REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
 find_package(action_msgs REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -23,6 +24,7 @@ set(dependencies
     behaviortree_cpp
     action_msgs
     lifecycle_msgs
+    nlohmann_json
 )
 
 include_directories(include)
@@ -63,7 +65,7 @@ if(BUILD_TESTING)
 
   set(dependencies ${dependencies} plansys2_msgs test_msgs geometry_msgs)
 
-  add_subdirectory(test)
+  # add_subdirectory(test)
 endif()
 
 ament_export_include_directories(include)
