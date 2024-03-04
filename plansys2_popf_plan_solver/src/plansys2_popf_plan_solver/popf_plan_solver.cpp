@@ -188,7 +188,7 @@ POPFPlanSolver::isDomainValid(
 
   const auto problem_file_path = output_dir / std::filesystem::path("check_problem.pddl");
   std::ofstream problem_out(problem_file_path);
-  problem_out << "(define (problem void) (:domain plansys2))";
+  problem_out << "(define (problem void) (:domain plansys2) (:objects ) (:init ) (:goal (and ) ))";
   problem_out.close();
 
   const auto plan_file_path = output_dir / std::filesystem::path("check.out");
