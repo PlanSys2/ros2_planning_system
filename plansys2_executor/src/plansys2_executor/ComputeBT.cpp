@@ -313,7 +313,7 @@ ComputeBT::computeBTCallback(
   auto bt_xml_tree = bt_builder->get_tree(plan.value());
   if (bt_xml_tree.empty()) {
     RCLCPP_ERROR(get_logger(), "Error computing behavior tree!");
-   
+
     finish = true;
     t.join();
     response->success = false;

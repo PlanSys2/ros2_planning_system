@@ -428,8 +428,7 @@ SimpleBTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
     }
 
     // Return and empyt graph to fail the serveice call
-    if(!requirements.empty())
-    {
+    if (!requirements.empty()) {
       return nullptr;
     }
 
