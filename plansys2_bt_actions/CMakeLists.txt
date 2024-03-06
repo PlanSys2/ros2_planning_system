@@ -68,6 +68,5 @@ endif()
 
 ament_export_include_directories(include)
 ament_export_dependencies(${dependencies})
-include_directories(include)
 
 ament_package()
