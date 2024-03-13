@@ -417,6 +417,12 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
   if (bt_xml_tree.empty()) {
     RCLCPP_ERROR(get_logger(), "Error computing behavior tree!");
+
+    result->success = false;
+    goal_handle->succeed(result);
+
+    // Publish void plan
+    executing_plan_pub_->publish(plansys2_msgs::msg::Plan());
     return;
   }
 
