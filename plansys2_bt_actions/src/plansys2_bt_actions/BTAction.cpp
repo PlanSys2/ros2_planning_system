@@ -34,8 +34,7 @@ BTAction::BTAction(
 : ActionExecutorClient(action, rate)
 {
   declare_parameter<std::string>("bt_xml_file", "");
-  declare_parameter<std::vector<std::string>>(
-    "plugins", std::vector<std::string>({}));
+  declare_parameter<std::string>("plugins", "");
   declare_parameter<bool>("bt_file_logging", false);
   declare_parameter<bool>("bt_minitrace_logging", false);
 }
@@ -43,21 +42,77 @@ BTAction::BTAction(
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
 {
+  node_namespace_ = this->get_namespace();
+  RCLCPP_INFO_STREAM(get_logger(), "node_namespace_: [" << node_namespace_ << "]");
+
   get_parameter("action_name", action_);
   get_parameter("bt_xml_file", bt_xml_file_);
 
   RCLCPP_INFO_STREAM(get_logger(), "action_name: [" << action_ << "]");
   RCLCPP_INFO_STREAM(get_logger(), "bt_xml_file: [" << bt_xml_file_ << "]");
 
-  auto plugin_lib_names = get_parameter("plugins").as_string_array();
-  for (auto plugin : plugin_lib_names) {
-    RCLCPP_INFO_STREAM(get_logger(), "plugin: [" << plugin << "]");
-  }
+  auto plugins_json = get_parameter("plugins");
+  auto plugins = nlohmann::json::parse(plugins_json.as_string());
 
   BT::SharedLibrary loader;
 
-  for (auto plugin : plugin_lib_names) {
-    factory_.registerFromPlugin(loader.getOSName(plugin));
+  for (auto & plugin : plugins) {
+    std::string plugin_path = loader.getOSName(plugin["name"]);
+    RCLCPP_INFO_STREAM(get_logger(), "plugin_path: [" << plugin_path << "]");
+
+    // Try to load the plugin
+    try {
+      loader.load(plugin_path);
+      RCLCPP_INFO_STREAM(get_logger(), "Loaded library: " << plugin_path);
+    } catch (const std::exception & e) {
+      RCLCPP_WARN_STREAM(
+        get_logger(),
+        "Failed to load library: " << plugin_path << " - " << e.what());
+    }
+
+    // First try to register the node from the plugin
+    try {
+      if (loader.getSymbol("BT_RegisterNodesFromPlugin") != nullptr) {
+        RCLCPP_INFO_STREAM(get_logger(), "Registering node from plugin " << plugin["name"]);
+        loader.unload();
+        factory_.registerFromPlugin(plugin_path);
+        continue;
+      }
+    } catch (const std::exception & e) {
+      RCLCPP_DEBUG_STREAM(
+        get_logger(),
+        "Plugin " << plugin["name"] << " does not have symbol BT_RegisterNodesFromPlugin: " <<
+          e.what());
+    }
+
+    // Second try to register the ROS node from the plugin
+    try {
+      if (loader.getSymbol("BT_RegisterRosNodeFromPlugin") != nullptr) {
+        RCLCPP_INFO_STREAM(get_logger(), "Registering ROS node from plugin " << plugin["name"]);
+        BT::RosNodeParams params;
+        auto nh = std::make_shared<rclcpp::Node>(plugin["name"]);
+
+        params.nh = nh;
+        params.default_port_value = createFullyQualifiedName(
+          node_namespace_,
+          plugin["ast"].get<std::string>());
+        loader.unload();
+        RegisterRosNode(factory_, plugin_path, params);
+        continue;
+      }
+    } catch (const std::exception & e) {
+      RCLCPP_DEBUG_STREAM(
+        get_logger(),
+        "Plugin " << plugin["name"] << " does not have symbol BT_RegisterRosNodeFromPlugin: " <<
+          e.what());
+    }
+
+    // If the plugin does not have any of the symbols, log an error
+    RCLCPP_ERROR_STREAM(
+      get_logger(),
+      "Plugin " << plugin["name"] <<
+        " does not have symbol BT_RegisterNodesFromPlugin nor BT_RegisterRosNodeFromPlugin");
+    loader.unload();
   }
 
   blackboard_ = BT::Blackboard::create();
@@ -171,6 +226,30 @@ BTAction::do_work()
         break;
     }
   }
+}
+
+// This function is used to create the fully qualified name of a node
+std::string BTAction::createFullyQualifiedName(const std::string & ns, const std::string & name)
+{
+  std::string fq_name;
+
+  if (!ns.empty()) {
+    if (ns.front() != '/') {
+      fq_name += "/";
+    }
+    fq_name += ns;
+
+    if (fq_name.back() == '/') {
+      fq_name.pop_back();
+    }
+  }
+
+  if (!fq_name.empty() && name.front() != '/') {
+    fq_name += "/";
+  }
+  fq_name += name;
+
+  return fq_name;
 }
 
 }  // namespace plansys2
