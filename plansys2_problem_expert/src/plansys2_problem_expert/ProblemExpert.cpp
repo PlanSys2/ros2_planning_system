@@ -467,7 +467,15 @@ ProblemExpert::isValidPredicate(const plansys2::Predicate & predicate)
         auto arg_type = getInstance(predicate.parameters[i].name);
 
         if (!arg_type.has_value()) {
+          // It might be a constant, so we check if the type is correct
           same_types = false;
+          auto constants = domain_expert_->getConstants(model_predicate.value().parameters[i].type);
+          for (auto constant : constants) {
+            if (constant == predicate.parameters[i].name) {
+              same_types = true;
+              break;
+            }
+          }
         } else if (arg_type.value().type != model_predicate.value().parameters[i].type) {
           bool isSubtype = false;
           for (std::string subType : model_predicate.value().parameters[i].sub_types) {
