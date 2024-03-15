@@ -84,21 +84,41 @@ DomainReader::get_joint_domain() const
   }
   ret += ")\n\n";
 
-  ret += "(:types\n";
-  for (auto & domain : domains_) {
-    if (!domain.types.empty()) {
-      ret += domain.types + "\n";
-    }
-  }
-  ret += ")\n\n";
+  bool functions = false;
+  bool constants = false;
+  bool types = false;
 
-  ret += "(:constants\n";
-  for (const auto & domain : domains_) {
+  for (auto & domain : domains_) {
+    if (!domain.functions.empty()) {
+      functions = true;
+    }
+    if (!domain.types.empty()) {
+      types = true;
+    }
     if (!domain.constants.empty()) {
-      ret += domain.constants + "\n";
+      constants = true;
     }
   }
-  ret += ")\n\n";
+
+  if (types) {
+    ret += "(:types\n";
+    for (auto & domain : domains_) {
+      if (!domain.types.empty()) {
+        ret += domain.types + "\n";
+      }
+    }
+    ret += ")\n\n";
+  }
+
+  if (constants) {
+    ret += "(:constants\n";
+    for (const auto & domain : domains_) {
+      if (!domain.constants.empty()) {
+        ret += domain.constants + "\n";
+      }
+    }
+    ret += ")\n\n";
+  }
 
   ret += "(:predicates\n";
   std::set<std::string> preds_set;
@@ -111,13 +131,15 @@ DomainReader::get_joint_domain() const
   }
   ret += ")\n\n";
 
-  ret += "(:functions\n";
-  for (auto & domain : domains_) {
-    if (!domain.functions.empty()) {
-      ret += domain.functions + "\n";
+  if (functions) {
+    ret += "(:functions\n";
+    for (auto & domain : domains_) {
+      if (!domain.functions.empty()) {
+        ret += domain.functions + "\n";
+      }
     }
+    ret += ")\n\n";
   }
-  ret += ")\n\n";
 
   for (auto & domain : domains_) {
     for (auto & action : domain.actions) {

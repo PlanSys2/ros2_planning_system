@@ -25,8 +25,10 @@ int main( int argc, char *argv[] ) {
 
 	// Read multiagent domain and instance
 	Domain domain( domain_str );
-	Instance instance( domain, instance_str );
 
 	std::cout << domain << std::endl;
+
+	Instance instance( domain, instance_str );
+	
 	std::cout << instance << std::endl;
 }
