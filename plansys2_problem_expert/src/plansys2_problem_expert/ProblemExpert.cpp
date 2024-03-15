@@ -512,7 +512,15 @@ ProblemExpert::isValidFunction(const plansys2::Function & function)
         auto arg_type = getInstance(function.parameters[i].name);
 
         if (!arg_type.has_value()) {
+          // It might be a constant, so we check if the type is correct
           same_types = false;
+          auto constants = domain_expert_->getConstants(model_function.value().parameters[i].type);
+          for (auto constant : constants) {
+            if (constant == function.parameters[i].name) {
+              same_types = true;
+              break;
+            }
+          }
         } else if (arg_type.value().type != model_function.value().parameters[i].type) {
           bool isSubtype = false;
           for (std::string subType : model_function.value().parameters[i].sub_types) {
