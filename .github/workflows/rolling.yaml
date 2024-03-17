@@ -20,11 +20,11 @@ jobs:
       - name: Install popf deps
         run: sudo apt-get install libfl-dev
       - name: Setup ROS 2
-        uses: ros-tooling/setup-ros@0.7.0
+        uses: ros-tooling/setup-ros@0.7.1
         with:
           required-ros-distributions: rolling
       - name: build and test
-        uses: ros-tooling/action-ros-ci@0.3.3
+        uses: ros-tooling/action-ros-ci@0.3.6
         with:
           package-name: plansys2_bringup plansys2_bt_actions plansys2_domain_expert plansys2_executor plansys2_lifecycle_manager plansys2_msgs plansys2_pddl_parser plansys2_planner plansys2_popf_plan_solver plansys2_problem_expert plansys2_terminal plansys2_tests plansys2_tools
           target-ros2-distro: rolling
