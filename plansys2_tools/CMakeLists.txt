@@ -1,5 +1,6 @@
-project(plansys2_tools)
 cmake_minimum_required(VERSION 3.5)
+
+project(plansys2_tools)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
