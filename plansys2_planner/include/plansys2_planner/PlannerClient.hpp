@@ -42,6 +42,7 @@ private:
     get_plan_client_;
 
   rclcpp::Node::SharedPtr node_;
+  int solver_timeout_ = 15;
 };
 
 }  // namespace plansys2

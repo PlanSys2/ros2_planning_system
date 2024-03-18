@@ -28,6 +28,11 @@ PlannerClient::PlannerClient()
   node_ = rclcpp::Node::make_shared("planner_client");
 
   get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("planner/get_plan");
+
+  node_->declare_parameter("plan_solver_timeout", solver_timeout_);
+  
+  node_->get_parameter("plan_solver_timeout", solver_timeout_);
+  RCLCPP_INFO(node_->get_logger(), "Planner CLient created with timeout %d", solver_timeout_);
 }
 
 std::optional<plansys2_msgs::msg::Plan>
@@ -44,6 +49,16 @@ PlannerClient::getPlan(
       get_plan_client_->get_service_name() <<
         " service  client: waiting for service to appear...");
   }
+  int timeout = solver_timeout_;
+  if (timeout <= 0) {
+    std::string timeout_str = "Get Plan service called with negative timed out:";
+    timeout_str += std::to_string(solver_timeout_);
+    timeout_str += ". Setting to 15 seconds";
+    RCLCPP_ERROR(node_->get_logger(), timeout_str.c_str());
+    timeout = 15;
+  }
+
+  RCLCPP_INFO(node_->get_logger(), "Get Plan service call with time out %d", timeout);
 
   auto request = std::make_shared<plansys2_msgs::srv::GetPlan::Request>();
   request->domain = domain;
@@ -51,9 +66,16 @@ PlannerClient::getPlan(
 
   auto future_result = get_plan_client_->async_send_request(request);
 
-  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(15)) !=
-    rclcpp::FutureReturnCode::SUCCESS)
+  auto outresult = rclcpp::spin_until_future_complete(node_, future_result,
+                                                    std::chrono::seconds(timeout));
+  if (outresult != rclcpp::FutureReturnCode::SUCCESS)
   {
+    if (outresult == rclcpp::FutureReturnCode::TIMEOUT)
+    {
+      RCLCPP_ERROR(node_->get_logger(), "Get Plan service call timed out");
+    } else {
+      RCLCPP_ERROR(node_->get_logger(), "Get Plan service call failed");
+    }
     return {};
   }
 
