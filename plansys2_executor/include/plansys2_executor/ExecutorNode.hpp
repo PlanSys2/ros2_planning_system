@@ -74,8 +74,6 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response);
 
 protected:
-  rclcpp::Node::SharedPtr node_;
-
   bool cancel_plan_requested_;
   std::optional<plansys2_msgs::msg::Plan> current_plan_;
   std::optional<std::vector<plansys2_msgs::msg::Tree>> ordered_sub_goals_;

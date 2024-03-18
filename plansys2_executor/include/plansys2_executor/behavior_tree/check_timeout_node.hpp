@@ -19,7 +19,7 @@
 #include <string>
 #include <memory>
 
-#include "behaviortree_cpp_v3/action_node.h"
+#include "behaviortree_cpp/action_node.h"
 
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
@@ -35,7 +35,7 @@ class CheckTimeout : public BT::ActionNodeBase
 public:
   CheckTimeout(
     const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf);
+    const BT::NodeConfig & conf);
 
   void halt() {}
   BT::NodeStatus tick() override;
@@ -49,7 +49,8 @@ public:
   }
 
 private:
-  std::chrono::high_resolution_clock::time_point start_;
+  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  rclcpp::Time start_;
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 };

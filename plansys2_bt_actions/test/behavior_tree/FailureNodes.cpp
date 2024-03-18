@@ -15,14 +15,14 @@
 #include <string>
 #include <memory>
 
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 #include "FailureNodes.hpp"
 
 BT_REGISTER_NODES(factory)
 {
   BT::NodeBuilder builder =
-    [](const std::string & name, const BT::NodeConfiguration & config)
+    [](const std::string & name, const BT::NodeConfig & config)
     {
       return std::make_unique<plansys2_bt_tests::OnTickFail>(
         name, "move", config);
@@ -32,7 +32,7 @@ BT_REGISTER_NODES(factory)
     "OnTickFail", builder);
 
   builder =
-    [](const std::string & name, const BT::NodeConfiguration & config)
+    [](const std::string & name, const BT::NodeConfig & config)
     {
       return std::make_unique<plansys2_bt_tests::OnFeedbackFail>(
         name, "move", config);

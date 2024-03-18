@@ -1,36 +1,40 @@
-name: master
+name: rolling
 
 on:
   pull_request:
     branches:
-      - master
+      - rolling
   push:
     branches:
-      - master
-
+      - rolling
+  schedule:
+      - cron: '0 0 * * 6'     
 jobs:
   build-and-test:
     runs-on: ${{ matrix.os }}
-    container:
-      image: osrf/ros:humble-desktop
     strategy:
       matrix:
         os: [ubuntu-22.04]
       fail-fast: false
     steps:
-      - name: Install deps
-        run: sudo apt-get update && sudo apt-get install -y wget python3-vcstool python3-colcon-coveragepy-result libfl-dev
+      - name: Install popf deps
+        run: sudo apt-get install libfl-dev
+      - name: Setup ROS 2
+        uses: ros-tooling/setup-ros@0.7.0
+        with:
+          required-ros-distributions: rolling
       - name: build and test
-        uses: ros-tooling/action-ros-ci@0.2.6
+        uses: ros-tooling/action-ros-ci@0.3.3
         with:
           package-name: plansys2_bringup plansys2_bt_actions plansys2_domain_expert plansys2_executor plansys2_lifecycle_manager plansys2_msgs plansys2_pddl_parser plansys2_planner plansys2_popf_plan_solver plansys2_problem_expert plansys2_terminal plansys2_tests plansys2_tools
-          target-ros2-distro: humble
+          target-ros2-distro: rolling
           colcon-defaults: |
             {
               "test": {
                 "parallel-workers" : 1
               }
             }
+          vcs-repo-file-url: https://raw.githubusercontent.com/PlanSys2/ros2_planning_system/rolling/dependency_repos.repos
           colcon-mixin-name: coverage-gcc
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
       - name: Codecov

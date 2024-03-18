@@ -47,17 +47,22 @@ TEST(problem_expert, addget_instances)
         "Paco",
         "SCIENTIFIC")));
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("ur5e", "Robot")));
 
-  ASSERT_EQ(problem_expert.getInstances().size(), 2);
+  ASSERT_EQ(problem_expert.getInstances().size(), 3);
   ASSERT_EQ(problem_expert.getInstances()[0].name, "Paco");
   ASSERT_EQ(problem_expert.getInstances()[0].type, "person");
   ASSERT_EQ(problem_expert.getInstances()[1].name, "r2d2");
   ASSERT_EQ(problem_expert.getInstances()[1].type, "robot");
+  ASSERT_EQ(problem_expert.getInstances()[2].name, "ur5e");
+  ASSERT_EQ(problem_expert.getInstances()[2].type, "robot");
 
   ASSERT_TRUE(problem_expert.removeInstance(parser::pddl::fromStringParam("Paco", "person")));
-  ASSERT_EQ(problem_expert.getInstances().size(), 1);
+  ASSERT_EQ(problem_expert.getInstances().size(), 2);
   ASSERT_EQ(problem_expert.getInstances()[0].name, "r2d2");
   ASSERT_EQ(problem_expert.getInstances()[0].type, "robot");
+  ASSERT_EQ(problem_expert.getInstances()[1].name, "ur5e");
+  ASSERT_EQ(problem_expert.getInstances()[1].type, "robot");
 
   auto paco_instance = problem_expert.getInstance("Paco");
   ASSERT_FALSE(paco_instance);
@@ -65,6 +70,10 @@ TEST(problem_expert, addget_instances)
   ASSERT_TRUE(r2d2_instance);
   ASSERT_EQ(r2d2_instance.value().name, "r2d2");
   ASSERT_EQ(r2d2_instance.value().type, "robot");
+  auto ur5e_instance = problem_expert.getInstance("ur5e");
+  ASSERT_TRUE(ur5e_instance);
+  ASSERT_EQ(ur5e_instance.value().name, "ur5e");
+  ASSERT_EQ(ur5e_instance.value().type, "robot");
 }
 
 TEST(problem_expert, add_functions)
@@ -571,6 +580,11 @@ TEST(problem_expert, add_problem)
   ASSERT_TRUE(problem_expert.isValidType("room"));
   ASSERT_TRUE(problem_expert.isValidType("room_with_teleporter"));
   ASSERT_TRUE(problem_expert.isValidType("message"));
+  ASSERT_TRUE(problem_expert.isValidType("ROBOT"));
+  ASSERT_TRUE(problem_expert.isValidType("Person"));
+  ASSERT_TRUE(problem_expert.isValidType("ROOM"));
+  ASSERT_TRUE(problem_expert.isValidType("ROOM_with_TELEPORTER"));
+  ASSERT_TRUE(problem_expert.isValidType("Message"));
 
   ASSERT_EQ(problem_expert.getInstances().size(), 5);
   ASSERT_EQ(problem_expert.getPredicates().size(), 2);

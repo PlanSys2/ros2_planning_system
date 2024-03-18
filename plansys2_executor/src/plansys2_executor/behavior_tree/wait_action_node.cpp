@@ -23,7 +23,7 @@ namespace plansys2
 
 WaitAction::WaitAction(
   const std::string & xml_tag_name,
-  const BT::NodeConfiguration & conf)
+  const BT::NodeConfig & conf)
 : ActionNodeBase(xml_tag_name, conf)
 {
   action_map_ =
@@ -42,9 +42,7 @@ WaitAction::tick()
   }
 
   if ((*action_map_)[action].action_executor != nullptr &&
-    (*action_map_)[action].action_executor->is_finished() &&
-    (*action_map_)[action].at_start_effects_applied &&
-    (*action_map_)[action].at_end_effects_applied)
+    (*action_map_)[action].action_executor->is_finished())
   {
     return BT::NodeStatus::SUCCESS;
   } else {

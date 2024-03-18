@@ -37,6 +37,7 @@ set(PDDL-PARSER-SOURCES
   src/plansys2_pddl_parser/Ground.cpp
   src/plansys2_pddl_parser/Utils.cpp
   src/plansys2_pddl_parser/TypeGround.cpp
+  src/plansys2_pddl_parser/Imply.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${PDDL-PARSER-SOURCES})
