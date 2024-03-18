@@ -38,7 +38,8 @@ public:
 
   virtual std::optional<plansys2_msgs::msg::Plan> getPlan(
     const std::string & domain, const std::string & problem,
-    const std::string & node_namespace = "") = 0;
+    const std::string & node_namespace = "",
+    const int solver_timeout = 15) = 0;
 };
 
 }  // namespace plansys2

@@ -39,6 +39,8 @@ PlannerNode::PlannerNode()
       std::placeholders::_3));
 
   declare_parameter("plan_solver_plugins", default_ids_);
+  solver_timeout_ = 15;
+  declare_parameter("plan_solver_timeout", solver_timeout_);
 }
 
 
@@ -53,6 +55,7 @@ PlannerNode::on_configure(const rclcpp_lifecycle::State & state)
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
 
   get_parameter("plan_solver_plugins", solver_ids_);
+  get_parameter("plan_solver_timeout", solver_timeout_);
 
   if (!solver_ids_.empty()) {
     if (solver_ids_ == default_ids_) {
@@ -90,6 +93,7 @@ PlannerNode::on_configure(const rclcpp_lifecycle::State & state)
       "POPF", "plansys2/POPFPlanSolver");
   }
 
+  RCLCPP_INFO(get_logger(), "[%s] Solver Timeout %d", get_name(), solver_timeout_);
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
 }
@@ -145,7 +149,7 @@ PlannerNode::get_plan_service_callback(
   const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response)
 {
   auto plan = solvers_.begin()->second->getPlan(
-    request->domain, request->problem, get_namespace());
+    request->domain, request->problem, get_namespace(), solver_timeout_);
 
   if (plan) {
     response->success = true;

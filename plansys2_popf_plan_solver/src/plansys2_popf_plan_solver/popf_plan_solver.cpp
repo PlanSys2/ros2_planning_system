@@ -44,7 +44,8 @@ void POPFPlanSolver::configure(
 std::optional<plansys2_msgs::msg::Plan>
 POPFPlanSolver::getPlan(
   const std::string & domain, const std::string & problem,
-  const std::string & node_namespace)
+  const std::string & node_namespace,
+  const int solver_timeout)
 {
   if (system(nullptr) == 0) {
     return {};
@@ -69,6 +70,9 @@ POPFPlanSolver::getPlan(
   problem_out << problem;
   problem_out.close();
 
+  RCLCPP_INFO(lc_node_->get_logger(), "[%s-popf] called with timeout %d seconds", 
+              lc_node_->get_name(), solver_timeout);
+  
   int status = system(
     ("ros2 run popf popf " +
     lc_node_->get_parameter(parameter_name_).value_to_string() +

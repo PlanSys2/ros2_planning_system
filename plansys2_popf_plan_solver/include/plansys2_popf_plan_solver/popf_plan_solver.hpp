@@ -37,7 +37,8 @@ public:
 
   std::optional<plansys2_msgs::msg::Plan> getPlan(
     const std::string & domain, const std::string & problem,
-    const std::string & node_namespace = "");
+    const std::string & node_namespace = "",
+    const int solver_timeout = 15);
 
   bool is_valid_domain(
     const std::string & domain,
