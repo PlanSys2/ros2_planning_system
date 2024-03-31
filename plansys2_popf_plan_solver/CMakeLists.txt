@@ -1,6 +1,6 @@
-project(plansys2_popf_plan_solver)
-
 cmake_minimum_required(VERSION 3.5)
+
+project(plansys2_popf_plan_solver)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
