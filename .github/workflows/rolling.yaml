@@ -24,8 +24,8 @@ jobs:
         uses: ros-tooling/setup-ros@0.7.1
         with:
           required-ros-distributions: rolling
-      - name: Install BT.CPP v4 (provisional Fix)
-        run: sudo apt-get install ros-rolling-behaviortree-cpp
+      - name: Install BT.CPP v4 and test_msgs (provisional Fix)
+        run: sudo apt-get install ros-rolling-behaviortree-cpp ros-rolling-test-msgs
       - name: build and test
         uses: ros-tooling/action-ros-ci@0.3.6
         with:
