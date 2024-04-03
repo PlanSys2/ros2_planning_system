@@ -2,7 +2,7 @@
 (:requirements :adl :durative-actions :fluents :strips :typing )
 
 (:types
-person  - object 
+person  - object
 message - object
 robot   - object
 room    - object
@@ -10,9 +10,6 @@ teleporter_room - room
 robot
 pickable_object
 room
-)
-
-(:constants
 )
 
 (:predicates
@@ -61,7 +58,7 @@ room
 )
 (:action move_person
     :parameters (?p - person ?r1 ?r2 - room)
-    :precondition (and 
+    :precondition (and
         (person_at ?p ?r1)
     )
     :effect (and
