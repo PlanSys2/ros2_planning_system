@@ -29,6 +29,7 @@
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_msgs/srv/get_plan.hpp"
+#include "plansys2_msgs/srv/validate_domain.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -61,6 +62,11 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::GetPlan::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response);
 
+  void validate_domain_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Response> response);
+
 private:
   pluginlib::ClassLoader<plansys2::PlanSolverBase> lp_loader_;
   SolverMap solvers_;
@@ -71,6 +77,8 @@ private:
 
   rclcpp::Service<plansys2_msgs::srv::GetPlan>::SharedPtr
     get_plan_service_;
+  rclcpp::Service<plansys2_msgs::srv::ValidateDomain>::SharedPtr
+    validate_domain_service_;
 };
 
 template<typename NodeT>

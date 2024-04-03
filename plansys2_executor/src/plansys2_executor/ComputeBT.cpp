@@ -26,14 +26,10 @@
 
 #include "plansys2_executor/ComputeBT.hpp"
 
-#include "behaviortree_cpp_v3/behavior_tree.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/utils/shared_library.h"
-#include "behaviortree_cpp_v3/blackboard.h"
-
-#ifdef ZMQ_FOUND
-#include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
-#endif
+#include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/utils/shared_library.h"
+#include "behaviortree_cpp/blackboard.h"
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_action_node.hpp"
@@ -71,13 +67,6 @@ ComputeBT::ComputeBT()
       "action_timeouts." + action + ".duration_overrun_percentage",
       0.0);
   }
-
-#ifdef ZMQ_FOUND
-  this->declare_parameter<bool>("enable_groot_monitoring", true);
-  this->declare_parameter<int>("publisher_port", 2666);
-  this->declare_parameter<int>("server_port", 2667);
-  this->declare_parameter<int>("max_msgs_per_second", 25);
-#endif
 
   compute_bt_srv_ = create_service<std_srvs::srv::Trigger>(
     "compute_bt",
@@ -310,21 +299,25 @@ ComputeBT::computeBTCallback(
     bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
   }
 
-  auto bt_xml = bt_builder->get_tree(plan.value());
-  saveBT(bt_xml, problem_path.stem().u8string());
+  auto bt_xml_tree = bt_builder->get_tree(plan.value());
+  if (bt_xml_tree.empty()) {
+    RCLCPP_ERROR(get_logger(), "Error computing behavior tree!");
 
+    finish = true;
+    t.join();
+    response->success = false;
+    return;
+  }
+
+  saveBT(bt_xml_tree, problem_path.stem().u8string());
+
+  auto action_graph = bt_builder->get_graph();
   std_msgs::msg::String dotgraph_msg;
   dotgraph_msg.data = bt_builder->get_dotgraph(
     action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
     this->get_parameter("print_graph").as_bool());
   dotgraph_pub_->publish(dotgraph_msg);
   saveDotGraph(dotgraph_msg.data, problem_path.stem().u8string());
-
-  auto blackboard = BT::Blackboard::create();
-  blackboard->set("action_map", action_map);
-  blackboard->set("node", shared_from_this());
-  blackboard->set("domain_client", domain_client_);
-  blackboard->set("problem_client", problem_client_);
 
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<ExecuteAction>("ExecuteAction");
@@ -337,29 +330,18 @@ ComputeBT::computeBTCallback(
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
 
-  auto tree = factory.createTreeFromText(bt_xml, blackboard);
+  (*action_map)[":0"].at_start_effects_applied_time = now();
+  (*action_map)[":0"].at_end_effects_applied_time = now();
 
-#ifdef ZMQ_FOUND
-  unsigned int publisher_port = this->get_parameter("publisher_port").as_int();
-  unsigned int server_port = this->get_parameter("server_port").as_int();
-  unsigned int max_msgs_per_second = this->get_parameter("max_msgs_per_second").as_int();
+  auto blackboard = BT::Blackboard::create();
+  blackboard->set("action_map", action_map);
+  blackboard->set("action_graph", action_graph);
+  blackboard->set("node", shared_from_this());
+  blackboard->set("domain_client", domain_client_);
+  blackboard->set("problem_client", problem_client_);
+  blackboard->set("bt_builder", bt_builder);
 
-  std::unique_ptr<BT::PublisherZMQ> publisher_zmq;
-  if (this->get_parameter("enable_groot_monitoring").as_bool()) {
-    RCLCPP_DEBUG(
-      get_logger(),
-      "[%s] Groot monitoring: Publisher port: %d, Server port: %d, Max msgs per second: %d",
-      get_name(), publisher_port, server_port, max_msgs_per_second);
-    try {
-      publisher_zmq.reset(
-        new BT::PublisherZMQ(
-          tree, max_msgs_per_second, publisher_port,
-          server_port));
-    } catch (const BT::LogicError & exc) {
-      RCLCPP_ERROR(get_logger(), "ZMQ error: %s", exc.what());
-    }
-  }
-#endif
+  auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
   finish = true;
   t.join();

@@ -2,6 +2,29 @@
 Changelog for package plansys2_pddl_parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge remote-tracking branch 'origin/humble-devel'
+* Merge pull request `#238 <https://github.com/PlanSys2/ros2_planning_system/issues/238>`_ from roveri-marco/fix_goal_structure_issue_205
+  Fix goal structure issue 205
+* Merge pull request `#246 <https://github.com/PlanSys2/ros2_planning_system/issues/246>`_ from pac48/fix-not-regex-in-parser-utils
+  Fix regex for 'not', 'and', 'or' in parser utils
+* fix regex for 'and' and 'or'
+* fix regex for NOT
+* Removed debug code
+* Fixed support for complex goals and other changes
+* Fixed some errors and some tests to comply with the revised output
+* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
+* Fixed support for the complex goal parsing both from the terminal and from file
+* Merge remote-tracking branch 'upstream/master'
+* Contributors: Francisco Martín Rico, Marco Roveri, Paul Gesel, Splinter1984
+
+2.0.9 (2022-07-10)
+------------------
+* Humble Upgrade
+* Update popf checker interface
+* Contributors: Francisco Martín Rico
+
 2.0.8 (2022-05-04)
 ------------------
 * Add missing dependency

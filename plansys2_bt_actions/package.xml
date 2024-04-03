@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>plansys2_bt_actions</name>
-  <version>2.0.8</version>
+  <version>2.0.9</version>
   
   <description>This package contains the Problem Expert module for the ROS2 Planning System</description>
 
@@ -16,9 +16,8 @@
   <depend>rclcpp_action</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>plansys2_executor</depend>
-  <depend>behaviortree_cpp_v3</depend>
+  <depend>behaviortree_cpp</depend>
   <depend>action_msgs</depend>
-  <depend>libzmq3-dev</depend>
 
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>

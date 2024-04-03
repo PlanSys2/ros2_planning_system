@@ -1,6 +1,6 @@
-project(plansys2_tests)
-
 cmake_minimum_required(VERSION 3.5)
+
+project(plansys2_tests)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -15,7 +15,7 @@ find_package(plansys2_domain_expert REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
 find_package(plansys2_planner REQUIRED)
 find_package(plansys2_executor REQUIRED)
-find_package(behaviortree_cpp_v3 REQUIRED)
+find_package(behaviortree_cpp REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -32,7 +32,7 @@ set(dependencies
     plansys2_problem_expert
     plansys2_planner
     plansys2_executor
-    behaviortree_cpp_v3
+    behaviortree_cpp
 )
 
 include_directories(include)

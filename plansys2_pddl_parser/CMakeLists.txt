@@ -1,6 +1,6 @@
-project(plansys2_pddl_parser)
-
 cmake_minimum_required(VERSION 3.5)
+
+project(plansys2_pddl_parser)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -37,6 +37,7 @@ set(PDDL-PARSER-SOURCES
   src/plansys2_pddl_parser/Ground.cpp
   src/plansys2_pddl_parser/Utils.cpp
   src/plansys2_pddl_parser/TypeGround.cpp
+  src/plansys2_pddl_parser/Imply.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${PDDL-PARSER-SOURCES})

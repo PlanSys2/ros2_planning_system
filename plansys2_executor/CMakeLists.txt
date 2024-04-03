@@ -1,9 +1,10 @@
-project(plansys2_executor)
-
 cmake_minimum_required(VERSION 3.5)
+project(plansys2_executor)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+find_package(eigen3_cmake_module REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
@@ -18,21 +19,15 @@ find_package(plansys2_domain_expert REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
 find_package(plansys2_planner REQUIRED)
 find_package(pluginlib REQUIRED)
-find_package(behaviortree_cpp_v3 REQUIRED)
+find_package(behaviortree_cpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
-
-find_package(ZMQ)
-if(ZMQ_FOUND)
-    message(STATUS "ZeroMQ found.")
-    add_definitions(-DZMQ_FOUND)
-else()
-  message(WARNING "ZeroMQ NOT found. Not including PublisherZMQ.")
-endif()
 
 set(CMAKE_CXX_STANDARD 17)
 
 set(dependencies
+    eigen3_cmake_module
+    Eigen3
     rclcpp
     rclcpp_lifecycle
     lifecycle_msgs
@@ -46,12 +41,12 @@ set(dependencies
     plansys2_problem_expert
     plansys2_planner
     pluginlib
-    behaviortree_cpp_v3
+    behaviortree_cpp
     std_msgs
     std_srvs
 )
 
-include_directories(include ${ZMQ_INCLUDE_DIRS})
+include_directories(include)
 
 set(EXECUTOR_SOURCES
   src/plansys2_executor/ExecutorClient.cpp
@@ -73,7 +68,7 @@ set(EXECUTOR_SOURCES
 
 add_library(${PROJECT_NAME} SHARED ${EXECUTOR_SOURCES})
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
-target_link_libraries(${PROJECT_NAME} ${ZMQ_LIBRARIES})
+target_link_libraries(${PROJECT_NAME})
 
 add_executable(executor_node
   src/executor_node.cpp

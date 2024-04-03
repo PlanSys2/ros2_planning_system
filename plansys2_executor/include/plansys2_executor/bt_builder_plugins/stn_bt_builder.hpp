@@ -15,6 +15,8 @@
 #ifndef PLANSYS2_EXECUTOR__BT_BUILDER_PLUGINS__STN_BT_BUILDER_HPP_
 #define PLANSYS2_EXECUTOR__BT_BUILDER_PLUGINS__STN_BT_BUILDER_HPP_
 
+#include <eigen3/Eigen/Dense>
+
 #include <list>
 #include <map>
 #include <memory>
@@ -39,29 +41,6 @@ struct StateVec
   std::vector<plansys2::Function> functions;
 };
 
-struct GraphNode
-{
-  using Ptr = std::shared_ptr<GraphNode>;
-  static Ptr make_shared(int id) {return std::make_shared<GraphNode>(id);}
-
-  int node_num;
-  ActionStamped action;
-
-  std::set<std::tuple<GraphNode::Ptr, double, double>> input_arcs;
-  std::set<std::tuple<GraphNode::Ptr, double, double>> output_arcs;
-
-  explicit GraphNode(int id)
-  : node_num(id) {}
-};
-
-struct Graph
-{
-  using Ptr = std::shared_ptr<Graph>;
-  static Ptr make_shared() {return std::make_shared<Graph>();}
-
-  std::list<GraphNode::Ptr> nodes;
-};
-
 class STNBTBuilder : public BTBuilder
 {
 public:
@@ -72,6 +51,8 @@ public:
     int precision = 3);
 
   std::string get_tree(const plansys2_msgs::msg::Plan & current_plan);
+  Graph::Ptr get_graph() {return stn_;}
+  bool propagate(const Graph::Ptr stn);
   std::string get_dotgraph(
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map,
     bool enable_legend = false,
@@ -97,12 +78,12 @@ protected:
     const std::vector<plansys2::Predicate> & preds,
     const std::vector<plansys2::Function> & funcs) const;
 
-  std::vector<GraphNode::Ptr> get_nodes(
+  std::vector<Node::Ptr> get_nodes(
     const ActionStamped & action,
     const Graph::Ptr graph) const;
 
   bool is_match(
-    const GraphNode::Ptr node,
+    const Node::Ptr node,
     const ActionStamped & action) const;
 
   std::vector<std::pair<int, ActionStamped>> get_parents(
@@ -135,29 +116,30 @@ protected:
   plansys2_msgs::msg::Tree get_conditions(const ActionStamped & action) const;
   plansys2_msgs::msg::Tree get_effects(const ActionStamped & action) const;
 
-  void prune_paths(GraphNode::Ptr current, GraphNode::Ptr previous) const;
-  bool check_paths(GraphNode::Ptr current, GraphNode::Ptr previous) const;
+  void prune_paths(Node::Ptr current, Node::Ptr previous) const;
+  bool check_paths(Node::Ptr current, Node::Ptr previous) const;
+
+  Eigen::MatrixXd get_distance_matrix(const Graph::Ptr stn) const;
+  void floyd_warshall(Eigen::MatrixXd & dist) const;
 
   std::string get_flow(
-    const GraphNode::Ptr node,
-    const GraphNode::Ptr parent,
-    std::set<GraphNode::Ptr> & used,
+    const Node::Ptr node,
+    const Node::Ptr prev_node,
+    std::set<Node::Ptr> & used,
     const int & level) const;
 
   std::string start_execution_block(
-    const GraphNode::Ptr node,
-    const GraphNode::Ptr parent,
+    const Node::Ptr node,
     const int & l) const;
   std::string end_execution_block(
-    const GraphNode::Ptr node,
-    const GraphNode::Ptr parent,
+    const Node::Ptr node,
     const int & l) const;
 
   void get_flow_dotgraph(
-    GraphNode::Ptr node,
+    Node::Ptr node,
     std::set<std::string> & edges);
   std::string get_node_dotgraph(
-    GraphNode::Ptr node,
+    Node::Ptr node,
     std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map);
   ActionExecutor::Status get_action_status(
     ActionStamped action,
@@ -166,12 +148,13 @@ protected:
     int level_counter,
     int node_counter);
   void print_graph(const plansys2::Graph::Ptr graph) const;
-  void print_node(const GraphNode::Ptr node, int level) const;
+  void print_node(const Node::Ptr node, int level) const;
+  void print_arcs(const plansys2::Graph::Ptr graph) const;
 
   void replace(std::string & str, const std::string & from, const std::string & to) const;
 
   bool is_end(
-    const std::tuple<GraphNode::Ptr, double, double> & edge,
+    const std::tuple<Node::Ptr, double, double> & edge,
     const ActionStamped & action) const;
 
   std::string t(const int & level) const;

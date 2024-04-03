@@ -20,11 +20,13 @@
 #include <memory>
 
 
-#include "behaviortree_cpp_v3/action_node.h"
+#include "behaviortree_cpp/action_node.h"
 
 #include "plansys2_executor/ActionExecutor.hpp"
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
+
+#include "plansys2_executor/BTBuilder.hpp"
 
 namespace plansys2
 {
@@ -34,7 +36,7 @@ class CheckAction : public BT::ActionNodeBase
 public:
   CheckAction(
     const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf);
+    const BT::NodeConfig & conf);
 
   void halt() {}
   BT::NodeStatus tick() override;
@@ -48,7 +50,11 @@ public:
   }
 
 private:
+  Node::Ptr get_node(const std::string & node_id, const std::string & node_type);
+
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
+  Graph::Ptr action_graph_;
+  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
 };
 
 }  // namespace plansys2

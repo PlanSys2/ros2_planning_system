@@ -45,6 +45,7 @@ public:
     const std::string & node_name,
     const std::chrono::nanoseconds & rate);
 
+  rclcpp::Time get_start_time() const {return start_time_;}
   plansys2_msgs::msg::ActionPerformerStatus get_internal_status() const {return status_;}
 
 protected:
@@ -82,6 +83,7 @@ protected:
     status_pub_;
   rclcpp::TimerBase::SharedPtr hearbeat_pub_;
   plansys2_msgs::msg::ActionPerformerStatus status_;
+  rclcpp::Time start_time_;
 };
 
 }  // namespace plansys2

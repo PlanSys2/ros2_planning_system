@@ -36,10 +36,10 @@
 #include "plansys2_executor/ExecutorClient.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
 
-#include "behaviortree_cpp_v3/behavior_tree.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/utils/shared_library.h"
-#include "behaviortree_cpp_v3/blackboard.h"
+#include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/utils/shared_library.h"
+#include "behaviortree_cpp/blackboard.h"
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_action_node.hpp"
@@ -107,7 +107,7 @@ public:
   {
     std::cerr << "MoveAction::on_activate" << std::endl;
     counter_ = 0;
-    start_ = std::chrono::high_resolution_clock::now();
+    start_ = now();
 
     return ActionExecutorClient::on_activate(state);
   }
@@ -120,17 +120,18 @@ public:
     }
 
     cycles_++;
-    auto current_time = std::chrono::high_resolution_clock::now();
-    auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-      current_time - start_);
+    auto current_time = now();
+    auto elapsed_time = (current_time - start_).seconds();
+
+    rclcpp::Rate rate(100);
 
     if (runtime_ > 1e-5) {
-      if (elapsed_time > std::chrono::duration<double>(runtime_)) {
+      if (elapsed_time > runtime_) {
         finish(true, 1.0, "completed");
         executions_++;
       } else {
-        send_feedback((static_cast<double>(elapsed_time.count()) / 1000.0) / runtime_, "running");
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        send_feedback(elapsed_time / runtime_, "running");
+        rate.sleep();
       }
     } else {
       if (counter_++ > 3) {
@@ -146,7 +147,7 @@ public:
   int executions_;
   int cycles_;
   double runtime_;
-  std::chrono::high_resolution_clock::time_point start_;
+  rclcpp::Time start_;
 };
 
 class TransportAction : public plansys2::ActionExecutorClient
@@ -248,10 +249,10 @@ TEST(executor, action_executor_client)
 
   std::string bt_xml_tree =
     R"(
-    <root main_tree_to_execute = "MainTree" >
+    <root BTCPP_format="4" main_tree_to_execute = "MainTree" >
       <BehaviorTree ID="MainTree">
         <Sequence name="root_sequence">
-          <Parallel success_threshold="2" failure_threshold="1">
+          <Parallel success_count="2" failure_count="1">
             <ExecuteAction    action="(move robot1 wheels_zone assembly_zone):5"/>
             <ExecuteAction    action="(move robot1 steering_wheels_zone assembly_zone):5"/>
           </Parallel>
@@ -281,7 +282,7 @@ TEST(executor, action_executor_client)
 
   auto status = BT::NodeStatus::RUNNING;
   while (status != BT::NodeStatus::SUCCESS) {
-    status = tree.tickRoot();
+    status = tree.tickOnce();
   }
 
   ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
@@ -440,7 +441,7 @@ class ExecuteActionTest : public plansys2::ExecuteAction
 public:
   ExecuteActionTest(
     const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf)
+    const BT::NodeConfig & conf)
   : ExecuteAction(xml_tag_name, conf) {}
 
   void halt() override
@@ -465,7 +466,7 @@ class WaitActionTest : public plansys2::WaitAction
 public:
   WaitActionTest(
     const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf)
+    const BT::NodeConfig & conf)
   : WaitAction(xml_tag_name, conf) {}
 
   void halt() override
@@ -489,7 +490,7 @@ class CheckOverAllReqTest : public plansys2::CheckOverAllReq
 public:
   CheckOverAllReqTest(
     const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf)
+    const BT::NodeConfig & conf)
   : CheckOverAllReq(xml_tag_name, conf) {}
 
   void halt() override
@@ -513,7 +514,7 @@ class WaitAtStartReqTest : public plansys2::WaitAtStartReq
 public:
   WaitAtStartReqTest(
     const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf)
+    const BT::NodeConfig & conf)
   : WaitAtStartReq(xml_tag_name, conf) {}
 
   void halt() override
@@ -537,7 +538,7 @@ class CheckAtEndReqTest : public plansys2::CheckAtEndReq
 public:
   CheckAtEndReqTest(
     const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf)
+    const BT::NodeConfig & conf)
   : CheckAtEndReq(xml_tag_name, conf) {}
 
   void halt() override
@@ -561,7 +562,7 @@ class ApplyAtStartEffectTest : public plansys2::ApplyAtStartEffect
 public:
   ApplyAtStartEffectTest(
     const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf)
+    const BT::NodeConfig & conf)
   : ApplyAtStartEffect(xml_tag_name, conf) {}
 
   void halt() override
@@ -585,7 +586,7 @@ class ApplyAtEndEffectTest : public plansys2::ApplyAtEndEffect
 public:
   ApplyAtEndEffectTest(
     const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf)
+    const BT::NodeConfig & conf)
   : ApplyAtEndEffect(xml_tag_name, conf) {}
 
   void halt() override
@@ -691,7 +692,7 @@ TEST(executor, action_real_action_1)
 
   std::string bt_xml_tree =
     R"(
-    <root main_tree_to_execute="MainTree">
+    <root BTCPP_format="4" main_tree_to_execute="MainTree">
       <BehaviorTree ID="MainTree">
         <Sequence name="(move r2d2 steering_wheels_zone assembly_zone):0">
           <WaitAction action="other"/>
@@ -742,7 +743,7 @@ TEST(executor, action_real_action_1)
     auto status = BT::NodeStatus::RUNNING;
 
     for (int i = 0; i < 10; i++) {
-      status = tree.tickRoot();
+      status = tree.tickOnce();
       ASSERT_EQ(status, BT::NodeStatus::RUNNING);
       ASSERT_EQ(WaitActionTest::test_status, BT::NodeStatus::RUNNING);
     }
@@ -753,7 +754,7 @@ TEST(executor, action_real_action_1)
   // Test ApplyAtStartEffect and CheckOverAllReq
   bt_xml_tree =
     R"(
-    <root main_tree_to_execute="MainTree">
+    <root BTCPP_format="4" main_tree_to_execute="MainTree">
       <BehaviorTree ID="MainTree">
         <WaitAtStartReq action="(move r2d2 steering_wheels_zone assembly_zone):0"/>
         <Sequence name="(move r2d2 steering_wheels_zone assembly_zone):0">
@@ -786,7 +787,7 @@ TEST(executor, action_real_action_1)
     auto status = BT::NodeStatus::RUNNING;
 
     ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
-    status = tree.tickRoot();
+    status = tree.tickOnce();
 
     ASSERT_EQ(ApplyAtStartEffectTest::test_status, BT::NodeStatus::SUCCESS);
     ASSERT_FALSE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
@@ -795,16 +796,16 @@ TEST(executor, action_real_action_1)
         plansys2::Predicate(
           "(robot_at r2d2 steering_wheels_zone)")));
 
-    status = tree.tickRoot();
+    status = tree.tickOnce();
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
     ASSERT_EQ(ExecuteActionTest::test_status, BT::NodeStatus::RUNNING);
-    status = tree.tickRoot();
+    status = tree.tickOnce();
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
     ASSERT_EQ(ExecuteActionTest::test_status, BT::NodeStatus::RUNNING);
 
     ASSERT_TRUE(problem_client->removePredicate(plansys2::Predicate("(battery_full r2d2)")));
 
-    status = tree.tickRoot();
+    status = tree.tickOnce();
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::FAILURE);
     ASSERT_EQ(status, BT::NodeStatus::FAILURE);
   } catch (const std::exception & e) {
@@ -829,7 +830,7 @@ TEST(executor, action_real_action_1)
     ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
 
     while (ApplyAtStartEffectTest::test_status != BT::NodeStatus::SUCCESS) {
-      status = tree.tickRoot();
+      status = tree.tickOnce();
     }
 
     ASSERT_FALSE(
@@ -839,12 +840,12 @@ TEST(executor, action_real_action_1)
     ASSERT_FALSE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
 
     while (ExecuteActionTest::test_status != BT::NodeStatus::SUCCESS) {
-      status = tree.tickRoot();
+      status = tree.tickOnce();
       ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
     }
 
     while (ApplyAtEndEffectTest::test_status != BT::NodeStatus::SUCCESS) {
-      status = tree.tickRoot();
+      status = tree.tickOnce();
     }
 
     ASSERT_TRUE(
@@ -946,7 +947,7 @@ TEST(executor, cancel_bt_execution)
 
   std::string bt_xml_tree =
     R"(
-    <root main_tree_to_execute="MainTree">
+    <root BTCPP_format="4" main_tree_to_execute="MainTree">
       <BehaviorTree ID="MainTree">
         <WaitAtStartReq action="(move r2d2 steering_wheels_zone assembly_zone):0"/>
         <Sequence name="(move r2d2 steering_wheels_zone assembly_zone):0">
@@ -1005,7 +1006,7 @@ TEST(executor, cancel_bt_execution)
     auto status = BT::NodeStatus::RUNNING;
 
     ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
-    status = tree.tickRoot();
+    status = tree.tickOnce();
 
     ASSERT_EQ(ApplyAtStartEffectTest::test_status, BT::NodeStatus::SUCCESS);
     ASSERT_FALSE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
@@ -1014,10 +1015,10 @@ TEST(executor, cancel_bt_execution)
         plansys2::Predicate(
           "(robot_at r2d2 steering_wheels_zone)")));
 
-    status = tree.tickRoot();
+    status = tree.tickOnce();
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
     ASSERT_EQ(ExecuteActionTest::test_status, BT::NodeStatus::RUNNING);
-    status = tree.tickRoot();
+    status = tree.tickOnce();
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
     ASSERT_EQ(ExecuteActionTest::test_status, BT::NodeStatus::RUNNING);
 
@@ -1037,9 +1038,9 @@ TEST(executor, cancel_bt_execution)
 
     tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
-    status = tree.tickRoot();
-    status = tree.tickRoot();
-    status = tree.tickRoot();
+    status = tree.tickOnce();
+    status = tree.tickOnce();
+    status = tree.tickOnce();
     ASSERT_EQ(ApplyAtStartEffectTest::test_status, BT::NodeStatus::SUCCESS);
     ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
     ASSERT_EQ(ExecuteActionTest::test_status, BT::NodeStatus::RUNNING);
@@ -1174,7 +1175,7 @@ TEST(executor, executor_client_execute_plan)
 
     while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
       auto feedback = executor_client->getFeedBack();
-      ASSERT_LT(feedback.action_execution_status.size(), 2);
+      ASSERT_LT(feedback.action_execution_status.size(), 3);
       rate.sleep();
     }
   }
@@ -1185,7 +1186,7 @@ TEST(executor, executor_client_execute_plan)
   auto result = executor_client->getResult().value();
 
   ASSERT_TRUE(result.success);
-  ASSERT_EQ(result.action_execution_status.size(), 1u);
+  ASSERT_EQ(result.action_execution_status.size(), 2u);
   for (const auto & action_status : result.action_execution_status) {
     ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
   }
@@ -1205,7 +1206,7 @@ TEST(executor, executor_client_execute_plan)
 
     while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
       auto feedback = executor_client->getFeedBack();
-      ASSERT_LT(feedback.action_execution_status.size(), 2);
+      ASSERT_LT(feedback.action_execution_status.size(), 3);
       rate.sleep();
     }
   }
@@ -1270,6 +1271,7 @@ public:
   int executions_;
   int cycles_;
 };
+
 
 TEST(executor, executor_client_ordered_sub_goals)
 {
@@ -1400,7 +1402,7 @@ TEST(executor, executor_client_ordered_sub_goals)
     while (rclcpp::ok() && executor_client->execute_and_check_plan()) {
       auto feedback = executor_client->getFeedBack();
 
-      ASSERT_LE(feedback.action_execution_status.size(), 4);
+      ASSERT_LE(feedback.action_execution_status.size(), 5);
       rate.sleep();
     }
   }
@@ -1548,7 +1550,6 @@ TEST(executor, executor_client_cancel_plan)
   finish = true;
   t.join();
 }
-
 
 TEST(executor, action_timeout)
 {

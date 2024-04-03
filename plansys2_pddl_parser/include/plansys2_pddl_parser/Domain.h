@@ -9,6 +9,7 @@
   #include "plansys2_pddl_parser/Forall.h"
   #include "plansys2_pddl_parser/Function.h"
   #include "plansys2_pddl_parser/GroundFunc.h"
+  #include "plansys2_pddl_parser/Imply.h"
   #include "plansys2_pddl_parser/FunctionModifier.h"
 
   #include "plansys2_pddl_parser/Not.h"
@@ -610,6 +611,7 @@ public:
 		if ( s == "and" ) return new And;
 		if ( s == "exists" ) return new Exists;
 		if ( s == "forall" ) return new Forall;
+		if ( s == "imply" ) return new Imply;
 		if ( s == "assign" ) return new Assign;
 		if ( s == "increase" ) return new Increase;
 		if ( s == "decrease" ) return new Decrease;

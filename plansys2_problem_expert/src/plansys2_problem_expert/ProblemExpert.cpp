@@ -41,19 +41,29 @@ ProblemExpert::ProblemExpert(std::shared_ptr<DomainExpert> & domain_expert)
 bool
 ProblemExpert::addInstance(const plansys2::Instance & instance)
 {
-  if (!isValidType(instance.type)) {
+  plansys2::Instance lowercase_instance = instance;
+  std::transform(
+    lowercase_instance.type.begin(), lowercase_instance.type.end(), lowercase_instance.type.begin(),
+    [](unsigned char c) {return std::tolower(c);});
+  for (auto i = 0; i < lowercase_instance.sub_types.size(); ++i) {
+    std::transform(
+      lowercase_instance.sub_types[i].begin(), lowercase_instance.sub_types[i].end(),
+      lowercase_instance.sub_types[i].begin(), [](unsigned char c) {return std::tolower(c);});
+  }
+
+  if (!isValidType(lowercase_instance.type)) {
     return false;
   }
 
-  std::optional<plansys2::Instance> existing_instance = getInstance(instance.name);
+  std::optional<plansys2::Instance> existing_instance = getInstance(lowercase_instance.name);
   bool exist_instance = existing_instance.has_value();
 
-  if (exist_instance && existing_instance.value().type != instance.type) {
+  if (exist_instance && existing_instance.value().type != lowercase_instance.type) {
     return false;
   }
 
   if (!exist_instance) {
-    instances_.push_back(instance);
+    instances_.push_back(lowercase_instance);
   }
 
   return true;
@@ -398,8 +408,13 @@ ProblemExpert::clearKnowledge()
 bool
 ProblemExpert::isValidType(const std::string & type)
 {
+  std::string lowercase_type = type;
+  std::transform(
+    lowercase_type.begin(), lowercase_type.end(), lowercase_type.begin(),
+    [](unsigned char c) {return std::tolower(c);});
+
   auto valid_types = domain_expert_->getTypes();
-  auto it = std::find(valid_types.begin(), valid_types.end(), type);
+  auto it = std::find(valid_types.begin(), valid_types.end(), lowercase_type);
 
   return it != valid_types.end();
 }

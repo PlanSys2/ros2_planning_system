@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>plansys2_tests</name>
-  <version>2.0.8</version>
+  <version>2.0.9</version>
   
   <description>This package contains the tests package for the ROS2 Planning System</description>
 
@@ -24,7 +24,7 @@
   <depend>plansys2_problem_expert</depend>
   <depend>plansys2_planner</depend>
   <depend>plansys2_executor</depend>
-  <depend>behaviortree_cpp_v3</depend>
+  <depend>behaviortree_cpp</depend>
  
   <exec_depend>popf</exec_depend>
 
