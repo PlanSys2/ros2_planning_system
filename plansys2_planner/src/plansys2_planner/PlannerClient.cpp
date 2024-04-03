@@ -30,7 +30,7 @@ PlannerClient::PlannerClient()
   get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("planner/get_plan");
 
   node_->declare_parameter("plan_solver_timeout", solver_timeout_);
-  
+
   node_->get_parameter("plan_solver_timeout", solver_timeout_);
   RCLCPP_INFO(node_->get_logger(), "Planner CLient created with timeout %d", solver_timeout_);
 }
@@ -66,12 +66,11 @@ PlannerClient::getPlan(
 
   auto future_result = get_plan_client_->async_send_request(request);
 
-  auto outresult = rclcpp::spin_until_future_complete(node_, future_result,
-                                                    std::chrono::seconds(timeout));
-  if (outresult != rclcpp::FutureReturnCode::SUCCESS)
-  {
-    if (outresult == rclcpp::FutureReturnCode::TIMEOUT)
-    {
+  auto outresult = rclcpp::spin_until_future_complete(
+      node_, future_result,
+      std::chrono::seconds(timeout));
+  if (outresult != rclcpp::FutureReturnCode::SUCCESS) {
+    if (outresult == rclcpp::FutureReturnCode::TIMEOUT) {
       RCLCPP_ERROR(node_->get_logger(), "Get Plan service call timed out");
     } else {
       RCLCPP_ERROR(node_->get_logger(), "Get Plan service call failed");
