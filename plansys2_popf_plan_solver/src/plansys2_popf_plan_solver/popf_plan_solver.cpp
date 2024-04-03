@@ -112,9 +112,10 @@ POPFPlanSolver::getPlan(
   problem_out << problem;
   problem_out.close();
 
-  RCLCPP_INFO(lc_node_->get_logger(), "[%s-popf] called with timeout %d seconds", 
-              lc_node_->get_name(), solver_timeout);
-  
+  RCLCPP_INFO(
+    lc_node_->get_logger(), "[%s-popf] called with timeout %d seconds",
+    lc_node_->get_name(), solver_timeout);
+
   const auto plan_file_path = output_dir / std::filesystem::path("plan");
   const auto args = lc_node_->get_parameter(arguments_parameter_name_).value_to_string();
   const int status = system(

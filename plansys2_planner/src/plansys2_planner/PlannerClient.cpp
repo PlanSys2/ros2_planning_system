@@ -67,8 +67,8 @@ PlannerClient::getPlan(
   auto future_result = get_plan_client_->async_send_request(request);
 
   auto outresult = rclcpp::spin_until_future_complete(
-      node_, future_result,
-      std::chrono::seconds(timeout));
+    node_, future_result,
+    std::chrono::seconds(timeout));
   if (outresult != rclcpp::FutureReturnCode::SUCCESS) {
     if (outresult == rclcpp::FutureReturnCode::TIMEOUT) {
       RCLCPP_ERROR(node_->get_logger(), "Get Plan service call timed out");
