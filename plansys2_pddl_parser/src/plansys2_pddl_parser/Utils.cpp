@@ -23,37 +23,79 @@ namespace parser
 namespace pddl
 {
 
-static void printN(uint8_t node_type) {
+static void printN(std::ostream & s, uint8_t node_type) {
   switch(node_type) {
     case plansys2_msgs::msg::Node::UNKNOWN:
-      std::cout << "NODE TYPE UNKNOWN" << std::endl;
+      s << "NODE TYPE UNKNOWN" << std::endl;
       break;
     case plansys2_msgs::msg::Node::AND:
-      std::cout << "NODE TYPE AND" << std::endl;
+      s << "NODE TYPE AND" << std::endl;
       break;
     case plansys2_msgs::msg::Node::OR:
-      std::cout << "NODE TYPE OR" << std::endl;
+      s << "NODE TYPE OR" << std::endl;
       break;
     case plansys2_msgs::msg::Node::NOT:
-      std::cout << "NODE TYPE NOT" << std::endl;
+      s << "NODE TYPE NOT" << std::endl;
       break;
     case plansys2_msgs::msg::Node::PREDICATE:
-      std::cout << "NODE TYPE PRED" << std::endl;
+      s << "NODE TYPE PRED" << std::endl;
       break;
     case plansys2_msgs::msg::Node::FUNCTION:
-      std::cout << "NODE TYPE FUNC" << std::endl;
+      s << "NODE TYPE FUNC" << std::endl;
       break;
     case plansys2_msgs::msg::Node::EXPRESSION:
-      std::cout << "NODE TYPE EXPR" << std::endl;
-      break;
-    case plansys2_msgs::msg::Node::FUNCTION_MODIFIER:
-      std::cout << "NODE TYPE FUN MOD" << std::endl;
+      s << "NODE TYPE EXPR" << std::endl;
       break;
     case plansys2_msgs::msg::Node::NUMBER:
-      std::cout << "NODE TYPE NUM" << std::endl;
+      s << "NODE TYPE NUM" << std::endl;
       break;
-    defaul:
-      std::cout << "NODE TYPE ERROR" << std::endl;
+    case plansys2_msgs::msg::Node::COMP_GE:
+      s << "NODE TYPE COMP GE" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::COMP_GT:
+      s << "NODE TYPE COMP GT" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::COMP_LE:
+      s << "NODE TYPE COMP LE" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::COMP_LT:
+      s << "NODE TYPE COMP LT" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::COMP_EQ:
+      s << "NODE TYPE COMP EQ" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::ARITH_ADD:
+      s << "NODE TYPE ARITH ADD" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::ARITH_SUB:
+      s << "NODE TYPE ARITH SUB" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::ARITH_MULT:
+      s << "NODE TYPE ARITH MULT" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::ARITH_DIV:
+      s << "NODE TYPE ARITH DIV" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::ASSIGN:
+      s << "NODE TYPE ASSIGN" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::INCREASE:
+      s << "NODE TYPE INCREASE" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::DECREASE:
+      s << "NODE TYPE DECREASE" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::SCALE_UP:
+      s << "NODE TYPE SCALE UP" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::SCALE_DOWN:
+      s << "NODE TYPE SCALE DOWN" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::FUNCTION_MODIFIER:
+      s << "NODE TYPE FUNCTION MODIFIER" << std::endl;
+      break;
+    default:
+      s << "NODE TYPE UNDEFINED" << std::endl;
       break;
   }
 }
@@ -157,67 +199,71 @@ std::tuple<uint8_t, int> getExpr(const std::string & input)
   std::smatch match;
   int first = std::numeric_limits<int>::max();
 
-  if (std::regex_search(input, match, std::regex("\\(\\s*>="))) {
+  if (std::regex_search(input, match, std::regex("\\s*>="))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       expr_type = plansys2_msgs::msg::Node::COMP_GE;
     }
   }
 
-  if (std::regex_search(input, match, std::regex("\\(\\s*>"))) {
+  if (std::regex_search(input, match, std::regex("\\s*>"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       expr_type = plansys2_msgs::msg::Node::COMP_GT;
     }
   }
 
-  if (std::regex_search(input, match, std::regex("\\(\\s*<="))) {
+  if (std::regex_search(input, match, std::regex("\\s*<="))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       expr_type = plansys2_msgs::msg::Node::COMP_LE;
     }
   }
 
-  if (std::regex_search(input, match, std::regex("\\(\\s*<"))) {
+  if (std::regex_search(input, match, std::regex("\\s*<"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       expr_type = plansys2_msgs::msg::Node::COMP_LT;
     }
   }
 
-  if (std::regex_search(input, match, std::regex("\\(\\s*="))) {
+  if (std::regex_search(input, match, std::regex("\\s*="))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       expr_type = plansys2_msgs::msg::Node::COMP_EQ;
     }
   }
 
-  if (std::regex_search(input, match, std::regex("\\(\\s*\\*"))) {
+  if (std::regex_search(input, match, std::regex("\\s*\\*"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       expr_type = plansys2_msgs::msg::Node::ARITH_MULT;
     }
   }
 
-  if (std::regex_search(input, match, std::regex("\\(\\s*\\/"))) {
+  if (std::regex_search(input, match, std::regex("\\s*\\/"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       expr_type = plansys2_msgs::msg::Node::ARITH_DIV;
     }
   }
 
-  if (std::regex_search(input, match, std::regex("\\(\\s*\\+"))) {
+  if (std::regex_search(input, match, std::regex("\\s*\\+"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       expr_type = plansys2_msgs::msg::Node::ARITH_ADD;
     }
   }
 
-  if (std::regex_search(input, match, std::regex("\\(\\s*\\-"))) {
+  if (std::regex_search(input, match, std::regex("\\s*\\-"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       expr_type = plansys2_msgs::msg::Node::ARITH_SUB;
     }
+  }
+
+  if (expr_type == plansys2_msgs::msg::Node::UNKNOWN) {
+    std::cerr << "getExpr: Error parsing expresion [" << input << "]" << std::endl;
   }
 
   return std::make_tuple(expr_type, first);
@@ -574,11 +620,15 @@ std::string toStringExpression(const plansys2_msgs::msg::Tree & tree, uint32_t n
       ret = "(- ";
       break;
     default:
+      ret = "(UNKNOWN ";
+      std::cerr << "toStringExpression: Unknown expression type: ";
+      printN(std::cerr, tree.nodes[node_id].expression_type);
+      std::cerr << std::endl;
       break;
   }
 
   for (auto child_id : tree.nodes[node_id].children) {
-    ret += toString(tree, child_id, negate);
+    ret += " " + toString(tree, child_id, negate);
   }
   ret += ")";
 
