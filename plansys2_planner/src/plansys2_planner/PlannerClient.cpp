@@ -29,10 +29,14 @@ PlannerClient::PlannerClient()
 
   get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("planner/get_plan");
 
-  node_->declare_parameter("plan_solver_timeout", solver_timeout_);
+  double timeout;
+  node_->declare_parameter("plan_solver_timeout", timeout);
 
-  node_->get_parameter("plan_solver_timeout", solver_timeout_);
-  RCLCPP_INFO(node_->get_logger(), "Planner CLient created with timeout %d", solver_timeout_);
+  node_->get_parameter("plan_solver_timeout", timeout);
+  solver_timeout_ = rclcpp::Duration((int32_t)timeout, 0);
+  RCLCPP_INFO(
+    node_->get_logger(), "Planner CLient created with timeout %g",
+    solver_timeout_.seconds());
 }
 
 std::optional<plansys2_msgs::msg::Plan>
@@ -49,10 +53,10 @@ PlannerClient::getPlan(
       get_plan_client_->get_service_name() <<
         " service  client: waiting for service to appear...");
   }
-  int timeout = solver_timeout_;
+  int32_t timeout = solver_timeout_.seconds();
   if (timeout <= 0) {
     std::string timeout_str = "Get Plan service called with negative timed out:";
-    timeout_str += std::to_string(solver_timeout_);
+    timeout_str += std::to_string(timeout);
     timeout_str += ". Setting to 15 seconds";
     RCLCPP_ERROR(node_->get_logger(), timeout_str.c_str());
     timeout = 15;

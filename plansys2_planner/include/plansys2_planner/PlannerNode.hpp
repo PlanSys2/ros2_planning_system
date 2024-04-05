@@ -74,7 +74,7 @@ private:
   std::vector<std::string> default_types_;
   std::vector<std::string> solver_ids_;
   std::vector<std::string> solver_types_;
-  int solver_timeout_;
+  rclcpp::Duration solver_timeout_;
 
   rclcpp::Service<plansys2_msgs::srv::GetPlan>::SharedPtr
     get_plan_service_;
