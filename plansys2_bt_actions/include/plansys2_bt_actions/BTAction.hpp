@@ -31,8 +31,6 @@
 #include "behaviortree_ros2/ros_node_params.hpp"
 #include "behaviortree_ros2/plugins.hpp"
 
-#include <nlohmann/json.hpp>
-
 namespace plansys2
 {
 
@@ -69,7 +67,6 @@ private:
   std::string node_namespace_;
   std::string action_;
   std::string bt_xml_file_;
-  std::vector<std::string> plugin_list_;
   bool finished_;
   std::unique_ptr<BT::FileLogger2> bt_file_logger_;
   std::unique_ptr<BT::MinitraceLogger> bt_minitrace_logger_;

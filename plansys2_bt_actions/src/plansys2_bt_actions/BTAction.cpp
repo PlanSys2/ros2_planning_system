@@ -34,7 +34,8 @@ BTAction::BTAction(
 : ActionExecutorClient(action, rate)
 {
   declare_parameter<std::string>("bt_xml_file", "");
-  declare_parameter<std::string>("plugins", "");
+  declare_parameter<std::vector<std::string>>("plugin_names", std::vector<std::string>());
+  declare_parameter<std::vector<std::string>>("plugin_asts", std::vector<std::string>());
   declare_parameter<bool>("bt_file_logging", false);
   declare_parameter<bool>("bt_minitrace_logging", false);
 }
@@ -43,37 +44,46 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
 {
   node_namespace_ = this->get_namespace();
-  RCLCPP_INFO_STREAM(get_logger(), "node_namespace_: [" << node_namespace_ << "]");
+  
+  this->get_parameter("action_name", action_);
+  this->get_parameter("bt_xml_file", bt_xml_file_);
 
-  get_parameter("action_name", action_);
-  get_parameter("bt_xml_file", bt_xml_file_);
-
-  RCLCPP_INFO_STREAM(get_logger(), "action_name: [" << action_ << "]");
   RCLCPP_INFO_STREAM(get_logger(), "bt_xml_file: [" << bt_xml_file_ << "]");
 
-  auto plugins_json = get_parameter("plugins");
-  auto plugins = nlohmann::json::parse(plugins_json.as_string());
+  std::vector<std::string> plugin_names, plugin_asts;
+  this->get_parameter("plugin_names", plugin_names);
+  this->get_parameter("plugin_asts", plugin_asts);
+
+  if (plugin_names.size() != plugin_asts.size()) {
+    RCLCPP_ERROR(
+      this->get_logger(), "The number of plugin names does not match the number of plugin ASTs.");
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
+  }
 
   BT::SharedLibrary loader;
 
-  for (auto & plugin : plugins) {
-    std::string plugin_path = loader.getOSName(plugin["name"]);
-    RCLCPP_INFO_STREAM(get_logger(), "plugin_path: [" << plugin_path << "]");
+  for (size_t i = 0; i < plugin_names.size(); ++i) {
+    const std::string & plugin_name = plugin_names[i];
+    const std::string & plugin_ast = plugin_asts[i];
+
+    std::string plugin_path = loader.getOSName(plugin_name);
+    RCLCPP_DEBUG_STREAM(get_logger(), "Loading plugin: " << plugin_path);
+    RCLCPP_DEBUG_STREAM(get_logger(), "Plugin AST: " << plugin_ast);
 
     // Try to load the plugin
     try {
       loader.load(plugin_path);
-      RCLCPP_INFO_STREAM(get_logger(), "Loaded library: " << plugin_path);
     } catch (const std::exception & e) {
       RCLCPP_WARN_STREAM(
         get_logger(),
         "Failed to load library: " << plugin_path << " - " << e.what());
+      continue;
     }
 
     // First try to register the node from the plugin
     try {
       if (loader.getSymbol("BT_RegisterNodesFromPlugin") != nullptr) {
-        RCLCPP_INFO_STREAM(get_logger(), "Registering node from plugin " << plugin["name"]);
+        RCLCPP_INFO_STREAM(get_logger(), "Registering node from plugin " << plugin_name);
         loader.unload();
         factory_.registerFromPlugin(plugin_path);
         continue;
@@ -81,36 +91,39 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
     } catch (const std::exception & e) {
       RCLCPP_DEBUG_STREAM(
         get_logger(),
-        "Plugin " << plugin["name"] << " does not have symbol BT_RegisterNodesFromPlugin: " <<
+        "Plugin " << plugin_name << " does not have symbol BT_RegisterNodesFromPlugin: " <<
           e.what());
     }
 
     // Second try to register the ROS node from the plugin
     try {
       if (loader.getSymbol("BT_RegisterRosNodeFromPlugin") != nullptr) {
-        RCLCPP_INFO_STREAM(get_logger(), "Registering ROS node from plugin " << plugin["name"]);
         BT::RosNodeParams params;
-        auto nh = std::make_shared<rclcpp::Node>(plugin["name"]);
+        auto nh = std::make_shared<rclcpp::Node>(plugin_name);
 
         params.nh = nh;
         params.default_port_value = createFullyQualifiedName(
           node_namespace_,
-          plugin["ast"].get<std::string>());
+          plugin_ast);
         loader.unload();
+        RCLCPP_INFO_STREAM(
+          get_logger(),
+          "Registering ROS node [" << params.default_port_value << "] from plugin [" << plugin_name <<
+            "]");
         RegisterRosNode(factory_, plugin_path, params);
         continue;
       }
     } catch (const std::exception & e) {
       RCLCPP_DEBUG_STREAM(
         get_logger(),
-        "Plugin " << plugin["name"] << " does not have symbol BT_RegisterRosNodeFromPlugin: " <<
+        "Plugin " << plugin_name << " does not have symbol BT_RegisterRosNodeFromPlugin: " <<
           e.what());
     }
 
     // If the plugin does not have any of the symbols, log an error
     RCLCPP_ERROR_STREAM(
       get_logger(),
-      "Plugin " << plugin["name"] <<
+      "Plugin " << plugin_name <<
         " does not have symbol BT_RegisterNodesFromPlugin nor BT_RegisterRosNodeFromPlugin");
     loader.unload();
   }
