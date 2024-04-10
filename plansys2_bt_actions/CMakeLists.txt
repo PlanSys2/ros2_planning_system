@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.5)
-
 project(plansys2_bt_actions)
+
+cmake_minimum_required(VERSION 3.5)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
