@@ -262,10 +262,9 @@ DomainExpert::getDurativeAction(const std::string & action, const std::vector<st
   unsigned i = 0;
 
   while (i < domain_->actions.size() && !found) {
-    bool is_durative_action =
-      dynamic_cast<parser::pddl::TemporalAction *>(domain_->actions[i]) != nullptr;
     parser::pddl::TemporalAction * action_obj =
       dynamic_cast<parser::pddl::TemporalAction *>(domain_->actions[i]);
+    bool is_durative_action = action_obj != nullptr;
 
     if (is_durative_action && action_obj->name == action_search) {
       found = true;

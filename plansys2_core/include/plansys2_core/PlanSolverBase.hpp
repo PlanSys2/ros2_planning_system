@@ -24,6 +24,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
+using namespace std::chrono_literals;
+
 namespace plansys2
 {
 
@@ -52,7 +54,8 @@ public:
   */
   virtual std::optional<plansys2_msgs::msg::Plan> getPlan(
     const std::string & domain, const std::string & problem,
-    const std::string & node_namespace = "") = 0;
+    const std::string & node_namespace = "",
+    const rclcpp::Duration solver_timeout = 15s) = 0;
 
   /**
    * @brief Exposes a capability to validate a PDDL domain.

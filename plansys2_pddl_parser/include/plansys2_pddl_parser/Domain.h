@@ -135,7 +135,7 @@ public:
 		else if ( s == "non-deterministic" ) nondet = true;
 		else if ( s == "universal-preconditions" ) universal = true;
 		else if ( s == "fluents" ) fluents = true;
-		else if ( s == "disjuntive-preconditions" ) disj = true;
+		else if ( s == "disjunctive-preconditions" ) disj = true;
 		else if ( s == "derived-predicates" ) derivedpred = true;
 		else return false; // Unknown requirement
 
@@ -215,9 +215,15 @@ public:
 
 		TokenStruct< std::string > ts = f.parseTypedList( true, types );
 
-		for ( unsigned i = 0; i < ts.size(); ++i )
-			getType( ts.types[i] )->constants.insert( ts[i] );
-
+		for ( unsigned i = 0; i < ts.size(); ++i ) {
+			Type * t = getType( ts.types[i] );
+			t->constants.insert(ts[i]);
+			// We need to populate the constants of all supertypes
+			while(t->supertype != nullptr) {
+				t = t->supertype;
+				t->constants.insert(ts[i]);
+			}
+		}
 		for ( unsigned i = 0; DOMAIN_DEBUG && i < types.size(); ++i ) {
 			std::cout << " ";
 			if ( typed ) std::cout << " " << types[i] << ":";
@@ -537,15 +543,16 @@ public:
 
 		if ( cons ) {
 			os << "( :constants\n";
-			for ( unsigned i = 0; i < types.size(); ++i )
-				if ( types[i]->constants.size() ) {
-					os << "\t";
-					for ( unsigned j = 0; j < types[i]->constants.size(); ++j )
-						os << types[i]->constants[j] << " ";
-					if ( typed )
-						os << "- " << types[i]->name;
-					os << "\n";
+			for ( unsigned i = 0; i < types.size(); ++i ) {
+				for (unsigned j = 0; j < types[i]->constants.size(); j++) {
+					if (!types[i]->definedInSubtype(types[i]->constants[j])) {
+						os << "\t" << types[i]->constants[j] << " ";
+					    if ( typed )
+							os << "- " << types[i]->name;
+						os << "\n";
+				    }
 				}
+			}
 			os << ")\n";
 		}
 
@@ -590,7 +597,7 @@ public:
 		if ( nondet ) os << " :non-deterministic";
 		if ( universal ) os << " :universal-preconditions";
 		if ( fluents ) os << " :fluents";
-		if ( disj ) os << " :disjuntive-preconditions";
+		if ( disj ) os << " :disjunctive-preconditions";
 		if ( derivedpred ) os << " :derived-predicates";
 		os << " )\n";
 		return os;
