@@ -131,6 +131,7 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
   blackboard_ = BT::Blackboard::create();
   blackboard_->set("node", shared_from_this());
 
+
   return ActionExecutorClient::on_configure(previous_state);
 }
 
