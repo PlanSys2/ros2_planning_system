@@ -51,16 +51,6 @@ public:
 		for ( unsigned i = 0; i < t->subtypes.size(); ++i )
 			subtypes.push_back( ts.get( t->subtypes[i]->name ) );
 	}
-	
-	bool definedInSubtype( const std::string & s) const {
-		for (unsigned i = 0; i < subtypes.size(); ++i) {
-			for (unsigned j = 0; j < subtypes[i]->constants.size(); ++j) {
-				if (subtypes[i]->constants[j] == s) return true;
-			}
-			if (subtypes[i]->definedInSubtype(s)) return true;
-		}
-		return false;
-	}
 
 	void print( std::ostream & stream ) const {
 		stream << name;

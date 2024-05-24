@@ -8,6 +8,9 @@
 	car - object
 )
 
+(:constants
+)
+
 (:predicates
 	( car_assembled ?car0 - car )
 	( is_assembly_zone ?zone0 - zone )
@@ -18,6 +21,9 @@
 	( piece_not_used ?piece0 - piece )
 	( robot_at ?robot0 - robot ?zone1 - zone )
 	( robot_available ?robot0 - robot )
+)
+
+(:functions
 )
 
 (:durative-action move
