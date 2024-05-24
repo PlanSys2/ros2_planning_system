@@ -22,8 +22,6 @@
 
 #include "lifecycle_msgs/msg/state.hpp"
 
-using namespace std::chrono_literals;
-
 namespace plansys2
 {
 
@@ -31,12 +29,9 @@ PlannerNode::PlannerNode()
 : rclcpp_lifecycle::LifecycleNode("planner"),
   lp_loader_("plansys2_core", "plansys2::PlanSolverBase"),
   default_ids_{},
-  default_types_{},
-  solver_timeout_(15s)
+  default_types_{}
 {
   declare_parameter("plan_solver_plugins", default_ids_);
-  double timeout = solver_timeout_.seconds();
-  declare_parameter("plan_solver_timeout", timeout);
 }
 
 
@@ -47,14 +42,10 @@ CallbackReturnT
 PlannerNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   auto node = shared_from_this();
-  double timeout;
 
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
 
   get_parameter("plan_solver_plugins", solver_ids_);
-  get_parameter("plan_solver_timeout", timeout);
-
-  solver_timeout_ = rclcpp::Duration((int32_t)timeout, 0);
 
   if (!solver_ids_.empty()) {
     if (solver_ids_ == default_ids_) {
@@ -91,8 +82,6 @@ PlannerNode::on_configure(const rclcpp_lifecycle::State & state)
       get_logger(), "Created default solver : %s of type %s",
       "POPF", "plansys2/POPFPlanSolver");
   }
-
-  RCLCPP_INFO(get_logger(), "[%s] Solver Timeout %g", get_name(), solver_timeout_.seconds());
 
   get_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
     "planner/get_plan",
@@ -161,8 +150,8 @@ PlannerNode::get_plan_service_callback(
   const std::shared_ptr<plansys2_msgs::srv::GetPlan::Request> request,
   const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response)
 {
-  auto plan = solvers_.begin()->second->getPlan(
-    request->domain, request->problem, get_namespace(), solver_timeout_);
+  const auto plan = solvers_.begin()->second->getPlan(
+    request->domain, request->problem, get_namespace());
 
   if (plan) {
     response->success = true;
