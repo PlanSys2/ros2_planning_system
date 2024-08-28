@@ -166,6 +166,18 @@ DomainExpert::getFunction(const std::string & function)
   }
 }
 
+std::vector<plansys2::Predicate>
+DomainExpert::getDerivedPredicates(){
+  std::vector<plansys2::Predicate> ret;
+  for (unsigned i = 0; i < domain_->derived.size(); i++) {
+    plansys2_msgs::msg::Node pred;
+    pred.node_type = plansys2_msgs::msg::Node::PREDICATE;
+    pred.name = domain_->derived[i]->name;
+    ret.push_back(pred);
+  }
+  return ret;
+}
+
 std::vector<std::string>
 DomainExpert::getActions()
 {

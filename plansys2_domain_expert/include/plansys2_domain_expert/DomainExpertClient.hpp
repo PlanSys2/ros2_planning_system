@@ -101,6 +101,12 @@ public:
    */
   std::optional<plansys2::Function> getFunction(const std::string & function);
 
+  /// Get the derived predicates existing in the domain.
+  /**
+   * \return The vector containing the derived predicates.
+   */
+  std::vector<plansys2::Predicate> getDerivedPredicates();
+
   /// Get the regular actions existing in the domain.
   /**
    * \return The vector containing the names of the actions.
@@ -148,6 +154,7 @@ private:
   rclcpp::Client<plansys2_msgs::srv::GetDomainConstants>::SharedPtr get_constants_client_;
   rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_predicates_client_;
   rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_functions_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_derived_predicates_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_actions_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_durative_actions_client_;
   rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr get_predicate_details_client_;

@@ -95,6 +95,12 @@ public:
    */
   std::optional<plansys2::Function> getFunction(const std::string & function);
 
+  /// Get the derived predicates existing in the domain.
+  /**
+   * \return The vector containing the derived predicates.
+   */
+  std::vector<plansys2::Predicate> getDerivedPredicates();
+
   /// Get the regular actions existing in the domain.
   /**
    * \return The vector containing the names of the actions.

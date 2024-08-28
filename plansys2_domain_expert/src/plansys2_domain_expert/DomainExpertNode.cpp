@@ -91,6 +91,11 @@ DomainExpertNode::DomainExpertNode()
       &DomainExpertNode::get_domain_function_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
+  get_domain_derived_predicates_service_ = create_service<plansys2_msgs::srv::GetStates>(
+    "domain_expert/get_domain_derived_predicates", std::bind(
+      &DomainExpertNode::get_domain_derived_predicates_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
   get_domain_service_ = create_service<plansys2_msgs::srv::GetDomain>(
     "domain_expert/get_domain", std::bind(
       &DomainExpertNode::get_domain_service_callback,
@@ -409,6 +414,23 @@ DomainExpertNode::get_domain_function_details_service_callback(
       response->success = false;
       response->error_info = "Function not found";
     }
+  }
+}
+
+void
+DomainExpertNode::get_domain_derived_predicates_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::GetStates::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::GetStates::Response> response)
+{
+  if (domain_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    response->success = true;
+    response->states = plansys2::convertVector<plansys2_msgs::msg::Node, plansys2::Predicate>(
+      domain_expert_->getDerivedPredicates());
   }
 }
 

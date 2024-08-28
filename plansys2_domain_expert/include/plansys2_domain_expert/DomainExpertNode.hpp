@@ -203,6 +203,17 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::GetNodeDetails::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::GetNodeDetails::Response> response);
 
+  /// Receives the result of the GetDomainDerivedPredicates service call
+  /**
+   * \param[in] request_header The header of the request
+   * \param[in] request The request
+   * \param[out] request The response
+   */
+  void get_domain_derived_predicates_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::GetStates::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::GetStates::Response> response);
+
   /// Receives the result of the GetDomain service call
   /**
    * \param[in] request_header The header of the request
@@ -234,6 +245,8 @@ private:
     get_domain_functions_service_;
   rclcpp::Service<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
     get_domain_function_details_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetStates>::SharedPtr
+    get_domain_derived_predicates_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_service_;
 
   rclcpp::Client<plansys2_msgs::srv::ValidateDomain>::SharedPtr
