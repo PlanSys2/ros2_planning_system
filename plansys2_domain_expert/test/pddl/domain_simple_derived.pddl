@@ -1,5 +1,5 @@
 (define (domain plansys2)
-(:requirements :strips :typing :adl :fluents :durative-actions :derived-predicates)
+(:requirements :strips :typing :adl :derived-predicates)
 
 ;; Types ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (:types
@@ -22,8 +22,9 @@ jack john - person
 (robot_talk ?r - robot ?m - message ?p - person)
 (robot_near_person ?r - robot ?p - person)
 (robot_at ?r - robot ?ro - room)
-(inferred-robot_localized ?r - robot)
+(inferred-robot_at ?r - robot ?ro - room)
 (person_at ?p - person ?ro - room)
+(inferred-person_at ?p - person ?ro - room)
 
 );; end Predicates ;;;;;;;;;;;;;;;;;;;;
 ;; Functions ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -32,60 +33,60 @@ jack john - person
 );; end Functions ;;;;;;;;;;;;;;;;;;;;
 
 ;; Derived predicates ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(:derived (inferred-robot_localized ?r)
-  (exists (?l)
-    (and
-      (robot_at ?r ?l)
-    )
+(:derived (inferred-robot_at ?r - robot ?ro - room)
+  (and
+    (robot_at ?r ?ro)
+  )
+)
+(:derived (inferred-person_at ?p - person ?ro - room)
+  (and
+    (person_at ?p ?ro)
   )
 )
 
 ;; Actions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(:durative-action move
+(:action move
     :parameters (?r - robot ?r1 ?r2 - room)
-    :duration ( = ?duration 5)
-    :condition (and
-        (at start(robot_at ?r ?r1)))
+    :precondition (and
+        (inferred-robot_at ?r1 ?r2)
+        (robot_at ?r ?r1))
     :effect (and
-        (at start(not(robot_at ?r ?r1)))
-        (at end(robot_at ?r ?r2))
+        (not(robot_at ?r ?r1))
+        (robot_at ?r ?r2)
     )
 )
 
 
-(:durative-action talk_leia
+(:action talk_leia
     :parameters (?from ?p - person ?m - message)
-    :duration ( = ?duration 5)
-    :condition (and
-        (over all(robot_near_person leia ?p))
+    :precondition (and
+        (robot_near_person leia ?p)
     )
     :effect (and
-        (at end(robot_talk leia ?m ?p))
+        (robot_talk leia ?m ?p)
     )
 )
 
 
-(:durative-action talk_lema
+(:action talk_lema
     :parameters (?from ?p - person ?m - message)
-    :duration ( = ?duration 5)
-    :condition (and
-        (over all(robot_near_person lema ?p))
+    :precondition (and
+        (robot_near_person lema ?p)
     )
     :effect (and
-        (at end(robot_talk lema ?m ?p))
+        (robot_talk lema ?m ?p)
     )
 )
 
 
-(:durative-action approach
+(:action approach
     :parameters (?r - robot ?ro - room ?p - person)
-    :duration ( = ?duration 5)
-    :condition (and
-        (over all(robot_at ?r ?ro))
-        (over all(person_at ?p ?ro))
+    :precondition (and
+        (robot_at ?r ?ro)
+        (person_at ?p ?ro)
     )
     :effect (and
-        (at end(robot_near_person ?r ?p))
+        (robot_near_person ?r ?p)
     )
 )
 
