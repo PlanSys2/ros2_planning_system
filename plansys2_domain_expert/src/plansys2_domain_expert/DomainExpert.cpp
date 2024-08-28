@@ -178,6 +178,45 @@ DomainExpert::getDerivedPredicates(){
   return ret;
 }
 
+std::vector<plansys2_msgs::msg::Derived>
+DomainExpert::getDerivedPredicate(const std::string & predicate){
+  std::vector<plansys2_msgs::msg::Derived> ret;
+
+  std::string predicate_search = predicate;
+  std::transform(
+    predicate_search.begin(), predicate_search.end(),
+    predicate_search.begin(), ::tolower);
+
+  unsigned i = 0;
+
+  while (i < domain_->derived.size()) {
+    if (domain_->derived[i]->name == predicate_search) {
+      plansys2_msgs::msg::Derived derived;
+      derived.predicate.name = predicate_search;
+
+      //Parameters
+      for (unsigned j = 0; j < domain_->derived[i]->params.size(); j++) {
+        plansys2_msgs::msg::Param param;
+        param.name = "?" + domain_->types[domain_->derived[i]->params[j]]->getName() +
+          std::to_string(j);
+        param.type = domain_->types[domain_->derived[i]->params[j]]->name;
+        domain_->types[domain_->derived[i]->params[j]]->getSubTypesNames(param.sub_types);
+        derived.predicate.parameters.push_back(param);
+      }
+
+      // Preconditions
+      if (domain_->derived[i]->cond) {
+        domain_->derived[i]->cond->getTree(derived.preconditions, *domain_);
+      }
+
+      ret.push_back(derived);
+    }
+    i++;
+  }
+
+  return ret;
+}
+
 std::vector<std::string>
 DomainExpert::getActions()
 {

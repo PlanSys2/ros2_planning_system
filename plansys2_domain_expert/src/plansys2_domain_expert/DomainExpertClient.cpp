@@ -41,6 +41,8 @@ DomainExpertClient::DomainExpertClient()
     "domain_expert/get_domain_functions");
   get_derived_predicates_client_ = node_->create_client<plansys2_msgs::srv::GetStates>(
     "domain_expert/get_domain_derived_predicates");
+  get_derived_predicate_details_client_ = node_->create_client<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>(
+    "domain_expert/get_domain_derived_predicate_details");
   get_actions_client_ = node_->create_client<plansys2_msgs::srv::GetDomainActions>(
     "domain_expert/get_domain_actions");
   get_durative_actions_client_ = node_->create_client<plansys2_msgs::srv::GetDomainActions>(
@@ -329,6 +331,45 @@ DomainExpertClient::getDerivedPredicates()
     result.states);
 
   return ret;
+}
+
+std::vector<plansys2_msgs::msg::Derived>
+DomainExpertClient::getDerivedPredicate(const std::string & predicate)
+{
+  while (!get_derived_predicate_details_client_->wait_for_service(std::chrono::seconds(1))) {
+    if (!rclcpp::ok()) {
+      return {};
+    }
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      get_derived_predicate_details_client_->get_service_name() <<
+        " service client: waiting for service to appear...");
+  }
+
+  auto request = std::make_shared<plansys2_msgs::srv::GetDomainDerivedPredicateDetails::Request>();
+
+  request->predicate = predicate;
+
+  auto future_result = get_derived_predicate_details_client_->async_send_request(request);
+
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
+    rclcpp::FutureReturnCode::SUCCESS)
+  {
+    return {};
+  }
+
+  auto result = *future_result.get();
+
+
+  if (result.success) {
+    return result.predicates;
+  } else {
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      get_derived_predicate_details_client_->get_service_name() << ": " <<
+        result.error_info);
+    return {};
+  }
 }
 
 std::vector<std::string>

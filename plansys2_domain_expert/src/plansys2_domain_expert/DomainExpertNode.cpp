@@ -96,6 +96,11 @@ DomainExpertNode::DomainExpertNode()
       &DomainExpertNode::get_domain_derived_predicates_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
+  get_domain_derived_predicate_details_service_ = create_service<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>(
+    "domain_expert/get_domain_derived_predicate_details", std::bind(
+      &DomainExpertNode::get_domain_derived_predicate_details_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
   get_domain_service_ = create_service<plansys2_msgs::srv::GetDomain>(
     "domain_expert/get_domain", std::bind(
       &DomainExpertNode::get_domain_service_callback,
@@ -431,6 +436,31 @@ DomainExpertNode::get_domain_derived_predicates_service_callback(
     response->success = true;
     response->states = plansys2::convertVector<plansys2_msgs::msg::Node, plansys2::Predicate>(
       domain_expert_->getDerivedPredicates());
+  }
+}
+
+void
+DomainExpertNode::get_domain_derived_predicate_details_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::GetDomainDerivedPredicateDetails::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::GetDomainDerivedPredicateDetails::Response> response)
+{
+  if (domain_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    auto predicates = domain_expert_->getDerivedPredicate(request->predicate);
+
+    if (predicates.size()>0) {
+      response->predicates = predicates;
+      response->success = true;
+    } else {
+      RCLCPP_WARN(get_logger(), "Requesting a non-existing derived predicate [%s]", request->predicate.c_str());
+      response->success = false;
+      response->error_info = "Derived predicate not found";
+    }
   }
 }
 
