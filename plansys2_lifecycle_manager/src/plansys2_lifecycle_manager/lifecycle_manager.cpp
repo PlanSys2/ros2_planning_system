@@ -127,6 +127,22 @@ startup_function(
   std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes,
   std::chrono::seconds timeout)
 {
+  // configure planner
+  {
+    if (!manager_nodes["planner"]->change_state(
+        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
+        timeout))
+    {
+      return false;
+    }
+
+    while (manager_nodes["planner"]->get_state() !=
+      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE)
+    {
+      std::cerr << "Waiting for inactive state for planner" << std::endl;
+    }
+  }
+
   // configure domain_expert
   {
     if (!manager_nodes["domain_expert"]->change_state(
@@ -156,22 +172,6 @@ startup_function(
       lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE)
     {
       std::cerr << "Waiting for inactive state for problem_expert" << std::endl;
-    }
-  }
-
-  // configure planner
-  {
-    if (!manager_nodes["planner"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
-        timeout))
-    {
-      return false;
-    }
-
-    while (manager_nodes["planner"]->get_state() !=
-      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE)
-    {
-      std::cerr << "Waiting for inactive state for planner" << std::endl;
     }
   }
 
