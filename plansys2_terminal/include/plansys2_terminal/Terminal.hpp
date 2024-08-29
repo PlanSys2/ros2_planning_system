@@ -56,6 +56,9 @@ protected:
   virtual void process_get_model_predicate(
     std::vector<std::string> & command,
     std::ostringstream & os);
+  virtual void process_get_model_derived_predicate(
+    std::vector<std::string> & command,
+    std::ostringstream & os);
   virtual void process_get_model_function(
     std::vector<std::string> & command,
     std::ostringstream & os);
