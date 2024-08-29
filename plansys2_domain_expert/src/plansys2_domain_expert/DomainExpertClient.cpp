@@ -334,7 +334,7 @@ DomainExpertClient::getDerivedPredicates()
 }
 
 std::vector<plansys2_msgs::msg::Derived>
-DomainExpertClient::getDerivedPredicate(const std::string & predicate)
+DomainExpertClient::getDerivedPredicate(const std::string & predicate, const std::vector<std::string> & params)
 {
   while (!get_derived_predicate_details_client_->wait_for_service(std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {

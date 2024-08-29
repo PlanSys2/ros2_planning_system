@@ -99,7 +99,9 @@ public:
    * \return A Derived object containing the predicate name, its parameters (name and type), and preconditions.
    *    If the predicate does not exist, the value returned has not value.
    */
-  virtual std::vector<plansys2_msgs::msg::Derived> getDerivedPredicate(const std::string & predicate) = 0;
+  virtual std::vector<plansys2_msgs::msg::Derived> getDerivedPredicate(
+    const std::string & predicate,
+    const std::vector<std::string> & params = {}) = 0;
 
   /// Get the regular actions existing in the domain.
   /**

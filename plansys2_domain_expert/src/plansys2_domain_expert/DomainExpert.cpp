@@ -179,7 +179,7 @@ DomainExpert::getDerivedPredicates(){
 }
 
 std::vector<plansys2_msgs::msg::Derived>
-DomainExpert::getDerivedPredicate(const std::string & predicate){
+DomainExpert::getDerivedPredicate(const std::string & predicate, const std::vector<std::string> & params){
   std::vector<plansys2_msgs::msg::Derived> ret;
 
   std::string predicate_search = predicate;
@@ -206,7 +206,7 @@ DomainExpert::getDerivedPredicate(const std::string & predicate){
 
       // Preconditions
       if (domain_->derived[i]->cond) {
-        domain_->derived[i]->cond->getTree(derived.preconditions, *domain_);
+        domain_->derived[i]->cond->getTree(derived.preconditions, *domain_, params);
       }
 
       ret.push_back(derived);
