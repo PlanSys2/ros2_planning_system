@@ -96,7 +96,8 @@ DomainExpertNode::DomainExpertNode()
       &DomainExpertNode::get_domain_derived_predicates_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
-  get_domain_derived_predicate_details_service_ = create_service<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>(
+  get_domain_derived_predicate_details_service_ =
+    create_service<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>(
     "domain_expert/get_domain_derived_predicate_details", std::bind(
       &DomainExpertNode::get_domain_derived_predicate_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
@@ -453,11 +454,14 @@ DomainExpertNode::get_domain_derived_predicate_details_service_callback(
   } else {
     auto predicates = domain_expert_->getDerivedPredicate(request->predicate);
 
-    if (predicates.size()>0) {
+    if (predicates.size() > 0) {
       response->predicates = predicates;
       response->success = true;
     } else {
-      RCLCPP_WARN(get_logger(), "Requesting a non-existing derived predicate [%s]", request->predicate.c_str());
+      RCLCPP_WARN(
+        get_logger(),
+        "Requesting a non-existing derived predicate [%s]",
+        request->predicate.c_str());
       response->success = false;
       response->error_info = "Derived predicate not found";
     }

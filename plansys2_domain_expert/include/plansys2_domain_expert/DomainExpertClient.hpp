@@ -167,7 +167,8 @@ private:
   rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_predicates_client_;
   rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_functions_client_;
   rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_derived_predicates_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>::SharedPtr get_derived_predicate_details_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>::SharedPtr
+    get_derived_predicate_details_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_actions_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_durative_actions_client_;
   rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr get_predicate_details_client_;

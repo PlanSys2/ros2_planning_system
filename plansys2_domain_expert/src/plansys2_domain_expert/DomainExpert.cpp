@@ -167,7 +167,8 @@ DomainExpert::getFunction(const std::string & function)
 }
 
 std::vector<plansys2::Predicate>
-DomainExpert::getDerivedPredicates(){
+DomainExpert::getDerivedPredicates()
+{
   std::vector<plansys2::Predicate> ret;
   for (unsigned i = 0; i < domain_->derived.size(); i++) {
     plansys2_msgs::msg::Node pred;
@@ -179,7 +180,9 @@ DomainExpert::getDerivedPredicates(){
 }
 
 std::vector<plansys2_msgs::msg::Derived>
-DomainExpert::getDerivedPredicate(const std::string & predicate, const std::vector<std::string> & params){
+DomainExpert::getDerivedPredicate(
+  const std::string & predicate, const std::vector<std::string> & params)
+{
   std::vector<plansys2_msgs::msg::Derived> ret;
 
   std::string predicate_search = predicate;
@@ -194,7 +197,7 @@ DomainExpert::getDerivedPredicate(const std::string & predicate, const std::vect
       plansys2_msgs::msg::Derived derived;
       derived.predicate.name = predicate_search;
 
-      //Parameters
+      // Parameters
       for (unsigned j = 0; j < domain_->derived[i]->params.size(); j++) {
         plansys2_msgs::msg::Param param;
         param.name = "?" + domain_->types[domain_->derived[i]->params[j]]->getName() +

@@ -41,7 +41,8 @@ DomainExpertClient::DomainExpertClient()
     "domain_expert/get_domain_functions");
   get_derived_predicates_client_ = node_->create_client<plansys2_msgs::srv::GetStates>(
     "domain_expert/get_domain_derived_predicates");
-  get_derived_predicate_details_client_ = node_->create_client<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>(
+  get_derived_predicate_details_client_ =
+    node_->create_client<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>(
     "domain_expert/get_domain_derived_predicate_details");
   get_actions_client_ = node_->create_client<plansys2_msgs::srv::GetDomainActions>(
     "domain_expert/get_domain_actions");
@@ -334,7 +335,8 @@ DomainExpertClient::getDerivedPredicates()
 }
 
 std::vector<plansys2_msgs::msg::Derived>
-DomainExpertClient::getDerivedPredicate(const std::string & predicate, const std::vector<std::string> & params)
+DomainExpertClient::getDerivedPredicate(
+  const std::string & predicate, const std::vector<std::string> & params)
 {
   while (!get_derived_predicate_details_client_->wait_for_service(std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {

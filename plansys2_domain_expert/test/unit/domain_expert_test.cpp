@@ -302,7 +302,7 @@ TEST(domain_expert, get_derived_predicate_params)
   plansys2::DomainExpert domain_expert(domain_str);
 
   auto pred_1 = domain_expert.getDerivedPredicate("inferred-robot_at");
-  ASSERT_TRUE(pred_1.size()>0);
+  ASSERT_GT(pred_1.size(), 0);
   ASSERT_EQ(pred_1[0].predicate.name, "inferred-robot_at");
   ASSERT_EQ(pred_1[0].predicate.parameters.size(), 2);
   ASSERT_EQ(pred_1[0].predicate.parameters[0].name, "?robot0");

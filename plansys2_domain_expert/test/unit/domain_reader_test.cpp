@@ -337,8 +337,10 @@ TEST(domain_reader, derived_predicates)
 
   std::string req0_str = "(:predicates\n(robot_at leia bedroom) (person_at paco kitchen)\n)";
 
-  std::string req1_str = "(:derived (inferred-robot_localized ?r)\n(exists (?l)\n(and\n(robot_at ?r ?l)))\n)";
-  std::string req1_estr = "(:derived (inferred-robot_localized ?r)\n(exists (?l)\n(and\n(robot_at ?r ?l)))\n)";
+  std::string req1_str =
+    "(:derived (inferred-robot_localized ?r)\n(exists (?l)\n(and\n(robot_at ?r ?l)))\n)";
+  std::string req1_estr =
+    "(:derived (inferred-robot_localized ?r)\n(exists (?l)\n(and\n(robot_at ?r ?l)))\n)";
 
   auto res0 = dr.get_derived_test(req0_str);
   auto res1 = dr.get_derived_test(req1_str);
