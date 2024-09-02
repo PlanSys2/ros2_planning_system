@@ -342,16 +342,17 @@ Terminal::process_get_model_predicate(std::vector<std::string> & command, std::o
 }
 
 void
-Terminal::process_get_model_derived_predicate(std::vector<std::string> & command, std::ostringstream & os)
+Terminal::process_get_model_derived_predicate(
+  std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() == 1) {
     auto deriveds = domain_client_->getDerivedPredicate(command[0]);
     if (deriveds.size() > 0) {
-      for (auto derived : deriveds){
+      for (auto derived : deriveds) {
         os << "Parameters: " << derived.predicate.parameters.size() << std::endl;
         for (size_t i = 0; i < derived.predicate.parameters.size(); i++) {
           os << "\t" << derived.predicate.parameters[i].type << " - " <<
-          derived.predicate.parameters[i].name << std::endl;
+            derived.predicate.parameters[i].name << std::endl;
         }
         os << "Preconditions: " << parser::pddl::toString(derived.preconditions) << std::endl;
         os << "\n";
@@ -480,13 +481,15 @@ Terminal::process_get_model(std::vector<std::string> & command, std::ostringstre
       process_get_model_action(command, os);
     } else {
       os <<
-        "\tUsage: \n\t\tget model [types|predicates|functions|actions|predicate|function|action|derived|deriveds]..."
+        "\tUsage: \n\t\tget model "
+        "[types|predicates|functions|actions|predicate|function|action|derived|deriveds]..."
          <<
         std::endl;
     }
   } else {
     os <<
-      "\tUsage: \n\t\tget model [types|predicates|functions|actions|predicate|function|action|derived|deriveds]..."
+      "\tUsage: \n\t\tget model "
+      "[types|predicates|functions|actions|predicate|function|action|derived|deriveds]..."
        <<
       std::endl;
   }

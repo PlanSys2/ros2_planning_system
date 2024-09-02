@@ -448,14 +448,14 @@ ProblemExpert::existPredicate(const plansys2::Predicate & predicate)
     i++;
   }
 
-  if (!found)
-  {
+  if (!found) {
     std::vector<std::string> parameters_names;
-    std::for_each (predicate.parameters.begin(), predicate.parameters.end(),
-      [&](auto p){parameters_names.push_back(p.name);});
+    std::for_each(
+      predicate.parameters.begin(), predicate.parameters.end(),
+      [&](auto p) {parameters_names.push_back(p.name);});
     auto derived_predicates = domain_expert_->getDerivedPredicate(predicate.name, parameters_names);
-    for(auto derived : derived_predicates){
-      if(check(derived.preconditions, predicates_, functions_)){
+    for (auto derived : derived_predicates) {
+      if (check(derived.preconditions, predicates_, functions_)) {
         found = true;
         break;
       }

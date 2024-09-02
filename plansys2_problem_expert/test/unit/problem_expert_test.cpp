@@ -810,7 +810,6 @@ TEST(problem_expert, exist_predicate)
     problem_expert.existPredicate(
       parser::pddl::fromStringPredicate(
         "(robot_at leia kitchen)")));
-
 }
 
 int main(int argc, char ** argv)
