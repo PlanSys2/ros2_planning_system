@@ -747,6 +747,72 @@ TEST(problem_expert, is_goal_satisfied)
   ASSERT_TRUE(problem_expert.isGoalSatisfied(goal));
 }
 
+TEST(problem_expert, exist_predicate)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_derived.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  std::ifstream problem_ifs(pkgpath + "/pddl/problem_simple_1.pddl");
+  std::string problem_str((
+      std::istreambuf_iterator<char>(problem_ifs)),
+    std::istreambuf_iterator<char>());
+  ASSERT_TRUE(problem_expert.addProblem(problem_str));
+
+  ASSERT_TRUE(
+    problem_expert.existPredicate(
+      parser::pddl::fromStringPredicate(
+        "(robot_at leia kitchen)")));
+  ASSERT_TRUE(
+    problem_expert.existPredicate(
+      parser::pddl::fromStringPredicate(
+        "(inferred-robot_at leia kitchen)")));
+  ASSERT_TRUE(
+    problem_expert.existPredicate(
+      parser::pddl::fromStringPredicate(
+        "(person_at jack bedroom)")));
+  ASSERT_TRUE(
+    problem_expert.existPredicate(
+      parser::pddl::fromStringPredicate(
+        "(inferred-person_at jack bedroom)")));
+  ASSERT_FALSE(
+    problem_expert.existPredicate(
+      parser::pddl::fromStringPredicate(
+        "(inferred-person_at jack kitchen)")));
+  ASSERT_FALSE(
+    problem_expert.existPredicate(
+      parser::pddl::fromStringPredicate(
+        "(inferred-robot_at leia bedroom)")));
+
+  problem_expert.removePredicate(
+    parser::pddl::fromStringPredicate("(robot_at leia kitchen)"));
+  problem_expert.removePredicate(
+    parser::pddl::fromStringPredicate("(person_at jack bedroom)"));
+
+  ASSERT_FALSE(
+    problem_expert.existPredicate(
+      parser::pddl::fromStringPredicate(
+        "(inferred-person_at jack bedroom)")));
+  ASSERT_FALSE(
+    problem_expert.existPredicate(
+      parser::pddl::fromStringPredicate(
+        "(inferred-robot_at leia kitchen)")));
+  ASSERT_FALSE(
+    problem_expert.existPredicate(
+      parser::pddl::fromStringPredicate(
+        "(person_at jack bedroom)")));
+  ASSERT_FALSE(
+    problem_expert.existPredicate(
+      parser::pddl::fromStringPredicate(
+        "(robot_at leia kitchen)")));
+
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
