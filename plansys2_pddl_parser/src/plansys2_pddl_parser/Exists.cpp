@@ -31,10 +31,14 @@ void Exists::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & 
 	f.assert_token( "(" );
 
 	TokenStruct< std::string > es = f.parseTypedList( true, d.types );
-	params = d.convertTypes( es.types );
+  params = d.convertTypes( es.types );
 
-	TokenStruct< std::string > estruct( ts );
-	estruct.append( es );
+  TokenStruct< std::string > estruct( ts );
+  for (size_t i = 0; i < params.size(); i++) {
+    params[i] += estruct.size();
+  }
+
+  estruct.append( es );
 
 	f.next();
 	f.assert_token( "(" );
