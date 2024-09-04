@@ -215,15 +215,9 @@ public:
 
 		TokenStruct< std::string > ts = f.parseTypedList( true, types );
 
-		for ( unsigned i = 0; i < ts.size(); ++i ) {
-			Type * t = getType( ts.types[i] );
-			t->constants.insert(ts[i]);
-			// We need to populate the constants of all supertypes
-			while(t->supertype != nullptr) {
-				t = t->supertype;
-				t->constants.insert(ts[i]);
-			}
-		}
+		for ( unsigned i = 0; i < ts.size(); ++i )
+			getType( ts.types[i] )->constants.insert( ts[i] );
+
 		for ( unsigned i = 0; DOMAIN_DEBUG && i < types.size(); ++i ) {
 			std::cout << " ";
 			if ( typed ) std::cout << " " << types[i] << ":";
@@ -543,16 +537,15 @@ public:
 
 		if ( cons ) {
 			os << "( :constants\n";
-			for ( unsigned i = 0; i < types.size(); ++i ) {
-				for (unsigned j = 0; j < types[i]->constants.size(); j++) {
-					if (!types[i]->definedInSubtype(types[i]->constants[j])) {
-						os << "\t" << types[i]->constants[j] << " ";
-					    if ( typed )
-							os << "- " << types[i]->name;
-						os << "\n";
-				    }
+			for ( unsigned i = 0; i < types.size(); ++i )
+				if ( types[i]->constants.size() ) {
+					os << "\t";
+					for ( unsigned j = 0; j < types[i]->constants.size(); ++j )
+						os << types[i]->constants[j] << " ";
+					if ( typed )
+						os << "- " << types[i]->name;
+					os << "\n";
 				}
-			}
 			os << ")\n";
 		}
 

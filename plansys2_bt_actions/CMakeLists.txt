@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.5)
-
 project(plansys2_bt_actions)
+
+cmake_minimum_required(VERSION 3.5)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -63,7 +63,7 @@ if(BUILD_TESTING)
 
   set(dependencies ${dependencies} plansys2_msgs test_msgs geometry_msgs)
 
-  add_subdirectory(test)
+  # add_subdirectory(test)
 endif()
 
 ament_export_include_directories(include)

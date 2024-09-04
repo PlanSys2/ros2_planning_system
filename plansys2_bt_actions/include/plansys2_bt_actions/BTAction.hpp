@@ -28,6 +28,9 @@
 #include "plansys2_executor/ActionExecutorClient.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+#include "behaviortree_ros2/ros_node_params.hpp"
+#include "behaviortree_ros2/plugins.hpp"
+
 namespace plansys2
 {
 
@@ -61,12 +64,14 @@ protected:
 private:
   BT::Tree tree_;
   BT::Blackboard::Ptr blackboard_;
+  std::string node_namespace_;
   std::string action_;
   std::string bt_xml_file_;
-  std::vector<std::string> plugin_list_;
   bool finished_;
   std::unique_ptr<BT::FileLogger2> bt_file_logger_;
   std::unique_ptr<BT::MinitraceLogger> bt_minitrace_logger_;
+
+  std::string createFullyQualifiedName(const std::string & ns, const std::string & name);
 };
 
 }  // namespace plansys2
