@@ -49,6 +49,9 @@ static void printN(std::ostream & s, uint8_t node_type) {
     case plansys2_msgs::msg::Node::NUMBER:
       s << "NODE TYPE NUM" << std::endl;
       break;
+    case plansys2_msgs::msg::Node::EXISTS:
+      s << "NODE TYPE EXISTS" << std::endl;
+      break;
     case plansys2_msgs::msg::Node::COMP_GE:
       s << "NODE TYPE COMP GE" << std::endl;
       break;
@@ -136,6 +139,13 @@ uint8_t getNodeType(const std::string & expr, uint8_t default_node_type)
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       node_type = plansys2_msgs::msg::Node::NOT;
+    }
+  }
+
+  if (std::regex_search(expr, match, std::regex("\\(\\s*exists[ (]"))) {
+    if (static_cast<int>(match.position()) < first) {
+      first = static_cast<int>(match.position());
+      node_type = plansys2_msgs::msg::Node::EXISTS;
     }
   }
 
@@ -438,6 +448,9 @@ std::string toString(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bo
     case plansys2_msgs::msg::Node::FUNCTION_MODIFIER:
       ret = toStringFunctionModifier(tree, node_id, negate);
       break;
+    case plansys2_msgs::msg::Node::EXISTS:
+      ret = toStringExists(tree, node_id, negate);
+      break;
     default:
       std::cerr << "Unsupported node to string conversion" << std::endl;
       break;
@@ -670,6 +683,30 @@ std::string toStringFunctionModifier(const plansys2_msgs::msg::Tree & tree, uint
       break;
     default:
       break;
+  }
+
+  for (auto child_id : tree.nodes[node_id].children) {
+    ret += toString(tree, child_id, negate);
+  }
+  ret += ")";
+
+  return ret;
+}
+
+std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate)
+{
+  if (node_id >= tree.nodes.size()) {
+    return {};
+  }
+
+  if (tree.nodes[node_id].children.empty()) {
+    return {};
+  }
+
+  std::string ret = "(exists ";
+
+  for (const auto & param : tree.nodes[node_id].parameters) {
+    ret += " " + param.name;
   }
 
   for (auto child_id : tree.nodes[node_id].children) {

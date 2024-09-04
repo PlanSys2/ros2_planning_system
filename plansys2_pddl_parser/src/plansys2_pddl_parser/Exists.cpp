@@ -5,11 +5,10 @@ namespace parser { namespace pddl {
 
 void Exists::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
 	tabindent( s, indent );
-	s << "( exists\n";
+	s << "( exists ";
 
 	TokenStruct< std::string > fstruct( ts );
 
-	tabindent( s, indent + 1 );
 	printParams( 0, s, fstruct, d );
 
 	if ( cond ) cond->PDDLPrint( s, indent + 1, fstruct, d );
