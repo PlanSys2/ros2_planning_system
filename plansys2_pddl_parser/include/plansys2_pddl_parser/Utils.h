@@ -117,6 +117,8 @@ plansys2_msgs::msg::Tree fromString(const std::string & expr, bool negate = fals
 
 plansys2_msgs::msg::Node fromStringPredicate(const std::string & predicate);
 
+plansys2_msgs::msg::Node fromStringExists(const std::string & exists);
+
 plansys2_msgs::msg::Node fromStringFunction(const std::string & function);
 
 plansys2_msgs::msg::Param fromStringParam(const std::string & name, const std::string & type = {});
