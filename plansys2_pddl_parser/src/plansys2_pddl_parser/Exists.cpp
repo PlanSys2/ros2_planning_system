@@ -50,12 +50,8 @@ void Exists::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & 
 	f.assert_token( "(" );
 
 	TokenStruct< std::string > es = f.parseTypedList( true, d.types );
-  params = d.convertTypes( es.types );
-
   TokenStruct< std::string > estruct( ts );
-  for (size_t i = 0; i < params.size(); i++) {
-    params[i] += estruct.size();
-  }
+  params = incvec(estruct.size(), estruct.size() + es.size());
 
   estruct.append( es );
 

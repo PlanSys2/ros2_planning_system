@@ -93,12 +93,19 @@ TEST(PDDLParserTestCase, exists_get_tree)
   std::string str = parser::pddl::toString(tree);
 
   ASSERT_EQ(str,
-    "(and (exists  ?1(and (robot_at ?0 ?1)(charging_point_at ?1)))(and (>  (battery_level ?0) 1.000000)(<  (battery_level ?0) 200.000000)))");
+    "(and (exists (?1) (and (robot_at ?0 ?1)(charging_point_at ?1)))(and (>  (battery_level ?0) 1.000000)(<  (battery_level ?0) 200.000000)))");
 
   plansys2_msgs::msg::Tree tree2;
   std::vector<std::string> replace = {"rob1"};
   action->pre->getTree(tree2, domain, replace);
   std::string str2 = parser::pddl::toString(tree2);
   ASSERT_EQ(str2,
-    "(and (exists  ?1(and (robot_at rob1 ?1)(charging_point_at ?1)))(and (>  (battery_level rob1) 1.000000)(<  (battery_level rob1) 200.000000)))");
+    "(and (exists (?1) (and (robot_at rob1 ?1)(charging_point_at ?1)))(and (>  (battery_level rob1) 1.000000)(<  (battery_level rob1) 200.000000)))");
+
+  auto action2 = domain.actions.get("action_test5");
+  plansys2_msgs::msg::Tree tree3;
+  action2->pre->getTree(tree3, domain);
+  std::string str3 = parser::pddl::toString(tree3);
+  ASSERT_EQ(str3,
+    "(exists (?1 ?2) (and (robot_at ?0 ?1)(connected ?1 ?2)))");
 }

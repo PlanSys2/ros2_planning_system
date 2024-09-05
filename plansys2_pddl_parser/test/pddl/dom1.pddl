@@ -95,4 +95,16 @@
     )
 )
 
+(:action action_test5
+    :parameters (?r - robot)
+    :precondition
+      (exists (?ro1 ?ro2)
+        (and
+          (robot_at ?r ?ro1)
+          (connected ?ro1 ?ro2)
+        )
+      )
+    :effect (and )
+)
+
 )
