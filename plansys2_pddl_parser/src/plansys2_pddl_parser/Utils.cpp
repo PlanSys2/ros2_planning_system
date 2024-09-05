@@ -703,11 +703,14 @@ std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_
     return {};
   }
 
-  std::string ret = "(exists ";
+  std::string ret = "(exists (";
 
+  bool first_param = true;
   for (const auto & param : tree.nodes[node_id].parameters) {
-    ret += " " + param.name;
+    ret += first_param ? param.name : " " + param.name;
+    first_param = false;
   }
+  ret+= ") ";
 
   for (auto child_id : tree.nodes[node_id].children) {
     ret += toString(tree, child_id, negate);
