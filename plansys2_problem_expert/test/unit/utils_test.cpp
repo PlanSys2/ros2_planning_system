@@ -862,6 +862,69 @@ TEST(utils, evaluate_invalid)
     std::make_tuple(false, false, 0));
 }
 
+
+TEST(utils, evaluate_exists_client)
+{
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_exists.pddl"});
+
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
+
+  exe.add_node(problem_node->get_node_base_interface());
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("rob1", "robot")));
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  std::string expression = "(exists (?1 ?2) (and (robot_at rob1 ?1)(connected ?1 ?2)))";
+  plansys2_msgs::msg::Tree goal;
+  parser::pddl::fromString(goal, expression);
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal, problem_client, predicates, functions, false, false),
+    std::make_tuple(true, false, 0));
+
+  ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate("(robot_at rob1 bedroom)")));
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal, problem_client, predicates, functions, false, false),
+    std::make_tuple(true, false, 0));
+
+  ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected bedroom kitchen)")));
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal, problem_client, predicates, functions, false, false),
+    std::make_tuple(true, true, 0));
+
+  finish = true;
+  t.join();
+}
+
 TEST(utils, get_subtrees)
 {
   std::vector<uint32_t> empty_expected;
