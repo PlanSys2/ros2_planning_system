@@ -178,5 +178,4 @@ void  cart_product(
 }  // namespace plansys2
 
 
-
 #endif  // PLANSYS2_PROBLEM_EXPERT__UTILS_HPP_

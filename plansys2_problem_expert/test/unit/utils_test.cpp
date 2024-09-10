@@ -875,9 +875,7 @@ TEST(utils, evaluate_exists_client)
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
 
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_exists.pddl"});
-
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
   rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
@@ -909,13 +907,17 @@ TEST(utils, evaluate_exists_client)
     plansys2::evaluate(goal, problem_client, predicates, functions, false, false),
     std::make_tuple(true, false, 0));
 
-  ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate("(robot_at rob1 bedroom)")));
+  ASSERT_TRUE(
+    problem_client->addPredicate(
+      parser::pddl::fromStringPredicate("(robot_at rob1 bedroom)")));
 
   ASSERT_EQ(
     plansys2::evaluate(goal, problem_client, predicates, functions, false, false),
     std::make_tuple(true, false, 0));
 
-  ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected bedroom kitchen)")));
+  ASSERT_TRUE(
+    problem_client->addPredicate(
+      parser::pddl::fromStringPredicate("(connected bedroom kitchen)")));
 
   ASSERT_EQ(
     plansys2::evaluate(goal, problem_client, predicates, functions, false, false),
@@ -1121,15 +1123,15 @@ TEST(utils, get_name)
   ASSERT_EQ(plansys2::get_action_name(action_str), "move");
 }
 
-TEST(utils, replace_children_param){
+TEST(utils, replace_children_param) {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
   std::string domain_file = pkgpath + "/pddl/domain_exists.pddl";
 
   std::ifstream domain_ifs(domain_file);
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-                         std::istreambuf_iterator<char>());
-  parser::pddl::Domain domain( domain_str );
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+  parser::pddl::Domain domain(domain_str);
 
   auto action = domain.actions.get("action_test");
   plansys2_msgs::msg::Tree tree;
@@ -1143,20 +1145,23 @@ TEST(utils, replace_children_param){
     replace
   );
   std::string str = parser::pddl::toString(tree2);
-  ASSERT_EQ(str,
-    "(and (exists (bedroom) (and (robot_at ?0 bedroom)(charging_point_at bedroom)))(and (>  (battery_level ?0) 1.000000)(<  (battery_level ?0) 200.000000)))");
+  ASSERT_EQ(
+    str,
+    "(and (exists (bedroom) (and (robot_at ?0 bedroom)(charging_point_at bedroom)))"
+    "(and (>  (battery_level ?0) 1.000000)(<  (battery_level ?0) 200.000000)))");
 
-    auto action2 = domain.actions.get("action_test2");
-    plansys2_msgs::msg::Tree tree3;
-    action2->pre->getTree(tree3, domain);
-    plansys2_msgs::msg::Tree tree4 = plansys2::replace_children_param(
-      tree3,
-      0,
-      replace
-    );
-    std::string str2 = parser::pddl::toString(tree4);
-    ASSERT_EQ(str2,
-      "(exists (bedroom bathroom) (and (robot_at ?0 bedroom)(connected bedroom bathroom)))");
+  auto action2 = domain.actions.get("action_test2");
+  plansys2_msgs::msg::Tree tree3;
+  action2->pre->getTree(tree3, domain);
+  plansys2_msgs::msg::Tree tree4 = plansys2::replace_children_param(
+    tree3,
+    0,
+    replace
+  );
+  std::string str2 = parser::pddl::toString(tree4);
+  ASSERT_EQ(
+    str2,
+    "(exists (bedroom bathroom) (and (robot_at ?0 bedroom)(connected bedroom bathroom)))");
 }
 
 int main(int argc, char ** argv)
