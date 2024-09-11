@@ -862,6 +862,33 @@ TEST(utils, evaluate_invalid)
     std::make_tuple(false, false, 0));
 }
 
+TEST(utils, evaluate_exists)
+{
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+  std::string expression = "(exists (?1 ?2) (and (robot_at rob1 ?1)(connected ?1 ?2)))";
+  plansys2_msgs::msg::Tree goal;
+  parser::pddl::fromString(goal, expression);
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, false, 0));
+
+  predicates.push_back(parser::pddl::fromStringPredicate("(robot_at rob1 bedroom)"));
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, false, 0));
+
+  predicates.push_back(parser::pddl::fromStringPredicate("(connected bedroom kitchen)"));
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, true, 0));
+}
 
 TEST(utils, evaluate_exists_client)
 {
