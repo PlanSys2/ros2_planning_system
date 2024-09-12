@@ -28,7 +28,7 @@ void Not::parse( Stringreader & f, TokenStruct< std::string > & ts, Domain & d )
 	f.next();
 	f.assert_token( "(" );
 
-	cond = dynamic_cast< Ground * >( d.createCondition( f ) );
+	cond = d.createCondition( f );
 
 	if ( !cond ) {
 		f.tokenExit( f.getToken() );

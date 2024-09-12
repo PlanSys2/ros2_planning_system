@@ -116,7 +116,8 @@ GroundVec Action::getGroundsFromCondition( Condition * c, bool neg ) {
 	for ( unsigned i = 0; a && i < a->conds.size(); ++i ) {
 		if ( neg ) {
 			Not * n = dynamic_cast< Not * >( a->conds[i] );
-			if ( n ) grounds.push_back( n->cond );
+			Ground * g = dynamic_cast< Ground * >( n->cond );
+			if ( n && g) grounds.push_back( g );
 		}
 		else {
 			Ground * g = dynamic_cast< Ground * >( a->conds[i] );
@@ -126,7 +127,8 @@ GroundVec Action::getGroundsFromCondition( Condition * c, bool neg ) {
 
 	if ( neg ) {
 		Not * n = dynamic_cast< Not * >( c );
-		if ( n ) grounds.push_back( n->cond );
+		Ground * g = dynamic_cast< Ground * >( n->cond );
+		if ( n && g) grounds.push_back( g );
 	}
 	else {
 		Ground * g = dynamic_cast< Ground * >( c );

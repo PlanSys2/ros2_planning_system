@@ -12,7 +12,7 @@ class Not : public Condition {
 
 public:
 
-	Ground * cond;
+	Condition * cond;
 
 	Not()
 		: cond( 0 ) {}
