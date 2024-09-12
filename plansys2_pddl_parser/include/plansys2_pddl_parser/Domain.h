@@ -218,11 +218,6 @@ public:
 		for ( unsigned i = 0; i < ts.size(); ++i ) {
 			Type * t = getType( ts.types[i] );
 			t->constants.insert(ts[i]);
-			// We need to populate the constants of all supertypes
-			while(t->supertype != nullptr) {
-				t = t->supertype;
-				t->constants.insert(ts[i]);
-			}
 		}
 		for ( unsigned i = 0; DOMAIN_DEBUG && i < types.size(); ++i ) {
 			std::cout << " ";
