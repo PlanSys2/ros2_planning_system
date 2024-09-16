@@ -21,6 +21,8 @@
 namespace plansys2
 {
 
+using shared_ptr_action = std::shared_ptr<plansys2_msgs::msg::Action>;
+
 ApplyAtStartEffect::ApplyAtStartEffect(
   const std::string & xml_tag_name,
   const BT::NodeConfig & conf)
@@ -41,7 +43,12 @@ ApplyAtStartEffect::tick()
   std::string action;
   getInput("action", action);
 
-  auto effect = (*action_map_)[action].durative_action_info->at_start_effects;
+  if (std::holds_alternative<shared_ptr_action>((*action_map_)[action].action_info)) {
+    return BT::NodeStatus::SUCCESS;
+  }
+
+  auto effect = std::get<std::shared_ptr<plansys2_msgs::msg::DurativeAction>>(
+    (*action_map_)[action].action_info)->at_start_effects;
 
   if (!(*action_map_)[action].at_start_effects_applied) {
     (*action_map_)[action].at_start_effects_applied = true;

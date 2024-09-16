@@ -715,7 +715,7 @@ TEST(executor, action_real_action_1)
   (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].action_executor =
     plansys2::ActionExecutor::make_shared(
     "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
-  (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].durative_action_info =
+  (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].action_info =
     domain_client->getDurativeAction(
     plansys2::get_action_name("(move r2d2 steering_wheels_zone assembly_zone):0"),
     plansys2::get_action_params("(move r2d2 steering_wheels_zone assembly_zone):0"));
@@ -969,7 +969,7 @@ TEST(executor, cancel_bt_execution)
   (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].action_executor =
     plansys2::ActionExecutor::make_shared(
     "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
-  (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].durative_action_info =
+  (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].action_info =
     domain_client->getDurativeAction(
     plansys2::get_action_name("(move r2d2 steering_wheels_zone assembly_zone):0"),
     plansys2::get_action_params("(move r2d2 steering_wheels_zone assembly_zone):0"));

@@ -18,9 +18,13 @@
 #include <tuple>
 
 #include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
+#include "plansys2_msgs/msg/tree.hpp"
 
 namespace plansys2
 {
+
+using shared_ptr_action = std::shared_ptr<plansys2_msgs::msg::Action>;
+using shared_ptr_durative = std::shared_ptr<plansys2_msgs::msg::DurativeAction>;
 
 WaitAtStartReq::WaitAtStartReq(
   const std::string & xml_tag_name,
@@ -44,8 +48,19 @@ WaitAtStartReq::tick()
 
   auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 
-  auto reqs_as = (*action_map_)[action].durative_action_info->at_start_requirements;
-  auto reqs_oa = (*action_map_)[action].durative_action_info->over_all_requirements;
+  plansys2_msgs::msg::Tree reqs_as;
+  plansys2_msgs::msg::Tree reqs_oa;
+  if (std::holds_alternative<shared_ptr_action>((*action_map_)[action].action_info)) {
+    reqs_as = std::get<shared_ptr_action>(
+      (*action_map_)[action].action_info)->preconditions;
+    reqs_oa = std::get<shared_ptr_action>(
+      (*action_map_)[action].action_info)->preconditions;
+  } else if (std::holds_alternative<shared_ptr_durative>((*action_map_)[action].action_info)) {
+    reqs_as = std::get<shared_ptr_durative>(
+      (*action_map_)[action].action_info)->at_start_requirements;
+    reqs_oa = std::get<shared_ptr_durative>(
+      (*action_map_)[action].action_info)->over_all_requirements;
+  }
 
   bool check_as = check(reqs_as, problem_client_);
   if (!check_as) {
@@ -54,7 +69,7 @@ WaitAtStartReq::tick()
     RCLCPP_ERROR_STREAM(
       node->get_logger(),
       "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-        parser::pddl::toString((*action_map_)[action].durative_action_info->at_start_requirements));
+        parser::pddl::toString(reqs_as));
 
     return BT::NodeStatus::RUNNING;
   }
@@ -66,7 +81,7 @@ WaitAtStartReq::tick()
     RCLCPP_ERROR_STREAM(
       node->get_logger(),
       "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-        parser::pddl::toString((*action_map_)[action].durative_action_info->over_all_requirements));
+        parser::pddl::toString(reqs_oa));
 
     return BT::NodeStatus::RUNNING;
   }

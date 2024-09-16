@@ -102,14 +102,14 @@ TEST(problem_expert, wait_atstart_req_test)
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
   (*action_map)["(move robot1 wp1 wp2):5"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info =
+  (*action_map)["(move robot1 wp1 wp2):5"].action_info =
     domain_client->getDurativeAction(
     plansys2::get_action_name("(move robot1 wp1 wp2)"),
     plansys2::get_action_params("(move robot1 wp1 wp2)"));
 
   ASSERT_NE(
-    (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info,
-    nullptr);
+    (*action_map)["(move robot1 wp1 wp2):5"].action_info.index(),
+    std::variant_npos);
 
   std::string bt_xml_tree =
     R"(
@@ -227,14 +227,14 @@ TEST(problem_expert, apply_atstart_effect_test)
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
   (*action_map)["(move robot1 wp1 wp2):5"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info =
+  (*action_map)["(move robot1 wp1 wp2):5"].action_info =
     domain_client->getDurativeAction(
     plansys2::get_action_name("(move robot1 wp1 wp2)"),
     plansys2::get_action_params("(move robot1 wp1 wp2)"));
 
   ASSERT_NE(
-    (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info,
-    nullptr);
+    (*action_map)["(move robot1 wp1 wp2):5"].action_info.index(),
+    std::variant_npos);
 
   std::string bt_xml_tree =
     R"(
@@ -354,14 +354,14 @@ TEST(problem_expert, apply_atend_effect_test)
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
   (*action_map)["(move robot1 wp1 wp2):5"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info =
+  (*action_map)["(move robot1 wp1 wp2):5"].action_info =
     domain_client->getDurativeAction(
     plansys2::get_action_name("(move robot1 wp1 wp2)"),
     plansys2::get_action_params("(move robot1 wp1 wp2)"));
 
   ASSERT_NE(
-    (*action_map)["(move robot1 wp1 wp2):5"].durative_action_info,
-    nullptr);
+    (*action_map)["(move robot1 wp1 wp2):5"].action_info.index(),
+    std::variant_npos);
 
   std::string bt_xml_tree =
     R"(

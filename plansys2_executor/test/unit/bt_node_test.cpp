@@ -107,14 +107,14 @@ TEST(problem_expert, wait_overall_req_test)
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
   (*action_map)["(move robot1 wheels_zone assembly_zone):5"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info =
+  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].action_info =
     domain_client->getDurativeAction(
     plansys2::get_action_name("(move robot1 wheels_zone assembly_zone)"),
     plansys2::get_action_params("(move robot1 wheels_zone assembly_zone)"));
 
   ASSERT_NE(
-    (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info,
-    nullptr);
+    (*action_map)["(move robot1 wheels_zone assembly_zone):5"].action_info.index(),
+    std::variant_npos);
 
   std::string bt_xml_tree =
     R"(
@@ -221,14 +221,14 @@ TEST(problem_expert, wait_atstart_req_test)
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
   (*action_map)["(move robot1 wheels_zone assembly_zone):5"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info =
+  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].action_info =
     domain_client->getDurativeAction(
     plansys2::get_action_name("(move robot1 wheels_zone assembly_zone)"),
     plansys2::get_action_params("(move robot1 wheels_zone assembly_zone)"));
 
   ASSERT_NE(
-    (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info,
-    nullptr);
+    (*action_map)["(move robot1 wheels_zone assembly_zone):5"].action_info.index(),
+    std::variant_npos);
 
   std::string bt_xml_tree =
     R"(
@@ -337,14 +337,14 @@ TEST(problem_expert, wait_atend_req_test)
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
   (*action_map)["(move robot1 wheels_zone assembly_zone):5"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info =
+  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].action_info =
     domain_client->getDurativeAction(
     plansys2::get_action_name("(move robot1 wheels_zone assembly_zone)"),
     plansys2::get_action_params("(move robot1 wheels_zone assembly_zone)"));
 
   ASSERT_NE(
-    (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info,
-    nullptr);
+    (*action_map)["(move robot1 wheels_zone assembly_zone):5"].action_info.index(),
+    std::variant_npos);
 
   std::string bt_xml_tree =
     R"(
@@ -451,14 +451,14 @@ TEST(problem_expert, at_start_effect_test)
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
   (*action_map)["(move robot1 wheels_zone assembly_zone):5"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info =
+  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].action_info =
     domain_client->getDurativeAction(
     plansys2::get_action_name("(move robot1 wheels_zone assembly_zone)"),
     plansys2::get_action_params("(move robot1 wheels_zone assembly_zone)"));
 
   ASSERT_NE(
-    (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info,
-    nullptr);
+    (*action_map)["(move robot1 wheels_zone assembly_zone):5"].action_info.index(),
+    std::variant_npos);
 
   std::string bt_xml_tree =
     R"(
@@ -570,14 +570,14 @@ TEST(problem_expert, at_end_effect_test)
 
   auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
   (*action_map)["(move robot1 wheels_zone assembly_zone):5"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info =
+  (*action_map)["(move robot1 wheels_zone assembly_zone):5"].action_info =
     domain_client->getDurativeAction(
     plansys2::get_action_name("(move robot1 wheels_zone assembly_zone)"),
     plansys2::get_action_params("(move robot1 wheels_zone assembly_zone)"));
 
   ASSERT_NE(
-    (*action_map)["(move robot1 wheels_zone assembly_zone):5"].durative_action_info,
-    nullptr);
+    (*action_map)["(move robot1 wheels_zone assembly_zone):5"].action_info.index(),
+    std::variant_npos);
 
   std::string bt_xml_tree =
     R"(

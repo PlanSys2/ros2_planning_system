@@ -18,9 +18,13 @@
 #include <tuple>
 
 #include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
+#include "plansys2_msgs/msg/action.hpp"
 
 namespace plansys2
 {
+
+using shared_ptr_action = std::shared_ptr<plansys2_msgs::msg::Action>;
+using shared_ptr_durative = std::shared_ptr<plansys2_msgs::msg::DurativeAction>;
 
 CheckOverAllReq::CheckOverAllReq(
   const std::string & xml_tag_name,
@@ -44,7 +48,14 @@ CheckOverAllReq::tick()
 
   auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 
-  auto reqs = (*action_map_)[action].durative_action_info->over_all_requirements;
+  plansys2_msgs::msg::Tree reqs;
+  if (std::holds_alternative<shared_ptr_action>((*action_map_)[action].action_info)) {
+    reqs = std::get<shared_ptr_action>(
+      (*action_map_)[action].action_info)->preconditions;
+  } else if (std::holds_alternative<shared_ptr_durative>((*action_map_)[action].action_info)) {
+    reqs = std::get<shared_ptr_durative>(
+      (*action_map_)[action].action_info)->over_all_requirements;
+  }
 
   if (!check(reqs, problem_client_)) {
     (*action_map_)[action].execution_error_info = "Error checking over all requirements";
@@ -52,7 +63,7 @@ CheckOverAllReq::tick()
     RCLCPP_ERROR_STREAM(
       node->get_logger(),
       "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-        parser::pddl::toString((*action_map_)[action].durative_action_info->over_all_requirements));
+        parser::pddl::toString(reqs));
 
     return BT::NodeStatus::FAILURE;
   } else {
