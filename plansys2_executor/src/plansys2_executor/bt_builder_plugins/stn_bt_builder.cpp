@@ -263,10 +263,12 @@ STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
   auto predicates = problem_client_->getPredicates();
   auto functions = problem_client_->getFunctions();
 
+  auto init_action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
+  init_action->at_end_effects = from_state(predicates, functions);
+
   int node_cnt = 0;
   auto init_node = Node::make_shared(node_cnt++);
-  init_node->action.action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
-  init_node->action.action->at_end_effects = from_state(predicates, functions);
+  init_node->action.action = init_action;
   init_node->action.type = ActionType::INIT;
   graph->nodes.push_back(init_node);
 
@@ -291,9 +293,10 @@ STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
   auto goal = problem_client_->getGoal();
   plansys2_msgs::msg::Tree * goal_tree = &goal;
 
+  auto goal_action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
+  goal_action->at_start_requirements = *goal_tree;
   auto goal_node = Node::make_shared(node_cnt++);
-  goal_node->action.action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
-  goal_node->action.action->at_start_requirements = *goal_tree;
+  goal_node->action.action = goal_action;
   goal_node->action.type = ActionType::GOAL;
   graph->nodes.push_back(goal_node);
 
@@ -311,9 +314,16 @@ STNBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan) const
     action_stamped.expression = item.action;
     action_stamped.duration = item.duration;
     action_stamped.type = ActionType::DURATIVE;
-    action_stamped.action =
-      domain_client_->getDurativeAction(
-      get_action_name(item.action), get_action_params(item.action));
+    auto actions = domain_client_->getActions();
+    if (std::find(actions.begin(), actions.end(), get_action_name(item.action)) != actions.end()) {
+      action_stamped.action =
+        domain_client_->getAction(
+          get_action_name(item.action), get_action_params(item.action));
+    } else {
+      action_stamped.action =
+        domain_client_->getDurativeAction(
+          get_action_name(item.action), get_action_params(item.action));
+    }
 
     ret.push_back(action_stamped);
   }
@@ -384,9 +394,10 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
   auto predicates = problem_client_->getPredicates();
   auto functions = problem_client_->getFunctions();
 
+  auto init_action_ = std::make_shared<plansys2_msgs::msg::DurativeAction>();
+  init_action_->at_end_effects = from_state(predicates, functions);
   ActionStamped init_action;
-  init_action.action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
-  init_action.action->at_end_effects = from_state(predicates, functions);
+  init_action.action = init_action_;
   init_action.type = ActionType::INIT;
   simple_plan.insert(std::make_pair(-1, init_action));
 
@@ -406,9 +417,11 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
   auto goal = problem_client_->getGoal();
   plansys2_msgs::msg::Tree * goal_tree = &goal;
 
+  auto goal_action_ = std::make_shared<plansys2_msgs::msg::DurativeAction>();
+  goal_action_->at_start_requirements = *goal_tree;
+
   ActionStamped goal_action;
-  goal_action.action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
-  goal_action.action->at_start_requirements = *goal_tree;
+  goal_action.action = goal_action_;
   goal_action.type = ActionType::GOAL;
   simple_plan.insert(std::make_pair(max_time, goal_action));
 
@@ -474,9 +487,9 @@ STNBTBuilder::get_states(
     auto it = plan.equal_range(time);
     for (auto iter = it.first; iter != it.second; ++iter) {
       if (iter->second.type == ActionType::START) {
-        apply(iter->second.action->at_start_effects, state_vec.predicates, state_vec.functions);
+        apply(iter->second.action.get_at_start_effects(), state_vec.predicates, state_vec.functions);
       } else if (iter->second.type == ActionType::END) {
-        apply(iter->second.action->at_end_effects, state_vec.predicates, state_vec.functions);
+        apply(iter->second.action.get_at_end_effects(), state_vec.predicates, state_vec.functions);
       }
     }
     states.insert(std::make_pair(time, state_vec));
@@ -927,11 +940,11 @@ plansys2_msgs::msg::Tree
 STNBTBuilder::get_conditions(const ActionStamped & action) const
 {
   if (action.type == ActionType::START || action.type == ActionType::GOAL) {
-    return action.action->at_start_requirements;
+    return action.action.get_at_start_requirements();
   } else if (action.type == ActionType::OVERALL) {
-    return action.action->over_all_requirements;
+    return action.action.get_overall_requirements();
   } else if (action.type == ActionType::END) {
-    return action.action->at_end_requirements;
+    return action.action.get_at_end_requirements();
   }
 
   return plansys2_msgs::msg::Tree();
@@ -941,9 +954,9 @@ plansys2_msgs::msg::Tree
 STNBTBuilder::get_effects(const ActionStamped & action) const
 {
   if (action.type == ActionType::START) {
-    return action.action->at_start_effects;
+    return action.action.get_at_start_effects();
   } else if (action.type == ActionType::END || action.type == ActionType::INIT) {
-    return action.action->at_end_effects;
+    return action.action.get_at_end_effects();
   }
 
   return plansys2_msgs::msg::Tree();
@@ -1296,7 +1309,7 @@ STNBTBuilder::get_node_dotgraph(
 {
   std::stringstream ss;
   ss << t(2) << node->node_num << " [label=\"";
-  ss << parser::pddl::nameActionsToString(node->action.action);
+  ss << node->action.action.get_action_string();
   ss << " " << to_string(node->action.type) << "\"";
   ss << "labeljust=c,style=filled";
 
@@ -1329,7 +1342,7 @@ STNBTBuilder::get_action_status(
   ActionStamped action_stamped,
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map)
 {
-  auto index = "(" + parser::pddl::nameActionsToString(action_stamped.action) + "):" +
+  auto index = "(" + action_stamped.action.get_action_string() + "):" +
     std::to_string(static_cast<int>(action_stamped.time * 1000));
   if (action_map->find(index) != action_map->end()) {
     if ((*action_map)[index].action_executor) {
@@ -1412,8 +1425,8 @@ STNBTBuilder::print_node(const plansys2::Node::Ptr node, int level) const
   } else {
     std::cerr << node->action.time + node->action.duration;
   }
-  std::cerr << ": (" << node->action.action->name;
-  for (const auto & param : node->action.action->parameters) {
+  std::cerr << ": (" << node->action.action.get_action_name();
+  for (const auto & param : node->action.action.get_action_params()) {
     std::cerr << " " << param.name;
   }
   std::cerr << ")_" << to_string(node->action.type);

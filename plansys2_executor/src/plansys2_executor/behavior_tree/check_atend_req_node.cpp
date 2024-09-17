@@ -22,8 +22,6 @@
 namespace plansys2
 {
 
-using shared_ptr_action = std::shared_ptr<plansys2_msgs::msg::Action>;
-
 CheckAtEndReq::CheckAtEndReq(
   const std::string & xml_tag_name,
   const BT::NodeConfig & conf)
@@ -46,12 +44,11 @@ CheckAtEndReq::tick()
 
   auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 
-  if (std::holds_alternative<shared_ptr_action>((*action_map_)[action].action_info)) {
+  if ((*action_map_)[action].action_info.is_action()) {
     return BT::NodeStatus::SUCCESS;
   }
 
-  auto reqs = std::get<std::shared_ptr<plansys2_msgs::msg::DurativeAction>>(
-    (*action_map_)[action].action_info)->at_end_requirements;
+  auto reqs = (*action_map_)[action].action_info.get_at_end_requirements();
 
   if (!check(reqs, problem_client_)) {
     (*action_map_)[action].execution_error_info = "Error checking at end requirements";

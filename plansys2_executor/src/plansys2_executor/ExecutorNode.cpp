@@ -274,17 +274,18 @@ ExecutorNode::getOrderedSubGoals()
   }
 
   for (const auto & plan_item : current_plan_.value().items) {
-    if (plan_item.duration > 0) {
+    auto actions = domain_client_->getActions();
+    if (std::find(actions.begin(), actions.end(), get_action_name(plan_item.action)) != actions.end()) {
+      std::shared_ptr<plansys2_msgs::msg::Action> action =
+        domain_client_->getAction(
+        get_action_name(plan_item.action), get_action_params(plan_item.action));
+      apply(action->effects, local_predicates, local_functions);
+    } else {
       std::shared_ptr<plansys2_msgs::msg::DurativeAction> action =
         domain_client_->getDurativeAction(
         get_action_name(plan_item.action), get_action_params(plan_item.action));
       apply(action->at_start_effects, local_predicates, local_functions);
       apply(action->at_end_effects, local_predicates, local_functions);
-    } else {
-      std::shared_ptr<plansys2_msgs::msg::Action> action =
-        domain_client_->getAction(
-        get_action_name(plan_item.action), get_action_params(plan_item.action));
-      apply(action->effects, local_predicates, local_functions);
     }
 
 
@@ -376,25 +377,21 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
   for (const auto & plan_item : current_plan_.value().items) {
     auto index = BTBuilder::to_action_id(plan_item, 3);
 
-    std::string action_name;
+
     (*action_map)[index] = ActionExecutionInfo();
     (*action_map)[index].action_executor =
       ActionExecutor::make_shared(plan_item.action, shared_from_this());
 
-    if (plan_item.duration > 0) {
-      auto action =
-        domain_client_->getDurativeAction(
+    auto actions = domain_client_->getActions();
+    if (std::find(actions.begin(), actions.end(), get_action_name(plan_item.action)) != actions.end()) {
+      (*action_map)[index].action_info = domain_client_->getAction(
         get_action_name(plan_item.action), get_action_params(plan_item.action));
-      action_name = action->name;
-      (*action_map)[index].action_info = action;
     } else {
-      auto action =
-        domain_client_->getAction(
+      (*action_map)[index].action_info = domain_client_->getDurativeAction(
         get_action_name(plan_item.action), get_action_params(plan_item.action));
-      action_name = action->name;
-      (*action_map)[index].action_info = action;
     }
 
+    std::string action_name = (*action_map)[index].action_info.get_action_name();
     (*action_map)[index].duration = plan_item.duration;
     if (std::find(
         action_timeout_actions.begin(), action_timeout_actions.end(),
@@ -637,7 +634,7 @@ ExecutorNode::print_execution_info(
         fprintf(stderr, "\tFAILURE\n");
         break;
     }
-    if (action_info.second.action_info.index() == std::variant_npos) {
+    if (action_info.second.action_info.action.index() == std::variant_npos) {
       fprintf(stderr, "\tWith no action info\n");
     }
 

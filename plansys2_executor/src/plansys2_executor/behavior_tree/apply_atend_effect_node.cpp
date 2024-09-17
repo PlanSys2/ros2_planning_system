@@ -22,10 +22,6 @@
 namespace plansys2
 {
 
-using shared_ptr_action = std::shared_ptr<plansys2_msgs::msg::Action>;
-using shared_ptr_durative = std::shared_ptr<plansys2_msgs::msg::DurativeAction>;
-
-
 ApplyAtEndEffect::ApplyAtEndEffect(
   const std::string & xml_tag_name,
   const BT::NodeConfig & conf)
@@ -46,14 +42,7 @@ ApplyAtEndEffect::tick()
   std::string action;
   getInput("action", action);
 
-  plansys2_msgs::msg::Tree effect;
-  if (std::holds_alternative<shared_ptr_action>((*action_map_)[action].action_info)) {
-    effect = std::get<shared_ptr_action>(
-      (*action_map_)[action].action_info)->effects;
-  } else if (std::holds_alternative<shared_ptr_durative>((*action_map_)[action].action_info)) {
-    effect = std::get<shared_ptr_durative>(
-      (*action_map_)[action].action_info)->at_end_effects;
-  }
+  auto effect = (*action_map_)[action].action_info.get_at_end_effects();
 
   if (!(*action_map_)[action].at_end_effects_applied) {
     (*action_map_)[action].at_end_effects_applied = true;

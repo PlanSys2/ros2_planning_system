@@ -23,9 +23,6 @@
 namespace plansys2
 {
 
-using shared_ptr_action = std::shared_ptr<plansys2_msgs::msg::Action>;
-using shared_ptr_durative = std::shared_ptr<plansys2_msgs::msg::DurativeAction>;
-
 WaitAtStartReq::WaitAtStartReq(
   const std::string & xml_tag_name,
   const BT::NodeConfig & conf)
@@ -48,19 +45,8 @@ WaitAtStartReq::tick()
 
   auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 
-  plansys2_msgs::msg::Tree reqs_as;
-  plansys2_msgs::msg::Tree reqs_oa;
-  if (std::holds_alternative<shared_ptr_action>((*action_map_)[action].action_info)) {
-    reqs_as = std::get<shared_ptr_action>(
-      (*action_map_)[action].action_info)->preconditions;
-    reqs_oa = std::get<shared_ptr_action>(
-      (*action_map_)[action].action_info)->preconditions;
-  } else if (std::holds_alternative<shared_ptr_durative>((*action_map_)[action].action_info)) {
-    reqs_as = std::get<shared_ptr_durative>(
-      (*action_map_)[action].action_info)->at_start_requirements;
-    reqs_oa = std::get<shared_ptr_durative>(
-      (*action_map_)[action].action_info)->over_all_requirements;
-  }
+  auto reqs_as = (*action_map_)[action].action_info.get_at_start_requirements();
+  auto reqs_oa = (*action_map_)[action].action_info.get_overall_requirements();
 
   bool check_as = check(reqs_as, problem_client_);
   if (!check_as) {

@@ -23,9 +23,6 @@
 namespace plansys2
 {
 
-using shared_ptr_action = std::shared_ptr<plansys2_msgs::msg::Action>;
-using shared_ptr_durative = std::shared_ptr<plansys2_msgs::msg::DurativeAction>;
-
 CheckOverAllReq::CheckOverAllReq(
   const std::string & xml_tag_name,
   const BT::NodeConfig & conf)
@@ -48,14 +45,7 @@ CheckOverAllReq::tick()
 
   auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 
-  plansys2_msgs::msg::Tree reqs;
-  if (std::holds_alternative<shared_ptr_action>((*action_map_)[action].action_info)) {
-    reqs = std::get<shared_ptr_action>(
-      (*action_map_)[action].action_info)->preconditions;
-  } else if (std::holds_alternative<shared_ptr_durative>((*action_map_)[action].action_info)) {
-    reqs = std::get<shared_ptr_durative>(
-      (*action_map_)[action].action_info)->over_all_requirements;
-  }
+  auto reqs = (*action_map_)[action].action_info.get_overall_requirements();
 
   if (!check(reqs, problem_client_)) {
     (*action_map_)[action].execution_error_info = "Error checking over all requirements";

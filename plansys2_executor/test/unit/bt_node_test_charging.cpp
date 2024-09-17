@@ -108,7 +108,7 @@ TEST(problem_expert, wait_atstart_req_test)
     plansys2::get_action_params("(move robot1 wp1 wp2)"));
 
   ASSERT_NE(
-    (*action_map)["(move robot1 wp1 wp2):5"].action_info.index(),
+    (*action_map)["(move robot1 wp1 wp2):5"].action_info.action.index(),
     std::variant_npos);
 
   std::string bt_xml_tree =
@@ -233,7 +233,7 @@ TEST(problem_expert, apply_atstart_effect_test)
     plansys2::get_action_params("(move robot1 wp1 wp2)"));
 
   ASSERT_NE(
-    (*action_map)["(move robot1 wp1 wp2):5"].action_info.index(),
+    (*action_map)["(move robot1 wp1 wp2):5"].action_info.action.index(),
     std::variant_npos);
 
   std::string bt_xml_tree =
@@ -360,7 +360,7 @@ TEST(problem_expert, apply_atend_effect_test)
     plansys2::get_action_params("(move robot1 wp1 wp2)"));
 
   ASSERT_NE(
-    (*action_map)["(move robot1 wp1 wp2):5"].action_info.index(),
+    (*action_map)["(move robot1 wp1 wp2):5"].action_info.action.index(),
     std::variant_npos);
 
   std::string bt_xml_tree =
