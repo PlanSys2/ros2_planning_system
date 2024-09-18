@@ -275,15 +275,16 @@ ExecutorNode::getOrderedSubGoals()
 
   for (const auto & plan_item : current_plan_.value().items) {
     auto actions = domain_client_->getActions();
-    if (std::find(actions.begin(), actions.end(), get_action_name(plan_item.action)) != actions.end()) {
+    std::string action_name = get_action_name(plan_item.action);
+    if (std::find(actions.begin(), actions.end(), action_name) != actions.end()) {
       std::shared_ptr<plansys2_msgs::msg::Action> action =
         domain_client_->getAction(
-        get_action_name(plan_item.action), get_action_params(plan_item.action));
+        action_name, get_action_params(plan_item.action));
       apply(action->effects, local_predicates, local_functions);
     } else {
       std::shared_ptr<plansys2_msgs::msg::DurativeAction> action =
         domain_client_->getDurativeAction(
-        get_action_name(plan_item.action), get_action_params(plan_item.action));
+        action_name, get_action_params(plan_item.action));
       apply(action->at_start_effects, local_predicates, local_functions);
       apply(action->at_end_effects, local_predicates, local_functions);
     }
@@ -383,12 +384,13 @@ ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
       ActionExecutor::make_shared(plan_item.action, shared_from_this());
 
     auto actions = domain_client_->getActions();
-    if (std::find(actions.begin(), actions.end(), get_action_name(plan_item.action)) != actions.end()) {
+    std::string action_name_ = get_action_name(plan_item.action);
+    if (std::find(actions.begin(), actions.end(), action_name_) != actions.end()) {
       (*action_map)[index].action_info = domain_client_->getAction(
-        get_action_name(plan_item.action), get_action_params(plan_item.action));
+        action_name_, get_action_params(plan_item.action));
     } else {
       (*action_map)[index].action_info = domain_client_->getDurativeAction(
-        get_action_name(plan_item.action), get_action_params(plan_item.action));
+        action_name_, get_action_params(plan_item.action));
     }
 
     std::string action_name = (*action_map)[index].action_info.get_action_name();

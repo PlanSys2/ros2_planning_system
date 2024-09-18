@@ -99,7 +99,7 @@ SimpleBTBuilder::get_node_satisfy(
   bool satisfied_before = check(requirement, predicates, functions);
 
   // Apply the effects
-  if (node->action.action.is_durative_action()){
+  if (node->action.action.is_durative_action()) {
     apply(node->action.action.get_at_start_effects(), predicates, functions);
   }
   apply(node->action.action.get_at_end_effects(), predicates, functions);
@@ -365,9 +365,9 @@ SimpleBTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
     auto over_all_requirements = parser::pddl::getSubtrees(
       new_node->action.action.get_overall_requirements());
     auto at_start_requirements = parser::pddl::getSubtrees(
-        new_node->action.action.get_at_start_requirements());
+      new_node->action.action.get_at_start_requirements());
     auto at_end_requirements = parser::pddl::getSubtrees(
-        new_node->action.action.get_at_end_requirements());
+      new_node->action.action.get_at_end_requirements());
 
     std::vector<plansys2_msgs::msg::Tree> requirements;
     requirements.insert(
@@ -834,11 +834,11 @@ SimpleBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan)
     if (std::find(actions.begin(), actions.end(), get_action_name(item.action)) != actions.end()) {
       action_stamped.action.action =
         domain_client_->getAction(
-          get_action_name(item.action), get_action_params(item.action));
+        get_action_name(item.action), get_action_params(item.action));
     } else {
       action_stamped.action.action =
         domain_client_->getDurativeAction(
-          get_action_name(item.action), get_action_params(item.action));
+        get_action_name(item.action), get_action_params(item.action));
     }
 
     ret.push_back(action_stamped);

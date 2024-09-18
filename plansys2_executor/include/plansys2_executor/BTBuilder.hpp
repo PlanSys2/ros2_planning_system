@@ -42,7 +42,6 @@ enum struct ActionType
 
 struct ActionStamped
 {
-
   float time;
   std::string expression;
   float duration;

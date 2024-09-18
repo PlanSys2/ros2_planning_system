@@ -239,7 +239,8 @@ TEST(simple_btbuilder_tests, test_plan_1)
     parser::pddl::toString(action_sequence[0].action.get_at_start_effects()),
     "(and (not (robot_at leia entrance))(robot_at leia chargingroom))");
   std::vector<plansys2_msgs::msg::Node> action_0_predicates;
-  parser::pddl::getPredicates(action_0_predicates, action_sequence[0].action.get_at_start_effects());
+  parser::pddl::getPredicates(
+    action_0_predicates, action_sequence[0].action.get_at_start_effects());
   ASSERT_EQ(action_0_predicates.size(), 2u);
   ASSERT_EQ(action_0_predicates[0].name, "robot_at");
   ASSERT_EQ(action_0_predicates[0].parameters[0].name, "leia");

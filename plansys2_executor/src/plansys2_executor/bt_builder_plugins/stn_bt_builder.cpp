@@ -318,11 +318,11 @@ STNBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan) const
     if (std::find(actions.begin(), actions.end(), get_action_name(item.action)) != actions.end()) {
       action_stamped.action =
         domain_client_->getAction(
-          get_action_name(item.action), get_action_params(item.action));
+        get_action_name(item.action), get_action_params(item.action));
     } else {
       action_stamped.action =
         domain_client_->getDurativeAction(
-          get_action_name(item.action), get_action_params(item.action));
+        get_action_name(item.action), get_action_params(item.action));
     }
 
     ret.push_back(action_stamped);
@@ -487,9 +487,11 @@ STNBTBuilder::get_states(
     auto it = plan.equal_range(time);
     for (auto iter = it.first; iter != it.second; ++iter) {
       if (iter->second.type == ActionType::START) {
-        apply(iter->second.action.get_at_start_effects(), state_vec.predicates, state_vec.functions);
+        apply(
+          iter->second.action.get_at_start_effects(), state_vec.predicates, state_vec.functions);
       } else if (iter->second.type == ActionType::END) {
-        apply(iter->second.action.get_at_end_effects(), state_vec.predicates, state_vec.functions);
+        apply(
+          iter->second.action.get_at_end_effects(), state_vec.predicates, state_vec.functions);
       }
     }
     states.insert(std::make_pair(time, state_vec));
