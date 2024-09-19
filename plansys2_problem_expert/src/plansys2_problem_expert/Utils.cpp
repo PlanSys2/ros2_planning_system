@@ -200,14 +200,24 @@ std::tuple<bool, bool, double> evaluate(
               return std::make_tuple(true, false, 0);
             }
             break;
-          case plansys2_msgs::msg::Node::COMP_EQ:
-            if (std::get<2>(left) == std::get<2>(right)) {
-              return std::make_tuple(true, true, 0);
-            } else {
-              return std::make_tuple(true, false, 0);
+          case plansys2_msgs::msg::Node::COMP_EQ: {
+              auto c_t = plansys2_msgs::msg::Node::CONSTANT;
+              auto p_t = plansys2_msgs::msg::Node::PARAMETER;
+              auto n_t = plansys2_msgs::msg::Node::NUMBER;
+              auto c0_type = tree.nodes[tree.nodes[node_id].children[0]].node_type;
+              auto c1_type = tree.nodes[tree.nodes[node_id].children[1]].node_type;
+              if ((c0_type == c_t || c0_type == p_t) && (c1_type == c_t || c1_type == p_t)) {
+                return std::make_tuple(
+                  true,
+                  negate ^ (tree.nodes[tree.nodes[node_id].children[0]].name ==
+                  tree.nodes[tree.nodes[node_id].children[1]].name),
+                  0);
+              }
+              if (c0_type == n_t && c1_type == n_t) {
+                return std::make_tuple(true, negate ^ std::get<2>(left) == std::get<2>(right), 0);
+              }
+              break;
             }
-            break;
-
           case plansys2_msgs::msg::Node::ARITH_MULT:
             return std::make_tuple(true, false, std::get<2>(left) * std::get<2>(right));
             break;
@@ -300,6 +310,20 @@ std::tuple<bool, bool, double> evaluate(
 
     case plansys2_msgs::msg::Node::NUMBER: {
         return std::make_tuple(true, true, tree.nodes[node_id].value);
+      }
+
+    case plansys2_msgs::msg::Node::CONSTANT: {
+        if (tree.nodes[node_id].name.size() > 0) {
+          return std::make_tuple(true, true, 0);
+        }
+        return std::make_tuple(true, false, 0);
+      }
+
+    case plansys2_msgs::msg::Node::PARAMETER: {
+        if (tree.nodes[node_id].name.size() > 0 && tree.nodes[node_id].name.front() != '?') {
+          return std::make_tuple(true, true, 0);
+        }
+        return std::make_tuple(true, false, 0);
       }
 
     default:

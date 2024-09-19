@@ -60,8 +60,17 @@ double FunctionExpression::evaluate( Instance & ins, const StringVec & par ) {
 
 
 void ConstExpression::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
-		s << d.types[tid]->constants[constant];
-	}
+	s << d.types[tid]->constants[constant];
+}
+
+plansys2_msgs::msg::Node::SharedPtr ConstExpression::getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace) const {
+  plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+  node->node_type = plansys2_msgs::msg::Node::CONSTANT;
+  node->node_id = tree.nodes.size();
+  node->name = d.types[tid]->constants[constant];
+  tree.nodes.push_back(*node);
+  return node;
+}
 
 Expression * createExpression( Stringreader & f, TokenStruct< std::string > & ts, Domain & d ) {
 	f.next();
