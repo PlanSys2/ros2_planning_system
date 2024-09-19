@@ -9,7 +9,9 @@ void Exists::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 
 	TokenStruct< std::string > fstruct( ts );
 
-	printParams( 0, s, fstruct, d );
+	for ( unsigned i = 0; i < params.size(); ++i ) {
+    s << " ?" + std::to_string(params[i]);
+  }
 
 	if ( cond ) cond->PDDLPrint( s, indent + 1, fstruct, d );
 	else {
