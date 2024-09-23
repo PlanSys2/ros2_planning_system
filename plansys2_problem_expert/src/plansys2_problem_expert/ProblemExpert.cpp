@@ -121,7 +121,52 @@ ProblemExpert::getInstance(const std::string & instance_name)
 std::vector<plansys2::Predicate>
 ProblemExpert::getPredicates()
 {
-  return predicates_;
+  std::vector<plansys2::Predicate> ret = predicates_;
+
+  auto derived_predicates = domain_expert_->getDerivedPredicates();
+  for (auto derived_name : derived_predicates) {
+    auto derived = domain_expert_->getDerivedPredicate(derived_name.name);
+    for (auto d : derived) {
+      std::vector<std::vector<std::string>> parameters_vector;
+      for (size_t i = 0; i < d.predicate.parameters.size(); i++) {
+        std::vector<std::string> p_vector;
+        std::for_each(
+          instances_.begin(), instances_.end(),
+          [&](auto instance) {
+            if (d.predicate.parameters[i].type == instance.type) {
+              p_vector.push_back(instance.name);
+            }
+          });
+        parameters_vector.push_back(p_vector);
+      }
+      std::vector<std::vector<std::string>> possible_parameters_values;
+      std::vector<std::string> aux;
+      plansys2::cart_product(
+        possible_parameters_values, aux, parameters_vector.begin(), parameters_vector.end());
+
+      for (auto parameters_values : possible_parameters_values) {
+        std::map<std::string, std::string> replace;
+        for (size_t i = 0; i < d.predicate.parameters.size(); i++) {
+          replace["?" + std::to_string(i)] = parameters_values[i];
+        }
+        auto tree_replaced = plansys2::replace_children_param(
+          d.preconditions, d.preconditions.nodes[0].node_id, replace);
+        bool result = check(tree_replaced, predicates_, functions_);
+        if (result) {
+          plansys2::Predicate inferred_predicate;
+          inferred_predicate.node_type = plansys2_msgs::msg::Node::PREDICATE;
+          inferred_predicate.name = d.predicate.name;
+          for (size_t i = 0; i < d.predicate.parameters.size(); i++) {
+            plansys2_msgs::msg::Param param;
+            param.name = replace.at("?" + std::to_string(i));
+            inferred_predicate.parameters.push_back(param);
+          }
+          ret.push_back(inferred_predicate);
+        }
+      }
+    }
+  }
+  return ret;
 }
 
 bool
