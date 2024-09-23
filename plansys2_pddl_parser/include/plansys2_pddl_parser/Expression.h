@@ -257,11 +257,14 @@ public:
     plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
     node->node_type = plansys2_msgs::msg::Node::PARAMETER;
 		node->node_id = tree.nodes.size();
-    if(replace.size() >= param){
+    plansys2_msgs::msg::Param node_param;
+    if (replace.size() > param) {
       node->name = replace[param];
     } else {
-      node->name = "?"+param;
+      node->name = "?" + std::to_string(param);
     }
+    node_param.name = node->name;
+    node->parameters.push_back(node_param);
 		tree.nodes.push_back(*node);
     return node;
 	}

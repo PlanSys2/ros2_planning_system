@@ -696,7 +696,7 @@ std::string toStringParameter(const plansys2_msgs::msg::Tree & tree, uint32_t no
     return {};
   }
 
-  return tree.nodes[node_id].name;
+  return tree.nodes[node_id].parameters[0].name;
 }
 
 plansys2_msgs::msg::Node::SharedPtr fromString(plansys2_msgs::msg::Tree & tree, const std::string & expr, bool negate, uint8_t parent)
