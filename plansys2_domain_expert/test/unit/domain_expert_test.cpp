@@ -146,7 +146,8 @@ TEST(domain_expert, get_types)
   plansys2::DomainExpert domain_expert(domain_str);
 
   std::vector<std::string> types = domain_expert.getTypes();
-  std::vector<std::string> test_types {"person", "message", "robot", "room", "teleporter_room"};
+  std::vector<std::string> test_types {"object", "person", "message", "robot",
+    "room", "teleporter_room"};
 
   ASSERT_EQ(types, test_types);
 }
@@ -396,8 +397,8 @@ TEST(domain_expert, multidomain_get_types)
   domain_expert->extendDomain(domain_ext_str);
 
   std::vector<std::string> types = domain_expert->getTypes();
-  std::vector<std::string> test_types {"person", "message", "robot", "room", "teleporter_room",
-    "pickable_object"};
+  std::vector<std::string> test_types {"object", "person", "message", "robot", "room",
+    "teleporter_room", "pickable_object"};
 
   ASSERT_EQ(types, test_types);
 

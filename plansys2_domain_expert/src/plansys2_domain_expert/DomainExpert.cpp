@@ -55,7 +55,7 @@ DomainExpert::getTypes()
 {
   std::vector<std::string> ret;
   if (domain_->typed) {
-    for (unsigned i = 1; i < domain_->types.size(); i++) {
+    for (unsigned i = 0; i < domain_->types.size(); i++) {
       ret.push_back(domain_->types[i]->name);
     }
   }
