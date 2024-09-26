@@ -41,7 +41,11 @@ ApplyAtStartEffect::tick()
   std::string action;
   getInput("action", action);
 
-  auto effect = (*action_map_)[action].durative_action_info->at_start_effects;
+  if ((*action_map_)[action].action_info.is_action()) {
+    return BT::NodeStatus::SUCCESS;
+  }
+
+  auto effect = (*action_map_)[action].action_info.get_at_start_effects();
 
   if (!(*action_map_)[action].at_start_effects_applied) {
     (*action_map_)[action].at_start_effects_applied = true;

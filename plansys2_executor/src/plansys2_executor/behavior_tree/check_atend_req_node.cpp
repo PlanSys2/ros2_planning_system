@@ -44,7 +44,11 @@ CheckAtEndReq::tick()
 
   auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 
-  auto reqs = (*action_map_)[action].durative_action_info->at_end_requirements;
+  if ((*action_map_)[action].action_info.is_action()) {
+    return BT::NodeStatus::SUCCESS;
+  }
+
+  auto reqs = (*action_map_)[action].action_info.get_at_end_requirements();
 
   if (!check(reqs, problem_client_)) {
     (*action_map_)[action].execution_error_info = "Error checking at end requirements";
@@ -52,7 +56,7 @@ CheckAtEndReq::tick()
     RCLCPP_ERROR_STREAM(
       node->get_logger(),
       "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-        parser::pddl::toString((*action_map_)[action].durative_action_info->at_end_requirements));
+        parser::pddl::toString(reqs));
 
     return BT::NodeStatus::FAILURE;
   } else {
