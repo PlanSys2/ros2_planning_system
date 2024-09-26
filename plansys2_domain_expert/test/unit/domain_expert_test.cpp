@@ -272,6 +272,47 @@ TEST(domain_expert, get_function_params)
   ASSERT_EQ(params_3.value().parameters[1].type, "waypoint");
 }
 
+TEST(domain_expert, get_derived_predicates)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_derived.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  plansys2::DomainExpert domain_expert(domain_str);
+
+  std::vector<plansys2::Predicate> predicates = domain_expert.getDerivedPredicates();
+  std::vector<std::string> predicates_types {"inferred-robot_at", "inferred-person_at"};
+
+  ASSERT_EQ(predicates.size(), predicates_types.size());
+  for (unsigned i = 0; i < predicates.size(); i++) {
+    ASSERT_EQ(predicates[i].name, predicates_types[i]);
+  }
+}
+
+TEST(domain_expert, get_derived_predicate_params)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_derived.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  plansys2::DomainExpert domain_expert(domain_str);
+
+  auto pred_1 = domain_expert.getDerivedPredicate("inferred-robot_at");
+  ASSERT_GT(pred_1.size(), 0);
+  ASSERT_EQ(pred_1[0].predicate.name, "inferred-robot_at");
+  ASSERT_EQ(pred_1[0].predicate.parameters.size(), 2);
+  ASSERT_EQ(pred_1[0].predicate.parameters[0].name, "?robot0");
+  ASSERT_EQ(pred_1[0].predicate.parameters[0].type, "robot");
+  ASSERT_EQ(pred_1[0].predicate.parameters[1].name, "?room1");
+  ASSERT_EQ(pred_1[0].predicate.parameters[1].type, "room");
+  ASSERT_EQ(
+    parser::pddl::toString(pred_1[0].preconditions), "(and (robot_at ?0 ?1))");
+}
+
 TEST(domain_expert, get_actions)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");

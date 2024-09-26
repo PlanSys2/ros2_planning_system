@@ -433,4 +433,44 @@ std::vector<std::string> get_action_params(const std::string & input)
   return ret;
 }
 
+plansys2_msgs::msg::Tree replace_children_param(
+  const plansys2_msgs::msg::Tree & tree,
+  const uint8_t & node_id,
+  const std::map<std::string, std::string> & replace)
+{
+  plansys2_msgs::msg::Tree new_tree = tree;
+  if (tree.nodes[node_id].children.size() > 0) {
+    for (auto & child_id : tree.nodes[node_id].children) {
+      new_tree = replace_children_param(new_tree, child_id, replace);
+    }
+  }
+
+  for (size_t i = 0; i < tree.nodes[node_id].parameters.size(); i++) {
+    if (replace.find(tree.nodes[node_id].parameters[i].name) != replace.end()) {
+      new_tree.nodes[node_id].parameters[i].name = replace.at(
+        tree.nodes[node_id].parameters[i].name);
+    }
+  }
+  return new_tree;
+}
+
+void cart_product(
+  std::vector<std::vector<std::string>> & rvvi,  // final result
+  std::vector<std::string> & rvi,  // current result
+  std::vector<std::vector<std::string>>::const_iterator me,  // current input
+  std::vector<std::vector<std::string>>::const_iterator end)  // final input
+{
+  if (me == end) {
+    rvvi.push_back(rvi);
+    return;
+  }
+
+  const std::vector<std::string> & mevi = *me;
+  for (std::vector<std::string>::const_iterator it = mevi.begin(); it != mevi.end(); it++) {
+    rvi.push_back(*it);
+    cart_product(rvvi, rvi, me + 1, end);
+    rvi.pop_back();
+  }
+}
+
 }  // namespace plansys2
