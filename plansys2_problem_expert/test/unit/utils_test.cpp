@@ -129,6 +129,22 @@ TEST(utils, evaluate_not)
   ASSERT_EQ(
     plansys2::evaluate(test_tree, problem_client, predicates, functions, false, true),
     std::make_tuple(true, false, 0));
+
+  plansys2_msgs::msg::Tree test_tree2;
+  parser::pddl::fromString(
+    test_tree2, "(not (= wp1 wp2))");
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree2, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, true, 0));
+
+  plansys2_msgs::msg::Tree test_tree3;
+  parser::pddl::fromString(
+    test_tree3, "(not (= wp1 wp1))");
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree3, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, false, 0));
 }
 
 TEST(utils, evaluate_predicate_use_state)

@@ -174,37 +174,37 @@ std::tuple<bool, bool, double> evaluate(
         switch (tree.nodes[node_id].expression_type) {
           case plansys2_msgs::msg::Node::COMP_GE:
             if (std::get<2>(left) >= std::get<2>(right)) {
-              return std::make_tuple(true, true, 0);
+              return std::make_tuple(true, negate ^ true, 0);
             } else {
-              return std::make_tuple(true, false, 0);
+              return std::make_tuple(true, negate ^ false, 0);
             }
             break;
           case plansys2_msgs::msg::Node::COMP_GT:
             if (std::get<2>(left) > std::get<2>(right)) {
-              return std::make_tuple(true, true, 0);
+              return std::make_tuple(true, negate ^ true, 0);
             } else {
-              return std::make_tuple(true, false, 0);
+              return std::make_tuple(true, negate ^ false, 0);
             }
             break;
           case plansys2_msgs::msg::Node::COMP_LE:
             if (std::get<2>(left) <= std::get<2>(right)) {
-              return std::make_tuple(true, true, 0);
+              return std::make_tuple(true, negate ^ true, 0);
             } else {
-              return std::make_tuple(true, false, 0);
+              return std::make_tuple(true, negate ^ false, 0);
             }
             break;
           case plansys2_msgs::msg::Node::COMP_LT:
             if (std::get<2>(left) < std::get<2>(right)) {
-              return std::make_tuple(true, true, 0);
+              return std::make_tuple(true, negate ^ true, 0);
             } else {
-              return std::make_tuple(true, false, 0);
+              return std::make_tuple(true, negate ^ false, 0);
             }
             break;
           case plansys2_msgs::msg::Node::COMP_EQ:
             if (std::get<2>(left) == std::get<2>(right)) {
-              return std::make_tuple(true, true, 0);
+              return std::make_tuple(true, negate ^ true, 0);
             } else {
-              return std::make_tuple(true, false, 0);
+              return std::make_tuple(true, negate ^ false, 0);
             }
             break;
 

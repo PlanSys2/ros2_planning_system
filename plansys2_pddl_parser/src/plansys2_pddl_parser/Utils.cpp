@@ -575,7 +575,6 @@ std::string toStringNot(const plansys2_msgs::msg::Tree & tree, uint32_t node_id,
   if (tree.nodes[node_id].children.empty()) {
     return {};
   }
-
   return toString(tree, tree.nodes[node_id].children[0], !negate);
 }
 
@@ -590,22 +589,25 @@ std::string toStringExpression(const plansys2_msgs::msg::Tree & tree, uint32_t n
   }
 
   std::string ret;
+  if (negate) {
+    ret = "(not ";
+  }
 
   switch (tree.nodes[node_id].expression_type) {
     case plansys2_msgs::msg::Node::COMP_GE:
-      ret = "(>= ";
+      ret += "(>= ";
       break;
     case plansys2_msgs::msg::Node::COMP_GT:
-      ret = "(> ";
+      ret += "(> ";
       break;
     case plansys2_msgs::msg::Node::COMP_LE:
-      ret = "(<= ";
+      ret += "(<= ";
       break;
     case plansys2_msgs::msg::Node::COMP_LT:
-      ret = "(< ";
+      ret += "(< ";
       break;
     case plansys2_msgs::msg::Node::COMP_EQ:
-      ret = "(= ";
+      ret += "(= ";
       break;
     case plansys2_msgs::msg::Node::ARITH_MULT:
       ret = "(* ";
@@ -631,6 +633,9 @@ std::string toStringExpression(const plansys2_msgs::msg::Tree & tree, uint32_t n
     ret += " " + toString(tree, child_id, negate);
   }
   ret += ")";
+  if (negate) {
+    ret += ")";
+  }
 
   return ret;
 }
