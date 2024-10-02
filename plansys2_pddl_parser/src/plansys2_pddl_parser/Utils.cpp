@@ -49,6 +49,9 @@ static void printN(std::ostream & s, uint8_t node_type) {
     case plansys2_msgs::msg::Node::NUMBER:
       s << "NODE TYPE NUM" << std::endl;
       break;
+    case plansys2_msgs::msg::Node::EXISTS:
+      s << "NODE TYPE EXISTS" << std::endl;
+      break;
     case plansys2_msgs::msg::Node::COMP_GE:
       s << "NODE TYPE COMP GE" << std::endl;
       break;
@@ -136,6 +139,13 @@ uint8_t getNodeType(const std::string & expr, uint8_t default_node_type)
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       node_type = plansys2_msgs::msg::Node::NOT;
+    }
+  }
+
+  if (std::regex_search(expr, match, std::regex("\\(\\s*exists[ (]"))) {
+    if (static_cast<int>(match.position()) < first) {
+      first = static_cast<int>(match.position());
+      node_type = plansys2_msgs::msg::Node::EXISTS;
     }
   }
 
@@ -438,6 +448,9 @@ std::string toString(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bo
     case plansys2_msgs::msg::Node::FUNCTION_MODIFIER:
       ret = toStringFunctionModifier(tree, node_id, negate);
       break;
+    case plansys2_msgs::msg::Node::EXISTS:
+      ret = toStringExists(tree, node_id, negate);
+      break;
     default:
       std::cerr << "Unsupported node to string conversion" << std::endl;
       break;
@@ -680,6 +693,33 @@ std::string toStringFunctionModifier(const plansys2_msgs::msg::Tree & tree, uint
   return ret;
 }
 
+std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate)
+{
+  if (node_id >= tree.nodes.size()) {
+    return {};
+  }
+
+  if (tree.nodes[node_id].children.empty()) {
+    return {};
+  }
+
+  std::string ret = "(exists (";
+
+  bool first_param = true;
+  for (const auto & param : tree.nodes[node_id].parameters) {
+    ret += first_param ? param.name : " " + param.name;
+    first_param = false;
+  }
+  ret+= ") ";
+
+  for (auto child_id : tree.nodes[node_id].children) {
+    ret += toString(tree, child_id, negate);
+  }
+  ret += ")";
+
+  return ret;
+}
+
 plansys2_msgs::msg::Node::SharedPtr fromString(plansys2_msgs::msg::Tree & tree, const std::string & expr, bool negate, uint8_t parent)
 {
   std::string wexpr = getReducedString(expr);
@@ -816,6 +856,22 @@ plansys2_msgs::msg::Node::SharedPtr fromString(plansys2_msgs::msg::Tree & tree, 
 
         return node;
     }
+
+    case plansys2_msgs::msg::Node::EXISTS: {
+      auto node = std::make_shared<plansys2_msgs::msg::Node>(fromStringExists(wexpr));
+      node->node_id = tree.nodes.size();
+      node->negate = negate;
+      tree.nodes.push_back(*node);
+
+      size_t begin_exists = wexpr.find("exists", 0) + 6;
+      size_t end_exists = wexpr.find(")", begin_exists);
+      wexpr = wexpr.substr(end_exists + 1, std::string::npos);
+
+      auto child = fromString(tree, wexpr, negate, node_type);
+      tree.nodes[node->node_id].children.push_back(child->node_id);
+
+      return node;
+    }
     // LCOV_EXCL_START
     default:
       std::cerr << "fromString: Error parsing expresion [" << wexpr << "]" << std::endl;
@@ -853,6 +909,39 @@ plansys2_msgs::msg::Node fromStringPredicate(const std::string & predicate)
   ret.name = tokens[0];
 
   tokens.back().pop_back();
+
+  for (size_t i = 1; i < tokens.size(); i++) {
+    plansys2_msgs::msg::Param param;
+    param.name = tokens[i];
+    ret.parameters.push_back(param);
+  }
+
+  ret.value = 0;
+
+  return ret;
+}
+
+plansys2_msgs::msg::Node fromStringExists(const std::string & exists)
+{
+  plansys2_msgs::msg::Node ret;
+  ret.node_type = plansys2_msgs::msg::Node::EXISTS;
+
+  std::vector<std::string> tokens;
+  size_t start = 0;
+  size_t end_exists = exists.find(")", start);
+  size_t end = 0;
+
+  while (end < end_exists) {
+    end = exists.find(" ", start);
+    tokens.push_back(
+      exists.substr(
+        start,
+        (end == std::string::npos) ? std::string::npos : end - start));
+    start = ((end > (std::string::npos - 1)) ? std::string::npos : end + 1);
+  }
+
+  tokens.back().pop_back();
+  tokens[1].erase(0, 1);
 
   for (size_t i = 1; i < tokens.size(); i++) {
     plansys2_msgs::msg::Param param;

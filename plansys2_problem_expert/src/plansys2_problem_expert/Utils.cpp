@@ -302,6 +302,57 @@ std::tuple<bool, bool, double> evaluate(
         return std::make_tuple(true, true, tree.nodes[node_id].value);
       }
 
+    case plansys2_msgs::msg::Node::EXISTS: {
+        std::vector<plansys2::Instance> instances;
+        if (use_state == false) {
+          instances = problem_client->getInstances();
+        } else {
+          for (auto predicate : predicates) {
+            std::for_each(
+              predicate.parameters.begin(), predicate.parameters.end(),
+              [&](auto p) {
+                if (std::find(instances.begin(), instances.end(), p) == instances.end()) {
+                  instances.push_back(p);
+                }
+              });
+          }
+        }
+        std::vector<std::vector<std::string>> parameters_vector;
+        for (size_t i = 0; i < tree.nodes[node_id].parameters.size(); i++) {
+          std::vector<std::string> p_vector;
+          std::for_each(
+            instances.begin(), instances.end(),
+            [&](auto i) {p_vector.push_back(i.name);});
+          parameters_vector.push_back(p_vector);
+        }
+
+        std::vector<std::vector<std::string>> possible_parameters_values;
+        std::vector<std::string> aux;
+        plansys2::cart_product(
+          possible_parameters_values, aux, parameters_vector.begin(), parameters_vector.end());
+
+        for (auto parameters_values : possible_parameters_values) {
+          std::map<std::string, std::string> replace;
+          for (size_t i = 0; i < tree.nodes[node_id].parameters.size(); i++) {
+            replace[tree.nodes[node_id].parameters[i].name] = parameters_values[i];
+          }
+          auto tree_replaced = plansys2::replace_children_param(tree, node_id, replace);
+          std::tuple<bool, bool, double> result = evaluate(
+            tree_replaced,
+            problem_client,
+            predicates,
+            functions,
+            apply,
+            use_state,
+            tree_replaced.nodes[node_id].children[0],
+            negate);
+          if (std::get<1>(result)) {
+            return result;
+          }
+        }
+        return std::make_tuple(true, false, 0);
+      }
+
     default:
       std::cerr << "evaluate: Error parsing expresion [" <<
         parser::pddl::toString(tree, node_id) << "]" << std::endl;

@@ -38,7 +38,7 @@ plansys2_msgs::msg::Node::SharedPtr Ground::getTree( plansys2_msgs::msg::Tree & 
     node->name = name;
     for ( unsigned i = 0; i < params.size(); ++i ) {
         plansys2_msgs::msg::Param param;
-        if (i < replace.size()) {
+        if (i < replace.size() && params[i]<replace.size()) {
           if (params[i] >= 0) {
             // param has a variable value; replace by action-args
             param.name = replace[params[i]];
