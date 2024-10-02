@@ -20,7 +20,7 @@
 #include <vector>
 #include <memory>
 
-#include "plansys2_pddl_parser/Utils.h"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 namespace plansys2
 {

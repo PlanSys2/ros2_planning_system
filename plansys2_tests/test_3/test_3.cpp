@@ -26,7 +26,7 @@
 #include "plansys2_planner/PlannerClient.hpp"
 #include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
-#include "plansys2_pddl_parser/Utils.h"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 #include "plansys2_tests/test_action_node.hpp"
 #include "plansys2_tests/execution_logger.hpp"

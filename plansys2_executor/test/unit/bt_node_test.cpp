@@ -33,7 +33,7 @@
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/ActionExecutorClient.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
-#include "plansys2_pddl_parser/Utils.h"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/bt_factory.h"

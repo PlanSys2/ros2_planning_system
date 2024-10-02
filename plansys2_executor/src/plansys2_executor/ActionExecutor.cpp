@@ -16,7 +16,7 @@
 #include <memory>
 #include <vector>
 
-#include "plansys2_pddl_parser/Utils.h"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 #include "plansys2_executor/ActionExecutor.hpp"
 

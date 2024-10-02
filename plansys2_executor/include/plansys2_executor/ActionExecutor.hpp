@@ -24,7 +24,7 @@
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
 #include "plansys2_msgs/msg/param.hpp"
-#include "plansys2_pddl_parser/Utils.h"
+#include "plansys2_pddl_parser/Utils.hpp"
 #include "behaviortree_cpp/behavior_tree.h"
 
 #include "rclcpp/rclcpp.hpp"

@@ -24,7 +24,7 @@
 #include "plansys2_msgs/msg/param.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
 
-#include "plansys2_pddl_parser/Utils.h"
+#include "plansys2_pddl_parser/Utils.hpp"
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
 

@@ -18,7 +18,7 @@
 #include <memory>
 #include <vector>
 
-#include "plansys2_pddl_parser/Utils.h"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 std::vector<std::string> tokenize(const std::string & string, const std::string & delim)
 {

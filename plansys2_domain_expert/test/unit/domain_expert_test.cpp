@@ -22,7 +22,7 @@
 
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpert.hpp"
-#include "plansys2_pddl_parser/Utils.h"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 #include "plansys2_msgs/msg/node.hpp"
 
