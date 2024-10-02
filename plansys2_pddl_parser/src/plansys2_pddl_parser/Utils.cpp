@@ -448,6 +448,11 @@ std::string toString(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bo
     case plansys2_msgs::msg::Node::FUNCTION_MODIFIER:
       ret = toStringFunctionModifier(tree, node_id, negate);
       break;
+    case plansys2_msgs::msg::Node::CONSTANT:
+      ret = toStringConstant(tree, node_id, negate);
+      break;
+    case plansys2_msgs::msg::Node::PARAMETER:
+      ret = toStringParameter(tree, node_id, negate);
     case plansys2_msgs::msg::Node::EXISTS:
       ret = toStringExists(tree, node_id, negate);
       break;
@@ -691,6 +696,24 @@ std::string toStringFunctionModifier(const plansys2_msgs::msg::Tree & tree, uint
   ret += ")";
 
   return ret;
+}
+
+std::string toStringConstant(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate)
+{
+  if (node_id >= tree.nodes.size()) {
+    return {};
+  }
+
+  return tree.nodes[node_id].name;
+}
+
+std::string toStringParameter(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate)
+{
+  if (node_id >= tree.nodes.size()) {
+    return {};
+  }
+
+  return tree.nodes[node_id].parameters[0].name;
 }
 
 std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate)

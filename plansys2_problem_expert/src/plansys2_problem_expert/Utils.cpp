@@ -200,14 +200,27 @@ std::tuple<bool, bool, double> evaluate(
               return std::make_tuple(true, negate ^ false, 0);
             }
             break;
-          case plansys2_msgs::msg::Node::COMP_EQ:
-            if (std::get<2>(left) == std::get<2>(right)) {
-              return std::make_tuple(true, negate ^ true, 0);
-            } else {
-              return std::make_tuple(true, negate ^ false, 0);
+          case plansys2_msgs::msg::Node::COMP_EQ: {
+              auto c_t = plansys2_msgs::msg::Node::CONSTANT;
+              auto p_t = plansys2_msgs::msg::Node::PARAMETER;
+              auto n_t = plansys2_msgs::msg::Node::NUMBER;
+              auto c0 = tree.nodes[tree.nodes[node_id].children[0]];
+              auto c1 = tree.nodes[tree.nodes[node_id].children[1]];
+              auto c0_type = c0.node_type;
+              auto c1_type = c1.node_type;
+              if ((c0_type == c_t || c0_type == p_t) && (c1_type == c_t || c1_type == p_t)) {
+                std::string c0_name = (c0_type == p_t) ? c0.parameters[0].name : c0.name;
+                std::string c1_name = (c1_type == p_t) ? c1.parameters[0].name : c1.name;
+                return std::make_tuple(
+                  true,
+                  negate ^ ( c1_name == c0_name),
+                  0);
+              }
+              if (c0_type == n_t && c1_type == n_t) {
+                return std::make_tuple(true, negate ^ std::get<2>(left) == std::get<2>(right), 0);
+              }
+              break;
             }
-            break;
-
           case plansys2_msgs::msg::Node::ARITH_MULT:
             return std::make_tuple(true, false, std::get<2>(left) * std::get<2>(right));
             break;
@@ -300,6 +313,21 @@ std::tuple<bool, bool, double> evaluate(
 
     case plansys2_msgs::msg::Node::NUMBER: {
         return std::make_tuple(true, true, tree.nodes[node_id].value);
+      }
+
+    case plansys2_msgs::msg::Node::CONSTANT: {
+        if (tree.nodes[node_id].name.size() > 0) {
+          return std::make_tuple(true, true, 0);
+        }
+        return std::make_tuple(true, false, 0);
+      }
+
+    case plansys2_msgs::msg::Node::PARAMETER: {
+        if (tree.nodes[node_id].parameters.size() > 0 &&
+          tree.nodes[node_id].parameters[0].name.front() != '?')
+        {
+          return std::make_tuple(true, true, 0);
+        }
       }
 
     case plansys2_msgs::msg::Node::EXISTS: {

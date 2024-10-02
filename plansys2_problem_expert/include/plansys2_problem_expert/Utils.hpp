@@ -41,7 +41,7 @@ namespace plansys2
  * \param[in] negate Invert the truth value.
  * \return result <- tuple(bool, bool, double)
  *         result(0) true if success
- *         result(1) truth value of boolen expression
+ *         result(1) truth value of boolean expression
  *         result(2) value of numeric expression
  */
 std::tuple<bool, bool, double> evaluate(

@@ -100,6 +100,10 @@ std::string toStringExpression(const plansys2_msgs::msg::Tree & tree, uint32_t n
 
 std::string toStringFunctionModifier(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
 
+std::string toStringConstant(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+
+std::string toStringParameter(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+
 std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
 
 /// This function creates a complete tree.

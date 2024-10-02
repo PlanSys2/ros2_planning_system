@@ -250,11 +250,23 @@ public:
 	}
 
 	void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override {
-		s << ts[param];
+		s << "?" <<param;
 	}
 
 	plansys2_msgs::msg::Node::SharedPtr getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override {
-		throw UnsupportedConstruct("ParamExpression");
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::PARAMETER;
+		node->node_id = tree.nodes.size();
+    plansys2_msgs::msg::Param node_param;
+    if (replace.size() > param) {
+      node->name = replace[param];
+    } else {
+      node->name = "?" + std::to_string(param);
+    }
+    node_param.name = node->name;
+    node->parameters.push_back(node_param);
+		tree.nodes.push_back(*node);
+    return node;
 	}
 
 	double evaluate() { return -1; }
@@ -276,8 +288,8 @@ class ConstExpression : public Expression {
 
 public:
 
-	int constant;
- int tid;
+  int constant;
+  int tid;
   ConstExpression( int c, int t ) : constant( c ), tid (t) {}
 
 	std::string info() const {
@@ -288,14 +300,12 @@ public:
 
 	void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override;
 
-	plansys2_msgs::msg::Node::SharedPtr getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override {
-		throw UnsupportedConstruct("ConstExpression");
-	}
+	plansys2_msgs::msg::Node::SharedPtr getTree( plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace = {} ) const override;
 
 	double evaluate() { return -1; }
 
 	double evaluate( Instance & ins, const StringVec & par ) {
-  return evaluate();
+    return evaluate();
 	}
 
 	IntSet params() {
