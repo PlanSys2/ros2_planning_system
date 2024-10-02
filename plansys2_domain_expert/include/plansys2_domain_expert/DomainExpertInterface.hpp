@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "plansys2_msgs/msg/action.hpp"
+#include "plansys2_msgs/msg/derived.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
 #include "plansys2_msgs/msg/node.hpp"
 
@@ -85,6 +86,22 @@ public:
    */
   virtual std::optional<plansys2::Function> getFunction(const std::string & function) =
   0;
+
+  /// Get the derived predicates existing in the domain.
+  /**
+   * \return The vector containing the derived predicates.
+   */
+  virtual std::vector<plansys2::Predicate> getDerivedPredicates() = 0;
+
+  /// Get the details of a derived predicate existing in the domain.
+  /**
+   * \param[in] predicate The name of the predicate.
+   * \return A Derived object containing the predicate name, its parameters (name and type), and preconditions.
+   *    If the predicate does not exist, the value returned has not value.
+   */
+  virtual std::vector<plansys2_msgs::msg::Derived> getDerivedPredicate(
+    const std::string & predicate,
+    const std::vector<std::string> & params = {}) = 0;
 
   /// Get the regular actions existing in the domain.
   /**

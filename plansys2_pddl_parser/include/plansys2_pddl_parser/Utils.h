@@ -104,6 +104,7 @@ std::string toStringConstant(const plansys2_msgs::msg::Tree & tree, uint32_t nod
 
 std::string toStringParameter(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
 
+std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
 
 /// This function creates a complete tree.
 /**
@@ -119,6 +120,8 @@ plansys2_msgs::msg::Node::SharedPtr fromString(plansys2_msgs::msg::Tree & tree, 
 plansys2_msgs::msg::Tree fromString(const std::string & expr, bool negate = false, uint8_t parent = plansys2_msgs::msg::Node::UNKNOWN);
 
 plansys2_msgs::msg::Node fromStringPredicate(const std::string & predicate);
+
+plansys2_msgs::msg::Node fromStringExists(const std::string & exists);
 
 plansys2_msgs::msg::Node fromStringFunction(const std::string & function);
 

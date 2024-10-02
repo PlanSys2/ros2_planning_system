@@ -231,15 +231,16 @@ TEST(simple_btbuilder_tests, test_plan_1)
   ASSERT_EQ(action_sequence.size(), 6u);
 
   ASSERT_NEAR(action_sequence[0].time, 0.000, 0.0001);
-  ASSERT_EQ(action_sequence[0].action->name, "askcharge");
-  ASSERT_EQ(action_sequence[0].action->parameters[0].name, "leia");
-  ASSERT_EQ(action_sequence[0].action->parameters[1].name, "entrance");
-  ASSERT_EQ(action_sequence[0].action->parameters[2].name, "chargingroom");
+  ASSERT_EQ(action_sequence[0].action.get_action_name(), "askcharge");
+  ASSERT_EQ(action_sequence[0].action.get_action_params()[0].name, "leia");
+  ASSERT_EQ(action_sequence[0].action.get_action_params()[1].name, "entrance");
+  ASSERT_EQ(action_sequence[0].action.get_action_params()[2].name, "chargingroom");
   ASSERT_EQ(
-    parser::pddl::toString(action_sequence[0].action->at_start_effects),
+    parser::pddl::toString(action_sequence[0].action.get_at_start_effects()),
     "(and (not (robot_at leia entrance))(robot_at leia chargingroom))");
   std::vector<plansys2_msgs::msg::Node> action_0_predicates;
-  parser::pddl::getPredicates(action_0_predicates, action_sequence[0].action->at_start_effects);
+  parser::pddl::getPredicates(
+    action_0_predicates, action_sequence[0].action.get_at_start_effects());
   ASSERT_EQ(action_0_predicates.size(), 2u);
   ASSERT_EQ(action_0_predicates[0].name, "robot_at");
   ASSERT_EQ(action_0_predicates[0].parameters[0].name, "leia");
@@ -248,28 +249,28 @@ TEST(simple_btbuilder_tests, test_plan_1)
 
   ASSERT_TRUE(
     plansys2::check(
-      action_sequence[0].action->at_start_requirements,
+      action_sequence[0].action.get_at_start_requirements(),
       problem_client));
 
   ASSERT_FALSE(
     plansys2::check(
-      action_sequence[1].action->at_start_requirements,
+      action_sequence[1].action.get_at_start_requirements(),
       problem_client));
   ASSERT_FALSE(
     plansys2::check(
-      action_sequence[2].action->at_start_requirements,
+      action_sequence[2].action.get_at_start_requirements(),
       problem_client));
   ASSERT_FALSE(
     plansys2::check(
-      action_sequence[3].action->at_start_requirements,
+      action_sequence[3].action.get_at_start_requirements(),
       problem_client));
   ASSERT_FALSE(
     plansys2::check(
-      action_sequence[4].action->at_start_requirements,
+      action_sequence[4].action.get_at_start_requirements(),
       problem_client));
   ASSERT_FALSE(
     plansys2::check(
-      action_sequence[5].action->at_start_requirements,
+      action_sequence[5].action.get_at_start_requirements(),
       problem_client));
 
   ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[0], predicates, functions));
@@ -293,10 +294,10 @@ TEST(simple_btbuilder_tests, test_plan_1)
         parser::pddl::fromStringPredicate("(robot_at leia chargingroom)"))), predicates.end());
 
   plansys2::apply(
-    action_sequence[0].action->at_start_effects,
+    action_sequence[0].action.get_at_start_effects(),
     predicates, functions);
   plansys2::apply(
-    action_sequence[0].action->at_end_effects,
+    action_sequence[0].action.get_at_end_effects(),
     predicates, functions);
 
   ASSERT_EQ(
@@ -318,10 +319,10 @@ TEST(simple_btbuilder_tests, test_plan_1)
   ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[4], predicates, functions));
   ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[5], predicates, functions));
   plansys2::apply(
-    action_sequence[1].action->at_start_effects,
+    action_sequence[1].action.get_at_start_effects(),
     predicates, functions);
   plansys2::apply(
-    action_sequence[1].action->at_end_effects,
+    action_sequence[1].action.get_at_end_effects(),
     predicates, functions);
 
   ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[2], predicates, functions));
@@ -329,37 +330,37 @@ TEST(simple_btbuilder_tests, test_plan_1)
   ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[4], predicates, functions));
   ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[5], predicates, functions));
   plansys2::apply(
-    action_sequence[2].action->at_start_effects,
+    action_sequence[2].action.get_at_start_effects(),
     predicates, functions);
   plansys2::apply(
-    action_sequence[2].action->at_end_effects,
+    action_sequence[2].action.get_at_end_effects(),
     predicates, functions);
 
   ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[3], predicates, functions));
   ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[4], predicates, functions));
   ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[5], predicates, functions));
   plansys2::apply(
-    action_sequence[3].action->at_start_effects,
+    action_sequence[3].action.get_at_start_effects(),
     predicates, functions);
   plansys2::apply(
-    action_sequence[3].action->at_end_effects,
+    action_sequence[3].action.get_at_end_effects(),
     predicates, functions);
 
   ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[4], predicates, functions));
   ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[5], predicates, functions));
   plansys2::apply(
-    action_sequence[4].action->at_start_effects,
+    action_sequence[4].action.get_at_start_effects(),
     predicates, functions);
   plansys2::apply(
-    action_sequence[4].action->at_end_effects,
+    action_sequence[4].action.get_at_end_effects(),
     predicates, functions);
 
   ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[5], predicates, functions));
   plansys2::apply(
-    action_sequence[5].action->at_start_effects,
+    action_sequence[5].action.get_at_start_effects(),
     predicates, functions);
   plansys2::apply(
-    action_sequence[5].action->at_end_effects,
+    action_sequence[5].action.get_at_end_effects(),
     predicates, functions);
 
   ASSERT_NE(
@@ -526,10 +527,10 @@ TEST(simple_btbuilder_tests, test_plan_2)
   // Apply roots actions
   for (auto & action_node : roots) {
     plansys2::apply(
-      action_node->action.action->at_start_effects,
+      action_node->action.action.get_at_start_effects(),
       predicates, functions);
     plansys2::apply(
-      action_node->action.action->at_end_effects,
+      action_node->action.action.get_at_end_effects(),
       predicates, functions);
   }
 
@@ -559,11 +560,11 @@ TEST(simple_btbuilder_tests, test_plan_2)
     plansys2_msgs::msg::Node::AND);
   auto node_satisfy_1 = btbuilder->get_node_satisfy(tree, *roots.begin(), nullptr);
   ASSERT_NE(node_satisfy_1, nullptr);
-  ASSERT_EQ(node_satisfy_1->action.action->name, "move");
-  ASSERT_EQ(node_satisfy_1->action.action->parameters.size(), 3u);
-  ASSERT_EQ(node_satisfy_1->action.action->parameters[0].name, "robot1");
-  ASSERT_EQ(node_satisfy_1->action.action->parameters[1].name, "assembly_zone");
-  ASSERT_EQ(node_satisfy_1->action.action->parameters[2].name, "body_car_zone");
+  ASSERT_EQ(node_satisfy_1->action.action.get_action_name(), "move");
+  ASSERT_EQ(node_satisfy_1->action.action.get_action_params().size(), 3u);
+  ASSERT_EQ(node_satisfy_1->action.action.get_action_params()[0].name, "robot1");
+  ASSERT_EQ(node_satisfy_1->action.action.get_action_params()[1].name, "assembly_zone");
+  ASSERT_EQ(node_satisfy_1->action.action.get_action_params()[2].name, "body_car_zone");
 
   auto it = roots.begin();
   it++;

@@ -1,5 +1,5 @@
 (define (domain simple)
-(:requirements :strips :typing :adl :fluents :durative-actions)
+(:requirements :strips :typing :adl :fluents :durative-actions :existential-preconditions)
 (:types
     robot
     room
@@ -77,6 +77,34 @@
          (at end (increase (battery_level ?r) (* ?duration 5.0)))
          (at end (battery_full ?r))
     )
+)
+
+(:action action_test4
+    :parameters (?r - robot)
+    :precondition (and
+      (exists (?ro)
+        (and
+          (robot_at ?r ?ro)
+          (charging_point_at ?ro)
+        )
+      )
+      (and (> (battery_level ?r) 1) (< (battery_level ?r) 200))
+    )
+    :effect (and
+      (battery_full ?r)
+    )
+)
+
+(:action action_test5
+    :parameters (?r - robot)
+    :precondition
+      (exists (?ro1 ?ro2)
+        (and
+          (robot_at ?r ?ro1)
+          (connected ?ro1 ?ro2)
+        )
+      )
+    :effect (and )
 )
 
 )

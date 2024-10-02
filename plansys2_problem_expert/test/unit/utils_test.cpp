@@ -129,6 +129,22 @@ TEST(utils, evaluate_not)
   ASSERT_EQ(
     plansys2::evaluate(test_tree, problem_client, predicates, functions, false, true),
     std::make_tuple(true, false, 0));
+
+  plansys2_msgs::msg::Tree test_tree2;
+  parser::pddl::fromString(
+    test_tree2, "(not (= wp1 wp2))");
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree2, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, true, 0));
+
+  plansys2_msgs::msg::Tree test_tree3;
+  parser::pddl::fromString(
+    test_tree3, "(not (= wp1 wp1))");
+
+  ASSERT_EQ(
+    plansys2::evaluate(test_tree3, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, false, 0));
 }
 
 TEST(utils, evaluate_predicate_use_state)
@@ -846,6 +862,98 @@ TEST(utils, evaluate_invalid)
     std::make_tuple(false, false, 0));
 }
 
+TEST(utils, evaluate_exists)
+{
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+  std::string expression = "(exists (?1 ?2) (and (robot_at rob1 ?1)(connected ?1 ?2)))";
+  plansys2_msgs::msg::Tree goal;
+  parser::pddl::fromString(goal, expression);
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, false, 0));
+
+  predicates.push_back(parser::pddl::fromStringPredicate("(robot_at rob1 bedroom)"));
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, false, 0));
+
+  predicates.push_back(parser::pddl::fromStringPredicate("(connected bedroom kitchen)"));
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal, problem_client, predicates, functions, false, true),
+    std::make_tuple(true, true, 0));
+}
+
+TEST(utils, evaluate_exists_client)
+{
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
+  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_exists.pddl"});
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
+
+  exe.add_node(problem_node->get_node_base_interface());
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("rob1", "robot")));
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  std::string expression = "(exists (?1 ?2) (and (robot_at rob1 ?1)(connected ?1 ?2)))";
+  plansys2_msgs::msg::Tree goal;
+  parser::pddl::fromString(goal, expression);
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal, problem_client, predicates, functions, false, false),
+    std::make_tuple(true, false, 0));
+
+  ASSERT_TRUE(
+    problem_client->addPredicate(
+      parser::pddl::fromStringPredicate("(robot_at rob1 bedroom)")));
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal, problem_client, predicates, functions, false, false),
+    std::make_tuple(true, false, 0));
+
+  ASSERT_TRUE(
+    problem_client->addPredicate(
+      parser::pddl::fromStringPredicate("(connected bedroom kitchen)")));
+
+  ASSERT_EQ(
+    plansys2::evaluate(goal, problem_client, predicates, functions, false, false),
+    std::make_tuple(true, true, 0));
+
+  finish = true;
+  t.join();
+}
+
 TEST(utils, get_subtrees)
 {
   std::vector<uint32_t> empty_expected;
@@ -1040,6 +1148,47 @@ TEST(utils, get_name)
   std::string action_str = "(move r2d2 bedroom)";
 
   ASSERT_EQ(plansys2::get_action_name(action_str), "move");
+}
+
+TEST(utils, replace_children_param) {
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string domain_file = pkgpath + "/pddl/domain_exists.pddl";
+
+  std::ifstream domain_ifs(domain_file);
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+  parser::pddl::Domain domain(domain_str);
+
+  auto action = domain.actions.get("action_test");
+  plansys2_msgs::msg::Tree tree;
+  action->pre->getTree(tree, domain);
+  std::map<std::string, std::string> replace;
+  replace["?1"] = "bedroom";
+  replace["?2"] = "bathroom";
+  plansys2_msgs::msg::Tree tree2 = plansys2::replace_children_param(
+    tree,
+    1,
+    replace
+  );
+  std::string str = parser::pddl::toString(tree2);
+  ASSERT_EQ(
+    str,
+    "(and (exists (bedroom) (and (robot_at ?0 bedroom)(charging_point_at bedroom)))"
+    "(and (>  (battery_level ?0) 1.000000)(<  (battery_level ?0) 200.000000)))");
+
+  auto action2 = domain.actions.get("action_test2");
+  plansys2_msgs::msg::Tree tree3;
+  action2->pre->getTree(tree3, domain);
+  plansys2_msgs::msg::Tree tree4 = plansys2::replace_children_param(
+    tree3,
+    0,
+    replace
+  );
+  std::string str2 = parser::pddl::toString(tree4);
+  ASSERT_EQ(
+    str2,
+    "(exists (bedroom bathroom) (and (robot_at ?0 bedroom)(connected bedroom bathroom)))");
 }
 
 int main(int argc, char ** argv)

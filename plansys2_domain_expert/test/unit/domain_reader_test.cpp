@@ -59,6 +59,12 @@ public:
   {
     return get_functions(domain);
   }
+
+  std::vector<std::string> get_derived_test(const std::string & domain)
+  {
+    return get_derived_predicates(domain);
+  }
+
   std::vector<std::string> get_actions_test(const std::string & domain)
   {
     return get_actions(domain);
@@ -325,6 +331,27 @@ TEST(domain_reader, functions)
   ASSERT_EQ(res4, req4_estr);
 }
 
+TEST(domain_reader, derived_predicates)
+{
+  DomainReaderTest dr;
+
+  std::string req0_str = "(:predicates\n(robot_at leia bedroom) (person_at paco kitchen)\n)";
+
+  std::string req1_str =
+    "(:derived (inferred-robot_localized ?r)\n(exists (?l)\n(and\n(robot_at ?r ?l)))\n)";
+  std::string req1_estr =
+    "(:derived (inferred-robot_localized ?r)\n(exists (?l)\n(and\n(robot_at ?r ?l)))\n)";
+
+  auto res0 = dr.get_derived_test(req0_str);
+  auto res1 = dr.get_derived_test(req1_str);
+
+  ASSERT_TRUE(res0.empty());
+
+  ASSERT_FALSE(res1.empty());
+  ASSERT_EQ(res1.size(), 1u);
+  ASSERT_EQ(res1[0], req1_estr);
+}
+
 TEST(domain_reader, actions)
 {
   DomainReaderTest dr;
@@ -436,6 +463,26 @@ TEST(domain_reader, add_domain_with_constants)
     std::istreambuf_iterator<char>());
 
   std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_constants_processed.pddl");
+  std::string domain_str_p((
+      std::istreambuf_iterator<char>(domain_ifs_p)),
+    std::istreambuf_iterator<char>());
+
+  dr.add_domain(domain_str);
+
+  ASSERT_EQ(dr.get_joint_domain_test(), domain_str_p);
+}
+
+TEST(domain_reader, add_domain_with_derived)
+{
+  DomainReaderTest dr;
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_derived.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_derived_processed.pddl");
   std::string domain_str_p((
       std::istreambuf_iterator<char>(domain_ifs_p)),
     std::istreambuf_iterator<char>());

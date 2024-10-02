@@ -24,6 +24,7 @@
 
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_msgs/msg/plan.hpp"
+#include "plansys2_pddl_parser/Utils.h"
 
 namespace plansys2
 {
@@ -45,7 +46,7 @@ struct ActionStamped
   std::string expression;
   float duration;
   ActionType type;
-  std::shared_ptr<plansys2_msgs::msg::DurativeAction> action;
+  ActionVariant action;
 
   ActionStamped()
   : time(0.0), duration(0.0) {}

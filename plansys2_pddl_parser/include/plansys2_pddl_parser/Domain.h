@@ -34,6 +34,7 @@ public:
 	bool universal;                     // whether domain has universal precons
 	bool fluents;                       // whether domains contains fluents
 	bool derivedpred;                   // whether domain contains derived predicates
+	bool existentialcond;               // whether domain contains existential predicates
 
 	TokenStruct< Type * > types;        // types
 	TokenStruct< Lifted * > preds;      // predicates
@@ -46,7 +47,7 @@ public:
 		: equality( false ), strips( false ), adl( false ), condeffects( false )
 		, typed( false ), cons( false ), costs( false ), temp( false )
 		, nondet( false ), neg( false ), disj( false ), universal( false )
-		, fluents( false ), derivedpred( false )
+		, fluents( false ), derivedpred( false ), existentialcond( false )
 	{
 		types.insert( new Type( "object" ) ); // Type 0 is always "object", whether the domain is typed or not
 	}
@@ -137,6 +138,7 @@ public:
 		else if ( s == "fluents" ) fluents = true;
 		else if ( s == "disjunctive-preconditions" ) disj = true;
 		else if ( s == "derived-predicates" ) derivedpred = true;
+		else if ( s == "existential-preconditions" ) existentialcond = true;
 		else return false; // Unknown requirement
 
 		return true;
@@ -218,11 +220,6 @@ public:
 		for ( unsigned i = 0; i < ts.size(); ++i ) {
 			Type * t = getType( ts.types[i] );
 			t->constants.insert(ts[i]);
-			// We need to populate the constants of all supertypes
-			while(t->supertype != nullptr) {
-				t = t->supertype;
-				t->constants.insert(ts[i]);
-			}
 		}
 		for ( unsigned i = 0; DOMAIN_DEBUG && i < types.size(); ++i ) {
 			std::cout << " ";
@@ -599,6 +596,7 @@ public:
 		if ( fluents ) os << " :fluents";
 		if ( disj ) os << " :disjunctive-preconditions";
 		if ( derivedpred ) os << " :derived-predicates";
+		if ( existentialcond ) os << " :existential-preconditions";
 		os << " )\n";
 		return os;
 	}

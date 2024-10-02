@@ -1,0 +1,5 @@
+string predicate
+---
+plansys2_msgs/Derived[] predicates
+bool success
+string error_info

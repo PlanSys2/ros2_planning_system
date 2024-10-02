@@ -174,30 +174,30 @@ std::tuple<bool, bool, double> evaluate(
         switch (tree.nodes[node_id].expression_type) {
           case plansys2_msgs::msg::Node::COMP_GE:
             if (std::get<2>(left) >= std::get<2>(right)) {
-              return std::make_tuple(true, true, 0);
+              return std::make_tuple(true, negate ^ true, 0);
             } else {
-              return std::make_tuple(true, false, 0);
+              return std::make_tuple(true, negate ^ false, 0);
             }
             break;
           case plansys2_msgs::msg::Node::COMP_GT:
             if (std::get<2>(left) > std::get<2>(right)) {
-              return std::make_tuple(true, true, 0);
+              return std::make_tuple(true, negate ^ true, 0);
             } else {
-              return std::make_tuple(true, false, 0);
+              return std::make_tuple(true, negate ^ false, 0);
             }
             break;
           case plansys2_msgs::msg::Node::COMP_LE:
             if (std::get<2>(left) <= std::get<2>(right)) {
-              return std::make_tuple(true, true, 0);
+              return std::make_tuple(true, negate ^ true, 0);
             } else {
-              return std::make_tuple(true, false, 0);
+              return std::make_tuple(true, negate ^ false, 0);
             }
             break;
           case plansys2_msgs::msg::Node::COMP_LT:
             if (std::get<2>(left) < std::get<2>(right)) {
-              return std::make_tuple(true, true, 0);
+              return std::make_tuple(true, negate ^ true, 0);
             } else {
-              return std::make_tuple(true, false, 0);
+              return std::make_tuple(true, negate ^ false, 0);
             }
             break;
           case plansys2_msgs::msg::Node::COMP_EQ: {
@@ -327,6 +327,56 @@ std::tuple<bool, bool, double> evaluate(
           tree.nodes[node_id].parameters[0].name.front() != '?')
         {
           return std::make_tuple(true, true, 0);
+        }
+      }
+
+    case plansys2_msgs::msg::Node::EXISTS: {
+        std::vector<plansys2::Instance> instances;
+        if (use_state == false) {
+          instances = problem_client->getInstances();
+        } else {
+          for (auto predicate : predicates) {
+            std::for_each(
+              predicate.parameters.begin(), predicate.parameters.end(),
+              [&](auto p) {
+                if (std::find(instances.begin(), instances.end(), p) == instances.end()) {
+                  instances.push_back(p);
+                }
+              });
+          }
+        }
+        std::vector<std::vector<std::string>> parameters_vector;
+        for (size_t i = 0; i < tree.nodes[node_id].parameters.size(); i++) {
+          std::vector<std::string> p_vector;
+          std::for_each(
+            instances.begin(), instances.end(),
+            [&](auto i) {p_vector.push_back(i.name);});
+          parameters_vector.push_back(p_vector);
+        }
+
+        std::vector<std::vector<std::string>> possible_parameters_values;
+        std::vector<std::string> aux;
+        plansys2::cart_product(
+          possible_parameters_values, aux, parameters_vector.begin(), parameters_vector.end());
+
+        for (auto parameters_values : possible_parameters_values) {
+          std::map<std::string, std::string> replace;
+          for (size_t i = 0; i < tree.nodes[node_id].parameters.size(); i++) {
+            replace[tree.nodes[node_id].parameters[i].name] = parameters_values[i];
+          }
+          auto tree_replaced = plansys2::replace_children_param(tree, node_id, replace);
+          std::tuple<bool, bool, double> result = evaluate(
+            tree_replaced,
+            problem_client,
+            predicates,
+            functions,
+            apply,
+            use_state,
+            tree_replaced.nodes[node_id].children[0],
+            negate);
+          if (std::get<1>(result)) {
+            return result;
+          }
         }
         return std::make_tuple(true, false, 0);
       }
@@ -460,6 +510,46 @@ std::vector<std::string> get_action_params(const std::string & input)
   }
 
   return ret;
+}
+
+plansys2_msgs::msg::Tree replace_children_param(
+  const plansys2_msgs::msg::Tree & tree,
+  const uint8_t & node_id,
+  const std::map<std::string, std::string> & replace)
+{
+  plansys2_msgs::msg::Tree new_tree = tree;
+  if (tree.nodes[node_id].children.size() > 0) {
+    for (auto & child_id : tree.nodes[node_id].children) {
+      new_tree = replace_children_param(new_tree, child_id, replace);
+    }
+  }
+
+  for (size_t i = 0; i < tree.nodes[node_id].parameters.size(); i++) {
+    if (replace.find(tree.nodes[node_id].parameters[i].name) != replace.end()) {
+      new_tree.nodes[node_id].parameters[i].name = replace.at(
+        tree.nodes[node_id].parameters[i].name);
+    }
+  }
+  return new_tree;
+}
+
+void cart_product(
+  std::vector<std::vector<std::string>> & rvvi,  // final result
+  std::vector<std::string> & rvi,  // current result
+  std::vector<std::vector<std::string>>::const_iterator me,  // current input
+  std::vector<std::vector<std::string>>::const_iterator end)  // final input
+{
+  if (me == end) {
+    rvvi.push_back(rvi);
+    return;
+  }
+
+  const std::vector<std::string> & mevi = *me;
+  for (std::vector<std::string>::const_iterator it = mevi.begin(); it != mevi.end(); it++) {
+    rvi.push_back(*it);
+    cart_product(rvvi, rvi, me + 1, end);
+    rvi.pop_back();
+  }
 }
 
 }  // namespace plansys2

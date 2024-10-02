@@ -18,6 +18,7 @@
 #include <tuple>
 
 #include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
+#include "plansys2_msgs/msg/tree.hpp"
 
 namespace plansys2
 {
@@ -44,8 +45,8 @@ WaitAtStartReq::tick()
 
   auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 
-  auto reqs_as = (*action_map_)[action].durative_action_info->at_start_requirements;
-  auto reqs_oa = (*action_map_)[action].durative_action_info->over_all_requirements;
+  auto reqs_as = (*action_map_)[action].action_info.get_at_start_requirements();
+  auto reqs_oa = (*action_map_)[action].action_info.get_overall_requirements();
 
   bool check_as = check(reqs_as, problem_client_);
   if (!check_as) {
@@ -54,7 +55,7 @@ WaitAtStartReq::tick()
     RCLCPP_ERROR_STREAM(
       node->get_logger(),
       "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-        parser::pddl::toString((*action_map_)[action].durative_action_info->at_start_requirements));
+        parser::pddl::toString(reqs_as));
 
     return BT::NodeStatus::RUNNING;
   }
@@ -66,7 +67,7 @@ WaitAtStartReq::tick()
     RCLCPP_ERROR_STREAM(
       node->get_logger(),
       "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-        parser::pddl::toString((*action_map_)[action].durative_action_info->over_all_requirements));
+        parser::pddl::toString(reqs_oa));
 
     return BT::NodeStatus::RUNNING;
   }

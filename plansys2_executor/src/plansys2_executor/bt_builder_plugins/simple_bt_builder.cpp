@@ -70,9 +70,13 @@ SimpleBTBuilder::is_action_executable(
   std::vector<plansys2::Predicate> & predicates,
   std::vector<plansys2::Function> & functions) const
 {
-  return check(action.action->at_start_requirements, predicates, functions) &&
-         check(action.action->at_end_requirements, predicates, functions) &&
-         check(action.action->over_all_requirements, predicates, functions);
+  if (action.action.is_action()) {
+    return check(action.action.get_overall_requirements(), predicates, functions);
+  }
+
+  return check(action.action.get_at_start_requirements(), predicates, functions) &&
+         check(action.action.get_at_end_requirements(), predicates, functions) &&
+         check(action.action.get_overall_requirements(), predicates, functions);
 }
 
 ActionNode::Ptr
@@ -95,8 +99,10 @@ SimpleBTBuilder::get_node_satisfy(
   bool satisfied_before = check(requirement, predicates, functions);
 
   // Apply the effects
-  apply(node->action.action->at_start_effects, predicates, functions);
-  apply(node->action.action->at_end_effects, predicates, functions);
+  if (node->action.action.is_durative_action()) {
+    apply(node->action.action.get_at_start_effects(), predicates, functions);
+  }
+  apply(node->action.action.get_at_end_effects(), predicates, functions);
 
   // Is the requirement satisfied after applying the effects?
   bool satisfied_after = check(requirement, predicates, functions);
@@ -134,7 +140,9 @@ SimpleBTBuilder::get_node_contradict(
   // Are all of the requirements satisfied?
   if (is_action_executable(current->action, predicates, functions)) {
     // Apply the effects
-    apply(current->action.action->at_start_effects, predicates, functions);
+    if (current->action.action.is_durative_action()) {
+      apply(current->action.action.get_at_start_effects(), predicates, functions);
+    }
 
     // Look for a contradiction
     if (!is_action_executable(node->action, predicates, functions)) {
@@ -158,7 +166,9 @@ SimpleBTBuilder::is_parallelizable(
   // Apply the "at start" effects of the new action.
   auto preds = predicates;
   auto funcs = functions;
-  apply(action.action->at_start_effects, preds, funcs);
+  if (action.action.is_durative_action()) {
+    apply(action.action.get_at_start_effects(), preds, funcs);
+  }
 
   // Check the requirements of the actions in the input set.
   for (const auto & other : nodes) {
@@ -172,7 +182,10 @@ SimpleBTBuilder::is_parallelizable(
     // Apply the "at start" effects of the action.
     preds = predicates;
     funcs = functions;
-    apply(other->action.action->at_start_effects, preds, funcs);
+
+    if (other->action.action.is_durative_action()) {
+      apply(other->action.action.get_at_start_effects(), preds, funcs);
+    }
 
     // Check the requirements of the new action.
     if (!is_action_executable(action, preds, funcs)) {
@@ -308,8 +321,10 @@ SimpleBTBuilder::get_state(
   for (auto & in : node->in_arcs) {
     if (std::find(used_nodes.begin(), used_nodes.end(), in) == used_nodes.end()) {
       get_state(in, used_nodes, predicates, functions);
-      apply(in->action.action->at_start_effects, predicates, functions);
-      apply(in->action.action->at_end_effects, predicates, functions);
+      if (in->action.action.is_durative_action()) {
+        apply(in->action.action.get_at_start_effects(), predicates, functions);
+      }
+      apply(in->action.action.get_at_end_effects(), predicates, functions);
       used_nodes.push_back(in);
     }
   }
@@ -347,12 +362,12 @@ SimpleBTBuilder::get_graph(const plansys2_msgs::msg::Plan & current_plan)
     }
     new_node->level_num = level_counter;
 
-    std::vector<plansys2_msgs::msg::Tree> at_start_requirements =
-      parser::pddl::getSubtrees(new_node->action.action->at_start_requirements);
-    std::vector<plansys2_msgs::msg::Tree> over_all_requirements =
-      parser::pddl::getSubtrees(new_node->action.action->over_all_requirements);
-    std::vector<plansys2_msgs::msg::Tree> at_end_requirements =
-      parser::pddl::getSubtrees(new_node->action.action->at_end_requirements);
+    auto over_all_requirements = parser::pddl::getSubtrees(
+      new_node->action.action.get_overall_requirements());
+    auto at_start_requirements = parser::pddl::getSubtrees(
+      new_node->action.action.get_at_start_requirements());
+    auto at_end_requirements = parser::pddl::getSubtrees(
+      new_node->action.action.get_at_end_requirements());
 
     std::vector<plansys2_msgs::msg::Tree> requirements;
     requirements.insert(
@@ -597,8 +612,7 @@ SimpleBTBuilder::get_flow_tree(
   std::string ret;
   int l = level;
 
-  const std::string action_id = "(" + parser::pddl::nameActionsToString(node->action.action) +
-    "):" +
+  const std::string action_id = "(" + node->action.action.get_action_string() + "):" +
     std::to_string(static_cast<int>(node->action.time * 1000));
 
   if (std::find(used_nodes.begin(), used_nodes.end(), action_id) != used_nodes.end()) {
@@ -657,7 +671,7 @@ SimpleBTBuilder::get_node_dotgraph(
 {
   std::stringstream ss;
   ss << t(level);
-  ss << node->node_num << " [label=\"" << parser::pddl::nameActionsToString(node->action.action) <<
+  ss << node->node_num << " [label=\"" << node->action.action.get_action_string() <<
     "\"";
   ss << "labeljust=c,style=filled";
 
@@ -689,7 +703,7 @@ ActionExecutor::Status SimpleBTBuilder::get_action_status(
   ActionStamped action_stamped,
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map)
 {
-  auto index = "(" + parser::pddl::nameActionsToString(action_stamped.action) + "):" +
+  auto index = "(" + action_stamped.action.get_action_string() + "):" +
     std::to_string(static_cast<int>(action_stamped.time * 1000));
   if ((*action_map)[index].action_executor) {
     return (*action_map)[index].action_executor->get_internal_status();
@@ -777,13 +791,14 @@ SimpleBTBuilder::execution_block(const ActionNode::Ptr & node, int l)
   const auto & action = node->action;
   std::string ret;
   std::string ret_aux = bt_action_;
-  const std::string action_id = "(" + parser::pddl::nameActionsToString(action.action) + "):" +
+
+  const std::string action_id = "(" + node->action.action.get_action_string() + "):" +
     std::to_string(static_cast<int>(action.time * 1000));
 
   std::string wait_actions;
   for (const auto & previous_node : node->in_arcs) {
     const std::string parent_action_id = "(" +
-      parser::pddl::nameActionsToString(previous_node->action.action) + "):" +
+      previous_node->action.action.get_action_string() + "):" +
       std::to_string(static_cast<int>( previous_node->action.time * 1000));
     wait_actions = wait_actions + t(1) + "<WaitAction action=\"" + parent_action_id + "\"/>";
 
@@ -815,9 +830,16 @@ SimpleBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan)
 
     action_stamped.time = item.time;
     action_stamped.duration = item.duration;
-    action_stamped.action =
-      domain_client_->getDurativeAction(
-      get_action_name(item.action), get_action_params(item.action));
+    auto actions = domain_client_->getActions();
+    if (std::find(actions.begin(), actions.end(), get_action_name(item.action)) != actions.end()) {
+      action_stamped.action.action =
+        domain_client_->getAction(
+        get_action_name(item.action), get_action_params(item.action));
+    } else {
+      action_stamped.action.action =
+        domain_client_->getDurativeAction(
+        get_action_name(item.action), get_action_params(item.action));
+    }
 
     ret.push_back(action_stamped);
   }
@@ -832,8 +854,8 @@ SimpleBTBuilder::print_node(
   std::set<plansys2::ActionNode::Ptr> & used_nodes) const
 {
   std::cerr << std::string(level, '\t') << "[" << node->action.time << "] ";
-  std::cerr << node->action.action->name << " ";
-  for (const auto & param : node->action.action->parameters) {
+  std::cerr << node->action.action.get_action_name() << " ";
+  for (const auto & param : node->action.action.get_action_params()) {
     std::cerr << param.name << " ";
   }
   std::cerr << " in arcs " << node->in_arcs.size() << "  ";
@@ -859,9 +881,9 @@ SimpleBTBuilder::print_node_csv(const plansys2::ActionNode::Ptr & node, uint32_t
   std::string out_str = std::to_string(root_num) + ", " +
     std::to_string(node->node_num) + ", " +
     std::to_string(node->level_num) + ", " +
-    parser::pddl::nameActionsToString(node->action.action);
+    node->action.action.get_action_string();
   for (const auto & arc : node->out_arcs) {
-    out_str = out_str + ", " + parser::pddl::nameActionsToString(arc->action.action);
+    out_str = out_str + ", " + arc->action.action.get_action_string();
   }
   std::cerr << out_str << std::endl;
   for (const auto & out : node->out_arcs) {
@@ -888,7 +910,7 @@ SimpleBTBuilder::get_node_tabular(
   graph.push_back(
     std::make_tuple(
       root_num, node->node_num, node->level_num,
-      parser::pddl::nameActionsToString(node->action.action)));
+      node->action.action.get_action_string()));
   for (const auto & out : node->out_arcs) {
     get_node_tabular(out, root_num, graph);
   }
