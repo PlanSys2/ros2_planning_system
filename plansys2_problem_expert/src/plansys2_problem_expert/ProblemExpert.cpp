@@ -24,8 +24,8 @@
 #include <map>
 
 #include "plansys2_core/Utils.hpp"
-#include "plansys2_pddl_parser/Domain.h"
-#include "plansys2_pddl_parser/Instance.h"
+#include "plansys2_pddl_parser/Domain.hpp"
+#include "plansys2_pddl_parser/Instance.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
 
 #include "plansys2_core/Types.hpp"

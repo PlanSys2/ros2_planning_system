@@ -27,7 +27,7 @@
 #include "plansys2_executor/bt_builder_plugins/simple_bt_builder.hpp"
 
 #include "plansys2_problem_expert/Utils.hpp"
-#include "plansys2_pddl_parser/Utils.h"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 

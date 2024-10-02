@@ -33,7 +33,7 @@
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
-#include "plansys2_pddl_parser/Utils.h"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 #include "plansys2_msgs/msg/knowledge.hpp"
 
