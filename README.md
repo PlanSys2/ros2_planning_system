@@ -7,6 +7,10 @@ Status](https://github.com/IntelligentRoboticsLabs/ros2_planning_system/workflow
 [![codecov](https://codecov.io/gh/IntelligentRoboticsLabs/ros2_planning_system/rolling/graph/badge.svg)](https://codecov.io/gh/IntelligentRoboticsLabs/ros2_planning_system)
 
 [![GitHub Action
+Status](https://github.com/IntelligentRoboticsLabs/ros2_planning_system/workflows/jazzy-devel/badge.svg)](https://github.com/IntelligentRoboticsLabs/ros2_planning_system)
+[![codecov](https://codecov.io/gh/IntelligentRoboticsLabs/ros2_planning_system/jazzy-devel/graph/badge.svg)](https://codecov.io/gh/IntelligentRoboticsLabs/ros2_planning_system)
+
+[![GitHub Action
 Status](https://github.com/IntelligentRoboticsLabs/ros2_planning_system/workflows/iron-devel/badge.svg)](https://github.com/IntelligentRoboticsLabs/ros2_planning_system)
 [![codecov](https://codecov.io/gh/IntelligentRoboticsLabs/ros2_planning_system/iron-devel/graph/badge.svg)](https://codecov.io/gh/IntelligentRoboticsLabs/ros2_planning_system)
 
