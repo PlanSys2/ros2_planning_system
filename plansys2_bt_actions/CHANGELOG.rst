@@ -4,19 +4,21 @@ Changelog for package plansys2_bt_actions
 
 Forthcoming
 -----------
-* Merge pull request `#251 <https://github.com/PlanSys2/ros2_planning_system/issues/251>`_ from PlanSys2/fix_bt_node
-  Fix bt node
+* Remove cmake warning
+* Removed some small references still related to the old version of BehaviorTree
+* Bump Behaviortree.CPP v3 to v4
+* fix code style issues with uncrustify
+* Update BTAction.cpp
+* fix groot enabling
+* Linting
+* Fix logger destruction at BTActions
+* Update Changelog
 * Insert in blackboard the action ROS 2 Node
-* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
-* Merge branch 'master' into bt-builder-plugins
-* Merge pull request `#236 <https://github.com/PlanSys2/ros2_planning_system/issues/236>`_ from sarcasticnature/feature/misc-fixes
-  Fixes for bt_actions and popf_plan_sover
+* Insert in blackboard the action ROS 2 Node
 * Correct tick function call in bt_actions test
 * Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
 * Explicitly ignore feedback in default on_feedback
 * Add try/catch to bt creation, reset loggers
-* Merge remote-tracking branch 'upstream/master'
-* Merge branch 'IntelligentRoboticsLabs:master' into master
 * Contributors: Andrianov Roman, Francisco Martín Rico, Jake Keller, Marco Roveri, Splinter1984
 
 2.0.9 (2022-07-10)

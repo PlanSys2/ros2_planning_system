@@ -4,13 +4,12 @@ Changelog for package plansys2_planner
 
 Forthcoming
 -----------
-* Merge remote-tracking branch 'origin/humble-devel'
-* Merge pull request `#238 <https://github.com/PlanSys2/ros2_planning_system/issues/238>`_ from roveri-marco/fix_goal_structure_issue_205
-  Fix goal structure issue 205
+* Integrated feedback, and fixes to have tests to pass
+* Added support for configuring the planner timeout
+* Spin up temporary node for domain validation
+* Add option to use planner node to validate domain in domain expert
 * Minor changes to the tests to comply with some change in the generated output
-* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
-* Merge remote-tracking branch 'upstream/master'
-* Contributors: Francisco Martín Rico, Marco Roveri, Splinter1984
+* Contributors: Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Robodrome, Sebastian Castro, Splinter1984
 
 2.0.9 (2022-07-10)
 ------------------

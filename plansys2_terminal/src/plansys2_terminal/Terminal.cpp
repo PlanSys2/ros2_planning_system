@@ -798,7 +798,7 @@ Terminal::process_remove(std::vector<std::string> & command, std::ostringstream 
     } else if (command[0] == "function") {
       pop_front(command);
       process_remove_function(command, os);
-    } else if (command[0] == "goal", os) {
+    } else if (command[0] == "goal") {
       problem_client_->clearGoal();
     } else {
       os << "\tUsage: \n\t\tremove [instance|predicate|function|goal]..." <<

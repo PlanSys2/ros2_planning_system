@@ -4,29 +4,66 @@ Changelog for package plansys2_executor
 
 Forthcoming
 -----------
-* Merge remote-tracking branch 'origin/humble-devel'
-* Merge pull request `#252 <https://github.com/PlanSys2/ros2_planning_system/issues/252>`_ from PlanSys2/check_at_end
-  Check at end reqs in bt builder
-* Check at end reqs in bt builder
-* Merge pull request `#251 <https://github.com/PlanSys2/ros2_planning_system/issues/251>`_ from PlanSys2/fix_bt_node
-  Fix bt node
+* add ActionVariant
+* execute regular actions
+* Remove cmake warning
+* Fix ccplinti and uncrustify
+* fail execute_plan action if initial conditions changed
+  We terminate the program is many senarios instead of just returning an
+  explict value. We used to terminate if the initial conditions changed
+  before the plan is started. Now just send a result that the action
+  server failed to execute the plan
+* Send Cancelation response to ActionClient
+* ExecutorNode, remove unused ros node
+* Removed some small references still related to the old version of BehaviorTree
+* Bump Behaviortree.CPP v3 to v4 - fix executor test
+* Fix Timeout BT Node
+* Adding imports to stn builder
+* Fixing line-length
+* Adding duration to dotgraphs.
+* Restore tests and enable warnings
+* Revert STN changes in Executor BT
+* Removing unused or commented out code.
+* Updating ComputeBT.cpp.
+* Fix Terminal and executor bugs
+* Fixing bug in propagation step.
+* Adding dependency on eigen3_cmake_module to plansys2_executor.
+* Fixing min time bounds in STN to adhere to plan times.
+* Adding some print statements to help with debugging.
+* Saving progress.
+* Removing unused code. Debuggin get_threat function.
+* Simplifying bound checkin logic.
+* Update and propagate time constraints after applying effects.
+* Adding action graph to blackboard.
+* Moving STNBTBuilder node and graph structures to parent class.
+* Ensure that every start node has direct link to end node in BT.
 * Change MultiThreaded for SingleThreaded in CI failing tests
 * Change double quotes for simple ones (linter)
 * Insert in blackboard the action ROS 2 Node
-* Merge pull request `#247 <https://github.com/PlanSys2/ros2_planning_system/issues/247>`_ from jjzapf/standalone-bt-builder
-  Standalone BT Builder Service
-* Fixing cpplint warning.
-* Fixing cpplint warnings.
+* Adding Eigen3 dependency to plansys2_executor.
+* Removing redundant get_current_time function.
+* Fixing RCLCPP_ERROR message bug.
+* Fixing colcon build warning.
+* Fixing colcon build warnings.
+* Cleaning up code for merge request.
+* Cleaning up changes.
+* Match example is now working!
+* Modified BT by hand to get plan to succeed.
+* BT not finishing.
+* Fixing bug with updating STN time bounds.
+* Adding time propagation step.
+* Don't check time limits on start-end connections.
+* Supporting time-triggered execution.
 * Checking for self-referencing edges in STNBTBuilder. Adding standalone compute_bt service.
-* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
-* Merge pull request `#240 <https://github.com/PlanSys2/ros2_planning_system/issues/240>`_ from jjzapf/bt-builder-plugins
-  New BT Builder and Plugin Interface
 * bt-builder-plugins: Setting default BT builder plugin to SimpleBTBuilder.
 * bt-builder-plugins: Creating BT builder plugin interface. Moving current BT builder to plugin named SimpleBTBuilder. Adding new and improved STN-based BT builder plugin named STNBTBuilder.
-* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
-* Merge remote-tracking branch 'upstream/master'
-* Merge branch 'IntelligentRoboticsLabs:master' into master
-* Contributors: Andrianov Roman, Francisco Martín Rico, Josh Zapf, Marco Roveri, Splinter1984
+* Check at end reqs in bt builder
+* Change MultiThreaded for SingleThreaded in CI failing tests
+* Insert in blackboard the action ROS 2 Node
+* Checking for self-referencing edges in STNBTBuilder. Adding standalone compute_bt service.
+* bt-builder-plugins: Setting default BT builder plugin to SimpleBTBuilder.
+* bt-builder-plugins: Creating BT builder plugin interface. Moving current BT builder to plugin named SimpleBTBuilder. Adding new and improved STN-based BT builder plugin named STNBTBuilder.
+* Contributors: Alexander Xydes, Andrianov Roman, Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Mostafa Gomaa, Samuele Sandrini, Splinter1984, robodrome
 
 2.0.9 (2022-07-10)
 ------------------

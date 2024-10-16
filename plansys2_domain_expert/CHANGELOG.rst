@@ -4,10 +4,28 @@ Changelog for package plansys2_domain_expert
 
 Forthcoming
 -----------
+* include "object" in getType
+* fix code style
+* add params to getDerivedPredicate
+* add tests for getDerivedPredicate(s)
+* add getDerivedPredicate
+* add getDerivedPredicates
+* add DomainReader::get_derived_predicates
+* Small optimization
+* Fixed expected output
+* Remove cmake warning
+* Fixed dump of functions/constants/types to handle the case where no funcions/constants/types declared to avoid printing the entry, thus generating a valid PDDL file
+* Remove commented-out line in domain expert node
+* Switch to MultiThreadedExecutor
+* Spin up temporary node for domain validation
+* Add option to use planner node to validate domain in domain expert
+* Reduce copypasta in domain expert
+* Configure POPF solver in domain expert
+* Merge remote-tracking branch 'upstream/master' into return-stn
 * Merge remote-tracking branch 'origin/humble-devel'
-* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
-* Merge remote-tracking branch 'upstream/master'
-* Contributors: Francisco Martín Rico, Marco Roveri, Splinter1984
+* Reverting changes to checking for valid domain.
+* Supporting time-triggered execution.
+* Contributors: Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Robodrome, Sebastian Castro, Splinter1984
 
 2.0.9 (2022-07-10)
 ------------------
