@@ -2,8 +2,8 @@
 Changelog for package plansys2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.10 (2024-10-16)
--------------------
+Forthcoming
+-----------
 * Add parameter for timeout of plan solver
 * Added support for configuring the planner timeout
 * Remove cmake warning

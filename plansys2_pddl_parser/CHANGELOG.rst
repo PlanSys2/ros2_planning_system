@@ -2,8 +2,8 @@
 Changelog for package plansys2_pddl_parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.10 (2024-10-16)
--------------------
+Forthcoming
+-----------
 * fix Exists print
 * add fromStringExists
 * adjust toStringExists

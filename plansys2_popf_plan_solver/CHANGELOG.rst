@@ -2,8 +2,8 @@
 Changelog for package plansys2_popf_plan_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.10 (2024-10-16)
--------------------
+Forthcoming
+-----------
 * adjust prints and utils
 * Integrated feedback, and fixes to have tests to pass
 * Added support for configuring the planner timeout

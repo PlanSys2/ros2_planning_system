@@ -2,8 +2,8 @@
 Changelog for package plansys2_tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.10 (2024-10-16)
--------------------
+Forthcoming
+-----------
 * Bump Behaviortree.CPP v3 to v4
 * Contributors: Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, robodrome
 

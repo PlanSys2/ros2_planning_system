@@ -2,8 +2,8 @@
 Changelog for package plansys2_lifecycle_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.10 (2024-10-16)
--------------------
+Forthcoming
+-----------
 * lifecycle_manager: activate planner first
 * Remove cmake warning
 * Contributors: Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Splinter1984

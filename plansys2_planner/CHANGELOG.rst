@@ -2,8 +2,8 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.12 (2024-10-16)
--------------------
+Forthcoming
+-----------
 * Integrated feedback, and fixes to have tests to pass
 * Added support for configuring the planner timeout
 * Spin up temporary node for domain validation
