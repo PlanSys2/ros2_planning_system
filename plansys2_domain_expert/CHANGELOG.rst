@@ -2,8 +2,8 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.10 (2024-10-16)
+-------------------
 * include "object" in getType
 * fix code style
 * add params to getDerivedPredicate

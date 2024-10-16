@@ -2,8 +2,8 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.10 (2024-10-16)
+-------------------
 * add get model derived predicates to terminal
 * Added some information in the README to allow for using a configuration file to change the planner timeout
 * Read multiple lines in terminal input

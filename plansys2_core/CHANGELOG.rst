@@ -2,8 +2,8 @@
 Changelog for package plansys2_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.10 (2024-10-16)
+-------------------
 * Integrated feedback, and fixes to have tests to pass
 * Added support for configuring the planner timeout
 * Remove cmake warning
