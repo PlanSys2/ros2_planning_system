@@ -2,8 +2,8 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.12 (2024-10-16)
+-------------------
 * Remove cmake warning
 * Removed some small references still related to the old version of BehaviorTree
 * Bump Behaviortree.CPP v3 to v4

@@ -2,8 +2,8 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.12 (2024-10-16)
+-------------------
 * add uint8 EXISTS = 10 to Node.msg
 * support for ParamExpression and ConstExpression
 * add Derived.msg and GetDomainDerivedPredicateDetails.srv

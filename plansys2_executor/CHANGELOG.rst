@@ -2,8 +2,8 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.12 (2024-10-16)
+-------------------
 * add ActionVariant
 * execute regular actions
 * Remove cmake warning
