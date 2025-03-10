@@ -522,7 +522,7 @@ Terminal::process_get_problem(std::vector<std::string> & command, std::ostringst
       }
     } else if (command[0] == "goal") {
       auto goal = problem_client_->getGoal();
-      os << "Goal: " << parser::pddl::toString(goal) << std::endl;
+      os << "Goal: \n" << parser::pddl::toString(goal) << std::endl;
     }
   } else {
     os << "\tUsage: \n\t\tget problem [instances|predicates|functions|goal]..." <<

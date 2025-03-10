@@ -274,16 +274,16 @@ std::tuple<uint8_t, int> getExpr(const std::string & input)
     }
   }
 
-  if (expr_type == plansys2_msgs::msg::Node::UNKNOWN) {
-    std::cerr << "getExpr: Error parsing expresion [" << input << "]" << std::endl;
-  }
-
   return std::make_tuple(expr_type, first);
 }
 
 uint8_t getExprType(const std::string & input)
 {
   std::tuple<uint8_t, int> result = getExpr(input);
+  if (std::get<0>(result) == plansys2_msgs::msg::Node::UNKNOWN) {
+    std::cerr << "getExprType: Error parsing expresion [" << input << "]" << std::endl;
+  }
+
   return std::get<0>(result);
 }
 
@@ -563,9 +563,9 @@ std::string toStringAnd(const plansys2_msgs::msg::Tree & tree, uint32_t node_id,
   }
 
   for (auto child_id : tree.nodes[node_id].children) {
-    ret += toString(tree, child_id, negate);
+    ret += "\n" + toString(tree, child_id, negate);
   }
-  ret += ")";
+  ret += "\n)";
 
   return ret;
 }
@@ -589,9 +589,9 @@ std::string toStringOr(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, 
   }
 
   for (auto child_id : tree.nodes[node_id].children) {
-    ret += toString(tree, child_id, negate);
+    ret += "\n" + toString(tree, child_id, negate);
   }
-  ret += ")";
+  ret += "\n)";
 
   return ret;
 }
