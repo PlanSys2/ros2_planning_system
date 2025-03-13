@@ -87,8 +87,8 @@ TEST(PDDLParserTestCase, exists_get_tree)
 
   ASSERT_EQ(
     str,
-    "(and (exists (?1) (and (robot_at ?0 ?1)(charging_point_at ?1)))(and (>  (battery_level ?0) "
-    "1.000000)(<  (battery_level ?0) 200.000000)))");
+    "(and \n(exists (?1) (and \n(robot_at ?0 ?1)\n(charging_point_at ?1)\n))\n"
+    "(and \n(>  (battery_level ?0) 1.000000)\n(<  (battery_level ?0) 200.000000)\n)\n)");
 
   plansys2_msgs::msg::Tree tree2;
   std::vector<std::string> replace = {"rob1"};
@@ -96,12 +96,12 @@ TEST(PDDLParserTestCase, exists_get_tree)
   std::string str2 = parser::pddl::toString(tree2);
   ASSERT_EQ(
     str2,
-    "(and (exists (?1) (and (robot_at rob1 ?1)(charging_point_at ?1)))(and (>  (battery_level "
-    "rob1) 1.000000)(<  (battery_level rob1) 200.000000)))");
+    "(and \n(exists (?1) (and \n(robot_at rob1 ?1)\n(charging_point_at ?1)\n))\n"
+    "(and \n(>  (battery_level rob1) 1.000000)\n(<  (battery_level rob1) 200.000000)\n)\n)");
 
   auto action2 = domain.actions.get("action_test5");
   plansys2_msgs::msg::Tree tree3;
   action2->pre->getTree(tree3, domain);
   std::string str3 = parser::pddl::toString(tree3);
-  ASSERT_EQ(str3, "(exists (?1 ?2) (and (robot_at ?0 ?1)(connected ?1 ?2)))");
+  ASSERT_EQ(str3, "(exists (?1 ?2) (and \n(robot_at ?0 ?1)\n(connected ?1 ?2)\n))");
 }
