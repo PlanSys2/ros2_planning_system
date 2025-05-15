@@ -156,7 +156,7 @@ POPFPlanSolver::parse_plan_result(const std::string & plan_path)
     plan_file.close();
   }
 
-  if (solution && !plan.items.empty()) {
+  if (solution) {
     return plan;
   } else {
     return {};

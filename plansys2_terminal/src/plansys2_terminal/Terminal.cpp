@@ -818,6 +818,9 @@ Terminal::execute_plan(int items)
   if (!plan.has_value()) {
     std::cout << "Plan could not be computed " << std::endl;
     return;
+  } else if (plan.value().items.size() == 0) {
+    std::cout << "Planning succeeded, but there are no actions to execute " << std::endl;
+    return;
   }
 
   if (items > 0 && items <= plan.value().items.size()) {
