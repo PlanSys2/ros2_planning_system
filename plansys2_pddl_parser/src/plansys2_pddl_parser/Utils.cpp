@@ -267,7 +267,7 @@ std::tuple<uint8_t, int> getExpr(const std::string & input)
     }
   }
 
-  if (std::regex_search(input, match, std::regex("\\s*\\-"))) {
+  if (std::regex_search(input, match, std::regex("\\s*\\-\\s+"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       expr_type = plansys2_msgs::msg::Node::ARITH_SUB;

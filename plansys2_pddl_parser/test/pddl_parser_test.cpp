@@ -122,3 +122,32 @@ TEST(PDDLParserTestCase, check_node_equality)
   ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate6));
   ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate6, predicate1));
 }
+
+TEST(PDDLParserTestCase, from_string_exists)
+{
+  plansys2_msgs::msg::Node exist_node;
+  exist_node.node_type = plansys2_msgs::msg::Node::EXISTS;
+  exist_node.parameters.push_back(parser::pddl::fromStringParam("?y"));
+  exist_node.node_id = 0;
+  exist_node.children.push_back(1);
+
+  plansys2_msgs::msg::Node and_node;
+  and_node.node_type = plansys2_msgs::msg::Node::AND;
+  and_node.node_id = 1;
+  and_node.children.push_back(2);
+
+  plansys2_msgs::msg::Node predicate_node;
+  predicate_node.node_type = plansys2_msgs::msg::Node::PREDICATE;
+  predicate_node.name = "inferred-RequiresF";
+  predicate_node.parameters.push_back(parser::pddl::fromStringParam("?x"));
+  predicate_node.parameters.push_back(parser::pddl::fromStringParam("?y"));
+  predicate_node.node_id = 2;
+
+  plansys2_msgs::msg::Tree tree;
+  tree.nodes.push_back(exist_node);
+  tree.nodes.push_back(and_node);
+  tree.nodes.push_back(predicate_node);
+
+  auto from_exists = parser::pddl::fromString("(exists (?y) (and (inferred-RequiresF ?x ?y)))");
+  ASSERT_EQ(tree, from_exists);
+}
