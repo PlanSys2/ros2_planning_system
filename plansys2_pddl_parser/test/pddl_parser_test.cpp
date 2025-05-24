@@ -205,3 +205,47 @@ TEST(PDDLParserTestCase, test_remove_operators_before_parenthesis)
   parser::pddl::removeOperatorBeforeParenthesis(expr);
   ASSERT_EQ(expr, "?s k");
 }
+
+TEST(PDDLParserTestCase, get_sub_expr)
+{
+  std::string expr = "(and (predicateA ?a) (exists (?b) (and (inferredA ?a)(inferredB ?b)(inferredAB ?a ?b)(not(=?a ?b)))))";
+  std::vector<std::string> subexprs = parser::pddl::getSubExpr(expr);
+  ASSERT_EQ(subexprs.size(), 2);
+  ASSERT_EQ(subexprs[0], "(predicateA ?a)");
+  ASSERT_EQ(subexprs[1], "(exists (?b) (and (inferredA ?a)(inferredB ?b)(inferredAB ?a ?b)(not(=?a ?b))))");
+
+  subexprs = parser::pddl::getSubExpr(subexprs[1]);
+  ASSERT_EQ(subexprs.size(), 1);
+  ASSERT_EQ(subexprs[0], "(and (inferredA ?a)(inferredB ?b)(inferredAB ?a ?b)(not(=?a ?b)))");
+
+  expr = "(= 3 5)";
+  subexprs = parser::pddl::getSubExpr(expr);
+  ASSERT_EQ(subexprs.size(), 2);
+  ASSERT_EQ(subexprs[0], "3");
+  ASSERT_EQ(subexprs[1], "5");
+  
+  expr = "(= ?a a)";
+  subexprs = parser::pddl::getSubExpr(expr);
+  ASSERT_EQ(subexprs.size(), 2);
+  ASSERT_EQ(subexprs[0], "?a");
+  ASSERT_EQ(subexprs[1], "a");
+
+  expr = "(+ ?a b)";
+  subexprs = parser::pddl::getSubExpr(expr);
+  ASSERT_EQ(subexprs.size(), 2);
+  ASSERT_EQ(subexprs[0], "?a");
+  ASSERT_EQ(subexprs[1], "b");
+
+  expr = "(?s k)";
+  subexprs = parser::pddl::getSubExpr(expr);
+  ASSERT_EQ(subexprs.size(), 2);
+  ASSERT_EQ(subexprs[0], "?s");
+  ASSERT_EQ(subexprs[1], "k");
+
+  expr = "(- b ?sas)";
+  subexprs = parser::pddl::getSubExpr(expr);
+  ASSERT_EQ(subexprs.size(), 2);
+  ASSERT_EQ(subexprs[0], "b");
+  ASSERT_EQ(subexprs[1], "?sas");
+
+}

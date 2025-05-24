@@ -413,30 +413,35 @@ std::vector<std::string> getSubExpr(const std::string & expr)
   }
   wexpr.erase(0, 1);
 
-  while (wexpr.size() > 0) {
+  removeOperatorBeforeParenthesis(wexpr);
+
+  // Parse the inner content
+  while (!wexpr.empty()) {
     int first = wexpr.find("(");
 
-    std::smatch match;
-    std::regex num_regexp("[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)");
-    bool found_num = std::regex_search(wexpr, match, num_regexp);
-
-    if (found_num && first != std::string::npos) {
-      if (match.position() < first) {
-        ret.push_back(wexpr.substr(match.position(), match.length()));
-        wexpr.erase(wexpr.begin(), wexpr.begin() + match.position() + match.length());
-      } else {
-        int last = getParenthesis(wexpr, first);
-        ret.push_back(wexpr.substr(first, last - first + 1));
-        wexpr.erase(wexpr.begin(), wexpr.begin() + last + 1);
+    // If there's a parenthesized subexpression
+    if (first != std::string::npos) {
+      if (first > 0) {
+        // Extract everything before the parenthesis as a token
+        std::string before = wexpr.substr(0, first);
+        std::istringstream iss(before);
+        std::string token;
+        while (iss >> token) {
+          ret.push_back(token);
+        }
       }
-    } else if (found_num) {
-      ret.push_back(wexpr.substr(match.position(), match.length()));
-      wexpr.erase(wexpr.begin(), wexpr.begin() + match.position() + match.length());
-    } else if (first != std::string::npos) {
+
+      // Extract the parenthesized subexpression
       int last = getParenthesis(wexpr, first);
       ret.push_back(wexpr.substr(first, last - first + 1));
-      wexpr.erase(wexpr.begin(), wexpr.begin() + last + 1);
+      wexpr.erase(0, last + 1);
     } else {
+      // No more parentheses, split the remaining string by whitespace
+      std::istringstream iss(wexpr);
+      std::string token;
+      while (iss >> token) {
+        ret.push_back(token);
+      }
       break;
     }
   }
