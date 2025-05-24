@@ -948,15 +948,27 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
         node->negate = negate;
         tree.nodes.push_back(*node);
 
-        size_t begin_exists = wexpr.find("exists", 0) + 6;
-        size_t end_exists = wexpr.find(")", begin_exists);
-        wexpr = wexpr.substr(end_exists + 1, std::string::npos);
+        std::vector<std::string> subexprs = getSubExpr(wexpr);
 
-        auto child = fromString(tree, wexpr, negate, node_type);
-        tree.nodes[node->node_id].children.push_back(child->node_id);
+        for (const auto & e : subexprs) {
+          auto child = fromString(tree, e, negate, node_type);
+          tree.nodes[node->node_id].children.push_back(child->node_id);
+        }
 
         return node;
       }
+    
+    case plansys2_msgs::msg::Node::PARAMETER: {
+        auto node = std::make_shared<plansys2_msgs::msg::Node>();
+        node->node_type = node_type;
+        node->node_id = tree.nodes.size();
+        node->name = wexpr;
+        node->negate = negate;
+        node->parameters.push_back(fromStringParam(wexpr));
+        tree.nodes.push_back(*node);
+
+        return node;
+    }
     // LCOV_EXCL_START
     default:
       std::cerr << "fromString: Error parsing expresion [" << wexpr << "]" << std::endl;
