@@ -150,7 +150,7 @@ uint8_t getNodeType(const std::string & expr, uint8_t default_node_type)
       node_type = plansys2_msgs::msg::Node::EXISTS;
     }
   }
-  
+
   if (std::regex_search(expr, match, std::regex("^\\s*\\(?\\s*\\?\\w+"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
@@ -368,19 +368,24 @@ int getParenthesis(const std::string & wexpr, int start)
   return it;
 }
 
-void removeOperatorBeforeParenthesis(std::string & wexpr) {
+void removeOperatorBeforeParenthesis(std::string & wexpr)
+{
   // Find the position of the first parenthesis
   int first_parenthesis = wexpr.find("(");
 
   // Check if "exists" appears before the first parenthesis
   size_t exists_pos = wexpr.find("exists");
   // Ensure "exists" is found and appears before the first parenthesis
-  if (exists_pos != std::string::npos && (first_parenthesis == std::string::npos || exists_pos < first_parenthesis)) {
-    size_t begin_exists = exists_pos + 6; // Move past "exists"
-    size_t end_exists = wexpr.find(")", begin_exists); // Find the first closing parenthesis
-    if (end_exists != std::string::npos) { // Ensure a closing parenthesis exists
-      wexpr = wexpr.substr(end_exists + 1, std::string::npos); // Remove "exists" and the first parenthesis
-      wexpr.erase(0, wexpr.find_first_not_of(" \t\n\r")); // Trim whitespace after the closing parenthesis
+  if (exists_pos != std::string::npos &&
+    (first_parenthesis == std::string::npos || exists_pos < first_parenthesis))
+  {
+    size_t begin_exists = exists_pos + 6;  // Move past "exists"
+    size_t end_exists = wexpr.find(")", begin_exists);  // Find the first closing parenthesis
+    if (end_exists != std::string::npos) {  // Ensure a closing parenthesis exists
+      // Remove "exists" and the first parenthesis
+      wexpr = wexpr.substr(end_exists + 1, std::string::npos);
+      // Trim whitespace after the closing parenthesis
+      wexpr.erase(0, wexpr.find_first_not_of(" \t\n\r"));
     } else {
       throw std::runtime_error("Malformed 'exists' expression: missing closing parenthesis");
     }
@@ -388,7 +393,8 @@ void removeOperatorBeforeParenthesis(std::string & wexpr) {
   }
 
   // Define a regex to match the operators
-  std::regex operator_regex(R"([\+\-\*\/=<>]=?|<=|>=|and|or|not|assign|increase|decrease|scale-up|scale-down)");
+  std::regex operator_regex(
+    R"([\+\-\*\/=<>]=?|<=|>=|and|or|not|assign|increase|decrease|scale-up|scale-down)");
 
   // Search for the first operator in the string
   std::smatch match;
@@ -399,7 +405,7 @@ void removeOperatorBeforeParenthesis(std::string & wexpr) {
     if (operator_pos < first_parenthesis || first_parenthesis == std::string::npos) {
       // Remove the operator from the string
       wexpr.erase(operator_pos, match.length());
-      wexpr.erase(0, wexpr.find_first_not_of(" \t\n\r")); // Trim whitespace after the oeprator
+      wexpr.erase(0, wexpr.find_first_not_of(" \t\n\r"));
     }
   }
 }
@@ -957,7 +963,7 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
 
         return node;
       }
-    
+
     case plansys2_msgs::msg::Node::PARAMETER: {
         auto node = std::make_shared<plansys2_msgs::msg::Node>();
         node->node_type = node_type;
@@ -968,7 +974,7 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
         tree.nodes.push_back(*node);
 
         return node;
-    }
+      }
     // LCOV_EXCL_START
     default:
       std::cerr << "fromString: Error parsing expresion [" << wexpr << "]" << std::endl;
