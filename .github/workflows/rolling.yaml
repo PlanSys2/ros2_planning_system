@@ -25,7 +25,7 @@ jobs:
         with:
           required-ros-distributions: rolling
       - name: Install test_msgs (provisional Fix)
-        run: sudo apt-get install ros-rolling-test-msgs
+        run: sudo apt-get install ros-rolling-test-msgs ros-rolling-rclcpp-cascade-lifecycle
       - name: build and test
         uses: ros-tooling/action-ros-ci@0.4.3
         with:
