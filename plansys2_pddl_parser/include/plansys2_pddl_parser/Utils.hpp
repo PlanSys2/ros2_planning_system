@@ -79,6 +79,8 @@ uint8_t getFunModType(const std::string & input);
 
 int getParenthesis(const std::string & wexpr, int start);
 
+void removeOperatorBeforeParenthesis(std::string & wexpr);
+
 std::vector<std::string> getSubExpr(const std::string & expr);
 
 std::string nameActionsToString(const std::shared_ptr<plansys2_msgs::msg::Action> action);

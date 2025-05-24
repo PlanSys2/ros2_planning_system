@@ -170,3 +170,38 @@ TEST(PDDLParserTestCase, from_string_hyphen)
   ASSERT_EQ(expression_sub.nodes[2].node_type, plansys2_msgs::msg::Node::NUMBER);
   ASSERT_EQ(expression_sub.nodes[2].value, 4.0);
 }
+
+TEST(PDDLParserTestCase, test_remove_operators_before_parenthesis)
+{
+  std::string expr = "and (predicateA ?a)(predicateB ?b)";
+  parser::pddl::removeOperatorBeforeParenthesis(expr);
+  ASSERT_EQ(expr, "(predicateA ?a)(predicateB ?b)");
+
+  expr = "or (predicateA ?a) (predicateB ?b)";
+  parser::pddl::removeOperatorBeforeParenthesis(expr);
+  ASSERT_EQ(expr, "(predicateA ?a) (predicateB ?b)");
+
+  expr = "exists (?b) (and (predicateA ?a)(predicateB ?b))";
+  parser::pddl::removeOperatorBeforeParenthesis(expr);
+  ASSERT_EQ(expr, "(and (predicateA ?a)(predicateB ?b))");
+
+  expr = "    exists (?b) (and (predicateA ?a)(predicateB ?b))";
+  parser::pddl::removeOperatorBeforeParenthesis(expr);
+  ASSERT_EQ(expr, "(and (predicateA ?a)(predicateB ?b))");
+
+  expr = "= 3 5";
+  parser::pddl::removeOperatorBeforeParenthesis(expr);
+  ASSERT_EQ(expr, "3 5"); 
+
+  expr = " = ?a a";
+  parser::pddl::removeOperatorBeforeParenthesis(expr);
+  ASSERT_EQ(expr, "?a a");
+  
+  expr = "+ ?a b";
+  parser::pddl::removeOperatorBeforeParenthesis(expr);
+  ASSERT_EQ(expr, "?a b");
+  
+  expr = "?s k";
+  parser::pddl::removeOperatorBeforeParenthesis(expr);
+  ASSERT_EQ(expr, "?s k");
+}
