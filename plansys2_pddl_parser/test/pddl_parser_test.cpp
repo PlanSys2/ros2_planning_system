@@ -249,3 +249,16 @@ TEST(PDDLParserTestCase, get_sub_expr)
   ASSERT_EQ(subexprs[1], "?sas");
 
 }
+
+TEST(PDDLParserTestCase, get_node_type)
+{
+  ASSERT_EQ(parser::pddl::getNodeType("(and (predicateA ?a) (predicateB ?b))"), plansys2_msgs::msg::Node::AND);
+  ASSERT_EQ(parser::pddl::getNodeType("(or (predicateA ?a) (predicateB ?b))"), plansys2_msgs::msg::Node::OR);
+  ASSERT_EQ(parser::pddl::getNodeType("(not (predicateA ?a))"), plansys2_msgs::msg::Node::NOT);
+  ASSERT_EQ(parser::pddl::getNodeType("(exists (?b) (and (predicateA ?a)(predicateB ?b)))"), plansys2_msgs::msg::Node::EXISTS);
+  ASSERT_EQ(parser::pddl::getNodeType("(= 3 5)"), plansys2_msgs::msg::Node::EXPRESSION);
+  ASSERT_EQ(parser::pddl::getNodeType("(+ ?a b)"), plansys2_msgs::msg::Node::EXPRESSION);
+  ASSERT_EQ(parser::pddl::getNodeType("(- b ?sas)"), plansys2_msgs::msg::Node::EXPRESSION);
+  ASSERT_EQ(parser::pddl::getNodeType("?a"), plansys2_msgs::msg::Node::PARAMETER);
+  ASSERT_EQ(parser::pddl::getNodeType("3"), plansys2_msgs::msg::Node::NUMBER);
+}

@@ -150,6 +150,13 @@ uint8_t getNodeType(const std::string & expr, uint8_t default_node_type)
       node_type = plansys2_msgs::msg::Node::EXISTS;
     }
   }
+  
+  if (std::regex_search(expr, match, std::regex("^\\s*\\(?\\s*\\?\\w+"))) {
+    if (static_cast<int>(match.position()) < first) {
+      first = static_cast<int>(match.position());
+      return plansys2_msgs::msg::Node::PARAMETER;
+    }
+  }
 
   std::tuple<uint8_t, int> modifier_search_result = getFunMod(expr);
   if (std::get<0>(modifier_search_result) != plansys2_msgs::msg::Node::UNKNOWN) {
