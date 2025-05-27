@@ -16,12 +16,15 @@
 #define PLANSYS2_CORE__GRAPH_HPP_
 
 #include <deque>
+#include <map>
 #include <memory>
+#include <queue>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 #include "plansys2_core/Action.hpp"
 #include "plansys2_core/Types.hpp"
@@ -78,6 +81,18 @@ public:
 
   bool isDerived() const {return std::holds_alternative<plansys2::Derived>(*node_);}
 
+  bool isAction() const
+  {
+    return std::holds_alternative<plansys2::ActionVariant>(*node_) &&
+           std::get<plansys2::ActionVariant>(*node_).is_action();
+  }
+  
+  bool isDurativeAction() const
+  {
+    return std::holds_alternative<plansys2::ActionVariant>(*node_) &&
+           std::get<plansys2::ActionVariant>(*node_).is_durative_action();
+  }
+
   plansys2::Predicate & getPredicate() const {return std::get<plansys2::Predicate>(*node_);}
 
   plansys2::Function & getFunction() const {return std::get<plansys2::Function>(*node_);}
@@ -101,6 +116,37 @@ public:
       return std::get<plansys2::ActionVariant>(*node_).is_action() ? "action" : "durative action";
     }
     return "";
+  }
+
+  void printNode() const
+  {
+    if(isDerived()) {
+      std::cout << "  Derived Predicate: " << getDerivedPredicate().name;
+      for (const auto & param : getDerivedPredicate().parameters) {
+        std::cout << " " << param.name;
+      }
+      std::cout << "\n";
+    }
+    if(isPredicate()) {
+      std::cout << "  Predicate: " << getPredicate().name;
+      for (const auto & param : getPredicate().parameters) {
+        std::cout << " " << param.name;
+      }
+      std::cout << "\n";
+    }
+    if(isFunction()) {
+      std::cout << "  Function: " << getFunction().name;
+      for (const auto & param : getFunction().parameters) {
+        std::cout << " " << param.name;
+      }
+      std::cout << "\n";
+    }
+    if(isAction()) {
+      std::cout << "  Action: " << getNodeName() << "\n";
+    }
+    if(isDurativeAction()) {
+      std::cout << "  Durative Action: " << getNodeName() << "\n";
+    }
   }
 
 private:
@@ -136,73 +182,144 @@ public:
   Graph()
   : edge_count_(0) {}
 
+  void printGraph() const 
+  {
+    std::cout << "Graph structure:\n";
+    for (const auto & [node, edges] : adj_list_) {
+      node.printNode();
+      for (const auto & child : edges) {
+        std::cout << "    -> "; 
+        child.printNode();
+      }
+    }
+  }
+
+  void printGraphLayers() const
+  {
+    // Step 1: Find root nodes (no incoming edges)
+    std::vector<NodeVariant> roots;
+    for (const auto & [node, _] : adj_list_) {
+      if (in_nodes_.find(node) == in_nodes_.end()) {
+        roots.push_back(node);
+      }
+    }
+
+    // Step 2: BFS to assign depth
+    std::unordered_map<NodeVariant, int> depth;
+    // std::map<int, std::vector<NodeVariant>> layers;  // keep this if you want ordered layers
+    std::queue<NodeVariant> q;
+    for (const auto & root : roots) {
+      depth.insert({root, 0});
+      q.push(root);
+    }
+
+    while (!q.empty()) {
+      NodeVariant current = q.front();
+      q.pop();
+
+      int current_depth = depth[current];
+      auto it = adj_list_.find(current);
+      if (it != adj_list_.end()) {
+        for (const auto & child : it->second) {
+          if (depth.find(child) == depth.end()) {
+            // depth[child] = current_depth + 1;
+            depth.insert({child, current_depth + 1});
+            q.push(child);
+          }
+        }
+      }
+    }
+
+    // Step 3: Group by layer
+    std::map<int, std::vector<NodeVariant>> layers;
+    for (const auto & [node, d] : depth) {
+      layers[d].push_back(node);
+    }
+
+    // Step 4: Print layers
+    std::cout << "\n=== Graph Layers ===\n";
+    for (const auto & [d, nodes] : layers) {
+      std::cout << "Layer " << d << ":\n";
+      for (const auto & node : nodes) {
+        std::cout << "  - " << node.getNodeName() << "\n";
+      }
+    }
+    std::cout << "====================\n";
+  }
+
   void addEdge(const NodeVariant & u, const NodeVariant & v)
   {
-    adj_list_[u].insert(v);
+    auto [it, inserted] = adj_list_[u].insert(v);
+    if (inserted) {
+      ++edge_count_;
+    }
     in_nodes_[v].insert(u);
-    ++edge_count_;
+    
+    nodes_.insert(u);
+    nodes_.insert(v);
+    
+    roots_.insert(u);
+    roots_.erase(v); 
   }
 
   const auto & getNodeOutEdges(const NodeVariant & node) {return adj_list_[node];}
   const auto & getNodeInEdges(const NodeVariant & node) {return in_nodes_[node];}
+  const std::unordered_set<NodeVariant>& getRoots() const { return roots_; }
+  const std::unordered_set<NodeVariant>& getNodes() const { return nodes_; }
 
-  template<typename Func>
-  void depthFirstTraverse(
-    const NodeVariant & node, std::unordered_set<NodeVariant> & visited, Func && func,
+  // DFS from a given start node
+  void depthFirstTraverse(const NodeVariant& start, 
+    const std::function<void(const NodeVariant&)>& func,
+    std::unordered_set<NodeVariant>& visited,
+    bool check_dependencies = false) const 
+  {
+    dfsHelper(start, func, visited, check_dependencies);
+  }
+
+  void depthFirstTraverse(const NodeVariant& start, 
+    const std::function<void(const NodeVariant&)>& func,
+    bool check_dependencies = false) const 
+  {
+    std::unordered_set<NodeVariant> visited;
+    dfsHelper(start, func, visited, check_dependencies);
+  }
+
+  void depthFirstTraverseFromNodes(
+    const std::function<void(const NodeVariant&)>& func, 
+    bool check_dependencies = false,
+    const std::vector<NodeVariant>& start_nodes = {}) const 
+  {
+    std::unordered_set<NodeVariant> visited;
+    std::vector<NodeVariant> stack = start_nodes.empty() 
+      ? std::vector<NodeVariant>(getRoots().begin(), getRoots().end()) : start_nodes;
+
+    while (!stack.empty()) {
+        NodeVariant node = stack.back();
+        stack.pop_back();
+
+        if (visited.count(node)) continue;
+        if (check_dependencies && !parentsVisited(node, visited)) {
+            continue; // skip nodes whose dependencies aren't met
+        }
+        visited.insert(node);
+        func(node);
+
+        auto it = adj_list_.find(node);
+        if (it != adj_list_.end()) {
+            for (const auto& neighbor : it->second) {
+                if (!visited.count(neighbor))
+                    stack.push_back(neighbor);
+            }
+        }
+    }
+  }
+
+  void depthFirstTraverseAll(
+    const std::function<void(const NodeVariant&)>& func,
     bool check_dependencies = false) const
   {
-    if (visited.find(node) != visited.end()) {
-      return;
-    }
-
-    auto it_in_nodes = in_nodes_.find(node);
-    if (check_dependencies && it_in_nodes != in_nodes_.end()) {
-      for (const auto & in_node : it_in_nodes->second) {
-        if (visited.find(in_node) == visited.end()) {
-          return;
-        }
-      }
-    }
-    std::forward<Func>(func)(node);
-    visited.insert(node);
-
-    auto it = adj_list_.find(node);
-    if (it == adj_list_.end()) {
-      return;
-    }
-
-    for (const auto & neighbor : it->second) {
-      if (visited.find(neighbor) == visited.end()) {
-        depthFirstTraverse(neighbor, visited, std::forward<Func>(func), check_dependencies);
-      }
-    }
-  }
-
-  template<typename Func>
-  void depthFirstTraverse(
-    const NodeVariant & start, Func && func, bool check_dependencies = false) const
-  {
-    std::unordered_set<NodeVariant> visited;
-    depthFirstTraverse(start, visited, std::forward<Func>(func), check_dependencies);
-  }
-
-  template<typename Func>
-  void depthFirstTraverseAll(
-    Func && func, bool check_dependencies = true,
-    std::vector<plansys2_msgs::msg::Node> root_nodes_only = {}) const
-  {
-    std::unordered_set<NodeVariant> visited;
-    for (const auto & [key, _] : adj_list_) {
-      if (
-        root_nodes_only.empty() ||
-        std::find_if(
-          root_nodes_only.begin(), root_nodes_only.end(), [&key](auto & r) {
-            return key == r;
-          }) != root_nodes_only.end())
-      {
-        depthFirstTraverse(key, visited, std::forward<Func>(func), check_dependencies);
-      }
-    }
+    std::vector<NodeVariant> roots(getRoots().begin(), getRoots().end());
+    depthFirstTraverseFromNodes(func, check_dependencies, roots);
   }
 
   template<typename Func>
@@ -223,7 +340,7 @@ public:
 
     // Apply the provided function to the current node
     std::forward<Func>(func)(node);
-    visited.insert(node);
+    // visited.insert(node);
 
     // Find predecessors (in-nodes)
     auto it_in_nodes = in_nodes_.find(node);
@@ -240,18 +357,54 @@ public:
   }
 
   auto getEdgeNumber() const {return edge_count_;}
+  auto getNodeNumber() const {return nodes_.size();}
+  auto getRootNumber() const {return roots_.size();}
 
-  void clear() {adj_list_.clear();}
+  void clear() {adj_list_.clear(); in_nodes_.clear(); nodes_.clear(); roots_.clear(); edge_count_ = 0;}
 
-  bool operator==(const Graph & graph) const {return this->adj_list_ == graph.adj_list_;}
+  bool operator==(const Graph & graph) const 
+  {
+    return this->adj_list_ == graph.adj_list_ && this->in_nodes_ == graph.in_nodes_ &&
+      this->nodes_ == graph.nodes_ && this->edge_count_ == graph.edge_count_;
+  }
 
   using NodeEdgesMap = std::unordered_map<NodeVariant, std::unordered_set<NodeVariant>>;
 
 private:
   NodeEdgesMap adj_list_;
   NodeEdgesMap in_nodes_;
-
+  std::unordered_set<NodeVariant> nodes_;
+  std::unordered_set<NodeVariant> roots_;
   size_t edge_count_;
+
+  void dfsHelper(const NodeVariant& node, 
+    const std::function<void(const NodeVariant&)>& func,
+    std::unordered_set<NodeVariant>& visited,
+    bool check_dependencies = false) const 
+  {
+    if (visited.count(node) || (check_dependencies && !parentsVisited(node, visited))) 
+    {
+      return;  // Skip this node if dependencies are not satisfied
+    }
+    visited.insert(node);
+    func(node);
+    auto it = adj_list_.find(node);
+    if (it != adj_list_.end()) {
+      for (const auto& neighbor : it->second) {
+        dfsHelper(neighbor, func, visited, check_dependencies);
+      }
+    }
+  }
+
+  bool parentsVisited(const NodeVariant& node, const std::unordered_set<NodeVariant>& visited) const 
+  {
+    auto it = in_nodes_.find(node);
+    if (it == in_nodes_.end()) return true; // No parents
+    for (const auto& p : it->second) {
+        if (!visited.count(p)) return false;
+    }
+    return true;
+  }
 
   friend struct std::hash<Graph>;
 };
