@@ -19,6 +19,7 @@
 #include <unordered_set>
 #include <variant>
 #include <vector>
+#include <map>
 
 #include "plansys2_msgs/msg/derived.hpp"
 #include "plansys2_msgs/msg/node.hpp"
@@ -97,9 +98,55 @@ public:
 
   bool operator==(const Derived & d) const
   {
-    return parser::pddl::checkNodeEquality(this->predicate, d.predicate) &&
-           parser::pddl::checkTreeEquality(this->preconditions, d.preconditions);
+    auto this_norm = this->getNormalizedDerived();
+    auto d_norm = d.getNormalizedDerived();
+    return parser::pddl::checkNodeEquality(this_norm.predicate, d_norm.predicate) &&
+           parser::pddl::checkTreeEquality(this_norm.preconditions, d_norm.preconditions);
   }
+
+  std::string normalize_param(
+    const std::string& old_name, std::map<std::string, std::string>& var_map, uint& i) const
+  {
+    if (old_name.empty() || old_name.front() != '?')
+      return old_name;
+
+    auto it = var_map.find(old_name);
+    if (it != var_map.end())
+      return it->second;
+
+    std::string normalized = "?" + std::to_string(i++);
+    var_map[old_name] = normalized;
+    return normalized;
+  }
+
+  Derived getNormalizedDerived() const
+  {
+    Derived new_derived;
+    new_derived.predicate = this->predicate;
+    new_derived.preconditions = this->preconditions;
+
+    std::map<std::string, std::string> var_map;
+    uint i = 0;
+
+    // Normalize predicate parameters
+    for (auto& p : new_derived.predicate.parameters)
+    {
+      p.name = this->normalize_param(p.name, var_map, i);
+    }
+
+    // Normalize precondition nodes and their parameters
+    for (auto& node : new_derived.preconditions.nodes)
+    {
+      if (node.node_type == plansys2_msgs::msg::Node::PARAMETER)
+        node.name = this->normalize_param(node.name, var_map, i);
+
+      for (auto& p : node.parameters)
+        p.name = this->normalize_param(p.name, var_map, i);
+    }
+
+    return new_derived;
+  }
+
 };
 
 class Function : public plansys2_msgs::msg::Node
@@ -192,10 +239,11 @@ struct hash<plansys2::Derived>
 {
   std::size_t operator()(const plansys2::Derived & derived) const noexcept
   {
+    auto derived_norm = derived.getNormalizedDerived();
     std::size_t seed = 0;
-    hash_combine(seed, derived.predicate);
+    hash_combine(seed, derived_norm.predicate);
 
-    for (auto node : derived.preconditions.nodes) {
+    for (auto node : derived_norm.preconditions.nodes) {
       hash_combine(seed, node);
     }
 

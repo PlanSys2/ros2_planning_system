@@ -281,9 +281,9 @@ std::tuple<uint8_t, int> getExpr(const std::string & input)
     }
   }
 
-  if (expr_type == plansys2_msgs::msg::Node::UNKNOWN) {
-    std::cerr << "getExpr: Error parsing expresion [" << input << "]" << std::endl;
-  }
+  // if (expr_type == plansys2_msgs::msg::Node::UNKNOWN) {
+  //   std::cerr << "getExpr: Error parsing expresion [" << input << "]" << std::endl;
+  // }
 
   return std::make_tuple(expr_type, first);
 }
@@ -996,20 +996,22 @@ plansys2_msgs::msg::Node fromStringPredicate(const std::string & predicate)
   plansys2_msgs::msg::Node ret;
   ret.node_type = plansys2_msgs::msg::Node::PREDICATE;
 
+  std::string predicate_(predicate);
+  if (!predicate_.empty() && predicate_.front() == '(') {
+    predicate_.erase(0, 1);
+  }
+  if (!predicate_.empty() && predicate_.back() == ')') {
+    predicate_.pop_back();
+  }
+  
   std::vector<std::string> tokens;
-  size_t start = 0, end = 0;
-
-  while (end != std::string::npos) {
-    end = predicate.find(" ", start);
-    tokens.push_back(
-      predicate.substr(start, (end == std::string::npos) ? std::string::npos : end - start));
-    start = ((end > (std::string::npos - 1)) ? std::string::npos : end + 1);
+  std::istringstream iss(predicate_);
+  std::string token;
+  while (iss >> token) {
+    tokens.push_back(token);
   }
 
-  tokens[0].erase(0, 1);
   ret.name = tokens[0];
-
-  tokens.back().pop_back();
 
   for (size_t i = 1; i < tokens.size(); i++) {
     plansys2_msgs::msg::Param param;
@@ -1256,7 +1258,10 @@ void getPredicates(
       if (
         std::find_if(
           predicates.begin(), predicates.end(),
-          std::bind(&checkNodeEquality, std::placeholders::_1, pred)) == predicates.end())
+          [&](const plansys2_msgs::msg::Node& p) {
+            return checkNodeEquality(p, pred, true);
+          }
+        ) == predicates.end())
       {
         pred.negate = negate;
         predicates.push_back(pred);
@@ -1300,7 +1305,10 @@ void getFunctions(
       if (
         std::find_if(
           functions.begin(), functions.end(),
-          std::bind(&checkNodeEquality, std::placeholders::_1, func)) == functions.end())
+          [&](const plansys2_msgs::msg::Node& f) {
+            return checkNodeEquality(f, func, true);
+          }
+        ) == functions.end())
       {
         func.value = 0.0;
         functions.push_back(func);
@@ -1326,7 +1334,7 @@ bool checkTreeEquality(
 }
 
 bool checkNodeEquality(
-  const plansys2_msgs::msg::Node & first, const plansys2_msgs::msg::Node & second)
+  const plansys2_msgs::msg::Node & first, const plansys2_msgs::msg::Node & second, bool check_var_params)
 {
   if (first.node_type != second.node_type) {
     return false;
@@ -1369,7 +1377,7 @@ bool checkNodeEquality(
   }
 
   for (unsigned i = 0; i < first.parameters.size(); i++) {
-    if (!checkParamEquality(first.parameters[i], second.parameters[i])) {
+    if (!checkParamEquality(first.parameters[i], second.parameters[i], check_var_params)) {
       return false;
     }
   }
@@ -1378,13 +1386,23 @@ bool checkNodeEquality(
 }
 
 bool checkParamEquality(
-  const plansys2_msgs::msg::Param & first, const plansys2_msgs::msg::Param & second)
+  const plansys2_msgs::msg::Param & first,
+  const plansys2_msgs::msg::Param & second,
+  bool check_var_params)
 {
-  if (first.name.front() != '?' && second.name.front() != '?' && first.name != second.name) {
-    return false;
-  }
+  auto types_match = first.type == second.type
+    || (first.type.empty() && second.type == "object")
+    || (second.type.empty() && first.type == "object");
 
-  return true;
+  if (!types_match)
+    return false;
+
+  if (!check_var_params && 
+    (first.name.front() == '?' || second.name.front() == '?')) 
+  {
+    return true;
+  }
+  return first.name == second.name;
 }
 
 bool checkActionEquality(
@@ -1434,6 +1452,11 @@ bool checkDurativeActionEquality(
          parser::pddl::checkTreeEquality(first.at_start_effects, second.at_start_effects) &&
          parser::pddl::checkTreeEquality(first.at_end_effects, second.at_end_effects);
 }
+
+// bool checkNodeUnification(const plansys2_msgs::msg::Node & first, const plansys2_msgs::msg::Node & second)
+// {
+
+// }
 
 bool empty(const plansys2_msgs::msg::Tree & tree)
 {

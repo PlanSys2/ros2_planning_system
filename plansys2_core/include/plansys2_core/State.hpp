@@ -79,7 +79,7 @@ public:
     return derived_predicates_.getDerivedPredicatesDepthFirst();
   }
   auto getDerivedPredicatesDepthFirst(
-    const std::vector<plansys2_msgs::msg::Node> & root_nodes) const
+    const std::vector<NodeVariant>& root_nodes) const
   {
     return derived_predicates_.getDerivedPredicatesDepthFirst(root_nodes);
   }

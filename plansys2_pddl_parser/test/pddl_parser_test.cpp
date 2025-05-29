@@ -70,6 +70,54 @@ TEST(PDDLParserTestCase, pddl_parser)
   ASSERT_TRUE(okprint);
 }
 
+TEST(PDDLParserTestCase, pddl_parser_suave)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_pddl_parser");
+  std::string domain_file = pkgpath + "/pddl/suave_domain.pddl";
+  std::string instance_file = pkgpath + "/pddl/suave_problem.pddl";
+
+  std::ifstream domain_ifs(domain_file);
+  ASSERT_TRUE(domain_ifs.good());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
+  ASSERT_NE(domain_str, "");
+  std::ifstream instance_ifs(instance_file);
+  ASSERT_TRUE(instance_ifs.good());
+  std::string instance_str(
+    (std::istreambuf_iterator<char>(instance_ifs)), std::istreambuf_iterator<char>());
+
+  ASSERT_NE(instance_str, "");
+  
+  // Read domain and instance
+  bool okparse = false;
+  bool okprint = false;
+  try {
+    parser::pddl::Domain domain(domain_str);
+    parser::pddl::Instance instance(domain, instance_str);
+    okparse = true;
+    try {
+      std::cout << domain << std::endl;
+      std::cout << instance << std::endl;
+      okprint = true;
+    } catch (std::runtime_error e) {
+      std::cerr << e.what() << std::endl;
+    }
+  } catch (std::runtime_error e) {
+    std::cerr << e.what() << std::endl;
+  }
+  ASSERT_TRUE(okparse);
+  ASSERT_TRUE(okprint);
+
+  parser::pddl::Domain domain(domain_str);
+  ASSERT_EQ(domain.name, "suave");
+  ASSERT_EQ(domain.types.size(), 4);
+  ASSERT_EQ(domain.types[0]->constants.size(), 34);
+  ASSERT_EQ(domain.actions.size(), 5);
+  ASSERT_EQ(domain.preds.size(), 47);
+  ASSERT_EQ(domain.derived.size(), 54);
+
+}
+
 TEST(PDDLParserTestCase, exists_get_tree)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_pddl_parser");
@@ -108,6 +156,20 @@ TEST(PDDLParserTestCase, exists_get_tree)
 
 TEST(PDDLParserTestCase, check_node_equality)
 {
+  auto param1 = parser::pddl::fromStringParam("?x");
+  auto param2 = parser::pddl::fromStringParam("?x", "object");
+  auto param3 = parser::pddl::fromStringParam("?x", "param_type");
+  auto param4 = parser::pddl::fromStringParam("?y");
+  auto param5 = parser::pddl::fromStringParam("y");
+
+  ASSERT_TRUE(parser::pddl::checkParamEquality(param1, param2));
+  ASSERT_FALSE(parser::pddl::checkParamEquality(param1, param3));
+  ASSERT_FALSE(parser::pddl::checkParamEquality(param2, param3));
+  ASSERT_FALSE(parser::pddl::checkParamEquality(param1, param4));
+  ASSERT_FALSE(parser::pddl::checkParamEquality(param1, param5));
+  ASSERT_FALSE(parser::pddl::checkParamEquality(param4, param5));
+  ASSERT_FALSE(parser::pddl::checkParamEquality(param4, param2));
+
   auto predicate1 = parser::pddl::fromStringPredicate("(predicate a b)");
   auto predicate2 = parser::pddl::fromStringPredicate("(predicate a b)");
   auto predicate3 = parser::pddl::fromStringPredicate("(predicate ?x b)");
@@ -116,12 +178,101 @@ TEST(PDDLParserTestCase, check_node_equality)
   auto predicate6 = parser::pddl::fromStringPredicate("(predicate ?x ?y)");
 
   ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate2));
-  ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate3));
-  ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate4));
+  ASSERT_FALSE(parser::pddl::checkNodeEquality(predicate1, predicate3));
+  ASSERT_FALSE(parser::pddl::checkNodeEquality(predicate1, predicate4));
   ASSERT_FALSE(parser::pddl::checkNodeEquality(predicate1, predicate5));
-  ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate6));
-  ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate6, predicate1));
+  ASSERT_FALSE(parser::pddl::checkNodeEquality(predicate1, predicate6));
+  ASSERT_FALSE(parser::pddl::checkNodeEquality(predicate6, predicate1));
+
+  auto expression1 = parser::pddl::fromString("(= ?x 5)");
+  auto expression2 = parser::pddl::fromString("(= ?x 5)");
+  auto expression3 = parser::pddl::fromString("(= ?x ?y)");
+  auto expression4 = parser::pddl::fromString("(= ?x 6)");
+  auto expression5 = parser::pddl::fromString("(= ?y 5)");
+  auto expression6 = parser::pddl::fromString("(= 4 5)");
+  auto expression7 = parser::pddl::fromString("(= 4 5)");
+
+  ASSERT_TRUE(parser::pddl::checkTreeEquality(expression1, expression2));
+  ASSERT_FALSE(parser::pddl::checkTreeEquality(expression1, expression3));
+  ASSERT_FALSE(parser::pddl::checkTreeEquality(expression1, expression4));
+  ASSERT_FALSE(parser::pddl::checkTreeEquality(expression1, expression5));
+  ASSERT_FALSE(parser::pddl::checkTreeEquality(expression1, expression6));
+  ASSERT_FALSE(parser::pddl::checkTreeEquality(expression1, expression7));
+  ASSERT_TRUE(parser::pddl::checkTreeEquality(expression6, expression7));
+
+  // with check_var_params = false
+  ASSERT_TRUE(parser::pddl::checkParamEquality(param1, param2, false));
+  ASSERT_FALSE(parser::pddl::checkParamEquality(param1, param3, false));
+  ASSERT_FALSE(parser::pddl::checkParamEquality(param2, param3, false));
+  ASSERT_TRUE(parser::pddl::checkParamEquality(param1, param4, false));
+  ASSERT_TRUE(parser::pddl::checkParamEquality(param1, param5, false));
+  ASSERT_TRUE(parser::pddl::checkParamEquality(param4, param5, false));
+  ASSERT_TRUE(parser::pddl::checkParamEquality(param4, param2, false));
+
+  ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate2, false));
+  ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate3, false));
+  ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate4, false));
+  ASSERT_FALSE(parser::pddl::checkNodeEquality(predicate1, predicate5, false));
+  ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate6, false));
+  ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate6, predicate1, false));
+
 }
+
+// TEST(PDDLParserTestCase, check_node_unification)
+// {
+//   auto param1 = parser::pddl::fromStringParam("?x");
+//   auto param2 = parser::pddl::fromStringParam("?x", "object");
+//   auto param3 = parser::pddl::fromStringParam("?x", "param_type");
+//   auto param4 = parser::pddl::fromStringParam("?y");
+//   auto param5 = parser::pddl::fromStringParam("y");
+//   auto param6 = parser::pddl::fromStringParam("y", "object");
+//   auto param7 = parser::pddl::fromStringParam("y", "param_type");
+
+//   ASSERT_TRUE(parser::pddl::checkNodeUnification(param1, param2));
+//   ASSERT_FALSE(parser::pddl::checkNodeUnification(param1, param3));
+//   ASSERT_FALSE(parser::pddl::checkNodeUnification(param2, param3));
+//   ASSERT_FALSE(parser::pddl::checkNodeUnification(param1, param4));
+//   ASSERT_TRUE(parser::pddl::checkNodeUnification(param1, param5));
+//   ASSERT_TRUE(parser::pddl::checkNodeUnification(param4, param5));
+//   ASSERT_FALSE(parser::pddl::checkNodeUnification(param4, param2));
+//   ASSERT_TRUE(parser::pddl::checkNodeUnification(param1, param6));
+//   ASSERT_TRUE(parser::pddl::checkNodeUnification(param2, param6));
+//   ASSERT_FALSE(parser::pddl::checkNodeUnification(param3, param6));
+//   ASSERT_TRUE(parser::pddl::checkNodeUnification(param1, param7));
+//   ASSERT_TRUE(parser::pddl::checkNodeUnification(param2, param7));
+//   ASSERT_TRUE(parser::pddl::checkNodeUnification(param3, param7));
+
+//   auto predicate1 = parser::pddl::fromStringPredicate("(predicate a b)");
+//   auto predicate2 = parser::pddl::fromStringPredicate("(predicate a b)");
+//   auto predicate3 = parser::pddl::fromStringPredicate("(predicate ?x b)");
+//   auto predicate4 = parser::pddl::fromStringPredicate("(predicate a ?y)");
+//   auto predicate5 = parser::pddl::fromStringPredicate("(predicate a c)");
+//   auto predicate6 = parser::pddl::fromStringPredicate("(predicate ?x ?y)");
+
+//   ASSERT_TRUE(parser::pddl::checkNodeUnification(predicate1, predicate2));
+//   ASSERT_TRUE(parser::pddl::checkNodeUnification(predicate1, predicate3));
+//   ASSERT_TRUE(parser::pddl::checkNodeUnification(predicate1, predicate4));
+//   ASSERT_FALSE(parser::pddl::checkNodeUnification(predicate1, predicate5));
+//   ASSERT_TRUE(parser::pddl::checkNodeUnification(predicate1, predicate6));
+//   ASSERT_TRUE(parser::pddl::checkNodeUnification(predicate6, predicate1));
+
+//   auto expression1 = parser::pddl::fromString("(= ?x 5)");
+//   auto expression2 = parser::pddl::fromString("(= ?x 5)");
+//   auto expression3 = parser::pddl::fromString("(= ?x ?y)");
+//   auto expression4 = parser::pddl::fromString("(= ?x 6)");
+//   auto expression5 = parser::pddl::fromString("(= ?y 5)");
+//   auto expression6 = parser::pddl::fromString("(= 4 5)");
+//   auto expression7 = parser::pddl::fromString("(= 4 5)");
+
+//   ASSERT_TRUE(parser::pddl::checkNodeEquality(expression1, expression2));
+//   ASSERT_FALSE(parser::pddl::checkNodeEquality(expression1, expression3));
+//   ASSERT_FALSE(parser::pddl::checkNodeEquality(expression1, expression4));
+//   ASSERT_FALSE(parser::pddl::checkNodeEquality(expression1, expression5));
+//   ASSERT_FALSE(parser::pddl::checkNodeEquality(expression1, expression6));
+//   ASSERT_FALSE(parser::pddl::checkNodeEquality(expression1, expression7));
+//   ASSERT_TRUE(parser::pddl::checkNodeEquality(expression6, expression7));
+// }
+
 
 TEST(PDDLParserTestCase, from_string_exists)
 {

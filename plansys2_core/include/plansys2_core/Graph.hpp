@@ -35,6 +35,26 @@
 namespace plansys2
 {
 
+/**
+ * @class NodeVariant
+ * @brief A wrapper class for representing different types of nodes in the planning system.
+ *
+ * NodeVariant encapsulates a variant type that can hold one of several node types used in the planning system,
+ * including Predicate, Function, Derived, and ActionVariant. It provides utility methods for type checking,
+ * accessing the underlying node, and retrieving node-specific information such as name and type.
+ *
+ * The class supports hashing, equality comparison, and printing node information for debugging purposes.
+ * 
+ * This class uses a custom hash function and '==' operators designed specifically for enabling the 
+ * resolution of derived predicates in the correct order, which might not be suitable for other uses. 
+ * For example (check the unit tests for more examples): 
+ *  - (predA ?a) == (predA ?x)
+ *
+ * @note The underlying node is stored as a shared pointer to allow for efficient copying and management.
+ *
+ * @author
+ * @date
+ */
 class NodeVariant
 {
 public:
@@ -53,11 +73,30 @@ public:
       [](auto && arg) {return std::hash<std::decay_t<decltype(arg)>>{}(arg);}, *node_);
   }
 
-  bool operator==(const NodeVariant & other) const {return *node_ == *other.node_;}
+  bool operator==(const NodeVariant& other) const
+  {
+    // Check type first
+    if (this->getNodeType() != other.getNodeType())
+      return false;
+
+    // Predicate case
+    if (this->isPredicate()) {
+      return parser::pddl::checkNodeEquality(this->getPredicateNode(), other.getPredicateNode(), false);
+    }
+
+    // Function case
+    if (this->isFunction()) {
+      return parser::pddl::checkNodeEquality(this->getFunctionNode(), other.getFunctionNode(), false);
+    }
+
+    return *node_ == *other.node_;
+  }
+
+  bool operator!=(const NodeVariant& other) const {
+    return !(*this == other);
+  }
 
   const NodeType & getNode() const {return *node_;}
-
-  plansys2::Derived getDerivedNode() const {return std::get<plansys2::Derived>(*node_);}
 
   std::string getNodeName() const
   {
@@ -93,9 +132,10 @@ public:
            std::get<plansys2::ActionVariant>(*node_).is_durative_action();
   }
 
-  plansys2::Predicate & getPredicate() const {return std::get<plansys2::Predicate>(*node_);}
-
-  plansys2::Function & getFunction() const {return std::get<plansys2::Function>(*node_);}
+  // plansys2::Predicate & getPredicate() const {return std::get<plansys2::Predicate>(*node_);}
+  plansys2::Function & getFunctionNode() const {return std::get<plansys2::Function>(*node_);}
+  plansys2::Predicate getPredicateNode() const {return std::get<plansys2::Predicate>(*node_);}
+  plansys2::Derived getDerivedNode() const {return std::get<plansys2::Derived>(*node_);}
 
   auto & getDerivedPreconditions() const
   {
@@ -128,15 +168,15 @@ public:
       std::cout << "\n";
     }
     if(isPredicate()) {
-      std::cout << "  Predicate: " << getPredicate().name;
-      for (const auto & param : getPredicate().parameters) {
+      std::cout << "  Predicate: " << getPredicateNode().name;
+      for (const auto & param : getPredicateNode().parameters) {
         std::cout << " " << param.name;
       }
       std::cout << "\n";
     }
     if(isFunction()) {
-      std::cout << "  Function: " << getFunction().name;
-      for (const auto & param : getFunction().parameters) {
+      std::cout << "  Function: " << getFunctionNode().name;
+      for (const auto & param : getFunctionNode().parameters) {
         std::cout << " " << param.name;
       }
       std::cout << "\n";
@@ -151,14 +191,16 @@ public:
 
 private:
   std::shared_ptr<NodeType> node_;
+
+  friend struct std::hash<NodeVariant>;
 };
 
 inline bool operator==(const NodeVariant & lhs, const plansys2_msgs::msg::Node & rhs)
 {
   if (lhs.isPredicate()) {
-    return lhs.getPredicate() == static_cast<plansys2::Predicate>(rhs);
+    return lhs.getPredicateNode() == static_cast<plansys2::Predicate>(rhs);
   } else if (lhs.isFunction()) {
-    return lhs.getFunction() == static_cast<plansys2::Function>(rhs);
+    return lhs.getFunctionNode() == static_cast<plansys2::Function>(rhs);
   }
   return false;
 }
@@ -167,10 +209,33 @@ inline bool operator==(const NodeVariant & lhs, const plansys2_msgs::msg::Node &
 
 namespace std
 {
+
+inline std::size_t hash_node_variant(const plansys2_msgs::msg::Node & node)
+{
+  std::size_t seed = 0;
+
+  hash_combine(seed, node.name);
+  hash_combine(seed, node.node_type);
+  hash_combine(seed, node.parameters.size());
+
+  return seed;
+}
+
 template<>
 struct hash<plansys2::NodeVariant>
 {
-  std::size_t operator()(const plansys2::NodeVariant & nv) const noexcept {return nv.hash();}
+  std::size_t operator()(const plansys2::NodeVariant & nv) const noexcept 
+  {
+    // return nv.hash();
+    if (nv.isPredicate())
+    {
+      return hash_node_variant(nv.getPredicateNode());
+    } else if(nv.isFunction())
+    {
+      return hash_node_variant(nv.getFunctionNode());
+    } 
+    return nv.hash();
+  }
 };
 }  // namespace std
 
@@ -247,6 +312,14 @@ public:
     std::cout << "====================\n";
   }
 
+  void addNode(const NodeVariant & node)
+  {
+    nodes_.insert(node);
+    if(in_nodes_.find(node) == in_nodes_.end()) {
+      roots_.insert(node);
+    }
+  }
+
   void addEdge(const NodeVariant & u, const NodeVariant & v)
   {
     auto [it, inserted] = adj_list_[u].insert(v);
@@ -258,14 +331,11 @@ public:
     nodes_.insert(u);
     nodes_.insert(v);
     
-    roots_.insert(u);
+    if(in_nodes_.find(u) == in_nodes_.end()) {
+      roots_.insert(u);
+    }
     roots_.erase(v); 
   }
-
-  const auto & getNodeOutEdges(const NodeVariant & node) {return adj_list_[node];}
-  const auto & getNodeInEdges(const NodeVariant & node) {return in_nodes_[node];}
-  const std::unordered_set<NodeVariant>& getRoots() const { return roots_; }
-  const std::unordered_set<NodeVariant>& getNodes() const { return nodes_; }
 
   // DFS from a given start node
   void depthFirstTraverse(const NodeVariant& start, 
@@ -284,8 +354,9 @@ public:
     dfsHelper(start, func, visited, check_dependencies);
   }
 
+  template<typename Func>
   void depthFirstTraverseFromNodes(
-    const std::function<void(const NodeVariant&)>& func, 
+    Func && func, 
     bool check_dependencies = false,
     const std::vector<NodeVariant>& start_nodes = {}) const 
   {
@@ -294,23 +365,23 @@ public:
       ? std::vector<NodeVariant>(getRoots().begin(), getRoots().end()) : start_nodes;
 
     while (!stack.empty()) {
-        NodeVariant node = stack.back();
-        stack.pop_back();
+      NodeVariant node = stack.back();
+      stack.pop_back();
 
-        if (visited.count(node)) continue;
-        if (check_dependencies && !parentsVisited(node, visited)) {
-            continue; // skip nodes whose dependencies aren't met
-        }
-        visited.insert(node);
-        func(node);
+      if (visited.count(node)) continue;
+      if (check_dependencies && !parentsVisited(node, visited)) {
+        continue; // skip nodes whose dependencies aren't met
+      }
+      visited.insert(node);
+      func(node);
 
-        auto it = adj_list_.find(node);
-        if (it != adj_list_.end()) {
-            for (const auto& neighbor : it->second) {
-                if (!visited.count(neighbor))
-                    stack.push_back(neighbor);
-            }
+      auto it = adj_list_.find(node);
+      if (it != adj_list_.end()) {
+        for (const auto& neighbor : it->second) {
+          if (!visited.count(neighbor))
+              stack.push_back(neighbor);
         }
+      }
     }
   }
 
@@ -322,43 +393,91 @@ public:
     depthFirstTraverseFromNodes(func, check_dependencies, roots);
   }
 
-  template<typename Func>
-  void backtrackTraverse(const NodeVariant & start, Func && func) const
+  void backtrackTraverse(const NodeVariant & start, const std::function<void(const NodeVariant&)>& func) const
   {
     std::unordered_set<NodeVariant> visited;
-    backtrackTraverse(start, visited, std::forward<Func>(func));
+    backtrackTraverse(start, visited, func);
   }
 
-  template<typename Func>
   void backtrackTraverse(
-    const NodeVariant & node, std::unordered_set<NodeVariant> & visited, Func && func) const
+    const NodeVariant & node, std::unordered_set<NodeVariant> & visited, 
+    const std::function<void(const NodeVariant&)>& func) const
   {
-    // If already visited, skip this node to avoid infinite loops
-    if (visited.find(node) != visited.end()) {
-      return;
-    }
+    std::vector<NodeVariant> stack;
+    stack.push_back(node);
 
-    // Apply the provided function to the current node
-    std::forward<Func>(func)(node);
-    // visited.insert(node);
+    while (!stack.empty()) {
+      NodeVariant node = stack.back();
+      stack.pop_back();
 
-    // Find predecessors (in-nodes)
-    auto it_in_nodes = in_nodes_.find(node);
-    if (it_in_nodes == in_nodes_.end()) {
-      return;  // No predecessors to explore
-    }
+      if (visited.count(node)) continue;
+      visited.insert(node);
+      func(node);
 
-    // Recursively visit all predecessors
-    for (const auto & predecessor : it_in_nodes->second) {
-      if (visited.find(predecessor) == visited.end()) {
-        backtrackTraverse(predecessor, visited, std::forward<Func>(func));
+      auto it = in_nodes_.find(node);
+      if (it != in_nodes_.end()) {
+          for (const auto& neighbor : it->second) {
+              if (!visited.count(neighbor))
+                stack.push_back(neighbor);
+          }
       }
     }
   }
 
+  Graph getSubGraphFromNodes(const std::vector<NodeVariant> & nodes) const
+  {
+    Graph sub_graph;
+    std::unordered_set<NodeVariant> visited;
+    std::vector<NodeVariant> stack = nodes;
+    while (!stack.empty()) {
+      NodeVariant node = stack.back();
+      stack.pop_back();
+
+      if (visited.count(node)) continue;
+      visited.insert(node);
+
+      auto it = adj_list_.find(node);
+      if (it != adj_list_.end()) {
+        for (const auto& neighbor : it->second) {
+          sub_graph.addEdge(node, neighbor);
+          if (!visited.count(neighbor))
+          {
+            stack.push_back(neighbor);
+          }
+        }
+      } else {
+        sub_graph.addNode(node);
+      }
+    }
+    return sub_graph;
+  }
+
+  const std::unordered_set<NodeVariant>& getNodeOutEdges(const NodeVariant & node) {return adj_list_[node];}
+  const std::unordered_set<NodeVariant>& getNodeInEdges(const NodeVariant & node) {return in_nodes_[node];}
+  const std::unordered_set<NodeVariant>& getRoots() const { return roots_; }
+  const std::unordered_set<NodeVariant>& getNodes() const { return nodes_; }
+  
   auto getEdgeNumber() const {return edge_count_;}
   auto getNodeNumber() const {return nodes_.size();}
-  auto getRootNumber() const {return roots_.size();}
+  auto getRootNumber() const {return roots_.size();} 
+
+  auto getRootsNames()
+  {
+    std::vector<std::string> root_names;
+    for (const auto & root : roots_) {
+      root_names.push_back(root.getNodeName());
+    }
+    return root_names;
+  }
+
+  auto getNodesNames()
+  {
+    std::vector<std::string> nodes_names;
+    for (const auto & node : nodes_) {
+      nodes_names.push_back(node.getNodeName());
+    }
+    return nodes_names;
+  }
 
   void clear() {adj_list_.clear(); in_nodes_.clear(); nodes_.clear(); roots_.clear(); edge_count_ = 0;}
 
@@ -377,8 +496,33 @@ private:
   std::unordered_set<NodeVariant> roots_;
   size_t edge_count_;
 
-  void dfsHelper(const NodeVariant& node, 
+  void invertedDfsHelper(const NodeVariant& node, 
     const std::function<void(const NodeVariant&)>& func,
+    std::unordered_set<NodeVariant>& visited) const
+  {
+    if (visited.count(node)) 
+    {
+      return;  // Skip this node if already visited
+    }
+    
+    visited.insert(node);
+    func(node);
+
+    auto it = in_nodes_.find(node);
+    if (it != in_nodes_.end()) {
+      for (const auto& parent : it->second) {
+        if (!visited.count(parent)) {
+          visited.insert(parent);
+          invertedDfsHelper(parent, func, visited);
+        }
+      }
+    }
+
+  }
+
+  template<typename Func>
+  void dfsHelper(const NodeVariant& node, 
+    Func && func,
     std::unordered_set<NodeVariant>& visited,
     bool check_dependencies = false) const 
   {
@@ -387,7 +531,8 @@ private:
       return;  // Skip this node if dependencies are not satisfied
     }
     visited.insert(node);
-    func(node);
+    // func(node);
+    std::forward<Func>(func)(node);
     auto it = adj_list_.find(node);
     if (it != adj_list_.end()) {
       for (const auto& neighbor : it->second) {
@@ -424,7 +569,7 @@ public:
   auto & getDerivedPredicates() const {return derived_predicates_;}
 
   std::vector<plansys2::Derived> getDerivedPredicatesDepthFirst(
-    std::vector<plansys2_msgs::msg::Node> root_nodes_only = {}) const;
+    const std::vector<NodeVariant>& start_nodes = {}) const;
 
   std::deque<plansys2::Derived> getDerivedPredicatesFromActions(
     const std::vector<plansys2::ActionVariant> & actions) const;

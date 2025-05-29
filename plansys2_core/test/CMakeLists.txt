@@ -6,3 +6,9 @@ target_link_libraries(graph_test ${PROJECT_NAME})
 
 ament_add_gtest(state_test state_test.cpp)
 target_link_libraries(state_test ${PROJECT_NAME})
+
+ament_add_gtest(types_test types_test.cpp)
+target_link_libraries(types_test ${PROJECT_NAME})
+
+ament_add_gtest(node_variant_test node_variant_test.cpp)
+target_link_libraries(node_variant_test ${PROJECT_NAME})

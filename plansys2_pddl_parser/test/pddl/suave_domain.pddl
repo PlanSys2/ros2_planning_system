@@ -317,6 +317,15 @@
 (:derived (inferred-FunctionDesign ?x) 
 	(exists (?y)
  		(and
+			(inferred-FdBetterUtility ?x ?y)
+		)
+	)
+ )
+
+
+(:derived (inferred-FunctionDesign ?x) 
+	(exists (?y)
+ 		(and
 			(inferred-Fd_realisability ?x ?y)
 		)
 	)
@@ -361,14 +370,6 @@
 
 (:derived (inferred-FunctionDesign ?y) 
 	(exists (?x)
- 		(and
-			(inferred-FdBetterUtility ?x ?y)
-		)
-	)
- )
-
-(:derived (inferred-FunctionDesign ?x) 
-	(exists (?y)
  		(and
 			(inferred-FdBetterUtility ?x ?y)
 		)

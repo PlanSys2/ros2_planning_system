@@ -46,16 +46,21 @@ DerivedGraph::DerivedGraph(const std::unordered_set<plansys2::Derived> & derived
 }
 
 std::vector<plansys2::Derived> DerivedGraph::getDerivedPredicatesDepthFirst(
-  std::vector<plansys2_msgs::msg::Node> root_nodes_only) const
+  const std::vector<NodeVariant>& start_nodes) const
 {
   std::vector<plansys2::Derived> all_nodes;
-  depthFirstTraverseAll(
-    [&all_nodes](const plansys2::NodeVariant & node) {
-      if (node.isDerived()) {
-        all_nodes.push_back(node.getDerivedNode());
-      }
-    },
-    root_nodes_only.empty(), root_nodes_only);
+  auto traversal = [&all_nodes](const plansys2::NodeVariant & node) {
+    if (node.isDerived()) {
+      all_nodes.push_back(node.getDerivedNode());
+    }
+  };
+
+  if (start_nodes.empty()) {
+    this->depthFirstTraverseAll(traversal, true);
+  } else {
+    auto sub_graph = getSubGraphFromNodes(start_nodes);
+    sub_graph.depthFirstTraverseFromNodes(traversal, true, start_nodes);
+  }
   return all_nodes;
 }
 
@@ -100,7 +105,7 @@ void DerivedGraph::addEdgeFromPreconditions(
       case plansys2_msgs::msg::Node::PREDICATE: {
           bool is_derived_predicate = false;
           for (const auto & d : derived_predicates_) {
-            if (parser::pddl::checkNodeEquality(tree_node, d.predicate)) {
+            if (parser::pddl::checkNodeEquality(tree_node, d.predicate, false)) {
               addEdge(static_cast<const plansys2::Derived &>(d), node);
               is_derived_predicate = true;
             }
