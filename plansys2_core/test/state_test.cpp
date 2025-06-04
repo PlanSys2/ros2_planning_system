@@ -15,7 +15,7 @@
 #include "plansys2_core/State.hpp"
 
 #include "gtest/gtest.h"
-#include "plansys2_core/Graph.hpp"
+#include "plansys2_core/DerivedResolutionGraph.hpp"
 
 TEST(state_test, state)
 {
@@ -54,7 +54,7 @@ TEST(state_test, state)
   inferredAB.preconditions = parser::pddl::fromString("(and (inferredA ?p)(inferredB ?p))");
   derived_predicates.push_back(inferredAB);
 
-  plansys2::Graph graph(derived_predicates);
+  plansys2::DerivedResolutionGraph graph(derived_predicates);
 
   plansys2::Instance instanceA = parser::pddl::fromStringParam("(instanceA)");
   plansys2::Instance instanceB = parser::pddl::fromStringParam("(instanceB)");

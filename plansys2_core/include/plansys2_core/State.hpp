@@ -21,7 +21,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "plansys2_core/Graph.hpp"
+#include "plansys2_core/DerivedResolutionGraph.hpp"
 #include "plansys2_core/Types.hpp"
 #include "plansys2_msgs/msg/derived.hpp"
 #include "plansys2_msgs/msg/node.hpp"
@@ -58,7 +58,7 @@ public:
     const std::unordered_set<plansys2::Function> & functions,
     const std::unordered_set<plansys2::Predicate> & predicates,
     const std::unordered_set<plansys2::Predicate> & inferred_predicates,
-    const plansys2::Graph & derived_predicates);
+    const plansys2::DerivedResolutionGraph & derived_predicates);
 
   State(const plansys2_msgs::msg::State & state);  //NOLINT
 
@@ -228,7 +228,7 @@ public:
     return functions_.find(std::move(function));
   }
 
-  void setDerivedPredicates(const plansys2::Graph derived_predicates)
+  void setDerivedPredicates(const plansys2::DerivedResolutionGraph derived_predicates)
   {
     derived_predicates_ = derived_predicates;
   }
@@ -256,7 +256,7 @@ private:
   std::unordered_set<plansys2::Predicate> predicates_;
   std::unordered_set<plansys2::Predicate> inferred_predicates_;
   std::unordered_map<std::string, std::unordered_set<plansys2::Predicate>> inferred_predicates_map_;
-  plansys2::Graph derived_predicates_;
+  plansys2::DerivedResolutionGraph derived_predicates_;
 
   friend struct std::hash<State>;
 };

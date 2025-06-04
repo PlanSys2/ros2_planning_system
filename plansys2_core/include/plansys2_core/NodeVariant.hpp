@@ -16,6 +16,7 @@
 #define PLANSYS2_CORE__NODEVARIANT_HPP_
 
 #include "plansys2_core/Types.hpp"
+#include "plansys2_core/Action.hpp"
 
 namespace plansys2
 {

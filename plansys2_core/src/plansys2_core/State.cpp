@@ -37,7 +37,7 @@ State::State(
   const std::unordered_set<plansys2::Function> & functions,
   const std::unordered_set<plansys2::Predicate> & predicates,
   const std::unordered_set<plansys2::Predicate> & inferred_predicates,
-  const plansys2::Graph & derived_predicates)
+  const plansys2::DerivedResolutionGraph & derived_predicates)
 : instances_(instances),
   functions_(functions),
   predicates_(predicates),

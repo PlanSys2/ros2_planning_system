@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plansys2_core/Graph.hpp"
+#include "plansys2_core/DerivedResolutionGraph.hpp"
 #include <fstream>
 
 namespace plansys2
 {
 
-Graph::Graph(const std::vector<plansys2_msgs::msg::Derived> & derived_predicates)
+DerivedResolutionGraph::DerivedResolutionGraph(const std::vector<plansys2_msgs::msg::Derived> & derived_predicates)
 {
   derived_predicates_ =
     convertVectorToUnorderedSet<plansys2::Derived, plansys2_msgs::msg::Derived>(derived_predicates);
@@ -27,7 +27,7 @@ Graph::Graph(const std::vector<plansys2_msgs::msg::Derived> & derived_predicates
   }
 }
 
-Graph::Graph(const std::vector<plansys2::Derived> & derived_predicates)
+DerivedResolutionGraph::DerivedResolutionGraph(const std::vector<plansys2::Derived> & derived_predicates)
 {
   derived_predicates_ =
     convertVectorToUnorderedSet<plansys2::Derived, plansys2::Derived>(derived_predicates);
@@ -36,7 +36,7 @@ Graph::Graph(const std::vector<plansys2::Derived> & derived_predicates)
   }
 }
 
-Graph::Graph(const std::unordered_set<plansys2::Derived> & derived_predicates)
+DerivedResolutionGraph::DerivedResolutionGraph(const std::unordered_set<plansys2::Derived> & derived_predicates)
 : derived_predicates_(derived_predicates)
 {
   for (const auto & derived : derived_predicates) {
@@ -44,7 +44,7 @@ Graph::Graph(const std::unordered_set<plansys2::Derived> & derived_predicates)
   }
 }
 
-void Graph::printGraph() const
+void DerivedResolutionGraph::printGraph() const
 {
   std::cout << "Graph structure:\n";
   for (const auto & [node, edges] : adj_list_) {
@@ -56,7 +56,7 @@ void Graph::printGraph() const
   }
 }
 
-void Graph::printGraphLayers() const
+void DerivedResolutionGraph::printGraphLayers() const
 {
   // Step 1: Find root nodes (no incoming edges)
   std::vector<NodeVariant> roots;
@@ -109,7 +109,7 @@ void Graph::printGraphLayers() const
   std::cout << "====================\n";
 }
 
-void Graph::addNode(const NodeVariant & node)
+void DerivedResolutionGraph::addNode(const NodeVariant & node)
 {
   if (nodes_.insert(node).second) { // check if it was actually inserted
     node_ids_[node] = next_id_++;
@@ -119,7 +119,7 @@ void Graph::addNode(const NodeVariant & node)
   }
 }
 
-void Graph::addEdge(const NodeVariant & u, const NodeVariant & v)
+void DerivedResolutionGraph::addEdge(const NodeVariant & u, const NodeVariant & v)
 {
   if (u.isDerived()) {
     derived_predicates_.insert(u.getDerivedNode());
@@ -146,7 +146,7 @@ void Graph::addEdge(const NodeVariant & u, const NodeVariant & v)
   roots_.erase(v); 
 }
 
-void Graph::addEdgeFromPreconditions(
+void DerivedResolutionGraph::addEdgeFromPreconditions(
   const NodeVariant & node, const plansys2_msgs::msg::Tree & tree)
 {
   for (const auto & tree_node : tree.nodes) {
@@ -174,7 +174,7 @@ void Graph::addEdgeFromPreconditions(
 }
 
 // DFS from a given start node
-void Graph::depthFirstTraverse(const NodeVariant& start, 
+void DerivedResolutionGraph::depthFirstTraverse(const NodeVariant& start, 
   const std::function<void(const NodeVariant&)>& func,
   std::unordered_set<NodeVariant>& visited,
   bool check_dependencies) const 
@@ -182,7 +182,7 @@ void Graph::depthFirstTraverse(const NodeVariant& start,
   dfsHelper(start, func, visited, check_dependencies);
 }
 
-void Graph::depthFirstTraverse(const NodeVariant& start, 
+void DerivedResolutionGraph::depthFirstTraverse(const NodeVariant& start, 
   const std::function<void(const NodeVariant&)>& func,
   bool check_dependencies) const 
 {
@@ -190,7 +190,7 @@ void Graph::depthFirstTraverse(const NodeVariant& start,
   dfsHelper(start, func, visited, check_dependencies);
 }
 
-void Graph::depthFirstTraverseFromNodes(
+void DerivedResolutionGraph::depthFirstTraverseFromNodes(
   const std::function<void(const NodeVariant&)>& func, 
   bool check_dependencies,
   const std::vector<NodeVariant>& start_nodes, bool check_visited) const 
@@ -220,7 +220,7 @@ void Graph::depthFirstTraverseFromNodes(
   }
 }
 
-void Graph::depthFirstTraverseAll(
+void DerivedResolutionGraph::depthFirstTraverseAll(
   const std::function<void(const NodeVariant&)>& func,
   bool check_dependencies) const
 {
@@ -228,7 +228,7 @@ void Graph::depthFirstTraverseAll(
   depthFirstTraverseFromNodes(func, check_dependencies, roots);
 }
 
-std::vector<plansys2::Derived> Graph::getDerivedPredicatesDepthFirst(
+std::vector<plansys2::Derived> DerivedResolutionGraph::getDerivedPredicatesDepthFirst(
   const std::vector<NodeVariant>& start_nodes) const
 {
   std::vector<plansys2::Derived> all_nodes;
@@ -247,7 +247,7 @@ std::vector<plansys2::Derived> Graph::getDerivedPredicatesDepthFirst(
   return all_nodes;
 }
 
-std::deque<plansys2::Derived> Graph::getDerivedPredicatesFromActions(
+std::deque<plansys2::Derived> DerivedResolutionGraph::getDerivedPredicatesFromActions(
   const std::vector<plansys2::ActionVariant> & actions) const
 {
   std::deque<plansys2::Derived> derived_predicates;
@@ -263,13 +263,13 @@ std::deque<plansys2::Derived> Graph::getDerivedPredicatesFromActions(
   return derived_predicates;
 }
 
-void Graph::backtrackTraverse(const NodeVariant & start, const std::function<void(const NodeVariant&)>& func) const
+void DerivedResolutionGraph::backtrackTraverse(const NodeVariant & start, const std::function<void(const NodeVariant&)>& func) const
 {
   std::unordered_set<NodeVariant> visited;
   backtrackTraverse(start, visited, func);
 }
 
-void Graph::backtrackTraverse(
+void DerivedResolutionGraph::backtrackTraverse(
   const NodeVariant & node, std::unordered_set<NodeVariant> & visited, 
   const std::function<void(const NodeVariant&)>& func) const
 {
@@ -294,9 +294,9 @@ void Graph::backtrackTraverse(
   }
 }
 
-Graph Graph::getSubGraphFromNodes(const std::vector<NodeVariant> & nodes) const
+DerivedResolutionGraph DerivedResolutionGraph::getSubGraphFromNodes(const std::vector<NodeVariant> & nodes) const
 {
-  Graph sub_graph;
+  DerivedResolutionGraph sub_graph;
   std::unordered_set<NodeVariant> visited;
   std::vector<NodeVariant> stack = nodes;
   while (!stack.empty()) {
@@ -322,10 +322,10 @@ Graph Graph::getSubGraphFromNodes(const std::vector<NodeVariant> & nodes) const
   return sub_graph;
 }
 
-plansys2::Graph Graph::pruneGraphToActions(
+plansys2::DerivedResolutionGraph DerivedResolutionGraph::pruneGraphToActions(
   const std::vector<plansys2::ActionVariant> & actions)
 {
-  auto new_graph = Graph();
+  auto new_graph = DerivedResolutionGraph();
   auto func_new_graph = [this, &new_graph](const plansys2::NodeVariant & node) {
       for (const auto & parent_node : this->getNodeInEdges(node)) {
         new_graph.addEdge(parent_node, node);
@@ -339,14 +339,14 @@ plansys2::Graph Graph::pruneGraphToActions(
   return new_graph;
 }
 
-void Graph::appendActions(const std::vector<plansys2::ActionVariant> & actions)
+void DerivedResolutionGraph::appendActions(const std::vector<plansys2::ActionVariant> & actions)
 {
   for (const auto & action : actions) {
     appendAction(action);
   }
 }
 
-void Graph::appendAction(const plansys2::ActionVariant & action)
+void DerivedResolutionGraph::appendAction(const plansys2::ActionVariant & action)
 {
   addEdgeFromPreconditions(action, action.get_overall_requirements());
   if (action.is_durative_action()) {
@@ -355,7 +355,7 @@ void Graph::appendAction(const plansys2::ActionVariant & action)
   }
 }
 
-std::vector<std::vector<Derived>> Graph::computeSCCsTarjanDerivedPredicates() const
+std::vector<std::vector<Derived>> DerivedResolutionGraph::computeSCCsTarjanDerivedPredicates() const
 {
   std::vector<std::vector<Derived>> sccs;
   std::unordered_map<Derived, int> index;
@@ -372,7 +372,7 @@ std::vector<std::vector<Derived>> Graph::computeSCCsTarjanDerivedPredicates() co
   return sccs;
 }
 
-void Graph::strongConnect(
+void DerivedResolutionGraph::strongConnect(
   const Derived& node,
   int& current_index,
   std::unordered_map<Derived, int>& index,
@@ -415,7 +415,7 @@ void Graph::strongConnect(
   }
 }
 
-std::vector<std::string> Graph::getRootsNames() const
+std::vector<std::string> DerivedResolutionGraph::getRootsNames() const
 {
   std::vector<std::string> root_names;
   for (const auto & root : roots_) {
@@ -424,7 +424,7 @@ std::vector<std::string> Graph::getRootsNames() const
   return root_names;
 }
 
-std::vector<std::string> Graph::getNodesNames() const
+std::vector<std::string> DerivedResolutionGraph::getNodesNames() const
 {
   std::vector<std::string> nodes_names;
   for (const auto & node : nodes_) {
@@ -433,7 +433,7 @@ std::vector<std::string> Graph::getNodesNames() const
   return nodes_names;
 }
 
-std::vector<std::string> Graph::getPredicatesNames() const 
+std::vector<std::string> DerivedResolutionGraph::getPredicatesNames() const 
 {
   std::vector<std::string> predicates_names;
   for (const auto & node : nodes_)
@@ -446,7 +446,7 @@ std::vector<std::string> Graph::getPredicatesNames() const
   return predicates_names;
 }
 
-std::vector<plansys2::Predicate> Graph::getPredicates() const
+std::vector<plansys2::Predicate> DerivedResolutionGraph::getPredicates() const
 {
   std::vector<plansys2::Predicate> predicates_;
   for (const auto & node : nodes_)
@@ -459,7 +459,7 @@ std::vector<plansys2::Predicate> Graph::getPredicates() const
   return predicates_;
 }
 
-std::vector<std::string> Graph::getFunctionsNames() const
+std::vector<std::string> DerivedResolutionGraph::getFunctionsNames() const
 {
   std::vector<std::string> functions_;
   for (const auto & node : nodes_)
@@ -472,7 +472,7 @@ std::vector<std::string> Graph::getFunctionsNames() const
   return functions_;
 }
 
-std::vector<plansys2::Function> Graph::getFunctions() const
+std::vector<plansys2::Function> DerivedResolutionGraph::getFunctions() const
 {
   std::vector<plansys2::Function> functions_;
   for (const auto & node : nodes_)
@@ -485,7 +485,7 @@ std::vector<plansys2::Function> Graph::getFunctions() const
   return functions_;
 }
 
-std::vector<std::string> Graph::getDerivedPredicatesNames() const 
+std::vector<std::string> DerivedResolutionGraph::getDerivedPredicatesNames() const 
 {
   std::vector<std::string> predicates_names;
   for (const auto & node : nodes_)
@@ -498,7 +498,7 @@ std::vector<std::string> Graph::getDerivedPredicatesNames() const
   return predicates_names;
 }
 
-std::unordered_set<NodeVariant> Graph::getParentNodes(const NodeVariant& node) const 
+std::unordered_set<NodeVariant> DerivedResolutionGraph::getParentNodes(const NodeVariant& node) const 
 {
   auto it = parent_nodes_.find(node);
   if (it != parent_nodes_.end())
@@ -506,7 +506,7 @@ std::unordered_set<NodeVariant> Graph::getParentNodes(const NodeVariant& node) c
   return {};
 }
 
-std::vector<std::string> Graph::getParentNodesNames(const NodeVariant& node) const 
+std::vector<std::string> DerivedResolutionGraph::getParentNodesNames(const NodeVariant& node) const 
 {
   std::vector<std::string> parent_nodes_names;
   auto it = parent_nodes_.find(node);
@@ -520,7 +520,7 @@ std::vector<std::string> Graph::getParentNodesNames(const NodeVariant& node) con
   return parent_nodes_names;
 }
 
-void Graph::invertedDfsHelper(const NodeVariant& node, 
+void DerivedResolutionGraph::invertedDfsHelper(const NodeVariant& node, 
   const std::function<void(const NodeVariant&)>& func,
   std::unordered_set<NodeVariant>& visited) const
 {
@@ -544,7 +544,7 @@ void Graph::invertedDfsHelper(const NodeVariant& node,
 
 }
 
-void Graph::dfsHelper(const NodeVariant& node, 
+void DerivedResolutionGraph::dfsHelper(const NodeVariant& node, 
   const std::function<void(const NodeVariant&)>& func,
   std::unordered_set<NodeVariant>& visited,
   bool check_dependencies) const 
@@ -563,7 +563,7 @@ void Graph::dfsHelper(const NodeVariant& node,
   }
 }
 
-bool Graph::parentsVisited(const NodeVariant& node, const std::unordered_set<NodeVariant>& visited) const 
+bool DerivedResolutionGraph::parentsVisited(const NodeVariant& node, const std::unordered_set<NodeVariant>& visited) const 
 {
   auto it = parent_nodes_.find(node);
   if (it == parent_nodes_.end()) return true; // No parents
@@ -573,7 +573,7 @@ bool Graph::parentsVisited(const NodeVariant& node, const std::unordered_set<Nod
   return true;
 }
 
-void Graph::exportToDOT(const std::string& filename) const {
+void DerivedResolutionGraph::exportToDOT(const std::string& filename) const {
   std::ofstream file(filename);
   if (!file.is_open()) return;
 

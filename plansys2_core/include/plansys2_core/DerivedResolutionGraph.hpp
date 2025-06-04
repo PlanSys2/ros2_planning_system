@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef PLANSYS2_CORE__GRAPH_HPP_
-#define PLANSYS2_CORE__GRAPH_HPP_
+#ifndef PLANSYS2_CORE__DERIVED_RESOLUTION_GRAPH_HPP_
+#define PLANSYS2_CORE__DERIVED_RESOLUTION_GRAPH_HPP_
 
 #include <deque>
 #include <map>
@@ -48,16 +48,16 @@ namespace plansys2
 //   std::unordered_map<NodeVariant, std::unordered_map<std::string, std::unordered_set<NodeVariant>>> data_;
 // };
 
-class Graph
+class DerivedResolutionGraph
 {
 public:
-  Graph() {};
+  DerivedResolutionGraph() {};
 
-  Graph(const std::vector<plansys2_msgs::msg::Derived> & derived_predicates);  // NOLINT
+  DerivedResolutionGraph(const std::vector<plansys2_msgs::msg::Derived> & derived_predicates);  // NOLINT
 
-  Graph(const std::vector<plansys2::Derived> & derived_predicates);  // NOLINT
+  DerivedResolutionGraph(const std::vector<plansys2::Derived> & derived_predicates);  // NOLINT
 
-  Graph(const std::unordered_set<plansys2::Derived> & derived_predicates);  // NOLINT
+  DerivedResolutionGraph(const std::unordered_set<plansys2::Derived> & derived_predicates);  // NOLINT
 
   void printGraph() const;
 
@@ -100,9 +100,9 @@ public:
     const NodeVariant & node, std::unordered_set<NodeVariant> & visited, 
     const std::function<void(const NodeVariant&)>& func) const;
 
-  Graph getSubGraphFromNodes(const std::vector<NodeVariant> & nodes) const;
+  DerivedResolutionGraph getSubGraphFromNodes(const std::vector<NodeVariant> & nodes) const;
 
-  plansys2::Graph pruneGraphToActions(const std::vector<plansys2::ActionVariant> & actions);
+  plansys2::DerivedResolutionGraph pruneGraphToActions(const std::vector<plansys2::ActionVariant> & actions);
 
   void appendActions(const std::vector<plansys2::ActionVariant> & actions);
   void appendAction(const plansys2::ActionVariant & action);
@@ -146,19 +146,17 @@ public:
 
   void clear() {adj_list_.clear(); parent_nodes_.clear(); nodes_.clear(); roots_.clear(); edge_count_ = 0;}
 
-  bool operator==(const Graph & graph) const 
+  bool operator==(const DerivedResolutionGraph & graph) const 
   {
     return this->adj_list_ == graph.adj_list_ && this->parent_nodes_ == graph.parent_nodes_ &&
       this->nodes_ == graph.nodes_ && this->edge_count_ == graph.edge_count_;
   }
 
   using NodeEdgesMap = std::unordered_map<NodeVariant, std::unordered_set<NodeVariant>>;
-  // using ParentNodesEdgesMap = std::unordered_map<NodeVariant, std::unordered_map<std::string, std::unordered_set<NodeVariant>>>;
 
 private:
   NodeEdgesMap adj_list_;
   NodeEdgesMap parent_nodes_;
-  // ParentNodesEdgesMap parent_nodes_2;
   std::unordered_set<NodeVariant> roots_;
   std::unordered_set<NodeVariant> nodes_;
   std::unordered_map<NodeVariant, size_t> node_ids_;
@@ -180,7 +178,7 @@ private:
 
   bool parentsVisited(const NodeVariant& node, const std::unordered_set<NodeVariant>& visited) const;
 
-  friend struct std::hash<Graph>;
+  friend struct std::hash<DerivedResolutionGraph>;
 };
 
 }  // namespace plansys2
@@ -188,9 +186,9 @@ private:
 namespace std
 {
 template<>
-struct hash<plansys2::Graph>
+struct hash<plansys2::DerivedResolutionGraph>
 {
-  std::size_t operator()(const plansys2::Graph & graph) const noexcept
+  std::size_t operator()(const plansys2::DerivedResolutionGraph & graph) const noexcept
   {
     std::size_t seed = 0;
     for (const auto & [key, neighbors] : graph.adj_list_) {
@@ -204,4 +202,4 @@ struct hash<plansys2::Graph>
 };
 }  // namespace std
 
-#endif  // PLANSYS2_CORE__GRAPH_HPP_
+#endif  // PLANSYS2_CORE__DERIVED_RESOLUTION_GRAPH_HPP_

@@ -17,7 +17,7 @@
 #include <fstream>
 
 #include "gtest/gtest.h"
-#include "plansys2_core/Graph.hpp"
+#include "plansys2_core/DerivedResolutionGraph.hpp"
 // #include "plansys2_core/DerivedGraph.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
 
@@ -62,7 +62,7 @@ TEST_F(GraphExportToDOTTest, export_dot_file)
   inferredAB.predicate = parser::pddl::fromStringPredicate("(inferredAB ?a ?b)");
   inferredAB.preconditions = parser::pddl::fromString("(and (inferredA ?a)(inferredB ?b))");
 
-  plansys2::Graph graph;
+  plansys2::DerivedResolutionGraph graph;
   graph.addEdge(predA, inferredA);
   graph.addEdge(predA, inferredAA2);
 
@@ -111,7 +111,7 @@ TEST(graph_test, depth_first_traverse)
   inferredAB.predicate = parser::pddl::fromStringPredicate("(inferredAB ?a ?b)");
   inferredAB.preconditions = parser::pddl::fromString("(and (inferredA ?a)(inferredB ?b))");
 
-  plansys2::Graph graph;
+  plansys2::DerivedResolutionGraph graph;
   graph.addEdge(predA, inferredA);
   graph.addEdge(predA, inferredAA2);
 
@@ -245,8 +245,8 @@ TEST(graph_test, depth_first_traverse)
   plansys2::Predicate nodeK = parser::pddl::fromStringPredicate("(K)");
   plansys2::Predicate nodeL = parser::pddl::fromStringPredicate("(L)");
 
-  // Graph
-  plansys2::Graph graph2;
+  // DerivedResolutionGraph
+  plansys2::DerivedResolutionGraph graph2;
 
   // Main component
   graph2.addEdge(nodeA, nodeB);
@@ -310,7 +310,7 @@ TEST(graph_test, single_node)
 {
   plansys2::Predicate nodeA = parser::pddl::fromStringPredicate("(A)");
 
-  plansys2::Graph graph;
+  plansys2::DerivedResolutionGraph graph;
   graph.addEdge(nodeA, nodeA); // Self-loop
 
   std::vector<std::string> visited;
@@ -335,7 +335,7 @@ TEST(graph_test, dfs_handles_cycle)
   plansys2::Predicate nodeB = parser::pddl::fromStringPredicate("(B)");
   plansys2::Predicate nodeC = parser::pddl::fromStringPredicate("(C)");
 
-  plansys2::Graph graph;
+  plansys2::DerivedResolutionGraph graph;
   graph.addEdge(nodeA, nodeB);
   graph.addEdge(nodeB, nodeC);
   graph.addEdge(nodeC, nodeA); // Creates a cycle
@@ -354,7 +354,7 @@ TEST(graph_test, dfs_handles_cycle)
 
 TEST(graph_test, empty_graph)
 {
-  plansys2::Graph graph;
+  plansys2::DerivedResolutionGraph graph;
 
   // No nodes or edges should exist
   ASSERT_EQ(graph.getNodeNumber(), 0);
@@ -399,7 +399,7 @@ TEST(graph_test, back_traverse)
   inferredAB.predicate = parser::pddl::fromStringPredicate("(inferredAB ?a ?b)");
   inferredAB.preconditions = parser::pddl::fromString("(and (inferredA ?a)(inferredB ?b))");
 
-  plansys2::Graph graph;
+  plansys2::DerivedResolutionGraph graph;
   graph.addEdge(predA, inferredA);
   graph.addEdge(predA, inferredAA2);
 
@@ -478,8 +478,8 @@ TEST(graph_test, back_traverse)
   plansys2::Predicate nodeK = parser::pddl::fromStringPredicate("(K)");
   plansys2::Predicate nodeL = parser::pddl::fromStringPredicate("(L)");
 
-  // Graph
-  plansys2::Graph graph2;
+  // DerivedResolutionGraph
+  plansys2::DerivedResolutionGraph graph2;
 
   // Main component
   graph2.addEdge(nodeA, nodeB);
@@ -557,7 +557,7 @@ TEST(graph_test, get_subgraph)
   inferredAB.predicate = parser::pddl::fromStringPredicate("(inferredAB ?a ?b)");
   inferredAB.preconditions = parser::pddl::fromString("(and (inferredA ?a)(inferredB ?b))");
 
-  plansys2::Graph graph;
+  plansys2::DerivedResolutionGraph graph;
   graph.addEdge(predA, inferredA);
   graph.addEdge(predA, inferredAA2);
 
@@ -674,7 +674,7 @@ TEST(graph_test, graph_derived_constructor)
   inferredAB.preconditions = parser::pddl::fromString("(and (inferredA ?a)(inferredB ?b))");
   derived_predicates.push_back(inferredAB);
 
-  plansys2::Graph graph(derived_predicates);
+  plansys2::DerivedResolutionGraph graph(derived_predicates);
 
   auto nodes = graph.getNodesNames();
   auto roots = graph.getRoots();
@@ -768,7 +768,7 @@ TEST(graph_test, graph_derived_constructor)
     "(inferredExists ?a)) ))");
   derived_predicates.push_back(inferred_exists_2);
 
-  plansys2::Graph graph_2(derived_predicates);
+  plansys2::DerivedResolutionGraph graph_2(derived_predicates);
   predA_children.clear();
   graph_2.depthFirstTraverse(predA, func);
 
@@ -853,7 +853,7 @@ TEST(graph_test, graph_derived_action)
   inferredAB.preconditions = parser::pddl::fromString("(and (inferredA ?a)(inferredB ?b))");
   derived_predicates.push_back(inferredAB);
 
-  plansys2::Graph graph(derived_predicates);
+  plansys2::DerivedResolutionGraph graph(derived_predicates);
 
   plansys2::Action actionA;
   actionA.name = "actionA";
@@ -1131,7 +1131,7 @@ TEST(graph_test, get_scc)
   der9.preconditions = parser::pddl::fromString("(and (der4 ?x) (der6 ?x))");
   derived_predicates.push_back(der9);
 
-  plansys2::Graph graph(derived_predicates);
+  plansys2::DerivedResolutionGraph graph(derived_predicates);
 
   auto sccs = graph.computeSCCsTarjanDerivedPredicates();
 
@@ -1457,7 +1457,7 @@ TEST(graph_test, graph_derived_action_suave)
   inferred_solvesf_direct.preconditions = parser::pddl::fromString("(and (solvesF ?x ?y))");
   derived_predicates.push_back(inferred_solvesf_direct);
 
-  plansys2::Graph graph(derived_predicates);
+  plansys2::DerivedResolutionGraph graph(derived_predicates);
   
   ASSERT_EQ(graph.getNodeNumber(), 75);
   ASSERT_EQ(graph.getRootNumber(), 21); 

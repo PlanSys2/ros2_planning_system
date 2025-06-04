@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "plansys2_core/Graph.hpp"
+#include "plansys2_core/NodeVariant.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
 
 
