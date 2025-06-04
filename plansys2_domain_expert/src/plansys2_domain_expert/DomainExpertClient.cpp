@@ -330,10 +330,10 @@ DomainExpertClient::getDerivedPredicates()
   return future_result.get()->predicates;
 }
 
-plansys2::DerivedGraph
-DomainExpertClient::getDerivedPredicatesGraph()
+plansys2::DerivedResolutionGraph
+DomainExpertClient::getDerivedResolutionGraph()
 {
-  plansys2::DerivedGraph ret;
+  plansys2::DerivedResolutionGraph ret;
 
   while (!get_derived_predicates_client_->wait_for_service(std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
@@ -355,7 +355,7 @@ DomainExpertClient::getDerivedPredicatesGraph()
     return ret;
   }
 
-  return plansys2::DerivedGraph(future_result.get()->predicates);
+  return plansys2::DerivedResolutionGraph(future_result.get()->predicates);
 }
 
 std::vector<plansys2_msgs::msg::Derived>

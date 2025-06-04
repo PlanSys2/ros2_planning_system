@@ -202,10 +202,10 @@ DomainExpert::getDerivedPredicates()
   return ret;
 }
 
-plansys2::DerivedGraph
-DomainExpert::getDerivedPredicatesGraph()
+plansys2::DerivedResolutionGraph
+DomainExpert::getDerivedResolutionGraph()
 {
-  return plansys2::DerivedGraph(getDerivedPredicates());
+  return plansys2::DerivedResolutionGraph(getDerivedPredicates());
 }
 
 std::vector<plansys2_msgs::msg::Derived>

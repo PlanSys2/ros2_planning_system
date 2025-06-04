@@ -107,7 +107,7 @@ public:
    */
   std::vector<plansys2_msgs::msg::Derived> getDerivedPredicates();
 
-  plansys2::DerivedGraph getDerivedPredicatesGraph();
+  plansys2::DerivedResolutionGraph getDerivedResolutionGraph();
 
   /// Get the details of a derived predicate existing in the domain.
   /**
