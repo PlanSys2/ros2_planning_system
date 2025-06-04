@@ -25,7 +25,6 @@ TEST(state_test, state)
   std::vector<plansys2_msgs::msg::Derived> derived_predicates;
   plansys2_msgs::msg::Derived inferredA;
   inferredA.predicate = parser::pddl::fromStringPredicate("(inferredA ?a)");
-  inferredA.predicate.parameters[0].type = "typea";
   inferredA.preconditions = parser::pddl::fromString("(and (predicateA ?a))");
   derived_predicates.push_back(inferredA);
 
@@ -176,6 +175,91 @@ TEST(state_test, state)
   state_3.ungroundDerivedPredicate(inferredAB);
   ASSERT_EQ(state_3.getInferredPredicatesSize(), 12);
   ASSERT_EQ(state_3.getNumberInferredFromDerived(inferredAB), 0);
+}
+
+TEST(state_test, get_derived_predicates_sccs)
+{
+  std::vector<plansys2::Derived> derived_predicates;
+
+  plansys2::Derived der1;
+  der1.predicate = parser::pddl::fromStringPredicate("(der1 ?x)");
+  der1.preconditions = parser::pddl::fromString("(and (pred1 ?x))");
+  derived_predicates.push_back(der1);
+
+  plansys2::Derived der2;
+  der2.predicate = parser::pddl::fromStringPredicate("(der2 ?x)");
+  der2.preconditions = parser::pddl::fromString("(or (pred2 ?x) (der3 ?x))");
+  derived_predicates.push_back(der2);
+
+  plansys2::Derived der3;
+  der3.predicate = parser::pddl::fromStringPredicate("(der3 ?x)");
+  der3.preconditions = parser::pddl::fromString("(or (der4 ?x) (pred3 ?x))");
+  derived_predicates.push_back(der3);
+
+  plansys2::Derived der4;
+  der4.predicate = parser::pddl::fromStringPredicate("(der4 ?x)");
+  der4.preconditions = parser::pddl::fromString("(or (der2 ?x) (pred4 ?x))");
+  derived_predicates.push_back(der4);
+
+  plansys2::Derived der5;
+  der5.predicate = parser::pddl::fromStringPredicate("(der5 ?x)");
+  der5.preconditions = parser::pddl::fromString("(or (der6 ?x) (pred2 ?x))");
+  derived_predicates.push_back(der5);
+
+  plansys2::Derived der6;
+  der6.predicate = parser::pddl::fromStringPredicate("(der6 ?x)");
+  der6.preconditions = parser::pddl::fromString("(exists (?y) (and (der5 ?y)))");
+  derived_predicates.push_back(der6);
+
+  plansys2::Derived der7;
+  der7.predicate = parser::pddl::fromStringPredicate("(der7 ?x)");
+  der7.preconditions = parser::pddl::fromString("(and (der2 ?x) (pred5 ?x))");
+  derived_predicates.push_back(der7);
+
+  plansys2::Derived der8;
+  der8.predicate = parser::pddl::fromStringPredicate("(der8 ?x)");
+  der8.preconditions = parser::pddl::fromString("(and (pred3 ?x))");
+  derived_predicates.push_back(der8);
+
+  plansys2::Derived der9;
+  der9.predicate = parser::pddl::fromStringPredicate("(der9 ?x)");
+  der9.preconditions = parser::pddl::fromString("(and (der4 ?x) (der6 ?x))");
+  derived_predicates.push_back(der9);
+
+  plansys2::DerivedResolutionGraph graph(derived_predicates);
+  plansys2::State state;
+  state.setDerivedPredicates(graph);
+
+  auto sccs_full = state.getDerivedPredicatesSCCs();
+
+  ASSERT_EQ(sccs_full.size(), 6);
+  
+  std::vector<plansys2::Derived> target = {der4, der2, der3};
+  auto it = std::find(sccs_full.begin(), sccs_full.end(), target);
+  ASSERT_TRUE(it != sccs_full.end());
+
+  target = {der6, der5};
+  it = std::find(sccs_full.begin(), sccs_full.end(), target);
+  ASSERT_TRUE(it != sccs_full.end());
+
+  target = {der1};
+  it = std::find(sccs_full.begin(), sccs_full.end(), target);
+  ASSERT_TRUE(it != sccs_full.end());
+
+  plansys2::Predicate pred2 = parser::pddl::fromStringPredicate("(pred2 ?x)");;
+  auto sccs_pred2 = state.getDerivedPredicatesSCCs({pred2});
+
+  target = {der4, der2, der3};
+  it = std::find(sccs_pred2.begin(), sccs_pred2.end(), target);
+  ASSERT_TRUE(it != sccs_pred2.end());
+
+  target = {der5, der6};
+  it = std::find(sccs_pred2.begin(), sccs_pred2.end(), target);
+  ASSERT_TRUE(it != sccs_pred2.end());
+
+  target = {der1};
+  it = std::find(sccs_pred2.begin(), sccs_pred2.end(), target);
+  ASSERT_TRUE(it == sccs_pred2.end());
 }
 
 int main(int argc, char ** argv)

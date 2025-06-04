@@ -73,20 +73,71 @@ public:
   }
 
   auto & getDerivedPredicates() const {return derived_predicates_;}
+  
+  /**
+   * @brief Retrieves the strongly connected components (SCCs) of derived predicates.
+   *
+   * This method computes the SCCs of the derived predicates using Tarjan's algorithm,
+   * reverses the order of the resulting SCCs, and returns them as a vector of vectors
+   * in topological order.
+   *
+   * @return A vector of vectors, where each inner vector contains derived predicates
+   *         that form a strongly connected component.
+   */
+  std::vector<std::vector<Derived>> getDerivedPredicatesSCCs() const
+  {
+    auto sccs = derived_predicates_.computeSCCsTarjanDerivedPredicates();
+    std::reverse(sccs.begin(), sccs.end());
+    return sccs;
+  }
+
+  /**
+   * @brief Computes the strongly connected components (SCCs) of derived predicates.
+   *
+   * This function returns the SCCs of the derived predicates graph using Tarjan's algorithm.
+   * If no root nodes are provided, it computes the SCCs for the entire derived predicates graph.
+   * If a set of root nodes is provided, it computes the SCCs for the subgraph induced by those nodes.
+   * The resulting SCCs are returned in reverse topological order.
+   *
+   * @param root_nodes A vector of root nodes to define the subgraph for SCC computation.
+   *                   If empty, the entire graph is considered.
+   * @return std::vector<std::vector<Derived>> A vector of SCCs, each represented as a vector of Derived predicates.
+   */
+  std::vector<std::vector<Derived>> getDerivedPredicatesSCCs(
+    const std::vector<plansys2_msgs::msg::Node>& root_nodes) const
+  {
+    if(root_nodes.empty())
+    {
+      auto sccs = derived_predicates_.computeSCCsTarjanDerivedPredicates();
+      std::reverse(sccs.begin(), sccs.end());
+      return sccs;
+    }
+
+    std::vector<plansys2::NodeVariant> root_nodes_variant;
+    root_nodes_variant.reserve(root_nodes.size());
+    for (const auto& n : root_nodes) {
+      root_nodes_variant.push_back(nodeMsgToVariant(n));
+    }
+    
+    auto sub_graph = derived_predicates_.getSubGraphFromNodes(root_nodes_variant);
+    auto sccs = sub_graph.computeSCCsTarjanDerivedPredicates();
+    std::reverse(sccs.begin(), sccs.end());
+    return sccs;
+  }
+
   std::vector<plansys2::Derived> getDerivedPredicatesDepthFirst() const
   {
     std::vector<plansys2_msgs::msg::Node> root_nodes;
     return derived_predicates_.getDerivedPredicatesDepthFirst();
   }
+  
   std::vector<plansys2::Derived> getDerivedPredicatesDepthFirst(
     const std::vector<plansys2_msgs::msg::Node>& root_nodes) const
   {
     std::vector<plansys2::NodeVariant> root_nodes_variant;
     for (const auto& n : root_nodes) {
-        // root_nodes_variant.push_back(plansys2::NodeVariant(n)); // or plansys2::NodeVariant(n) if explicit
       root_nodes_variant.push_back(nodeMsgToVariant(n));
     }
-    // state.getDerivedPredicatesDepthFirst(root_nodes_variant);
     return derived_predicates_.getDerivedPredicatesDepthFirst(root_nodes_variant);
   }
 
