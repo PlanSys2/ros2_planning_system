@@ -54,7 +54,7 @@ TEST(state_test, state)
   inferredAB.preconditions = parser::pddl::fromString("(and (inferredA ?p)(inferredB ?p))");
   derived_predicates.push_back(inferredAB);
 
-  plansys2::DerivedGraph graph(derived_predicates);
+  plansys2::Graph graph(derived_predicates);
 
   plansys2::Instance instanceA = parser::pddl::fromStringParam("(instanceA)");
   plansys2::Instance instanceB = parser::pddl::fromStringParam("(instanceB)");

@@ -58,7 +58,7 @@ public:
     const std::unordered_set<plansys2::Function> & functions,
     const std::unordered_set<plansys2::Predicate> & predicates,
     const std::unordered_set<plansys2::Predicate> & inferred_predicates,
-    const plansys2::DerivedGraph & derived_predicates);
+    const plansys2::Graph & derived_predicates);
 
   State(const plansys2_msgs::msg::State & state);  //NOLINT
 
@@ -73,15 +73,21 @@ public:
   }
 
   auto & getDerivedPredicates() const {return derived_predicates_;}
-  auto getDerivedPredicatesDepthFirst() const
+  std::vector<plansys2::Derived> getDerivedPredicatesDepthFirst() const
   {
     std::vector<plansys2_msgs::msg::Node> root_nodes;
     return derived_predicates_.getDerivedPredicatesDepthFirst();
   }
-  auto getDerivedPredicatesDepthFirst(
-    const std::vector<NodeVariant>& root_nodes) const
+  std::vector<plansys2::Derived> getDerivedPredicatesDepthFirst(
+    const std::vector<plansys2_msgs::msg::Node>& root_nodes) const
   {
-    return derived_predicates_.getDerivedPredicatesDepthFirst(root_nodes);
+    std::vector<plansys2::NodeVariant> root_nodes_variant;
+    for (const auto& n : root_nodes) {
+        // root_nodes_variant.push_back(plansys2::NodeVariant(n)); // or plansys2::NodeVariant(n) if explicit
+      root_nodes_variant.push_back(nodeMsgToVariant(n));
+    }
+    // state.getDerivedPredicatesDepthFirst(root_nodes_variant);
+    return derived_predicates_.getDerivedPredicatesDepthFirst(root_nodes_variant);
   }
 
   auto getInstancesSize() const {return instances_.size();}
@@ -222,7 +228,7 @@ public:
     return functions_.find(std::move(function));
   }
 
-  void setDerivedPredicates(const plansys2::DerivedGraph derived_predicates)
+  void setDerivedPredicates(const plansys2::Graph derived_predicates)
   {
     derived_predicates_ = derived_predicates;
   }
@@ -250,7 +256,7 @@ private:
   std::unordered_set<plansys2::Predicate> predicates_;
   std::unordered_set<plansys2::Predicate> inferred_predicates_;
   std::unordered_map<std::string, std::unordered_set<plansys2::Predicate>> inferred_predicates_map_;
-  plansys2::DerivedGraph derived_predicates_;
+  plansys2::Graph derived_predicates_;
 
   friend struct std::hash<State>;
 };

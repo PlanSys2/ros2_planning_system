@@ -14,10 +14,73 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
 
 #include "gtest/gtest.h"
 #include "plansys2_core/Graph.hpp"
+// #include "plansys2_core/DerivedGraph.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
+
+class GraphExportToDOTTest : public ::testing::Test {
+  protected:
+      void SetUp() override {
+          // Clean up any previous test file
+          std::remove(filename.c_str());
+      }
+      // void TearDown() override {
+      //     std::remove(filename.c_str());
+      // }
+      std::string filename = "/tmp/test_graph.dot";
+  };
+
+TEST_F(GraphExportToDOTTest, export_dot_file)
+{
+  plansys2::Predicate predA = parser::pddl::fromStringPredicate("(predicateA ?a)");
+  plansys2::Predicate predB = parser::pddl::fromStringPredicate("(predicateB ?b)");
+
+  plansys2::Derived inferredA;
+  inferredA.predicate = parser::pddl::fromStringPredicate("(inferredA ?a)");
+  inferredA.preconditions = parser::pddl::fromString("(and (predicateA ?a))");
+
+  plansys2::Derived inferredB;
+  inferredB.predicate = parser::pddl::fromStringPredicate("(inferredB ?b)");
+  inferredB.preconditions = parser::pddl::fromString("(and (predicateB ?b))");
+
+  plansys2::Derived inferredAA;
+  inferredAA.predicate = parser::pddl::fromStringPredicate("(inferredAA ?a)");
+  inferredAA.preconditions = parser::pddl::fromString("(and (inferredA ?a))");
+
+  plansys2::Derived inferredAA2;
+  inferredAA2.predicate = parser::pddl::fromStringPredicate("(inferredAA ?a)");
+  inferredAA2.preconditions = parser::pddl::fromString("(and (predicate ?a))");
+
+  plansys2::Derived inferredBB;
+  inferredBB.predicate = parser::pddl::fromStringPredicate("(inferredBB ?b)");
+  inferredBB.preconditions = parser::pddl::fromString("(and (inferredB ?b))");
+
+  plansys2::Derived inferredAB;
+  inferredAB.predicate = parser::pddl::fromStringPredicate("(inferredAB ?a ?b)");
+  inferredAB.preconditions = parser::pddl::fromString("(and (inferredA ?a)(inferredB ?b))");
+
+  plansys2::Graph graph;
+  graph.addEdge(predA, inferredA);
+  graph.addEdge(predA, inferredAA2);
+
+  graph.addEdge(inferredA, inferredAA);
+  graph.addEdge(inferredA, inferredAB);
+  
+  graph.addEdge(predB, inferredB);
+  graph.addEdge(inferredB, inferredBB);
+  graph.addEdge(inferredB, inferredAB);
+
+  ASSERT_EQ(graph.getEdgeNumber(), 7);
+  ASSERT_EQ(graph.getNodeNumber(), 8);
+  ASSERT_EQ(graph.getRootNumber(), 2);
+
+  graph.exportToDOT(filename);
+  std::ifstream file(filename);
+  ASSERT_TRUE(file.is_open());
+}
 
 TEST(graph_test, depth_first_traverse)
 {
@@ -611,7 +674,7 @@ TEST(graph_test, graph_derived_constructor)
   inferredAB.preconditions = parser::pddl::fromString("(and (inferredA ?a)(inferredB ?b))");
   derived_predicates.push_back(inferredAB);
 
-  plansys2::DerivedGraph graph(derived_predicates);
+  plansys2::Graph graph(derived_predicates);
 
   auto nodes = graph.getNodesNames();
   auto roots = graph.getRoots();
@@ -705,7 +768,7 @@ TEST(graph_test, graph_derived_constructor)
     "(inferredExists ?a)) ))");
   derived_predicates.push_back(inferred_exists_2);
 
-  plansys2::DerivedGraph graph_2(derived_predicates);
+  plansys2::Graph graph_2(derived_predicates);
   predA_children.clear();
   graph_2.depthFirstTraverse(predA, func);
 
@@ -727,11 +790,11 @@ TEST(graph_test, graph_derived_constructor)
 
   nodes_root_predA = graph_2.getDerivedPredicatesDepthFirst({predA});
   ASSERT_EQ(nodes_root_predA.size(), 6);
-  ASSERT_EQ(nodes_root_predA[0].predicate.name, "inferredExists");
-  ASSERT_EQ(nodes_root_predA[1].predicate.name, "inferredExists2");
-  ASSERT_EQ(nodes_root_predA[2].predicate.name, "inferredAA");
-  ASSERT_EQ(nodes_root_predA[3].predicate.name, "inferredA");
-  ASSERT_EQ(nodes_root_predA[4].predicate.name, "inferredAB");
+  ASSERT_EQ(nodes_root_predA[0].predicate.name, "inferredAA");
+  ASSERT_EQ(nodes_root_predA[1].predicate.name, "inferredA");
+  ASSERT_EQ(nodes_root_predA[2].predicate.name, "inferredAB");
+  ASSERT_EQ(nodes_root_predA[3].predicate.name, "inferredExists");
+  ASSERT_EQ(nodes_root_predA[4].predicate.name, "inferredExists2");
   ASSERT_EQ(nodes_root_predA[5].predicate.name, "inferredAA");
 
   std::vector<std::pair<std::string, std::string>> inferredB_children;
@@ -744,9 +807,9 @@ TEST(graph_test, graph_derived_constructor)
   ASSERT_EQ(inferredB_children.size(), 5);
   ASSERT_EQ(inferredB_children[0].first, "inferredB");
   ASSERT_EQ(inferredB_children[0].second, "derived");
-  ASSERT_EQ(inferredB_children[1].first, "inferredExists2");
+  ASSERT_EQ(inferredB_children[1].first, "inferredExists");
   ASSERT_EQ(inferredB_children[1].second, "derived");
-  ASSERT_EQ(inferredB_children[2].first, "inferredExists");
+  ASSERT_EQ(inferredB_children[2].first, "inferredExists2");
   ASSERT_EQ(inferredB_children[2].second, "derived");
   ASSERT_EQ(inferredB_children[3].first, "inferredAB");
   ASSERT_EQ(inferredB_children[3].second, "derived");
@@ -754,738 +817,904 @@ TEST(graph_test, graph_derived_constructor)
   ASSERT_EQ(inferredB_children[4].second, "derived");
 }
 
-// TEST(graph_test, graph_derived_action)
-// {
-//   plansys2::Predicate predA = parser::pddl::fromStringPredicate("(predicateA ?a)");
-//   plansys2::Predicate predB = parser::pddl::fromStringPredicate("(predicateB ?b)");
+TEST(graph_test, graph_derived_action)
+{
+  plansys2::Predicate predA = parser::pddl::fromStringPredicate("(predicateA ?a)");
+  plansys2::Predicate predB = parser::pddl::fromStringPredicate("(predicateB ?b)");
 
-//   std::vector<plansys2::Derived> derived_predicates;
-//   plansys2::Derived inferredA;
-//   inferredA.predicate = parser::pddl::fromStringPredicate("(inferredA ?a)");
-//   inferredA.predicate.parameters[0].type = "typea";
-//   inferredA.preconditions = parser::pddl::fromString("(and (predicateA ?a))");
-//   derived_predicates.push_back(inferredA);
+  std::vector<plansys2::Derived> derived_predicates;
+  plansys2::Derived inferredA;
+  inferredA.predicate = parser::pddl::fromStringPredicate("(inferredA ?a)");
+  inferredA.preconditions = parser::pddl::fromString("(and (predicateA ?a))");
+  derived_predicates.push_back(inferredA);
 
-//   plansys2::Derived inferredB;
-//   inferredB.predicate = parser::pddl::fromStringPredicate("(inferredB ?b)");
-//   inferredB.preconditions = parser::pddl::fromString("(and (predicateB ?b))");
-//   derived_predicates.push_back(inferredB);
+  plansys2::Derived inferredB;
+  inferredB.predicate = parser::pddl::fromStringPredicate("(inferredB ?b)");
+  inferredB.preconditions = parser::pddl::fromString("(and (predicateB ?b))");
+  derived_predicates.push_back(inferredB);
 
-//   plansys2::Derived inferredAA;
-//   inferredAA.predicate = parser::pddl::fromStringPredicate("(inferredAA ?aa)");
-//   inferredAA.preconditions = parser::pddl::fromString("(and (inferredA ?aa))");
-//   derived_predicates.push_back(inferredAA);
+  plansys2::Derived inferredAA;
+  inferredAA.predicate = parser::pddl::fromStringPredicate("(inferredAA ?aa)");
+  inferredAA.preconditions = parser::pddl::fromString("(and (inferredA ?aa))");
+  derived_predicates.push_back(inferredAA);
 
-//   plansys2::Derived inferredAA2;
-//   inferredAA2.predicate = parser::pddl::fromStringPredicate("(inferredAA ?a)");
-//   inferredAA2.preconditions = parser::pddl::fromString("(and (predicateA ?a))");
-//   derived_predicates.push_back(inferredAA2);
+  plansys2::Derived inferredAA2;
+  inferredAA2.predicate = parser::pddl::fromStringPredicate("(inferredAA ?a)");
+  inferredAA2.preconditions = parser::pddl::fromString("(and (predicateA ?a))");
+  derived_predicates.push_back(inferredAA2);
 
-//   plansys2::Derived inferredBB;
-//   inferredBB.predicate = parser::pddl::fromStringPredicate("(inferredBB ?b)");
-//   inferredBB.preconditions = parser::pddl::fromString("(and (inferredB ?b))");
-//   derived_predicates.push_back(inferredBB);
+  plansys2::Derived inferredBB;
+  inferredBB.predicate = parser::pddl::fromStringPredicate("(inferredBB ?b)");
+  inferredBB.preconditions = parser::pddl::fromString("(and (inferredB ?b))");
+  derived_predicates.push_back(inferredBB);
 
-//   plansys2::Derived inferredAB;
-//   inferredAB.predicate = parser::pddl::fromStringPredicate("(inferredAB ?a ?b)");
-//   inferredAB.preconditions = parser::pddl::fromString("(and (inferredA ?a)(inferredB ?b))");
-//   derived_predicates.push_back(inferredAB);
+  plansys2::Derived inferredAB;
+  inferredAB.predicate = parser::pddl::fromStringPredicate("(inferredAB ?a ?b)");
+  inferredAB.preconditions = parser::pddl::fromString("(and (inferredA ?a)(inferredB ?b))");
+  derived_predicates.push_back(inferredAB);
 
-//   plansys2::DerivedGraph graph(derived_predicates);
+  plansys2::Graph graph(derived_predicates);
 
-//   plansys2::Action actionA;
-//   actionA.name = "actionA";
-//   actionA.parameters.push_back(parser::pddl::fromStringParam("a"));
+  plansys2::Action actionA;
+  actionA.name = "actionA";
+  actionA.parameters.push_back(parser::pddl::fromStringParam("a"));
 
-//   plansys2_msgs::msg::Tree actionA_preconditions;
-//   parser::pddl::fromString(actionA_preconditions, "(and (inferredAA a))");
-//   actionA.preconditions = actionA_preconditions;
+  plansys2_msgs::msg::Tree actionA_preconditions;
+  parser::pddl::fromString(actionA_preconditions, "(and (inferredAA a))");
+  actionA.preconditions = actionA_preconditions;
 
-//   plansys2::Action actionB;
-//   actionB.name = "actionB";
-//   actionB.parameters.push_back(parser::pddl::fromStringParam("b"));
+  plansys2::Action actionB;
+  actionB.name = "actionB";
+  actionB.parameters.push_back(parser::pddl::fromStringParam("b"));
 
-//   plansys2_msgs::msg::Tree actionB_preconditions;
-//   parser::pddl::fromString(actionB_preconditions, "(and (inferredBB b))");
-//   actionB.preconditions = actionB_preconditions;
+  plansys2_msgs::msg::Tree actionB_preconditions;
+  parser::pddl::fromString(actionB_preconditions, "(and (inferredBB b))");
+  actionB.preconditions = actionB_preconditions;
 
-//   plansys2::Action actionAB;
-//   actionAB.name = "actionAB";
-//   actionAB.parameters.push_back(parser::pddl::fromStringParam("a"));
-//   actionAB.parameters.push_back(parser::pddl::fromStringParam("b"));
+  plansys2::Action actionAB;
+  actionAB.name = "actionAB";
+  actionAB.parameters.push_back(parser::pddl::fromStringParam("a"));
+  actionAB.parameters.push_back(parser::pddl::fromStringParam("b"));
 
-//   plansys2_msgs::msg::Tree actionAB_preconditions;
-//   parser::pddl::fromString(actionAB_preconditions, "(and (inferredAB a b))");
-//   actionAB.preconditions = actionAB_preconditions;
+  plansys2_msgs::msg::Tree actionAB_preconditions;
+  parser::pddl::fromString(actionAB_preconditions, "(and (inferredAB a b))");
+  actionAB.preconditions = actionAB_preconditions;
 
-//   graph.appendAction(actionA);
-//   graph.appendAction(actionB);
-//   graph.appendAction(actionAB);
+  graph.appendAction(actionA);
+  graph.appendAction(actionB);
+  graph.appendAction(actionAB);
 
-//   std::vector<std::string> all_nodes;
-//   auto func_all = [&all_nodes](const plansys2::NodeVariant & node) {
-//       all_nodes.push_back(node.getNodeName());
-//     };
-//   graph.depthFirstTraverseAll(func_all, true);
+  std::vector<std::string> all_nodes;
+  auto func_all = [&all_nodes](const plansys2::NodeVariant & node) {
+      all_nodes.push_back(node.getNodeName());
+    };
+  graph.depthFirstTraverseAll(func_all, true);
 
-//   ASSERT_EQ(all_nodes.size(), 11);
-//   ASSERT_EQ(all_nodes[0], "predicateB");
-//   ASSERT_EQ(all_nodes[1], "inferredB");
-//   ASSERT_EQ(all_nodes[2], "inferredBB");
-//   ASSERT_EQ(all_nodes[3], "actionB");
-//   ASSERT_EQ(all_nodes[4], "predicateA");
-//   ASSERT_EQ(all_nodes[5], "inferredAA");
-//   ASSERT_EQ(all_nodes[6], "inferredA");
-//   ASSERT_EQ(all_nodes[7], "inferredAB");
-//   ASSERT_EQ(all_nodes[8], "actionAB");
-//   ASSERT_EQ(all_nodes[9], "inferredAA");
-//   ASSERT_EQ(all_nodes[10], "actionA");
+  ASSERT_EQ(graph.getPredicates().size(), 2);
+  ASSERT_EQ(graph.getDerivedPredicates().size(), 6);
+  ASSERT_EQ(graph.getActions().size(), 3);
+  ASSERT_EQ(graph.getFunctions().size(), 0);
 
-//   std::vector<std::string> actionAB_parent_nodes;
-//   auto func_actionAB_parents = [&actionAB_parent_nodes](const plansys2::NodeVariant & node) {
-//       actionAB_parent_nodes.push_back(node.getNodeName());
-//     };
-//   graph.backtrackTraverse(actionAB, func_actionAB_parents);
+  ASSERT_EQ(all_nodes.size(), 11);
+  ASSERT_EQ(all_nodes[0], "predicateA");
+  ASSERT_EQ(all_nodes[1], "inferredA");
+  ASSERT_EQ(all_nodes[2], "inferredAA");
+  ASSERT_EQ(all_nodes[3], "inferredAA");
+  ASSERT_EQ(all_nodes[4], "actionA");
+  ASSERT_EQ(all_nodes[5], "predicateB");
+  ASSERT_EQ(all_nodes[6], "inferredB");
+  ASSERT_EQ(all_nodes[7], "inferredBB");
+  ASSERT_EQ(all_nodes[8], "actionB");
+  ASSERT_EQ(all_nodes[9], "inferredAB");
+  ASSERT_EQ(all_nodes[10], "actionAB");
 
-//   ASSERT_EQ(actionAB_parent_nodes.size(), 6);
-//   ASSERT_EQ(actionAB_parent_nodes[0], "actionAB");
-//   ASSERT_EQ(actionAB_parent_nodes[1], "inferredAB");
-//   ASSERT_EQ(actionAB_parent_nodes[2], "inferredB");
-//   ASSERT_EQ(actionAB_parent_nodes[3], "predicateB");
-//   ASSERT_EQ(actionAB_parent_nodes[4], "inferredA");
-//   ASSERT_EQ(actionAB_parent_nodes[5], "predicateA");
+  std::vector<std::string> actionAB_parent_nodes;
+  auto func_actionAB_parents = [&actionAB_parent_nodes](const plansys2::NodeVariant & node) {
+      actionAB_parent_nodes.push_back(node.getNodeName());
+    };
+  graph.backtrackTraverse(actionAB, func_actionAB_parents);
 
-//   std::vector<std::string> actionA_parent_nodes;
-//   auto func_actionA_parents = [&actionA_parent_nodes](const plansys2::NodeVariant & node) {
-//       actionA_parent_nodes.push_back(node.getNodeName());
-//     };
-//   graph.backtrackTraverse(actionA, func_actionA_parents);
+  ASSERT_EQ(actionAB_parent_nodes.size(), 6);
+  ASSERT_EQ(actionAB_parent_nodes[0], "actionAB");
+  ASSERT_EQ(actionAB_parent_nodes[1], "inferredAB");
+  ASSERT_EQ(actionAB_parent_nodes[2], "inferredA");
+  ASSERT_EQ(actionAB_parent_nodes[3], "predicateA");
+  ASSERT_EQ(actionAB_parent_nodes[4], "inferredB");
+  ASSERT_EQ(actionAB_parent_nodes[5], "predicateB");
 
-//   ASSERT_EQ(actionA_parent_nodes.size(), 6);
-//   ASSERT_EQ(actionA_parent_nodes[0], "actionA");
-//   ASSERT_EQ(actionA_parent_nodes[1], "inferredAA");
-//   ASSERT_EQ(actionA_parent_nodes[2], "inferredA");
-//   ASSERT_EQ(actionA_parent_nodes[3], "predicateA");
-//   ASSERT_EQ(actionA_parent_nodes[4], "inferredAA");
-//   ASSERT_EQ(actionA_parent_nodes[5], "predicateA");
+  std::vector<std::string> actionA_parent_nodes;
+  auto func_actionA_parents = [&actionA_parent_nodes](const plansys2::NodeVariant & node) {
+      actionA_parent_nodes.push_back(node.getNodeName());
+    };
+  graph.backtrackTraverse(actionA, func_actionA_parents);
 
-//   std::vector<std::string> actionB_parent_nodes;
-//   auto func_actionB_parents = [&actionB_parent_nodes](const plansys2::NodeVariant & node) {
-//       actionB_parent_nodes.push_back(node.getNodeName());
-//     };
-//   graph.backtrackTraverse(actionB, func_actionB_parents);
+  ASSERT_EQ(actionA_parent_nodes.size(), 5);
+  ASSERT_EQ(actionA_parent_nodes[0], "actionA");
+  ASSERT_EQ(actionA_parent_nodes[1], "inferredAA");
+  ASSERT_EQ(actionA_parent_nodes[2], "predicateA");
+  ASSERT_EQ(actionA_parent_nodes[3], "inferredAA");
+  ASSERT_EQ(actionA_parent_nodes[4], "inferredA");
 
-//   ASSERT_EQ(actionB_parent_nodes.size(), 4);
-//   ASSERT_EQ(actionB_parent_nodes[0], "actionB");
-//   ASSERT_EQ(actionB_parent_nodes[1], "inferredBB");
-//   ASSERT_EQ(actionB_parent_nodes[2], "inferredB");
-//   ASSERT_EQ(actionB_parent_nodes[3], "predicateB");
+  std::vector<std::string> actionB_parent_nodes;
+  auto func_actionB_parents = [&actionB_parent_nodes](const plansys2::NodeVariant & node) {
+      actionB_parent_nodes.push_back(node.getNodeName());
+    };
+  graph.backtrackTraverse(actionB, func_actionB_parents);
 
-//   auto actionAB_parent_nodes_2 = graph.getDerivedPredicatesFromActions({actionAB});
-//   ASSERT_EQ(actionAB_parent_nodes_2.size(), 3);
-//   ASSERT_EQ(actionAB_parent_nodes_2[0].predicate.name, "inferredA");
-//   ASSERT_EQ(actionAB_parent_nodes_2[1].predicate.name, "inferredB");
-//   ASSERT_EQ(actionAB_parent_nodes_2[2].predicate.name, "inferredAB");
+  ASSERT_EQ(actionB_parent_nodes.size(), 4);
+  ASSERT_EQ(actionB_parent_nodes[0], "actionB");
+  ASSERT_EQ(actionB_parent_nodes[1], "inferredBB");
+  ASSERT_EQ(actionB_parent_nodes[2], "inferredB");
+  ASSERT_EQ(actionB_parent_nodes[3], "predicateB");
 
-//   auto graph_actionA = graph.pruneGraphToActions({actionA});
+  auto actionAB_parent_nodes_2 = graph.getDerivedPredicatesFromActions({actionAB});
+  ASSERT_EQ(actionAB_parent_nodes_2.size(), 3);
+  ASSERT_EQ(actionAB_parent_nodes_2[0].predicate.name, "inferredB");
+  ASSERT_EQ(actionAB_parent_nodes_2[1].predicate.name, "inferredA");
+  ASSERT_EQ(actionAB_parent_nodes_2[2].predicate.name, "inferredAB");
 
-//   all_nodes.clear();
-//   graph_actionA.depthFirstTraverseAll(func_all, true);
+  auto graph_actionA = graph.pruneGraphToActions({actionA});
 
-//   ASSERT_EQ(all_nodes.size(), 5);
-//   ASSERT_EQ(all_nodes[0], "predicateA");
-//   ASSERT_EQ(all_nodes[1], "inferredAA");
-//   ASSERT_EQ(all_nodes[2], "inferredA");
-//   ASSERT_EQ(all_nodes[3], "inferredAA");
-//   ASSERT_EQ(all_nodes[4], "actionA");
+  all_nodes.clear();
+  graph_actionA.depthFirstTraverseAll(func_all, true);
 
-//   actionA_parent_nodes.clear();
-//   graph_actionA.backtrackTraverse(actionA, func_actionA_parents);
+  ASSERT_EQ(all_nodes.size(), 5);
+  ASSERT_EQ(all_nodes[0], "predicateA");
+  ASSERT_EQ(all_nodes[1], "inferredAA");
+  ASSERT_EQ(all_nodes[2], "inferredA");
+  ASSERT_EQ(all_nodes[3], "inferredAA");
+  ASSERT_EQ(all_nodes[4], "actionA");
 
-//   ASSERT_EQ(actionA_parent_nodes.size(), 6);
-//   ASSERT_EQ(actionA_parent_nodes[0], "actionA");
-//   ASSERT_EQ(actionA_parent_nodes[1], "inferredAA");
-//   ASSERT_EQ(actionA_parent_nodes[2], "predicateA");
-//   ASSERT_EQ(actionA_parent_nodes[3], "inferredAA");
-//   ASSERT_EQ(actionA_parent_nodes[4], "inferredA");
-//   ASSERT_EQ(actionA_parent_nodes[5], "predicateA");
+  actionA_parent_nodes.clear();
+  graph_actionA.backtrackTraverse(actionA, func_actionA_parents);
 
-//   auto derived_predicates_A = graph_actionA.getDerivedPredicatesDepthFirst();
-//   ASSERT_EQ(derived_predicates_A.size(), 3);
-//   ASSERT_EQ(derived_predicates_A[0].predicate.name, "inferredAA");
-//   ASSERT_EQ(derived_predicates_A[1].predicate.name, "inferredA");
-//   ASSERT_EQ(derived_predicates_A[2].predicate.name, "inferredAA");
+  ASSERT_EQ(actionA_parent_nodes.size(), 5);
+  ASSERT_EQ(actionA_parent_nodes[0], "actionA");
+  ASSERT_EQ(actionA_parent_nodes[1], "inferredAA");
+  ASSERT_EQ(actionA_parent_nodes[2], "inferredA");
+  ASSERT_EQ(actionA_parent_nodes[3], "predicateA");
+  ASSERT_EQ(actionA_parent_nodes[4], "inferredAA");
 
-//   auto graph_actionB = graph.pruneGraphToActions({actionB});
+  auto derived_predicates_A = graph_actionA.getDerivedPredicatesDepthFirst();
+  ASSERT_EQ(derived_predicates_A.size(), 3);
+  ASSERT_EQ(derived_predicates_A[0].predicate.name, "inferredAA");
+  ASSERT_EQ(derived_predicates_A[1].predicate.name, "inferredA");
+  ASSERT_EQ(derived_predicates_A[2].predicate.name, "inferredAA");
 
-//   all_nodes.clear();
-//   graph_actionB.depthFirstTraverseAll(func_all, true);
+  auto graph_actionB = graph.pruneGraphToActions({actionB});
 
-//   ASSERT_EQ(all_nodes.size(), 4);
-//   ASSERT_EQ(all_nodes[0], "predicateB");
-//   ASSERT_EQ(all_nodes[1], "inferredB");
-//   ASSERT_EQ(all_nodes[2], "inferredBB");
-//   ASSERT_EQ(all_nodes[3], "actionB");
+  all_nodes.clear();
+  graph_actionB.depthFirstTraverseAll(func_all, true);
 
-//   actionB_parent_nodes.clear();
-//   graph_actionB.backtrackTraverse(actionB, func_actionB_parents);
+  ASSERT_EQ(all_nodes.size(), 4);
+  ASSERT_EQ(all_nodes[0], "predicateB");
+  ASSERT_EQ(all_nodes[1], "inferredB");
+  ASSERT_EQ(all_nodes[2], "inferredBB");
+  ASSERT_EQ(all_nodes[3], "actionB");
 
-//   ASSERT_EQ(actionB_parent_nodes.size(), 4);
-//   ASSERT_EQ(actionB_parent_nodes[0], "actionB");
-//   ASSERT_EQ(actionB_parent_nodes[1], "inferredBB");
-//   ASSERT_EQ(actionB_parent_nodes[2], "inferredB");
-//   ASSERT_EQ(actionB_parent_nodes[3], "predicateB");
+  actionB_parent_nodes.clear();
+  graph_actionB.backtrackTraverse(actionB, func_actionB_parents);
 
-//   auto derived_predicates_B = graph_actionB.getDerivedPredicatesDepthFirst();
-//   ASSERT_EQ(derived_predicates_B.size(), 2);
-//   ASSERT_EQ(derived_predicates_B[0].predicate.name, "inferredB");
-//   ASSERT_EQ(derived_predicates_B[1].predicate.name, "inferredBB");
+  ASSERT_EQ(actionB_parent_nodes.size(), 4);
+  ASSERT_EQ(actionB_parent_nodes[0], "actionB");
+  ASSERT_EQ(actionB_parent_nodes[1], "inferredBB");
+  ASSERT_EQ(actionB_parent_nodes[2], "inferredB");
+  ASSERT_EQ(actionB_parent_nodes[3], "predicateB");
 
-//   auto graph_actionAB = graph.pruneGraphToActions({actionAB});
+  auto derived_predicates_B = graph_actionB.getDerivedPredicatesDepthFirst();
+  ASSERT_EQ(derived_predicates_B.size(), 2);
+  ASSERT_EQ(derived_predicates_B[0].predicate.name, "inferredB");
+  ASSERT_EQ(derived_predicates_B[1].predicate.name, "inferredBB");
 
-//   all_nodes.clear();
-//   graph_actionAB.depthFirstTraverseAll(func_all, true);
+  auto graph_actionAB = graph.pruneGraphToActions({actionAB});
 
-//   ASSERT_EQ(all_nodes.size(), 6);
-//   ASSERT_EQ(all_nodes[0], "predicateA");
-//   ASSERT_EQ(all_nodes[1], "inferredA");
-//   ASSERT_EQ(all_nodes[2], "predicateB");
-//   ASSERT_EQ(all_nodes[3], "inferredB");
-//   ASSERT_EQ(all_nodes[4], "inferredAB");
-//   ASSERT_EQ(all_nodes[5], "actionAB");
+  all_nodes.clear();
+  graph_actionAB.depthFirstTraverseAll(func_all, true);
 
-//   actionAB_parent_nodes.clear();
-//   graph_actionAB.backtrackTraverse(actionAB, func_actionAB_parents);
+  ASSERT_EQ(all_nodes.size(), 6);
+  ASSERT_EQ(all_nodes[0], "predicateA");
+  ASSERT_EQ(all_nodes[1], "inferredA");
+  ASSERT_EQ(all_nodes[2], "predicateB");
+  ASSERT_EQ(all_nodes[3], "inferredB");
+  ASSERT_EQ(all_nodes[4], "inferredAB");
+  ASSERT_EQ(all_nodes[5], "actionAB");
 
-//   ASSERT_EQ(actionAB_parent_nodes.size(), 6);
-//   ASSERT_EQ(actionAB_parent_nodes[0], "actionAB");
-//   ASSERT_EQ(actionAB_parent_nodes[1], "inferredAB");
-//   ASSERT_EQ(actionAB_parent_nodes[2], "inferredA");
-//   ASSERT_EQ(actionAB_parent_nodes[3], "predicateA");
-//   ASSERT_EQ(actionAB_parent_nodes[4], "inferredB");
-//   ASSERT_EQ(actionAB_parent_nodes[5], "predicateB");
+  actionAB_parent_nodes.clear();
+  graph_actionAB.backtrackTraverse(actionAB, func_actionAB_parents);
 
-//   auto derived_predicatesAB = graph_actionAB.getDerivedPredicatesDepthFirst();
-//   ASSERT_EQ(derived_predicatesAB.size(), 3);
-//   ASSERT_EQ(derived_predicatesAB[0].predicate.name, "inferredA");
-//   ASSERT_EQ(derived_predicatesAB[1].predicate.name, "inferredB");
-//   ASSERT_EQ(derived_predicatesAB[2].predicate.name, "inferredAB");
+  ASSERT_EQ(actionAB_parent_nodes.size(), 6);
+  ASSERT_EQ(actionAB_parent_nodes[0], "actionAB");
+  ASSERT_EQ(actionAB_parent_nodes[1], "inferredAB");
+  ASSERT_EQ(actionAB_parent_nodes[2], "inferredB");
+  ASSERT_EQ(actionAB_parent_nodes[3], "predicateB");
+  ASSERT_EQ(actionAB_parent_nodes[4], "inferredA");
+  ASSERT_EQ(actionAB_parent_nodes[5], "predicateA");
 
-//   auto graph_actionA_AB = graph.pruneGraphToActions({actionA, actionAB});
+  auto derived_predicatesAB = graph_actionAB.getDerivedPredicatesDepthFirst();
+  ASSERT_EQ(derived_predicatesAB.size(), 3);
+  ASSERT_EQ(derived_predicatesAB[0].predicate.name, "inferredA");
+  ASSERT_EQ(derived_predicatesAB[1].predicate.name, "inferredB");
+  ASSERT_EQ(derived_predicatesAB[2].predicate.name, "inferredAB");
 
-//   all_nodes.clear();
-//   graph_actionA_AB.depthFirstTraverseAll(func_all, true);
+  auto graph_actionA_AB = graph.pruneGraphToActions({actionA, actionAB});
 
-//   ASSERT_EQ(all_nodes.size(), 9);
-//   ASSERT_EQ(all_nodes[0], "predicateB");
-//   ASSERT_EQ(all_nodes[1], "inferredB");
-//   ASSERT_EQ(all_nodes[2], "predicateA");
-//   ASSERT_EQ(all_nodes[3], "inferredAA");
-//   ASSERT_EQ(all_nodes[4], "inferredA");
-//   ASSERT_EQ(all_nodes[5], "inferredAB");
-//   ASSERT_EQ(all_nodes[6], "actionAB");
-//   ASSERT_EQ(all_nodes[7], "inferredAA");
-//   ASSERT_EQ(all_nodes[8], "actionA");
+  all_nodes.clear();
+  graph_actionA_AB.depthFirstTraverseAll(func_all, true);
 
-//   actionA_parent_nodes.clear();
-//   graph_actionA_AB.backtrackTraverse(actionA, func_actionA_parents);
+  ASSERT_EQ(all_nodes.size(), 9);
+  ASSERT_EQ(all_nodes[0], "predicateA");
+  ASSERT_EQ(all_nodes[1], "inferredAA");
+  ASSERT_EQ(all_nodes[2], "inferredA");
+  ASSERT_EQ(all_nodes[3], "inferredAA");
+  ASSERT_EQ(all_nodes[4], "actionA");
+  ASSERT_EQ(all_nodes[5], "predicateB");
+  ASSERT_EQ(all_nodes[6], "inferredB");
+  ASSERT_EQ(all_nodes[7], "inferredAB");
+  ASSERT_EQ(all_nodes[8], "actionAB");
 
-//   ASSERT_EQ(actionA_parent_nodes.size(), 6);
-//   ASSERT_EQ(actionA_parent_nodes[0], "actionA");
-//   ASSERT_EQ(actionA_parent_nodes[1], "inferredAA");
-//   ASSERT_EQ(actionA_parent_nodes[2], "predicateA");
-//   ASSERT_EQ(actionA_parent_nodes[3], "inferredAA");
-//   ASSERT_EQ(actionA_parent_nodes[4], "inferredA");
-//   ASSERT_EQ(actionA_parent_nodes[5], "predicateA");
+  actionA_parent_nodes.clear();
+  graph_actionA_AB.backtrackTraverse(actionA, func_actionA_parents);
 
-//   actionAB_parent_nodes.clear();
-//   graph_actionA_AB.backtrackTraverse(actionAB, func_actionAB_parents);
+  ASSERT_EQ(actionA_parent_nodes.size(), 5);
+  ASSERT_EQ(actionA_parent_nodes[0], "actionA");
+  ASSERT_EQ(actionA_parent_nodes[1], "inferredAA");
+  ASSERT_EQ(actionA_parent_nodes[2], "inferredA");
+  ASSERT_EQ(actionA_parent_nodes[3], "predicateA");
+  ASSERT_EQ(actionA_parent_nodes[4], "inferredAA");
 
-//   ASSERT_EQ(actionAB_parent_nodes.size(), 6);
-//   ASSERT_EQ(actionAB_parent_nodes[0], "actionAB");
-//   ASSERT_EQ(actionAB_parent_nodes[1], "inferredAB");
-//   ASSERT_EQ(actionAB_parent_nodes[2], "inferredA");
-//   ASSERT_EQ(actionAB_parent_nodes[3], "predicateA");
-//   ASSERT_EQ(actionAB_parent_nodes[4], "inferredB");
-//   ASSERT_EQ(actionAB_parent_nodes[5], "predicateB");
+  actionAB_parent_nodes.clear();
+  graph_actionA_AB.backtrackTraverse(actionAB, func_actionAB_parents);
 
-//   auto derived_predicates_A_AB = graph_actionA_AB.getDerivedPredicatesDepthFirst();
-//   ASSERT_EQ(derived_predicates_A_AB.size(), 5);
-//   ASSERT_EQ(derived_predicates_A_AB[0].predicate.name, "inferredB");
-//   ASSERT_EQ(derived_predicates_A_AB[1].predicate.name, "inferredAA");
-//   ASSERT_EQ(derived_predicates_A_AB[2].predicate.name, "inferredA");
-//   ASSERT_EQ(derived_predicates_A_AB[3].predicate.name, "inferredAB");
-//   ASSERT_EQ(derived_predicates_A_AB[4].predicate.name, "inferredAA");
-// }
+  ASSERT_EQ(actionAB_parent_nodes.size(), 6);
+  ASSERT_EQ(actionAB_parent_nodes[0], "actionAB");
+  ASSERT_EQ(actionAB_parent_nodes[1], "inferredAB");
+  ASSERT_EQ(actionAB_parent_nodes[2], "inferredB");
+  ASSERT_EQ(actionAB_parent_nodes[3], "predicateB");
+  ASSERT_EQ(actionAB_parent_nodes[4], "inferredA");
+  ASSERT_EQ(actionAB_parent_nodes[5], "predicateA");
 
-// TEST(graph_test, graph_derived_action_suave)
-// {
-//   std::vector<plansys2::Derived> derived_predicates;
+  auto derived_predicates_A_AB = graph_actionA_AB.getDerivedPredicatesDepthFirst();
+  ASSERT_EQ(derived_predicates_A_AB.size(), 5);
+  ASSERT_EQ(derived_predicates_A_AB[0].predicate.name, "inferredAA");
+  ASSERT_EQ(derived_predicates_A_AB[1].predicate.name, "inferredA");
+  ASSERT_EQ(derived_predicates_A_AB[2].predicate.name, "inferredAA");
+  ASSERT_EQ(derived_predicates_A_AB[3].predicate.name, "inferredB");
+  ASSERT_EQ(derived_predicates_A_AB[4].predicate.name, "inferredAB");
+}
+
+TEST(graph_test, get_scc)
+{
+  std::vector<plansys2::Derived> derived_predicates;
+
+  plansys2::Derived der1;
+  der1.predicate = parser::pddl::fromStringPredicate("(der1 ?x)");
+  der1.preconditions = parser::pddl::fromString("(and (pred1 ?x))");
+  derived_predicates.push_back(der1);
+
+  plansys2::Derived der2;
+  der2.predicate = parser::pddl::fromStringPredicate("(der2 ?x)");
+  der2.preconditions = parser::pddl::fromString("(or (pred2 ?x) (der3 ?x))");
+  derived_predicates.push_back(der2);
+
+  plansys2::Derived der3;
+  der3.predicate = parser::pddl::fromStringPredicate("(der3 ?x)");
+  der3.preconditions = parser::pddl::fromString("(or (der4 ?x) (pred3 ?x))");
+  derived_predicates.push_back(der3);
+
+  plansys2::Derived der4;
+  der4.predicate = parser::pddl::fromStringPredicate("(der4 ?x)");
+  der4.preconditions = parser::pddl::fromString("(or (der2 ?x) (pred4 ?x))");
+  derived_predicates.push_back(der4);
+
+  plansys2::Derived der5;
+  der5.predicate = parser::pddl::fromStringPredicate("(der5 ?x)");
+  der5.preconditions = parser::pddl::fromString("(or (der6 ?x) (pred2 ?x))");
+  derived_predicates.push_back(der5);
+
+  plansys2::Derived der6;
+  der6.predicate = parser::pddl::fromStringPredicate("(der6 ?x)");
+  der6.preconditions = parser::pddl::fromString("(exists (?y) (and (der5 ?y)))");
+  derived_predicates.push_back(der6);
+
+  plansys2::Derived der7;
+  der7.predicate = parser::pddl::fromStringPredicate("(der7 ?x)");
+  der7.preconditions = parser::pddl::fromString("(and (der2 ?x) (pred5 ?x))");
+  derived_predicates.push_back(der7);
+
+  plansys2::Derived der8;
+  der8.predicate = parser::pddl::fromStringPredicate("(der8 ?x)");
+  der8.preconditions = parser::pddl::fromString("(and (pred3 ?x))");
+  derived_predicates.push_back(der8);
+
+  plansys2::Derived der9;
+  der9.predicate = parser::pddl::fromStringPredicate("(der9 ?x)");
+  der9.preconditions = parser::pddl::fromString("(and (der4 ?x) (der6 ?x))");
+  derived_predicates.push_back(der9);
+
+  plansys2::Graph graph(derived_predicates);
+
+  auto sccs = graph.computeSCCsTarjanDerivedPredicates();
+
+  ASSERT_EQ(sccs.size(), 6);
   
-//   plansys2::Derived inferred_action_1;
-//   inferred_action_1.predicate = parser::pddl::fromStringPredicate("(inferred-Action ?x)");
-//   inferred_action_1.preconditions = parser::pddl::fromString("(and (Action ?x))");
-//   derived_predicates.push_back(inferred_action_1);
+  std::vector<plansys2::Derived> target = {der4, der2, der3};
+  auto it = std::find(sccs.begin(), sccs.end(), target);
+  ASSERT_TRUE(it != sccs.end());
 
-//   plansys2::Derived inferred_action_2;
-//   inferred_action_2.predicate = parser::pddl::fromStringPredicate("(inferred-Action ?x)");
-//   inferred_action_2.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-RequiresF ?x ?y)))");
-//   derived_predicates.push_back(inferred_action_2);
+  target = {der6, der5};
+  it = std::find(sccs.begin(), sccs.end(), target);
+  ASSERT_TRUE(it != sccs.end());
 
-//   plansys2::Derived inferred_c_status;
-//   inferred_c_status.predicate = parser::pddl::fromStringPredicate("(inferred-C_status ?x ?y)");
-//   inferred_c_status.preconditions = parser::pddl::fromString("(and (c_status ?x ?y))");
-//   derived_predicates.push_back(inferred_c_status);
+  target = {der1};
+  it = std::find(sccs.begin(), sccs.end(), target);
+  ASSERT_TRUE(it != sccs.end());
+}
 
-//   plansys2::Derived inferred_component;
-//   inferred_component.predicate = parser::pddl::fromStringPredicate("(inferred-Component ?x)");
-//   inferred_component.preconditions = parser::pddl::fromString("(and (Component ?x))");
-//   derived_predicates.push_back(inferred_component);
+TEST(graph_test, graph_derived_action_suave)
+{
+  std::vector<plansys2::Derived> derived_predicates;
   
-//   plansys2::Derived inferred_component_1;
-//   inferred_component_1.predicate = parser::pddl::fromStringPredicate("(inferred-Component ?x)");
-//   inferred_component_1.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-C_status ?x ?y)))");
-//   derived_predicates.push_back(inferred_component_1);
+  plansys2::Derived inferred_action_1;
+  inferred_action_1.predicate = parser::pddl::fromStringPredicate("(inferred-Action ?x)");
+  inferred_action_1.preconditions = parser::pddl::fromString("(and (Action ?x))");
+  derived_predicates.push_back(inferred_action_1);
 
-//   plansys2::Derived inferred_component_2;
-//   inferred_component_2.predicate = parser::pddl::fromStringPredicate("(inferred-Component ?y)");
-//   inferred_component_2.preconditions = parser::pddl::fromString("(exists (?x) (and (inferred-RequiresC ?x ?y)))");
-//   derived_predicates.push_back(inferred_component_2);
+  plansys2::Derived inferred_action_2;
+  inferred_action_2.predicate = parser::pddl::fromStringPredicate("(inferred-Action ?x)");
+  inferred_action_2.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-RequiresF ?x ?y)))");
+  derived_predicates.push_back(inferred_action_2);
 
-//   plansys2::Derived inferred_different_from;
-//   inferred_different_from.predicate = parser::pddl::fromStringPredicate("(inferred-DifferentFrom ?x ?y)");
-//   inferred_different_from.preconditions = parser::pddl::fromString("(and (differentFrom ?x ?y))");
-//   derived_predicates.push_back(inferred_different_from);
+  plansys2::Derived inferred_c_status;
+  inferred_c_status.predicate = parser::pddl::fromStringPredicate("(inferred-C_status ?x ?y)");
+  inferred_c_status.preconditions = parser::pddl::fromString("(and (c_status ?x ?y))");
+  derived_predicates.push_back(inferred_c_status);
 
-//   plansys2::Derived inferred_f_active;
-//   inferred_f_active.predicate = parser::pddl::fromStringPredicate("(inferred-F_active ?f ?true_boolean)");
-//   inferred_f_active.preconditions = parser::pddl::fromString(
-//     "(and (= ?true_boolean true_boolean) (exists (?fd) (and (inferred-Function ?f) (inferred-FunctionDesign ?fd) (not (= ?fd fd_unground)) (inferred-SolvesF ?fd ?f) (inferred-FunctionGrounding ?f ?fd))))"
-//   );
-//   inferred_f_active.preconditions.nodes[3].node_type = plansys2_msgs::msg::Node::CONSTANT;
-//   inferred_f_active.preconditions.nodes[3].name = "true_boolean";
-//   inferred_f_active.preconditions.nodes[11].node_type = plansys2_msgs::msg::Node::CONSTANT;
-//   inferred_f_active.preconditions.nodes[11].name = "fd_unground";
-//   derived_predicates.push_back(inferred_f_active);
-
-//   plansys2::Derived inferred_f_active_1;
-//   inferred_f_active_1.predicate = parser::pddl::fromStringPredicate("(inferred-F_active ?x ?y)");
-//   inferred_f_active_1.preconditions = parser::pddl::fromString("(and (f_active ?x ?y))");
-//   derived_predicates.push_back(inferred_f_active_1);
-
-//   plansys2::Derived inferred_fd_better_utility_exists;
-//   inferred_fd_better_utility_exists.predicate = parser::pddl::fromStringPredicate("(inferred-FdBetterUtility ?fd_better ?fd)");
-//   inferred_fd_better_utility_exists.preconditions = parser::pddl::fromString(
-//     "(exists (?x_better ?f ?x) (and"
-//     " (inferred-Fd_utility ?fd_better ?x_better)"
-//     " (inferred-Function ?f)"
-//     " (inferred-FunctionDesign ?fd)"
-//     " (inferred-FunctionDesign ?fd_better)"
-//     " (lessThan ?x ?x_better)"
-//     " (inferred-SolvesF ?fd ?f)"
-//     " (inferred-Fd_utility ?fd ?x)"
-//     " (inferred-SolvesF ?fd_better ?f)"
-//     "))"
-//   );
-//   derived_predicates.push_back(inferred_fd_better_utility_exists);
-
-//   plansys2::Derived inferred_fd_better_utility_simple;
-//   inferred_fd_better_utility_simple.predicate = parser::pddl::fromStringPredicate("(inferred-FdBetterUtility ?x ?y)");
-//   inferred_fd_better_utility_simple.preconditions = parser::pddl::fromString("(and (fdBetterUtility ?x ?y))");
-//   derived_predicates.push_back(inferred_fd_better_utility_simple);
-
-//   plansys2::Derived inferred_fd_realisability_1;
-//   inferred_fd_realisability_1.predicate = parser::pddl::fromStringPredicate("(inferred-Fd_realisability ?fd ?false_boolean)");
-//   inferred_fd_realisability_1.preconditions = parser::pddl::fromString("(and (= ?false_boolean false_boolean) (exists (?c) (and (inferred-RequiresC ?fd ?c) (inferred-Component ?c) (inferred-C_status ?c ERROR_string))))");
-//   inferred_fd_realisability_1.preconditions.nodes[3].node_type = plansys2_msgs::msg::Node::CONSTANT;
-//   inferred_fd_realisability_1.preconditions.nodes[3].name = "false_boolean";
-//   derived_predicates.push_back(inferred_fd_realisability_1);
-
-//   plansys2::Derived inferred_fd_realisability_2;
-//   inferred_fd_realisability_2.predicate = parser::pddl::fromStringPredicate("(inferred-Fd_realisability ?fd1 ?false_boolean)");
-//   inferred_fd_realisability_2.preconditions = parser::pddl::fromString("(and (= ?false_boolean false_boolean) (exists (?eqa ?eqav ?mqa ?mqav) (and (inferred-FunctionDesign ?fd1) (inferred-HasQAestimation ?fd1 ?eqa) (inferred-IsQAtype ?eqa water_visibility) (inferred-Qa_has_value ?eqa ?eqav) (inferred-QAvalue ?mqa) (= ?mqa obs_water_visibility) (inferred-Qa_has_value ?mqa ?mqav) (inferred-IsQAtype ?mqa water_visibility) (lessThan ?mqav ?eqav))))");
-//   inferred_fd_realisability_2.preconditions.nodes[3].node_type = plansys2_msgs::msg::Node::CONSTANT;
-//   inferred_fd_realisability_2.preconditions.nodes[3].name = "false_boolean";
-//   inferred_fd_realisability_2.preconditions.nodes[13].node_type = plansys2_msgs::msg::Node::CONSTANT;
-//   inferred_fd_realisability_2.preconditions.nodes[13].name = "obs_water_visibility";
-//   derived_predicates.push_back(inferred_fd_realisability_2);
-
-//   plansys2::Derived inferred_fd_realisability_direct;
-//   inferred_fd_realisability_direct.predicate = parser::pddl::fromStringPredicate("(inferred-Fd_realisability ?x ?y)");
-//   inferred_fd_realisability_direct.preconditions = parser::pddl::fromString("(and (fd_realisability ?x ?y))");
-//   derived_predicates.push_back(inferred_fd_realisability_direct);
-
-//   plansys2::Derived inferred_fd_utility_follow;
-//   inferred_fd_utility_follow.predicate = parser::pddl::fromStringPredicate("(inferred-Fd_utility ?fd ?qav)");
-//   inferred_fd_utility_follow.preconditions = parser::pddl::fromString("(exists (?f ?qa) (and (inferred-Function f_follow_pipeline) (inferred-FunctionDesign ?fd) (inferred-SolvesF ?fd ?f) (inferred-HasQAestimation ?fd ?qa) (inferred-IsQAtype ?qa performance) (inferred-Qa_has_value ?qa ?qav)))");
-//   derived_predicates.push_back(inferred_fd_utility_follow);
-
-//   plansys2::Derived inferred_fd_utility_generate;
-//   inferred_fd_utility_generate.predicate = parser::pddl::fromStringPredicate("(inferred-Fd_utility ?fd ?qav)");
-//   inferred_fd_utility_generate.preconditions = parser::pddl::fromString("(exists (?f ?qa) (and (inferred-Function f_generate_search_path) (inferred-FunctionDesign ?fd) (inferred-SolvesF ?fd ?f) (inferred-HasQAestimation ?fd ?qa) (inferred-IsQAtype ?qa performance) (inferred-Qa_has_value ?qa ?qav)))");
-//   derived_predicates.push_back(inferred_fd_utility_generate);
-
-//   plansys2::Derived inferred_fd_utility_motion;
-//   inferred_fd_utility_motion.predicate = parser::pddl::fromStringPredicate("(inferred-Fd_utility ?fd ?qav)");
-//   inferred_fd_utility_motion.preconditions = parser::pddl::fromString("(exists (?f ?qa) (and (inferred-Function f_maintain_motion) (inferred-FunctionDesign ?fd) (inferred-SolvesF ?fd ?f) (inferred-HasQAestimation ?fd ?qa) (inferred-IsQAtype ?qa performance) (inferred-Qa_has_value ?qa ?qav)))");
-//   derived_predicates.push_back(inferred_fd_utility_motion);
-
-//   plansys2::Derived inferred_fd_utility_direct;
-//   inferred_fd_utility_direct.predicate = parser::pddl::fromStringPredicate("(inferred-Fd_utility ?x ?y)");
-//   inferred_fd_utility_direct.preconditions = parser::pddl::fromString("(and (fd_utility ?x ?y))");
-//   derived_predicates.push_back(inferred_fd_utility_direct);
-
-//   plansys2::Derived inferred_function_direct;
-//   inferred_function_direct.predicate = parser::pddl::fromStringPredicate("(inferred-Function ?x)");
-//   inferred_function_direct.preconditions = parser::pddl::fromString("(and (Function ?x))");
-//   derived_predicates.push_back(inferred_function_direct);
-
-//   plansys2::Derived inferred_function_f_active;
-//   inferred_function_f_active.predicate = parser::pddl::fromStringPredicate("(inferred-Function ?x)");
-//   inferred_function_f_active.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-F_active ?x ?y)))");
-//   derived_predicates.push_back(inferred_function_f_active);
-//   //20
-
-//   plansys2::Derived inferred_function_grounding;
-//   inferred_function_grounding.predicate = parser::pddl::fromStringPredicate("(inferred-Function ?x)");
-//   inferred_function_grounding.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-FunctionGrounding ?x ?y)))");
-//   derived_predicates.push_back(inferred_function_grounding);
-
-//   plansys2::Derived inferred_function_requiresf;
-//   inferred_function_requiresf.predicate = parser::pddl::fromStringPredicate("(inferred-Function ?y)");
-//   inferred_function_requiresf.preconditions = parser::pddl::fromString("(exists (?x) (and (inferred-RequiresF ?x ?y)))");
-//   derived_predicates.push_back(inferred_function_requiresf);
-
-//   plansys2::Derived inferred_function_solvesf;
-//   inferred_function_solvesf.predicate = parser::pddl::fromStringPredicate("(inferred-Function ?y)");
-//   inferred_function_solvesf.preconditions = parser::pddl::fromString("(exists (?x) (and (inferred-SolvesF ?x ?y)))");
-//   derived_predicates.push_back(inferred_function_solvesf);
-
-//   plansys2::Derived inferred_function_design_direct;
-//   inferred_function_design_direct.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?x)");
-//   inferred_function_design_direct.preconditions = parser::pddl::fromString("(and (FunctionDesign ?x))");
-//   derived_predicates.push_back(inferred_function_design_direct);
-
-//   plansys2::Derived inferred_function_design_fd_better;
-//   inferred_function_design_fd_better.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?x)");
-//   inferred_function_design_fd_better.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-FdBetterUtility ?x ?y)))");
-//   derived_predicates.push_back(inferred_function_design_fd_better);
-//   //25
-
-//   plansys2::Derived inferred_function_design_fd_realisability;
-//   inferred_function_design_fd_realisability.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?x)");
-//   inferred_function_design_fd_realisability.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-Fd_realisability ?x ?y)))");
-//   derived_predicates.push_back(inferred_function_design_fd_realisability);
-
-//   plansys2::Derived inferred_function_design_fd_utility;
-//   inferred_function_design_fd_utility.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?x)");
-//   inferred_function_design_fd_utility.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-Fd_utility ?x ?y)))");
-//   derived_predicates.push_back(inferred_function_design_fd_utility);
-
-//   plansys2::Derived inferred_function_design_qaestimation;
-//   inferred_function_design_qaestimation.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?x)");
-//   inferred_function_design_qaestimation.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-HasQAestimation ?x ?y)))");
-//   derived_predicates.push_back(inferred_function_design_qaestimation);
-
-//   plansys2::Derived inferred_function_design_requiresc;
-//   inferred_function_design_requiresc.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?x)");
-//   inferred_function_design_requiresc.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-RequiresC ?x ?y)))");
-//   derived_predicates.push_back(inferred_function_design_requiresc);
+  plansys2::Derived inferred_component;
+  inferred_component.predicate = parser::pddl::fromStringPredicate("(inferred-Component ?x)");
+  inferred_component.preconditions = parser::pddl::fromString("(and (Component ?x))");
+  derived_predicates.push_back(inferred_component);
   
-//   plansys2::Derived inferred_function_design_solvesf;
-//   inferred_function_design_solvesf.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?x)");
-//   inferred_function_design_solvesf.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-SolvesF ?x ?y)))");
-//   derived_predicates.push_back(inferred_function_design_solvesf);
-//   //30
+  plansys2::Derived inferred_component_1;
+  inferred_component_1.predicate = parser::pddl::fromStringPredicate("(inferred-Component ?x)");
+  inferred_component_1.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-C_status ?x ?y)))");
+  derived_predicates.push_back(inferred_component_1);
+  //5
 
-//   // THIS IS THE PROBLEMATIC ONE
-//   plansys2::Derived inferred_function_design_fd_better_inverse;
-//   inferred_function_design_fd_better_inverse.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?y)");
-//   inferred_function_design_fd_better_inverse.preconditions = parser::pddl::fromString("(exists (?x) (and (inferred-FdBetterUtility ?x ?y)))");
-//   derived_predicates.push_back(inferred_function_design_fd_better_inverse);
+  plansys2::Derived inferred_component_2;
+  inferred_component_2.predicate = parser::pddl::fromStringPredicate("(inferred-Component ?y)");
+  inferred_component_2.preconditions = parser::pddl::fromString("(exists (?x) (and (inferred-RequiresC ?x ?y)))");
+  derived_predicates.push_back(inferred_component_2);
 
-//   plansys2::Derived inferred_function_design_grounding_inverse;
-//   inferred_function_design_grounding_inverse.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?y)");
-//   inferred_function_design_grounding_inverse.preconditions = parser::pddl::fromString("(exists (?x) (and (inferred-FunctionGrounding ?x ?y)))");
-//   derived_predicates.push_back(inferred_function_design_grounding_inverse);
+  plansys2::Derived inferred_different_from;
+  inferred_different_from.predicate = parser::pddl::fromStringPredicate("(inferred-DifferentFrom ?x ?y)");
+  inferred_different_from.preconditions = parser::pddl::fromString("(and (differentFrom ?x ?y))");
+  derived_predicates.push_back(inferred_different_from);
 
-//   plansys2::Derived inferred_function_grounding_1;
-//   inferred_function_grounding_1.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionGrounding ?x ?y)");
-//   inferred_function_grounding_1.preconditions = parser::pddl::fromString("(and (functionGrounding ?x ?y))");
-//   derived_predicates.push_back(inferred_function_grounding_1);
+  plansys2::Derived inferred_f_active;
+  inferred_f_active.predicate = parser::pddl::fromStringPredicate("(inferred-F_active ?f ?true_boolean)");
+  inferred_f_active.preconditions = parser::pddl::fromString(
+    "(and (= ?true_boolean true_boolean) (exists (?fd) (and (inferred-Function ?f) (inferred-FunctionDesign ?fd) (not (= ?fd fd_unground)) (inferred-SolvesF ?fd ?f) (inferred-FunctionGrounding ?f ?fd))))"
+  );
+  inferred_f_active.preconditions.nodes[3].node_type = plansys2_msgs::msg::Node::CONSTANT;
+  inferred_f_active.preconditions.nodes[3].name = "true_boolean";
+  inferred_f_active.preconditions.nodes[11].node_type = plansys2_msgs::msg::Node::CONSTANT;
+  inferred_f_active.preconditions.nodes[11].name = "fd_unground";
+  derived_predicates.push_back(inferred_f_active);
 
-//   plansys2::Derived inferred_has_qaestimation;
-//   inferred_has_qaestimation.predicate = parser::pddl::fromStringPredicate("(inferred-HasQAestimation ?x ?y)");
-//   inferred_has_qaestimation.preconditions = parser::pddl::fromString("(and (hasQAestimation ?x ?y))");
-//   derived_predicates.push_back(inferred_has_qaestimation);
+  plansys2::Derived inferred_f_active_1;
+  inferred_f_active_1.predicate = parser::pddl::fromStringPredicate("(inferred-F_active ?x ?y)");
+  inferred_f_active_1.preconditions = parser::pddl::fromString("(and (f_active ?x ?y))");
+  derived_predicates.push_back(inferred_f_active_1);
 
-//   plansys2::Derived inferred_inconsistent_c_status;
-//   inferred_inconsistent_c_status.predicate = parser::pddl::fromStringPredicate("(inferred-Inconsistent)");
-//   inferred_inconsistent_c_status.preconditions = parser::pddl::fromString("(exists (?x ?y ?z) (and (inferred-C_status ?x ?y) (inferred-C_status ?x ?z) (not (= ?y ?z))))");
-//   derived_predicates.push_back(inferred_inconsistent_c_status);
-//   //35
+  plansys2::Derived inferred_fd_better_utility_exists;
+  inferred_fd_better_utility_exists.predicate = parser::pddl::fromStringPredicate("(inferred-FdBetterUtility ?fd_better ?fd)");
+  inferred_fd_better_utility_exists.preconditions = parser::pddl::fromString(
+    "(exists (?x_better ?f ?x) (and"
+    " (inferred-Fd_utility ?fd_better ?x_better)"
+    " (inferred-Function ?f)"
+    " (inferred-FunctionDesign ?fd)"
+    " (inferred-FunctionDesign ?fd_better)"
+    " (lessThan ?x ?x_better)"
+    " (inferred-SolvesF ?fd ?f)"
+    " (inferred-Fd_utility ?fd ?x)"
+    " (inferred-SolvesF ?fd_better ?f)"
+    "))"
+  );
+  derived_predicates.push_back(inferred_fd_better_utility_exists);
+  //10
 
-//   plansys2::Derived inferred_inconsistent_f_active;
-//   inferred_inconsistent_f_active.predicate = parser::pddl::fromStringPredicate("(inferred-Inconsistent)");
-//   inferred_inconsistent_f_active.preconditions = parser::pddl::fromString("(exists (?x ?y ?z) (and (inferred-F_active ?x ?y) (inferred-F_active ?x ?z) (not (= ?y ?z))))");
-//   derived_predicates.push_back(inferred_inconsistent_f_active);
+  plansys2::Derived inferred_fd_better_utility_simple;
+  inferred_fd_better_utility_simple.predicate = parser::pddl::fromStringPredicate("(inferred-FdBetterUtility ?x ?y)");
+  inferred_fd_better_utility_simple.preconditions = parser::pddl::fromString("(and (fdBetterUtility ?x ?y))");
+  derived_predicates.push_back(inferred_fd_better_utility_simple);
 
-//   plansys2::Derived inferred_inconsistent_fd_realisability;
-//   inferred_inconsistent_fd_realisability.predicate = parser::pddl::fromStringPredicate("(inferred-Inconsistent)");
-//   inferred_inconsistent_fd_realisability.preconditions = parser::pddl::fromString("(exists (?x ?y ?z) (and (inferred-Fd_realisability ?x ?y) (inferred-Fd_realisability ?x ?z) (not (= ?y ?z))))");
-//   derived_predicates.push_back(inferred_inconsistent_fd_realisability);
+  plansys2::Derived inferred_fd_realisability_1;
+  inferred_fd_realisability_1.predicate = parser::pddl::fromStringPredicate("(inferred-Fd_realisability ?fd ?false_boolean)");
+  inferred_fd_realisability_1.preconditions = parser::pddl::fromString("(and (= ?false_boolean false_boolean) (exists (?c) (and (inferred-RequiresC ?fd ?c) (inferred-Component ?c) (inferred-C_status ?c ERROR_string))))");
+  inferred_fd_realisability_1.preconditions.nodes[3].node_type = plansys2_msgs::msg::Node::CONSTANT;
+  inferred_fd_realisability_1.preconditions.nodes[3].name = "false_boolean";
+  derived_predicates.push_back(inferred_fd_realisability_1);
 
-//   plansys2::Derived inferred_inconsistent_fd_utility;
-//   inferred_inconsistent_fd_utility.predicate = parser::pddl::fromStringPredicate("(inferred-Inconsistent)");
-//   inferred_inconsistent_fd_utility.preconditions = parser::pddl::fromString("(exists (?x ?y ?z) (and (inferred-Fd_utility ?x ?y) (inferred-Fd_utility ?x ?z) (not (= ?y ?z))))");
-//   derived_predicates.push_back(inferred_inconsistent_fd_utility);
+  plansys2::Derived inferred_fd_realisability_2;
+  inferred_fd_realisability_2.predicate = parser::pddl::fromStringPredicate("(inferred-Fd_realisability ?fd1 ?false_boolean)");
+  inferred_fd_realisability_2.preconditions = parser::pddl::fromString("(and (= ?false_boolean false_boolean) (exists (?eqa ?eqav ?mqa ?mqav) (and (inferred-FunctionDesign ?fd1) (inferred-HasQAestimation ?fd1 ?eqa) (inferred-IsQAtype ?eqa water_visibility) (inferred-Qa_has_value ?eqa ?eqav) (inferred-QAvalue ?mqa) (= ?mqa obs_water_visibility) (inferred-Qa_has_value ?mqa ?mqav) (inferred-IsQAtype ?mqa water_visibility) (lessThan ?mqav ?eqav))))");
+  inferred_fd_realisability_2.preconditions.nodes[3].node_type = plansys2_msgs::msg::Node::CONSTANT;
+  inferred_fd_realisability_2.preconditions.nodes[3].name = "false_boolean";
+  inferred_fd_realisability_2.preconditions.nodes[13].node_type = plansys2_msgs::msg::Node::CONSTANT;
+  inferred_fd_realisability_2.preconditions.nodes[13].name = "obs_water_visibility";
+  derived_predicates.push_back(inferred_fd_realisability_2);
 
-//   plansys2::Derived inferred_inconsistent_isqatype;
-//   inferred_inconsistent_isqatype.predicate = parser::pddl::fromStringPredicate("(inferred-Inconsistent)");
-//   inferred_inconsistent_isqatype.preconditions = parser::pddl::fromString("(exists (?x ?y ?z) (and (inferred-IsQAtype ?x ?y) (inferred-IsQAtype ?x ?z) (= ?y ?z)))");
-//   derived_predicates.push_back(inferred_inconsistent_isqatype);
+  plansys2::Derived inferred_fd_realisability_direct;
+  inferred_fd_realisability_direct.predicate = parser::pddl::fromStringPredicate("(inferred-Fd_realisability ?x ?y)");
+  inferred_fd_realisability_direct.preconditions = parser::pddl::fromString("(and (fd_realisability ?x ?y))");
+  derived_predicates.push_back(inferred_fd_realisability_direct);
 
-//   //15
-//   plansys2::Derived inferred_inconsistent_qavalue;
-//   inferred_inconsistent_qavalue.predicate = parser::pddl::fromStringPredicate("(inferred-Inconsistent)");
-//   inferred_inconsistent_qavalue.preconditions = parser::pddl::fromString("(exists (?x ?y ?z) (and (inferred-Qa_has_value ?x ?y) (inferred-Qa_has_value ?x ?z) (not (= ?y ?z))))");
-//   derived_predicates.push_back(inferred_inconsistent_qavalue);
+  plansys2::Derived inferred_fd_utility_follow;
+  inferred_fd_utility_follow.predicate = parser::pddl::fromStringPredicate("(inferred-Fd_utility ?fd ?qav)");
+  inferred_fd_utility_follow.preconditions = parser::pddl::fromString("(exists (?f ?qa) (and (inferred-Function f_follow_pipeline) (inferred-FunctionDesign ?fd) (inferred-SolvesF ?fd ?f) (inferred-HasQAestimation ?fd ?qa) (inferred-IsQAtype ?qa performance) (inferred-Qa_has_value ?qa ?qav)))");
+  derived_predicates.push_back(inferred_fd_utility_follow);
+  // 15
 
-//   plansys2::Derived inferred_inconsistent_solvesf;
-//   inferred_inconsistent_solvesf.predicate = parser::pddl::fromStringPredicate("(inferred-Inconsistent)");
-//   inferred_inconsistent_solvesf.preconditions = parser::pddl::fromString("(exists (?x ?y ?z) (and (inferred-SolvesF ?x ?y) (inferred-SolvesF ?x ?z) (= ?y ?z)))");
-//   derived_predicates.push_back(inferred_inconsistent_solvesf);
+  plansys2::Derived inferred_fd_utility_generate;
+  inferred_fd_utility_generate.predicate = parser::pddl::fromStringPredicate("(inferred-Fd_utility ?fd ?qav)");
+  inferred_fd_utility_generate.preconditions = parser::pddl::fromString("(exists (?f ?qa) (and (inferred-Function f_generate_search_path) (inferred-FunctionDesign ?fd) (inferred-SolvesF ?fd ?f) (inferred-HasQAestimation ?fd ?qa) (inferred-IsQAtype ?qa performance) (inferred-Qa_has_value ?qa ?qav)))");
+  derived_predicates.push_back(inferred_fd_utility_generate);
 
-//   plansys2::Derived inferred_isqatype;
-//   inferred_isqatype.predicate = parser::pddl::fromStringPredicate("(inferred-IsQAtype ?x ?y)");
-//   inferred_isqatype.preconditions = parser::pddl::fromString("(and (isQAtype ?x ?y))");
-//   derived_predicates.push_back(inferred_isqatype);
+  plansys2::Derived inferred_fd_utility_motion;
+  inferred_fd_utility_motion.predicate = parser::pddl::fromStringPredicate("(inferred-Fd_utility ?fd ?qav)");
+  inferred_fd_utility_motion.preconditions = parser::pddl::fromString("(exists (?f ?qa) (and (inferred-Function f_maintain_motion) (inferred-FunctionDesign ?fd) (inferred-SolvesF ?fd ?f) (inferred-HasQAestimation ?fd ?qa) (inferred-IsQAtype ?qa performance) (inferred-Qa_has_value ?qa ?qav)))");
+  derived_predicates.push_back(inferred_fd_utility_motion);
 
-//   plansys2::Derived inferred_qavalue_direct;
-//   inferred_qavalue_direct.predicate = parser::pddl::fromStringPredicate("(inferred-QAvalue ?x)");
-//   inferred_qavalue_direct.preconditions = parser::pddl::fromString("(and (QAvalue ?x))");
-//   derived_predicates.push_back(inferred_qavalue_direct);
+  plansys2::Derived inferred_fd_utility_direct;
+  inferred_fd_utility_direct.predicate = parser::pddl::fromStringPredicate("(inferred-Fd_utility ?x ?y)");
+  inferred_fd_utility_direct.preconditions = parser::pddl::fromString("(and (fd_utility ?x ?y))");
+  derived_predicates.push_back(inferred_fd_utility_direct);
 
-//   plansys2::Derived inferred_qavalue_from_type;
-//   inferred_qavalue_from_type.predicate = parser::pddl::fromStringPredicate("(inferred-QAvalue ?x)");
-//   inferred_qavalue_from_type.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-IsQAtype ?x ?y)))");
-//   derived_predicates.push_back(inferred_qavalue_from_type);
+  plansys2::Derived inferred_function_direct;
+  inferred_function_direct.predicate = parser::pddl::fromStringPredicate("(inferred-Function ?x)");
+  inferred_function_direct.preconditions = parser::pddl::fromString("(and (Function ?x))");
+  derived_predicates.push_back(inferred_function_direct);
 
-//   //10
-//   plansys2::Derived inferred_qavalue_from_value;
-//   inferred_qavalue_from_value.predicate = parser::pddl::fromStringPredicate("(inferred-QAvalue ?x)");
-//   inferred_qavalue_from_value.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-Qa_has_value ?x ?y)))");
-//   derived_predicates.push_back(inferred_qavalue_from_value);
+  plansys2::Derived inferred_function_f_active;
+  inferred_function_f_active.predicate = parser::pddl::fromStringPredicate("(inferred-Function ?x)");
+  inferred_function_f_active.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-F_active ?x ?y)))");
+  derived_predicates.push_back(inferred_function_f_active);
+  //20
 
-//   plansys2::Derived inferred_qavalue_from_estimation;
-//   inferred_qavalue_from_estimation.predicate = parser::pddl::fromStringPredicate("(inferred-QAvalue ?y)");
-//   inferred_qavalue_from_estimation.preconditions = parser::pddl::fromString("(exists (?x) (and (inferred-HasQAestimation ?x ?y)))");
-//   derived_predicates.push_back(inferred_qavalue_from_estimation);
+  plansys2::Derived inferred_function_grounding;
+  inferred_function_grounding.predicate = parser::pddl::fromStringPredicate("(inferred-Function ?x)");
+  inferred_function_grounding.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-FunctionGrounding ?x ?y)))");
+  derived_predicates.push_back(inferred_function_grounding);
 
-//   plansys2::Derived inferred_qa_has_value;
-//   inferred_qa_has_value.predicate = parser::pddl::fromStringPredicate("(inferred-Qa_has_value ?x ?y)");
-//   inferred_qa_has_value.preconditions = parser::pddl::fromString("(and (qa_has_value ?x ?y))");
-//   derived_predicates.push_back(inferred_qa_has_value);
+  plansys2::Derived inferred_function_requiresf;
+  inferred_function_requiresf.predicate = parser::pddl::fromStringPredicate("(inferred-Function ?y)");
+  inferred_function_requiresf.preconditions = parser::pddl::fromString("(exists (?x) (and (inferred-RequiresF ?x ?y)))");
+  derived_predicates.push_back(inferred_function_requiresf);
 
-//   plansys2::Derived inferred_quality_attribute_type_direct;
-//   inferred_quality_attribute_type_direct.predicate = parser::pddl::fromStringPredicate("(inferred-QualityAttributeType ?x)");
-//   inferred_quality_attribute_type_direct.preconditions = parser::pddl::fromString("(and (QualityAttributeType ?x))");
-//   derived_predicates.push_back(inferred_quality_attribute_type_direct);
+  plansys2::Derived inferred_function_solvesf;
+  inferred_function_solvesf.predicate = parser::pddl::fromStringPredicate("(inferred-Function ?y)");
+  inferred_function_solvesf.preconditions = parser::pddl::fromString("(exists (?x) (and (inferred-SolvesF ?x ?y)))");
+  derived_predicates.push_back(inferred_function_solvesf);
 
-//   plansys2::Derived inferred_quality_attribute_type_from_type;
-//   inferred_quality_attribute_type_from_type.predicate = parser::pddl::fromStringPredicate("(inferred-QualityAttributeType ?y)");
-//   inferred_quality_attribute_type_from_type.preconditions = parser::pddl::fromString("(exists (?x) (and (inferred-IsQAtype ?x ?y)))");
-//   derived_predicates.push_back(inferred_quality_attribute_type_from_type);
+  plansys2::Derived inferred_function_design_direct;
+  inferred_function_design_direct.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?x)");
+  inferred_function_design_direct.preconditions = parser::pddl::fromString("(and (FunctionDesign ?x))");
+  derived_predicates.push_back(inferred_function_design_direct);
 
-//   // 5
-//   plansys2::Derived inferred_requires_c;
-//   inferred_requires_c.predicate = parser::pddl::fromStringPredicate("(inferred-RequiresC ?x ?y)");
-//   inferred_requires_c.preconditions = parser::pddl::fromString("(and (requiresC ?x ?y))");
-//   derived_predicates.push_back(inferred_requires_c);
+  plansys2::Derived inferred_function_design_fd_better;
+  inferred_function_design_fd_better.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?x)");
+  inferred_function_design_fd_better.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-FdBetterUtility ?x ?y)))");
+  derived_predicates.push_back(inferred_function_design_fd_better);
+  //25
 
-//   plansys2::Derived inferred_requires_f;
-//   inferred_requires_f.predicate = parser::pddl::fromStringPredicate("(inferred-RequiresF ?x ?y)");
-//   inferred_requires_f.preconditions = parser::pddl::fromString("(and (requiresF ?x ?y))");
-//   derived_predicates.push_back(inferred_requires_f);
+  plansys2::Derived inferred_function_design_fd_realisability;
+  inferred_function_design_fd_realisability.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?x)");
+  inferred_function_design_fd_realisability.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-Fd_realisability ?x ?y)))");
+  derived_predicates.push_back(inferred_function_design_fd_realisability);
 
-//   plansys2::Derived inferred_same_as;
-//   inferred_same_as.predicate = parser::pddl::fromStringPredicate("(inferred-SameAs ?x ?y)");
-//   inferred_same_as.preconditions = parser::pddl::fromString("(and (sameAs ?x ?y))");
-//   derived_predicates.push_back(inferred_same_as);
+  plansys2::Derived inferred_function_design_fd_utility;
+  inferred_function_design_fd_utility.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?x)");
+  inferred_function_design_fd_utility.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-Fd_utility ?x ?y)))");
+  derived_predicates.push_back(inferred_function_design_fd_utility);
 
-//   plansys2::Derived inferred_solvesf_fd_unground;
-//   inferred_solvesf_fd_unground.predicate = parser::pddl::fromStringPredicate("(inferred-SolvesF ?fd_unground ?f)");
-//   inferred_solvesf_fd_unground.preconditions = parser::pddl::fromString("(and (= ?fd_unground fd_unground) (and (inferred-Function ?f) (inferred-FunctionDesign fd_unground)))");
-//   inferred_solvesf_fd_unground.preconditions.nodes[3].node_type = plansys2_msgs::msg::Node::CONSTANT;
-//   inferred_solvesf_fd_unground.preconditions.nodes[3].name = "fd_unground";
-//   derived_predicates.push_back(inferred_solvesf_fd_unground);
+  plansys2::Derived inferred_function_design_qaestimation;
+  inferred_function_design_qaestimation.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?x)");
+  inferred_function_design_qaestimation.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-HasQAestimation ?x ?y)))");
+  derived_predicates.push_back(inferred_function_design_qaestimation);
 
-//   plansys2::Derived inferred_solvesf_direct;
-//   inferred_solvesf_direct.predicate = parser::pddl::fromStringPredicate("(inferred-SolvesF ?x ?y)");
-//   inferred_solvesf_direct.preconditions = parser::pddl::fromString("(and (solvesF ?x ?y))");
-//   derived_predicates.push_back(inferred_solvesf_direct);
-
-//   plansys2::DerivedGraph graph(derived_predicates);
-//   // graph.printGraph();
-//   ASSERT_EQ(graph.getDerivedPredicates().size(), 54);
-
-//   plansys2::Action start_robot;
-//   start_robot.name = "start_robot";
-//   start_robot.parameters.push_back(parser::pddl::fromStringParam("r", "robot"));
-//   start_robot.preconditions = parser::pddl::fromString("(and (robot_not_started ?r))");
-//   start_robot.effects = parser::pddl::fromString("(and (not (robot_not_started ?r)) (robot_started ?r))");
-//   // graph.appendAction(start_robot);
-
-//   plansys2::Action reconfigure1;
-//   reconfigure1.name = "reconfigure1";
-//   reconfigure1.parameters.push_back(parser::pddl::fromStringParam("f"));
-//   reconfigure1.parameters.push_back(parser::pddl::fromStringParam("fd_goal"));
-//   reconfigure1.preconditions = parser::pddl::fromString(
-//     "(and"
-//     " (Function ?f)"
-//     " (inferred-SolvesF ?fd_goal ?f)"
-//     " (FunctionDesign ?fd_goal)"
-//     " (not (inferred-Fd_realisability ?fd_goal false_boolean))"
-//     " (not (exists (?fd) (and"
-//     "   (inferred-SolvesF ?fd ?f)"
-//     "   (FunctionDesign ?fd)"
-//     "   (functionGrounding ?f ?fd)"
-//     " )))"
-//     " (or"
-//     "   (= ?fd_goal fd_unground)"
-//     "   (not (exists (?fd) (and"
-//     "     (inferred-SolvesF ?fd ?f)"
-//     "     (not (inferred-Fd_realisability ?fd false_boolean))"
-//     "     (inferred-FdBetterUtility ?fd ?fd_goal)"
-//     "   )))"
-//     " )"
-//     ")"
-//   );
-//   reconfigure1.preconditions.nodes[15].node_type = plansys2_msgs::msg::Node::CONSTANT;
-//   reconfigure1.preconditions.nodes[15].name = "fd_unground";
-//   reconfigure1.effects = parser::pddl::fromString("(and (functionGrounding ?f ?fd_goal))");
-//   graph.appendAction(reconfigure1);
-
-//   plansys2::Action reconfigure2;
-//   reconfigure2.name = "reconfigure2";
-//   reconfigure2.parameters.push_back(parser::pddl::fromStringParam("f"));
-//   reconfigure2.parameters.push_back(parser::pddl::fromStringParam("fd_initial"));
-//   reconfigure2.parameters.push_back(parser::pddl::fromStringParam("fd_goal"));
-//   reconfigure2.preconditions = parser::pddl::fromString(
-//     "(and"
-//     " (not (= ?fd_initial ?fd_goal))"
-//     " (Function ?f)"
-//     " (FunctionDesign ?fd_initial)"
-//     " (functionGrounding ?f ?fd_initial)"
-//     " (inferred-SolvesF ?fd_goal ?f)"
-//     " (FunctionDesign ?fd_goal)"
-//     " (not (inferred-Fd_realisability ?fd_goal false_boolean))"
-//     " (or"
-//     "   (= ?fd_goal fd_unground)"
-//     "   (not (exists (?fd) (and"
-//     "     (inferred-SolvesF ?fd ?f)"
-//     "     (not (inferred-Fd_realisability ?fd false_boolean))"
-//     "     (inferred-FdBetterUtility ?fd ?fd_goal)"
-//     "   )))"
-//     " )"
-//     ")"
-//   );
-//   reconfigure2.effects = parser::pddl::fromString(
-//     "(and"
-//     " (not (functionGrounding ?f ?fd_initial))"
-//     " (functionGrounding ?f ?fd_goal)"
-//     ")"
-//   );
-//   // graph.appendAction(reconfigure2);
-
-//   plansys2::Action search_pipeline;
-//   search_pipeline.name = "search_pipeline";
-//   search_pipeline.parameters.push_back(parser::pddl::fromStringParam("p", "pipeline"));
-//   search_pipeline.parameters.push_back(parser::pddl::fromStringParam("r", "robot"));
-//   search_pipeline.preconditions = parser::pddl::fromString(
-//     "(and"
-//     " (robot_started ?r)"
-//     " (exists (?a ?f1 ?f2 ?fd1 ?fd2) (and"
-//     "   (inferred-Action ?a)"
-//     "   (= ?a a_search_pipeline)"
-//     "   (not (= ?f1 ?f2))"
-//     "   (inferred-requiresF ?a ?f1)"
-//     "   (inferred-requiresF ?a ?f2)"
-//     "   (inferred-F_active ?f1 true_boolean)"
-//     "   (inferred-F_active ?f2 true_boolean)"
-//     " ))"
-//     " (not (inferred-F_active f_follow_pipeline true_boolean))"
-//     ")"
-//   );
-//   search_pipeline.preconditions.nodes[7].node_type = plansys2_msgs::msg::Node::CONSTANT;
-//   search_pipeline.preconditions.nodes[7].name = "a_search_pipeline";
-//   search_pipeline.effects = parser::pddl::fromString("(and (pipeline_found ?p))");
-//   // graph.appendAction(search_pipeline);
-
-//   plansys2::Action inspect_pipeline;
-//   inspect_pipeline.name = "inspect_pipeline";
-//   inspect_pipeline.parameters.push_back(parser::pddl::fromStringParam("p", "pipeline"));
-//   inspect_pipeline.parameters.push_back(parser::pddl::fromStringParam("r", "robot"));
-//   inspect_pipeline.preconditions = parser::pddl::fromString(
-//     "(and"
-//     " (robot_started ?r)"
-//     " (pipeline_found ?p)"
-//     " (exists (?a ?f1 ?f2 ?fd1 ?fd2) (and"
-//     "   (Action ?a)"
-//     "   (= ?a a_inspect_pipeline)"
-//     "   (not (= ?f1 ?f2))"
-//     "   (inferred-requiresF ?a ?f1)"
-//     "   (inferred-requiresF ?a ?f2)"
-//     "   (inferred-F_active ?f1 true_boolean)"
-//     "   (inferred-F_active ?f2 true_boolean)"
-//     " ))"
-//     " (not (inferred-F_active f_generate_search_path true_boolean))"
-//     ")"
-//   );
-//   inspect_pipeline.preconditions.nodes[8].node_type = plansys2_msgs::msg::Node::CONSTANT;
-//   inspect_pipeline.preconditions.nodes[8].name = "a_inspect_pipeline";
-//   inspect_pipeline.effects = parser::pddl::fromString("(and (pipeline_inspected ?p))");
-//   // graph.appendAction(inspect_pipeline);
+  plansys2::Derived inferred_function_design_requiresc;
+  inferred_function_design_requiresc.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?x)");
+  inferred_function_design_requiresc.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-RequiresC ?x ?y)))");
+  derived_predicates.push_back(inferred_function_design_requiresc);
   
-//   graph.printGraphLayers();
+  plansys2::Derived inferred_function_design_solvesf;
+  inferred_function_design_solvesf.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?x)");
+  inferred_function_design_solvesf.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-SolvesF ?x ?y)))");
+  derived_predicates.push_back(inferred_function_design_solvesf);
+  //30
 
-//   graph.printGraph();
-//   std::vector<std::string> all_nodes;
-//   auto func_all = [&all_nodes](const plansys2::NodeVariant & node) {
-//       all_nodes.push_back(node.getNodeName());
-//       std::cout << node.getNodeName() << std::endl;
-//     };
-//   std::cout << "\nTraversing full graph" << std::endl;
-//   graph.depthFirstTraverseAll(func_all, true);
+  // THIS IS THE PROBLEMATIC ONE
+  plansys2::Derived inferred_function_design_fd_better_inverse;
+  inferred_function_design_fd_better_inverse.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?y)");
+  inferred_function_design_fd_better_inverse.preconditions = parser::pddl::fromString("(exists (?x) (and (inferred-FdBetterUtility ?x ?y)))");
+  derived_predicates.push_back(inferred_function_design_fd_better_inverse);
+
+  plansys2::Derived inferred_function_design_grounding_inverse;
+  inferred_function_design_grounding_inverse.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionDesign ?y)");
+  inferred_function_design_grounding_inverse.preconditions = parser::pddl::fromString("(exists (?x) (and (inferred-FunctionGrounding ?x ?y)))");
+  derived_predicates.push_back(inferred_function_design_grounding_inverse);
+
+  plansys2::Derived inferred_function_grounding_1;
+  inferred_function_grounding_1.predicate = parser::pddl::fromStringPredicate("(inferred-FunctionGrounding ?x ?y)");
+  inferred_function_grounding_1.preconditions = parser::pddl::fromString("(and (functionGrounding ?x ?y))");
+  derived_predicates.push_back(inferred_function_grounding_1);
+
+  plansys2::Derived inferred_has_qaestimation;
+  inferred_has_qaestimation.predicate = parser::pddl::fromStringPredicate("(inferred-HasQAestimation ?x ?y)");
+  inferred_has_qaestimation.preconditions = parser::pddl::fromString("(and (hasQAestimation ?x ?y))");
+  derived_predicates.push_back(inferred_has_qaestimation);
+
+  plansys2::Derived inferred_inconsistent_c_status;
+  inferred_inconsistent_c_status.predicate = parser::pddl::fromStringPredicate("(inferred-Inconsistent)");
+  inferred_inconsistent_c_status.preconditions = parser::pddl::fromString("(exists (?x ?y ?z) (and (inferred-C_status ?x ?y) (inferred-C_status ?x ?z) (not (= ?y ?z))))");
+  derived_predicates.push_back(inferred_inconsistent_c_status);
+  //35
+
+  plansys2::Derived inferred_inconsistent_f_active;
+  inferred_inconsistent_f_active.predicate = parser::pddl::fromStringPredicate("(inferred-Inconsistent)");
+  inferred_inconsistent_f_active.preconditions = parser::pddl::fromString("(exists (?x ?y ?z) (and (inferred-F_active ?x ?y) (inferred-F_active ?x ?z) (not (= ?y ?z))))");
+  derived_predicates.push_back(inferred_inconsistent_f_active);
+
+  plansys2::Derived inferred_inconsistent_fd_realisability;
+  inferred_inconsistent_fd_realisability.predicate = parser::pddl::fromStringPredicate("(inferred-Inconsistent)");
+  inferred_inconsistent_fd_realisability.preconditions = parser::pddl::fromString("(exists (?x ?y ?z) (and (inferred-Fd_realisability ?x ?y) (inferred-Fd_realisability ?x ?z) (not (= ?y ?z))))");
+  derived_predicates.push_back(inferred_inconsistent_fd_realisability);
+
+  plansys2::Derived inferred_inconsistent_fd_utility;
+  inferred_inconsistent_fd_utility.predicate = parser::pddl::fromStringPredicate("(inferred-Inconsistent)");
+  inferred_inconsistent_fd_utility.preconditions = parser::pddl::fromString("(exists (?x ?y ?z) (and (inferred-Fd_utility ?x ?y) (inferred-Fd_utility ?x ?z) (not (= ?y ?z))))");
+  derived_predicates.push_back(inferred_inconsistent_fd_utility);
+
+  plansys2::Derived inferred_inconsistent_isqatype;
+  inferred_inconsistent_isqatype.predicate = parser::pddl::fromStringPredicate("(inferred-Inconsistent)");
+  inferred_inconsistent_isqatype.preconditions = parser::pddl::fromString("(exists (?x ?y ?z) (and (inferred-IsQAtype ?x ?y) (inferred-IsQAtype ?x ?z) (= ?y ?z)))");
+  derived_predicates.push_back(inferred_inconsistent_isqatype);
+
+  plansys2::Derived inferred_inconsistent_qavalue;
+  inferred_inconsistent_qavalue.predicate = parser::pddl::fromStringPredicate("(inferred-Inconsistent)");
+  inferred_inconsistent_qavalue.preconditions = parser::pddl::fromString("(exists (?x ?y ?z) (and (inferred-Qa_has_value ?x ?y) (inferred-Qa_has_value ?x ?z) (not (= ?y ?z))))");
+  derived_predicates.push_back(inferred_inconsistent_qavalue);
+
+  plansys2::Derived inferred_inconsistent_solvesf;
+  inferred_inconsistent_solvesf.predicate = parser::pddl::fromStringPredicate("(inferred-Inconsistent)");
+  inferred_inconsistent_solvesf.preconditions = parser::pddl::fromString("(exists (?x ?y ?z) (and (inferred-SolvesF ?x ?y) (inferred-SolvesF ?x ?z) (= ?y ?z)))");
+  derived_predicates.push_back(inferred_inconsistent_solvesf);
+
+  plansys2::Derived inferred_isqatype;
+  inferred_isqatype.predicate = parser::pddl::fromStringPredicate("(inferred-IsQAtype ?x ?y)");
+  inferred_isqatype.preconditions = parser::pddl::fromString("(and (isQAtype ?x ?y))");
+  derived_predicates.push_back(inferred_isqatype);
+
+  plansys2::Derived inferred_qavalue_direct;
+  inferred_qavalue_direct.predicate = parser::pddl::fromStringPredicate("(inferred-QAvalue ?x)");
+  inferred_qavalue_direct.preconditions = parser::pddl::fromString("(and (QAvalue ?x))");
+  derived_predicates.push_back(inferred_qavalue_direct);
+
+  plansys2::Derived inferred_qavalue_from_type;
+  inferred_qavalue_from_type.predicate = parser::pddl::fromStringPredicate("(inferred-QAvalue ?x)");
+  inferred_qavalue_from_type.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-IsQAtype ?x ?y)))");
+  derived_predicates.push_back(inferred_qavalue_from_type);
+
+  plansys2::Derived inferred_qavalue_from_value;
+  inferred_qavalue_from_value.predicate = parser::pddl::fromStringPredicate("(inferred-QAvalue ?x)");
+  inferred_qavalue_from_value.preconditions = parser::pddl::fromString("(exists (?y) (and (inferred-Qa_has_value ?x ?y)))");
+  derived_predicates.push_back(inferred_qavalue_from_value);
+
+  plansys2::Derived inferred_qavalue_from_estimation;
+  inferred_qavalue_from_estimation.predicate = parser::pddl::fromStringPredicate("(inferred-QAvalue ?y)");
+  inferred_qavalue_from_estimation.preconditions = parser::pddl::fromString("(exists (?x) (and (inferred-HasQAestimation ?x ?y)))");
+  derived_predicates.push_back(inferred_qavalue_from_estimation);
+
+  plansys2::Derived inferred_qa_has_value;
+  inferred_qa_has_value.predicate = parser::pddl::fromStringPredicate("(inferred-Qa_has_value ?x ?y)");
+  inferred_qa_has_value.preconditions = parser::pddl::fromString("(and (qa_has_value ?x ?y))");
+  derived_predicates.push_back(inferred_qa_has_value);
+
+  plansys2::Derived inferred_quality_attribute_type_direct;
+  inferred_quality_attribute_type_direct.predicate = parser::pddl::fromStringPredicate("(inferred-QualityAttributeType ?x)");
+  inferred_quality_attribute_type_direct.preconditions = parser::pddl::fromString("(and (QualityAttributeType ?x))");
+  derived_predicates.push_back(inferred_quality_attribute_type_direct);
+
+  plansys2::Derived inferred_quality_attribute_type_from_type;
+  inferred_quality_attribute_type_from_type.predicate = parser::pddl::fromStringPredicate("(inferred-QualityAttributeType ?y)");
+  inferred_quality_attribute_type_from_type.preconditions = parser::pddl::fromString("(exists (?x) (and (inferred-IsQAtype ?x ?y)))");
+  derived_predicates.push_back(inferred_quality_attribute_type_from_type);
+
+  plansys2::Derived inferred_requires_c;
+  inferred_requires_c.predicate = parser::pddl::fromStringPredicate("(inferred-RequiresC ?x ?y)");
+  inferred_requires_c.preconditions = parser::pddl::fromString("(and (requiresC ?x ?y))");
+  derived_predicates.push_back(inferred_requires_c);
+
+  plansys2::Derived inferred_requires_f;
+  inferred_requires_f.predicate = parser::pddl::fromStringPredicate("(inferred-RequiresF ?x ?y)");
+  inferred_requires_f.preconditions = parser::pddl::fromString("(and (requiresF ?x ?y))");
+  derived_predicates.push_back(inferred_requires_f);
+
+  plansys2::Derived inferred_same_as;
+  inferred_same_as.predicate = parser::pddl::fromStringPredicate("(inferred-SameAs ?x ?y)");
+  inferred_same_as.preconditions = parser::pddl::fromString("(and (sameAs ?x ?y))");
+  derived_predicates.push_back(inferred_same_as);
+
+  plansys2::Derived inferred_solvesf_fd_unground;
+  inferred_solvesf_fd_unground.predicate = parser::pddl::fromStringPredicate("(inferred-SolvesF ?fd_unground ?f)");
+  inferred_solvesf_fd_unground.preconditions = parser::pddl::fromString("(and (= ?fd_unground fd_unground) (and (inferred-Function ?f) (inferred-FunctionDesign fd_unground)))");
+  inferred_solvesf_fd_unground.preconditions.nodes[3].node_type = plansys2_msgs::msg::Node::CONSTANT;
+  inferred_solvesf_fd_unground.preconditions.nodes[3].name = "fd_unground";
+  derived_predicates.push_back(inferred_solvesf_fd_unground);
+
+  plansys2::Derived inferred_solvesf_direct;
+  inferred_solvesf_direct.predicate = parser::pddl::fromStringPredicate("(inferred-SolvesF ?x ?y)");
+  inferred_solvesf_direct.preconditions = parser::pddl::fromString("(and (solvesF ?x ?y))");
+  derived_predicates.push_back(inferred_solvesf_direct);
+
+  plansys2::Graph graph(derived_predicates);
   
-//   ASSERT_EQ(all_nodes.size(), 71); // Is this correct?
+  ASSERT_EQ(graph.getNodeNumber(), 75);
+  ASSERT_EQ(graph.getRootNumber(), 21); 
+  ASSERT_EQ(graph.getPredicates().size(), 21);
+  ASSERT_EQ(graph.getPredicatesNames().size(), 21);
+  ASSERT_EQ(graph.getDerivedPredicates().size(), 54);
 
-//   //  TEST PRUNE GRAPH TO ACTIONS
-//   auto graph_start_robot_action = graph.pruneGraphToActions({start_robot});
+  auto sccs = graph.computeSCCsTarjanDerivedPredicates();
+  int total_size = 0;
+  for (const auto& scc: sccs) {
+    total_size += scc.size();
+    for (const auto& node: scc) {
+    }
+  }
+  ASSERT_EQ(total_size, 54);
 
-//   all_nodes.clear();
-//   std::cout << "Traversing graph_start_robot_action" << std::endl;
-//   graph_start_robot_action.depthFirstTraverseAll(func_all, true);
+  plansys2::Action start_robot;
+  start_robot.name = "start_robot";
+  start_robot.parameters.push_back(parser::pddl::fromStringParam("?r", "robot"));
+  start_robot.preconditions = parser::pddl::fromString("(and (robot_not_started ?r))");
+  start_robot.effects = parser::pddl::fromString("(and (not (robot_not_started ?r)) (robot_started ?r))");
+  graph.appendAction(start_robot);
 
-//   ASSERT_EQ(all_nodes.size(), 2);
-//   ASSERT_EQ(all_nodes[0], "robot_not_started");
-//   ASSERT_EQ(all_nodes[1], "start_robot");
+  ASSERT_EQ(graph.getNodeNumber(), 77);
+  ASSERT_EQ(graph.getRootNumber(), 22); 
+  ASSERT_EQ(graph.getPredicates().size(), 22);
+  ASSERT_EQ(graph.getPredicatesNames().size(), 22);
+  ASSERT_EQ(graph.getDerivedPredicates().size(), 54);
+  ASSERT_EQ(graph.getActionsNumber(), 1);
 
-//   std::vector<std::string> start_robot_parent_nodes;
-//   auto func_start_robot_parents = [&start_robot_parent_nodes](const plansys2::NodeVariant & node) {
-//       start_robot_parent_nodes.push_back(node.getNodeName());
-//     };
-//   graph.backtrackTraverse(start_robot, func_start_robot_parents);
-//   ASSERT_EQ(start_robot_parent_nodes.size(), 2);
-//   ASSERT_EQ(start_robot_parent_nodes[0], "start_robot");
-//   ASSERT_EQ(start_robot_parent_nodes[1], "robot_not_started");
+  std::vector<std::string> parent_nodes_names = graph.getParentNodesNames(start_robot);
+  ASSERT_EQ(parent_nodes_names.size(), 1);
+  ASSERT_EQ(parent_nodes_names[0], "robot_not_started");
 
-//   auto graph_reconfigure1_action = graph.pruneGraphToActions({reconfigure1});
-//   all_nodes.clear();
-//   std::cout << "\nTraversing graph_reconfigure1_action" << std::endl;
-//   graph_reconfigure1_action.depthFirstTraverseAll(func_all, true);
-//   ASSERT_EQ(all_nodes.size(), 32);
-// }
+  plansys2::Action reconfigure1;
+  reconfigure1.name = "reconfigure1";
+  reconfigure1.parameters.push_back(parser::pddl::fromStringParam("?f"));
+  reconfigure1.parameters.push_back(parser::pddl::fromStringParam("?fd_goal"));
+  reconfigure1.preconditions = parser::pddl::fromString(
+    "(and"
+    " (Function ?f)"
+    " (inferred-SolvesF ?fd_goal ?f)"
+    " (FunctionDesign ?fd_goal)"
+    " (not (inferred-Fd_realisability ?fd_goal false_boolean))"
+    " (not (exists (?fd) (and"
+    "   (inferred-SolvesF ?fd ?f)"
+    "   (FunctionDesign ?fd)"
+    "   (functionGrounding ?f ?fd)"
+    " )))"
+    " (or"
+    "   (= ?fd_goal fd_unground)"
+    "   (not (exists (?fd) (and"
+    "     (inferred-SolvesF ?fd ?f)"
+    "     (not (inferred-Fd_realisability ?fd false_boolean))" 
+    "     (inferred-FdBetterUtility ?fd ?fd_goal)"
+    "   )))"
+    " )"
+    ")"
+  );
+  reconfigure1.preconditions.nodes[15].node_type = plansys2_msgs::msg::Node::CONSTANT;
+  reconfigure1.preconditions.nodes[15].name = "fd_unground";
+  reconfigure1.effects = parser::pddl::fromString("(and (functionGrounding ?f ?fd_goal))");
+  graph.appendAction(reconfigure1);
+
+  ASSERT_EQ(graph.getNodeNumber(), 78);
+  ASSERT_EQ(graph.getRootNumber(), 22); 
+  ASSERT_EQ(graph.getPredicates().size(), 22);
+  ASSERT_EQ(graph.getPredicatesNames().size(), 22);
+  ASSERT_EQ(graph.getDerivedPredicates().size(), 54);
+  ASSERT_EQ(graph.getActionsNumber(), 2);
+
+  plansys2::Action reconfigure2;
+  reconfigure2.name = "reconfigure2";
+  reconfigure2.parameters.push_back(parser::pddl::fromStringParam("?f"));
+  reconfigure2.parameters.push_back(parser::pddl::fromStringParam("?fd_initial"));
+  reconfigure2.parameters.push_back(parser::pddl::fromStringParam("?fd_goal"));
+  reconfigure2.preconditions = parser::pddl::fromString(
+    "(and"
+    " (not (= ?fd_initial ?fd_goal))"
+    " (Function ?f)"
+    " (FunctionDesign ?fd_initial)"
+    " (functionGrounding ?f ?fd_initial)"
+    " (inferred-SolvesF ?fd_goal ?f)"
+    " (FunctionDesign ?fd_goal)"
+    " (not (inferred-Fd_realisability ?fd_goal false_boolean))"
+    " (or"
+    "   (= ?fd_goal fd_unground)"
+    "   (not (exists (?fd) (and"
+    "     (inferred-SolvesF ?fd ?f)"
+    "     (not (inferred-Fd_realisability ?fd false_boolean))"
+    "     (inferred-FdBetterUtility ?fd ?fd_goal)"
+    "   )))"
+    " )"
+    ")"
+  );
+  reconfigure2.effects = parser::pddl::fromString(
+    "(and"
+    " (not (functionGrounding ?f ?fd_initial))"
+    " (functionGrounding ?f ?fd_goal)"
+    ")"
+  );
+  reconfigure2.preconditions.nodes[15].node_type = plansys2_msgs::msg::Node::CONSTANT;
+  reconfigure2.preconditions.nodes[15].name = "fd_unground";
+  graph.appendAction(reconfigure2);
+  
+  ASSERT_EQ(graph.getPredicates().size(), 22);
+  ASSERT_EQ(graph.getPredicatesNames().size(), 22);
+  ASSERT_EQ(graph.getDerivedPredicates().size(), 54);
+  ASSERT_EQ(graph.getActionsNumber(), 3);
+  ASSERT_EQ(graph.getRootNumber(), 22); 
+  ASSERT_EQ(graph.getNodeNumber(), 79);
+
+  plansys2::Action search_pipeline;
+  search_pipeline.name = "search_pipeline";
+  search_pipeline.parameters.push_back(parser::pddl::fromStringParam("?p", "pipeline"));
+  search_pipeline.parameters.push_back(parser::pddl::fromStringParam("?r", "robot"));
+  search_pipeline.preconditions = parser::pddl::fromString(
+    "(and"
+    " (robot_started ?r)"
+    " (exists (?a ?f1 ?f2 ?fd1 ?fd2) (and"
+    "   (inferred-Action ?a)"
+    "   (= ?a a_search_pipeline)"
+    "   (not (= ?f1 ?f2))"
+    "   (inferred-requiresF ?a ?f1)"
+    "   (inferred-requiresF ?a ?f2)"
+    "   (inferred-F_active ?f1 true_boolean)"
+    "   (inferred-F_active ?f2 true_boolean)"
+    " ))"
+    " (not (inferred-F_active f_follow_pipeline true_boolean))"
+    ")"
+  );
+  search_pipeline.preconditions.nodes[7].node_type = plansys2_msgs::msg::Node::CONSTANT;
+  search_pipeline.preconditions.nodes[7].name = "a_search_pipeline";
+  search_pipeline.effects = parser::pddl::fromString("(and (pipeline_found ?p))");
+  graph.appendAction(search_pipeline);
+
+  ASSERT_EQ(graph.getFunctions().size(), 0);
+  ASSERT_EQ(graph.getPredicates().size(), 23);
+  ASSERT_EQ(graph.getPredicatesNames().size(), 23);
+  ASSERT_EQ(graph.getDerivedPredicates().size(), 54);
+  ASSERT_EQ(graph.getActionsNumber(), 4);
+  ASSERT_EQ(graph.getRootNumber(), 23); 
+  ASSERT_EQ(graph.getNodeNumber(), 81);
+
+  plansys2::Action inspect_pipeline;
+  inspect_pipeline.name = "inspect_pipeline";
+  inspect_pipeline.parameters.push_back(parser::pddl::fromStringParam("?p", "pipeline"));
+  inspect_pipeline.parameters.push_back(parser::pddl::fromStringParam("?r", "robot"));
+  inspect_pipeline.preconditions = parser::pddl::fromString(
+    "(and"
+    " (robot_started ?r)"
+    " (pipeline_found ?p)"
+    " (exists (?a ?f1 ?f2 ?fd1 ?fd2) (and"
+    "   (inferred-Action ?a)"
+    "   (= ?a a_inspect_pipeline)"
+    "   (not (= ?f1 ?f2))"
+    "   (inferred-requiresF ?a ?f1)"
+    "   (inferred-requiresF ?a ?f2)"
+    "   (inferred-F_active ?f1 true_boolean)"
+    "   (inferred-F_active ?f2 true_boolean)"
+    " ))"
+    " (not (inferred-F_active f_generate_search_path true_boolean))"
+    ")"
+  );
+  inspect_pipeline.preconditions.nodes[8].node_type = plansys2_msgs::msg::Node::CONSTANT;
+  inspect_pipeline.preconditions.nodes[8].name = "a_inspect_pipeline";
+  inspect_pipeline.effects = parser::pddl::fromString("(and (pipeline_inspected ?p))");
+  graph.appendAction(inspect_pipeline);
+  
+  ASSERT_EQ(graph.getFunctions().size(), 0);
+  ASSERT_EQ(graph.getPredicates().size(), 24);
+  ASSERT_EQ(graph.getRootNumber(), 24); 
+  ASSERT_EQ(graph.getPredicatesNames().size(), 24);
+  ASSERT_EQ(graph.getDerivedPredicates().size(), 54);
+  ASSERT_EQ(graph.getActionsNumber(), 5);
+  ASSERT_EQ(graph.getNodeNumber(), 83);
+  
+  auto graph_start_robot_action = graph.pruneGraphToActions({start_robot});
+
+  ASSERT_EQ(graph_start_robot_action.getFunctions().size(), 0);
+  ASSERT_EQ(graph_start_robot_action.getPredicates().size(), 1);
+  ASSERT_EQ(graph_start_robot_action.getRootNumber(), 1); 
+  ASSERT_EQ(graph_start_robot_action.getPredicatesNames().size(), 1);
+  ASSERT_EQ(graph_start_robot_action.getDerivedPredicates().size(), 0);
+  ASSERT_EQ(graph_start_robot_action.getActionsNumber(), 1);
+  ASSERT_EQ(graph_start_robot_action.getNodeNumber(), 2);
+
+  std::vector<std::string> start_robot_parent_nodes;
+  auto func_start_robot_parents = [&start_robot_parent_nodes](const plansys2::NodeVariant & node) {
+      start_robot_parent_nodes.push_back(node.getNodeName());
+    };
+  graph.backtrackTraverse(start_robot, func_start_robot_parents);
+  ASSERT_EQ(start_robot_parent_nodes.size(), 2);
+  ASSERT_EQ(start_robot_parent_nodes[0], "start_robot");
+  ASSERT_EQ(start_robot_parent_nodes[1], "robot_not_started");
+
+  auto graph_reconfigure1_action = graph.pruneGraphToActions({reconfigure1});
+
+  ASSERT_EQ(graph_reconfigure1_action.getFunctions().size(), 0);
+  ASSERT_EQ(graph_reconfigure1_action.getPredicates().size(), 17);
+  ASSERT_EQ(graph_reconfigure1_action.getRootNumber(), 17); 
+  ASSERT_EQ(graph_reconfigure1_action.getDerivedPredicates().size(), 41);
+  ASSERT_EQ(graph_reconfigure1_action.getActionsNumber(), 1);
+  ASSERT_EQ(graph_reconfigure1_action.getNodeNumber(), 59);
+
+  std::vector<std::string> reconfigure1_parent_nodes;
+  auto func_reconfigure1_parents = [&reconfigure1_parent_nodes](const plansys2::NodeVariant & node) {
+      reconfigure1_parent_nodes.push_back(node.getNodeName());
+    };
+  graph.backtrackTraverse(reconfigure1, func_reconfigure1_parents);
+  ASSERT_EQ(reconfigure1_parent_nodes.size(), 59);
+
+  auto graph_reconfigure2_action = graph.pruneGraphToActions({reconfigure2});
+  ASSERT_EQ(graph_reconfigure2_action.getFunctions().size(), 0);
+  ASSERT_EQ(graph_reconfigure2_action.getPredicates().size(), 17);
+  ASSERT_EQ(graph_reconfigure2_action.getRootNumber(), 17); 
+  ASSERT_EQ(graph_reconfigure2_action.getDerivedPredicates().size(), 41);
+  ASSERT_EQ(graph_reconfigure2_action.getActionsNumber(), 1);
+  ASSERT_EQ(graph_reconfigure2_action.getNodeNumber(), 59);
+
+  std::vector<std::string> reconfigure2_parent_nodes;
+  auto func_reconfigure2_parents = [&reconfigure2_parent_nodes](const plansys2::NodeVariant & node) {
+      reconfigure2_parent_nodes.push_back(node.getNodeName());
+    };
+  graph.backtrackTraverse(reconfigure2, func_reconfigure2_parents);
+  ASSERT_EQ(reconfigure2_parent_nodes.size(), 59);
+
+  auto graph_search_pipeline_action = graph.pruneGraphToActions({search_pipeline});
+  ASSERT_EQ(graph_search_pipeline_action.getFunctions().size(), 0);
+  ASSERT_EQ(graph_search_pipeline_action.getPredicates().size(), 19);
+  ASSERT_EQ(graph_search_pipeline_action.getRootNumber(), 19); 
+  ASSERT_EQ(graph_search_pipeline_action.getDerivedPredicates().size(), 43);
+  ASSERT_EQ(graph_search_pipeline_action.getActionsNumber(), 1);
+  ASSERT_EQ(graph_search_pipeline_action.getNodeNumber(), 63);
+
+  std::vector<std::string> search_pipeline_parent_nodes;
+  auto func_search_pipeline_parents = [&search_pipeline_parent_nodes](const plansys2::NodeVariant & node) {
+      search_pipeline_parent_nodes.push_back(node.getNodeName());
+    };
+  graph.backtrackTraverse(search_pipeline, func_search_pipeline_parents);
+  ASSERT_EQ(search_pipeline_parent_nodes.size(), 63);
+
+  auto graph_inspect_pipeline_action = graph.pruneGraphToActions({inspect_pipeline});
+  ASSERT_EQ(graph_inspect_pipeline_action.getFunctions().size(), 0);
+  ASSERT_EQ(graph_inspect_pipeline_action.getPredicates().size(), 20);
+  ASSERT_EQ(graph_inspect_pipeline_action.getRootNumber(), 20); 
+  ASSERT_EQ(graph_inspect_pipeline_action.getDerivedPredicates().size(), 43);
+  ASSERT_EQ(graph_inspect_pipeline_action.getActionsNumber(), 1);
+  ASSERT_EQ(graph_inspect_pipeline_action.getNodeNumber(), 64);
+
+  std::vector<std::string> inspect_pipeline_parent_nodes;
+  auto func_inspect_pipeline_parents = [&inspect_pipeline_parent_nodes](const plansys2::NodeVariant & node) {
+      inspect_pipeline_parent_nodes.push_back(node.getNodeName());
+    };
+  graph.backtrackTraverse(inspect_pipeline, func_inspect_pipeline_parents);
+  ASSERT_EQ(inspect_pipeline_parent_nodes.size(), 64);
+}
 
 int main(int argc, char ** argv)
 {
