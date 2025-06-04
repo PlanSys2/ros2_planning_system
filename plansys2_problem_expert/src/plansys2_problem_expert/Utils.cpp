@@ -241,28 +241,51 @@ void solveDerivedPredicates(plansys2::State & state)
 }
 
 void solveDerivedPredicates(
-  plansys2::State & state, const std::vector<plansys2_msgs::msg::Node> & root_nodes)
-{
+  plansys2::State& state,
+  const std::vector<plansys2_msgs::msg::Node>& root_nodes) {
   if (root_nodes.empty()) {
     state.resetInferredPredicates();
   }
+
   std::unordered_set<std::string> derived_ungrounded_cache;
+  auto sccs = state.getDerivedPredicatesSCCs(root_nodes);
 
-  for (const auto & derived : state.getDerivedPredicatesDepthFirst(root_nodes)) {
-    if (
-      !root_nodes.empty() &&
-      derived_ungrounded_cache.find(derived.predicate.name) == derived_ungrounded_cache.end())
-    {
-      state.ungroundDerivedPredicate(derived);
-      derived_ungrounded_cache.insert(derived.predicate.name);
-    }
-    auto [_, evaluate_value, __, params_values] =
-      evaluate(derived.preconditions, state, derived.preconditions.nodes[0].node_id);
-
-    if (evaluate_value && !params_values.empty()) {
-      groundPredicate(state, derived.predicate, params_values);
+  for (const auto& scc : sccs) {
+    if (scc.size() == 1) {  // Acyclic SCC
+      evaluateSCC(scc, state, root_nodes, derived_ungrounded_cache);
+    } else {  // Cyclic SCC
+      std::unordered_set<std::string> fixpoint_cache;
+      bool changed = true;
+      while (changed) {
+        changed = evaluateSCC(scc, state, root_nodes, fixpoint_cache);
+      }
     }
   }
+}
+
+
+bool evaluateSCC(
+  const std::vector<Derived>& scc,
+  plansys2::State& state,
+  const std::vector<plansys2_msgs::msg::Node>& root_nodes,
+  std::unordered_set<std::string>& unground_cache) 
+{
+  bool changed_flag = false;
+  for (const auto& derived : scc) {
+    if (!root_nodes.empty() &&
+        unground_cache.find(derived.predicate.name) == unground_cache.end()) {
+      state.ungroundDerivedPredicate(derived);
+      unground_cache.insert(derived.predicate.name);
+    }
+    size_t inferred_size_before = state.getInferredPredicatesSize();
+    auto [_, evaluate_value, __, params_values] =
+        evaluate(derived.preconditions, state, derived.preconditions.nodes[0].node_id);
+    if (evaluate_value && !params_values.empty()) {
+      groundPredicate(state, derived.predicate, params_values);
+      changed_flag |= (inferred_size_before != state.getInferredPredicatesSize());
+    }
+  }
+  return changed_flag;
 }
 
 void groundPredicate(

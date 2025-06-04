@@ -36,7 +36,7 @@ namespace plansys2
 ProblemExpert::ProblemExpert(std::shared_ptr<DomainExpert> & domain_expert)
 : domain_expert_(domain_expert)
 {
-  state_.setDerivedPredicates(domain_expert_->getDerivedPredicatesGraph());
+  state_.setDerivedPredicates(domain_expert_->getDerivedResolutionGraph());
 }
 
 void ProblemExpert::updateInferredPredicates() {solveDerivedPredicates(state_);}

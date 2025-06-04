@@ -58,6 +58,11 @@ void solveDerivedPredicates(
   plansys2::State & state, const std::vector<plansys2_msgs::msg::Node> & root_nodes);
 
 void solveDerivedPredicates(plansys2::State & state);
+bool evaluateSCC(
+  const std::vector<Derived>& scc,
+  plansys2::State& state,
+  const std::vector<plansys2_msgs::msg::Node>& root_nodes,
+  std::unordered_set<std::string>& unground_cache);
 
 void groundPredicate(
   plansys2::State & new_state, const plansys2::Predicate & predicate,

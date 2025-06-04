@@ -19,7 +19,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "plansys2_core/Graph.hpp"
+#include "plansys2_core/DerivedResolutionGraph.hpp"
 #include "plansys2_core/State.hpp"
 #include "plansys2_core/Types.hpp"
 #include "plansys2_msgs/msg/node.hpp"
