@@ -8,6 +8,7 @@ find_package(plansys2_msgs REQUIRED)
 find_package(qt_gui_cpp REQUIRED)
 find_package(rqt_gui_cpp REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
+find_package(plansys2_domain_expert REQUIRED)
 
 find_package(Qt5Widgets REQUIRED)
 
@@ -150,12 +151,17 @@ target_link_libraries(
 )
 ament_target_dependencies(rqt_plansys2_plan ${dependencies})
 
+add_executable(export_graph src/export_derived_graph.cpp)
+ament_target_dependencies(export_graph plansys2_domain_expert)
+# target_link_libraries(logger plansys2_logger)
+
 
 install(TARGETS
   plansys2_logger logger
   rqt_plansys2_knowledge
   rqt_plansys2_performers
   rqt_plansys2_plan
+  export_graph
   EXPORT rqt_plansys2
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
