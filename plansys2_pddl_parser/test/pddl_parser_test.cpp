@@ -216,6 +216,91 @@ TEST(PDDLParserTestCase, check_node_equality)
   ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate6, false));
   ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate6, predicate1, false));
 
+  auto predicate1capital = parser::pddl::fromStringPredicate("(PREDICATE A B)");
+  ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate1capital));
+}
+
+TEST(PDDLParserTestCase, check_action_equality)
+{
+  plansys2_msgs::msg::Action actionA;
+  actionA.name = "actionA";
+  actionA.parameters.push_back(parser::pddl::fromStringParam("a"));
+
+  plansys2_msgs::msg::Tree actionA_preconditions;
+  parser::pddl::fromString(actionA_preconditions, "(and (inferredAA a))");
+  actionA.preconditions = actionA_preconditions;
+  
+  plansys2_msgs::msg::Action actionA_case_test;
+  actionA_case_test.name = "aCtIONa";
+  actionA_case_test.parameters.push_back(parser::pddl::fromStringParam("A"));
+
+  plansys2_msgs::msg::Tree actionA_case_test_preconditions;
+  parser::pddl::fromString(actionA_case_test_preconditions, "(and (inferredaa a))");
+  actionA_case_test.preconditions = actionA_case_test_preconditions;
+
+  plansys2_msgs::msg::Action actionB;
+  actionB.name = "actionB";
+  actionB.parameters.push_back(parser::pddl::fromStringParam("b"));
+
+  plansys2_msgs::msg::Tree actionB_preconditions;
+  parser::pddl::fromString(actionB_preconditions, "(and (inferredBB b))");
+  actionB.preconditions = actionB_preconditions;
+
+  plansys2_msgs::msg::Action actionAB;
+  actionAB.name = "actionAB";
+  actionAB.parameters.push_back(parser::pddl::fromStringParam("a"));
+  actionAB.parameters.push_back(parser::pddl::fromStringParam("b"));
+
+  plansys2_msgs::msg::Tree actionAB_preconditions;
+  parser::pddl::fromString(actionAB_preconditions, "(and (inferredAB a b))");
+  actionAB.preconditions = actionAB_preconditions;
+
+  ASSERT_TRUE(parser::pddl::checkActionEquality(actionA, actionA));
+  ASSERT_TRUE(parser::pddl::checkActionEquality(actionA, actionA_case_test));
+  ASSERT_TRUE(parser::pddl::checkActionEquality(actionB, actionB));
+  ASSERT_TRUE(parser::pddl::checkActionEquality(actionAB, actionAB));
+  ASSERT_FALSE(parser::pddl::checkActionEquality(actionA, actionB));
+  ASSERT_FALSE(parser::pddl::checkActionEquality(actionA, actionAB));
+
+  plansys2_msgs::msg::DurativeAction dur_actionA;
+  dur_actionA.name = "dur_actionA";
+  dur_actionA.parameters.push_back(parser::pddl::fromStringParam("a"));
+
+  plansys2_msgs::msg::Tree dur_actionA_over_all_requirements;
+  parser::pddl::fromString(dur_actionA_over_all_requirements, "(and (over all (inferredAA a)))");
+  dur_actionA.over_all_requirements = dur_actionA_over_all_requirements;
+  
+  plansys2_msgs::msg::DurativeAction dur_actionA_case_test;
+  dur_actionA_case_test.name = "dur_aCtIONa";
+  dur_actionA_case_test.parameters.push_back(parser::pddl::fromStringParam("A"));
+
+  plansys2_msgs::msg::Tree dur_actionA_case_test_over_all_requirements;
+  parser::pddl::fromString(dur_actionA_case_test_over_all_requirements, "(and (over all (inferredaa a)))");
+  dur_actionA_case_test.over_all_requirements = dur_actionA_case_test_over_all_requirements;
+
+  plansys2_msgs::msg::DurativeAction dur_actionB;
+  dur_actionB.name = "dur_actionB";
+  dur_actionB.parameters.push_back(parser::pddl::fromStringParam("b"));
+
+  plansys2_msgs::msg::Tree dur_actionB_over_all_requirements;
+  parser::pddl::fromString(dur_actionB_over_all_requirements, "(and (over all (inferredBB b)))");
+  dur_actionB.over_all_requirements = dur_actionB_over_all_requirements;
+
+  plansys2_msgs::msg::DurativeAction dur_actionAB;
+  dur_actionAB.name = "dur_actionAB";
+  dur_actionAB.parameters.push_back(parser::pddl::fromStringParam("a"));
+  dur_actionAB.parameters.push_back(parser::pddl::fromStringParam("b"));
+
+  plansys2_msgs::msg::Tree dur_actionAB_over_all_requirements;
+  parser::pddl::fromString(dur_actionAB_over_all_requirements, "(and (over all (inferredAB a b)))");
+  dur_actionAB.over_all_requirements = dur_actionAB_over_all_requirements;
+
+  ASSERT_TRUE(parser::pddl::checkDurativeActionEquality(dur_actionA, dur_actionA));
+  ASSERT_TRUE(parser::pddl::checkDurativeActionEquality(dur_actionA, dur_actionA_case_test));
+  ASSERT_TRUE(parser::pddl::checkDurativeActionEquality(dur_actionB, dur_actionB));
+  ASSERT_TRUE(parser::pddl::checkDurativeActionEquality(dur_actionAB, dur_actionAB));
+  ASSERT_FALSE(parser::pddl::checkDurativeActionEquality(dur_actionA, dur_actionB));
+  ASSERT_FALSE(parser::pddl::checkDurativeActionEquality(dur_actionA, dur_actionAB));
 }
 
 // TEST(PDDLParserTestCase, check_node_unification)

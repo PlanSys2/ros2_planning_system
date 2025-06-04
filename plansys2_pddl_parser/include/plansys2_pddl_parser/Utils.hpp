@@ -190,6 +190,9 @@ bool empty(const plansys2_msgs::msg::Tree & tree);
 bool checkParamTypeEquivalence(
   const plansys2_msgs::msg::Param & first, const plansys2_msgs::msg::Param & second);
 
+bool compare_str_case_insensitive(const std::string& a, const std::string& b);
+
+
 }  // namespace pddl
 }  // namespace parser
 

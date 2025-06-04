@@ -1345,7 +1345,7 @@ bool checkNodeEquality(
     first.node_type == plansys2_msgs::msg::Node::PREDICATE ||
     first.node_type == plansys2_msgs::msg::Node::FUNCTION)
   {
-    if (first.name != second.name) {
+    if (!compare_str_case_insensitive(first.name, second.name)) {
       return false;
     }
   }
@@ -1390,9 +1390,9 @@ bool checkParamEquality(
   const plansys2_msgs::msg::Param & second,
   bool check_var_params)
 {
-  auto types_match = first.type == second.type
-    || (first.type.empty() && second.type == "object")
-    || (second.type.empty() && first.type == "object");
+  auto types_match = compare_str_case_insensitive(first.type, second.type)
+    || (first.type.empty() && compare_str_case_insensitive(second.type, "object"))
+    || (second.type.empty() && compare_str_case_insensitive(first.type, "object"));
 
   if (!types_match)
     return false;
@@ -1402,13 +1402,13 @@ bool checkParamEquality(
   {
     return true;
   }
-  return first.name == second.name;
+  return compare_str_case_insensitive(first.name, second.name);
 }
 
 bool checkActionEquality(
   const plansys2_msgs::msg::Action & first, const plansys2_msgs::msg::Action & second)
 {
-  if (first.name != second.name) {
+  if (!compare_str_case_insensitive(first.name, second.name)) {
     return false;
   }
 
@@ -1430,7 +1430,7 @@ bool checkDurativeActionEquality(
   const plansys2_msgs::msg::DurativeAction & first,
   const plansys2_msgs::msg::DurativeAction & second)
 {
-  if (first.name != second.name) {
+  if (!compare_str_case_insensitive(first.name, second.name)) {
     return false;
   }
 
@@ -1452,11 +1452,6 @@ bool checkDurativeActionEquality(
          parser::pddl::checkTreeEquality(first.at_start_effects, second.at_start_effects) &&
          parser::pddl::checkTreeEquality(first.at_end_effects, second.at_end_effects);
 }
-
-// bool checkNodeUnification(const plansys2_msgs::msg::Node & first, const plansys2_msgs::msg::Node & second)
-// {
-
-// }
 
 bool empty(const plansys2_msgs::msg::Tree & tree)
 {
@@ -1481,9 +1476,18 @@ bool empty(const plansys2_msgs::msg::Tree & tree)
 bool checkParamTypeEquivalence(
   const plansys2_msgs::msg::Param & first, const plansys2_msgs::msg::Param & second)
 {
-  return first.type == "" || first.type == "object" || first.type == second.type ||
+  return first.type == "" || compare_str_case_insensitive(first.type, "object") || 
+         compare_str_case_insensitive(first.type, second.type) ||
          std::find(first.sub_types.begin(), first.sub_types.end(), second.type) !=
          first.sub_types.end();
+}
+
+bool compare_str_case_insensitive(const std::string& a, const std::string& b) {
+  return a.size() == b.size() &&
+      std::equal(a.begin(), a.end(), b.begin(), b.end(),
+          [](unsigned char ac, unsigned char bc) {
+              return std::tolower(ac) == std::tolower(bc);
+          });
 }
 
 }  // namespace pddl
