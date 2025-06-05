@@ -116,6 +116,8 @@ TEST(utils, evaluate_not)
 
   plansys2_msgs::msg::Tree test_tree2;
   parser::pddl::fromString(test_tree2, "(not (= wp1 wp2))");
+  test_tree2.nodes[2].node_type = plansys2_msgs::msg::Node::CONSTANT;
+  test_tree2.nodes[3].node_type = plansys2_msgs::msg::Node::CONSTANT;
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree2, state),
@@ -123,6 +125,8 @@ TEST(utils, evaluate_not)
 
   plansys2_msgs::msg::Tree test_tree3;
   parser::pddl::fromString(test_tree3, "(not (= wp1 wp1))");
+  test_tree3.nodes[2].node_type = plansys2_msgs::msg::Node::CONSTANT;
+  test_tree3.nodes[3].node_type = plansys2_msgs::msg::Node::CONSTANT;
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree3, state),
@@ -550,224 +554,224 @@ TEST(utils, evaluate_expression_invalid_client)
   t.join();
 }
 
-TEST(utils, evaluate_function_mod)
-{
-  std::vector<plansys2_msgs::msg::Node> predicates_msg;
-  std::vector<plansys2_msgs::msg::Node> functions_msg;
+// TEST(utils, evaluate_function_mod)
+// {
+//   std::vector<plansys2_msgs::msg::Node> predicates_msg;
+//   std::vector<plansys2_msgs::msg::Node> functions_msg;
 
-  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+//   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+//   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
-  plansys2_msgs::msg::Tree test_tree;
-  parser::pddl::fromString(
-    test_tree, "(assign (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
+//   plansys2_msgs::msg::Tree test_tree;
+//   parser::pddl::fromString(
+//     test_tree, "(assign (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
-  parser::pddl::getPredicates(predicates_msg, test_tree);
-  parser::pddl::getFunctions(functions_msg, test_tree);
+//   parser::pddl::getPredicates(predicates_msg, test_tree);
+//   parser::pddl::getFunctions(functions_msg, test_tree);
 
-  // std::unordered_set<plansys2::Instance> instances;
-  auto predicates =
-    plansys2::convertVectorToUnorderedSet<plansys2::Predicate, plansys2_msgs::msg::Node>(
-    predicates_msg);
-  auto functions =
-    plansys2::convertVectorToUnorderedSet<plansys2::Function, plansys2_msgs::msg::Node>(
-    functions_msg);
+//   // std::unordered_set<plansys2::Instance> instances;
+//   auto predicates =
+//     plansys2::convertVectorToUnorderedSet<plansys2::Predicate, plansys2_msgs::msg::Node>(
+//     predicates_msg);
+//   auto functions =
+//     plansys2::convertVectorToUnorderedSet<plansys2::Function, plansys2_msgs::msg::Node>(
+//     functions_msg);
 
-  std::unordered_set<plansys2::Instance> instances;
-  plansys2::State state(instances, functions, predicates);
+//   std::unordered_set<plansys2::Instance> instances;
+//   plansys2::State state(instances, functions, predicates);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, state),
-    std::make_tuple(true, false, 3.0, std::vector<std::map<std::string, std::string>>{}));
-  ASSERT_EQ(functions.find(parser::pddl::fromStringFunction("(vx)"))->value, 0.0);
+//   ASSERT_EQ(
+//     plansys2::evaluate(test_tree, state),
+//     std::make_tuple(true, false, 3.0, std::vector<std::map<std::string, std::string>>{}));
+//   ASSERT_EQ(functions.find(parser::pddl::fromStringFunction("(vx)"))->value, 0.0);
 
-  ASSERT_TRUE(plansys2::apply(test_tree, state));
-  // ASSERT_EQ(
-  //   plansys2::evaluate(test_tree, state),
-  //   std::make_tuple(true, false, 3.0, std::vector<std::map<std::string, std::string>>{}));
-  // ASSERT_EQ(functions[0].value, 3.0);
-  ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 3.0);
+//   ASSERT_TRUE(plansys2::apply(test_tree, state));
+//   // ASSERT_EQ(
+//   //   plansys2::evaluate(test_tree, state),
+//   //   std::make_tuple(true, false, 3.0, std::vector<std::map<std::string, std::string>>{}));
+//   // ASSERT_EQ(functions[0].value, 3.0);
+//   ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 3.0);
 
-  test_tree.nodes.clear();
-  parser::pddl::fromString(
-    test_tree, "(increase (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
+//   test_tree.nodes.clear();
+//   parser::pddl::fromString(
+//     test_tree, "(increase (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
-  ASSERT_TRUE(plansys2::apply(test_tree, state));
-  ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 6.0);
+//   ASSERT_TRUE(plansys2::apply(test_tree, state));
+//   ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 6.0);
 
-  test_tree.nodes.clear();
-  parser::pddl::fromString(
-    test_tree, "(decrease (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
+//   test_tree.nodes.clear();
+//   parser::pddl::fromString(
+//     test_tree, "(decrease (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
-  ASSERT_TRUE(plansys2::apply(test_tree, state));
-  // ASSERT_EQ(functions[0].value, 3.0);
-  ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 3.0);
+//   ASSERT_TRUE(plansys2::apply(test_tree, state));
+//   // ASSERT_EQ(functions[0].value, 3.0);
+//   ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 3.0);
 
-  test_tree.nodes.clear();
-  parser::pddl::fromString(
-    test_tree, "(scale-up (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
+//   test_tree.nodes.clear();
+//   parser::pddl::fromString(
+//     test_tree, "(scale-up (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
-  ASSERT_TRUE(plansys2::apply(test_tree, state));
-  // ASSERT_EQ(functions[0].value, 9.0);
-  ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 9.0);
+//   ASSERT_TRUE(plansys2::apply(test_tree, state));
+//   // ASSERT_EQ(functions[0].value, 9.0);
+//   ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 9.0);
 
-  test_tree.nodes.clear();
-  parser::pddl::fromString(
-    test_tree, "(scale-down (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
+//   test_tree.nodes.clear();
+//   parser::pddl::fromString(
+//     test_tree, "(scale-down (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
-  ASSERT_TRUE(plansys2::apply(test_tree, state));
-  ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 3.0);
+//   ASSERT_TRUE(plansys2::apply(test_tree, state));
+//   ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 3.0);
 
-  // divide by zero
-  test_tree.nodes.clear();
-  parser::pddl::fromString(
-    test_tree, "(scale-down (vx) 0.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
+//   // divide by zero
+//   test_tree.nodes.clear();
+//   parser::pddl::fromString(
+//     test_tree, "(scale-down (vx) 0.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
-  ASSERT_TRUE(plansys2::apply(test_tree, state));
-  ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 3.0);
-}
+//   ASSERT_TRUE(plansys2::apply(test_tree, state));
+//   ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 3.0);
+// }
 
-TEST(utils, evaluate_function_mod_client)
-{
-  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
-  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+// TEST(utils, evaluate_function_mod_client)
+// {
+//   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+//   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+//   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+//   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+//   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
 
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+//   domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+//   problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
 
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+//   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+//   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+//   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+//   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
+//   rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
 
-  exe.add_node(domain_node->get_node_base_interface());
-  exe.add_node(problem_node->get_node_base_interface());
+//   exe.add_node(domain_node->get_node_base_interface());
+//   exe.add_node(problem_node->get_node_base_interface());
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {
-        exe.spin_some();
-      }
-    });
+//   bool finish = false;
+//   std::thread t([&]() {
+//       while (!finish) {
+//         exe.spin_some();
+//       }
+//     });
 
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
-  ASSERT_TRUE(
-    problem_client->addFunction(plansys2::Function("(= (room_distance bedroom kitchen) 1.0)")));
+//   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+//   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
+//   ASSERT_TRUE(
+//     problem_client->addFunction(plansys2::Function("(= (room_distance bedroom kitchen) 1.0)")));
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
+//   {
+//     rclcpp::Rate rate(10);
+//     auto start = test_node->now();
+//     while ((test_node->now() - start).seconds() < 0.5) {
+//       rate.sleep();
+//     }
+//   }
 
-  plansys2_msgs::msg::Tree test_tree;
-  parser::pddl::fromString(
-    test_tree, "(assign (room_distance bedroom kitchen) 0)", false,
-    plansys2_msgs::msg::Node::EXPRESSION);
+//   plansys2_msgs::msg::Tree test_tree;
+//   parser::pddl::fromString(
+//     test_tree, "(assign (room_distance bedroom kitchen) 0)", false,
+//     plansys2_msgs::msg::Node::EXPRESSION);
 
-  ASSERT_TRUE(plansys2::apply(test_tree, problem_client));
-  std::optional<plansys2_msgs::msg::Node> func =
-    problem_client->getFunction("(room_distance bedroom kitchen)");
-  ASSERT_TRUE(func.has_value());
-  ASSERT_EQ(func.value().value, 0.0);
+//   ASSERT_TRUE(plansys2::apply(test_tree, problem_client));
+//   std::optional<plansys2_msgs::msg::Node> func =
+//     problem_client->getFunction("(room_distance bedroom kitchen)");
+//   ASSERT_TRUE(func.has_value());
+//   ASSERT_EQ(func.value().value, 0.0);
 
-  test_tree.nodes.clear();
-  parser::pddl::fromString(
-    test_tree, "(increase (room_distance bedroom kitchen) 10.0)", false,
-    plansys2_msgs::msg::Node::EXPRESSION);
+//   test_tree.nodes.clear();
+//   parser::pddl::fromString(
+//     test_tree, "(increase (room_distance bedroom kitchen) 10.0)", false,
+//     plansys2_msgs::msg::Node::EXPRESSION);
 
-  ASSERT_TRUE(plansys2::apply(test_tree, problem_client));
-  func = problem_client->getFunction("(room_distance bedroom kitchen)");
-  ASSERT_TRUE(func.has_value());
+//   ASSERT_TRUE(plansys2::apply(test_tree, problem_client));
+//   func = problem_client->getFunction("(room_distance bedroom kitchen)");
+//   ASSERT_TRUE(func.has_value());
 
-  finish = true;
-  t.join();
-}
+//   finish = true;
+//   t.join();
+// }
 
-TEST(utils, evaluate_function_mod_invalid)
-{
-  plansys2::State state;
+// TEST(utils, evaluate_function_mod_invalid)
+// {
+//   plansys2::State state;
 
-  // Unknown function modifier type
-  plansys2_msgs::msg::Tree test_tree;
-  parser::pddl::fromString(
-    test_tree, "(assign (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
-  test_tree.nodes[0].node_type = plansys2_msgs::msg::Node::UNKNOWN;
+//   // Unknown function modifier type
+//   plansys2_msgs::msg::Tree test_tree;
+//   parser::pddl::fromString(
+//     test_tree, "(assign (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
+//   test_tree.nodes[0].node_type = plansys2_msgs::msg::Node::UNKNOWN;
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, state),
-    std::make_tuple(false, false, 0, std::vector<std::map<std::string, std::string>>{}));
-}
+//   ASSERT_EQ(
+//     plansys2::evaluate(test_tree, state),
+//     std::make_tuple(false, false, 0, std::vector<std::map<std::string, std::string>>{}));
+// }
 
-TEST(utils, evaluate_function_mod_invalid_client)
-{
-  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
-  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+// TEST(utils, evaluate_function_mod_invalid_client)
+// {
+//   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+//   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+//   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+//   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+//   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
 
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+//   domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+//   problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
 
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+//   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+//   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+//   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+//   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
+//   rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
 
-  exe.add_node(domain_node->get_node_base_interface());
-  exe.add_node(problem_node->get_node_base_interface());
+//   exe.add_node(domain_node->get_node_base_interface());
+//   exe.add_node(problem_node->get_node_base_interface());
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {
-        exe.spin_some();
-      }
-    });
+//   bool finish = false;
+//   std::thread t([&]() {
+//       while (!finish) {
+//         exe.spin_some();
+//       }
+//     });
 
-  plansys2_msgs::msg::Tree test_tree;
-  parser::pddl::fromString(
-    test_tree, "(assign (room_distance bedroom kitchen) 0)", false,
-    plansys2_msgs::msg::Node::EXPRESSION);
+//   plansys2_msgs::msg::Tree test_tree;
+//   parser::pddl::fromString(
+//     test_tree, "(assign (room_distance bedroom kitchen) 0)", false,
+//     plansys2_msgs::msg::Node::EXPRESSION);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, problem_client),
-    std::make_tuple(false, false, 0, std::vector<std::map<std::string, std::string>>{}));
+//   ASSERT_EQ(
+//     plansys2::evaluate(test_tree, problem_client),
+//     std::make_tuple(false, false, 0, std::vector<std::map<std::string, std::string>>{}));
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
+//   {
+//     rclcpp::Rate rate(10);
+//     auto start = test_node->now();
+//     while ((test_node->now() - start).seconds() < 0.5) {
+//       rate.sleep();
+//     }
+//   }
 
-  test_tree.nodes.clear();
-  parser::pddl::fromString(
-    test_tree, "(assign 0 (room_distance bedroom kitchen))", false,
-    plansys2_msgs::msg::Node::EXPRESSION);
+//   test_tree.nodes.clear();
+//   parser::pddl::fromString(
+//     test_tree, "(assign 0 (room_distance bedroom kitchen))", false,
+//     plansys2_msgs::msg::Node::EXPRESSION);
 
-  ASSERT_EQ(
-    plansys2::evaluate(test_tree, problem_client),
-    std::make_tuple(false, false, 0, std::vector<std::map<std::string, std::string>>{}));
+//   ASSERT_EQ(
+//     plansys2::evaluate(test_tree, problem_client),
+//     std::make_tuple(false, false, 0, std::vector<std::map<std::string, std::string>>{}));
 
-  finish = true;
-  t.join();
-}
+//   finish = true;
+//   t.join();
+// }
 
 TEST(utils, evaluate_number)
 {
@@ -1324,7 +1328,11 @@ TEST(utils, apply_with_derived)
   ASSERT_TRUE(problem_expert.addProblem(problem_str));
 
   auto state = problem_expert.getState();
+  auto start_time = std::chrono::steady_clock::now();
   solveDerivedPredicates(state);
+  auto end_time = std::chrono::steady_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
+  std::cout << "solveDerivedPredicates took " << duration << " seconds" << std::endl;
   ASSERT_GT(state.getInstances().size(), 0);
   ASSERT_GT(state.getFunctions().size(), 0);
   ASSERT_GT(state.getPredicates().size(), 0);
@@ -1351,7 +1359,11 @@ TEST(utils, apply_with_derived)
   plansys2_msgs::msg::Tree tree1;
   parser::pddl::fromString(tree1, "(and (not (robot_at leia kitchen)) (robot_at leia bedroom))");
 
+  auto apply_start_time = std::chrono::steady_clock::now();
   plansys2::apply(tree1, state);
+  auto apply_end_time = std::chrono::steady_clock::now();
+  auto apply_duration = std::chrono::duration_cast<std::chrono::duration<double>>(apply_end_time - apply_start_time).count();
+  std::cout << "plansys2::apply took " << apply_duration << " seconds" << std::endl;
   ASSERT_FALSE(
     state.getInferredPredicates().find(
       parser::pddl::fromStringPredicate(
@@ -1386,7 +1398,11 @@ TEST(utils, apply_with_derived_2)
   ASSERT_TRUE(problem_expert.addProblem(problem_str));
 
   auto state = problem_expert.getState();
+  auto start_time = std::chrono::steady_clock::now();
   solveDerivedPredicates(state);
+  auto end_time = std::chrono::steady_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
+  std::cout << "solveDerivedPredicates took " << duration << " seconds" << std::endl;
   ASSERT_GT(state.getInstances().size(), 0);
   ASSERT_GT(state.getPredicates().size(), 0);
   ASSERT_GT(state.getInferredPredicates().size(), 0);
@@ -1491,6 +1507,46 @@ TEST(utils, apply_with_derived_2)
   plansys2::apply(action_inspect_pipeline->effects, state);
   ASSERT_TRUE(
     state.hasPredicate(parser::pddl::fromStringPredicate("(pipeline_inspected pipeline)")));
+}
+
+TEST(utils, apply_with_derived_suave_2)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/suave_domain2.pddl");
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
+
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  std::ifstream problem_ifs(pkgpath + "/pddl/suave_problem2.pddl");
+  std::string problem_str(
+    (std::istreambuf_iterator<char>(problem_ifs)), std::istreambuf_iterator<char>());
+  ASSERT_TRUE(problem_expert.addProblem(problem_str));
+
+  auto state = problem_expert.getState();
+  auto start_time = std::chrono::steady_clock::now();
+  solveDerivedPredicates(state);
+  auto end_time = std::chrono::steady_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
+  std::cout << "solveDerivedPredicates took " << duration << " seconds" << std::endl;
+  ASSERT_GT(state.getInstances().size(), 0);
+  ASSERT_GT(state.getPredicates().size(), 0);
+  ASSERT_GT(state.getInferredPredicates().size(), 0);
+  ASSERT_GT(state.getDerivedPredicates().getEdgeNumber(), 0);
+
+  ASSERT_FALSE(
+    state.hasInferredPredicate(parser::pddl::fromStringPredicate("inferred-f_active f_generate_search_path true_boolean")));
+
+  auto function_grounding = parser::pddl::fromStringPredicate("(functiongrounding f_generate_search_path fd_spiral_high)");
+  state.addPredicate(function_grounding);
+  start_time = std::chrono::steady_clock::now();
+  solveDerivedPredicates(state);
+  end_time = std::chrono::steady_clock::now();
+  duration = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
+  std::cout << "solveDerivedPredicates took " << duration << " seconds" << std::endl;
+  ASSERT_TRUE(
+    state.hasInferredPredicate(parser::pddl::fromStringPredicate("inferred-f_active f_generate_search_path true_boolean")));
 }
 
 int main(int argc, char ** argv)

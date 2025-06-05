@@ -51,7 +51,7 @@ std::tuple<bool, std::vector<std::map<std::string, std::string>>> unifyPredicate
   bool result = false;
 
   for (const auto & p : predicates) {
-    if (parser::pddl::checkNodeEquality(p, predicate)) {
+    if (parser::pddl::checkNodeEquality(p, predicate, false)) {
       std::map<std::string, std::string> params_dict;
 
       for (const auto & variable : variable_parameters) {
@@ -77,7 +77,7 @@ std::tuple<bool, std::vector<std::map<std::string, std::string>>> unifyFunction(
   const size_t param_count = function.parameters.size();
 
   for (const plansys2::Function & p : functions) {
-    if (parser::pddl::checkNodeEquality(p, function)) {
+    if (parser::pddl::checkNodeEquality(p, function, false)) {
       std::map<std::string, std::string> params_dict;
 
       for (size_t i = 0; i < param_count; ++i) {
