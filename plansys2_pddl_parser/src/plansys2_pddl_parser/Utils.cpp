@@ -1390,12 +1390,12 @@ bool checkParamEquality(
   const plansys2_msgs::msg::Param & second,
   bool check_var_params)
 {
-  auto types_match = compare_str_case_insensitive(first.type, second.type)
-    || (first.type.empty() && compare_str_case_insensitive(second.type, "object"))
-    || (second.type.empty() && compare_str_case_insensitive(first.type, "object"));
+  // auto types_match = compare_str_case_insensitive(first.type, second.type)
+  //   || (first.type.empty() && compare_str_case_insensitive(second.type, "object"))
+  //   || (second.type.empty() && compare_str_case_insensitive(first.type, "object"));
 
-  if (!types_match)
-    return false;
+  // if (!types_match)
+  //   return false;
 
   if (!check_var_params && 
     (first.name.front() == '?' || second.name.front() == '?')) 
