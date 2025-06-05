@@ -216,20 +216,18 @@ TEST(bt_node_test_suave, suave_bt_execution_test)
     plansys2::solveDerivedPredicates(state);
 
     ASSERT_TRUE(state.hasPredicate(plansys2::Predicate("(robot_started bluerov)")));
-    // ASSERT_FALSE(state.hasPredicate(plansys2::Predicate("(system_in_mode f_maintain_motion fd_unground)")));
     ASSERT_TRUE(state.hasPredicate(plansys2::Predicate("(functiongrounding f_maintain_motion fd_all_thrusters)")));
-    // ASSERT_FALSE(state.hasPredicate(plansys2::Predicate("(system_in_mode f_generate_search_path fd_unground)")));
     ASSERT_TRUE(state.hasPredicate(plansys2::Predicate("(functiongrounding f_generate_search_path fd_spiral_high)")));
 
     ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(robot_started bluerov)")));
-    // ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(system_in_mode f_maintain_motion fd_unground)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_maintain_motion fd_all_thrusters)")));
-    // ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(system_in_mode f_generate_search_path fd_unground)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_generate_search_path fd_spiral_high)")));
+    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-functiongrounding f_maintain_motion fd_all_thrusters)")));
+    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-functiongrounding f_generate_search_path fd_spiral_high)")));
+    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_generate_search_path true_boolean)")));
+    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_maintain_motion true_boolean)")));
 
     ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_all_thrusters false_boolean)")));
     ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_spiral_high false_boolean)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_activated f_follow_pipeline)")));
+    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_follow_pipeline)")));
 
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
@@ -274,9 +272,12 @@ TEST(bt_node_test_suave, suave_bt_execution_test)
     ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_generate_search_path fd_unground)")));
     ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_generate_search_path fd_spiral_high)")));
 
+    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_generate_search_path true_boolean)")));
+    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_maintain_motion true_boolean)")));
+
     ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_all_thrusters false_boolean)")));
     ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_spiral_high false_boolean)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_activated f_follow_pipeline)")));
+    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_follow_pipeline true_boolean)")));
 
     ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(pipeline_found pipeline)")));
 
@@ -317,15 +318,19 @@ TEST(bt_node_test_suave, suave_bt_execution_test)
     plansys2::solveDerivedPredicates(state);
 
     ASSERT_TRUE(state.hasPredicate(plansys2::Predicate("(robot_started bluerov)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrouding f_generate_search_path fd_unground)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(functiongrouding f_maintain_motion fd_unground)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrouding f_maintain_motion fd_all_thrusters)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrouding f_follow_pipeline fd_follow_pipeline)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(functiongrouding f_follow_pipeline fd_unground)")));
+    ASSERT_TRUE(state.hasPredicate(plansys2::Predicate("(functiongrounding f_generate_search_path fd_unground)")));
+    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_generate_search_path fd_unground)")));
+    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_maintain_motion fd_unground)")));
+    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_maintain_motion fd_all_thrusters)")));
+    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_follow_pipeline fd_follow_pipeline)")));
+    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_follow_pipeline fd_unground)")));
+
+    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_follow_pipeline true_boolean)")));
+    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_maintain_motion true_boolean)")));
 
     ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_all_thrusters false_boolean)")));
     ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_follow_pipeline false_boolean)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_activated f_generate_search_path)")));
+    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_generate_search_path true_boolean)")));
 
     ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(pipeline_found pipeline)")));
 
@@ -367,15 +372,15 @@ TEST(bt_node_test_suave, suave_bt_execution_test)
     plansys2::solveDerivedPredicates(state);
 
     ASSERT_TRUE(state.hasPredicate(plansys2::Predicate("(robot_started bluerov)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrouding f_generate_search_path fd_unground)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(functiongrouding f_maintain_motion fd_unground)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrouding f_maintain_motion fd_all_thrusters)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrouding f_follow_pipeline fd_follow_pipeline)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(functiongrouding f_follow_pipeline fd_unground)")));
+    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_generate_search_path fd_unground)")));
+    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_maintain_motion fd_unground)")));
+    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_maintain_motion fd_all_thrusters)")));
+    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_follow_pipeline fd_follow_pipeline)")));
+    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_follow_pipeline fd_unground)")));
 
     ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_all_thrusters false_boolean)")));
     ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_follow_pipeline false_boolean)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_activated f_generate_search_path)")));
+    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_generate_search_path true_boolean)")));
 
     ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(pipeline_found pipeline)")));
     ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(pipeline_inspected pipeline)")));
