@@ -151,6 +151,6 @@ endif()
 
 ament_export_include_directories("include/${PROJECT_NAME}")
 ament_export_libraries(${PROJECT_NAME} bt_builder_plugins)
-ament_export_targets(${PROJECT_NAME} bt_builder_plugins)
+ament_export_targets(export_${PROJECT_NAME} bt_builder_plugins)
 ament_export_dependencies(${package_dependencies})
 ament_package()
