@@ -118,7 +118,7 @@ pluginlib_export_plugin_description_file(plansys2_executor plugins.xml)
 install(DIRECTORY launch behavior_trees DESTINATION share/${PROJECT_NAME})
 
 install(TARGETS
-  ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
+  ${PROJECT_NAME} EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
