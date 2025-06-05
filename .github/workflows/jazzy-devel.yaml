@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Install popf deps
         run: sudo apt-get install libfl-dev
-      - uses: ament_export_targets(export_${PROJECT_NAME})v4
+      - uses: actions/checkout@v4
         with:
           ref: jazzy-devel
       - name: Setup ROS 2
