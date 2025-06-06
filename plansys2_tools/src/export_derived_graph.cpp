@@ -38,7 +38,7 @@ int main(int argc, char ** argv)
       std::istreambuf_iterator<char>());
 
   plansys2::DomainExpert domain_expert(domain_str);
-  auto graph = domain_expert.getDerivedPredicatesGraph();
+  auto graph = domain_expert.getDerivedResolutionGraph();
   graph.exportToDOT(graph_file);
 
   // rclcpp::shutdown();
