@@ -352,7 +352,7 @@ std::tuple<bool, bool, double, std::vector<std::map<std::string, std::string>>> 
 
         for (const auto & child_id : current_node.children) {
           auto [child_success, child_value, _, child_param_values] =
-            evaluate(tree, state, child_id, negate);
+            evaluate(tree, state, child_id, false);
 
           success &= child_success;
           truth_value &= child_value;
@@ -371,7 +371,7 @@ std::tuple<bool, bool, double, std::vector<std::map<std::string, std::string>>> 
             }
           }
         }
-        return {success, truth_value, 0, std::move(param_values)};
+        return {success, negate ^ truth_value, 0, std::move(param_values)};
       }
 
     case plansys2_msgs::msg::Node::OR: {
@@ -381,14 +381,14 @@ std::tuple<bool, bool, double, std::vector<std::map<std::string, std::string>>> 
 
         for (auto & child_id : current_node.children) {
           auto [child_success, child_value, _, child_param_values] =
-            evaluate(tree, state, child_id, negate);
+            evaluate(tree, state, child_id, false);
 
           success = success && child_success;
           truth_value = truth_value || child_value;
           param_values.insert(
             param_values.end(), child_param_values.begin(), child_param_values.end());
         }
-        return {success, truth_value, 0, std::move(param_values)};
+        return {success, negate ^ truth_value, 0, std::move(param_values)};
       }
 
     case plansys2_msgs::msg::Node::NOT: {
@@ -618,7 +618,11 @@ std::tuple<bool, bool, double, std::vector<std::map<std::string, std::string>>> 
       }
 
     case plansys2_msgs::msg::Node::EXISTS: {
-        return std::move(evaluate(tree, state, current_node.children[0], negate));
+        auto ret = evaluate(tree, state, current_node.children[0], false);
+        if (negate) {
+          std::get<1>(ret) = !std::get<1>(ret);
+        }
+        return std::move(ret);
       }
 
     default:

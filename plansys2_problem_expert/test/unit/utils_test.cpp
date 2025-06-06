@@ -1398,11 +1398,13 @@ TEST(utils, apply_with_derived_2)
   ASSERT_TRUE(problem_expert.addProblem(problem_str));
 
   auto state = problem_expert.getState();
+  
   auto start_time = std::chrono::steady_clock::now();
   solveDerivedPredicates(state);
   auto end_time = std::chrono::steady_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
   std::cout << "solveDerivedPredicates took " << duration << " seconds" << std::endl;
+  
   ASSERT_GT(state.getInstances().size(), 0);
   ASSERT_GT(state.getPredicates().size(), 0);
   ASSERT_GT(state.getInferredPredicates().size(), 0);
@@ -1525,16 +1527,40 @@ TEST(utils, apply_with_derived_suave_2)
   ASSERT_TRUE(problem_expert.addProblem(problem_str));
 
   auto state = problem_expert.getState();
+  
   auto start_time = std::chrono::steady_clock::now();
   solveDerivedPredicates(state);
   auto end_time = std::chrono::steady_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
   std::cout << "solveDerivedPredicates took " << duration << " seconds" << std::endl;
+  
   ASSERT_GT(state.getInstances().size(), 0);
   ASSERT_GT(state.getPredicates().size(), 0);
   ASSERT_GT(state.getInferredPredicates().size(), 0);
   ASSERT_GT(state.getDerivedPredicates().getEdgeNumber(), 0);
 
+  auto action_reconfig_maintain = domain_expert->getAction(
+    "reconfigure1", {"f_maintain_motion", "fd_all_thrusters"});
+  ASSERT_TRUE(plansys2::check(action_reconfig_maintain->preconditions, state));
+
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-solvesf fd_all_thrusters f_maintain_motion")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-solvesf fd_recover_thrusters f_maintain_motion")));
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-fd_realisability fd_all_thrusters false_boolean")));
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-fd_realisability fd_recover_thrusters false_boolean")));
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-fdbetterutility fd_recover_thrusters fd_all_thrusters")));    
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-fdbetterutility fd_all_thrusters fd_recover_thrusters")));  
   ASSERT_FALSE(
     state.hasInferredPredicate(parser::pddl::fromStringPredicate("inferred-f_active f_generate_search_path true_boolean")));
 
