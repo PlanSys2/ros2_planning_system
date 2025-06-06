@@ -152,6 +152,18 @@ TEST(PDDLParserTestCase, exists_get_tree)
   action2->pre->getTree(tree3, domain);
   std::string str3 = parser::pddl::toString(tree3);
   ASSERT_EQ(str3, "(exists (?1 ?2) (and (robot_at ?0 ?1)(connected ?1 ?2)))");
+
+  auto action_test6 = domain.actions.get("action_test6");
+  plansys2_msgs::msg::Tree action_test6_tree;
+  action_test6->pre->getTree(action_test6_tree, domain);
+  std::string action_test6_tree_str = parser::pddl::toString(action_test6_tree);
+  ASSERT_EQ(action_test6_tree_str, "(and (exists (?1 ?2) (and (robot_at ?0 ?1)(connected ?1 ?2)))(exists (?3) (and (battery_full ?3)))(exists (?4) (and (battery_full ?4)))(exists (?5 ?6) (and (connected ?5 ?6)))(exists (?7) (and (battery_full ?7))))");
+  
+  auto action_test7 = domain.actions.get("action_test7");
+  plansys2_msgs::msg::Tree action_test7_tree;
+  action_test7->pre->getTree(action_test7_tree, domain);
+  std::string action_test7_tree_str = parser::pddl::toString(action_test7_tree);
+  ASSERT_EQ(action_test7_tree_str, "(or (=  ?0 rob1)(not (exists (?2) (and (not (battery_full ?2))))))");
 }
 
 TEST(PDDLParserTestCase, check_node_equality)
