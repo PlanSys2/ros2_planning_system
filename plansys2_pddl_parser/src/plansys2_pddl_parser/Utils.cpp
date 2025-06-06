@@ -517,6 +517,7 @@ std::string toString(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bo
       break;
     case plansys2_msgs::msg::Node::PARAMETER:
       ret = toStringParameter(tree, node_id, negate);
+      break;
     case plansys2_msgs::msg::Node::EXISTS:
       ret = toStringExists(tree, node_id, negate);
       break;
@@ -793,7 +794,11 @@ std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_
     return {};
   }
 
-  std::string ret = "(exists (";
+  std::string ret;
+  if (negate) {
+    ret = "(not ";
+  }
+  ret += "(exists (";
 
   bool first_param = true;
   for (const auto & param : tree.nodes[node_id].parameters) {
@@ -803,9 +808,13 @@ std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_
   ret += ") ";
 
   for (auto child_id : tree.nodes[node_id].children) {
-    ret += toString(tree, child_id, negate);
+    ret += toString(tree, child_id, false);
   }
   ret += ")";
+
+  if (negate) {
+    ret += ")";
+  }
 
   return ret;
 }
