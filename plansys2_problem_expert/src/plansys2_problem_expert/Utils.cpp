@@ -247,14 +247,14 @@ void solveDerivedPredicates(
     state.resetInferredPredicates();
   }
 
-  std::unordered_set<std::string> derived_ungrounded_cache;
+  std::unordered_set<plansys2::Derived> derived_ungrounded_cache;
   auto sccs = state.getDerivedPredicatesSCCs(root_nodes);
 
   for (const auto& scc : sccs) {
     if (scc.size() == 1) {  // Acyclic SCC
       evaluateSCC(scc, state, root_nodes, derived_ungrounded_cache);
     } else {  // Cyclic SCC
-      std::unordered_set<std::string> fixpoint_cache;
+      std::unordered_set<plansys2::Derived> fixpoint_cache;
       bool changed = true;
       while (changed) {
         changed = evaluateSCC(scc, state, root_nodes, fixpoint_cache);
@@ -263,25 +263,25 @@ void solveDerivedPredicates(
   }
 }
 
-
 bool evaluateSCC(
   const std::vector<Derived>& scc,
   plansys2::State& state,
   const std::vector<plansys2_msgs::msg::Node>& root_nodes,
-  std::unordered_set<std::string>& unground_cache) 
+  std::unordered_set<plansys2::Derived>& unground_cache) 
 {
   bool changed_flag = false;
   for (const auto& derived : scc) {
     if (!root_nodes.empty() &&
-        unground_cache.find(derived.predicate.name) == unground_cache.end()) {
-      state.ungroundDerivedPredicate(derived);
-      unground_cache.insert(derived.predicate.name);
+        unground_cache.find(derived) == unground_cache.end()) {
+      auto derived_removed = state.ungroundDerivedPredicate(derived);
+      unground_cache.insert(derived);
+      unground_cache.insert(derived_removed.begin(), derived_removed.end());
     }
     size_t inferred_size_before = state.getInferredPredicatesSize();
     auto [_, evaluate_value, __, params_values] =
         evaluate(derived.preconditions, state, derived.preconditions.nodes[0].node_id);
     if (evaluate_value && !params_values.empty()) {
-      groundPredicate(state, derived.predicate, params_values);
+      groundPredicate(state, derived, params_values);
       changed_flag |= (inferred_size_before != state.getInferredPredicatesSize());
     }
   }
@@ -289,13 +289,13 @@ bool evaluateSCC(
 }
 
 void groundPredicate(
-  plansys2::State & state, const plansys2::Predicate & predicate,
+  plansys2::State & state, const plansys2::Derived & derived,
   const std::vector<std::map<std::string, std::string>> & params_values_vector)
 {
-  size_t num_params = predicate.parameters.size();
+  size_t num_params = derived.predicate.parameters.size();
   size_t params_values_size = params_values_vector.size();
 
-  state.reserveInferredPredicates(state.getInferredPredicatesSize() + params_values_size);
+  state.reserveInferredPredicates(state.getUnionPredicatesSize() + params_values_size);
   auto instances = state.getInstances();
 
 #pragma omp parallel for schedule(dynamic)
@@ -303,12 +303,12 @@ void groundPredicate(
     const auto & params_values = params_values_vector[j];
     plansys2::Predicate new_predicate;
     new_predicate.node_type = plansys2_msgs::msg::Node::PREDICATE;
-    new_predicate.name = predicate.name;
+    new_predicate.name = derived.predicate.name;
     new_predicate.parameters.reserve(num_params);
     bool add_predicate = true;
 
     for (size_t i = 0; i < num_params; ++i) {
-      plansys2_msgs::msg::Param new_param = predicate.parameters[i];
+      plansys2_msgs::msg::Param new_param = derived.predicate.parameters[i];
 
       // Only perform lookup and assignment if the parameter is a variable (starts with '?')
       if (new_param.name.front() == '?') {
@@ -330,7 +330,7 @@ void groundPredicate(
 
     if (add_predicate) {
 #pragma omp critical
-      state.addInferredPredicate(std::move(new_predicate));
+      state.addInferredPredicate(derived, std::move(new_predicate));
     }
   }
 }
@@ -400,7 +400,7 @@ std::tuple<bool, bool, double, std::vector<std::map<std::string, std::string>>> 
         bool value = true;
         std::vector<std::map<std::string, std::string>> param_values;
 
-        std::tie(value, param_values) = unifyPredicate(current_node, state.getInferredPredicates());
+        std::tie(value, param_values) = unifyPredicate(current_node, state.getUnionPredicatesInferredPredicates());
         if (negate) {
           std::tie(value, param_values) =
             negateResult(current_node, value, param_values, state.getInstances());
@@ -622,7 +622,7 @@ std::tuple<bool, bool, double, std::vector<std::map<std::string, std::string>>> 
         if (negate) {
           std::get<1>(ret) = !std::get<1>(ret);
         }
-        return std::move(ret);
+        return ret;
       }
 
     default:

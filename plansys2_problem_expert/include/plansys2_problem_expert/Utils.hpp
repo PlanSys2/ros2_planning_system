@@ -62,10 +62,10 @@ bool evaluateSCC(
   const std::vector<Derived>& scc,
   plansys2::State& state,
   const std::vector<plansys2_msgs::msg::Node>& root_nodes,
-  std::unordered_set<std::string>& unground_cache);
+  std::unordered_set<plansys2::Derived>& unground_cache);
 
 void groundPredicate(
-  plansys2::State & new_state, const plansys2::Predicate & predicate,
+  plansys2::State & new_state, const plansys2::Derived & derived,
   const std::vector<std::map<std::string, std::string>> & params_values_vector);
 
 /// Evaluate a PDDL expression represented as a tree.
