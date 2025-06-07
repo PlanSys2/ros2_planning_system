@@ -108,51 +108,60 @@ TEST(state_test, state)
   ASSERT_EQ(state.getInstancesSize(), 3);
   ASSERT_EQ(state.getPredicatesSize(), 4);
   ASSERT_EQ(state.getFunctionsSize(), 0);
-  ASSERT_EQ(state.getInferredPredicatesSize(), 4);
+  ASSERT_EQ(state.getInferredPredicatesSize(), 0);
+  ASSERT_EQ(state.getUnionPredicatesSize(), 4);
 
-  state.addInferredPredicate(inferredA_instanceA);
-  state.addInferredPredicate(inferredAA_instanceA);
-  state.addInferredPredicate(inferredAA2_instanceA);
+  state.addInferredPredicate(inferredA, inferredA_instanceA);
+  state.addInferredPredicate(inferredAA, inferredAA_instanceA);
+  state.addInferredPredicate(inferredAA2, inferredAA2_instanceA);
 
-  state.addInferredPredicate(inferredA_instanceAB);
-  state.addInferredPredicate(inferredAA_instanceAB);
-  state.addInferredPredicate(inferredAA2_instanceAB);
+  state.addInferredPredicate(inferredA, inferredA_instanceAB);
+  state.addInferredPredicate(inferredAA, inferredAA_instanceAB);
+  state.addInferredPredicate(inferredAA2, inferredAA2_instanceAB);
 
-  state.addInferredPredicate(inferredB_instanceB);
-  state.addInferredPredicate(inferredBB_instanceB);
+  state.addInferredPredicate(inferredB, inferredB_instanceB);
+  state.addInferredPredicate(inferredBB, inferredBB_instanceB);
 
-  state.addInferredPredicate(inferredB_instanceAB);
-  state.addInferredPredicate(inferredBB_instanceAB);
+  state.addInferredPredicate(inferredB, inferredB_instanceAB);
+  state.addInferredPredicate(inferredBB, inferredBB_instanceAB);
 
-  state.addInferredPredicate(inferredAB_instanceAB);
+  state.addInferredPredicate(inferredAB, inferredAB_instanceAB);
 
-  ASSERT_EQ(state.getInferredPredicatesSize(), 13);
+  ASSERT_EQ(state.getPredicatesSize(), 4);
+  ASSERT_EQ(state.getInferredPredicatesSize(), 9);
+  ASSERT_EQ(state.getUnionPredicatesSize(), 13);
+  ASSERT_EQ(state.getInferredPredicateRefCount(inferredAA_instanceA), 2);
+  ASSERT_EQ(state.getInferredPredicateRefCount(inferredAA2_instanceAB), 2);
   ASSERT_EQ(state.getNumberInferredFromDerived(inferredA), 2);
   ASSERT_EQ(state.getNumberInferredFromDerived(inferredB), 2);
   ASSERT_EQ(state.getNumberInferredFromDerived(inferredAA), 2);
   ASSERT_EQ(state.getNumberInferredFromDerived(inferredBB), 2);
   ASSERT_EQ(state.getNumberInferredFromDerived(inferredAB), 1);
 
-  std::unordered_set<plansys2::Predicate> inferred_predicates;
-  inferred_predicates.insert(inferredA_instanceA);
-  inferred_predicates.insert(inferredAA_instanceA);
-  inferred_predicates.insert(inferredAA2_instanceA);
+  std::vector<std::tuple<plansys2::Derived, plansys2::Predicate>> inferred_predicates;
+  inferred_predicates.push_back({inferredA, inferredA_instanceA});
+  inferred_predicates.push_back({inferredAA, inferredAA_instanceA});
+  inferred_predicates.push_back({inferredAA2, inferredAA2_instanceA});
 
-  inferred_predicates.insert(inferredA_instanceAB);
-  inferred_predicates.insert(inferredAA_instanceAB);
-  inferred_predicates.insert(inferredAA2_instanceAB);
+  inferred_predicates.push_back({inferredA, inferredA_instanceAB});
+  inferred_predicates.push_back({inferredAA, inferredAA_instanceAB});
+  inferred_predicates.push_back({inferredAA2, inferredAA2_instanceAB});
 
-  inferred_predicates.insert(inferredB_instanceB);
-  inferred_predicates.insert(inferredBB_instanceB);
+  inferred_predicates.push_back({inferredB, inferredB_instanceB});
+  inferred_predicates.push_back({inferredBB, inferredBB_instanceB});
 
-  inferred_predicates.insert(inferredB_instanceAB);
-  inferred_predicates.insert(inferredBB_instanceAB);
+  inferred_predicates.push_back({inferredB, inferredB_instanceAB});
+  inferred_predicates.push_back({inferredBB, inferredBB_instanceAB});
 
-  inferred_predicates.insert(inferredAB_instanceAB);
+  inferred_predicates.push_back({inferredAB, inferredAB_instanceAB});
 
   plansys2::State state_2(instances, functions, predicates, inferred_predicates, graph);
 
-  ASSERT_EQ(state_2.getInferredPredicatesSize(), 13);
+  ASSERT_EQ(state_2.getPredicatesSize(), 4);
+  ASSERT_EQ(state_2.getInferredPredicatesSize(), 9);
+  ASSERT_EQ(state_2.getUnionPredicatesSize(), 13);
+  ASSERT_EQ(state_2.getInferredPredicateRefCount(inferredAA_instanceA), 2);
+  ASSERT_EQ(state_2.getInferredPredicateRefCount(inferredAA2_instanceAB), 2);
   ASSERT_EQ(state_2.getNumberInferredFromDerived(inferredA), 2);
   ASSERT_EQ(state_2.getNumberInferredFromDerived(inferredB), 2);
   ASSERT_EQ(state_2.getNumberInferredFromDerived(inferredAA), 2);
@@ -160,20 +169,28 @@ TEST(state_test, state)
   ASSERT_EQ(state_2.getNumberInferredFromDerived(inferredAB), 1);
 
   state_2.ungroundDerivedPredicate(inferredA);
-  ASSERT_EQ(state_2.getInferredPredicatesSize(), 8);
+  ASSERT_EQ(state_2.getPredicatesSize(), 4);
+  ASSERT_EQ(state_2.getInferredPredicatesSize(), 6);
+  ASSERT_EQ(state_2.getUnionPredicatesSize(), 10);
+  ASSERT_EQ(state_2.getInferredPredicateRefCount(inferredAA_instanceA), 1);
+  ASSERT_EQ(state_2.getInferredPredicateRefCount(inferredAA2_instanceAB), 1);
   ASSERT_EQ(state_2.getNumberInferredFromDerived(inferredA), 0);
   ASSERT_EQ(state_2.getNumberInferredFromDerived(inferredAA), 0);
   ASSERT_EQ(state_2.getNumberInferredFromDerived(inferredAB), 0);
 
   state_2.ungroundDerivedPredicate(inferredA);
-  ASSERT_EQ(state_2.getInferredPredicatesSize(), 8);
+  ASSERT_EQ(state_2.getPredicatesSize(), 4);
+  ASSERT_EQ(state_2.getInferredPredicatesSize(), 6);
+  ASSERT_EQ(state_2.getUnionPredicatesSize(), 10);
   ASSERT_EQ(state_2.getNumberInferredFromDerived(inferredA), 0);
   ASSERT_EQ(state_2.getNumberInferredFromDerived(inferredAA), 0);
   ASSERT_EQ(state_2.getNumberInferredFromDerived(inferredAB), 0);
 
   plansys2::State state_3(instances, functions, predicates, inferred_predicates, graph);
   state_3.ungroundDerivedPredicate(inferredAB);
-  ASSERT_EQ(state_3.getInferredPredicatesSize(), 12);
+  ASSERT_EQ(state_3.getPredicatesSize(), 4);
+  ASSERT_EQ(state_3.getInferredPredicatesSize(), 8);
+  ASSERT_EQ(state_3.getUnionPredicatesSize(), 12);
   ASSERT_EQ(state_3.getNumberInferredFromDerived(inferredAB), 0);
 }
 
