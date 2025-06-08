@@ -252,13 +252,26 @@ void solveDerivedPredicates(
 
   for (const auto& scc : sccs) {
     if (scc.size() == 1) {  // Acyclic SCC
+      std::cout << "\nstart evaluateSCC (acyclic) "<<scc.at(0).predicate.name<<std::endl;
+      auto start = std::chrono::steady_clock::now();
       evaluateSCC(scc, state, root_nodes, derived_ungrounded_cache);
+      auto end = std::chrono::steady_clock::now();
+      std::chrono::duration<double> elapsed_seconds = end - start;
+      std::cout << "evaluateSCC (acyclic) "<<scc.at(0).predicate.name<< " took " << elapsed_seconds.count() << " seconds" << std::endl;
     } else {  // Cyclic SCC
       std::unordered_set<plansys2::Derived> fixpoint_cache;
       bool changed = true;
+      auto total_start = std::chrono::steady_clock::now();
       while (changed) {
+        auto eval_start = std::chrono::steady_clock::now();
         changed = evaluateSCC(scc, state, root_nodes, fixpoint_cache);
+        auto eval_end = std::chrono::steady_clock::now();
+        std::chrono::duration<double> eval_elapsed = eval_end - eval_start;
+        std::cout << "evaluateSCC (cyclic) iteration took " << eval_elapsed.count() << " seconds" << std::endl;
       }
+      auto total_end = std::chrono::steady_clock::now();
+      std::chrono::duration<double> total_elapsed = total_end - total_start;
+      std::cout << "\n Total time for cyclic SCC while loop: " << total_elapsed.count() << " seconds" << std::endl;
     }
   }
 }
@@ -273,17 +286,34 @@ bool evaluateSCC(
   for (const auto& derived : scc) {
     if (!root_nodes.empty() &&
         unground_cache.find(derived) == unground_cache.end()) {
+      auto start = std::chrono::steady_clock::now();
       auto derived_removed = state.ungroundDerivedPredicate(derived);
+      auto end = std::chrono::steady_clock::now();
+      std::chrono::duration<double> elapsed_seconds = end - start;
+      std::cout << "ungroundDerivedPredicate took " << elapsed_seconds.count() << " seconds" << std::endl;
       unground_cache.insert(derived);
       unground_cache.insert(derived_removed.begin(), derived_removed.end());
     }
     size_t inferred_size_before = state.getInferredPredicatesSize();
+    auto eval_start = std::chrono::steady_clock::now();
     auto [_, evaluate_value, __, params_values] =
-        evaluate(derived.preconditions, state, derived.preconditions.nodes[0].node_id);
+      evaluate(derived.preconditions, state, derived.preconditions.nodes[0].node_id);
+    auto eval_end = std::chrono::steady_clock::now();
+    std::chrono::duration<double> eval_elapsed = eval_end - eval_start;
+    std::cout << "evaluate() " <<derived.predicate.name<< " took " << eval_elapsed.count() << " seconds" << std::endl;
+
     if (evaluate_value && !params_values.empty()) {
+      auto ground_start = std::chrono::steady_clock::now();
       groundPredicate(state, derived, params_values);
+      auto ground_end = std::chrono::steady_clock::now();
+      std::chrono::duration<double> ground_elapsed = ground_end - ground_start;
+      std::cout << "groundPredicate() "<<derived.predicate.name<<" took " << ground_elapsed.count() << " seconds" << std::endl;
       changed_flag |= (inferred_size_before != state.getInferredPredicatesSize());
     }
+    // if (evaluate_value && !params_values.empty()) {
+    //   groundPredicate(state, derived, params_values);
+    //   changed_flag |= (inferred_size_before != state.getInferredPredicatesSize());
+    // }
   }
   return changed_flag;
 }
@@ -292,11 +322,26 @@ void groundPredicate(
   plansys2::State & state, const plansys2::Derived & derived,
   const std::vector<std::map<std::string, std::string>> & params_values_vector)
 {
+  std::cout<<"\n!@ start grounding predicate: "<<derived.predicate.name<<std::endl;
+
   size_t num_params = derived.predicate.parameters.size();
   size_t params_values_size = params_values_vector.size();
 
   state.reserveInferredPredicates(state.getUnionPredicatesSize() + params_values_size);
   auto instances = state.getInstances();
+
+  // Add this before the parallel region
+  std::vector<double> thread_times(omp_get_max_threads(), 0.0);
+
+  size_t n_threads = omp_get_max_threads();
+  std::vector<std::unordered_set<Predicate>> thread_local_pred_sets(n_threads);
+  for (auto& v : thread_local_pred_sets)
+    v.reserve(params_values_size / n_threads);
+
+  std::vector<std::string> param_keys(num_params);
+  for (size_t i = 0; i < num_params; ++i){
+    param_keys[i] = "?" + std::to_string(i);
+  }
 
 #pragma omp parallel for schedule(dynamic)
   for (size_t j = 0; j < params_values_size; ++j) {
@@ -312,7 +357,7 @@ void groundPredicate(
 
       // Only perform lookup and assignment if the parameter is a variable (starts with '?')
       if (new_param.name.front() == '?') {
-        auto it = params_values.find("?" + std::to_string(i));
+        auto it = params_values.find(param_keys[i]);
         if (it != params_values.end()) {
           auto instance = instances.find(parser::pddl::fromStringParam(it->second));
           if (
@@ -329,10 +374,21 @@ void groundPredicate(
     }
 
     if (add_predicate) {
-#pragma omp critical
-      state.addInferredPredicate(derived, std::move(new_predicate));
+      thread_local_pred_sets[omp_get_thread_num()].emplace(std::move(new_predicate));
     }
   }
+// #pragma omp parallel for schedule(dynamic)
+//   for (size_t t = 0; t < thread_local_pred_sets.size(); ++t) {
+//     for (auto& pred : thread_local_pred_sets[t]) {
+//       state.addInferredPredicate(derived, std::move(pred));
+//     }
+//   }
+  for (auto& pred_vec : thread_local_pred_sets) {
+    for (auto& pred : pred_vec) {
+        state.addInferredPredicate(derived, std::move(pred));
+    }
+  }
+  std::cout<<"Finish grounding predicate: "<<derived.predicate.name<<"\n\n";
 }
 
 std::tuple<bool, bool, double, std::vector<std::map<std::string, std::string>>> evaluate(

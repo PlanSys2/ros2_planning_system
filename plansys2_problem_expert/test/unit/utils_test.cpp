@@ -1332,7 +1332,7 @@ TEST(utils, apply_with_derived)
   solveDerivedPredicates(state);
   auto end_time = std::chrono::steady_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
-  std::cout << "solveDerivedPredicates took " << duration << " seconds" << std::endl;
+  std::cout << "\n TOTAL solveDerivedPredicates took " << duration << " seconds" << std::endl;
   ASSERT_GT(state.getInstances().size(), 0);
   ASSERT_GT(state.getFunctions().size(), 0);
   ASSERT_GT(state.getPredicates().size(), 0);
@@ -1585,13 +1585,6 @@ TEST(utils, apply_with_derived_suave_2)
   ASSERT_TRUE(plansys2::check(action_reconfig_generate->preconditions, state));
   ASSERT_TRUE(plansys2::apply(action_reconfig_generate->effects, state));
   
-  // auto function_grounding = parser::pddl::fromStringPredicate("(functiongrounding f_generate_search_path fd_spiral_high)");
-  // state.addPredicate(function_grounding);
-  // start_time = std::chrono::steady_clock::now();
-  // solveDerivedPredicates(state);
-  // end_time = std::chrono::steady_clock::now();
-  // duration = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
-  // std::cout << "solveDerivedPredicates took " << duration << " seconds" << std::endl;
   ASSERT_TRUE(
     state.hasInferredPredicate(parser::pddl::fromStringPredicate("inferred-f_active f_generate_search_path true_boolean")));
   ASSERT_TRUE(
