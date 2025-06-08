@@ -824,7 +824,8 @@ std::vector<ActionStamped>
 SimpleBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan)
 {
   std::vector<ActionStamped> ret;
-
+  auto instances = plansys2::convertVector<plansys2_msgs::msg::Param, plansys2::Instance>(
+    problem_client_->getInstances());
   for (auto & item : plan.items) {
     ActionStamped action_stamped;
 
@@ -838,7 +839,7 @@ SimpleBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan)
     } else {
       action_stamped.action.action =
         domain_client_->getDurativeAction(
-        get_action_name(item.action), get_action_params(item.action));
+        get_action_name(item.action), get_action_params(item.action), instances);
     }
 
     ret.push_back(action_stamped);

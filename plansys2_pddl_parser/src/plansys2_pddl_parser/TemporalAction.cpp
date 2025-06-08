@@ -71,7 +71,9 @@ void TemporalAction::PDDLPrint(
 }
 
 plansys2_msgs::msg::Node::SharedPtr TemporalAction::getTree(
-  plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace) const
+  plansys2_msgs::msg::Tree & tree,
+  const Domain & d, const std::vector<std::string> & replace,
+  const std::map<std::string, std::vector<std::string>> & instances_map) const
 {
   throw UnsupportedConstruct("TemporalAction");
 }

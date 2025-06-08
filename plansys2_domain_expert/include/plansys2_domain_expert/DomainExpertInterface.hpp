@@ -131,8 +131,8 @@ public:
    *    effects. If the action does not exist, the value returned has not value.
    */
   virtual plansys2_msgs::msg::DurativeAction::SharedPtr getDurativeAction(
-    const std::string & durative_action, const std::vector<std::string> & params) =
-  0;
+    const std::string & durative_action, const std::vector<std::string> & params,
+    const std::vector<plansys2_msgs::msg::Param> & instances) = 0;
 
   /// Get the current domain, ready to be saved to file, or to initialize another domain.
   /**

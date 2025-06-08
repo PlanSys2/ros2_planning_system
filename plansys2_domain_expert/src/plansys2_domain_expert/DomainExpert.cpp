@@ -304,7 +304,9 @@ DomainExpert::getDurativeActions()
 }
 
 plansys2_msgs::msg::DurativeAction::SharedPtr
-DomainExpert::getDurativeAction(const std::string & action, const std::vector<std::string> & params)
+DomainExpert::getDurativeAction(
+  const std::string & action, const std::vector<std::string> & params,
+  const std::vector<plansys2_msgs::msg::Param> & instances)
 {
   std::string action_search = action;
   std::transform(
@@ -336,20 +338,24 @@ DomainExpert::getDurativeAction(const std::string & action, const std::vector<st
         domain_->types[action_obj->params[j]]->getSubTypesNames(param.sub_types);
         ret->parameters.push_back(param);
       }
-
+      // Instances
+      std::map<std::string, std::vector<std::string>> instances_map;
+      for (const auto & instance : instances) {
+        instances_map[instance.type].push_back(instance.name);
+      }
       // Preconditions AtStart
       if (action_obj->pre) {
-        action_obj->pre->getTree(ret->at_start_requirements, *domain_, params);
+        action_obj->pre->getTree(ret->at_start_requirements, *domain_, params, instances_map);
       }
 
       // Preconditions OverAll
       if (action_obj->pre_o) {
-        action_obj->pre_o->getTree(ret->over_all_requirements, *domain_, params);
+        action_obj->pre_o->getTree(ret->over_all_requirements, *domain_, params, instances_map);
       }
 
       // Preconditions AtEnd
       if (action_obj->pre_e) {
-        action_obj->pre_e->getTree(ret->at_end_requirements, *domain_, params);
+        action_obj->pre_e->getTree(ret->at_end_requirements, *domain_, params, instances_map);
       }
 
       // Effects AtStart

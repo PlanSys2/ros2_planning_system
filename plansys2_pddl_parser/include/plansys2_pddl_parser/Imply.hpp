@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <map>
 
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
@@ -29,26 +30,30 @@ namespace pddl
 class Imply : public ParamCond
 {
 public:
-  Condition * cond;
+  Condition * left;
+  Condition * right;
 
   Imply()
-  : cond(0) {}
+  : left(0), right(0) {}
 
   Imply(const Imply * f, Domain & d)
-  : ParamCond(f), cond(0)
+  : ParamCond(f), left(0), right(0)
   {
-    if (f->cond) {cond = f->cond->copy(d);}
+    if (f->left) {left = f->left->copy(d);}
+    if (f->right) {right = f->right->copy(d);}
   }
 
   ~Imply()
   {
-    if (cond) {delete cond;}
+    if (left) {delete left;}
+    if (right) {delete right;}
   }
 
   void print(std::ostream & s) const
   {
     s << "Imply" << params << ":\n";
-    if (cond) {cond->print(s);}
+    if (left) {left->print(s);}
+    if (right) {right->print(s);}
   }
 
   void PDDLPrint(
@@ -57,11 +62,16 @@ public:
 
   plansys2_msgs::msg::Node::SharedPtr getTree(
     plansys2_msgs::msg::Tree & tree, const Domain & d,
-    const std::vector<std::string> & replace = {}) const override;
+    const std::vector<std::string> & replace = {},
+    const std::map<std::string, std::vector<std::string>> & instances_map = {}) const override;
 
   void parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d);
 
-  void addParams(int m, unsigned n) {cond->addParams(m, n);}
+  void addParams(int m, unsigned n)
+  {
+    left->addParams(m, n);
+    right->addParams(m, n);
+  }
 
   Condition * copy(Domain & d) {return new Imply(this, d);}
 };

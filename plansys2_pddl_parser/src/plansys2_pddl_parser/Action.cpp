@@ -49,7 +49,9 @@ void Action::PDDLPrint(
 }
 
 plansys2_msgs::msg::Node::SharedPtr Action::getTree(
-  plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace) const
+  plansys2_msgs::msg::Tree & tree,
+  const Domain & d, const std::vector<std::string> & replace,
+  const std::map<std::string, std::vector<std::string>> & instances_map) const
 {
   plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
   node->node_type = plansys2_msgs::msg::Node::ACTION;
@@ -57,12 +59,12 @@ plansys2_msgs::msg::Node::SharedPtr Action::getTree(
   tree.nodes.push_back(*node);
 
   if (pre) {
-    plansys2_msgs::msg::Node::SharedPtr child = pre->getTree(tree, d, replace);
+    plansys2_msgs::msg::Node::SharedPtr child = pre->getTree(tree, d, replace, instances_map);
     tree.nodes[node->node_id].children.push_back(child->node_id);
   }
 
   if (eff) {
-    plansys2_msgs::msg::Node::SharedPtr child = eff->getTree(tree, d, replace);
+    plansys2_msgs::msg::Node::SharedPtr child = eff->getTree(tree, d, replace, instances_map);
     tree.nodes[node->node_id].children.push_back(child->node_id);
   }
 

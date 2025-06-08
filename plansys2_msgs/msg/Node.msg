@@ -14,6 +14,8 @@ uint8 NUMBER = 9
 uint8 CONSTANT = 10
 uint8 PARAMETER = 11
 uint8 EXISTS = 12
+uint8 FORALL = 13
+uint8 IMPLY = 14
 
 # Expression types
 uint8 COMP_EQ = 13

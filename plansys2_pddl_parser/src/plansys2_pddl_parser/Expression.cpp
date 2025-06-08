@@ -40,13 +40,15 @@ void FunctionExpression::PDDLPrint(
 }
 
 plansys2_msgs::msg::Node::SharedPtr FunctionExpression::getTree(
-  plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace) const
+  plansys2_msgs::msg::Tree & tree,
+  const Domain & d, const std::vector<std::string> & replace,
+  const std::map<std::string, std::vector<std::string>> & instances_map) const
 {
   plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
   node->node_type = plansys2_msgs::msg::Node::FUNCTION;
   node->node_id = tree.nodes.size();
   node->name = fun->name;
-  for (unsigned i = 0; i < fun->params.size(); ++i) {
+  for ( unsigned i = 0; i < fun->params.size(); ++i ) {
     plansys2_msgs::msg::Param param;
     if (i < replace.size()) {
       param.name = replace[fun->params[i]];
@@ -94,7 +96,9 @@ void ConstExpression::PDDLPrint(
 }
 
 plansys2_msgs::msg::Node::SharedPtr ConstExpression::getTree(
-  plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace) const
+  plansys2_msgs::msg::Tree & tree,
+  const Domain & d, const std::vector<std::string> & replace,
+  const std::map<std::string, std::vector<std::string>> & instances_map) const
 {
   plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
   node->node_type = plansys2_msgs::msg::Node::CONSTANT;

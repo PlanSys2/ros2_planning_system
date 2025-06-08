@@ -15,6 +15,7 @@
 
 #include <string>
 #include <utility>
+#include <map>
 
 #include "plansys2_pddl_parser/Domain.hpp"
 // #undef DOMAIN_DEBUG

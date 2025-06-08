@@ -761,6 +761,117 @@ TEST(problem_expert, at_end_effect_test)
   t.join();
 }
 
+TEST(problem_expert, forall_imply_test)
+{
+  auto test_node = rclcpp::Node::make_shared("test_node");
+  auto test_lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_lc_node");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/test_forall_imply.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/test_forall_imply.pddl"});
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  {
+    rclcpp::Rate rate(10);
+    auto start = test_node->now();
+    while ((test_node->now() - start).seconds() < 0.5) {
+      rate.sleep();
+    }
+  }
+
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("location1", "location")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("item1", "item")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("item2", "item")));
+
+  auto instances = plansys2::convertVector<plansys2_msgs::msg::Param, plansys2::Instance>(
+    problem_client->getInstances());
+  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
+  (*action_map)["(check_items location1):1"] = plansys2::ActionExecutionInfo();
+  (*action_map)["(check_items location1):1"].action_info =
+    domain_client->getDurativeAction(
+    plansys2::get_action_name("(check_items location1)"),
+    plansys2::get_action_params("(check_items location1)"), instances);
+
+  ASSERT_NE(
+    (*action_map)["(check_items location1):1"].action_info.action.index(),
+    std::variant_npos);
+
+  std::string bt_xml_tree =
+    R"(
+    <root main_tree_to_execute = "MainTree" >
+      <BehaviorTree ID="MainTree">
+        <Sequence name="root_sequence">
+          <CheckOverAllReq action="(check_items location1):1"/>
+       </Sequence>
+      </BehaviorTree>
+    </root>
+  )";
+
+  auto blackboard = BT::Blackboard::create();
+
+  blackboard->set("action_map", action_map);
+  blackboard->set("node", test_lc_node);
+  blackboard->set("problem_client", problem_client);
+
+  BT::BehaviorTreeFactory factory;
+  factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
+  factory.registerNodeType<plansys2::CheckOverAllReq>("CheckOverAllReq");
+
+
+  std::vector<std::string> predicates = {
+    "(item_at item1 location1)",
+    "(item_at item2 location1)",
+    "(item_checked item1)",
+    "(item_checked item2)"
+  };
+
+  try {
+    for (const auto & pred : predicates) {
+      ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
+    }
+
+    auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
+
+    auto status = BT::NodeStatus::RUNNING;
+    status = tree.tickOnce();
+    ASSERT_EQ(status, BT::NodeStatus::SUCCESS);
+  } catch (std::exception & e) {
+    std::cerr << e.what() << std::endl;
+  }
+
+  finish = true;
+  t.join();
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

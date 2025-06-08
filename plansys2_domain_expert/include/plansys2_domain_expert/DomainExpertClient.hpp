@@ -150,7 +150,8 @@ public:
    */
   plansys2_msgs::msg::DurativeAction::SharedPtr getDurativeAction(
     const std::string & action,
-    const std::vector<std::string> & params = {});
+    const std::vector<std::string> & params = {},
+    const std::vector<plansys2_msgs::msg::Param> & instances = {});
 
   /// Get the current domain, ready to be saved to file, or to initialize another domain.
   /**

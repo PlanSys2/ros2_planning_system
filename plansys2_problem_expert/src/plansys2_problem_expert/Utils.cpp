@@ -315,6 +315,37 @@ std::tuple<bool, bool, double> evaluate(
         return std::make_tuple(true, true, tree.nodes[node_id].value);
       }
 
+    case plansys2_msgs::msg::Node::FORALL: {
+        bool success = true;
+        bool truth_value = true;
+
+        for (auto & child_id : tree.nodes[node_id].children) {
+          std::tuple<bool, bool, double> result =
+            evaluate(
+            tree, problem_client, predicates, functions, apply, use_state, child_id,
+            negate);
+          success = success && std::get<0>(result);
+          truth_value = truth_value && std::get<1>(result);
+        }
+        return std::make_tuple(success, truth_value, 0);
+      }
+
+    case plansys2_msgs::msg::Node::IMPLY: {
+        std::tuple<bool, bool, double> left = evaluate(
+          tree, problem_client, predicates,
+          functions, false, use_state, tree.nodes[node_id].children[0], !negate);
+        // negated as imply evaluates to !left || right
+        // apply set to false as imply can't be used in effects. Maybe raise error if true?
+        std::tuple<bool, bool, double> right = evaluate(
+          tree, problem_client,
+          predicates, functions, false, use_state, tree.nodes[node_id].children[1],
+          negate);
+
+        return std::make_tuple(
+          std::get<0>(left) && std::get<0>(right), std::get<1>(
+            left) || std::get<1>(right), 0);
+      }
+
     case plansys2_msgs::msg::Node::CONSTANT: {
         if (tree.nodes[node_id].name.size() > 0) {
           return std::make_tuple(true, true, 0);

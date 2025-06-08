@@ -1,5 +1,6 @@
 string durative_action
 string[] parameters
+plansys2_msgs/Param[] instances
 ---
 bool success
 plansys2_msgs/DurativeAction durative_action

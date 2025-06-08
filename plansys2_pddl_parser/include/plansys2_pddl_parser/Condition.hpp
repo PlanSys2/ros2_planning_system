@@ -17,6 +17,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <map>
 
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
@@ -52,7 +53,8 @@ public:
 
   virtual plansys2_msgs::msg::Node::SharedPtr getTree(
     plansys2_msgs::msg::Tree & tree, const Domain & d,
-    const std::vector<std::string> & replace = {}) const = 0;
+    const std::vector<std::string> & replace = {},
+    const std::map<std::string, std::vector<std::string>> & instances_map = {}) const = 0;
 
   virtual void parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d) = 0;
 

@@ -29,9 +29,8 @@ void Imply::PDDLPrint(
   tabindent(s, indent + 1);
   printParams(0, s, fstruct, d);
 
-  if (cond) {
-    cond->PDDLPrint(s, indent + 1, fstruct, d);
-  } else {
+  if (left) {left->PDDLPrint(s, indent + 1, fstruct, d);}
+  if (right) {right->PDDLPrint(s, indent + 1, fstruct, d);} else {
     tabindent(s, indent + 1);
     s << "()";
   }
@@ -42,30 +41,60 @@ void Imply::PDDLPrint(
 }
 
 plansys2_msgs::msg::Node::SharedPtr Imply::getTree(
-  plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace) const
+  plansys2_msgs::msg::Tree & tree,
+  const Domain & d, const std::vector<std::string> & replace,
+  const std::map<std::string, std::vector<std::string>> & instances_map) const
 {
-  throw UnsupportedConstruct("Imply");
+  plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+  node->node_type = plansys2_msgs::msg::Node::IMPLY;
+  node->node_id = tree.nodes.size();
+  node->name = name;
+
+  for (unsigned i = 0; i < params.size(); ++i) {
+    plansys2_msgs::msg::Param param;
+    if (i < replace.size()) {
+      if (params[i] >= 0) {  // param has a variable value; replace by action-args
+        param.name = replace[i];
+      }
+    } else {
+      param.name = "?" + std::to_string(params[i]);
+    }
+    param.type = d.types[params[i]]->name;
+    node->parameters.push_back(param);
+  }
+
+  tree.nodes.push_back(*node);
+
+  if (left) {
+    plansys2_msgs::msg::Node::SharedPtr child_1 = left->getTree(tree, d, replace);
+    // Could conditions need instances?
+    tree.nodes[node->node_id].children.push_back(child_1->node_id);
+  }
+
+  if(right) {
+    plansys2_msgs::msg::Node::SharedPtr child_2 = right->getTree(tree, d, replace);
+    // Could conditions need instances?
+    tree.nodes[node->node_id].children.push_back(child_2->node_id);
+  }
+  return node;
 }
 
 void Imply::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
 {
   f.next();
   f.assert_token("(");
-
-  TokenStruct<std::string> fs = f.parseTypedList(true, d.types);
-  params = d.convertTypes(fs.types);
-
-  TokenStruct<std::string> fstruct(ts);
-  fstruct.append(fs);
+  params = d.convertTypes(ts.types);
+  if (f.getChar() != ')') {
+    left = d.createCondition(f);
+    left->parse(f, ts, d);
+  } else {++f.c;}
 
   f.next();
   f.assert_token("(");
   if (f.getChar() != ')') {
-    cond = d.createCondition(f);
-    cond->parse(f, fstruct, d);
-  } else {
-    ++f.c;
-  }
+    right = d.createCondition(f);
+    right->parse(f, ts, d);
+  } else {++f.c;}
 
   f.next();
   f.assert_token(")");
