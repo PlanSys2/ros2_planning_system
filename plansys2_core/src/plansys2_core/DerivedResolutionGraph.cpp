@@ -122,9 +122,11 @@ void DerivedResolutionGraph::addNode(const NodeVariant & node)
 void DerivedResolutionGraph::addEdge(const NodeVariant & u, const NodeVariant & v)
 {
   if (u.isDerived()) {
+    u.getDerivedNode().computeNormalizedDerived();
     derived_predicates_.insert(u.getDerivedNode());
   }
   if (v.isDerived()) {
+    v.getDerivedNode().computeNormalizedDerived();
     derived_predicates_.insert(v.getDerivedNode());
   }
   if (u.isAction() || u.isDurativeAction()) {
