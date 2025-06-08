@@ -140,22 +140,25 @@ size_t State::getNumberInferredFromDerived(const plansys2::Derived & derived) co
 bool State::addInferredPredicate(const plansys2::Derived & derived, const plansys2::Predicate & predicate)
 {
   auto res = inferred_predicates_.emplace(predicate);
-  union_predicates_inferred_predicates_.emplace(predicate);
-  auto insert_result = inferred_predicates_map_[derived].insert(predicate);
+  auto pred_it = res.first;
+
+  union_predicates_inferred_predicates_.emplace(*pred_it);
+  auto insert_result = inferred_predicates_map_[derived].insert(*pred_it);
   if (insert_result.second) {
-    inferred_predicate_refcount_[predicate] += 1;
+    inferred_predicate_refcount_[*pred_it] += 1;
   }
   return res.second;
 }
 
 bool State::addInferredPredicate(const plansys2::Derived & derived, plansys2::Predicate && predicate)
 {
-  auto moved_predicate = std::move(predicate);
-  auto res = inferred_predicates_.emplace(moved_predicate);
-  union_predicates_inferred_predicates_.emplace(moved_predicate);
-  auto insert_result = inferred_predicates_map_[derived].insert(moved_predicate);
+  auto res = inferred_predicates_.emplace(std::move(predicate));
+  auto pred_it = res.first;
+
+  union_predicates_inferred_predicates_.emplace(*pred_it);
+  auto insert_result = inferred_predicates_map_[derived].insert(*pred_it);
   if (insert_result.second) {
-    inferred_predicate_refcount_[moved_predicate] += 1;
+    inferred_predicate_refcount_[*pred_it] += 1;
   }
   return res.second;
 }
