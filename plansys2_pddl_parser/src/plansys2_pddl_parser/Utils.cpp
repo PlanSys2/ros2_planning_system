@@ -1354,7 +1354,7 @@ bool checkNodeEquality(
     first.node_type == plansys2_msgs::msg::Node::PREDICATE ||
     first.node_type == plansys2_msgs::msg::Node::FUNCTION)
   {
-    if (!compare_str_case_insensitive(first.name, second.name)) {
+    if (first.name != second.name) {
       return false;
     }
   }
@@ -1399,19 +1399,12 @@ bool checkParamEquality(
   const plansys2_msgs::msg::Param & second,
   bool check_var_params)
 {
-  // auto types_match = compare_str_case_insensitive(first.type, second.type)
-  //   || (first.type.empty() && compare_str_case_insensitive(second.type, "object"))
-  //   || (second.type.empty() && compare_str_case_insensitive(first.type, "object"));
-
-  // if (!types_match)
-  //   return false;
-
   if (!check_var_params && 
     (first.name.front() == '?' || second.name.front() == '?')) 
   {
     return true;
   }
-  return compare_str_case_insensitive(first.name, second.name);
+  return first.name == second.name;
 }
 
 bool checkActionEquality(
