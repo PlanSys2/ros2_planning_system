@@ -35,6 +35,21 @@ inline void hash_combine(std::size_t & seed, const T & value)
 {
   seed ^= std::hash<T>{}(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
+
+inline std::size_t hash_node(const plansys2_msgs::msg::Node & node)
+{
+  std::size_t seed = 0;
+
+  hash_combine(seed, node.name);
+  hash_combine(seed, node.node_type);
+  hash_combine(seed, node.children.size());
+  hash_combine(seed, node.parameters.size());
+
+  for (const auto & param : node.parameters) {
+    hash_combine(seed, param.name);
+  }
+  return seed;
+}
 }
 
 namespace plansys2
@@ -75,7 +90,11 @@ public:
   {
   }
 
-  bool operator==(const Instance & i2) const {return parser::pddl::checkParamEquality(*this, i2);}
+  bool operator==(const Instance & i2) const 
+  {
+    if (this == &i2) return true;
+    return parser::pddl::checkParamEquality(*this, i2);
+  }
 };
 
 class Predicate : public plansys2_msgs::msg::Node
@@ -92,7 +111,11 @@ public:
   {
   }
 
-  bool operator==(const Predicate & p2) const {return parser::pddl::checkNodeEquality(*this, p2);}
+  bool operator==(const Predicate & p2) const 
+  {
+    if (this == &p2) return true;
+    return parser::pddl::checkNodeEquality(*this, p2);
+  }
 };
 
 class Derived : public plansys2_msgs::msg::Derived
@@ -104,6 +127,7 @@ public:
   
   bool operator==(const Derived & d) const
   { 
+    if (this == &d) return true;
     if (!normalizedDerivedComputed()) {
       computeNormalizedDerived();
     }
@@ -185,10 +209,10 @@ public:
     }
 
     normalized_hash_ = 0;
-    std::hash_combine(normalized_hash_, normalized_predicate_);
+    std::hash_combine(normalized_hash_, std::hash_node(normalized_predicate_));
+    std::hash_combine(normalized_hash_, normalized_preconditions_.nodes.size());
     for (auto &node : normalized_preconditions_.nodes)
-      std::hash_combine(normalized_hash_, node);
-    
+      std::hash_combine(normalized_hash_, std::hash_node(node));
   }
 
 private:
@@ -212,7 +236,11 @@ public:
   {
   }
 
-  bool operator==(const Function & f2) const {return parser::pddl::checkNodeEquality(*this, f2);}
+  bool operator==(const Function & f2) const 
+  {
+    if (this == &f2) return true;
+    return parser::pddl::checkNodeEquality(*this, f2);
+  }
 };
 
 class Goal : public plansys2_msgs::msg::Tree
@@ -234,21 +262,6 @@ public:
 
 namespace std
 {
-
-inline std::size_t hash_node(const plansys2_msgs::msg::Node & node)
-{
-  std::size_t seed = 0;
-
-  hash_combine(seed, node.name);
-  hash_combine(seed, node.node_type);
-  hash_combine(seed, node.children.size());
-  hash_combine(seed, node.parameters.size());
-
-  for (const auto & param : node.parameters) {
-    hash_combine(seed, param.name);
-  }
-  return seed;
-}
 
 template<>
 struct hash<plansys2_msgs::msg::Node>
