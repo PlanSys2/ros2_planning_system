@@ -61,6 +61,9 @@ public:
 
   bool operator==(const NodeVariant& other) const
   {
+    if (this == &other) {
+      return true;  // Same instance
+    }
     // Check type first
     if (this->getNodeType() != other.getNodeType())
       return false;
@@ -122,9 +125,10 @@ public:
 
   plansys2::Function & getFunctionNode() const {return std::get<plansys2::Function>(*node_);}
   plansys2::Predicate getPredicateNode() const {return std::get<plansys2::Predicate>(*node_);}
-  const plansys2::Derived& getDerivedNode() const {
-    return std::get<plansys2::Derived>(*node_);
-  }
+  plansys2::Derived getDerivedNode() const {return std::get<plansys2::Derived>(*node_);}
+  // const plansys2::Derived& getDerivedNode() const {
+  //   return std::get<plansys2::Derived>(*node_);
+  // }
   plansys2::ActionVariant getActionVariantNode() const {return std::get<plansys2::ActionVariant>(*node_);}
 
   auto & getDerivedPreconditions() const
@@ -255,7 +259,6 @@ struct hash<plansys2::NodeVariant>
 {
   std::size_t operator()(const plansys2::NodeVariant & nv) const noexcept 
   {
-    // return nv.hash();
     if (nv.isPredicate())
     {
       return hash_node_variant(nv.getPredicateNode());

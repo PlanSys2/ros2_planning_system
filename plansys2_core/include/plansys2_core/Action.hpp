@@ -38,6 +38,7 @@ public:
 
   bool operator==(const Action & action) const
   {
+    if (this == &action) return true;
     return parser::pddl::checkActionEquality(*this, action);
   }
 };
@@ -54,6 +55,7 @@ public:
 
   bool operator==(const DurativeAction & action) const
   {
+    if (this == &action) return true;
     return parser::pddl::checkDurativeActionEquality(*this, action);
   }
 };
@@ -69,6 +71,8 @@ struct hash<plansys2::Action>
     std::size_t seed = 0;
     hash_combine(seed, action.name);
     hash_combine(seed, action.parameters.size());
+    hash_combine(seed, action.preconditions.nodes.size());
+    hash_combine(seed, action.effects.nodes.size());
 
     for (const auto & param : action.parameters) {
       hash_combine(seed, param.name);
@@ -93,6 +97,11 @@ struct hash<plansys2::DurativeAction>
     std::size_t seed = 0;
     hash_combine(seed, action.name);
     hash_combine(seed, action.parameters.size());
+    hash_combine(seed, action.at_start_requirements.nodes.size());
+    hash_combine(seed, action.over_all_requirements.nodes.size());
+    hash_combine(seed, action.at_end_requirements.nodes.size());
+    hash_combine(seed, action.at_start_effects.nodes.size());
+    hash_combine(seed, action.at_end_effects.nodes.size());
 
     for (const auto & param : action.parameters) {
       hash_combine(seed, param.name);

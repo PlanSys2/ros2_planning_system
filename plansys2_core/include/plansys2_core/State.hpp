@@ -328,21 +328,12 @@ struct hash<plansys2::State>
   std::size_t operator()(const plansys2::State & state) const
   {
     std::size_t seed = 0;
-
-    for (const auto & instance : state.instances_) {
-      hash_combine(seed, instance);
-    }
-    for (const auto & function : state.functions_) {
-      hash_combine(seed, function);
-    }
-    for (const auto & predicate : state.predicates_) {
-      hash_combine(seed, predicate);
-    }
-    for (const auto & inferred_predicate : state.inferred_predicates_) {
-      hash_combine(seed, inferred_predicate);
-    }
-    hash_combine(seed, state.derived_predicates_);
-
+    seed ^= unordered_container_hash(state.instances_);
+    seed ^= unordered_container_hash(state.functions_);
+    seed ^= unordered_container_hash(state.predicates_);
+    seed ^= unordered_container_hash(state.inferred_predicates_);
+    seed ^= unordered_container_hash(state.union_predicates_inferred_predicates_);
+    seed ^= std::hash<decltype(state.derived_predicates_)>{}(state.derived_predicates_);
     return seed;
   }
 };

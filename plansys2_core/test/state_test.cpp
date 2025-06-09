@@ -251,32 +251,30 @@ TEST(state_test, get_derived_predicates_sccs)
 
   ASSERT_EQ(sccs_full.size(), 6);
   
-  std::vector<plansys2::Derived> target = {der4, der2, der3};
-  auto it = std::find(sccs_full.begin(), sccs_full.end(), target);
-  ASSERT_TRUE(it != sccs_full.end());
+  // Helper lambda to check if a set of derived predicates (regardless of order) is in sccs_full
+  auto contains_scc = [](const std::vector<std::vector<plansys2::Derived>> &sccs,
+                         const std::vector<plansys2::Derived> &target) {
+    for (const auto &scc : sccs) {
+      if (scc.size() == target.size()) {
+        std::unordered_set<plansys2::Derived> scc_set(scc.begin(), scc.end());
+        std::unordered_set<plansys2::Derived> target_set(target.begin(), target.end());
+        if (scc_set == target_set) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
 
-  target = {der6, der5};
-  it = std::find(sccs_full.begin(), sccs_full.end(), target);
-  ASSERT_TRUE(it != sccs_full.end());
-
-  target = {der1};
-  it = std::find(sccs_full.begin(), sccs_full.end(), target);
-  ASSERT_TRUE(it != sccs_full.end());
+  ASSERT_TRUE(contains_scc(sccs_full, {der2, der3, der4}));
+  ASSERT_TRUE(contains_scc(sccs_full, {der5, der6}));
+  ASSERT_TRUE(contains_scc(sccs_full, {der1}));
 
   plansys2::Predicate pred2 = parser::pddl::fromStringPredicate("(pred2 ?x)");;
   auto sccs_pred2 = state.getDerivedPredicatesSCCs({pred2});
-
-  target = {der4, der2, der3};
-  it = std::find(sccs_pred2.begin(), sccs_pred2.end(), target);
-  ASSERT_TRUE(it != sccs_pred2.end());
-
-  target = {der5, der6};
-  it = std::find(sccs_pred2.begin(), sccs_pred2.end(), target);
-  ASSERT_TRUE(it != sccs_pred2.end());
-
-  target = {der1};
-  it = std::find(sccs_pred2.begin(), sccs_pred2.end(), target);
-  ASSERT_TRUE(it == sccs_pred2.end());
+  ASSERT_TRUE(contains_scc(sccs_pred2, {der2, der3, der4}));
+  ASSERT_TRUE(contains_scc(sccs_pred2, {der5, der6}));
+  ASSERT_FALSE(contains_scc(sccs_pred2, {der1}));
 }
 
 int main(int argc, char ** argv)

@@ -50,6 +50,34 @@ inline std::size_t hash_node(const plansys2_msgs::msg::Node & node)
   }
   return seed;
 }
+
+template <typename UnorderedContainer>
+inline std::size_t unordered_container_hash(const UnorderedContainer& container)
+{
+  std::size_t h = 0;
+  for (const auto& elem : container) {
+      // Combine using XOR for order independence
+      h ^= std::hash<std::decay_t<decltype(elem)>>{}(elem);
+  }
+  // Optionally, mix in the size for more uniqueness
+  h ^= container.size();
+  return h;
+}
+
+// For unordered_map and similar
+template <typename Key, typename T, typename Hash, typename KeyEqual, typename Alloc>
+std::size_t unordered_container_hash(const std::unordered_map<Key, T, Hash, KeyEqual, Alloc>& map)
+{
+    std::size_t h = 0;
+    for (const auto& [key, value] : map) {
+        std::size_t entry_hash = std::hash<Key>{}(key);
+        entry_hash ^= std::hash<T>{}(value) + 0x9e3779b9;
+        h ^= entry_hash;
+    }
+    h ^= map.size();
+    return h;
+}
+
 }
 
 namespace plansys2

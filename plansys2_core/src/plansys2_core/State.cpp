@@ -69,6 +69,13 @@ State::State(const plansys2_msgs::msg::State & state)
 
 bool State::operator==(const State & state) const
 {
+  if (this == &state) return true;
+  if (this->instances_.size() != state.instances_.size()) return false;
+  if (this->functions_.size() != state.functions_.size()) return false;
+  if (this->predicates_.size() != state.predicates_.size()) return false;
+  if (this->inferred_predicates_.size() != state.inferred_predicates_.size()) return false;
+  if (this->union_predicates_inferred_predicates_.size() != state.union_predicates_inferred_predicates_.size()) return false;
+  if (this->derived_predicates_.getNodeNumber() != state.derived_predicates_.getNodeNumber()) return false;
   return this->instances_ == state.instances_ && this->functions_ == state.functions_ &&
          this->predicates_ == state.predicates_ &&
          this->inferred_predicates_ == state.inferred_predicates_ &&

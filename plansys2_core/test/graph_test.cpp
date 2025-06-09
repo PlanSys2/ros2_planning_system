@@ -807,9 +807,9 @@ TEST(graph_test, graph_derived_constructor)
   ASSERT_EQ(inferredB_children.size(), 5);
   ASSERT_EQ(inferredB_children[0].first, "inferredB");
   ASSERT_EQ(inferredB_children[0].second, "derived");
-  ASSERT_EQ(inferredB_children[1].first, "inferredExists");
+  ASSERT_EQ(inferredB_children[1].first, "inferredExists2");
   ASSERT_EQ(inferredB_children[1].second, "derived");
-  ASSERT_EQ(inferredB_children[2].first, "inferredExists2");
+  ASSERT_EQ(inferredB_children[2].first, "inferredExists");
   ASSERT_EQ(inferredB_children[2].second, "derived");
   ASSERT_EQ(inferredB_children[3].first, "inferredAB");
   ASSERT_EQ(inferredB_children[3].second, "derived");
@@ -1136,18 +1136,24 @@ TEST(graph_test, get_scc)
   auto sccs = graph.computeSCCsTarjanDerivedPredicates();
 
   ASSERT_EQ(sccs.size(), 6);
+
+  auto contains_scc = [](const std::vector<std::vector<plansys2::Derived>> &sccs,
+                         const std::vector<plansys2::Derived> &target) {
+    for (const auto &scc : sccs) {
+      if (scc.size() == target.size()) {
+        std::unordered_set<plansys2::Derived> scc_set(scc.begin(), scc.end());
+        std::unordered_set<plansys2::Derived> target_set(target.begin(), target.end());
+        if (scc_set == target_set) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
   
-  std::vector<plansys2::Derived> target = {der4, der2, der3};
-  auto it = std::find(sccs.begin(), sccs.end(), target);
-  ASSERT_TRUE(it != sccs.end());
-
-  target = {der6, der5};
-  it = std::find(sccs.begin(), sccs.end(), target);
-  ASSERT_TRUE(it != sccs.end());
-
-  target = {der1};
-  it = std::find(sccs.begin(), sccs.end(), target);
-  ASSERT_TRUE(it != sccs.end());
+  ASSERT_TRUE(contains_scc(sccs, {der2, der3, der4}));
+  ASSERT_TRUE(contains_scc(sccs, {der5, der6}));
+  ASSERT_TRUE(contains_scc(sccs, {der1}));
 }
 
 TEST(graph_test, graph_derived_action_suave)

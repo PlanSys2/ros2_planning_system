@@ -146,10 +146,17 @@ public:
 
   void clear() {adj_list_.clear(); parent_nodes_.clear(); nodes_.clear(); roots_.clear(); edge_count_ = 0;}
 
-  bool operator==(const DerivedResolutionGraph & graph) const 
+  bool operator==(const DerivedResolutionGraph& other) const
   {
-    return this->adj_list_ == graph.adj_list_ && this->parent_nodes_ == graph.parent_nodes_ &&
-      this->nodes_ == graph.nodes_ && this->edge_count_ == graph.edge_count_;
+    if (this == &other) return true;
+    return adj_list_ == other.adj_list_
+        && parent_nodes_ == other.parent_nodes_
+        && nodes_ == other.nodes_
+        && roots_ == other.roots_
+        && derived_predicates_ == other.derived_predicates_
+        && actions_ == other.actions_
+        && node_ids_ == other.node_ids_
+        && edge_count_ == other.edge_count_;
   }
 
   using NodeEdgesMap = std::unordered_map<NodeVariant, std::unordered_set<NodeVariant>>;
@@ -185,18 +192,37 @@ private:
 
 namespace std
 {
+template <typename NodeEdgesMap>
+std::size_t unordered_nodeedgesmap_hash(const NodeEdgesMap& map)
+{
+    std::size_t seed = 0;
+    for (const auto& [key, neighbors] : map) {
+        // Hash the key
+        std::size_t entry_hash = std::hash<std::decay_t<decltype(key)>>{}(key);
+        // Hash the neighbor set (order-independent)
+        entry_hash ^= unordered_container_hash(neighbors);
+        // XOR with seed (order-independent for map)
+        seed ^= entry_hash;
+    }
+    // Mix in size for extra entropy
+    seed ^= map.size();
+    return seed;
+}
+
 template<>
 struct hash<plansys2::DerivedResolutionGraph>
 {
   std::size_t operator()(const plansys2::DerivedResolutionGraph & graph) const noexcept
   {
     std::size_t seed = 0;
-    for (const auto & [key, neighbors] : graph.adj_list_) {
-      hash_combine(seed, key);
-      for (const auto & neighbor : neighbors) {
-        hash_combine(seed, neighbor);
-      }
-    }
+    hash_combine(seed, graph.edge_count_);
+    seed ^= unordered_container_hash(graph.nodes_);
+    seed ^= unordered_container_hash(graph.roots_);
+    seed ^= unordered_container_hash(graph.derived_predicates_);
+    seed ^= unordered_container_hash(graph.actions_);
+    seed ^= unordered_container_hash(graph.node_ids_);
+    seed ^= unordered_nodeedgesmap_hash(graph.adj_list_);
+    seed ^= unordered_nodeedgesmap_hash(graph.parent_nodes_);
     return seed;
   }
 };
