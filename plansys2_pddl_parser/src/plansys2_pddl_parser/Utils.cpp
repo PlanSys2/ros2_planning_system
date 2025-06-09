@@ -1410,7 +1410,7 @@ bool checkParamEquality(
 bool checkActionEquality(
   const plansys2_msgs::msg::Action & first, const plansys2_msgs::msg::Action & second)
 {
-  if (!compare_str_case_insensitive(first.name, second.name)) {
+  if (first.name != second.name) {
     return false;
   }
 
@@ -1432,9 +1432,9 @@ bool checkDurativeActionEquality(
   const plansys2_msgs::msg::DurativeAction & first,
   const plansys2_msgs::msg::DurativeAction & second)
 {
-  if (!compare_str_case_insensitive(first.name, second.name)) {
+  if (first.name != second.name) {
     return false;
-  }
+  }  
 
   if (first.parameters.size() != second.parameters.size()) {
     return false;
