@@ -1522,8 +1522,32 @@ TEST(utils, apply_with_derived_suave_2)
 
   auto action_start_robot = domain_expert->getAction(
     "start_robot", {"bluerov"});
+  auto action_reconfig_maintain = domain_expert->getAction(
+    "reconfigure1", {"f_maintain_motion", "fd_all_thrusters"});
+  auto action_reconfig_generate = domain_expert->getAction(
+    "reconfigure1", {"f_generate_search_path", "fd_spiral_high"});
+  auto action_search_pipeline = domain_expert->getAction(
+    "search_pipeline", {"pipeline", "bluerov"});
+  auto action_reconfig_follow = domain_expert->getAction(
+    "reconfigure1", {"f_follow_pipeline", "fd_follow_pipeline"});
+  auto action_reconfig_generate2 = domain_expert->getAction(
+    "reconfigure2", {"f_generate_search_path", "fd_spiral_high", "fd_unground"});
+  auto action_inspect_pipeline = domain_expert->getAction(
+    "inspect_pipeline", {"pipeline", "bluerov"});
+
   ASSERT_TRUE(plansys2::check(action_start_robot->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_maintain->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_generate->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_search_pipeline->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_inspect_pipeline->preconditions, state));
+  
   ASSERT_TRUE(plansys2::apply(action_start_robot->effects, state));
+
+  ASSERT_FALSE(plansys2::check(action_start_robot->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_maintain->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_generate->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_search_pipeline->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_inspect_pipeline->preconditions, state));
 
   ASSERT_TRUE(
     state.hasInferredPredicate(
@@ -1559,10 +1583,15 @@ TEST(utils, apply_with_derived_suave_2)
   ASSERT_FALSE(
     state.hasInferredPredicate(parser::pddl::fromStringPredicate("inferred-f_active f_follow_pipeline true_boolean")));
 
-  auto action_reconfig_maintain = domain_expert->getAction(
-    "reconfigure1", {"f_maintain_motion", "fd_all_thrusters"});
+  
   ASSERT_TRUE(plansys2::check(action_reconfig_maintain->preconditions, state));
   ASSERT_TRUE(plansys2::apply(action_reconfig_maintain->effects, state));
+
+  ASSERT_FALSE(plansys2::check(action_start_robot->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_reconfig_maintain->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_generate->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_search_pipeline->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_inspect_pipeline->preconditions, state));
 
   ASSERT_TRUE(
     state.hasInferredPredicate(
@@ -1580,10 +1609,15 @@ TEST(utils, apply_with_derived_suave_2)
     state.hasInferredPredicate(
       parser::pddl::fromStringPredicate("inferred-solvesf fd_spiral_low f_generate_search_path")));
   
-  auto action_reconfig_generate = domain_expert->getAction(
-    "reconfigure1", {"f_generate_search_path", "fd_spiral_high"});
+  
   ASSERT_TRUE(plansys2::check(action_reconfig_generate->preconditions, state));
   ASSERT_TRUE(plansys2::apply(action_reconfig_generate->effects, state));
+
+  ASSERT_FALSE(plansys2::check(action_start_robot->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_reconfig_maintain->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_reconfig_generate->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_search_pipeline->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_inspect_pipeline->preconditions, state));
   
   ASSERT_TRUE(
     state.hasInferredPredicate(parser::pddl::fromStringPredicate("inferred-f_active f_generate_search_path true_boolean")));
@@ -1592,19 +1626,14 @@ TEST(utils, apply_with_derived_suave_2)
   ASSERT_FALSE(
     state.hasInferredPredicate(parser::pddl::fromStringPredicate("inferred-f_active f_follow_pipeline true_boolean")));
 
-  auto action_search_pipeline = domain_expert->getAction(
-    "search_pipeline", {"pipeline", "bluerov"});
+  
   ASSERT_TRUE(plansys2::check(action_search_pipeline->preconditions, state));
   ASSERT_TRUE(plansys2::apply(action_search_pipeline->effects, state));
 
-  auto action_reconfig_follow = domain_expert->getAction(
-    "reconfigure1", {"f_follow_pipeline", "fd_follow_pipeline"});
   ASSERT_TRUE(plansys2::check(action_reconfig_follow->preconditions, state));
   ASSERT_TRUE(plansys2::apply(action_reconfig_follow->effects, state));
   
 
-  auto action_reconfig_generate2 = domain_expert->getAction(
-    "reconfigure2", {"f_generate_search_path", "fd_spiral_high", "fd_unground"});
   ASSERT_TRUE(plansys2::check(action_reconfig_generate2->preconditions, state));
   std::cout<<"APLLYING reconfig f_generate_search_path fd_spiral_high fd_unground action"<<std::endl;
   ASSERT_TRUE(plansys2::apply(action_reconfig_generate2->effects, state));
@@ -1616,8 +1645,6 @@ TEST(utils, apply_with_derived_suave_2)
   ASSERT_TRUE(
     state.hasInferredPredicate(parser::pddl::fromStringPredicate("inferred-f_active f_follow_pipeline true_boolean")));
 
-  auto action_inspect_pipeline = domain_expert->getAction(
-    "inspect_pipeline", {"pipeline", "bluerov"});
   ASSERT_TRUE(plansys2::check(action_inspect_pipeline->preconditions, state));
   std::cout<<"APLLYING inspect_pipeline action"<<std::endl;
   ASSERT_TRUE(plansys2::apply(action_inspect_pipeline->effects, state));
