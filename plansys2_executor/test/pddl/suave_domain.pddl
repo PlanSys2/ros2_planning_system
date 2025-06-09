@@ -605,7 +605,8 @@
           )
         )
       )
-      (or (= ?fd_goal fd_unground)
+      (or 
+      	(= ?fd_goal fd_unground)
         (not
           (exists (?fd)
             (and
@@ -682,11 +683,11 @@
       (pipeline_found ?p)
       (exists (?a ?f1 ?f2 ?fd1 ?fd2)
         (and
-          (Action ?a)
+          (inferred-Action ?a)
           (= ?a a_inspect_pipeline)
           (not (= ?f1 ?f2))
-          (inferred-requiresF ?a ?f1)
-          (inferred-requiresF ?a ?f2)
+          (inferred-RequiresF ?a ?f1)
+          (inferred-RequiresF ?a ?f2)
           (inferred-F_active ?f1 true_boolean)
           (inferred-F_active ?f2 true_boolean)
         )

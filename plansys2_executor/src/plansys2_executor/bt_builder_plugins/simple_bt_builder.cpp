@@ -65,13 +65,26 @@ WAIT_PREV_ACTIONS
 bool SimpleBTBuilder::is_action_executable(
   const ActionStamped & action, const plansys2::State & state)
 {
+  const std::string& action_str = action.action.get_action_string();
+  auto action_key = std::make_pair(action_str, state);
+
+  auto it = check_action_state_cache_.find(action_key);
+  if (it != check_action_state_cache_.end()) {
+    return it->second;
+  }
+  
+  bool result;
   if (action.action.is_action()) {
-    return plansys2::check(action.action.get_overall_requirements(), state);
+    result = plansys2::check(action.action.get_overall_requirements(), state);
+  } else {
+    result =
+        plansys2::check(action.action.get_at_start_requirements(), state) &&
+        plansys2::check(action.action.get_at_end_requirements(), state) &&
+        plansys2::check(action.action.get_overall_requirements(), state);
   }
 
-  return plansys2::check(action.action.get_at_start_requirements(), state) &&
-         plansys2::check(action.action.get_at_end_requirements(), state) &&
-         plansys2::check(action.action.get_overall_requirements(), state);
+  check_action_state_cache_.emplace(std::move(action_key), result);
+  return result;
 }
 
 ActionNode::Ptr SimpleBTBuilder::get_node_satisfy(
@@ -143,17 +156,20 @@ void SimpleBTBuilder::get_node_contradict(
 void SimpleBTBuilder::apply_action_to_state(
   const plansys2::bt_builder::ActionStamped & action, plansys2::State & state)
 {
-  auto action_key = std::make_pair(action.action.get_action_string(), state);
-  auto it = action_state_cache.find(action_key);
-  if (it == action_state_cache.end()) {
-    if (action.action.is_durative_action()) {
-      plansys2::apply(action.action.get_at_start_effects(), state);
-    }
-    plansys2::apply(action.action.get_at_end_effects(), state);
-    action_state_cache.emplace(std::move(action_key), state);
-  } else {
+  const std::string& action_str = action.action.get_action_string();
+  auto action_key = std::make_pair(action_str, state);
+
+  auto it = apply_action_state_cache_.find(action_key);
+  if (it != apply_action_state_cache_.end()) {
     state = it->second;
+    return;
   }
+  
+  if (action.action.is_durative_action()) {
+    plansys2::apply(action.action.get_at_start_effects(), state);
+  }
+  plansys2::apply(action.action.get_at_end_effects(), state);
+  apply_action_state_cache_.emplace(std::move(action_key), state);
 }
 
 bool SimpleBTBuilder::is_parallelizable(
@@ -288,17 +304,28 @@ void SimpleBTBuilder::prune_forward(
   }
 }
 
-void SimpleBTBuilder::get_state(
-  const ActionNode::Ptr & node, std::list<ActionNode::Ptr> & used_nodes, plansys2::State & state)
+void SimpleBTBuilder::get_state_recursive(
+  const ActionNode::Ptr& node,
+  std::list<ActionNode::Ptr>& used_nodes,
+  plansys2::State& state)
 {
-  // Traverse graph to the root
-  for (auto & in : node->in_arcs) {
-    if (std::find(used_nodes.begin(), used_nodes.end(), in) == used_nodes.end()) {
-      get_state(in, used_nodes, state);
-      apply_action_to_state(in->action, state);
-      used_nodes.push_back(in);
-    }
+  for (auto& in : node->in_arcs) {
+      if (std::find(used_nodes.begin(), used_nodes.end(), in) == used_nodes.end()) {
+          get_state_recursive(in, used_nodes, state); // state is modified in-place
+          apply_action_to_state(in->action, state);   // also in-place
+          used_nodes.push_back(in);
+      }
   }
+}
+
+plansys2::State SimpleBTBuilder::get_state(
+  const ActionNode::Ptr& node,
+  std::list<ActionNode::Ptr>& used_nodes,
+  const plansys2::State& state)
+{
+  plansys2::State new_state = state; // Only one copy, at the top.
+  get_state_recursive(node, used_nodes, new_state);
+  return new_state;
 }
 
 std::vector<plansys2_msgs::msg::Tree> SimpleBTBuilder::check_requirements(
@@ -368,10 +395,17 @@ ActionGraph::Ptr SimpleBTBuilder::get_graph(const plansys2_msgs::msg::Plan & cur
   plansys2::solveDerivedPredicates(state);
 
   // Get root actions that can be run in parallel
+  auto start_get_roots = std::chrono::steady_clock::now();
   graph->roots = get_roots(action_sequence, state, node_counter);
+  auto end_get_roots = std::chrono::steady_clock::now();
+  std::chrono::duration<double> elapsed_get_roots = end_get_roots - start_get_roots;
+  std::cout << "[SimpleBTBuilder::get_graph] get_roots() took "
+            << elapsed_get_roots.count() << " seconds" << std::endl;
 
   // Build the rest of the graph
   while (!action_sequence.empty()) {
+    std::cout<<"\n new loop"<<std::endl;
+
     auto new_node = ActionNode::make_shared();
     new_node->action = *action_sequence.begin();
     new_node->node_num = node_counter++;
@@ -405,42 +439,59 @@ ActionGraph::Ptr SimpleBTBuilder::get_graph(const plansys2_msgs::msg::Plan & cur
 
     // Look for satisfying nodes
     // A satisfying node is a node with an effect that satisfies a requirement of the new node
+    auto start_satisfying_nodes = std::chrono::steady_clock::now();
     requirements = check_requirements(requirements, graph, new_node);
+    auto end_satisfying_nodes = std::chrono::steady_clock::now();
+    std::chrono::duration<double> elapsed_satisfying_nodes = end_satisfying_nodes - start_satisfying_nodes;
+    std::cout << "[SimpleBTBuilder::get_graph] check_requirements() took "
+          << elapsed_satisfying_nodes.count() << " seconds" << std::endl;
 
     // Look for contradicting parallel actions
     // A1 and A2 cannot run in parallel if the effects of A1 contradict the requirements of A2
+    auto start_contradictions = std::chrono::steady_clock::now();
     auto contradictions = get_node_contradict(graph, new_node);
+    auto end_contradictions = std::chrono::steady_clock::now();
+    std::chrono::duration<double> elapsed_contradictions = end_contradictions - start_contradictions;
+    std::cout << "[SimpleBTBuilder::get_graph] get_node_contradict() took "
+          << elapsed_contradictions.count() << " seconds" << std::endl;
+    
     for (const auto parent : contradictions) {
       prune_backwards(new_node, parent);
 
       // Create the connections to the parent node
       if (
-        std::find(new_node->in_arcs.begin(), new_node->in_arcs.end(), parent) ==
-        new_node->in_arcs.end())
+      std::find(new_node->in_arcs.begin(), new_node->in_arcs.end(), parent) ==
+      new_node->in_arcs.end())
       {
-        new_node->in_arcs.push_back(parent);
+      new_node->in_arcs.push_back(parent);
       }
       if (
-        std::find(parent->out_arcs.begin(), parent->out_arcs.end(), new_node) ==
-        parent->out_arcs.end())
+      std::find(parent->out_arcs.begin(), parent->out_arcs.end(), new_node) ==
+      parent->out_arcs.end())
       {
-        parent->out_arcs.push_back(new_node);
+      parent->out_arcs.push_back(new_node);
       }
     }
 
     // Compute the state up to the new node
     // The effects of the new node are not applied
     std::list<ActionNode::Ptr> used_nodes;
-    state = problem_client_->getState();
-    state.addActionsAndPruneDerived(action_variant_vec);
-    plansys2::solveDerivedPredicates(state);
-
-    get_state(new_node, used_nodes, state);
-    new_node->state = state;
+    auto start_get_state = std::chrono::steady_clock::now();
+    new_node->state = get_state(new_node, used_nodes, state);
+    // new_node->state = state;
+    auto end_get_state = std::chrono::steady_clock::now();
+    std::chrono::duration<double> elapsed_get_state = end_get_state - start_get_state;
+    std::cout << "[SimpleBTBuilder::get_graph] get_state() took "
+          << elapsed_get_state.count() << " seconds" << std::endl;
 
     // Check any requirements that do not have satisfying nodes.
     // These should be satisfied by the initial state.
-    remove_existing_requirements(requirements, state);
+    auto start_remove_requirements = std::chrono::steady_clock::now();
+    remove_existing_requirements(requirements, new_node->state);
+    auto end_remove_requirements = std::chrono::steady_clock::now();
+    std::chrono::duration<double> elapsed_remove_requirements = end_remove_requirements - start_remove_requirements;
+    std::cout << "[SimpleBTBuilder::get_graph] remove_existing_requirements() took "
+          << elapsed_remove_requirements.count() << " seconds" << std::endl;
     for (const auto & req : requirements) {
       std::cerr << "[ERROR] requirement not met: [" << parser::pddl::toString(req) << "]"
                 << std::endl;

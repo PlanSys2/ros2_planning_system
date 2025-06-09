@@ -111,7 +111,8 @@ protected:
   std::string bt_;
   std::string bt_action_;
 
-  std::unordered_map<std::pair<std::string, plansys2::State>, plansys2::State> action_state_cache;
+  std::unordered_map<std::pair<std::string, plansys2::State>, plansys2::State> apply_action_state_cache_;
+  std::unordered_map<std::pair<std::string, plansys2::State>, bool> check_action_state_cache_;
 
   plansys2::bt_builder::ActionGraph::Ptr get_graph(const plansys2_msgs::msg::Plan & current_plan);
 
@@ -123,9 +124,13 @@ protected:
   void prune_forward(
     plansys2::bt_builder::ActionNode::Ptr current,
     std::list<plansys2::bt_builder::ActionNode::Ptr> & used_nodes);
-  void get_state(
+  plansys2::State get_state(
     const plansys2::bt_builder::ActionNode::Ptr & node,
-    std::list<plansys2::bt_builder::ActionNode::Ptr> & used_nodes, plansys2::State & state);
+    std::list<plansys2::bt_builder::ActionNode::Ptr> & used_nodes, const plansys2::State & state);
+  void get_state_recursive(
+    const ActionNode::Ptr& node,
+    std::list<ActionNode::Ptr>& used_nodes,
+    plansys2::State& state);
 
   std::vector<plansys2_msgs::msg::Tree> check_requirements(
     const std::vector<plansys2_msgs::msg::Tree> & requirements,
