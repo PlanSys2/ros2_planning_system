@@ -17,7 +17,7 @@
 	)
 
 	(:constants
-		ERROR_string a_inspect_pipeline a_search_pipeline c_thruster_1 c_thruster_2 c_thruster_3 c_thruster_4 c_thruster_5 c_thruster_6 f_follow_pipeline f_generate_search_path f_maintain_motion false_boolean fd_all_thrusters fd_follow_pipeline fd_recover_thrusters fd_spiral_high fd_spiral_low fd_spiral_medium fd_unground obs_water_visibility performance qa_inspect_efficiency_high qa_motion_efficiency_degraded qa_motion_efficiency_normal qa_performance_zero qa_search_efficiency_high qa_search_efficiency_low qa_search_efficiency_medium qa_water_visibility_high qa_water_visibility_low qa_water_visibility_medium true_boolean water_visibility - object
+		ERROR_string a_inspect_pipeline a_recharge_battery a_search_pipeline battery_level c_thruster_1 c_thruster_2 c_thruster_3 c_thruster_4 c_thruster_5 c_thruster_6 f_follow_pipeline f_generate_search_path f_maintain_motion false_boolean fd_all_thrusters fd_follow_pipeline fd_recover_thrusters fd_spiral_high fd_spiral_low fd_spiral_medium fd_unground generate_recharge_path obs_battery_level obs_water_visibility performance qa_inspect_efficiency_high qa_motion_efficiency_degraded qa_motion_efficiency_normal qa_performance_zero qa_search_efficiency_high qa_search_efficiency_low qa_search_efficiency_medium qa_water_visibility_high qa_water_visibility_low qa_water_visibility_medium true_boolean water_visibility - object
 	)
 
   (:predicates
@@ -317,6 +317,15 @@
 (:derived (inferred-FunctionDesign ?x) 
 	(exists (?y)
  		(and
+			(inferred-FdBetterUtility ?x ?y)
+		)
+	)
+ )
+
+
+(:derived (inferred-FunctionDesign ?x) 
+	(exists (?y)
+ 		(and
 			(inferred-Fd_realisability ?x ?y)
 		)
 	)
@@ -361,14 +370,6 @@
 
 (:derived (inferred-FunctionDesign ?y) 
 	(exists (?x)
- 		(and
-			(inferred-FdBetterUtility ?x ?y)
-		)
-	)
- )
-
-(:derived (inferred-FunctionDesign ?x) 
-	(exists (?y)
  		(and
 			(inferred-FdBetterUtility ?x ?y)
 		)
@@ -578,18 +579,20 @@
 	)
 )
 
+
+
   (:action start_robot
     :parameters (?r - robot)
     :precondition (and
       (robot_not_started ?r)
     )
     :effect (and
-      (not (robot_not_started ?r))	
+      (not (robot_not_started ?r))
       (robot_started ?r)
     )
   )
 
-    (:action reconfigure1
+  (:action reconfigure1
     :parameters (?f ?fd_goal)
     :precondition (and
       (Function ?f)
@@ -605,23 +608,12 @@
           )
         )
       )
-      (or (= ?fd_goal fd_unground)
-        (not
-          (exists (?fd)
-            (and
-              (inferred-SolvesF ?fd ?f)
-              (not (inferred-Fd_realisability ?fd false_boolean))
-              (inferred-FdBetterUtility  ?fd ?fd_goal)
-            )
-          )
-        )
-      )
     )
     :effect (and
       (functionGrounding ?f ?fd_goal)
     )
   )
-  
+
   (:action reconfigure2
     :parameters (?f ?fd_initial ?fd_goal)
     :precondition (and
@@ -634,18 +626,6 @@
       (inferred-SolvesF ?fd_goal ?f)
       (FunctionDesign ?fd_goal)
       (not (inferred-Fd_realisability ?fd_goal false_boolean))
-
-      (or (= ?fd_goal fd_unground)
-        (not
-          (exists (?fd)
-            (and
-              (inferred-SolvesF ?fd ?f)
-              (not (inferred-Fd_realisability ?fd false_boolean))
-              (inferred-FdBetterUtility  ?fd ?fd_goal)
-            )
-          )
-        )
-      )
     )
     :effect (and
       (not (functionGrounding ?f ?fd_initial))
@@ -662,10 +642,32 @@
           (inferred-Action ?a)
           (= ?a a_search_pipeline)
           (not (= ?f1 ?f2))
-          (inferred-RequiresF ?a ?f1)
-          (inferred-RequiresF ?a ?f2)
+          (inferred-requiresF ?a ?f1)
+          (inferred-requiresF ?a ?f2)
           (inferred-F_active ?f1 true_boolean)
           (inferred-F_active ?f2 true_boolean)
+          (inferred-FunctionGrounding ?f1 ?fd1)
+          (inferred-FunctionGrounding ?f2 ?fd2)
+          (not
+            (exists (?fd1_b)
+              (and
+                (not (= ?fd1 ?fd1_b))
+                (inferred-SolvesF ?fd1_b ?f1)
+                (not (inferred-Fd_realisability ?fd1_b false_boolean))
+                (inferred-FdBetterUtility  ?fd1_b ?fd1)
+              )
+            )
+          )
+          (not
+            (exists (?fd2_b)
+              (and
+                (not (= ?fd2 ?fd2_b))
+                (inferred-SolvesF ?fd2_b ?f2)
+                (not (inferred-Fd_realisability ?fd2_b false_boolean))
+                (inferred-FdBetterUtility  ?fd2_b ?fd2)
+              )
+            )
+          )
         )
       )
       (not (inferred-F_active f_follow_pipeline true_boolean))
@@ -682,13 +684,35 @@
       (pipeline_found ?p)
       (exists (?a ?f1 ?f2 ?fd1 ?fd2)
         (and
-          (Action ?a)
+          (inferred-Action ?a)
           (= ?a a_inspect_pipeline)
           (not (= ?f1 ?f2))
           (inferred-requiresF ?a ?f1)
           (inferred-requiresF ?a ?f2)
           (inferred-F_active ?f1 true_boolean)
           (inferred-F_active ?f2 true_boolean)
+          (inferred-FunctionGrounding ?f1 ?fd1)
+          (inferred-FunctionGrounding ?f2 ?fd2)
+          (not
+            (exists (?fd1_b)
+              (and
+                (not (= ?fd1 ?fd1_b))
+                (inferred-SolvesF ?fd1_b ?f1)
+                (not (inferred-Fd_realisability ?fd1_b false_boolean))
+                (inferred-FdBetterUtility  ?fd1_b ?fd1)
+              )
+            )
+          )
+          (not
+            (exists (?fd2_b)
+              (and
+                (not (= ?fd2 ?fd2_b))
+                (inferred-SolvesF ?fd2_b ?f2)
+                (not (inferred-Fd_realisability ?fd2_b false_boolean))
+                (inferred-FdBetterUtility  ?fd2_b ?fd2)
+              )
+            )
+          )
         )
       )
       (not (inferred-F_active f_generate_search_path true_boolean))

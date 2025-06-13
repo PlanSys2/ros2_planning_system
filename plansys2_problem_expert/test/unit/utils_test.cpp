@@ -102,17 +102,17 @@ TEST(utils, evaluate_not)
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
-    test_tree, "(not (patrolled wp1))", false, plansys2_msgs::msg::Node::AND);
+      test_tree, "(not (patrolled wp1))", false, plansys2_msgs::msg::Node::AND);
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, state),
-    std::make_tuple(true, true, 0, std::vector<std::map<std::string, std::string>>{}));
+      plansys2::evaluate(test_tree, state),
+      std::make_tuple(true, true, 0, std::vector<std::map<std::string, std::string>>{}));
 
   state.addPredicate(parser::pddl::fromStringPredicate("(patrolled wp1)"));
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree, state),
-    std::make_tuple(true, false, 0, std::vector<std::map<std::string, std::string>>{}));
+      plansys2::evaluate(test_tree, state),
+      std::make_tuple(true, false, 0, std::vector<std::map<std::string, std::string>>{}));
 
   plansys2_msgs::msg::Tree test_tree2;
   parser::pddl::fromString(test_tree2, "(not (= wp1 wp2))");
@@ -120,8 +120,8 @@ TEST(utils, evaluate_not)
   test_tree2.nodes[3].node_type = plansys2_msgs::msg::Node::CONSTANT;
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree2, state),
-    std::make_tuple(true, true, 0, std::vector<std::map<std::string, std::string>>{}));
+      plansys2::evaluate(test_tree2, state),
+      std::make_tuple(true, true, 0, std::vector<std::map<std::string, std::string>>{}));
 
   plansys2_msgs::msg::Tree test_tree3;
   parser::pddl::fromString(test_tree3, "(not (= wp1 wp1))");
@@ -129,8 +129,118 @@ TEST(utils, evaluate_not)
   test_tree3.nodes[3].node_type = plansys2_msgs::msg::Node::CONSTANT;
 
   ASSERT_EQ(
-    plansys2::evaluate(test_tree3, state),
-    std::make_tuple(true, false, 0, std::vector<std::map<std::string, std::string>>{}));
+      plansys2::evaluate(test_tree3, state),
+      std::make_tuple(true, false, 0, std::vector<std::map<std::string, std::string>>{}));
+
+  plansys2_msgs::msg::Tree test_tree4;
+  parser::pddl::fromString(test_tree4, "(not (and (patrolled wp1) (patrolled wp2)))");
+  ASSERT_EQ(
+      plansys2::evaluate(test_tree4, state),
+      std::make_tuple(true, true, 0, std::vector<std::map<std::string, std::string>>{}));
+
+  state.addInstance(parser::pddl::fromStringParam("wp1"));
+  state.addInstance(parser::pddl::fromStringParam("wp2", "waypoint"));
+  state.addInstance(parser::pddl::fromStringParam("wp3"));
+
+  plansys2_msgs::msg::Tree test_tree5;
+  parser::pddl::fromString(test_tree5, "(not (and (patrolled wp1) (patrolled ?x)))");
+  std::vector<std::map<std::string, std::string>> params_tree5;
+  params_tree5.push_back({{"?x", "wp2"}});
+  params_tree5.push_back({{"?x", "wp3"}});
+  ASSERT_EQ(
+      plansys2::evaluate(test_tree5, state), std::make_tuple(true, true, 0, params_tree5));
+
+  plansys2_msgs::msg::Tree test_tree6;
+  parser::pddl::fromString(test_tree6, "(not (and (patrolled ?x) (patrolled_2 ?x)))");
+  state.addPredicate(parser::pddl::fromStringPredicate("(patrolled_2 wp0)"));
+  ASSERT_EQ(
+      plansys2::evaluate(test_tree6, state),
+      std::make_tuple(true, true, 0, std::vector<std::map<std::string, std::string>>{}));
+  state.addPredicate(parser::pddl::fromStringPredicate("(patrolled_2 wp1)"));
+  state.addInstance(parser::pddl::fromStringParam("wp0"));
+  std::vector<std::map<std::string, std::string>> params_tree6;
+  params_tree6.push_back({{"?x", "wp0"}});
+  params_tree6.push_back({{"?x", "wp2"}});
+  params_tree6.push_back({{"?x", "wp3"}});
+  ASSERT_EQ(
+      plansys2::evaluate(test_tree6, state),
+      std::make_tuple(true, true, 0, params_tree6));
+
+  plansys2::State state_or;
+  plansys2_msgs::msg::Tree test_tree_or;
+  parser::pddl::fromString(test_tree_or, "(not (or (patrolled ?x) (patrolled_2 ?x)))");
+  ASSERT_EQ(
+      plansys2::evaluate(test_tree_or, state_or),
+      std::make_tuple(true, true, 0, std::vector<std::map<std::string, std::string>>{}));
+
+  plansys2_msgs::msg::Tree test_tree_or_2;
+  parser::pddl::fromString(test_tree_or_2, "(not (or (patrolled wp1) (patrolled_2 wp1)))");
+  ASSERT_EQ(
+      plansys2::evaluate(test_tree_or_2, state_or),
+      std::make_tuple(true, true, 0, std::vector<std::map<std::string, std::string>>{}));
+
+  plansys2_msgs::msg::Tree test_tree_or_3;
+  parser::pddl::fromString(test_tree_or_3, "(not (or (patrolled wp1) (patrolled_2 wp1)))");
+  ASSERT_EQ(
+      plansys2::evaluate(test_tree_or_3, state_or),
+      std::make_tuple(true, true, 0, std::vector<std::map<std::string, std::string>>{}));
+
+  state_or.addPredicate(parser::pddl::fromStringPredicate("(patrolled wp1)"));
+  state_or.addInstance(parser::pddl::fromStringParam("wp1"));
+  state_or.addInstance(parser::pddl::fromStringParam("wp2", "waypoint"));
+  state_or.addInstance(parser::pddl::fromStringParam("wp3"));
+  ASSERT_EQ(
+      plansys2::evaluate(test_tree_or_3, state_or),
+      std::make_tuple(true, false, 0, std::vector<std::map<std::string, std::string>>{}));
+
+  std::vector<std::map<std::string, std::string>> params_tree_or;
+  params_tree_or.push_back({{"?x", "wp2"}});
+  params_tree_or.push_back({{"?x", "wp3"}});
+  ASSERT_EQ(
+      plansys2::evaluate(test_tree_or, state_or),
+      std::make_tuple(true, true, 0, params_tree_or));
+
+  state_or.addPredicate(parser::pddl::fromStringPredicate("(patrolled_2 wp1)"));
+  state_or.addInstance(parser::pddl::fromStringParam("wp0"));
+  std::vector<std::map<std::string, std::string>> params_tree_or_2;
+  params_tree_or_2.push_back({{"?x", "wp0"}});
+  params_tree_or_2.push_back({{"?x", "wp2"}});
+  params_tree_or_2.push_back({{"?x", "wp3"}});
+  ASSERT_EQ(
+      plansys2::evaluate(test_tree_or, state_or),
+      std::make_tuple(true, true, 0, params_tree_or_2));
+
+  plansys2::State state_exists;
+  plansys2_msgs::msg::Tree test_tree_exists;
+  parser::pddl::fromString(test_tree_exists, "(not (exists (?x) (and (patrolled ?x) (patrolled_2 ?x))))");
+  ASSERT_EQ(
+      plansys2::evaluate(test_tree_exists, state_exists),
+      std::make_tuple(true, true, 0, std::vector<std::map<std::string, std::string>>{}));
+
+  plansys2_msgs::msg::Tree test_tree_exists_2;
+  parser::pddl::fromString(test_tree_exists_2, "(not (exists (?x) (and (patrolled ?x) (patrolled_2 ?y))))");
+  ASSERT_EQ(
+      plansys2::evaluate(test_tree_exists_2, state_exists),
+      std::make_tuple(true, true, 0, std::vector<std::map<std::string, std::string>>{}));
+
+  state_exists.addPredicate(parser::pddl::fromStringPredicate("(patrolled wp1)"));
+  state_exists.addInstance(parser::pddl::fromStringParam("wp1"));
+  std::vector<std::map<std::string, std::string>> params_tree_exists;
+  params_tree_exists.push_back({{"?y", "wp1"}});
+  ASSERT_EQ(
+      plansys2::evaluate(test_tree_exists_2, state_exists),
+      std::make_tuple(true, true, 0, params_tree_exists));
+
+  state_exists.addPredicate(parser::pddl::fromStringPredicate("(patrolled_2 wp1)"));
+  state_exists.addInstance(parser::pddl::fromStringParam("wp2", "waypoint"));
+  state_exists.addInstance(parser::pddl::fromStringParam("wp3"));
+
+  std::vector<std::map<std::string, std::string>> params_tree_exists2;
+  params_tree_exists2.push_back({{"?y", "wp2"}});
+  params_tree_exists2.push_back({{"?y", "wp3"}});
+  ASSERT_EQ(
+      plansys2::evaluate(test_tree_exists_2, state_exists),
+      std::make_tuple(true, true, 0, params_tree_exists2));
 }
 
 TEST(utils, evaluate_predicate_use_state)
@@ -823,9 +933,8 @@ TEST(utils, evaluate_exists)
 
   state.addPredicate(parser::pddl::fromStringPredicate("(connected bedroom kitchen)"));
 
-  std::vector<std::map<std::string, std::string>> expected_result = {
-    {{"?1", "bedroom"}, {"?2", "kitchen"}}};
-  ASSERT_EQ(plansys2::evaluate(goal, state), std::make_tuple(true, true, 0, expected_result));
+  ASSERT_EQ(plansys2::evaluate(goal, state), 
+    std::make_tuple(true, true, 0, std::vector<std::map<std::string, std::string>>{}));
 }
 
 TEST(utils, evaluate_exists_client)
@@ -880,10 +989,11 @@ TEST(utils, evaluate_exists_client)
   ASSERT_TRUE(
     problem_client->addPredicate(parser::pddl::fromStringPredicate("(connected bedroom kitchen)")));
 
-  std::vector<std::map<std::string, std::string>> expected_result = {
-    {{"?1", "bedroom"}, {"?2", "kitchen"}}};
+  // std::vector<std::map<std::string, std::string>> expected_result = {
+  //   {{"?1", "bedroom"}, {"?2", "kitchen"}}};
   ASSERT_EQ(
-    plansys2::evaluate(goal, problem_client), std::make_tuple(true, true, 0, expected_result));
+    plansys2::evaluate(goal, problem_client), 
+      std::make_tuple(true, true, 0, std::vector<std::map<std::string, std::string>>{}));
 
   finish = true;
   t.join();
@@ -1398,13 +1508,13 @@ TEST(utils, apply_with_derived_2)
   ASSERT_TRUE(problem_expert.addProblem(problem_str));
 
   auto state = problem_expert.getState();
-  
+
   auto start_time = std::chrono::steady_clock::now();
   solveDerivedPredicates(state);
   auto end_time = std::chrono::steady_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
   std::cout << "solveDerivedPredicates took " << duration << " seconds" << std::endl;
-  
+
   ASSERT_GT(state.getInstances().size(), 0);
   ASSERT_GT(state.getPredicates().size(), 0);
   ASSERT_GT(state.getInferredPredicates().size(), 0);
@@ -1508,13 +1618,13 @@ TEST(utils, apply_with_derived_suave_2)
   ASSERT_TRUE(problem_expert.addProblem(problem_str));
 
   auto state = problem_expert.getState();
-  
+
   auto start_time = std::chrono::steady_clock::now();
   solveDerivedPredicates(state);
   auto end_time = std::chrono::steady_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
   std::cout << "solveDerivedPredicates took " << duration << " seconds" << std::endl;
-  
+
   ASSERT_GT(state.getInstances().size(), 0);
   ASSERT_GT(state.getPredicates().size(), 0);
   ASSERT_GT(state.getInferredPredicates().size(), 0);
@@ -1540,7 +1650,7 @@ TEST(utils, apply_with_derived_suave_2)
   ASSERT_TRUE(plansys2::check(action_reconfig_generate->preconditions, state));
   ASSERT_FALSE(plansys2::check(action_search_pipeline->preconditions, state));
   ASSERT_FALSE(plansys2::check(action_inspect_pipeline->preconditions, state));
-  
+
   ASSERT_TRUE(plansys2::apply(action_start_robot->effects, state));
 
   ASSERT_FALSE(plansys2::check(action_start_robot->preconditions, state));
@@ -1572,10 +1682,10 @@ TEST(utils, apply_with_derived_suave_2)
       parser::pddl::fromStringPredicate("inferred-fd_realisability fd_recover_thrusters false_boolean")));
   ASSERT_FALSE(
     state.hasInferredPredicate(
-      parser::pddl::fromStringPredicate("inferred-fdbetterutility fd_recover_thrusters fd_all_thrusters")));    
+      parser::pddl::fromStringPredicate("inferred-fdbetterutility fd_recover_thrusters fd_all_thrusters")));
   ASSERT_TRUE(
     state.hasInferredPredicate(
-      parser::pddl::fromStringPredicate("inferred-fdbetterutility fd_all_thrusters fd_recover_thrusters")));  
+      parser::pddl::fromStringPredicate("inferred-fdbetterutility fd_all_thrusters fd_recover_thrusters")));
   ASSERT_FALSE(
     state.hasInferredPredicate(parser::pddl::fromStringPredicate("inferred-f_active f_generate_search_path true_boolean")));
   ASSERT_FALSE(
@@ -1583,7 +1693,6 @@ TEST(utils, apply_with_derived_suave_2)
   ASSERT_FALSE(
     state.hasInferredPredicate(parser::pddl::fromStringPredicate("inferred-f_active f_follow_pipeline true_boolean")));
 
-  
   ASSERT_TRUE(plansys2::check(action_reconfig_maintain->preconditions, state));
   ASSERT_TRUE(plansys2::apply(action_reconfig_maintain->effects, state));
 
@@ -1608,8 +1717,7 @@ TEST(utils, apply_with_derived_suave_2)
   ASSERT_TRUE(
     state.hasInferredPredicate(
       parser::pddl::fromStringPredicate("inferred-solvesf fd_spiral_low f_generate_search_path")));
-  
-  
+
   ASSERT_TRUE(plansys2::check(action_reconfig_generate->preconditions, state));
   ASSERT_TRUE(plansys2::apply(action_reconfig_generate->effects, state));
 
@@ -1618,7 +1726,7 @@ TEST(utils, apply_with_derived_suave_2)
   ASSERT_FALSE(plansys2::check(action_reconfig_generate->preconditions, state));
   ASSERT_TRUE(plansys2::check(action_search_pipeline->preconditions, state));
   ASSERT_FALSE(plansys2::check(action_inspect_pipeline->preconditions, state));
-  
+
   ASSERT_TRUE(
     state.hasInferredPredicate(parser::pddl::fromStringPredicate("inferred-f_active f_generate_search_path true_boolean")));
   ASSERT_TRUE(
@@ -1626,13 +1734,11 @@ TEST(utils, apply_with_derived_suave_2)
   ASSERT_FALSE(
     state.hasInferredPredicate(parser::pddl::fromStringPredicate("inferred-f_active f_follow_pipeline true_boolean")));
 
-  
   ASSERT_TRUE(plansys2::check(action_search_pipeline->preconditions, state));
   ASSERT_TRUE(plansys2::apply(action_search_pipeline->effects, state));
 
   ASSERT_TRUE(plansys2::check(action_reconfig_follow->preconditions, state));
   ASSERT_TRUE(plansys2::apply(action_reconfig_follow->effects, state));
-  
 
   ASSERT_TRUE(plansys2::check(action_reconfig_generate2->preconditions, state));
   std::cout<<"APLLYING reconfig f_generate_search_path fd_spiral_high fd_unground action"<<std::endl;
@@ -1648,10 +1754,69 @@ TEST(utils, apply_with_derived_suave_2)
   ASSERT_TRUE(plansys2::check(action_inspect_pipeline->preconditions, state));
   std::cout<<"APLLYING inspect_pipeline action"<<std::endl;
   ASSERT_TRUE(plansys2::apply(action_inspect_pipeline->effects, state));
-  
 }
 
-int main(int argc, char ** argv)
+TEST(utils, get_free_params)
+{
+  plansys2_msgs::msg::Tree tree;
+  parser::pddl::fromString(tree, "(not (exists (?x) (and (patrolled ?x) (patrolled_2 ?y))))");
+  auto free_params = plansys2::get_node_children_free_parameters(tree, tree.nodes[0]);
+  ASSERT_EQ(free_params.size(), 1);
+  ASSERT_EQ(free_params[0].name, "?y");
+
+  plansys2_msgs::msg::Tree tree2;
+  parser::pddl::fromString(tree2, "(and (predicateA ?a) (not (exists (?x) (and (patrolled ?x) (patrolled_2 ?y)))) (predicateA ?b))");
+  free_params = plansys2::get_node_children_free_parameters(tree2, tree2.nodes[0]);
+  ASSERT_EQ(free_params.size(), 3);
+  ASSERT_EQ(free_params[0].name, "?a");
+  ASSERT_EQ(free_params[1].name, "?y");
+  ASSERT_EQ(free_params[2].name, "?b");
+
+  std::string expr = R"((and
+  (robot_started ?r)
+  (exists (?a ?f1 ?f2 ?fd1 ?fd2)
+    (and
+      (inferred-Action ?a)
+      (= ?a a_search_pipeline)
+      (not (= ?f1 ?f2))
+      (inferred-requiresF ?a ?f1)
+      (inferred-requiresF ?a ?f2)
+      (inferred-F_active ?f1 true_boolean)
+      (inferred-F_active ?f2 true_boolean)
+      (inferred-FunctionGrounding ?f1 ?fd1)
+      (inferred-FunctionGrounding ?f2 ?fd2)
+      (not
+        (exists (?fd1_b)
+          (and
+            (not (= ?fd1 ?fd1_b))
+            (inferred-SolvesF ?fd1_b ?f1)
+            (not (inferred-Fd_realisability ?fd1_b false_boolean))
+            (inferred-FdBetterUtility  ?fd1_b ?fd1)
+          )
+        )
+      )
+      (not
+        (exists (?fd2_b)
+          (and
+            (not (= ?fd2 ?fd2_b))
+            (inferred-SolvesF ?fd2_b ?f2)
+            (not (inferred-Fd_realisability ?fd2_b false_boolean))
+            (inferred-FdBetterUtility  ?fd2_b ?fd2)
+          )
+        )
+      )
+    )
+  )
+  (not (inferred-F_active f_follow_pipeline true_boolean))
+))";
+  plansys2_msgs::msg::Tree tree3;
+  parser::pddl::fromString(tree3, expr);
+  auto free_params3 = plansys2::get_node_children_free_parameters(tree3, tree3.nodes[0]);
+  ASSERT_EQ(free_params3.size(), 1);
+  ASSERT_EQ(free_params3[0].name, "?r");
+}
+
+int main(int argc, char **argv)
 {
   testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);

@@ -54,6 +54,27 @@ std::tuple<bool, std::vector<std::map<std::string, std::string>>> negateResult(
   const std::vector<std::map<std::string, std::string>> & param_dict_vector,
   const std::unordered_set<plansys2::Instance> & instances);
 
+std::tuple<bool, std::vector<std::map<std::string, std::string>>> negateResult(
+  const std::vector<plansys2_msgs::msg::Param> & params, const bool & result,
+  const std::vector<std::map<std::string, std::string>> & param_dict_vector,
+  const std::unordered_set<plansys2::Instance> & instances);
+
+std::vector<plansys2_msgs::msg::Param> get_node_children_free_parameters(
+  const plansys2_msgs::msg::Tree & tree,
+  const plansys2_msgs::msg::Node & current_node);
+void get_node_children_free_parameters_impl(
+  const plansys2_msgs::msg::Tree& tree,
+  const plansys2_msgs::msg::Node& current_node,
+  std::vector<plansys2_msgs::msg::Param>& params,
+  std::unordered_set<std::string>& seen,
+  std::unordered_set<std::string>& exists_params);
+
+std::vector<plansys2_msgs::msg::Param> get_node_free_parameters(const plansys2_msgs::msg::Node & node);
+void get_node_free_parameters_impl(
+  const plansys2_msgs::msg::Node& node,
+  std::vector<plansys2_msgs::msg::Param>& params,
+  std::unordered_set<std::string>& seen);
+
 void solveDerivedPredicates(
   plansys2::State & state, const std::vector<plansys2_msgs::msg::Node> & root_nodes);
 
