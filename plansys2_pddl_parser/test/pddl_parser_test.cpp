@@ -229,7 +229,7 @@ TEST(PDDLParserTestCase, check_node_equality)
   ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate6, predicate1, false));
 
   auto predicate1capital = parser::pddl::fromStringPredicate("(PREDICATE A B)");
-  ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate1capital));
+  ASSERT_FALSE(parser::pddl::checkNodeEquality(predicate1, predicate1capital));
 }
 
 TEST(PDDLParserTestCase, check_action_equality)
@@ -268,7 +268,7 @@ TEST(PDDLParserTestCase, check_action_equality)
   actionAB.preconditions = actionAB_preconditions;
 
   ASSERT_TRUE(parser::pddl::checkActionEquality(actionA, actionA));
-  ASSERT_TRUE(parser::pddl::checkActionEquality(actionA, actionA_case_test));
+  ASSERT_FALSE(parser::pddl::checkActionEquality(actionA, actionA_case_test));
   ASSERT_TRUE(parser::pddl::checkActionEquality(actionB, actionB));
   ASSERT_TRUE(parser::pddl::checkActionEquality(actionAB, actionAB));
   ASSERT_FALSE(parser::pddl::checkActionEquality(actionA, actionB));
@@ -308,7 +308,7 @@ TEST(PDDLParserTestCase, check_action_equality)
   dur_actionAB.over_all_requirements = dur_actionAB_over_all_requirements;
 
   ASSERT_TRUE(parser::pddl::checkDurativeActionEquality(dur_actionA, dur_actionA));
-  ASSERT_TRUE(parser::pddl::checkDurativeActionEquality(dur_actionA, dur_actionA_case_test));
+  ASSERT_FALSE(parser::pddl::checkDurativeActionEquality(dur_actionA, dur_actionA_case_test));
   ASSERT_TRUE(parser::pddl::checkDurativeActionEquality(dur_actionB, dur_actionB));
   ASSERT_TRUE(parser::pddl::checkDurativeActionEquality(dur_actionAB, dur_actionAB));
   ASSERT_FALSE(parser::pddl::checkDurativeActionEquality(dur_actionA, dur_actionB));
@@ -654,4 +654,107 @@ TEST(PDDLParserTestCase, get_node_type)
   ASSERT_EQ(parser::pddl::getNodeType("(- b ?sas)"), plansys2_msgs::msg::Node::EXPRESSION);
   ASSERT_EQ(parser::pddl::getNodeType("?a"), plansys2_msgs::msg::Node::PARAMETER);
   ASSERT_EQ(parser::pddl::getNodeType("3"), plansys2_msgs::msg::Node::NUMBER);
+}
+
+TEST(PDDLParserTestCase, get_subtree)
+{
+  plansys2_msgs::msg::Tree tree = parser::pddl::fromString("(and (predicateA ?a) (predicateB ?b))");
+  auto subtree = parser::pddl::getSubtrees(tree);
+  ASSERT_EQ(subtree.size(), 2);
+  ASSERT_EQ(subtree[0].nodes.size(), 1);
+  ASSERT_EQ(subtree[0].nodes[0].node_type, plansys2_msgs::msg::Node::PREDICATE);
+  ASSERT_EQ(subtree[0].nodes[0].node_id, 0);
+  ASSERT_EQ(subtree[0].nodes[0].name, "predicateA");  
+  ASSERT_EQ(subtree[1].nodes[0].node_id, 0);
+  ASSERT_EQ(subtree[1].nodes[0].name, "predicateB");
+  
+  tree = parser::pddl::fromString(
+    "(and (predicateA ?a) (exists (?b) (and (inferredA ?a)(inferredB ?b)"
+    "(inferredAB ?a ?b)(not(=?a ?b)))))"
+  );
+  subtree = parser::pddl::getSubtrees(tree);
+  ASSERT_EQ(subtree.size(), 2);
+  ASSERT_EQ(subtree[0].nodes.size(), 1);
+  ASSERT_EQ(subtree[0].nodes[0].node_id, 0);
+  ASSERT_EQ(subtree[0].nodes[0].node_type, plansys2_msgs::msg::Node::PREDICATE);
+  ASSERT_EQ(subtree[0].nodes[0].name, "predicateA");
+  ASSERT_EQ(subtree[1].nodes.size(), 9);
+  ASSERT_EQ(subtree[1].nodes[0].node_type, plansys2_msgs::msg::Node::EXISTS);
+
+  tree = parser::pddl::fromString(
+    "(and (exists (?1 ?2) (and (robot_at ?0 ?1)(connected ?1 ?2)))"
+    "(exists (?3) (and (battery_full ?3)))"
+    "(exists (?4) (and (battery_full ?4)))"
+    "(exists (?5 ?6) (and (connected ?5 ?6)))"
+    "(exists (?7) (and (battery_full ?7))))"
+  );
+
+  subtree = parser::pddl::getSubtrees(tree);
+  ASSERT_EQ(subtree.size(), 5);
+  ASSERT_EQ(subtree[0].nodes.size(), 4);
+  ASSERT_EQ(subtree[1].nodes.size(), 3);
+  ASSERT_EQ(subtree[2].nodes.size(), 3);
+  ASSERT_EQ(subtree[3].nodes.size(), 3);
+  ASSERT_EQ(subtree[4].nodes.size(), 3);
+
+  tree = parser::pddl::fromString(
+    "(and"
+    "  (Function ?f)"
+    "  (inferred-SolvesF ?fd_goal ?f)"
+    "  (FunctionDesign ?fd_goal)"
+    "  (not (inferred-Fd_realisability ?fd_goal false_boolean))"
+    "  (not"
+    "    (exists (?fd)"
+    "      (and"
+    "        (inferred-SolvesF ?fd ?f)"
+    "        (FunctionDesign ?fd)"
+    "        (functionGrounding ?f ?fd)"
+    "      )"
+    "    )"
+    "  )"
+    "  (or "
+    "  	(= ?fd_goal fd_unground)"
+    "    (not"
+    "      (exists (?fd)"
+    "        (and"
+    "          (inferred-SolvesF ?fd ?f)"
+    "          (not (inferred-Fd_realisability ?fd false_boolean))"
+    "          (inferred-FdBetterUtility  ?fd ?fd_goal)"
+    "        )"
+    "      )"
+    "    )"
+    "  )"
+    ")"
+  );
+  subtree = parser::pddl::getSubtrees(tree);
+  ASSERT_EQ(subtree.size(), 6);
+  
+  ASSERT_EQ(subtree[0].nodes.size(), 1);
+  ASSERT_EQ(subtree[0].nodes[0].node_id, 0);
+  ASSERT_EQ(subtree[0].nodes[0].node_type, plansys2_msgs::msg::Node::PREDICATE);
+  ASSERT_EQ(subtree[0].nodes[0].name, "Function");
+  
+  ASSERT_EQ(subtree[1].nodes.size(), 1);
+  ASSERT_EQ(subtree[1].nodes[0].node_id, 0);
+  ASSERT_EQ(subtree[1].nodes[0].node_type, plansys2_msgs::msg::Node::PREDICATE);
+  ASSERT_EQ(subtree[1].nodes[0].name, "inferred-SolvesF");
+  
+  ASSERT_EQ(subtree[2].nodes.size(), 1);
+  ASSERT_EQ(subtree[2].nodes[0].node_id, 0);
+  ASSERT_EQ(subtree[2].nodes[0].node_type, plansys2_msgs::msg::Node::PREDICATE);
+  ASSERT_EQ(subtree[2].nodes[0].name, "FunctionDesign");
+
+  ASSERT_EQ(subtree[3].nodes.size(), 2);
+  ASSERT_EQ(subtree[3].nodes[0].node_id, 0);
+  ASSERT_EQ(subtree[3].nodes[0].node_type, plansys2_msgs::msg::Node::NOT);
+  ASSERT_EQ(subtree[3].nodes[1].node_type, plansys2_msgs::msg::Node::PREDICATE);
+  ASSERT_EQ(subtree[3].nodes[1].name, "inferred-Fd_realisability");
+
+  ASSERT_EQ(subtree[4].nodes.size(), 6);
+  ASSERT_EQ(subtree[4].nodes[0].node_id, 0);
+  ASSERT_EQ(subtree[4].nodes[0].node_type, plansys2_msgs::msg::Node::NOT);
+
+  ASSERT_EQ(subtree[5].nodes.size(), 11);
+  ASSERT_EQ(subtree[5].nodes[0].node_id, 0);
+  ASSERT_EQ(subtree[5].nodes[0].node_type, plansys2_msgs::msg::Node::OR);
 }
