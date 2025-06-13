@@ -323,8 +323,6 @@ struct hash<plansys2::Derived>
 {
   std::size_t operator()(const plansys2::Derived & derived) const noexcept
   {
-    std::size_t seed = 0;
-    
     if (!derived.normalizedDerivedComputed()) {
       derived.computeNormalizedDerived();
     }
