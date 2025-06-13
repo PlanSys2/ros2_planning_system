@@ -21,6 +21,12 @@ target_compile_definitions(simple_btbuilder_tests
 target_link_libraries(simple_btbuilder_tests ${PROJECT_NAME} bt_builder_plugins)
 ament_target_dependencies(simple_btbuilder_tests ${dependencies})
 
+ament_add_gtest(sequential_bt_builder_test sequential_bt_builder_test.cpp TIMEOUT 1200)
+target_compile_definitions(sequential_bt_builder_test
+  PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(sequential_bt_builder_test ${PROJECT_NAME} bt_builder_plugins)
+ament_target_dependencies(sequential_bt_builder_test ${dependencies})
+
 ament_add_gtest(bt_node_test bt_node_test.cpp)
 target_compile_definitions(bt_node_test
   PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")

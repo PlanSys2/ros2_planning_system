@@ -87,44 +87,6 @@ bool SimpleBTBuilder::is_action_executable(
   return result;
 }
 
-ActionNode::Ptr SimpleBTBuilder::get_node_satisfy(
-  const plansys2_msgs::msg::Tree & requirement, const ActionNode::Ptr & node,
-  const ActionNode::Ptr & current)
-{
-  if (node == current) {
-    return nullptr;
-  }
-
-  ActionNode::Ptr ret = nullptr;
-
-  // Get the state prior to applying the effects
-  plansys2::State state = node->state;
-
-  // Is the requirement satisfied before applying the effects?
-  bool satisfied_before = plansys2::check(requirement, state);
-
-  // Apply the effects
-  apply_action_to_state(node->action, state);
-
-  // Is the requirement satisfied after applying the effects?
-  bool satisfied_after = plansys2::check(requirement, state);
-
-  if (satisfied_after && !satisfied_before) {
-    return node;
-  }
-
-  // Traverse the rest of the graph.
-  for (const auto & arc : node->out_arcs) {
-    auto node_ret = get_node_satisfy(requirement, arc, current);
-
-    if (node_ret != nullptr) {
-      return node_ret;
-    }
-  }
-
-  return ret;
-}
-
 void SimpleBTBuilder::get_node_contradict(
   const ActionNode::Ptr & node, const ActionNode::Ptr & current,
   std::list<ActionNode::Ptr> & contradictions)
@@ -205,6 +167,46 @@ bool SimpleBTBuilder::is_parallelizable(
 }
 
 ActionNode::Ptr SimpleBTBuilder::get_node_satisfy(
+  const plansys2_msgs::msg::Tree & requirement, const ActionNode::Ptr & node,
+  const ActionNode::Ptr & current)
+{
+  if (node == current) {
+    return nullptr;
+  }
+
+  ActionNode::Ptr ret = nullptr;
+
+  // Get the state prior to applying the effects
+  plansys2::State state = node->state;
+
+  // Is the requirement satisfied before applying the effects?
+  bool satisfied_before = plansys2::check(requirement, state);
+
+  // Apply the effects
+  apply_action_to_state(node->action, state);
+
+  // Is the requirement satisfied after applying the effects?
+  bool satisfied_after = plansys2::check(requirement, state);
+
+  if (satisfied_after && !satisfied_before) {
+    // return node;
+    ret = node;
+  }
+
+  // Traverse the rest of the graph.
+  for (const auto & arc : node->out_arcs) {
+    auto node_ret = get_node_satisfy(requirement, arc, current);
+
+    if (node_ret != nullptr) {
+      // return node_ret;
+      ret = node_ret;
+    }
+  }
+
+  return ret;
+}
+
+ActionNode::Ptr SimpleBTBuilder::get_node_satisfy(
   const plansys2_msgs::msg::Tree & requirement, const ActionGraph::Ptr & graph,
   const ActionNode::Ptr & current)
 {
@@ -212,7 +214,8 @@ ActionNode::Ptr SimpleBTBuilder::get_node_satisfy(
   for (const auto & root : graph->roots) {
     auto node_satisfy = get_node_satisfy(requirement, root, current);
     if (node_satisfy != nullptr) {
-      return node_satisfy;
+      // return node_satisfy;
+      ret = node_satisfy;
     }
   }
 
@@ -817,13 +820,13 @@ std::string SimpleBTBuilder::t(int level)
   return ret;
 }
 
-void replace(std::string & str, const std::string & from, const std::string & to)
-{
-  size_t start_pos = std::string::npos;
-  while ((start_pos = str.find(from)) != std::string::npos) {
-    str.replace(start_pos, from.length(), to);
-  }
-}
+// void replace(std::string & str, const std::string & from, const std::string & to)
+// {
+//   size_t start_pos = std::string::npos;
+//   while ((start_pos = str.find(from)) != std::string::npos) {
+//     str.replace(start_pos, from.length(), to);
+//   }
+// }
 
 std::string SimpleBTBuilder::execution_block(const ActionNode::Ptr & node, int l)
 {

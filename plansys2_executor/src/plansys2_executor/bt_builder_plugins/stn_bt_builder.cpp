@@ -1392,14 +1392,14 @@ void STNBTBuilder::print_arcs(const plansys2::Graph::Ptr graph) const
   }
 }
 
-void STNBTBuilder::replace(
-  std::string & str, const std::string & from, const std::string & to) const
-{
-  size_t start_pos = std::string::npos;
-  while ((start_pos = str.find(from)) != std::string::npos) {
-    str.replace(start_pos, from.length(), to);
-  }
-}
+// void STNBTBuilder::replace(
+//   std::string & str, const std::string & from, const std::string & to) const
+// {
+//   size_t start_pos = std::string::npos;
+//   while ((start_pos = str.find(from)) != std::string::npos) {
+//     str.replace(start_pos, from.length(), to);
+//   }
+// }
 
 bool STNBTBuilder::is_end(
   const std::tuple<Node::Ptr, double, double> & edge, const ActionStamped & action) const

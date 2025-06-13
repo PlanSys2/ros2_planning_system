@@ -87,6 +87,7 @@ install(DIRECTORY include/
 )
 
 add_library(bt_builder_plugins SHARED
+  src/plansys2_executor/bt_builder_plugins/sequential_bt_builder.cpp
   src/plansys2_executor/bt_builder_plugins/simple_bt_builder.cpp
   # src/plansys2_executor/bt_builder_plugins/stn_bt_builder.cpp
 )

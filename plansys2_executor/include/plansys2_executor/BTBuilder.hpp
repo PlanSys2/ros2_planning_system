@@ -25,6 +25,9 @@
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_msgs/msg/plan.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
+#include "plansys2_domain_expert/DomainExpertClient.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_problem_expert/Utils.hpp"
 
 namespace plansys2
 {
@@ -67,6 +70,21 @@ struct Graph
 
   std::list<plansys2::bt_builder::Node::Ptr> nodes;
 };
+
+inline std::string add_tabs(int level)
+{
+  return std::string(level * 2, ' ');
+}
+
+inline void replace(std::string & str, const std::string & from, const std::string & to)
+{
+  if (from.empty()) return;
+  size_t start_pos = 0;
+  while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+    str.replace(start_pos, from.length(), to);
+    start_pos += to.length();
+  }
+}
 
 class BTBuilder
 {
@@ -119,6 +137,34 @@ public:
   {
     return action.expression + ":" + std::to_string(to_int_time(action.time, precision));
   }
+
+  std::vector<ActionStamped> get_plan_actions(const plansys2_msgs::msg::Plan & plan)
+  {
+    std::vector<ActionStamped> ret;
+
+    for (auto & item : plan.items) {
+      ActionStamped action_stamped;
+
+      action_stamped.time = item.time;
+      action_stamped.duration = item.duration;
+      auto actions = domain_client_->getActions();
+      if (std::find(actions.begin(), actions.end(), get_action_name(item.action)) != actions.end()) {
+        action_stamped.action =
+          domain_client_->getAction(get_action_name(item.action), get_action_params(item.action));
+      } else {
+        action_stamped.action = domain_client_->getDurativeAction(
+          get_action_name(item.action), get_action_params(item.action));
+      }
+
+      ret.push_back(action_stamped);
+    }
+
+    return ret;
+  }
+
+protected:
+  std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 };
 
 }  // namespace bt_builder

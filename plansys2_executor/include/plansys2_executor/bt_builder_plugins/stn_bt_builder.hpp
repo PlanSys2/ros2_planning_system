@@ -126,7 +126,7 @@ protected:
   void print_node(const Node::Ptr node, int level) const;
   void print_arcs(const plansys2::Graph::Ptr graph) const;
 
-  void replace(std::string & str, const std::string & from, const std::string & to) const;
+  // void replace(std::string & str, const std::string & from, const std::string & to) const;
 
   bool is_end(
     const std::tuple<Node::Ptr, double, double> & edge, const ActionStamped & action) const;
