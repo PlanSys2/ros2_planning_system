@@ -47,13 +47,6 @@ BT::NodeStatus CheckOverAllReq::tick()
   state.addActionsAndPruneDerived({(*action_map_)[action].action_info});
   solveDerivedPredicates(state);
 
-  // bool check_result = check(reqs, state);
-  // std::string check_result_str = 
-  //   "##############################Checking overall requirements for action "+ 
-  //   action + " result: " + (check_result ? "true" : "false");
-  
-  // RCLCPP_ERROR_STREAM(node->get_logger(),check_result_str.c_str());
-
   if (!check(reqs, state)) {
     (*action_map_)[action].execution_error_info = "Error checking over all requirements";
 

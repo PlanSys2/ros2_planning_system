@@ -402,7 +402,7 @@ void ExecutorNode::execute(const std::shared_ptr<GoalHandleExecutePlan> goal_han
     // auto precision = this->get_parameter("action_time_precision").as_int();
     // bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
   } else if (bt_builder_plugin == "SequentialBTBuilder") {
-    bt_builder->initialize(action_bt_xml_);
+    bt_builder->initialize();
   }
 
   auto bt_xml_tree = bt_builder->get_tree(current_plan_.value());
