@@ -2,6 +2,9 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 3.0.0 (2025-06-06)
 ------------------
 * Modify export target. Rename metapackage

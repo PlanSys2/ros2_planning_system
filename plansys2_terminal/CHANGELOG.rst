@@ -2,6 +2,9 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 3.0.0 (2025-06-06)
 ------------------
 * Revamp CMake and clean unused headers

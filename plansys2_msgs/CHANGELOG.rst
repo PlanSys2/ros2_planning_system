@@ -2,6 +2,9 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 3.0.0 (2025-06-06)
 ------------------
 * Multiple plans and replanning stability
