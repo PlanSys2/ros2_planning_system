@@ -2,8 +2,8 @@
 Changelog for package plansys2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.1 (2025-06-22)
+------------------
 * remove dependency with nav2
 * Contributors: Francisco Martín Rico
 
