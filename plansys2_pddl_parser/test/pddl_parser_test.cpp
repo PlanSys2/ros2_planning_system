@@ -118,6 +118,55 @@ TEST(PDDLParserTestCase, pddl_parser_suave)
 
 }
 
+TEST(PDDLParserTestCase, pddl_parser_suave_extended_created)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_pddl_parser");
+  std::string domain_file = pkgpath + "/pddl/suave_domain_extended_created.pddl";
+  std::string instance_file = pkgpath + "/pddl/suave_problem_extended_created.pddl";
+
+  std::ifstream domain_ifs(domain_file);
+  ASSERT_TRUE(domain_ifs.good());
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
+  ASSERT_NE(domain_str, "");
+  std::ifstream instance_ifs(instance_file);
+  ASSERT_TRUE(instance_ifs.good());
+  std::string instance_str(
+    (std::istreambuf_iterator<char>(instance_ifs)), std::istreambuf_iterator<char>());
+
+  ASSERT_NE(instance_str, "");
+  
+  // Read domain and instance
+  bool okparse = false;
+  bool okprint = false;
+  try {
+    parser::pddl::Domain domain(domain_str);
+    parser::pddl::Instance instance(domain, instance_str);
+    okparse = true;
+    try {
+      std::cout << domain << std::endl;
+      std::cout << instance << std::endl;
+      okprint = true;
+    } catch (std::runtime_error e) {
+      std::cerr << e.what() << std::endl;
+    }
+  } catch (std::runtime_error e) {
+    std::cerr << e.what() << std::endl;
+  }
+  ASSERT_TRUE(okparse);
+  ASSERT_TRUE(okprint);
+
+  parser::pddl::Domain domain(domain_str);
+  ASSERT_EQ(domain.name, "suave_extended");
+  ASSERT_EQ(domain.types.size(), 4);
+  ASSERT_EQ(domain.types[0]->constants.size(), 39);
+  ASSERT_EQ(domain.types[3]->constants.size(), 2);
+  ASSERT_EQ(domain.actions.size(), 6);
+  ASSERT_EQ(domain.preds.size(), 48);
+  ASSERT_EQ(domain.derived.size(), 55);
+
+}
+
 TEST(PDDLParserTestCase, exists_get_tree)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_pddl_parser");
