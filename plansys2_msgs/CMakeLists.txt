@@ -25,6 +25,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/AddProblem.srv"
   "srv/AddProblemGoal.srv"
   "srv/AffectNode.srv"
+  "srv/AffectNodes.srv"
   "srv/AffectParam.srv"
   "srv/ExistNode.srv"
   "srv/GetDomain.srv"
