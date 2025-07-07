@@ -240,138 +240,156 @@ TEST(problem_expert_node, addget_instances)
   t.join();
 }
 
-/*
-TEST(problem_expert, add_assignments)
-{
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
 
-  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
-  plansys2::ProblemExpert problem_expert(domain_expert);
+// TEST(problem_expert, add_assignments)
+// {
+//   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+//   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+//   std::string domain_str((
+//       std::istreambuf_iterator<char>(domain_ifs)),
+//     std::istreambuf_iterator<char>());
 
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room_with_teleporter")));
+//   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
+//   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  plansys2_msgs::msg::Node function_1;
-  function_1.node_type = plansys2_msgs::msg::Node::FUNCTION;
-  function_1.name = "room_distance";
-  function_1.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
-  function_1.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room_with_teleporter"));
-  function_1.value = 1.23;
+//   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+//   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room_with_teleporter")));
 
-  ASSERT_EQ(function_1.name, "room_distance");
-  ASSERT_EQ(function_1.parameters.size(), 2);
-  ASSERT_EQ(function_1.parameters[0].name, "bedroom");
-  ASSERT_EQ(function_1.parameters[0].type, "room");
-  ASSERT_EQ(function_1.parameters[1].name, "kitchen");
-  ASSERT_EQ(function_1.parameters[1].type, "room_with_teleporter");
-  ASSERT_EQ(function_1.value, 1.23);
+//   plansys2_msgs::msg::Node function_1;
+//   function_1.node_type = plansys2_msgs::msg::Node::FUNCTION;
+//   function_1.name = "room_distance";
+//   function_1.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
+//   function_1.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room_with_teleporter"));
+//   function_1.value = 1.23;
 
-  ASSERT_TRUE(problem_client->addFunction(function_1));
+//   ASSERT_EQ(function_1.name, "room_distance");
+//   ASSERT_EQ(function_1.parameters.size(), 2);
+//   ASSERT_EQ(function_1.parameters[0].name, "bedroom");
+//   ASSERT_EQ(function_1.parameters[0].type, "room");
+//   ASSERT_EQ(function_1.parameters[1].name, "kitchen");
+//   ASSERT_EQ(function_1.parameters[1].type, "room_with_teleporter");
+//   ASSERT_EQ(function_1.value, 1.23);
 
-  ASSERT_EQ(
-    problem_client->getProblem(),
-    "( define ( problem problem_1 )\n"
-    "( :domain plansys2 )\n"
-    "( :objects\n"
-    "\tbedroom - room\n"
-    "\tkitchen - room_with_teleporter\n"
-    ")\n"
-    "( :init\n"
-    "\t( = ( room_distance bedroom kitchen ) 1.23 )\n"
-    ")\n"
-    "( :goal\n"
-    "\t( and\n"
-    "\t)\n"
-    ")\n"
-    ")\n");
+//   ASSERT_TRUE(problem_client->addFunction(function_1));
 
-  plansys2_msgs::msg::Node function_2;
-  function_2.node_type = plansys2_msgs::msg::Node::FUNCTION;
-  function_2.name = "room_distance";
-  function_2.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room_with_teleporter"));
-  function_2.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
-  function_2.value = 2.34;
+//   ASSERT_EQ(
+//     problem_client->getProblem(),
+//     "( define ( problem problem_1 )\n"
+//     "( :domain plansys2 )\n"
+//     "( :objects\n"
+//     "\tbedroom - room\n"
+//     "\tkitchen - room_with_teleporter\n"
+//     ")\n"
+//     "( :init\n"
+//     "\t( = ( room_distance bedroom kitchen ) 1.23 )\n"
+//     ")\n"
+//     "( :goal\n"
+//     "\t( and\n"
+//     "\t)\n"
+//     ")\n"
+//     ")\n");
 
-  ASSERT_EQ(function_2.name, "room_distance");
-  ASSERT_EQ(function_2.parameters.size(), 2);
-  ASSERT_EQ(function_2.parameters[0].name, "kitchen");
-  ASSERT_EQ(function_2.parameters[0].type, "room_with_teleporter");
-  ASSERT_EQ(function_2.parameters[1].name, "bedroom");
-  ASSERT_EQ(function_2.parameters[1].type, "room");
-  ASSERT_EQ(function_2.value, 2.34);
+//   plansys2_msgs::msg::Node function_2;
+//   function_2.node_type = plansys2_msgs::msg::Node::FUNCTION;
+//   function_2.name = "room_distance";
+//   function_2.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room_with_teleporter"));
+//   function_2.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
+//   function_2.value = 2.34;
 
-  ASSERT_TRUE(problem_client->addFunction(function_2));
+//   ASSERT_EQ(function_2.name, "room_distance");
+//   ASSERT_EQ(function_2.parameters.size(), 2);
+//   ASSERT_EQ(function_2.parameters[0].name, "kitchen");
+//   ASSERT_EQ(function_2.parameters[0].type, "room_with_teleporter");
+//   ASSERT_EQ(function_2.parameters[1].name, "bedroom");
+//   ASSERT_EQ(function_2.parameters[1].type, "room");
+//   ASSERT_EQ(function_2.value, 2.34);
 
-  ASSERT_EQ(
-    problem_client->getProblem(),
-    "( define ( problem problem_1 )\n"
+//   ASSERT_TRUE(problem_client->addFunction(function_2));
 
-    "( :domain plansys2 )\n"
-    "( :objects\n"
-    "\tbedroom - room\n"
-    "\tkitchen - room_with_teleporter\n"
-    ")\n"
-    "( :init\n"
-    "\t( = ( room_distance bedroom kitchen ) 1.23 )\n"
-    "\t( = ( room_distance kitchen bedroom ) 2.34 )\n"
-    ")\n"
-    "( :goal\n"
-    "\t( and\n"
-    "\t)\n"
-    ")\n"
-    ")\n");
+//   ASSERT_EQ(
+//     problem_client->getProblem(),
+//     "( define ( problem problem_1 )\n"
 
-  function_2.value = 3.45;
+//     "( :domain plansys2 )\n"
+//     "( :objects\n"
+//     "\tbedroom - room\n"
+//     "\tkitchen - room_with_teleporter\n"
+//     ")\n"
+//     "( :init\n"
+//     "\t( = ( room_distance bedroom kitchen ) 1.23 )\n"
+//     "\t( = ( room_distance kitchen bedroom ) 2.34 )\n"
+//     ")\n"
+//     "( :goal\n"
+//     "\t( and\n"
+//     "\t)\n"
+//     ")\n"
+//     ")\n");
 
-  ASSERT_TRUE(problem_client->addFunction(function_2));
+//   function_2.value = 3.45;
 
-  ASSERT_EQ(
-    problem_client->getProblem(),
-    "( define ( problem problem_1 )\n"
-    "( :domain plansys2 )\n"
-    "( :objects\n"
-    "\tbedroom - room\n"
-    "\tkitchen - room_with_teleporter\n"
-    ")\n"
-    "( :init\n"
-    "\t( = ( room_distance bedroom kitchen ) 1.23 )\n"
-    "\t( = ( room_distance kitchen bedroom ) 3.45 )\n"
-    ")\n"
-    "( :goal\n"
-    "\t( and\n"
-    "\t)\n"
-    ")\n"
-    ")\n");
+//   ASSERT_TRUE(problem_client->addFunction(function_2));
 
-  plansys2_msgs::msg::Node function_3;
-  function_3.node_type = plansys2_msgs::msg::Node::FUNCTION;
-  function_3.name = "room_temperature";
-  function_3.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
-  function_3.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room_with_teleporter"));
-  function_3.value = 2.34;
+//   ASSERT_EQ(
+//     problem_client->getProblem(),
+//     "( define ( problem problem_1 )\n"
+//     "( :domain plansys2 )\n"
+//     "( :objects\n"
+//     "\tbedroom - room\n"
+//     "\tkitchen - room_with_teleporter\n"
+//     ")\n"
+//     "( :init\n"
+//     "\t( = ( room_distance bedroom kitchen ) 1.23 )\n"
+//     "\t( = ( room_distance kitchen bedroom ) 3.45 )\n"
+//     ")\n"
+//     "( :goal\n"
+//     "\t( and\n"
+//     "\t)\n"
+//     ")\n"
+//     ")\n");
 
-  ASSERT_FALSE(problem_client->addFunction(function_3));
+//   plansys2_msgs::msg::Node function_3;
+//   function_3.node_type = plansys2_msgs::msg::Node::FUNCTION;
+//   function_3.name = "room_temperature";
+//   function_3.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
+//   function_3.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room_with_teleporter"));
+//   function_3.value = 2.34;
 
-  ASSERT_FALSE(problem_client->removeFunction(function_3));
+//   ASSERT_FALSE(problem_client->addFunction(function_3));
+
+//   ASSERT_FALSE(problem_client->removeFunction(function_3));
 
 
-  ASSERT_TRUE(problem_client->removeInstance("kitchen"));
-}
+//   ASSERT_TRUE(problem_client->removeInstance("kitchen"));
+// }
 
 TEST(problem_expert, addget_predicates)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
-  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
-  plansys2::ProblemExpert problem_expert(domain_expert);
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
+
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+
+  bool finish = false;
+  std::thread t([&]() {
+      while (!finish) {
+        exe.spin_some();
+      }
+    });
 
   plansys2_msgs::msg::Node predicate_1;
   predicate_1.node_type = plansys2_msgs::msg::Node::PREDICATE;
@@ -431,7 +449,7 @@ TEST(problem_expert, addget_predicates)
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
 
-  std::vector<plansys2_msgs::msg::Node> predicates = problem_client->getPredicates();
+  auto predicates = problem_client->getPredicates();
   ASSERT_TRUE(predicates.empty());
 
   ASSERT_TRUE(problem_client->addPredicate(predicate_1));
@@ -449,7 +467,7 @@ TEST(problem_expert, addget_predicates)
 
   ASSERT_FALSE(problem_client->removePredicate(predicate_5));
   ASSERT_TRUE(problem_client->removePredicate(predicate_4));
-  ASSERT_TRUE(problem_client->removePredicate(predicate_4));
+  ASSERT_FALSE(problem_client->removePredicate(predicate_4));
 
   predicates = problem_client->getPredicates();
   ASSERT_EQ(predicates.size(), 3);
@@ -480,117 +498,130 @@ TEST(problem_expert, addget_predicates)
 
   ASSERT_TRUE(problem_client->addPredicate(predicate_8));
 
-  ASSERT_TRUE(problem_client->removeInstance("bathroom"));
+  ASSERT_TRUE(problem_client->removeInstance(plansys2::Instance("bathroom", "room_with_teleporter")));
+
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("linus", "person")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("hallway", "room")));
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("office", "room")));
+
+  std::vector<plansys2::Predicate> new_predicates;
+  new_predicates.push_back(parser::pddl::fromStringPredicate("(person_at linus hallway)"));
+  new_predicates.push_back(parser::pddl::fromStringPredicate("(person_at linus office)"));
+  
+  ASSERT_TRUE(problem_client->addPredicates(new_predicates));
+
+  finish = true;
+  t.join();
 }
 
-TEST(problem_expert, addget_goals)
-{
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+// TEST(problem_expert, addget_goals)
+// {
+//   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+//   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+//   std::string domain_str((
+//       std::istreambuf_iterator<char>(domain_ifs)),
+//     std::istreambuf_iterator<char>());
 
-  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
-  plansys2::ProblemExpert problem_expert(domain_expert);
+//   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
+//   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("paco", "person")));
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
+//   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("paco", "person")));
+//   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+//   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+//   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
 
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(goal, "(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
-  ASSERT_EQ(parser::pddl::toString(goal), "(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
+//   plansys2_msgs::msg::Tree goal;
+//   parser::pddl::fromString(goal, "(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
+//   ASSERT_EQ(parser::pddl::toString(goal), "(and (robot_at r2d2 bedroom)(person_at paco kitchen))");
 
-  plansys2_msgs::msg::Tree goal2;
-  parser::pddl::fromString(goal2, "(and (robot_at r2d2 bedroom)(not(person_at paco kitchen)))");
-  ASSERT_EQ(parser::pddl::toString(goal2), "(and (robot_at r2d2 bedroom)(not (person_at paco kitchen)))");
+//   plansys2_msgs::msg::Tree goal2;
+//   parser::pddl::fromString(goal2, "(and (robot_at r2d2 bedroom)(not(person_at paco kitchen)))");
+//   ASSERT_EQ(parser::pddl::toString(goal2), "(and (robot_at r2d2 bedroom)(not (person_at paco kitchen)))");
 
-  ASSERT_TRUE(problem_client->setGoal(goal));
-  ASSERT_TRUE(problem_client->setGoal(goal2));
+//   ASSERT_TRUE(problem_client->setGoal(goal));
+//   ASSERT_TRUE(problem_client->setGoal(goal2));
 
-  ASSERT_EQ(
-    problem_client->getGoal().toString(),
-    "(and (robot_at r2d2 bedroom)(not (person_at paco kitchen)))");
+//   ASSERT_EQ(
+//     problem_client->getGoal().toString(),
+//     "(and (robot_at r2d2 bedroom)(not (person_at paco kitchen)))");
 
-  const plansys2_msgs::msg::Tree & goal3 = problem_client->getGoal();
-  ASSERT_EQ(parser::pddl::toString(goal3), "(and (robot_at r2d2 bedroom)(not (person_at paco kitchen)))");
+//   const plansys2_msgs::msg::Tree & goal3 = problem_client->getGoal();
+//   ASSERT_EQ(parser::pddl::toString(goal3), "(and (robot_at r2d2 bedroom)(not (person_at paco kitchen)))");
 
-  ASSERT_TRUE(problem_client->clearGoal());
-  ASSERT_TRUE(problem_client->clearGoal());
+//   ASSERT_TRUE(problem_client->clearGoal());
+//   ASSERT_TRUE(problem_client->clearGoal());
 
-  ASSERT_EQ(problem_client->getGoal().toString(), "");
+//   ASSERT_EQ(problem_client->getGoal().toString(), "");
 
-  ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and (or (robot_at r2d2 bedroom)(robot_at r2d2 kitchen))(not(person_at paco kitchen)))")));
-}
+//   ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and (or (robot_at r2d2 bedroom)(robot_at r2d2 kitchen))(not(person_at paco kitchen)))")));
+// }
 
-TEST(problem_expert, get_probem)
-{
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
-  std::string domain_str((
-      std::istreambuf_iterator<char>(domain_ifs)),
-    std::istreambuf_iterator<char>());
+// TEST(problem_expert, get_probem)
+// {
+//   std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+//   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+//   std::string domain_str((
+//       std::istreambuf_iterator<char>(domain_ifs)),
+//     std::istreambuf_iterator<char>());
 
-  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
-  plansys2::ProblemExpert problem_expert(domain_expert);
+//   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
+//   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  plansys2_msgs::msg::Node predicate_1;
-  predicate_1.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  predicate_1.name = "robot_at";
-  predicate_1.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
-  predicate_1.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
+//   plansys2_msgs::msg::Node predicate_1;
+//   predicate_1.node_type = plansys2_msgs::msg::Node::PREDICATE;
+//   predicate_1.name = "robot_at";
+//   predicate_1.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
+//   predicate_1.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
 
-  plansys2_msgs::msg::Node predicate_2;
-  predicate_2.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  predicate_2.name = "robot_at";
-  predicate_2.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
-  predicate_2.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
+//   plansys2_msgs::msg::Node predicate_2;
+//   predicate_2.node_type = plansys2_msgs::msg::Node::PREDICATE;
+//   predicate_2.name = "robot_at";
+//   predicate_2.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
+//   predicate_2.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
 
-  plansys2_msgs::msg::Node predicate_3;
-  predicate_3.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  predicate_3.name = "person_at";
-  predicate_3.parameters.push_back(parser::pddl::fromStringParam("paco", "person"));
-  predicate_3.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
+//   plansys2_msgs::msg::Node predicate_3;
+//   predicate_3.node_type = plansys2_msgs::msg::Node::PREDICATE;
+//   predicate_3.name = "person_at";
+//   predicate_3.parameters.push_back(parser::pddl::fromStringParam("paco", "person"));
+//   predicate_3.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
 
-  plansys2_msgs::msg::Node predicate_4;
-  predicate_4.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  predicate_4.name = "person_at";
-  predicate_4.parameters.push_back(parser::pddl::fromStringParam("paco", "person"));
-  predicate_4.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
+//   plansys2_msgs::msg::Node predicate_4;
+//   predicate_4.node_type = plansys2_msgs::msg::Node::PREDICATE;
+//   predicate_4.name = "person_at";
+//   predicate_4.parameters.push_back(parser::pddl::fromStringParam("paco", "person"));
+//   predicate_4.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
 
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("paco", "person")));
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
+//   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("paco", "person")));
+//   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+//   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+//   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
 
-  ASSERT_TRUE(problem_client->addPredicate(predicate_1));
-  ASSERT_TRUE(problem_client->addPredicate(predicate_2));
-  ASSERT_TRUE(problem_client->addPredicate(predicate_3));
-  ASSERT_TRUE(problem_client->addPredicate(predicate_4));
+//   ASSERT_TRUE(problem_client->addPredicate(predicate_1));
+//   ASSERT_TRUE(problem_client->addPredicate(predicate_2));
+//   ASSERT_TRUE(problem_client->addPredicate(predicate_3));
+//   ASSERT_TRUE(problem_client->addPredicate(predicate_4));
 
-  ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and (robot_at r2d2 bedroom)(person_at paco kitchen))")));
+//   ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and (robot_at r2d2 bedroom)(person_at paco kitchen))")));
 
-  ASSERT_EQ(
-    problem_client->getProblem(),
-    std::string("( define ( problem problem_1 )\n( :domain plansys2 ") +
-    std::string(")\n( :objects\n\tpaco - person\n\tr2d2 - robot\n\tbedroom kitchen - room\n)\n") +
-    std::string("( :init\n\t( robot_at r2d2 bedroom )\n\t( robot_at r2d2 kitchen )\n\t( ") +
-    std::string("person_at paco bedroom )\n\t( person_at paco kitchen )\n)\n( :goal\n\t( ") +
-    std::string("and\n\t\t( robot_at r2d2 bedroom )\n\t\t( person_at paco kitchen )\n\t)\n)\n)\n"));
-}
+//   ASSERT_EQ(
+//     problem_client->getProblem(),
+//     std::string("( define ( problem problem_1 )\n( :domain plansys2 ") +
+//     std::string(")\n( :objects\n\tpaco - person\n\tr2d2 - robot\n\tbedroom kitchen - room\n)\n") +
+//     std::string("( :init\n\t( robot_at r2d2 bedroom )\n\t( robot_at r2d2 kitchen )\n\t( ") +
+//     std::string("person_at paco bedroom )\n\t( person_at paco kitchen )\n)\n( :goal\n\t( ") +
+//     std::string("and\n\t\t( robot_at r2d2 bedroom )\n\t\t( person_at paco kitchen )\n\t)\n)\n)\n"));
+// }
 
 
-TEST(problem_expert, set_goal)
-{
-  std::string expresion = std::string("(and (patrolled ro1) (patrolled ro2) (patrolled ro3))");
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(goal, expresion);
+// TEST(problem_expert, set_goal)
+// {
+//   std::string expresion = std::string("(and (patrolled ro1) (patrolled ro2) (patrolled ro3))");
+//   plansys2_msgs::msg::Tree goal;
+//   parser::pddl::fromString(goal, expresion);
 
-  ASSERT_EQ(goal.toString(), "(and (patrolled ro1)(patrolled ro2)(patrolled ro3))");
-}
-*/
+//   ASSERT_EQ(goal.toString(), "(and (patrolled ro1)(patrolled ro2)(patrolled ro3))");
+// }
+
 
 TEST(problem_expert_node, addget_goal_is_satisfied)
 {

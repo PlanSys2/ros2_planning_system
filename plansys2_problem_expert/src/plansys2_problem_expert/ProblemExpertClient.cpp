@@ -37,6 +37,8 @@ ProblemExpertClient::ProblemExpertClient()
     node_->create_client<plansys2_msgs::srv::AffectParam>("problem_expert/add_problem_instance");
   add_problem_predicate_client_ =
     node_->create_client<plansys2_msgs::srv::AffectNode>("problem_expert/add_problem_predicate");
+  add_problem_predicates_client_ =
+    node_->create_client<plansys2_msgs::srv::AffectNodes>("problem_expert/add_problem_predicates");
   add_problem_function_client_ =
     node_->create_client<plansys2_msgs::srv::AffectNode>("problem_expert/add_problem_function");
   get_problem_goal_client_ =
@@ -361,6 +363,42 @@ bool ProblemExpertClient::addPredicate(const plansys2::Predicate & predicate)
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(), add_problem_predicate_client_->get_service_name()
+        << ": " << result.error_info);
+    return false;
+  }
+}
+
+bool ProblemExpertClient::addPredicates(const std::vector<plansys2::Predicate> & predicates)
+{
+  while (!add_problem_predicates_client_->wait_for_service(std::chrono::seconds(5))) {
+    if (!rclcpp::ok()) {
+      return false;
+    }
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(), add_problem_predicates_client_->get_service_name()
+        << " service  client: waiting for service to appear...");
+  }
+
+  auto request = std::make_shared<plansys2_msgs::srv::AffectNodes::Request>();
+  request->nodes = convertVector<plansys2_msgs::msg::Node, plansys2::Predicate>(predicates);
+
+  auto future_result = add_problem_predicates_client_->async_send_request(request);
+
+  if (
+    rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
+    rclcpp::FutureReturnCode::SUCCESS)
+  {
+    return false;
+  }
+
+  auto result = *future_result.get();
+
+  if (result.success) {
+    update_time_ = node_->now();
+    return true;
+  } else {
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(), add_problem_predicates_client_->get_service_name()
         << ": " << result.error_info);
     return false;
   }

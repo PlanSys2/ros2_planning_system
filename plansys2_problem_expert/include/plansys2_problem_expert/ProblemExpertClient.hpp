@@ -26,6 +26,7 @@
 #include "plansys2_msgs/srv/add_problem.hpp"
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
 #include "plansys2_msgs/srv/affect_node.hpp"
+#include "plansys2_msgs/srv/affect_nodes.hpp"
 #include "plansys2_msgs/srv/affect_param.hpp"
 #include "plansys2_msgs/srv/clear_problem_knowledge.hpp"
 #include "plansys2_msgs/srv/exist_node.hpp"
@@ -57,6 +58,7 @@ public:
   std::unordered_set<plansys2::Predicate> getInferredPredicates();
   std::unordered_set<plansys2::Predicate> getPredicates();
   bool addPredicate(const plansys2::Predicate & predicate);
+  bool addPredicates(const std::vector<plansys2::Predicate> & predicates);
   bool removePredicate(const plansys2::Predicate & predicate);
   bool existPredicate(const plansys2::Predicate & predicate);
   std::optional<plansys2::Predicate> getPredicate(const std::string & predicate);
@@ -87,6 +89,7 @@ private:
   rclcpp::Client<plansys2_msgs::srv::AddProblemGoal>::SharedPtr add_problem_goal_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr add_problem_instance_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr add_problem_predicate_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectNodes>::SharedPtr add_problem_predicates_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr add_problem_function_client_;
   rclcpp::Client<plansys2_msgs::srv::GetProblemGoal>::SharedPtr get_problem_goal_client_;
   rclcpp::Client<plansys2_msgs::srv::GetProblemState>::SharedPtr get_problem_state_client_;

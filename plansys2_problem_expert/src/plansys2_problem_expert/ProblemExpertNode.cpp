@@ -71,6 +71,12 @@ ProblemExpertNode::ProblemExpertNode()
     std::bind(
       &ProblemExpertNode::add_problem_predicate_service_callback, this, std::placeholders::_1,
       std::placeholders::_2, std::placeholders::_3));
+  
+  add_problem_predicates_service_ = create_service<plansys2_msgs::srv::AffectNodes>(
+    "problem_expert/add_problem_predicates",
+    std::bind(
+      &ProblemExpertNode::add_problem_predicates_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
 
   add_problem_function_service_ = create_service<plansys2_msgs::srv::AffectNode>(
     "problem_expert/add_problem_function",
@@ -364,6 +370,28 @@ void ProblemExpertNode::add_problem_predicate_service_callback(
       knowledge_pub_->publish(*get_knowledge_as_msg());
     } else {
       response->error_info = "Predicate [" + parser::pddl::toString(request->node) + "] not valid";
+    }
+  }
+}
+
+void ProblemExpertNode::add_problem_predicates_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::AffectNodes::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::AffectNodes::Response> response)
+{
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    response->success = problem_expert_->addPredicates(
+      convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(request->nodes)
+    );
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
+    } else {
+      response->error_info = "One of the predicates  is not valid";
     }
   }
 }

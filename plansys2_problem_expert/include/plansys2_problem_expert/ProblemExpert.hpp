@@ -45,6 +45,7 @@ public:
   std::unordered_set<plansys2::Predicate> getPredicates();
   std::unordered_set<plansys2::Predicate> getInferredPredicates();
   bool addPredicate(const plansys2::Predicate & predicate);
+  bool addPredicates(const std::vector<plansys2::Predicate> & predicates);
   bool removePredicate(const plansys2::Predicate & predicate);
   bool existPredicate(const plansys2::Predicate & predicate);
   bool existInferredPredicate(const plansys2::Predicate & predicate);

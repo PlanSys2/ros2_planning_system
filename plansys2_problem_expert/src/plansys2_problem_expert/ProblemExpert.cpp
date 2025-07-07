@@ -119,6 +119,15 @@ bool ProblemExpert::addPredicate(const plansys2::Predicate & predicate)
   return false;
 }
 
+bool ProblemExpert::addPredicates(const std::vector<plansys2::Predicate> & predicates)
+{
+  bool result = true;
+  for(const auto & predicate: predicates) {
+    result &= addPredicate(predicate);
+  }
+  return result;
+}
+
 bool ProblemExpert::removePredicate(const plansys2::Predicate & predicate)
 {
   if (!isValidPredicate(predicate)) {  // if predicate is not valid, error

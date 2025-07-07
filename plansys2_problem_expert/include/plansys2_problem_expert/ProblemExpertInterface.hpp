@@ -42,6 +42,7 @@ public:
   virtual std::unordered_set<plansys2::Predicate> getPredicates() = 0;
   virtual std::unordered_set<plansys2::Predicate> getInferredPredicates() = 0;
   virtual bool addPredicate(const plansys2::Predicate & predicate) = 0;
+  virtual bool addPredicates(const std::vector<plansys2::Predicate> & predicates) = 0;
   virtual bool removePredicate(const plansys2::Predicate & predicate) = 0;
   virtual bool existPredicate(const plansys2::Predicate & predicate) = 0;
   virtual std::optional<plansys2::Predicate> getPredicate(const std::string & expr) = 0;

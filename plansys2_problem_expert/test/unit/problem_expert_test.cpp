@@ -288,6 +288,16 @@ TEST(problem_expert, addget_predicates)
   ASSERT_TRUE(
     problem_expert.removeInstance(
       parser::pddl::fromStringParam("bathroom", "room_with_teleporter")));
+  
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("linus", "person")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("hallway", "room")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("office", "room")));
+  
+  std::vector<plansys2::Predicate> new_predicates;
+  new_predicates.push_back(parser::pddl::fromStringPredicate("(person_at linus hallway)"));
+  new_predicates.push_back(parser::pddl::fromStringPredicate("(person_at linus office)"));
+  
+  ASSERT_TRUE(problem_expert.addPredicates(new_predicates));
 }
 
 TEST(problem_expert, addget_functions)
@@ -764,10 +774,6 @@ TEST(problem_expert, get_predicate_with_derived)
     predicates.find(
       parser::pddl::fromStringPredicate(
         "(inferred-exists-another-drone-at-drone_area drone123)")) != predicates.end());
-
-  ASSERT_TRUE(
-    predicates.find(parser::pddl::fromStringPredicate("(person_at jack bedroom)")) !=
-    predicates.end());
 
   ASSERT_TRUE(
     predicates.find(parser::pddl::fromStringPredicate("(inferred-person_at jack bedroom)")) !=

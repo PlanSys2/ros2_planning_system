@@ -23,6 +23,7 @@
 #include "plansys2_msgs/srv/add_problem.hpp"
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
 #include "plansys2_msgs/srv/affect_node.hpp"
+#include "plansys2_msgs/srv/affect_nodes.hpp"
 #include "plansys2_msgs/srv/affect_param.hpp"
 #include "plansys2_msgs/srv/clear_problem_knowledge.hpp"
 #include "plansys2_msgs/srv/exist_node.hpp"
@@ -79,6 +80,11 @@ public:
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::AffectNode::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::AffectNode::Response> response);
+  
+  void add_problem_predicates_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::AffectNodes::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::AffectNodes::Response> response);
 
   void add_problem_function_service_callback(
     const std::shared_ptr<rmw_request_id_t> request_header,
@@ -187,6 +193,7 @@ private:
   rclcpp::Service<plansys2_msgs::srv::AddProblemGoal>::SharedPtr add_problem_goal_service_;
   rclcpp::Service<plansys2_msgs::srv::AffectParam>::SharedPtr add_problem_instance_service_;
   rclcpp::Service<plansys2_msgs::srv::AffectNode>::SharedPtr add_problem_predicate_service_;
+  rclcpp::Service<plansys2_msgs::srv::AffectNodes>::SharedPtr add_problem_predicates_service_;
   rclcpp::Service<plansys2_msgs::srv::AffectNode>::SharedPtr add_problem_function_service_;
   rclcpp::Service<plansys2_msgs::srv::GetProblemGoal>::SharedPtr get_problem_goal_service_;
   rclcpp::Service<plansys2_msgs::srv::GetProblemState>::SharedPtr get_problem_state_service_;
