@@ -47,6 +47,10 @@ public:
   bool addPredicate(const plansys2::Predicate & predicate);
   bool addPredicates(const std::vector<plansys2::Predicate> & predicates);
   bool removePredicate(const plansys2::Predicate & predicate);
+  bool removePredicates(const std::vector<plansys2::Predicate> & predicates);
+  bool updatePredicates(
+    const std::vector<plansys2::Predicate> & add_predicates, 
+    const std::vector<plansys2::Predicate> & remove_predicates);
   bool existPredicate(const plansys2::Predicate & predicate);
   bool existInferredPredicate(const plansys2::Predicate & predicate);
   std::optional<plansys2::Predicate> getPredicate(const std::string & expr);

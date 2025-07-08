@@ -44,6 +44,10 @@ public:
   virtual bool addPredicate(const plansys2::Predicate & predicate) = 0;
   virtual bool addPredicates(const std::vector<plansys2::Predicate> & predicates) = 0;
   virtual bool removePredicate(const plansys2::Predicate & predicate) = 0;
+  virtual bool removePredicates(const std::vector<plansys2::Predicate> & predicates) = 0;
+  virtual bool updatePredicates(
+    const std::vector<plansys2::Predicate> & add_predicates, 
+    const std::vector<plansys2::Predicate> & remove_predicates) = 0;
   virtual bool existPredicate(const plansys2::Predicate & predicate) = 0;
   virtual std::optional<plansys2::Predicate> getPredicate(const std::string & expr) = 0;
 

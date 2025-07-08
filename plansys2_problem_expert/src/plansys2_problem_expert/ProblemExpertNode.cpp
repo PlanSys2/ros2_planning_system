@@ -77,6 +77,12 @@ ProblemExpertNode::ProblemExpertNode()
     std::bind(
       &ProblemExpertNode::add_problem_predicates_service_callback, this, std::placeholders::_1,
       std::placeholders::_2, std::placeholders::_3));
+  
+  update_problem_predicates_service_ = create_service<plansys2_msgs::srv::UpdateNodes>(
+    "problem_expert/update_problem_predicates",
+    std::bind(
+      &ProblemExpertNode::update_problem_predicates_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
 
   add_problem_function_service_ = create_service<plansys2_msgs::srv::AffectNode>(
     "problem_expert/add_problem_function",
@@ -173,6 +179,12 @@ ProblemExpertNode::ProblemExpertNode()
     "problem_expert/remove_problem_predicate",
     std::bind(
       &ProblemExpertNode::remove_problem_predicate_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
+
+  remove_problem_predicates_service_ = create_service<plansys2_msgs::srv::AffectNodes>(
+    "problem_expert/remove_problem_predicates",
+    std::bind(
+      &ProblemExpertNode::remove_problem_predicates_service_callback, this, std::placeholders::_1,
       std::placeholders::_2, std::placeholders::_3));
 
   remove_problem_function_service_ = create_service<plansys2_msgs::srv::AffectNode>(
@@ -386,6 +398,30 @@ void ProblemExpertNode::add_problem_predicates_service_callback(
   } else {
     response->success = problem_expert_->addPredicates(
       convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(request->nodes)
+    );
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
+    } else {
+      response->error_info = "One of the predicates  is not valid";
+    }
+  }
+}
+
+void ProblemExpertNode::update_problem_predicates_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::UpdateNodes::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::UpdateNodes::Response> response)
+{
+  response->success = true;
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    response->success &= problem_expert_->updatePredicates(
+      convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(request->add_nodes),
+      convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(request->remove_nodes)
     );
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
@@ -680,6 +716,27 @@ void ProblemExpertNode::remove_problem_predicate_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = problem_expert_->removePredicate(request->node);
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
+    } else {
+      response->error_info = "Error removing predicate";
+    }
+  }
+}
+
+void ProblemExpertNode::remove_problem_predicates_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::AffectNodes::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::AffectNodes::Response> response)
+{
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    response->success = problem_expert_->removePredicates(
+      convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(request->nodes));
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
       knowledge_pub_->publish(*get_knowledge_as_msg());

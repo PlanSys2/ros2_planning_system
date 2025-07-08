@@ -293,11 +293,28 @@ TEST(problem_expert, addget_predicates)
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("hallway", "room")));
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("office", "room")));
   
-  std::vector<plansys2::Predicate> new_predicates;
-  new_predicates.push_back(parser::pddl::fromStringPredicate("(person_at linus hallway)"));
-  new_predicates.push_back(parser::pddl::fromStringPredicate("(person_at linus office)"));
+  std::vector<plansys2::Predicate> predicates1;
+  predicates1.push_back(parser::pddl::fromStringPredicate("(person_at linus hallway)"));
+  predicates1.push_back(parser::pddl::fromStringPredicate("(person_at linus office)"));
   
-  ASSERT_TRUE(problem_expert.addPredicates(new_predicates));
+  ASSERT_TRUE(problem_expert.addPredicates(predicates1));
+  
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("stallman", "person")));
+
+  std::vector<plansys2::Predicate> predicates2;
+  predicates2.push_back(parser::pddl::fromStringPredicate("(person_at stallman hallway)"));
+  predicates2.push_back(parser::pddl::fromStringPredicate("(person_at stallman office)"));
+  
+  ASSERT_TRUE(problem_expert.updatePredicates(predicates2, predicates1));
+
+  ASSERT_FALSE(
+    problem_expert.existPredicate(predicates1[0]));
+  ASSERT_FALSE(
+    problem_expert.existPredicate(predicates1[1]));
+  ASSERT_TRUE(
+    problem_expert.existPredicate(predicates2[0]));
+  ASSERT_TRUE(
+    problem_expert.existPredicate(predicates2[1]));
 }
 
 TEST(problem_expert, addget_functions)

@@ -39,6 +39,7 @@
 #include "plansys2_msgs/srv/get_states.hpp"
 #include "plansys2_msgs/srv/is_problem_goal_satisfied.hpp"
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
+#include "plansys2_msgs/srv/update_nodes.hpp"
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 #include "rclcpp/rclcpp.hpp"
 
@@ -60,6 +61,10 @@ public:
   bool addPredicate(const plansys2::Predicate & predicate);
   bool addPredicates(const std::vector<plansys2::Predicate> & predicates);
   bool removePredicate(const plansys2::Predicate & predicate);
+  bool removePredicates(const std::vector<plansys2::Predicate> & predicates);
+  bool updatePredicates(
+    const std::vector<plansys2::Predicate> & add_predicates, 
+    const std::vector<plansys2::Predicate> & remove_predicates);
   bool existPredicate(const plansys2::Predicate & predicate);
   std::optional<plansys2::Predicate> getPredicate(const std::string & predicate);
 
@@ -90,6 +95,7 @@ private:
   rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr add_problem_instance_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr add_problem_predicate_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectNodes>::SharedPtr add_problem_predicates_client_;
+  rclcpp::Client<plansys2_msgs::srv::UpdateNodes>::SharedPtr update_problem_predicates_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr add_problem_function_client_;
   rclcpp::Client<plansys2_msgs::srv::GetProblemGoal>::SharedPtr get_problem_goal_client_;
   rclcpp::Client<plansys2_msgs::srv::GetProblemState>::SharedPtr get_problem_state_client_;
@@ -109,6 +115,7 @@ private:
     clear_problem_knowledge_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr remove_problem_instance_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr remove_problem_predicate_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectNodes>::SharedPtr remove_problem_predicates_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr remove_problem_function_client_;
   rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr exist_problem_predicate_client_;
   rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr exist_problem_function_client_;
