@@ -1,0 +1,5 @@
+plansys2_msgs/Node[] add_nodes
+plansys2_msgs/Node[] remove_nodes
+---
+bool success
+string error_info
