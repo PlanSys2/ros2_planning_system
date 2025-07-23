@@ -1756,6 +1756,238 @@ TEST(utils, apply_with_derived_suave_2)
   ASSERT_TRUE(plansys2::apply(action_inspect_pipeline->effects, state));
 }
 
+TEST(utils, apply_with_derived_suave_extended)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::ifstream domain_ifs(pkgpath + "/pddl/suave_domain_extended.pddl");
+  std::string domain_str(
+    (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
+
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  std::ifstream problem_ifs(pkgpath + "/pddl/suave_problem_extended.pddl");
+  std::string problem_str(
+    (std::istreambuf_iterator<char>(problem_ifs)), std::istreambuf_iterator<char>());
+  ASSERT_TRUE(problem_expert.addProblem(problem_str));
+
+  auto state = problem_expert.getState();
+
+  auto start_time = std::chrono::steady_clock::now();
+  solveDerivedPredicates(state);
+  auto end_time = std::chrono::steady_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
+  std::cout << "solveDerivedPredicates took " << duration << " seconds" << std::endl;
+
+  ASSERT_GT(state.getInstances().size(), 0);
+  ASSERT_GT(state.getPredicates().size(), 0);
+  ASSERT_GT(state.getInferredPredicates().size(), 0);
+  ASSERT_GT(state.getDerivedPredicates().getEdgeNumber(), 0);
+
+  auto action_start_robot = domain_expert->getAction(
+    "start_robot", {"bluerov"});
+  auto action_reconfig_recharge_path_normal = domain_expert->getAction(
+    "reconfigure1", {"generate_recharge_path", "normal"});
+  auto action_reconfig_maintain = domain_expert->getAction(
+    "reconfigure1", {"f_maintain_motion", "fd_all_thrusters"});
+  auto action_recharge = domain_expert->getAction(
+    "recharge_battery", {"bluerov"});
+  auto action_reconfig_generate = domain_expert->getAction(
+    "reconfigure1", {"f_generate_search_path", "fd_spiral_high"});
+  auto action_reconfig_recharge_path_unground = domain_expert->getAction(
+    "reconfigure2", {"generate_recharge_path", "normal", "fd_unground"});
+  auto action_search_pipeline = domain_expert->getAction(
+    "search_pipeline", {"pipeline", "bluerov"});
+  auto action_reconfig_follow = domain_expert->getAction(
+    "reconfigure1", {"f_follow_pipeline", "fd_follow_pipeline"});
+  auto action_reconfig_generate2 = domain_expert->getAction(
+    "reconfigure2", {"f_generate_search_path", "fd_spiral_high", "fd_unground"});
+  auto action_inspect_pipeline = domain_expert->getAction(
+    "inspect_pipeline", {"pipeline", "bluerov"});
+  
+  ASSERT_TRUE(plansys2::check(action_start_robot->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_recharge_path_normal->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_maintain->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_recharge->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_generate->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_reconfig_recharge_path_unground->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_search_pipeline->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_inspect_pipeline->preconditions, state));
+
+  ASSERT_TRUE(plansys2::apply(action_start_robot->effects, state));
+
+  ASSERT_FALSE(plansys2::check(action_start_robot->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_recharge_path_normal->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_maintain->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_recharge->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_generate->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_reconfig_recharge_path_unground->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_search_pipeline->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_inspect_pipeline->preconditions, state));
+
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-solvesf fd_all_thrusters f_maintain_motion")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-solvesf fd_recover_thrusters f_maintain_motion")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-solvesf fd_spiral_high f_generate_search_path")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-solvesf fd_spiral_medium f_generate_search_path")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-solvesf fd_spiral_low f_generate_search_path")));
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-fd_realisability fd_all_thrusters false_boolean")));
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-fd_realisability fd_recover_thrusters false_boolean")));
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-fdbetterutility fd_recover_thrusters fd_all_thrusters")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-fdbetterutility fd_all_thrusters fd_recover_thrusters")));
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-f_active f_generate_search_path true_boolean")));
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-f_active f_maintain_motion true_boolean")));
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-f_active f_follow_pipeline true_boolean")));
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-battery_charged bluerov")));
+
+  ASSERT_TRUE(plansys2::check(action_reconfig_recharge_path_normal->preconditions, state));
+  ASSERT_TRUE(plansys2::apply(action_reconfig_recharge_path_normal->effects, state));
+
+  ASSERT_FALSE(plansys2::check(action_start_robot->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_reconfig_recharge_path_normal->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_maintain->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_recharge->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_generate->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_recharge_path_unground->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_search_pipeline->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_inspect_pipeline->preconditions, state));
+
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-solvesf fd_all_thrusters f_maintain_motion")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-solvesf fd_recover_thrusters f_maintain_motion")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-solvesf fd_spiral_high f_generate_search_path")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-solvesf fd_spiral_medium f_generate_search_path")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-solvesf fd_spiral_low f_generate_search_path")));
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-battery_charged bluerov")));
+
+  ASSERT_TRUE(plansys2::check(action_reconfig_maintain->preconditions, state));
+  ASSERT_TRUE(plansys2::apply(action_reconfig_maintain->effects, state));
+
+  ASSERT_FALSE(plansys2::check(action_start_robot->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_reconfig_recharge_path_normal->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_reconfig_maintain->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_recharge->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_generate->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_recharge_path_unground->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_search_pipeline->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_inspect_pipeline->preconditions, state));
+
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-f_active f_generate_search_path true_boolean")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-f_active f_maintain_motion true_boolean")));
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-f_active f_follow_pipeline true_boolean")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-f_active generate_recharge_path true_boolean")));
+
+  ASSERT_TRUE(plansys2::check(action_recharge->preconditions, state));
+  ASSERT_TRUE(plansys2::apply(action_recharge->effects, state));
+
+  ASSERT_FALSE(plansys2::check(action_start_robot->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_reconfig_recharge_path_normal->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_reconfig_maintain->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_recharge->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_generate->preconditions, state));
+  ASSERT_TRUE(plansys2::check(action_reconfig_recharge_path_unground->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_search_pipeline->preconditions, state));
+  ASSERT_FALSE(plansys2::check(action_inspect_pipeline->preconditions, state));
+  
+  
+  ASSERT_TRUE(
+    state.hasPredicate(
+      parser::pddl::fromStringPredicate("qa_has_value obs_battery_level 1.0_decimal")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-battery_charged bluerov")));
+  
+      ASSERT_TRUE(plansys2::check(action_reconfig_generate->preconditions, state));
+  ASSERT_TRUE(plansys2::apply(action_reconfig_generate->effects, state));
+  
+  ASSERT_TRUE(plansys2::check(action_reconfig_recharge_path_unground->preconditions, state));
+  ASSERT_TRUE(plansys2::apply(action_reconfig_recharge_path_unground->effects, state));
+
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-f_active f_generate_search_path true_boolean")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-f_active f_maintain_motion true_boolean")));
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-f_active f_follow_pipeline true_boolean")));
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-f_active generate_recharge_path true_boolean")));
+
+  ASSERT_TRUE(plansys2::check(action_search_pipeline->preconditions, state));
+  ASSERT_TRUE(plansys2::apply(action_search_pipeline->effects, state));
+
+  ASSERT_TRUE(plansys2::check(action_reconfig_follow->preconditions, state));
+  ASSERT_TRUE(plansys2::apply(action_reconfig_follow->effects, state));
+
+  ASSERT_TRUE(plansys2::check(action_reconfig_generate2->preconditions, state));
+  std::cout<<"APLLYING reconfig f_generate_search_path fd_spiral_high fd_unground action"<<std::endl;
+  ASSERT_TRUE(plansys2::apply(action_reconfig_generate2->effects, state));
+
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-f_active f_generate_search_path true_boolean")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-f_active f_maintain_motion true_boolean")));
+  ASSERT_TRUE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-f_active f_follow_pipeline true_boolean")));
+  ASSERT_FALSE(
+    state.hasInferredPredicate(
+      parser::pddl::fromStringPredicate("inferred-f_active generate_recharge_path true_boolean")));
+
+  ASSERT_TRUE(plansys2::check(action_inspect_pipeline->preconditions, state));
+  std::cout<<"APLLYING inspect_pipeline action"<<std::endl;
+  ASSERT_TRUE(plansys2::apply(action_inspect_pipeline->effects, state));
+}
+
 TEST(utils, get_free_params)
 {
   plansys2_msgs::msg::Tree tree;
