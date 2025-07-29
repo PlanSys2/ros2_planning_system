@@ -16,20 +16,6 @@ find_package(OpenMP REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# set(dependencies
-#     rclcpp
-#     rclcpp_action
-#     rclcpp_lifecycle
-#     plansys2_pddl_parser
-#     ament_index_cpp
-#     plansys2_core
-#     plansys2_msgs
-#     plansys2_domain_expert
-#     std_msgs
-#     lifecycle_msgs
-#     OpenMP
-# )
-
 include_directories(include)
 
 set(PROBLEM_EXPERT_SOURCES
@@ -69,10 +55,6 @@ target_link_libraries(problem_expert_node
   ${PROJECT_NAME}
   rclcpp::rclcpp
 )
-
-# if(OpenMP_CXX_FOUND)
-#   target_link_libraries(problem_expert_node OpenMP::OpenMP_CXX)
-# endif()
 
 install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
