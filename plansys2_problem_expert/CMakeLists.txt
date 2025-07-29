@@ -97,6 +97,7 @@ ament_export_dependencies(
   plansys2_domain_expert
   std_msgs
   lifecycle_msgs
+  OpenMP
 )
 
 ament_package()

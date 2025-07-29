@@ -11,7 +11,6 @@ find_package(rqt_gui_cpp REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
 
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
-find_package(OpenMP REQUIRED)
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -73,7 +72,6 @@ target_link_libraries(rqt_plansys2_knowledge
   rqt_gui_cpp::rqt_gui_cpp
   rclcpp::rclcpp
   Qt5::Widgets
-  OpenMP::OpenMP_CXX
   PRIVATE
   pluginlib::pluginlib
 )
@@ -113,7 +111,6 @@ target_link_libraries(rqt_plansys2_performers
   rqt_gui_cpp::rqt_gui_cpp
   rclcpp::rclcpp
   Qt5::Widgets
-  OpenMP::OpenMP_CXX
   PRIVATE
   pluginlib::pluginlib
 )
