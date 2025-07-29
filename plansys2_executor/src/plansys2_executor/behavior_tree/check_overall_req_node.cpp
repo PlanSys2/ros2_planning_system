@@ -52,9 +52,12 @@ CheckOverAllReq::tick()
   auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 
   auto reqs = (*action_map_)[action].action_info.get_overall_requirements();
+  auto state = problem_client_->getState();
+  state.addActionsAndPruneDerived({(*action_map_)[action].action_info});
+  solveDerivedPredicates(state);
   last_check_problem_ts_ = node->now();
 
-  if (!check(reqs, problem_client_)) {
+  if (!check(reqs, state)) {
     (*action_map_)[action].execution_error_info = "Error checking over all requirements";
 
     RCLCPP_ERROR_STREAM(
