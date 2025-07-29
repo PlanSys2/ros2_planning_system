@@ -903,6 +903,29 @@ bool apply(
         nodes_modified.push_back(current_node);
         break;
       }
+
+    case plansys2_msgs::msg::Node::FUNCTION_MODIFIER: {
+        auto [eval_success, eval_truth, eval_value, eval_param_values] =
+          std::make_tuple(false, false, 0.0, std::vector<std::map<std::string, std::string>>{});
+        if (use_state) {
+          std::tie(eval_success, eval_truth, eval_value, eval_param_values) =
+            evaluate(tree, state, node_id, negate);
+        } else {
+          std::tie(eval_success, eval_truth, eval_value, eval_param_values) =
+            evaluate(tree, problem_client, node_id, negate);
+        }
+        if (eval_success) {
+          uint8_t left_id = current_node.children[0];
+          if (use_state) {
+            success = state.updateFunctionValue(tree.nodes[left_id], eval_value);
+          } else {
+            std::stringstream ss;
+            ss << "(= " << parser::pddl::toString(tree, left_id) << " " << eval_value << ")";
+            problem_client->updateFunction(parser::pddl::fromStringFunction(ss.str()));
+          }
+        }
+        break;
+      }
     default:
       success = false;
       std::cerr << "Apply: Error parsing expresion [" << parser::pddl::toString(tree, node_id)
