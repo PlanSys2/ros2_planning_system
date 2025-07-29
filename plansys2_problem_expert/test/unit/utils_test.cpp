@@ -677,7 +677,6 @@ TEST(utils, evaluate_function_mod)
   parser::pddl::getPredicates(predicates_msg, test_tree);
   parser::pddl::getFunctions(functions_msg, test_tree);
 
-  // std::unordered_set<plansys2::Instance> instances;
   auto predicates =
     plansys2::convertVectorToUnorderedSet<plansys2::Predicate, plansys2_msgs::msg::Node>(
       predicates_msg);
@@ -691,13 +690,9 @@ TEST(utils, evaluate_function_mod)
   ASSERT_EQ(
     plansys2::evaluate(test_tree, state),
     std::make_tuple(true, false, 3.0, std::vector<std::map<std::string, std::string>>{}));
-  ASSERT_EQ(functions.find(parser::pddl::fromStringFunction("(vx)"))->value, 0.0);
+  ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 0.0);
 
   ASSERT_TRUE(plansys2::apply(test_tree, state));
-  // ASSERT_EQ(
-  //   plansys2::evaluate(test_tree, state),
-  //   std::make_tuple(true, false, 3.0, std::vector<std::map<std::string, std::string>>{}));
-  // ASSERT_EQ(functions[0].value, 3.0);
   ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 3.0);
 
   test_tree.nodes.clear();
@@ -712,7 +707,6 @@ TEST(utils, evaluate_function_mod)
     test_tree, "(decrease (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
   ASSERT_TRUE(plansys2::apply(test_tree, state));
-  // ASSERT_EQ(functions[0].value, 3.0);
   ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 3.0);
 
   test_tree.nodes.clear();
@@ -720,7 +714,6 @@ TEST(utils, evaluate_function_mod)
     test_tree, "(scale-up (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
 
   ASSERT_TRUE(plansys2::apply(test_tree, state));
-  // ASSERT_EQ(functions[0].value, 9.0);
   ASSERT_EQ(state.getFunction(parser::pddl::fromStringFunction("(vx)"))->value, 9.0);
 
   test_tree.nodes.clear();
@@ -1442,7 +1435,6 @@ TEST(utils, apply_with_derived)
   auto end_time = std::chrono::steady_clock::now();
   auto duration =
     std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
-  std::cout << "\n TOTAL solveDerivedPredicates took " << duration << " seconds" << std::endl;
   ASSERT_GT(state.getInstances().size(), 0);
   ASSERT_GT(state.getFunctions().size(), 0);
   ASSERT_GT(state.getPredicates().size(), 0);
@@ -1471,7 +1463,6 @@ TEST(utils, apply_with_derived)
   auto apply_duration =
     std::chrono::duration_cast<std::chrono::duration<double>>(apply_end_time - apply_start_time)
     .count();
-  std::cout << "plansys2::apply took " << apply_duration << " seconds" << std::endl;
   ASSERT_FALSE(
     state.getUnionPredicatesInferredPredicates().find(parser::pddl::fromStringPredicate(
       "(robot_at leia kitchen)")) != state.getUnionPredicatesInferredPredicates().end());
@@ -1508,7 +1499,6 @@ TEST(utils, apply_with_derived_2)
   auto end_time = std::chrono::steady_clock::now();
   auto duration =
     std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
-  std::cout << "solveDerivedPredicates took " << duration << " seconds" << std::endl;
 
   ASSERT_GT(state.getInstances().size(), 0);
   ASSERT_GT(state.getPredicates().size(), 0);
@@ -1608,7 +1598,6 @@ TEST(utils, apply_with_derived_suave_2)
   auto end_time = std::chrono::steady_clock::now();
   auto duration =
     std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
-  std::cout << "solveDerivedPredicates took " << duration << " seconds" << std::endl;
 
   ASSERT_GT(state.getInstances().size(), 0);
   ASSERT_GT(state.getPredicates().size(), 0);
@@ -1711,8 +1700,6 @@ TEST(utils, apply_with_derived_suave_2)
   ASSERT_TRUE(plansys2::apply(action_reconfig_follow->effects, state));
 
   ASSERT_TRUE(plansys2::check(action_reconfig_generate2->preconditions, state));
-  std::cout << "APLLYING reconfig f_generate_search_path fd_spiral_high fd_unground action"
-            << std::endl;
   ASSERT_TRUE(plansys2::apply(action_reconfig_generate2->effects, state));
 
   ASSERT_FALSE(state.hasInferredPredicate(
@@ -1723,7 +1710,6 @@ TEST(utils, apply_with_derived_suave_2)
     parser::pddl::fromStringPredicate("inferred-f_active f_follow_pipeline true_boolean")));
 
   ASSERT_TRUE(plansys2::check(action_inspect_pipeline->preconditions, state));
-  std::cout << "APLLYING inspect_pipeline action" << std::endl;
   ASSERT_TRUE(plansys2::apply(action_inspect_pipeline->effects, state));
 }
 
@@ -1749,7 +1735,6 @@ TEST(utils, apply_with_derived_suave_extended)
   auto end_time = std::chrono::steady_clock::now();
   auto duration =
     std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
-  std::cout << "solveDerivedPredicates took " << duration << " seconds" << std::endl;
 
   ASSERT_GT(state.getInstances().size(), 0);
   ASSERT_GT(state.getPredicates().size(), 0);
@@ -1907,8 +1892,6 @@ TEST(utils, apply_with_derived_suave_extended)
   ASSERT_TRUE(plansys2::apply(action_reconfig_follow->effects, state));
 
   ASSERT_TRUE(plansys2::check(action_reconfig_generate2->preconditions, state));
-  std::cout << "APLLYING reconfig f_generate_search_path fd_spiral_high fd_unground action"
-            << std::endl;
   ASSERT_TRUE(plansys2::apply(action_reconfig_generate2->effects, state));
 
   ASSERT_FALSE(state.hasInferredPredicate(
@@ -1921,7 +1904,6 @@ TEST(utils, apply_with_derived_suave_extended)
     parser::pddl::fromStringPredicate("inferred-f_active generate_recharge_path true_boolean")));
 
   ASSERT_TRUE(plansys2::check(action_inspect_pipeline->preconditions, state));
-  std::cout << "APLLYING inspect_pipeline action" << std::endl;
   ASSERT_TRUE(plansys2::apply(action_inspect_pipeline->effects, state));
 }
 
