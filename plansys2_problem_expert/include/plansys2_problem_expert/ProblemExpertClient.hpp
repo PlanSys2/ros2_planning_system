@@ -17,6 +17,7 @@
 
 #include <optional>
 #include <string>
+#include <tuple>
 #include <unordered_set>
 #include <vector>
 
@@ -134,7 +135,7 @@ public:
    * @return true if the predicate was successfully removed, false otherwise.
    */
   bool removePredicate(const plansys2::Predicate & predicate);
-  
+
   /**
    * @brief Remove multiple predicates from the problem.
    *
@@ -142,7 +143,7 @@ public:
    * @return true if the predicates were successfully removed, false otherwise.
    */
   bool removePredicates(const std::vector<plansys2::Predicate> & predicates);
-  
+
   /**
    * @brief Update predicates in the problem.
    *
@@ -151,7 +152,7 @@ public:
    * @return true if the predicates were successfully updated, false otherwise.
    */
   bool updatePredicates(
-    const std::vector<plansys2::Predicate> & add_predicates, 
+    const std::vector<plansys2::Predicate> & add_predicates,
     const std::vector<plansys2::Predicate> & remove_predicates);
 
   /**

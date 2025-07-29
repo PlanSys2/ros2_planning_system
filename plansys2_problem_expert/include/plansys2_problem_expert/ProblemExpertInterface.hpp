@@ -80,7 +80,7 @@ public:
    *
    * @return std::unordered_set<plansys2::Predicate> Set containing all predicates in the problem.
    */
-  virtual std::unordered_set<plansys2::Predicate>  getPredicates() = 0;
+  virtual std::unordered_set<plansys2::Predicate> getPredicates() = 0;
 
   /**
    * @brief Get all inferred predicates in the problem.
@@ -129,7 +129,7 @@ public:
    * @return true if the predicates were successfully updated, false otherwise.
    */
   virtual bool updatePredicates(
-    const std::vector<plansys2::Predicate> & add_predicates, 
+    const std::vector<plansys2::Predicate> & add_predicates,
     const std::vector<plansys2::Predicate> & remove_predicates) = 0;
 
   /**

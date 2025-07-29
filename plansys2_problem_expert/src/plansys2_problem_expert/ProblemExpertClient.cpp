@@ -39,8 +39,8 @@ ProblemExpertClient::ProblemExpertClient()
     node_->create_client<plansys2_msgs::srv::AffectNode>("problem_expert/add_problem_predicate");
   add_problem_predicates_client_ =
     node_->create_client<plansys2_msgs::srv::AffectNodes>("problem_expert/add_problem_predicates");
-  update_problem_predicates_client_ =
-    node_->create_client<plansys2_msgs::srv::UpdateNodes>("problem_expert/update_problem_predicates");
+  update_problem_predicates_client_ = node_->create_client<plansys2_msgs::srv::UpdateNodes>(
+    "problem_expert/update_problem_predicates");
   add_problem_function_client_ =
     node_->create_client<plansys2_msgs::srv::AffectNode>("problem_expert/add_problem_function");
   get_problem_goal_client_ =
@@ -72,8 +72,8 @@ ProblemExpertClient::ProblemExpertClient()
     node_->create_client<plansys2_msgs::srv::AffectParam>("problem_expert/remove_problem_instance");
   remove_problem_predicate_client_ =
     node_->create_client<plansys2_msgs::srv::AffectNode>("problem_expert/remove_problem_predicate");
-  remove_problem_predicates_client_ =
-    node_->create_client<plansys2_msgs::srv::AffectNodes>("problem_expert/remove_problem_predicates");
+  remove_problem_predicates_client_ = node_->create_client<plansys2_msgs::srv::AffectNodes>(
+    "problem_expert/remove_problem_predicates");
   remove_problem_function_client_ =
     node_->create_client<plansys2_msgs::srv::AffectNode>("problem_expert/remove_problem_function");
   exist_problem_predicate_client_ =
@@ -87,17 +87,14 @@ ProblemExpertClient::ProblemExpertClient()
     "problem_expert/is_problem_goal_satisfied");
 
   problem_sub_ = node_->create_subscription<plansys2_msgs::msg::Problem>(
-    "problem_expert/problem",
-    rclcpp::QoS(100), [this](plansys2_msgs::msg::Problem::SharedPtr msg) {
+    "problem_expert/problem", rclcpp::QoS(100), [this](plansys2_msgs::msg::Problem::SharedPtr msg) {
       cached_problem_ = msg->problem;
       problem_ts_ = msg->stamp;
     });
 
   update_problem_sub_ = node_->create_subscription<std_msgs::msg::Empty>(
     "problem_expert/update_notify", 100,
-    [this](std_msgs::msg::Empty::SharedPtr msg){
-      update_time_ = this->node_->now();
-    });
+    [this](std_msgs::msg::Empty::SharedPtr msg) {update_time_ = this->node_->now();});
 
   problem_ts_ = node_->now();
 }
@@ -459,7 +456,7 @@ bool ProblemExpertClient::removePredicate(const plansys2::Predicate & predicate)
   }
 }
 
-bool ProblemExpertClient::removePredicates(const std::vector<plansys2::Predicate>& predicates)
+bool ProblemExpertClient::removePredicates(const std::vector<plansys2::Predicate> & predicates)
 {
   while (!remove_problem_predicates_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
@@ -496,7 +493,7 @@ bool ProblemExpertClient::removePredicates(const std::vector<plansys2::Predicate
 }
 
 bool ProblemExpertClient::updatePredicates(
-  const std::vector<plansys2::Predicate> & add_predicates, 
+  const std::vector<plansys2::Predicate> & add_predicates,
   const std::vector<plansys2::Predicate> & remove_predicates)
 {
   while (!update_problem_predicates_client_->wait_for_service(std::chrono::seconds(5))) {
@@ -510,7 +507,8 @@ bool ProblemExpertClient::updatePredicates(
 
   auto request = std::make_shared<plansys2_msgs::srv::UpdateNodes::Request>();
   request->add_nodes = convertVector<plansys2_msgs::msg::Node, plansys2::Predicate>(add_predicates);
-  request->remove_nodes = convertVector<plansys2_msgs::msg::Node, plansys2::Predicate>(remove_predicates);
+  request->remove_nodes =
+    convertVector<plansys2_msgs::msg::Node, plansys2::Predicate>(remove_predicates);
 
   auto future_result = update_problem_predicates_client_->async_send_request(request);
 
@@ -983,14 +981,12 @@ bool ProblemExpertClient::clearKnowledge()
   }
 }
 
-std::tuple<std::string, rclcpp::Time>
-ProblemExpertClient::getProblemWithTimestamp(bool use_cache)
+std::tuple<std::string, rclcpp::Time> ProblemExpertClient::getProblemWithTimestamp(bool use_cache)
 {
   return {getProblem(use_cache), problem_ts_};
 }
 
-std::string
-ProblemExpertClient::getProblem(bool use_cache)
+std::string ProblemExpertClient::getProblem(bool use_cache)
 {
   if (use_cache && cached_problem_ != "") {
     return cached_problem_;
@@ -999,8 +995,7 @@ ProblemExpertClient::getProblem(bool use_cache)
   }
 }
 
-std::string
-ProblemExpertClient::getProblem()
+std::string ProblemExpertClient::getProblem()
 {
   while (!get_problem_client_->wait_for_service(std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {

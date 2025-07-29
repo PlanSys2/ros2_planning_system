@@ -60,30 +60,26 @@ std::tuple<bool, std::vector<std::map<std::string, std::string>>> negateResult(
   const std::unordered_set<plansys2::Instance> & instances);
 
 std::vector<plansys2_msgs::msg::Param> get_node_children_free_parameters(
-  const plansys2_msgs::msg::Tree & tree,
-  const plansys2_msgs::msg::Node & current_node);
+  const plansys2_msgs::msg::Tree & tree, const plansys2_msgs::msg::Node & current_node);
 void get_node_children_free_parameters_impl(
-  const plansys2_msgs::msg::Tree& tree,
-  const plansys2_msgs::msg::Node& current_node,
-  std::vector<plansys2_msgs::msg::Param>& params,
-  std::unordered_set<std::string>& seen,
-  std::unordered_set<std::string>& exists_params);
+  const plansys2_msgs::msg::Tree & tree, const plansys2_msgs::msg::Node & current_node,
+  std::vector<plansys2_msgs::msg::Param> & params, std::unordered_set<std::string> & seen,
+  std::unordered_set<std::string> & exists_params);
 
-std::vector<plansys2_msgs::msg::Param> get_node_free_parameters(const plansys2_msgs::msg::Node & node);
+std::vector<plansys2_msgs::msg::Param> get_node_free_parameters(
+  const plansys2_msgs::msg::Node & node);
 void get_node_free_parameters_impl(
-  const plansys2_msgs::msg::Node& node,
-  std::vector<plansys2_msgs::msg::Param>& params,
-  std::unordered_set<std::string>& seen);
+  const plansys2_msgs::msg::Node & node, std::vector<plansys2_msgs::msg::Param> & params,
+  std::unordered_set<std::string> & seen);
 
 void solveDerivedPredicates(
   plansys2::State & state, const std::vector<plansys2_msgs::msg::Node> & root_nodes);
 
 void solveDerivedPredicates(plansys2::State & state);
 bool evaluateSCC(
-  const std::vector<Derived>& scc,
-  plansys2::State& state,
-  const std::vector<plansys2_msgs::msg::Node>& root_nodes,
-  std::unordered_set<plansys2::Derived>& unground_cache);
+  const std::vector<Derived> & scc, plansys2::State & state,
+  const std::vector<plansys2_msgs::msg::Node> & root_nodes,
+  std::unordered_set<plansys2::Derived> & unground_cache);
 
 void groundPredicate(
   plansys2::State & new_state, const plansys2::Derived & derived,

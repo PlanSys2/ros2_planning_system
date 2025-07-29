@@ -152,8 +152,7 @@ std::tuple<bool, std::vector<std::map<std::string, std::string>>> negateResult(
   const std::unordered_set<plansys2::Instance> & instances)
 {
   std::vector<plansys2_msgs::msg::Param> params = get_node_free_parameters(node);
-  return negateResult(
-    params, result, param_dict_vector, instances);
+  return negateResult(params, result, param_dict_vector, instances);
 }
 
 std::tuple<bool, std::vector<std::map<std::string, std::string>>> negateResult(
@@ -172,23 +171,23 @@ std::tuple<bool, std::vector<std::map<std::string, std::string>>> negateResult(
     std::move(complement_param_dict_vector)};
 }
 
-std::vector<plansys2_msgs::msg::Param> get_node_free_parameters(const plansys2_msgs::msg::Node& node)
+std::vector<plansys2_msgs::msg::Param> get_node_free_parameters(
+  const plansys2_msgs::msg::Node & node)
 {
-    std::vector<plansys2_msgs::msg::Param> params;
-    std::unordered_set<std::string> seen;
-    get_node_free_parameters_impl(node, params, seen);
-    return params;
+  std::vector<plansys2_msgs::msg::Param> params;
+  std::unordered_set<std::string> seen;
+  get_node_free_parameters_impl(node, params, seen);
+  return params;
 }
 
 void get_node_free_parameters_impl(
-  const plansys2_msgs::msg::Node& node,
-  std::vector<plansys2_msgs::msg::Param>& params,
-  std::unordered_set<std::string>& seen)
+  const plansys2_msgs::msg::Node & node, std::vector<plansys2_msgs::msg::Param> & params,
+  std::unordered_set<std::string> & seen)
 {
   // std::vector<plansys2_msgs::msg::Param> params;
   // std::unordered_set<std::string> seen;
 
-  for (const auto& param : node.parameters) {
+  for (const auto & param : node.parameters) {
     if (!param.name.empty() && param.name.front() == '?') {
       if (seen.insert(param.name).second) {
         params.push_back(param);
@@ -199,8 +198,7 @@ void get_node_free_parameters_impl(
 }
 
 std::vector<plansys2_msgs::msg::Param> get_node_children_free_parameters(
-  const plansys2_msgs::msg::Tree& tree,
-  const plansys2_msgs::msg::Node& current_node)
+  const plansys2_msgs::msg::Tree & tree, const plansys2_msgs::msg::Node & current_node)
 {
   std::vector<plansys2_msgs::msg::Param> params;
   std::unordered_set<std::string> seen;
@@ -210,31 +208,26 @@ std::vector<plansys2_msgs::msg::Param> get_node_children_free_parameters(
 }
 
 void get_node_children_free_parameters_impl(
-  const plansys2_msgs::msg::Tree& tree,
-  const plansys2_msgs::msg::Node& current_node,
-  std::vector<plansys2_msgs::msg::Param>& params,
-  std::unordered_set<std::string>& seen,
-  std::unordered_set<std::string>& exists_params)
+  const plansys2_msgs::msg::Tree & tree, const plansys2_msgs::msg::Node & current_node,
+  std::vector<plansys2_msgs::msg::Param> & params, std::unordered_set<std::string> & seen,
+  std::unordered_set<std::string> & exists_params)
 {
   auto current_node_params = get_node_free_parameters(current_node);
-  if(current_node.node_type == plansys2_msgs::msg::Node::EXISTS) {
+  if (current_node.node_type == plansys2_msgs::msg::Node::EXISTS) {
     for (const auto & param : current_node_params) {
       exists_params.insert(param.name);
     }
   }
 
-  if(current_node.node_type != plansys2_msgs::msg::Node::EXISTS)
-  {
+  if (current_node.node_type != plansys2_msgs::msg::Node::EXISTS) {
     for (const auto & param : current_node_params) {
-      if (seen.insert(param.name).second &&
-          exists_params.find(param.name) == exists_params.end()) {
+      if (seen.insert(param.name).second && exists_params.find(param.name) == exists_params.end()) {
         params.push_back(param);
       }
     }
   }
 
-  for (const auto & child_id : current_node.children)
-  {
+  for (const auto & child_id : current_node.children) {
     get_node_children_free_parameters_impl(tree, tree.nodes[child_id], params, seen, exists_params);
   }
 }
@@ -292,23 +285,23 @@ std::vector<std::map<std::string, std::string>> mergeParamsValuesVector(
   thread_locals.resize(n_threads);
   thread_signatures.resize(n_threads);
 
-  auto map_to_string = [](const std::map<std::string, std::string>& m) {
-    std::ostringstream oss;
-    for (const auto& [k, v] : m) {
+  auto map_to_string = [](const std::map<std::string, std::string> & m) {
+      std::ostringstream oss;
+      for (const auto & [k, v] : m) {
         oss << k << '=' << v << ';';
-    }
-    return oss.str();
-  };
+      }
+      return oss.str();
+    };
 
 #pragma omp parallel
   {
     int tid = omp_get_thread_num();
-    auto& local_vec = thread_locals[tid];
-    auto& local_sig = thread_signatures[tid];
+    auto & local_vec = thread_locals[tid];
+    auto & local_sig = thread_signatures[tid];
 
-    #pragma omp for schedule(dynamic) nowait
+#pragma omp for schedule(dynamic) nowait
     for (size_t i = 0; i < vector1.size(); ++i) {
-      for (const auto& dict2 : vector2) {
+      for (const auto & dict2 : vector2) {
         std::map<std::string, std::string> dict3;
         mergeParamsValuesDicts(vector1[i], dict2, dict3);
         if (!dict3.empty()) {
@@ -324,11 +317,11 @@ std::vector<std::map<std::string, std::string>> mergeParamsValuesVector(
   // Merge thread-local results, keeping global uniqueness and vector output
   std::vector<std::map<std::string, std::string>> result;
   std::unordered_set<std::string> global_signatures;
-  for (const auto& local_vec : thread_locals) {
-    for (const auto& dict : local_vec) {
+  for (const auto & local_vec : thread_locals) {
+    for (const auto & dict : local_vec) {
       std::string sig = map_to_string(dict);
       if (global_signatures.insert(sig).second) {
-        result.push_back(dict); // Keep order of first occurrence
+        result.push_back(dict);  // Keep order of first occurrence
       }
     }
   }
@@ -342,8 +335,8 @@ void solveDerivedPredicates(plansys2::State & state)
 }
 
 void solveDerivedPredicates(
-  plansys2::State& state,
-  const std::vector<plansys2_msgs::msg::Node>& root_nodes) {
+  plansys2::State & state, const std::vector<plansys2_msgs::msg::Node> & root_nodes)
+{
   if (root_nodes.empty()) {
     state.resetInferredPredicates();
   }
@@ -351,7 +344,7 @@ void solveDerivedPredicates(
   std::unordered_set<plansys2::Derived> derived_ungrounded_cache;
   auto sccs = state.getDerivedPredicatesSCCs(root_nodes);
 
-  for (const auto& scc : sccs) {
+  for (const auto & scc : sccs) {
     if (scc.size() == 1) {  // Acyclic SCC
       evaluateSCC(scc, state, root_nodes, derived_ungrounded_cache);
     } else {  // Cyclic SCC
@@ -365,15 +358,13 @@ void solveDerivedPredicates(
 }
 
 bool evaluateSCC(
-  const std::vector<Derived>& scc,
-  plansys2::State& state,
-  const std::vector<plansys2_msgs::msg::Node>& root_nodes,
-  std::unordered_set<plansys2::Derived>& unground_cache) 
+  const std::vector<Derived> & scc, plansys2::State & state,
+  const std::vector<plansys2_msgs::msg::Node> & root_nodes,
+  std::unordered_set<plansys2::Derived> & unground_cache)
 {
   bool changed_flag = false;
-  for (const auto& derived : scc) {
-    if (!root_nodes.empty() &&
-        unground_cache.find(derived) == unground_cache.end()) {
+  for (const auto & derived : scc) {
+    if (!root_nodes.empty() && unground_cache.find(derived) == unground_cache.end()) {
       auto derived_removed = state.ungroundDerivedPredicate(derived);
       unground_cache.insert(derived);
       unground_cache.insert(derived_removed.begin(), derived_removed.end());
@@ -405,11 +396,12 @@ void groundPredicate(
 
   size_t n_threads = omp_get_max_threads();
   std::vector<std::unordered_set<Predicate>> thread_local_pred_sets(n_threads);
-  for (auto& v : thread_local_pred_sets)
+  for (auto & v : thread_local_pred_sets) {
     v.reserve(params_values_size / n_threads);
+  }
 
   std::vector<std::string> param_keys(num_params);
-  for (size_t i = 0; i < num_params; ++i){
+  for (size_t i = 0; i < num_params; ++i) {
     param_keys[i] = "?" + std::to_string(i);
   }
 
@@ -447,10 +439,10 @@ void groundPredicate(
       thread_local_pred_sets[omp_get_thread_num()].emplace(std::move(new_predicate));
     }
   }
-  
-  for (auto& pred_vec : thread_local_pred_sets) {
-    for (auto& pred : pred_vec) {
-        state.addInferredPredicate(derived, std::move(pred));
+
+  for (auto & pred_vec : thread_local_pred_sets) {
+    for (auto & pred : pred_vec) {
+      state.addInferredPredicate(derived, std::move(pred));
     }
   }
 }
@@ -471,9 +463,8 @@ std::tuple<bool, bool, double, std::vector<std::map<std::string, std::string>>> 
         std::vector<std::map<std::string, std::string>> param_values;
         std::vector<plansys2_msgs::msg::Param> child_nodes_free_params;
         std::unordered_set<std::string> existing_child_nodes_free_params;
-        
+
         for (const auto & child_id : current_node.children) {
-          // TODO: get node params to be used in the get complementParamsValuesVector when negated
           auto [child_success, child_value, _, child_param_values] =
             evaluate(tree, state, child_id, false);
 
@@ -483,12 +474,14 @@ std::tuple<bool, bool, double, std::vector<std::map<std::string, std::string>>> 
             return {success, static_cast<bool>(negate ^ truth_value), 0, {}};
             break;
           }
-          
+
           if (negate) {
             auto child_node = tree.nodes[child_id];
             auto child_free_params = get_node_free_parameters(child_node);
-            for (const auto& p : child_free_params) {
-              if (existing_child_nodes_free_params.insert(p.name).second) { // Only insert if not already present
+            for (const auto & p : child_free_params) {
+              if (existing_child_nodes_free_params.insert(p.name)
+                .second)      // Only insert if not already present
+              {
                 child_nodes_free_params.push_back(p);
               }
             }
@@ -526,12 +519,14 @@ std::tuple<bool, bool, double, std::vector<std::map<std::string, std::string>>> 
           truth_value = truth_value || child_value;
           param_values.insert(
             param_values.end(), child_param_values.begin(), child_param_values.end());
-          
+
           if (negate) {
             auto child_node = tree.nodes[child_id];
             auto child_free_params = get_node_free_parameters(child_node);
-            for (const auto& p : child_free_params) {
-              if (existing_child_nodes_free_params.insert(p.name).second) { // Only insert if not already present
+            for (const auto & p : child_free_params) {
+              if (existing_child_nodes_free_params.insert(p.name)
+                .second)      // Only insert if not already present
+              {
                 child_nodes_free_params.push_back(p);
               }
             }
@@ -553,7 +548,8 @@ std::tuple<bool, bool, double, std::vector<std::map<std::string, std::string>>> 
         bool value = true;
         std::vector<std::map<std::string, std::string>> param_values;
 
-        std::tie(value, param_values) = unifyPredicate(current_node, state.getUnionPredicatesInferredPredicates());
+        std::tie(value, param_values) =
+          unifyPredicate(current_node, state.getUnionPredicatesInferredPredicates());
         if (negate) {
           std::tie(value, param_values) =
             negateResult(current_node, value, param_values, state.getInstances());
@@ -771,13 +767,13 @@ std::tuple<bool, bool, double, std::vector<std::map<std::string, std::string>>> 
       }
 
     case plansys2_msgs::msg::Node::EXISTS: {
-        auto [success, truth_value, _, param_values] = 
+        auto [success, truth_value, _, param_values] =
           evaluate(tree, state, current_node.children[0], false);
         auto free_params = get_node_children_free_parameters(tree, current_node);
-        
+
         // 1. Convert free_params to a set of allowed names
         std::unordered_set<std::string> free_param_names;
-        for (const auto& param : free_params) {
+        for (const auto & param : free_params) {
           free_param_names.insert(param.name);
         }
 

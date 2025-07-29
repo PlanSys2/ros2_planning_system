@@ -135,7 +135,7 @@ public:
    * @return true if the predicates were successfully updated, false otherwise.
    */
   bool updatePredicates(
-    const std::vector<plansys2::Predicate> & add_predicates, 
+    const std::vector<plansys2::Predicate> & add_predicates,
     const std::vector<plansys2::Predicate> & remove_predicates);
 
   /**
@@ -323,10 +323,9 @@ private:
     const plansys2_msgs::msg::Tree & tree, std::shared_ptr<DomainExpert> & domain_expert_,
     uint8_t node_id = 0);
 
-  
   void removeInvalidPredicates(const plansys2::Instance & instance);
   void removeInvalidFunctions(const plansys2::Instance & instance);
-  
+
   /**
    * @brief Remove predicates that reference a specific instance.
    *
@@ -334,8 +333,7 @@ private:
    * @param[in] instance The instance to check for references.
    */
   void removeInvalidPredicates(
-    std::vector<plansys2::Predicate> & predicates,
-    const plansys2::Instance & instance);
+    std::vector<plansys2::Predicate> & predicates, const plansys2::Instance & instance);
 
   /**
    * @brief Remove functions that reference a specific instance.
@@ -344,8 +342,7 @@ private:
    * @param[in] instance The instance to check for references.
    */
   void removeInvalidFunctions(
-    std::vector<plansys2::Function> & functions,
-    const plansys2::Instance & instance);
+    std::vector<plansys2::Function> & functions, const plansys2::Instance & instance);
 
   /**
    * @brief Remove goals that reference a specific instance.

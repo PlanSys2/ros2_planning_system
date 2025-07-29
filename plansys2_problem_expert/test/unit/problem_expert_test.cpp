@@ -100,9 +100,9 @@ TEST(problem_expert, add_functions)
   ASSERT_EQ(
     problem_expert.getProblem(),
     std::string("( define ( problem problem_1 )\n( :domain simple )\n") +
-    std::string("( :objects\n\tbedroom - room\n\tkitchen - room_with_teleporter\n)\n") +
-    std::string("( :init\n\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n)\n") +
-    std::string("( :goal\n\t( and\n\t))\n)\n"));
+      std::string("( :objects\n\tbedroom - room\n\tkitchen - room_with_teleporter\n)\n") +
+      std::string("( :init\n\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n)\n") +
+      std::string("( :goal\n\t( and\n\t))\n)\n"));
 
   plansys2_msgs::msg::Node function_2;
   function_2.node_type = plansys2_msgs::msg::Node::FUNCTION;
@@ -124,10 +124,10 @@ TEST(problem_expert, add_functions)
   ASSERT_EQ(
     problem_expert.getProblem(),
     std::string("( define ( problem problem_1 )\n( :domain simple )\n") +
-    std::string("( :objects\n\tbedroom - room\n\tkitchen - room_with_teleporter\n)\n") +
-    std::string("( :init\n\t( = ( room_distance kitchen bedroom ) 2.3400000000 )\n") +
-    std::string("\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n)\n") +
-    std::string("( :goal\n\t( and\n\t))\n)\n"));
+      std::string("( :objects\n\tbedroom - room\n\tkitchen - room_with_teleporter\n)\n") +
+      std::string("( :init\n\t( = ( room_distance kitchen bedroom ) 2.3400000000 )\n") +
+      std::string("\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n)\n") +
+      std::string("( :goal\n\t( and\n\t))\n)\n"));
 
   function_2.value = 3.45;
 
@@ -136,10 +136,10 @@ TEST(problem_expert, add_functions)
   ASSERT_EQ(
     problem_expert.getProblem(),
     std::string("( define ( problem problem_1 )\n( :domain simple )\n") +
-    std::string("( :objects\n\tbedroom - room\n\tkitchen - room_with_teleporter\n)\n") +
-    std::string("( :init\n\t( = ( room_distance kitchen bedroom ) 3.4500000000 )\n") +
-    std::string("\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n)\n") +
-    std::string("( :goal\n\t( and\n\t))\n)\n"));
+      std::string("( :objects\n\tbedroom - room\n\tkitchen - room_with_teleporter\n)\n") +
+      std::string("( :init\n\t( = ( room_distance kitchen bedroom ) 3.4500000000 )\n") +
+      std::string("\t( = ( room_distance bedroom kitchen ) 1.2300000000 )\n)\n") +
+      std::string("( :goal\n\t( and\n\t))\n)\n"));
 
   plansys2_msgs::msg::Node function_3;
   function_3.node_type = plansys2_msgs::msg::Node::FUNCTION;
@@ -152,9 +152,8 @@ TEST(problem_expert, add_functions)
 
   ASSERT_FALSE(problem_expert.removeFunction(function_3));
 
-  ASSERT_TRUE(
-    problem_expert.removeInstance(
-      parser::pddl::fromStringParam("kitchen", "room_with_teleporter")));
+  ASSERT_TRUE(problem_expert.removeInstance(
+    parser::pddl::fromStringParam("kitchen", "room_with_teleporter")));
 }
 
 TEST(problem_expert, addget_predicates)
@@ -285,36 +284,31 @@ TEST(problem_expert, addget_predicates)
 
   ASSERT_TRUE(problem_expert.addPredicate(predicate_8));
 
-  ASSERT_TRUE(
-    problem_expert.removeInstance(
-      parser::pddl::fromStringParam("bathroom", "room_with_teleporter")));
-  
+  ASSERT_TRUE(problem_expert.removeInstance(
+    parser::pddl::fromStringParam("bathroom", "room_with_teleporter")));
+
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("linus", "person")));
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("hallway", "room")));
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("office", "room")));
-  
+
   std::vector<plansys2::Predicate> predicates1;
   predicates1.push_back(parser::pddl::fromStringPredicate("(person_at linus hallway)"));
   predicates1.push_back(parser::pddl::fromStringPredicate("(person_at linus office)"));
-  
+
   ASSERT_TRUE(problem_expert.addPredicates(predicates1));
-  
+
   ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("stallman", "person")));
 
   std::vector<plansys2::Predicate> predicates2;
   predicates2.push_back(parser::pddl::fromStringPredicate("(person_at stallman hallway)"));
   predicates2.push_back(parser::pddl::fromStringPredicate("(person_at stallman office)"));
-  
+
   ASSERT_TRUE(problem_expert.updatePredicates(predicates2, predicates1));
 
-  ASSERT_FALSE(
-    problem_expert.existPredicate(predicates1[0]));
-  ASSERT_FALSE(
-    problem_expert.existPredicate(predicates1[1]));
-  ASSERT_TRUE(
-    problem_expert.existPredicate(predicates2[0]));
-  ASSERT_TRUE(
-    problem_expert.existPredicate(predicates2[1]));
+  ASSERT_FALSE(problem_expert.existPredicate(predicates1[0]));
+  ASSERT_FALSE(problem_expert.existPredicate(predicates1[1]));
+  ASSERT_TRUE(problem_expert.existPredicate(predicates2[0]));
+  ASSERT_TRUE(problem_expert.existPredicate(predicates2[1]));
 }
 
 TEST(problem_expert, addget_functions)
@@ -513,13 +507,13 @@ TEST(problem_expert, get_problem)
   ASSERT_EQ(
     problem_expert.getProblem(),
     std::string("( define ( problem problem_1 )\n( :domain simple )\n") +
-    std::string("( :objects\n\tpaco - person\n\tr2d2 - robot\n") +
-    std::string("\tkitchen bedroom - room\n)\n") +
-    std::string("( :init\n\t( person_at paco kitchen )\n") +
-    std::string("\t( person_at paco bedroom )\n") + std::string("\t( robot_at r2d2 kitchen )\n") +
-    std::string("\t( robot_at r2d2 bedroom )\n)\n") +
-    std::string("( :goal\n\t( and\n\t\t( robot_at r2d2 bedroom )\n\t\t") +
-    std::string("( person_at paco kitchen )\n\t))\n)\n"));
+      std::string("( :objects\n\tpaco - person\n\tr2d2 - robot\n") +
+      std::string("\tkitchen bedroom - room\n)\n") +
+      std::string("( :init\n\t( person_at paco kitchen )\n") +
+      std::string("\t( person_at paco bedroom )\n") + std::string("\t( robot_at r2d2 kitchen )\n") +
+      std::string("\t( robot_at r2d2 bedroom )\n)\n") +
+      std::string("( :goal\n\t( and\n\t\t( robot_at r2d2 bedroom )\n\t\t") +
+      std::string("( person_at paco kitchen )\n\t))\n)\n"));
 
   ASSERT_TRUE(problem_expert.clearKnowledge());
   ASSERT_EQ(problem_expert.getPredicates().size(), 0);
@@ -598,13 +592,13 @@ TEST(problem_expert, add_problem)
   ASSERT_EQ(
     problem_expert.getProblem(),
     std::string("( define ( problem problem_1 )\n") +
-    std::string("( :domain simple )\n( :objects\n") + std::string("\talice jack - person\n") +
-    std::string("\tm1 - message\n") + std::string("\tleia - robot\n") +
-    std::string("\tbedroom kitchen - room\n)\n") +
-    std::string("( :init\n\t( person_at jack bedroom )\n") +
-    std::string("\t( robot_at leia kitchen )\n") +
-    std::string("\t( = ( room_distance kitchen bedroom ) 10.0000000000 )\n)\n") +
-    std::string("( :goal\n\t( and\n\t\t( robot_talk leia m1 jack )\n\t))\n)\n"));
+      std::string("( :domain simple )\n( :objects\n") + std::string("\talice jack - person\n") +
+      std::string("\tm1 - message\n") + std::string("\tleia - robot\n") +
+      std::string("\tbedroom kitchen - room\n)\n") +
+      std::string("( :init\n\t( person_at jack bedroom )\n") +
+      std::string("\t( robot_at leia kitchen )\n") +
+      std::string("\t( = ( room_distance kitchen bedroom ) 10.0000000000 )\n)\n") +
+      std::string("( :goal\n\t( and\n\t\t( robot_talk leia m1 jack )\n\t))\n)\n"));
 
   ASSERT_TRUE(problem_expert.clearKnowledge());
   ASSERT_EQ(problem_expert.getPredicates().size(), 0);
@@ -659,10 +653,10 @@ TEST(problem_expert, add_problem_with_constants)
   ASSERT_EQ(
     problem_expert.getProblem(),
     std::string("( define ( problem problem_1 )\n( :domain plansys2 )\n") +
-    std::string("( :objects\n\tm1 - message\n\tbedroom kitchen - room\n)\n") +
-    std::string("( :init\n\t( person_at jack bedroom )\n") +
-    std::string("\t( robot_at leia kitchen )\n)\n") +
-    std::string("( :goal\n\t( and\n\t\t( robot_talk leia m1 jack )\n\t))\n)\n"));
+      std::string("( :objects\n\tm1 - message\n\tbedroom kitchen - room\n)\n") +
+      std::string("( :init\n\t( person_at jack bedroom )\n") +
+      std::string("\t( robot_at leia kitchen )\n)\n") +
+      std::string("( :goal\n\t( and\n\t\t( robot_talk leia m1 jack )\n\t))\n)\n"));
 
   ASSERT_TRUE(problem_expert.clearKnowledge());
   ASSERT_EQ(problem_expert.getPredicates().size(), 0);
@@ -671,7 +665,7 @@ TEST(problem_expert, add_problem_with_constants)
   ASSERT_EQ(
     problem_expert.getProblem(),
     std::string("( define ( problem problem_1 )\n( :domain plansys2 )\n") +
-    std::string("( :objects\n)\n( :init\n)\n( :goal\n\t( and\n\t))\n)\n"));
+      std::string("( :objects\n)\n( :init\n)\n( :goal\n\t( and\n\t))\n)\n"));
 
   std::ifstream problem_2_ifs(pkgpath + "/pddl/problem_simple_constants_2.pddl");
   std::string problem_2_str(
@@ -735,31 +729,25 @@ TEST(problem_expert, exist_predicate)
   problem_expert.updateInferredPredicates();
   ASSERT_TRUE(
     problem_expert.existPredicate(parser::pddl::fromStringPredicate("(robot_at leia kitchen)")));
-  ASSERT_TRUE(
-    problem_expert.existInferredPredicate(
-      parser::pddl::fromStringPredicate("(inferred-robot_at leia kitchen)")));
+  ASSERT_TRUE(problem_expert.existInferredPredicate(
+    parser::pddl::fromStringPredicate("(inferred-robot_at leia kitchen)")));
   ASSERT_TRUE(
     problem_expert.existPredicate(parser::pddl::fromStringPredicate("(person_at jack bedroom)")));
-  ASSERT_TRUE(
-    problem_expert.existInferredPredicate(
-      parser::pddl::fromStringPredicate("(inferred-person_at jack bedroom)")));
-  ASSERT_FALSE(
-    problem_expert.existInferredPredicate(
-      parser::pddl::fromStringPredicate("(inferred-person_at jack kitchen)")));
-  ASSERT_FALSE(
-    problem_expert.existInferredPredicate(
-      parser::pddl::fromStringPredicate("(inferred-robot_at leia bedroom)")));
+  ASSERT_TRUE(problem_expert.existInferredPredicate(
+    parser::pddl::fromStringPredicate("(inferred-person_at jack bedroom)")));
+  ASSERT_FALSE(problem_expert.existInferredPredicate(
+    parser::pddl::fromStringPredicate("(inferred-person_at jack kitchen)")));
+  ASSERT_FALSE(problem_expert.existInferredPredicate(
+    parser::pddl::fromStringPredicate("(inferred-robot_at leia bedroom)")));
 
   problem_expert.removePredicate(parser::pddl::fromStringPredicate("(robot_at leia kitchen)"));
   problem_expert.removePredicate(parser::pddl::fromStringPredicate("(person_at jack bedroom)"));
   problem_expert.updateInferredPredicates();
 
-  ASSERT_FALSE(
-    problem_expert.existInferredPredicate(
-      parser::pddl::fromStringPredicate("(inferred-person_at jack bedroom)")));
-  ASSERT_FALSE(
-    problem_expert.existInferredPredicate(
-      parser::pddl::fromStringPredicate("(inferred-robot_at leia kitchen)")));
+  ASSERT_FALSE(problem_expert.existInferredPredicate(
+    parser::pddl::fromStringPredicate("(inferred-person_at jack bedroom)")));
+  ASSERT_FALSE(problem_expert.existInferredPredicate(
+    parser::pddl::fromStringPredicate("(inferred-robot_at leia kitchen)")));
   ASSERT_FALSE(
     problem_expert.existPredicate(parser::pddl::fromStringPredicate("(person_at jack bedroom)")));
   ASSERT_FALSE(
@@ -788,24 +776,21 @@ TEST(problem_expert, get_predicate_with_derived)
     predicates.end());
 
   ASSERT_FALSE(
-    predicates.find(
-      parser::pddl::fromStringPredicate(
-        "(inferred-exists-another-drone-at-drone_area drone123)")) != predicates.end());
+    predicates.find(parser::pddl::fromStringPredicate(
+      "(inferred-exists-another-drone-at-drone_area drone123)")) != predicates.end());
 
   ASSERT_TRUE(
     predicates.find(parser::pddl::fromStringPredicate("(inferred-person_at jack bedroom)")) !=
     predicates.end());
 
   ASSERT_TRUE(
-    predicates.find(
-      parser::pddl::fromStringPredicate(
-        "(inferred-party jose jose jose jose jose turtlebot turtlebot livingroom)")) !=
+    predicates.find(parser::pddl::fromStringPredicate(
+      "(inferred-party jose jose jose jose jose turtlebot turtlebot livingroom)")) !=
     predicates.end());
 
   ASSERT_TRUE(
-    predicates.find(
-      parser::pddl::fromStringPredicate(
-        "(inferred-exists-party-in-room livingroom)")) != predicates.end());
+    predicates.find(parser::pddl::fromStringPredicate(
+      "(inferred-exists-party-in-room livingroom)")) != predicates.end());
 
   ASSERT_TRUE(
     predicates.find(parser::pddl::fromStringPredicate("(inferred-aerial rob1)")) !=

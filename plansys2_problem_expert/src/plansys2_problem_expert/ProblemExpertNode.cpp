@@ -71,13 +71,13 @@ ProblemExpertNode::ProblemExpertNode()
     std::bind(
       &ProblemExpertNode::add_problem_predicate_service_callback, this, std::placeholders::_1,
       std::placeholders::_2, std::placeholders::_3));
-  
+
   add_problem_predicates_service_ = create_service<plansys2_msgs::srv::AffectNodes>(
     "problem_expert/add_problem_predicates",
     std::bind(
       &ProblemExpertNode::add_problem_predicates_service_callback, this, std::placeholders::_1,
       std::placeholders::_2, std::placeholders::_3));
-  
+
   update_problem_predicates_service_ = create_service<plansys2_msgs::srv::UpdateNodes>(
     "problem_expert/update_problem_predicates",
     std::bind(
@@ -211,13 +211,11 @@ ProblemExpertNode::ProblemExpertNode()
       &ProblemExpertNode::update_problem_function_service_callback, this, std::placeholders::_1,
       std::placeholders::_2, std::placeholders::_3));
 
-  problem_pub_ = create_publisher<plansys2_msgs::msg::Problem>(
-    "problem_expert/problem",
-    rclcpp::QoS(100));
+  problem_pub_ =
+    create_publisher<plansys2_msgs::msg::Problem>("problem_expert/problem", rclcpp::QoS(100));
 
-  update_pub_ = create_publisher<std_msgs::msg::Empty>(
-    "problem_expert/update_notify",
-    rclcpp::QoS(100));
+  update_pub_ =
+    create_publisher<std_msgs::msg::Empty>("problem_expert/update_notify", rclcpp::QoS(100));
 
   knowledge_pub_ = create_publisher<plansys2_msgs::msg::Knowledge>(
     "problem_expert/knowledge", rclcpp::QoS(100).transient_local());
@@ -424,8 +422,7 @@ void ProblemExpertNode::add_problem_predicates_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = problem_expert_->addPredicates(
-      convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(request->nodes)
-    );
+      convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(request->nodes));
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
       knowledge_pub_->publish(*get_knowledge_as_msg());
@@ -448,8 +445,7 @@ void ProblemExpertNode::update_problem_predicates_service_callback(
   } else {
     response->success &= problem_expert_->updatePredicates(
       convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(request->add_nodes),
-      convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(request->remove_nodes)
-    );
+      convertVector<plansys2::Predicate, plansys2_msgs::msg::Node>(request->remove_nodes));
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
       knowledge_pub_->publish(*get_knowledge_as_msg());

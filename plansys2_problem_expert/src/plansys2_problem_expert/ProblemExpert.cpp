@@ -122,7 +122,7 @@ bool ProblemExpert::addPredicate(const plansys2::Predicate & predicate)
 bool ProblemExpert::addPredicates(const std::vector<plansys2::Predicate> & predicates)
 {
   bool result = true;
-  for(const auto & predicate: predicates) {
+  for (const auto & predicate : predicates) {
     result &= addPredicate(predicate);
   }
   return result;
@@ -139,14 +139,14 @@ bool ProblemExpert::removePredicate(const plansys2::Predicate & predicate)
 bool ProblemExpert::removePredicates(const std::vector<plansys2::Predicate> & predicates)
 {
   bool result = true;
-  for(const auto & predicate: predicates) {
+  for (const auto & predicate : predicates) {
     result &= removePredicate(predicate);
   }
   return result;
 }
 
 bool ProblemExpert::updatePredicates(
-  const std::vector<plansys2::Predicate> & add_predicates, 
+  const std::vector<plansys2::Predicate> & add_predicates,
   const std::vector<plansys2::Predicate> & remove_predicates)
 {
   return removePredicates(remove_predicates) && addPredicates(add_predicates);
