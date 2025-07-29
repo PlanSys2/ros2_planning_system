@@ -527,7 +527,23 @@ TEST(planner_expert, generate_plan_with_domain_constants)
     std::istreambuf_iterator<char>());
 
   ASSERT_TRUE(problem_client->addProblem(problem_1_str));
-  ASSERT_EQ(problem_client->getProblem(), problem_1_str);
+  const std::string expected_str =
+    "( define ( problem problem_1 )\n"
+    "( :domain plansys2 )\n"
+    "( :objects\n"
+    "\tm1 - message\n"
+    "\tbedroom kitchen - room\n"
+    ")\n"
+    "( :init\n"
+    "\t( person_at jack bedroom )\n"
+    "\t( robot_at leia kitchen )\n"
+    ")\n"
+    "( :goal\n"
+    "\t( and\n"
+    "\t\t( robot_talk leia m1 jack )\n"
+    "\t))\n"
+    ")\n";
+  ASSERT_EQ(problem_client->getProblem(), expected_str);
 
   auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
   ASSERT_TRUE(plan);
