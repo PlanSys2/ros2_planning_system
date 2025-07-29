@@ -12,6 +12,7 @@ find_package(plansys2_problem_expert REQUIRED)
 find_package(plansys2_popf_plan_solver REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
+find_package(OpenMP REQUIRED)
 
 set(PLANNER_SOURCES
   src/plansys2_planner/PlannerClient.cpp
@@ -33,6 +34,7 @@ target_link_libraries(${PROJECT_NAME}
   pluginlib::pluginlib
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
+  OpenMP::OpenMP_CXX
   PRIVATE
   plansys2_popf_plan_solver::plansys2_popf_plan_solver
 )
