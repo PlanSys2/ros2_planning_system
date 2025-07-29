@@ -34,8 +34,8 @@
 #include "plansys2_executor/BTBuilder.hpp"
 #include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
-#include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
+#include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
@@ -47,7 +47,6 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
-
 class ValidateDomainNode : public rclcpp::Node
 {
 public:
@@ -55,15 +54,16 @@ public:
   : Node("validate_domain_server")
   {
     service_ = this->create_service<plansys2_msgs::srv::ValidateDomain>(
-      "planner/validate_domain",
-      std::bind(&ValidateDomainNode::handle_validate_domain, this, std::placeholders::_1, std::placeholders::_2));
-    
+      "planner/validate_domain", std::bind(
+        &ValidateDomainNode::handle_validate_domain, this,
+        std::placeholders::_1, std::placeholders::_2));
+
     RCLCPP_INFO(this->get_logger(), "Service 'planner/validate_domain' is ready.");
   }
 
 private:
   void handle_validate_domain(
-    const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Request> /* request */,
+    const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Request>/* request */,
     std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Response> response)
   {
     response->success = true;
@@ -132,13 +132,17 @@ TEST(bt_node_test_suave, suave_bt_execution_test)
     plansys2::get_action_name("(start_robot bluerov)"),
     plansys2::get_action_params("(start_robot bluerov)"));
 
-  (*action_map)["(reconfigure1 f_maintain_motion fd_all_thrusters):0"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(reconfigure1 f_maintain_motion fd_all_thrusters):0"].action_info = domain_client->getAction(
+  (*action_map)["(reconfigure1 f_maintain_motion fd_all_thrusters):0"] =
+    plansys2::ActionExecutionInfo();
+  (*action_map)["(reconfigure1 f_maintain_motion fd_all_thrusters):0"].action_info =
+    domain_client->getAction(
     plansys2::get_action_name("(reconfigure1 f_maintain_motion fd_all_thrusters)"),
     plansys2::get_action_params("(reconfigure1 f_maintain_motion fd_all_thrusters)"));
 
-  (*action_map)["(reconfigure1 f_generate_search_path fd_spiral_high):0"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(reconfigure1 f_generate_search_path fd_spiral_high):0"].action_info = domain_client->getAction(
+  (*action_map)["(reconfigure1 f_generate_search_path fd_spiral_high):0"] =
+    plansys2::ActionExecutionInfo();
+  (*action_map)["(reconfigure1 f_generate_search_path fd_spiral_high):0"].action_info =
+    domain_client->getAction(
     plansys2::get_action_name("(reconfigure1 f_generate_search_path fd_spiral_high)"),
     plansys2::get_action_params("(reconfigure1 f_generate_search_path fd_spiral_high)"));
 
@@ -147,15 +151,20 @@ TEST(bt_node_test_suave, suave_bt_execution_test)
     plansys2::get_action_name("(search_pipeline pipeline bluerov)"),
     plansys2::get_action_params("(search_pipeline pipeline bluerov)"));
 
-  (*action_map)["(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"].action_info = domain_client->getAction(
+  (*action_map)["(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"] =
+    plansys2::ActionExecutionInfo();
+  (*action_map)["(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"].action_info =
+    domain_client->getAction(
     plansys2::get_action_name("(reconfigure1 f_follow_pipeline fd_follow_pipeline)"),
     plansys2::get_action_params("(reconfigure1 f_follow_pipeline fd_follow_pipeline)"));
 
-  (*action_map)["(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"] = plansys2::ActionExecutionInfo();
-  (*action_map)["(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"].action_info = domain_client->getAction(
+  (*action_map)["(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"] =
+    plansys2::ActionExecutionInfo();
+  (*action_map)["(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"].action_info =
+    domain_client->getAction(
     plansys2::get_action_name("(reconfigure2 f_generate_search_path fd_spiral_high fd_unground)"),
-    plansys2::get_action_params("(reconfigure2 f_generate_search_path fd_spiral_high fd_unground)"));
+    plansys2::get_action_params(
+      "(reconfigure2 f_generate_search_path fd_spiral_high fd_unground)"));
 
   (*action_map)["(inspect_pipeline pipeline bluerov):0"] = plansys2::ActionExecutionInfo();
   (*action_map)["(inspect_pipeline pipeline bluerov):0"].action_info = domain_client->getAction(
@@ -163,11 +172,16 @@ TEST(bt_node_test_suave, suave_bt_execution_test)
     plansys2::get_action_params("(inspect_pipeline pipeline bluerov)"));
 
   ASSERT_FALSE((*action_map)["(start_robot bluerov):0"].action_info.is_empty());
-  ASSERT_FALSE((*action_map)["(reconfigure1 f_maintain_motion fd_all_thrusters):0"].action_info.is_empty());
-  ASSERT_FALSE((*action_map)["(reconfigure1 f_generate_search_path fd_spiral_high):0"].action_info.is_empty());
+  ASSERT_FALSE(
+    (*action_map)["(reconfigure1 f_maintain_motion fd_all_thrusters):0"].action_info.is_empty());
+  ASSERT_FALSE(
+    (*action_map)["(reconfigure1 f_generate_search_path fd_spiral_high):0"].action_info.is_empty());
   ASSERT_FALSE((*action_map)["(search_pipeline pipeline bluerov):0"].action_info.is_empty());
-  ASSERT_FALSE((*action_map)["(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"].action_info.is_empty());
-  ASSERT_FALSE((*action_map)["(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"].action_info.is_empty());
+  ASSERT_FALSE(
+    (*action_map)["(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"].action_info.is_empty());
+  ASSERT_FALSE(
+    (*action_map)["(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"]
+    .action_info.is_empty());
   ASSERT_FALSE((*action_map)["(inspect_pipeline pipeline bluerov):0"].action_info.is_empty());
 
   std::string bt_xml_tree =
@@ -212,23 +226,40 @@ TEST(bt_node_test_suave, suave_bt_execution_test)
     }
 
     auto state = problem_client->getState();
-    state.addActionsAndPruneDerived({(*action_map)["(search_pipeline pipeline bluerov):0"].action_info});
+    state.addActionsAndPruneDerived(
+      {(*action_map)["(search_pipeline pipeline bluerov):0"].action_info});
     plansys2::solveDerivedPredicates(state);
 
     ASSERT_TRUE(state.hasPredicate(plansys2::Predicate("(robot_started bluerov)")));
-    ASSERT_TRUE(state.hasPredicate(plansys2::Predicate("(functiongrounding f_maintain_motion fd_all_thrusters)")));
-    ASSERT_TRUE(state.hasPredicate(plansys2::Predicate("(functiongrounding f_generate_search_path fd_spiral_high)")));
+    ASSERT_TRUE(
+      state.hasPredicate(
+        plansys2::Predicate("(functiongrounding f_maintain_motion fd_all_thrusters)")));
+    ASSERT_TRUE(
+      state.hasPredicate(
+        plansys2::Predicate("(functiongrounding f_generate_search_path fd_spiral_high)")));
 
     ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(robot_started bluerov)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-functiongrounding f_maintain_motion fd_all_thrusters)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-functiongrounding f_generate_search_path fd_spiral_high)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_generate_search_path true_boolean)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_maintain_motion true_boolean)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-functiongrounding f_maintain_motion fd_all_thrusters)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-functiongrounding f_generate_search_path fd_spiral_high)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-f_active f_generate_search_path true_boolean)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-f_active f_maintain_motion true_boolean)")));
 
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_all_thrusters false_boolean)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_spiral_high false_boolean)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_follow_pipeline)")));
-
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-fd_realisability fd_all_thrusters false_boolean)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-fd_realisability fd_spiral_high false_boolean)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_follow_pipeline)")));
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
@@ -263,28 +294,45 @@ TEST(bt_node_test_suave, suave_bt_execution_test)
     }
 
     auto state = problem_client->getState();
-    state.addActionsAndPruneDerived({(*action_map)["(search_pipeline pipeline bluerov):0"].action_info});
+    state.addActionsAndPruneDerived(
+      {(*action_map)["(search_pipeline pipeline bluerov):0"].action_info});
     plansys2::solveDerivedPredicates(state);
 
     ASSERT_TRUE(state.hasPredicate(plansys2::Predicate("(robot_started bluerov)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_maintain_motion fd_unground)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_maintain_motion fd_all_thrusters)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_generate_search_path fd_unground)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_generate_search_path fd_spiral_high)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(functiongrounding f_maintain_motion fd_unground)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(functiongrounding f_maintain_motion fd_all_thrusters)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(functiongrounding f_generate_search_path fd_unground)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(functiongrounding f_generate_search_path fd_spiral_high)")));
 
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_generate_search_path true_boolean)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_maintain_motion true_boolean)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-f_active f_generate_search_path true_boolean)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-f_active f_maintain_motion true_boolean)")));
 
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_all_thrusters false_boolean)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_spiral_high false_boolean)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_follow_pipeline true_boolean)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-fd_realisability fd_all_thrusters false_boolean)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-fd_realisability fd_spiral_high false_boolean)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-f_active f_follow_pipeline true_boolean)")));
 
     ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(pipeline_found pipeline)")));
-
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
-
 
   bt_xml_tree =
     R"(
@@ -314,26 +362,48 @@ TEST(bt_node_test_suave, suave_bt_execution_test)
     }
 
     auto state = problem_client->getState();
-    state.addActionsAndPruneDerived({(*action_map)["(inspect_pipeline pipeline bluerov):0"].action_info});
+    state.addActionsAndPruneDerived(
+      {(*action_map)["(inspect_pipeline pipeline bluerov):0"].action_info});
     plansys2::solveDerivedPredicates(state);
 
     ASSERT_TRUE(state.hasPredicate(plansys2::Predicate("(robot_started bluerov)")));
-    ASSERT_TRUE(state.hasPredicate(plansys2::Predicate("(functiongrounding f_generate_search_path fd_unground)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_generate_search_path fd_unground)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_maintain_motion fd_unground)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_maintain_motion fd_all_thrusters)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_follow_pipeline fd_follow_pipeline)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_follow_pipeline fd_unground)")));
+    ASSERT_TRUE(
+      state.hasPredicate(
+        plansys2::Predicate("(functiongrounding f_generate_search_path fd_unground)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(functiongrounding f_generate_search_path fd_unground)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(functiongrounding f_maintain_motion fd_unground)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(functiongrounding f_maintain_motion fd_all_thrusters)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(functiongrounding f_follow_pipeline fd_follow_pipeline)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(functiongrounding f_follow_pipeline fd_unground)")));
 
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_follow_pipeline true_boolean)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_maintain_motion true_boolean)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-f_active f_follow_pipeline true_boolean)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-f_active f_maintain_motion true_boolean)")));
 
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_all_thrusters false_boolean)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_follow_pipeline false_boolean)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_generate_search_path true_boolean)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-fd_realisability fd_all_thrusters false_boolean)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-fd_realisability fd_follow_pipeline false_boolean)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-f_active f_generate_search_path true_boolean)")));
 
     ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(pipeline_found pipeline)")));
-
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
@@ -368,29 +438,45 @@ TEST(bt_node_test_suave, suave_bt_execution_test)
     }
 
     auto state = problem_client->getState();
-    state.addActionsAndPruneDerived({(*action_map)["(inspect_pipeline pipeline bluerov):0"].action_info});
+    state.addActionsAndPruneDerived(
+      {(*action_map)["(inspect_pipeline pipeline bluerov):0"].action_info});
     plansys2::solveDerivedPredicates(state);
 
     ASSERT_TRUE(state.hasPredicate(plansys2::Predicate("(robot_started bluerov)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_generate_search_path fd_unground)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_maintain_motion fd_unground)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_maintain_motion fd_all_thrusters)")));
-    ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_follow_pipeline fd_follow_pipeline)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(functiongrounding f_follow_pipeline fd_unground)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(functiongrounding f_generate_search_path fd_unground)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(functiongrounding f_maintain_motion fd_unground)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(functiongrounding f_maintain_motion fd_all_thrusters)")));
+    ASSERT_TRUE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(functiongrounding f_follow_pipeline fd_follow_pipeline)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(functiongrounding f_follow_pipeline fd_unground)")));
 
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_all_thrusters false_boolean)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-fd_realisability fd_follow_pipeline false_boolean)")));
-    ASSERT_FALSE(state.hasInferredPredicate(plansys2::Predicate("(inferred-f_active f_generate_search_path true_boolean)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-fd_realisability fd_all_thrusters false_boolean)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-fd_realisability fd_follow_pipeline false_boolean)")));
+    ASSERT_FALSE(
+      state.hasInferredPredicate(
+        plansys2::Predicate("(inferred-f_active f_generate_search_path true_boolean)")));
 
     ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(pipeline_found pipeline)")));
     ASSERT_TRUE(state.hasInferredPredicate(plansys2::Predicate("(pipeline_inspected pipeline)")));
-
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
 
-finish = true;
-t.join();
+  finish = true;
+  t.join();
 }
 
 int main(int argc, char ** argv)

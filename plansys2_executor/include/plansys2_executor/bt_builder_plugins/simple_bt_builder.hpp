@@ -21,6 +21,7 @@
 #include <set>
 #include <list>
 #include <map>
+#include <unordered_map>
 #include <utility>
 #include <tuple>
 
@@ -204,9 +205,9 @@ protected:
   void prune_forward(ActionNode::Ptr current, std::list<ActionNode::Ptr> & used_nodes);
 
   void get_state_recursive(
-    const ActionNode::Ptr& node,
-    std::list<ActionNode::Ptr>& used_nodes,
-    plansys2::State& state);
+    const ActionNode::Ptr & node,
+    std::list<ActionNode::Ptr> & used_nodes,
+    plansys2::State & state);
 
   /**
    * @brief Computes the state of the world at a node.
@@ -233,7 +234,7 @@ protected:
   bool is_action_executable(
     const ActionStamped & action,
     const plansys2::State & state) const;
-  
+
   std::vector<plansys2_msgs::msg::Tree> check_requirements(
     const std::vector<plansys2_msgs::msg::Tree> & requirements,
     std::shared_ptr<plansys2::ActionGraph> & graph,
@@ -329,9 +330,9 @@ protected:
     const std::list<ActionNode::Ptr> & ret);
 
   void apply_action_to_state(
-    const plansys2::ActionStamped & action, 
+    const plansys2::ActionStamped & action,
     plansys2::State & state);
-  
+
   /**
    * @brief Generates the behavior tree XML for a node and its descendants.
    *
