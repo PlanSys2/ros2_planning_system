@@ -12,48 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <vector>
-#include <regex>
-#include <iostream>
-#include <memory>
+#include <chrono>
 #include <fstream>
-#include <map>
-#include <set>
+#include <iostream>
 #include <list>
+#include <map>
+#include <memory>
+#include <regex>
+#include <set>
+#include <string>
 #include <tuple>
+#include <vector>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
-
-#include "plansys2_domain_expert/DomainExpertNode.hpp"
-#include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_executor/bt_builder_plugins/simple_bt_builder.hpp"
-#include "plansys2_problem_expert/ProblemExpertNode.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_planner/PlannerNode.hpp"
-#include "plansys2_planner/PlannerClient.hpp"
-#include "plansys2_problem_expert/Utils.hpp"
-
-#include "plansys2_executor/ActionExecutor.hpp"
-#include "plansys2_executor/ActionExecutorClient.hpp"
-#include "plansys2_executor/ExecutorNode.hpp"
-#include "plansys2_executor/ExecutorClient.hpp"
-
 #include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/utils/shared_library.h"
-#include "behaviortree_cpp/blackboard.h"
-
+#include "gtest/gtest.h"
+#include "lifecycle_msgs/msg/state.hpp"
+#include "plansys2_domain_expert/DomainExpertClient.hpp"
+#include "plansys2_domain_expert/DomainExpertNode.hpp"
+#include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/ActionExecutorClient.hpp"
+#include "plansys2_executor/ExecutorClient.hpp"
+#include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_action_node.hpp"
-
-#include "lifecycle_msgs/msg/state.hpp"
-
+#include "plansys2_executor/bt_builder_plugins/simple_bt_builder.hpp"
+#include "plansys2_planner/PlannerClient.hpp"
+#include "plansys2_planner/PlannerNode.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_problem_expert/ProblemExpertNode.hpp"
+#include "plansys2_problem_expert/Utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
-
-#include "gtest/gtest.h"
 
 class SimpleBTBuilderTest : public plansys2::SimpleBTBuilder
 {
@@ -63,34 +57,31 @@ public:
 
   std::string get_tree(const plansys2_msgs::msg::Plan & current_plan)
   {
-    return SimpleBTBuilder::get_tree(current_plan);
+    return plansys2::SimpleBTBuilder::get_tree(current_plan);
   }
 
-  std::vector<plansys2::ActionStamped> get_plan_actions(const plansys2_msgs::msg::Plan & plan)
+  std::vector<plansys2::ActionStamped> get_plan_actions(
+    const plansys2_msgs::msg::Plan & plan)
   {
-    return SimpleBTBuilder::get_plan_actions(plan);
+    return plansys2::SimpleBTBuilder::get_plan_actions(plan);
   }
 
   bool is_action_executable(
-    const plansys2::ActionStamped & action,
-    std::vector<plansys2::Predicate> & predicates,
-    std::vector<plansys2::Function> & functions) const
+    const plansys2::ActionStamped & action, const plansys2::State & state)
   {
-    return SimpleBTBuilder::is_action_executable(action, predicates, functions);
+    return plansys2::SimpleBTBuilder::is_action_executable(action, state);
   }
 
   plansys2::ActionGraph::Ptr get_graph(const plansys2_msgs::msg::Plan & current_plan)
   {
-    return SimpleBTBuilder::get_graph(current_plan);
+    return plansys2::SimpleBTBuilder::get_graph(current_plan);
   }
 
   std::list<plansys2::ActionNode::Ptr> get_roots(
     std::vector<plansys2::ActionStamped> & action_sequence,
-    std::vector<plansys2::Predicate> & predicates,
-    std::vector<plansys2::Function> & functions,
-    int & node_counter)
+    const plansys2::State & state, int & node_counter)
   {
-    return SimpleBTBuilder::get_roots(action_sequence, predicates, functions, node_counter);
+    return plansys2::SimpleBTBuilder::get_roots(action_sequence, state, node_counter);
   }
 
   plansys2::ActionNode::Ptr get_node_satisfy(
@@ -98,7 +89,7 @@ public:
     const plansys2::ActionGraph::Ptr & graph,
     const plansys2::ActionNode::Ptr & current)
   {
-    return SimpleBTBuilder::get_node_satisfy(requirement, graph, current);
+    return plansys2::SimpleBTBuilder::get_node_satisfy(requirement, graph, current);
   }
 
   plansys2::ActionNode::Ptr get_node_satisfy(
@@ -106,32 +97,52 @@ public:
     const plansys2::ActionNode::Ptr & node,
     const plansys2::ActionNode::Ptr & current)
   {
-    return SimpleBTBuilder::get_node_satisfy(requirement, node, current);
+    return plansys2::SimpleBTBuilder::get_node_satisfy(requirement, node, current);
   }
-
 
   void print_graph(const plansys2::ActionGraph::Ptr & graph) const
   {
-    SimpleBTBuilder::print_graph(graph);
+    plansys2::SimpleBTBuilder::print_graph(graph);
   }
 
   void print_graph_csv(const plansys2::ActionGraph::Ptr & graph) const
   {
-    SimpleBTBuilder::print_graph_csv(graph);
+    plansys2::SimpleBTBuilder::print_graph_csv(graph);
   }
 
   std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> get_graph_tabular(
     const plansys2::ActionGraph::Ptr & graph) const
   {
-    return SimpleBTBuilder::get_graph_tabular(graph);
+    return plansys2::SimpleBTBuilder::get_graph_tabular(graph);
   }
 
   void remove_existing_requirements(
-    std::vector<plansys2_msgs::msg::Tree> & requirements,
-    std::vector<plansys2::Predicate> & predicates,
-    std::vector<plansys2::Function> & functions) const
+    std::vector<plansys2_msgs::msg::Tree> & requirements, const plansys2::State & state)
   {
-    SimpleBTBuilder::remove_existing_requirements(requirements, predicates, functions);
+    plansys2::SimpleBTBuilder::remove_existing_requirements(requirements, state);
+  }
+};
+
+class TestPlannerNode : public rclcpp::Node
+{
+private:
+  rclcpp::Service<plansys2_msgs::srv::ValidateDomain>::SharedPtr validate_domain_service_ =
+    create_service<plansys2_msgs::srv::ValidateDomain>(
+    "planner/validate_domain",
+    std::bind(
+      &TestPlannerNode::validate_domain_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
+
+public:
+  TestPlannerNode()
+  : Node("test_planner_node") {}
+
+  void validate_domain_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Response> response)
+  {
+    response->success = true;
   }
 };
 
@@ -161,9 +172,10 @@ TEST(simple_btbuilder_tests, test_plan_1)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
+      while (!finish) {
+        exe.spin_some();
+      }
     });
-
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -199,18 +211,12 @@ TEST(simple_btbuilder_tests, test_plan_1)
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("chargingroom", "room")));
 
   std::vector<std::string> predicate_strings = {
-    "(connected entrance dinning)",
-    "(connected dinning entrance)",
-    "(connected dinning kitchen)",
-    "(connected kitchen dinning)",
-    "(connected dinning bedroom)",
-    "(connected bedroom dinning)",
-    "(connected bathroom bedroom)",
-    "(connected bedroom bathroom)",
-    "(connected chargingroom kitchen)",
-    "(connected kitchen chargingroom)",
-    "(charging_point_at chargingroom)",
-    "(battery_low leia)",
+    "(connected entrance dinning)", "(connected dinning entrance)",
+    "(connected dinning kitchen)", "(connected kitchen dinning)",
+    "(connected dinning bedroom)", "(connected bedroom dinning)",
+    "(connected bathroom bedroom)", "(connected bedroom bathroom)",
+    "(connected chargingroom kitchen)", "(connected kitchen chargingroom)",
+    "(charging_point_at chargingroom)", "(battery_low leia)",
     "(robot_at leia entrance)"};
 
   for (const auto & pred : predicate_strings) {
@@ -223,9 +229,7 @@ TEST(simple_btbuilder_tests, test_plan_1)
     domain_client->getDomain(true), problem_client->getProblem(true));
   ASSERT_TRUE(plan);
 
-
-  auto predicates = problem_client->getPredicates();
-  auto functions = problem_client->getFunctions();
+  auto state = problem_client->getState();
 
   auto action_sequence = btbuilder->get_plan_actions(plan.value());
 
@@ -249,135 +253,72 @@ TEST(simple_btbuilder_tests, test_plan_1)
   ASSERT_TRUE(action_0_predicates[0].negate);
 
   ASSERT_TRUE(
-    plansys2::check(
-      action_sequence[0].action.get_at_start_requirements(),
-      problem_client));
+    plansys2::check(action_sequence[0].action.get_at_start_requirements(), problem_client));
 
   ASSERT_FALSE(
-    plansys2::check(
-      action_sequence[1].action.get_at_start_requirements(),
-      problem_client));
+    plansys2::check(action_sequence[1].action.get_at_start_requirements(), problem_client));
   ASSERT_FALSE(
-    plansys2::check(
-      action_sequence[2].action.get_at_start_requirements(),
-      problem_client));
+    plansys2::check(action_sequence[2].action.get_at_start_requirements(), problem_client));
   ASSERT_FALSE(
-    plansys2::check(
-      action_sequence[3].action.get_at_start_requirements(),
-      problem_client));
+    plansys2::check(action_sequence[3].action.get_at_start_requirements(), problem_client));
   ASSERT_FALSE(
-    plansys2::check(
-      action_sequence[4].action.get_at_start_requirements(),
-      problem_client));
+    plansys2::check(action_sequence[4].action.get_at_start_requirements(), problem_client));
   ASSERT_FALSE(
-    plansys2::check(
-      action_sequence[5].action.get_at_start_requirements(),
-      problem_client));
+    plansys2::check(action_sequence[5].action.get_at_start_requirements(), problem_client));
 
-  ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[0], predicates, functions));
-  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[1], predicates, functions));
-  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[2], predicates, functions));
-  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[3], predicates, functions));
-  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[4], predicates, functions));
-  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[5], predicates, functions));
+  ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[0], state));
+  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[1], state));
+  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[2], state));
+  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[3], state));
+  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[4], state));
+  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[5], state));
 
-  EXPECT_TRUE(
-    std::find_if(
-      predicates.begin(), predicates.end(),
-      std::bind(
-        &parser::pddl::checkNodeEquality, std::placeholders::_1,
-        parser::pddl::fromStringPredicate("(robot_at leia entrance)"), true)) != predicates.end());
-  EXPECT_TRUE(
-    std::find_if(
-      predicates.begin(), predicates.end(),
-      std::bind(
-        &parser::pddl::checkNodeEquality, std::placeholders::_1,
-        parser::pddl::fromStringPredicate("(robot_at leia chargingroom)"), true)) ==
-        predicates.end());
+  ASSERT_TRUE(state.hasPredicate(parser::pddl::fromStringPredicate("(robot_at leia entrance)")));
+  ASSERT_FALSE(
+    state.hasPredicate(parser::pddl::fromStringPredicate("(robot_at leia chargingroom)")));
 
-  plansys2::apply(
-    action_sequence[0].action.get_at_start_effects(),
-    predicates, functions);
-  plansys2::apply(
-    action_sequence[0].action.get_at_end_effects(),
-    predicates, functions);
+  plansys2::apply(action_sequence[0].action.get_at_start_effects(), state);
+  plansys2::apply(action_sequence[0].action.get_at_end_effects(), state);
 
-  EXPECT_TRUE(
-    std::find_if(
-      predicates.begin(), predicates.end(),
-      std::bind(
-        &parser::pddl::checkNodeEquality, std::placeholders::_1,
-        parser::pddl::fromStringPredicate("(robot_at leia entrance)"), true)) ==
-        predicates.end());
-  EXPECT_TRUE(
-    std::find_if(
-      predicates.begin(), predicates.end(),
-      std::bind(
-        &parser::pddl::checkNodeEquality, std::placeholders::_1,
-        parser::pddl::fromStringPredicate("(robot_at leia chargingroom)"), true)) !=
-        predicates.end());
+  ASSERT_FALSE(state.hasPredicate(parser::pddl::fromStringPredicate("(robot_at leia entrance)")));
+  ASSERT_TRUE(
+    state.hasPredicate(parser::pddl::fromStringPredicate("(robot_at leia chargingroom)")));
 
-  ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[1], predicates, functions));
-  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[2], predicates, functions));
-  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[3], predicates, functions));
-  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[4], predicates, functions));
-  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[5], predicates, functions));
-  plansys2::apply(
-    action_sequence[1].action.get_at_start_effects(),
-    predicates, functions);
-  plansys2::apply(
-    action_sequence[1].action.get_at_end_effects(),
-    predicates, functions);
+  ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[1], state));
+  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[2], state));
+  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[3], state));
+  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[4], state));
+  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[5], state));
+  plansys2::apply(action_sequence[1].action.get_at_start_effects(), state);
+  plansys2::apply(action_sequence[1].action.get_at_end_effects(), state);
 
-  ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[2], predicates, functions));
-  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[3], predicates, functions));
-  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[4], predicates, functions));
-  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[5], predicates, functions));
-  plansys2::apply(
-    action_sequence[2].action.get_at_start_effects(),
-    predicates, functions);
-  plansys2::apply(
-    action_sequence[2].action.get_at_end_effects(),
-    predicates, functions);
+  ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[2], state));
+  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[3], state));
+  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[4], state));
+  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[5], state));
+  plansys2::apply(action_sequence[2].action.get_at_start_effects(), state);
+  plansys2::apply(action_sequence[2].action.get_at_end_effects(), state);
 
-  ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[3], predicates, functions));
-  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[4], predicates, functions));
-  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[5], predicates, functions));
-  plansys2::apply(
-    action_sequence[3].action.get_at_start_effects(),
-    predicates, functions);
-  plansys2::apply(
-    action_sequence[3].action.get_at_end_effects(),
-    predicates, functions);
+  ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[3], state));
+  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[4], state));
+  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[5], state));
+  plansys2::apply(action_sequence[3].action.get_at_start_effects(), state);
+  plansys2::apply(action_sequence[3].action.get_at_end_effects(), state);
 
-  ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[4], predicates, functions));
-  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[5], predicates, functions));
-  plansys2::apply(
-    action_sequence[4].action.get_at_start_effects(),
-    predicates, functions);
-  plansys2::apply(
-    action_sequence[4].action.get_at_end_effects(),
-    predicates, functions);
+  ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[4], state));
+  ASSERT_FALSE(btbuilder->is_action_executable(action_sequence[5], state));
+  plansys2::apply(action_sequence[4].action.get_at_start_effects(), state);
+  plansys2::apply(action_sequence[4].action.get_at_end_effects(), state);
 
-  ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[5], predicates, functions));
-  plansys2::apply(
-    action_sequence[5].action.get_at_start_effects(),
-    predicates, functions);
-  plansys2::apply(
-    action_sequence[5].action.get_at_end_effects(),
-    predicates, functions);
+  ASSERT_TRUE(btbuilder->is_action_executable(action_sequence[5], state));
+  plansys2::apply(action_sequence[5].action.get_at_start_effects(), state);
+  plansys2::apply(action_sequence[5].action.get_at_end_effects(), state);
 
-  EXPECT_TRUE(
-    std::find_if(
-      predicates.begin(), predicates.end(),
-      std::bind(
-        &parser::pddl::checkNodeEquality, std::placeholders::_1,
-        parser::pddl::fromStringPredicate("(robot_at leia bathroom)"), true)) != predicates.end());
+  ASSERT_TRUE(state.hasPredicate(parser::pddl::fromStringPredicate("(robot_at leia bathroom)")));
 
   finish = true;
   t.join();
 }
-
 
 TEST(simple_btbuilder_tests, test_plan_2)
 {
@@ -405,9 +346,10 @@ TEST(simple_btbuilder_tests, test_plan_2)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
+      while (!finish) {
+        exe.spin_some();
+      }
     });
-
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -494,19 +436,16 @@ TEST(simple_btbuilder_tests, test_plan_2)
     ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
-
   ASSERT_TRUE(
     problem_client->setGoal(
-      plansys2::Goal(
-        "(and(car_assembled car_1)(car_assembled car_2)(car_assembled car_3))")));
+      plansys2::Goal("(and(car_assembled car_1)(car_assembled car_2)(car_assembled car_3))")));
 
   auto plan = planner_client->getPlan(
     domain_client->getDomain(true), problem_client->getProblem(true));
 
   ASSERT_TRUE(plan);
 
-  auto predicates = problem_client->getPredicates();
-  auto functions = problem_client->getFunctions();
+  auto state = problem_client->getState();
 
   auto predicates_plus_one = predicate_strings;
   predicates_plus_one.push_back("(is_assembly_zone body_car_zone)");
@@ -514,63 +453,42 @@ TEST(simple_btbuilder_tests, test_plan_2)
 
   std::vector<plansys2_msgs::msg::Tree> check_predicates = parser::pddl::getSubtrees(tree);
 
-  btbuilder->remove_existing_requirements(check_predicates, predicates, functions);
+  btbuilder->remove_existing_requirements(check_predicates, state);
 
   ASSERT_EQ(check_predicates.size(), 1);
-  ASSERT_EQ(
-    parser::pddl::toString(check_predicates.front()), "(is_assembly_zone body_car_zone)");
+  ASSERT_EQ(parser::pddl::toString(check_predicates.front()), "(is_assembly_zone body_car_zone)");
 
-
-  ASSERT_EQ(problem_client->getPredicates().size(), predicates.size());
+  ASSERT_EQ(problem_client->getPredicates().size(), state.getPredicatesSize());
 
   auto action_sequence = btbuilder->get_plan_actions(plan.value());
 
   ASSERT_EQ(action_sequence.size(), 22u);
 
   int node_counter = 0;
-  auto roots = btbuilder->get_roots(action_sequence, predicates, functions, node_counter);
+  auto roots = btbuilder->get_roots(action_sequence, state, node_counter);
   ASSERT_EQ(roots.size(), 3u);
   // Apply roots actions
   for (auto & action_node : roots) {
-    plansys2::apply(
-      action_node->action.action.get_at_start_effects(),
-      predicates, functions);
-    plansys2::apply(
-      action_node->action.action.get_at_end_effects(),
-      predicates, functions);
+    plansys2::apply(action_node->action.action.get_at_start_effects(), state);
+    plansys2::apply(action_node->action.action.get_at_end_effects(), state);
   }
 
-  EXPECT_TRUE(
-    std::find_if(
-      predicates.begin(), predicates.end(),
-      std::bind(
-        &parser::pddl::checkNodeEquality, std::placeholders::_1,
-        parser::pddl::fromStringPredicate("(robot_at robot1 body_car_zone)"), true)) !=
-        predicates.end());
-  EXPECT_TRUE(
-    std::find_if(
-      predicates.begin(), predicates.end(),
-      std::bind(
-        &parser::pddl::checkNodeEquality, std::placeholders::_1,
-        parser::pddl::fromStringPredicate("(robot_at robot2 steering_wheels_zone)"), true)) !=
-        predicates.end());
-  EXPECT_TRUE(
-    std::find_if(
-      predicates.begin(), predicates.end(),
-      std::bind(
-        &parser::pddl::checkNodeEquality, std::placeholders::_1,
-        parser::pddl::fromStringPredicate("(robot_at robot3 wheels_zone)"), true)) !=
-        predicates.end());
+  ASSERT_TRUE(
+    state.hasPredicate(
+      parser::pddl::fromStringPredicate("(robot_at robot1 steering_wheels_zone)")));
+  ASSERT_TRUE(
+    state.hasPredicate(parser::pddl::fromStringPredicate("(robot_at robot2 wheels_zone)")));
+  ASSERT_TRUE(
+    state.hasPredicate(parser::pddl::fromStringPredicate("(robot_at robot3 body_car_zone)")));
 
   tree.nodes.clear();
   parser::pddl::fromString(
-    tree, "(robot_at robot1 body_car_zone)", false,
-    plansys2_msgs::msg::Node::AND);
+    tree, "(robot_at robot3 body_car_zone)", false, plansys2_msgs::msg::Node::AND);
   auto node_satisfy_1 = btbuilder->get_node_satisfy(tree, *roots.begin(), nullptr);
   EXPECT_TRUE(node_satisfy_1 != nullptr);
   ASSERT_EQ(node_satisfy_1->action.action.get_action_name(), "move");
   ASSERT_EQ(node_satisfy_1->action.action.get_action_params().size(), 3u);
-  ASSERT_EQ(node_satisfy_1->action.action.get_action_params()[0].name, "robot1");
+  ASSERT_EQ(node_satisfy_1->action.action.get_action_params()[0].name, "robot3");
   ASSERT_EQ(node_satisfy_1->action.action.get_action_params()[1].name, "assembly_zone");
   ASSERT_EQ(node_satisfy_1->action.action.get_action_params()[2].name, "body_car_zone");
 
@@ -615,9 +533,10 @@ TEST(simple_btbuilder_tests, test_plan_3)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
+      while (!finish) {
+        exe.spin_some();
+      }
     });
-
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -650,14 +569,8 @@ TEST(simple_btbuilder_tests, test_plan_3)
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("ro3", "room")));
 
   std::vector<std::string> predicates = {
-    "(connected ro1 ro2)",
-    "(connected ro2 ro1)",
-    "(connected ro1 ro3)",
-    "(connected ro3 ro1)",
-    "(connected ro2 ro3)",
-    "(connected ro3 ro2)",
-    "(robot_at leia ro1)",
-    "(battery_full leia)"};
+    "(connected ro1 ro2)", "(connected ro2 ro1)", "(connected ro1 ro3)", "(connected ro3 ro1)",
+    "(connected ro2 ro3)", "(connected ro3 ro2)", "(robot_at leia ro1)", "(battery_full leia)"};
 
   for (const auto & pred : predicates) {
     ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
@@ -665,8 +578,7 @@ TEST(simple_btbuilder_tests, test_plan_3)
 
   ASSERT_TRUE(
     problem_client->setGoal(
-      plansys2::Goal(
-        "(and (patrolled ro1) (patrolled ro2) (patrolled ro3))")));
+      plansys2::Goal("(and (patrolled ro1) (patrolled ro2) (patrolled ro3))")));
 
   auto plan = planner_client->getPlan(
     domain_client->getDomain(true), problem_client->getProblem(true));
@@ -707,9 +619,10 @@ TEST(simple_btbuilder_tests, test_plan_4)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
+      while (!finish) {
+        exe.spin_some();
+      }
     });
-
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -772,17 +685,14 @@ TEST(simple_btbuilder_tests, test_plan_4)
     "(robot_at r2d2 cooking_zone)",
     "(battery_full r2d2)",
     "(robot_at c3po cooking_zone)",
-    "(battery_full c3po)"
-  };
+    "(battery_full c3po)"};
 
   for (const auto & pred : predicates) {
     ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
   }
 
   ASSERT_TRUE(
-    problem_client->setGoal(
-      plansys2::Goal(
-        "(and (dish_prepared cake)(dish_prepared omelette))")));
+    problem_client->setGoal(plansys2::Goal("(and (dish_prepared cake)(dish_prepared omelette))")));
 
   auto plan = planner_client->getPlan(
     domain_client->getDomain(true), problem_client->getProblem(true));
@@ -826,7 +736,9 @@ TEST(simple_btbuilder_tests, test_plan_5)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
+      while (!finish) {
+        exe.spin_some();
+      }
     });
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -855,9 +767,8 @@ TEST(simple_btbuilder_tests, test_plan_5)
   }
 
   std::ifstream problem_ifs(pkgpath + "/pddl/road_trip_problem.pddl");
-  std::string problem_str((
-      std::istreambuf_iterator<char>(problem_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string problem_str(
+    (std::istreambuf_iterator<char>(problem_ifs)), std::istreambuf_iterator<char>());
   ASSERT_TRUE(problem_client->addProblem(problem_str));
 
   auto plan = planner_client->getPlan(
@@ -940,7 +851,9 @@ TEST(simple_btbuilder_tests, test_plan_6)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
+      while (!finish) {
+        exe.spin_some();
+      }
     });
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -969,9 +882,8 @@ TEST(simple_btbuilder_tests, test_plan_6)
   }
 
   std::ifstream problem_ifs(pkgpath + "/pddl/elevator_problem.pddl");
-  std::string problem_str((
-      std::istreambuf_iterator<char>(problem_ifs)),
-    std::istreambuf_iterator<char>());
+  std::string problem_str(
+    (std::istreambuf_iterator<char>(problem_ifs)), std::istreambuf_iterator<char>());
   ASSERT_TRUE(problem_client->addProblem(problem_str));
 
   auto plan = planner_client->getPlan(
@@ -1027,7 +939,6 @@ TEST(simple_btbuilder_tests, test_plan_6)
   finish = true;
   t.join();
 }
-
 
 int main(int argc, char ** argv)
 {

@@ -12,34 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <regex>
 #include <string>
 #include <vector>
-#include <regex>
-#include <iostream>
-#include <memory>
-#include <fstream>
-#include <map>
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
-
-#include "plansys2_domain_expert/DomainExpertNode.hpp"
-#include "plansys2_domain_expert/DomainExpertClient.hpp"
-#include "plansys2_problem_expert/ProblemExpertNode.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
-#include "plansys2_planner/PlannerNode.hpp"
-#include "plansys2_planner/PlannerClient.hpp"
-#include "plansys2_executor/BTBuilder.hpp"
-
-#include "plansys2_executor/ActionExecutor.hpp"
-#include "plansys2_executor/ActionExecutorClient.hpp"
-#include "plansys2_problem_expert/Utils.hpp"
-#include "plansys2_pddl_parser/Utils.hpp"
-
 #include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/blackboard.h"
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/utils/shared_library.h"
-#include "behaviortree_cpp/blackboard.h"
-
+#include "gtest/gtest.h"
+#include "lifecycle_msgs/msg/state.hpp"
+#include "plansys2_domain_expert/DomainExpertClient.hpp"
+#include "plansys2_domain_expert/DomainExpertNode.hpp"
+#include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/ActionExecutorClient.hpp"
+#include "plansys2_executor/BTBuilder.hpp"
+#include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
+#include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
+#include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
+#include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_action_node.hpp"
 #include "plansys2_executor/behavior_tree/wait_atstart_req_node.hpp"
@@ -51,12 +47,15 @@
 
 #include "lifecycle_msgs/msg/state.hpp"
 
+#include "plansys2_pddl_parser/Utils.hpp"
+#include "plansys2_planner/PlannerClient.hpp"
+#include "plansys2_planner/PlannerNode.hpp"
+#include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_problem_expert/ProblemExpertNode.hpp"
+#include "plansys2_problem_expert/Utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
-
-#include "gtest/gtest.h"
-
 
 TEST(problem_expert, wait_overall_req_test)
 {
@@ -80,9 +79,10 @@ TEST(problem_expert, wait_overall_req_test)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
+      while (!finish) {
+        exe.spin_some();
+      }
     });
-
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -137,15 +137,13 @@ TEST(problem_expert, wait_overall_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::CheckOverAllReq>("CheckOverAllReq");
 
-
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
 
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
   std::vector<std::string> predicates = {
-    "(robot_available robot1)",
-    "(robot_at robot1 wheels_zone)"};
+    "(robot_available robot1)", "(robot_at robot1 wheels_zone)"};
 
   try {
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
@@ -193,9 +191,10 @@ TEST(problem_expert, wait_atstart_req_test)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
+      while (!finish) {
+        exe.spin_some();
+      }
     });
-
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -250,15 +249,13 @@ TEST(problem_expert, wait_atstart_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::WaitAtStartReq>("WaitAtStartReq");
 
-
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
 
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
   std::vector<std::string> predicates = {
-    "(robot_available robot1)",
-    "(robot_at robot1 wheels_zone)"};
+    "(robot_available robot1)", "(robot_at robot1 wheels_zone)"};
 
   try {
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
@@ -270,7 +267,6 @@ TEST(problem_expert, wait_atstart_req_test)
     ASSERT_EQ(status, BT::NodeStatus::RUNNING);
     status = tree.tickOnce();
     ASSERT_EQ(status, BT::NodeStatus::RUNNING);
-
 
     for (const auto & pred : predicates) {
       ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
@@ -308,9 +304,10 @@ TEST(problem_expert, wait_atend_req_test)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
+      while (!finish) {
+        exe.spin_some();
+      }
     });
-
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -365,15 +362,13 @@ TEST(problem_expert, wait_atend_req_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::CheckAtEndReq>("CheckAtEndReq");
 
-
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
 
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
   std::vector<std::string> predicates = {
-    "(robot_available robot1)",
-    "(robot_at robot1 wheels_zone)"};
+    "(robot_available robot1)", "(robot_at robot1 wheels_zone)"};
 
   try {
     auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
@@ -421,9 +416,10 @@ TEST(problem_expert, at_start_effect_test)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
+      while (!finish) {
+        exe.spin_some();
+      }
     });
-
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -478,7 +474,6 @@ TEST(problem_expert, at_start_effect_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtStartEffect>("ApplyAtStartEffect");
 
-
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
 
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
@@ -486,8 +481,7 @@ TEST(problem_expert, at_start_effect_test)
 
   try {
     std::vector<std::string> predicates = {
-      "(robot_available robot1)",
-      "(robot_at robot1 wheels_zone)"};
+      "(robot_available robot1)", "(robot_at robot1 wheels_zone)"};
 
     for (const auto & pred : predicates) {
       ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
@@ -506,9 +500,7 @@ TEST(problem_expert, at_start_effect_test)
       }
     }
     ASSERT_FALSE(
-      problem_client->existPredicate(
-        plansys2::Predicate(
-          "(robot_at robot1 wheels_zone)")));
+      problem_client->existPredicate(plansys2::Predicate("(robot_at robot1 wheels_zone)")));
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }
@@ -659,9 +651,10 @@ TEST(problem_expert, at_end_effect_test)
 
   bool finish = false;
   std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
+      while (!finish) {
+        exe.spin_some();
+      }
     });
-
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -716,15 +709,13 @@ TEST(problem_expert, at_end_effect_test)
   factory.registerNodeType<plansys2::ExecuteAction>("ExecuteAction");
   factory.registerNodeType<plansys2::ApplyAtEndEffect>("ApplyAtEndEffect");
 
-
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
 
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("assembly_zone", "zone")));
 
   try {
-    std::vector<std::string> predicates = {
-      "(robot_at robot1 wheels_zone)"};
+    std::vector<std::string> predicates = {"(robot_at robot1 wheels_zone)"};
 
     for (const auto & pred : predicates) {
       ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(pred)));
@@ -744,9 +735,7 @@ TEST(problem_expert, at_end_effect_test)
     }
 
     ASSERT_TRUE(
-      problem_client->existPredicate(
-        plansys2::Predicate(
-          "(robot_at robot1 assembly_zone)")));
+      problem_client->existPredicate(plansys2::Predicate("(robot_at robot1 assembly_zone)")));
   } catch (std::exception & e) {
     std::cerr << e.what() << std::endl;
   }

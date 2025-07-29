@@ -19,7 +19,7 @@ target_link_libraries(execution_tree_test
   ${PROJECT_NAME}
 )
 
-ament_add_gtest(simple_btbuilder_tests simple_btbuilder_tests.cpp)
+ament_add_gtest(simple_btbuilder_tests simple_btbuilder_tests.cpp TIMEOUT 1200)
 target_compile_definitions(simple_btbuilder_tests
   PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 target_link_libraries(simple_btbuilder_tests
@@ -48,3 +48,8 @@ target_compile_definitions(bt_node_test_charging
 target_link_libraries(bt_node_test_charging
   ${PROJECT_NAME}
 )
+
+ament_add_gtest(bt_node_test_suave bt_node_test_suave.cpp)
+target_compile_definitions(bt_node_test_suave
+  PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(bt_node_test_suave ${PROJECT_NAME})
