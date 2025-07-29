@@ -315,6 +315,19 @@ public:
     return functions_.find(std::move(function));
   }
 
+  bool updateFunctionValue(const plansys2::Function & function, const double & value)
+  {
+    auto func_it = functions_.find(function);
+    if (func_it != functions_.end())
+    {
+      plansys2::Function updated_func = *func_it;
+      removeFunction(func_it);
+      updated_func.value = value;
+      return addFunction(updated_func);
+    }
+    return false;
+  }
+
   void setDerivedPredicates(const plansys2::DerivedResolutionGraph derived_predicates)
   {
     derived_predicates_ = derived_predicates;
