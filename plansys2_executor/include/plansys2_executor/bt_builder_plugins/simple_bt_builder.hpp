@@ -35,6 +35,29 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 
+namespace std
+{
+template<typename T1, typename T2>
+struct hash<std::pair<T1, T2>>
+{
+  std::size_t operator()(const std::pair<T1, T2> & p) const
+  {
+    std::size_t seed = 0;
+    hash_combine(seed, p.first);
+    hash_combine(seed, p.second);
+    return seed;
+  }
+
+private:
+  // Hash combine function
+  template<typename T>
+  inline void hash_combine(std::size_t & seed, const T & value) const
+  {
+    seed ^= std::hash<T>{}(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+  }
+};
+}  // namespace std
+
 namespace plansys2
 {
 
@@ -53,8 +76,7 @@ struct ActionNode
   int node_num;
   int level_num;
 
-  std::vector<plansys2::Predicate> predicates;
-  std::vector<plansys2::Function> functions;
+  plansys2::State state;
 
   std::list<ActionNode::Ptr> in_arcs;
   std::list<ActionNode::Ptr> out_arcs;
@@ -181,6 +203,11 @@ protected:
    */
   void prune_forward(ActionNode::Ptr current, std::list<ActionNode::Ptr> & used_nodes);
 
+  void get_state_recursive(
+    const ActionNode::Ptr& node,
+    std::list<ActionNode::Ptr>& used_nodes,
+    plansys2::State& state);
+
   /**
    * @brief Computes the state of the world at a node.
    *
@@ -189,41 +216,44 @@ protected:
    *
    * @param[in] node The node to compute state for.
    * @param[in,out] used_nodes List of nodes already processed.
-   * @param[out] predicates Resulting predicates at this node.
-   * @param[out] functions Resulting functions at this node.
+   * @param[out] state Resulting state at this node.
    */
-  void get_state(
+  plansys2::State get_state(
     const ActionNode::Ptr & node,
     std::list<ActionNode::Ptr> & used_nodes,
-    std::vector<plansys2::Predicate> & predicates,
-    std::vector<plansys2::Function> & functions) const;
+    const plansys2::State & state);
 
   /**
    * @brief Checks if an action is executable in a given state.
    *
    * @param[in] action The action to check.
-   * @param[in] predicates Current predicates.
-   * @param[in] functions Current functions.
+   * @param[in] state Current state.
    * @return True if the action's requirements are satisfied, false otherwise.
    */
   bool is_action_executable(
     const ActionStamped & action,
-    std::vector<plansys2::Predicate> & predicates,
-    std::vector<plansys2::Function> & functions) const;
+    const plansys2::State & state) const;
+  
+  std::vector<plansys2_msgs::msg::Tree> check_requirements(
+    const std::vector<plansys2_msgs::msg::Tree> & requirements,
+    std::shared_ptr<plansys2::ActionGraph> & graph,
+    std::shared_ptr<plansys2::ActionNode> & new_node);
+  bool check_requirement(
+    const plansys2_msgs::msg::Tree & requirement,
+    std::shared_ptr<plansys2::ActionGraph> & graph,
+    std::shared_ptr<plansys2::ActionNode> & new_node);
 
   /**
    * @brief Finds root actions that can be executed immediately.
    *
    * @param[in,out] action_sequence Actions to check, executable ones will be removed.
-   * @param[in] predicates Current predicates.
-   * @param[in] functions Current functions.
+   * @param[in] state Current state.
    * @param[in,out] node_counter Counter for assigning unique node IDs.
    * @return std::list<ActionNode::Ptr> List of nodes representing executable actions.
    */
   std::list<ActionNode::Ptr> get_roots(
     std::vector<plansys2::ActionStamped> & action_sequence,
-    std::vector<plansys2::Predicate> & predicates,
-    std::vector<plansys2::Function> & functions,
+    const plansys2::State & state,
     int & node_counter);
 
   /**
@@ -279,29 +309,29 @@ protected:
    * @brief Removes requirements that are already satisfied in the current state.
    *
    * @param[in,out] requirements List of requirements to filter.
-   * @param[in] predicates Current predicates.
-   * @param[in] functions Current functions.
+   * @param[in] state Current state.
    */
   void remove_existing_requirements(
     std::vector<plansys2_msgs::msg::Tree> & requirements,
-    std::vector<plansys2::Predicate> & predicates,
-    std::vector<plansys2::Function> & functions) const;
+    const plansys2::State & state) const;
 
   /**
    * @brief Checks if an action can be executed in parallel with a set of other actions.
    *
    * @param[in] action The action to check.
-   * @param[in] predicates Current predicates.
-   * @param[in] functions Current functions.
+   * @param[in] state Current state.
    * @param[in] ret List of actions to check parallelization with.
    * @return True if the action can be executed in parallel, false otherwise.
    */
   bool is_parallelizable(
     const plansys2::ActionStamped & action,
-    const std::vector<plansys2::Predicate> & predicates,
-    const std::vector<plansys2::Function> & functions,
-    const std::list<ActionNode::Ptr> & ret) const;
+    const plansys2::State & state,
+    const std::list<ActionNode::Ptr> & ret);
 
+  void apply_action_to_state(
+    const plansys2::ActionStamped & action, 
+    plansys2::State & state);
+  
   /**
    * @brief Generates the behavior tree XML for a node and its descendants.
    *
@@ -436,6 +466,10 @@ protected:
   ActionGraph::Ptr graph_;
   std::string bt_;
   std::string bt_action_;
+
+  std::unordered_map<
+    std::pair<std::string, plansys2::State>, plansys2::State> apply_action_state_cache_;
+  std::unordered_map<std::pair<std::string, plansys2::State>, bool> check_action_state_cache_;
 };
 
 }  // namespace plansys2
