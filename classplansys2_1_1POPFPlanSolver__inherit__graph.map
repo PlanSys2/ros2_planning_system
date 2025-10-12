@@ -1,0 +1,5 @@
+<map id="POPFPlanSolver" name="POPFPlanSolver">
+<area shape="rect" id="Node000001" title="Plan solver implementation that uses the POPF planning system." alt="" coords="5,79,126,105"/>
+<area shape="rect" id="Node000002" href="$classplansys2_1_1PlanSolverBase.html" title="Abstract base class for plan solvers in PlanSys2." alt="" coords="8,5,123,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="68,46,68,79,63,79,63,46"/>
+</map>

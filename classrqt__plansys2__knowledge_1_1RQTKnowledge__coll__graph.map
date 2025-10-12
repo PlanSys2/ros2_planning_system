@@ -1,0 +1,9 @@
+<map id="RQTKnowledge" name="RQTKnowledge">
+<area shape="rect" id="Node000001" title=" " alt="" coords="110,94,222,120"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,63,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="67,37,149,91,146,96,64,42"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="87,5,245,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="169,47,169,94,163,94,163,47"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="269,5,348,31"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="277,42,188,96,185,91,274,37"/>
+</map>

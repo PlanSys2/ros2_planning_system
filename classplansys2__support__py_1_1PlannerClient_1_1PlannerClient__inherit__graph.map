@@ -1,0 +1,5 @@
+<map id="PlannerClient" name="PlannerClient">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,79,104,105"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="28,5,81,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="57,46,57,79,52,79,52,46"/>
+</map>

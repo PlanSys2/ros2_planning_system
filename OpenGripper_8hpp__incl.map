@@ -1,0 +1,9 @@
+<map id="plansys2_bt_actions/test/behavior_tree/OpenGripper.hpp" name="plansys2_bt_actions/test/behavior_tree/OpenGripper.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="100,5,239,61"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,116,59,142"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="131,64,64,110,61,105,128,59"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="83,109,256,150"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="172,62,172,94,167,94,167,62"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="280,109,416,150"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="222,59,298,99,296,104,220,64"/>
+</map>

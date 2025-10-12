@@ -1,0 +1,7 @@
+<map id="RestoreAtStartEffectTest" name="RestoreAtStartEffectTest">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,153,172,178"/>
+<area shape="rect" id="Node000002" href="$classplansys2_1_1RestoreAtStartEffect.html" title="BehaviorTree node that restores the at&#45;start effects of a durative action." alt="" coords="18,79,159,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,120,91,152,86,152,86,120"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="29,5,148,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="91,46,91,79,86,79,86,46"/>
+</map>

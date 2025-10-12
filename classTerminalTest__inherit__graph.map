@@ -1,0 +1,7 @@
+<map id="TerminalTest" name="TerminalTest">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,153,103,178"/>
+<area shape="rect" id="Node000002" href="$classplansys2__terminal_1_1Terminal.html" title=" " alt="" coords="18,79,90,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="57,120,57,152,51,152,51,120"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="28,5,80,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="57,46,57,79,51,79,51,46"/>
+</map>

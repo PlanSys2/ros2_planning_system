@@ -1,0 +1,18 @@
+<map id="plansys2_core/include/plansys2_core/NodeVariant.hpp" name="plansys2_core/include/plansys2_core/NodeVariant.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="349,5,558,46"/>
+<area shape="rect" id="Node000002" href="$DerivedResolutionGraph_8hpp.html" title=" " alt="" coords="241,94,458,150"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="422,59,381,95,378,91,419,55"/>
+<area shape="rect" id="Node000008" href="$node__variant__test_8cpp.html" title=" " alt="" coords="482,102,635,142"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="488,54,539,99,535,103,485,58"/>
+<area shape="rect" id="Node000003" href="$State_8hpp.html" title=" " alt="" coords="71,198,238,238"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="281,159,197,200,194,195,278,154"/>
+<area shape="rect" id="Node000005" href="$state__test_8cpp.html" title=" " alt="" coords="211,286,341,327"/>
+<area shape="poly" id="edge7_Node000002_Node000005" title=" " alt="" coords="323,164,304,199,289,245,281,287,276,286,284,244,299,197,318,162"/>
+<area shape="rect" id="Node000006" href="$DerivedResolutionGraph_8cpp.html" title=" " alt="" coords="313,198,535,238"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="382,160,411,196,407,199,378,164"/>
+<area shape="rect" id="Node000007" href="$graph__test_8cpp.html" title=" " alt="" coords="559,198,689,238"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="444,153,567,195,566,200,442,158"/>
+<area shape="rect" id="Node000004" href="$State_8cpp.html" title=" " alt="" coords="5,286,187,327"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="135,253,111,287,107,284,131,250"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="196,245,250,284,247,288,193,250"/>
+</map>

@@ -1,0 +1,17 @@
+<map id="plansys2_tools/include/plansys2_logger/LoggerNode.hpp" name="plansys2_tools/include/plansys2_logger/LoggerNode.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="537,5,754,46"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,102,73,127"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="537,34,440,41,326,53,205,71,86,97,80,98,79,93,85,91,204,66,326,48,440,36,537,29"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="97,102,328,127"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="547,49,289,101,288,95,546,44"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="352,94,531,135"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="600,49,503,90,501,85,598,44"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="556,94,735,135"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="648,47,648,78,643,78,643,47"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="760,94,939,135"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="693,44,790,85,788,90,691,49"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="963,102,1155,127"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="741,44,986,95,985,100,739,49"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="1179,102,1299,127"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="755,34,948,56,1167,91,1183,95,1182,100,1167,97,947,62,754,39"/>
+</map>

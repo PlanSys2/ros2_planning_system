@@ -1,0 +1,5 @@
+<map id="PlannerInterface" name="PlannerInterface">
+<area shape="rect" id="Node000001" title="Interface for planning components that generate action plans from PDDL domains and problems." alt="" coords="5,5,122,31"/>
+<area shape="rect" id="Node000002" href="$classplansys2_1_1PlannerClient.html" title="Client implementation of the PlannerInterface." alt="" coords="14,79,113,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="66,46,66,79,61,79,61,46"/>
+</map>

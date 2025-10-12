@@ -1,0 +1,5 @@
+<map id="Goal" name="Goal">
+<area shape="rect" id="Node000001" title="Represents a goal in the planning domain." alt="" coords="5,79,54,105"/>
+<area shape="rect" id="Node000002" href="$classplansys2__msgs_1_1msg_1_1Tree.html" title=" " alt="" coords="6,5,53,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="32,46,32,79,27,79,27,46"/>
+</map>

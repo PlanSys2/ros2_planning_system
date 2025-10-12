@@ -1,0 +1,7 @@
+<map id="ProblemExpertClient" name="ProblemExpertClient">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,94,144,120"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="14,5,66,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="53,44,72,93,67,95,48,46"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="90,5,128,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="101,46,82,95,77,93,96,44"/>
+</map>

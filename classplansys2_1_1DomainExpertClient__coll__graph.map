@@ -1,0 +1,7 @@
+<map id="DomainExpertClient" name="DomainExpertClient">
+<area shape="rect" id="Node000001" title="Client for requesting information or sending changes from/to the DomainExpertNode." alt="" coords="77,94,211,120"/>
+<area shape="rect" id="Node000002" href="$classplansys2_1_1DomainExpertInterface.html" title="Interface for both DomainExpert and DomainExpertClient classes." alt="" coords="5,5,158,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="101,42,138,92,133,95,97,45"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="182,5,235,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="193,45,155,95,151,92,188,42"/>
+</map>

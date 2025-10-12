@@ -1,0 +1,16 @@
+<map id="TypeGround" name="TypeGround">
+<area shape="rect" id="Node000001" title=" " alt="" coords="91,333,182,358"/>
+<area shape="rect" id="Node000002" href="$classparser_1_1pddl_1_1Ground.html" title=" " alt="" coords="105,258,168,283"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="139,299,139,332,134,332,134,299"/>
+<area shape="rect" id="Node000003" href="$classparser_1_1pddl_1_1ParamCond.html" title=" " alt="" coords="86,94,176,120"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="135,135,139,257,133,257,129,136"/>
+<area shape="rect" id="Node000007" href="$classparser_1_1pddl_1_1Lifted.html" title=" " alt="" coords="152,169,206,195"/>
+<area shape="poly" id="edge7_Node000007_Node000003" title=" " alt="" coords="149,131,173,167,169,170,145,134"/>
+<area shape="rect" id="Node000004" href="$classparser_1_1pddl_1_1Condition.html" title=" " alt="" coords="5,5,81,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="68,40,121,92,117,96,64,44"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="104,5,158,31"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="134,47,134,94,128,94,128,47"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="182,5,275,31"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="205,43,146,96,143,92,202,39"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="169,210,145,258,140,256,164,207"/>
+</map>

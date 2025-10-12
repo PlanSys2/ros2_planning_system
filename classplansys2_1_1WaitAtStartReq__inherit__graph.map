@@ -1,0 +1,7 @@
+<map id="WaitAtStartReq" name="WaitAtStartReq">
+<area shape="rect" id="Node000001" title="BehaviorTree node that waits for the at&#45;start requirements of a specified action." alt="" coords="18,79,130,105"/>
+<area shape="rect" id="Node000003" href="$classWaitAtStartReqTest.html" title=" " alt="" coords="5,153,143,178"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="77,120,77,152,71,152,71,120"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="14,5,134,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="77,46,77,79,71,79,71,46"/>
+</map>

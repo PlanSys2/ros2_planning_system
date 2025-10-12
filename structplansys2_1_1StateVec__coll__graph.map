@@ -1,0 +1,7 @@
+<map id="StateVec" name="StateVec">
+<area shape="rect" id="Node000001" title="Structure that represents a state vector in the planning system." alt="" coords="170,94,245,120"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,197,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="129,39,194,91,191,95,126,43"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="221,5,408,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="289,43,224,95,221,91,286,39"/>
+</map>

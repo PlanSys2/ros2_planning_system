@@ -1,0 +1,5 @@
+<map id="Predicate" name="Predicate">
+<area shape="rect" id="Node000001" title="Represents a predicate in the planning domain." alt="" coords="5,79,82,105"/>
+<area shape="rect" id="Node000002" href="$classplansys2__msgs_1_1msg_1_1Node.html" title=" " alt="" coords="17,5,70,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="46,46,46,79,41,79,41,46"/>
+</map>

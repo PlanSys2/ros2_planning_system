@@ -1,0 +1,14 @@
+<map id="plansys2_planner/include" name="plansys2_planner/include">
+<area shape="rect" id="node2" href="dir_179c398021eaf1799f583da484d8f16c.html" title="plansys2_planner" alt="" coords="216,63,337,89"/>
+<area shape="rect" id="node3" href="dir_2404d6c063050a1c7b9b5cc223db4c30.html" title="plansys2_domain_expert" alt="" coords="5,137,169,162"/>
+<area shape="poly" id="edge1" href="dir_000044_000028.html" alt="" coords="252,92,204,112,142,134,141,129,202,108,250,87"/>
+<area shape="rect" id="edge1-headlabel" href="dir_000044_000028.html" title="1" alt="" coords="143,131,150,146"/>
+<area shape="rect" id="node4" href="dir_6da96ddc57aad03b9ce52d1f97183db8.html" title="plansys2_problem_expert" alt="" coords="193,137,360,162"/>
+<area shape="poly" id="edge2" href="dir_000044_000049.html" alt="" coords="279,89,279,121,274,121,274,89"/>
+<area shape="rect" id="edge2-headlabel" href="dir_000044_000049.html" title="1" alt="" coords="281,111,288,126"/>
+<area shape="rect" id="node5" href="dir_ac5bbbf0bf83a4761ae8fbf4ac2d6527.html" title="plansys2_core" alt="" coords="384,137,488,162"/>
+<area shape="poly" id="edge3" href="dir_000044_000024.html" alt="" coords="305,87,396,128,394,132,302,92"/>
+<area shape="rect" id="edge3-headlabel" href="dir_000044_000024.html" title="1" alt="" coords="392,113,399,128"/>
+<area shape="rect" id="clust2" href="dir_abe045b3999c32f6d93ef50ae8c35551.html" alt="" coords="119,52,348,99"/>
+<area shape="rect" id="clust1" href="dir_3c7693bbfaac5db58bcc3462d13a32be.html" title="plansys2_planner" alt="" coords="108,16,359,110"/>
+</map>

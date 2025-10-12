@@ -1,0 +1,17 @@
+<map id="ActionExecutionInfo" name="ActionExecutionInfo">
+<area shape="rect" id="Node000001" title="Structure that holds execution information for an action." alt="" coords="402,154,538,180"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,13,79,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="54,52,77,93,94,112,114,128,135,137,165,145,241,155,401,163,401,168,241,160,164,150,134,142,111,132,90,116,73,96,50,54"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="103,5,248,46"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="178,61,185,97,193,114,204,128,237,143,287,153,402,162,402,168,287,159,235,148,201,132,188,117,180,99,173,62"/>
+<area shape="rect" id="Node000004" href="$classbool.html" title=" " alt="" coords="278,13,323,38"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="303,54,309,93,317,112,329,128,344,141,362,150,402,161,401,166,360,155,341,145,325,132,312,114,304,94,298,55"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="445,13,495,38"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="473,54,473,154,467,154,467,54"/>
+<area shape="rect" id="Node000006" href="$classplansys2_1_1ActionVariant.html" title="Structure that holds either an Action or DurativeAction message." alt="" coords="586,13,685,38"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="638,55,631,94,622,114,609,132,576,153,539,164,538,159,574,149,606,128,618,112,626,93,633,54"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="709,13,762,38"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="738,55,730,95,721,115,706,132,678,146,635,156,539,166,538,160,635,151,676,141,703,128,716,112,725,93,732,54"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="855,13,914,38"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="888,55,880,95,871,115,857,132,840,139,811,146,727,155,539,166,539,161,727,150,810,140,838,134,854,128,867,112,875,94,882,54"/>
+</map>

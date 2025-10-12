@@ -1,0 +1,9 @@
+<map id="QTreeWidget" name="QTreeWidget">
+<area shape="rect" id="Node000001" title=" " alt="" coords="148,5,246,31"/>
+<area shape="rect" id="Node000002" href="$classrqt__plansys2__knowledge_1_1KnowledgeTree.html" title=" " alt="" coords="5,79,117,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,41,85,81,83,76,159,36"/>
+<area shape="rect" id="Node000003" href="$classrqt__plansys2__performers_1_1PerformersTree.html" title=" " alt="" coords="141,79,253,105"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="200,46,200,79,194,79,194,46"/>
+<area shape="rect" id="Node000004" href="$classrqt__plansys2__plan_1_1PlanTree.html" title=" " alt="" coords="276,79,350,105"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="231,37,295,76,292,81,228,42"/>
+</map>

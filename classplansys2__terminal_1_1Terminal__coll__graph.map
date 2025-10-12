@@ -1,0 +1,5 @@
+<map id="Terminal" name="Terminal">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,79,77,105"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="15,5,67,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="44,46,44,79,38,79,38,46"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="ProblemExpertInterface" name="ProblemExpertInterface">
+<area shape="rect" id="Node000001" title="Interface for managing PDDL problem elements." alt="" coords="52,5,208,31"/>
+<area shape="rect" id="Node000002" href="$classplansys2_1_1ProblemExpert.html" title="Class that implements the ProblemExpertInterface to manage a PDDL problem." alt="" coords="5,79,111,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,44,72,80,68,77,105,40"/>
+<area shape="rect" id="Node000003" href="$classplansys2_1_1ProblemExpertClient.html" title="Client implementation for accessing the ProblemExpert node services." alt="" coords="134,79,272,105"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="155,40,193,77,189,80,151,44"/>
+</map>

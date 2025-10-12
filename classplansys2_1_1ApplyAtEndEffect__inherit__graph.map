@@ -1,0 +1,7 @@
+<map id="ApplyAtEndEffect" name="ApplyAtEndEffect">
+<area shape="rect" id="Node000001" title="BehaviorTree node that applies the at&#45;end effects of a durative action." alt="" coords="18,79,140,105"/>
+<area shape="rect" id="Node000003" href="$classApplyAtEndEffectTest.html" title=" " alt="" coords="5,153,153,178"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="82,120,82,152,76,152,76,120"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="19,5,139,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="82,46,82,79,76,79,76,46"/>
+</map>

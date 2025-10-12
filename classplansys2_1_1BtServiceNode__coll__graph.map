@@ -1,0 +1,25 @@
+<map id="BtServiceNode&lt; ServiceT &gt;" name="BtServiceNode&lt; ServiceT &gt;">
+<area shape="rect" id="Node000001" title="Abstract class representing a service based BT node." alt="" coords="422,268,605,293"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="53,9,173,35"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="188,6,238,3,293,6,349,18,375,28,399,42,427,66,450,95,469,127,484,160,504,222,513,267,508,268,499,223,479,162,464,129,446,98,423,70,396,47,372,33,347,23,293,11,238,8,188,11"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="86,58,140,84"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="156,70,288,80,353,91,399,107,421,124,441,144,473,189,496,233,510,266,505,268,491,235,469,192,437,148,418,128,396,112,352,97,287,86,155,75"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="73,108,153,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="169,119,219,123,278,132,340,148,399,171,432,193,462,219,504,265,500,269,458,222,429,197,396,176,338,153,277,138,219,129,168,124"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="38,157,188,198"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="204,185,298,201,398,226,447,245,488,265,486,269,445,249,397,231,297,206,203,190"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="73,222,153,248"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="168,237,398,262,422,265,421,270,397,267,168,243"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="73,272,153,297"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="168,281,421,279,421,284,168,287"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="73,321,153,347"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="168,327,274,317,397,301,450,291,451,296,398,306,275,322,168,332"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="66,393,160,419"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="175,411,225,413,282,411,340,402,397,385,430,365,460,340,501,292,505,295,463,343,433,369,399,389,342,407,282,416,225,418,175,416"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="5,443,221,483"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="236,470,277,467,318,461,359,450,396,433,436,402,467,362,490,323,504,293,509,295,495,326,472,365,440,405,399,438,360,455,319,466,277,473,237,475"/>
+<area shape="rect" id="Node000011" href="$classbool.html" title=" " alt="" coords="90,510,136,536"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="151,529,203,537,267,540,335,531,367,521,396,506,423,484,445,457,463,427,478,396,498,336,507,293,513,294,503,338,483,398,468,429,449,460,427,487,399,510,369,526,336,537,267,545,203,543,150,534"/>
+<area shape="rect" id="Node000012" title=" " alt="" coords="88,560,138,585"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="154,581,206,591,270,595,303,593,336,588,367,577,396,561,428,533,453,499,472,460,486,420,503,346,509,293,514,294,508,346,491,422,477,462,457,501,431,537,399,566,370,582,337,593,304,599,270,601,206,596,153,586"/>
+</map>

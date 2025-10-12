@@ -1,0 +1,7 @@
+<map id="TestAction" name="TestAction">
+<area shape="rect" id="Node000001" title=" " alt="" coords="41,153,125,178"/>
+<area shape="rect" id="Node000002" href="$classplansys2_1_1ActionExecutorClient.html" title="Base class for implementing action executors in the planning system." alt="" coords="12,79,154,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="86,120,86,152,80,152,80,120"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,5,161,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="86,46,86,79,80,79,80,46"/>
+</map>
