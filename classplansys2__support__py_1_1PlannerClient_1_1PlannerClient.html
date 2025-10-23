@@ -171,9 +171,12 @@ in PlanSys2, wrapping the ROS2 service calls with proper error handling.
 </div><div class="memdoc">
 <pre class="fragment">Initialize the Planner client.
 
-Parameters:
-node_name (str): Name of the ROS2 node.
-namespace (str): Namespace prefix for services.
+Parameters
+----------
+node_name : str, optional
+    Name of the ROS2 node.
+namespace : str, optional
+    Namespace prefix for services.
 </pre> 
 </div>
 </div>
@@ -216,13 +219,19 @@ namespace (str): Namespace prefix for services.
 </div><div class="memdoc">
 <pre class="fragment">Create a service client for the given service, call it and return the response.
 
-Parameters:
-service_type (Type): The ROS2 service type class.
-service_name (str): The name/topic of the service.
-request (Any): The service request object.
+Parameters
+----------
+service_type : Type
+    The ROS2 service type class.
+service_name : str
+    The name/topic of the service.
+request : Any
+    The service request object.
 
-Returns:
-Any: The service response or None if failed.
+Returns
+-------
+Any
+    The service response or None if failed.
 </pre> 
 </div>
 </div>
@@ -251,12 +260,17 @@ Any: The service response or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get a plan that will satisfy the provided domain and problem.
 
-Parameters:
-domain (str): The PDDL domain string.
-problem (str): The PDDL problem string.
+Parameters
+----------
+domain : str
+    The PDDL domain string.
+problem : str
+    The PDDL problem string.
 
-Returns:
-Optional[Plan]: The plan response or None if failed.
+Returns
+-------
+Optional[Plan]
+    The plan response or None if failed.
 </pre> 
 </div>
 </div>
@@ -285,12 +299,17 @@ Optional[Plan]: The plan response or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get a plan array that will satisfy the provided domain and problem.
 
-Parameters:
-domain (str): The PDDL domain string.
-problem (str): The PDDL problem string.
+Parameters
+----------
+domain : str
+    The PDDL domain string.
+problem : str
+    The PDDL problem string.
 
-Returns:
-Optional[GetPlanArray]: The plan array response or None if failed.
+Returns
+-------
+Optional[GetPlanArray]
+    The plan array response or None if failed.
 </pre> 
 </div>
 </div>
@@ -314,11 +333,15 @@ Optional[GetPlanArray]: The plan array response or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Validate the provided domain.
 
-Parameters:
-domain (str): The PDDL domain string.
+Parameters
+----------
+domain : str
+    The PDDL domain string.
 
-Returns:
-bool: True if the domain is valid, False otherwise.
+Returns
+-------
+bool
+    True if the domain is valid, False otherwise.
 </pre> 
 </div>
 </div>

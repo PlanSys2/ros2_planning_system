@@ -18,8 +18,9 @@ var searchData=
   ['lifted_2ehpp_15',['Lifted.hpp',['../Lifted_8hpp.html',1,'']]],
   ['liftedvec_16',['LiftedVec',['../namespaceparser_1_1pddl.html#a7c7bfecbb6c7554ebc5bbba91abc3993',1,'parser::pddl']]],
   ['lines_17',['lines',['../classparser_1_1pddl_1_1Stringreader.html#a3ba903187d7ce56233f6e022013c811d',1,'parser::pddl::Stringreader']]],
-  ['logger_2ecpp_18',['logger.cpp',['../logger_8cpp.html',1,'']]],
-  ['loggernode_19',['LoggerNode',['../classplansys2__logger_1_1LoggerNode.html',1,'LoggerNode'],['../classplansys2__logger_1_1LoggerNode.html#af72e7652692bb7218ec0fbc54ce7ac7d',1,'plansys2_logger::LoggerNode::LoggerNode()']]],
-  ['loggernode_2ecpp_20',['LoggerNode.cpp',['../LoggerNode_8cpp.html',1,'']]],
-  ['loggernode_2ehpp_21',['LoggerNode.hpp',['../LoggerNode_8hpp.html',1,'']]]
+  ['load_18',['load',['../classplansys2__support__py_1_1core_1_1PluginProvider_1_1PluginProvider.html#a9455a33f3187754b04bd6d5a9b6e71e3',1,'plansys2_support_py::core::PluginProvider::PluginProvider']]],
+  ['logger_2ecpp_19',['logger.cpp',['../logger_8cpp.html',1,'']]],
+  ['loggernode_20',['LoggerNode',['../classplansys2__logger_1_1LoggerNode.html',1,'LoggerNode'],['../classplansys2__logger_1_1LoggerNode.html#af72e7652692bb7218ec0fbc54ce7ac7d',1,'plansys2_logger::LoggerNode::LoggerNode()']]],
+  ['loggernode_2ecpp_21',['LoggerNode.cpp',['../LoggerNode_8cpp.html',1,'']]],
+  ['loggernode_2ehpp_22',['LoggerNode.hpp',['../LoggerNode_8hpp.html',1,'']]]
 ];

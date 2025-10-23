@@ -211,9 +211,12 @@ in PlanSys2, wrapping the ROS2 service calls with proper error handling.
 </div><div class="memdoc">
 <pre class="fragment">Initialize the Problem Expert client.
 
-Parameters:
-node_name (str): Name of the ROS2 node.
-namespace (str): Namespace prefix for services.
+Parameters
+----------
+node_name : str, optional
+    Name of the ROS2 node.
+namespace : str, optional
+    Namespace prefix for services.
 </pre> 
 </div>
 </div>
@@ -256,13 +259,19 @@ namespace (str): Namespace prefix for services.
 </div><div class="memdoc">
 <pre class="fragment">Create a service client for the given service, call it and return the response.
 
-Parameters:
-service_type (Type): The ROS2 service type class.
-service_name (str): The name/topic of the service.
-request (Any): The service request object.
+Parameters
+----------
+service_type : Type
+    The ROS2 service type class.
+service_name : str
+    The name/topic of the service.
+request : Any
+    The service request object.
 
-Returns:
-Any: The service response or None if failed.
+Returns
+-------
+Any
+    The service response or None if failed.
 </pre> 
 </div>
 </div>
@@ -286,10 +295,13 @@ Any: The service response or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Add a PDDL problem.
 
-Parameters:
-problem (str): The PDDL problem string.
+Parameters
+----------
+problem : str
+    The PDDL problem string.
 
-Returns:
+Returns
+-------
 bool: True if successful, False otherwise.
 </pre> 
 </div>
@@ -314,10 +326,13 @@ bool: True if successful, False otherwise.
 </div><div class="memdoc">
 <pre class="fragment">Add a function to the problem.
 
-Parameters:
-function (PlanSys2Node): The function to add.
+Parameters
+----------
+function : PlanSys2Node
+    The function to add.
 
-Returns:
+Returns
+-------
 bool: True if successful, False otherwise.
 </pre> 
 </div>
@@ -342,10 +357,13 @@ bool: True if successful, False otherwise.
 </div><div class="memdoc">
 <pre class="fragment">Add a goal to the problem.
 
-Parameters:
-goal (Tree): The goal to add.
+Parameters
+----------
+goal : Tree
+    The goal to add.
 
-Returns:
+Returns
+-------
 bool: True if successful, False otherwise.
 </pre> 
 </div>
@@ -370,10 +388,13 @@ bool: True if successful, False otherwise.
 </div><div class="memdoc">
 <pre class="fragment">Add an instance to the problem.
 
-Parameters:
-instance (Param): The instance to add.
+Parameters
+----------
+instance : Param
+    The instance to add.
 
-Returns:
+Returns
+-------
 bool: True if successful, False otherwise.
 </pre> 
 </div>
@@ -398,10 +419,13 @@ bool: True if successful, False otherwise.
 </div><div class="memdoc">
 <pre class="fragment">Add a predicate to the problem.
 
-Parameters:
-predicate (PlanSys2Node): The predicate to add.
+Parameters
+----------
+predicate : PlanSys2Node
+    The predicate to add.
 
-Returns:
+Returns
+-------
 bool: True if successful, False otherwise.
 </pre> 
 </div>
@@ -422,7 +446,8 @@ bool: True if successful, False otherwise.
 </div><div class="memdoc">
 <pre class="fragment">Clear the instances, predicates, and functions.
 
-Returns:
+Returns
+-------
 bool: True if successful, False otherwise.
 </pre> 
 </div>
@@ -447,10 +472,13 @@ bool: True if successful, False otherwise.
 </div><div class="memdoc">
 <pre class="fragment">Check if a function exists.
 
-Parameters:
-function (PlanSys2Node): The function to check.
+Parameters
+----------
+function : PlanSys2Node
+    The function to check.
 
-Returns:
+Returns
+-------
 Optional[bool]: True if satisfied, False if not, None if failed.
 </pre> 
 </div>
@@ -475,10 +503,13 @@ Optional[bool]: True if satisfied, False if not, None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Check if a predicate exists.
 
-Parameters:
-predicate (PlanSys2Node): The predicate to check.
+Parameters
+----------
+predicate : PlanSys2Node
+    The predicate to check.
 
-Returns:
+Returns
+-------
 Optional[bool]: True if satisfied, False if not, None if failed.
 </pre> 
 </div>
@@ -499,7 +530,8 @@ Optional[bool]: True if satisfied, False if not, None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the PDDL problem as a string.
 
-Returns:
+Returns
+-------
 Optional[str]: The PDDL problem string or None if failed.
 </pre> 
 </div>
@@ -524,10 +556,13 @@ Optional[str]: The PDDL problem string or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the details of a function.
 
-Parameters:
-function (str): The name of the function to retrieve.
+Parameters
+----------
+function : str
+    The name of the function to retrieve.
 
-Returns:
+Returns
+-------
 Optional[PlanSys2Node]: List of function names or None if failed.
 </pre> 
 </div>
@@ -548,7 +583,8 @@ Optional[PlanSys2Node]: List of function names or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the functions in the problem.
 
-Returns:
+Returns
+-------
 Optional[List[PlanSys2Node]]: List of function names or None if failed.
 </pre> 
 </div>
@@ -569,7 +605,8 @@ Optional[List[PlanSys2Node]]: List of function names or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the goals in the problem as a PDDL string.
 
-Returns:
+Returns
+-------
 Optional[str]: The goals string or None if failed.
 </pre> 
 </div>
@@ -594,10 +631,13 @@ Optional[str]: The goals string or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the details of an instance.
 
-Parameters:
-instance (str): The name of the instance to retrieve.
+Parameters
+----------
+instance : str
+    The name of the instance to retrieve.
 
-Returns:
+Returns
+-------
 Optional[Param]: Details of the instance or None if failed.
 </pre> 
 </div>
@@ -618,7 +658,8 @@ Optional[Param]: Details of the instance or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the instances in the problem.
 
-Returns:
+Returns
+-------
 Optional[List[Param]]: List of instance or None if failed.
 </pre> 
 </div>
@@ -643,10 +684,13 @@ Optional[List[Param]]: List of instance or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the details of a predicate.
 
-Parameters:
-predicate (str): The name of the predicate to retrieve.
+Parameters
+----------
+predicate : str
+    The name of the predicate to retrieve.
 
-Returns:
+Returns
+-------
 Optional[PlanSys2Node]: List of predicate names or None if failed.
 </pre> 
 </div>
@@ -667,7 +711,8 @@ Optional[PlanSys2Node]: List of predicate names or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the predicates in the problem.
 
-Returns:
+Returns
+-------
 Optional[List[PlanSys2Node]]: List of predicate names or None if failed.
 </pre> 
 </div>
@@ -692,7 +737,8 @@ Optional[List[PlanSys2Node]]: List of predicate names or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Check if the current problem goal is satisfied.
 
-Returns:
+Returns
+-------
 Optional[bool]: True if satisfied, False if not, None if failed.
 </pre> 
 </div>
@@ -737,10 +783,13 @@ Calls all available public methods to provide an overview of the problem state.
 </div><div class="memdoc">
 <pre class="fragment">Remove a function from the problem.
 
-Parameters:
-function (PlanSys2Node): The function to remove.
+Parameters
+----------
+function : PlanSys2Node
+    The function to remove.
 
-Returns:
+Returns
+-------
 bool: True if successful, False otherwise.
 </pre> 
 </div>
@@ -761,7 +810,8 @@ bool: True if successful, False otherwise.
 </div><div class="memdoc">
 <pre class="fragment">Remove the current goal from the problem.
 
-Returns:
+Returns
+-------
 bool: True if successful, False otherwise.
 </pre> 
 </div>
@@ -786,10 +836,13 @@ bool: True if successful, False otherwise.
 </div><div class="memdoc">
 <pre class="fragment">Remove an instance from the problem.
 
-Parameters:
-instance (Param): The instance to remove.
+Parameters
+----------
+instance : Param
+    The instance to remove.
 
-Returns:
+Returns
+-------
 bool: True if successful, False otherwise.
 </pre> 
 </div>
@@ -814,10 +867,13 @@ bool: True if successful, False otherwise.
 </div><div class="memdoc">
 <pre class="fragment">Remove a predicate from the problem.
 
-Parameters:
-predicate (PlanSys2Node): The predicate to remove.
+Parameters
+----------
+predicate : PlanSys2Node
+    The predicate to remove.
 
-Returns:
+Returns
+-------
 bool: True if successful, False otherwise.
 </pre> 
 </div>
@@ -842,10 +898,13 @@ bool: True if successful, False otherwise.
 </div><div class="memdoc">
 <pre class="fragment">Update a function value.
 
-Parameters:
-function (PlanSys2Node): The function to update.
+Parameters
+----------
+function : PlanSys2Node
+    The function to update.
 
-Returns:
+Returns
+-------
 Optional[bool]: True if satisfied, False if not, None if failed.
 </pre> 
 </div>

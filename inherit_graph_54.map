@@ -1,3 +1,9 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$classstd_1_1shared__ptr_3_01std_1_1shared__future_3_01typename_01rclcpp__action_1_1ClientGoalHan90ca363f48a18115fc1381518b2a93fd.html" title=" " alt="" coords="5,5,202,91"/>
+<area shape="rect" id="Node000000" href="$classQTreeWidget.html" title=" " alt="" coords="5,55,103,80"/>
+<area shape="rect" id="Node000001" href="$classrqt__plansys2__knowledge_1_1KnowledgeTree.html" title=" " alt="" coords="151,5,262,31"/>
+<area shape="poly" id="edge108_Node000000_Node000001" title=" " alt="" coords="110,47,163,29,165,34,111,52"/>
+<area shape="rect" id="Node000002" href="$classrqt__plansys2__performers_1_1PerformersTree.html" title=" " alt="" coords="151,55,262,80"/>
+<area shape="poly" id="edge109_Node000000_Node000002" title=" " alt="" coords="118,65,150,65,150,70,118,70"/>
+<area shape="rect" id="Node000003" href="$classrqt__plansys2__plan_1_1PlanTree.html" title=" " alt="" coords="170,104,243,130"/>
+<area shape="poly" id="edge110_Node000000_Node000003" title=" " alt="" coords="112,83,170,103,168,108,110,88"/>
 </map>

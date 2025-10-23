@@ -1,5 +1,7 @@
 <map id="LifecycleNode" name="LifecycleNode">
-<area shape="rect" id="Node000001" title=" " alt="" coords="24,5,128,31"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="94,5,199,31"/>
 <area shape="rect" id="Node000002" href="$classplansys2__support__py_1_1ActionExecutorClient_1_1ActionExecutorClient.html" title=" " alt="" coords="5,79,147,105"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="79,46,79,79,73,79,73,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="126,44,90,80,86,77,122,40"/>
+<area shape="rect" id="Node000003" href="$classplansys2__support__py_1_1Planner_1_1PlannerNode.html" title=" " alt="" coords="170,79,267,105"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="171,40,208,77,205,80,168,44"/>
 </map>

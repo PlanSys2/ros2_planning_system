@@ -111,11 +111,13 @@ Collaboration diagram for ExecutorClient:</div>
 <div class="dyncontent">
 <div class="center"><img src="classplansys2__support__py_1_1ExecutorClient_1_1ExecutorClient__coll__graph.png" border="0" usemap="#aExecutorClient_coll__map" alt="Collaboration graph"/></div>
 <map name="aExecutorClient_coll__map" id="aExecutorClient_coll__map">
-<area shape="rect" title=" " alt="" coords="14,94,118,120"/>
+<area shape="rect" title=" " alt="" coords="49,109,153,135"/>
 <area shape="rect" title=" " alt="" coords="5,5,58,31"/>
-<area shape="poly" title=" " alt="" coords="44,44,64,93,59,95,39,46"/>
+<area shape="poly" title=" " alt="" coords="50,42,95,107,90,110,46,45"/>
 <area shape="rect" title=" " alt="" coords="82,5,120,31"/>
-<area shape="poly" title=" " alt="" coords="93,46,73,95,68,93,88,44"/>
+<area shape="poly" title=" " alt="" coords="104,47,104,109,98,109,98,47"/>
+<area shape="rect" title=" " alt="" coords="200,5,292,31"/>
+<area shape="poly" title=" " alt="" coords="242,47,233,68,219,87,188,106,154,117,153,112,186,101,215,83,229,65,237,45"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -123,6 +125,8 @@ Collaboration diagram for ExecutorClient:</div>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ad09cf437dc2aab62fbab0b156f8a947c" id="r_ad09cf437dc2aab62fbab0b156f8a947c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad09cf437dc2aab62fbab0b156f8a947c">__init__</a> (self, str node_name='executor_client', str namespace='')</td></tr>
 <tr class="separator:ad09cf437dc2aab62fbab0b156f8a947c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf02164b5aa9e94b85da94457f456521" id="r_abf02164b5aa9e94b85da94457f456521"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abf02164b5aa9e94b85da94457f456521">execute_plan</a> (self, Optional[Plan] plan=None, <a class="el" href="classbool.html">bool</a> verbose=True, float rate_hz=5.0)</td></tr>
+<tr class="separator:abf02164b5aa9e94b85da94457f456521"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab1bedfd61361841091207ff833da1d2b" id="r_ab1bedfd61361841091207ff833da1d2b"><td class="memItemLeft" align="right" valign="top">Optional[List[Tree]]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab1bedfd61361841091207ff833da1d2b">get_ordered_sub_goals</a> (self)</td></tr>
 <tr class="separator:ab1bedfd61361841091207ff833da1d2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c170021d632b01eecf504e392b89994" id="r_a2c170021d632b01eecf504e392b89994"><td class="memItemLeft" align="right" valign="top">Optional[Plan]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2c170021d632b01eecf504e392b89994">get_plan</a> (self)</td></tr>
@@ -136,11 +140,23 @@ Public Member Functions</h2></td></tr>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:aca1e4669afa0eb310dc449ebcafcc643" id="r_aca1e4669afa0eb310dc449ebcafcc643"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aca1e4669afa0eb310dc449ebcafcc643">_create_and_call_service</a> (self, service_type, str service_name, request)</td></tr>
 <tr class="separator:aca1e4669afa0eb310dc449ebcafcc643"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66fdacc5302f1e006e789f99fdddeb37" id="r_a66fdacc5302f1e006e789f99fdddeb37"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a66fdacc5302f1e006e789f99fdddeb37">_feedback_callback</a> (self, feedback_msg)</td></tr>
+<tr class="separator:a66fdacc5302f1e006e789f99fdddeb37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7a31324bec17a2fb014c198a74edaad" id="r_ae7a31324bec17a2fb014c198a74edaad"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae7a31324bec17a2fb014c198a74edaad">_print_execution_result</a> (self, result)</td></tr>
+<tr class="separator:ae7a31324bec17a2fb014c198a74edaad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
+<tr class="memitem:a4e04eb4865c21a341a696d3c11c7c393" id="r_a4e04eb4865c21a341a696d3c11c7c393"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4e04eb4865c21a341a696d3c11c7c393">_domain_client</a> = <a class="el" href="classplansys2__support__py_1_1DomainExpertClient_1_1DomainExpertClient.html">DomainExpertClient</a>(namespace=namespace)</td></tr>
+<tr class="separator:a4e04eb4865c21a341a696d3c11c7c393"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a946d9a4a2c5a0672d6c6e6b131b4ca77" id="r_a946d9a4a2c5a0672d6c6e6b131b4ca77"><td class="memItemLeft" align="right" valign="top">ActionClient&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a946d9a4a2c5a0672d6c6e6b131b4ca77">_execute_plan_action_client</a></td></tr>
+<tr class="separator:a946d9a4a2c5a0672d6c6e6b131b4ca77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af76e502192227ef153c75d1cac19a88a" id="r_af76e502192227ef153c75d1cac19a88a"><td class="memItemLeft" align="right" valign="top">str&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af76e502192227ef153c75d1cac19a88a">_namespace_prefix</a> = f'/{namespace}' if namespace else ''</td></tr>
 <tr class="separator:af76e502192227ef153c75d1cac19a88a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a585f7f146981b696445b64f662df249c" id="r_a585f7f146981b696445b64f662df249c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a585f7f146981b696445b64f662df249c">_planner_client</a> = <a class="el" href="classplansys2__support__py_1_1PlannerClient_1_1PlannerClient.html">PlannerClient</a>(namespace=namespace)</td></tr>
+<tr class="separator:a585f7f146981b696445b64f662df249c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0c0244ba299214f041e067791439113" id="r_ae0c0244ba299214f041e067791439113"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae0c0244ba299214f041e067791439113">_problem_client</a> = <a class="el" href="classplansys2__support__py_1_1ProblemExpertClient_1_1ProblemExpertClient.html">ProblemExpertClient</a>(namespace=namespace)</td></tr>
+<tr class="separator:ae0c0244ba299214f041e067791439113"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><pre class="fragment">Executor client for PlanSys2.
@@ -173,9 +189,12 @@ in PlanSys2, wrapping the ROS2 service calls with proper error handling.
 </div><div class="memdoc">
 <pre class="fragment">Initialize the Executor client.
 
-Parameters:
-node_name (str): Name of the ROS2 node.
-namespace (str): Namespace prefix for services.
+Parameters
+----------
+node_name : str, optional
+    Name of the ROS2 node.
+namespace : str, optional
+    Namespace prefix for services.
 </pre> 
 </div>
 </div>
@@ -218,13 +237,139 @@ namespace (str): Namespace prefix for services.
 </div><div class="memdoc">
 <pre class="fragment">Create a service client for the given service, call it and return the response.
 
-Parameters:
-service_type (Type): The ROS2 service type class.
-service_name (str): The name/topic of the service.
-request (Any): The service request object.
+Parameters
+----------
+service_type : Type
+    The ROS2 service type class.
+service_name : str
+    The name/topic of the service.
+request : Any
+    The service request object.
 
-Returns:
-Any: The service response or None if failed.
+Returns
+-------
+Any
+    The service response or None if failed.
+</pre> 
+</div>
+</div>
+<a id="a66fdacc5302f1e006e789f99fdddeb37" name="a66fdacc5302f1e006e789f99fdddeb37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66fdacc5302f1e006e789f99fdddeb37">&#9670;&#160;</a></span>_feedback_callback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None _feedback_callback </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>feedback_msg</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<pre class="fragment">Handle feedback from the plan execution action.
+
+Parameters
+----------
+feedback_msg
+    The feedback message from the action server.
+</pre> 
+</div>
+</div>
+<a id="ae7a31324bec17a2fb014c198a74edaad" name="ae7a31324bec17a2fb014c198a74edaad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae7a31324bec17a2fb014c198a74edaad">&#9670;&#160;</a></span>_print_execution_result()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None _print_execution_result </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>result</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<pre class="fragment">Print the final execution result.
+
+Parameters
+----------
+result
+    The execution result from the action.
+</pre> 
+</div>
+</div>
+<a id="abf02164b5aa9e94b85da94457f456521" name="abf02164b5aa9e94b85da94457f456521"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abf02164b5aa9e94b85da94457f456521">&#9670;&#160;</a></span>execute_plan()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> <a class="el" href="classbool.html">bool</a> execute_plan </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Optional[Plan] </td>          <td class="paramname"><span class="paramname"><em>plan</em></span><span class="paramdefsep"> = </span><span class="paramdefval">None</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classbool.html">bool</a> </td>          <td class="paramname"><span class="paramname"><em>verbose</em></span><span class="paramdefsep"> = </span><span class="paramdefval">True</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float </td>          <td class="paramname"><span class="paramname"><em>rate_hz</em></span><span class="paramdefsep"> = </span><span class="paramdefval">5.0</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Execute a plan using the executor action client.
+
+This method executes the provided plan (or computes a new plan if not provided)
+and monitors its execution, displaying feedback if verbose is enabled.
+
+Parameters
+----------
+plan : Optional[Plan], optional
+    The plan to execute. If None, computes a new plan from
+    the current domain and problem.
+verbose : bool, optional
+    Whether to print execution feedback to the console.
+rate_hz : float, optional
+    Update rate in Hz for checking execution status.
+
+Returns
+-------
+bool
+    True if plan execution succeeded, False otherwise.
 </pre> 
 </div>
 </div>
@@ -247,8 +392,10 @@ Any: The service response or None if failed.
 This method retrieves the list of sub-goals that the executor has identified
 for achieving the current problem goal, ordered by execution priority.
 
-Returns:
-Optional[List[Tree]]: List of sub-goals as Tree objects, or None if failed.
+Returns
+-------
+Optional[List[Tree]]
+    List of sub-goals as Tree objects, or None if failed.
 </pre> 
 </div>
 </div>
@@ -270,8 +417,10 @@ Optional[List[Tree]]: List of sub-goals as Tree objects, or None if failed.
 
 This method retrieves the complete plan that the executor is currently working on.
 
-Returns:
-Optional[Plan]: The current plan or None if failed.
+Returns
+-------
+Optional[Plan]
+    The current plan or None if failed.
 </pre> 
 </div>
 </div>
@@ -294,8 +443,10 @@ Optional[Plan]: The current plan or None if failed.
 This method retrieves the portion of the plan that has not yet been executed,
 which is useful for monitoring progress or handling plan modifications.
 
-Returns:
-Optional[Plan]: The remaining plan or None if failed.
+Returns
+-------
+Optional[Plan]
+    The remaining plan or None if failed.
 </pre> 
 </div>
 </div>
@@ -315,12 +466,63 @@ Optional[Plan]: The remaining plan or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Print comprehensive information about the executor state.
 
+Notes
+-----
 Call multiple services to provide an overview of the executor's current status,
 including ordered sub-goals, current plan, and remaining plan.
 </pre> 
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
+<a id="a4e04eb4865c21a341a696d3c11c7c393" name="a4e04eb4865c21a341a696d3c11c7c393"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4e04eb4865c21a341a696d3c11c7c393">&#9670;&#160;</a></span>_domain_client</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">_domain_client = <a class="el" href="classplansys2__support__py_1_1DomainExpertClient_1_1DomainExpertClient.html">DomainExpertClient</a>(namespace=namespace)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a946d9a4a2c5a0672d6c6e6b131b4ca77" name="a946d9a4a2c5a0672d6c6e6b131b4ca77"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a946d9a4a2c5a0672d6c6e6b131b4ca77">&#9670;&#160;</a></span>_execute_plan_action_client</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ActionClient _execute_plan_action_client</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=  ActionClient(</div>
+<div class="line">            self,</div>
+<div class="line">            ExecutePlan,</div>
+<div class="line">            f<span class="stringliteral">&#39;{self._namespace_prefix}/execute_plan&#39;</span></div>
+<div class="line">        )</div>
+</div><!-- fragment -->
+</div>
+</div>
 <a id="af76e502192227ef153c75d1cac19a88a" name="af76e502192227ef153c75d1cac19a88a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af76e502192227ef153c75d1cac19a88a">&#9670;&#160;</a></span>_namespace_prefix</h2>
 
@@ -332,6 +534,50 @@ including ordered sub-goals, current plan, and remaining plan.
       <table class="memname">
         <tr>
           <td class="memname">str _namespace_prefix = f'/{namespace}' if namespace else ''</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a585f7f146981b696445b64f662df249c" name="a585f7f146981b696445b64f662df249c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a585f7f146981b696445b64f662df249c">&#9670;&#160;</a></span>_planner_client</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">_planner_client = <a class="el" href="classplansys2__support__py_1_1PlannerClient_1_1PlannerClient.html">PlannerClient</a>(namespace=namespace)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae0c0244ba299214f041e067791439113" name="ae0c0244ba299214f041e067791439113"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0c0244ba299214f041e067791439113">&#9670;&#160;</a></span>_problem_client</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">_problem_client = <a class="el" href="classplansys2__support__py_1_1ProblemExpertClient_1_1ProblemExpertClient.html">ProblemExpertClient</a>(namespace=namespace)</td>
         </tr>
       </table>
   </td>

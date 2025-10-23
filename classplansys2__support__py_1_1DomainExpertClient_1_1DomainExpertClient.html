@@ -167,8 +167,9 @@ Protected Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><pre class="fragment">Domain Expert client for PlanSys2.
 
-This class provides convenient methods to interact with all Domain Expert services
-in PlanSys2, wrapping the ROS2 service calls with proper error handling.
+This class provides convenient methods to interact with all Domain
+Expert services in PlanSys2, wrapping the ROS2 service calls with
+proper error handling.
 </pre> </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a57fcd2757782df91ccecb87f6789b03a" name="a57fcd2757782df91ccecb87f6789b03a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a57fcd2757782df91ccecb87f6789b03a">&#9670;&#160;</a></span>__init__()</h2>
@@ -195,9 +196,12 @@ in PlanSys2, wrapping the ROS2 service calls with proper error handling.
 </div><div class="memdoc">
 <pre class="fragment">Initialize the Domain Expert client.
 
-Parameters:
-node_name (str): Name of the ROS2 node.
-namespace (str): Namespace prefix for services.
+Parameters
+----------
+node_name : str, optional
+    Name of the ROS2 node.
+namespace : str, optional
+    Namespace prefix for services.
 </pre> 
 </div>
 </div>
@@ -238,15 +242,21 @@ namespace (str): Namespace prefix for services.
   </tr>
 </table>
 </div><div class="memdoc">
-<pre class="fragment">Create a service client for the given service, call it and return the response.
+<pre class="fragment">Create service client, call it and return response.
 
-Parameters:
-service_type (Type): The ROS2 service type class.
-service_name (str): The name/topic of the service.
-request (Any): The service request object.
+Parameters
+----------
+service_type : Type
+    The ROS2 service type class.
+service_name : str
+    The name/topic of the service.
+request : Any
+    The service request object.
 
-Returns:
-Any: The service response or None if failed.
+Returns
+-------
+Any
+    The service response or None if failed.
 </pre> 
 </div>
 </div>
@@ -266,8 +276,10 @@ Any: The service response or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the PDDL domain as a string.
 
-Returns:
-Optional[str]: The PDDL domain string or None if failed.
+Returns
+-------
+Optional[str]
+    The PDDL domain string or None if failed.
 </pre> 
 </div>
 </div>
@@ -296,12 +308,17 @@ Optional[str]: The PDDL domain string or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the details of a specific action.
 
-Parameters:
-action_name (str): Name of the action.
-parameters (Optional[List[str]]): Optional list of parameters.
+Parameters
+----------
+action_name : str
+    Name of the action.
+parameters : Optional[List[str]], optional
+    Optional list of parameters.
 
-Returns:
-Optional[PlanSys2Action]: Action details or None if failed.
+Returns
+-------
+Optional[PlanSys2Action]
+    Action details or None if failed.
 </pre> 
 </div>
 </div>
@@ -321,8 +338,10 @@ Optional[PlanSys2Action]: Action details or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the available actions in the domain.
 
-Returns:
-Optional[List[str]]: List of action names or None if failed.
+Returns
+-------
+Optional[List[str]]
+    List of action names or None if failed.
 </pre> 
 </div>
 </div>
@@ -346,11 +365,15 @@ Optional[List[str]]: List of action names or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the constants of a specific type.
 
-Parameters:
-type_name (str): The type name to get constants for.
+Parameters
+----------
+type_name : str
+    The type name to get constants for.
 
-Returns:
-Optional[List[str]]: List of constants or None if failed.
+Returns
+-------
+Optional[List[str]]
+    List of constants or None if failed.
 </pre> 
 </div>
 </div>
@@ -374,11 +397,15 @@ Optional[List[str]]: List of constants or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the details of a specific derived predicate.
 
-Parameters:
-predicate_name (str): Name of the derived predicate.
+Parameters
+----------
+predicate_name : str
+    Name of the derived predicate.
 
-Returns:
-[Optional[List[Derived]]]: List of derived predicate details or None if failed.
+Returns
+-------
+Optional[List[Derived]]
+    List of derived predicate details or None if failed.
 </pre> 
 </div>
 </div>
@@ -398,8 +425,10 @@ Returns:
 </div><div class="memdoc">
 <pre class="fragment">Get the derived predicates in the domain.
 
-Returns:
-Optional[List[PlanSys2Node]]: List of derived predicate nodes or None if failed.
+Returns
+-------
+Optional[List[PlanSys2Node]]
+    List of derived predicate nodes or None if failed.
 </pre> 
 </div>
 </div>
@@ -428,12 +457,17 @@ Optional[List[PlanSys2Node]]: List of derived predicate nodes or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the details of a specific durative action.
 
-Parameters:
-action_name (str): Name of the durative action.
-parameters (Optional[List[str]]): Optional list of parameters.
+Parameters
+----------
+action_name : str
+    Name of the durative action.
+parameters : Optional[List[str]], optional
+    Optional list of parameters.
 
-Returns:
-Optional[PlanSys2DurativeAction]: Durative action details or None if failed.
+Returns
+-------
+Optional[PlanSys2DurativeAction]
+    Durative action details or None if failed.
 </pre> 
 </div>
 </div>
@@ -453,8 +487,10 @@ Optional[PlanSys2DurativeAction]: Durative action details or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the durative actions in the domain.
 
-Returns:
-Optional[List[str]]: List of durative action names or None if failed.
+Returns
+-------
+Optional[List[str]]
+    List of durative action names or None if failed.
 </pre> 
 </div>
 </div>
@@ -478,11 +514,15 @@ Optional[List[str]]: List of durative action names or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the details of a specific function.
 
-Parameters:
-function_name (str): Name of the function.
+Parameters
+----------
+function_name : str
+    Name of the function.
 
-Returns:
-Optional[PlanSys2Node]: Function details or None if failed.
+Returns
+-------
+Optional[PlanSys2Node]
+    Function details or None if failed.
 </pre> 
 </div>
 </div>
@@ -502,8 +542,10 @@ Optional[PlanSys2Node]: Function details or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the functions in the domain.
 
-Returns:
-Optional[List[PlanSys2Node]]: List of function nodes or None if failed.
+Returns
+-------
+Optional[List[PlanSys2Node]]
+    List of function nodes or None if failed.
 </pre> 
 </div>
 </div>
@@ -523,8 +565,10 @@ Optional[List[PlanSys2Node]]: List of function nodes or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the name of the domain.
 
-Returns:
-Optional[str]: The domain name or None if failed.
+Returns
+-------
+Optional[str]
+    The domain name or None if failed.
 </pre> 
 </div>
 </div>
@@ -548,11 +592,15 @@ Optional[str]: The domain name or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the details of a specific predicate.
 
-Parameters:
-predicate_name (str): Name of the predicate.
+Parameters
+----------
+predicate_name : str
+    Name of the predicate.
 
-Returns:
-Optional[PlanSys2Node]: Predicate details or None if failed.
+Returns
+-------
+Optional[PlanSys2Node]
+    Predicate details or None if failed.
 </pre> 
 </div>
 </div>
@@ -572,8 +620,10 @@ Optional[PlanSys2Node]: Predicate details or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the predicates in the domain.
 
-Returns:
-Optional[List[PlanSys2Node]]: List of predicate nodes or None if failed.
+Returns
+-------
+Optional[List[PlanSys2Node]]
+    List of predicate nodes or None if failed.
 </pre> 
 </div>
 </div>
@@ -593,8 +643,10 @@ Optional[List[PlanSys2Node]]: List of predicate nodes or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Get the valid types in the domain.
 
-Returns:
-Optional[List[str]]: List of domain types or None if failed.
+Returns
+-------
+Optional[List[str]]
+    List of domain types or None if failed.
 </pre> 
 </div>
 </div>
@@ -614,6 +666,8 @@ Optional[List[str]]: List of domain types or None if failed.
 </div><div class="memdoc">
 <pre class="fragment">Print comprehensive information about the domain.
 
+Notes
+-----
 Call multiple services to provide an overview of the domain.
 </pre> 
 </div>
