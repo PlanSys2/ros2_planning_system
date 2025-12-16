@@ -157,9 +157,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a38b74771f6ab23805f990786e4d6f806" id="r_a38b74771f6ab23805f990786e4d6f806"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#a391b2d7620068e0fba4a812f869555a5">CallbackReturnT</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a38b74771f6ab23805f990786e4d6f806">on_shutdown</a> (const rclcpp_lifecycle::State &amp;state)</td></tr>
 <tr class="memdesc:a38b74771f6ab23805f990786e4d6f806"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shuts down the node.  <br /></td></tr>
 <tr class="separator:a38b74771f6ab23805f990786e4d6f806"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a82dd928a6fd32b6ad597f9de49e4cfca" id="r_a82dd928a6fd32b6ad597f9de49e4cfca"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a82dd928a6fd32b6ad597f9de49e4cfca">PlannerNode</a> ()</td></tr>
-<tr class="memdesc:a82dd928a6fd32b6ad597f9de49e4cfca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classplansys2_1_1PlannerNode.html" title="ROS2 Lifecycle Node that manages the planning system and handles planning requests.">PlannerNode</a>.  <br /></td></tr>
-<tr class="separator:a82dd928a6fd32b6ad597f9de49e4cfca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af704ae61f2177a980bf10e15c267159d" id="r_af704ae61f2177a980bf10e15c267159d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af704ae61f2177a980bf10e15c267159d">PlannerNode</a> (const rclcpp::NodeOptions &amp;options=rclcpp::NodeOptions())</td></tr>
+<tr class="memdesc:af704ae61f2177a980bf10e15c267159d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classplansys2_1_1PlannerNode.html" title="ROS2 Lifecycle Node that manages the planning system and handles planning requests.">PlannerNode</a>.  <br /></td></tr>
+<tr class="separator:af704ae61f2177a980bf10e15c267159d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab8dcf3c2d4e1341671290a76f6e6090c" id="r_ab8dcf3c2d4e1341671290a76f6e6090c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab8dcf3c2d4e1341671290a76f6e6090c">set_timeout</a> (rclcpp::Duration solver_timeout)</td></tr>
 <tr class="memdesc:ab8dcf3c2d4e1341671290a76f6e6090c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the timeout for plan solvers.  <br /></td></tr>
 <tr class="separator:ab8dcf3c2d4e1341671290a76f6e6090c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -205,19 +205,27 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a82dd928a6fd32b6ad597f9de49e4cfca" name="a82dd928a6fd32b6ad597f9de49e4cfca"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a82dd928a6fd32b6ad597f9de49e4cfca">&#9670;&#160;</a></span>PlannerNode()</h2>
+<a id="af704ae61f2177a980bf10e15c267159d" name="af704ae61f2177a980bf10e15c267159d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af704ae61f2177a980bf10e15c267159d">&#9670;&#160;</a></span>PlannerNode()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classplansys2_1_1PlannerNode.html">PlannerNode</a> </td>
           <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td class="paramtype">const rclcpp::NodeOptions &amp;</td>          <td class="paramname"><span class="paramname"><em>options</em></span><span class="paramdefsep"> = </span><span class="paramdefval">rclcpp::NodeOptions()</span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel explicit">explicit</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Constructor for the <a class="el" href="classplansys2_1_1PlannerNode.html" title="ROS2 Lifecycle Node that manages the planning system and handles planning requests.">PlannerNode</a>. </p>

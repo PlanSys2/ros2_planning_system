@@ -389,144 +389,222 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span>  }</div>
 </div>
 <div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span> </div>
-<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>  <span class="keyword">mutable</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> normalized_predicate_;</div>
-<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>  <span class="keyword">mutable</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> normalized_preconditions_;</div>
-<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>  <span class="keyword">mutable</span> <span class="keywordtype">bool</span> normalized_cache_;</div>
-<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>  <span class="keyword">mutable</span> std::size_t normalized_hash_;</div>
-<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>};</div>
+<div class="foldopen" id="foldopen00299" data-start="{" data-end="}">
+<div class="line"><a id="l00299" name="l00299"></a><span class="lineno"><a class="line" href="classplansys2_1_1Derived.html#a1162b62ae84e8799d17baa009614e318">  299</a></span>  std::string <a class="code hl_function" href="classplansys2_1_1Derived.html#a1162b62ae84e8799d17baa009614e318">toNormalizedString</a>()<span class="keyword"> const</span></div>
+<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span><span class="keyword">  </span>{</div>
+<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>    <span class="keywordflow">if</span> (!<a class="code hl_function" href="classplansys2_1_1Derived.html#ad8c36c6c9b75687e85a8792e01c984cb">normalizedDerivedComputed</a>()) {</div>
+<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>      <a class="code hl_function" href="classplansys2_1_1Derived.html#ad881ee89ec2b09ba4b7600259a64e274">computeNormalizedDerived</a>();</div>
+<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>    }</div>
+<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span> </div>
+<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>    std::ostringstream oss;</div>
+<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span> </div>
+<div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span>    <span class="comment">// Predicate</span></div>
+<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>    oss &lt;&lt; <span class="stringliteral">&quot;(&quot;</span> &lt;&lt; normalized_predicate_.name;</div>
+<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>    <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp; p : normalized_predicate_.parameters) {</div>
+<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>      oss &lt;&lt; <span class="stringliteral">&quot; &quot;</span> &lt;&lt; p.name;</div>
+<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>    }</div>
+<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span>    oss &lt;&lt; <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span> </div>
+<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span>    <span class="comment">// Preconditions</span></div>
+<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>    <span class="keywordflow">if</span> (!normalized_preconditions_.nodes.empty()) {</div>
+<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>      oss &lt;&lt; <span class="stringliteral">&quot; :- &quot;</span>;</div>
+<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span> </div>
+<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>      <span class="keywordtype">bool</span> first = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>      <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp; node : normalized_preconditions_.nodes) {</div>
+<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>        <span class="keywordflow">if</span> (!first) {</div>
+<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>          oss &lt;&lt; <span class="stringliteral">&quot; &quot;</span>;</div>
+<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>        }</div>
+<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>        first = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span> </div>
+<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span>        oss &lt;&lt; nodeToString(node);</div>
+<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span>      }</div>
+<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>    }</div>
+<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span> </div>
+<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>    <span class="keywordflow">return</span> oss.str();</div>
+<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>  }</div>
 </div>
-<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span></div>
-<div class="foldopen" id="foldopen00313" data-start="{" data-end="};">
-<div class="line"><a id="l00313" name="l00313"></a><span class="lineno"><a class="line" href="classplansys2_1_1Function.html">  313</a></span><span class="keyword">class </span><a class="code hl_function" href="classplansys2_1_1Function.html#aa61125691a5b694a46ce9f6a0fbe5093">Function</a> : <span class="keyword">public</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a></div>
-<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span>{</div>
-<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span><span class="keyword">public</span>:</div>
-<div class="foldopen" id="foldopen00319" data-start="{" data-end="}">
-<div class="line"><a id="l00319" name="l00319"></a><span class="lineno"><a class="line" href="classplansys2_1_1Function.html#aa61125691a5b694a46ce9f6a0fbe5093">  319</a></span>  <a class="code hl_function" href="classplansys2_1_1Function.html#aa61125691a5b694a46ce9f6a0fbe5093">Function</a>()</div>
-<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>  : plansys2_msgs::msg::<a class="code hl_struct" href="structplansys2_1_1Node.html">Node</a>() {}</div>
+<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span> </div>
+<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>  <span class="keyword">mutable</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> normalized_predicate_;</div>
+<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>  <span class="keyword">mutable</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> normalized_preconditions_;</div>
+<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>  <span class="keyword">mutable</span> <span class="keywordtype">bool</span> normalized_cache_;</div>
+<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>  <span class="keyword">mutable</span> std::size_t normalized_hash_;</div>
+<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span> </div>
+<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>  <span class="keyword">static</span> std::string</div>
+<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>  nodeToString(<span class="keyword">const</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp; node)</div>
+<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>  {</div>
+<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>    std::ostringstream oss;</div>
+<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span> </div>
+<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>    <span class="keywordflow">switch</span> (node.node_type) {</div>
+<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>      <span class="keywordflow">case</span> plansys2_msgs::msg::Node::AND:</div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>        oss &lt;&lt; <span class="stringliteral">&quot;(and&quot;</span>;</div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>        <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp; p : node.parameters) {</div>
+<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>          oss &lt;&lt; <span class="stringliteral">&quot; &quot;</span> &lt;&lt; p.name;</div>
+<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>        }</div>
+<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>        oss &lt;&lt; <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span>        <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span> </div>
+<div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span>      <span class="keywordflow">case</span> plansys2_msgs::msg::Node::OR:</div>
+<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span>        oss &lt;&lt; <span class="stringliteral">&quot;(or&quot;</span>;</div>
+<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span>        <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp; p : node.parameters) {</div>
+<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span>          oss &lt;&lt; <span class="stringliteral">&quot; &quot;</span> &lt;&lt; p.name;</div>
+<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span>        }</div>
+<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span>        oss &lt;&lt; <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span>        <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span> </div>
+<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span>      <span class="keywordflow">case</span> plansys2_msgs::msg::Node::PREDICATE:</div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>        oss &lt;&lt; <span class="stringliteral">&quot;(&quot;</span> &lt;&lt; node.name;</div>
+<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>        <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> &amp; p : node.parameters) {</div>
+<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>          oss &lt;&lt; <span class="stringliteral">&quot; &quot;</span> &lt;&lt; p.name;</div>
+<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span>        }</div>
+<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span>        oss &lt;&lt; <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>        <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span> </div>
+<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>      <span class="keywordflow">case</span> plansys2_msgs::msg::Node::PARAMETER:</div>
+<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>        oss &lt;&lt; node.name;</div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>        <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span> </div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>      <span class="keywordflow">default</span>:</div>
+<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>        oss &lt;&lt; <span class="stringliteral">&quot;(unknown)&quot;</span>;</div>
+<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>        <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>    }</div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span> </div>
+<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>    <span class="keywordflow">return</span> oss.str();</div>
+<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>  }</div>
+<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>};</div>
 </div>
-<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span></div>
-<div class="foldopen" id="foldopen00326" data-start="{" data-end="}">
-<div class="line"><a id="l00326" name="l00326"></a><span class="lineno"><a class="line" href="classplansys2_1_1Function.html#ad9973a887862cbb5844dc31ed181a75b">  326</a></span>  <span class="keyword">explicit</span> <a class="code hl_function" href="classplansys2_1_1Function.html#ad9973a887862cbb5844dc31ed181a75b">Function</a>(<span class="keyword">const</span> std::string &amp; func)</div>
-<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>  : plansys2_msgs::msg::<a class="code hl_struct" href="structplansys2_1_1Node.html">Node</a>(<a class="code hl_namespace" href="namespaceparser.html">parser</a>::pddl::fromStringFunction(func))</div>
-<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>  {</div>
-<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>  }</div>
-</div>
-<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span></div>
-<div class="foldopen" id="foldopen00335" data-start="{" data-end="}">
-<div class="line"><a id="l00335" name="l00335"></a><span class="lineno"><a class="line" href="classplansys2_1_1Function.html#a0cfd0f9d635abacdafac45c490d31799">  335</a></span>  <a class="code hl_function" href="classplansys2_1_1Function.html#a0cfd0f9d635abacdafac45c490d31799">Function</a>(<span class="keyword">const</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp; func)  <span class="comment">// NOLINT(runtime/explicit)</span></div>
-<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>  : plansys2_msgs::msg::<a class="code hl_struct" href="structplansys2_1_1Node.html">Node</a>(func)</div>
-<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>  {</div>
-<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>  }</div>
-</div>
-<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span> </div>
-<div class="foldopen" id="foldopen00340" data-start="{" data-end="}">
-<div class="line"><a id="l00340" name="l00340"></a><span class="lineno"><a class="line" href="classplansys2_1_1Function.html#a96a82437d9d2aeaaafa2d970537b97fa">  340</a></span>  <span class="keywordtype">bool</span> <a class="code hl_function" href="classplansys2_1_1Function.html#a96a82437d9d2aeaaafa2d970537b97fa">operator==</a>(<span class="keyword">const</span> <a class="code hl_function" href="classplansys2_1_1Function.html#aa61125691a5b694a46ce9f6a0fbe5093">Function</a> &amp; f2)<span class="keyword"> const</span></div>
-<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span><span class="keyword">  </span>{</div>
-<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>    <span class="keywordflow">if</span> (<span class="keyword">this</span> == &amp;f2) {<span class="keywordflow">return</span> <span class="keyword">true</span>;}</div>
-<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceparser_1_1pddl.html#ae0cf3a5b579ccbbfbcf0cfac2e6f0d1c">parser::pddl::checkNodeEquality</a>(*<span class="keyword">this</span>, f2);</div>
-<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>  }</div>
-</div>
-<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>};</div>
-</div>
-<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span></div>
-<div class="foldopen" id="foldopen00354" data-start="{" data-end="};">
-<div class="line"><a id="l00354" name="l00354"></a><span class="lineno"><a class="line" href="classplansys2_1_1Goal.html">  354</a></span><span class="keyword">class </span><a class="code hl_function" href="classplansys2_1_1Goal.html#a2fe3c63aaf5a32bb92674ef63b2e2732">Goal</a> : <span class="keyword">public</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a></div>
-<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span>{</div>
-<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span><span class="keyword">public</span>:</div>
-<div class="foldopen" id="foldopen00360" data-start="{" data-end="}">
-<div class="line"><a id="l00360" name="l00360"></a><span class="lineno"><a class="line" href="classplansys2_1_1Goal.html#a2fe3c63aaf5a32bb92674ef63b2e2732">  360</a></span>  <a class="code hl_function" href="classplansys2_1_1Goal.html#a2fe3c63aaf5a32bb92674ef63b2e2732">Goal</a>()</div>
-<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>  : plansys2_msgs::msg::Tree() {}</div>
-</div>
-<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span></div>
-<div class="foldopen" id="foldopen00367" data-start="{" data-end="}">
-<div class="line"><a id="l00367" name="l00367"></a><span class="lineno"><a class="line" href="classplansys2_1_1Goal.html#aba05d13a04601f1aa3b79049753d4874">  367</a></span>  <span class="keyword">explicit</span> <a class="code hl_function" href="classplansys2_1_1Goal.html#aba05d13a04601f1aa3b79049753d4874">Goal</a>(<span class="keyword">const</span> std::string &amp; goal)</div>
-<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>  : plansys2_msgs::msg::Tree(<a class="code hl_namespace" href="namespaceparser.html">parser</a>::pddl::fromString(goal))</div>
-<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>  {</div>
-<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>  }</div>
-</div>
-<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span></div>
-<div class="foldopen" id="foldopen00376" data-start="{" data-end="}">
-<div class="line"><a id="l00376" name="l00376"></a><span class="lineno"><a class="line" href="classplansys2_1_1Goal.html#aa35ac9fdf87ef996bae429cd86f47be1">  376</a></span>  <a class="code hl_function" href="classplansys2_1_1Goal.html#aa35ac9fdf87ef996bae429cd86f47be1">Goal</a>(<span class="keyword">const</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp; goal)  <span class="comment">// NOLINT(runtime/explicit)</span></div>
-<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>  : plansys2_msgs::msg::Tree(goal)</div>
-<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>  {</div>
-<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>  }</div>
-</div>
-<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span>};</div>
-</div>
-<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span> </div>
-<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span>}  <span class="comment">// namespace plansys2</span></div>
-<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span> </div>
-<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacestd.html">std</a></div>
-<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>{</div>
-<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span> </div>
-<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span><span class="keyword">template</span>&lt;&gt;</div>
+<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span></div>
 <div class="foldopen" id="foldopen00388" data-start="{" data-end="};">
-<div class="line"><a id="l00388" name="l00388"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2__msgs_1_1msg_1_1Node_01_4.html">  388</a></span><span class="keyword">struct </span>hash&lt;plansys2_msgs::msg::Node&gt;</div>
+<div class="line"><a id="l00388" name="l00388"></a><span class="lineno"><a class="line" href="classplansys2_1_1Function.html">  388</a></span><span class="keyword">class </span><a class="code hl_function" href="classplansys2_1_1Function.html#aa61125691a5b694a46ce9f6a0fbe5093">Function</a> : <span class="keyword">public</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a></div>
 <div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>{</div>
-<div class="foldopen" id="foldopen00390" data-start="{" data-end="}">
-<div class="line"><a id="l00390" name="l00390"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2__msgs_1_1msg_1_1Node_01_4.html#a261ef2bfc432bcb37177c0fdee0d93a1">  390</a></span>  std::size_t <a class="code hl_function" href="structstd_1_1hash_3_01plansys2__msgs_1_1msg_1_1Node_01_4.html#a261ef2bfc432bcb37177c0fdee0d93a1">operator()</a>(<span class="keyword">const</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp; node) <span class="keyword">const</span> <span class="keyword">noexcept</span></div>
-<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>  {</div>
-<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="namespacestd.html#ac37c9afa04d9dcc9e3f21f713f1a4e19">hash_node</a>(node);</div>
-<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>  }</div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span><span class="keyword">public</span>:</div>
+<div class="foldopen" id="foldopen00394" data-start="{" data-end="}">
+<div class="line"><a id="l00394" name="l00394"></a><span class="lineno"><a class="line" href="classplansys2_1_1Function.html#aa61125691a5b694a46ce9f6a0fbe5093">  394</a></span>  <a class="code hl_function" href="classplansys2_1_1Function.html#aa61125691a5b694a46ce9f6a0fbe5093">Function</a>()</div>
+<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>  : plansys2_msgs::msg::<a class="code hl_struct" href="structplansys2_1_1Node.html">Node</a>() {}</div>
 </div>
-<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span>};</div>
+<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span></div>
+<div class="foldopen" id="foldopen00401" data-start="{" data-end="}">
+<div class="line"><a id="l00401" name="l00401"></a><span class="lineno"><a class="line" href="classplansys2_1_1Function.html#ad9973a887862cbb5844dc31ed181a75b">  401</a></span>  <span class="keyword">explicit</span> <a class="code hl_function" href="classplansys2_1_1Function.html#ad9973a887862cbb5844dc31ed181a75b">Function</a>(<span class="keyword">const</span> std::string &amp; func)</div>
+<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>  : plansys2_msgs::msg::<a class="code hl_struct" href="structplansys2_1_1Node.html">Node</a>(<a class="code hl_namespace" href="namespaceparser.html">parser</a>::pddl::fromStringFunction(func))</div>
+<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span>  {</div>
+<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span>  }</div>
 </div>
-<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span> </div>
-<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span><span class="keyword">template</span>&lt;&gt;</div>
-<div class="foldopen" id="foldopen00397" data-start="{" data-end="};">
-<div class="line"><a id="l00397" name="l00397"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Instance_01_4.html">  397</a></span><span class="keyword">struct </span>hash&lt;<a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a>::Instance&gt;</div>
-<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>{</div>
-<div class="foldopen" id="foldopen00399" data-start="{" data-end="}">
-<div class="line"><a id="l00399" name="l00399"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Instance_01_4.html#a66eda3729ddb4abf01d9f4a2dc306c62">  399</a></span>  std::size_t <a class="code hl_function" href="structstd_1_1hash_3_01plansys2_1_1Instance_01_4.html#a66eda3729ddb4abf01d9f4a2dc306c62">operator()</a>(<span class="keyword">const</span> <a class="code hl_class" href="classplansys2_1_1Instance.html">plansys2::Instance</a> &amp; inst) <span class="keyword">const</span> <span class="keyword">noexcept</span></div>
-<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span>  {</div>
-<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span>    <span class="keywordflow">return</span> std::hash&lt;std::string&gt;{}(inst.name);</div>
-<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>  }</div>
+<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span></div>
+<div class="foldopen" id="foldopen00410" data-start="{" data-end="}">
+<div class="line"><a id="l00410" name="l00410"></a><span class="lineno"><a class="line" href="classplansys2_1_1Function.html#a0cfd0f9d635abacdafac45c490d31799">  410</a></span>  <a class="code hl_function" href="classplansys2_1_1Function.html#a0cfd0f9d635abacdafac45c490d31799">Function</a>(<span class="keyword">const</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp; func)  <span class="comment">// NOLINT(runtime/explicit)</span></div>
+<div class="line"><a id="l00411" name="l00411"></a><span class="lineno">  411</span>  : plansys2_msgs::msg::<a class="code hl_struct" href="structplansys2_1_1Node.html">Node</a>(func)</div>
+<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span>  {</div>
+<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span>  }</div>
 </div>
-<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span>};</div>
+<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span> </div>
+<div class="foldopen" id="foldopen00415" data-start="{" data-end="}">
+<div class="line"><a id="l00415" name="l00415"></a><span class="lineno"><a class="line" href="classplansys2_1_1Function.html#a96a82437d9d2aeaaafa2d970537b97fa">  415</a></span>  <span class="keywordtype">bool</span> <a class="code hl_function" href="classplansys2_1_1Function.html#a96a82437d9d2aeaaafa2d970537b97fa">operator==</a>(<span class="keyword">const</span> <a class="code hl_function" href="classplansys2_1_1Function.html#aa61125691a5b694a46ce9f6a0fbe5093">Function</a> &amp; f2)<span class="keyword"> const</span></div>
+<div class="line"><a id="l00416" name="l00416"></a><span class="lineno">  416</span><span class="keyword">  </span>{</div>
+<div class="line"><a id="l00417" name="l00417"></a><span class="lineno">  417</span>    <span class="keywordflow">if</span> (<span class="keyword">this</span> == &amp;f2) {<span class="keywordflow">return</span> <span class="keyword">true</span>;}</div>
+<div class="line"><a id="l00418" name="l00418"></a><span class="lineno">  418</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceparser_1_1pddl.html#ae0cf3a5b579ccbbfbcf0cfac2e6f0d1c">parser::pddl::checkNodeEquality</a>(*<span class="keyword">this</span>, f2);</div>
+<div class="line"><a id="l00419" name="l00419"></a><span class="lineno">  419</span>  }</div>
 </div>
-<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span> </div>
-<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span><span class="keyword">template</span>&lt;&gt;</div>
-<div class="foldopen" id="foldopen00406" data-start="{" data-end="};">
-<div class="line"><a id="l00406" name="l00406"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Predicate_01_4.html">  406</a></span><span class="keyword">struct </span>hash&lt;<a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a>::Predicate&gt;</div>
-<div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span>{</div>
-<div class="foldopen" id="foldopen00408" data-start="{" data-end="}">
-<div class="line"><a id="l00408" name="l00408"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Predicate_01_4.html#a73337682534823a1edfca9fe46ae827a">  408</a></span>  std::size_t <a class="code hl_function" href="structstd_1_1hash_3_01plansys2_1_1Predicate_01_4.html#a73337682534823a1edfca9fe46ae827a">operator()</a>(<span class="keyword">const</span> <a class="code hl_class" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &amp; pred) <span class="keyword">const</span> <span class="keyword">noexcept</span></div>
-<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span>  {</div>
-<div class="line"><a id="l00410" name="l00410"></a><span class="lineno">  410</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="namespacestd.html#ac37c9afa04d9dcc9e3f21f713f1a4e19">hash_node</a>(pred);</div>
-<div class="line"><a id="l00411" name="l00411"></a><span class="lineno">  411</span>  }</div>
+<div class="line"><a id="l00420" name="l00420"></a><span class="lineno">  420</span>};</div>
 </div>
-<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span>};</div>
+<div class="line"><a id="l00421" name="l00421"></a><span class="lineno">  421</span></div>
+<div class="foldopen" id="foldopen00429" data-start="{" data-end="};">
+<div class="line"><a id="l00429" name="l00429"></a><span class="lineno"><a class="line" href="classplansys2_1_1Goal.html">  429</a></span><span class="keyword">class </span><a class="code hl_function" href="classplansys2_1_1Goal.html#a2fe3c63aaf5a32bb92674ef63b2e2732">Goal</a> : <span class="keyword">public</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a></div>
+<div class="line"><a id="l00430" name="l00430"></a><span class="lineno">  430</span>{</div>
+<div class="line"><a id="l00431" name="l00431"></a><span class="lineno">  431</span><span class="keyword">public</span>:</div>
+<div class="foldopen" id="foldopen00435" data-start="{" data-end="}">
+<div class="line"><a id="l00435" name="l00435"></a><span class="lineno"><a class="line" href="classplansys2_1_1Goal.html#a2fe3c63aaf5a32bb92674ef63b2e2732">  435</a></span>  <a class="code hl_function" href="classplansys2_1_1Goal.html#a2fe3c63aaf5a32bb92674ef63b2e2732">Goal</a>()</div>
+<div class="line"><a id="l00436" name="l00436"></a><span class="lineno">  436</span>  : plansys2_msgs::msg::Tree() {}</div>
 </div>
-<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span> </div>
-<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span><span class="keyword">template</span>&lt;&gt;</div>
-<div class="foldopen" id="foldopen00415" data-start="{" data-end="};">
-<div class="line"><a id="l00415" name="l00415"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Derived_01_4.html">  415</a></span><span class="keyword">struct </span>hash&lt;<a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a>::Derived&gt;</div>
-<div class="line"><a id="l00416" name="l00416"></a><span class="lineno">  416</span>{</div>
-<div class="foldopen" id="foldopen00417" data-start="{" data-end="}">
-<div class="line"><a id="l00417" name="l00417"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Derived_01_4.html#a017beda5a153aae6f4ac5ed278f401f1">  417</a></span>  std::size_t <a class="code hl_function" href="structstd_1_1hash_3_01plansys2_1_1Derived_01_4.html#a017beda5a153aae6f4ac5ed278f401f1">operator()</a>(<span class="keyword">const</span> <a class="code hl_class" href="classplansys2_1_1Derived.html">plansys2::Derived</a> &amp; derived) <span class="keyword">const</span> <span class="keyword">noexcept</span></div>
-<div class="line"><a id="l00418" name="l00418"></a><span class="lineno">  418</span>  {</div>
-<div class="line"><a id="l00419" name="l00419"></a><span class="lineno">  419</span>    <span class="keywordflow">if</span> (!derived.normalizedDerivedComputed()) {</div>
-<div class="line"><a id="l00420" name="l00420"></a><span class="lineno">  420</span>      derived.computeNormalizedDerived();</div>
-<div class="line"><a id="l00421" name="l00421"></a><span class="lineno">  421</span>    }</div>
-<div class="line"><a id="l00422" name="l00422"></a><span class="lineno">  422</span> </div>
-<div class="line"><a id="l00423" name="l00423"></a><span class="lineno">  423</span>    <span class="keywordflow">return</span> derived.getNormalizedHash();</div>
-<div class="line"><a id="l00424" name="l00424"></a><span class="lineno">  424</span>  }</div>
+<div class="line"><a id="l00437" name="l00437"></a><span class="lineno">  437</span></div>
+<div class="foldopen" id="foldopen00442" data-start="{" data-end="}">
+<div class="line"><a id="l00442" name="l00442"></a><span class="lineno"><a class="line" href="classplansys2_1_1Goal.html#aba05d13a04601f1aa3b79049753d4874">  442</a></span>  <span class="keyword">explicit</span> <a class="code hl_function" href="classplansys2_1_1Goal.html#aba05d13a04601f1aa3b79049753d4874">Goal</a>(<span class="keyword">const</span> std::string &amp; goal)</div>
+<div class="line"><a id="l00443" name="l00443"></a><span class="lineno">  443</span>  : plansys2_msgs::msg::Tree(<a class="code hl_namespace" href="namespaceparser.html">parser</a>::pddl::fromString(goal))</div>
+<div class="line"><a id="l00444" name="l00444"></a><span class="lineno">  444</span>  {</div>
+<div class="line"><a id="l00445" name="l00445"></a><span class="lineno">  445</span>  }</div>
 </div>
-<div class="line"><a id="l00425" name="l00425"></a><span class="lineno">  425</span>};</div>
+<div class="line"><a id="l00446" name="l00446"></a><span class="lineno">  446</span></div>
+<div class="foldopen" id="foldopen00451" data-start="{" data-end="}">
+<div class="line"><a id="l00451" name="l00451"></a><span class="lineno"><a class="line" href="classplansys2_1_1Goal.html#aa35ac9fdf87ef996bae429cd86f47be1">  451</a></span>  <a class="code hl_function" href="classplansys2_1_1Goal.html#aa35ac9fdf87ef996bae429cd86f47be1">Goal</a>(<span class="keyword">const</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp; goal)  <span class="comment">// NOLINT(runtime/explicit)</span></div>
+<div class="line"><a id="l00452" name="l00452"></a><span class="lineno">  452</span>  : plansys2_msgs::msg::Tree(goal)</div>
+<div class="line"><a id="l00453" name="l00453"></a><span class="lineno">  453</span>  {</div>
+<div class="line"><a id="l00454" name="l00454"></a><span class="lineno">  454</span>  }</div>
 </div>
-<div class="line"><a id="l00426" name="l00426"></a><span class="lineno">  426</span> </div>
-<div class="line"><a id="l00427" name="l00427"></a><span class="lineno">  427</span><span class="keyword">template</span>&lt;&gt;</div>
-<div class="foldopen" id="foldopen00428" data-start="{" data-end="};">
-<div class="line"><a id="l00428" name="l00428"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Function_01_4.html">  428</a></span><span class="keyword">struct </span>hash&lt;<a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a>::Function&gt;</div>
-<div class="line"><a id="l00429" name="l00429"></a><span class="lineno">  429</span>{</div>
-<div class="line"><a id="l00430" name="l00430"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Function_01_4.html#a6563a05d40e897ffa1ddfb9088c06c78">  430</a></span>  std::size_t <a class="code hl_function" href="structstd_1_1hash_3_01plansys2_1_1Function_01_4.html#a6563a05d40e897ffa1ddfb9088c06c78">operator()</a>(<span class="keyword">const</span> <a class="code hl_class" href="classplansys2_1_1Function.html">plansys2::Function</a> &amp; func) <span class="keyword">const</span> <span class="keyword">noexcept</span> {<span class="keywordflow">return</span> <a class="code hl_function" href="namespacestd.html#ac37c9afa04d9dcc9e3f21f713f1a4e19">hash_node</a>(func);}</div>
-<div class="line"><a id="l00431" name="l00431"></a><span class="lineno">  431</span>};</div>
+<div class="line"><a id="l00455" name="l00455"></a><span class="lineno">  455</span>};</div>
 </div>
-<div class="line"><a id="l00432" name="l00432"></a><span class="lineno">  432</span>}  <span class="comment">// namespace std</span></div>
-<div class="line"><a id="l00433" name="l00433"></a><span class="lineno">  433</span> </div>
-<div class="line"><a id="l00434" name="l00434"></a><span class="lineno">  434</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_CORE__TYPES_HPP_</span></div>
+<div class="line"><a id="l00456" name="l00456"></a><span class="lineno">  456</span> </div>
+<div class="line"><a id="l00457" name="l00457"></a><span class="lineno">  457</span>}  <span class="comment">// namespace plansys2</span></div>
+<div class="line"><a id="l00458" name="l00458"></a><span class="lineno">  458</span> </div>
+<div class="line"><a id="l00459" name="l00459"></a><span class="lineno">  459</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacestd.html">std</a></div>
+<div class="line"><a id="l00460" name="l00460"></a><span class="lineno">  460</span>{</div>
+<div class="line"><a id="l00461" name="l00461"></a><span class="lineno">  461</span> </div>
+<div class="line"><a id="l00462" name="l00462"></a><span class="lineno">  462</span><span class="keyword">template</span>&lt;&gt;</div>
+<div class="foldopen" id="foldopen00463" data-start="{" data-end="};">
+<div class="line"><a id="l00463" name="l00463"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2__msgs_1_1msg_1_1Node_01_4.html">  463</a></span><span class="keyword">struct </span>hash&lt;plansys2_msgs::msg::Node&gt;</div>
+<div class="line"><a id="l00464" name="l00464"></a><span class="lineno">  464</span>{</div>
+<div class="foldopen" id="foldopen00465" data-start="{" data-end="}">
+<div class="line"><a id="l00465" name="l00465"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2__msgs_1_1msg_1_1Node_01_4.html#a261ef2bfc432bcb37177c0fdee0d93a1">  465</a></span>  std::size_t <a class="code hl_function" href="structstd_1_1hash_3_01plansys2__msgs_1_1msg_1_1Node_01_4.html#a261ef2bfc432bcb37177c0fdee0d93a1">operator()</a>(<span class="keyword">const</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp; node) <span class="keyword">const</span> <span class="keyword">noexcept</span></div>
+<div class="line"><a id="l00466" name="l00466"></a><span class="lineno">  466</span>  {</div>
+<div class="line"><a id="l00467" name="l00467"></a><span class="lineno">  467</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="namespacestd.html#ac37c9afa04d9dcc9e3f21f713f1a4e19">hash_node</a>(node);</div>
+<div class="line"><a id="l00468" name="l00468"></a><span class="lineno">  468</span>  }</div>
+</div>
+<div class="line"><a id="l00469" name="l00469"></a><span class="lineno">  469</span>};</div>
+</div>
+<div class="line"><a id="l00470" name="l00470"></a><span class="lineno">  470</span> </div>
+<div class="line"><a id="l00471" name="l00471"></a><span class="lineno">  471</span><span class="keyword">template</span>&lt;&gt;</div>
+<div class="foldopen" id="foldopen00472" data-start="{" data-end="};">
+<div class="line"><a id="l00472" name="l00472"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Instance_01_4.html">  472</a></span><span class="keyword">struct </span>hash&lt;<a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a>::Instance&gt;</div>
+<div class="line"><a id="l00473" name="l00473"></a><span class="lineno">  473</span>{</div>
+<div class="foldopen" id="foldopen00474" data-start="{" data-end="}">
+<div class="line"><a id="l00474" name="l00474"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Instance_01_4.html#a66eda3729ddb4abf01d9f4a2dc306c62">  474</a></span>  std::size_t <a class="code hl_function" href="structstd_1_1hash_3_01plansys2_1_1Instance_01_4.html#a66eda3729ddb4abf01d9f4a2dc306c62">operator()</a>(<span class="keyword">const</span> <a class="code hl_class" href="classplansys2_1_1Instance.html">plansys2::Instance</a> &amp; inst) <span class="keyword">const</span> <span class="keyword">noexcept</span></div>
+<div class="line"><a id="l00475" name="l00475"></a><span class="lineno">  475</span>  {</div>
+<div class="line"><a id="l00476" name="l00476"></a><span class="lineno">  476</span>    <span class="keywordflow">return</span> std::hash&lt;std::string&gt;{}(inst.name);</div>
+<div class="line"><a id="l00477" name="l00477"></a><span class="lineno">  477</span>  }</div>
+</div>
+<div class="line"><a id="l00478" name="l00478"></a><span class="lineno">  478</span>};</div>
+</div>
+<div class="line"><a id="l00479" name="l00479"></a><span class="lineno">  479</span> </div>
+<div class="line"><a id="l00480" name="l00480"></a><span class="lineno">  480</span><span class="keyword">template</span>&lt;&gt;</div>
+<div class="foldopen" id="foldopen00481" data-start="{" data-end="};">
+<div class="line"><a id="l00481" name="l00481"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Predicate_01_4.html">  481</a></span><span class="keyword">struct </span>hash&lt;<a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a>::Predicate&gt;</div>
+<div class="line"><a id="l00482" name="l00482"></a><span class="lineno">  482</span>{</div>
+<div class="foldopen" id="foldopen00483" data-start="{" data-end="}">
+<div class="line"><a id="l00483" name="l00483"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Predicate_01_4.html#a73337682534823a1edfca9fe46ae827a">  483</a></span>  std::size_t <a class="code hl_function" href="structstd_1_1hash_3_01plansys2_1_1Predicate_01_4.html#a73337682534823a1edfca9fe46ae827a">operator()</a>(<span class="keyword">const</span> <a class="code hl_class" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &amp; pred) <span class="keyword">const</span> <span class="keyword">noexcept</span></div>
+<div class="line"><a id="l00484" name="l00484"></a><span class="lineno">  484</span>  {</div>
+<div class="line"><a id="l00485" name="l00485"></a><span class="lineno">  485</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="namespacestd.html#ac37c9afa04d9dcc9e3f21f713f1a4e19">hash_node</a>(pred);</div>
+<div class="line"><a id="l00486" name="l00486"></a><span class="lineno">  486</span>  }</div>
+</div>
+<div class="line"><a id="l00487" name="l00487"></a><span class="lineno">  487</span>};</div>
+</div>
+<div class="line"><a id="l00488" name="l00488"></a><span class="lineno">  488</span> </div>
+<div class="line"><a id="l00489" name="l00489"></a><span class="lineno">  489</span><span class="keyword">template</span>&lt;&gt;</div>
+<div class="foldopen" id="foldopen00490" data-start="{" data-end="};">
+<div class="line"><a id="l00490" name="l00490"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Derived_01_4.html">  490</a></span><span class="keyword">struct </span>hash&lt;<a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a>::Derived&gt;</div>
+<div class="line"><a id="l00491" name="l00491"></a><span class="lineno">  491</span>{</div>
+<div class="foldopen" id="foldopen00492" data-start="{" data-end="}">
+<div class="line"><a id="l00492" name="l00492"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Derived_01_4.html#a017beda5a153aae6f4ac5ed278f401f1">  492</a></span>  std::size_t <a class="code hl_function" href="structstd_1_1hash_3_01plansys2_1_1Derived_01_4.html#a017beda5a153aae6f4ac5ed278f401f1">operator()</a>(<span class="keyword">const</span> <a class="code hl_class" href="classplansys2_1_1Derived.html">plansys2::Derived</a> &amp; derived) <span class="keyword">const</span> <span class="keyword">noexcept</span></div>
+<div class="line"><a id="l00493" name="l00493"></a><span class="lineno">  493</span>  {</div>
+<div class="line"><a id="l00494" name="l00494"></a><span class="lineno">  494</span>    <span class="keywordflow">if</span> (!derived.normalizedDerivedComputed()) {</div>
+<div class="line"><a id="l00495" name="l00495"></a><span class="lineno">  495</span>      derived.computeNormalizedDerived();</div>
+<div class="line"><a id="l00496" name="l00496"></a><span class="lineno">  496</span>    }</div>
+<div class="line"><a id="l00497" name="l00497"></a><span class="lineno">  497</span> </div>
+<div class="line"><a id="l00498" name="l00498"></a><span class="lineno">  498</span>    <span class="keywordflow">return</span> derived.getNormalizedHash();</div>
+<div class="line"><a id="l00499" name="l00499"></a><span class="lineno">  499</span>  }</div>
+</div>
+<div class="line"><a id="l00500" name="l00500"></a><span class="lineno">  500</span>};</div>
+</div>
+<div class="line"><a id="l00501" name="l00501"></a><span class="lineno">  501</span> </div>
+<div class="line"><a id="l00502" name="l00502"></a><span class="lineno">  502</span><span class="keyword">template</span>&lt;&gt;</div>
+<div class="foldopen" id="foldopen00503" data-start="{" data-end="};">
+<div class="line"><a id="l00503" name="l00503"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Function_01_4.html">  503</a></span><span class="keyword">struct </span>hash&lt;<a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a>::Function&gt;</div>
+<div class="line"><a id="l00504" name="l00504"></a><span class="lineno">  504</span>{</div>
+<div class="line"><a id="l00505" name="l00505"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01plansys2_1_1Function_01_4.html#a6563a05d40e897ffa1ddfb9088c06c78">  505</a></span>  std::size_t <a class="code hl_function" href="structstd_1_1hash_3_01plansys2_1_1Function_01_4.html#a6563a05d40e897ffa1ddfb9088c06c78">operator()</a>(<span class="keyword">const</span> <a class="code hl_class" href="classplansys2_1_1Function.html">plansys2::Function</a> &amp; func) <span class="keyword">const</span> <span class="keyword">noexcept</span> {<span class="keywordflow">return</span> <a class="code hl_function" href="namespacestd.html#ac37c9afa04d9dcc9e3f21f713f1a4e19">hash_node</a>(func);}</div>
+<div class="line"><a id="l00506" name="l00506"></a><span class="lineno">  506</span>};</div>
+</div>
+<div class="line"><a id="l00507" name="l00507"></a><span class="lineno">  507</span>}  <span class="comment">// namespace std</span></div>
+<div class="line"><a id="l00508" name="l00508"></a><span class="lineno">  508</span> </div>
+<div class="line"><a id="l00509" name="l00509"></a><span class="lineno">  509</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_CORE__TYPES_HPP_</span></div>
 <div class="ttc" id="aclassplansys2_1_1Derived_html"><div class="ttname"><a href="classplansys2_1_1Derived.html">plansys2::Derived</a></div><div class="ttdoc">Represents a derived predicate (i.e., axiom) in the planning domain.</div><div class="ttdef"><b>Definition</b> Types.hpp:205</div></div>
+<div class="ttc" id="aclassplansys2_1_1Derived_html_a1162b62ae84e8799d17baa009614e318"><div class="ttname"><a href="classplansys2_1_1Derived.html#a1162b62ae84e8799d17baa009614e318">plansys2::Derived::toNormalizedString</a></div><div class="ttdeci">std::string toNormalizedString() const</div><div class="ttdef"><b>Definition</b> Types.hpp:299</div></div>
 <div class="ttc" id="aclassplansys2_1_1Derived_html_a3c742112b61674961002d2df3d91248e"><div class="ttname"><a href="classplansys2_1_1Derived.html#a3c742112b61674961002d2df3d91248e">plansys2::Derived::normalize_param</a></div><div class="ttdeci">std::string normalize_param(const std::string &amp;old_name, std::map&lt; std::string, std::string &gt; &amp;var_map, uint &amp;i) const</div><div class="ttdef"><b>Definition</b> Types.hpp:254</div></div>
 <div class="ttc" id="aclassplansys2_1_1Derived_html_a424cfc89bbc12a10e47dbbdd69f58904"><div class="ttname"><a href="classplansys2_1_1Derived.html#a424cfc89bbc12a10e47dbbdd69f58904">plansys2::Derived::getNormalizedPreconditions</a></div><div class="ttdeci">const plansys2_msgs::msg::Tree &amp; getNormalizedPreconditions() const</div><div class="ttdef"><b>Definition</b> Types.hpp:233</div></div>
 <div class="ttc" id="aclassplansys2_1_1Derived_html_a48c52f0918677a66919330a1ab162942"><div class="ttname"><a href="classplansys2_1_1Derived.html#a48c52f0918677a66919330a1ab162942">plansys2::Derived::Derived</a></div><div class="ttdeci">Derived(const plansys2_msgs::msg::Derived &amp;derived)</div><div class="ttdef"><b>Definition</b> Types.hpp:209</div></div>
@@ -537,14 +615,14 @@ $(function(){ initResizable(false); });
 <div class="ttc" id="aclassplansys2_1_1Derived_html_ad881ee89ec2b09ba4b7600259a64e274"><div class="ttname"><a href="classplansys2_1_1Derived.html#ad881ee89ec2b09ba4b7600259a64e274">plansys2::Derived::computeNormalizedDerived</a></div><div class="ttdeci">void computeNormalizedDerived() const</div><div class="ttdef"><b>Definition</b> Types.hpp:267</div></div>
 <div class="ttc" id="aclassplansys2_1_1Derived_html_ad8c36c6c9b75687e85a8792e01c984cb"><div class="ttname"><a href="classplansys2_1_1Derived.html#ad8c36c6c9b75687e85a8792e01c984cb">plansys2::Derived::normalizedDerivedComputed</a></div><div class="ttdeci">bool normalizedDerivedComputed() const</div><div class="ttdef"><b>Definition</b> Types.hpp:249</div></div>
 <div class="ttc" id="aclassplansys2_1_1Derived_html_add2a0c16fe072e2e2ffd054cb3733e12"><div class="ttname"><a href="classplansys2_1_1Derived.html#add2a0c16fe072e2e2ffd054cb3733e12">plansys2::Derived::getNormalizedDerived</a></div><div class="ttdeci">Derived getNormalizedDerived()</div><div class="ttdef"><b>Definition</b> Types.hpp:238</div></div>
-<div class="ttc" id="aclassplansys2_1_1Function_html"><div class="ttname"><a href="classplansys2_1_1Function.html">plansys2::Function</a></div><div class="ttdoc">Represents a function in the planning domain.</div><div class="ttdef"><b>Definition</b> Types.hpp:314</div></div>
-<div class="ttc" id="aclassplansys2_1_1Function_html_a0cfd0f9d635abacdafac45c490d31799"><div class="ttname"><a href="classplansys2_1_1Function.html#a0cfd0f9d635abacdafac45c490d31799">plansys2::Function::Function</a></div><div class="ttdeci">Function(const plansys2_msgs::msg::Node &amp;func)</div><div class="ttdoc">Construct a Function from an existing Node message.</div><div class="ttdef"><b>Definition</b> Types.hpp:335</div></div>
-<div class="ttc" id="aclassplansys2_1_1Function_html_a96a82437d9d2aeaaafa2d970537b97fa"><div class="ttname"><a href="classplansys2_1_1Function.html#a96a82437d9d2aeaaafa2d970537b97fa">plansys2::Function::operator==</a></div><div class="ttdeci">bool operator==(const Function &amp;f2) const</div><div class="ttdef"><b>Definition</b> Types.hpp:340</div></div>
-<div class="ttc" id="aclassplansys2_1_1Function_html_aa61125691a5b694a46ce9f6a0fbe5093"><div class="ttname"><a href="classplansys2_1_1Function.html#aa61125691a5b694a46ce9f6a0fbe5093">plansys2::Function::Function</a></div><div class="ttdeci">Function()</div><div class="ttdoc">Default constructor.</div><div class="ttdef"><b>Definition</b> Types.hpp:319</div></div>
-<div class="ttc" id="aclassplansys2_1_1Function_html_ad9973a887862cbb5844dc31ed181a75b"><div class="ttname"><a href="classplansys2_1_1Function.html#ad9973a887862cbb5844dc31ed181a75b">plansys2::Function::Function</a></div><div class="ttdeci">Function(const std::string &amp;func)</div><div class="ttdoc">Construct a Function from a string representation.</div><div class="ttdef"><b>Definition</b> Types.hpp:326</div></div>
-<div class="ttc" id="aclassplansys2_1_1Goal_html_a2fe3c63aaf5a32bb92674ef63b2e2732"><div class="ttname"><a href="classplansys2_1_1Goal.html#a2fe3c63aaf5a32bb92674ef63b2e2732">plansys2::Goal::Goal</a></div><div class="ttdeci">Goal()</div><div class="ttdoc">Default constructor.</div><div class="ttdef"><b>Definition</b> Types.hpp:360</div></div>
-<div class="ttc" id="aclassplansys2_1_1Goal_html_aa35ac9fdf87ef996bae429cd86f47be1"><div class="ttname"><a href="classplansys2_1_1Goal.html#aa35ac9fdf87ef996bae429cd86f47be1">plansys2::Goal::Goal</a></div><div class="ttdeci">Goal(const plansys2_msgs::msg::Tree &amp;goal)</div><div class="ttdoc">Construct a Goal from an existing Tree message.</div><div class="ttdef"><b>Definition</b> Types.hpp:376</div></div>
-<div class="ttc" id="aclassplansys2_1_1Goal_html_aba05d13a04601f1aa3b79049753d4874"><div class="ttname"><a href="classplansys2_1_1Goal.html#aba05d13a04601f1aa3b79049753d4874">plansys2::Goal::Goal</a></div><div class="ttdeci">Goal(const std::string &amp;goal)</div><div class="ttdoc">Construct a Goal from a string representation.</div><div class="ttdef"><b>Definition</b> Types.hpp:367</div></div>
+<div class="ttc" id="aclassplansys2_1_1Function_html"><div class="ttname"><a href="classplansys2_1_1Function.html">plansys2::Function</a></div><div class="ttdoc">Represents a function in the planning domain.</div><div class="ttdef"><b>Definition</b> Types.hpp:389</div></div>
+<div class="ttc" id="aclassplansys2_1_1Function_html_a0cfd0f9d635abacdafac45c490d31799"><div class="ttname"><a href="classplansys2_1_1Function.html#a0cfd0f9d635abacdafac45c490d31799">plansys2::Function::Function</a></div><div class="ttdeci">Function(const plansys2_msgs::msg::Node &amp;func)</div><div class="ttdoc">Construct a Function from an existing Node message.</div><div class="ttdef"><b>Definition</b> Types.hpp:410</div></div>
+<div class="ttc" id="aclassplansys2_1_1Function_html_a96a82437d9d2aeaaafa2d970537b97fa"><div class="ttname"><a href="classplansys2_1_1Function.html#a96a82437d9d2aeaaafa2d970537b97fa">plansys2::Function::operator==</a></div><div class="ttdeci">bool operator==(const Function &amp;f2) const</div><div class="ttdef"><b>Definition</b> Types.hpp:415</div></div>
+<div class="ttc" id="aclassplansys2_1_1Function_html_aa61125691a5b694a46ce9f6a0fbe5093"><div class="ttname"><a href="classplansys2_1_1Function.html#aa61125691a5b694a46ce9f6a0fbe5093">plansys2::Function::Function</a></div><div class="ttdeci">Function()</div><div class="ttdoc">Default constructor.</div><div class="ttdef"><b>Definition</b> Types.hpp:394</div></div>
+<div class="ttc" id="aclassplansys2_1_1Function_html_ad9973a887862cbb5844dc31ed181a75b"><div class="ttname"><a href="classplansys2_1_1Function.html#ad9973a887862cbb5844dc31ed181a75b">plansys2::Function::Function</a></div><div class="ttdeci">Function(const std::string &amp;func)</div><div class="ttdoc">Construct a Function from a string representation.</div><div class="ttdef"><b>Definition</b> Types.hpp:401</div></div>
+<div class="ttc" id="aclassplansys2_1_1Goal_html_a2fe3c63aaf5a32bb92674ef63b2e2732"><div class="ttname"><a href="classplansys2_1_1Goal.html#a2fe3c63aaf5a32bb92674ef63b2e2732">plansys2::Goal::Goal</a></div><div class="ttdeci">Goal()</div><div class="ttdoc">Default constructor.</div><div class="ttdef"><b>Definition</b> Types.hpp:435</div></div>
+<div class="ttc" id="aclassplansys2_1_1Goal_html_aa35ac9fdf87ef996bae429cd86f47be1"><div class="ttname"><a href="classplansys2_1_1Goal.html#aa35ac9fdf87ef996bae429cd86f47be1">plansys2::Goal::Goal</a></div><div class="ttdeci">Goal(const plansys2_msgs::msg::Tree &amp;goal)</div><div class="ttdoc">Construct a Goal from an existing Tree message.</div><div class="ttdef"><b>Definition</b> Types.hpp:451</div></div>
+<div class="ttc" id="aclassplansys2_1_1Goal_html_aba05d13a04601f1aa3b79049753d4874"><div class="ttname"><a href="classplansys2_1_1Goal.html#aba05d13a04601f1aa3b79049753d4874">plansys2::Goal::Goal</a></div><div class="ttdeci">Goal(const std::string &amp;goal)</div><div class="ttdoc">Construct a Goal from a string representation.</div><div class="ttdef"><b>Definition</b> Types.hpp:442</div></div>
 <div class="ttc" id="aclassplansys2_1_1Instance_html"><div class="ttname"><a href="classplansys2_1_1Instance.html">plansys2::Instance</a></div><div class="ttdoc">Represents an instance (object) in the planning domain.</div><div class="ttdef"><b>Definition</b> Types.hpp:122</div></div>
 <div class="ttc" id="aclassplansys2_1_1Instance_html_a19a65974bdc77bfb0addc8b8781c7360"><div class="ttname"><a href="classplansys2_1_1Instance.html#a19a65974bdc77bfb0addc8b8781c7360">plansys2::Instance::Instance</a></div><div class="ttdeci">Instance(const std::string &amp;name, const std::string &amp;type={})</div><div class="ttdoc">Construct an Instance from a name and optional type.</div><div class="ttdef"><b>Definition</b> Types.hpp:135</div></div>
 <div class="ttc" id="aclassplansys2_1_1Instance_html_a1e7a673100f4e7d970f78c87ad76be28"><div class="ttname"><a href="classplansys2_1_1Instance.html#a1e7a673100f4e7d970f78c87ad76be28">plansys2::Instance::operator==</a></div><div class="ttdeci">bool operator==(const Instance &amp;i2) const</div><div class="ttdef"><b>Definition</b> Types.hpp:149</div></div>
@@ -573,11 +651,11 @@ $(function(){ initResizable(false); });
 <div class="ttc" id="anamespacestd_html_ac37c9afa04d9dcc9e3f21f713f1a4e19"><div class="ttname"><a href="namespacestd.html#ac37c9afa04d9dcc9e3f21f713f1a4e19">std::hash_node</a></div><div class="ttdeci">std::size_t hash_node(const plansys2_msgs::msg::Node &amp;node)</div><div class="ttdef"><b>Definition</b> Types.hpp:39</div></div>
 <div class="ttc" id="aplansys2__pddl__parser_2include_2plansys2__pddl__parser_2Utils_8hpp_html"><div class="ttname"><a href="plansys2__pddl__parser_2include_2plansys2__pddl__parser_2Utils_8hpp.html">Utils.hpp</a></div></div>
 <div class="ttc" id="astructplansys2_1_1Node_html"><div class="ttname"><a href="structplansys2_1_1Node.html">plansys2::Node</a></div><div class="ttdoc">Node in the temporal planning graph.</div><div class="ttdef"><b>Definition</b> BTBuilder.hpp:75</div></div>
-<div class="ttc" id="astructstd_1_1hash_3_01plansys2_1_1Derived_01_4_html_a017beda5a153aae6f4ac5ed278f401f1"><div class="ttname"><a href="structstd_1_1hash_3_01plansys2_1_1Derived_01_4.html#a017beda5a153aae6f4ac5ed278f401f1">std::hash&lt; plansys2::Derived &gt;::operator()</a></div><div class="ttdeci">std::size_t operator()(const plansys2::Derived &amp;derived) const noexcept</div><div class="ttdef"><b>Definition</b> Types.hpp:417</div></div>
-<div class="ttc" id="astructstd_1_1hash_3_01plansys2_1_1Function_01_4_html_a6563a05d40e897ffa1ddfb9088c06c78"><div class="ttname"><a href="structstd_1_1hash_3_01plansys2_1_1Function_01_4.html#a6563a05d40e897ffa1ddfb9088c06c78">std::hash&lt; plansys2::Function &gt;::operator()</a></div><div class="ttdeci">std::size_t operator()(const plansys2::Function &amp;func) const noexcept</div><div class="ttdef"><b>Definition</b> Types.hpp:430</div></div>
-<div class="ttc" id="astructstd_1_1hash_3_01plansys2_1_1Instance_01_4_html_a66eda3729ddb4abf01d9f4a2dc306c62"><div class="ttname"><a href="structstd_1_1hash_3_01plansys2_1_1Instance_01_4.html#a66eda3729ddb4abf01d9f4a2dc306c62">std::hash&lt; plansys2::Instance &gt;::operator()</a></div><div class="ttdeci">std::size_t operator()(const plansys2::Instance &amp;inst) const noexcept</div><div class="ttdef"><b>Definition</b> Types.hpp:399</div></div>
-<div class="ttc" id="astructstd_1_1hash_3_01plansys2_1_1Predicate_01_4_html_a73337682534823a1edfca9fe46ae827a"><div class="ttname"><a href="structstd_1_1hash_3_01plansys2_1_1Predicate_01_4.html#a73337682534823a1edfca9fe46ae827a">std::hash&lt; plansys2::Predicate &gt;::operator()</a></div><div class="ttdeci">std::size_t operator()(const plansys2::Predicate &amp;pred) const noexcept</div><div class="ttdef"><b>Definition</b> Types.hpp:408</div></div>
-<div class="ttc" id="astructstd_1_1hash_3_01plansys2__msgs_1_1msg_1_1Node_01_4_html_a261ef2bfc432bcb37177c0fdee0d93a1"><div class="ttname"><a href="structstd_1_1hash_3_01plansys2__msgs_1_1msg_1_1Node_01_4.html#a261ef2bfc432bcb37177c0fdee0d93a1">std::hash&lt; plansys2_msgs::msg::Node &gt;::operator()</a></div><div class="ttdeci">std::size_t operator()(const plansys2_msgs::msg::Node &amp;node) const noexcept</div><div class="ttdef"><b>Definition</b> Types.hpp:390</div></div>
+<div class="ttc" id="astructstd_1_1hash_3_01plansys2_1_1Derived_01_4_html_a017beda5a153aae6f4ac5ed278f401f1"><div class="ttname"><a href="structstd_1_1hash_3_01plansys2_1_1Derived_01_4.html#a017beda5a153aae6f4ac5ed278f401f1">std::hash&lt; plansys2::Derived &gt;::operator()</a></div><div class="ttdeci">std::size_t operator()(const plansys2::Derived &amp;derived) const noexcept</div><div class="ttdef"><b>Definition</b> Types.hpp:492</div></div>
+<div class="ttc" id="astructstd_1_1hash_3_01plansys2_1_1Function_01_4_html_a6563a05d40e897ffa1ddfb9088c06c78"><div class="ttname"><a href="structstd_1_1hash_3_01plansys2_1_1Function_01_4.html#a6563a05d40e897ffa1ddfb9088c06c78">std::hash&lt; plansys2::Function &gt;::operator()</a></div><div class="ttdeci">std::size_t operator()(const plansys2::Function &amp;func) const noexcept</div><div class="ttdef"><b>Definition</b> Types.hpp:505</div></div>
+<div class="ttc" id="astructstd_1_1hash_3_01plansys2_1_1Instance_01_4_html_a66eda3729ddb4abf01d9f4a2dc306c62"><div class="ttname"><a href="structstd_1_1hash_3_01plansys2_1_1Instance_01_4.html#a66eda3729ddb4abf01d9f4a2dc306c62">std::hash&lt; plansys2::Instance &gt;::operator()</a></div><div class="ttdeci">std::size_t operator()(const plansys2::Instance &amp;inst) const noexcept</div><div class="ttdef"><b>Definition</b> Types.hpp:474</div></div>
+<div class="ttc" id="astructstd_1_1hash_3_01plansys2_1_1Predicate_01_4_html_a73337682534823a1edfca9fe46ae827a"><div class="ttname"><a href="structstd_1_1hash_3_01plansys2_1_1Predicate_01_4.html#a73337682534823a1edfca9fe46ae827a">std::hash&lt; plansys2::Predicate &gt;::operator()</a></div><div class="ttdeci">std::size_t operator()(const plansys2::Predicate &amp;pred) const noexcept</div><div class="ttdef"><b>Definition</b> Types.hpp:483</div></div>
+<div class="ttc" id="astructstd_1_1hash_3_01plansys2__msgs_1_1msg_1_1Node_01_4_html_a261ef2bfc432bcb37177c0fdee0d93a1"><div class="ttname"><a href="structstd_1_1hash_3_01plansys2__msgs_1_1msg_1_1Node_01_4.html#a261ef2bfc432bcb37177c0fdee0d93a1">std::hash&lt; plansys2_msgs::msg::Node &gt;::operator()</a></div><div class="ttdeci">std::size_t operator()(const plansys2_msgs::msg::Node &amp;node) const noexcept</div><div class="ttdef"><b>Definition</b> Types.hpp:465</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -128,9 +128,9 @@ Public Types</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a3758c6b279c00a7b705bc9555485c133" id="r_a3758c6b279c00a7b705bc9555485c133"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3758c6b279c00a7b705bc9555485c133">DomainExpertNode</a> ()</td></tr>
-<tr class="memdesc:a3758c6b279c00a7b705bc9555485c133"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new <a class="el" href="classplansys2_1_1DomainExpertNode.html" title="ROS2 Lifecycle Node that manages the domain model and handles requests from DomainExpertClient.">DomainExpertNode</a> object.  <br /></td></tr>
-<tr class="separator:a3758c6b279c00a7b705bc9555485c133"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aabc0a91637a4debbecb79d3e6aea1809" id="r_aabc0a91637a4debbecb79d3e6aea1809"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aabc0a91637a4debbecb79d3e6aea1809">DomainExpertNode</a> (const rclcpp::NodeOptions &amp;options=rclcpp::NodeOptions())</td></tr>
+<tr class="memdesc:aabc0a91637a4debbecb79d3e6aea1809"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new <a class="el" href="classplansys2_1_1DomainExpertNode.html" title="ROS2 Lifecycle Node that manages the domain model and handles requests from DomainExpertClient.">DomainExpertNode</a> object.  <br /></td></tr>
+<tr class="separator:aabc0a91637a4debbecb79d3e6aea1809"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2b13c580a35bdb82d762b93a9ea6ae72" id="r_a2b13c580a35bdb82d762b93a9ea6ae72"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2b13c580a35bdb82d762b93a9ea6ae72">get_domain_action_details_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::GetDomainActionDetails::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::GetDomainActionDetails::Response &gt; response)</td></tr>
 <tr class="memdesc:a2b13c580a35bdb82d762b93a9ea6ae72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to retrieve details of a specific action.  <br /></td></tr>
 <tr class="separator:a2b13c580a35bdb82d762b93a9ea6ae72"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -210,22 +210,36 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a3758c6b279c00a7b705bc9555485c133" name="a3758c6b279c00a7b705bc9555485c133"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3758c6b279c00a7b705bc9555485c133">&#9670;&#160;</a></span>DomainExpertNode()</h2>
+<a id="aabc0a91637a4debbecb79d3e6aea1809" name="aabc0a91637a4debbecb79d3e6aea1809"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aabc0a91637a4debbecb79d3e6aea1809">&#9670;&#160;</a></span>DomainExpertNode()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classplansys2_1_1DomainExpertNode.html">DomainExpertNode</a> </td>
           <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td class="paramtype">const rclcpp::NodeOptions &amp;</td>          <td class="paramname"><span class="paramname"><em>options</em></span><span class="paramdefsep"> = </span><span class="paramdefval">rclcpp::NodeOptions()</span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel explicit">explicit</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Construct a new <a class="el" href="classplansys2_1_1DomainExpertNode.html" title="ROS2 Lifecycle Node that manages the domain model and handles requests from DomainExpertClient.">DomainExpertNode</a> object. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">options</td><td><a class="el" href="structplansys2_1_1Node.html" title="Node in the temporal planning graph.">Node</a> options for configuring the node. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

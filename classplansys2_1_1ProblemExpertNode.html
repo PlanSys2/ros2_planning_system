@@ -200,9 +200,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a38b74771f6ab23805f990786e4d6f806" id="r_a38b74771f6ab23805f990786e4d6f806"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#a391b2d7620068e0fba4a812f869555a5">CallbackReturnT</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a38b74771f6ab23805f990786e4d6f806">on_shutdown</a> (const rclcpp_lifecycle::State &amp;state)</td></tr>
 <tr class="memdesc:a38b74771f6ab23805f990786e4d6f806"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shuts down the node.  <br /></td></tr>
 <tr class="separator:a38b74771f6ab23805f990786e4d6f806"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a011bc2bbf484706eb5b66907a20cf6fa" id="r_a011bc2bbf484706eb5b66907a20cf6fa"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a011bc2bbf484706eb5b66907a20cf6fa">ProblemExpertNode</a> ()</td></tr>
-<tr class="memdesc:a011bc2bbf484706eb5b66907a20cf6fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classplansys2_1_1ProblemExpertNode.html" title="ROS 2 Lifecycle node that manages the PDDL problem representation and operations.">ProblemExpertNode</a>.  <br /></td></tr>
-<tr class="separator:a011bc2bbf484706eb5b66907a20cf6fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a576969a842c39a1ada36eae38e96a896" id="r_a576969a842c39a1ada36eae38e96a896"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a576969a842c39a1ada36eae38e96a896">ProblemExpertNode</a> (const rclcpp::NodeOptions &amp;options=rclcpp::NodeOptions())</td></tr>
+<tr class="memdesc:a576969a842c39a1ada36eae38e96a896"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classplansys2_1_1ProblemExpertNode.html" title="ROS 2 Lifecycle node that manages the PDDL problem representation and operations.">ProblemExpertNode</a>.  <br /></td></tr>
+<tr class="separator:a576969a842c39a1ada36eae38e96a896"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abf65dd493e9b33eeaf23833dc462ae5f" id="r_abf65dd493e9b33eeaf23833dc462ae5f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abf65dd493e9b33eeaf23833dc462ae5f">remove_problem_function_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::AffectNode::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::AffectNode::Response &gt; response)</td></tr>
 <tr class="memdesc:abf65dd493e9b33eeaf23833dc462ae5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to remove a problem function.  <br /></td></tr>
 <tr class="separator:abf65dd493e9b33eeaf23833dc462ae5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -240,19 +240,27 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a011bc2bbf484706eb5b66907a20cf6fa" name="a011bc2bbf484706eb5b66907a20cf6fa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a011bc2bbf484706eb5b66907a20cf6fa">&#9670;&#160;</a></span>ProblemExpertNode()</h2>
+<a id="a576969a842c39a1ada36eae38e96a896" name="a576969a842c39a1ada36eae38e96a896"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a576969a842c39a1ada36eae38e96a896">&#9670;&#160;</a></span>ProblemExpertNode()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classplansys2_1_1ProblemExpertNode.html">ProblemExpertNode</a> </td>
           <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td class="paramtype">const rclcpp::NodeOptions &amp;</td>          <td class="paramname"><span class="paramname"><em>options</em></span><span class="paramdefsep"> = </span><span class="paramdefval">rclcpp::NodeOptions()</span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel explicit">explicit</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Constructor for the <a class="el" href="classplansys2_1_1ProblemExpertNode.html" title="ROS 2 Lifecycle node that manages the PDDL problem representation and operations.">ProblemExpertNode</a>. </p>

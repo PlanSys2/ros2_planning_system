@@ -322,6 +322,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a97f9f8df76f2e849d11c2f313dd7e7d3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a97f9f8df76f2e849d11c2f313dd7e7d3">declare_parameter_if_not_declared</a> (NodeT node, const std::string &amp;param_name, const rclcpp::ParameterValue &amp;default_value=rclcpp::ParameterValue(), const rcl_interfaces::msg::ParameterDescriptor &amp;parameter_descriptor=rcl_interfaces::msg::ParameterDescriptor())</td></tr>
 <tr class="memdesc:a97f9f8df76f2e849d11c2f313dd7e7d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Declare a parameter if it has not been declared yet.  <br /></td></tr>
 <tr class="separator:a97f9f8df76f2e849d11c2f313dd7e7d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28a96de02f88e847d111d59691b841e9" id="r_a28a96de02f88e847d111d59691b841e9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a28a96de02f88e847d111d59691b841e9">drain_ros</a> (std::chrono::milliseconds total=200ms)</td></tr>
+<tr class="memdesc:a28a96de02f88e847d111d59691b841e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Drain ROS messages for a given time.  <br /></td></tr>
+<tr class="separator:a28a96de02f88e847d111d59691b841e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae34c9624ccb00dfef684fa77148d3abe" id="r_ae34c9624ccb00dfef684fa77148d3abe"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; <a class="el" href="classbool.html">bool</a>, <a class="el" href="classbool.html">bool</a>, double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae34c9624ccb00dfef684fa77148d3abe">evaluate</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt; problem_client, <a class="el" href="classbool.html">bool</a> <a class="el" href="#a578d8b816105e47be824adaec61e64f9">apply</a>=false, uint32_t node_id=0)</td></tr>
 <tr class="memdesc:ae34c9624ccb00dfef684fa77148d3abe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a PDDL expression represented as a tree using only the problem client.  <br /></td></tr>
 <tr class="separator:ae34c9624ccb00dfef684fa77148d3abe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -790,6 +793,32 @@ template&lt;typename NodeT&gt; </div>
     <tr><td class="paramdir">[in]</td><td class="paramname">param_name</td><td>Name of the parameter to declare. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">default_value</td><td>Default value for the parameter. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">parameter_descriptor</td><td>Parameter descriptor for additional metadata. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a28a96de02f88e847d111d59691b841e9" name="a28a96de02f88e847d111d59691b841e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a28a96de02f88e847d111d59691b841e9">&#9670;&#160;</a></span>drain_ros()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void drain_ros </td>
+          <td>(</td>
+          <td class="paramtype">std::chrono::milliseconds</td>          <td class="paramname"><span class="paramname"><em>total</em></span><span class="paramdefsep"> = </span><span class="paramdefval">200ms</span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Drain ROS messages for a given time. </p>
+<p>Useful in tests to ensure all messages are processed. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>The node to use for spinning. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">total</td><td>The total time to drain messages. </td></tr>
   </table>
   </dd>
 </dl>

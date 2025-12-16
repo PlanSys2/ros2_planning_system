@@ -1,3 +1,5 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$classstd_1_1vector_3_01parser_1_1pddl_1_1Action_01_5_01_4.html" title=" " alt="" coords="5,5,140,46"/>
+<area shape="rect" id="Node000000" href="$classparser_1_1pddl_1_1Type.html" title=" " alt="" coords="5,5,55,31"/>
+<area shape="rect" id="Node000001" href="$classparser_1_1pddl_1_1EitherType.html" title=" " alt="" coords="103,5,185,31"/>
+<area shape="poly" id="edge131_Node000000_Node000001" title=" " alt="" coords="70,16,102,16,102,21,70,21"/>
 </map>
