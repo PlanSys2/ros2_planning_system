@@ -2,6 +2,32 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix orphan thread bug in ExecutorNode
+* Set C++23 as default
+* Use std::string for BT API
+* Remove Eigen dependency export
+* adjust simple_btbuilder_tests.cpp
+* include Action.hpp in BTBuilder.hpp
+* More improvments in BTActionNode
+* Fix Groot2 monitor format
+* Added BTUtils and JSONUtils to ComputeBT and ExecutorNode
+* Added blackboard keys for compatibility with other nodes
+* Fix formats
+* rm old ActionVariant from ActionExecutor and adjust code
+* add plansys2::SequentialBTBuilder plugin
+* Improvements to pddl parser utils
+* Improvements on BTAction
+* add plansys2::SequentialBTBuilder plugin
+* Added deprecated constructor
+* Minor fixes
+* Added explicit to constructor
+* Remove rate of ActionExecutorClient constructor and set as default parameter
+* Improve doxygen documentation
+* Added Groot2 monitor
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+
 3.0.1 (2025-06-22)
 ------------------
 

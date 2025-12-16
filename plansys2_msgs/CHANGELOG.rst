@@ -2,6 +2,12 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Set C++23 as default
+* add State.msg
+* Contributors: Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+
 3.0.1 (2025-06-22)
 ------------------
 

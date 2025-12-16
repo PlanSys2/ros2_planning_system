@@ -2,6 +2,20 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Set C++23 as default
+* Plansys2 domain expert
+* fix code style
+* change variable name in getDerivedFromDomain
+* include DerivedResolutionGraph.hpp in DomainExpert.hpp
+* merge plansys2_domain_expert pkg from rezenders/new_evaluationwq
+* Improve doxygen documentation
+* Improve doc for domain and problem
+* Improve doc for Domain
+* Doc for domain expert
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+
 3.0.1 (2025-06-22)
 ------------------
 

@@ -2,6 +2,18 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Set C++23 as default
+* derived_name.name -> derived_name.predicate.name
+* Improvements to pddl parser utils
+* fix evaluate_not test
+* Improve doxygen documentation
+* Added optional dependency
+* Improve doc for domain and problem
+* Doc for problem expert
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+
 3.0.1 (2025-06-22)
 ------------------
 

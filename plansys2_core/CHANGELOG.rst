@@ -2,6 +2,26 @@
 Changelog for package plansys2_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Set C++23 as default
+* Add function to print predicates for debugging
+* Allow `rolling` to build against ROS Jazzy
+* core: tests use std::fs, so include it
+* improve documentation State and DerivedResolutionGraph
+* rm old ActionVariant from ActionExecutor and adjust code
+* 🎨 fix code style
+* add State class
+* add DerivedResolutionGraph
+* add NodeVariant class
+* add Action class
+* add Derived class and hashes
+* add == operator to Instance and Predicate
+* Improve doxygen documentation
+* Improve doc for core
+* Doc for core
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende, gavanderhoorn
+
 3.0.1 (2025-06-22)
 ------------------
 

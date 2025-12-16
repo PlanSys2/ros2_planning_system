@@ -2,6 +2,39 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Set C++23 as default
+* Fix cancel handle
+* Add tf2_geometry_msgs to plansys2_bt_actions package.xml
+* More improvments in BTActionNode
+* Fix default  server_timeout
+* Fix Groot2 monitor format
+* Fix tests
+* Added callback group executor
+* Return to IDLE when finished
+* Add tf2_geometry_msgs to plansys2_bt_actions package.xml.
+  tf2_geometry_msgs is required to build plansys2_bt_actions
+* Use geometry_msgs::msg::Pose as Pose2D is now in vision_msgs
+* Improvements on BTAction
+* Fix BTService and BT-JSON
+* Update BTServiceNode.hpp
+* Added a BT for services
+* Added JSON utils
+* Revert lifecycle
+* Added deprecated constructor
+* Merge branch 'PlanSys2:rolling' into fix_predicate_parsing
+* Added spin to test
+* Added bt_loop_duration to the blackboard
+* Remove rate of ActionExecutorClient constructor and set as default parameter
+* Added wait_for_service_timeout param and blackboard
+* Added server_timeout as parameter and blackboard
+* Doc for bt actions
+* Added Groot2 monitor
+* Minor fix
+* Update Readme
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+
 3.0.1 (2025-06-22)
 ------------------
 
