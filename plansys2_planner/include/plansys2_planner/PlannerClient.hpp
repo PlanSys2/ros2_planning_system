@@ -29,15 +29,45 @@
 namespace plansys2
 {
 
+/**
+ * @class plansys2::PlannerClient
+ * @brief Client implementation of the PlannerInterface.
+ *
+ * This class provides a client that connects to the planner services
+ * to request plans for PDDL planning problems.
+ */
 class PlannerClient : public PlannerInterface
 {
 public:
+  /**
+   * @brief Constructor for the PlannerClient.
+   *
+   * Creates a ROS node and configures service clients to connect to
+   * the planner services. Also retrieves the plan_solver_timeout parameter.
+   */
   PlannerClient();
 
+  /**
+   * @brief Generate a single plan for a PDDL planning problem.
+   *
+   * @param[in] domain PDDL domain definition as a string.
+   * @param[in] problem PDDL problem definition as a string.
+   * @param[in] node_namespace Namespace used for organizing temporary files and resources.
+   * @return std::optional<plansys2_msgs::msg::Plan> Plan message containing the plan if found,
+   *         std::nullopt if no plan could be generated.
+   */
   std::optional<plansys2_msgs::msg::Plan> getPlan(
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace = "");
 
+  /**
+   * @brief Generate multiple alternative plans for a PDDL planning problem.
+   *
+   * @param[in] domain PDDL domain definition as a string.
+   * @param[in] problem PDDL problem definition as a string.
+   * @param[in] node_namespace Namespace used for organizing temporary files and resources.
+   * @return A message containing an array of plans found for the problem.
+   */
   plansys2_msgs::msg::PlanArray getPlanArray(
     const std::string & domain, const std::string & problem,
     const std::string & node_namespace = "");

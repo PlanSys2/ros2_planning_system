@@ -125,7 +125,7 @@ ProblemExpert::getPredicates()
 
   auto derived_predicates = domain_expert_->getDerivedPredicates();
   for (auto derived_name : derived_predicates) {
-    auto derived = domain_expert_->getDerivedPredicate(derived_name.name);
+    auto derived = domain_expert_->getDerivedPredicate(derived_name.predicate.name);
     for (auto d : derived) {
       std::vector<std::vector<std::string>> parameters_vector;
       for (size_t i = 0; i < d.predicate.parameters.size(); i++) {

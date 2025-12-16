@@ -2,13 +2,13 @@ repositories:
   cascade_lifecycle:
     type: git
     url: https://github.com/fmrico/cascade_lifecycle.git
-    version: rolling
+    version: kilted-devel
   popf:
     type: git
     url: https://github.com/fmrico/popf.git
-    version: ros2
-  behavior_tree_cpp:
-    type: git
-    url: https://github.com/BehaviorTree/BehaviorTree.CPP.git
-    version: 4.7.0
+    version: kilted-devel
+#   behavior_tree_cpp:
+#     type: git
+#     url: https://github.com/BehaviorTree/BehaviorTree.CPP.git
+#     version: 4.7.0
 

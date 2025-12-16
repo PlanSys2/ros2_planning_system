@@ -30,16 +30,42 @@
 namespace plansys2
 {
 
+/**
+ * @class plansys2::ApplyAtEndEffect
+ * @brief BehaviorTree node that applies the at-end effects of a durative action.
+ *
+ * This node is responsible for modifying the world state by applying the effects
+ * that occur at the end of a durative action. It retrieves the action's at-end effects
+ * and applies them to the problem state through the ProblemExpertClient if they
+ * haven't been applied yet.
+ */
 class ApplyAtEndEffect : public BT::ActionNodeBase
 {
 public:
-  ApplyAtEndEffect(
-    const std::string & xml_tag_name,
-    const BT::NodeConfig & conf);
+  /**
+   * @brief Constructor for the ApplyAtEndEffect node.
+   *
+   * @param[in] xml_tag_name Name of the XML tag for this node in the BT definition.
+   * @param[in] conf Node configuration including the blackboard.
+   */
+  ApplyAtEndEffect(const std::string & xml_tag_name, const BT::NodeConfig & conf);
 
+  /**
+   * @brief Halt method (required by the BT framework).
+   */
   void halt() {}
+
+  /**
+   * @brief Main execution method for the BT node.
+   *
+   * @return BT::NodeStatus Status of tick execution
+   */
   BT::NodeStatus tick() override;
 
+  /**
+   * @brief Creates list of BT ports
+   * @return BT::PortsList Containing basic ports along with node-specific ports
+   */
   static BT::PortsList providedPorts()
   {
     return BT::PortsList(

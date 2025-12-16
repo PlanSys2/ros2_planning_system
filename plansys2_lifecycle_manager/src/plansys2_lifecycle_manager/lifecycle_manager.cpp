@@ -74,7 +74,7 @@ LifecycleServiceClient::get_state(std::chrono::seconds time_out)
       managed_node_.c_str());
     return lifecycle_msgs::msg::State::PRIMARY_STATE_UNKNOWN;
   }
-  // We have an succesful answer. So let's print the current state.
+  // We have an successful answer. So let's print the current state.
   if (state != nullptr) {
     RCLCPP_INFO(
       get_logger(), "Node %s has current state %s.",

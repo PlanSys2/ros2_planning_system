@@ -73,16 +73,22 @@ void Exists::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
   f.assert_token("(");
 
   TokenStruct<std::string> es = f.parseTypedList(true, d.types);
-  TokenStruct<std::string> estruct(ts);
-  params = incvec(estruct.size(), estruct.size() + es.size());
+  params = incvec(ts.size(), ts.size() + es.size());
 
-  estruct.append(es);
+  unsigned int count = 0;
+  for (auto & tm : es.tokenMap) {
+    if(ts.tokenMap.count(tm.first)) {
+      ts.tokenMap[tm.first] = ts.size() + count;
+      count++;
+    }
+  }
+  ts.append(es);
 
   f.next();
   f.assert_token("(");
   if (f.getChar() != ')') {
     cond = d.createCondition(f);
-    cond->parse(f, estruct, d);
+    cond->parse(f, ts, d);
   } else {
     ++f.c;
   }

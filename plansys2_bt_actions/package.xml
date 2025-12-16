@@ -17,6 +17,8 @@
   <depend>rclcpp_lifecycle</depend>
   <depend>plansys2_executor</depend>
   <depend>behaviortree_cpp</depend>
+  <depend>lifecycle_msgs</depend>
+  <depend>std_msgs</depend>
 
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>
@@ -24,6 +26,7 @@
   <test_depend>plansys2_msgs</test_depend>
   <test_depend>test_msgs</test_depend>
   <test_depend>geometry_msgs</test_depend>
+  <test_depend>tf2_geometry_msgs</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

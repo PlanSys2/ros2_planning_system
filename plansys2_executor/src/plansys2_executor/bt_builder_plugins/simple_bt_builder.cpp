@@ -777,14 +777,6 @@ SimpleBTBuilder::t(int level)
   return ret;
 }
 
-void replace(std::string & str, const std::string & from, const std::string & to)
-{
-  size_t start_pos = std::string::npos;
-  while ((start_pos = str.find(from)) != std::string::npos) {
-    str.replace(start_pos, from.length(), to);
-  }
-}
-
 std::string
 SimpleBTBuilder::execution_block(const ActionNode::Ptr & node, int l)
 {
@@ -832,11 +824,11 @@ SimpleBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan)
     action_stamped.duration = item.duration;
     auto actions = domain_client_->getActions();
     if (std::find(actions.begin(), actions.end(), get_action_name(item.action)) != actions.end()) {
-      action_stamped.action.action =
+      action_stamped.action =
         domain_client_->getAction(
         get_action_name(item.action), get_action_params(item.action));
     } else {
-      action_stamped.action.action =
+      action_stamped.action =
         domain_client_->getDurativeAction(
         get_action_name(item.action), get_action_params(item.action));
     }

@@ -89,7 +89,7 @@ std::tuple<bool, bool, double> evaluate(
               predicates.begin(), predicates.end(),
               std::bind(
                 &parser::pddl::checkNodeEquality, std::placeholders::_1,
-                tree.nodes[node_id]));
+                tree.nodes[node_id], true));
             if (negate) {
               if (it != predicates.end()) {
                 predicates.erase(it);
@@ -120,7 +120,7 @@ std::tuple<bool, bool, double> evaluate(
                 predicates.begin(), predicates.end(),
                 std::bind(
                   &parser::pddl::checkNodeEquality, std::placeholders::_1,
-                  tree.nodes[node_id])) != predicates.end());
+                  tree.nodes[node_id], true)) != predicates.end());
           } else {
             value = negate ^ problem_client->existPredicate(tree.nodes[node_id]);
           }
@@ -139,7 +139,7 @@ std::tuple<bool, bool, double> evaluate(
             functions.begin(), functions.end(),
             std::bind(
               &parser::pddl::checkNodeEquality, std::placeholders::_1,
-              tree.nodes[node_id]));
+              tree.nodes[node_id], true));
           if (it != functions.end()) {
             value = it->value;
           } else {
@@ -295,7 +295,7 @@ std::tuple<bool, bool, double> evaluate(
               functions.begin(), functions.end(),
               std::bind(
                 &parser::pddl::checkNodeEquality, std::placeholders::_1,
-                tree.nodes[left_id]));
+                tree.nodes[left_id], true));
             if (it != functions.end()) {
               it->value = value;
             } else {

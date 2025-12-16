@@ -7,11 +7,8 @@
   <description>This package contains modules for developing PlanSys components in Python</description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
- 
-  <license>Apache License, Version 2.0</license>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>python_cmake_module</buildtool_depend>
+  <license>Apache License, Version 2.0</license>
 
   <depend>rclpy</depend>
   <depend>lifecycle_msgs</depend>
@@ -23,6 +20,6 @@
   <test_depend>python3-pytest</test_depend>
 
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type>ament_python</build_type>
   </export>
 </package>

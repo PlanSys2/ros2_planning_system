@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
+#include "plansys2_core/Utils.hpp"
+
 #include <sstream>
+#include <string>
 #include <vector>
 
-#include "plansys2_core/Utils.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace plansys2
 {
@@ -41,9 +43,7 @@ std::vector<std::string> tokenize(const std::string & string, const std::string 
 }
 
 std::string substr_without_empty_lines(
-  std::string string,
-  std::size_t init_pos,
-  std::size_t end_pos)
+  std::string string, std::size_t init_pos, std::size_t end_pos)
 {
   std::stringstream stream_in(string.substr(init_pos, end_pos - init_pos));
   std::stringstream stream_out;
@@ -87,4 +87,23 @@ std::string remove_comments(const std::string & pddl)
   }
   return std::string(uncomment.str());
 }
+
+void drain_ros(std::chrono::milliseconds total)
+{
+  auto drain_node = std::make_shared<rclcpp::Node>("__drain__");
+
+  rclcpp::executors::SingleThreadedExecutor ex;
+  ex.add_node(drain_node);
+
+  auto start = drain_node->now();
+  rclcpp::Rate r(200);  // 5 ms
+  while ((drain_node->now() - start).seconds() < std::chrono::duration<double>(total).count()) {
+    ex.spin_some();
+    r.sleep();
+  }
+
+  ex.remove_node(drain_node);
+}
+
+
 }  // namespace plansys2

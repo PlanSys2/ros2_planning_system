@@ -151,6 +151,13 @@ uint8_t getNodeType(const std::string & expr, uint8_t default_node_type)
     }
   }
 
+  if (std::regex_search(expr, match, std::regex("^\\s*\\(?\\s*\\?\\w+"))) {
+    if (static_cast<int>(match.position()) < first) {
+      first = static_cast<int>(match.position());
+      return plansys2_msgs::msg::Node::PARAMETER;
+    }
+  }
+
   std::tuple<uint8_t, int> modifier_search_result = getFunMod(expr);
   if (std::get<0>(modifier_search_result) != plansys2_msgs::msg::Node::UNKNOWN) {
     if (std::get<1>(modifier_search_result) < first) {
@@ -267,15 +274,11 @@ std::tuple<uint8_t, int> getExpr(const std::string & input)
     }
   }
 
-  if (std::regex_search(input, match, std::regex("\\s*\\-"))) {
+  if (std::regex_search(input, match, std::regex("\\s*\\-\\s+"))) {
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       expr_type = plansys2_msgs::msg::Node::ARITH_SUB;
     }
-  }
-
-  if (expr_type == plansys2_msgs::msg::Node::UNKNOWN) {
-    std::cerr << "getExpr: Error parsing expresion [" << input << "]" << std::endl;
   }
 
   return std::make_tuple(expr_type, first);
@@ -361,6 +364,48 @@ int getParenthesis(const std::string & wexpr, int start)
   return it;
 }
 
+void removeOperatorBeforeParenthesis(std::string & wexpr)
+{
+  // Find the position of the first parenthesis
+  int first_parenthesis = wexpr.find("(");
+
+  // Check if "exists" appears before the first parenthesis
+  size_t exists_pos = wexpr.find("exists");
+  // Ensure "exists" is found and appears before the first parenthesis
+  if (exists_pos != std::string::npos &&
+    (first_parenthesis == std::string::npos || exists_pos < first_parenthesis))
+  {
+    size_t begin_exists = exists_pos + 6;  // Move past "exists"
+    size_t end_exists = wexpr.find(")", begin_exists);  // Find the first closing parenthesis
+    if (end_exists != std::string::npos) {  // Ensure a closing parenthesis exists
+      // Remove "exists" and the first parenthesis
+      wexpr = wexpr.substr(end_exists + 1, std::string::npos);
+      // Trim whitespace after the closing parenthesis
+      wexpr.erase(0, wexpr.find_first_not_of(" \t\n\r"));
+    } else {
+      throw std::runtime_error("Malformed 'exists' expression: missing closing parenthesis");
+    }
+    return;
+  }
+
+  // Define a regex to match the operators
+  std::regex operator_regex(
+    R"([\+\-\*\/=<>]=?|<=|>=|and|or|not|assign|increase|decrease|scale-up|scale-down)");
+
+  // Search for the first operator in the string
+  std::smatch match;
+  if (std::regex_search(wexpr, match, operator_regex)) {
+    int operator_pos = match.position();
+
+    // Check if the operator is before the first parenthesis
+    if (operator_pos < first_parenthesis || first_parenthesis == std::string::npos) {
+      // Remove the operator from the string
+      wexpr.erase(operator_pos, match.length());
+      wexpr.erase(0, wexpr.find_first_not_of(" \t\n\r"));
+    }
+  }
+}
+
 std::vector<std::string> getSubExpr(const std::string & expr)
 {
   std::vector<std::string> ret;
@@ -377,30 +422,35 @@ std::vector<std::string> getSubExpr(const std::string & expr)
   }
   wexpr.erase(0, 1);
 
-  while (wexpr.size() > 0) {
+  removeOperatorBeforeParenthesis(wexpr);
+
+  // Parse the inner content
+  while (!wexpr.empty()) {
     int first = wexpr.find("(");
 
-    std::smatch match;
-    std::regex num_regexp("[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)");
-    bool found_num = std::regex_search(wexpr, match, num_regexp);
-
-    if (found_num && first != std::string::npos) {
-      if (match.position() < first) {
-        ret.push_back(wexpr.substr(match.position(), match.length()));
-        wexpr.erase(wexpr.begin(), wexpr.begin() + match.position() + match.length());
-      } else {
-        int last = getParenthesis(wexpr, first);
-        ret.push_back(wexpr.substr(first, last - first + 1));
-        wexpr.erase(wexpr.begin(), wexpr.begin() + last + 1);
+    // If there's a parenthesized subexpression
+    if (first != std::string::npos) {
+      if (first > 0) {
+        // Extract everything before the parenthesis as a token
+        std::string before = wexpr.substr(0, first);
+        std::istringstream iss(before);
+        std::string token;
+        while (iss >> token) {
+          ret.push_back(token);
+        }
       }
-    } else if (found_num) {
-      ret.push_back(wexpr.substr(match.position(), match.length()));
-      wexpr.erase(wexpr.begin(), wexpr.begin() + match.position() + match.length());
-    } else if (first != std::string::npos) {
+
+      // Extract the parenthesized subexpression
       int last = getParenthesis(wexpr, first);
       ret.push_back(wexpr.substr(first, last - first + 1));
-      wexpr.erase(wexpr.begin(), wexpr.begin() + last + 1);
+      wexpr.erase(0, last + 1);
     } else {
+      // No more parentheses, split the remaining string by whitespace
+      std::istringstream iss(wexpr);
+      std::string token;
+      while (iss >> token) {
+        ret.push_back(token);
+      }
       break;
     }
   }
@@ -463,6 +513,7 @@ std::string toString(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bo
       break;
     case plansys2_msgs::msg::Node::PARAMETER:
       ret = toStringParameter(tree, node_id, negate);
+      break;
     case plansys2_msgs::msg::Node::EXISTS:
       ret = toStringExists(tree, node_id, negate);
       break;
@@ -739,7 +790,11 @@ std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_
     return {};
   }
 
-  std::string ret = "(exists (";
+  std::string ret;
+  if (negate) {
+    ret = "(not ";
+  }
+  ret += "(exists (";
 
   bool first_param = true;
   for (const auto & param : tree.nodes[node_id].parameters) {
@@ -749,9 +804,13 @@ std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_
   ret += ") ";
 
   for (auto child_id : tree.nodes[node_id].children) {
-    ret += toString(tree, child_id, negate);
+    ret += toString(tree, child_id, false);
   }
   ret += ")";
+
+  if (negate) {
+    ret += ")";
+  }
 
   return ret;
 }
@@ -900,12 +959,24 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
         node->negate = negate;
         tree.nodes.push_back(*node);
 
-        size_t begin_exists = wexpr.find("exists", 0) + 6;
-        size_t end_exists = wexpr.find(")", begin_exists);
-        wexpr = wexpr.substr(end_exists + 1, std::string::npos);
+        std::vector<std::string> subexprs = getSubExpr(wexpr);
 
-        auto child = fromString(tree, wexpr, negate, node_type);
-        tree.nodes[node->node_id].children.push_back(child->node_id);
+        for (const auto & e : subexprs) {
+          auto child = fromString(tree, e, negate, node_type);
+          tree.nodes[node->node_id].children.push_back(child->node_id);
+        }
+
+        return node;
+      }
+
+    case plansys2_msgs::msg::Node::PARAMETER: {
+        auto node = std::make_shared<plansys2_msgs::msg::Node>();
+        node->node_type = node_type;
+        node->node_id = tree.nodes.size();
+        node->name = wexpr;
+        node->negate = negate;
+        node->parameters.push_back(fromStringParam(wexpr));
+        tree.nodes.push_back(*node);
 
         return node;
       }
@@ -930,20 +1001,21 @@ plansys2_msgs::msg::Node fromStringPredicate(const std::string & predicate)
   plansys2_msgs::msg::Node ret;
   ret.node_type = plansys2_msgs::msg::Node::PREDICATE;
 
+  std::string predicate_(predicate);
+  if (!predicate_.empty() && predicate_.front() == '(') {
+    predicate_.erase(0, 1);
+  }
+  if (!predicate_.empty() && predicate_.back() == ')') {
+    predicate_.pop_back();
+  }
   std::vector<std::string> tokens;
-  size_t start = 0, end = 0;
-
-  while (end != std::string::npos) {
-    end = predicate.find(" ", start);
-    tokens.push_back(
-      predicate.substr(start, (end == std::string::npos) ? std::string::npos : end - start));
-    start = ((end > (std::string::npos - 1)) ? std::string::npos : end + 1);
+  std::istringstream iss(predicate_);
+  std::string token;
+  while (iss >> token) {
+    tokens.push_back(token);
   }
 
-  tokens[0].erase(0, 1);
   ret.name = tokens[0];
-
-  tokens.back().pop_back();
 
   for (size_t i = 1; i < tokens.size(); i++) {
     plansys2_msgs::msg::Param param;
@@ -1113,6 +1185,9 @@ std::vector<uint32_t> getSubtreeIds(const plansys2_msgs::msg::Tree & tree)
     case plansys2_msgs::msg::Node::AND: {
         return tree.nodes.front().children;
       }
+    case plansys2_msgs::msg::Node::EXISTS: {
+        return tree.nodes.front().children;
+      }
     default:
       std::cerr << "getSubtreeIds: Error parsing expresion [" << toString(tree) << "]" << std::endl;
   }
@@ -1187,7 +1262,10 @@ void getPredicates(
       if (
         std::find_if(
           predicates.begin(), predicates.end(),
-          std::bind(&checkNodeEquality, std::placeholders::_1, pred)) == predicates.end())
+          [&](const plansys2_msgs::msg::Node & p) {
+            return checkNodeEquality(p, pred, true);
+          }
+        ) == predicates.end())
       {
         pred.negate = negate;
         predicates.push_back(pred);
@@ -1231,7 +1309,10 @@ void getFunctions(
       if (
         std::find_if(
           functions.begin(), functions.end(),
-          std::bind(&checkNodeEquality, std::placeholders::_1, func)) == functions.end())
+          [&](const plansys2_msgs::msg::Node & f) {
+            return checkNodeEquality(f, func, true);
+          }
+        ) == functions.end())
       {
         func.value = 0.0;
         functions.push_back(func);
@@ -1257,7 +1338,9 @@ bool checkTreeEquality(
 }
 
 bool checkNodeEquality(
-  const plansys2_msgs::msg::Node & first, const plansys2_msgs::msg::Node & second)
+  const plansys2_msgs::msg::Node & first,
+  const plansys2_msgs::msg::Node & second,
+  bool check_var_params)
 {
   if (first.node_type != second.node_type) {
     return false;
@@ -1300,7 +1383,7 @@ bool checkNodeEquality(
   }
 
   for (unsigned i = 0; i < first.parameters.size(); i++) {
-    if (!checkParamEquality(first.parameters[i], second.parameters[i])) {
+    if (!checkParamEquality(first.parameters[i], second.parameters[i], check_var_params)) {
       return false;
     }
   }
@@ -1309,13 +1392,63 @@ bool checkNodeEquality(
 }
 
 bool checkParamEquality(
-  const plansys2_msgs::msg::Param & first, const plansys2_msgs::msg::Param & second)
+  const plansys2_msgs::msg::Param & first,
+  const plansys2_msgs::msg::Param & second,
+  bool check_var_params)
+{
+  if (!check_var_params &&
+    (first.name.front() == '?' || second.name.front() == '?'))
+  {
+    return true;
+  }
+  return first.name == second.name;
+}
+
+bool checkActionEquality(
+  const plansys2_msgs::msg::Action & first, const plansys2_msgs::msg::Action & second)
 {
   if (first.name != second.name) {
     return false;
   }
 
-  return true;
+  if (first.parameters.size() != second.parameters.size()) {
+    return false;
+  }
+
+  for (unsigned i = 0; i < first.parameters.size(); i++) {
+    if (!checkParamEquality(first.parameters[i], second.parameters[i])) {
+      return false;
+    }
+  }
+
+  return parser::pddl::checkTreeEquality(first.preconditions, second.preconditions) &&
+         parser::pddl::checkTreeEquality(first.effects, second.effects);
+}
+
+bool checkDurativeActionEquality(
+  const plansys2_msgs::msg::DurativeAction & first,
+  const plansys2_msgs::msg::DurativeAction & second)
+{
+  if (first.name != second.name) {
+    return false;
+  }
+  if (first.parameters.size() != second.parameters.size()) {
+    return false;
+  }
+
+  for (unsigned i = 0; i < first.parameters.size(); i++) {
+    if (!checkParamEquality(first.parameters[i], second.parameters[i])) {
+      return false;
+    }
+  }
+
+  return parser::pddl::checkTreeEquality(
+    first.at_start_requirements, second.at_start_requirements) &&
+         parser::pddl::checkTreeEquality(
+    first.over_all_requirements, second.over_all_requirements) &&
+         parser::pddl::checkTreeEquality(first.at_end_requirements, second.at_end_requirements) &&
+         parser::pddl::checkTreeEquality(first.at_start_effects, second.at_start_effects) &&
+         parser::pddl::checkTreeEquality(first.at_end_effects, second.at_end_effects);
 }
 
 bool empty(const plansys2_msgs::msg::Tree & tree)
@@ -1336,6 +1469,24 @@ bool empty(const plansys2_msgs::msg::Tree & tree)
   }
 
   return false;
+}
+
+bool checkParamTypeEquivalence(
+  const plansys2_msgs::msg::Param & first, const plansys2_msgs::msg::Param & second)
+{
+  return first.type == "" || compare_str_case_insensitive(first.type, "object") ||
+         compare_str_case_insensitive(first.type, second.type) ||
+         std::find(first.sub_types.begin(), first.sub_types.end(), second.type) !=
+         first.sub_types.end();
+}
+
+bool compare_str_case_insensitive(const std::string & a, const std::string & b)
+{
+  return a.size() == b.size() &&
+         std::equal(a.begin(), a.end(), b.begin(), b.end(),
+           [](unsigned char ac, unsigned char bc) {
+             return std::tolower(ac) == std::tolower(bc);
+          });
 }
 
 }  // namespace pddl

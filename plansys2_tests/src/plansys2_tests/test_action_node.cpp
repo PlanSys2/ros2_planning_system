@@ -26,10 +26,9 @@ namespace plansys2_tests
 
 int TestAction::node_name_counter_ = 0;
 
-TestAction::TestAction(
-  const std::string & action_name, const std::chrono::seconds & rate, float increment)
-: plansys2::ActionExecutorClient(action_name + std::to_string(node_name_counter_++),
-    rate), increment_(increment)
+TestAction::TestAction(const std::string & action_name, float increment)
+: plansys2::ActionExecutorClient(action_name + std::to_string(node_name_counter_++)),
+  increment_(increment)
 {
   progress_ = 0.0;
 }

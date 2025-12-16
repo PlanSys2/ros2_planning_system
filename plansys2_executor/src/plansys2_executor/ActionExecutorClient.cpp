@@ -27,28 +27,39 @@ namespace plansys2
 {
 
 using namespace std::chrono_literals;
+using std::placeholders::_1;
 
-ActionExecutorClient::ActionExecutorClient(
-  const std::string & node_name,
-  const std::chrono::nanoseconds & rate)
+ActionExecutorClient::ActionExecutorClient(const std::string & node_name)
 : CascadeLifecycleNode(node_name),
-  rate_(rate),
-  commited_(false)
+  committed_(false)
 {
   declare_parameter<std::string>("action_name", "");
   declare_parameter<std::vector<std::string>>(
     "specialized_arguments", std::vector<std::string>({}));
 
-  double default_rate = 1.0 / std::chrono::duration<double>(rate_).count();
+  period_ = std::chrono::milliseconds(200);
+  double default_rate = 1.0 / std::chrono::duration<double>(period_).count();
   declare_parameter<double>("rate", default_rate);
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::NOT_READY;
   status_.status_stamp = now();
   status_.node_name = get_name();
 }
 
-using CallbackReturnT =
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
-using std::placeholders::_1;
+ActionExecutorClient::ActionExecutorClient(
+  const std::string & node_name, const std::chrono::nanoseconds & rate)
+: CascadeLifecycleNode(node_name),
+  period_(rate), committed_(false)
+{
+  declare_parameter<std::string>("action_name", "");
+  declare_parameter<std::vector<std::string>>(
+    "specialized_arguments", std::vector<std::string>({}));
+
+  double default_rate = 1.0 / std::chrono::duration<double>(period_).count();
+  declare_parameter<double>("rate", default_rate);
+  status_.state = plansys2_msgs::msg::ActionPerformerStatus::NOT_READY;
+  status_.status_stamp = now();
+  status_.node_name = get_name();
+}
 
 CallbackReturnT
 ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
@@ -77,7 +88,7 @@ ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
   double rate;
   get_parameter("rate", rate);
 
-  rate_ = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+  period_ = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
     std::chrono::duration<double>(1.0 / rate));
 
   action_hub_pub_ = create_publisher<plansys2_msgs::msg::ActionExecution>(
@@ -102,10 +113,7 @@ ActionExecutorClient::on_activate(const rclcpp_lifecycle::State & state)
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::RUNNING;
   status_.status_stamp = now();
   start_time_ = now();
-  timer_ = create_wall_timer(
-    rate_, std::bind(&ActionExecutorClient::do_work, this));
-
-//  do_work();
+  timer_ = create_wall_timer(period_, std::bind(&ActionExecutorClient::do_work, this));
 
   return CallbackReturnT::SUCCESS;
 }
@@ -126,24 +134,24 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
   switch (msg->type) {
     case plansys2_msgs::msg::ActionExecution::REQUEST:
       if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE &&
-        !commited_ && should_execute(msg->action, msg->arguments))
+        !committed_ && should_execute(msg->action, msg->arguments))
       {
-        commited_ = true;
+        committed_ = true;
         send_response(msg);
       }
       break;
     case plansys2_msgs::msg::ActionExecution::CONFIRM:
       if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE &&
-        commited_ && msg->node_id == get_name())
+        committed_ && msg->node_id == get_name())
       {
         current_arguments_ = msg->arguments;
         trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-        commited_ = false;
+        committed_ = false;
       }
       break;
     case plansys2_msgs::msg::ActionExecution::REJECT:
       if (msg->node_id == get_name()) {
-        commited_ = false;
+        committed_ = false;
       }
       break;
     case plansys2_msgs::msg::ActionExecution::CANCEL:

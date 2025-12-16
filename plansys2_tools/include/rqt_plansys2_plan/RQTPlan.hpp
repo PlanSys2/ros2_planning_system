@@ -30,7 +30,12 @@
 #include <memory>
 #include <string>
 
+#include "rclcpp/version.h"
+#if RCLCPP_VERSION_GTE(29, 0, 0)
 #include "rqt_gui_cpp/plugin.hpp"
+#else
+#include "rqt_gui_cpp/plugin.h"
+#endif
 
 #include "rqt_plansys2_plan/PlanTree.hpp"
 

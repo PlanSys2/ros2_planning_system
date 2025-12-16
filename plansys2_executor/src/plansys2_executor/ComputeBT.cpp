@@ -41,6 +41,8 @@
 #include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/restore_atstart_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
+#include "plansys2_executor/BTUtils.hpp"
+#include "plansys2_executor/JSONUtils.hpp"
 
 namespace plansys2
 {
@@ -68,6 +70,9 @@ ComputeBT::ComputeBT()
       "action_timeouts." + action + ".duration_overrun_percentage",
       0.0);
   }
+
+  this->declare_parameter<bool>("enable_groot_monitoring", false);
+  this->declare_parameter<int>("server_port", 1800);
 
   compute_bt_srv_ = create_service<std_srvs::srv::Trigger>(
     "compute_bt",
@@ -175,6 +180,7 @@ ComputeBT::on_cleanup(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "[%s] Cleaning up...", get_name());
   dotgraph_pub_.reset();
+  reset_groot_monitor();
   RCLCPP_INFO(get_logger(), "[%s] Cleaned up", get_name());
   return CallbackReturnT::SUCCESS;
 }
@@ -250,7 +256,7 @@ ComputeBT::computeBTCallback(
   auto problem = problem_client_->getProblem();
   auto plan = planner_client_->getPlan(domain, problem);
 
-  savePlan(plan.value(), problem_path.stem().u8string());
+  savePlan(plan.value(), problem_path.stem().string());
 
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
   auto action_timeout_actions = this->get_parameter("action_timeouts.actions").as_string_array();
@@ -267,10 +273,10 @@ ComputeBT::computeBTCallback(
     auto actions = domain_client_->getActions();
     std::string action_name_ = get_action_name(plan_item.action);
     if (std::find(actions.begin(), actions.end(), action_name_) != actions.end()) {
-      (*action_map)[index].action_info.action = domain_client_->getAction(
+      (*action_map)[index].action_info = domain_client_->getAction(
         action_name_, get_action_params(plan_item.action));
     } else {
-      (*action_map)[index].action_info.action = domain_client_->getDurativeAction(
+      (*action_map)[index].action_info = domain_client_->getDurativeAction(
         action_name_, get_action_params(plan_item.action));
     }
 
@@ -319,7 +325,7 @@ ComputeBT::computeBTCallback(
     return;
   }
 
-  saveBT(bt_xml_tree, problem_path.stem().u8string());
+  saveBT(bt_xml_tree, problem_path.stem().string());
 
   auto action_graph = bt_builder->get_graph();
   std_msgs::msg::String dotgraph_msg;
@@ -327,7 +333,7 @@ ComputeBT::computeBTCallback(
     action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
     this->get_parameter("print_graph").as_bool());
   dotgraph_pub_->publish(dotgraph_msg);
-  saveDotGraph(dotgraph_msg.data, problem_path.stem().u8string());
+  saveDotGraph(dotgraph_msg.data, problem_path.stem().string());
 
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<ExecuteAction>("ExecuteAction");
@@ -344,6 +350,9 @@ ComputeBT::computeBTCallback(
   (*action_map)[":0"].at_start_effects_applied_time = now();
   (*action_map)[":0"].at_end_effects_applied_time = now();
 
+  // If a new tree is created, than the Groot2 Publisher must be destroyed
+  reset_groot_monitor();
+
   auto blackboard = BT::Blackboard::create();
   blackboard->set("action_map", action_map);
   blackboard->set("action_graph", action_graph);
@@ -353,6 +362,13 @@ ComputeBT::computeBTCallback(
   blackboard->set("bt_builder", bt_builder);
 
   auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
+
+  bool enable_groot_monitoring = get_parameter("enable_groot_monitoring").as_bool();
+  int server_port = get_parameter("server_port").as_int();
+  if (enable_groot_monitoring) {
+    RCLCPP_INFO(get_logger(), "Enabling Groot2 monitoring on port: %i", server_port);
+    add_groot_monitoring(&tree, server_port);
+  }
 
   finish = true;
   t.join();
@@ -409,6 +425,23 @@ ComputeBT::saveDotGraph(const std::string & dotgraph, const std::string & filena
     file.close();
   } else {
     std::cerr << "Unable to open " << filename << "_graph.dot" << std::endl;
+  }
+}
+
+void ComputeBT::add_groot_monitoring(BT::Tree * tree, uint16_t server_port)
+{
+  // This logger publish status changes using Groot2
+  groot_monitor_ = std::make_unique<BT::Groot2Publisher>(*tree, server_port);
+
+  // Register common types JSON definitions
+  BT::RegisterJsonDefinition<builtin_interfaces::msg::Time>();
+  BT::RegisterJsonDefinition<std_msgs::msg::Header>();
+}
+
+void ComputeBT::reset_groot_monitor()
+{
+  if (groot_monitor_) {
+    groot_monitor_.reset();
   }
 }
 

@@ -26,10 +26,7 @@ int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 
-  auto action_node = std::make_shared<plansys2::BTAction>(
-    "default",
-    200ms  // ToDo(fmrico): This should be specified by a parameter
-  );
+  auto action_node = std::make_shared<plansys2::BTAction>("default");
 
   action_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 

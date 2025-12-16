@@ -133,6 +133,8 @@ TEST(utils, evaluate_not)
   plansys2_msgs::msg::Tree test_tree2;
   parser::pddl::fromString(
     test_tree2, "(not (= wp1 wp2))");
+  test_tree2.nodes[2].node_type = plansys2_msgs::msg::Node::CONSTANT;
+  test_tree2.nodes[3].node_type = plansys2_msgs::msg::Node::CONSTANT;
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree2, problem_client, predicates, functions, false, true),
@@ -141,6 +143,8 @@ TEST(utils, evaluate_not)
   plansys2_msgs::msg::Tree test_tree3;
   parser::pddl::fromString(
     test_tree3, "(not (= wp1 wp1))");
+  test_tree3.nodes[2].node_type = plansys2_msgs::msg::Node::CONSTANT;
+  test_tree3.nodes[3].node_type = plansys2_msgs::msg::Node::CONSTANT;
 
   ASSERT_EQ(
     plansys2::evaluate(test_tree3, problem_client, predicates, functions, false, true),

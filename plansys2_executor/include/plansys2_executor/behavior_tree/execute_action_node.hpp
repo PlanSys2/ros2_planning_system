@@ -30,16 +30,37 @@
 namespace plansys2
 {
 
+/**
+ * @class plansys2::ExecuteAction
+ * @brief BehaviorTree node that executes a given action.
+ */
 class ExecuteAction : public BT::ActionNodeBase
 {
 public:
-  ExecuteAction(
-    const std::string & xml_tag_name,
-    const BT::NodeConfig & conf);
+  /**
+   * @brief Constructor for the ExecuteAction node.
+   *
+   * @param[in] xml_tag_name Name of the XML tag for this node in the BT definition.
+   * @param[in] conf Node configuration including the blackboard.
+   */
+  ExecuteAction(const std::string & xml_tag_name, const BT::NodeConfig & conf);
 
+  /**
+   * @brief Halt method (required by the BT framework).
+   */
   void halt();
+
+  /**
+   * @brief Main execution method for the BT node.
+   *
+   * @return BT::NodeStatus Status of tick execution
+   */
   BT::NodeStatus tick() override;
 
+  /**
+   * @brief Creates list of BT ports
+   * @return BT::PortsList Containing basic ports along with node-specific ports
+   */
   static BT::PortsList providedPorts()
   {
     return BT::PortsList(

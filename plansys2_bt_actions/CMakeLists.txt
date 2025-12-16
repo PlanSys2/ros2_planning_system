@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.5)
 
 project(plansys2_bt_actions)
 
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 find_package(ament_cmake REQUIRED)
@@ -11,6 +15,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(plansys2_executor REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 
 set(BT_ACTIONS_SOURCES
   src/plansys2_bt_actions/BTAction.cpp
@@ -28,6 +33,8 @@ target_link_libraries(${PROJECT_NAME}
   rclcpp::rclcpp
   rclcpp_action::rclcpp_action
   rclcpp_lifecycle::rclcpp_lifecycle
+  PRIVATE
+  ${std_msgs_TARGETS}
 )
 
 add_executable(bt_action_node
@@ -66,7 +73,7 @@ if(BUILD_TESTING)
   find_package(plansys2_msgs REQUIRED)
   find_package(test_msgs REQUIRED)
   find_package(geometry_msgs REQUIRED)
-
+  find_package(tf2_geometry_msgs)
   add_subdirectory(test)
 endif()
 

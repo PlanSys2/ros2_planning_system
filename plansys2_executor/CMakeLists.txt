@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 project(plansys2_executor)
 
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 find_package(eigen3_cmake_module REQUIRED)
@@ -92,6 +96,7 @@ target_link_libraries(compute_bt
 add_library(bt_builder_plugins SHARED
   src/plansys2_executor/bt_builder_plugins/simple_bt_builder.cpp
   src/plansys2_executor/bt_builder_plugins/stn_bt_builder.cpp
+  src/plansys2_executor/bt_builder_plugins/sequential_bt_builder.cpp
 )
 target_include_directories(bt_builder_plugins PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -155,8 +160,6 @@ ament_export_include_directories("include/${PROJECT_NAME}")
 ament_export_libraries(${PROJECT_NAME} bt_builder_plugins)
 ament_export_targets(export_${PROJECT_NAME} bt_builder_plugins)
 ament_export_dependencies(
-  eigen3_cmake_module
-  Eigen3
   rclcpp
   rclcpp_lifecycle
   lifecycle_msgs

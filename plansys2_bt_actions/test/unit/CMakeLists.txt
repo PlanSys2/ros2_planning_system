@@ -23,6 +23,7 @@ foreach(bt_plugin ${plugin_libs})
   target_link_libraries(${bt_plugin}
     behaviortree_cpp::behaviortree_cpp
     ${geometry_msgs_TARGETS}
+    tf2_geometry_msgs::tf2_geometry_msgs
     rclcpp::rclcpp
     rclcpp_action::rclcpp_action
     rclcpp_lifecycle::rclcpp_lifecycle

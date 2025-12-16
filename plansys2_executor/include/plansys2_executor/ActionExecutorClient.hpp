@@ -32,44 +32,167 @@
 namespace plansys2
 {
 
+using CallbackReturnT =
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+
+/**
+ * @class plansys2::ActionExecutorClient
+ * @brief Base class for implementing action executors in the planning system.
+ *
+ * ActionExecutorClient provides a framework for executing PDDL actions in the real world.
+ * It handles the communication with the executor node, manages the action lifecycle,
+ * and provides feedback about the execution progress.
+ */
 class ActionExecutorClient : public rclcpp_cascade_lifecycle::CascadeLifecycleNode
 {
 public:
   using Ptr = std::shared_ptr<ActionExecutorClient>;
-  static Ptr make_shared(const std::string & node_name, const std::chrono::nanoseconds & rate)
+
+  /**
+   * @brief Factory method to create a shared pointer to an ActionExecutorClient.
+   *
+   * @param[in] node_name Name for the ROS node.
+   * @return Shared pointer to the newly created ActionExecutorClient.
+   */
+  static Ptr make_shared(const std::string & node_name)
   {
-    return std::make_shared<ActionExecutorClient>(node_name, rate);
+    return std::make_shared<ActionExecutorClient>(node_name);
   }
 
-  ActionExecutorClient(
-    const std::string & node_name,
-    const std::chrono::nanoseconds & rate);
+  /**
+   * @brief Constructor for the ActionExecutorClient.
+   *
+   * @param[in] node_name Name for the ROS node.
+   */
+  explicit ActionExecutorClient(const std::string & node_name);
 
+  /**
+   * @brief Constructor for the ActionExecutorClient.
+   *
+   * @param[in] node_name Name for the ROS node.
+   * @param[in] rate Execution rate for periodic work.
+   */
+  [[deprecated("Use ActionExecutorClient(const std::string & node_name) instead")]]
+  ActionExecutorClient(const std::string & node_name, const std::chrono::nanoseconds & rate);
+
+  /**
+   * @brief Get the time when the action execution started.
+   *
+   * @return rclcpp::TimeThe ROS time when action execution was activated.
+   */
   rclcpp::Time get_start_time() const {return start_time_;}
+
+  /**
+   * @brief Get the current internal status of the action executor.
+   *
+   * @return plansys2_msgs::msg::ActionPerformerStatus Current status message with state, timestamp,
+   *         action and specialized arguments.
+   */
   plansys2_msgs::msg::ActionPerformerStatus get_internal_status() const {return status_;}
 
 protected:
+  /**
+   * @brief Main work method that derived classes should implement.
+   *
+   * This method is called periodically at the rate specified in the constructor.
+   * Derived classes should implement this method to perform the actual execution
+   * of the action and report progress.
+   */
   virtual void do_work() {}
 
+  /**
+   * @brief Get the arguments for the current action execution.
+   *
+   * @return Reference to the vector of arguments.
+   */
   const std::vector<std::string> & get_arguments() const {return current_arguments_;}
+
+  /**
+   * @brief Get the name of the action this executor manages.
+   *
+   * @return std::stringThe action name.
+   */
   const std::string get_action_name() const {return action_managed_;}
 
-  using CallbackReturnT =
-    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
-
+  /**
+   * @brief Configures the node.
+   *
+   * @param[in] state The current lifecycle state.
+   * @return SUCCESS if configuration is successful, FAILURE otherwise.
+   */
   virtual CallbackReturnT on_configure(const rclcpp_lifecycle::State & state);
+
+  /**
+   * @brief Activates the node.
+   *
+   * @param[in] state The current lifecycle state.
+   * @return SUCCESS if activation is successful, FAILURE otherwise.
+   */
   virtual CallbackReturnT on_activate(const rclcpp_lifecycle::State & state);
+
+  /**
+   * @brief Deactivates the node.
+   *
+   * @param[in] state The current lifecycle state.
+   * @return SUCCESS if deactivation is successful, FAILURE otherwise.
+   */
   virtual CallbackReturnT on_deactivate(const rclcpp_lifecycle::State & state);
+
+  /**
+   * @brief Process messages from the actions hub.
+   *
+   * Handles REQUEST, CONFIRM, REJECT, and CANCEL messages, managing the
+   * action execution lifecycle accordingly.
+   *
+   * @param[in] msg The action execution message received.
+   */
   void action_hub_callback(const plansys2_msgs::msg::ActionExecution::SharedPtr msg);
 
+  /**
+   * @brief Check if this executor should execute the given action.
+   *
+   * Verifies that the action name matches and that any specialized arguments
+   * are compatible with the requested arguments.
+   *
+   * @param[in] action The action name to check.
+   * @param[in] args The arguments to check.
+   * @return True if this executor should handle the action, false otherwise.
+   */
   bool should_execute(const std::string & action, const std::vector<std::string> & args);
+
+  /**
+   * @brief Send a response to a request message.
+   *
+   * Indicates that this executor is willing to execute the requested action.
+   *
+   * @param[in] msg The original request message.
+   */
   void send_response(const plansys2_msgs::msg::ActionExecution::SharedPtr msg);
+
+  /**
+   * @brief Send feedback about the action execution progress.
+   *
+   * @param[in] completion Percentage of completion (0.0 to 1.0).
+   * @param[in] status Optional status message describing the current state.
+   */
   void send_feedback(float completion, const std::string & status = "");
+
+  /**
+   * @brief Finish the action execution.
+   *
+   * Deactivates the executor if active and sends a FINISH message to
+   * indicate completion or failure.
+   *
+   * @param[in] success Whether the action was successful.
+   * @param[in] completion Final completion percentage (typically 1.0 for success).
+   * @param[in] status Optional status message describing the final state.
+   */
   void finish(bool success, float completion, const std::string & status = "");
 
-  std::chrono::nanoseconds rate_;
+  // Period for the timer to call do_work
+  std::chrono::nanoseconds period_;
   std::string action_managed_;
-  bool commited_;
+  bool committed_;
 
   std::vector<std::string> current_arguments_;
   std::vector<std::string> specialized_arguments_;

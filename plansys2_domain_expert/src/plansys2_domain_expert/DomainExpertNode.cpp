@@ -23,8 +23,8 @@
 namespace plansys2
 {
 
-DomainExpertNode::DomainExpertNode()
-: rclcpp_lifecycle::LifecycleNode("domain_expert")
+DomainExpertNode::DomainExpertNode(const rclcpp::NodeOptions & options)
+: rclcpp_lifecycle::LifecycleNode("domain_expert", options)
 {
   declare_parameter("model_file", "");
   declare_parameter("validate_using_planner_node", false);
@@ -89,7 +89,8 @@ DomainExpertNode::DomainExpertNode()
       &DomainExpertNode::get_domain_function_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
-  get_domain_derived_predicates_service_ = create_service<plansys2_msgs::srv::GetStates>(
+  get_domain_derived_predicates_service_ =
+    create_service<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>(
     "domain_expert/get_domain_derived_predicates", std::bind(
       &DomainExpertNode::get_domain_derived_predicates_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
@@ -155,7 +156,7 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
       auto request = std::make_shared<plansys2_msgs::srv::ValidateDomain::Request>();
       request->domain = domain_expert_->getDomain();
       auto future_result = validate_domain_client_->async_send_request(std::move(request));
-      if (future_result.wait_for(std::chrono::seconds(1)) != std::future_status::ready) {
+      if (future_result.wait_for(std::chrono::seconds(3)) != std::future_status::ready) {
         RCLCPP_ERROR(
           get_logger(), "Timed out waiting for service: %s",
           validate_domain_client_->get_service_name());
@@ -437,8 +438,8 @@ DomainExpertNode::get_domain_function_details_service_callback(
 void
 DomainExpertNode::get_domain_derived_predicates_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
-  const std::shared_ptr<plansys2_msgs::srv::GetStates::Request> request,
-  const std::shared_ptr<plansys2_msgs::srv::GetStates::Response> response)
+  const std::shared_ptr<plansys2_msgs::srv::GetDomainDerivedPredicateDetails::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::GetDomainDerivedPredicateDetails::Response> response)
 {
   if (domain_expert_ == nullptr) {
     response->success = false;
@@ -446,8 +447,7 @@ DomainExpertNode::get_domain_derived_predicates_service_callback(
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
     response->success = true;
-    response->states = plansys2::convertVector<plansys2_msgs::msg::Node, plansys2::Predicate>(
-      domain_expert_->getDerivedPredicates());
+    response->predicates = domain_expert_->getDerivedPredicates();
   }
 }
 

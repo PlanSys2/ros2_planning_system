@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "plansys2_core/PlanSolverBase.hpp"
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -19,26 +20,23 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include <filesystem>
-#include <string>
-#include <iostream>
+#include <atomic>
+#include <csignal>
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
-#include <csignal>
-#include <atomic>
-#include <thread>
+#include <iostream>
 #include <sstream>
-
-#include "plansys2_core/PlanSolverBase.hpp"
+#include <string>
+#include <thread>
 
 using namespace std::chrono_literals;  // NOLINT
 
 namespace plansys2
 {
 
-char **
-PlanSolverBase::tokenize(const std::string & command)
+char ** PlanSolverBase::tokenize(const std::string & command)
 {
   std::vector<std::string> tokens;
   std::istringstream stream(command);
@@ -60,10 +58,9 @@ PlanSolverBase::tokenize(const std::string & command)
   return argv;
 }
 
-bool
-PlanSolverBase::execute_planner(
-  const std::string & command,
-  const rclcpp::Duration & solver_timeout, const std::string & plan_path)
+bool PlanSolverBase::execute_planner(
+  const std::string & command, const rclcpp::Duration & solver_timeout,
+  const std::string & plan_path)
 {
   cancel_requested_ = false;
   bool child_finish = false;
@@ -86,9 +83,7 @@ PlanSolverBase::execute_planner(
     exit(EXIT_FAILURE);
   } else {
     std::thread monitor_thread([&]() {
-        while (!cancel_requested_ && !child_finish &&
-        lc_node_->now() - start < solver_timeout)
-        {
+        while (!cancel_requested_ && !child_finish && lc_node_->now() - start < solver_timeout) {
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
         kill(pid, SIGKILL);
@@ -127,11 +122,12 @@ PlanSolverBase::execute_planner(
       RCLCPP_DEBUG_STREAM(
         lc_node_->get_logger(), "Child process exited with status: " << WEXITSTATUS(status));
 
-      if (WEXITSTATUS(status) != 0) {return false;}
+      if (WEXITSTATUS(status) != 0) {
+        return false;
+      }
     }
   }
   return true;
 }
-
 
 }  // namespace plansys2
