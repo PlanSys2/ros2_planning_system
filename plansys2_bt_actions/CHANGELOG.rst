@@ -2,8 +2,8 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.2 (2025-12-16)
+------------------
 * Set C++23 as default
 * Fix cancel handle
 * Add tf2_geometry_msgs to plansys2_bt_actions package.xml

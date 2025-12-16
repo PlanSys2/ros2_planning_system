@@ -2,8 +2,8 @@
 Changelog for package plansys2_support_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.2 (2025-12-16)
+------------------
 * Fix logging in python support
 * Improve python package
 * Added some tests

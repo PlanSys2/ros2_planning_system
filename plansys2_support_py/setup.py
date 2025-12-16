@@ -4,7 +4,7 @@ package_name = 'plansys2_support_py'
 
 setup(
     name=package_name,
-    version='3.0.0',
+    version='3.0.2',
     packages=find_packages(exclude=['test']),
     data_files=[
         ('share/ament_index/resource_index/packages',

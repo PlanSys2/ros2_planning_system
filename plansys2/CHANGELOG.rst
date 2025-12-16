@@ -2,8 +2,8 @@
 Changelog for package plansys2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.2 (2025-12-16)
+------------------
 * Remove nav2_common dependency
 * Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo
 

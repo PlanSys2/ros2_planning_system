@@ -2,8 +2,8 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.2 (2025-12-16)
+------------------
 * Fix orphan thread bug in ExecutorNode
 * Set C++23 as default
 * derived_name.name -> derived_name.predicate.name

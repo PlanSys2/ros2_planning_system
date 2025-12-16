@@ -2,8 +2,8 @@
 Changelog for package plansys2_tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.2 (2025-12-16)
+------------------
 * Set C++23 as default
 * Improvements on BTAction
 * added test case for no arg predicates

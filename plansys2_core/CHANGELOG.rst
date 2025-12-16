@@ -2,8 +2,8 @@
 Changelog for package plansys2_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.2 (2025-12-16)
+------------------
 * Set C++23 as default
 * Add function to print predicates for debugging
 * Allow `rolling` to build against ROS Jazzy
