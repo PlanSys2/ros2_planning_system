@@ -15,14 +15,19 @@
 #ifndef PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERT_HPP_
 #define PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERT_HPP_
 
+#include <map>
+#include <memory>
 #include <optional>
 #include <string>
+#include <unordered_set>
 #include <vector>
-#include <memory>
 
-#include "plansys2_msgs/msg/tree.hpp"
-#include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
+#include "plansys2_msgs/msg/node.hpp"
+#include "plansys2_msgs/msg/param.hpp"
+#include "plansys2_msgs/msg/tree.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
+#include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 
 namespace plansys2
 {
@@ -48,9 +53,9 @@ public:
   /**
    * @brief Get all instances in the problem.
    *
-   * @return std::vector<plansys2::Instance> Vector containing all instances in the problem.
+   * @return std::unordered_set<plansys2::Instance> Set containing all instances in the problem.
    */
-  std::vector<plansys2::Instance> getInstances();
+  std::unordered_set<plansys2::Instance> getInstances();
 
   /**
    * @brief Add a new instance to the problem.
@@ -79,9 +84,16 @@ public:
   /**
    * @brief Get all predicates in the problem.
    *
-   * @return std::vector<plansys2::Predicate> Vector containing all predicates in the problem.
+   * @return std::unordered_set<plansys2::Predicate> Set containing all predicates in the problem.
    */
-  std::vector<plansys2::Predicate> getPredicates();
+  std::unordered_set<plansys2::Predicate> getPredicates();
+
+  /**
+   * @brief Get all inferred predicates in the problem.
+   *
+   * @return std::unordered_set<plansys2::Predicate> Set containing all inferred predicates in the problem.
+   */
+  std::unordered_set<plansys2::Predicate> getInferredPredicates();
 
   /**
    * @brief Add a new predicate to the problem.
@@ -92,6 +104,14 @@ public:
   bool addPredicate(const plansys2::Predicate & predicate);
 
   /**
+   * @brief Add new predicates to the problem.
+   *
+   * @param[in] predicates The predicates to be added.
+   * @return true if the predicates were successfully added, false otherwise.
+   */
+  bool addPredicates(const std::vector<plansys2::Predicate> & predicates);
+
+  /**
    * @brief Remove a predicate from the problem.
    *
    * @param[in] predicate The predicate to be removed.
@@ -100,12 +120,39 @@ public:
   bool removePredicate(const plansys2::Predicate & predicate);
 
   /**
+   * @brief Remove multiple predicates from the problem.
+   *
+   * @param[in] predicates The predicates to be removed.
+   * @return true if the predicates were successfully removed, false otherwise.
+   */
+  bool removePredicates(const std::vector<plansys2::Predicate> & predicates);
+
+  /**
+   * @brief Update the predicates in the problem.
+   *
+   * @param[in] add_predicates The predicates to be added.
+   * @param[in] remove_predicates The predicates to be removed.
+   * @return true if the predicates were successfully updated, false otherwise.
+   */
+  bool updatePredicates(
+    const std::vector<plansys2::Predicate> & add_predicates,
+    const std::vector<plansys2::Predicate> & remove_predicates);
+
+  /**
    * @brief Check if a predicate exists in the problem.
    *
    * @param[in] predicate The predicate to check.
    * @return true if the predicate exists, false otherwise.
    */
   bool existPredicate(const plansys2::Predicate & predicate);
+
+  /**
+   * @brief Check if an inferred predicate exists in the problem.
+   *
+   * @param[in] predicate The inferred predicate to check.
+   * @return true if the inferred predicate exists, false otherwise.
+   */
+  bool existInferredPredicate(const plansys2::Predicate & predicate);
 
   /**
    * @brief Get a specific predicate by its expression.
@@ -118,9 +165,9 @@ public:
   /**
    * @brief Get all functions in the problem.
    *
-   * @return std::vector<plansys2::Function> Vector containing all functions in the problem.
+   * @return std::unordered_set<plansys2::Function> Set containing all functions in the problem.
    */
-  std::vector<plansys2::Function> getFunctions();
+  std::unordered_set<plansys2::Function> getFunctions();
 
   /**
    * @brief Add a new function to the problem.
@@ -161,6 +208,13 @@ public:
    * @return std::optional<plansys2::Function> The function if found, empty otherwise.
    */
   std::optional<plansys2::Function> getFunction(const std::string & expr);
+
+  /**
+   * @brief Get the current state of the problem.
+   *
+   * @return plansys2::State The current state of the problem.
+   */
+  plansys2::State getState();
 
   /**
    * @brief Get the current goal of the problem.
@@ -254,6 +308,8 @@ public:
    */
   bool isValidGoal(const plansys2::Goal & goal);
 
+  void updateInferredPredicates();
+
 private:
   /**
    * @brief Check if all predicates and functions in a tree are valid.
@@ -264,9 +320,11 @@ private:
    * @return true if all predicates and functions in the tree are valid, false otherwise.
    */
   bool checkPredicateTreeTypes(
-    const plansys2_msgs::msg::Tree & tree,
-    std::shared_ptr<DomainExpert> & domain_expert_,
+    const plansys2_msgs::msg::Tree & tree, std::shared_ptr<DomainExpert> & domain_expert_,
     uint8_t node_id = 0);
+
+  void removeInvalidPredicates(const plansys2::Instance & instance);
+  void removeInvalidFunctions(const plansys2::Instance & instance);
 
   /**
    * @brief Remove predicates that reference a specific instance.
@@ -275,8 +333,7 @@ private:
    * @param[in] instance The instance to check for references.
    */
   void removeInvalidPredicates(
-    std::vector<plansys2::Predicate> & predicates,
-    const plansys2::Instance & instance);
+    std::vector<plansys2::Predicate> & predicates, const plansys2::Instance & instance);
 
   /**
    * @brief Remove functions that reference a specific instance.
@@ -285,8 +342,7 @@ private:
    * @param[in] instance The instance to check for references.
    */
   void removeInvalidFunctions(
-    std::vector<plansys2::Function> & functions,
-    const plansys2::Instance & instance);
+    std::vector<plansys2::Function> & functions, const plansys2::Instance & instance);
 
   /**
    * @brief Remove goals that reference a specific instance.
@@ -295,9 +351,7 @@ private:
    */
   void removeInvalidGoals(const plansys2::Instance & instance);
 
-  std::vector<plansys2::Instance> instances_;
-  std::vector<plansys2::Predicate> predicates_;
-  std::vector<plansys2::Function> functions_;
+  plansys2::State state_;
   plansys2::Goal goal_;
 
   std::shared_ptr<DomainExpert> domain_expert_;

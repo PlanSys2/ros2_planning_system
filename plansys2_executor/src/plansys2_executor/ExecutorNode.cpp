@@ -272,14 +272,13 @@ void
 ExecutorNode::get_ordered_subgoals(PlanRuntineInfo & runtime_info)
 {
   auto goal = problem_client_->getGoal();
-  auto local_predicates = problem_client_->getPredicates();
-  auto local_functions = problem_client_->getFunctions();
+  auto local_state = problem_client_->getState();
 
   std::vector<uint32_t> unordered_subgoals = parser::pddl::getSubtreeIds(goal);
 
   // just in case some goals are already satisfied
   for (auto it = unordered_subgoals.begin(); it != unordered_subgoals.end(); ) {
-    if (check(goal, local_predicates, local_functions, *it)) {
+    if (check(goal, local_state, *it)) {
       plansys2_msgs::msg::Tree new_goal;
       parser::pddl::fromString(new_goal, "(and " + parser::pddl::toString(goal, (*it)) + ")");
       runtime_info.ordered_sub_goals.push_back(new_goal);
@@ -296,18 +295,18 @@ ExecutorNode::get_ordered_subgoals(PlanRuntineInfo & runtime_info)
       std::shared_ptr<plansys2_msgs::msg::Action> action =
         domain_client_->getAction(
         action_name, get_action_params(plan_item.action));
-      apply(action->effects, local_predicates, local_functions);
+      plansys2::apply(action->effects, local_state);
     } else {
       std::shared_ptr<plansys2_msgs::msg::DurativeAction> action =
         domain_client_->getDurativeAction(
         action_name, get_action_params(plan_item.action));
-      apply(action->at_start_effects, local_predicates, local_functions);
-      apply(action->at_end_effects, local_predicates, local_functions);
+      plansys2::apply(action->at_start_effects, local_state);
+      plansys2::apply(action->at_end_effects, local_state);
     }
 
 
     for (auto it = unordered_subgoals.begin(); it != unordered_subgoals.end(); ) {
-      if (check(goal, local_predicates, local_functions, *it)) {
+      if (check(goal, local_state, *it)) {
         plansys2_msgs::msg::Tree new_goal;
         parser::pddl::fromString(new_goal, "(and " + parser::pddl::toString(goal, (*it)) + ")");
         runtime_info.ordered_sub_goals.push_back(new_goal);

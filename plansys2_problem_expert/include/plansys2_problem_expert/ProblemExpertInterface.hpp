@@ -15,11 +15,16 @@
 #ifndef PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTINTERFACE_HPP_
 #define PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTINTERFACE_HPP_
 
-#include <vector>
-#include <optional>
 #include <string>
+#include <unordered_set>
+#include <vector>
 
+#include "plansys2_core/DerivedResolutionGraph.hpp"
+#include "plansys2_core/State.hpp"
 #include "plansys2_core/Types.hpp"
+#include "plansys2_msgs/msg/node.hpp"
+#include "plansys2_msgs/msg/param.hpp"
+#include "plansys2_msgs/msg/tree.hpp"
 
 namespace plansys2
 {
@@ -42,9 +47,9 @@ public:
   /**
    * @brief Get all instances in the problem.
    *
-   * @return std::vector<plansys2::Instance> Vector containing all instances in the problem.
+   * @return std::unordered_set<plansys2::Instance> Set containing all instances in the problem.
    */
-  virtual std::vector<plansys2::Instance> getInstances() = 0;
+  virtual std::unordered_set<plansys2::Instance> getInstances() = 0;
 
   /**
    * @brief Add a new instance to the problem.
@@ -73,9 +78,16 @@ public:
   /**
    * @brief Get all predicates in the problem.
    *
-   * @return std::vector<plansys2::Predicate> Vector containing all predicates in the problem.
+   * @return std::unordered_set<plansys2::Predicate> Set containing all predicates in the problem.
    */
-  virtual std::vector<plansys2::Predicate> getPredicates() = 0;
+  virtual std::unordered_set<plansys2::Predicate> getPredicates() = 0;
+
+  /**
+   * @brief Get all inferred predicates in the problem.
+   *
+   * @return std::unordered_set<plansys2::Predicate> Set containing all inferred predicates in the problem.
+   */
+  virtual std::unordered_set<plansys2::Predicate> getInferredPredicates() = 0;
 
   /**
    * @brief Add a new predicate to the problem.
@@ -86,12 +98,39 @@ public:
   virtual bool addPredicate(const plansys2::Predicate & predicate) = 0;
 
   /**
+   * @brief Add new predicates to the problem.
+   *
+   * @param[in] predicates The predicates to be added.
+   * @return true if the predicates were successfully added, false otherwise.
+   */
+  virtual bool addPredicates(const std::vector<plansys2::Predicate> & predicates) = 0;
+
+  /**
    * @brief Remove a predicate from the problem.
    *
    * @param[in] predicate The predicate to be removed.
    * @return true if the predicate was successfully removed, false otherwise.
    */
   virtual bool removePredicate(const plansys2::Predicate & predicate) = 0;
+
+  /**
+   * @brief Remove multiple predicates from the problem.
+   *
+   * @param[in] predicates The predicates to be removed.
+   * @return true if the predicates were successfully removed, false otherwise.
+   */
+  virtual bool removePredicates(const std::vector<plansys2::Predicate> & predicates) = 0;
+
+  /**
+   * @brief Update predicates in the problem.
+   *
+   * @param[in] add_predicates The predicates to be added.
+   * @param[in] remove_predicates The predicates to be removed.
+   * @return true if the predicates were successfully updated, false otherwise.
+   */
+  virtual bool updatePredicates(
+    const std::vector<plansys2::Predicate> & add_predicates,
+    const std::vector<plansys2::Predicate> & remove_predicates) = 0;
 
   /**
    * @brief Check if a predicate exists in the problem.
@@ -112,9 +151,9 @@ public:
   /**
    * @brief Get all functions in the problem.
    *
-   * @return std::vector<plansys2::Function> Vector containing all functions in the problem.
+   * @return std::unordered_set<plansys2::Function> Set containing all functions in the problem.
    */
-  virtual std::vector<plansys2::Function> getFunctions() = 0;
+  virtual std::unordered_set<plansys2::Function> getFunctions() = 0;
 
   /**
    * @brief Add a new function to the problem.
@@ -155,6 +194,13 @@ public:
    * @return std::optional<plansys2::Function> The function if found, empty otherwise.
    */
   virtual std::optional<plansys2::Function> getFunction(const std::string & expr) = 0;
+
+  /**
+   * @brief Get the current state of the problem.
+   *
+   * @return plansys2::State The current state of the problem.
+   */
+  virtual plansys2::State getState() = 0;
 
   /**
    * @brief Get the current goal of the problem.

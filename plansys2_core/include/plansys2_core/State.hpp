@@ -248,48 +248,48 @@ public:
     return functions_.erase(std::move(function)) == 1;
   }
 
-  bool hasInstance(const plansys2::Instance & instance)
+  bool hasInstance(const plansys2::Instance & instance) const
   {
     return instances_.find(instance) != instances_.end();
   }
-  bool hasInstance(plansys2::Instance && instance)
+  bool hasInstance(plansys2::Instance && instance) const
   {
     return instances_.find(std::move(instance)) != instances_.end();
   }
 
-  bool hasPredicate(const std::string & predicate_str)
+  bool hasPredicate(const std::string & predicate_str) const
   {
     auto predicate = parser::pddl::fromStringPredicate(predicate_str);
     return predicates_.find(predicate) != predicates_.end();
   }
-  bool hasPredicate(const plansys2::Predicate & predicate)
+  bool hasPredicate(const plansys2::Predicate & predicate) const
   {
     return predicates_.find(predicate) != predicates_.end();
   }
-  bool hasPredicate(plansys2::Predicate && predicate)
+  bool hasPredicate(plansys2::Predicate && predicate) const
   {
     return predicates_.find(std::move(predicate)) != predicates_.end();
   }
 
-  bool hasInferredPredicate(const std::string & predicate_str)
+  bool hasInferredPredicate(const std::string & predicate_str) const
   {
     auto predicate = parser::pddl::fromStringPredicate(predicate_str);
     return inferred_predicates_.find(predicate) != inferred_predicates_.end();
   }
-  bool hasInferredPredicate(const plansys2::Predicate & predicate)
+  bool hasInferredPredicate(const plansys2::Predicate & predicate) const
   {
     return inferred_predicates_.find(predicate) != inferred_predicates_.end();
   }
-  bool hasInferredPredicate(plansys2::Predicate && predicate)
+  bool hasInferredPredicate(plansys2::Predicate && predicate) const
   {
     return inferred_predicates_.find(std::move(predicate)) != inferred_predicates_.end();
   }
 
-  bool hasFunction(const plansys2::Function & function)
+  bool hasFunction(const plansys2::Function & function) const
   {
     return functions_.find(function) != functions_.end();
   }
-  bool hasFunction(plansys2::Function && function)
+  bool hasFunction(plansys2::Function && function) const
   {
     return functions_.find(std::move(function)) != functions_.end();
   }
@@ -313,6 +313,18 @@ public:
   auto getFunction(plansys2::Function && function) const
   {
     return functions_.find(std::move(function));
+  }
+
+  bool updateFunctionValue(const plansys2::Function & function, const double & value)
+  {
+    auto func_it = functions_.find(function);
+    if (func_it != functions_.end()) {
+      plansys2::Function updated_func = *func_it;
+      removeFunction(func_it);
+      updated_func.value = value;
+      return addFunction(updated_func);
+    }
+    return false;
   }
 
   void setDerivedPredicates(const plansys2::DerivedResolutionGraph derived_predicates)

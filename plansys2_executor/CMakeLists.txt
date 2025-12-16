@@ -22,6 +22,7 @@ find_package(pluginlib REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(OpenMP REQUIRED)
 
 set(EXECUTOR_SOURCES
   src/plansys2_executor/ExecutorClient.cpp
@@ -61,6 +62,7 @@ target_link_libraries(${PROJECT_NAME}
   rclcpp_action::rclcpp_action
   rclcpp_cascade_lifecycle::rclcpp_cascade_lifecycle
   rclcpp_lifecycle::rclcpp_lifecycle
+  OpenMP::OpenMP_CXX
   ${std_msgs_TARGETS}
   ${std_srvs_TARGETS}
   PRIVATE

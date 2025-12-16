@@ -52,8 +52,8 @@ RestoreAtStartEffect::tick()
 
     std::vector<plansys2::Predicate> predicates;
     std::vector<plansys2::Function> functions;
-    std::tuple<bool, bool, double> ret = evaluate(
-      effect, problem_client_, predicates, functions, true, false, 0, true);
+    auto ret = apply(
+      effect, problem_client_, 0, true);
   }
 
   return BT::NodeStatus::SUCCESS;

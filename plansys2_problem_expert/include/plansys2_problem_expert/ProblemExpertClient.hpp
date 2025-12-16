@@ -18,29 +18,31 @@
 #include <optional>
 #include <string>
 #include <tuple>
+#include <unordered_set>
 #include <vector>
 
-#include "plansys2_problem_expert/ProblemExpertInterface.hpp"
-#include "plansys2_core/Types.hpp"
-
-#include "std_msgs/msg/empty.hpp"
-
+#include "plansys2_msgs/msg/node.hpp"
+#include "plansys2_msgs/msg/param.hpp"
 #include "plansys2_msgs/msg/problem.hpp"
+#include "plansys2_msgs/msg/tree.hpp"
 #include "plansys2_msgs/srv/add_problem.hpp"
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
 #include "plansys2_msgs/srv/affect_node.hpp"
+#include "plansys2_msgs/srv/affect_nodes.hpp"
 #include "plansys2_msgs/srv/affect_param.hpp"
+#include "plansys2_msgs/srv/clear_problem_knowledge.hpp"
 #include "plansys2_msgs/srv/exist_node.hpp"
+#include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_msgs/srv/get_problem.hpp"
 #include "plansys2_msgs/srv/get_problem_goal.hpp"
 #include "plansys2_msgs/srv/get_problem_instance_details.hpp"
 #include "plansys2_msgs/srv/get_problem_instances.hpp"
-#include "plansys2_msgs/srv/get_node_details.hpp"
+#include "plansys2_msgs/srv/get_problem_state.hpp"
 #include "plansys2_msgs/srv/get_states.hpp"
 #include "plansys2_msgs/srv/is_problem_goal_satisfied.hpp"
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
-#include "plansys2_msgs/srv/clear_problem_knowledge.hpp"
-
+#include "plansys2_msgs/srv/update_nodes.hpp"
+#include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace plansys2
@@ -68,9 +70,9 @@ public:
   /**
    * @brief Get all instances in the problem.
    *
-   * @return std::vector<plansys2::Instance> Vector containing all instances in the problem.
+   * @return std::unordered_set<plansys2::Instance> Set containing all instances in the problem.
    */
-  std::vector<plansys2::Instance> getInstances();
+  std::unordered_set<plansys2::Instance> getInstances();
 
   /**
    * @brief Add a new instance to the problem.
@@ -99,9 +101,16 @@ public:
   /**
    * @brief Get all predicates in the problem.
    *
-   * @return std::vector<plansys2::Predicate> Vector containing all predicates in the problem.
+   * @return std::unordered_set<plansys2::Predicate> Set containing all predicates in the problem.
    */
-  std::vector<plansys2::Predicate> getPredicates();
+  std::unordered_set<plansys2::Predicate> getPredicates();
+
+  /**
+   * @brief Get all inferred predicates in the problem.
+   *
+   * @return std::unordered_set<plansys2::Predicate> Set containing all inferred predicates in the problem.
+   */
+  std::unordered_set<plansys2::Predicate> getInferredPredicates();
 
   /**
    * @brief Add a new predicate to the problem.
@@ -112,12 +121,39 @@ public:
   bool addPredicate(const plansys2::Predicate & predicate);
 
   /**
+   * @brief Add new predicates to the problem.
+   *
+   * @param[in] predicates The predicates to be added.
+   * @return true if the predicates were successfully added, false otherwise.
+   */
+  bool addPredicates(const std::vector<plansys2::Predicate> & predicates);
+
+  /**
    * @brief Remove a predicate from the problem.
    *
    * @param[in] predicate The predicate to be removed.
    * @return true if the predicate was successfully removed, false otherwise.
    */
   bool removePredicate(const plansys2::Predicate & predicate);
+
+  /**
+   * @brief Remove multiple predicates from the problem.
+   *
+   * @param[in] predicates The predicates to be removed.
+   * @return true if the predicates were successfully removed, false otherwise.
+   */
+  bool removePredicates(const std::vector<plansys2::Predicate> & predicates);
+
+  /**
+   * @brief Update predicates in the problem.
+   *
+   * @param[in] add_predicates The predicates to be added.
+   * @param[in] remove_predicates The predicates to be removed.
+   * @return true if the predicates were successfully updated, false otherwise.
+   */
+  bool updatePredicates(
+    const std::vector<plansys2::Predicate> & add_predicates,
+    const std::vector<plansys2::Predicate> & remove_predicates);
 
   /**
    * @brief Check if a predicate exists in the problem.
@@ -138,9 +174,9 @@ public:
   /**
    * @brief Get all functions in the problem.
    *
-   * @return std::vector<plansys2::Function> Vector containing all functions in the problem.
+   * @return std::unordered_set<plansys2::Function> Set containing all functions in the problem.
    */
-  std::vector<plansys2::Function> getFunctions();
+  std::unordered_set<plansys2::Function> getFunctions();
 
   /**
    * @brief Add a new function to the problem.
@@ -181,6 +217,13 @@ public:
    * @return std::optional<plansys2::Function> The function if found, empty otherwise.
    */
   std::optional<plansys2::Function> getFunction(const std::string & function);
+
+  /**
+   * @brief Get the current state of the problem.
+   *
+   * @return plansys2::State The current state of the problem.
+   */
+  plansys2::State getState();
 
   /**
    * @brief Get the current goal of the problem.
@@ -261,48 +304,36 @@ public:
   rclcpp::Time problem_ts_;
 
 private:
-  rclcpp::Client<plansys2_msgs::srv::AddProblem>::SharedPtr
-    add_problem_client_;
-  rclcpp::Client<plansys2_msgs::srv::AddProblemGoal>::SharedPtr
-    add_problem_goal_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr
-    add_problem_instance_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
-    add_problem_predicate_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
-    add_problem_function_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetProblemGoal>::SharedPtr
-    get_problem_goal_client_;
+  rclcpp::Client<plansys2_msgs::srv::AddProblem>::SharedPtr add_problem_client_;
+  rclcpp::Client<plansys2_msgs::srv::AddProblemGoal>::SharedPtr add_problem_goal_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr add_problem_instance_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr add_problem_predicate_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectNodes>::SharedPtr add_problem_predicates_client_;
+  rclcpp::Client<plansys2_msgs::srv::UpdateNodes>::SharedPtr update_problem_predicates_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr add_problem_function_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblemGoal>::SharedPtr get_problem_goal_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblemState>::SharedPtr get_problem_state_client_;
   rclcpp::Client<plansys2_msgs::srv::GetProblemInstanceDetails>::SharedPtr
     get_problem_instance_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetProblemInstances>::SharedPtr
-    get_problem_instances_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblemInstances>::SharedPtr get_problem_instances_client_;
   rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
     get_problem_predicate_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr
-    get_problem_predicates_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_problem_predicates_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_problem_inferred_predicates_client_;
   rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
     get_problem_function_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr
-    get_problem_functions_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetProblem>::SharedPtr
-    get_problem_client_;
-  rclcpp::Client<plansys2_msgs::srv::RemoveProblemGoal>::SharedPtr
-    remove_problem_goal_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_problem_functions_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblem>::SharedPtr get_problem_client_;
+  rclcpp::Client<plansys2_msgs::srv::RemoveProblemGoal>::SharedPtr remove_problem_goal_client_;
   rclcpp::Client<plansys2_msgs::srv::ClearProblemKnowledge>::SharedPtr
     clear_problem_knowledge_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr
-    remove_problem_instance_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
-    remove_problem_predicate_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
-    remove_problem_function_client_;
-  rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr
-    exist_problem_predicate_client_;
-  rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr
-    exist_problem_function_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
-    update_problem_function_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr remove_problem_instance_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr remove_problem_predicate_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectNodes>::SharedPtr remove_problem_predicates_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr remove_problem_function_client_;
+  rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr exist_problem_predicate_client_;
+  rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr exist_problem_function_client_;
+  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr update_problem_function_client_;
   rclcpp::Client<plansys2_msgs::srv::IsProblemGoalSatisfied>::SharedPtr
     is_problem_goal_satisfied_client_;
   rclcpp::Subscription<plansys2_msgs::msg::Problem>::SharedPtr problem_sub_;

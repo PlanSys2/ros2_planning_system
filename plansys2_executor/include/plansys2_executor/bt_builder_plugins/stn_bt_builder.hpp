@@ -26,6 +26,7 @@
 #include <utility>
 #include <vector>
 
+#include "plansys2_core/State.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
@@ -34,18 +35,6 @@
 
 namespace plansys2
 {
-
-/**
- * @brief Structure that represents a state vector in the planning system.
- *
- * Contains the predicates and functions that define a state of the world
- * at a specific point in time during plan execution.
- */
-struct StateVec
-{
-  std::vector<plansys2::Predicate> predicates;
-  std::vector<plansys2::Function> functions;
-};
 
 /**
  * @class plansys2::STNBTBuilder
@@ -199,9 +188,9 @@ protected:
    *
    * @param[in] happenings The set of happening times.
    * @param[in] plan The simplified plan representation.
-   * @return std::map<int, StateVec> Map from happening times to state vectors.
+   * @return std::map<int, plansys2::State> Map from happening times to state vectors.
    */
-  std::map<int, StateVec> get_states(
+  std::map<int, plansys2::State> get_states(
     const std::set<int> & happenings,
     const std::multimap<int, ActionStamped> & plan) const;
 
@@ -213,8 +202,7 @@ protected:
    * @return Tree representing the conjunction of predicates and functions.
    */
   plansys2_msgs::msg::Tree from_state(
-    const std::vector<plansys2::Predicate> & preds,
-    const std::vector<plansys2::Function> & funcs) const;
+    const plansys2::State & state) const;
 
   /**
    * @brief Finds the graph nodes corresponding to an action.
@@ -252,7 +240,7 @@ protected:
     const std::pair<int, ActionStamped> & action,
     const std::multimap<int, ActionStamped> & plan,
     const std::set<int> & happenings,
-    const std::map<int, StateVec> & states) const;
+    const std::map<int, plansys2::State> & states) const;
 
   /**
    * @brief Finds actions that satisfy the requirements of an action.
@@ -267,7 +255,7 @@ protected:
     const std::pair<int, ActionStamped> & action,
     const std::multimap<int, ActionStamped> & plan,
     const std::set<int> & happenings,
-    const std::map<int, StateVec> & states) const;
+    const std::map<int, plansys2::State> & states) const;
 
   /**
    * @brief Finds actions that threaten the execution of an action.
@@ -285,7 +273,7 @@ protected:
     const std::pair<int, ActionStamped> & action,
     const std::multimap<int, ActionStamped> & plan,
     const std::set<int> & happenings,
-    const std::map<int, StateVec> & states) const;
+    const std::map<int, plansys2::State> & states) const;
 
   /**
    * @brief Checks if an action can be applied in a given state.
@@ -303,7 +291,7 @@ protected:
     const std::pair<int, ActionStamped> & action,
     const std::multimap<int, ActionStamped> & plan,
     const int & time,
-    StateVec & state) const;
+    plansys2::State & state) const;
 
   /**
    * @brief Computes the difference between two states.
@@ -312,9 +300,9 @@ protected:
    *
    * @param[in] X_1 The first state.
    * @param[in] X_2 The second state.
-   * @return StateVec containing the differences.
+   * @return plansys2::State containing the differences.
    */
-  StateVec get_diff(const StateVec & X_1, const StateVec & X_2) const;
+  plansys2::State get_diff(const plansys2::State & X_1, const plansys2::State & X_2) const;
 
   /**
    * @brief Computes the intersection of two states.
@@ -323,9 +311,9 @@ protected:
    *
    * @param[in] X_1 The first state.
    * @param[in] X_2 The second state.
-   * @return StateVec containing the intersection.
+   * @return plansys2::State containing the intersection.
    */
-  StateVec get_intersection(const StateVec & X_1, const StateVec & X_2) const;
+  plansys2::State get_intersection(const plansys2::State & X_1, const plansys2::State & X_2) const;
 
   /**
    * @brief Gets the conditions required by an action.

@@ -1,0 +1,4 @@
+plansys2_msgs/Node[] nodes
+---
+bool success
+string error_info

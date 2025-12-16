@@ -260,11 +260,10 @@ STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
   auto action_sequence = get_plan_actions(plan);
 
   // Add a node to represent the initial state
-  auto predicates = problem_client_->getPredicates();
-  auto functions = problem_client_->getFunctions();
+  auto state = problem_client_->getState();
 
   auto init_action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
-  init_action->at_end_effects = from_state(predicates, functions);
+  init_action->at_end_effects = from_state(state);
 
   int node_cnt = 0;
   auto init_node = Node::make_shared(node_cnt++);
@@ -391,11 +390,10 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
   auto action_sequence = get_plan_actions(plan);
 
   // Add an action to represent the initial state
-  auto predicates = problem_client_->getPredicates();
-  auto functions = problem_client_->getFunctions();
+  auto state = problem_client_->getState();
 
   auto init_action_ = std::make_shared<plansys2_msgs::msg::DurativeAction>();
-  init_action_->at_end_effects = from_state(predicates, functions);
+  init_action_->at_end_effects = from_state(state);
   ActionStamped init_action;
   init_action.action = init_action_;
   init_action.type = ActionType::INIT;
@@ -471,30 +469,28 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
   return simple_plan;
 }
 
-std::map<int, StateVec>
+std::map<int, plansys2::State>
 STNBTBuilder::get_states(
   const std::set<int> & happenings,
   const std::multimap<int, ActionStamped> & plan) const
 {
-  std::map<int, StateVec> states;
+  std::map<int, plansys2::State> states;
 
-  StateVec state_vec;
-  state_vec.predicates = problem_client_->getPredicates();
-  state_vec.functions = problem_client_->getFunctions();
-  states.insert(std::make_pair(-1, state_vec));
+  auto state = problem_client_->getState();
+  states.insert(std::make_pair(-1, state));
 
   for (const auto & time : happenings) {
     auto it = plan.equal_range(time);
     for (auto iter = it.first; iter != it.second; ++iter) {
       if (iter->second.type == ActionType::START) {
-        apply(
-          iter->second.action.get_at_start_effects(), state_vec.predicates, state_vec.functions);
+        plansys2::apply(
+          iter->second.action.get_at_start_effects(), state);
       } else if (iter->second.type == ActionType::END) {
-        apply(
-          iter->second.action.get_at_end_effects(), state_vec.predicates, state_vec.functions);
+        plansys2::apply(
+          iter->second.action.get_at_end_effects(), state);
       }
     }
-    states.insert(std::make_pair(time, state_vec));
+    states.insert(std::make_pair(time, state));
   }
 
   return states;
@@ -502,8 +498,7 @@ STNBTBuilder::get_states(
 
 plansys2_msgs::msg::Tree
 STNBTBuilder::from_state(
-  const std::vector<plansys2::Predicate> & preds,
-  const std::vector<plansys2::Function> & funcs) const
+  const plansys2::State & state) const
 {
   plansys2_msgs::msg::Tree tree;
   plansys2_msgs::msg::Node node;
@@ -512,14 +507,14 @@ STNBTBuilder::from_state(
   node.negate = false;
   tree.nodes.push_back(node);
 
-  for (const auto & pred : preds) {
+  for (const auto & pred : state.getPredicates()) {
     const plansys2_msgs::msg::Node * child = &pred;
     tree.nodes.push_back(*child);
     tree.nodes.back().node_id = tree.nodes.size() - 1;
     tree.nodes[0].children.push_back(tree.nodes.size() - 1);
   }
 
-  for (const auto & func : funcs) {
+  for (const auto & func : state.getFunctions()) {
     const plansys2_msgs::msg::Node * child = &func;
     tree.nodes.push_back(*child);
     tree.nodes.back().node_id = tree.nodes.size() - 1;
@@ -613,7 +608,7 @@ STNBTBuilder::get_parents(
   const std::pair<int, ActionStamped> & action,
   const std::multimap<int, ActionStamped> & plan,
   const std::set<int> & happenings,
-  const std::map<int, StateVec> & states) const
+  const std::map<int, plansys2::State> & states) const
 {
   auto parents = get_satisfy(action, plan, happenings, states);
   auto threats = get_threat(action, plan, happenings, states);
@@ -627,7 +622,7 @@ STNBTBuilder::get_satisfy(
   const std::pair<int, ActionStamped> & action,
   const std::multimap<int, ActionStamped> & plan,
   const std::set<int> & happenings,
-  const std::map<int, StateVec> & states) const
+  const std::map<int, plansys2::State> & states) const
 {
   std::vector<std::pair<int, ActionStamped>> ret;
 
@@ -656,7 +651,7 @@ STNBTBuilder::get_satisfy(
     auto X_1 = X_it->second;
 
     for (const auto & r : R_a) {
-      if (!check(r, X_1.predicates, X_1.functions)) {
+      if (!check(r, X_1)) {
         auto it = plan.equal_range(t_2);
         for (auto iter = it.first; iter != it.second; ++iter) {
           if (iter->first == action.first) {
@@ -668,10 +663,10 @@ STNBTBuilder::get_satisfy(
           auto E_k = get_effects(iter->second);
 
           auto X_hat = X_1;
-          apply(E_k, X_hat.predicates, X_hat.functions);
+          plansys2::apply(E_k, X_hat);
 
           // Check if action k satisfies action i
-          if (check(r, X_hat.predicates, X_hat.functions)) {
+          if (check(r, X_hat)) {
             ret.push_back(*iter);
           }
         }
@@ -680,11 +675,10 @@ STNBTBuilder::get_satisfy(
     t_2 = t_1;
   }
 
-  auto predicates = problem_client_->getPredicates();
-  auto functions = problem_client_->getFunctions();
+  auto state = problem_client_->getState();
 
   for (const auto & r : R_a) {
-    if (check(r, predicates, functions)) {
+    if (check(r, state)) {
       ret.push_back(*plan.begin());
     }
   }
@@ -697,7 +691,7 @@ STNBTBuilder::get_threat(
   const std::pair<int, ActionStamped> & action,
   const std::multimap<int, ActionStamped> & plan,
   const std::set<int> & happenings,
-  const std::map<int, StateVec> & states) const
+  const std::map<int, plansys2::State> & states) const
 {
   std::vector<std::pair<int, ActionStamped>> ret;
 
@@ -753,11 +747,11 @@ STNBTBuilder::get_threat(
         auto E_k = get_effects(iter->second);
 
         auto X_hat = X_1_k;
-        apply(E_a, X_hat.predicates, X_hat.functions);
+        plansys2::apply(E_a, X_hat);
 
         // Check if the input action threatens action k
         if (action.second.type != ActionType::OVERALL &&
-          !check(R_k, X_hat.predicates, X_hat.functions))
+          !check(R_k, X_hat))
         {
           if (t_2 != t_in) {
             ret.push_back(*iter);
@@ -770,11 +764,11 @@ STNBTBuilder::get_threat(
         }
 
         auto X_bar = X_1_a;
-        apply(E_k, X_bar.predicates, X_bar.functions);
+        plansys2::apply(E_k, X_bar);
 
         // Check if action k threatens the input action
         if (iter->second.type != ActionType::OVERALL &&
-          !check(R_a, X_bar.predicates, X_bar.functions))
+          !check(R_a, X_bar))
         {
           if (t_2 != t_in) {
             ret.push_back(*iter);
@@ -793,7 +787,7 @@ STNBTBuilder::get_threat(
           auto DX_hat = get_diff(X_1_k, X_hat);
           auto DX_bar = get_diff(X_1_a, X_bar);
           auto intersection = get_intersection(DX_hat, DX_bar);
-          if (intersection.predicates.size() > 0 || intersection.functions.size() > 0) {
+          if (intersection.getPredicatesSize() > 0 || intersection.getFunctionsSize() > 0) {
             if (t_2 != t_in) {
               ret.push_back(*iter);
             } else {
@@ -816,12 +810,12 @@ STNBTBuilder::can_apply(
   const std::pair<int, ActionStamped> & action,
   const std::multimap<int, ActionStamped> & plan,
   const int & time,
-  StateVec & state) const
+  plansys2::State & state) const
 {
   auto X = state;
   auto R = get_conditions(action.second);
 
-  if (check(R, X.predicates, X.functions)) {
+  if (check(R, X)) {
     return true;
   }
 
@@ -842,8 +836,8 @@ STNBTBuilder::can_apply(
             }
           }
           auto E = get_effects(iter->second);
-          apply(E, state.predicates, state.functions);
-          if (check(R, state.predicates, state.functions)) {
+          plansys2::apply(E, state);
+          if (check(R, state)) {
             return true;
           }
         }
@@ -854,49 +848,34 @@ STNBTBuilder::can_apply(
   return false;
 }
 
-StateVec
+plansys2::State
 STNBTBuilder::get_diff(
-  const StateVec & X_1,
-  const StateVec & X_2) const
+  const plansys2::State & X_1,
+  const plansys2::State & X_2) const
 {
-  StateVec ret;
+  plansys2::State ret;
 
   // Look for predicates in X_1 that are not in X_2
-  for (const auto & p_1 : X_1.predicates) {
-    auto it = std::find_if(
-      X_2.predicates.begin(), X_2.predicates.end(),
-      [&](plansys2::Predicate p_2) {
-        return parser::pddl::checkNodeEquality(p_1, p_2);
-      });
-    if (it == X_2.predicates.end()) {
-      ret.predicates.push_back(p_1);
+  for (const auto & p_1 : X_1.getPredicates()) {
+    if(!X_2.hasPredicate(p_1)) {
+      ret.addPredicate(p_1);
     }
   }
 
   // Look for predicates in X_2 that are not in X_1
-  for (const auto & p_2 : X_2.predicates) {
-    auto it = std::find_if(
-      X_1.predicates.begin(), X_1.predicates.end(),
-      [&](plansys2::Predicate p_1) {
-        return parser::pddl::checkNodeEquality(p_1, p_2);
-      });
-    if (it == X_1.predicates.end()) {
-      ret.predicates.push_back(p_2);
+  for (const auto & p_2 : X_2.getPredicates()) {
+    if(!X_1.hasPredicate(p_2)) {
+      ret.addPredicate(p_2);
     }
   }
 
   // Look for function changes
-  for (const auto & f_1 : X_1.functions) {
-    auto it = std::find_if(
-      X_2.functions.begin(), X_2.functions.end(),
-      [&](plansys2::Function f_2) {
-        return parser::pddl::checkNodeEquality(f_1, f_2);
-      });
-    if (it != X_2.functions.end()) {
-      if (std::abs(f_1.value - it->value) >
-        1e-5 * std::max(std::abs(f_1.value), std::abs(it->value)))
+  for (const auto & f_1 : X_1.getFunctions()) {
+    if (X_2.hasFunction(f_1)) {
+      if (std::abs(f_1.value - X_2.getFunction(f_1)->value) >
+        1e-5 * std::max(std::abs(f_1.value), std::abs(X_2.getFunction(f_1)->value)))
       {
-        ret.functions.push_back(f_1);
+        ret.addFunction(f_1);
       }
     }
   }
@@ -904,34 +883,24 @@ STNBTBuilder::get_diff(
   return ret;
 }
 
-StateVec
+plansys2::State
 STNBTBuilder::get_intersection(
-  const StateVec & X_1,
-  const StateVec & X_2) const
+  const plansys2::State & X_1,
+  const plansys2::State & X_2) const
 {
-  StateVec ret;
+  plansys2::State ret;
 
   // Look for predicates in X_1 that are also in X_2
-  for (const auto & p_1 : X_1.predicates) {
-    auto it = std::find_if(
-      X_2.predicates.begin(), X_2.predicates.end(),
-      [&](plansys2::Predicate p_2) {
-        return parser::pddl::checkNodeEquality(p_1, p_2);
-      });
-    if (it != X_2.predicates.end()) {
-      ret.predicates.push_back(p_1);
+  for (const auto & p_1 : X_1.getPredicates()) {
+    if (X_2.hasPredicate(p_1)) {
+      ret.addPredicate(p_1);
     }
   }
 
   // Look for functions in X_1 that are also in X_2
-  for (const auto & f_1 : X_1.functions) {
-    auto it = std::find_if(
-      X_2.functions.begin(), X_2.functions.end(),
-      [&](plansys2::Function f_2) {
-        return parser::pddl::checkNodeEquality(f_1, f_2);
-      });
-    if (it != X_2.functions.end()) {
-      ret.functions.push_back(f_1);
+  for (const auto & f_1 : X_1.getFunctions()) {
+    if (X_2.hasFunction(f_1)) {
+      ret.addFunction(f_1);
     }
   }
 
