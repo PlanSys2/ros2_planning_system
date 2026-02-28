@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['patrolling_20example_0',['Patrolling example',['../md_plansys2__docs_2tutorials_2tut__2__patrol.html',1,'']]],
-  ['planning_20system_1',['ROS2 Planning System',['../index.html',1,'']]],
-  ['plansys2_20and_20terminal_2',['Working with Plansys2 and Terminal',['../md_plansys2__docs_2tutorials_2tut__1__terminal.html',1,'']]]
+  ['bt_20actions_0',['BT Actions',['../dir_bdc1a66e15f7eaa40d71189504882d79.html#autotoc_md1',1,'']]],
+  ['bt_20node_20for_20calling_20ros2_20action_20servers_1',['BT node for calling ROS2 action servers',['../dir_bdc1a66e15f7eaa40d71189504882d79.html#autotoc_md3',1,'']]]
 ];

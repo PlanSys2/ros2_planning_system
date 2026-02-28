@@ -1,11 +1,11 @@
 <map id="ActionStamped" name="ActionStamped">
-<area shape="rect" id="Node000001" title="Representation of an action with its temporal information." alt="" coords="101,109,211,135"/>
+<area shape="rect" id="Node000001" title="Representation of an action with its temporal information." alt="" coords="109,122,219,148"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,5,51,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="34,46,40,66,52,83,75,99,101,110,99,115,72,104,48,87,35,68,29,47"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="81,5,135,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="106,46,107,66,112,84,122,96,134,106,131,110,118,100,107,86,101,66,101,47"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="161,5,247,31"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="195,46,177,86,165,110,160,108,172,84,191,44"/>
-<area shape="rect" id="Node000005" href="$classplansys2_1_1ActionVariant.html" title="Structure that holds either an Action or DurativeAction message." alt="" coords="272,5,371,31"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="292,42,221,87,180,111,177,106,219,83,290,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="31,46,37,73,51,97,78,115,109,126,108,131,75,120,47,100,32,75,26,47"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="87,5,140,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="111,46,111,72,118,97,128,110,141,120,138,124,124,114,113,100,105,73,106,46"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="172,5,258,31"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="209,47,188,99,174,124,169,121,183,97,204,45"/>
+<area shape="rect" id="Node000005" href="$classplansys2_1_1ActionVariant.html" title="Structure that holds either an Action or DurativeAction message." alt="" coords="282,5,382,31"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="311,44,279,72,241,101,196,124,193,119,239,96,276,68,308,40"/>
 </map>

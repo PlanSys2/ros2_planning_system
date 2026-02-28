@@ -1,16 +1,16 @@
 <map id="EitherType" name="EitherType">
-<area shape="rect" id="Node000001" title=" " alt="" coords="99,288,181,313"/>
-<area shape="rect" id="Node000002" href="$classparser_1_1pddl_1_1Type.html" title=" " alt="" coords="115,213,165,238"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,254,143,287,137,287,137,254"/>
-<area shape="poly" id="edge4_Node000002_Node000002" title=" " alt="" coords="182,217,191,225,183,234,165,235,165,230,181,229,186,226,179,222"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="5,109,59,135"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="56,144,101,187,128,210,124,214,98,191,53,147"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="82,109,198,135"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="143,150,143,212,137,212,137,150"/>
-<area shape="rect" id="Node000005" href="$classparser_1_1pddl_1_1TokenStruct.html" title=" " alt="" coords="222,109,392,135"/>
-<area shape="poly" id="edge5_Node000002_Node000005" title=" " alt="" coords="276,145,201,191,162,214,159,210,199,186,273,141"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="99,314,181,340"/>
+<area shape="rect" id="Node000002" href="$classparser_1_1pddl_1_1Type.html" title=" " alt="" coords="115,239,165,265"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,280,143,314,137,314,137,280"/>
+<area shape="poly" id="edge4_Node000002_Node000002" title=" " alt="" coords="182,244,191,252,183,260,165,262,165,256,181,256,186,252,179,248"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,122,59,148"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="51,159,97,213,125,237,121,241,93,217,47,162"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="82,122,198,148"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="143,164,143,239,137,239,137,164"/>
+<area shape="rect" id="Node000005" href="$classparser_1_1pddl_1_1TokenStruct.html" title=" " alt="" coords="222,122,392,148"/>
+<area shape="poly" id="edge5_Node000002_Node000005" title=" " alt="" coords="283,160,207,218,165,241,163,237,204,213,279,156"/>
 <area shape="rect" id="Node000006" title=" " alt="" coords="147,5,282,31"/>
-<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="237,41,298,107,294,110,234,44"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="236,42,299,120,295,124,232,45"/>
 <area shape="rect" id="Node000007" title=" " alt="" coords="307,5,490,31"/>
-<area shape="poly" id="edge7_Node000005_Node000007" title=" " alt="" coords="380,44,320,110,316,107,376,41"/>
+<area shape="poly" id="edge7_Node000005_Node000007" title=" " alt="" coords="382,45,318,124,314,120,378,42"/>
 </map>

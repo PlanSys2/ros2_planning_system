@@ -1,7 +1,7 @@
 <map id="Domain" name="Domain">
-<area shape="rect" id="Node000001" title="Structure representing the main components of a PDDL domain." alt="" coords="58,169,123,195"/>
+<area shape="rect" id="Node000001" title="Structure representing the main components of a PDDL domain." alt="" coords="58,204,123,229"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,5,59,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="32,47,34,94,39,120,49,144,59,156,71,167,68,171,55,160,44,146,34,121,28,95,27,47"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="29,46,25,75,24,109,28,145,41,178,51,191,65,201,62,205,47,195,36,181,23,146,19,110,20,75,24,46"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="83,5,218,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="151,47,142,95,124,146,106,170,102,167,119,144,137,93,146,46"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="153,47,145,110,137,146,124,181,106,205,102,202,119,178,132,144,140,109,147,46"/>
 </map>

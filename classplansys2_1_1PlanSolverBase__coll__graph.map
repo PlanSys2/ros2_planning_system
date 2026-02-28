@@ -1,7 +1,7 @@
 <map id="PlanSolverBase" name="PlanSolverBase">
-<area shape="rect" id="Node000001" title="Abstract base class for plan solvers in PlanSys2." alt="" coords="30,94,145,120"/>
+<area shape="rect" id="Node000001" title="Abstract base class for plan solvers in PlanSys2." alt="" coords="33,102,148,128"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,5,85,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="45,46,50,69,58,81,70,91,66,95,54,85,45,71,40,47"/>
-<area shape="rect" id="Node000003" href="$classbool.html" title=" " alt="" coords="109,5,154,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="121,46,96,95,91,92,116,44"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="44,46,44,62,49,77,58,89,70,99,67,104,54,93,44,79,39,63,38,47"/>
+<area shape="rect" id="Node000003" href="$classbool.html" title=" " alt="" coords="113,5,158,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="126,46,99,103,94,100,121,44"/>
 </map>

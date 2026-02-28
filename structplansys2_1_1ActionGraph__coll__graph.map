@@ -1,7 +1,7 @@
 <map id="ActionGraph" name="ActionGraph">
-<area shape="rect" id="Node000001" title="Graph structure representing a plan as a directed acyclic graph of actions." alt="" coords="120,109,213,135"/>
+<area shape="rect" id="Node000001" title="Graph structure representing a plan as a directed acyclic graph of actions." alt="" coords="120,117,213,143"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,13,157,38"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,48,157,107,153,110,100,52"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,49,158,115,154,118,99,52"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="180,5,326,46"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="227,59,179,111,175,107,223,55"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="228,60,179,118,174,115,224,56"/>
 </map>

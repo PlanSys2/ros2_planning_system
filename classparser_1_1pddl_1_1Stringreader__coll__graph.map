@@ -1,11 +1,11 @@
 <map id="Stringreader" name="Stringreader">
-<area shape="rect" id="Node000001" title=" " alt="" coords="189,109,280,135"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="190,122,281,148"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,5,141,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="96,41,119,63,146,83,196,106,194,111,143,87,115,67,92,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="90,42,111,70,138,96,164,110,191,121,189,126,161,115,135,100,107,74,85,45"/>
 <area shape="rect" id="Node000003" href="$classint.html" title=" " alt="" coords="164,5,203,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="182,46,183,66,188,84,198,97,211,107,208,111,194,100,183,86,177,66,177,47"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="258,5,312,31"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="277,46,258,86,244,110,239,108,253,84,272,44"/>
-<area shape="rect" id="Node000005" title=" " alt="" coords="336,5,410,31"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="347,42,287,87,253,111,250,106,283,83,344,38"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="181,46,180,72,187,97,197,110,211,120,208,124,194,114,182,100,175,73,175,46"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="262,5,316,31"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="283,47,262,100,247,123,243,120,257,97,278,45"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="340,5,414,31"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="359,44,332,72,300,100,262,124,259,120,297,96,328,69,355,41"/>
 </map>

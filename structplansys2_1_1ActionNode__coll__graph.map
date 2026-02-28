@@ -1,21 +1,21 @@
 <map id="ActionNode" name="ActionNode">
-<area shape="rect" id="Node000001" title="Node in an action graph representing a single action from the plan." alt="" coords="520,187,609,212"/>
-<area shape="rect" id="Node000002" href="$structplansys2_1_1ActionStamped.html" title="Representation of an action with its temporal information." alt="" coords="258,79,368,104"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="385,97,441,110,497,133,531,158,555,184,551,188,527,162,495,138,439,115,383,102"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="32,5,78,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="94,25,194,52,272,75,270,81,193,57,92,30"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="28,55,82,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="97,69,258,84,258,89,97,74"/>
-<area shape="rect" id="Node000005" title=" " alt="" coords="12,104,98,130"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="113,108,257,94,258,100,114,114"/>
-<area shape="rect" id="Node000006" href="$classplansys2_1_1ActionVariant.html" title="Structure that holds either an Action or DurativeAction message." alt="" coords="5,153,105,179"/>
-<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="119,147,193,127,271,102,272,107,194,132,120,152"/>
-<area shape="rect" id="Node000007" href="$classint.html" title=" " alt="" coords="294,137,333,163"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="348,153,497,180,520,185,519,190,495,185,347,158"/>
-<area shape="rect" id="Node000008" title=" " alt="" coords="218,187,409,212"/>
-<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="425,197,520,197,520,202,425,202"/>
-<area shape="rect" id="Node000009" title=" " alt="" coords="220,236,406,262"/>
-<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="421,232,495,217,521,210,523,216,497,222,422,237"/>
-<area shape="rect" id="Node000010" title=" " alt="" coords="238,295,389,320"/>
-<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="404,295,450,283,495,265,528,238,552,211,556,214,532,242,497,269,452,288,405,300"/>
+<area shape="rect" id="Node000001" title="Node in an action graph representing a single action from the plan." alt="" coords="530,229,619,255"/>
+<area shape="rect" id="Node000002" href="$structplansys2_1_1ActionStamped.html" title="Representation of an action with its temporal information." alt="" coords="263,101,374,127"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="389,115,449,127,479,138,507,153,528,170,546,190,569,227,565,230,542,193,525,174,505,157,477,143,447,133,388,120"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="32,21,78,47"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="94,38,199,65,288,98,286,103,198,70,92,43"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="28,74,82,100"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="98,89,263,106,262,111,97,94"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="12,128,98,153"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="114,134,198,127,263,119,263,125,199,133,114,140"/>
+<area shape="rect" id="Node000006" href="$classplansys2_1_1ActionVariant.html" title="Structure that holds either an Action or DurativeAction message." alt="" coords="5,181,105,207"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="119,181,198,162,247,144,289,125,291,130,249,149,199,167,121,186"/>
+<area shape="rect" id="Node000007" href="$classint.html" title=" " alt="" coords="299,176,338,201"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="353,189,424,199,507,215,540,226,539,231,505,220,423,204,352,194"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="223,229,414,255"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="429,239,530,239,530,244,429,244"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="225,282,412,308"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="427,283,505,268,545,253,547,258,507,273,428,288"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="243,357,394,383"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="409,362,458,351,505,329,525,313,542,292,565,254,570,257,546,295,529,316,507,334,460,356,410,367"/>
 </map>

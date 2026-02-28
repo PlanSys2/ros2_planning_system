@@ -1,7 +1,7 @@
 <map id="GraphExportToDOTTest" name="GraphExportToDOTTest">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,94,166,120"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,102,166,128"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="24,5,72,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="62,44,83,93,78,95,57,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="61,44,83,100,78,102,56,46"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="96,5,150,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="114,46,93,95,88,93,109,44"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="115,46,93,102,88,100,110,44"/>
 </map>

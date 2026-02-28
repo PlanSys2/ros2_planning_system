@@ -1,7 +1,7 @@
 <map id="And" name="And">
-<area shape="rect" id="Node000001" title=" " alt="" coords="86,94,130,120"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="86,102,130,128"/>
 <area shape="rect" id="Node000002" href="$classparser_1_1pddl_1_1Condition.html" title=" " alt="" coords="5,5,81,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="63,42,101,92,97,95,59,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="62,42,102,100,98,103,58,45"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="104,5,246,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="159,45,120,95,115,92,154,42"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="160,45,119,103,115,100,156,42"/>
 </map>

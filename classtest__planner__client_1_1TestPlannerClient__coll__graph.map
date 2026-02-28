@@ -1,7 +1,7 @@
 <map id="TestPlannerClient" name="TestPlannerClient">
-<area shape="rect" id="Node000001" title=" " alt="" coords="22,109,146,135"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="22,122,146,148"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,5,83,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="57,44,82,108,77,110,52,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="56,45,82,121,77,123,51,46"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="106,5,145,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="117,46,91,110,86,108,112,44"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="118,46,91,123,86,121,113,45"/>
 </map>
