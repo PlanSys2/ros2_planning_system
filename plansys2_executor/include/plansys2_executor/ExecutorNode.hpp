@@ -100,7 +100,12 @@ public:
   /**
    * @brief Constructor for the ExecutorNode.
    */
-  ExecutorNode();
+  explicit ExecutorNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+
+  /**
+   * @brief Destructor for the ExecutorNode.
+   */
+  virtual ~ExecutorNode();
 
   /**
    * @brief Configures the node.
@@ -342,6 +347,8 @@ protected:
   bool replan_requested_;
   bool new_plan_received_ {false};
   bool cancel_requested_ {false};
+
+  bool node_running_ {true};
 
   std::list<std::shared_ptr<GoalHandleExecutePlan>> goal_handlers_;
   std::shared_ptr<GoalHandleExecutePlan> current_goal_handle_;

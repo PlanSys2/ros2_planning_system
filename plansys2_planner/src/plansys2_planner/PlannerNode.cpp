@@ -27,8 +27,8 @@ using namespace std::chrono_literals;
 namespace plansys2
 {
 
-PlannerNode::PlannerNode()
-: rclcpp_lifecycle::LifecycleNode("planner"),
+PlannerNode::PlannerNode(const rclcpp::NodeOptions & options)
+: rclcpp_lifecycle::LifecycleNode("planner", options),
   lp_loader_("plansys2_core", "plansys2::PlanSolverBase"),
   default_ids_{},
   default_types_{},

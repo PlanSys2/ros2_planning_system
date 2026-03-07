@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.5)
 
 project(plansys2_bt_actions)
 
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 find_package(ament_cmake REQUIRED)

@@ -256,7 +256,7 @@ ComputeBT::computeBTCallback(
   auto problem = problem_client_->getProblem();
   auto plan = planner_client_->getPlan(domain, problem);
 
-  savePlan(plan.value(), problem_path.stem().u8string());
+  savePlan(plan.value(), problem_path.stem().string());
 
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
   auto action_timeout_actions = this->get_parameter("action_timeouts.actions").as_string_array();
@@ -325,7 +325,7 @@ ComputeBT::computeBTCallback(
     return;
   }
 
-  saveBT(bt_xml_tree, problem_path.stem().u8string());
+  saveBT(bt_xml_tree, problem_path.stem().string());
 
   auto action_graph = bt_builder->get_graph();
   std_msgs::msg::String dotgraph_msg;
@@ -333,7 +333,7 @@ ComputeBT::computeBTCallback(
     action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
     this->get_parameter("print_graph").as_bool());
   dotgraph_pub_->publish(dotgraph_msg);
-  saveDotGraph(dotgraph_msg.data, problem_path.stem().u8string());
+  saveDotGraph(dotgraph_msg.data, problem_path.stem().string());
 
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<ExecuteAction>("ExecuteAction");

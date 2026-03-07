@@ -17,9 +17,12 @@
 
 #include <string>
 #include <vector>
+#include <chrono>
 
 namespace plansys2
 {
+
+using namespace std::chrono_literals;  // NOLINT
 
 /**
  * @brief Splits a string into tokens based on a delimiter.
@@ -45,6 +48,13 @@ std::string substr_without_empty_lines(
  * @return std::string The PDDL string without comments.
  */
 std::string remove_comments(const std::string & pddl);
+
+/**
+ * @brief Drain ROS messages for a given time. Useful in tests to ensure all messages are processed.
+ * @param[in] n The node to use for spinning.
+ * @param[in] total The total time to drain messages.
+ */
+void drain_ros(std::chrono::milliseconds total = 200ms);
 
 }  // namespace plansys2
 

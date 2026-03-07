@@ -296,11 +296,86 @@ public:
     }
   }
 
+  std::string toNormalizedString() const
+  {
+    if (!normalizedDerivedComputed()) {
+      computeNormalizedDerived();
+    }
+
+    std::ostringstream oss;
+
+    // Predicate
+    oss << "(" << normalized_predicate_.name;
+    for (const auto & p : normalized_predicate_.parameters) {
+      oss << " " << p.name;
+    }
+    oss << ")";
+
+    // Preconditions
+    if (!normalized_preconditions_.nodes.empty()) {
+      oss << " :- ";
+
+      bool first = true;
+      for (const auto & node : normalized_preconditions_.nodes) {
+        if (!first) {
+          oss << " ";
+        }
+        first = false;
+
+        oss << nodeToString(node);
+      }
+    }
+
+    return oss.str();
+  }
+
 private:
   mutable plansys2_msgs::msg::Node normalized_predicate_;
   mutable plansys2_msgs::msg::Tree normalized_preconditions_;
   mutable bool normalized_cache_;
   mutable std::size_t normalized_hash_;
+
+  static std::string
+  nodeToString(const plansys2_msgs::msg::Node & node)
+  {
+    std::ostringstream oss;
+
+    switch (node.node_type) {
+      case plansys2_msgs::msg::Node::AND:
+        oss << "(and";
+        for (const auto & p : node.parameters) {
+          oss << " " << p.name;
+        }
+        oss << ")";
+        break;
+
+      case plansys2_msgs::msg::Node::OR:
+        oss << "(or";
+        for (const auto & p : node.parameters) {
+          oss << " " << p.name;
+        }
+        oss << ")";
+        break;
+
+      case plansys2_msgs::msg::Node::PREDICATE:
+        oss << "(" << node.name;
+        for (const auto & p : node.parameters) {
+          oss << " " << p.name;
+        }
+        oss << ")";
+        break;
+
+      case plansys2_msgs::msg::Node::PARAMETER:
+        oss << node.name;
+        break;
+
+      default:
+        oss << "(unknown)";
+        break;
+    }
+
+    return oss.str();
+  }
 };
 
 /**

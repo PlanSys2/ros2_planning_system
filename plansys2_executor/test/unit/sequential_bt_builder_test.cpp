@@ -21,7 +21,26 @@
 #include "plansys2_msgs/srv/validate_domain.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
+
+#include "plansys2_core/Utils.hpp"
+
 #include "rclcpp/rclcpp.hpp"
+
+
+class ROS2Environment : public ::testing::Environment
+{
+public:
+  void SetUp() override
+  {
+    rclcpp::init(0, nullptr);
+  }
+
+  void TearDown() override
+  {
+    rclcpp::shutdown();
+  }
+};
+
 
 class SequentialBTBuilderTest : public plansys2::SequentialBTBuilder
 {
@@ -60,87 +79,88 @@ public:
 
 TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
 {
-  auto test_node = rclcpp::Node::make_shared("test_plan_1");
-  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
-  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
-  auto planner_node = std::make_shared<TestPlannerNode>();
+  {
+    auto test_node = rclcpp::Node::make_shared("test_plan_1");
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+    auto planner_node = std::make_shared<TestPlannerNode>();
 
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
-  auto btbuilder = std::make_shared<SequentialBTBuilderTest>();
+    auto btbuilder = std::make_shared<SequentialBTBuilderTest>();
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/suave_domain.pddl"});
-  domain_node->set_parameter({"validate_using_planner_node", true});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/suave_domain.pddl"});
-  problem_node->set_parameter({"problem_file", pkgpath + "/pddl/suave_problem.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/suave_domain.pddl"});
+    domain_node->set_parameter({"validate_using_planner_node", true});
+    problem_node->set_parameter({"model_file", pkgpath + "/pddl/suave_domain.pddl"});
+    problem_node->set_parameter({"problem_file", pkgpath + "/pddl/suave_problem.pddl"});
 
-  rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
+    rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
 
-  exe.add_node(domain_node->get_node_base_interface());
-  exe.add_node(problem_node->get_node_base_interface());
-  exe.add_node(planner_node->get_node_base_interface());
+    exe.add_node(domain_node->get_node_base_interface());
+    exe.add_node(problem_node->get_node_base_interface());
+    exe.add_node(planner_node->get_node_base_interface());
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {
-        exe.spin_some();
+    bool finish = false;
+    std::thread t([&]() {
+        while (!finish) {
+          exe.spin_some();
+        }
+      });
+
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+    {
+      rclcpp::Rate rate(10);
+      auto start = test_node->now();
+      while ((test_node->now() - start).seconds() < 0.5) {
+        rate.sleep();
       }
-    });
-
-  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
     }
-  }
 
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
+    {
+      rclcpp::Rate rate(10);
+      auto start = test_node->now();
+      while ((test_node->now() - start).seconds() < 0.5) {
+        rate.sleep();
+      }
     }
-  }
 
-  plansys2_msgs::msg::Plan plan;
+    plansys2_msgs::msg::Plan plan;
 
-  plansys2_msgs::msg::PlanItem plan_item_0;
-  plansys2_msgs::msg::PlanItem plan_item_1;
-  plansys2_msgs::msg::PlanItem plan_item_2;
-  plansys2_msgs::msg::PlanItem plan_item_3;
-  plansys2_msgs::msg::PlanItem plan_item_4;
-  plansys2_msgs::msg::PlanItem plan_item_5;
-  plansys2_msgs::msg::PlanItem plan_item_6;
-  plan_item_0.action = "(start_robot bluerov)";
-  plan_item_1.action = "(reconfigure1 f_maintain_motion fd_all_thrusters)";
-  plan_item_2.action = "(reconfigure1 f_generate_search_path fd_spiral_high)";
-  plan_item_3.action = "(search_pipeline pipeline bluerov)";
-  plan_item_4.action = "(reconfigure1 f_follow_pipeline fd_follow_pipeline)";
-  plan_item_5.action = "(reconfigure2 f_generate_search_path fd_spiral_high fd_unground)";
-  plan_item_6.action = "(inspect_pipeline pipeline bluerov)";
+    plansys2_msgs::msg::PlanItem plan_item_0;
+    plansys2_msgs::msg::PlanItem plan_item_1;
+    plansys2_msgs::msg::PlanItem plan_item_2;
+    plansys2_msgs::msg::PlanItem plan_item_3;
+    plansys2_msgs::msg::PlanItem plan_item_4;
+    plansys2_msgs::msg::PlanItem plan_item_5;
+    plansys2_msgs::msg::PlanItem plan_item_6;
+    plan_item_0.action = "(start_robot bluerov)";
+    plan_item_1.action = "(reconfigure1 f_maintain_motion fd_all_thrusters)";
+    plan_item_2.action = "(reconfigure1 f_generate_search_path fd_spiral_high)";
+    plan_item_3.action = "(search_pipeline pipeline bluerov)";
+    plan_item_4.action = "(reconfigure1 f_follow_pipeline fd_follow_pipeline)";
+    plan_item_5.action = "(reconfigure2 f_generate_search_path fd_spiral_high fd_unground)";
+    plan_item_6.action = "(inspect_pipeline pipeline bluerov)";
 
-  plan.items.push_back(plan_item_0);
-  plan.items.push_back(plan_item_1);
-  plan.items.push_back(plan_item_2);
-  plan.items.push_back(plan_item_3);
-  plan.items.push_back(plan_item_4);
-  plan.items.push_back(plan_item_5);
-  plan.items.push_back(plan_item_6);
+    plan.items.push_back(plan_item_0);
+    plan.items.push_back(plan_item_1);
+    plan.items.push_back(plan_item_2);
+    plan.items.push_back(plan_item_3);
+    plan.items.push_back(plan_item_4);
+    plan.items.push_back(plan_item_5);
+    plan.items.push_back(plan_item_6);
 
-  auto bt_string = btbuilder->get_tree(plan);
+    auto bt_string = btbuilder->get_tree(plan);
 
-  const std::string expected_bt_string =
-    R"(<root BTCPP_format="4" main_tree_to_execute="MainTree">
+    const std::string expected_bt_string =
+      R"(<root BTCPP_format="4" main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
     <Sequence name="MainSequence">
       <Sequence name="(start_robot bluerov):0">
@@ -232,16 +252,18 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
 </root>
 )";
 
-  EXPECT_EQ(bt_string, expected_bt_string);
+    EXPECT_EQ(bt_string, expected_bt_string);
 
-  finish = true;
-  t.join();
+    finish = true;
+    t.join();
+}
+  plansys2::drain_ros(200ms);
 }
 
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  rclcpp::init(argc, argv);
+  ::testing::AddGlobalTestEnvironment(new ROS2Environment);
 
   return RUN_ALL_TESTS();
 }

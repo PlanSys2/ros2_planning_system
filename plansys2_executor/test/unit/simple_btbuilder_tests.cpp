@@ -55,6 +55,22 @@
 
 #include "gtest/gtest.h"
 
+
+class ROS2Environment : public ::testing::Environment
+{
+public:
+  void SetUp() override
+  {
+    rclcpp::init(0, nullptr);
+  }
+
+  void TearDown() override
+  {
+    rclcpp::shutdown();
+  }
+};
+
+
 class SimpleBTBuilderTest : public plansys2::SimpleBTBuilder
 {
 public:
@@ -1032,7 +1048,7 @@ TEST(simple_btbuilder_tests, test_plan_6)
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  rclcpp::init(argc, argv);
+  ::testing::AddGlobalTestEnvironment(new ROS2Environment);
 
   return RUN_ALL_TESTS();
 }

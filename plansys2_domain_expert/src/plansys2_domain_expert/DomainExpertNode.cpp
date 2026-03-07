@@ -23,8 +23,8 @@
 namespace plansys2
 {
 
-DomainExpertNode::DomainExpertNode()
-: rclcpp_lifecycle::LifecycleNode("domain_expert")
+DomainExpertNode::DomainExpertNode(const rclcpp::NodeOptions & options)
+: rclcpp_lifecycle::LifecycleNode("domain_expert", options)
 {
   declare_parameter("model_file", "");
   declare_parameter("validate_using_planner_node", false);

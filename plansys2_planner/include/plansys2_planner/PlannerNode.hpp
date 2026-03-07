@@ -52,7 +52,7 @@ public:
   /**
    * @brief Constructor for the PlannerNode.
    */
-  PlannerNode();
+  explicit PlannerNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   /**
    * @brief Destructor for the PlannerNode.

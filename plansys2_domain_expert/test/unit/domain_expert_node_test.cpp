@@ -24,121 +24,144 @@
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 
+#include "plansys2_core/Utils.hpp"
+
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
-TEST(domain_expert, lifecycle)
+
+class ROS2Environment : public ::testing::Environment
 {
-  auto test_node = rclcpp::Node::make_shared("get_action_from_string");
-  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
-
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
-  rclcpp::experimental::executors::EventsExecutor exe;
-
-  exe.add_node(domain_node->get_node_base_interface());
-
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
-
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-
+public:
+  void SetUp() override
   {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
+    rclcpp::init(0, nullptr);
   }
 
-  ASSERT_EQ(
+  void TearDown() override
+  {
+    rclcpp::shutdown();
+  }
+};
+
+TEST(domain_expert, lifecycle)
+{
+  {
+    auto test_node = rclcpp::Node::make_shared("get_action_from_string");
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    rclcpp::experimental::executors::EventsExecutor exe;
+
+    exe.add_node(domain_node->get_node_base_interface());
+
+    bool finish = false;
+    std::thread t([&]() {
+        while (!finish) {exe.spin_some();}
+      });
+
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+    {
+      rclcpp::Rate rate(10);
+      auto start = test_node->now();
+      while ((test_node->now() - start).seconds() < 0.5) {
+        rate.sleep();
+      }
+    }
+
+    ASSERT_EQ(
     domain_node->get_current_state().id(),
     lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
 
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
+    {
+      rclcpp::Rate rate(10);
+      auto start = test_node->now();
+      while ((test_node->now() - start).seconds() < 0.5) {
+        rate.sleep();
+      }
     }
-  }
 
-  ASSERT_EQ(
+    ASSERT_EQ(
     domain_node->get_current_state().id(),
     lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);
 
-  ASSERT_EQ(domain_client->getDomain(), domain_client->getDomain(true));
-  auto domain_str = domain_client->getDomain();
+    ASSERT_EQ(domain_client->getDomain(), domain_client->getDomain(true));
+    auto domain_str = domain_client->getDomain();
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
+    {
+      rclcpp::Rate rate(10);
+      auto start = test_node->now();
+      while ((test_node->now() - start).seconds() < 0.5) {
+        rate.sleep();
+      }
     }
+
+    std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_processed.pddl");
+    std::string domain_str_p((
+        std::istreambuf_iterator<char>(domain_ifs_p)),
+      std::istreambuf_iterator<char>());
+
+    ASSERT_EQ(domain_str, domain_str_p);
+
+    finish = true;
+    t.join();
   }
-
-  std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_processed.pddl");
-  std::string domain_str_p((
-      std::istreambuf_iterator<char>(domain_ifs_p)),
-    std::istreambuf_iterator<char>());
-
-  ASSERT_EQ(domain_str, domain_str_p);
-
-  finish = true;
-  t.join();
+  plansys2::drain_ros(200ms);
 }
 
 TEST(domain_expert, lifecycle_error)
 {
-  auto test_node = rclcpp::Node::make_shared("get_action_from_string");
-  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
-
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_2_error.pddl"});
-  rclcpp::experimental::executors::EventsExecutor exe;
-
-  exe.add_node(domain_node->get_node_base_interface());
-
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
-
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-
   {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
+    auto test_node = rclcpp::Node::make_shared("get_action_from_string");
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
-  ASSERT_EQ(
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_2_error.pddl"});
+    rclcpp::experimental::executors::EventsExecutor exe;
+
+    exe.add_node(domain_node->get_node_base_interface());
+
+    bool finish = false;
+    std::thread t([&]() {
+        while (!finish) {exe.spin_some();}
+      });
+
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+    {
+      rclcpp::Rate rate(10);
+      auto start = test_node->now();
+      while ((test_node->now() - start).seconds() < 0.5) {
+        rate.sleep();
+      }
+    }
+
+    ASSERT_EQ(
     domain_node->get_current_state().id(),
     lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
 
-  finish = true;
-  t.join();
+    finish = true;
+    t.join();
+  }
+  plansys2::drain_ros(200ms);
 }
 
 
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  rclcpp::init(argc, argv);
+  ::testing::AddGlobalTestEnvironment(new ROS2Environment);
 
   return RUN_ALL_TESTS();
 }

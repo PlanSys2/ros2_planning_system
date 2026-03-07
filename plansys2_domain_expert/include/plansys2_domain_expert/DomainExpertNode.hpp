@@ -51,8 +51,9 @@ class DomainExpertNode : public rclcpp_lifecycle::LifecycleNode
 public:
   /**
    * @brief Construct a new DomainExpertNode object.
+   * @param[in] options Node options for configuring the node.
    */
-  DomainExpertNode();
+  explicit DomainExpertNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   using CallbackReturnT =
     rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;

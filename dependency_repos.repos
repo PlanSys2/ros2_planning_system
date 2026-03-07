@@ -6,9 +6,9 @@ repositories:
   popf:
     type: git
     url: https://github.com/fmrico/popf.git
-    version: ros2
-  behavior_tree_cpp:
-    type: git
-    url: https://github.com/BehaviorTree/BehaviorTree.CPP.git
-    version: 4.7.0
+    version: rolling-devel
+#   behavior_tree_cpp:
+#     type: git
+#     url: https://github.com/BehaviorTree/BehaviorTree.CPP.git
+#     version: 4.7.0
 

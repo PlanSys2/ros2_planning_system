@@ -42,8 +42,8 @@ std::vector<std::string> tokenize(const std::string & string, const std::string 
 namespace plansys2
 {
 
-ProblemExpertNode::ProblemExpertNode()
-: rclcpp_lifecycle::LifecycleNode("problem_expert")
+ProblemExpertNode::ProblemExpertNode(const rclcpp::NodeOptions & options)
+: rclcpp_lifecycle::LifecycleNode("problem_expert", options)
 {
   declare_parameter("model_file", "");
   declare_parameter("problem_file", "");

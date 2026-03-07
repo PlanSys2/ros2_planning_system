@@ -30,196 +30,216 @@
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 
+#include "plansys2_core/Utils.hpp"
+
 #include "plansys2_msgs/msg/knowledge.hpp"
+
+
+class ROS2Environment : public ::testing::Environment
+{
+public:
+  void SetUp() override
+  {
+    rclcpp::init(0, nullptr);
+  }
+
+  void TearDown() override
+  {
+    rclcpp::shutdown();
+  }
+};
 
 TEST(problem_expert_node, addget_instances)
 {
-  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto test_node_2 = rclcpp::Node::make_shared("test_problem_expert_node_2");
-  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
-  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  {
+    auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+    auto test_node_2 = rclcpp::Node::make_shared("test_problem_expert_node_2");
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
 
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
 
 
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::experimental::executors::EventsExecutor exe;
 
-  exe.add_node(domain_node->get_node_base_interface());
-  exe.add_node(problem_node->get_node_base_interface());
-  exe.add_node(test_node_2->get_node_base_interface());
+    exe.add_node(domain_node->get_node_base_interface());
+    exe.add_node(problem_node->get_node_base_interface());
+    exe.add_node(test_node_2->get_node_base_interface());
 
-  plansys2_msgs::msg::Knowledge last_knowledge_msg;
-  int knowledge_msg_counter = 0;
-  auto knowledge_sub = test_node_2->create_subscription<plansys2_msgs::msg::Knowledge>(
+    plansys2_msgs::msg::Knowledge last_knowledge_msg;
+    int knowledge_msg_counter = 0;
+    auto knowledge_sub = test_node_2->create_subscription<plansys2_msgs::msg::Knowledge>(
     "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
-    [&last_knowledge_msg, &knowledge_msg_counter]
-    (const plansys2_msgs::msg::Knowledge::SharedPtr msg) {
-      last_knowledge_msg = *msg;
-      knowledge_msg_counter++;
+      [&last_knowledge_msg, &knowledge_msg_counter]
+      (const plansys2_msgs::msg::Knowledge::SharedPtr msg) {
+        last_knowledge_msg = *msg;
+        knowledge_msg_counter++;
     });
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+    bool finish = false;
+    std::thread t([&]() {
+        while (!finish) {exe.spin_some();}
+      });
 
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("Paco", "person")));
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("Paco", "person")));
-  ASSERT_FALSE(problem_client->addInstance(plansys2::Instance("Paco", "SCIENTIFIC")));
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("Paco", "person")));
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("Paco", "person")));
+    ASSERT_FALSE(problem_client->addInstance(plansys2::Instance("Paco", "SCIENTIFIC")));
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
+    {
+      rclcpp::Rate rate(10);
+      auto start = test_node->now();
+      while ((test_node->now() - start).seconds() < 0.5) {
+        rate.sleep();
+      }
     }
-  }
 
-  ASSERT_EQ(knowledge_msg_counter, 4u);
-  ASSERT_EQ(last_knowledge_msg.instances.size(), 3u);
-  ASSERT_EQ(last_knowledge_msg.instances[0], "Paco");
-  ASSERT_EQ(last_knowledge_msg.instances[1], "bedroom");
-  ASSERT_EQ(last_knowledge_msg.instances[2], "kitchen");
-  ASSERT_EQ(last_knowledge_msg.predicates.size(), 0);
-  ASSERT_EQ(last_knowledge_msg.goal, "");
+    ASSERT_EQ(knowledge_msg_counter, 4u);
+    ASSERT_EQ(last_knowledge_msg.instances.size(), 3u);
+    ASSERT_EQ(last_knowledge_msg.instances[0], "Paco");
+    ASSERT_EQ(last_knowledge_msg.instances[1], "bedroom");
+    ASSERT_EQ(last_knowledge_msg.instances[2], "kitchen");
+    ASSERT_EQ(last_knowledge_msg.predicates.size(), 0);
+    ASSERT_EQ(last_knowledge_msg.goal, "");
 
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
+    {
+      rclcpp::Rate rate(10);
+      auto start = test_node->now();
+      while ((test_node->now() - start).seconds() < 0.5) {
+        rate.sleep();
+      }
     }
-  }
 
-  ASSERT_EQ(knowledge_msg_counter, 5u);
-  ASSERT_EQ(last_knowledge_msg.instances.size(), 4u);
-  ASSERT_EQ(last_knowledge_msg.instances[0], "Paco");
-  ASSERT_EQ(last_knowledge_msg.instances[1], "bedroom");
-  ASSERT_EQ(last_knowledge_msg.instances[2], "kitchen");
-  ASSERT_EQ(last_knowledge_msg.instances[3], "r2d2");
-  ASSERT_EQ(last_knowledge_msg.predicates.size(), 0);
-  ASSERT_EQ(last_knowledge_msg.goal, "");
+    ASSERT_EQ(knowledge_msg_counter, 5u);
+    ASSERT_EQ(last_knowledge_msg.instances.size(), 4u);
+    ASSERT_EQ(last_knowledge_msg.instances[0], "Paco");
+    ASSERT_EQ(last_knowledge_msg.instances[1], "bedroom");
+    ASSERT_EQ(last_knowledge_msg.instances[2], "kitchen");
+    ASSERT_EQ(last_knowledge_msg.instances[3], "r2d2");
+    ASSERT_EQ(last_knowledge_msg.predicates.size(), 0);
+    ASSERT_EQ(last_knowledge_msg.goal, "");
 
-  ASSERT_EQ(problem_client->getInstances().size(), 4);
-  ASSERT_EQ(problem_client->getInstances()[0].name, "Paco");
-  ASSERT_EQ(problem_client->getInstances()[0].type, "person");
-  ASSERT_EQ(problem_client->getInstances()[1].name, "bedroom");
-  ASSERT_EQ(problem_client->getInstances()[1].type, "room");
-  ASSERT_EQ(problem_client->getInstances()[2].name, "kitchen");
-  ASSERT_EQ(problem_client->getInstances()[2].type, "room");
-  ASSERT_EQ(problem_client->getInstances()[3].name, "r2d2");
-  ASSERT_EQ(problem_client->getInstances()[3].type, "robot");
+    ASSERT_EQ(problem_client->getInstances().size(), 4);
+    ASSERT_EQ(problem_client->getInstances()[0].name, "Paco");
+    ASSERT_EQ(problem_client->getInstances()[0].type, "person");
+    ASSERT_EQ(problem_client->getInstances()[1].name, "bedroom");
+    ASSERT_EQ(problem_client->getInstances()[1].type, "room");
+    ASSERT_EQ(problem_client->getInstances()[2].name, "kitchen");
+    ASSERT_EQ(problem_client->getInstances()[2].type, "room");
+    ASSERT_EQ(problem_client->getInstances()[3].name, "r2d2");
+    ASSERT_EQ(problem_client->getInstances()[3].type, "robot");
 
-  ASSERT_TRUE(problem_client->removeInstance(plansys2::Instance("Paco", "person")));
-  ASSERT_EQ(problem_client->getInstances().size(), 3);
-  ASSERT_EQ(problem_client->getInstances()[0].name, "bedroom");
-  ASSERT_EQ(problem_client->getInstances()[0].type, "room");
-  ASSERT_EQ(problem_client->getInstances()[1].name, "kitchen");
-  ASSERT_EQ(problem_client->getInstances()[1].type, "room");
-  ASSERT_EQ(problem_client->getInstances()[2].name, "r2d2");
-  ASSERT_EQ(problem_client->getInstances()[2].type, "robot");
+    ASSERT_TRUE(problem_client->removeInstance(plansys2::Instance("Paco", "person")));
+    ASSERT_EQ(problem_client->getInstances().size(), 3);
+    ASSERT_EQ(problem_client->getInstances()[0].name, "bedroom");
+    ASSERT_EQ(problem_client->getInstances()[0].type, "room");
+    ASSERT_EQ(problem_client->getInstances()[1].name, "kitchen");
+    ASSERT_EQ(problem_client->getInstances()[1].type, "room");
+    ASSERT_EQ(problem_client->getInstances()[2].name, "r2d2");
+    ASSERT_EQ(problem_client->getInstances()[2].type, "robot");
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
+    {
+      rclcpp::Rate rate(10);
+      auto start = test_node->now();
+      while ((test_node->now() - start).seconds() < 0.5) {
+        rate.sleep();
+      }
     }
-  }
 
-  ASSERT_EQ(knowledge_msg_counter, 6u);
-  ASSERT_EQ(last_knowledge_msg.instances.size(), 3u);
-  ASSERT_EQ(last_knowledge_msg.instances[0], "bedroom");
-  ASSERT_EQ(last_knowledge_msg.instances[1], "kitchen");
-  ASSERT_EQ(last_knowledge_msg.instances[2], "r2d2");
-  ASSERT_EQ(last_knowledge_msg.predicates.size(), 0);
-  ASSERT_EQ(last_knowledge_msg.goal, "");
+    ASSERT_EQ(knowledge_msg_counter, 6u);
+    ASSERT_EQ(last_knowledge_msg.instances.size(), 3u);
+    ASSERT_EQ(last_knowledge_msg.instances[0], "bedroom");
+    ASSERT_EQ(last_knowledge_msg.instances[1], "kitchen");
+    ASSERT_EQ(last_knowledge_msg.instances[2], "r2d2");
+    ASSERT_EQ(last_knowledge_msg.predicates.size(), 0);
+    ASSERT_EQ(last_knowledge_msg.goal, "");
 
-  plansys2_msgs::msg::Node predicate_1;
-  predicate_1.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  predicate_1.name = "robot_at";
-  predicate_1.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
-  predicate_1.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
+    plansys2_msgs::msg::Node predicate_1;
+    predicate_1.node_type = plansys2_msgs::msg::Node::PREDICATE;
+    predicate_1.name = "robot_at";
+    predicate_1.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
+    predicate_1.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
 
-  ASSERT_TRUE(problem_client->addPredicate(predicate_1));
+    ASSERT_TRUE(problem_client->addPredicate(predicate_1));
 
-  plansys2_msgs::msg::Node predicate_2;
-  predicate_2.node_type = plansys2_msgs::msg::Node::PREDICATE;
-  predicate_2.name = "robot_at";
-  predicate_2.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
-  predicate_2.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
+    plansys2_msgs::msg::Node predicate_2;
+    predicate_2.node_type = plansys2_msgs::msg::Node::PREDICATE;
+    predicate_2.name = "robot_at";
+    predicate_2.parameters.push_back(parser::pddl::fromStringParam("r2d2", "robot"));
+    predicate_2.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
 
-  ASSERT_TRUE(problem_client->addPredicate(predicate_2));
+    ASSERT_TRUE(problem_client->addPredicate(predicate_2));
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
+    {
+      rclcpp::Rate rate(10);
+      auto start = test_node->now();
+      while ((test_node->now() - start).seconds() < 0.5) {
+        rate.sleep();
+      }
     }
-  }
 
-  ASSERT_EQ(knowledge_msg_counter, 8u);
-  ASSERT_EQ(last_knowledge_msg.instances.size(), 3u);
-  ASSERT_EQ(last_knowledge_msg.instances[0], "bedroom");
-  ASSERT_EQ(last_knowledge_msg.instances[1], "kitchen");
-  ASSERT_EQ(last_knowledge_msg.instances[2], "r2d2");
-  ASSERT_EQ(last_knowledge_msg.predicates.size(), 2u);
-  ASSERT_EQ(last_knowledge_msg.predicates[0], "(robot_at r2d2 bedroom)");
-  ASSERT_EQ(last_knowledge_msg.predicates[1], "(robot_at r2d2 kitchen)");
-  ASSERT_EQ(last_knowledge_msg.goal, "");
+    ASSERT_EQ(knowledge_msg_counter, 8u);
+    ASSERT_EQ(last_knowledge_msg.instances.size(), 3u);
+    ASSERT_EQ(last_knowledge_msg.instances[0], "bedroom");
+    ASSERT_EQ(last_knowledge_msg.instances[1], "kitchen");
+    ASSERT_EQ(last_knowledge_msg.instances[2], "r2d2");
+    ASSERT_EQ(last_knowledge_msg.predicates.size(), 2u);
+    ASSERT_EQ(last_knowledge_msg.predicates[0], "(robot_at r2d2 bedroom)");
+    ASSERT_EQ(last_knowledge_msg.predicates[1], "(robot_at r2d2 kitchen)");
+    ASSERT_EQ(last_knowledge_msg.goal, "");
 
-  ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and (robot_at r2d2 kitchen))")));
+    ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and (robot_at r2d2 kitchen))")));
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
+    {
+      rclcpp::Rate rate(10);
+      auto start = test_node->now();
+      while ((test_node->now() - start).seconds() < 0.5) {
+        rate.sleep();
+      }
     }
-  }
 
-  ASSERT_EQ(knowledge_msg_counter, 9u);
-  ASSERT_EQ(last_knowledge_msg.instances[0], "bedroom");
-  ASSERT_EQ(last_knowledge_msg.instances[1], "kitchen");
-  ASSERT_EQ(last_knowledge_msg.instances[2], "r2d2");
-  ASSERT_EQ(last_knowledge_msg.predicates.size(), 2u);
-  ASSERT_EQ(last_knowledge_msg.predicates[0], "(robot_at r2d2 bedroom)");
-  ASSERT_EQ(last_knowledge_msg.predicates[1], "(robot_at r2d2 kitchen)");
-  ASSERT_EQ(last_knowledge_msg.goal, "(and (robot_at r2d2 kitchen))");
+    ASSERT_EQ(knowledge_msg_counter, 9u);
+    ASSERT_EQ(last_knowledge_msg.instances[0], "bedroom");
+    ASSERT_EQ(last_knowledge_msg.instances[1], "kitchen");
+    ASSERT_EQ(last_knowledge_msg.instances[2], "r2d2");
+    ASSERT_EQ(last_knowledge_msg.predicates.size(), 2u);
+    ASSERT_EQ(last_knowledge_msg.predicates[0], "(robot_at r2d2 bedroom)");
+    ASSERT_EQ(last_knowledge_msg.predicates[1], "(robot_at r2d2 kitchen)");
+    ASSERT_EQ(last_knowledge_msg.goal, "(and (robot_at r2d2 kitchen))");
 
-  ASSERT_EQ(problem_client->getProblem(), problem_client->getProblem(true));
+    ASSERT_EQ(problem_client->getProblem(), problem_client->getProblem(true));
 
-  ASSERT_TRUE(problem_client->clearKnowledge());
+    ASSERT_TRUE(problem_client->clearKnowledge());
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
+    {
+      rclcpp::Rate rate(10);
+      auto start = test_node->now();
+      while ((test_node->now() - start).seconds() < 0.5) {
+        rate.sleep();
+      }
     }
-  }
 
-  ASSERT_TRUE(problem_client->getInstances().empty());
-  ASSERT_TRUE(problem_client->getFunctions().empty());
-  ASSERT_TRUE(problem_client->getPredicates().empty());
+    ASSERT_TRUE(problem_client->getInstances().empty());
+    ASSERT_TRUE(problem_client->getFunctions().empty());
+    ASSERT_TRUE(problem_client->getPredicates().empty());
 
-  finish = true;
-  t.join();
+    finish = true;
+    t.join();
+}
+  plansys2::drain_ros(200ms);
 }
 
 /*
@@ -576,126 +596,129 @@ TEST(problem_expert, set_goal)
 
 TEST(problem_expert_node, addget_goal_is_satisfied)
 {
-  auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto test_node_2 = rclcpp::Node::make_shared("test_problem_expert_node_2");
-  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
-  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
-
-
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-
-  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-  rclcpp::experimental::executors::EventsExecutor exe;
-
-  exe.add_node(domain_node->get_node_base_interface());
-  exe.add_node(problem_node->get_node_base_interface());
-  exe.add_node(test_node_2->get_node_base_interface());
-
-  plansys2_msgs::msg::Knowledge last_knowledge_msg;
-  int knowledge_msg_counter = 0;
-  auto knowledge_sub = test_node_2->create_subscription<plansys2_msgs::msg::Knowledge>(
-    "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
-    [&last_knowledge_msg, &knowledge_msg_counter]
-    (const plansys2_msgs::msg::Knowledge::SharedPtr msg) {
-      last_knowledge_msg = *msg;
-      knowledge_msg_counter++;
-    });
-
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
-
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("leia", "robot")));
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("jack", "person")));
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
-  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("m1", "message")));
-
   {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
+    auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+    auto test_node_2 = rclcpp::Node::make_shared("test_problem_expert_node_2");
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+
+
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+    rclcpp::experimental::executors::EventsExecutor exe;
+
+    exe.add_node(domain_node->get_node_base_interface());
+    exe.add_node(problem_node->get_node_base_interface());
+    exe.add_node(test_node_2->get_node_base_interface());
+
+    plansys2_msgs::msg::Knowledge last_knowledge_msg;
+    int knowledge_msg_counter = 0;
+    auto knowledge_sub = test_node_2->create_subscription<plansys2_msgs::msg::Knowledge>(
+    "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
+      [&last_knowledge_msg, &knowledge_msg_counter]
+      (const plansys2_msgs::msg::Knowledge::SharedPtr msg) {
+        last_knowledge_msg = *msg;
+        knowledge_msg_counter++;
+    });
+
+    bool finish = false;
+    std::thread t([&]() {
+        while (!finish) {exe.spin_some();}
+      });
+
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("leia", "robot")));
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("jack", "person")));
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("m1", "message")));
+
+    {
+      rclcpp::Rate rate(10);
+      auto start = test_node->now();
+      while ((test_node->now() - start).seconds() < 0.5) {
+        rate.sleep();
+      }
     }
-  }
 
-  ASSERT_EQ(knowledge_msg_counter, 5u);
-  ASSERT_EQ(last_knowledge_msg.instances.size(), 5u);
-  ASSERT_EQ(last_knowledge_msg.instances[0], "leia");
-  ASSERT_EQ(last_knowledge_msg.instances[1], "jack");
-  ASSERT_EQ(last_knowledge_msg.instances[2], "bedroom");
-  ASSERT_EQ(last_knowledge_msg.instances[3], "kitchen");
-  ASSERT_EQ(last_knowledge_msg.instances[4], "m1");
-  ASSERT_EQ(last_knowledge_msg.predicates.size(), 0);
-  ASSERT_EQ(last_knowledge_msg.goal, "");
+    ASSERT_EQ(knowledge_msg_counter, 5u);
+    ASSERT_EQ(last_knowledge_msg.instances.size(), 5u);
+    ASSERT_EQ(last_knowledge_msg.instances[0], "leia");
+    ASSERT_EQ(last_knowledge_msg.instances[1], "jack");
+    ASSERT_EQ(last_knowledge_msg.instances[2], "bedroom");
+    ASSERT_EQ(last_knowledge_msg.instances[3], "kitchen");
+    ASSERT_EQ(last_knowledge_msg.instances[4], "m1");
+    ASSERT_EQ(last_knowledge_msg.predicates.size(), 0);
+    ASSERT_EQ(last_knowledge_msg.goal, "");
 
-  ASSERT_TRUE(
+    ASSERT_TRUE(
     problem_client->addPredicate(plansys2::Predicate("(robot_at leia kitchen)")));
-  ASSERT_TRUE(
+    ASSERT_TRUE(
     problem_client->addPredicate(plansys2::Predicate("(person_at jack bedroom)")));
 
-  std::string expression = "(and (robot_talk leia m1 jack))";
-  plansys2_msgs::msg::Tree goal;
-  parser::pddl::fromString(goal, expression);
-  ASSERT_TRUE(problem_client->setGoal(goal));
-  ASSERT_FALSE(problem_client->isGoalSatisfied(goal));
+    std::string expression = "(and (robot_talk leia m1 jack))";
+    plansys2_msgs::msg::Tree goal;
+    parser::pddl::fromString(goal, expression);
+    ASSERT_TRUE(problem_client->setGoal(goal));
+    ASSERT_FALSE(problem_client->isGoalSatisfied(goal));
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
+    {
+      rclcpp::Rate rate(10);
+      auto start = test_node->now();
+      while ((test_node->now() - start).seconds() < 0.5) {
+        rate.sleep();
+      }
     }
-  }
 
-  ASSERT_EQ(knowledge_msg_counter, 8u);
-  ASSERT_EQ(last_knowledge_msg.instances.size(), 5u);
-  ASSERT_EQ(last_knowledge_msg.instances[0], "leia");
-  ASSERT_EQ(last_knowledge_msg.instances[1], "jack");
-  ASSERT_EQ(last_knowledge_msg.instances[2], "bedroom");
-  ASSERT_EQ(last_knowledge_msg.instances[3], "kitchen");
-  ASSERT_EQ(last_knowledge_msg.instances[4], "m1");
-  ASSERT_EQ(last_knowledge_msg.predicates.size(), 2u);
-  ASSERT_EQ(last_knowledge_msg.predicates[0], "(robot_at leia kitchen)");
-  ASSERT_EQ(last_knowledge_msg.predicates[1], "(person_at jack bedroom)");
-  ASSERT_EQ(last_knowledge_msg.goal, "(and (robot_talk leia m1 jack))");
+    ASSERT_EQ(knowledge_msg_counter, 8u);
+    ASSERT_EQ(last_knowledge_msg.instances.size(), 5u);
+    ASSERT_EQ(last_knowledge_msg.instances[0], "leia");
+    ASSERT_EQ(last_knowledge_msg.instances[1], "jack");
+    ASSERT_EQ(last_knowledge_msg.instances[2], "bedroom");
+    ASSERT_EQ(last_knowledge_msg.instances[3], "kitchen");
+    ASSERT_EQ(last_knowledge_msg.instances[4], "m1");
+    ASSERT_EQ(last_knowledge_msg.predicates.size(), 2u);
+    ASSERT_EQ(last_knowledge_msg.predicates[0], "(robot_at leia kitchen)");
+    ASSERT_EQ(last_knowledge_msg.predicates[1], "(person_at jack bedroom)");
+    ASSERT_EQ(last_knowledge_msg.goal, "(and (robot_talk leia m1 jack))");
 
-  ASSERT_TRUE(
+    ASSERT_TRUE(
     problem_client->addPredicate(plansys2::Predicate("(robot_talk leia m1 jack)")));
 
-  ASSERT_TRUE(problem_client->isGoalSatisfied(goal));
+    ASSERT_TRUE(problem_client->isGoalSatisfied(goal));
 
-  ASSERT_EQ(knowledge_msg_counter, 9u);
-  ASSERT_EQ(last_knowledge_msg.instances.size(), 5u);
-  ASSERT_EQ(last_knowledge_msg.instances[0], "leia");
-  ASSERT_EQ(last_knowledge_msg.instances[1], "jack");
-  ASSERT_EQ(last_knowledge_msg.instances[2], "bedroom");
-  ASSERT_EQ(last_knowledge_msg.instances[3], "kitchen");
-  ASSERT_EQ(last_knowledge_msg.instances[4], "m1");
-  ASSERT_EQ(last_knowledge_msg.predicates.size(), 3u);
-  ASSERT_EQ(last_knowledge_msg.predicates[0], "(robot_at leia kitchen)");
-  ASSERT_EQ(last_knowledge_msg.predicates[1], "(person_at jack bedroom)");
-  ASSERT_EQ(last_knowledge_msg.predicates[2], "(robot_talk leia m1 jack)");
-  ASSERT_EQ(last_knowledge_msg.goal, "(and (robot_talk leia m1 jack))");
+    ASSERT_EQ(knowledge_msg_counter, 9u);
+    ASSERT_EQ(last_knowledge_msg.instances.size(), 5u);
+    ASSERT_EQ(last_knowledge_msg.instances[0], "leia");
+    ASSERT_EQ(last_knowledge_msg.instances[1], "jack");
+    ASSERT_EQ(last_knowledge_msg.instances[2], "bedroom");
+    ASSERT_EQ(last_knowledge_msg.instances[3], "kitchen");
+    ASSERT_EQ(last_knowledge_msg.instances[4], "m1");
+    ASSERT_EQ(last_knowledge_msg.predicates.size(), 3u);
+    ASSERT_EQ(last_knowledge_msg.predicates[0], "(robot_at leia kitchen)");
+    ASSERT_EQ(last_knowledge_msg.predicates[1], "(person_at jack bedroom)");
+    ASSERT_EQ(last_knowledge_msg.predicates[2], "(robot_talk leia m1 jack)");
+    ASSERT_EQ(last_knowledge_msg.goal, "(and (robot_talk leia m1 jack))");
 
-  finish = true;
-  t.join();
+    finish = true;
+    t.join();
+  }
+  plansys2::drain_ros(200ms);
 }
 
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  rclcpp::init(argc, argv);
+  ::testing::AddGlobalTestEnvironment(new ROS2Environment);
 
   return RUN_ALL_TESTS();
 }

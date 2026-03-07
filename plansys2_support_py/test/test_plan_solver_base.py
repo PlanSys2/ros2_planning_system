@@ -288,7 +288,7 @@ class TestPlanSolverBase(unittest.TestCase):
         try:
             # Use a very short timeout to trigger kill
             result = self.solver.execute_planner(
-                'sleep 100',
+                'sleep 5',
                 Duration(nanoseconds=100000000),  # 0.1 seconds
                 tmp_path
             )

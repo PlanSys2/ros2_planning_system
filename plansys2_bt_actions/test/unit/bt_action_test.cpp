@@ -28,6 +28,7 @@
 #include "../behavior_tree/FailureNodes.hpp"
 
 #include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_core/Utils.hpp"
 
 #include "test_msgs/action/fibonacci.hpp"
 #include "ament_index_cpp/get_package_share_directory.hpp"
@@ -109,326 +110,368 @@ private:
   bool cancelled_ {false};
 };
 
+
+class ROS2Environment : public ::testing::Environment
+{
+public:
+  void SetUp() override
+  {
+    rclcpp::init(0, nullptr);
+  }
+
+  void TearDown() override
+  {
+    rclcpp::shutdown();
+  }
+};
+
 class BTActionsTestCase : public ::testing::Test
 {
 protected:
   void SetUp()
   {
-    rclcpp::init(0, nullptr);
   }
 
   void TearDown()
   {
-    rclcpp::shutdown();
   }
 };
 
 
 TEST_F(BTActionsTestCase, load_plugins)
 {
-  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("load_plugins_node");
-  auto move_server_node = std::make_shared<MoveServer>();
-  move_server_node->start_server();
+  {
+    auto node = rclcpp_lifecycle::LifecycleNode::make_shared("load_plugins_node");
+    auto move_server_node = std::make_shared<MoveServer>();
+    move_server_node->start_server();
 
-  bool finish = false;
-  std::thread t([&]() {
-      rclcpp::Rate rate(100);
-      while (!finish) {
-        rclcpp::spin_some(move_server_node);
-        rclcpp::spin_some(node->get_node_base_interface());
-        rate.sleep();
-      }
-    });
+    bool finish = false;
+    std::thread t([&]() {
+        rclcpp::Rate rate(100);
+        while (!finish) {
+          rclcpp::spin_some(move_server_node);
+          rclcpp::spin_some(node->get_node_base_interface());
+          rate.sleep();
+        }
+      });
 
-  BT::BehaviorTreeFactory factory;
-  BT::SharedLibrary loader;
+    BT::BehaviorTreeFactory factory;
+    BT::SharedLibrary loader;
 
-  factory.registerFromPlugin(loader.getOSName("plansys2_close_gripper_bt_node"));
-  factory.registerFromPlugin(loader.getOSName("plansys2_open_gripper_bt_node"));
-  factory.registerFromPlugin(loader.getOSName("plansys2_move_bt_test_node"));
+    factory.registerFromPlugin(loader.getOSName("plansys2_close_gripper_bt_node"));
+    factory.registerFromPlugin(loader.getOSName("plansys2_open_gripper_bt_node"));
+    factory.registerFromPlugin(loader.getOSName("plansys2_move_bt_test_node"));
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
-  std::string xml_file = pkgpath + "/test/behavior_tree/transport.xml";
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
+    std::string xml_file = pkgpath + "/test/behavior_tree/transport.xml";
 
-  auto blackboard = BT::Blackboard::create();
-  blackboard->set("node", node);
-  blackboard->set<std::chrono::milliseconds>("server_timeout", 250ms);
-  blackboard->set<std::chrono::milliseconds>("wait_for_service_timeout", 10ms);
-  blackboard->set<std::chrono::milliseconds>("bt_loop_duration", 100ms);
-  BT::Tree tree = factory.createTreeFromFile(xml_file, blackboard);
+    auto blackboard = BT::Blackboard::create();
+    blackboard->set("node", node);
+    blackboard->set<std::chrono::milliseconds>("server_timeout", 250ms);
+    blackboard->set<std::chrono::milliseconds>("wait_for_service_timeout", 10ms);
+    blackboard->set<std::chrono::milliseconds>("bt_loop_duration", 100ms);
+    BT::Tree tree = factory.createTreeFromFile(xml_file, blackboard);
 
-  rclcpp::Rate rate(10);
+    rclcpp::Rate rate(10);
 
-  int counter = 0;
-  while (!finish && rclcpp::ok()) {
-    finish = tree.rootNode()->executeTick() == BT::NodeStatus::SUCCESS;
-    counter++;
-    rate.sleep();
-  }
+    int counter = 0;
+    while (!finish && rclcpp::ok()) {
+      finish = tree.rootNode()->executeTick() == BT::NodeStatus::SUCCESS;
+      counter++;
+      rate.sleep();
+    }
 
-  t.join();
+    t.join();
 
-  node->shutdown();
+    node->shutdown();
+}
+  plansys2::drain_ros(200ms);
 }
 
 TEST_F(BTActionsTestCase, on_tick_failure)
 {
-  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
-  auto move_server_node = std::make_shared<MoveServer>();
-  move_server_node->start_server();
+  {
+    auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
+    auto move_server_node = std::make_shared<MoveServer>();
+    move_server_node->start_server();
 
-  bool finished = false;
-  std::thread t([&]() {
-      rclcpp::Rate rate(100);
-      while (!finished) {
-        rclcpp::spin_some(move_server_node);
-        rclcpp::spin_some(node->get_node_base_interface());
-        rate.sleep();
-      }
-    });
+    bool finished = false;
+    std::thread t([&]() {
+        rclcpp::Rate rate(100);
+        while (!finished) {
+          rclcpp::spin_some(move_server_node);
+          rclcpp::spin_some(node->get_node_base_interface());
+          rate.sleep();
+        }
+      });
 
 
-  BT::NodeConfig config;
-  BT::assignDefaultRemapping<plansys2_bt_tests::OnTickFail>(config);
-  auto bb = BT::Blackboard::create();
-  bb->set("node", node);
-  bb->set<std::chrono::milliseconds>("server_timeout", 250ms);
-  bb->set<std::chrono::milliseconds>("wait_for_service_timeout", 10ms);
-  bb->set<std::chrono::milliseconds>("bt_loop_duration", 100ms);
-  config.blackboard = bb;
+    BT::NodeConfig config;
+    BT::assignDefaultRemapping<plansys2_bt_tests::OnTickFail>(config);
+    auto bb = BT::Blackboard::create();
+    bb->set("node", node);
+    bb->set<std::chrono::milliseconds>("server_timeout", 250ms);
+    bb->set<std::chrono::milliseconds>("wait_for_service_timeout", 10ms);
+    bb->set<std::chrono::milliseconds>("bt_loop_duration", 100ms);
+    config.blackboard = bb;
 
-  plansys2_bt_tests::OnTickFail failure_node("OnTickFail", "move", config);
+    plansys2_bt_tests::OnTickFail failure_node("OnTickFail", "move", config);
 
-  rclcpp::Rate rate(10);
+    rclcpp::Rate rate(10);
 
-  BT::NodeStatus status = BT::NodeStatus::RUNNING;
-  while (rclcpp::ok() && status == BT::NodeStatus::RUNNING) {
-    status = failure_node.executeTick();
-    rate.sleep();
-  }
+    BT::NodeStatus status = BT::NodeStatus::RUNNING;
+    while (rclcpp::ok() && status == BT::NodeStatus::RUNNING) {
+      status = failure_node.executeTick();
+      rate.sleep();
+    }
 
-  ASSERT_TRUE(failure_node.on_tick_run);
-  ASSERT_EQ(status, BT::NodeStatus::FAILURE);
+    ASSERT_TRUE(failure_node.on_tick_run);
+    ASSERT_EQ(status, BT::NodeStatus::FAILURE);
 
-  finished = true;
-  t.join();
+    finished = true;
+    t.join();
 
-  node->shutdown();
+    node->shutdown();
+}
+  plansys2::drain_ros(200ms);
 }
 
 TEST_F(BTActionsTestCase, on_feedback_failure)
 {
-  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
-  auto move_server_node = std::make_shared<MoveServer>();
-  move_server_node->start_server();
+  {
+    auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
+    auto move_server_node = std::make_shared<MoveServer>();
+    move_server_node->start_server();
 
-  bool finished = false;
-  std::thread t([&]() {
-      rclcpp::Rate rate(100);
-      while (!finished) {
-        rclcpp::spin_some(move_server_node);
-        rclcpp::spin_some(node->get_node_base_interface());
-        rate.sleep();
-      }
-    });
+    bool finished = false;
+    std::thread t([&]() {
+        rclcpp::Rate rate(100);
+        while (!finished) {
+          rclcpp::spin_some(move_server_node);
+          rclcpp::spin_some(node->get_node_base_interface());
+          rate.sleep();
+        }
+      });
 
-  BT::NodeConfig config;
-  BT::assignDefaultRemapping<plansys2_bt_tests::OnFeedbackFail>(config);
-  auto bb = BT::Blackboard::create();
-  bb->set("node", node);
-  bb->set<std::chrono::milliseconds>("server_timeout", 250ms);
-  bb->set<std::chrono::milliseconds>("wait_for_service_timeout", 10ms);
-  bb->set<std::chrono::milliseconds>("bt_loop_duration", 100ms);
-  config.blackboard = bb;
+    BT::NodeConfig config;
+    BT::assignDefaultRemapping<plansys2_bt_tests::OnFeedbackFail>(config);
+    auto bb = BT::Blackboard::create();
+    bb->set("node", node);
+    bb->set<std::chrono::milliseconds>("server_timeout", 250ms);
+    bb->set<std::chrono::milliseconds>("wait_for_service_timeout", 10ms);
+    bb->set<std::chrono::milliseconds>("bt_loop_duration", 100ms);
+    config.blackboard = bb;
 
-  plansys2_bt_tests::OnFeedbackFail failure_node("OnFeedbackFail",
-    "move",
-    config);
+    plansys2_bt_tests::OnFeedbackFail failure_node("OnFeedbackFail",
+      "move",
+      config);
 
-  rclcpp::Rate rate(10);
+    rclcpp::Rate rate(10);
 
-  BT::NodeStatus status = BT::NodeStatus::RUNNING;
-  while (rclcpp::ok() && status == BT::NodeStatus::RUNNING) {
-    status = failure_node.executeTick();
-    rate.sleep();
-  }
+    BT::NodeStatus status = BT::NodeStatus::RUNNING;
+    while (rclcpp::ok() && status == BT::NodeStatus::RUNNING) {
+      status = failure_node.executeTick();
+      rate.sleep();
+    }
 
-  ASSERT_TRUE(failure_node.on_feedback_run);
-  ASSERT_EQ(status, BT::NodeStatus::FAILURE);
+    ASSERT_TRUE(failure_node.on_feedback_run);
+    ASSERT_EQ(status, BT::NodeStatus::FAILURE);
 
-  finished = true;
-  t.join();
+    finished = true;
+    t.join();
 
-  node->shutdown();
+    node->shutdown();
+}
+  plansys2::drain_ros(200ms);
 }
 
 TEST_F(BTActionsTestCase, bt_action)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
-  std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
+  {
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
+    std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
 
-  std::vector<std::string> plugins = {
-    "plansys2_close_gripper_bt_node", "plansys2_open_gripper_bt_node"};
+    std::vector<std::string> plugins = {
+      "plansys2_close_gripper_bt_node", "plansys2_open_gripper_bt_node"};
 
-  auto bt_action = std::make_shared<plansys2::BTAction>("assemble");
+    auto bt_action = std::make_shared<plansys2::BTAction>("assemble");
 
-  auto lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
-  auto action_client = plansys2::ActionExecutor::make_shared("(assemble r2d2 z p1 p2 p3)", lc_node);
+    auto lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
+    auto action_client = plansys2::ActionExecutor::make_shared("(assemble r2d2 z p1 p2 p3)",
+      lc_node);
 
-  bt_action->set_parameter(rclcpp::Parameter("action_name", "assemble"));
-  bt_action->set_parameter(rclcpp::Parameter("rate", 10.0));
-  bt_action->set_parameter(rclcpp::Parameter("bt_xml_file", xml_file));
-  bt_action->set_parameter(rclcpp::Parameter("plugins", plugins));
+    bt_action->set_parameter(rclcpp::Parameter("action_name", "assemble"));
+    bt_action->set_parameter(rclcpp::Parameter("rate", 10.0));
+    bt_action->set_parameter(rclcpp::Parameter("bt_xml_file", xml_file));
+    bt_action->set_parameter(rclcpp::Parameter("plugins", plugins));
 
-  bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-  rclcpp::experimental::executors::EventsExecutor exe;
-  exe.add_node(bt_action->get_node_base_interface());
-  exe.add_node(lc_node->get_node_base_interface());
+    rclcpp::experimental::executors::EventsExecutor exe;
+    exe.add_node(bt_action->get_node_base_interface());
+    exe.add_node(lc_node->get_node_base_interface());
 
-  bool finished = false;
-  while (rclcpp::ok && !finished) {
-    exe.spin_some();
+    bool finished = false;
+    while (rclcpp::ok && !finished) {
+      exe.spin_some();
 
-    action_client->tick(lc_node->now());
-    finished = action_client->get_status() == BT::NodeStatus::SUCCESS;
-  }
+      action_client->tick(lc_node->now());
+      finished = action_client->get_status() == BT::NodeStatus::SUCCESS;
+    }
 
-  auto start = lc_node->now();
-  while ( (lc_node->now() - start).seconds() < 2) {
-    exe.spin_some();
-  }
+    auto start = lc_node->now();
+    while ( (lc_node->now() - start).seconds() < 2) {
+      exe.spin_some();
+    }
 
-  lc_node->shutdown();
+    lc_node->shutdown();
+}
+  plansys2::drain_ros(200ms);
 }
 
 TEST_F(BTActionsTestCase, bt_action_old_constructor)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
-  std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
+  {
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
+    std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
 
-  std::vector<std::string> plugins = {
-    "plansys2_close_gripper_bt_node", "plansys2_open_gripper_bt_node"};
+    std::vector<std::string> plugins = {
+      "plansys2_close_gripper_bt_node", "plansys2_open_gripper_bt_node"};
 
-  auto bt_action = std::make_shared<plansys2::BTAction>("assemble", 100ms);
+    auto bt_action = std::make_shared<plansys2::BTAction>("assemble", 100ms);
 
-  auto lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
-  auto action_client = plansys2::ActionExecutor::make_shared("(assemble r2d2 z p1 p2 p3)", lc_node);
+    auto lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
+    auto action_client = plansys2::ActionExecutor::make_shared("(assemble r2d2 z p1 p2 p3)",
+      lc_node);
 
-  bt_action->set_parameter(rclcpp::Parameter("action_name", "assemble"));
-  bt_action->set_parameter(rclcpp::Parameter("bt_xml_file", xml_file));
-  bt_action->set_parameter(rclcpp::Parameter("plugins", plugins));
+    bt_action->set_parameter(rclcpp::Parameter("action_name", "assemble"));
+    bt_action->set_parameter(rclcpp::Parameter("bt_xml_file", xml_file));
+    bt_action->set_parameter(rclcpp::Parameter("plugins", plugins));
 
-  bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-  rclcpp::experimental::executors::EventsExecutor exe;
-  exe.add_node(bt_action->get_node_base_interface());
-  exe.add_node(lc_node->get_node_base_interface());
+    rclcpp::experimental::executors::EventsExecutor exe;
+    exe.add_node(bt_action->get_node_base_interface());
+    exe.add_node(lc_node->get_node_base_interface());
 
-  bool finished = false;
-  while (rclcpp::ok && !finished) {
-    exe.spin_some();
+    bool finished = false;
+    while (rclcpp::ok && !finished) {
+      exe.spin_some();
 
-    action_client->tick(lc_node->now());
-    finished = action_client->get_status() == BT::NodeStatus::SUCCESS;
-  }
+      action_client->tick(lc_node->now());
+      finished = action_client->get_status() == BT::NodeStatus::SUCCESS;
+    }
 
-  auto start = lc_node->now();
-  while ( (lc_node->now() - start).seconds() < 2) {
-    exe.spin_some();
-  }
+    auto start = lc_node->now();
+    while ( (lc_node->now() - start).seconds() < 2) {
+      exe.spin_some();
+    }
 
-  lc_node->shutdown();
+    lc_node->shutdown();
+}
+  plansys2::drain_ros(200ms);
 }
 
 TEST_F(BTActionsTestCase, cancel_bt_action)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
-  std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
+  {
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
+    std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
 
-  std::vector<std::string> plugins = {
-    "plansys2_close_gripper_bt_node", "plansys2_open_gripper_bt_node"};
+    std::vector<std::string> plugins = {
+      "plansys2_close_gripper_bt_node", "plansys2_open_gripper_bt_node"};
 
-  auto bt_action = std::make_shared<plansys2::BTAction>("assemble");
+    auto bt_action = std::make_shared<plansys2::BTAction>("assemble");
 
-  auto lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
-  auto action_client = plansys2::ActionExecutor::make_shared("(assemble r2d2 z p1 p2 p3)", lc_node);
+    auto lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
+    auto action_client = plansys2::ActionExecutor::make_shared("(assemble r2d2 z p1 p2 p3)",
+      lc_node);
 
-  bt_action->set_parameter(rclcpp::Parameter("action_name", "assemble"));
-  bt_action->set_parameter(rclcpp::Parameter("rate", 1.0));
-  bt_action->set_parameter(rclcpp::Parameter("bt_xml_file", xml_file));
-  bt_action->set_parameter(rclcpp::Parameter("plugins", plugins));
+    bt_action->set_parameter(rclcpp::Parameter("action_name", "assemble"));
+    bt_action->set_parameter(rclcpp::Parameter("rate", 1.0));
+    bt_action->set_parameter(rclcpp::Parameter("bt_xml_file", xml_file));
+    bt_action->set_parameter(rclcpp::Parameter("plugins", plugins));
 
-  bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-  rclcpp::experimental::executors::EventsExecutor exe;
-  exe.add_node(bt_action->get_node_base_interface());
-  exe.add_node(lc_node->get_node_base_interface());
+    rclcpp::experimental::executors::EventsExecutor exe;
+    exe.add_node(bt_action->get_node_base_interface());
+    exe.add_node(lc_node->get_node_base_interface());
 
-  std::vector<plansys2_msgs::msg::ActionExecution> action_execution_msgs;
+    std::vector<plansys2_msgs::msg::ActionExecution> action_execution_msgs;
 
-  auto action_hub_sub = lc_node->create_subscription<plansys2_msgs::msg::ActionExecution>(
+    auto action_hub_sub = lc_node->create_subscription<plansys2_msgs::msg::ActionExecution>(
     "/actions_hub", rclcpp::QoS(100).reliable(),
-    [&action_execution_msgs](const plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
-      action_execution_msgs.push_back(*msg);
+      [&action_execution_msgs](const plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
+        action_execution_msgs.push_back(*msg);
     });
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+    bool finish = false;
+    std::thread t([&]() {
+        while (!finish) {exe.spin_some();}
+      });
 
-  ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::IDLE);
-  ASSERT_EQ(
+    ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::IDLE);
+    ASSERT_EQ(
     bt_action->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = lc_node->now();
-    while ((lc_node->now() - start).seconds() < 0.5) {
-      action_client->tick(lc_node->now());
-      rate.sleep();
+    {
+      rclcpp::Rate rate(10);
+      auto start = lc_node->now();
+      while ((lc_node->now() - start).seconds() < 0.5) {
+        action_client->tick(lc_node->now());
+        rate.sleep();
+      }
     }
-  }
 
-  ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::RUNNING);
-  ASSERT_EQ(bt_action->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);
+    ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::RUNNING);
+    ASSERT_EQ(bt_action->get_current_state().id(),
+      lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);
 
-  ASSERT_EQ(action_execution_msgs.size(), 3u);
-  ASSERT_EQ(action_execution_msgs[0].type, plansys2_msgs::msg::ActionExecution::REQUEST);
-  ASSERT_EQ(action_execution_msgs[1].type, plansys2_msgs::msg::ActionExecution::RESPONSE);
-  ASSERT_EQ(action_execution_msgs[2].type, plansys2_msgs::msg::ActionExecution::CONFIRM);
-  {
-    rclcpp::Rate rate(10);
-    auto start = lc_node->now();
-    while ((lc_node->now() - start).seconds() < 1.0) {
-      action_client->tick(lc_node->now());
-      rate.sleep();
+    ASSERT_EQ(action_execution_msgs.size(), 3u);
+    ASSERT_EQ(action_execution_msgs[0].type, plansys2_msgs::msg::ActionExecution::REQUEST);
+    ASSERT_EQ(action_execution_msgs[1].type, plansys2_msgs::msg::ActionExecution::RESPONSE);
+    ASSERT_EQ(action_execution_msgs[2].type, plansys2_msgs::msg::ActionExecution::CONFIRM);
+    {
+      rclcpp::Rate rate(10);
+      auto start = lc_node->now();
+      while ((lc_node->now() - start).seconds() < 1.0) {
+        action_client->tick(lc_node->now());
+        rate.sleep();
+      }
     }
-  }
 
-  ASSERT_EQ(action_execution_msgs.size(), 4u);
-  action_client->cancel();
+    ASSERT_EQ(action_execution_msgs.size(), 4u);
+    action_client->cancel();
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = lc_node->now();
-    while ((lc_node->now() - start).seconds() < 1.0) {
-      action_client->tick(lc_node->now());
-      rate.sleep();
+    {
+      rclcpp::Rate rate(10);
+      auto start = lc_node->now();
+      while ((lc_node->now() - start).seconds() < 1.0) {
+        action_client->tick(lc_node->now());
+        rate.sleep();
+      }
     }
-  }
 
-  ASSERT_EQ(action_execution_msgs.size(), 5u);
-  ASSERT_EQ(action_execution_msgs[3].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
-  ASSERT_EQ(action_execution_msgs[4].type, plansys2_msgs::msg::ActionExecution::CANCEL);
+    ASSERT_EQ(action_execution_msgs.size(), 5u);
+    ASSERT_EQ(action_execution_msgs[3].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
+    ASSERT_EQ(action_execution_msgs[4].type, plansys2_msgs::msg::ActionExecution::CANCEL);
 
-  ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::CANCELLED);
-  ASSERT_EQ(
+    ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::CANCELLED);
+    ASSERT_EQ(
     bt_action->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
 
-  finish = true;
-  t.join();
+    finish = true;
+    t.join();
 
-  lc_node->shutdown();
+    lc_node->shutdown();
+  }
+  plansys2::drain_ros(200ms);
+}
+
+int main(int argc, char ** argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  ::testing::AddGlobalTestEnvironment(new ROS2Environment);
+  return RUN_ALL_TESTS();
 }

@@ -59,8 +59,8 @@ namespace plansys2
 using ExecutePlan = plansys2_msgs::action::ExecutePlan;
 using namespace std::chrono_literals;
 
-ExecutorNode::ExecutorNode()
-: rclcpp_lifecycle::LifecycleNode("executor"),
+ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
+: rclcpp_lifecycle::LifecycleNode("executor", options),
   bt_builder_loader_("plansys2_executor", "plansys2::BTBuilder"),
   executor_state_(STATE_IDLE)
 {
@@ -115,6 +115,11 @@ ExecutorNode::ExecutorNode()
       &ExecutorNode::get_remaining_plan_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
+}
+
+ExecutorNode::~ExecutorNode()
+{
+  node_running_ = false;
 }
 
 
@@ -209,6 +214,8 @@ ExecutorNode::on_activate(const rclcpp_lifecycle::State & state)
   //    20ms, std::bind(&ExecutorNode::execution_cycle, this));
 
   std::thread{std::bind(&ExecutorNode::execution_cycle, this)}.detach();
+
+  node_running_ = true;
 
   return CallbackReturnT::SUCCESS;
 }
@@ -744,7 +751,7 @@ void
 ExecutorNode::execution_cycle()
 {
   rclcpp::Rate rate(50);
-  while (rclcpp::ok()) {
+  while (rclcpp::ok() && node_running_) {
     auto feedback = std::make_shared<ExecutePlan::Feedback>();
     auto result = std::make_shared<ExecutePlan::Result>();
 

@@ -218,8 +218,8 @@ parse_plan(const std::string planfile)
 }
 
 
-Terminal::Terminal()
-: rclcpp::Node("terminal")
+Terminal::Terminal(const rclcpp::NodeOptions & options)
+: rclcpp::Node("terminal", options)
 {
   this->declare_parameter<std::string>("problem_file", "");
 }

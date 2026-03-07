@@ -59,7 +59,7 @@ public:
    *
    * Initializes the node, declares parameters, and creates service servers and publishers.
    */
-  ProblemExpertNode();
+  explicit ProblemExpertNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   using CallbackReturnT =
     rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
