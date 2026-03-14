@@ -108,74 +108,76 @@ $(function() {
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &lt;map&gt;</span></div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">#include &lt;memory&gt;</span></div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &quot;rclcpp/version.h&quot;</span></div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#if RCLCPP_VERSION_GTE(29, 0, 0)</span></div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#include &quot;rqt_gui_cpp/plugin.hpp&quot;</span></div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#include &quot;rqt_gui_cpp/plugin.h&quot;</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#include &quot;<a class="code" href="KnowledgeTree_8hpp.html">rqt_plansys2_knowledge/KnowledgeTree.hpp</a>&quot;</span></div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#include &quot;<a class="code" href="ProblemExpertClient_8hpp.html">plansys2_problem_expert/ProblemExpertClient.hpp</a>&quot;</span></div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#include &quot;plansys2_msgs/msg/knowledge.hpp&quot;</span></div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="preprocessor">#include &quot;rclcpp/rclcpp.hpp&quot;</span></div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacerqt__plansys2__knowledge.html">rqt_plansys2_knowledge</a></div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>{</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &lt;mutex&gt;</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#include &quot;rclcpp/version.h&quot;</span></div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#if RCLCPP_VERSION_GTE(29, 0, 0)</span></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#include &quot;rqt_gui_cpp/plugin.hpp&quot;</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="preprocessor">#include &quot;rqt_gui_cpp/plugin.h&quot;</span></div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#include &quot;<a class="code" href="KnowledgeTree_8hpp.html">rqt_plansys2_knowledge/KnowledgeTree.hpp</a>&quot;</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#include &quot;<a class="code" href="ProblemExpertClient_8hpp.html">plansys2_problem_expert/ProblemExpertClient.hpp</a>&quot;</span></div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="preprocessor">#include &quot;plansys2_msgs/msg/knowledge.hpp&quot;</span></div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="preprocessor">#include &quot;rclcpp/rclcpp.hpp&quot;</span></div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespacerqt__plansys2__knowledge.html">rqt_plansys2_knowledge</a></div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>{</div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
-<div class="foldopen" id="foldopen00049" data-start="{" data-end="};">
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html">   49</a></span><span class="keyword">class </span><a class="code hl_function" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa14147180bf6af8eb15b961b30ef2b0c">RQTKnowledge</a></div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>  : <span class="keyword">public</span> rqt_gui_cpp::Plugin</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>{</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>  Q_OBJECT</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>  <a class="code hl_function" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa14147180bf6af8eb15b961b30ef2b0c">RQTKnowledge</a>();</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a7b8a5f610ca7d900157438b5845fe026">initPlugin</a>(qt_gui_cpp::PluginContext &amp; context);</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a886eadaed1ffff711c12fc40111f1d30">shutdownPlugin</a>();</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a60cecb672668c615685a90a047943330">saveSettings</a>(</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    qt_gui_cpp::Settings &amp; plugin_settings, qt_gui_cpp::Settings &amp; instance_settings) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa4f3c7276e7507a9f48e2709b3e0e35d">restoreSettings</a>(</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    <span class="keyword">const</span> qt_gui_cpp::Settings &amp; plugin_settings, <span class="keyword">const</span> qt_gui_cpp::Settings &amp; instance_settings);</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="keyword">protected</span> slots:</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  <span class="keywordtype">void</span> <a class="code hl_slot" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a54d1eec1894b2cdd149f7f7699b1d746">spin_loop</a>();</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno"><a class="line" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa168a619d462322445067287dcdae2b9">   68</a></span>  Ui::RqtPlansys2Knowledge <a class="code hl_variable" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa168a619d462322445067287dcdae2b9">ui_</a>;</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno"><a class="line" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a3cde5d907aadf2ae0dd4ba3b189be5ee">   69</a></span>  QWidget * <a class="code hl_variable" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a3cde5d907aadf2ae0dd4ba3b189be5ee">widget_</a>;</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  QTimer * controller_spin_timer_;</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  <a class="code hl_class" href="classrqt__plansys2__knowledge_1_1KnowledgeTree.html">KnowledgeTree</a> * knowledge_tree_;</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span> </div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  plansys2_msgs::msg::Knowledge::UniquePtr last_msg_;</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  <span class="keywordtype">bool</span> need_repaint_;</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  <span class="keywordtype">void</span> knowledge_callback(plansys2_msgs::msg::Knowledge::UniquePtr msg);</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  rclcpp::Subscription&lt;plansys2_msgs::msg::Knowledge&gt;::SharedPtr knowledge_sub_;</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  std::shared_ptr&lt;plansys2::ProblemExpertClient&gt; problem_;</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>};</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
+<div class="foldopen" id="foldopen00050" data-start="{" data-end="};">
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html">   50</a></span><span class="keyword">class </span><a class="code hl_function" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa14147180bf6af8eb15b961b30ef2b0c">RQTKnowledge</a></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  : <span class="keyword">public</span> rqt_gui_cpp::Plugin</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>{</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>  Q_OBJECT</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  <a class="code hl_function" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa14147180bf6af8eb15b961b30ef2b0c">RQTKnowledge</a>();</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a7b8a5f610ca7d900157438b5845fe026">initPlugin</a>(qt_gui_cpp::PluginContext &amp; context);</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a886eadaed1ffff711c12fc40111f1d30">shutdownPlugin</a>();</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a60cecb672668c615685a90a047943330">saveSettings</a>(</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    qt_gui_cpp::Settings &amp; plugin_settings, qt_gui_cpp::Settings &amp; instance_settings) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa4f3c7276e7507a9f48e2709b3e0e35d">restoreSettings</a>(</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    <span class="keyword">const</span> qt_gui_cpp::Settings &amp; plugin_settings, <span class="keyword">const</span> qt_gui_cpp::Settings &amp; instance_settings);</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="keyword">protected</span> slots:</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>  <span class="keywordtype">void</span> <a class="code hl_slot" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a54d1eec1894b2cdd149f7f7699b1d746">spin_loop</a>();</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno"><a class="line" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa168a619d462322445067287dcdae2b9">   69</a></span>  Ui::RqtPlansys2Knowledge <a class="code hl_variable" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa168a619d462322445067287dcdae2b9">ui_</a>;</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a3cde5d907aadf2ae0dd4ba3b189be5ee">   70</a></span>  QWidget * <a class="code hl_variable" href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a3cde5d907aadf2ae0dd4ba3b189be5ee">widget_</a>;</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  QTimer * controller_spin_timer_;</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  <a class="code hl_class" href="classrqt__plansys2__knowledge_1_1KnowledgeTree.html">KnowledgeTree</a> * knowledge_tree_;</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span> </div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  plansys2_msgs::msg::Knowledge::UniquePtr last_msg_;</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  <span class="keywordtype">bool</span> need_repaint_;</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  std::mutex mutex_;</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span> </div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  <span class="keywordtype">void</span> knowledge_callback(plansys2_msgs::msg::Knowledge::UniquePtr msg);</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>  rclcpp::Subscription&lt;plansys2_msgs::msg::Knowledge&gt;::SharedPtr knowledge_sub_;</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>  std::shared_ptr&lt;plansys2::ProblemExpertClient&gt; problem_;</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>};</div>
 </div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>}  <span class="comment">// namespace rqt_plansys2_knowledge</span></div>
 <div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span><span class="preprocessor">#endif  </span><span class="comment">// RQT_PLANSYS2_KNOWLEDGE__RQTKNOWLEDGE_HPP_</span></div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>}  <span class="comment">// namespace rqt_plansys2_knowledge</span></div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span> </div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span><span class="preprocessor">#endif  </span><span class="comment">// RQT_PLANSYS2_KNOWLEDGE__RQTKNOWLEDGE_HPP_</span></div>
 <div class="ttc" id="aKnowledgeTree_8hpp_html"><div class="ttname"><a href="KnowledgeTree_8hpp.html">KnowledgeTree.hpp</a></div></div>
 <div class="ttc" id="aProblemExpertClient_8hpp_html"><div class="ttname"><a href="ProblemExpertClient_8hpp.html">ProblemExpertClient.hpp</a></div></div>
 <div class="ttc" id="aclassrqt__plansys2__knowledge_1_1KnowledgeTree_html"><div class="ttname"><a href="classrqt__plansys2__knowledge_1_1KnowledgeTree.html">rqt_plansys2_knowledge::KnowledgeTree</a></div><div class="ttdef"><b>Definition</b> KnowledgeTree.hpp:25</div></div>
-<div class="ttc" id="aclassrqt__plansys2__knowledge_1_1RQTKnowledge_html_a3cde5d907aadf2ae0dd4ba3b189be5ee"><div class="ttname"><a href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a3cde5d907aadf2ae0dd4ba3b189be5ee">rqt_plansys2_knowledge::RQTKnowledge::widget_</a></div><div class="ttdeci">QWidget * widget_</div><div class="ttdef"><b>Definition</b> RQTKnowledge.hpp:69</div></div>
-<div class="ttc" id="aclassrqt__plansys2__knowledge_1_1RQTKnowledge_html_a54d1eec1894b2cdd149f7f7699b1d746"><div class="ttname"><a href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a54d1eec1894b2cdd149f7f7699b1d746">rqt_plansys2_knowledge::RQTKnowledge::spin_loop</a></div><div class="ttdeci">void spin_loop()</div><div class="ttdef"><b>Definition</b> RQTKnowledge.cpp:98</div></div>
-<div class="ttc" id="aclassrqt__plansys2__knowledge_1_1RQTKnowledge_html_a60cecb672668c615685a90a047943330"><div class="ttname"><a href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a60cecb672668c615685a90a047943330">rqt_plansys2_knowledge::RQTKnowledge::saveSettings</a></div><div class="ttdeci">virtual void saveSettings(qt_gui_cpp::Settings &amp;plugin_settings, qt_gui_cpp::Settings &amp;instance_settings) const</div><div class="ttdef"><b>Definition</b> RQTKnowledge.cpp:90</div></div>
+<div class="ttc" id="aclassrqt__plansys2__knowledge_1_1RQTKnowledge_html_a3cde5d907aadf2ae0dd4ba3b189be5ee"><div class="ttname"><a href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a3cde5d907aadf2ae0dd4ba3b189be5ee">rqt_plansys2_knowledge::RQTKnowledge::widget_</a></div><div class="ttdeci">QWidget * widget_</div><div class="ttdef"><b>Definition</b> RQTKnowledge.hpp:70</div></div>
+<div class="ttc" id="aclassrqt__plansys2__knowledge_1_1RQTKnowledge_html_a54d1eec1894b2cdd149f7f7699b1d746"><div class="ttname"><a href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a54d1eec1894b2cdd149f7f7699b1d746">rqt_plansys2_knowledge::RQTKnowledge::spin_loop</a></div><div class="ttdeci">void spin_loop()</div><div class="ttdef"><b>Definition</b> RQTKnowledge.cpp:99</div></div>
+<div class="ttc" id="aclassrqt__plansys2__knowledge_1_1RQTKnowledge_html_a60cecb672668c615685a90a047943330"><div class="ttname"><a href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a60cecb672668c615685a90a047943330">rqt_plansys2_knowledge::RQTKnowledge::saveSettings</a></div><div class="ttdeci">virtual void saveSettings(qt_gui_cpp::Settings &amp;plugin_settings, qt_gui_cpp::Settings &amp;instance_settings) const</div><div class="ttdef"><b>Definition</b> RQTKnowledge.cpp:91</div></div>
 <div class="ttc" id="aclassrqt__plansys2__knowledge_1_1RQTKnowledge_html_a7b8a5f610ca7d900157438b5845fe026"><div class="ttname"><a href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a7b8a5f610ca7d900157438b5845fe026">rqt_plansys2_knowledge::RQTKnowledge::initPlugin</a></div><div class="ttdeci">virtual void initPlugin(qt_gui_cpp::PluginContext &amp;context)</div><div class="ttdef"><b>Definition</b> RQTKnowledge.cpp:48</div></div>
 <div class="ttc" id="aclassrqt__plansys2__knowledge_1_1RQTKnowledge_html_a886eadaed1ffff711c12fc40111f1d30"><div class="ttname"><a href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a886eadaed1ffff711c12fc40111f1d30">rqt_plansys2_knowledge::RQTKnowledge::shutdownPlugin</a></div><div class="ttdeci">virtual void shutdownPlugin()</div><div class="ttdef"><b>Definition</b> RQTKnowledge.cpp:78</div></div>
 <div class="ttc" id="aclassrqt__plansys2__knowledge_1_1RQTKnowledge_html_aa14147180bf6af8eb15b961b30ef2b0c"><div class="ttname"><a href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa14147180bf6af8eb15b961b30ef2b0c">rqt_plansys2_knowledge::RQTKnowledge::RQTKnowledge</a></div><div class="ttdeci">RQTKnowledge()</div><div class="ttdef"><b>Definition</b> RQTKnowledge.cpp:41</div></div>
-<div class="ttc" id="aclassrqt__plansys2__knowledge_1_1RQTKnowledge_html_aa168a619d462322445067287dcdae2b9"><div class="ttname"><a href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa168a619d462322445067287dcdae2b9">rqt_plansys2_knowledge::RQTKnowledge::ui_</a></div><div class="ttdeci">Ui::RqtPlansys2Knowledge ui_</div><div class="ttdef"><b>Definition</b> RQTKnowledge.hpp:68</div></div>
-<div class="ttc" id="aclassrqt__plansys2__knowledge_1_1RQTKnowledge_html_aa4f3c7276e7507a9f48e2709b3e0e35d"><div class="ttname"><a href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa4f3c7276e7507a9f48e2709b3e0e35d">rqt_plansys2_knowledge::RQTKnowledge::restoreSettings</a></div><div class="ttdeci">virtual void restoreSettings(const qt_gui_cpp::Settings &amp;plugin_settings, const qt_gui_cpp::Settings &amp;instance_settings)</div><div class="ttdef"><b>Definition</b> RQTKnowledge.cpp:170</div></div>
+<div class="ttc" id="aclassrqt__plansys2__knowledge_1_1RQTKnowledge_html_aa168a619d462322445067287dcdae2b9"><div class="ttname"><a href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa168a619d462322445067287dcdae2b9">rqt_plansys2_knowledge::RQTKnowledge::ui_</a></div><div class="ttdeci">Ui::RqtPlansys2Knowledge ui_</div><div class="ttdef"><b>Definition</b> RQTKnowledge.hpp:69</div></div>
+<div class="ttc" id="aclassrqt__plansys2__knowledge_1_1RQTKnowledge_html_aa4f3c7276e7507a9f48e2709b3e0e35d"><div class="ttname"><a href="classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa4f3c7276e7507a9f48e2709b3e0e35d">rqt_plansys2_knowledge::RQTKnowledge::restoreSettings</a></div><div class="ttdeci">virtual void restoreSettings(const qt_gui_cpp::Settings &amp;plugin_settings, const qt_gui_cpp::Settings &amp;instance_settings)</div><div class="ttdef"><b>Definition</b> RQTKnowledge.cpp:176</div></div>
 <div class="ttc" id="anamespacerqt__plansys2__knowledge_html"><div class="ttname"><a href="namespacerqt__plansys2__knowledge.html">rqt_plansys2_knowledge</a></div><div class="ttdef"><b>Definition</b> KnowledgeTree.hpp:22</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
