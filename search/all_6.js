@@ -19,7 +19,7 @@ var searchData=
   ['bt_5fnode_5ftest_5fcharging_2ecpp_16',['bt_node_test_charging.cpp',['../bt__node__test__charging_8cpp.html',1,'']]],
   ['bt_5fregister_5fnodes_17',['BT_REGISTER_NODES',['../CloseGripper_8cpp.html#a4f761ae5ffbaf6b0b834e47b8c53b2de',1,'BT_REGISTER_NODES(factory):&#160;CloseGripper.cpp'],['../FailureNodes_8cpp.html#a4f761ae5ffbaf6b0b834e47b8c53b2de',1,'BT_REGISTER_NODES(factory):&#160;FailureNodes.cpp'],['../Move_8cpp.html#a4f761ae5ffbaf6b0b834e47b8c53b2de',1,'BT_REGISTER_NODES(factory):&#160;Move.cpp'],['../OpenGripper_8cpp.html#a4f761ae5ffbaf6b0b834e47b8c53b2de',1,'BT_REGISTER_NODES(factory):&#160;OpenGripper.cpp']]],
   ['bt_5fstart_5faction_5f_18',['bt_start_action_',['../classplansys2_1_1STNBTBuilder.html#a41dc3ede305b1cd9ffb34ec423a6ad00',1,'plansys2::STNBTBuilder']]],
-  ['btaction_19',['BTAction',['../classplansys2_1_1BTAction.html',1,'BTAction'],['../classplansys2_1_1BTAction.html#a4acf8b92d555c6fa1fb2dc3362faf73c',1,'plansys2::BTAction::BTAction(const std::string &amp;action)'],['../classplansys2_1_1BTAction.html#a14a1830abd1da09f2bf5d370c4d65c41',1,'plansys2::BTAction::BTAction(const std::string &amp;action, const std::chrono::nanoseconds &amp;rate)']]],
+  ['btaction_19',['BTAction',['../classplansys2_1_1BTAction.html',1,'BTAction'],['../classplansys2_1_1BTAction.html#a4acf8b92d555c6fa1fb2dc3362faf73c',1,'plansys2::BTAction::BTAction()']]],
   ['btaction_2ecpp_20',['BTAction.cpp',['../BTAction_8cpp.html',1,'']]],
   ['btaction_2ehpp_21',['BTAction.hpp',['../BTAction_8hpp.html',1,'']]],
   ['btactionnode_22',['BtActionNode',['../classplansys2_1_1BtActionNode.html',1,'BtActionNode&lt; ActionT &gt;'],['../classplansys2_1_1BtActionNode.html#af137163709577309ff2be9e91b538a0a',1,'plansys2::BtActionNode::BtActionNode(const std::string &amp;xml_tag_name, const std::string &amp;action_name, const BT::NodeConfig &amp;conf)'],['../classplansys2_1_1BtActionNode.html#ad45d2720a5a2d71c0da4bd7c86e1a6b8',1,'plansys2::BtActionNode::BtActionNode()=delete']]],
@@ -31,8 +31,9 @@ var searchData=
   ['btservicenode_28',['BtServiceNode',['../classplansys2_1_1BtServiceNode.html',1,'BtServiceNode&lt; ServiceT &gt;'],['../classplansys2_1_1BtServiceNode.html#ab794d6513ba8835ddc819d0bc26f4727',1,'plansys2::BtServiceNode::BtServiceNode(const std::string &amp;service_node_name, const BT::NodeConfiguration &amp;conf, const std::string &amp;service_name=&quot;&quot;)'],['../classplansys2_1_1BtServiceNode.html#aebedbac14fbeefb8158335f5881301c3',1,'plansys2::BtServiceNode::BtServiceNode()=delete']]],
   ['btservicenode_2ehpp_29',['BTServiceNode.hpp',['../BTServiceNode_8hpp.html',1,'']]],
   ['btutils_2ehpp_30',['BTUtils.hpp',['../plansys2__bt__actions_2include_2plansys2__bt__actions_2BTUtils_8hpp.html',1,'(Global Namespace)'],['../plansys2__executor_2include_2plansys2__executor_2BTUtils_8hpp.html',1,'(Global Namespace)']]],
-  ['build_5fbt_31',['build_bt',['../classplansys2_1_1STNBTBuilder.html#a0454858d2b677c2aafe96cbb33cf1e07',1,'plansys2::STNBTBuilder']]],
-  ['build_5fstn_32',['build_stn',['../classplansys2_1_1STNBTBuilder.html#a0aeb16d21bca16e637ff6fd411dd0072',1,'plansys2::STNBTBuilder']]],
-  ['builtin_5finterfaces_33',['builtin_interfaces',['../namespacebuiltin__interfaces.html',1,'']]],
-  ['builtin_5finterfaces_3a_3amsg_34',['msg',['../namespacebuiltin__interfaces_1_1msg.html',1,'builtin_interfaces']]]
+  ['build_5faction_5fgraph_31',['build_action_graph',['../classplansys2_1_1SimpleBTBuilder.html#a1f7e8b997920441e65cbe1ba195e34af',1,'plansys2::SimpleBTBuilder::build_action_graph()'],['../classSimpleBTBuilderTest.html#a0eb369c64423175ccfdfacc81cdbbd87',1,'SimpleBTBuilderTest::build_action_graph()']]],
+  ['build_5fbt_32',['build_bt',['../classplansys2_1_1STNBTBuilder.html#a0454858d2b677c2aafe96cbb33cf1e07',1,'plansys2::STNBTBuilder']]],
+  ['build_5fstn_33',['build_stn',['../classplansys2_1_1STNBTBuilder.html#a0aeb16d21bca16e637ff6fd411dd0072',1,'plansys2::STNBTBuilder']]],
+  ['builtin_5finterfaces_34',['builtin_interfaces',['../namespacebuiltin__interfaces.html',1,'']]],
+  ['builtin_5finterfaces_3a_3amsg_35',['msg',['../namespacebuiltin__interfaces_1_1msg.html',1,'builtin_interfaces']]]
 ];

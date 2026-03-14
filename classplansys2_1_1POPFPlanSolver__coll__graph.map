@@ -1,9 +1,9 @@
 <map id="POPFPlanSolver" name="POPFPlanSolver">
-<area shape="rect" id="Node000001" title="Plan solver implementation that uses the POPF planning system." alt="" coords="30,177,150,203"/>
-<area shape="rect" id="Node000002" href="$classplansys2_1_1PlanSolverBase.html" title="Abstract base class for plan solvers in PlanSys2." alt="" coords="33,102,148,128"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,143,93,177,88,177,88,143"/>
+<area shape="rect" id="Node000001" title="Plan solver implementation that uses the POPF planning system." alt="" coords="44,177,164,203"/>
+<area shape="rect" id="Node000002" href="$classplansys2_1_1PlanSolverBase.html" title="Abstract base class for plan solvers in PlanSys2." alt="" coords="46,102,161,128"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,143,106,177,101,177,101,143"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="5,5,85,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="44,46,44,62,49,77,58,89,70,99,67,104,54,93,44,79,39,63,38,47"/>
-<area shape="rect" id="Node000004" href="$classbool.html" title=" " alt="" coords="113,5,158,31"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="126,46,99,103,94,100,121,44"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="58,44,75,77,94,100,90,103,71,79,53,47"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="109,5,216,31"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="153,47,135,79,117,103,113,100,131,77,149,44"/>
 </map>
