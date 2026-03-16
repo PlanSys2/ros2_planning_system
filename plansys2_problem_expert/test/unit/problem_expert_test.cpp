@@ -16,6 +16,7 @@
 #include <vector>
 #include <memory>
 
+#include <filesystem>
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
 #include "gtest/gtest.h"
@@ -29,8 +30,9 @@
 
 TEST(problem_expert, addget_instances)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_problem_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
@@ -78,8 +80,9 @@ TEST(problem_expert, addget_instances)
 
 TEST(problem_expert, add_functions)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_problem_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
@@ -176,8 +179,9 @@ TEST(problem_expert, add_functions)
 
 TEST(problem_expert, addget_predicates)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_problem_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
@@ -320,8 +324,9 @@ TEST(problem_expert, addget_predicates)
 
 TEST(problem_expert, addget_functions)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_charging.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_problem_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_charging.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
@@ -405,8 +410,9 @@ TEST(problem_expert, addget_functions)
 
 TEST(problem_expert, addget_goals)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_problem_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
@@ -455,8 +461,9 @@ TEST(problem_expert, addget_goals)
 
 TEST(problem_expert, empty_goals)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_problem_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
@@ -470,8 +477,9 @@ TEST(problem_expert, empty_goals)
 
 TEST(problem_expert, get_problem)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_problem_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
@@ -537,8 +545,9 @@ TEST(problem_expert, get_problem)
 
 TEST(problem_expert, add_problem)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_problem_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
@@ -549,27 +558,27 @@ TEST(problem_expert, add_problem)
   ASSERT_FALSE(problem_expert.addProblem(""));
 
   // Empty domain name
-  std::ifstream problem_empty_domain_ifs(pkgpath + "/pddl/problem_empty_domain.pddl");
+  std::ifstream problem_empty_domain_ifs(pkgpath.string() + "/pddl/problem_empty_domain.pddl");
   std::string problem_empty_domain_str((
       std::istreambuf_iterator<char>(problem_empty_domain_ifs)),
     std::istreambuf_iterator<char>());
   ASSERT_FALSE(problem_expert.addProblem(problem_empty_domain_str));
 
   // Domain doesn't exist
-  std::ifstream problem_charging_ifs(pkgpath + "/pddl/problem_charging.pddl");
+  std::ifstream problem_charging_ifs(pkgpath.string() + "/pddl/problem_charging.pddl");
   std::string problem_charging_str((
       std::istreambuf_iterator<char>(problem_charging_ifs)),
     std::istreambuf_iterator<char>());
   ASSERT_FALSE(problem_expert.addProblem(problem_charging_str));
 
   // missing syntax causes std::runtime_error
-  std::ifstream problem_unexpected_syntax_ifs(pkgpath + "/pddl/problem_unexpected_syntax.pddl");
+  std::ifstream problem_unexpected_syntax_ifs(pkgpath.string() + "/pddl/problem_unexpected_syntax.pddl");
   std::string problem_unexpected_syntax_str((
       std::istreambuf_iterator<char>(problem_unexpected_syntax_ifs)),
     std::istreambuf_iterator<char>());
   ASSERT_FALSE(problem_expert.addProblem(problem_unexpected_syntax_str));
 
-  std::ifstream problem_ifs(pkgpath + "/pddl/problem_simple_1.pddl");
+  std::ifstream problem_ifs(pkgpath.string() + "/pddl/problem_simple_1.pddl");
   std::string problem_str((
       std::istreambuf_iterator<char>(problem_ifs)),
     std::istreambuf_iterator<char>());
@@ -633,8 +642,9 @@ TEST(problem_expert, add_problem)
 
 TEST(problem_expert, add_problem_with_constants)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_constants.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_problem_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_simple_constants.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
@@ -642,7 +652,7 @@ TEST(problem_expert, add_problem_with_constants)
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  std::ifstream problem_1_ifs(pkgpath + "/pddl/problem_simple_constants_1.pddl");
+  std::ifstream problem_1_ifs(pkgpath.string() + "/pddl/problem_simple_constants_1.pddl");
   std::string problem_1_str((
       std::istreambuf_iterator<char>(problem_1_ifs)),
     std::istreambuf_iterator<char>());
@@ -699,7 +709,7 @@ TEST(problem_expert, add_problem_with_constants)
     std::string("( :objects\n)\n( :init\n)\n( :goal\n\t( and\n\t))\n)\n"));
 
 
-  std::ifstream problem_2_ifs(pkgpath + "/pddl/problem_simple_constants_2.pddl");
+  std::ifstream problem_2_ifs(pkgpath.string() + "/pddl/problem_simple_constants_2.pddl");
   std::string problem_2_str((
       std::istreambuf_iterator<char>(problem_2_ifs)),
     std::istreambuf_iterator<char>());
@@ -712,8 +722,9 @@ TEST(problem_expert, add_problem_with_constants)
 
 TEST(problem_expert, is_goal_satisfied)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_problem_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
@@ -749,8 +760,9 @@ TEST(problem_expert, is_goal_satisfied)
 
 TEST(problem_expert, exist_predicate)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_derived.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_problem_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_simple_derived.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
@@ -758,7 +770,7 @@ TEST(problem_expert, exist_predicate)
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  std::ifstream problem_ifs(pkgpath + "/pddl/problem_simple_1.pddl");
+  std::ifstream problem_ifs(pkgpath.string() + "/pddl/problem_simple_1.pddl");
   std::string problem_str((
       std::istreambuf_iterator<char>(problem_ifs)),
     std::istreambuf_iterator<char>());
@@ -814,8 +826,9 @@ TEST(problem_expert, exist_predicate)
 
 TEST(problem_expert, get_predicate_with_derived)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_derived.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_problem_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_simple_derived.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
@@ -823,7 +836,7 @@ TEST(problem_expert, get_predicate_with_derived)
   auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
   plansys2::ProblemExpert problem_expert(domain_expert);
 
-  std::ifstream problem_ifs(pkgpath + "/pddl/problem_simple_1.pddl");
+  std::ifstream problem_ifs(pkgpath.string() + "/pddl/problem_simple_1.pddl");
   std::string problem_str((
       std::istreambuf_iterator<char>(problem_ifs)),
     std::istreambuf_iterator<char>());

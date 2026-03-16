@@ -16,6 +16,7 @@
 #include <fstream>
 #include <vector>
 
+#include <filesystem>
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
 #include "gtest/gtest.h"
@@ -409,13 +410,14 @@ TEST(domain_reader, add_domain)
 {
   DomainReaderTest dr;
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_domain_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
 
-  std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_processed.pddl");
+  std::ifstream domain_ifs_p(pkgpath.string() + "/pddl/domain_simple_processed.pddl");
   std::string domain_str_p((
       std::istreambuf_iterator<char>(domain_ifs_p)),
     std::istreambuf_iterator<char>());
@@ -429,19 +431,20 @@ TEST(domain_reader, add_2_domain)
 {
   DomainReaderTest dr;
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_domain_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
 
-  std::ifstream domain_ifs_2(pkgpath + "/pddl/domain_simple_ext.pddl");
+  std::ifstream domain_ifs_2(pkgpath.string() + "/pddl/domain_simple_ext.pddl");
   std::string domain_str_2((
       std::istreambuf_iterator<char>(domain_ifs_2)),
     std::istreambuf_iterator<char>());
 
 
-  std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_combined_processed.pddl");
+  std::ifstream domain_ifs_p(pkgpath.string() + "/pddl/domain_combined_processed.pddl");
   std::string domain_str_p((
       std::istreambuf_iterator<char>(domain_ifs_p)),
     std::istreambuf_iterator<char>());
@@ -456,13 +459,14 @@ TEST(domain_reader, add_domain_with_constants)
 {
   DomainReaderTest dr;
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_constants.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_domain_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_simple_constants.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
 
-  std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_constants_processed.pddl");
+  std::ifstream domain_ifs_p(pkgpath.string() + "/pddl/domain_simple_constants_processed.pddl");
   std::string domain_str_p((
       std::istreambuf_iterator<char>(domain_ifs_p)),
     std::istreambuf_iterator<char>());
@@ -476,13 +480,14 @@ TEST(domain_reader, add_domain_with_derived)
 {
   DomainReaderTest dr;
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
-  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_derived.pddl");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_domain_expert", pkgpath);
+  std::ifstream domain_ifs(pkgpath.string() + "/pddl/domain_simple_derived.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
     std::istreambuf_iterator<char>());
 
-  std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_derived_processed.pddl");
+  std::ifstream domain_ifs_p(pkgpath.string() + "/pddl/domain_simple_derived_processed.pddl");
   std::string domain_str_p((
       std::istreambuf_iterator<char>(domain_ifs_p)),
     std::istreambuf_iterator<char>());

@@ -23,6 +23,7 @@
 #include <list>
 #include <tuple>
 
+#include <filesystem>
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
@@ -164,10 +165,11 @@ TEST(simple_btbuilder_tests, test_plan_1)
 
   auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_2.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_2.pddl"});
+  domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_simple_2.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_simple_2.pddl"});
 
   rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -408,10 +410,11 @@ TEST(simple_btbuilder_tests, test_plan_2)
 
   auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
+  domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory.pddl"});
 
   rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -618,10 +621,11 @@ TEST(simple_btbuilder_tests, test_plan_3)
 
   auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_2.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_2.pddl"});
+  domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_simple_2.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_simple_2.pddl"});
 
   rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -710,10 +714,11 @@ TEST(simple_btbuilder_tests, test_plan_4)
 
   auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/cooking_domain.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/cooking_domain.pddl"});
+  domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/cooking_domain.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/cooking_domain.pddl"});
 
   rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -829,10 +834,11 @@ TEST(simple_btbuilder_tests, test_plan_5)
 
   auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/road_trip_domain.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/road_trip_domain.pddl"});
+  domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/road_trip_domain.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/road_trip_domain.pddl"});
 
   rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -870,7 +876,7 @@ TEST(simple_btbuilder_tests, test_plan_5)
     }
   }
 
-  std::ifstream problem_ifs(pkgpath + "/pddl/road_trip_problem.pddl");
+  std::ifstream problem_ifs(pkgpath.string() + "/pddl/road_trip_problem.pddl");
   std::string problem_str((
       std::istreambuf_iterator<char>(problem_ifs)),
     std::istreambuf_iterator<char>());
@@ -886,7 +892,7 @@ TEST(simple_btbuilder_tests, test_plan_5)
 
   auto tabulated_graph = btbuilder->get_graph_tabular(action_graph);
 
-  std::ifstream expected_graph_ifs(pkgpath + "/test_data/road_trip_graph.csv");
+  std::ifstream expected_graph_ifs(pkgpath.string() + "/test_data/road_trip_graph.csv");
 
   std::string line, word, action;
   std::string whitespace = " \n\r\t\f\v";
@@ -943,10 +949,11 @@ TEST(simple_btbuilder_tests, test_plan_6)
 
   auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-  domain_node->set_parameter({"model_file", pkgpath + "/pddl/elevator_domain.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/pddl/elevator_domain.pddl"});
+  domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/elevator_domain.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/elevator_domain.pddl"});
 
   rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -984,7 +991,7 @@ TEST(simple_btbuilder_tests, test_plan_6)
     }
   }
 
-  std::ifstream problem_ifs(pkgpath + "/pddl/elevator_problem.pddl");
+  std::ifstream problem_ifs(pkgpath.string() + "/pddl/elevator_problem.pddl");
   std::string problem_str((
       std::istreambuf_iterator<char>(problem_ifs)),
     std::istreambuf_iterator<char>());
@@ -1000,7 +1007,7 @@ TEST(simple_btbuilder_tests, test_plan_6)
 
   auto tabulated_graph = btbuilder->get_graph_tabular(action_graph);
 
-  std::ifstream expected_graph_ifs(pkgpath + "/test_data/elevator_graph.csv");
+  std::ifstream expected_graph_ifs(pkgpath.string() + "/test_data/elevator_graph.csv");
 
   std::string line, word, action;
   std::string whitespace = " \n\r\t\f\v";

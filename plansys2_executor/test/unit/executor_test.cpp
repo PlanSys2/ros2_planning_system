@@ -20,6 +20,7 @@
 #include <fstream>
 #include <map>
 
+#include <filesystem>
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
@@ -105,21 +106,8 @@ public:
     return std::make_shared<MoveAction>(node_name);
   }
 
-  static Ptr make_shared(const std::string & node_name, const std::chrono::nanoseconds & rate)
-  {
-    return std::make_shared<MoveAction>(node_name, rate);
-  }
-
   explicit MoveAction(const std::string & id)
   : ActionExecutorClient(id),
-    executions_(0),
-    cycles_(0),
-    runtime_(0)
-  {
-  }
-
-  MoveAction(const std::string & id, const std::chrono::nanoseconds & rate)
-  : ActionExecutorClient(id, rate),
     executions_(0),
     cycles_(0),
     runtime_(0)
@@ -196,20 +184,8 @@ public:
     return std::make_shared<TransportAction>(node_name);
   }
 
-  static Ptr make_shared(const std::string & node_name, const std::chrono::nanoseconds & rate)
-  {
-    return std::make_shared<TransportAction>(node_name, rate);
-  }
-
   explicit TransportAction(const std::string & id)
   : ActionExecutorClient(id)
-  {
-    executions_ = 0;
-    cycles_ = 0;
-  }
-
-  TransportAction(const std::string & id, const std::chrono::nanoseconds & rate)
-  : ActionExecutorClient(id, rate)
   {
     executions_ = 0;
     cycles_ = 0;
@@ -372,9 +348,9 @@ TEST(executor, action_executor_client_old_constructor)
     auto test_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
     auto aux_node = rclcpp_lifecycle::LifecycleNode::make_shared("aux_node");
 
-    auto move_action_1_node = MoveAction::make_shared("move_node_1", 100ms);
-    auto move_action_2_node = MoveAction::make_shared("move_node_2", 100ms);
-    auto transport_action_node = TransportAction::make_shared("transport_node", 50ms);
+    auto move_action_1_node = MoveAction::make_shared("move_node_1");
+    auto move_action_2_node = MoveAction::make_shared("move_node_2");
+    auto transport_action_node = TransportAction::make_shared("transport_node");
 
     move_action_1_node->set_parameter({"action_name", "move"});
     move_action_2_node->set_parameter({"action_name", "move"});
@@ -482,10 +458,11 @@ TEST(executor, action_executor)
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -840,10 +817,11 @@ TEST(executor, action_real_action_1)
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory3.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory3.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -1099,10 +1077,11 @@ TEST(executor, action_real_action_1_with_restore)
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory3.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory3.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -1377,10 +1356,11 @@ TEST(executor, action_real_action_2)
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory4.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory4.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory4.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory4.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -1640,10 +1620,11 @@ TEST(executor, cancel_bt_execution)
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory3.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory3.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -1846,10 +1827,11 @@ TEST(executor, executor_client_execute_plan)
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
     auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory3.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory3.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -2000,10 +1982,11 @@ TEST(executor, executor_client_execute_plan_2)
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
     auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory4.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory4.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory4.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory4.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -2152,10 +2135,11 @@ TEST(executor, executor_client_execute_plan_3)
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
     auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_move_example.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_move_example.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -2291,10 +2275,11 @@ TEST(executor, executor_client_execute_plan_two_plans)
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
     auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_move_example.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_move_example.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -2464,10 +2449,11 @@ TEST(executor, executor_client_execute_plan_replan)
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
     auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_move_example.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_move_example.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -2635,10 +2621,11 @@ TEST(executor, executor_client_execute_plan_multi_replan)
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
     auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_move_example.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_move_example.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -2866,10 +2853,11 @@ TEST(executor, executor_client_ordered_sub_goals)
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
     auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_charging.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_charging.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -3019,10 +3007,11 @@ TEST(executor, executor_client_cancel_plan)
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
     auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory3.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory3.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -3157,13 +3146,14 @@ TEST(executor, action_timeout)
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
     auto executor_client = std::make_shared<plansys2::ExecutorClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory3.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/factory3.pddl"});
     executor_node->set_parameter(
       {"default_action_bt_xml_filename",
-        pkgpath + "/test_behavior_trees/test_action_timeout_bt.xml"});
+        pkgpath.string() + "/test_behavior_trees/test_action_timeout_bt.xml"});
     executor_node->set_parameter({"bt_builder_plugin", "SimpleBTBuilder"});
     executor_node->set_parameter({"action_timeouts.actions", std::vector<std::string>({"move"})});
   // have to declare because the actions vector above was not available at node creation

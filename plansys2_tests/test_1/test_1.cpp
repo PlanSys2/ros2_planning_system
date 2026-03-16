@@ -15,6 +15,7 @@
 #include <memory>
 #include <string>
 
+#include <filesystem>
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
 #include "gtest/gtest.h"
@@ -49,10 +50,11 @@ TEST(test_1, test_1)
 
   auto execution_logger = plansys2_tests::ExecutionLogger::make_shared();
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_tests");
+  std::filesystem::path pkgpath;
+  ament_index_cpp::get_package_share_directory("plansys2_tests", pkgpath);
 
-  domain_node->set_parameter({"model_file", pkgpath + "/test_1/pddl/test_1.pddl"});
-  problem_node->set_parameter({"model_file", pkgpath + "/test_1/pddl/test_1.pddl"});
+  domain_node->set_parameter({"model_file", pkgpath.string() + "/test_1/pddl/test_1.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath.string() + "/test_1/pddl/test_1.pddl"});
 
   rclcpp::experimental::executors::EventsExecutor exe;
 
