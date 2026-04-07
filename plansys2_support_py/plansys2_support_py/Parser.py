@@ -46,8 +46,10 @@ class Parser:
             The reduced expression.
 
         """
+        # Remove PDDL comments: from ';' to end of line
+        result = re.sub(r';[^\n\r]*', '', expr)
         # Remove newlines and tabs
-        result = re.sub(r'[\n\t]+', '', expr)
+        result = re.sub(r'[\n\t]+', '', result)
         # Replace multiple spaces with single space
         result = re.sub(r' +', ' ', result)
         # Remove space after opening parenthesis
