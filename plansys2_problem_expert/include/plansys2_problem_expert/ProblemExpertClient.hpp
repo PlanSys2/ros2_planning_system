@@ -70,7 +70,7 @@ public:
    *
    * @param node_name Name of the ROS2 node.
    */
-  ProblemExpertClient(const std::string & node_name);
+  explicit ProblemExpertClient(const std::string & node_name);
 
   /**
    * @brief Get all instances in the problem.

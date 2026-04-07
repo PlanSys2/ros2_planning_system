@@ -55,7 +55,7 @@ public:
    * Creates a ROS node and configures service clients to connect to
    * the planner services. Also retrieves the plan_solver_timeout parameter.
    */
-  PlannerClient(const std::string & node_name);
+  explicit PlannerClient(const std::string & node_name);
 
   /**
    * @brief Generate a single plan for a PDDL planning problem.

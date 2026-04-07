@@ -69,10 +69,17 @@ class ExecutorClient(Node):
             f'{self._namespace_prefix}/execute_plan'
         )
 
+        PREFIX = 'executor_client_py'
         # Create clients for domain, problem, and planner
-        self._domain_client = DomainExpertClient("executor_client_py_domain_expert_client", namespace=namespace)
-        self._problem_client = ProblemExpertClient("executor_client_py_problem_expert_client", namespace=namespace)
-        self._planner_client = PlannerClient("executor_client_py_planner_client", namespace=namespace)
+        self._domain_client = DomainExpertClient(
+                                f'{PREFIX}_domain_expert_client',
+                                namespace=namespace)
+        self._problem_client = ProblemExpertClient(
+                                f'{PREFIX}_problem_expert_client',
+                                namespace=namespace)
+        self._planner_client = PlannerClient(
+                                f'{PREFIX}_planner_client',
+                                namespace=namespace)
 
         self.get_logger().debug(f'Executor Client "{node_name}" initialized')
 
