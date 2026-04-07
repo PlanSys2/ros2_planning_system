@@ -56,7 +56,7 @@ class ProblemExpertClient(Node):
             Namespace prefix for services.
 
         """
-        super().__init__(node_name)
+        super().__init__(node_name, use_global_arguments=False)
         self._namespace_prefix = f'/{namespace}' if namespace else ''
         self.get_logger().debug(f'Problem Expert Client "{node_name}" initialized')
 
