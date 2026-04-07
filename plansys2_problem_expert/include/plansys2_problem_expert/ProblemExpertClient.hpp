@@ -66,6 +66,13 @@ public:
   ProblemExpertClient();
 
   /**
+   * @brief Constructor for the ProblemExpertClient with a given node name.
+   *
+   * @param node_name Name of the ROS2 node.
+   */
+  ProblemExpertClient(const std::string & node_name);
+
+  /**
    * @brief Get all instances in the problem.
    *
    * @return std::vector<plansys2::Instance> Vector containing all instances in the problem.

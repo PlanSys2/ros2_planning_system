@@ -63,6 +63,13 @@ public:
   DomainExpertClient();
 
   /**
+   * @brief Construct a new DomainExpertClient object with a given node name.
+   *
+   * @param node_name Name of the ROS2 node.
+   */
+  DomainExpertClient(const std::string & node_name);
+
+  /**
    * @brief Get the name of the domain.
    *
    * @return std::string The name of the domain.

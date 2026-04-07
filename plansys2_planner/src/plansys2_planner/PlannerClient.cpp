@@ -23,10 +23,13 @@
 namespace plansys2
 {
 
-PlannerClient::PlannerClient()
-{
-  node_ = rclcpp::Node::make_shared("planner_client");
+PlannerClient::PlannerClient(): PlannerClient("planner_client"){}
 
+PlannerClient::PlannerClient(const std::string & node_name)
+{
+  auto options = rclcpp::NodeOptions().use_global_arguments(false);
+  node_ = rclcpp::Node::make_shared(node_name, options);
+  
   get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("planner/get_plan");
   get_plan_array_client_ = node_->create_client<plansys2_msgs::srv::GetPlanArray>(
     "planner/get_plan_array");

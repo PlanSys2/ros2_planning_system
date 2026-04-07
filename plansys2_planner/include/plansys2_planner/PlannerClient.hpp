@@ -48,6 +48,16 @@ public:
   PlannerClient();
 
   /**
+   * @brief Constructor for the PlannerClient with a given node name.
+   *
+   * @param node_name Name of the ROS2 node.
+   *
+   * Creates a ROS node and configures service clients to connect to
+   * the planner services. Also retrieves the plan_solver_timeout parameter.
+   */
+  PlannerClient(const std::string & node_name);
+
+  /**
    * @brief Generate a single plan for a PDDL planning problem.
    *
    * @param[in] domain PDDL domain definition as a string.
