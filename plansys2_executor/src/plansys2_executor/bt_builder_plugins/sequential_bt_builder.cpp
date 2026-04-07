@@ -19,8 +19,10 @@ namespace plansys2
 
 SequentialBTBuilder::SequentialBTBuilder()
 {
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>("sequential_bt_builder_domain_expert_client");
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>("sequential_bt_builder_problem_expert_client");
+  domain_client_ =
+    std::make_shared<plansys2::DomainExpertClient>("sequential_bt_builder_domain_expert_client");
+  problem_client_ =
+    std::make_shared<plansys2::ProblemExpertClient>("sequential_bt_builder_problem_expert_client");
 }
 
 void SequentialBTBuilder::initialize(

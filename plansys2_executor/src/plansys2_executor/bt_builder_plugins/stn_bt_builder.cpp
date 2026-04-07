@@ -33,8 +33,10 @@ namespace plansys2
 
 STNBTBuilder::STNBTBuilder()
 {
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>("stn_bt_builder_domain_expert_client");
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>("stn_bt_builder_problem_expert_client");
+  domain_client_ =
+    std::make_shared<plansys2::DomainExpertClient>("stn_bt_builder_domain_expert_client");
+  problem_client_ =
+    std::make_shared<plansys2::ProblemExpertClient>("stn_bt_builder_problem_expert_client");
 }
 
 void

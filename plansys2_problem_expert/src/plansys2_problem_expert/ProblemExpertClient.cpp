@@ -25,7 +25,8 @@
 namespace plansys2
 {
 
-ProblemExpertClient::ProblemExpertClient(): ProblemExpertClient("problem_expert_client"){}
+ProblemExpertClient::ProblemExpertClient()
+: ProblemExpertClient("problem_expert_client") {}
 
 ProblemExpertClient::ProblemExpertClient(const std::string & node_name)
 {

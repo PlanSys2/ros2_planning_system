@@ -197,7 +197,8 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
     "remaining_plan", rclcpp::QoS(100));
 
   domain_client_ = std::make_shared<plansys2::DomainExpertClient>("executor_domain_expert_client");
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>("executor_problem_expert_client");
+  problem_client_ =
+    std::make_shared<plansys2::ProblemExpertClient>("executor_problem_expert_client");
   planner_client_ = std::make_shared<plansys2::PlannerClient>("executor_planner_client");
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());

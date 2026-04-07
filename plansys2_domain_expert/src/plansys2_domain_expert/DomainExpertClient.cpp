@@ -24,7 +24,8 @@
 namespace plansys2
 {
 
-DomainExpertClient::DomainExpertClient() : DomainExpertClient("domain_expert_client") {}
+DomainExpertClient::DomainExpertClient()
+: DomainExpertClient("domain_expert_client") {}
 
 DomainExpertClient::DomainExpertClient(const std::string & node_name)
 {
