@@ -153,9 +153,11 @@ ComputeBT::on_configure(const rclcpp_lifecycle::State & state)
   planner_node_ = std::make_shared<plansys2::PlannerNode>();
   problem_node_ = std::make_shared<plansys2::ProblemExpertNode>();
 
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
-  planner_client_ = std::make_shared<plansys2::PlannerClient>();
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
+  domain_client_ =
+    std::make_shared<plansys2::DomainExpertClient>("compute_bt_domain_expert_client");
+  planner_client_ = std::make_shared<plansys2::PlannerClient>("compute_bt_planner_expert_client");
+  problem_client_ =
+    std::make_shared<plansys2::ProblemExpertClient>("compute_bt_problem_expert_client");
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;

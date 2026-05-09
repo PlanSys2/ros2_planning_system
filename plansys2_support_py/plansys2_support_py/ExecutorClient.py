@@ -57,7 +57,7 @@ class ExecutorClient(Node):
             Namespace prefix for services.
 
         """
-        super().__init__(node_name)
+        super().__init__(node_name, use_global_arguments=False)
 
         # Setup namespace prefix
         self._namespace_prefix = f'/{namespace}' if namespace else ''
@@ -69,10 +69,17 @@ class ExecutorClient(Node):
             f'{self._namespace_prefix}/execute_plan'
         )
 
+        PREFIX = 'executor_client_py'
         # Create clients for domain, problem, and planner
-        self._domain_client = DomainExpertClient(namespace=namespace)
-        self._problem_client = ProblemExpertClient(namespace=namespace)
-        self._planner_client = PlannerClient(namespace=namespace)
+        self._domain_client = DomainExpertClient(
+                                f'{PREFIX}_domain_expert_client',
+                                namespace=namespace)
+        self._problem_client = ProblemExpertClient(
+                                f'{PREFIX}_problem_expert_client',
+                                namespace=namespace)
+        self._planner_client = PlannerClient(
+                                f'{PREFIX}_planner_client',
+                                namespace=namespace)
 
         self.get_logger().debug(f'Executor Client "{node_name}" initialized')
 

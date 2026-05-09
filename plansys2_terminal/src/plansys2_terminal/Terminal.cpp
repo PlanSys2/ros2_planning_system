@@ -229,10 +229,11 @@ Terminal::Terminal(const rclcpp::NodeOptions & options)
 void
 Terminal::init()
 {
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
-  planner_client_ = std::make_shared<plansys2::PlannerClient>();
-  executor_client_ = std::make_shared<plansys2::ExecutorClient>();
+  domain_client_ = std::make_shared<plansys2::DomainExpertClient>("terminal_domain_expert_client");
+  problem_client_ =
+    std::make_shared<plansys2::ProblemExpertClient>("terminal_problem_expert_client");
+  planner_client_ = std::make_shared<plansys2::PlannerClient>("terminal_planner_client");
+  executor_client_ = std::make_shared<plansys2::ExecutorClient>("terminal_executor_client");
 
   add_problem();
 }

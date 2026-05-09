@@ -62,6 +62,13 @@ class TestParser(unittest.TestCase):
         result = Parser.get_reduced_string(expr)
         self.assertEqual(result, '(and (robot_at r1 wp1) (carrying r1 obj1))')
 
+    def test_get_reduced_string_with_comments(self):
+        """Test that comments are removed without losing subsequent content."""
+        expr = '(and (robot_at r1 wp1) ; this is a comment\n (carrying r1 obj1))'
+        result = Parser.get_reduced_string(expr)
+        self.assertNotIn(';', result)
+        self.assertEqual(result, '(and (robot_at r1 wp1) (carrying r1 obj1))')
+
     def test_get_node_type_and(self):
         """Test detection of AND node type."""
         expr = '(and (p1) (p2))'
