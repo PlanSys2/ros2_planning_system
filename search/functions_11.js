@@ -26,7 +26,7 @@ var searchData=
   ['sorted_23',['sorted',['../classplansys2__tests_1_1ExecutionLogger.html#afcbcdcdf062cc733d9a8e943d47f4a17',1,'plansys2_tests::ExecutionLogger']]],
   ['spin_5floop_24',['spin_loop',['../classrqt__plansys2__knowledge_1_1RQTKnowledge.html#a54d1eec1894b2cdd149f7f7699b1d746',1,'rqt_plansys2_knowledge::RQTKnowledge::spin_loop()'],['../classrqt__plansys2__performers_1_1RQTPerformers.html#a54d1eec1894b2cdd149f7f7699b1d746',1,'rqt_plansys2_performers::RQTPerformers::spin_loop()'],['../classrqt__plansys2__plan_1_1RQTPlan.html#a54d1eec1894b2cdd149f7f7699b1d746',1,'rqt_plansys2_plan::RQTPlan::spin_loop()']]],
   ['start_5fexecution_5fblock_25',['start_execution_block',['../classplansys2_1_1STNBTBuilder.html#a2993a80c0709d95c985cd3135e03667b',1,'plansys2::STNBTBuilder']]],
-  ['start_5fplan_5fexecution_26',['start_plan_execution',['../classplansys2_1_1ExecutorClient.html#a847440ce254f4c75cfc80b8046eda65e',1,'plansys2::ExecutorClient']]],
+  ['start_5fplan_5fexecution_26',['start_plan_execution',['../classplansys2_1_1ExecutorClient.html#a847440ce254f4c75cfc80b8046eda65e',1,'plansys2::ExecutorClient::start_plan_execution()'],['../classplansys2__support__py_1_1ExecutorClient_1_1ExecutorClient.html#a6e1e925e56bb599edc452ddf41a1462d',1,'plansys2_support_py.ExecutorClient.ExecutorClient.start_plan_execution()']]],
   ['start_5fserver_27',['start_server',['../classMoveServer.html#af2693a5bca6590f846d4c29004b740ce',1,'MoveServer']]],
   ['started_5fbefore_28',['started_before',['../classplansys2__tests_1_1ExecutionLogger.html#a879dff24fe31b25f70baeeb3200525fd',1,'plansys2_tests::ExecutionLogger']]],
   ['startup_5ffunction_29',['startup_function',['../namespaceplansys2.html#ac0dc8a4e35bbe986c34479a396cf04e2',1,'plansys2']]],

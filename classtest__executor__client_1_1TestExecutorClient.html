@@ -110,7 +110,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8a31d90b8598f609fad4582512f6822f" id="r_a8a31d90b8598f609fad4582512f6822f"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a8a31d90b8598f609fad4582512f6822f">tearDown</a> (self)</td></tr>
 <tr class="memitem:a7a0f0acb59af44693c00c03820aa18eb" id="r_a7a0f0acb59af44693c00c03820aa18eb"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a7a0f0acb59af44693c00c03820aa18eb">tearDownClass</a> (cls)</td></tr>
 <tr class="memitem:af680dfed88954a261b50b6cab0cff1ee" id="r_af680dfed88954a261b50b6cab0cff1ee"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#af680dfed88954a261b50b6cab0cff1ee">test_execute_plan_compute_new_plan</a> (self)</td></tr>
-<tr class="memitem:a6cd6e2b223009da20f66f730a2603a43" id="r_a6cd6e2b223009da20f66f730a2603a43"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a6cd6e2b223009da20f66f730a2603a43">test_execute_plan_empty_plan</a> (self, mock_action_client, mock_planner, mock_problem, mock_domain)</td></tr>
+<tr class="memitem:a248d7af0914618a838d0c9eb090ce5e3" id="r_a248d7af0914618a838d0c9eb090ce5e3"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a248d7af0914618a838d0c9eb090ce5e3">test_execute_plan_empty_plan</a> (self)</td></tr>
 <tr class="memitem:ac29b02e7b76485883b1a33f9ca7ef0a5" id="r_ac29b02e7b76485883b1a33f9ca7ef0a5"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ac29b02e7b76485883b1a33f9ca7ef0a5">test_execute_plan_goal_rejected</a> (self)</td></tr>
 <tr class="memitem:ae07e2d16a3c2423b58b626d973e8dcf1" id="r_ae07e2d16a3c2423b58b626d973e8dcf1"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ae07e2d16a3c2423b58b626d973e8dcf1">test_execute_plan_no_domain</a> (self)</td></tr>
 <tr class="memitem:a74f08bc4b06bad78e85a2d25dac71499" id="r_a74f08bc4b06bad78e85a2d25dac71499"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a74f08bc4b06bad78e85a2d25dac71499">test_execute_plan_no_problem</a> (self)</td></tr>
@@ -225,11 +225,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Test execute_plan computing a new plan.</pre> 
+<pre class="fragment">Test start_plan_execution with provided plan.</pre> 
 </div>
 </div>
-<a id="a6cd6e2b223009da20f66f730a2603a43" name="a6cd6e2b223009da20f66f730a2603a43"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6cd6e2b223009da20f66f730a2603a43">&#9670;&#160;</a></span>test_execute_plan_empty_plan()</h2>
+<a id="a248d7af0914618a838d0c9eb090ce5e3" name="a248d7af0914618a838d0c9eb090ce5e3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a248d7af0914618a838d0c9eb090ce5e3">&#9670;&#160;</a></span>test_execute_plan_empty_plan()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -237,31 +237,12 @@ Public Attributes</h2></td></tr>
         <tr>
           <td class="memname">test_execute_plan_empty_plan </td>
           <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
           <td></td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>mock_action_client</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>mock_planner</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>mock_problem</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>mock_domain</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Test execute_plan with empty plan.</pre> 
+<pre class="fragment">Test start_plan_execution with empty plan.</pre> 
 </div>
 </div>
 <a id="ac29b02e7b76485883b1a33f9ca7ef0a5" name="ac29b02e7b76485883b1a33f9ca7ef0a5"></a>
@@ -278,7 +259,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Test execute_plan when goal is rejected.</pre> 
+<pre class="fragment">Test start_plan_execution when goal is rejected.</pre> 
 </div>
 </div>
 <a id="ae07e2d16a3c2423b58b626d973e8dcf1" name="ae07e2d16a3c2423b58b626d973e8dcf1"></a>
@@ -295,7 +276,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Test execute_plan when domain cannot be retrieved.</pre> 
+<pre class="fragment">Test start_plan_execution with None plan.</pre> 
 </div>
 </div>
 <a id="a74f08bc4b06bad78e85a2d25dac71499" name="a74f08bc4b06bad78e85a2d25dac71499"></a>
@@ -312,7 +293,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Test execute_plan when problem cannot be retrieved.</pre> 
+<pre class="fragment">Test start_plan_execution with None plan.</pre> 
 </div>
 </div>
 <a id="a02b71928b223b074c9095ab4995bc453" name="a02b71928b223b074c9095ab4995bc453"></a>
@@ -329,7 +310,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Test execute_plan when planner cannot compute plan.</pre> 
+<pre class="fragment">Test start_plan_execution with None plan.</pre> 
 </div>
 </div>
 <a id="ae6aac3264af2b11e2f92408c551bccaf" name="ae6aac3264af2b11e2f92408c551bccaf"></a>
@@ -346,7 +327,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Test execute_plan when action server is not available.</pre> 
+<pre class="fragment">Test start_plan_execution when action server is not available.</pre> 
 </div>
 </div>
 <a id="a955e02a3999ca92ba3aa0613b302bcaa" name="a955e02a3999ca92ba3aa0613b302bcaa"></a>
