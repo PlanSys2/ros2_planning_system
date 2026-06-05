@@ -21,6 +21,7 @@
 #include <cstdlib>
 
 #include "rclcpp/rclcpp.hpp"
+#include <filesystem>
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
@@ -301,10 +302,11 @@ TEST_F(TerminalTestCase, load_popf_plugin)
 
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_terminal");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_terminal", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_example.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_example.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -639,10 +641,11 @@ TEST_F(TerminalTestCase, add_problem)
 
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_terminal");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_terminal", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_example.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_example.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -686,7 +689,7 @@ TEST_F(TerminalTestCase, add_problem)
     }
 
     auto terminal_node = std::make_shared<TerminalTest>(options);
-    terminal_node->set_parameter({"problem_file", pkgpath + "/pddl/problem_charging.pddl"});
+    terminal_node->set_parameter({"problem_file", pkgpath.string() + "/pddl/problem_charging.pddl"});
     terminal_node->init();
 
     ASSERT_EQ(problem_client->getInstances().size(), 4);
@@ -770,10 +773,11 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
 
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_terminal");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_terminal", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_example.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_example.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -817,7 +821,7 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
     }
 
     auto terminal_node = std::make_shared<TerminalTest>(options);
-    terminal_node->set_parameter({"problem_file", pkgpath + "/pddl/problem_empty_domain.pddl"});
+    terminal_node->set_parameter({"problem_file", pkgpath.string() + "/pddl/problem_empty_domain.pddl"});
     terminal_node->init();
 
     ASSERT_EQ(problem_client->getInstances().size(), 0);
@@ -896,10 +900,11 @@ TEST_F(TerminalTestCase, check_actors)
     charge_actor_1_node->set_parameter({"action_name", "charge"});
     charge_actor_1_node->set_parameter({"rate", 10.0});
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_terminal");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_terminal", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_example.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_example.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -1064,13 +1069,14 @@ TEST_F(TerminalTestCase, source_run_plan)
     charge_actor_1_node->set_parameter({"action_name", "charge"});
     charge_actor_1_node->set_parameter({"rate", 1.0});
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_terminal");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_terminal", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_example.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/simple_example.pddl"});
 
-    std::string cmd_file = pkgpath + "/pddl/commands";
-    std::string plan_file = pkgpath + "/pddl/plan";
+    std::string cmd_file = pkgpath.string() + "/pddl/commands";
+    std::string plan_file = pkgpath.string() + "/pddl/plan";
 
     rclcpp::experimental::executors::EventsExecutor exe;
 

@@ -14,6 +14,7 @@
 
 #include "plansys2_executor/bt_builder_plugins/sequential_bt_builder.hpp"
 
+#include <filesystem>
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
@@ -90,12 +91,13 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
 
     auto btbuilder = std::make_shared<SequentialBTBuilderTest>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_executor", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/suave_domain.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/suave_domain.pddl"});
     domain_node->set_parameter({"validate_using_planner_node", true});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/suave_domain.pddl"});
-    problem_node->set_parameter({"problem_file", pkgpath + "/pddl/suave_problem.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/suave_domain.pddl"});
+    problem_node->set_parameter({"problem_file", pkgpath.string() + "/pddl/suave_problem.pddl"});
 
     rclcpp::executors::MultiThreadedExecutor exe(rclcpp::ExecutorOptions(), 8);
 

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <filesystem>
 #include <string>
 #include <vector>
 #include <memory>
@@ -146,11 +147,13 @@ TEST_F(BTActionsTestCase, load_plugins)
     move_server_node->start_server();
 
     bool finish = false;
+    rclcpp::executors::SingleThreadedExecutor spinner;
+    spinner.add_node(move_server_node);
+    spinner.add_node(node->get_node_base_interface());
     std::thread t([&]() {
         rclcpp::Rate rate(100);
         while (!finish) {
-          rclcpp::spin_some(move_server_node);
-          rclcpp::spin_some(node->get_node_base_interface());
+          spinner.spin_some();
           rate.sleep();
         }
       });
@@ -162,8 +165,9 @@ TEST_F(BTActionsTestCase, load_plugins)
     factory.registerFromPlugin(loader.getOSName("plansys2_open_gripper_bt_node"));
     factory.registerFromPlugin(loader.getOSName("plansys2_move_bt_test_node"));
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
-    std::string xml_file = pkgpath + "/test/behavior_tree/transport.xml";
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_bt_actions", pkgpath);
+    std::string xml_file = pkgpath.string() + "/test/behavior_tree/transport.xml";
 
     auto blackboard = BT::Blackboard::create();
     blackboard->set("node", node);
@@ -196,11 +200,13 @@ TEST_F(BTActionsTestCase, on_tick_failure)
     move_server_node->start_server();
 
     bool finished = false;
+    rclcpp::executors::SingleThreadedExecutor spinner2;
+    spinner2.add_node(move_server_node);
+    spinner2.add_node(node->get_node_base_interface());
     std::thread t([&]() {
         rclcpp::Rate rate(100);
         while (!finished) {
-          rclcpp::spin_some(move_server_node);
-          rclcpp::spin_some(node->get_node_base_interface());
+          spinner2.spin_some();
           rate.sleep();
         }
       });
@@ -244,11 +250,13 @@ TEST_F(BTActionsTestCase, on_feedback_failure)
     move_server_node->start_server();
 
     bool finished = false;
+    rclcpp::executors::SingleThreadedExecutor spinner3;
+    spinner3.add_node(move_server_node);
+    spinner3.add_node(node->get_node_base_interface());
     std::thread t([&]() {
         rclcpp::Rate rate(100);
         while (!finished) {
-          rclcpp::spin_some(move_server_node);
-          rclcpp::spin_some(node->get_node_base_interface());
+          spinner3.spin_some();
           rate.sleep();
         }
       });
@@ -288,8 +296,9 @@ TEST_F(BTActionsTestCase, on_feedback_failure)
 TEST_F(BTActionsTestCase, bt_action)
 {
   {
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
-    std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_bt_actions", pkgpath);
+    std::string xml_file = pkgpath.string() + "/test/behavior_tree/assemble.xml";
 
     std::vector<std::string> plugins = {
       "plansys2_close_gripper_bt_node", "plansys2_open_gripper_bt_node"};
@@ -332,8 +341,9 @@ TEST_F(BTActionsTestCase, bt_action)
 TEST_F(BTActionsTestCase, bt_action_old_constructor)
 {
   {
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
-    std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_bt_actions", pkgpath);
+    std::string xml_file = pkgpath.string() + "/test/behavior_tree/assemble.xml";
 
     std::vector<std::string> plugins = {
       "plansys2_close_gripper_bt_node", "plansys2_open_gripper_bt_node"};
@@ -375,8 +385,9 @@ TEST_F(BTActionsTestCase, bt_action_old_constructor)
 TEST_F(BTActionsTestCase, cancel_bt_action)
 {
   {
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
-    std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_bt_actions", pkgpath);
+    std::string xml_file = pkgpath.string() + "/test/behavior_tree/assemble.xml";
 
     std::vector<std::string> plugins = {
       "plansys2_close_gripper_bt_node", "plansys2_open_gripper_bt_node"};

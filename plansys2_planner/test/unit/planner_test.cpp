@@ -18,6 +18,7 @@
 #include <iostream>
 #include <fstream>
 
+#include <filesystem>
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
 #include "gtest/gtest.h"
@@ -60,10 +61,11 @@ TEST(planner_expert, generate_plan_good)
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_planner");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_planner", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_simple.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_simple.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -142,10 +144,11 @@ TEST(planner_expert, generate_plan_with_args)
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_planner");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_planner", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_simple.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_simple.pddl"});
 
     std::vector<std::string> solver_plugins = {"POPF1"};
     planner_node->set_parameter({"plan_solver_plugins", solver_plugins});
@@ -241,10 +244,11 @@ TEST(planner_expert, generate_plans)
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_planner");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_planner", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_simple.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_simple.pddl"});
 
     std::vector<std::string> solver_plugins = {"POPF1", "POPF2", "POPF3"};
     planner_node->set_parameter({"plan_solver_plugins", solver_plugins});
@@ -366,10 +370,11 @@ TEST(planner_expert, generate_plans_stress)
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_planner");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_planner", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_simple.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_simple.pddl"});
 
     std::vector<std::string> solver_plugins = {"POPF1", "POPF2", "POPF3"};
     planner_node->set_parameter({"plan_solver_plugins", solver_plugins});
@@ -508,10 +513,11 @@ TEST(planner_expert, generate_plan_with_domain_constants)
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
     auto planner_client = std::make_shared<plansys2::PlannerClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_planner");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_planner", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_constants.pddl"});
-    problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_constants.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_simple_constants.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_simple_constants.pddl"});
 
     rclcpp::experimental::executors::EventsExecutor exe;
 
@@ -550,7 +556,7 @@ TEST(planner_expert, generate_plan_with_domain_constants)
       }
     }
 
-    std::ifstream problem_1_ifs(pkgpath + "/pddl/problem_simple_constants_1.pddl");
+    std::ifstream problem_1_ifs(pkgpath.string() + "/pddl/problem_simple_constants_1.pddl");
     std::string problem_1_str((
         std::istreambuf_iterator<char>(problem_1_ifs)),
       std::istreambuf_iterator<char>());
@@ -564,7 +570,7 @@ TEST(planner_expert, generate_plan_with_domain_constants)
 
     problem_client->clearKnowledge();
 
-    std::ifstream problem_2_ifs(pkgpath + "/pddl/problem_simple_constants_2.pddl");
+    std::ifstream problem_2_ifs(pkgpath.string() + "/pddl/problem_simple_constants_2.pddl");
     std::string problem_2_str((
         std::istreambuf_iterator<char>(problem_2_ifs)),
       std::istreambuf_iterator<char>());

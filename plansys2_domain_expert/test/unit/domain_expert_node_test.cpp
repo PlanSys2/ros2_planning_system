@@ -18,6 +18,7 @@
 #include <iostream>
 #include <memory>
 
+#include <filesystem>
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
 #include "gtest/gtest.h"
@@ -54,9 +55,10 @@ TEST(domain_expert, lifecycle)
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_domain_expert", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_simple.pddl"});
     rclcpp::experimental::executors::EventsExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
@@ -105,7 +107,7 @@ TEST(domain_expert, lifecycle)
       }
     }
 
-    std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_processed.pddl");
+    std::ifstream domain_ifs_p(pkgpath.string() + "/pddl/domain_simple_processed.pddl");
     std::string domain_str_p((
         std::istreambuf_iterator<char>(domain_ifs_p)),
       std::istreambuf_iterator<char>());
@@ -125,9 +127,10 @@ TEST(domain_expert, lifecycle_error)
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+    std::filesystem::path pkgpath;
+    ament_index_cpp::get_package_share_directory("plansys2_domain_expert", pkgpath);
 
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_2_error.pddl"});
+    domain_node->set_parameter({"model_file", pkgpath.string() + "/pddl/domain_2_error.pddl"});
     rclcpp::experimental::executors::EventsExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
