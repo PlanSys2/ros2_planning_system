@@ -12,27 +12,28 @@ on:
   workflow_dispatch:
 jobs:
   build-and-test:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     container:
-      image: ubuntu:noble
+      image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-resolute-ros-rolling-ros-base:master
     steps:
-      - uses: actions/checkout@v4
+      - name: Repo checkout
+        uses: actions/checkout@v6
+        with:
+          ref: rolling
       - name: Install popf deps
         run: apt-get update && apt-get install -y libfl-dev
-      - name: Setup ROS 2
-        uses: ros-tooling/setup-ros@0.7.15
       - name: build and test
-        uses: ros-tooling/action-ros-ci@0.4.5
+        uses: ros-tooling/action-ros-ci@0.4.8
         with:
           package-name: plansys2_bringup plansys2_bt_actions plansys2_core plansys2_domain_expert plansys2_executor plansys2_lifecycle_manager plansys2_msgs plansys2_pddl_parser plansys2_planner plansys2_popf_plan_solver plansys2_problem_expert plansys2_support_py plansys2_terminal plansys2_tests plansys2_tools plansys2_tui_cli
           target-ros2-distro: rolling
+          vcs-repo-file-url: ${GITHUB_WORKSPACE}/.github/thirdparty.repos
           colcon-defaults: |
             {
               "test": {
                 "parallel-workers" : 1
               }
             }
-          vcs-repo-file-url: ${GITHUB_WORKSPACE}/dependency_repos.repos
           colcon-mixin-name: coverage-gcc
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
       - name: Codecov
