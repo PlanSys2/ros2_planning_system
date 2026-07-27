@@ -15,7 +15,7 @@ jobs:
       image: ubuntu:jammy
     steps:
       - name: Install popf deps
-        run: apt-get update && apt-get install libfl-dev
+        run: apt-get update && apt-get install -y libfl-dev
       - name: Fix pip
         run: pip3 install empy==3.3.4; pip3 install -U colcon-common-extensions
       - name: Setup ROS 2
