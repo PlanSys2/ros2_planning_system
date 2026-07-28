@@ -314,12 +314,12 @@ Terminal::clean_command(std::string & command)
   }
 
   // remove from spaces
-  while (*command.begin() == ' ') {
+  while (!command.empty() && *command.begin() == ' ') {
     command.erase(0, 1);
   }
 
   // remove trailing spaces
-  while (command[command.size() - 1] == ' ') {
+  while (!command.empty() && command[command.size() - 1] == ' ') {
     command.pop_back();
   }
 }
