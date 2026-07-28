@@ -172,7 +172,6 @@ class PlanSolverBase(ABC):
 
                 # Monitor thread to handle timeout and cancellation
                 def monitor():
-                    nonlocal child_finish
                     timeout_sec = solver_timeout.nanoseconds / 1e9
                     poll_interval = 0.1  # 100ms
 

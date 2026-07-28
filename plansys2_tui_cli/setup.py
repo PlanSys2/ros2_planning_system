@@ -23,7 +23,11 @@ setup(
     maintainer_email='fmrico@gmail.com',
     description='PlanSys2 TUI (Textual) and ros2cli tools.',
     license='Apache-2.0',
-    tests_require=['pytest'],
+    extras_require={
+        'test': [
+            'pytest',
+        ],
+    },
     entry_points={
         'console_scripts': [
             'plansys2_tui = plansys2_tui_cli.tui.app:run_app',
