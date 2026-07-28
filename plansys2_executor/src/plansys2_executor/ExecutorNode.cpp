@@ -33,7 +33,7 @@
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 #include "plansys2_msgs/msg/plan.hpp"
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "ament_index_cpp/get_package_share_path.hpp"
 
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/bt_factory.h"
@@ -135,8 +135,7 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   auto default_action_bt_xml_filename =
     this->get_parameter("default_action_bt_xml_filename").as_string();
   if (default_action_bt_xml_filename.empty()) {
-    std::filesystem::path pkg_path;
-    ament_index_cpp::get_package_share_directory("plansys2_executor", pkg_path);
+    auto pkg_path = ament_index_cpp::get_package_share_path("plansys2_executor");
     default_action_bt_xml_filename =
       (pkg_path / "behavior_trees" / "plansys2_action_bt.xml").string();
   }
@@ -153,8 +152,7 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   auto default_start_action_bt_xml_filename =
     this->get_parameter("default_start_action_bt_xml_filename").as_string();
   if (default_start_action_bt_xml_filename.empty()) {
-    std::filesystem::path pkg_path;
-    ament_index_cpp::get_package_share_directory("plansys2_executor", pkg_path);
+    auto pkg_path = ament_index_cpp::get_package_share_path("plansys2_executor");
     default_start_action_bt_xml_filename =
       (pkg_path / "behavior_trees" / "plansys2_start_action_bt.xml").string();
   }
@@ -172,8 +170,7 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   auto default_end_action_bt_xml_filename =
     this->get_parameter("default_end_action_bt_xml_filename").as_string();
   if (default_end_action_bt_xml_filename.empty()) {
-    std::filesystem::path pkg_path;
-    ament_index_cpp::get_package_share_directory("plansys2_executor", pkg_path);
+    auto pkg_path = ament_index_cpp::get_package_share_path("plansys2_executor");
     default_end_action_bt_xml_filename =
       (pkg_path / "behavior_trees" / "plansys2_end_action_bt.xml").string();
   }

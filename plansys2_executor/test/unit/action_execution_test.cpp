@@ -20,7 +20,7 @@
 #include <fstream>
 #include <map>
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "ament_index_cpp/get_package_share_path.hpp"
 
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"

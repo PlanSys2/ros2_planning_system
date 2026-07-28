@@ -19,7 +19,7 @@
 
 #include "gtest/gtest.h"
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "ament_index_cpp/get_package_share_path.hpp"
 #include "plansys2_core/PlanSolverBase.hpp"
 #include "plansys2_core/Utils.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -127,7 +127,7 @@ TEST(utils_test, run_planner_ok)
   PlannerTest planner;
   planner.configure(node, "test_node");
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_core");
+  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_core").string();
   std::string domain_path(pkgpath + "/pddl/domain_1_ok.pddl");
   std::string problem_path(pkgpath + "/pddl/problem_simple_1.pddl");
   std::string plan_path = std::filesystem::temp_directory_path() / std::filesystem::path("plan");
@@ -181,7 +181,7 @@ TEST(utils_test, run_planner_error)
   PlannerTest planner;
   planner.configure(node, "test_node");
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_core");
+  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_core").string();
   std::string domain_path(pkgpath + "/pddl/domain_2_error.pddl");
   std::string problem_path(pkgpath + "/pddl/problem_simple_1.pddl");
   std::string plan_path = std::filesystem::temp_directory_path() / std::filesystem::path("plan");
@@ -233,7 +233,7 @@ TEST(utils_test, run_planner_timeout)
   PlannerTest planner;
   planner.configure(node, "test_node");
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_core");
+  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_core").string();
   std::string domain_path(pkgpath + "/pddl/domain_1_ok.pddl");
   std::string problem_path(pkgpath + "/pddl/problem_simple_1.pddl");
   std::string plan_path = std::filesystem::temp_directory_path() / std::filesystem::path("plan");
