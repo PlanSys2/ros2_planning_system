@@ -2,8 +2,8 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.0 (2026-07-28)
+------------------
 * msgs: deal with CMake CMP0094
   Bump CMake minimum version to 3.15, as that's where CMP0094 was
   introduced.

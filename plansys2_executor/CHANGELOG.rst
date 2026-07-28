@@ -2,8 +2,8 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.0 (2026-07-28)
+------------------
 * Fix deprecated get_share_directory
 * Fix publish execution Info. TUI and CLI
 * Deprecate BTAction with rate. Fix all warnings

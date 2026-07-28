@@ -2,8 +2,8 @@
 Changelog for package plansys2_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.0 (2026-07-28)
+------------------
 * Adaptation to the new Qt version
 * Deprecate BTAction with rate. Fix all warnings
 * Fix RQT plugins

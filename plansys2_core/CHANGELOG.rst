@@ -2,8 +2,8 @@
 Changelog for package plansys2_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.0 (2026-07-28)
+------------------
 * Fix deprecated get_share_directory
 * Potential fix for pull request finding
   Co-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>

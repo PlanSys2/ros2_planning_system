@@ -2,8 +2,8 @@
 Changelog for package plansys2_tui_cli
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.0 (2026-07-28)
+------------------
 * Fix missing module in plansys2_tui dependencies
 * Fix test import
 * Fix publish execution Info. TUI and CLI

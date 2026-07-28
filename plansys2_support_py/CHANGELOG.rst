@@ -2,8 +2,8 @@
 Changelog for package plansys2_support_py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.0 (2026-07-28)
+------------------
 * Added some tests
 * Added planner in python
 * Convert to fully python package

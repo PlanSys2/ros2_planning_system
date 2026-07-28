@@ -2,8 +2,8 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.0 (2026-07-28)
+------------------
 * Deprecate BTAction with rate. Fix all warnings
 * Merge pull request `#392 <https://github.com/PlanSys2/ros2_planning_system/issues/392>`_ from fmrico/fix_ci_2
   Fix ci 2

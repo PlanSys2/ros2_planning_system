@@ -2,8 +2,8 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.0 (2026-07-28)
+------------------
 * Fix deprecated get_share_directory
 * Deprecate BTAction with rate. Fix all warnings
 * Set C++23 as default

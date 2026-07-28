@@ -2,8 +2,8 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.1.0 (2026-07-28)
+------------------
 * Fix deprecated get_share_directory
 * Support custom messages in BTAction via out_msg blackboard
   Read out_msg from the BT blackboard and use it as the status string
