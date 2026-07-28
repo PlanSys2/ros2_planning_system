@@ -2,6 +2,41 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix deprecated get_share_directory
+* Fix publish execution Info. TUI and CLI
+* Deprecate BTAction with rate. Fix all warnings
+* Fix  performer hang
+* Fix orphan thread bug in ExecutorNode
+* Fix test
+* Add default
+* Set C++23 as default
+* Use std::string for BT API
+* Remove Eigen dependency export
+* adjust simple_btbuilder_tests.cpp
+* include Action.hpp in BTBuilder.hpp
+* Fix Groot2 monitor format
+* Added BTUtils and JSONUtils to ComputeBT and ExecutorNode
+* Added blackboard keys for compatibility with other nodes
+* Fix formats
+* rm old ActionVariant from ActionExecutor and adjust code
+* add plansys2::SequentialBTBuilder plugin
+* Fix print
+* fix code style
+* Merge branch 'rolling' into getExpr
+* Merge branch 'rolling' into getExpr
+* Added deprecated constructor
+* Merge branch 'PlanSys2:rolling' into fix_predicate_parsing
+* Minor fixes
+* Added explicit to constructor
+* Remove rate of ActionExecutorClient constructor and set as default parameter
+* Minor fix
+* Doc for executor
+* Added Groot2 monitor
+* Merge branch 'rolling' into getExpr
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+
 3.0.0 (2025-06-06)
 ------------------
 * Modify export target. Rename metapackage

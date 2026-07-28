@@ -2,6 +2,36 @@
 Changelog for package plansys2_pddl_parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix deprecated get_share_directory
+* Deprecate BTAction with rate. Fix all warnings
+* Set C++23 as default
+* add more tests to parser
+* fix Ground PDDLPrint for constant
+* fix node name parsing in Expression.hpp
+* fix code style
+* Merge branch 'rolling' into getExpr
+* add new helper functions
+* add check_var_params to checkParamEquality
+* small improvements to getPredicates and getFunctions
+* improvments to fromStringPredicate
+* fix toString exists when negated
+* fix toString when node_type is Parameter
+* fix Exists parse
+* Fix string predicate parsing to handle cases with no parameters
+* more fixes
+* added test case for no arg predicates
+* fix code style
+* fromString works for Parameter
+* getNodeType works with parameters
+* fix bug in getSubExpr
+* add parser::pddl::removeOperatorBeforeParenthesis
+* getExpr fix parsing for words with hyphen
+* Fix string predicate parsing to handle cases with no parameters
+* Fixing bug `#329 <https://github.com/PlanSys2/ros2_planning_system/issues/329>`_
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende, eshan-savla
+
 3.0.0 (2025-06-06)
 ------------------
 * Modify export target. Rename metapackage

@@ -2,6 +2,13 @@
 Changelog for package plansys2_popf_plan_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix deprecated get_share_directory
+* Set C++23 as default
+* Doc for popf plan solver
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+
 3.0.0 (2025-06-06)
 ------------------
 * Modify export target. Rename metapackage

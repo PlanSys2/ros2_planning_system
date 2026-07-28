@@ -2,6 +2,12 @@
 Changelog for package plansys2_lifecycle_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Set C++23 as default
+* Doc for lifecycle
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+
 3.0.0 (2025-06-06)
 ------------------
 * Modify export target. Rename metapackage

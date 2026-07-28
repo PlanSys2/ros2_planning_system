@@ -2,6 +2,20 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* msgs: deal with CMake CMP0094
+  Bump CMake minimum version to 3.15, as that's where CMP0094 was
+  introduced.
+  CMake versions lower than 3.15 have trouble locating Python in
+  environments where a Python installed in a non-default location should
+  be used (such as Conda, Pixi, etc).
+* Set C++23 as default
+* Merge pull request `#372 <https://github.com/PlanSys2/ros2_planning_system/issues/372>`_ from Rezenders/plansys2_core
+  Plansys2 core
+* add State.msg
+* Contributors: Eshan Savla, Francisco Martín Rico, G.A. vd. Hoorn, Gustavo, Gustavo Rezende
+
 3.0.0 (2025-06-06)
 ------------------
 * Multiple plans and replanning stability

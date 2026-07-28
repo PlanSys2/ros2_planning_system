@@ -2,6 +2,14 @@
 Changelog for package plansys2_tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix deprecated get_share_directory
+* Deprecate BTAction with rate. Fix all warnings
+* Set C++23 as default
+* added test case for no arg predicates
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende, eshan-savla
+
 3.0.0 (2025-06-06)
 ------------------
 * Revamp CMake and clean unused headers

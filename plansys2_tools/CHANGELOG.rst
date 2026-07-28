@@ -2,6 +2,16 @@
 Changelog for package plansys2_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adaptation to the new Qt version
+* Deprecate BTAction with rate. Fix all warnings
+* Fix RQT plugins
+* Set C++23 as default
+* tools: conditionally include .hpp (vs .h)
+  Headers have been renamed in Rolling & Kilted.
+* Contributors: Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende, gavanderhoorn
+
 3.0.0 (2025-06-06)
 ------------------
 * Revamp CMake and clean unused headers

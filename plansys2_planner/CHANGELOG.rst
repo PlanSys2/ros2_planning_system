@@ -2,6 +2,16 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix deprecated get_share_directory
+* Deprecate BTAction with rate. Fix all warnings
+* Fix test
+* Add default
+* Set C++23 as default
+* Doc for planner
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+
 3.0.0 (2025-06-06)
 ------------------
 * Modify export target. Rename metapackage

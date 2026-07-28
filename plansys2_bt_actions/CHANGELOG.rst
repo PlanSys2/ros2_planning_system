@@ -2,6 +2,48 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix deprecated get_share_directory
+* Support custom messages in BTAction via out_msg blackboard
+  Read out_msg from the BT blackboard and use it as the status string
+  in send_feedback() and finish() calls. Falls back to the default
+  generic messages when out_msg is empty. This allows BT action nodes
+  to forward custom context (e.g. perception events) through the
+  action hub.
+* Fix publish execution Info. TUI and CLI
+* Deprecate BTAction with rate. Fix all warnings
+* Fix test
+* Set C++23 as default
+* fix: target cancel handle
+  More improvments in BTActionNode
+* Fix default  server_timeout
+* Fix Groot2 monitor format
+* Fix tests
+* Added callback group executor
+* Return to IDLE when finished
+* Add tf2_geometry_msgs to plansys2_bt_actions package.xml
+  Add tf2_geometry_msgs to plansys2_bt_actions package.xml.
+  tf2_geometry_msgs is required to build plansys2_bt_actions
+* Use geometry_msgs::msg::Pose as Pose2D is now in vision_msgs
+* Fix BTService and BT-JSON
+* Update BTServiceNode.hpp
+* Added a BT for services
+* Added JSON utils
+* Revert lifecycle
+* Added deprecated constructor
+* Remove nolint
+* Added spin to test
+* Fix some bt _action tests
+* Added bt_loop_duration to the blackboard
+* Remove rate of ActionExecutorClient constructor and set as default parameter
+* Added wait_for_service_timeout param and blackboard
+* Added server_timeout as parameter and blackboard
+* Doc for bt actions
+* Update Readme
+* Added Groot2 monitor
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende, avalen2022
+
 3.0.0 (2025-06-06)
 ------------------
 * Modify export target. Rename metapackage
