@@ -27,7 +27,6 @@
 #include "plansys2_executor/ComputeBT.hpp"
 
 #include "ament_index_cpp/get_package_share_path.hpp"
-
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/utils/shared_library.h"
@@ -98,7 +97,7 @@ ComputeBT::on_configure(const rclcpp_lifecycle::State & state)
   if (action_bt_xml_filename.empty()) {
     std::filesystem::path pkg_path = ament_index_cpp::get_package_share_path("plansys2_executor");
     action_bt_xml_filename =
-      (pkg_path / "behavior_trees" / "plansys2_action_bt.xml").string();
+      (pkg_path.string() + "/behavior_trees/plansys2_action_bt.xml");
   }
 
   std::ifstream action_bt_ifs(action_bt_xml_filename);
@@ -115,7 +114,7 @@ ComputeBT::on_configure(const rclcpp_lifecycle::State & state)
   if (start_action_bt_xml_filename.empty()) {
     std::filesystem::path pkg_path = ament_index_cpp::get_package_share_path("plansys2_executor");
     start_action_bt_xml_filename =
-      (pkg_path / "behavior_trees" / "plansys2_start_action_bt.xml").string();
+      (pkg_path.string() + "/behavior_trees/plansys2_start_action_bt.xml");
   }
 
   std::ifstream start_action_bt_ifs(start_action_bt_xml_filename);
@@ -133,7 +132,7 @@ ComputeBT::on_configure(const rclcpp_lifecycle::State & state)
   if (end_action_bt_xml_filename.empty()) {
     std::filesystem::path pkg_path = ament_index_cpp::get_package_share_path("plansys2_executor");
     end_action_bt_xml_filename =
-      (pkg_path / "behavior_trees" / "plansys2_end_action_bt.xml").string();
+      (pkg_path.string() + "/behavior_trees/plansys2_end_action_bt.xml");
   }
 
   std::ifstream end_action_bt_ifs(end_action_bt_xml_filename);
