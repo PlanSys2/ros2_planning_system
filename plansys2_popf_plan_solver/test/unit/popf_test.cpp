@@ -18,7 +18,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "ament_index_cpp/get_package_share_path.hpp"
 
 #include "gtest/gtest.h"
 #include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
@@ -28,7 +28,8 @@
 
 void test_plan_generation(const std::string & argument = "")
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver");
+  std::string pkgpath =
+    ament_index_cpp::get_package_share_path("plansys2_popf_plan_solver").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -93,7 +94,8 @@ TEST(popf_plan_solver, load_popf_plugin)
 
 TEST(popf_plan_solver, check_1_ok_domain)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver");
+  std::string pkgpath =
+    ament_index_cpp::get_package_share_path("plansys2_popf_plan_solver").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_1_ok.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -110,7 +112,8 @@ TEST(popf_plan_solver, check_1_ok_domain)
 
 TEST(popf_plan_solver, check_2_error_domain)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver");
+  std::string pkgpath =
+    ament_index_cpp::get_package_share_path("plansys2_popf_plan_solver").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_2_error.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -127,7 +130,8 @@ TEST(popf_plan_solver, check_2_error_domain)
 
 TEST(popf_plan_solver, generate_plan_unsolvable)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver");
+  std::string pkgpath =
+    ament_index_cpp::get_package_share_path("plansys2_popf_plan_solver").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -149,7 +153,8 @@ TEST(popf_plan_solver, generate_plan_unsolvable)
 
 TEST(popf_plan_solver, generate_plan_error)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver");
+  std::string pkgpath =
+    ament_index_cpp::get_package_share_path("plansys2_popf_plan_solver").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),

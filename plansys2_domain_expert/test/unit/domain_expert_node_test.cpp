@@ -18,7 +18,7 @@
 #include <iostream>
 #include <memory>
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "ament_index_cpp/get_package_share_path.hpp"
 
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
@@ -54,7 +54,8 @@ TEST(domain_expert, lifecycle)
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+    std::string pkgpath =
+      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     rclcpp::experimental::executors::EventsExecutor exe;
@@ -125,7 +126,8 @@ TEST(domain_expert, lifecycle_error)
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_domain_expert");
+    std::string pkgpath =
+      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_2_error.pddl"});
     rclcpp::experimental::executors::EventsExecutor exe;

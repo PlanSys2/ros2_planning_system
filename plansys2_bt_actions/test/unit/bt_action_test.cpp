@@ -31,7 +31,7 @@
 #include "plansys2_core/Utils.hpp"
 
 #include "test_msgs/action/fibonacci.hpp"
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "ament_index_cpp/get_package_share_path.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_cascade_lifecycle/rclcpp_cascade_lifecycle.hpp"
@@ -162,7 +162,7 @@ TEST_F(BTActionsTestCase, load_plugins)
     factory.registerFromPlugin(loader.getOSName("plansys2_open_gripper_bt_node"));
     factory.registerFromPlugin(loader.getOSName("plansys2_move_bt_test_node"));
 
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
+    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_bt_actions").string();
     std::string xml_file = pkgpath + "/test/behavior_tree/transport.xml";
 
     auto blackboard = BT::Blackboard::create();
@@ -288,7 +288,7 @@ TEST_F(BTActionsTestCase, on_feedback_failure)
 TEST_F(BTActionsTestCase, bt_action)
 {
   {
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
+    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_bt_actions").string();
     std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
 
     std::vector<std::string> plugins = {
@@ -332,7 +332,7 @@ TEST_F(BTActionsTestCase, bt_action)
 TEST_F(BTActionsTestCase, bt_action_old_constructor)
 {
   {
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
+    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_bt_actions").string();
     std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
 
     std::vector<std::string> plugins = {
@@ -375,7 +375,7 @@ TEST_F(BTActionsTestCase, bt_action_old_constructor)
 TEST_F(BTActionsTestCase, cancel_bt_action)
 {
   {
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
+    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_bt_actions").string();
     std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
 
     std::vector<std::string> plugins = {
