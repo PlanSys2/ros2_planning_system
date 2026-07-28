@@ -14,7 +14,7 @@ jobs:
   build-and-test:
     runs-on: ubuntu-26.04
     container:
-      image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-resolute-ros-lyrical-devel-ros-base:master
+      image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-resolute-ros-lyrical-ros-base:master
     steps:
       - name: Repo checkout
         uses: actions/checkout@v6
