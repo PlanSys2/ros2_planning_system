@@ -33,6 +33,7 @@ set(EXECUTOR_SOURCES
   src/plansys2_executor/ActionExecutorClient.cpp
   src/plansys2_executor/ExecutorNode.cpp
   src/plansys2_executor/ComputeBT.cpp
+  src/plansys2_executor/PredicateBTExecutor.cpp
   src/plansys2_executor/behavior_tree/execute_action_node.cpp
   src/plansys2_executor/behavior_tree/wait_action_node.cpp
   src/plansys2_executor/behavior_tree/check_action_node.cpp

@@ -24,6 +24,7 @@
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
+#include "plansys2_executor/PredicateBTExecutor.hpp"
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 
@@ -70,8 +71,21 @@ public:
   }
 
 private:
+  /**
+   * @brief Checks if the at-start requirements are satisfied using a behavior tree.
+   *
+   * @param tree The PDDL tree to check against.
+   * @param problem_client The ProblemExpertClient to use for checking.
+   * @return true if the requirements are satisfied, false otherwise.
+   */
+  bool check_with_bt(
+    const plansys2_msgs::msg::Tree & tree,
+    const std::shared_ptr<plansys2::ProblemExpertClient> & problem_client);
+
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
+  std::unique_ptr<PredicateBTExecutor> predicate_bt_executor_;
+  rclcpp::Logger logger_{rclcpp::get_logger("WaitAtStartReq")};
 };
 
 }  // namespace plansys2

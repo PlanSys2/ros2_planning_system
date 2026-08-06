@@ -20,6 +20,7 @@
 #include <string>
 #include <map>
 #include <tuple>
+#include <unordered_map>
 #include <list>
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
@@ -366,6 +367,10 @@ protected:
   int executor_state_;
 
   PlanRuntineInfo runtime_info_;
+
+  // Predicates and their XML templates
+  std::vector<std::string> predicate_plugin_list_;
+  std::unordered_map<std::string, std::string> predicates_bt_xml_;
 
   // Groot2 monitor
   std::unique_ptr<BT::Groot2Publisher> groot_monitor_;

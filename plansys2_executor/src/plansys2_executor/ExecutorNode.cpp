@@ -85,6 +85,17 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
   this->declare_parameter<bool>("enable_groot_monitoring", false);
   this->declare_parameter<int>("server_port", 1800);
 
+  auto predicates = this->declare_parameter<std::vector<std::string>>(
+    "predicates", std::vector<std::string>({}));
+  this->declare_parameter<std::vector<std::string>>(
+    "predicate_plugins", std::vector<std::string>({}));
+  for (const auto & predicate : predicates) {
+    this->declare_parameter<std::string>(
+      "predicates_bt_xml." + predicate,
+      ament_index_cpp::get_package_share_directory("plansys2_executor") +
+      "/behavior_trees/" + predicate + ".xml");
+  }
+
   execute_plan_action_server_ = rclcpp_action::create_server<ExecutePlan>(
     this->get_node_base_interface(),
     this->get_node_clock_interface(),
@@ -184,6 +195,22 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
 
   end_action_bt_xml_.assign(
     std::istreambuf_iterator<char>(end_action_bt_ifs), std::istreambuf_iterator<char>());
+
+  // Load the predicates and their XML templates
+  auto predicates = this->get_parameter("predicates").as_string_array();
+  for (const auto & predicate : predicates) {
+    std::string bt_xml = this->get_parameter("predicates_bt_xml." + predicate).as_string();
+    if (!bt_xml.empty()) {
+      predicates_bt_xml_[predicate] = bt_xml;
+    } else {
+      RCLCPP_WARN_STREAM(
+        get_logger(), "No XML template found for predicate [" << predicate << "]");
+    }
+  }
+  predicate_plugin_list_ = get_parameter("predicate_plugins").as_string_array();
+  for (auto plugin : predicate_plugin_list_) {
+    RCLCPP_INFO_STREAM(get_logger(), "plugin: [" << plugin << "]");
+  }
 
   dotgraph_pub_ = this->create_publisher<std_msgs::msg::String>("dot_graph", 1);
   execution_info_pub_ = create_publisher<plansys2_msgs::msg::ActionExecutionInfo>(
@@ -487,6 +514,11 @@ ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
   blackboard->set("bt_loop_duration", std::chrono::milliseconds(200));
   blackboard->set("server_timeout", std::chrono::milliseconds(250));
   blackboard->set("wait_for_service_timeout", std::chrono::milliseconds(1000));
+  // Set the map of predicates to behavior tree XML templates
+  // This map is used to execute predicates in the behavior tree
+  // And set the plugins for predicate execution
+  blackboard->set("predicates_bt_xml", predicates_bt_xml_);
+  blackboard->set("predicate_plugins", predicate_plugin_list_);
 
   // If a new tree is created, than the Groot2 Publisher must be destroyed
   reset_groot_monitor();
@@ -916,6 +948,7 @@ void ExecutorNode::add_groot_monitoring(BT::Tree * tree, uint16_t server_port)
   // Register common types JSON definitions
   BT::RegisterJsonDefinition<builtin_interfaces::msg::Time>();
   BT::RegisterJsonDefinition<std_msgs::msg::Header>();
+  BT::RegisterJsonDefinition<std::unordered_map<std::string, std::string>>();
 }
 
 void ExecutorNode::reset_groot_monitor()
