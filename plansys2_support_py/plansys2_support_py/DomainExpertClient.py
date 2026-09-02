@@ -25,7 +25,7 @@ from plansys2_msgs.msg import Action as PlanSys2Action
 from plansys2_msgs.msg import Derived
 from plansys2_msgs.msg import DurativeAction as PlanSys2DurativeAction
 from plansys2_msgs.msg import Node as PlanSys2Node
-from plansys2_msgs.srv import (GetDomain, GetDomainActionDetails,
+from plansys2_msgs.srv import (ChangeDomain, GetDomain, GetDomainActionDetails,
                                GetDomainActions, GetDomainConstants,
                                GetDomainDerivedPredicateDetails,
                                GetDomainDurativeActionDetails, GetDomainName,
@@ -66,7 +66,8 @@ class DomainExpertClient(Node):
         log_msg = f'Domain Expert Client "{node_name}" initialized'
         self.get_logger().debug(log_msg)
 
-    def _create_and_call_service(self, service_type, service_name: str, request):
+    def _create_and_call_service(
+            self, service_type, service_name: str, request, timeout_sec: float = 10.0):
         """
         Create service client, call it and return response.
 
@@ -78,6 +79,8 @@ class DomainExpertClient(Node):
             The name/topic of the service.
         request : Any
             The service request object.
+        timeout_sec : float, optional
+            How long to wait for the response before giving up.
 
         Returns
         -------
@@ -94,7 +97,7 @@ class DomainExpertClient(Node):
                 return None
 
             future = client.call_async(request)
-            rclpy.spin_until_future_complete(self, future, timeout_sec=10.0)
+            rclpy.spin_until_future_complete(self, future, timeout_sec=timeout_sec)
 
             if future.done():
                 return future.result()
@@ -129,6 +132,42 @@ class DomainExpertClient(Node):
             error_msg = response.error_info if response else 'Service call failed'
             self.get_logger().error(f'Failed to get domain: {error_msg}')
             return None
+
+    def change_domain(self, domain: str) -> bool:
+        """
+        Replace the current domain with a new one, given as PDDL content.
+
+        If the new domain is invalid, the call fails and nothing else is touched. If
+        it is valid: any in-progress plan execution is cancelled, the problem
+        knowledge is reconciled against the new domain (knowledge no longer
+        consistent with it is pruned, the rest is left untouched), and the domain is
+        swapped in.
+
+        Parameters
+        ----------
+        domain : str
+            The new domain, in PDDL.
+
+        Returns
+        -------
+        bool: True if the domain was successfully changed, False otherwise.
+
+        """
+        service_name = f'{self._namespace_prefix}/domain_expert/change_domain'
+        request = ChangeDomain.Request()
+        request.domain = domain
+
+        # This call chains, server-side, executor cancellation, a problem-expert
+        # reconcile, and two lifecycle cycles: give it more room than a plain query.
+        response = self._create_and_call_service(
+            ChangeDomain, service_name, request, timeout_sec=20.0)
+        if response and response.success:
+            self.get_logger().debug('Successfully changed domain')
+            return True
+        else:
+            error_msg = response.error_info if response else 'Service call failed'
+            self.get_logger().error(f'Failed to change domain: {error_msg}')
+            return False
 
     def get_domain_name(self) -> Optional[str]:
         """

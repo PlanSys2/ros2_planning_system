@@ -197,6 +197,11 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
   planner_client_ = std::make_shared<plansys2::PlannerClient>();
 
+  domain_sub_ = create_subscription<std_msgs::msg::String>(
+    "domain_expert/domain",
+    rclcpp::QoS(100).transient_local(),
+    std::bind(&ExecutorNode::domain_topic_callback, this, std::placeholders::_1));
+
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
 }
@@ -759,6 +764,23 @@ ExecutorNode::handle_cancel(
     return rclcpp_action::CancelResponse::ACCEPT;
   } else {
     return rclcpp_action::CancelResponse::REJECT;
+  }
+}
+
+void
+ExecutorNode::domain_topic_callback(const std_msgs::msg::String::SharedPtr msg)
+{
+  (void)msg;
+  if (!domain_baseline_seen_) {
+    domain_baseline_seen_ = true;
+    return;
+  }
+
+  if (executor_state_ == STATE_EXECUTING) {
+    RCLCPP_WARN(
+      get_logger(),
+      "[%s] Domain changed while executing a plan, cancelling execution", get_name());
+    executor_state_ = STATE_ABORTING;
   }
 }
 

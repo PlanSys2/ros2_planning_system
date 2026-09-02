@@ -212,6 +212,11 @@ ProblemExpertNode::ProblemExpertNode(const rclcpp::NodeOptions & options)
   knowledge_pub_ = create_publisher<plansys2_msgs::msg::Knowledge>(
     "problem_expert/knowledge",
     rclcpp::QoS(100).transient_local());
+
+  domain_sub_ = create_subscription<std_msgs::msg::String>(
+    "domain_expert/domain",
+    rclcpp::QoS(100).transient_local(),
+    std::bind(&ProblemExpertNode::domain_topic_callback, this, std::placeholders::_1));
 }
 
 
@@ -696,6 +701,46 @@ ProblemExpertNode::clear_problem_knowledge_service_callback(
   }
 }
 
+void
+ProblemExpertNode::applyNewDomain(const std::string & domain)
+{
+  if (!problem_expert_->updateDomain(domain)) {
+    RCLCPP_ERROR_STREAM(
+      get_logger(), "[" << get_name() << "] Failed to update domain: PDDL syntax error");
+    return;
+  }
+
+  update_pub_->publish(std_msgs::msg::Empty());
+  knowledge_pub_->publish(*get_knowledge_as_msg());
+
+  plansys2_msgs::msg::Problem problem_msg;
+  problem_msg.problem = problem_expert_->getProblem();
+  problem_msg.stamp = now();
+  problem_pub_->publish(problem_msg);
+
+  RCLCPP_INFO(get_logger(), "[%s] Reconciled problem knowledge with new domain", get_name());
+}
+
+void
+ProblemExpertNode::domain_topic_callback(const std_msgs::msg::String::SharedPtr msg)
+{
+  if (problem_expert_ == nullptr) {
+    // Not configured yet: this node will pick up its starting domain from
+    // model_file on its own first on_configure(), same as always.
+    return;
+  }
+
+  if (!domain_baseline_seen_) {
+    // The transient_local replay of whatever domain_expert already has: this node
+    // just loaded that same domain from model_file, so there is nothing to do.
+    domain_baseline_seen_ = true;
+    return;
+  }
+
+  RCLCPP_INFO(
+    get_logger(), "[%s] Domain changed, reconciling problem knowledge...", get_name());
+  applyNewDomain(msg->data);
+}
 
 void
 ProblemExpertNode::remove_problem_instance_service_callback(

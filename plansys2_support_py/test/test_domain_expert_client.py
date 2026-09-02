@@ -22,7 +22,7 @@ from plansys2_msgs.msg import Action as PlanSys2Action
 from plansys2_msgs.msg import Derived
 from plansys2_msgs.msg import DurativeAction as PlanSys2DurativeAction
 from plansys2_msgs.msg import Node as PlanSys2Node
-from plansys2_msgs.srv import (GetDomain, GetDomainActionDetails,
+from plansys2_msgs.srv import (ChangeDomain, GetDomain, GetDomainActionDetails,
                                GetDomainActions, GetDomainConstants,
                                GetDomainDerivedPredicateDetails,
                                GetDomainDurativeActionDetails, GetDomainName,
@@ -119,6 +119,54 @@ class TestDomainExpertClient(unittest.TestCase):
         result = self.client.get_domain()
 
         self.assertIsNone(result)
+
+    @patch.object(Client, 'wait_for_service')
+    @patch.object(Client, 'call_async')
+    def test_change_domain_success(self, mock_call_async, mock_wait_for_service):
+        """Test successful domain change."""
+        mock_wait_for_service.return_value = True
+
+        mock_response = ChangeDomain.Response()
+        mock_response.success = True
+
+        mock_future = MagicMock()
+        mock_future.done.return_value = True
+        mock_future.result.return_value = mock_response
+        mock_call_async.return_value = mock_future
+
+        with patch('rclpy.spin_until_future_complete'):
+            result = self.client.change_domain('(define (domain new_domain) ...)')
+
+        self.assertTrue(result)
+
+    @patch.object(Client, 'wait_for_service')
+    @patch.object(Client, 'call_async')
+    def test_change_domain_rejected(self, mock_call_async, mock_wait_for_service):
+        """Test a change_domain call rejected by the server (e.g. invalid PDDL)."""
+        mock_wait_for_service.return_value = True
+
+        mock_response = ChangeDomain.Response()
+        mock_response.success = False
+        mock_response.error_info = 'PDDL syntax error'
+
+        mock_future = MagicMock()
+        mock_future.done.return_value = True
+        mock_future.result.return_value = mock_response
+        mock_call_async.return_value = mock_future
+
+        with patch('rclpy.spin_until_future_complete'):
+            result = self.client.change_domain('(define (domain broken')
+
+        self.assertFalse(result)
+
+    @patch.object(Client, 'wait_for_service')
+    def test_change_domain_service_not_available(self, mock_wait_for_service):
+        """Test change_domain when the service is not available."""
+        mock_wait_for_service.return_value = False
+
+        result = self.client.change_domain('(define (domain new_domain) ...)')
+
+        self.assertFalse(result)
 
     @patch.object(Client, 'wait_for_service')
     @patch.object(Client, 'call_async')
