@@ -54,6 +54,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/RemoveProblemGoal.srv"
   "srv/ClearProblemKnowledge.srv"
   "srv/ValidateDomain.srv"
+  "srv/ChangeDomain.srv"
   "action/ExecutePlan.action"
   DEPENDENCIES builtin_interfaces std_msgs action_msgs
 )

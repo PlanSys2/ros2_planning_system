@@ -30,6 +30,7 @@
 #include "plansys2_msgs/msg/derived.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
 
+#include "plansys2_msgs/srv/change_domain.hpp"
 #include "plansys2_msgs/srv/get_domain.hpp"
 #include "plansys2_msgs/srv/get_domain_name.hpp"
 #include "plansys2_msgs/srv/get_domain_types.hpp"
@@ -198,11 +199,25 @@ public:
    */
   std::string getDomain(bool use_cache);
 
+  /**
+   * @brief Replace the current domain with a new one, given as PDDL content.
+   *
+   * If the new domain is invalid, the call fails and nothing else is touched. If it
+   * is valid: any in-progress plan execution is cancelled, the problem knowledge is
+   * reconciled against the new domain (knowledge no longer consistent with it is
+   * pruned, the rest is left untouched), and the domain is swapped in.
+   *
+   * @param[in] domain The new domain, in PDDL.
+   * @return true if the domain was successfully changed, false otherwise.
+   */
+  bool changeDomain(const std::string & domain);
+
   std::string cached_domain_;
 
 private:
   rclcpp::Node::SharedPtr node_;
 
+  rclcpp::Client<plansys2_msgs::srv::ChangeDomain>::SharedPtr change_domain_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainName>::SharedPtr get_name_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainTypes>::SharedPtr get_types_client_;

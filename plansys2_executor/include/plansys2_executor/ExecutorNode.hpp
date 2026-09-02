@@ -191,6 +191,16 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::GetPlan::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response);
 
+  /**
+   * @brief Callback for domain_expert/domain. Cancels any plan currently
+   * executing when the domain changes at runtime, since it may no longer
+   * match the domain the plan was computed against. Skips the initial
+   * transient_local replay of the domain the node already started with.
+   *
+   * @param[in] msg The new domain content.
+   */
+  void domain_topic_callback(const std_msgs::msg::String::SharedPtr msg);
+
 protected:
   /**
    * @brief Extracts ordered sub-goals from a plan.
@@ -340,6 +350,7 @@ protected:
 
   rclcpp::Service<plansys2_msgs::srv::GetPlan>::SharedPtr get_plan_service_;
   rclcpp::Service<plansys2_msgs::srv::GetPlan>::SharedPtr get_remaining_plan_service_;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr domain_sub_;
 
   rclcpp::TimerBase::SharedPtr execution_timer_;
 
@@ -347,6 +358,7 @@ protected:
   bool replan_requested_;
   bool new_plan_received_ {false};
   bool cancel_requested_ {false};
+  bool domain_baseline_seen_ {false};
 
   bool node_running_ {true};
 

@@ -15,13 +15,14 @@
 #ifndef PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTNODE_HPP_
 #define PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTNODE_HPP_
 
-#include <optional>
 #include <memory>
+#include <string>
 
 #include "plansys2_domain_expert/DomainExpert.hpp"
 #include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 #include "std_msgs/msg/string.hpp"
+#include "plansys2_msgs/srv/change_domain.hpp"
 #include "plansys2_msgs/srv/get_domain_name.hpp"
 #include "plansys2_msgs/srv/get_domain_types.hpp"
 #include "plansys2_msgs/srv/get_domain_actions.hpp"
@@ -262,7 +263,39 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::GetDomain::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::GetDomain::Response> response);
 
+  /**
+   * @brief Service callback to replace the domain at runtime.
+   *
+   * Validates the new domain first; if it is invalid, the call fails and nothing
+   * else is touched. If valid, domain_expert_ is swapped in place
+   * (DomainExpert::changeDomain()) and the new domain is republished on domain_pub_.
+   *
+   * @param[in] request_header ROS service request header.
+   * @param[in] request Service request containing the new domain, in PDDL.
+   * @param[out] response Service response with success status and error information.
+   */
+  void change_domain_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Response> response);
+
 private:
+  /**
+   * @brief Build a DomainExpert from a PDDL string and validate it the same way
+   *        on_configure() validates model_file: via the planner's validate_domain
+   *        service, or the local POPF solver, depending on how this node was
+   *        configured.
+   *
+   * @param[in] domain The candidate domain, in PDDL.
+   * @param[out] out_domain_expert The resulting DomainExpert, only set on success.
+   * @param[out] error Human-readable error, only set on failure.
+   * @return true if the domain is valid.
+   */
+  bool validateDomain(
+    const std::string & domain,
+    std::shared_ptr<DomainExpert> & out_domain_expert,
+    std::string & error);
+
   std::shared_ptr<DomainExpert> domain_expert_;
 
   rclcpp::Service<plansys2_msgs::srv::GetDomainName>::SharedPtr get_name_service_;
@@ -287,6 +320,7 @@ private:
   rclcpp::Service<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>::SharedPtr
     get_domain_derived_predicate_details_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_service_;
+  rclcpp::Service<plansys2_msgs::srv::ChangeDomain>::SharedPtr change_domain_service_;
 
   rclcpp::Client<plansys2_msgs::srv::ValidateDomain>::SharedPtr
     validate_domain_client_;

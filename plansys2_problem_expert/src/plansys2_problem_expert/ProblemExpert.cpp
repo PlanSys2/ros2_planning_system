@@ -623,6 +623,61 @@ ProblemExpert::isValidGoal(const plansys2::Goal & goal)
 }
 
 bool
+ProblemExpert::updateDomain(const std::string & domain)
+{
+  if (!domain_expert_->changeDomain(domain)) {
+    return false;
+  }
+
+  const bool goal_was_set = !goal_.nodes.empty();
+
+  // 1) Instances whose type no longer exists are removed first: removeInstance()
+  // already cascades to any predicate, function or goal subtree referencing them.
+  std::vector<plansys2::Instance> stale_instances;
+  for (const auto & instance : instances_) {
+    if (!isValidType(instance.type)) {
+      stale_instances.push_back(instance);
+    }
+  }
+  for (const auto & instance : stale_instances) {
+    removeInstance(instance);
+  }
+
+  // 2) Predicates/functions whose own signature (name, arity, parameter types) no
+  // longer matches the new domain are pruned, even if their instances are fine.
+  // Note: removePredicate()/removeFunction() refuse to touch anything that is
+  // not valid against the *current* domain_expert_ (already swapped above), so
+  // stale entries are erased directly instead of going through them.
+  for (auto it = predicates_.begin(); it != predicates_.end(); ) {
+    if (!isValidPredicate(*it)) {
+      it = predicates_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  for (auto it = functions_.begin(); it != functions_.end(); ) {
+    if (!isValidFunction(*it)) {
+      it = functions_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  // removeInstance() above may already have pruned individual subgoals referencing a
+  // removed instance (via removeInvalidGoals()), possibly down to nothing. Beyond
+  // that, a goal is only ever dropped in full, never partially: if what remains is
+  // invalid for some other reason (e.g. a predicate/function signature change), the
+  // whole thing is cleared rather than guessing which subtree to keep, since that
+  // would silently change its logical meaning.
+  if (goal_was_set && (goal_.nodes.empty() || !isValidGoal(goal_))) {
+    clearGoal();
+  }
+
+  return true;
+}
+
+bool
 ProblemExpert::checkPredicateTreeTypes(
   const plansys2_msgs::msg::Tree & tree,
   std::shared_ptr<DomainExpert> & domain_expert,

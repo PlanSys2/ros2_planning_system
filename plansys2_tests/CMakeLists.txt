@@ -43,6 +43,7 @@ if(BUILD_TESTING)
   add_subdirectory(test_2)
   add_subdirectory(test_3)
   add_subdirectory(test_4)
+  add_subdirectory(test_5)
 endif()
 
 ament_package()

@@ -63,7 +63,8 @@ class ProblemExpertClient(Node):
 
         self.get_logger().debug(f'Problem Expert Client "{node_name}" initialized')
 
-    def _create_and_call_service(self, service_type, service_name: str, request):
+    def _create_and_call_service(
+            self, service_type, service_name: str, request, timeout_sec: float = 10.0):
         """
         Create a service client for the given service, call it and return the response.
 
@@ -75,6 +76,8 @@ class ProblemExpertClient(Node):
             The name/topic of the service.
         request : Any
             The service request object.
+        timeout_sec : float, optional
+            How long to wait for the response before giving up.
 
         Returns
         -------
@@ -88,7 +91,7 @@ class ProblemExpertClient(Node):
                 self.get_logger().error(f'Service {service_name} not available')
                 return None
             future = client.call_async(request)
-            rclpy.spin_until_future_complete(self, future, timeout_sec=10.0)
+            rclpy.spin_until_future_complete(self, future, timeout_sec=timeout_sec)
             if future.done():
                 return future.result()
             else:

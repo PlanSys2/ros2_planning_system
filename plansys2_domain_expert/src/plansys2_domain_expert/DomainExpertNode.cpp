@@ -106,6 +106,11 @@ DomainExpertNode::DomainExpertNode(const rclcpp::NodeOptions & options)
       &DomainExpertNode::get_domain_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
+  change_domain_service_ = create_service<plansys2_msgs::srv::ChangeDomain>(
+    "domain_expert/change_domain", std::bind(
+      &DomainExpertNode::change_domain_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
   domain_pub_ = create_publisher<std_msgs::msg::String>(
     "domain_expert/domain",
     rclcpp::QoS(100).transient_local());
@@ -120,6 +125,7 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   (void)state;
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
+
   const std::string model_file = get_parameter("model_file").get_value<std::string>();
   const bool validate_using_planner_node =
     get_parameter("validate_using_planner_node").get_value<bool>();
@@ -140,6 +146,12 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
     popf_plan_solver_->configure(shared_from_this(), "POPF");
   }
 
+  // Build the joint domain from all model_files first (extendDomain() merges
+  // predicates/actions/etc, not naive string concatenation), then validate the whole
+  // joint result once via validateDomain() — the same helper
+  // change_domain_service_callback() uses — instead of duplicating the
+  // validate-via-planner-or-POPF logic here too.
+  std::shared_ptr<DomainExpert> joint_domain_expert;
   for (size_t i = 0; i < model_files.size(); i++) {
     std::ifstream domain_ifs(model_files[i]);
     std::string domain_str((
@@ -147,31 +159,16 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
       std::istreambuf_iterator<char>());
 
     if (i == 0) {
-      domain_expert_ = std::make_shared<DomainExpert>(domain_str);
+      joint_domain_expert = std::make_shared<DomainExpert>(domain_str);
     } else {
-      domain_expert_->extendDomain(domain_str);
+      joint_domain_expert->extendDomain(domain_str);
     }
+  }
 
-    bool check_valid = true;
-    if (validate_using_planner_node) {
-      auto request = std::make_shared<plansys2_msgs::srv::ValidateDomain::Request>();
-      request->domain = domain_expert_->getDomain();
-      auto future_result = validate_domain_client_->async_send_request(std::move(request));
-      if (future_result.wait_for(std::chrono::seconds(3)) != std::future_status::ready) {
-        RCLCPP_ERROR(
-          get_logger(), "Timed out waiting for service: %s",
-          validate_domain_client_->get_service_name());
-        return CallbackReturnT::FAILURE;
-      }
-      check_valid = future_result.get()->success;
-    } else {
-      check_valid = popf_plan_solver_->isDomainValid(domain_expert_->getDomain(), get_namespace());
-    }
-
-    if (!check_valid) {
-      RCLCPP_ERROR_STREAM(get_logger(), "PDDL syntax error");
-      return CallbackReturnT::FAILURE;
-    }
+  std::string error;
+  if (!validateDomain(joint_domain_expert->getDomain(), domain_expert_, error)) {
+    RCLCPP_ERROR_STREAM(get_logger(), error);
+    return CallbackReturnT::FAILURE;
   }
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
@@ -525,5 +522,87 @@ DomainExpertNode::get_domain_service_callback(
   }
 }
 
+bool
+DomainExpertNode::validateDomain(
+  const std::string & domain,
+  std::shared_ptr<DomainExpert> & out_domain_expert,
+  std::string & error)
+{
+  auto candidate = std::make_shared<DomainExpert>(domain);
+
+  bool check_valid = true;
+  if (validate_domain_client_) {
+    auto request = std::make_shared<plansys2_msgs::srv::ValidateDomain::Request>();
+    request->domain = candidate->getDomain();
+    auto future_result = validate_domain_client_->async_send_request(std::move(request));
+    if (future_result.wait_for(std::chrono::seconds(3)) != std::future_status::ready) {
+      error = "Timed out waiting for service: " +
+        std::string(validate_domain_client_->get_service_name());
+      return false;
+    }
+    auto response = future_result.get();
+    check_valid = response->success;
+    if (!check_valid) {
+      error = response->error_info.empty() ? "PDDL syntax error" : response->error_info;
+    }
+  } else if (popf_plan_solver_) {
+    check_valid = popf_plan_solver_->isDomainValid(candidate->getDomain(), get_namespace());
+    if (!check_valid) {
+      error = "PDDL syntax error";
+    }
+  } else {
+    error = "domain_expert has no domain validator configured";
+    return false;
+  }
+
+  if (!check_valid) {
+    return false;
+  }
+
+  out_domain_expert = candidate;
+  return true;
+}
+
+void
+DomainExpertNode::change_domain_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Response> response)
+{
+  (void)request_header;
+
+  if (domain_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    return;
+  }
+
+  std::shared_ptr<DomainExpert> validated_domain_expert;
+  std::string error;
+  if (!validateDomain(request->domain, validated_domain_expert, error)) {
+    response->success = false;
+    response->error_info = error;
+    RCLCPP_WARN_STREAM(
+      get_logger(), "[" << get_name() << "] Rejected domain change: " << error);
+    return;
+  }
+
+  if (!domain_expert_->changeDomain(request->domain)) {
+    response->success = false;
+    response->error_info = "PDDL syntax error";
+    RCLCPP_WARN_STREAM(
+      get_logger(),
+      "[" << get_name() << "] Rejected domain change: " << response->error_info);
+    return;
+  }
+
+  std_msgs::msg::String domain_msg;
+  domain_msg.data = domain_expert_->getDomain();
+  domain_pub_->publish(domain_msg);
+
+  RCLCPP_INFO(get_logger(), "[%s] Domain changed", get_name());
+  response->success = true;
+}
 
 }  // namespace plansys2
