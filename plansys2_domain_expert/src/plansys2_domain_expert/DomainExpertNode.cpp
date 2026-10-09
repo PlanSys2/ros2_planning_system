@@ -143,7 +143,11 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
     }
   } else {
     popf_plan_solver_ = std::make_unique<plansys2::POPFPlanSolver>();
-    popf_plan_solver_->configure(shared_from_this(), "POPF");
+    // The solver is owned by this node, so it gets a non-owning pointer to it: an
+    // owning one would keep the node alive forever (#422)
+    auto solver_node = rclcpp_lifecycle::LifecycleNode::SharedPtr(
+      rclcpp_lifecycle::LifecycleNode::SharedPtr(), this);
+    popf_plan_solver_->configure(solver_node, "POPF");
   }
 
   // Build the joint domain from all model_files first (extendDomain() merges

@@ -32,6 +32,8 @@
 
 #include "plansys2_core/Utils.hpp"
 
+#include "lifecycle_msgs/msg/state.hpp"
+#include "lifecycle_msgs/msg/transition.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 
@@ -581,6 +583,67 @@ TEST(planner_expert, generate_plan_with_domain_constants)
     t.join();
   }
   plansys2::drain_ros(200ms);
+}
+
+// Solvers keep a pointer to the planner node: it must not keep the node alive (#422)
+TEST(planner_expert, planner_node_is_destroyed)
+{
+  using lifecycle_msgs::msg::Transition;
+
+  // Never configured
+  {
+    auto planner_node = std::make_shared<plansys2::PlannerNode>();
+    std::weak_ptr<plansys2::PlannerNode> weak = planner_node;
+    planner_node.reset();
+    ASSERT_TRUE(weak.expired());
+  }
+
+  // Default POPF solver, configured and active
+  {
+    auto planner_node = std::make_shared<plansys2::PlannerNode>();
+    std::weak_ptr<plansys2::PlannerNode> weak = planner_node;
+    planner_node->trigger_transition(Transition::TRANSITION_CONFIGURE);
+    planner_node->trigger_transition(Transition::TRANSITION_ACTIVATE);
+    ASSERT_EQ(
+      planner_node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);
+    planner_node.reset();
+    ASSERT_TRUE(weak.expired());
+  }
+
+  // Solvers loaded as plugins, configured, active and deactivated again
+  {
+    auto planner_node = std::make_shared<plansys2::PlannerNode>();
+    std::weak_ptr<plansys2::PlannerNode> weak = planner_node;
+    std::vector<std::string> solver_plugins = {"POPF1", "POPF2"};
+    planner_node->set_parameter({"plan_solver_plugins", solver_plugins});
+    for (const auto & id : solver_plugins) {
+      plansys2::declare_parameter_if_not_declared(
+        planner_node, id + ".plugin", rclcpp::ParameterValue(std::string()));
+      planner_node->set_parameter({id + ".plugin", "plansys2/POPFPlanSolver"});
+    }
+    planner_node->trigger_transition(Transition::TRANSITION_CONFIGURE);
+    planner_node->trigger_transition(Transition::TRANSITION_ACTIVATE);
+    planner_node->trigger_transition(Transition::TRANSITION_DEACTIVATE);
+    ASSERT_EQ(
+      planner_node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
+    planner_node.reset();
+    ASSERT_TRUE(weak.expired());
+  }
+
+  // Spun by an executor that is gone before the node
+  {
+    auto planner_node = std::make_shared<plansys2::PlannerNode>();
+    std::weak_ptr<plansys2::PlannerNode> weak = planner_node;
+    {
+      rclcpp::executors::SingleThreadedExecutor exe;
+      exe.add_node(planner_node->get_node_base_interface());
+      planner_node->trigger_transition(Transition::TRANSITION_CONFIGURE);
+      planner_node->trigger_transition(Transition::TRANSITION_ACTIVATE);
+      exe.spin_some();
+    }
+    planner_node.reset();
+    ASSERT_TRUE(weak.expired());
+  }
 }
 
 int main(int argc, char ** argv)
