@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <atomic>
+#include <chrono>
+#include <fstream>
+#include <thread>
 #include <string>
 #include <vector>
 #include <memory>
@@ -929,6 +933,115 @@ TEST(problem_expert_node, reconcile_with_domain_full_replacement_prunes_everythi
     t.join();
   }
   plansys2::drain_ros(200ms);
+}
+
+// Joins the spinning thread on scope exit, so a failed ASSERT does not terminate
+class ScopedSpinner
+{
+public:
+  explicit ScopedSpinner(rclcpp::Executor & exe)
+  : thread_([this, &exe]() {while (!finish_) {exe.spin_once(std::chrono::milliseconds(10));}})
+  {}
+  ~ScopedSpinner()
+  {
+    finish_ = true;
+    thread_.join();
+  }
+
+private:
+  std::atomic<bool> finish_{false};
+  std::thread thread_;
+};
+
+// A malformed problem sent to add_problem used to kill the whole process (#416)
+TEST(problem_expert_node, add_problem_malformed_keeps_node_alive)
+{
+  auto remap = domain_topic_remap("add_problem_malformed_keeps_node_alive");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp::executors::SingleThreadedExecutor exe;
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  ScopedSpinner spinner(exe);
+
+  std::ifstream valid_ifs(pkgpath + "/pddl/problem_simple_1.pddl");
+  const std::string valid((std::istreambuf_iterator<char>(valid_ifs)),
+    std::istreambuf_iterator<char>());
+  ASSERT_TRUE(problem_client->addProblem(valid));
+  const auto instances = problem_client->getInstances().size();
+
+  std::string deep = "(define (problem p) (:domain simple) (:objects leia - robot) (:goal ";
+  for (int i = 0; i < 3000; i++) {
+    deep += "(and ";
+                                                  }
+  deep += "(robot_at leia leia)";
+  for (int i = 0; i < 3000; i++) {
+    deep += ")";
+                                              }
+  deep += "))";
+
+  const std::vector<std::string> malformed = {
+    "hello world",
+    " \n ",
+    "(",
+    "(define (problem p) (:domain simple) (:objects leia - robot)",
+    "(define (problem p) (:domain simple))) )))",
+    deep,
+  };
+
+  for (const auto & problem : malformed) {
+    SCOPED_TRACE(problem.substr(0, 60));
+    ASSERT_FALSE(problem_client->addProblem(problem));
+    // The node still answers and its knowledge is untouched
+    ASSERT_EQ(problem_client->getInstances().size(), instances);
+  }
+
+  // A problem without :goal is accepted
+  ASSERT_TRUE(
+    problem_client->addProblem(
+      "(define (problem p) (:domain simple)\n"
+      "  (:objects r2d2 - robot hall - room)\n"
+      "  (:init (robot_at r2d2 hall)))"));
+  ASSERT_TRUE(problem_client->addProblem(valid));
+}
+
+// A problem_file that cannot be loaded makes configure fail instead of being ignored
+TEST(problem_expert_node, problem_file_that_cannot_be_loaded_fails_configure)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+
+  for (const std::string file :
+    {pkgpath + "/pddl/problem_malformed_truncated.pddl", pkgpath + "/pddl/does_not_exist.pddl"})
+  {
+    SCOPED_TRACE(file);
+    auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(
+      domain_topic_remap("problem_file_that_cannot_be_loaded_fails_configure"));
+    problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    problem_node->set_parameter({"problem_file", file});
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    ASSERT_EQ(
+      problem_node->get_current_state().id(),
+      lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
+  }
+
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(
+    domain_topic_remap("problem_file_that_cannot_be_loaded_fails_configure_ok"));
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+  problem_node->set_parameter({"problem_file", pkgpath + "/pddl/problem_simple_1.pddl"});
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  ASSERT_EQ(
+    problem_node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
 }
 
 int main(int argc, char ** argv)

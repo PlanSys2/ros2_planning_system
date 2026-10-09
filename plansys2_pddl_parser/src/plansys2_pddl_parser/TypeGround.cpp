@@ -11,6 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <stdexcept>
+#include <string>
+
 #include "plansys2_pddl_parser/Domain.hpp"
 
 namespace parser
@@ -48,8 +51,7 @@ void TypeGround::insert(Domain & d, const StringVec & v)
       if (q.first) {
         params[i] = q.second;
       } else {
-        std::cerr << "Unknown object " << v[i] << "\n";
-        std::exit(1);
+        throw std::runtime_error("Unknown object " + v[i]);
       }
     }
   }

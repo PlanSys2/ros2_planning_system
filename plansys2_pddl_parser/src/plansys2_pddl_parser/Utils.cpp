@@ -14,6 +14,7 @@
 
 #include "plansys2_pddl_parser/Utils.hpp"
 
+#include <algorithm>
 #include <functional>
 #include <iostream>
 #include <limits>
@@ -103,6 +104,25 @@ static void printN(std::ostream & s, uint8_t node_type)
       s << "NODE TYPE UNDEFINED" << std::endl;
       break;
   }
+}
+
+int getMaxNesting(const std::string & expr)
+{
+  int depth = 0;
+  int max_depth = 0;
+  bool in_comment = false;
+  for (char ch : expr) {
+    if (in_comment) {
+      in_comment = ch != '\n';
+    } else if (ch == ';') {
+      in_comment = true;
+    } else if (ch == '(') {
+      max_depth = std::max(max_depth, ++depth);
+    } else if (ch == ')' && --depth < 0) {
+      return -1;
+    }
+  }
+  return depth == 0 ? max_depth : -1;
 }
 
 std::string getReducedString(const std::string & expr)
@@ -847,6 +867,9 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
     case plansys2_msgs::msg::Node::FUNCTION_MODIFIER:
       default_node_type = plansys2_msgs::msg::Node::FUNCTION;
       break;
+    case plansys2_msgs::msg::Node::EXISTS:
+      default_node_type = plansys2_msgs::msg::Node::PREDICATE;
+      break;
   }
 
   auto node_type = getNodeType(wexpr, default_node_type);
@@ -863,7 +886,9 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
 
         for (const auto & e : subexprs) {
           auto child = fromString(tree, e, negate, node_type);
-          tree.nodes[node->node_id].children.push_back(child->node_id);
+          if (child) {
+            tree.nodes[node->node_id].children.push_back(child->node_id);
+          }
         }
 
         return node;
@@ -879,7 +904,9 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
 
         for (const auto & e : subexprs) {
           auto child = fromString(tree, e, negate, node_type);
-          tree.nodes[node->node_id].children.push_back(child->node_id);
+          if (child) {
+            tree.nodes[node->node_id].children.push_back(child->node_id);
+          }
         }
 
         return node;
@@ -892,8 +919,12 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
         tree.nodes.push_back(*node);
 
         std::vector<std::string> subexprs = getSubExpr(wexpr);
-
-        auto child = fromString(tree, subexprs[0], !negate, node_type);
+        auto child = subexprs.empty() ? nullptr : fromString(tree, subexprs[0], !negate, node_type);
+        if (!child) {
+          // A (not) with nothing to negate is dropped as a whole
+          tree.nodes.pop_back();
+          return nullptr;
+        }
         tree.nodes[node->node_id].children.push_back(child->node_id);
 
         return node;
@@ -926,7 +957,9 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
 
         for (const auto & e : subexprs) {
           auto child = fromString(tree, e, false, node_type);
-          tree.nodes[node->node_id].children.push_back(child->node_id);
+          if (child) {
+            tree.nodes[node->node_id].children.push_back(child->node_id);
+          }
         }
 
         return node;
@@ -943,7 +976,9 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
 
         for (const auto & e : subexprs) {
           auto child = fromString(tree, e, false, node_type);
-          tree.nodes[node->node_id].children.push_back(child->node_id);
+          if (child) {
+            tree.nodes[node->node_id].children.push_back(child->node_id);
+          }
         }
 
         return node;
@@ -969,7 +1004,9 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
 
         for (const auto & e : subexprs) {
           auto child = fromString(tree, e, negate, node_type);
-          tree.nodes[node->node_id].children.push_back(child->node_id);
+          if (child) {
+            tree.nodes[node->node_id].children.push_back(child->node_id);
+          }
         }
 
         return node;
@@ -998,7 +1035,20 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
 plansys2_msgs::msg::Tree fromString(const std::string & expr, bool negate, uint8_t parent)
 {
   plansys2_msgs::msg::Tree tree;
-  fromString(tree, expr, negate, parent);
+
+  const int nesting = getMaxNesting(expr);
+  if (nesting < 0 || nesting > kMaxNestingDepth) {
+    std::cerr << "fromString: " << (nesting < 0 ? "unbalanced parentheses" : "nesting too deep") <<
+      " in [" << expr << "]" << std::endl;
+    return tree;
+  }
+
+  try {
+    fromString(tree, expr, negate, parent);
+  } catch (const std::exception & e) {
+    std::cerr << "fromString: error parsing [" << expr << "]: " << e.what() << std::endl;
+    tree.nodes.clear();
+  }
   return tree;
 }
 

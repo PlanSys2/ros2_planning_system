@@ -13,6 +13,7 @@
 // limitations under the License.
 #pragma once
 
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -178,8 +179,7 @@ public:
   void parseMetric(Stringreader & f)
   {
     if (!d.temp && !d.costs) {
-      std::cerr << "metric only defined for temporal actions or actions with costs!\n";
-      std::exit(1);
+      throw std::runtime_error("metric only defined for temporal actions or actions with costs");
     }
 
     metric = true;

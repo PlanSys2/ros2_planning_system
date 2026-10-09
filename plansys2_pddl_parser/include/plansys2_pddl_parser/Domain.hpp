@@ -13,6 +13,7 @@
 // limitations under the License.
 #pragma once
 
+#include <stdexcept>
 #include <string>
 
 #include "plansys2_pddl_parser/And.hpp"
@@ -225,8 +226,7 @@ public:
   void parseTypes(Stringreader & f)
   {
     if (!typed) {
-      std::cout << "Requirement :typing needed to define types\n";
-      exit(1);
+      throw std::runtime_error("Requirement :typing needed to define types");
     }
 
     // if this makes it in, probably need to define new subclass of Type
@@ -263,8 +263,7 @@ public:
   void parseConstants(Stringreader & f)
   {
     if (typed && !types.size()) {
-      std::cout << "Types needed before defining constants\n";
-      exit(1);
+      throw std::runtime_error("Types needed before defining constants");
     }
 
     cons = true;
@@ -288,8 +287,7 @@ public:
   void parsePredicates(Stringreader & f)
   {
     if (typed && !types.size()) {
-      std::cout << "Types needed before defining predicates\n";
-      exit(1);
+      throw std::runtime_error("Types needed before defining predicates");
     }
 
     for (f.next(); f.getChar() != ')'; f.next()) {
@@ -316,8 +314,7 @@ public:
   void parseFunctions(Stringreader & f)
   {
     if (typed && !types.size()) {
-      std::cout << "Types needed before defining functions\n";
-      exit(1);
+      throw std::runtime_error("Types needed before defining functions");
     }
 
     for (f.next(); f.getChar() != ')'; f.next()) {
@@ -334,8 +331,7 @@ public:
   virtual void parseAction(Stringreader & f)
   {
     if (!preds.size()) {
-      std::cout << "Predicates needed before defining actions\n";
-      exit(1);
+      throw std::runtime_error("Predicates needed before defining actions");
     }
 
     f.next();
@@ -349,8 +345,7 @@ public:
   void parseDerived(Stringreader & f)
   {
     if (!preds.size()) {
-      std::cout << "Predicates needed before defining derived predicates\n";
-      exit(1);
+      throw std::runtime_error("Predicates needed before defining derived predicates");
     }
 
     f.next();
@@ -364,8 +359,7 @@ public:
   void parseDurativeAction(Stringreader & f)
   {
     if (!preds.size()) {
-      std::cout << "Predicates needed before defining actions\n";
-      exit(1);
+      throw std::runtime_error("Predicates needed before defining actions");
     }
 
     f.next();
@@ -544,9 +538,9 @@ public:
   Ground * ground(const std::string & name, const IntVec & params = IntVec())
   {
     if (preds.index(name) < 0) {
-      std::cout << "Creating a ground condition " << name << params;
-      std::cout << " failed since the predicate " << name << " does not exist!\n";
-      std::exit(1);
+      throw std::runtime_error(
+              "Creating a ground condition " + name +
+              " failed since the predicate does not exist");
     }
     return new Ground(preds[preds.index(name)], params);
   }

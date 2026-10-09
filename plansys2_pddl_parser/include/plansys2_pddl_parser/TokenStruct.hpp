@@ -13,6 +13,7 @@
 // limitations under the License.
 #pragma once
 #include <map>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -102,7 +103,14 @@ public:
     return i == tokenMap.end() ? -1 : i->second;
   }
 
-  T get(const std::string & s) const {return tokens[index(s)];}
+  T get(const std::string & s) const
+  {
+    int i = index(s);
+    if (i < 0) {
+      throw std::runtime_error(s + " does not name a known token");
+    }
+    return tokens[i];
+  }
 };
 
 }  // namespace pddl

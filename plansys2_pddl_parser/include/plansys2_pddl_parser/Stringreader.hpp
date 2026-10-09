@@ -59,6 +59,7 @@ public:
   int current_line;  // current line of file
   std::string s;
   unsigned r, c;  // current row and column of file
+  bool eof = false;  // all the text has been consumed
 
   explicit Stringreader(const std::string & domain)
   : current_line(0), r(1), c(0)
@@ -93,8 +94,12 @@ public:
   // parenthesis
   bool paren(char c) {return c == '(' || c == ')' || c == '{' || c == '}';}
 
-  // current character
-  char getChar() {return s[c];}
+  // current character; asking for one past the end of the text means it is truncated
+  char getChar()
+  {
+    if (eof) {throw UnexpectedEOF();}
+    return s[c];
+  }
 
   // print line and column
   void printLine() {std::cout << "Line " << r << ", column " << c + 1 << ": ";}
@@ -111,7 +116,14 @@ public:
   {
     for (; c < s.size() && ignore(s[c]); ++c) {
     }
-    while (c == s.size() || s[c] == ';') {
+    while (c >= s.size() || s[c] == ';') {
+      if (current_line >= static_cast<int>(lines.size())) {
+        // Nothing left: the next getChar() reports it
+        eof = true;
+        s.clear();
+        c = 0;
+        return;
+      }
       ++r;
       c = 0;
 

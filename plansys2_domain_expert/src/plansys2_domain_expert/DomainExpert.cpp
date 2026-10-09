@@ -21,6 +21,8 @@
 
 #include "plansys2_domain_expert/DomainExpert.hpp"
 #include "plansys2_msgs/msg/node.hpp"
+#include "plansys2_pddl_parser/Domain.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 namespace plansys2
 {
@@ -47,6 +49,32 @@ DomainExpert::extendDomain(const std::string & domain)
 bool
 DomainExpert::changeDomain(const std::string & domain)
 {
+  if (domain.find_first_not_of(" \t\r\n") == std::string::npos) {
+    std::cerr << "Empty domain" << std::endl;
+    return false;
+  }
+
+  const int nesting = parser::pddl::getMaxNesting(domain);
+  if (nesting < 0 || nesting > parser::pddl::kMaxNestingDepth) {
+    std::cerr << "Domain has " <<
+      (nesting < 0 ? "unbalanced parentheses" : "too deep nesting") << std::endl;
+    return false;
+  }
+
+  // DomainReader picks the domain apart by text search and tolerates garbage, so
+  // the text as given must parse on its own first
+  try {
+    parser::pddl::Domain check;
+    check.parse(domain);
+    if (check.name.empty()) {
+      std::cerr << "Domain has no name" << std::endl;
+      return false;
+    }
+  } catch (const std::exception & e) {
+    std::cerr << "Error parsing PDDL: " << e.what() << std::endl;
+    return false;
+  }
+
   DomainReader new_domains;
   new_domains.add_domain(domain);
 

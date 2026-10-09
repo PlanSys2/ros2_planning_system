@@ -508,6 +508,44 @@ TEST(domain_expert, domain_expert_node_is_destroyed)
   }
 }
 
+// Malformed domains used to call exit() inside the parser, killing the process (#416)
+TEST(domain_expert, malformed_domains_do_not_kill_the_node)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+
+  // As model_file: configure fails, the process lives on
+  for (const std::string file : {"domain_no_predicates.pddl", "domain_2_error.pddl"}) {
+    SCOPED_TRACE(file);
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/" + file});
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    ASSERT_EQ(
+      domain_node->get_current_state().id(),
+      lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
+  }
+
+  // Through change_domain: rejected, the current domain stays
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+  rclcpp::executors::SingleThreadedExecutor exe;
+  exe.add_node(domain_node->get_node_base_interface());
+  ExecutorSpinner spinner(exe);
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  for (const std::string domain : {
+    read_file(pkgpath + "/pddl/domain_no_predicates.pddl"),
+    std::string("hello world"),
+    std::string("(define (domain d) (:requirements :strips)"),
+    std::string("(")})
+  {
+    SCOPED_TRACE(domain.substr(0, 40));
+    ASSERT_FALSE(domain_client->changeDomain(domain));
+    ASSERT_EQ(domain_client->getName(), "plansys2");
+  }
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
