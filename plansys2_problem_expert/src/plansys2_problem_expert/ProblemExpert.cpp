@@ -805,108 +805,134 @@ ProblemExpert::getProblem()
 bool
 ProblemExpert::addProblem(const std::string & problem_str)
 {
-  if (problem_str.empty()) {
+  if (problem_str.find_first_not_of(" \t\r\n") == std::string::npos) {
     std::cerr << "Empty problem." << std::endl;
     return false;
   }
+
+  const int nesting = parser::pddl::getMaxNesting(problem_str);
+  if (nesting < 0) {
+    std::cerr << "Problem has unbalanced parentheses" << std::endl;
+    return false;
+  } else if (nesting > parser::pddl::kMaxNestingDepth) {
+    std::cerr << "Problem nesting is too deep (" << nesting << " levels)" << std::endl;
+    return false;
+  }
+
+  // The parser reports malformed input with exceptions: nothing is touched until
+  // the whole problem has been parsed
   parser::pddl::Domain domain(domain_expert_->getDomain());
-
-  std::string lc_problem = problem_str;
-  std::transform(
-    problem_str.begin(), problem_str.end(), lc_problem.begin(),
-    [](unsigned char c) {return std::tolower(c);});
-
-  lc_problem = remove_comments(lc_problem);
-
-  std::cout << "Domain:\n" << domain << std::endl;
-  std::cout << "Problem:\n" << lc_problem << std::endl;
-
   parser::pddl::Instance problem(domain);
-
-  std::string domain_name = problem.getDomainName(lc_problem);
-  if (domain_name.empty()) {
-    std::cerr << "Domain name is empty" << std::endl;
-    return false;
-  } else if (!domain_expert_->existDomain(domain_name)) {
-    std::cerr << "Domain name does not exist: " << domain_name << std::endl;
-    return false;
-  }
-
-  domain.name = domain_name;
   try {
+    std::string lc_problem = problem_str;
+    std::transform(
+      problem_str.begin(), problem_str.end(), lc_problem.begin(),
+      [](unsigned char c) {return std::tolower(c);});
+
+    lc_problem = remove_comments(lc_problem);
+
+    std::cout << "Domain:\n" << domain << std::endl;
+    std::cout << "Problem:\n" << lc_problem << std::endl;
+
+    std::string domain_name = problem.getDomainName(lc_problem);
+    if (domain_name.empty()) {
+      std::cerr << "Domain name is empty" << std::endl;
+      return false;
+    } else if (!domain_expert_->existDomain(domain_name)) {
+      std::cerr << "Domain name does not exist: " << domain_name << std::endl;
+      return false;
+    }
+
+    domain.name = domain_name;
     problem.parse(lc_problem);
-  } catch (const std::runtime_error & ex) {
-    // all errors thrown by the Stringreader object extend std::runtime_error
-    std::cerr << ex.what() << std::endl;
+  } catch (const std::exception & ex) {
+    std::cerr << "Error parsing problem: " << ex.what() << std::endl;
     return false;
   }
 
-  std::cout << "Parsed problem: " << problem << std::endl;
+  // Converting the parsed problem can still fail: leave the knowledge as it was
+  auto prev_instances = instances_;
+  auto prev_predicates = predicates_;
+  auto prev_functions = functions_;
+  auto prev_goal = goal_;
+  try {
+    std::cout << "Parsed problem: " << problem << std::endl;
 
-  for (unsigned i = 0; i < domain.types.size(); ++i) {
-    if (domain.types[i]->constants.size() ) {
-      for (unsigned j = 0; j < domain.types[i]->constants.size(); ++j) {
-        plansys2::Instance instance;
-        instance.name = domain.types[i]->constants[j];
-        instance.type = domain.types[i]->name;
-        std::cout << "Adding constant: " << instance.name << " " << instance.type << std::endl;
-        addInstance(instance);
+    for (unsigned i = 0; i < domain.types.size(); ++i) {
+      if (domain.types[i]->constants.size() ) {
+        for (unsigned j = 0; j < domain.types[i]->constants.size(); ++j) {
+          plansys2::Instance instance;
+          instance.name = domain.types[i]->constants[j];
+          instance.type = domain.types[i]->name;
+          std::cout << "Adding constant: " << instance.name << " " << instance.type << std::endl;
+          addInstance(instance);
+        }
       }
     }
-  }
 
-  for (unsigned i = 0; i < domain.types.size(); ++i) {
-    if (domain.types[i]->objects.size() ) {
-      for (unsigned j = 0; j < domain.types[i]->objects.size(); ++j) {
-        plansys2::Instance instance;
-        instance.name = domain.types[i]->objects[j];
-        instance.type = domain.types[i]->name;
-        std::cout << "Adding instance: " << instance.name << " " << instance.type << std::endl;
-        addInstance(instance);
+    for (unsigned i = 0; i < domain.types.size(); ++i) {
+      if (domain.types[i]->objects.size() ) {
+        for (unsigned j = 0; j < domain.types[i]->objects.size(); ++j) {
+          plansys2::Instance instance;
+          instance.name = domain.types[i]->objects[j];
+          instance.type = domain.types[i]->name;
+          std::cout << "Adding instance: " << instance.name << " " << instance.type << std::endl;
+          addInstance(instance);
+        }
       }
     }
-  }
 
-  plansys2_msgs::msg::Tree tree;
-  for (auto ground : problem.init) {
-    auto tree_node = ground->getTree(tree, domain);
-    switch (tree_node->node_type) {
-      case plansys2_msgs::msg::Node::PREDICATE: {
-          plansys2::Predicate pred_node(*tree_node);
-          std::cout << "Adding predicate: " <<
-            parser::pddl::toString(tree, tree_node->node_id) << std::endl;
-          if (!addPredicate(pred_node)) {
-            std::cerr << "Failed to add predicate: " << parser::pddl::toString(
-              tree,
-              tree_node->node_id) <<
-              std::endl;
+    plansys2_msgs::msg::Tree tree;
+    for (auto ground : problem.init) {
+      auto tree_node = ground->getTree(tree, domain);
+      switch (tree_node->node_type) {
+        case plansys2_msgs::msg::Node::PREDICATE: {
+            plansys2::Predicate pred_node(*tree_node);
+            std::cout << "Adding predicate: " <<
+              parser::pddl::toString(tree, tree_node->node_id) << std::endl;
+            if (!addPredicate(pred_node)) {
+              std::cerr << "Failed to add predicate: " << parser::pddl::toString(
+                tree,
+                tree_node->node_id) <<
+                std::endl;
+            }
           }
-        }
-        break;
-      case plansys2_msgs::msg::Node::FUNCTION: {
-          plansys2::Function func_node(*tree_node);
-          std::cout << "Adding function: " <<
-            parser::pddl::toString(tree, tree_node->node_id) << std::endl;
-          if (!addFunction(func_node)) {
-            std::cerr << "Failed to add function: " << parser::pddl::toString(
-              tree,
-              tree_node->node_id) <<
-              std::endl;
+          break;
+        case plansys2_msgs::msg::Node::FUNCTION: {
+            plansys2::Function func_node(*tree_node);
+            std::cout << "Adding function: " <<
+              parser::pddl::toString(tree, tree_node->node_id) << std::endl;
+            if (!addFunction(func_node)) {
+              std::cerr << "Failed to add function: " << parser::pddl::toString(
+                tree,
+                tree_node->node_id) <<
+                std::endl;
+            }
           }
-        }
-        break;
-      default:
-        break;
+          break;
+        default:
+          break;
+      }
     }
-  }
 
-  plansys2_msgs::msg::Tree goal;
-  auto node = problem.goal->getTree(goal, domain);
-  std::cout << "Adding Goal: " << parser::pddl::toString(goal) << std::endl;
-  if (setGoal(goal)) {
-    std::cout << "Goal insertion ok" << std::endl;
-  } else {
-    std::cout << "Goal insertion failed" << std::endl;
+    // A problem without :goal is valid: the goal can be set later
+    if (problem.goal) {
+      plansys2_msgs::msg::Tree goal;
+      problem.goal->getTree(goal, domain);
+      std::cout << "Adding Goal: " << parser::pddl::toString(goal) << std::endl;
+      if (setGoal(goal)) {
+        std::cout << "Goal insertion ok" << std::endl;
+      } else {
+        std::cout << "Goal insertion failed" << std::endl;
+      }
+    }
+  } catch (const std::exception & ex) {
+    std::cerr << "Error adding problem: " << ex.what() << std::endl;
+    instances_ = prev_instances;
+    predicates_ = prev_predicates;
+    functions_ = prev_functions;
+    goal_ = prev_goal;
+    return false;
   }
 
   return true;

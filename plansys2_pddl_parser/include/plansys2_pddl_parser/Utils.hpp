@@ -32,6 +32,17 @@ namespace pddl
 {
 
 /// Removes newlines, duplicated spaces, tabs and spaces from parenthesis
+/// Deepest parenthesis nesting accepted in PDDL text: deeper input is rejected
+/// instead of risking a stack overflow in the recursive parsers
+constexpr int kMaxNestingDepth = 256;
+
+/**
+ * \brief Returns the deepest parenthesis nesting in a PDDL text, ignoring comments.
+ * \param[in] expr The PDDL text
+ * \return The nesting depth, or -1 if the parentheses are not balanced
+ */
+int getMaxNesting(const std::string & expr);
+
 /**
  * \param[in] expr The expression to be reduced
  * \return The reduced expression

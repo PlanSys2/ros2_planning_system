@@ -255,10 +255,17 @@ ProblemExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   auto problem_file = get_parameter("problem_file").get_value<std::string>();
   if (!problem_file.empty()) {
     std::ifstream problem_ifs(problem_file);
+    if (!problem_ifs) {
+      RCLCPP_ERROR(get_logger(), "Cannot read problem_file %s", problem_file.c_str());
+      return CallbackReturnT::FAILURE;
+    }
     std::string problem_str((
         std::istreambuf_iterator<char>(problem_ifs)),
       std::istreambuf_iterator<char>());
-    problem_expert_->addProblem(problem_str);
+    if (!problem_expert_->addProblem(problem_str)) {
+      RCLCPP_ERROR(get_logger(), "Cannot load problem_file %s", problem_file.c_str());
+      return CallbackReturnT::FAILURE;
+    }
   }
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
