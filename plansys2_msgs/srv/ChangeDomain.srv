@@ -1,0 +1,4 @@
+string domain
+---
+bool success
+string error_info

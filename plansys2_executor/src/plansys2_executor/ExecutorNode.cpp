@@ -197,6 +197,11 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
   planner_client_ = std::make_shared<plansys2::PlannerClient>();
 
+  domain_sub_ = create_subscription<std_msgs::msg::String>(
+    "domain_expert/domain",
+    rclcpp::QoS(100).transient_local(),
+    std::bind(&ExecutorNode::domain_topic_callback, this, std::placeholders::_1));
+
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
 }
@@ -763,6 +768,19 @@ ExecutorNode::handle_cancel(
 }
 
 void
+ExecutorNode::domain_topic_callback(const std_msgs::msg::String::SharedPtr msg)
+{
+  (void)msg;
+  if (!domain_baseline_seen_) {
+    domain_baseline_seen_ = true;
+    return;
+  }
+
+  // executor_state_ belongs to execution_cycle's thread: only flag the change here
+  domain_changed_ = true;
+}
+
+void
 ExecutorNode::handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 {
   RCLCPP_INFO(this->get_logger(), "Accepted new goal");
@@ -783,6 +801,8 @@ ExecutorNode::execution_cycle()
       case STATE_IDLE:
         if (new_plan_received_) {
           new_plan_received_ = false;
+          // A domain change before this plan started does not affect it
+          domain_changed_ = false;
 
           current_goal_handle_ = new_goal_handle_;
 
@@ -828,6 +848,11 @@ ExecutorNode::execution_cycle()
             executor_state_ = STATE_SUCCEDED;
           } else if (status == BT::NodeStatus::FAILURE) {
             executor_state_ = STATE_FAILED;
+          } else if (domain_changed_.exchange(false)) {
+            RCLCPP_WARN(
+              get_logger(),
+              "[%s] Domain changed while executing a plan, cancelling execution", get_name());
+            executor_state_ = STATE_ABORTING;
           } else if (cancel_requested_) {
             cancel_requested_ = false;
             executor_state_ = STATE_CANCELLED;

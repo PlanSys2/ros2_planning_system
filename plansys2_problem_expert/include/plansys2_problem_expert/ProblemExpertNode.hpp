@@ -16,10 +16,12 @@
 #define PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTNODE_HPP_
 
 #include <memory>
+#include <string>
 
 #include "plansys2_problem_expert/ProblemExpert.hpp"
 
 #include "std_msgs/msg/empty.hpp"
+#include "std_msgs/msg/string.hpp"
 #include "plansys2_msgs/msg/knowledge.hpp"
 #include "plansys2_msgs/msg/problem.hpp"
 #include "plansys2_msgs/srv/affect_node.hpp"
@@ -313,6 +315,17 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::ClearProblemKnowledge::Response> response);
 
   /**
+   * @brief Callback for domain_expert/domain: how this node picks up a runtime domain
+   *        change (see DomainExpertNode::change_domain_service_callback()) — no
+   *        direct call from domain_expert is involved, this node just reacts to a
+   *        domain being published, the same way any other DomainExpertClient
+   *        subscriber would find out about it.
+   *
+   * @param[in] msg The current domain, in PDDL.
+   */
+  void domain_topic_callback(const std_msgs::msg::String::SharedPtr msg);
+
+  /**
    * @brief Service callback to remove a problem instance.
    *
    * @param[in] request_header ROS service request header.
@@ -385,7 +398,26 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::AffectNode::Response> response);
 
 private:
+  /**
+   * @brief Adopt a new domain: swaps it into problem_expert_ in place
+   *        (ProblemExpert::updateDomain(), which prunes knowledge no longer
+   *        consistent with it and leaves the rest untouched) and publishes the
+   *        resulting knowledge/problem so subscribers see the update — the same
+   *        thing every other mutating callback in this node already does, no
+   *        lifecycle transitions involved.
+   *
+   * @param[in] domain The new domain, in PDDL.
+   */
+  void applyNewDomain(const std::string & domain);
+
   std::shared_ptr<ProblemExpert> problem_expert_;
+
+  // domain_topic_callback(): true once the first (transient_local replay / baseline)
+  // domain message has been seen, so every later message is known to be a genuine
+  // runtime change. Never reset — set once, for the lifetime of this node.
+  bool domain_baseline_seen_ {false};
+
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr domain_sub_;
 
   // Service servers
   rclcpp::Service<plansys2_msgs::srv::AddProblem>::SharedPtr

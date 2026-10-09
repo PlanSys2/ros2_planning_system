@@ -254,6 +254,17 @@ public:
    */
   bool isValidGoal(const plansys2::Goal & goal);
 
+  /**
+   * @brief Replace the domain this problem is checked against, given as PDDL content.
+   *        Knowledge (instances, predicates, functions, goal) that is no longer
+   *        consistent with the new domain is pruned; everything that remains valid
+   *        is left untouched. If the PDDL is invalid, nothing is changed.
+   *
+   * @param[in] domain The new domain, in PDDL.
+   * @return true if the domain was replaced, false if the PDDL was invalid.
+   */
+  bool updateDomain(const std::string & domain);
+
 private:
   /**
    * @brief Check if all predicates and functions in a tree are valid.

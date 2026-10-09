@@ -206,6 +206,17 @@ public:
    */
   bool existDomain(const std::string & domain_name);
 
+  /**
+   * @brief Replace the current domain with a new one, given as PDDL content.
+   *        Unlike extendDomain(), this does not merge with the previous domain(s):
+   *        it fully replaces them. If the new domain fails to parse, the current
+   *        domain is left untouched.
+   *
+   * @param[in] domain The new domain, in PDDL.
+   * @return true if the domain was successfully replaced, false otherwise.
+   */
+  bool changeDomain(const std::string & domain);
+
 private:
   std::shared_ptr<parser::pddl::Domain> domain_;
   DomainReader domains_;

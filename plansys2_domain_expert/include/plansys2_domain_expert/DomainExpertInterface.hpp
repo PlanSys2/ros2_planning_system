@@ -165,6 +165,16 @@ public:
    * @return std::string The current domain definition in PDDL format.
    */
   virtual std::string getDomain() = 0;
+
+  /**
+   * @brief Replace the current domain with a new one, given as PDDL content.
+   *
+   * If the new domain is invalid, the current domain is left untouched.
+   *
+   * @param[in] domain The new domain, in PDDL.
+   * @return true if the domain was successfully replaced, false otherwise.
+   */
+  virtual bool changeDomain(const std::string & domain) = 0;
 };
 
 }  // namespace plansys2

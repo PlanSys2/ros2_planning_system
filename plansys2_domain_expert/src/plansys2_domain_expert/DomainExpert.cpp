@@ -44,6 +44,25 @@ DomainExpert::extendDomain(const std::string & domain)
   }
 }
 
+bool
+DomainExpert::changeDomain(const std::string & domain)
+{
+  DomainReader new_domains;
+  new_domains.add_domain(domain);
+
+  auto new_domain = std::make_shared<parser::pddl::Domain>();
+  try {
+    new_domain->parse(new_domains.get_joint_domain());
+  } catch (const std::exception & e) {
+    std::cerr << "Error parsing PDDL: " << e.what() << std::endl;
+    return false;
+  }
+
+  domain_ = new_domain;
+  domains_ = new_domains;
+  return true;
+}
+
 std::string
 DomainExpert::getName()
 {

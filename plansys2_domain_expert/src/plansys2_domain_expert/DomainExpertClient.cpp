@@ -30,6 +30,8 @@ DomainExpertClient::DomainExpertClient()
 
   get_domain_client_ = node_->create_client<plansys2_msgs::srv::GetDomain>(
     "domain_expert/get_domain");
+  change_domain_client_ = node_->create_client<plansys2_msgs::srv::ChangeDomain>(
+    "domain_expert/change_domain");
   get_name_client_ = node_->create_client<plansys2_msgs::srv::GetDomainName>(
     "domain_expert/get_domain_name");
   get_types_client_ = node_->create_client<plansys2_msgs::srv::GetDomainTypes>(
@@ -600,4 +602,45 @@ DomainExpertClient::getDomain()
 
   return ret;
 }
+
+bool
+DomainExpertClient::changeDomain(const std::string & domain)
+{
+  while (!change_domain_client_->wait_for_service(std::chrono::seconds(5))) {
+    if (!rclcpp::ok()) {
+      return false;
+    }
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      change_domain_client_->get_service_name() <<
+        " service client: waiting for service to appear...");
+  }
+
+  auto request = std::make_shared<plansys2_msgs::srv::ChangeDomain::Request>();
+  request->domain = domain;
+
+  auto future_result = change_domain_client_->async_send_request(request);
+
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(15)) !=
+    rclcpp::FutureReturnCode::SUCCESS)
+  {
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      change_domain_client_->get_service_name() << ": timed out waiting for response");
+    return false;
+  }
+
+  auto result = *future_result.get();
+
+  if (result.success) {
+    return true;
+  } else {
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(),
+      change_domain_client_->get_service_name() << ": " <<
+        result.error_info);
+    return false;
+  }
+}
+
 }  // namespace plansys2

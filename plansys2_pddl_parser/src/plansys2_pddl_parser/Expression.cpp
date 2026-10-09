@@ -175,7 +175,7 @@ Expression * createExpression(Stringreader & f, TokenStruct<std::string> & ts, D
          << "and not supported by Plansys2" << std::endl;
       f.printLine();
       std::cout << os.str();
-      throw new std::runtime_error(os.str());
+      throw std::runtime_error(os.str());
       return nullptr;
     } else {
       // It is expected to be a number!
@@ -187,14 +187,14 @@ Expression * createExpression(Stringreader & f, TokenStruct<std::string> & ts, D
         os << "Expected a number, found \"" << s << "\"" << std::endl;
         f.printLine();
         std::cout << os.str();
-        throw new std::runtime_error(os.str());
+        throw std::runtime_error(os.str());
       } catch (const std::out_of_range &) {
         std::ostringstream os;
         os << "Expected a number, found \"" << s << "\"" << std::endl
            << "and it goes out of range" << std::endl;
         f.printLine();
         std::cout << os.str();
-        throw new std::runtime_error(os.str());
+        throw std::runtime_error(os.str());
       }
       return new ValueExpression(d);
     }

@@ -92,7 +92,6 @@ ament_export_dependencies(
   plansys2_core
   plansys2_popf_plan_solver
   std_msgs
-  lifecycle_msgs
 )
 
 ament_package()
