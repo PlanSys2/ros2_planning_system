@@ -14,8 +14,14 @@ find_package(qt_gui_cpp REQUIRED)
 find_package(rqt_gui_cpp REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
 
+# Newer qt_gui_cpp is Qt6-only and no longer sets this variable, but it does
+# find Qt6 for us: follow whatever Qt it brought in
 if(NOT DEFINED qt_gui_cpp_USE_QT_MAJOR_VERSION)
-  set(qt_gui_cpp_USE_QT_MAJOR_VERSION 5)
+  if(TARGET Qt6::Widgets)
+    set(qt_gui_cpp_USE_QT_MAJOR_VERSION 6)
+  else()
+    set(qt_gui_cpp_USE_QT_MAJOR_VERSION 5)
+  endif()
 endif()
 find_package(Qt${qt_gui_cpp_USE_QT_MAJOR_VERSION} REQUIRED COMPONENTS Widgets)
 
