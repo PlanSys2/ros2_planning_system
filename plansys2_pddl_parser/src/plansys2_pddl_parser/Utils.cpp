@@ -19,6 +19,7 @@
 #include <iostream>
 #include <limits>
 #include <regex>
+#include <utility>
 
 namespace parser
 {
@@ -123,6 +124,83 @@ int getMaxNesting(const std::string & expr)
     }
   }
   return depth == 0 ? max_depth : -1;
+}
+
+bool validateTree(const plansys2_msgs::msg::Tree & tree, std::string & error)
+{
+  if (tree.nodes.empty()) {
+    return true;
+  }
+
+  std::vector<bool> visited(tree.nodes.size(), false);
+  // Iterative walk: a malformed tree must not be able to overflow the stack here
+  std::vector<std::pair<uint32_t, int>> pending = {{0, 1}};
+  visited[0] = true;
+
+  while (!pending.empty()) {
+    auto [id, depth] = pending.back();
+    pending.pop_back();
+    const auto & node = tree.nodes[id];
+
+    if (depth > kMaxNestingDepth) {
+      error = "tree deeper than " + std::to_string(kMaxNestingDepth) + " levels";
+      return false;
+    }
+
+    size_t min_children = 0;
+    size_t max_children = 0;
+    switch (node.node_type) {
+      case plansys2_msgs::msg::Node::AND:
+      case plansys2_msgs::msg::Node::OR:
+        max_children = node.children.size();
+        break;
+      case plansys2_msgs::msg::Node::NOT:
+        min_children = max_children = 1;
+        break;
+      case plansys2_msgs::msg::Node::EXISTS:
+        min_children = 1;
+        max_children = node.children.size();
+        break;
+      case plansys2_msgs::msg::Node::EXPRESSION:
+        min_children = max_children = 2;
+        break;
+      case plansys2_msgs::msg::Node::FUNCTION_MODIFIER:
+        // A modifier of total-cost has only the value child
+        min_children = 1;
+        max_children = 2;
+        break;
+      case plansys2_msgs::msg::Node::PREDICATE:
+      case plansys2_msgs::msg::Node::FUNCTION:
+      case plansys2_msgs::msg::Node::NUMBER:
+      case plansys2_msgs::msg::Node::CONSTANT:
+      case plansys2_msgs::msg::Node::PARAMETER:
+        break;
+      default:
+        error = "node " + std::to_string(id) + " has unknown type " +
+          std::to_string(node.node_type);
+        return false;
+    }
+    if (node.children.size() < min_children || node.children.size() > max_children) {
+      error = "node " + std::to_string(id) + " has " + std::to_string(node.children.size()) +
+        " children";
+      return false;
+    }
+
+    for (auto child : node.children) {
+      if (child >= tree.nodes.size()) {
+        error = "node " + std::to_string(id) + " has child " + std::to_string(child) +
+          " out of range";
+        return false;
+      }
+      if (visited[child]) {
+        error = "node " + std::to_string(child) + " is reached twice (cycle or shared node)";
+        return false;
+      }
+      visited[child] = true;
+      pending.push_back({child, depth + 1});
+    }
+  }
+  return true;
 }
 
 std::string getReducedString(const std::string & expr)

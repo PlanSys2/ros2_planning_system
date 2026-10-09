@@ -44,6 +44,16 @@ constexpr int kMaxNestingDepth = 256;
 int getMaxNesting(const std::string & expr);
 
 /**
+ * \brief Checks that a tree can be walked safely: child ids in range, every node
+ *        reached once from the root (no cycles or shared nodes), the number of
+ *        children each node type needs, and no deeper than kMaxNestingDepth.
+ * \param[in] tree The tree to check; an empty tree is valid
+ * \param[out] error Why the tree is not valid
+ * \return true if the tree is valid
+ */
+bool validateTree(const plansys2_msgs::msg::Tree & tree, std::string & error);
+
+/**
  * \param[in] expr The expression to be reduced
  * \return The reduced expression
  */

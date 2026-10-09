@@ -429,6 +429,11 @@ ProblemExpert::setGoal(const plansys2::Goal & goal)
 
 bool ProblemExpert::isGoalSatisfied(const plansys2::Goal & goal)
 {
+  std::string error;
+  if (!parser::pddl::validateTree(goal, error)) {
+    std::cerr << "Malformed goal: " << error << std::endl;
+    return false;
+  }
   return check(goal, predicates_, functions_);
 }
 
@@ -619,6 +624,12 @@ ProblemExpert::isValidFunction(const plansys2::Function & function)
 bool
 ProblemExpert::isValidGoal(const plansys2::Goal & goal)
 {
+  // Goals may come from services: walk them only if they are sound
+  std::string error;
+  if (!parser::pddl::validateTree(goal, error)) {
+    std::cerr << "Malformed goal: " << error << std::endl;
+    return false;
+  }
   return checkPredicateTreeTypes(goal, domain_expert_);
 }
 
@@ -681,7 +692,7 @@ bool
 ProblemExpert::checkPredicateTreeTypes(
   const plansys2_msgs::msg::Tree & tree,
   std::shared_ptr<DomainExpert> & domain_expert,
-  uint8_t node_id)
+  uint32_t node_id)
 {
   if (node_id >= tree.nodes.size()) {
     return false;

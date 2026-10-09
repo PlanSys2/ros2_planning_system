@@ -9,3 +9,6 @@ install(DIRECTORY
   pddl
   DESTINATION share/${PROJECT_NAME}
 )
+
+ament_add_gtest(validate_tree_test validate_tree_test.cpp)
+target_link_libraries(validate_tree_test ${PROJECT_NAME})

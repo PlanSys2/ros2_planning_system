@@ -1044,6 +1044,71 @@ TEST(problem_expert_node, problem_file_that_cannot_be_loaded_fails_configure)
     problem_node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
 }
 
+// Goals with more than 255 nodes and malformed goal trees used to crash the node (#417)
+TEST(problem_expert_node, big_and_malformed_goals_keep_node_alive)
+{
+  auto remap = domain_topic_remap("big_and_malformed_goals_keep_node_alive");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp::executors::SingleThreadedExecutor exe;
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  ScopedSpinner spinner(exe);
+
+  // 300 predicates in the goal, through add_problem
+  std::string problem = "(define (problem p) (:domain simple) (:objects";
+  std::string goal = "(and";
+  for (int i = 0; i < 300; i++) {
+    problem += " room" + std::to_string(i);
+    goal += " (is_teleporter_destination room" + std::to_string(i) + ")";
+  }
+  goal += ")";
+  problem += " - room) (:init (is_teleporter_destination room0)) (:goal " + goal + "))";
+
+  ASSERT_TRUE(problem_client->addProblem(problem));
+  ASSERT_EQ(problem_client->getGoal().nodes.size(), 301u);
+  ASSERT_FALSE(problem_client->isGoalSatisfied(problem_client->getGoal()));
+  for (int i = 1; i < 300; i++) {
+    ASSERT_TRUE(
+      problem_client->addPredicate(
+        plansys2::Predicate("(is_teleporter_destination room" + std::to_string(i) + ")")));
+  }
+  ASSERT_TRUE(problem_client->isGoalSatisfied(problem_client->getGoal()));
+
+  // Malformed trees through add_problem_goal and is_problem_goal_satisfied
+  const auto goal_before = parser::pddl::toString(problem_client->getGoal());
+  plansys2_msgs::msg::Node and_node;
+  and_node.node_type = plansys2_msgs::msg::Node::AND;
+  plansys2_msgs::msg::Node not_node;
+  not_node.node_type = plansys2_msgs::msg::Node::NOT;
+
+  std::vector<plansys2::Goal> malformed(3);
+  and_node.children = {5};
+  malformed[0].nodes = {and_node};  // child out of range
+  and_node.children = {0};
+  malformed[1].nodes = {and_node};  // cycle
+  and_node.children = {1};
+  malformed[2].nodes = {and_node, not_node};  // NOT without child
+
+  for (const auto & tree : malformed) {
+    ASSERT_FALSE(problem_client->setGoal(tree));
+    ASSERT_FALSE(problem_client->isGoalSatisfied(tree));
+    // The node still answers and keeps its goal
+    ASSERT_EQ(parser::pddl::toString(problem_client->getGoal()), goal_before);
+  }
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
