@@ -266,9 +266,9 @@ public:
   /**
    * @brief Service callback to replace the domain at runtime.
    *
-   * Validates the new domain first; if it is invalid, the call fails and nothing
-   * else is touched. If valid, domain_expert_ is swapped in place
-   * (DomainExpert::changeDomain()) and the new domain is republished on domain_pub_.
+   * Fails without touching anything if the node is not active, the domain is empty
+   * or it does not validate. If valid, domain_expert_ is replaced by the instance
+   * validateDomain() built and the new domain is republished on domain_pub_.
    *
    * @param[in] request_header ROS service request header.
    * @param[in] request Service request containing the new domain, in PDDL.

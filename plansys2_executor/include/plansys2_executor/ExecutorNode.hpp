@@ -20,6 +20,7 @@
 #include <string>
 #include <map>
 #include <tuple>
+#include <atomic>
 #include <list>
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
@@ -359,6 +360,8 @@ protected:
   bool new_plan_received_ {false};
   bool cancel_requested_ {false};
   bool domain_baseline_seen_ {false};
+  // Set by domain_topic_callback, consumed by execution_cycle
+  std::atomic<bool> domain_changed_ {false};
 
   bool node_running_ {true};
 

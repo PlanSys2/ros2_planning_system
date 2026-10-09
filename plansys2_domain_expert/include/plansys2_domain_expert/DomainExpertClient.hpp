@@ -203,9 +203,10 @@ public:
    * @brief Replace the current domain with a new one, given as PDDL content.
    *
    * If the new domain is invalid, the call fails and nothing else is touched. If it
-   * is valid: any in-progress plan execution is cancelled, the problem knowledge is
-   * reconciled against the new domain (knowledge no longer consistent with it is
-   * pruned, the rest is left untouched), and the domain is swapped in.
+   * is valid, domain_expert swaps it in and republishes it on domain_expert/domain.
+   * The rest of the system reacts asynchronously to that topic, after this call
+   * returns: the executor cancels any in-progress plan and the problem expert
+   * reconciles its knowledge (what no longer fits the new domain is pruned).
    *
    * @param[in] domain The new domain, in PDDL.
    * @return true if the domain was successfully changed, false otherwise.

@@ -13,6 +13,9 @@
 // limitations under the License.
 
 #include <algorithm>
+#include <chrono>
+#include <fstream>
+#include <mutex>
 #include <string>
 #include <vector>
 #include <regex>
@@ -31,6 +34,7 @@
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "std_msgs/msg/string.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -175,7 +179,11 @@ class ExecutorSpinner
 {
 public:
   explicit ExecutorSpinner(rclcpp::Executor & exe)
-  : finish_(false), thread_([this, &exe]() {while (!finish_) {exe.spin_some();}}) {}
+  : finish_(false), thread_(
+      [this, &exe]() {
+        // spin_once blocks until there is work, so this does not burn a core
+        while (!finish_) {exe.spin_once(std::chrono::milliseconds(10));}
+      }) {}
 
   ~ExecutorSpinner()
   {
@@ -303,6 +311,163 @@ TEST(domain_expert, change_domain_rejected_when_unconfigured)
       domain_node->get_current_state().id(),
       lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
     ASSERT_FALSE(domain_client->changeDomain("(define (domain whatever))"));
+  }
+  plansys2::drain_ros(200ms);
+}
+
+std::string read_file(const std::string & path)
+{
+  std::ifstream ifs(path);
+  return std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+}
+
+TEST(domain_expert, change_domain_rejected_when_inactive)
+{
+  plansys2::drain_ros(300ms);
+  {
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+
+    std::string pkgpath =
+      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+
+    rclcpp::experimental::executors::EventsExecutor exe;
+    exe.add_node(domain_node->get_node_base_interface());
+    ExecutorSpinner spinner(exe);
+
+    const std::string new_domain = read_file(pkgpath + "/pddl/domain_charging.pddl");
+
+    // Configured but never activated: domain_pub_ cannot publish the change
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    ASSERT_EQ(
+      domain_node->get_current_state().id(),
+      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
+    ASSERT_FALSE(domain_client->changeDomain(new_domain));
+    ASSERT_EQ(domain_client->getName(), "plansys2");
+
+    // Active: accepted
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+    ASSERT_TRUE(domain_client->changeDomain(new_domain));
+    ASSERT_EQ(domain_client->getName(), "charging");
+
+    // Deactivated again: rejected, the last accepted domain stays
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+    ASSERT_FALSE(
+      domain_client->changeDomain(read_file(pkgpath + "/pddl/domain_simple.pddl")));
+    ASSERT_EQ(domain_client->getName(), "charging");
+  }
+  plansys2::drain_ros(200ms);
+}
+
+TEST(domain_expert, change_domain_empty_rejected)
+{
+  plansys2::drain_ros(300ms);
+  {
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+
+    std::string pkgpath =
+      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+
+    rclcpp::experimental::executors::EventsExecutor exe;
+    exe.add_node(domain_node->get_node_base_interface());
+    ExecutorSpinner spinner(exe);
+
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+    const auto types_before = domain_client->getTypes();
+    ASSERT_FALSE(types_before.empty());
+
+    for (const std::string empty : {"", " ", "\n", " \t\r\n "}) {
+      ASSERT_FALSE(domain_client->changeDomain(empty));
+      ASSERT_EQ(domain_client->getName(), "plansys2");
+      ASSERT_EQ(domain_client->getTypes(), types_before);
+    }
+  }
+  plansys2::drain_ros(200ms);
+}
+
+TEST(domain_expert, change_domain_sequence_publishes_each_accepted_domain)
+{
+  plansys2::drain_ros(300ms);
+  {
+    auto test_node = rclcpp::Node::make_shared("change_domain_sequence");
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+
+    std::string pkgpath =
+      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+
+    std::mutex mutex;
+    std::vector<std::string> published;
+    auto sub = test_node->create_subscription<std_msgs::msg::String>(
+      "domain_expert/domain", rclcpp::QoS(100).transient_local().reliable(),
+      [&mutex, &published](std_msgs::msg::String::SharedPtr msg) {
+        std::lock_guard<std::mutex> lock(mutex);
+        published.push_back(msg->data);
+      });
+
+    rclcpp::experimental::executors::EventsExecutor exe;
+    exe.add_node(domain_node->get_node_base_interface());
+    exe.add_node(test_node);
+    ExecutorSpinner spinner(exe);
+
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+    const std::string simple = read_file(pkgpath + "/pddl/domain_simple.pddl");
+    const std::string charging = read_file(pkgpath + "/pddl/domain_charging.pddl");
+    const std::string error = read_file(pkgpath + "/pddl/domain_2_error.pddl");
+
+    auto wait_published = [&](size_t n) {
+        auto start = std::chrono::steady_clock::now();
+        while (std::chrono::steady_clock::now() - start < 5s) {
+          {
+            std::lock_guard<std::mutex> lock(mutex);
+            if (published.size() >= n) {
+              return true;
+            }
+          }
+          std::this_thread::sleep_for(10ms);
+        }
+        return false;
+      };
+
+    // Activation publishes the initial domain. Nodes left alive by earlier tests may
+    // also replay their transient_local domains on match, so count from a baseline.
+    ASSERT_TRUE(wait_published(1));
+    std::this_thread::sleep_for(1s);
+    size_t base;
+    {
+      std::lock_guard<std::mutex> lock(mutex);
+      base = published.size();
+    }
+
+    ASSERT_TRUE(domain_client->changeDomain(charging));
+    ASSERT_EQ(domain_client->getName(), "charging");
+    ASSERT_TRUE(wait_published(base + 1));
+
+    // A rejected change publishes nothing and keeps the current domain
+    ASSERT_FALSE(domain_client->changeDomain(error));
+    ASSERT_EQ(domain_client->getName(), "charging");
+
+    ASSERT_TRUE(domain_client->changeDomain(simple));
+    ASSERT_EQ(domain_client->getName(), "plansys2");
+    ASSERT_TRUE(domain_client->getPredicate("robot_talk").has_value());
+    ASSERT_TRUE(wait_published(base + 2));
+
+    std::this_thread::sleep_for(300ms);
+    const std::string served = domain_client->getDomain();
+    std::lock_guard<std::mutex> lock(mutex);
+    ASSERT_EQ(published.size(), base + 2);
+    ASSERT_NE(published[base].find("charging"), std::string::npos);
+    ASSERT_NE(published[base + 1].find("plansys2"), std::string::npos);
+    // What is published is what get_domain serves
+    ASSERT_EQ(published[base + 1], served);
   }
   plansys2::drain_ros(200ms);
 }

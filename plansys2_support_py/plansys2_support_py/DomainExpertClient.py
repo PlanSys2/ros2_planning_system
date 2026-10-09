@@ -138,10 +138,11 @@ class DomainExpertClient(Node):
         Replace the current domain with a new one, given as PDDL content.
 
         If the new domain is invalid, the call fails and nothing else is touched. If
-        it is valid: any in-progress plan execution is cancelled, the problem
-        knowledge is reconciled against the new domain (knowledge no longer
-        consistent with it is pruned, the rest is left untouched), and the domain is
-        swapped in.
+        it is valid, domain_expert swaps it in and republishes it on
+        domain_expert/domain. The rest of the system reacts asynchronously to that
+        topic, after this call returns: the executor cancels any in-progress plan and
+        the problem expert reconciles its knowledge (what no longer fits the new
+        domain is pruned).
 
         Parameters
         ----------
@@ -157,8 +158,8 @@ class DomainExpertClient(Node):
         request = ChangeDomain.Request()
         request.domain = domain
 
-        # This call chains, server-side, executor cancellation, a problem-expert
-        # reconcile, and two lifecycle cycles: give it more room than a plain query.
+        # Validating a large domain (possibly through a planner) takes longer than a
+        # plain query, so give it more room.
         response = self._create_and_call_service(
             ChangeDomain, service_name, request, timeout_sec=20.0)
         if response and response.success:

@@ -706,7 +706,8 @@ ProblemExpertNode::applyNewDomain(const std::string & domain)
 {
   if (!problem_expert_->updateDomain(domain)) {
     RCLCPP_ERROR_STREAM(
-      get_logger(), "[" << get_name() << "] Failed to update domain: PDDL syntax error");
+      get_logger(), "[" << get_name() << "] Failed to update domain: the new domain could not "
+        "be loaded, problem knowledge left unchanged");
     return;
   }
 

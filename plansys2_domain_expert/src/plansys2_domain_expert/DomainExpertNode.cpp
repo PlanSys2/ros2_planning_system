@@ -571,10 +571,19 @@ DomainExpertNode::change_domain_service_callback(
 {
   (void)request_header;
 
-  if (domain_expert_ == nullptr) {
+  // Subscribers only learn about the change from domain_pub_, so it must be active
+  if (domain_expert_ == nullptr || !domain_pub_->is_activated()) {
     response->success = false;
     response->error_info = "Requesting service in non-active state";
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    return;
+  }
+
+  if (request->domain.find_first_not_of(" \t\r\n") == std::string::npos) {
+    response->success = false;
+    response->error_info = "Empty domain";
+    RCLCPP_WARN_STREAM(
+      get_logger(), "[" << get_name() << "] Rejected domain change: " << response->error_info);
     return;
   }
 
@@ -588,14 +597,8 @@ DomainExpertNode::change_domain_service_callback(
     return;
   }
 
-  if (!domain_expert_->changeDomain(request->domain)) {
-    response->success = false;
-    response->error_info = "PDDL syntax error";
-    RCLCPP_WARN_STREAM(
-      get_logger(),
-      "[" << get_name() << "] Rejected domain change: " << response->error_info);
-    return;
-  }
+  // Swap in the instance validateDomain() already parsed instead of parsing again
+  domain_expert_ = validated_domain_expert;
 
   std_msgs::msg::String domain_msg;
   domain_msg.data = domain_expert_->getDomain();

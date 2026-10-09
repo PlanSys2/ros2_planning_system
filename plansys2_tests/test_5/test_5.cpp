@@ -18,6 +18,7 @@
 // mirroring test_4's setup. See refactor_dynamic_domain.md for the design.
 
 #include <atomic>
+#include <chrono>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -62,7 +63,11 @@ class ExecutorSpinner
 {
 public:
   explicit ExecutorSpinner(rclcpp::Executor & exe)
-  : finish_(false), thread_([this, &exe]() {while (!finish_) {exe.spin_some();}}) {}
+  : finish_(false), thread_(
+      [this, &exe]() {
+        // spin_once blocks until there is work, so this does not burn a core
+        while (!finish_) {exe.spin_once(std::chrono::milliseconds(10));}
+      }) {}
 
   ~ExecutorSpinner()
   {
