@@ -147,6 +147,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a7c2ce51122af46837caa17fab971e3e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to add a PDDL problem.  <br /></td></tr>
 <tr class="memitem:ad43f610eb9f1708447daa5bcbb355579" id="r_ad43f610eb9f1708447daa5bcbb355579"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ad43f610eb9f1708447daa5bcbb355579">clear_problem_knowledge_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::ClearProblemKnowledge::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::ClearProblemKnowledge::Response &gt; response)</td></tr>
 <tr class="memdesc:ad43f610eb9f1708447daa5bcbb355579"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to clear all problem knowledge.  <br /></td></tr>
+<tr class="memitem:a2ed3c94ea7cccb62799922844eaa1620" id="r_a2ed3c94ea7cccb62799922844eaa1620"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a2ed3c94ea7cccb62799922844eaa1620">domain_topic_callback</a> (const std_msgs::msg::String::SharedPtr msg)</td></tr>
+<tr class="memdesc:a2ed3c94ea7cccb62799922844eaa1620"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback for domain_expert/domain: how this node picks up a runtime domain change (see <a class="el" href="classplansys2_1_1DomainExpertNode.html#aa953f5bd10223f0ce817b851b71d430b" title="Service callback to replace the domain at runtime.">DomainExpertNode::change_domain_service_callback()</a>) — no direct call from domain_expert is involved, this node just reacts to a domain being published, the same way any other <a class="el" href="classplansys2_1_1DomainExpertClient.html" title="Client for requesting information or sending changes from/to the DomainExpertNode.">DomainExpertClient</a> subscriber would find out about it.  <br /></td></tr>
 <tr class="memitem:ac75293771feb4b1b7b96556c83a16042" id="r_ac75293771feb4b1b7b96556c83a16042"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ac75293771feb4b1b7b96556c83a16042">exist_problem_function_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::ExistNode::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::ExistNode::Response &gt; response)</td></tr>
 <tr class="memdesc:ac75293771feb4b1b7b96556c83a16042"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to check if a function exists in the problem.  <br /></td></tr>
 <tr class="memitem:aa2fc4051c79ba84af70efdec93c16ee8" id="r_aa2fc4051c79ba84af70efdec93c16ee8"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aa2fc4051c79ba84af70efdec93c16ee8">exist_problem_predicate_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::ExistNode::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::ExistNode::Response &gt; response)</td></tr>
@@ -456,6 +458,31 @@ Public Member Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">request_header</td><td>ROS service request header. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">request</td><td>Empty service request. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">response</td><td>Service response with success status and error information. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a2ed3c94ea7cccb62799922844eaa1620" name="a2ed3c94ea7cccb62799922844eaa1620"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ed3c94ea7cccb62799922844eaa1620">&#9670;&#160;</a></span>domain_topic_callback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void domain_topic_callback </td>
+          <td>(</td>
+          <td class="paramtype">const std_msgs::msg::String::SharedPtr</td>          <td class="paramname"><span class="paramname"><em>msg</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Callback for domain_expert/domain: how this node picks up a runtime domain change (see <a class="el" href="classplansys2_1_1DomainExpertNode.html#aa953f5bd10223f0ce817b851b71d430b" title="Service callback to replace the domain at runtime.">DomainExpertNode::change_domain_service_callback()</a>) — no direct call from domain_expert is involved, this node just reacts to a domain being published, the same way any other <a class="el" href="classplansys2_1_1DomainExpertClient.html" title="Client for requesting information or sending changes from/to the DomainExpertNode.">DomainExpertClient</a> subscriber would find out about it. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">msg</td><td>The current domain, in PDDL. </td></tr>
   </table>
   </dd>
 </dl>

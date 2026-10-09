@@ -130,6 +130,8 @@ Collaboration diagram for DomainExpert:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a47df980ac6e46478eda93990fe09d97b" id="r_a47df980ac6e46478eda93990fe09d97b"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a47df980ac6e46478eda93990fe09d97b">changeDomain</a> (const std::string &amp;domain)</td></tr>
+<tr class="memdesc:a47df980ac6e46478eda93990fe09d97b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace the current domain with a new one, given as PDDL content.  <br /></td></tr>
 <tr class="memitem:a0e7b598f25c71b1cfa22bf1b672d8c1b" id="r_a0e7b598f25c71b1cfa22bf1b672d8c1b"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a0e7b598f25c71b1cfa22bf1b672d8c1b">DomainExpert</a> (const std::string &amp;domain)</td></tr>
 <tr class="memdesc:a0e7b598f25c71b1cfa22bf1b672d8c1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor that initializes the <a class="el" href="classplansys2_1_1DomainExpert.html" title="Class responsible for managing the internal structure of a PDDL domain.">DomainExpert</a> with the content of a PDDL domain.  <br /></td></tr>
 <tr class="memitem:a24d696a3cbacea5fe3fe0184fcae5d60" id="r_a24d696a3cbacea5fe3fe0184fcae5d60"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a24d696a3cbacea5fe3fe0184fcae5d60">existDomain</a> (const std::string &amp;domain_name)</td></tr>
@@ -209,6 +211,43 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a47df980ac6e46478eda93990fe09d97b" name="a47df980ac6e46478eda93990fe09d97b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a47df980ac6e46478eda93990fe09d97b">&#9670;&#160;</a></span>changeDomain()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> changeDomain </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>domain</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Replace the current domain with a new one, given as PDDL content. </p>
+<p>Unlike <a class="el" href="#ad2aae4d733892d2f8b7f13798e8a2773" title="Extends the current DomainExpert with another PDDL domain.">extendDomain()</a>, this does not merge with the previous domain(s): it fully replaces them. If the new domain fails to parse, the current domain is left untouched.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">domain</td><td>The new domain, in PDDL. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the domain was successfully replaced, false otherwise. </dd></dl>
+
+<p>Implements <a class="el" href="classplansys2_1_1DomainExpertInterface.html#a3bc7bc77fb46353946e9b9c411a1ad5b">DomainExpertInterface</a>.</p>
+
+</div>
+</div>
 <a id="a24d696a3cbacea5fe3fe0184fcae5d60" name="a24d696a3cbacea5fe3fe0184fcae5d60"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a24d696a3cbacea5fe3fe0184fcae5d60">&#9670;&#160;</a></span>existDomain()</h2>
 

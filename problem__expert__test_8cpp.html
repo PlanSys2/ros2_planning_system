@@ -470,6 +470,13 @@ Functions</h2></td></tr>
 <tr class="memitem:a5f4807e1547f8180bb655936affcc77d" id="r_a5f4807e1547f8180bb655936affcc77d"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a5f4807e1547f8180bb655936affcc77d">TEST</a> (problem_expert, get_predicate_with_derived)</td></tr>
 <tr class="memitem:ae0a3a472ffbccdb72e15803bd3c692e3" id="r_ae0a3a472ffbccdb72e15803bd3c692e3"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ae0a3a472ffbccdb72e15803bd3c692e3">TEST</a> (problem_expert, get_problem)</td></tr>
 <tr class="memitem:a3aec399977b42d468abe2875f3cac498" id="r_a3aec399977b42d468abe2875f3cac498"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a3aec399977b42d468abe2875f3cac498">TEST</a> (problem_expert, is_goal_satisfied)</td></tr>
+<tr class="memitem:a81c1aa79a7093516d8206b1710f9b759" id="r_a81c1aa79a7093516d8206b1710f9b759"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a81c1aa79a7093516d8206b1710f9b759">TEST</a> (problem_expert, update_domain_add_requirement_preserves_everything)</td></tr>
+<tr class="memitem:afa49bc5c9aaa4fbe606c070a83a2c74f" id="r_afa49bc5c9aaa4fbe606c070a83a2c74f"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#afa49bc5c9aaa4fbe606c070a83a2c74f">TEST</a> (problem_expert, update_domain_clears_goal_that_uses_removed_predicate)</td></tr>
+<tr class="memitem:a5bab9ac78f1bc7fafffaa259548346b7" id="r_a5bab9ac78f1bc7fafffaa259548346b7"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a5bab9ac78f1bc7fafffaa259548346b7">TEST</a> (problem_expert, update_domain_full_replacement_prunes_everything)</td></tr>
+<tr class="memitem:a568cd40c7b3187aaff338661a6ebe3d4" id="r_a568cd40c7b3187aaff338661a6ebe3d4"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a568cd40c7b3187aaff338661a6ebe3d4">TEST</a> (problem_expert, update_domain_rejects_invalid_pddl_and_keeps_everything)</td></tr>
+<tr class="memitem:a5a3062af8016a77322175c225a172a18" id="r_a5a3062af8016a77322175c225a172a18"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a5a3062af8016a77322175c225a172a18">TEST</a> (problem_expert, update_domain_removed_type_cascades_to_instances_and_predicates)</td></tr>
+<tr class="memitem:ab27067186429bbfe7f694ba6b24a38cb" id="r_ab27067186429bbfe7f694ba6b24a38cb"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ab27067186429bbfe7f694ba6b24a38cb">TEST</a> (problem_expert, update_domain_removes_only_affected_function)</td></tr>
+<tr class="memitem:aadfb8f7eb4781cd7473ab106494a6bbb" id="r_aadfb8f7eb4781cd7473ab106494a6bbb"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#aadfb8f7eb4781cd7473ab106494a6bbb">TEST</a> (problem_expert, update_domain_removes_only_affected_predicate)</td></tr>
 </table>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
 <a id="a3c04138a5bfe5d72780bb7e82a18e627" name="a3c04138a5bfe5d72780bb7e82a18e627"></a>
@@ -494,7 +501,7 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a id="aef60036c79307ec56237268b3bcb561d" name="aef60036c79307ec56237268b3bcb561d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aef60036c79307ec56237268b3bcb561d">&#9670;&#160;</a></span>TEST() <span class="overload">[1/12]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aef60036c79307ec56237268b3bcb561d">&#9670;&#160;</a></span>TEST() <span class="overload">[1/19]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -515,7 +522,7 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a id="af4df6fe229ba01e2ac214cfda3aa2c07" name="af4df6fe229ba01e2ac214cfda3aa2c07"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af4df6fe229ba01e2ac214cfda3aa2c07">&#9670;&#160;</a></span>TEST() <span class="overload">[2/12]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#af4df6fe229ba01e2ac214cfda3aa2c07">&#9670;&#160;</a></span>TEST() <span class="overload">[2/19]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -536,7 +543,7 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a id="afea35aa141d054ee41179d21d00293d9" name="afea35aa141d054ee41179d21d00293d9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afea35aa141d054ee41179d21d00293d9">&#9670;&#160;</a></span>TEST() <span class="overload">[3/12]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afea35aa141d054ee41179d21d00293d9">&#9670;&#160;</a></span>TEST() <span class="overload">[3/19]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -557,7 +564,7 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a id="ad3b6a530e416fe6e61532becf4abd1f9" name="ad3b6a530e416fe6e61532becf4abd1f9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad3b6a530e416fe6e61532becf4abd1f9">&#9670;&#160;</a></span>TEST() <span class="overload">[4/12]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ad3b6a530e416fe6e61532becf4abd1f9">&#9670;&#160;</a></span>TEST() <span class="overload">[4/19]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -578,7 +585,7 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a id="a54e582463efbeed1e40e31b68231aa0e" name="a54e582463efbeed1e40e31b68231aa0e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a54e582463efbeed1e40e31b68231aa0e">&#9670;&#160;</a></span>TEST() <span class="overload">[5/12]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a54e582463efbeed1e40e31b68231aa0e">&#9670;&#160;</a></span>TEST() <span class="overload">[5/19]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -599,7 +606,7 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a id="adbd4391b783a3a482cacca0131735067" name="adbd4391b783a3a482cacca0131735067"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adbd4391b783a3a482cacca0131735067">&#9670;&#160;</a></span>TEST() <span class="overload">[6/12]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#adbd4391b783a3a482cacca0131735067">&#9670;&#160;</a></span>TEST() <span class="overload">[6/19]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -620,7 +627,7 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a id="a844872e35b347fee29a23f0eaf8a2531" name="a844872e35b347fee29a23f0eaf8a2531"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a844872e35b347fee29a23f0eaf8a2531">&#9670;&#160;</a></span>TEST() <span class="overload">[7/12]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a844872e35b347fee29a23f0eaf8a2531">&#9670;&#160;</a></span>TEST() <span class="overload">[7/19]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -641,7 +648,7 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a id="a90b903f76d6b8a9d0c4b214dca30b3d4" name="a90b903f76d6b8a9d0c4b214dca30b3d4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a90b903f76d6b8a9d0c4b214dca30b3d4">&#9670;&#160;</a></span>TEST() <span class="overload">[8/12]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a90b903f76d6b8a9d0c4b214dca30b3d4">&#9670;&#160;</a></span>TEST() <span class="overload">[8/19]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -662,7 +669,7 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a id="ab1e5a904c648fe842292092e680d9edb" name="ab1e5a904c648fe842292092e680d9edb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab1e5a904c648fe842292092e680d9edb">&#9670;&#160;</a></span>TEST() <span class="overload">[9/12]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ab1e5a904c648fe842292092e680d9edb">&#9670;&#160;</a></span>TEST() <span class="overload">[9/19]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -683,7 +690,7 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a id="a5f4807e1547f8180bb655936affcc77d" name="a5f4807e1547f8180bb655936affcc77d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5f4807e1547f8180bb655936affcc77d">&#9670;&#160;</a></span>TEST() <span class="overload">[10/12]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f4807e1547f8180bb655936affcc77d">&#9670;&#160;</a></span>TEST() <span class="overload">[10/19]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -704,7 +711,7 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a id="ae0a3a472ffbccdb72e15803bd3c692e3" name="ae0a3a472ffbccdb72e15803bd3c692e3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae0a3a472ffbccdb72e15803bd3c692e3">&#9670;&#160;</a></span>TEST() <span class="overload">[11/12]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0a3a472ffbccdb72e15803bd3c692e3">&#9670;&#160;</a></span>TEST() <span class="overload">[11/19]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -725,7 +732,7 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a id="a3aec399977b42d468abe2875f3cac498" name="a3aec399977b42d468abe2875f3cac498"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3aec399977b42d468abe2875f3cac498">&#9670;&#160;</a></span>TEST() <span class="overload">[12/12]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a3aec399977b42d468abe2875f3cac498">&#9670;&#160;</a></span>TEST() <span class="overload">[12/19]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -739,6 +746,153 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">is_goal_satisfied</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a81c1aa79a7093516d8206b1710f9b759" name="a81c1aa79a7093516d8206b1710f9b759"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a81c1aa79a7093516d8206b1710f9b759">&#9670;&#160;</a></span>TEST() <span class="overload">[13/19]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">problem_expert</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">update_domain_add_requirement_preserves_everything</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="afa49bc5c9aaa4fbe606c070a83a2c74f" name="afa49bc5c9aaa4fbe606c070a83a2c74f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afa49bc5c9aaa4fbe606c070a83a2c74f">&#9670;&#160;</a></span>TEST() <span class="overload">[14/19]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">problem_expert</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">update_domain_clears_goal_that_uses_removed_predicate</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a5bab9ac78f1bc7fafffaa259548346b7" name="a5bab9ac78f1bc7fafffaa259548346b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5bab9ac78f1bc7fafffaa259548346b7">&#9670;&#160;</a></span>TEST() <span class="overload">[15/19]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">problem_expert</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">update_domain_full_replacement_prunes_everything</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a568cd40c7b3187aaff338661a6ebe3d4" name="a568cd40c7b3187aaff338661a6ebe3d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a568cd40c7b3187aaff338661a6ebe3d4">&#9670;&#160;</a></span>TEST() <span class="overload">[16/19]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">problem_expert</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">update_domain_rejects_invalid_pddl_and_keeps_everything</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a5a3062af8016a77322175c225a172a18" name="a5a3062af8016a77322175c225a172a18"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a3062af8016a77322175c225a172a18">&#9670;&#160;</a></span>TEST() <span class="overload">[17/19]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">problem_expert</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">update_domain_removed_type_cascades_to_instances_and_predicates</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab27067186429bbfe7f694ba6b24a38cb" name="ab27067186429bbfe7f694ba6b24a38cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab27067186429bbfe7f694ba6b24a38cb">&#9670;&#160;</a></span>TEST() <span class="overload">[18/19]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">problem_expert</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">update_domain_removes_only_affected_function</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aadfb8f7eb4781cd7473ab106494a6bbb" name="aadfb8f7eb4781cd7473ab106494a6bbb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aadfb8f7eb4781cd7473ab106494a6bbb">&#9670;&#160;</a></span>TEST() <span class="overload">[19/19]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">problem_expert</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">update_domain_removes_only_affected_predicate</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">

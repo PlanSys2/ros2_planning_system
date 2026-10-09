@@ -1,3 +1,15 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$structplansys2_1_1Node.html" title="Node in the temporal planning graph." alt="" coords="5,5,58,31"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,104,110,130"/>
+<area shape="rect" id="Node000001" href="$classplansys2_1_1ComputeBT.html" title=" " alt="" coords="181,5,271,31"/>
+<area shape="poly" id="edge81_Node000000_Node000001" title=" " alt="" coords="83,92,117,65,156,40,180,29,182,34,159,45,120,70,86,96"/>
+<area shape="rect" id="Node000002" href="$classplansys2_1_1DomainExpertNode.html" title="ROS2 Lifecycle Node that manages the domain model and handles requests from DomainExpertClient." alt="" coords="160,55,292,80"/>
+<area shape="poly" id="edge82_Node000000_Node000002" title=" " alt="" coords="118,97,179,78,180,84,119,102"/>
+<area shape="rect" id="Node000003" href="$classplansys2_1_1ExecutorNode.html" title="ROS2 Lifecycle node that manages plan execution." alt="" coords="175,104,277,130"/>
+<area shape="poly" id="edge83_Node000000_Node000003" title=" " alt="" coords="125,114,174,114,174,120,125,120"/>
+<area shape="rect" id="Node000005" href="$classplansys2_1_1PlannerNode.html" title="ROS2 Lifecycle Node that manages the planning system and handles planning requests." alt="" coords="178,153,274,179"/>
+<area shape="poly" id="edge85_Node000000_Node000005" title=" " alt="" coords="119,132,180,150,179,155,118,137"/>
+<area shape="rect" id="Node000006" href="$classplansys2_1_1ProblemExpertNode.html" title="ROS 2 Lifecycle node that manages the PDDL problem representation and operations." alt="" coords="158,203,294,228"/>
+<area shape="poly" id="edge86_Node000000_Node000006" title=" " alt="" coords="86,138,120,164,159,189,182,200,180,205,156,194,117,168,83,142"/>
+<area shape="rect" id="Node000004" href="$classExecutorNodeTest.html" title=" " alt="" coords="342,104,470,130"/>
+<area shape="poly" id="edge84_Node000003_Node000004" title=" " alt="" coords="293,114,342,114,342,120,293,120"/>
 </map>

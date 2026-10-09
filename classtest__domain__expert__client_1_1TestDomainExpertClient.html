@@ -130,6 +130,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ac86c73ff4bb09de46d20296fcbcbd1af" id="r_ac86c73ff4bb09de46d20296fcbcbd1af"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ac86c73ff4bb09de46d20296fcbcbd1af">setUpClass</a> (cls)</td></tr>
 <tr class="memitem:a8a31d90b8598f609fad4582512f6822f" id="r_a8a31d90b8598f609fad4582512f6822f"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a8a31d90b8598f609fad4582512f6822f">tearDown</a> (self)</td></tr>
 <tr class="memitem:a7a0f0acb59af44693c00c03820aa18eb" id="r_a7a0f0acb59af44693c00c03820aa18eb"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a7a0f0acb59af44693c00c03820aa18eb">tearDownClass</a> (cls)</td></tr>
+<tr class="memitem:a491fa5fcf3862e0c4901a00379cf06c0" id="r_a491fa5fcf3862e0c4901a00379cf06c0"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a491fa5fcf3862e0c4901a00379cf06c0">test_change_domain_rejected</a> (self, mock_call_async, mock_wait_for_service)</td></tr>
+<tr class="memitem:a6cd0171f4f6eb41fb6b941b8529c8c6f" id="r_a6cd0171f4f6eb41fb6b941b8529c8c6f"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a6cd0171f4f6eb41fb6b941b8529c8c6f">test_change_domain_service_not_available</a> (self, mock_wait_for_service)</td></tr>
+<tr class="memitem:a4b464915d448882628cdb173db275aaa" id="r_a4b464915d448882628cdb173db275aaa"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a4b464915d448882628cdb173db275aaa">test_change_domain_success</a> (self, mock_call_async, mock_wait_for_service)</td></tr>
 <tr class="memitem:a7d02edbd8b387897dc8af0944b51d3d5" id="r_a7d02edbd8b387897dc8af0944b51d3d5"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a7d02edbd8b387897dc8af0944b51d3d5">test_get_domain_action_details_failure</a> (self, mock_call_async, mock_wait_for_service)</td></tr>
 <tr class="memitem:a039dabb79fc0cd61be5fcd572e439e53" id="r_a039dabb79fc0cd61be5fcd572e439e53"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a039dabb79fc0cd61be5fcd572e439e53">test_get_domain_action_details_success</a> (self, mock_call_async, mock_wait_for_service)</td></tr>
 <tr class="memitem:a5f19e72794fdd211b391bb7672bbe7c9" id="r_a5f19e72794fdd211b391bb7672bbe7c9"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a5f19e72794fdd211b391bb7672bbe7c9">test_get_domain_actions_failure</a> (self, mock_call_async, mock_wait_for_service)</td></tr>
@@ -239,6 +242,79 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <pre class="fragment">Shutdown ROS2 after all tests.</pre> 
+</div>
+</div>
+<a id="a491fa5fcf3862e0c4901a00379cf06c0" name="a491fa5fcf3862e0c4901a00379cf06c0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a491fa5fcf3862e0c4901a00379cf06c0">&#9670;&#160;</a></span>test_change_domain_rejected()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">test_change_domain_rejected </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>mock_call_async</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>mock_wait_for_service</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Test a change_domain call rejected by the server (e.g. invalid PDDL).</pre> 
+</div>
+</div>
+<a id="a6cd0171f4f6eb41fb6b941b8529c8c6f" name="a6cd0171f4f6eb41fb6b941b8529c8c6f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6cd0171f4f6eb41fb6b941b8529c8c6f">&#9670;&#160;</a></span>test_change_domain_service_not_available()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">test_change_domain_service_not_available </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>mock_wait_for_service</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Test change_domain when the service is not available.</pre> 
+</div>
+</div>
+<a id="a4b464915d448882628cdb173db275aaa" name="a4b464915d448882628cdb173db275aaa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b464915d448882628cdb173db275aaa">&#9670;&#160;</a></span>test_change_domain_success()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">test_change_domain_success </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>mock_call_async</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>mock_wait_for_service</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Test successful domain change.</pre> 
 </div>
 </div>
 <a id="a7d02edbd8b387897dc8af0944b51d3d5" name="a7d02edbd8b387897dc8af0944b51d3d5"></a>

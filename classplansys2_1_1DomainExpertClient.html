@@ -133,6 +133,8 @@ Collaboration diagram for DomainExpertClient:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a47df980ac6e46478eda93990fe09d97b" id="r_a47df980ac6e46478eda93990fe09d97b"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a47df980ac6e46478eda93990fe09d97b">changeDomain</a> (const std::string &amp;domain)</td></tr>
+<tr class="memdesc:a47df980ac6e46478eda93990fe09d97b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace the current domain with a new one, given as PDDL content.  <br /></td></tr>
 <tr class="memitem:a3e678c130deb637988c33a0addf4acb8" id="r_a3e678c130deb637988c33a0addf4acb8"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a3e678c130deb637988c33a0addf4acb8">DomainExpertClient</a> ()</td></tr>
 <tr class="memdesc:a3e678c130deb637988c33a0addf4acb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new <a class="el" href="classplansys2_1_1DomainExpertClient.html" title="Client for requesting information or sending changes from/to the DomainExpertNode.">DomainExpertClient</a> object.  <br /></td></tr>
 <tr class="memitem:a973dccd8986cd45e23f2712cba6082b8" id="r_a973dccd8986cd45e23f2712cba6082b8"><td class="memItemLeft">plansys2_msgs::msg::Action::SharedPtr&#160;</td><td class="memItemRight"><a class="el" href="#a973dccd8986cd45e23f2712cba6082b8">getAction</a> (const std::string &amp;action, const std::vector&lt; std::string &gt; &amp;params={})</td></tr>
@@ -198,6 +200,43 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="a47df980ac6e46478eda93990fe09d97b" name="a47df980ac6e46478eda93990fe09d97b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a47df980ac6e46478eda93990fe09d97b">&#9670;&#160;</a></span>changeDomain()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> changeDomain </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>domain</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel virtual">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Replace the current domain with a new one, given as PDDL content. </p>
+<p>If the new domain is invalid, the call fails and nothing else is touched. If it is valid, domain_expert swaps it in and republishes it on domain_expert/domain. The rest of the system reacts asynchronously to that topic, after this call returns: the executor cancels any in-progress plan and the problem expert reconciles its knowledge (what no longer fits the new domain is pruned).</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">domain</td><td>The new domain, in PDDL. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the domain was successfully changed, false otherwise. </dd></dl>
+
+<p>Implements <a class="el" href="classplansys2_1_1DomainExpertInterface.html#a3bc7bc77fb46353946e9b9c411a1ad5b">DomainExpertInterface</a>.</p>
+
+</div>
+</div>
 <a id="a973dccd8986cd45e23f2712cba6082b8" name="a973dccd8986cd45e23f2712cba6082b8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a973dccd8986cd45e23f2712cba6082b8">&#9670;&#160;</a></span>getAction()</h2>
 

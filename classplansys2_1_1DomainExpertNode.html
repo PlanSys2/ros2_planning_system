@@ -135,6 +135,8 @@ Public Types</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:aa953f5bd10223f0ce817b851b71d430b" id="r_aa953f5bd10223f0ce817b851b71d430b"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aa953f5bd10223f0ce817b851b71d430b">change_domain_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::ChangeDomain::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::ChangeDomain::Response &gt; response)</td></tr>
+<tr class="memdesc:aa953f5bd10223f0ce817b851b71d430b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to replace the domain at runtime.  <br /></td></tr>
 <tr class="memitem:aabc0a91637a4debbecb79d3e6aea1809" id="r_aabc0a91637a4debbecb79d3e6aea1809"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#aabc0a91637a4debbecb79d3e6aea1809">DomainExpertNode</a> (const rclcpp::NodeOptions &amp;options=rclcpp::NodeOptions())</td></tr>
 <tr class="memdesc:aabc0a91637a4debbecb79d3e6aea1809"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new <a class="el" href="classplansys2_1_1DomainExpertNode.html" title="ROS2 Lifecycle Node that manages the domain model and handles requests from DomainExpertClient.">DomainExpertNode</a> object.  <br /></td></tr>
 <tr class="memitem:a2b13c580a35bdb82d762b93a9ea6ae72" id="r_a2b13c580a35bdb82d762b93a9ea6ae72"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a2b13c580a35bdb82d762b93a9ea6ae72">get_domain_action_details_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::GetDomainActionDetails::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::GetDomainActionDetails::Response &gt; response)</td></tr>
@@ -231,6 +233,43 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="aa953f5bd10223f0ce817b851b71d430b" name="aa953f5bd10223f0ce817b851b71d430b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa953f5bd10223f0ce817b851b71d430b">&#9670;&#160;</a></span>change_domain_service_callback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void change_domain_service_callback </td>
+          <td>(</td>
+          <td class="paramtype">const std::shared_ptr&lt; rmw_request_id_t &gt;</td>          <td class="paramname"><span class="paramname"><em>request_header</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::shared_ptr&lt; plansys2_msgs::srv::ChangeDomain::Request &gt;</td>          <td class="paramname"><span class="paramname"><em>request</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::shared_ptr&lt; plansys2_msgs::srv::ChangeDomain::Response &gt;</td>          <td class="paramname"><span class="paramname"><em>response</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Service callback to replace the domain at runtime. </p>
+<p>Fails without touching anything if the node is not active, the domain is empty or it does not validate. If valid, domain_expert_ is replaced by the instance validateDomain() built and the new domain is republished on domain_pub_.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">request_header</td><td>ROS service request header. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">request</td><td>Service request containing the new domain, in PDDL. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">response</td><td>Service response with success status and error information. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a2b13c580a35bdb82d762b93a9ea6ae72" name="a2b13c580a35bdb82d762b93a9ea6ae72"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2b13c580a35bdb82d762b93a9ea6ae72">&#9670;&#160;</a></span>get_domain_action_details_service_callback()</h2>
 
