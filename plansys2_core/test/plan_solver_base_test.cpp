@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <signal.h>
 #include <unistd.h>
 
 #include <chrono>
@@ -87,11 +86,29 @@ protected:
     return {ret, std::chrono::steady_clock::now() - start};
   }
 
+  // A zombie counts as dead: in containers whose PID 1 does not reap orphans, a
+  // killed grandchild stays as a zombie forever
+  static bool process_running(pid_t pid)
+  {
+    std::ifstream stat_ifs("/proc/" + std::to_string(pid) + "/stat");
+    std::string stat;
+    if (!std::getline(stat_ifs, stat)) {
+      return false;
+    }
+    // Format: "pid (comm) state ...", and comm may contain spaces or parentheses
+    auto close_paren = stat.rfind(')');
+    if (close_paren == std::string::npos || close_paren + 2 >= stat.size()) {
+      return false;
+    }
+    const char state = stat[close_paren + 2];
+    return state != 'Z' && state != 'X';
+  }
+
   static bool process_alive(pid_t pid)
   {
-    // A killed grandchild may need a moment to be reaped by its new parent
+    // A killed grandchild may need a moment to die or be reaped by its new parent
     for (int i = 0; i < 50; i++) {
-      if (kill(pid, 0) == -1 && errno == ESRCH) {
+      if (!process_running(pid)) {
         return false;
       }
       std::this_thread::sleep_for(20ms);
