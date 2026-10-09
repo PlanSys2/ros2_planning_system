@@ -41,17 +41,8 @@ PlannerNode::PlannerNode(const rclcpp::NodeOptions & options)
 
 PlannerNode::~PlannerNode()
 {
-  std::vector<std::string> loaded_libraries = lp_loader_.getRegisteredLibraries();
-
-  for (const auto & library : loaded_libraries) {
-    try {
-      lp_loader_.unloadLibraryForClass(library);
-      std::cout << "Successfully unloaded library: " << library << std::endl;
-    } catch (const pluginlib::LibraryUnloadException & e) {
-      std::cerr << "Failed to unload library: " << library <<
-        ". Error: " << e.what() << std::endl;
-    }
-  }
+  // Solvers must go before lp_loader_ unloads the libraries that implement them
+  solvers_.clear();
 }
 
 using CallbackReturnT =
@@ -62,6 +53,10 @@ PlannerNode::on_configure(const rclcpp_lifecycle::State & state)
 {
   (void)state;
   auto node = shared_from_this();
+  // Solvers are owned by this node, so they get a non-owning pointer to it: an
+  // owning one would keep the node alive forever (#422)
+  auto solver_node = rclcpp_lifecycle::LifecycleNode::SharedPtr(
+    rclcpp_lifecycle::LifecycleNode::SharedPtr(), this);
   double timeout;
 
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
@@ -87,7 +82,7 @@ PlannerNode::on_configure(const rclcpp_lifecycle::State & state)
         plansys2::PlanSolverBase::Ptr solver =
           lp_loader_.createUniqueInstance(solver_types_[i]);
 
-        solver->configure(node, solver_ids_[i]);
+        solver->configure(solver_node, solver_ids_[i]);
 
         RCLCPP_INFO(
           get_logger(), "Created solver : %s of type %s",
@@ -100,7 +95,7 @@ PlannerNode::on_configure(const rclcpp_lifecycle::State & state)
     }
   } else {
     auto default_solver = std::make_shared<plansys2::POPFPlanSolver>();
-    default_solver->configure(node, "POPF");
+    default_solver->configure(solver_node, "POPF");
     solvers_.insert({"POPF", default_solver});
     RCLCPP_INFO(
       get_logger(), "Created default solver : %s of type %s",

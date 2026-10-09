@@ -472,6 +472,42 @@ TEST(domain_expert, change_domain_sequence_publishes_each_accepted_domain)
   plansys2::drain_ros(200ms);
 }
 
+// The POPF solver used for validation keeps a pointer to the node: it must not keep
+// the node alive (#422)
+TEST(domain_expert, domain_expert_node_is_destroyed)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+
+  {
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    std::weak_ptr<plansys2::DomainExpertNode> weak = domain_node;
+    domain_node.reset();
+    ASSERT_TRUE(weak.expired());
+  }
+
+  {
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    std::weak_ptr<plansys2::DomainExpertNode> weak = domain_node;
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+    ASSERT_EQ(
+      domain_node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);
+    domain_node.reset();
+    ASSERT_TRUE(weak.expired());
+  }
+
+  // A domain that fails validation leaves the node unconfigured, but it must still go away
+  {
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    std::weak_ptr<plansys2::DomainExpertNode> weak = domain_node;
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_2_error.pddl"});
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    domain_node.reset();
+    ASSERT_TRUE(weak.expired());
+  }
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
