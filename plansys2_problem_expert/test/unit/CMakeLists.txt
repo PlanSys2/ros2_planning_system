@@ -21,3 +21,9 @@ target_link_libraries(malformed_pddl_test
   ${PROJECT_NAME}
   ament_index_cpp::ament_index_cpp
 )
+
+ament_add_gtest(tree_node_ids_test tree_node_ids_test.cpp TIMEOUT 300)
+target_link_libraries(tree_node_ids_test
+  ${PROJECT_NAME}
+  ament_index_cpp::ament_index_cpp
+)

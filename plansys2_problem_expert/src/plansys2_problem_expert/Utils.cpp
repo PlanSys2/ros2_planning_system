@@ -26,14 +26,17 @@
 namespace plansys2
 {
 
-std::tuple<bool, bool, double> evaluate(
+namespace
+{
+
+std::tuple<bool, bool, double> evaluate_node(
   const plansys2_msgs::msg::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
   std::vector<plansys2::Predicate> & predicates,
   std::vector<plansys2::Function> & functions,
   bool apply,
   bool use_state,
-  uint8_t node_id,
+  uint32_t node_id,
   bool negate)
 {
   if (tree.nodes.empty()) {  // No expression
@@ -47,7 +50,7 @@ std::tuple<bool, bool, double> evaluate(
 
         for (auto & child_id : tree.nodes[node_id].children) {
           std::tuple<bool, bool, double> result =
-            evaluate(
+            evaluate_node(
             tree, problem_client, predicates, functions, apply, use_state, child_id,
             negate);
           success = success && std::get<0>(result);
@@ -62,7 +65,7 @@ std::tuple<bool, bool, double> evaluate(
 
         for (auto & child_id : tree.nodes[node_id].children) {
           std::tuple<bool, bool, double> result =
-            evaluate(
+            evaluate_node(
             tree, problem_client, predicates, functions, apply, use_state, child_id,
             negate);
           success = success && std::get<0>(result);
@@ -72,7 +75,7 @@ std::tuple<bool, bool, double> evaluate(
       }
 
     case plansys2_msgs::msg::Node::NOT: {
-        return evaluate(
+        return evaluate_node(
           tree, problem_client, predicates, functions, apply, use_state,
           tree.nodes[node_id].children[0],
           !negate);
@@ -160,10 +163,10 @@ std::tuple<bool, bool, double> evaluate(
       }
 
     case plansys2_msgs::msg::Node::EXPRESSION: {
-        std::tuple<bool, bool, double> left = evaluate(
+        std::tuple<bool, bool, double> left = evaluate_node(
           tree, problem_client, predicates,
           functions, apply, use_state, tree.nodes[node_id].children[0], negate);
-        std::tuple<bool, bool, double> right = evaluate(
+        std::tuple<bool, bool, double> right = evaluate_node(
           tree, problem_client, predicates,
           functions, apply, use_state, tree.nodes[node_id].children[1], negate);
 
@@ -246,10 +249,14 @@ std::tuple<bool, bool, double> evaluate(
       }
 
     case plansys2_msgs::msg::Node::FUNCTION_MODIFIER: {
-        std::tuple<bool, bool, double> left = evaluate(
+        if (tree.nodes[node_id].children.size() < 2) {
+          // total-cost modifiers carry only the value: costs are not tracked here
+          return std::make_tuple(true, true, 0);
+        }
+        std::tuple<bool, bool, double> left = evaluate_node(
           tree, problem_client, predicates,
           functions, apply, use_state, tree.nodes[node_id].children[0], negate);
-        std::tuple<bool, bool, double> right = evaluate(
+        std::tuple<bool, bool, double> right = evaluate_node(
           tree, problem_client,
           predicates, functions, apply, use_state, tree.nodes[node_id].children[1],
           negate);
@@ -288,7 +295,7 @@ std::tuple<bool, bool, double> evaluate(
         }
 
         if (success && apply) {
-          uint8_t left_id = tree.nodes[node_id].children[0];
+          uint32_t left_id = tree.nodes[node_id].children[0];
           if (use_state) {
             auto it =
               std::find_if(
@@ -366,7 +373,7 @@ std::tuple<bool, bool, double> evaluate(
             replace[tree.nodes[node_id].parameters[i].name] = parameters_values[i];
           }
           auto tree_replaced = plansys2::replace_children_param(tree, node_id, replace);
-          std::tuple<bool, bool, double> result = evaluate(
+          std::tuple<bool, bool, double> result = evaluate_node(
             tree_replaced,
             problem_client,
             predicates,
@@ -388,6 +395,34 @@ std::tuple<bool, bool, double> evaluate(
   }
 
   return std::make_tuple(false, false, 0);
+}
+
+}  // namespace
+
+std::tuple<bool, bool, double> evaluate(
+  const plansys2_msgs::msg::Tree & tree,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions,
+  bool apply,
+  bool use_state,
+  uint32_t node_id,
+  bool negate)
+{
+  if (tree.nodes.empty()) {  // No expression
+    return std::make_tuple(true, true, 0);
+  }
+
+  // Trees may come from outside (e.g. services): walk them only if they are sound
+  std::string error;
+  if (node_id >= tree.nodes.size() || !parser::pddl::validateTree(tree, error)) {
+    std::cerr << "evaluate: malformed tree: " <<
+      (error.empty() ? "node id out of range" : error) << std::endl;
+    return std::make_tuple(false, false, 0);
+  }
+
+  return evaluate_node(
+    tree, problem_client, predicates, functions, apply, use_state, node_id, negate);
 }
 
 std::tuple<bool, bool, double> evaluate(
@@ -515,7 +550,7 @@ std::vector<std::string> get_action_params(const std::string & input)
 
 plansys2_msgs::msg::Tree replace_children_param(
   const plansys2_msgs::msg::Tree & tree,
-  const uint8_t & node_id,
+  const uint32_t & node_id,
   const std::map<std::string, std::string> & replace)
 {
   plansys2_msgs::msg::Tree new_tree = tree;

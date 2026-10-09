@@ -277,7 +277,7 @@ private:
   bool checkPredicateTreeTypes(
     const plansys2_msgs::msg::Tree & tree,
     std::shared_ptr<DomainExpert> & domain_expert_,
-    uint8_t node_id = 0);
+    uint32_t node_id = 0);
 
   /**
    * @brief Remove predicates that reference a specific instance.

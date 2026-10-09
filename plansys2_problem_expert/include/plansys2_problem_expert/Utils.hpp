@@ -54,7 +54,7 @@ std::tuple<bool, bool, double> evaluate(
   std::vector<plansys2::Function> & functions,
   bool apply = false,
   bool use_state = false,
-  uint8_t node_id = 0,
+  uint32_t node_id = 0,
   bool negate = false);
 
 /**
@@ -216,7 +216,7 @@ std::vector<std::string> get_action_params(const std::string & action_expr);
  */
 plansys2_msgs::msg::Tree replace_children_param(
   const plansys2_msgs::msg::Tree & tree,
-  const uint8_t & node_id,
+  const uint32_t & node_id,
   const std::map<std::string, std::string> & replace);
 
 /**
