@@ -12,11 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <unistd.h>
+
 #include <string>
 #include <vector>
 #include <memory>
 #include <iostream>
 #include <fstream>
+#include <filesystem>
+#include <future>
+#include <thread>
+#include <chrono>
 
 #include "ament_index_cpp/get_package_share_path.hpp"
 
@@ -210,6 +216,93 @@ TEST(popf_plan_solver, create_folder_filesystem_error)
   const auto test_namespace = "/test/node";
   const auto output_dir = test_folder_creation(test_path, test_namespace);
   ASSERT_FALSE(output_dir.has_value());
+}
+
+std::string read_test_file(const std::string & name)
+{
+  std::string pkgpath =
+    ament_index_cpp::get_package_share_path("plansys2_popf_plan_solver").string();
+  std::ifstream ifs(pkgpath + "/pddl/" + name);
+  return std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+}
+
+// Number of running processes whose command line mentions `pattern`
+int count_processes_with(const std::string & pattern)
+{
+  int count = 0;
+  for (const auto & entry : std::filesystem::directory_iterator("/proc")) {
+    const auto name = entry.path().filename().string();
+    if (name.find_first_not_of("0123456789") != std::string::npos ||
+      std::stoi(name) == getpid())
+    {
+      continue;
+    }
+    std::ifstream cmdline_ifs(entry.path() / "cmdline");
+    std::string cmdline((std::istreambuf_iterator<char>(cmdline_ifs)),
+      std::istreambuf_iterator<char>());
+    if (cmdline.find(pattern) != std::string::npos) {
+      count++;
+    }
+  }
+  return count;
+}
+
+// popf is started through `ros2 run`, so it is a grandchild of the solver: it must
+// not survive the call (#418)
+TEST(popf_plan_solver, timeout_is_enforced_and_popf_is_killed)
+{
+  const std::string ns = "popf_timeout_test_" + std::to_string(getpid());
+  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
+  auto planner = std::make_shared<plansys2::POPFPlanSolver>();
+  planner->configure(node, "POPF");
+
+  auto start = std::chrono::steady_clock::now();
+  auto plan = planner->getPlan(
+    read_test_file("domain_simple.pddl"), read_test_file("problem_hard_unsolvable.pddl"),
+    ns, rclcpp::Duration(2s));
+  auto elapsed = std::chrono::steady_clock::now() - start;
+
+  ASSERT_FALSE(plan);
+  ASSERT_GE(elapsed, 2s);
+  ASSERT_LT(elapsed, 5s);
+
+  std::this_thread::sleep_for(500ms);
+  ASSERT_EQ(count_processes_with(ns), 0);
+
+  // The solver is still usable after a timeout
+  auto good = planner->getPlan(
+    read_test_file("domain_simple.pddl"), read_test_file("problem_simple_1.pddl"), ns);
+  ASSERT_TRUE(good);
+  ASSERT_EQ(good.value().items.size(), 3u);
+}
+
+TEST(popf_plan_solver, cancel_stops_popf)
+{
+  const std::string ns = "popf_cancel_test_" + std::to_string(getpid());
+  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
+  auto planner = std::make_shared<plansys2::POPFPlanSolver>();
+  planner->configure(node, "POPF");
+
+  auto future = std::async(
+    std::launch::async, [&]() {
+      return planner->getPlan(
+        read_test_file("domain_simple.pddl"), read_test_file("problem_hard_unsolvable.pddl"),
+        ns, rclcpp::Duration(60s));
+    });
+
+  // Wait until popf is actually running
+  auto start = std::chrono::steady_clock::now();
+  while (count_processes_with(ns) == 0 && std::chrono::steady_clock::now() - start < 10s) {
+    std::this_thread::sleep_for(50ms);
+  }
+  ASSERT_GT(count_processes_with(ns), 0);
+
+  planner->cancel();
+  ASSERT_EQ(future.wait_for(5s), std::future_status::ready);
+  ASSERT_FALSE(future.get());
+
+  std::this_thread::sleep_for(500ms);
+  ASSERT_EQ(count_processes_with(ns), 0);
 }
 
 int main(int argc, char ** argv)

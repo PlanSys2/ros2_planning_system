@@ -47,6 +47,11 @@ public:
   PlanSolverBase() {}
 
   /**
+   * @brief Virtual destructor, plugins are destroyed through this base class.
+   */
+  virtual ~PlanSolverBase() = default;
+
+  /**
    * @brief Configure the plan solver with a lifecycle node and plugin name.
    * @param[in] lc_node Shared pointer to the lifecycle node.
    * @param[in] plugin_name The name of the plugin.
@@ -82,10 +87,16 @@ public:
 
   /**
    * @brief Execute the planner with a command.
+   *
+   * The command runs in its own process group with its standard output written to
+   * plan_path. On timeout or cancel() the whole group is killed, so processes it
+   * started (e.g. a planner under `ros2 run`) do not outlive the call.
+   *
    * @param[in] command The command to execute the planner.
    * @param[in] solver_timeout Timeout for the solver.
    * @param[in] plan_path Path to store the resulting plan.
-   * @return true if the planner executed successfully, false otherwise.
+   * @return true if the planner exited with status 0 and its output was fully
+   *         written, false on timeout, cancellation, signal, non-zero exit or error.
    */
   virtual bool execute_planner(
     const std::string & command, const rclcpp::Duration & solver_timeout,
