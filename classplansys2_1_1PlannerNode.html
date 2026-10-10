@@ -99,6 +99,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classplansys2_1_1PlannerNode-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">PlannerNode Class Reference</div></div>
 </div><!--header-->
@@ -113,9 +114,11 @@ Inheritance diagram for PlannerNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="classplansys2_1_1PlannerNode__inherit__graph.png" border="0" usemap="#aPlannerNode_inherit__map" loading="lazy" alt="Inheritance graph"/></div>
 <map name="aPlannerNode_inherit__map" id="aPlannerNode_inherit__map">
-<area shape="rect" title="ROS2 Lifecycle Node that manages the planning system and handles planning requests." alt="" coords="9,79,106,105"/>
-<area shape="rect" title=" " alt="" coords="5,5,110,31"/>
-<area shape="poly" title=" " alt="" coords="60,46,60,79,55,79,55,46"/>
+<area shape="rect" title="ROS2 Lifecycle Node that manages the planning system and handles planning requests." alt="" coords="18,79,115,105"/>
+<area shape="rect" href="classTestPlannerNode.html" title=" " alt="" coords="5,153,128,178"/>
+<area shape="poly" title=" " alt="" coords="69,120,69,152,64,152,64,120"/>
+<area shape="rect" title=" " alt="" coords="14,5,119,31"/>
+<area shape="poly" title=" " alt="" coords="69,46,69,79,64,79,64,46"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <div class="dynheader">
@@ -123,9 +126,13 @@ Collaboration diagram for PlannerNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="classplansys2_1_1PlannerNode__coll__graph.png" border="0" usemap="#aPlannerNode_coll__map" loading="lazy" alt="Collaboration graph"/></div>
 <map name="aPlannerNode_coll__map" id="aPlannerNode_coll__map">
-<area shape="rect" title="ROS2 Lifecycle Node that manages the planning system and handles planning requests." alt="" coords="9,79,106,105"/>
-<area shape="rect" title=" " alt="" coords="5,5,110,31"/>
-<area shape="poly" title=" " alt="" coords="60,46,60,79,55,79,55,46"/>
+<area shape="rect" title="ROS2 Lifecycle Node that manages the planning system and handles planning requests." alt="" coords="277,63,373,88"/>
+<area shape="rect" title=" " alt="" coords="31,5,136,31"/>
+<area shape="poly" title=" " alt="" coords="152,24,253,45,295,60,293,65,252,50,151,29"/>
+<area shape="rect" title=" " alt="" coords="5,55,162,96"/>
+<area shape="poly" title=" " alt="" coords="178,73,276,73,276,78,178,78"/>
+<area shape="rect" title=" " alt="" coords="9,120,158,175"/>
+<area shape="poly" title=" " alt="" coords="172,124,252,101,291,86,293,91,254,106,173,129"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -162,6 +169,11 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:ab3a0b566dd328562e2fea6bbb872a77a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to validate a PDDL domain.  <br /></td></tr>
 <tr class="memitem:a10ae20b189dd786b467a8441316e13d7" id="r_a10ae20b189dd786b467a8441316e13d7"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a10ae20b189dd786b467a8441316e13d7">~PlannerNode</a> ()</td></tr>
 <tr class="memdesc:a10ae20b189dd786b467a8441316e13d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor for the <a class="el" href="classplansys2_1_1PlannerNode.html" title="ROS2 Lifecycle Node that manages the planning system and handles planning requests.">PlannerNode</a>.  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-pro-attribs" class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:a58ea7b0662b3757e4a68b452bf1d94ec" id="r_a58ea7b0662b3757e4a68b452bf1d94ec"><td class="memItemLeft">pluginlib::ClassLoader&lt; <a class="el" href="classplansys2_1_1PlanSolverBase.html">plansys2::PlanSolverBase</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a58ea7b0662b3757e4a68b452bf1d94ec">lp_loader_</a></td></tr>
+<tr class="memitem:a7efc109754f2e9febc8368dd04fedda0" id="r_a7efc109754f2e9febc8368dd04fedda0"><td class="memItemLeft"><a class="el" href="#a818b87beedca3e0e96430839668ea46b">SolverMap</a>&#160;</td><td class="memItemRight"><a class="el" href="#a7efc109754f2e9febc8368dd04fedda0">solvers_</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>ROS2 Lifecycle <a class="el" href="structplansys2_1_1Node.html" title="Node in the temporal planning graph.">Node</a> that manages the planning system and handles planning requests. </p>
@@ -562,6 +574,51 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a58ea7b0662b3757e4a68b452bf1d94ec" name="a58ea7b0662b3757e4a68b452bf1d94ec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a58ea7b0662b3757e4a68b452bf1d94ec">&#9670;&#160;</a></span>lp_loader_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">pluginlib::ClassLoader&lt;<a class="el" href="classplansys2_1_1PlanSolverBase.html">plansys2::PlanSolverBase</a>&gt; lp_loader_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7efc109754f2e9febc8368dd04fedda0" name="a7efc109754f2e9febc8368dd04fedda0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7efc109754f2e9febc8368dd04fedda0">&#9670;&#160;</a></span>solvers_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="#a818b87beedca3e0e96430839668ea46b">SolverMap</a> solvers_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>

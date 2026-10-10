@@ -1,5 +1,13 @@
 <map id="TestPlannerNode" name="TestPlannerNode">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,79,128,105"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="40,5,93,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="69,46,69,79,64,79,64,46"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="422,96,545,122"/>
+<area shape="rect" id="Node000002" href="$classplansys2_1_1PlannerNode.html" title="ROS2 Lifecycle Node that manages the planning system and handles planning requests." alt="" coords="277,63,373,88"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="389,86,422,93,421,99,388,91"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="31,5,136,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="152,24,253,45,295,60,293,65,252,50,151,29"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="5,55,162,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="178,73,276,73,276,78,178,78"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="9,120,158,175"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="172,124,252,101,291,86,293,91,254,106,173,129"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="299,112,351,138"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="366,118,421,112,422,118,367,123"/>
 </map>

@@ -8,8 +8,24 @@
 <area shape="poly" id="edge84_Node000000_Node000003" title=" " alt="" coords="125,114,174,114,174,120,125,120"/>
 <area shape="rect" id="Node000005" href="$classplansys2_1_1PlannerNode.html" title="ROS2 Lifecycle Node that manages the planning system and handles planning requests." alt="" coords="178,153,274,179"/>
 <area shape="poly" id="edge86_Node000000_Node000005" title=" " alt="" coords="119,132,180,150,179,155,118,137"/>
-<area shape="rect" id="Node000006" href="$classplansys2_1_1ProblemExpertNode.html" title="ROS 2 Lifecycle node that manages the PDDL problem representation and operations." alt="" coords="158,203,294,228"/>
-<area shape="poly" id="edge87_Node000000_Node000006" title=" " alt="" coords="86,138,120,164,159,189,182,200,180,205,156,194,117,168,83,142"/>
-<area shape="rect" id="Node000004" href="$classExecutorNodeTest.html" title=" " alt="" coords="342,104,470,130"/>
-<area shape="poly" id="edge85_Node000003_Node000004" title=" " alt="" coords="293,114,342,114,342,120,293,120"/>
+<area shape="rect" id="Node000014" href="$classplansys2_1_1ProblemExpertNode.html" title="ROS 2 Lifecycle node that manages the PDDL problem representation and operations." alt="" coords="158,203,294,228"/>
+<area shape="poly" id="edge88_Node000000_Node000014" title=" " alt="" coords="86,138,120,164,159,189,182,200,180,205,156,194,117,168,83,142"/>
+<area shape="rect" id="Node000004" href="$classExecutorNodeTest.html" title=" " alt="" coords="353,104,481,130"/>
+<area shape="poly" id="edge85_Node000003_Node000004" title=" " alt="" coords="292,114,353,114,353,120,292,120"/>
+<area shape="rect" id="Node000006" href="$classTestPlannerNode.html" title=" " alt="" coords="356,153,478,179"/>
+<area shape="poly" id="edge87_Node000005_Node000006" title=" " alt="" coords="289,164,355,164,355,169,289,169"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="200,276,252,302"/>
+<area shape="poly" id="edge90_Node000007_Node000006" title=" " alt="" coords="259,265,292,239,315,212,325,200,341,188,362,177,365,182,343,192,329,204,319,216,296,243,262,269"/>
+<area shape="rect" id="Node000008" href="$classMoveServer.html" title=" " alt="" coords="372,203,463,228"/>
+<area shape="poly" id="edge89_Node000007_Node000008" title=" " alt="" coords="265,269,341,237,371,226,373,231,343,242,267,274"/>
+<area shape="rect" id="Node000009" href="$classplansys2_1_1LifecycleServiceClient.html" title="Client node to manage the lifecycle of another ROS2 node." alt="" coords="342,252,492,278"/>
+<area shape="poly" id="edge91_Node000007_Node000009" title=" " alt="" coords="267,281,341,272,342,277,268,286"/>
+<area shape="rect" id="Node000010" href="$classplansys2__logger_1_1LoggerNode.html" title=" " alt="" coords="371,301,463,327"/>
+<area shape="poly" id="edge92_Node000007_Node000010" title=" " alt="" coords="268,292,371,305,370,311,267,297"/>
+<area shape="rect" id="Node000011" href="$classplansys2__terminal_1_1Terminal.html" title=" " alt="" coords="382,351,453,376"/>
+<area shape="poly" id="edge93_Node000007_Node000011" title=" " alt="" coords="267,305,343,337,382,350,380,356,341,342,265,310"/>
+<area shape="rect" id="Node000013" href="$classplansys2__tests_1_1ExecutionLogger.html" title=" " alt="" coords="358,400,476,426"/>
+<area shape="poly" id="edge95_Node000007_Node000013" title=" " alt="" coords="251,311,292,349,343,387,367,397,364,402,341,391,288,354,247,315"/>
+<area shape="rect" id="Node000012" href="$classTerminalTest.html" title=" " alt="" coords="540,351,638,376"/>
+<area shape="poly" id="edge94_Node000011_Node000012" title=" " alt="" coords="468,361,540,361,540,366,468,366"/>
 </map>
