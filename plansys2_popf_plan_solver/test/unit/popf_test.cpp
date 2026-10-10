@@ -469,21 +469,24 @@ TEST(popf_plan_solver, unwritable_output_dir_fails_without_running_popf)
   const auto domain = read_test_file("domain_simple.pddl");
   const auto problem = read_test_file("problem_simple_1.pddl");
 
-  // A read-only folder: no run folder can be created in it
-  const auto read_only = fresh_folder("popf_read_only");
-  std::filesystem::create_directories(read_only / "ns");
-  std::filesystem::permissions(read_only / "ns", std::filesystem::perms::owner_read |
-    std::filesystem::perms::owner_exec);
-  auto planner = make_solver("read_only", read_only);
-  ASSERT_FALSE(planner->getPlan(domain, problem, "ns"));
-  ASSERT_FALSE(planner->isDomainValid(domain, "ns"));
-  std::filesystem::permissions(read_only / "ns", std::filesystem::perms::owner_all);
-  std::filesystem::remove_all(read_only);
+  // A read-only folder: no run folder can be created in it (root, as in CI, writes anyway)
+  if (geteuid() != 0) {
+    const auto read_only = fresh_folder("popf_read_only");
+    std::filesystem::create_directories(read_only / "ns");
+    std::filesystem::permissions(
+      read_only / "ns", std::filesystem::perms::owner_read |
+      std::filesystem::perms::owner_exec);
+    auto planner = make_solver("read_only", read_only);
+    ASSERT_FALSE(planner->getPlan(domain, problem, "ns"));
+    ASSERT_FALSE(planner->isDomainValid(domain, "ns"));
+    std::filesystem::permissions(read_only / "ns", std::filesystem::perms::owner_all);
+    std::filesystem::remove_all(read_only);
+  }
 
   // A file where a folder should be
   const auto file = fresh_folder("popf_not_a_folder");
   std::ofstream(file) << "not a folder\n";
-  planner = make_solver("not_a_folder", file);
+  auto planner = make_solver("not_a_folder", file);
   ASSERT_FALSE(planner->getPlan(domain, problem, "ns"));
   ASSERT_FALSE(planner->isDomainValid(domain, "ns"));
   std::filesystem::remove(file);
