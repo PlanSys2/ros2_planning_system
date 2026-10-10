@@ -27,21 +27,35 @@ jobs:
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
           apt-get install -y libfl-dev
+      # colcon lcov-result gives lcov its own configuration in every step, merging the
+      # package reports included: lcov 2 rejects some of them for gcc line mismatches
+      - name: lcov configuration
+        run: |
+          cat > /tmp/plansys2_lcovrc << 'EOF'
+          geninfo_auto_base = 1
+          geninfo_external = 0
+          genhtml_num_spaces = 2
+          genhtml_legend = 1
+          function_coverage = 1
+          branch_coverage = 1
+          lcov_quiet = 1
+          lcov_follow = 1
+          ignore_errors = inconsistent,corrupt,empty,gcov,missing
+          EOF
       - name: build and test
         uses: ros-tooling/action-ros-ci@0.4.8
         with:
           package-name: plansys2_bringup plansys2_bt_actions plansys2_core plansys2_domain_expert plansys2_executor plansys2_lifecycle_manager plansys2_msgs plansys2_pddl_parser plansys2_planner plansys2_popf_plan_solver plansys2_problem_expert plansys2_support_py plansys2_terminal plansys2_tests plansys2_tools plansys2_tui_cli
           target-ros2-distro: rolling
           vcs-repo-file-url: ${GITHUB_WORKSPACE}/dependency_repos.repos
-          # action-ros-ci 0.4 dropped colcon-mixin-name: the mixin goes in the defaults.
-          # lcov 2 stops on gcc line mismatches (e.g. in gtest bodies): report them only
+          # action-ros-ci 0.4 dropped colcon-mixin-name: the mixin goes in the defaults
           colcon-defaults: |
             {
               "build": {
                 "mixin": ["coverage-gcc"]
               },
               "lcov-result": {
-                "lcov-args": ["--ignore-errors", "inconsistent,empty,gcov,missing"]
+                "lcov-config-file": "/tmp/plansys2_lcovrc"
               },
               "test": {
                 "parallel-workers" : 1
