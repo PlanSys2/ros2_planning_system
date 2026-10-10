@@ -241,12 +241,14 @@ Protected Member Functions</h2></td></tr>
 <tr class="memdesc:a5f7f72a37570c07a0913e6a7d0ca16a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback for handling new goal requests.  <br /></td></tr>
 <tr class="memitem:a7769e872111ed8a6c88d9647e079468c" id="r_a7769e872111ed8a6c88d9647e079468c"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a7769e872111ed8a6c88d9647e079468c">init_plan_for_execution</a> (<a class="el" href="structplansys2_1_1PlanRuntineInfo.html">PlanRuntineInfo</a> &amp;runtime_info)</td></tr>
 <tr class="memdesc:a7769e872111ed8a6c88d9647e079468c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes runtime information for a new plan.  <br /></td></tr>
+<tr class="memitem:aba81f4baa33eb5fa7a3f13cd4e76b5bf" id="r_aba81f4baa33eb5fa7a3f13cd4e76b5bf"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#aba81f4baa33eb5fa7a3f13cd4e76b5bf">init_plan_for_execution_impl</a> (<a class="el" href="structplansys2_1_1PlanRuntineInfo.html">PlanRuntineInfo</a> &amp;runtime_info)</td></tr>
 <tr class="memitem:a86a57f1ccb911302c1441924ce84f667" id="r_a86a57f1ccb911302c1441924ce84f667"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a86a57f1ccb911302c1441924ce84f667">print_execution_info</a> (std::shared_ptr&lt; std::map&lt; std::string, <a class="el" href="structplansys2_1_1ActionExecutionInfo.html">ActionExecutionInfo</a> &gt; &gt; exec_info)</td></tr>
 <tr class="memdesc:a86a57f1ccb911302c1441924ce84f667"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints execution information to stderr for debugging.  <br /></td></tr>
 <tr class="memitem:a52977a10637c8bd1bdee8b52a42be81b" id="r_a52977a10637c8bd1bdee8b52a42be81b"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a52977a10637c8bd1bdee8b52a42be81b">purge_handlers_list</a> ()</td></tr>
 <tr class="memdesc:a52977a10637c8bd1bdee8b52a42be81b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes completed goal handlers from the list.  <br /></td></tr>
 <tr class="memitem:a122744ac0a2321d4cee807de35004a9a" id="r_a122744ac0a2321d4cee807de35004a9a"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a122744ac0a2321d4cee807de35004a9a">replan_for_execution</a> (<a class="el" href="structplansys2_1_1PlanRuntineInfo.html">PlanRuntineInfo</a> &amp;runtime_info)</td></tr>
 <tr class="memdesc:a122744ac0a2321d4cee807de35004a9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reinitializes runtime information for replanning.  <br /></td></tr>
+<tr class="memitem:a9857f04c682d6c7711eef491a3b330a6" id="r_a9857f04c682d6c7711eef491a3b330a6"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a9857f04c682d6c7711eef491a3b330a6">replan_for_execution_impl</a> (<a class="el" href="structplansys2_1_1PlanRuntineInfo.html">PlanRuntineInfo</a> &amp;runtime_info)</td></tr>
 <tr class="memitem:ad0cda71db3267a37b5751c1ed8a701fd" id="r_ad0cda71db3267a37b5751c1ed8a701fd"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ad0cda71db3267a37b5751c1ed8a701fd">reset_groot_monitor</a> ()</td></tr>
 <tr class="memdesc:ad0cda71db3267a37b5751c1ed8a701fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset Groot2 monitor.  <br /></td></tr>
 <tr class="memitem:a841fef30fd63d919994996fef8757cb7" id="r_a841fef30fd63d919994996fef8757cb7"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a841fef30fd63d919994996fef8757cb7">update_plan</a> (<a class="el" href="structplansys2_1_1PlanRuntineInfo.html">PlanRuntineInfo</a> &amp;runtime_info)</td></tr>
@@ -935,6 +937,31 @@ Static Protected Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="aba81f4baa33eb5fa7a3f13cd4e76b5bf" name="aba81f4baa33eb5fa7a3f13cd4e76b5bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba81f4baa33eb5fa7a3f13cd4e76b5bf">&#9670;&#160;</a></span>init_plan_for_execution_impl()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> init_plan_for_execution_impl </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structplansys2_1_1PlanRuntineInfo.html">PlanRuntineInfo</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>runtime_info</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a26f6915d7f6c74f8cf2e766e352ef4a1" name="a26f6915d7f6c74f8cf2e766e352ef4a1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a26f6915d7f6c74f8cf2e766e352ef4a1">&#9670;&#160;</a></span>on_activate()</h2>
 
@@ -1182,6 +1209,31 @@ Static Protected Attributes</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if reinitialization was successful, false otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a9857f04c682d6c7711eef491a3b330a6" name="a9857f04c682d6c7711eef491a3b330a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9857f04c682d6c7711eef491a3b330a6">&#9670;&#160;</a></span>replan_for_execution_impl()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> replan_for_execution_impl </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structplansys2_1_1PlanRuntineInfo.html">PlanRuntineInfo</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>runtime_info</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
