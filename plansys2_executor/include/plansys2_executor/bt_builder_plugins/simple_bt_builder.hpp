@@ -73,6 +73,21 @@ struct ActionGraph
 
   std::list<ActionNode::Ptr> roots;
   std::map<float, std::list<ActionNode::Ptr>> levels;
+
+  // Arcs point both ways, so the nodes would keep each other alive (#430)
+  ~ActionGraph()
+  {
+    auto unlink = [](const std::list<ActionNode::Ptr> & nodes) {
+        for (const auto & node : nodes) {
+          node->in_arcs.clear();
+          node->out_arcs.clear();
+        }
+      };
+    unlink(roots);
+    for (const auto & level : levels) {
+      unlink(level.second);
+    }
+  }
 };
 
 /**
