@@ -41,7 +41,9 @@ class POPFPlanSolver : public PlanSolverBase
 private:
   std::string arguments_parameter_name_;
   std::string output_dir_parameter_name_;
-  bool cancel_requested_;
+  std::string keep_files_parameter_name_;
+  // popf executable, found at configure
+  std::string popf_path_ {"popf"};
 
 public:
   /**
@@ -111,6 +113,14 @@ protected:
    * @return std::optional<plansys2_msgs::msg::Plan> The parsed plan if successful, nullopt otherwise.
    */
   std::optional<plansys2_msgs::msg::Plan> parse_plan_result(const std::string & plan_path);
+
+  // A new folder for one popf run, so concurrent runs never share files (#441)
+  std::optional<std::filesystem::path> create_run_folder(const std::string & node_namespace);
+  // Removed after the run unless <plugin>.keep_files is set
+  void remove_run_folder(const std::filesystem::path & run_folder);
+  // popf with the plugin arguments on the given files
+  std::string popf_command(
+    const std::filesystem::path & domain_path, const std::filesystem::path & problem_path);
 };
 
 }  // namespace plansys2

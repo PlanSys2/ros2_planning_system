@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(plansys2_core REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
   src/plansys2_popf_plan_solver/popf_plan_solver.cpp
@@ -22,6 +23,7 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC
   plansys2_core::plansys2_core
   PRIVATE
+  ament_index_cpp::ament_index_cpp
   pluginlib::pluginlib
   rclcpp::rclcpp
 )
@@ -50,7 +52,6 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
-  find_package(ament_index_cpp REQUIRED)
   add_subdirectory(test)
 endif()
 
