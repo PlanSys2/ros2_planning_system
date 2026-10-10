@@ -261,6 +261,11 @@ public:
   rclcpp::Time problem_ts_;
 
 private:
+  // Called before every change: the cache must not return the problem from before it (#438)
+  void invalidate_cache();
+  // Problem messages stamped earlier than this are older than our last change
+  rclcpp::Time cache_valid_since_ {0, 0, RCL_ROS_TIME};
+
   rclcpp::Client<plansys2_msgs::srv::AddProblem>::SharedPtr
     add_problem_client_;
   rclcpp::Client<plansys2_msgs::srv::AddProblemGoal>::SharedPtr

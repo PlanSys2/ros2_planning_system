@@ -19,6 +19,8 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <utility>
+#include <functional>
 
 #include "ament_index_cpp/get_package_share_path.hpp"
 
@@ -1140,6 +1142,132 @@ TEST(problem_expert_node, add_problem_instance_rejects_invalid_names)
   const auto problem = problem_client->getProblem();
   ASSERT_TRUE(problem_client->addProblem(problem));
   ASSERT_EQ(problem_client->getInstances().size(), 1u);
+}
+
+namespace
+{
+
+struct NodesWithClient
+{
+  explicit NodesWithClient(const std::string & name)
+  {
+    auto remap = domain_topic_remap(name);
+    domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
+    problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
+    problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+    std::string pkgpath =
+      ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+    exe.add_node(domain_node->get_node_base_interface());
+    exe.add_node(problem_node->get_node_base_interface());
+    spinner = std::make_unique<ScopedSpinner>(exe);
+  }
+
+  std::shared_ptr<plansys2::DomainExpertNode> domain_node;
+  std::shared_ptr<plansys2::ProblemExpertNode> problem_node;
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client;
+  rclcpp::executors::SingleThreadedExecutor exe;
+  std::unique_ptr<ScopedSpinner> spinner;
+};
+
+}  // namespace
+
+// #438: getProblem(true) right after a change used to return the problem from before it
+TEST(problem_expert_node, cached_problem_follows_the_client_changes)
+{
+  NodesWithClient nodes("cached_problem_follows_the_client_changes");
+  auto & client = nodes.problem_client;
+
+  std::string saved_problem;
+  std::vector<std::pair<std::string, std::function<bool()>>> changes = {
+    {"addInstance", [&]() {
+        return client->addInstance(plansys2::Instance("r2d2", "robot")) &&
+               client->addInstance(plansys2::Instance("kitchen", "room")) &&
+               client->addInstance(plansys2::Instance("bedroom", "room"));
+      }},
+    {"addPredicate", [&]() {
+        return client->addPredicate(plansys2::Predicate("(robot_at r2d2 kitchen)"));
+      }},
+    {"addFunction", [&]() {
+        return client->addFunction(plansys2::Function("(= (room_distance kitchen bedroom) 5)"));
+      }},
+    {"updateFunction", [&]() {
+        return client->updateFunction(plansys2::Function("(= (room_distance kitchen bedroom) 7)"));
+      }},
+    {"setGoal", [&]() {
+        saved_problem = client->getProblem();
+        return client->setGoal(plansys2::Goal("(and (robot_at r2d2 bedroom))"));
+      }},
+    {"setGoal again", [&]() {
+        return client->setGoal(plansys2::Goal("(and (robot_at r2d2 kitchen))"));
+      }},
+    {"clearGoal", [&]() {return client->clearGoal();}},
+    {"removePredicate", [&]() {
+        return client->removePredicate(plansys2::Predicate("(robot_at r2d2 kitchen)"));
+      }},
+    {"removeFunction", [&]() {
+        return client->removeFunction(plansys2::Function("(= (room_distance kitchen bedroom) 7)"));
+      }},
+    {"removeInstance", [&]() {
+        return client->removeInstance(plansys2::Instance("r2d2", "robot"));
+      }},
+    {"addProblem", [&]() {return client->addProblem(saved_problem);}},
+    {"clearKnowledge", [&]() {return client->clearKnowledge();}},
+  };
+
+  // Several rounds, so a late problem message has chances to show up
+  for (int round = 0; round < 5; round++) {
+    for (const auto & [name, change] : changes) {
+      client->getProblem();  // the cache holds the problem before the change
+      ASSERT_TRUE(change()) << name;
+      const auto cached = client->getProblem(true);
+      ASSERT_EQ(cached, client->getProblem()) << name << " in round " << round;
+    }
+  }
+}
+
+TEST(problem_expert_node, problem_messages_older_than_a_change_are_ignored)
+{
+  NodesWithClient nodes("problem_messages_older_than_a_change_are_ignored");
+  auto & client = nodes.problem_client;
+
+  auto test_node = rclcpp::Node::make_shared("stale_problem_publisher");
+  auto pub = test_node->create_publisher<plansys2_msgs::msg::Problem>(
+    "problem_expert/problem", rclcpp::QoS(100));
+  auto publish = [&](const std::string & content, const rclcpp::Time & stamp) {
+      plansys2_msgs::msg::Problem msg;
+      msg.problem = content;
+      msg.stamp = stamp;
+      pub->publish(msg);
+    };
+
+  auto before_change = test_node->now();
+  ASSERT_TRUE(client->addInstance(plansys2::Instance("r2d2", "robot")));
+
+  // A message from before the change never gets into the cache; reads spin the client
+  publish("stale problem", before_change);
+  auto until = std::chrono::steady_clock::now() + std::chrono::seconds(1);
+  while (std::chrono::steady_clock::now() < until) {
+    client->existPredicate(plansys2::Predicate("(robot_at r2d2 kitchen)"));
+    ASSERT_NE(client->getProblem(true), "stale problem");
+  }
+
+  // A newer one does
+  publish("newer problem", test_node->now() + rclcpp::Duration(std::chrono::seconds(1)));
+  auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+  std::string cached;
+  while (cached != "newer problem" && std::chrono::steady_clock::now() < deadline) {
+    client->existPredicate(plansys2::Predicate("(robot_at r2d2 kitchen)"));
+    cached = client->getProblem(true);
+  }
+  ASSERT_EQ(cached, "newer problem");
 }
 
 int main(int argc, char ** argv)
