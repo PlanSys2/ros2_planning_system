@@ -12,12 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
+#include <chrono>
+#include <future>
+#include <map>
+#include <set>
 #include <string>
 #include <memory>
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 #include "plansys2_planner/PlannerNode.hpp"
+#include "plansys2_pddl_parser/Domain.hpp"
+#include "plansys2_pddl_parser/Instance.hpp"
 #include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
@@ -64,7 +72,13 @@ PlannerNode::on_configure(const rclcpp_lifecycle::State & state)
   get_parameter("plan_solver_plugins", solver_ids_);
   get_parameter("plan_solver_timeout", timeout);
 
-  solver_timeout_ = rclcpp::Duration((int32_t)timeout, 0);
+  // Fractions of a second count: 0.5 used to mean no time at all (#434)
+  if (timeout <= 0.0) {
+    RCLCPP_WARN(
+      get_logger(), "plan_solver_timeout must be positive (%g), using 15 seconds", timeout);
+    timeout = 15.0;
+  }
+  solver_timeout_ = rclcpp::Duration::from_seconds(timeout);
 
   if (!solver_ids_.empty()) {
     if (solver_ids_ == default_ids_) {
@@ -88,9 +102,12 @@ PlannerNode::on_configure(const rclcpp_lifecycle::State & state)
           get_logger(), "Created solver : %s of type %s",
           solver_ids_[i].c_str(), solver_types_[i].c_str());
         solvers_.insert({solver_ids_[i], solver});
-      } catch (const pluginlib::PluginlibException & ex) {
-        RCLCPP_FATAL(get_logger(), "Failed to create solver. Exception: %s", ex.what());
-        exit(-1);
+      } catch (const std::exception & ex) {
+        // The transition fails instead of the whole process (#434)
+        RCLCPP_ERROR(
+          get_logger(), "Failed to create solver %s: %s", solver_ids_[i].c_str(), ex.what());
+        solvers_.clear();
+        return CallbackReturnT::FAILURE;
       }
     }
   } else {
@@ -180,52 +197,49 @@ PlannerNode::on_error(const rclcpp_lifecycle::State & state)
 plansys2_msgs::msg::PlanArray
 PlannerNode::get_plan_array(const std::string & domain, const std::string & problem)
 {
-  std::map<std::string, std::future<std::optional<plansys2_msgs::msg::Plan>>> futures;
-  std::map<std::string, std::optional<plansys2_msgs::msg::Plan>> results;
+  std::string error_info;
+  return solve(domain, problem, error_info);
+}
 
+plansys2_msgs::msg::PlanArray
+PlannerNode::solve(
+  const std::string & domain, const std::string & problem, std::string & error_info)
+{
+  std::map<std::string, std::future<std::optional<plansys2_msgs::msg::Plan>>> futures;
   for (auto & solver : solvers_) {
     futures[solver.first] = std::async(std::launch::async,
       &plansys2::PlanSolverBase::getPlan, solver.second,
       domain, problem, get_namespace(), solver_timeout_);
   }
 
-  auto start = now();
-
-  size_t pending_result = solvers_.size();
-  while (pending_result > 0 && now() - start < solver_timeout_) {
-    for (auto & fut : futures) {
-      if (results.find(fut.first) == results.end()) {
-        if (fut.second.wait_for(1ms) == std::future_status::ready) {
-          results[fut.first] = fut.second.get();
-          pending_result--;
-        }
-      }
-    }
-  }
-
-  for (auto & solver : solvers_) {
-    if (results.find(solver.first) == results.end()) {
-      solver.second->cancel();
-    }
-  }
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-  for (auto & fut : futures) {
-    if (results.find(fut.first) == results.end()) {
-      try {
-        fut.second.get();
-      } catch (const std::exception & e) {
-        RCLCPP_WARN_STREAM(
-          get_logger(), "Exception while destroying future for "
-            << fut.first << ": " << e.what());
-      }
+  // Wall time, whatever clock the node uses
+  const auto deadline = std::chrono::steady_clock::now() +
+    solver_timeout_.to_chrono<std::chrono::nanoseconds>();
+  std::set<std::string> timed_out;
+  for (auto & [id, future] : futures) {
+    if (future.wait_until(deadline) != std::future_status::ready) {
+      solvers_.at(id)->cancel();
+      timed_out.insert(id);
     }
   }
 
   plansys2_msgs::msg::PlanArray plans;
-  for (auto & result : results) {
-    if (result.second.has_value()) {
-      plans.plan_array.push_back(result.second.value());
+  std::vector<std::string> reasons;
+  for (auto & [id, future] : futures) {
+    // A solver error must not escape the service callback (#434)
+    try {
+      auto plan = future.get();
+      if (plan.has_value()) {
+        plans.plan_array.push_back(plan.value());
+      } else if (timed_out.count(id)) {
+        reasons.push_back(
+          id + " timed out after " + std::to_string(solver_timeout_.seconds()) + " s");
+      } else {
+        reasons.push_back(id + " found no plan");
+      }
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(get_logger(), "Solver %s failed: %s", id.c_str(), e.what());
+      reasons.push_back(id + " failed: " + e.what());
     }
   }
 
@@ -235,9 +249,37 @@ PlannerNode::get_plan_array(const std::string & domain, const std::string & prob
       return a.items.size() < b.items.size();
     });
 
+  if (plans.plan_array.empty()) {
+    // Only now, so the check never costs anything when there is a plan
+    error_info = check_pddl(domain, problem);
+    if (error_info.empty()) {
+      error_info = "Plan not found";
+      for (size_t i = 0; i < reasons.size(); i++) {
+        error_info += (i == 0 ? ": " : "; ") + reasons[i];
+      }
+    }
+  }
+
   return plans;
 }
 
+std::string
+PlannerNode::check_pddl(const std::string & domain, const std::string & problem)
+{
+  parser::pddl::Domain parsed_domain;
+  try {
+    parsed_domain.parse(domain);
+  } catch (const std::exception & e) {
+    return std::string("Invalid PDDL domain: ") + e.what();
+  }
+  try {
+    parser::pddl::Instance parsed_problem(parsed_domain);
+    parsed_problem.parse(problem);
+  } catch (const std::exception & e) {
+    return std::string("Invalid PDDL problem: ") + e.what();
+  }
+  return "";
+}
 
 void
 PlannerNode::get_plan_service_callback(
@@ -246,14 +288,13 @@ PlannerNode::get_plan_service_callback(
   const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response)
 {
   (void)request_header;
-  auto plans = get_plan_array(request->domain, request->problem);
+  auto plans = solve(request->domain, request->problem, response->error_info);
 
   if (!plans.plan_array.empty()) {
     response->success = true;
     response->plan = plans.plan_array.front();
   } else {
     response->success = false;
-    response->error_info = "Plan not found";
   }
 }
 
@@ -264,14 +305,8 @@ PlannerNode::get_plan_array_service_callback(
   const std::shared_ptr<plansys2_msgs::srv::GetPlanArray::Response> response)
 {
   (void)request_header;
-  response->plan_array = get_plan_array(request->domain, request->problem);
-
-  if (!response->plan_array.plan_array.empty()) {
-    response->success = true;
-  } else {
-    response->success = false;
-    response->error_info = "Plan not found";
-  }
+  response->plan_array = solve(request->domain, request->problem, response->error_info);
+  response->success = !response->plan_array.plan_array.empty();
 }
 
 void
@@ -281,11 +316,16 @@ PlannerNode::validate_domain_service_callback(
   const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Response> response)
 {
   (void)request_header;
-  response->success = solvers_.begin()->second->isDomainValid(
-    request->domain, get_namespace());
-
-  if (!response->success) {
-    response->error_info = "Domain is not valid";
+  try {
+    response->success = solvers_.begin()->second->isDomainValid(
+      request->domain, get_namespace());
+    if (!response->success) {
+      response->error_info = "Domain is not valid";
+    }
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR(get_logger(), "Domain check failed: %s", e.what());
+    response->success = false;
+    response->error_info = std::string("Domain check failed: ") + e.what();
   }
 }
 

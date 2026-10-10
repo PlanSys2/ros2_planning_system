@@ -14,6 +14,7 @@
 
 #include "plansys2_planner/PlannerClient.hpp"
 
+#include <chrono>
 #include <optional>
 #include <algorithm>
 #include <string>
@@ -23,6 +24,11 @@
 namespace plansys2
 {
 
+namespace
+{
+constexpr auto kAnswerMargin = std::chrono::seconds(5);
+}  // namespace
+
 PlannerClient::PlannerClient()
 {
   node_ = rclcpp::Node::make_shared("planner_client");
@@ -30,11 +36,14 @@ PlannerClient::PlannerClient()
   get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("planner/get_plan");
   get_plan_array_client_ = node_->create_client<plansys2_msgs::srv::GetPlanArray>(
     "planner/get_plan_array");
-  double timeout;
+  // It was declared from an uninitialized double (#434)
+  double timeout = 15.0;
   node_->declare_parameter("plan_solver_timeout", timeout);
-
   node_->get_parameter("plan_solver_timeout", timeout);
-  solver_timeout_ = rclcpp::Duration((int32_t)timeout, 0);
+  if (timeout <= 0.0) {
+    timeout = 15.0;
+  }
+  solver_timeout_ = rclcpp::Duration::from_seconds(timeout);
   RCLCPP_INFO(
     node_->get_logger(), "Planner CLient created with timeout %g",
     solver_timeout_.seconds());
@@ -55,16 +64,8 @@ PlannerClient::getPlan(
       get_plan_client_->get_service_name() <<
         " service  client: waiting for service to appear...");
   }
-  int32_t timeout = solver_timeout_.seconds();
-  if (timeout <= 0) {
-    std::string timeout_str = "Get Plan service called with negative timed out:";
-    timeout_str += std::to_string(timeout);
-    timeout_str += ". Setting to 15 seconds";
-    RCLCPP_DEBUG(node_->get_logger(), timeout_str.c_str());
-    timeout = 15;
-  }
-
-  RCLCPP_DEBUG(node_->get_logger(), "Get Plan service call with time out %d", timeout);
+  // The planner answers after its own timeout plus the time to stop its solvers (#434)
+  const auto wait = solver_timeout_.to_chrono<std::chrono::nanoseconds>() + kAnswerMargin;
 
   auto request = std::make_shared<plansys2_msgs::srv::GetPlan::Request>();
   request->domain = domain;
@@ -73,8 +74,7 @@ PlannerClient::getPlan(
   auto future_result = get_plan_client_->async_send_request(request);
 
   auto outresult = rclcpp::spin_until_future_complete(
-    node_, future_result,
-    std::chrono::seconds(timeout));
+    node_, future_result, wait);
   if (outresult != rclcpp::FutureReturnCode::SUCCESS) {
     if (outresult == rclcpp::FutureReturnCode::TIMEOUT) {
       RCLCPP_ERROR(node_->get_logger(), "Get Plan service call timed out");
@@ -112,16 +112,8 @@ PlannerClient::getPlanArray(
       get_plan_array_client_->get_service_name() <<
         " service  client: waiting for service to appear...");
   }
-  int32_t timeout = solver_timeout_.seconds();
-  if (timeout <= 0) {
-    std::string timeout_str = "Get Plan Array service called with negative timed out:";
-    timeout_str += std::to_string(timeout);
-    timeout_str += ". Setting to 15 seconds";
-    RCLCPP_DEBUG(node_->get_logger(), timeout_str.c_str());
-    timeout = 15;
-  }
-
-  RCLCPP_DEBUG(node_->get_logger(), "Get Plan Array service call with time out %d", timeout);
+  // The planner answers after its own timeout plus the time to stop its solvers (#434)
+  const auto wait = solver_timeout_.to_chrono<std::chrono::nanoseconds>() + kAnswerMargin;
 
   auto request = std::make_shared<plansys2_msgs::srv::GetPlanArray::Request>();
   request->domain = domain;
@@ -130,8 +122,7 @@ PlannerClient::getPlanArray(
   auto future_result = get_plan_array_client_->async_send_request(request);
 
   auto outresult = rclcpp::spin_until_future_complete(
-    node_, future_result,
-    std::chrono::seconds(timeout));
+    node_, future_result, wait);
   if (outresult != rclcpp::FutureReturnCode::SUCCESS) {
     if (outresult == rclcpp::FutureReturnCode::TIMEOUT) {
       RCLCPP_ERROR(node_->get_logger(), "Get Plan service call timed out");
@@ -148,7 +139,7 @@ PlannerClient::getPlanArray(
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      get_plan_client_->get_service_name() << ": " <<
+      get_plan_array_client_->get_service_name() << ": " <<
         result.error_info);
     return plansys2_msgs::msg::PlanArray();
   }
