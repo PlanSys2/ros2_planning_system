@@ -13,5 +13,6 @@ var searchData=
   ['_5fplugin_5fdescriptors_10',['_plugin_descriptors',['../classplansys2__support__py_1_1core_1_1PluginProvider_1_1PluginProvider.html#a3acdab0d148181205faa0d2b1cba721b',1,'plansys2_support_py::core::PluginProvider::PluginProvider']]],
   ['_5fplugin_5fid_11',['_plugin_id',['../classplansys2__support__py_1_1core_1_1PluginProvider_1_1PluginDescriptor.html#acc387e71aa11583a18d5734f15ed5dd7',1,'plansys2_support_py::core::PluginProvider::PluginDescriptor']]],
   ['_5fplugin_5fname_12',['_plugin_name',['../classtest__plan__solver__base_1_1MockPlanSolver.html#a33ae68fa3df11110bc33dc88be6befe0',1,'test_plan_solver_base.MockPlanSolver._plugin_name'],['../classtest__planner__node_1_1MockPlanSolver.html#a33ae68fa3df11110bc33dc88be6befe0',1,'test_planner_node.MockPlanSolver._plugin_name']]],
-  ['_5fresult_5ffuture_13',['_result_future',['../classplansys2__support__py_1_1ExecutorClient_1_1ExecutorClient.html#a5f8e59b5213860e5ba483036e1c09fd6',1,'plansys2_support_py::ExecutorClient::ExecutorClient']]]
+  ['_5fresult_5ffuture_13',['_result_future',['../classplansys2__support__py_1_1ExecutorClient_1_1ExecutorClient.html#a5f8e59b5213860e5ba483036e1c09fd6',1,'plansys2_support_py::ExecutorClient::ExecutorClient']]],
+  ['_5fserver_5flost_5fsince_14',['_server_lost_since',['../classplansys2__support__py_1_1ExecutorClient_1_1ExecutorClient.html#a192ed2ff98dac9693de76b2eb5bcb714',1,'plansys2_support_py::ExecutorClient::ExecutorClient']]]
 ];

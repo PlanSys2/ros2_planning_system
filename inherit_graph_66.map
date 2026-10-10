@@ -1,21 +1,3 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" title=" " alt="" coords="5,203,53,228"/>
-<area shape="rect" id="Node000001" href="$classBTActionsTestCase.html" title=" " alt="" coords="119,5,258,31"/>
-<area shape="poly" id="edge120_Node000000_Node000001" title=" " alt="" coords="31,187,38,153,51,114,71,74,99,40,117,28,120,33,102,44,75,77,56,116,44,155,37,188"/>
-<area shape="rect" id="Node000002" href="$classExecutorGoalHandlingTest.html" title=" " alt="" coords="101,55,276,80"/>
-<area shape="poly" id="edge121_Node000000_Node000002" title=" " alt="" coords="37,187,60,137,77,111,99,89,117,79,120,83,102,94,81,115,64,140,41,189"/>
-<area shape="rect" id="Node000003" href="$classExecutorLifecycleTest.html" title=" " alt="" coords="114,104,263,130"/>
-<area shape="poly" id="edge122_Node000000_Node000003" title=" " alt="" coords="46,189,70,162,99,139,122,128,124,133,102,143,73,166,50,192"/>
-<area shape="rect" id="Node000004" href="$classGraphExportToDOTTest.html" title=" " alt="" coords="108,153,268,179"/>
-<area shape="poly" id="edge123_Node000000_Node000004" title=" " alt="" coords="66,199,100,188,135,177,137,182,101,193,68,204"/>
-<area shape="rect" id="Node000005" href="$classPDDLParserTestCase.html" title=" " alt="" coords="113,203,264,228"/>
-<area shape="poly" id="edge124_Node000000_Node000005" title=" " alt="" coords="68,213,113,213,113,218,68,218"/>
-<area shape="rect" id="Node000006" href="$classPlanSetupErrorsTest.html" title=" " alt="" coords="118,252,259,278"/>
-<area shape="poly" id="edge125_Node000000_Node000006" title=" " alt="" coords="68,227,101,238,137,249,135,254,100,243,66,232"/>
-<area shape="rect" id="Node000007" href="$classPlanSolverBaseTest.html" title=" " alt="" coords="118,301,258,327"/>
-<area shape="poly" id="edge126_Node000000_Node000007" title=" " alt="" coords="50,239,73,265,102,288,124,298,122,303,99,292,70,269,46,242"/>
-<area shape="rect" id="Node000008" href="$classPlannerErrorsTest.html" title=" " alt="" coords="126,351,251,376"/>
-<area shape="poly" id="edge127_Node000000_Node000008" title=" " alt="" coords="41,242,64,291,81,316,102,337,126,350,124,355,99,342,77,320,60,294,37,244"/>
-<area shape="rect" id="Node000009" href="$classTerminalTestCase.html" title=" " alt="" coords="125,400,252,426"/>
-<area shape="poly" id="edge128_Node000000_Node000009" title=" " alt="" coords="37,243,44,276,56,315,75,354,102,387,125,400,123,405,99,391,71,357,51,317,38,278,31,244"/>
+<area shape="rect" id="Node000000" href="$classparser_1_1pddl_1_1Stringreader.html" title=" " alt="" coords="5,5,97,31"/>
 </map>

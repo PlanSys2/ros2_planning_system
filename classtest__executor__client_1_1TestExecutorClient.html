@@ -99,6 +99,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="classtest__executor__client_1_1TestExecutorClient-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">TestExecutorClient Class Reference</div></div>
 </div><!--header-->
@@ -138,6 +139,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a02b71928b223b074c9095ab4995bc453" id="r_a02b71928b223b074c9095ab4995bc453"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a02b71928b223b074c9095ab4995bc453">test_execute_plan_planner_fails</a> (self)</td></tr>
 <tr class="memitem:ae6aac3264af2b11e2f92408c551bccaf" id="r_ae6aac3264af2b11e2f92408c551bccaf"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ae6aac3264af2b11e2f92408c551bccaf">test_execute_plan_server_not_available</a> (self)</td></tr>
 <tr class="memitem:a955e02a3999ca92ba3aa0613b302bcaa" id="r_a955e02a3999ca92ba3aa0613b302bcaa"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a955e02a3999ca92ba3aa0613b302bcaa">test_execute_plan_with_provided_plan</a> (self)</td></tr>
+<tr class="memitem:a6049441eb18fea8770c09c4ff3f66d90" id="r_a6049441eb18fea8770c09c4ff3f66d90"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a6049441eb18fea8770c09c4ff3f66d90">test_executor_gone_ends_the_plan</a> (self, _spin)</td></tr>
 <tr class="memitem:aeb2b1933eb8732dc1b170c77c6b7f9b3" id="r_aeb2b1933eb8732dc1b170c77c6b7f9b3"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#aeb2b1933eb8732dc1b170c77c6b7f9b3">test_get_ordered_sub_goals_empty</a> (self, mock_call_async, mock_wait_for_service)</td></tr>
 <tr class="memitem:a1d9f447df29aff9940a5527185119138" id="r_a1d9f447df29aff9940a5527185119138"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a1d9f447df29aff9940a5527185119138">test_get_ordered_sub_goals_failure</a> (self, mock_call_async, mock_wait_for_service)</td></tr>
 <tr class="memitem:a4173725ec4730e278146970ac3e82c03" id="r_a4173725ec4730e278146970ac3e82c03"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a4173725ec4730e278146970ac3e82c03">test_get_ordered_sub_goals_success</a> (self, mock_call_async, mock_wait_for_service)</td></tr>
@@ -150,20 +152,52 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a9c1c906315d43ecec1634029c299a1b7" id="r_a9c1c906315d43ecec1634029c299a1b7"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a9c1c906315d43ecec1634029c299a1b7">test_get_remaining_plan_success</a> (self, mock_call_async, mock_wait_for_service)</td></tr>
 <tr class="memitem:aae34aaf90ffd5f78ef709c72d3e34669" id="r_aae34aaf90ffd5f78ef709c72d3e34669"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#aae34aaf90ffd5f78ef709c72d3e34669">test_initialization</a> (self)</td></tr>
 <tr class="memitem:a930d7d9cdf1bac6df4f10bffd7b9a9bd" id="r_a930d7d9cdf1bac6df4f10bffd7b9a9bd"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a930d7d9cdf1bac6df4f10bffd7b9a9bd">test_initialization_with_namespace</a> (self)</td></tr>
+<tr class="memitem:af9a2a212dccfb0f5549110b4ac8cf1cb" id="r_af9a2a212dccfb0f5549110b4ac8cf1cb"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#af9a2a212dccfb0f5549110b4ac8cf1cb">test_live_executor_keeps_the_plan</a> (self, _spin)</td></tr>
 <tr class="memitem:a1333b369dcd0319947bf905b72a6f13e" id="r_a1333b369dcd0319947bf905b72a6f13e"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a1333b369dcd0319947bf905b72a6f13e">test_multiple_service_calls</a> (self, mock_call_async, mock_wait_for_service)</td></tr>
+<tr class="memitem:ae08e0cf76d8a05a43f4b8fd19fdeabaa" id="r_ae08e0cf76d8a05a43f4b8fd19fdeabaa"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ae08e0cf76d8a05a43f4b8fd19fdeabaa">test_no_plan_has_no_result</a> (self)</td></tr>
 <tr class="memitem:a3890ad59c9a047c571286e0e95b6a99e" id="r_a3890ad59c9a047c571286e0e95b6a99e"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a3890ad59c9a047c571286e0e95b6a99e">test_print_executor_info</a> (self, mock_call_async, mock_wait_for_service)</td></tr>
 <tr class="memitem:ade14c97bbe791854482007314f88b11a" id="r_ade14c97bbe791854482007314f88b11a"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ade14c97bbe791854482007314f88b11a">test_print_executor_info_no_remaining_plan</a> (self, mock_call_async, mock_wait_for_service)</td></tr>
 <tr class="memitem:a36c3b27ed2997a5a9b50007c2af3cf30" id="r_a36c3b27ed2997a5a9b50007c2af3cf30"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a36c3b27ed2997a5a9b50007c2af3cf30">test_print_executor_info_with_plans</a> (self, mock_call_async, mock_wait_for_service)</td></tr>
 <tr class="memitem:a262fb3bed2c89b047904ae5cbce7be17" id="r_a262fb3bed2c89b047904ae5cbce7be17"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a262fb3bed2c89b047904ae5cbce7be17">test_service_exception</a> (self, mock_call_async, mock_wait_for_service)</td></tr>
 <tr class="memitem:ac6377efb3c493029ee6f4b0a730bc6af" id="r_ac6377efb3c493029ee6f4b0a730bc6af"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ac6377efb3c493029ee6f4b0a730bc6af">test_service_not_available</a> (self, mock_wait_for_service)</td></tr>
 <tr class="memitem:ae0593274391c5d76d0b9ecb01374e26b" id="r_ae0593274391c5d76d0b9ecb01374e26b"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ae0593274391c5d76d0b9ecb01374e26b">test_service_timeout</a> (self, mock_call_async, mock_wait_for_service)</td></tr>
+<tr class="memitem:ad91c40d5758b36f8ebbfd0ecce6f1ab1" id="r_ad91c40d5758b36f8ebbfd0ecce6f1ab1"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ad91c40d5758b36f8ebbfd0ecce6f1ab1">test_short_executor_absence_is_tolerated</a> (self, _spin)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:ad5bc32b75da65fe60067f501a4bb6665" id="r_ad5bc32b75da65fe60067f501a4bb6665"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ad5bc32b75da65fe60067f501a4bb6665">client</a> = <a class="el" href="classplansys2__support__py_1_1ExecutorClient_1_1ExecutorClient.html">ExecutorClient</a>('<a class="el" href="namespacetest__executor__client.html">test_executor_client</a>')</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-pro-methods" class="groupheader"><a id="pro-methods" name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:af8ef7867dff7eeb118cc62b967d42ef3" id="r_af8ef7867dff7eeb118cc62b967d42ef3"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#af8ef7867dff7eeb118cc62b967d42ef3">_running_plan</a> (self)</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><pre class="fragment">Test suite for ExecutorClient.</pre> </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="af8ef7867dff7eeb118cc62b967d42ef3" name="af8ef7867dff7eeb118cc62b967d42ef3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8ef7867dff7eeb118cc62b967d42ef3">&#9670;&#160;</a></span>_running_plan()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">_running_plan </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<pre class="fragment">Pretend a plan is executing (#446: a gone executor never answers).</pre> 
+</div>
+</div>
 <a id="a8265f43e817bd81e8ee0479d9cf942f1" name="a8265f43e817bd81e8ee0479d9cf942f1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8265f43e817bd81e8ee0479d9cf942f1">&#9670;&#160;</a></span>setUp()</h2>
 
@@ -366,6 +400,27 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <pre class="fragment">Test execute_plan with a provided plan.</pre> 
+</div>
+</div>
+<a id="a6049441eb18fea8770c09c4ff3f66d90" name="a6049441eb18fea8770c09c4ff3f66d90"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6049441eb18fea8770c09c4ff3f66d90">&#9670;&#160;</a></span>test_executor_gone_ends_the_plan()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">test_executor_gone_ends_the_plan </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>_spin</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">A missing executor for over 2 s ends the plan without result.</pre> 
 </div>
 </div>
 <a id="aeb2b1933eb8732dc1b170c77c6b7f9b3" name="aeb2b1933eb8732dc1b170c77c6b7f9b3"></a>
@@ -662,6 +717,27 @@ Public Attributes</h2></td></tr>
 <pre class="fragment">Test that the client initializes correctly with namespace.</pre> 
 </div>
 </div>
+<a id="af9a2a212dccfb0f5549110b4ac8cf1cb" name="af9a2a212dccfb0f5549110b4ac8cf1cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9a2a212dccfb0f5549110b4ac8cf1cb">&#9670;&#160;</a></span>test_live_executor_keeps_the_plan()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">test_live_executor_keeps_the_plan </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>_spin</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">While the executor is there, the plan is still executing.</pre> 
+</div>
+</div>
 <a id="a1333b369dcd0319947bf905b72a6f13e" name="a1333b369dcd0319947bf905b72a6f13e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1333b369dcd0319947bf905b72a6f13e">&#9670;&#160;</a></span>test_multiple_service_calls()</h2>
 
@@ -686,6 +762,23 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <pre class="fragment">Test multiple consecutive service calls.</pre> 
+</div>
+</div>
+<a id="ae08e0cf76d8a05a43f4b8fd19fdeabaa" name="ae08e0cf76d8a05a43f4b8fd19fdeabaa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae08e0cf76d8a05a43f4b8fd19fdeabaa">&#9670;&#160;</a></span>test_no_plan_has_no_result()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">test_no_plan_has_no_result </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Before any plan there is no result, and nothing is executing.</pre> 
 </div>
 </div>
 <a id="a3890ad59c9a047c571286e0e95b6a99e" name="a3890ad59c9a047c571286e0e95b6a99e"></a>
@@ -837,6 +930,27 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <pre class="fragment">Test behavior when service call times out.</pre> 
+</div>
+</div>
+<a id="ad91c40d5758b36f8ebbfd0ecce6f1ab1" name="ad91c40d5758b36f8ebbfd0ecce6f1ab1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad91c40d5758b36f8ebbfd0ecce6f1ab1">&#9670;&#160;</a></span>test_short_executor_absence_is_tolerated()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">test_short_executor_absence_is_tolerated </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>_spin</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">A brief absence (discovery) does not end the plan.</pre> 
 </div>
 </div>
 <a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
