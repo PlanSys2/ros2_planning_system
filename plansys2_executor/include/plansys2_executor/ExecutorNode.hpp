@@ -22,6 +22,8 @@
 #include <tuple>
 #include <atomic>
 #include <list>
+#include <mutex>
+#include <thread>
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
@@ -359,17 +361,21 @@ protected:
 
   bool cancel_plan_requested_;
   bool replan_requested_;
-  bool new_plan_received_ {false};
-  bool cancel_requested_ {false};
+  // Flags shared between execution_cycle's thread and the ROS callbacks (#435)
+  std::atomic<bool> new_plan_received_ {false};
+  std::atomic<bool> cancel_requested_ {false};
   bool domain_baseline_seen_ {false};
   // Set by domain_topic_callback, consumed by execution_cycle
   std::atomic<bool> domain_changed_ {false};
 
-  bool node_running_ {true};
+  std::atomic<bool> node_running_ {false};
+  std::thread execution_thread_;
 
   std::list<std::shared_ptr<GoalHandleExecutePlan>> goal_handlers_;
   std::shared_ptr<GoalHandleExecutePlan> current_goal_handle_;
   std::shared_ptr<GoalHandleExecutePlan> new_goal_handle_;
+  // Protects new_goal_handle_, set by handle_accepted and taken by execution_cycle
+  std::mutex goal_mutex_;
   std::shared_ptr<GoalHandleExecutePlan> cancel_goal_handle_;
 
   static const int STATE_IDLE = 0;
@@ -380,9 +386,30 @@ protected:
   static const int STATE_FAILED = 5;
   static const int STATE_SUCCEDED = 6;
   static const int STATE_ERROR = 7;
-  int executor_state_;
+  std::atomic<int> executor_state_;
 
+  // Owned by execution_cycle's thread
   PlanRuntineInfo runtime_info_;
+
+  // Copy of the plan for the services. They run in the ROS executor, which in the
+  // monolithic bringup also serves the requests execution_cycle makes while ticking,
+  // so they must never wait for the execution thread: this lock is only held briefly
+  std::mutex snapshot_mutex_;
+  plansys2_msgs::msg::Plan complete_plan_snapshot_;
+  plansys2_msgs::msg::Plan remaining_plan_snapshot_;
+  std::vector<plansys2_msgs::msg::Tree> ordered_sub_goals_snapshot_;
+
+  void update_snapshot();
+  // The action executors and the BT blackboard live in this node: an owning pointer
+  // from them would keep the node alive forever (#430)
+  rclcpp_lifecycle::LifecycleNode::SharedPtr non_owning_this()
+  {
+    return rclcpp_lifecycle::LifecycleNode::SharedPtr(
+      rclcpp_lifecycle::LifecycleNode::SharedPtr(), this);
+  }
+  void start_execution_thread();
+  // Stops execution_cycle and fails the goals it was handling
+  void stop_execution_thread();
 
   // Groot2 monitor
   std::unique_ptr<BT::Groot2Publisher> groot_monitor_;

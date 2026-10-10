@@ -62,3 +62,16 @@ foreach(scenario
     ENV GTEST_FILTER=PlanSetupErrorsTest.${scenario}
     TIMEOUT 120)
 endforeach()
+
+ament_add_gtest_executable(executor_lifecycle_test executor_lifecycle_test.cpp)
+target_compile_definitions(executor_lifecycle_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(executor_lifecycle_test ${PROJECT_NAME})
+foreach(scenario
+    node_is_destroyed_after_a_plan node_is_destroyed_while_active goals_rejected_unless_active
+    deactivate_during_a_plan_fails_it reactivations_run_a_single_execution_thread
+    cleanup_and_configure_again plan_services_during_execution)
+  ament_add_gtest_test(executor_lifecycle_test
+    TEST_NAME executor_lifecycle_${scenario}
+    ENV GTEST_FILTER=ExecutorLifecycleTest.${scenario}
+    TIMEOUT 120)
+endforeach()
