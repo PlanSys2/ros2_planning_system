@@ -99,7 +99,8 @@ document.addEventListener('DOMContentLoaded', codefold.init);
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">parser::pddl Namespace Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -191,6 +192,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ab7d92423c812cf00ac3dec6822ddb07f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns function modifier type and start position of a function modifier in a string.  <br /></td></tr>
 <tr class="memitem:a23ad2765f6668316ddf36a8ae5e907fe" id="r_a23ad2765f6668316ddf36a8ae5e907fe"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#a23ad2765f6668316ddf36a8ae5e907fe">getFunModType</a> (const std::string &amp;input)</td></tr>
 <tr class="memdesc:a23ad2765f6668316ddf36a8ae5e907fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns function modifier type corresponding to the string input.  <br /></td></tr>
+<tr class="memitem:aa1407117b80b1580a36bf543a883b7d3" id="r_aa1407117b80b1580a36bf543a883b7d3"><td class="memItemLeft"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa1407117b80b1580a36bf543a883b7d3">getMaxNesting</a> (const std::string &amp;expr)</td></tr>
+<tr class="memdesc:aa1407117b80b1580a36bf543a883b7d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the deepest parenthesis nesting in a PDDL text, ignoring comments.  <br /></td></tr>
 <tr class="memitem:a25601b67c5bfa6771cc17d160d30ae50" id="r_a25601b67c5bfa6771cc17d160d30ae50"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
 <tr class="memitem:a25601b67c5bfa6771cc17d160d30ae50 template"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a25601b67c5bfa6771cc17d160d30ae50">getName</a> (const T &amp;t)</td></tr>
 <tr class="memitem:aee3fab2398012edaa97d0cc8b7d520a1" id="r_aee3fab2398012edaa97d0cc8b7d520a1"><td class="memItemLeft">template&lt;&gt; </td></tr>
@@ -200,7 +203,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a79470b0c7c0bfe20beced91acb55035e" id="r_a79470b0c7c0bfe20beced91acb55035e"><td class="memItemLeft"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight"><a class="el" href="#a79470b0c7c0bfe20beced91acb55035e">getParenthesis</a> (const std::string &amp;wexpr, <a class="el" href="classint.html">int</a> start)</td></tr>
 <tr class="memitem:a9792fe99d312fb63a4d98a54b8dbe9b2" id="r_a9792fe99d312fb63a4d98a54b8dbe9b2"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a9792fe99d312fb63a4d98a54b8dbe9b2">getPredicates</a> (std::vector&lt; <a class="el" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &gt; &amp;predicates, const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t node_id=0, <a class="el" href="classbool.html">bool</a> negate=false)</td></tr>
 <tr class="memitem:ac2db743653ce9f663a7fb5305fa805bf" id="r_ac2db743653ce9f663a7fb5305fa805bf"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#ac2db743653ce9f663a7fb5305fa805bf">getReducedString</a> (const std::string &amp;expr)</td></tr>
-<tr class="memdesc:ac2db743653ce9f663a7fb5305fa805bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes newlines, duplicated spaces, tabs and spaces from parenthesis.  <br /></td></tr>
 <tr class="memitem:a1d5ed547f7db7547a59fc02905af1b8e" id="r_a1d5ed547f7db7547a59fc02905af1b8e"><td class="memItemLeft">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a1d5ed547f7db7547a59fc02905af1b8e">getSubExpr</a> (const std::string &amp;expr)</td></tr>
 <tr class="memitem:ad41283509c5800a7f9008ec3fb150830" id="r_ad41283509c5800a7f9008ec3fb150830"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ad41283509c5800a7f9008ec3fb150830">getSubtreeChildren</a> (<a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;subtree, const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t tree_parent, uint32_t subtree_parent)</td></tr>
 <tr class="memitem:aa9c7a8d4f2da476de9fc90c0b41e117e" id="r_aa9c7a8d4f2da476de9fc90c0b41e117e"><td class="memItemLeft">std::vector&lt; uint32_t &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aa9c7a8d4f2da476de9fc90c0b41e117e">getSubtreeIds</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree)</td></tr>
@@ -223,6 +225,13 @@ Functions</h2></td></tr>
 <tr class="memitem:a108e3a69fd0c7cd29ac860c43b00d0f8" id="r_a108e3a69fd0c7cd29ac860c43b00d0f8"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a108e3a69fd0c7cd29ac860c43b00d0f8">toStringOr</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:a1c9025a4d491c3c7ba7cecb7faaf82d5" id="r_a1c9025a4d491c3c7ba7cecb7faaf82d5"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a1c9025a4d491c3c7ba7cecb7faaf82d5">toStringParameter</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:ac2569d52c5bdaa4557520ad4fece57ea" id="r_ac2569d52c5bdaa4557520ad4fece57ea"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#ac2569d52c5bdaa4557520ad4fece57ea">toStringPredicate</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
+<tr class="memitem:abcaa411db2e4e0dbc31ce5f63ed52a12" id="r_abcaa411db2e4e0dbc31ce5f63ed52a12"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#abcaa411db2e4e0dbc31ce5f63ed52a12">validateTree</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, std::string &amp;error)</td></tr>
+<tr class="memdesc:abcaa411db2e4e0dbc31ce5f63ed52a12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks that a tree can be walked safely: child ids in range, every node reached once from the root (no cycles or shared nodes), the number of children each node type needs, and no deeper than kMaxNestingDepth.  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a29478b287cdaea18f77dc29d80e7bc16" id="r_a29478b287cdaea18f77dc29d80e7bc16"><td class="memItemLeft">constexpr <a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight"><a class="el" href="#a29478b287cdaea18f77dc29d80e7bc16">kMaxNestingDepth</a> = 256</td></tr>
+<tr class="memdesc:a29478b287cdaea18f77dc29d80e7bc16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes newlines, duplicated spaces, tabs and spaces from parenthesis Deepest parenthesis nesting accepted in PDDL text: deeper input is rejected instead of risking a stack overflow in the recursive parsers.  <br /></td></tr>
 </table>
 <a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Typedef Documentation</h2>
 <a id="abb2c37031acf07f3dc66f4829a533986" name="abb2c37031acf07f3dc66f4829a533986"></a>
@@ -901,6 +910,32 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="aa1407117b80b1580a36bf543a883b7d3" name="aa1407117b80b1580a36bf543a883b7d3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa1407117b80b1580a36bf543a883b7d3">&#9670;&#160;</a></span>getMaxNesting()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classint.html">int</a> getMaxNesting </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>expr</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the deepest parenthesis nesting in a PDDL text, ignoring comments. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">expr</td><td>The PDDL text </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The nesting depth, or -1 if the parentheses are not balanced </dd></dl>
+
+</div>
+</div>
 <a id="a25601b67c5bfa6771cc17d160d30ae50" name="a25601b67c5bfa6771cc17d160d30ae50"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a25601b67c5bfa6771cc17d160d30ae50">&#9670;&#160;</a></span>getName()</h2>
 
@@ -1035,8 +1070,6 @@ template&lt;&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Removes newlines, duplicated spaces, tabs and spaces from parenthesis. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">expr</td><td>The expression to be reduced </td></tr>
@@ -1548,6 +1581,62 @@ template&lt;&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="abcaa411db2e4e0dbc31ce5f63ed52a12" name="abcaa411db2e4e0dbc31ce5f63ed52a12"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abcaa411db2e4e0dbc31ce5f63ed52a12">&#9670;&#160;</a></span>validateTree()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> validateTree </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>tree</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>error</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Checks that a tree can be walked safely: child ids in range, every node reached once from the root (no cycles or shared nodes), the number of children each node type needs, and no deeper than kMaxNestingDepth. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">tree</td><td>The tree to check; an empty tree is valid </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">error</td><td>Why the tree is not valid </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the tree is valid </dd></dl>
+
+</div>
+</div>
+<a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
+<a id="a29478b287cdaea18f77dc29d80e7bc16" name="a29478b287cdaea18f77dc29d80e7bc16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a29478b287cdaea18f77dc29d80e7bc16">&#9670;&#160;</a></span>kMaxNestingDepth</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classint.html">int</a> kMaxNestingDepth = 256</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel constexpr">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Removes newlines, duplicated spaces, tabs and spaces from parenthesis Deepest parenthesis nesting accepted in PDDL text: deeper input is rejected instead of risking a stack overflow in the recursive parsers. </p>
 
 </div>
 </div>

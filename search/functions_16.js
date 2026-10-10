@@ -22,8 +22,9 @@ var searchData=
   ['_7eor_19',['~Or',['../classparser_1_1pddl_1_1Or.html#a8bd0fd249a0ed0f57aff6abece5808f2',1,'parser::pddl::Or']]],
   ['_7eplannernode_20',['~PlannerNode',['../classplansys2_1_1PlannerNode.html#a10ae20b189dd786b467a8441316e13d7',1,'plansys2::PlannerNode']]],
   ['_7eplansolverbase_21',['~PlanSolverBase',['../classplansys2_1_1PlanSolverBase.html#add0faac665426f6b155750d49dcd6462',1,'plansys2::PlanSolverBase']]],
-  ['_7estringreader_22',['~Stringreader',['../classparser_1_1pddl_1_1Stringreader.html#a472c0e8db928bf4775b1981ea667f70e',1,'parser::pddl::Stringreader']]],
-  ['_7etemporalaction_23',['~TemporalAction',['../classparser_1_1pddl_1_1TemporalAction.html#a4d641ae7cfdcf60201c03b444157fe3b',1,'parser::pddl::TemporalAction']]],
-  ['_7etype_24',['~Type',['../classparser_1_1pddl_1_1Type.html#ae748371673274c11b73ec33c000153db',1,'parser::pddl::Type']]],
-  ['_7ewhen_25',['~When',['../classparser_1_1pddl_1_1When.html#a8aa1fc719b49067b4cc978d0bd26289b',1,'parser::pddl::When']]]
+  ['_7escopedspinner_22',['~ScopedSpinner',['../classScopedSpinner.html#a7e1684dc80c614657a9a897a445f6ea4',1,'ScopedSpinner']]],
+  ['_7estringreader_23',['~Stringreader',['../classparser_1_1pddl_1_1Stringreader.html#a472c0e8db928bf4775b1981ea667f70e',1,'parser::pddl::Stringreader']]],
+  ['_7etemporalaction_24',['~TemporalAction',['../classparser_1_1pddl_1_1TemporalAction.html#a4d641ae7cfdcf60201c03b444157fe3b',1,'parser::pddl::TemporalAction']]],
+  ['_7etype_25',['~Type',['../classparser_1_1pddl_1_1Type.html#ae748371673274c11b73ec33c000153db',1,'parser::pddl::Type']]],
+  ['_7ewhen_26',['~When',['../classparser_1_1pddl_1_1When.html#a8aa1fc719b49067b4cc978d0bd26289b',1,'parser::pddl::When']]]
 ];

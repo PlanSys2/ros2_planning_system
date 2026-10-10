@@ -1,0 +1,5 @@
+<map id="MalformedDomainTest" name="MalformedDomainTest">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,109,158,135"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="11,5,152,61"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="84,76,84,108,79,108,79,76"/>
+</map>

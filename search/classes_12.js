@@ -26,7 +26,7 @@ var searchData=
   ['tokenstruct_3c_20parser_3a_3apddl_3a_3atype_20_2a_20_3e_23',['TokenStruct&lt; parser::pddl::Type * &gt;',['../classparser_1_1pddl_1_1TokenStruct.html',1,'parser::pddl']]],
   ['tokenstruct_3c_20std_3a_3astring_20_3e_24',['TokenStruct&lt; std::string &gt;',['../classparser_1_1pddl_1_1TokenStruct.html',1,'parser::pddl']]],
   ['transportaction_25',['TransportAction',['../classTransportAction.html',1,'']]],
-  ['tree_26',['Tree',['../classplansys2__msgs_1_1msg_1_1Tree.html',1,'plansys2_msgs::msg']]],
+  ['tree_26',['Tree',['../classplansys2__msgs_1_1msg_1_1Tree.html',1,'Tree'],['../classTree.html',1,'Tree']]],
   ['treeinfo_27',['TreeInfo',['../structplansys2_1_1TreeInfo.html',1,'plansys2']]],
   ['type_28',['Type',['../classparser_1_1pddl_1_1Type.html',1,'parser::pddl']]],
   ['typeground_29',['TypeGround',['../classparser_1_1pddl_1_1TypeGround.html',1,'parser::pddl']]]

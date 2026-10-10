@@ -1,11 +1,13 @@
 <map id="Stringreader" name="Stringreader">
-<area shape="rect" id="Node000001" title=" " alt="" coords="190,122,281,148"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="243,122,335,148"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,5,141,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="90,42,111,70,138,96,164,110,191,121,189,126,161,115,135,100,107,74,85,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="90,42,113,71,143,96,193,117,244,127,243,133,192,122,141,101,110,75,86,46"/>
 <area shape="rect" id="Node000003" href="$classint.html" title=" " alt="" coords="164,5,203,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="181,46,180,72,187,97,197,110,211,120,208,124,194,114,182,100,175,73,175,46"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="262,5,316,31"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="283,47,262,100,247,123,243,120,257,97,278,45"/>
-<area shape="rect" id="Node000005" title=" " alt="" coords="340,5,414,31"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="359,44,332,72,300,100,262,124,259,120,297,96,328,69,355,41"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="184,46,187,73,199,97,219,113,244,124,242,129,216,118,195,100,182,74,179,47"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="245,5,298,31"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="278,46,290,122,285,122,273,47"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="323,5,396,31"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="347,46,299,123,294,121,342,43"/>
+<area shape="rect" id="Node000006" href="$classbool.html" title=" " alt="" coords="421,5,466,31"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="424,44,394,72,358,101,317,124,314,120,356,96,391,68,421,40"/>
 </map>
