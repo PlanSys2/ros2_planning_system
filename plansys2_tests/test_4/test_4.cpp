@@ -53,7 +53,7 @@ TEST(test_4, test_4)
   domain_node->set_parameter({"model_file", pkgpath + "/test_4/pddl/test_4.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_4/pddl/test_4.pddl"});
 
-  rclcpp::experimental::executors::EventsExecutor exe;
+  rclcpp::executors::SingleThreadedExecutor exe;
 
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());

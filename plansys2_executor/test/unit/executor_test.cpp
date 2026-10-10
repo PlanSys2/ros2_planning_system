@@ -290,7 +290,7 @@ TEST(executor, action_executor_client)
     test_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     aux_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(test_node->get_node_base_interface());
     exe.add_node(aux_node->get_node_base_interface());
@@ -395,7 +395,7 @@ TEST(executor, action_executor_client_old_constructor)
     test_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     aux_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(test_node->get_node_base_interface());
     exe.add_node(aux_node->get_node_base_interface());
@@ -487,7 +487,7 @@ TEST(executor, action_executor)
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -845,7 +845,7 @@ TEST(executor, action_real_action_1)
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -1104,7 +1104,7 @@ TEST(executor, action_real_action_1_with_restore)
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -1382,7 +1382,7 @@ TEST(executor, action_real_action_2)
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory4.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory4.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -1645,7 +1645,7 @@ TEST(executor, cancel_bt_execution)
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -1851,7 +1851,7 @@ TEST(executor, executor_client_execute_plan)
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -2005,7 +2005,7 @@ TEST(executor, executor_client_execute_plan_2)
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory4.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory4.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -2157,7 +2157,7 @@ TEST(executor, executor_client_execute_plan_3)
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -2296,7 +2296,7 @@ TEST(executor, executor_client_execute_plan_two_plans)
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -2469,7 +2469,7 @@ TEST(executor, executor_client_execute_plan_replan)
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -2646,7 +2646,7 @@ TEST(executor, executor_client_execute_plan_multi_replan)
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -2877,7 +2877,7 @@ TEST(executor, executor_client_ordered_sub_goals)
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -3030,7 +3030,7 @@ TEST(executor, executor_client_cancel_plan)
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -3177,7 +3177,7 @@ TEST(executor, action_timeout)
     "action_timeouts.move.duration_overrun_percentage", 1.0);
     executor_node->set_parameter({"action_timeouts.move.duration_overrun_percentage", 1.0});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());

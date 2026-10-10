@@ -238,7 +238,8 @@ ComputeBT::computeBTCallback(
   domain_node_->set_parameter({"model_file", domain_filename});
   problem_node_->set_parameter({"model_file", domain_filename});
 
-  rclcpp::experimental::executors::EventsExecutor exe;
+  // EventsExecutor is deprecated; EventsCBGExecutor delays bursts of actions_hub messages (#449)
+  rclcpp::executors::SingleThreadedExecutor exe;
 
   exe.add_node(domain_node_->get_node_base_interface());
   exe.add_node(problem_node_->get_node_base_interface());

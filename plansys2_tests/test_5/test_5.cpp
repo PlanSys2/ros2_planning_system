@@ -96,7 +96,7 @@ TEST(test_5, requirement_only_change_preserves_problem)
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
-  rclcpp::experimental::executors::EventsExecutor exe;
+  rclcpp::executors::SingleThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   ExecutorSpinner spinner(exe);
@@ -138,7 +138,7 @@ TEST(test_5, removed_predicate_pruned)
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
-  rclcpp::experimental::executors::EventsExecutor exe;
+  rclcpp::executors::SingleThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   ExecutorSpinner spinner(exe);
@@ -172,7 +172,7 @@ TEST(test_5, invalid_domain_rejected)
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
-  rclcpp::experimental::executors::EventsExecutor exe;
+  rclcpp::executors::SingleThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   ExecutorSpinner spinner(exe);
@@ -226,7 +226,7 @@ TEST(test_5, normal_startup_does_not_disturb_executor_or_problem)
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
-  rclcpp::experimental::executors::EventsExecutor exe;
+  rclcpp::executors::SingleThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(planner_node->get_node_base_interface());
@@ -300,7 +300,7 @@ TEST(test_5, change_domain_cancels_active_execution)
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
-  rclcpp::experimental::executors::EventsExecutor exe;
+  rclcpp::executors::SingleThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(planner_node->get_node_base_interface());
@@ -395,7 +395,7 @@ TEST(test_5, plan_executes_successfully_after_domain_change)
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
-  rclcpp::experimental::executors::EventsExecutor exe;
+  rclcpp::executors::SingleThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(planner_node->get_node_base_interface());

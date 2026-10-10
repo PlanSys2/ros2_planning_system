@@ -22,7 +22,8 @@ int main(int argc, char ** argv)
   rclcpp::init(argc, argv);
   auto node = std::make_shared<plansys2::DomainExpertNode>();
 
-  rclcpp::experimental::executors::EventsExecutor executor;
+  // EventsExecutor is deprecated; EventsCBGExecutor delays bursts of actions_hub messages (#449)
+  rclcpp::executors::SingleThreadedExecutor executor;
   executor.add_node(node->get_node_base_interface());
   executor.spin();
   executor.remove_node(node->get_node_base_interface());

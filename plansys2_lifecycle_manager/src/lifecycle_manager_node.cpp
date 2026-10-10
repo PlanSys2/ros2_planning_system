@@ -37,7 +37,8 @@ int main(int argc, char ** argv)
   manager_nodes["executor"] = std::make_shared<plansys2::LifecycleServiceClient>(
     "executor_lc_mngr", "executor");
 
-  rclcpp::experimental::executors::EventsExecutor exe;
+  // EventsExecutor is deprecated; EventsCBGExecutor delays bursts of actions_hub messages (#449)
+  rclcpp::executors::SingleThreadedExecutor exe;
   for (auto & manager_node : manager_nodes) {
     manager_node.second->init();
     exe.add_node(manager_node.second);
