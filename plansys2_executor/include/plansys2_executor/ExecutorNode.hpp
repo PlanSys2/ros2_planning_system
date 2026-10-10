@@ -363,7 +363,6 @@ protected:
   bool replan_requested_;
   // Flags shared between execution_cycle's thread and the ROS callbacks (#435)
   std::atomic<bool> new_plan_received_ {false};
-  std::atomic<bool> cancel_requested_ {false};
   bool domain_baseline_seen_ {false};
   // Set by domain_topic_callback, consumed by execution_cycle
   std::atomic<bool> domain_changed_ {false};
@@ -376,7 +375,6 @@ protected:
   std::shared_ptr<GoalHandleExecutePlan> new_goal_handle_;
   // Protects new_goal_handle_, set by handle_accepted and taken by execution_cycle
   std::mutex goal_mutex_;
-  std::shared_ptr<GoalHandleExecutePlan> cancel_goal_handle_;
 
   static const int STATE_IDLE = 0;
   static const int STATE_EXECUTING = 1;
@@ -400,6 +398,13 @@ protected:
   std::vector<plansys2_msgs::msg::Tree> ordered_sub_goals_snapshot_;
 
   void update_snapshot();
+
+  // Takes the goal waiting to start, if any, clearing new_plan_received_ with it
+  std::shared_ptr<GoalHandleExecutePlan> take_new_goal();
+  // Ends a goal replaced by another one
+  static void finish_replaced_goal(
+    const std::shared_ptr<GoalHandleExecutePlan> & goal,
+    const std::shared_ptr<ExecutePlan::Result> & result);
   // The action executors and the BT blackboard live in this node: an owning pointer
   // from them would keep the node alive forever (#430)
   rclcpp_lifecycle::LifecycleNode::SharedPtr non_owning_this()

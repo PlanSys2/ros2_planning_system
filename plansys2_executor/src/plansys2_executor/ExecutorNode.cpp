@@ -651,9 +651,12 @@ ExecutorNode::cancel_all_running_actions(PlanRuntineInfo & runtime_info)
     for (auto & entry : *runtime_info.action_map) {
       ActionExecutionInfo & action_info = entry.second;
       // A plan that failed to set up may have entries without executor
-      if (action_info.action_executor &&
-        action_info.action_executor->get_internal_status() == ActionExecutor::RUNNING)
-      {
+      if (!action_info.action_executor) {
+        continue;
+      }
+      // Also those still looking for a performer, or they start once it answers (#436)
+      auto status = action_info.action_executor->get_internal_status();
+      if (status == ActionExecutor::RUNNING || status == ActionExecutor::DEALING) {
         action_info.action_executor->cancel();
       }
     }
@@ -672,6 +675,11 @@ ExecutorNode::get_feedback_info(
   }
 
   for (const auto & action : *action_map) {
+    // ":0" is the INIT pseudo-action the BT starts from, not part of the plan (#436)
+    if (action.first == ":0") {
+      continue;
+    }
+
     if (!action.second.action_executor) {
       // Executor not yet assigned (BT hasn't reached this action yet).
       // Still publish so subscribers know the action exists and is NOT_EXECUTED.
@@ -818,16 +826,11 @@ rclcpp_action::CancelResponse
 ExecutorNode::handle_cancel(
   const std::shared_ptr<GoalHandleExecutePlan> goal_handle)
 {
+  (void)goal_handle;
   RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
 
-  if (executor_state_ == STATE_EXECUTING) {
-    cancel_goal_handle_ = goal_handle;
-    cancel_requested_ = true;
-
-    return rclcpp_action::CancelResponse::ACCEPT;
-  } else {
-    return rclcpp_action::CancelResponse::REJECT;
-  }
+  // execution_cycle sees is_canceling() on the goal, running or waiting (#436)
+  return rclcpp_action::CancelResponse::ACCEPT;
 }
 
 void
@@ -849,8 +852,41 @@ ExecutorNode::handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_
   RCLCPP_INFO(this->get_logger(), "Accepted new goal");
 
   std::lock_guard<std::mutex> lock(goal_mutex_);
+  // A goal still waiting to start is replaced: its client must not wait forever (#436)
+  if (new_plan_received_) {
+    auto result = std::make_shared<ExecutePlan::Result>();
+    result->result = plansys2_msgs::action::ExecutePlan::Result::PREEMPT;
+    finish_replaced_goal(new_goal_handle_, result);
+  }
   new_goal_handle_ = goal_handle;
   new_plan_received_ = true;
+}
+
+std::shared_ptr<ExecutorNode::GoalHandleExecutePlan>
+ExecutorNode::take_new_goal()
+{
+  std::lock_guard<std::mutex> lock(goal_mutex_);
+  if (!new_plan_received_.exchange(false)) {
+    return nullptr;
+  }
+  auto goal = std::move(new_goal_handle_);
+  new_goal_handle_ = nullptr;
+  return goal;
+}
+
+void
+ExecutorNode::finish_replaced_goal(
+  const std::shared_ptr<GoalHandleExecutePlan> & goal,
+  const std::shared_ptr<ExecutePlan::Result> & result)
+{
+  if (!goal || !goal->is_active()) {
+    return;
+  }
+  if (goal->is_canceling()) {
+    goal->canceled(result);
+  } else {
+    goal->abort(result);
+  }
 }
 
 void
@@ -863,14 +899,20 @@ ExecutorNode::execution_cycle()
 
     switch (executor_state_) {
       case STATE_IDLE:
-        if (new_plan_received_) {
-          new_plan_received_ = false;
+        if (auto goal = take_new_goal()) {
           // A domain change before this plan started does not affect it
           domain_changed_ = false;
 
           {
             std::lock_guard<std::mutex> lock(goal_mutex_);
-            current_goal_handle_ = new_goal_handle_;
+            current_goal_handle_ = goal;
+          }
+
+          // Cancelled while waiting to start (#436)
+          if (current_goal_handle_->is_canceling()) {
+            result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
+            current_goal_handle_->canceled(result);
+            break;
           }
 
           if (current_goal_handle_->get_goal()->plan.items.empty()) {
@@ -904,7 +946,10 @@ ExecutorNode::execution_cycle()
 
           auto feedback_info_msgs = get_feedback_info(runtime_info_.action_map);
           feedback->action_execution_status = feedback_info_msgs;
-          current_goal_handle_->publish_feedback(feedback);
+          // rclcpp_action only takes feedback from executing goals
+          if (!current_goal_handle_->is_canceling()) {
+            current_goal_handle_->publish_feedback(feedback);
+          }
           for (const auto & msg : feedback_info_msgs) {
             execution_info_pub_->publish(msg);
           }
@@ -929,27 +974,36 @@ ExecutorNode::execution_cycle()
               get_logger(),
               "[%s] Domain changed while executing a plan, cancelling execution", get_name());
             executor_state_ = STATE_ABORTING;
-          } else if (cancel_requested_) {
-            cancel_requested_ = false;
+          } else if (current_goal_handle_->is_canceling()) {
+            // Checked on the goal itself, so a late cancel never leaks to the next one (#436)
             executor_state_ = STATE_CANCELLED;
           } else if (new_plan_received_) {
-            new_plan_received_ = false;
             executor_state_ = STATE_REPLANNING;
           }
         }
         break;
       case STATE_REPLANNING:
-        result->result = plansys2_msgs::action::ExecutePlan::Result::PREEMPT;
+        {
+          auto goal = take_new_goal();
+          if (!goal) {
+            executor_state_ = STATE_EXECUTING;
+            break;
+          }
 
-        if (current_goal_handle_->is_canceling()) {
-          RCLCPP_DEBUG(get_logger(), "previous is cancelling");
-        } else if (current_goal_handle_->is_active()) {
-          RCLCPP_DEBUG(get_logger(), "previous is active");
-          current_goal_handle_->abort(result);
-        } else {
+          // The running goal is replaced by the new one
+          result->result = plansys2_msgs::action::ExecutePlan::Result::PREEMPT;
+          result->action_execution_status = get_feedback_info(runtime_info_.action_map);
+          finish_replaced_goal(current_goal_handle_, result);
+
           {
             std::lock_guard<std::mutex> lock(goal_mutex_);
-            current_goal_handle_ = new_goal_handle_;
+            current_goal_handle_ = goal;
+          }
+
+          // Cancelled while waiting to start (#436)
+          if (current_goal_handle_->is_canceling()) {
+            executor_state_ = STATE_CANCELLED;
+            break;
           }
 
           runtime_info_.complete_plan = current_goal_handle_->get_goal()->plan;
@@ -962,7 +1016,6 @@ ExecutorNode::execution_cycle()
             executor_state_ = STATE_EXECUTING;
           }
         }
-
         break;
       case STATE_ABORTING:
         cancel_all_running_actions(runtime_info_);
@@ -988,7 +1041,8 @@ ExecutorNode::execution_cycle()
         result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
         result->action_execution_status = get_feedback_info(runtime_info_.action_map);
 
-        current_goal_handle_->succeed(result);
+        // A failed plan is not a succeeded goal (#436)
+        current_goal_handle_->abort(result);
         executor_state_ = STATE_IDLE;
         break;
       case STATE_ERROR:
@@ -1049,7 +1103,6 @@ ExecutorNode::stop_execution_thread()
     current_goal_handle_->abort(result);
   }
   executor_state_ = STATE_IDLE;
-  cancel_requested_ = false;
 
   std::lock_guard<std::mutex> lock(goal_mutex_);
   if (new_plan_received_ && new_goal_handle_ && new_goal_handle_->is_active()) {

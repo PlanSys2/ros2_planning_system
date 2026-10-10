@@ -401,7 +401,8 @@ class ExecutorClient(Node):
             The execution result response containing status and action information.
 
         """
-        if result_response.status == GoalStatus.STATUS_SUCCEEDED:
+        # Failed and preempted plans end as aborted goals (#436)
+        if result_response.status in (GoalStatus.STATUS_SUCCEEDED, GoalStatus.STATUS_ABORTED):
             if result_response.result is None:
                 self.get_logger().warning('Plan empty')
             elif result_response.result.result == ExecutePlan.Result.SUCCESS:
@@ -434,8 +435,6 @@ class ExecutorClient(Node):
                         self.get_logger().warning(
                             f'Action: {action_status.action_full_name} was executing'
                         )
-        elif result_response.status == GoalStatus.STATUS_ABORTED:
-            self.get_logger().warning('Plan Aborted')
         elif result_response.status == GoalStatus.STATUS_CANCELED:
             self.get_logger().info('Plan Cancelled')
         else:
