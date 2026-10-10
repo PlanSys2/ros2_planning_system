@@ -98,6 +98,15 @@ struct Graph
   static Ptr make_shared() {return std::make_shared<Graph>();}
 
   std::list<Node::Ptr> nodes;
+
+  // Arcs point both ways, so the nodes would keep each other alive (#430)
+  ~Graph()
+  {
+    for (const auto & node : nodes) {
+      node->input_arcs.clear();
+      node->output_arcs.clear();
+    }
+  }
 };
 
 inline std::string add_tabs(int level)
@@ -133,6 +142,9 @@ class BTBuilder
 {
 public:
   using Ptr = std::shared_ptr<plansys2::BTBuilder>;
+
+  // Plugins are destroyed through this class; without it their clients leaked (#430)
+  virtual ~BTBuilder() = default;
 
   /**
    * @brief Initialize the builder with behavior tree templates.

@@ -119,7 +119,8 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
 
 ExecutorNode::~ExecutorNode()
 {
-  node_running_ = false;
+  // execution_cycle uses this object: it must be gone before anything is destroyed
+  stop_execution_thread();
 }
 
 
@@ -197,6 +198,8 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
   planner_client_ = std::make_shared<plansys2::PlannerClient>();
 
+  // A new subscription gets the latched domain again: that is not a change
+  domain_baseline_seen_ = false;
   domain_sub_ = create_subscription<std_msgs::msg::String>(
     "domain_expert/domain",
     rclcpp::QoS(100).transient_local(),
@@ -217,12 +220,7 @@ ExecutorNode::on_activate(const rclcpp_lifecycle::State & state)
   remaining_plan_pub_->on_activate();
   RCLCPP_INFO(get_logger(), "[%s] Activated", get_name());
 
-  //  execution_timer_ = create_wall_timer(
-  //    20ms, std::bind(&ExecutorNode::execution_cycle, this));
-
-  std::thread{std::bind(&ExecutorNode::execution_cycle, this)}.detach();
-
-  node_running_ = true;
+  start_execution_thread();
 
   return CallbackReturnT::SUCCESS;
 }
@@ -232,6 +230,7 @@ ExecutorNode::on_deactivate(const rclcpp_lifecycle::State & state)
 {
   (void)state;
   RCLCPP_INFO(get_logger(), "[%s] Deactivating...", get_name());
+  stop_execution_thread();
   dotgraph_pub_->on_deactivate();
   executing_plan_pub_->on_deactivate();
   remaining_plan_pub_->on_deactivate();
@@ -246,6 +245,7 @@ ExecutorNode::on_cleanup(const rclcpp_lifecycle::State & state)
 {
   (void)state;
   RCLCPP_INFO(get_logger(), "[%s] Cleaning up...", get_name());
+  stop_execution_thread();
   dotgraph_pub_.reset();
   executing_plan_pub_.reset();
   remaining_plan_pub_.reset();
@@ -259,6 +259,7 @@ ExecutorNode::on_shutdown(const rclcpp_lifecycle::State & state)
 {
   (void)state;
   RCLCPP_INFO(get_logger(), "[%s] Shutting down...", get_name());
+  stop_execution_thread();
   dotgraph_pub_.reset();
   executing_plan_pub_.reset();
   remaining_plan_pub_.reset();
@@ -284,7 +285,8 @@ ExecutorNode::get_ordered_sub_goals_service_callback(
 {
   (void)request;
   (void)request_header;
-  response->sub_goals = runtime_info_.ordered_sub_goals;
+  std::lock_guard<std::mutex> lock(snapshot_mutex_);
+  response->sub_goals = ordered_sub_goals_snapshot_;
   response->success = true;
 }
 
@@ -348,8 +350,9 @@ ExecutorNode::get_plan_service_callback(
   (void)request_header;
   (void)request;
   if (executor_state_ == STATE_EXECUTING) {
+    std::lock_guard<std::mutex> lock(snapshot_mutex_);
     response->success = true;
-    response->plan = runtime_info_.complete_plan;
+    response->plan = complete_plan_snapshot_;
   } else {
     response->success = false;
   }
@@ -364,8 +367,9 @@ ExecutorNode::get_remaining_plan_service_callback(
   (void)request;
   (void)request_header;
   if (executor_state_ == STATE_EXECUTING) {
+    std::lock_guard<std::mutex> lock(snapshot_mutex_);
     response->success = true;
-    response->plan = runtime_info_.remaining_plan;
+    response->plan = remaining_plan_snapshot_;
   } else {
     response->success = false;
     response->error_info = "Not executing plan";
@@ -380,7 +384,7 @@ ExecutorNode::create_plan_runtime_info(PlanRuntineInfo & runtime_info)
 
   (*runtime_info.action_map)[":0"] = ActionExecutionInfo();
   (*runtime_info.action_map)[":0"].action_executor = ActionExecutor::make_shared("(INIT)",
-    shared_from_this());
+    non_owning_this());
   (*runtime_info.action_map)[":0"].action_executor->set_internal_status(
     ActionExecutor::Status::SUCCESS);
   (*runtime_info.action_map)[":0"].at_start_effects_applied = true;
@@ -401,7 +405,7 @@ ExecutorNode::create_plan_runtime_info(PlanRuntineInfo & runtime_info)
     (*runtime_info.action_map)[index] = ActionExecutionInfo();
     (*runtime_info.action_map)[index].plan_item = plan_item;
     (*runtime_info.action_map)[index].action_executor =
-      ActionExecutor::make_shared(plan_item.action, shared_from_this());
+      ActionExecutor::make_shared(plan_item.action, non_owning_this());
 
     auto actions = domain_client_->getActions();
     std::string action_name = get_action_name(plan_item.action);
@@ -495,7 +499,7 @@ ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
 
   blackboard->set("action_map", runtime_info.action_map);
   blackboard->set("action_graph", action_graph);
-  blackboard->set("node", shared_from_this());
+  blackboard->set("node", non_owning_this());
   blackboard->set("domain_client", domain_client_);
   blackboard->set("problem_client", problem_client_);
   blackboard->set("bt_builder", bt_builder);
@@ -801,6 +805,12 @@ ExecutorNode::handle_goal(
   (void)goal;
   RCLCPP_INFO(this->get_logger(), "Received goal request with order");
 
+  // Nothing would execute it (#435)
+  if (get_current_state().id() != lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE) {
+    RCLCPP_WARN(get_logger(), "Rejecting plan: executor is not active");
+    return rclcpp_action::GoalResponse::REJECT;
+  }
+
   return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
 
@@ -838,6 +848,7 @@ ExecutorNode::handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_
 {
   RCLCPP_INFO(this->get_logger(), "Accepted new goal");
 
+  std::lock_guard<std::mutex> lock(goal_mutex_);
   new_goal_handle_ = goal_handle;
   new_plan_received_ = true;
 }
@@ -857,7 +868,10 @@ ExecutorNode::execution_cycle()
           // A domain change before this plan started does not affect it
           domain_changed_ = false;
 
-          current_goal_handle_ = new_goal_handle_;
+          {
+            std::lock_guard<std::mutex> lock(goal_mutex_);
+            current_goal_handle_ = new_goal_handle_;
+          }
 
           if (current_goal_handle_->get_goal()->plan.items.empty()) {
             // Nothing to do (#431)
@@ -873,6 +887,7 @@ ExecutorNode::execution_cycle()
           if (!init_plan_for_execution(runtime_info_)) {
             executor_state_ = STATE_ABORTING;
           } else {
+            update_snapshot();
             executor_state_ = STATE_EXECUTING;
           }
         }
@@ -895,6 +910,7 @@ ExecutorNode::execution_cycle()
           }
 
           update_plan(runtime_info_);
+          update_snapshot();
           remaining_plan_pub_->publish(runtime_info_.remaining_plan);
           executing_plan_pub_->publish(runtime_info_.complete_plan);
 
@@ -931,7 +947,10 @@ ExecutorNode::execution_cycle()
           RCLCPP_DEBUG(get_logger(), "previous is active");
           current_goal_handle_->abort(result);
         } else {
-          current_goal_handle_ = new_goal_handle_;
+          {
+            std::lock_guard<std::mutex> lock(goal_mutex_);
+            current_goal_handle_ = new_goal_handle_;
+          }
 
           runtime_info_.complete_plan = current_goal_handle_->get_goal()->plan;
           runtime_info_.remaining_plan = current_goal_handle_->get_goal()->plan;
@@ -939,6 +958,7 @@ ExecutorNode::execution_cycle()
           if (!replan_for_execution(runtime_info_)) {
             executor_state_ = STATE_ERROR;
           } else {
+            update_snapshot();
             executor_state_ = STATE_EXECUTING;
           }
         }
@@ -991,6 +1011,52 @@ ExecutorNode::execution_cycle()
 
     rate.sleep();
   }
+}
+
+void
+ExecutorNode::update_snapshot()
+{
+  std::lock_guard<std::mutex> lock(snapshot_mutex_);
+  complete_plan_snapshot_ = runtime_info_.complete_plan;
+  remaining_plan_snapshot_ = runtime_info_.remaining_plan;
+  ordered_sub_goals_snapshot_ = runtime_info_.ordered_sub_goals;
+}
+
+void
+ExecutorNode::start_execution_thread()
+{
+  if (execution_thread_.joinable()) {
+    return;
+  }
+  node_running_ = true;
+  execution_thread_ = std::thread(&ExecutorNode::execution_cycle, this);
+}
+
+void
+ExecutorNode::stop_execution_thread()
+{
+  node_running_ = false;
+  if (execution_thread_.joinable()) {
+    execution_thread_.join();
+  }
+
+  // Nothing executes plans from now on: fail the goals in progress or waiting
+  auto result = std::make_shared<ExecutePlan::Result>();
+  result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
+  if (executor_state_ != STATE_IDLE && current_goal_handle_ && current_goal_handle_->is_active()) {
+    cancel_all_running_actions(runtime_info_);
+    result->action_execution_status = get_feedback_info(runtime_info_.action_map);
+    current_goal_handle_->abort(result);
+  }
+  executor_state_ = STATE_IDLE;
+  cancel_requested_ = false;
+
+  std::lock_guard<std::mutex> lock(goal_mutex_);
+  if (new_plan_received_ && new_goal_handle_ && new_goal_handle_->is_active()) {
+    result->action_execution_status.clear();
+    new_goal_handle_->abort(result);
+  }
+  new_plan_received_ = false;
 }
 
 void ExecutorNode::add_groot_monitoring(BT::Tree * tree, uint16_t server_port)
