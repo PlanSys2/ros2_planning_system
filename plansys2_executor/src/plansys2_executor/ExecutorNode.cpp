@@ -389,6 +389,14 @@ ExecutorNode::create_plan_runtime_info(PlanRuntineInfo & runtime_info)
   (*runtime_info.action_map)[":0"].at_end_effects_applied_time = now();
 
   for (const auto & plan_item : runtime_info.complete_plan.items) {
+    // The parsing below assumes "(name args...)"; anything else must not reach it
+    const auto & action = plan_item.action;
+    if (action.size() < 3 || action.front() != '(' || action.back() != ')' ||
+      action.find_first_not_of(" \t()") == std::string::npos)
+    {
+      throw std::runtime_error("malformed action in plan: [" + action + "]");
+    }
+
     auto index = BTBuilder::to_action_id(plan_item, 3);
     (*runtime_info.action_map)[index] = ActionExecutionInfo();
     (*runtime_info.action_map)[index].plan_item = plan_item;
