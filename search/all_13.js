@@ -40,7 +40,8 @@ var searchData=
   ['or_2ecpp_37',['Or.cpp',['../Or_8cpp.html',1,'']]],
   ['or_2ehpp_38',['Or.hpp',['../Or_8hpp.html',1,'']]],
   ['ordered_5fsub_5fgoals_39',['ordered_sub_goals',['../structplansys2_1_1PlanRuntineInfo.html#a176bb91c7880eb1dd1108c5923c5b049',1,'plansys2::PlanRuntineInfo']]],
-  ['out_5farcs_40',['out_arcs',['../structplansys2_1_1ActionNode.html#a30e526f2ab4cd9ee833be092277f61c8',1,'plansys2::ActionNode']]],
-  ['output_5farcs_41',['output_arcs',['../structplansys2_1_1Node.html#a1ccaca42f7af15887d5038802dd948d2',1,'plansys2::Node']]],
-  ['overall_42',['OVERALL',['../namespaceplansys2.html#a21d5e8f8cdaa838586b31007df0a950ba7905c9b3eda793da18fade6e791b2183',1,'plansys2']]]
+  ['ordered_5fsub_5fgoals_5fsnapshot_5f_40',['ordered_sub_goals_snapshot_',['../classplansys2_1_1ExecutorNode.html#afd8c1cba0098a1a857094268bd4218b5',1,'plansys2::ExecutorNode']]],
+  ['out_5farcs_41',['out_arcs',['../structplansys2_1_1ActionNode.html#a30e526f2ab4cd9ee833be092277f61c8',1,'plansys2::ActionNode']]],
+  ['output_5farcs_42',['output_arcs',['../structplansys2_1_1Node.html#a1ccaca42f7af15887d5038802dd948d2',1,'plansys2::Node']]],
+  ['overall_43',['OVERALL',['../namespaceplansys2.html#a21d5e8f8cdaa838586b31007df0a950ba7905c9b3eda793da18fade6e791b2183',1,'plansys2']]]
 ];

@@ -1,7 +1,9 @@
 <map id="SimpleBTBuilder" name="SimpleBTBuilder">
-<area shape="rect" id="Node000001" title="Simple implementation of a behavior tree builder." alt="" coords="18,79,137,105"/>
-<area shape="rect" id="Node000003" href="$classSimpleBTBuilderTest.html" title=" " alt="" coords="5,153,150,178"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="80,120,80,152,75,152,75,120"/>
-<area shape="rect" id="Node000002" href="$classplansys2_1_1BTBuilder.html" title="Interface for behavior tree builder implementations." alt="" coords="38,5,117,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,46,80,79,75,79,75,46"/>
+<area shape="rect" id="Node000001" title="Simple implementation of a behavior tree builder." alt="" coords="127,79,246,105"/>
+<area shape="rect" id="Node000003" href="$classDestructionProbeBTBuilder.html" title=" " alt="" coords="5,153,184,178"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="161,117,112,154,108,150,157,112"/>
+<area shape="rect" id="Node000004" href="$classSimpleBTBuilderTest.html" title=" " alt="" coords="208,153,352,178"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="216,112,266,150,263,154,213,117"/>
+<area shape="rect" id="Node000002" href="$classplansys2_1_1BTBuilder.html" title="Interface for behavior tree builder implementations." alt="" coords="147,5,226,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="189,46,189,79,184,79,184,46"/>
 </map>

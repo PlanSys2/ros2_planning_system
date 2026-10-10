@@ -30,9 +30,10 @@ var searchData=
   ['restoreatstarteffect_27',['RestoreAtStartEffect',['../classplansys2_1_1RestoreAtStartEffect.html#ad48313d872d7423a8bed6aa1c2630c4b',1,'plansys2::RestoreAtStartEffect']]],
   ['restoreatstarteffecttest_28',['RestoreAtStartEffectTest',['../classRestoreAtStartEffectTest.html#a1828930ca6464ef983338d43ec120cf0',1,'RestoreAtStartEffectTest']]],
   ['restoresettings_29',['restoreSettings',['../classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa4f3c7276e7507a9f48e2709b3e0e35d',1,'rqt_plansys2_knowledge::RQTKnowledge::restoreSettings()'],['../classrqt__plansys2__performers_1_1RQTPerformers.html#aa4f3c7276e7507a9f48e2709b3e0e35d',1,'rqt_plansys2_performers::RQTPerformers::restoreSettings()'],['../classrqt__plansys2__plan_1_1RQTPlan.html#aa4f3c7276e7507a9f48e2709b3e0e35d',1,'rqt_plansys2_plan::RQTPlan::restoreSettings()']]],
-  ['rqtknowledge_30',['RQTKnowledge',['../classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa14147180bf6af8eb15b961b30ef2b0c',1,'rqt_plansys2_knowledge::RQTKnowledge']]],
-  ['rqtperformers_31',['RQTPerformers',['../classrqt__plansys2__performers_1_1RQTPerformers.html#a7cc08ca65aa06a026ed2005ef67b5e14',1,'rqt_plansys2_performers::RQTPerformers']]],
-  ['rqtplan_32',['RQTPlan',['../classrqt__plansys2__plan_1_1RQTPlan.html#a451853bc47039020bda520283da55c54',1,'rqt_plansys2_plan::RQTPlan']]],
-  ['run_33',['run',['../classPlanSolverBaseTest.html#a98dfb44878fba544b8132e9c1f03d06c',1,'PlanSolverBaseTest::run()'],['../classPlanSetupErrorsTest.html#a014fa9ef2f08ff008259be2cd9c32771',1,'PlanSetupErrorsTest::run()']]],
-  ['run_5fconsole_34',['run_console',['../classplansys2__terminal_1_1Terminal.html#ad1d03cadad91316efd43b22302cc348e',1,'plansys2_terminal::Terminal']]]
+  ['robot_5fat_30',['robot_at',['../classExecutorLifecycleTest.html#af6e5fd3c11dcc8f24e753f238d49a410',1,'ExecutorLifecycleTest']]],
+  ['rqtknowledge_31',['RQTKnowledge',['../classrqt__plansys2__knowledge_1_1RQTKnowledge.html#aa14147180bf6af8eb15b961b30ef2b0c',1,'rqt_plansys2_knowledge::RQTKnowledge']]],
+  ['rqtperformers_32',['RQTPerformers',['../classrqt__plansys2__performers_1_1RQTPerformers.html#a7cc08ca65aa06a026ed2005ef67b5e14',1,'rqt_plansys2_performers::RQTPerformers']]],
+  ['rqtplan_33',['RQTPlan',['../classrqt__plansys2__plan_1_1RQTPlan.html#a451853bc47039020bda520283da55c54',1,'rqt_plansys2_plan::RQTPlan']]],
+  ['run_34',['run',['../classPlanSolverBaseTest.html#a98dfb44878fba544b8132e9c1f03d06c',1,'PlanSolverBaseTest::run()'],['../classPlanSetupErrorsTest.html#a014fa9ef2f08ff008259be2cd9c32771',1,'PlanSetupErrorsTest::run()']]],
+  ['run_5fconsole_35',['run_console',['../classplansys2__terminal_1_1Terminal.html#ad1d03cadad91316efd43b22302cc348e',1,'plansys2_terminal::Terminal']]]
 ];

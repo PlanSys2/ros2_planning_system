@@ -1,7 +1,7 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
 <area shape="rect" id="Node000000" href="$classplansys2__msgs_1_1msg_1_1Tree.html" title=" " alt="" coords="5,5,53,31"/>
 <area shape="rect" id="Node000001" href="$classplansys2_1_1Goal.html" title="Represents a goal in the planning domain." alt="" coords="101,31,149,56"/>
-<area shape="poly" id="edge135_Node000000_Node000001" title=" " alt="" coords="68,26,101,35,100,40,67,31"/>
+<area shape="poly" id="edge137_Node000000_Node000001" title=" " alt="" coords="68,26,101,35,100,40,67,31"/>
 <area shape="rect" id="Node000002" href="$classTree.html" title=" " alt="" coords="5,55,53,80"/>
-<area shape="poly" id="edge136_Node000002_Node000001" title=" " alt="" coords="67,55,100,47,101,52,68,61"/>
+<area shape="poly" id="edge138_Node000002_Node000001" title=" " alt="" coords="67,55,100,47,101,52,68,61"/>
 </map>
