@@ -165,9 +165,12 @@ public:
    */
   void set_timeout(rclcpp::Duration solver_timeout) {solver_timeout_ = solver_timeout;}
 
-private:
+protected:
+  // Destroyed before lp_loader_, which unloads their libraries
   pluginlib::ClassLoader<plansys2::PlanSolverBase> lp_loader_;
   SolverMap solvers_;
+
+private:
   std::vector<std::string> default_ids_;
   std::vector<std::string> default_types_;
   std::vector<std::string> solver_ids_;
@@ -177,6 +180,12 @@ private:
   rclcpp::Service<plansys2_msgs::srv::GetPlan>::SharedPtr get_plan_service_;
   rclcpp::Service<plansys2_msgs::srv::GetPlanArray>::SharedPtr get_plan_array_service_;
   rclcpp::Service<plansys2_msgs::srv::ValidateDomain>::SharedPtr validate_domain_service_;
+
+  // Runs every solver; when none finds a plan, error_info says why (#434)
+  plansys2_msgs::msg::PlanArray solve(
+    const std::string & domain, const std::string & problem, std::string & error_info);
+  // "Invalid PDDL ..." if the domain or problem does not parse, empty otherwise
+  static std::string check_pddl(const std::string & domain, const std::string & problem);
 };
 
 /**

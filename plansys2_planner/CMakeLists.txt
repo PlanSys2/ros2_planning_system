@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(plansys2_core REQUIRED)
+find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_domain_expert REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
@@ -31,6 +32,7 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC
   ${lifecycle_msgs_TARGETS}
   plansys2_core::plansys2_core
+  plansys2_pddl_parser::plansys2_pddl_parser
   plansys2_domain_expert::plansys2_domain_expert
   plansys2_problem_expert::plansys2_problem_expert
   ${plansys2_msgs_TARGETS}
