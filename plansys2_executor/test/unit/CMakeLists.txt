@@ -75,3 +75,17 @@ foreach(scenario
     ENV GTEST_FILTER=ExecutorLifecycleTest.${scenario}
     TIMEOUT 120)
 endforeach()
+
+ament_add_gtest_executable(executor_goal_handling_test executor_goal_handling_test.cpp)
+target_compile_definitions(executor_goal_handling_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(executor_goal_handling_test ${PROJECT_NAME})
+foreach(scenario
+    succeeded_plan_reports_only_its_actions failed_plan_is_aborted_with_failure
+    cancelled_plan_stops_its_actions cancelled_plan_does_not_start_actions_later
+    new_goal_preempts_the_running_one goals_in_a_row_all_end
+    cancel_a_goal_waiting_to_start cancel_as_the_plan_ends_does_not_reach_the_next_goal)
+  ament_add_gtest_test(executor_goal_handling_test
+    TEST_NAME executor_goal_handling_${scenario}
+    ENV GTEST_FILTER=ExecutorGoalHandlingTest.${scenario}
+    TIMEOUT 120)
+endforeach()

@@ -1939,7 +1939,7 @@ TEST(executor, executor_client_execute_plan)
     auto result = executor_client->getResult().value();
 
     ASSERT_EQ(result.result, plansys2_msgs::action::ExecutePlan::Result::SUCCESS);
-    ASSERT_EQ(result.action_execution_status.size(), 2u);
+    ASSERT_EQ(result.action_execution_status.size(), 1u);
     for (const auto & action_status : result.action_execution_status) {
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }
@@ -2093,7 +2093,7 @@ TEST(executor, executor_client_execute_plan_2)
     auto result = executor_client->getResult().value();
 
     ASSERT_EQ(result.result, plansys2_msgs::action::ExecutePlan::Result::SUCCESS);
-    ASSERT_EQ(result.action_execution_status.size(), 2u);
+    ASSERT_EQ(result.action_execution_status.size(), 1u);
     for (const auto & action_status : result.action_execution_status) {
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }
@@ -2255,7 +2255,7 @@ TEST(executor, executor_client_execute_plan_3)
     auto result = executor_client->getResult().value();
 
     ASSERT_EQ(result.result, plansys2_msgs::action::ExecutePlan::Result::SUCCESS);
-    ASSERT_EQ(result.action_execution_status.size(), 5u);
+    ASSERT_EQ(result.action_execution_status.size(), 4u);
     for (const auto & action_status : result.action_execution_status) {
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }
@@ -2394,7 +2394,7 @@ TEST(executor, executor_client_execute_plan_two_plans)
     auto result = executor_client->getResult().value();
 
     ASSERT_EQ(result.result, plansys2_msgs::action::ExecutePlan::Result::SUCCESS);
-    ASSERT_EQ(result.action_execution_status.size(), 5u);
+    ASSERT_EQ(result.action_execution_status.size(), 4u);
     for (const auto & action_status : result.action_execution_status) {
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }
@@ -2428,7 +2428,7 @@ TEST(executor, executor_client_execute_plan_two_plans)
     result = executor_client->getResult().value();
 
     ASSERT_EQ(result.result, plansys2_msgs::action::ExecutePlan::Result::SUCCESS);
-    ASSERT_EQ(result.action_execution_status.size(), 5u);
+    ASSERT_EQ(result.action_execution_status.size(), 4u);
     for (const auto & action_status : result.action_execution_status) {
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }
@@ -2590,7 +2590,7 @@ TEST(executor, executor_client_execute_plan_replan)
     auto result = executor_client->getResult().value();
 
     ASSERT_EQ(result.result, plansys2_msgs::action::ExecutePlan::Result::SUCCESS);
-    ASSERT_EQ(result.action_execution_status.size(), 3u);
+    ASSERT_EQ(result.action_execution_status.size(), 2u);
     for (const auto & action_status : result.action_execution_status) {
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }
@@ -2778,7 +2778,7 @@ TEST(executor, executor_client_execute_plan_multi_replan)
     auto result = executor_client->getResult().value();
 
     ASSERT_EQ(result.result, plansys2_msgs::action::ExecutePlan::Result::SUCCESS);
-    ASSERT_EQ(result.action_execution_status.size(), 7u);
+    ASSERT_EQ(result.action_execution_status.size(), 6u);
     for (const auto & action_status : result.action_execution_status) {
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }

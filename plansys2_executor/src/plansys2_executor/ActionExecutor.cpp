@@ -266,6 +266,10 @@ void
 ActionExecutor::cancel()
 {
   state_ = CANCELLED;
+  // Stop asking for performers (#436)
+  if (waiting_timer_) {
+    waiting_timer_->cancel();
+  }
   plansys2_msgs::msg::ActionExecution msg;
   msg.type = plansys2_msgs::msg::ActionExecution::CANCEL;
   msg.node_id = current_performer_id_;
@@ -315,6 +319,9 @@ ActionExecutor::get_params(const std::string & action_expr)
 void
 ActionExecutor::wait_timeout()
 {
+  if (state_ != DEALING) {
+    return;
+  }
   RCLCPP_WARN(node_->get_logger(), "No action performer for %s. retrying", action_.c_str());
   request_for_performers();
 }

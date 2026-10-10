@@ -90,7 +90,9 @@ ExecutorClient::execute_and_check_plan()
   }
 
   switch (result_.code) {
+    // Failed and preempted plans end as aborted goals (#436)
     case rclcpp_action::ResultCode::SUCCEEDED:
+    case rclcpp_action::ResultCode::ABORTED:
       if (result_.result == nullptr) {
         RCLCPP_WARN(
           node_->get_logger(),
@@ -142,10 +144,6 @@ ExecutorClient::execute_and_check_plan()
           }
         }
       }
-      break;
-
-    case rclcpp_action::ResultCode::ABORTED:
-      RCLCPP_WARN(node_->get_logger(), "Plan Aborted");
       break;
 
     case rclcpp_action::ResultCode::CANCELED:
