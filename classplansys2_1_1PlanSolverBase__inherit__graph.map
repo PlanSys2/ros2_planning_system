@@ -6,4 +6,6 @@
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="166,46,166,79,160,79,160,46"/>
 <area shape="rect" id="Node000004" href="$classplansys2_1_1POPFPlanSolver.html" title="Plan solver implementation that uses the POPF planning system." alt="" coords="230,79,350,105"/>
 <area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="199,37,269,76,267,81,196,41"/>
+<area shape="rect" id="Node000005" href="$classTestablePOPFPlanSolver.html" title=" " alt="" coords="204,153,375,178"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="292,120,292,152,287,152,287,120"/>
 </map>

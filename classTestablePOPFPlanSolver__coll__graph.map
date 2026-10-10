@@ -1,0 +1,11 @@
+<map id="TestablePOPFPlanSolver" name="TestablePOPFPlanSolver">
+<area shape="rect" id="Node000001" title=" " alt="" coords="18,252,189,278"/>
+<area shape="rect" id="Node000002" href="$classplansys2_1_1POPFPlanSolver.html" title="Plan solver implementation that uses the POPF planning system." alt="" coords="44,177,164,203"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,218,106,252,101,252,101,218"/>
+<area shape="rect" id="Node000003" href="$classplansys2_1_1PlanSolverBase.html" title="Abstract base class for plan solvers in PlanSys2." alt="" coords="46,102,161,128"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="106,143,106,177,101,177,101,143"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="5,5,85,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="58,44,75,77,94,100,90,103,71,79,53,47"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="109,5,216,31"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="153,47,135,79,117,103,113,100,131,77,149,44"/>
+</map>

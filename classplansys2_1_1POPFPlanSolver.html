@@ -113,9 +113,11 @@ Inheritance diagram for POPFPlanSolver:</div>
 <div class="dyncontent">
 <div class="center"><img src="classplansys2_1_1POPFPlanSolver__inherit__graph.png" border="0" usemap="#aPOPFPlanSolver_inherit__map" loading="lazy" alt="Inheritance graph"/></div>
 <map name="aPOPFPlanSolver_inherit__map" id="aPOPFPlanSolver_inherit__map">
-<area shape="rect" title="Plan solver implementation that uses the POPF planning system." alt="" coords="5,79,126,105"/>
-<area shape="rect" href="classplansys2_1_1PlanSolverBase.html" title="Abstract base class for plan solvers in PlanSys2." alt="" coords="8,5,123,31"/>
-<area shape="poly" title=" " alt="" coords="68,46,68,79,63,79,63,46"/>
+<area shape="rect" title="Plan solver implementation that uses the POPF planning system." alt="" coords="30,79,151,105"/>
+<area shape="rect" href="classTestablePOPFPlanSolver.html" title=" " alt="" coords="5,153,176,178"/>
+<area shape="poly" title=" " alt="" coords="93,120,93,152,88,152,88,120"/>
+<area shape="rect" href="classplansys2_1_1PlanSolverBase.html" title="Abstract base class for plan solvers in PlanSys2." alt="" coords="33,5,148,31"/>
+<area shape="poly" title=" " alt="" coords="93,46,93,79,88,79,88,46"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <div class="dynheader">
@@ -157,8 +159,11 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pro-methods" class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
+<tr class="memitem:a70968ac4515f03f96dd4b1bd9681022f" id="r_a70968ac4515f03f96dd4b1bd9681022f"><td class="memItemLeft">std::optional&lt; std::filesystem::path &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a70968ac4515f03f96dd4b1bd9681022f">create_run_folder</a> (const std::string &amp;node_namespace)</td></tr>
 <tr class="memitem:aed1b60005aa163b1a8f6ca131da74209" id="r_aed1b60005aa163b1a8f6ca131da74209"><td class="memItemLeft">std::optional&lt; plansys2_msgs::msg::Plan &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aed1b60005aa163b1a8f6ca131da74209">parse_plan_result</a> (const std::string &amp;plan_path)</td></tr>
 <tr class="memdesc:aed1b60005aa163b1a8f6ca131da74209"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses the plan output file into a Plan message.  <br /></td></tr>
+<tr class="memitem:a45807c05b75b3f7c350067fe3e43551a" id="r_a45807c05b75b3f7c350067fe3e43551a"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a45807c05b75b3f7c350067fe3e43551a">popf_command</a> (const std::filesystem::path &amp;domain_path, const std::filesystem::path &amp;problem_path)</td></tr>
+<tr class="memitem:ac41899f427ded70b2792b5303a932ece" id="r_ac41899f427ded70b2792b5303a932ece"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ac41899f427ded70b2792b5303a932ece">remove_run_folder</a> (const std::filesystem::path &amp;run_folder)</td></tr>
 <tr class="inherit_header pro_methods_classplansys2_1_1PlanSolverBase"><td colspan="2">Protected Member Functions inherited from <a class="el" href="classplansys2_1_1PlanSolverBase.html">PlanSolverBase</a></td></tr>
 <tr class="memitem:a46b15daba177d8f5019dc17c0ac2ce37 pro_methods_classplansys2_1_1PlanSolverBase" id="r_a46b15daba177d8f5019dc17c0ac2ce37"><td class="memItemLeft">char **&#160;</td><td class="memItemRight"><a class="el" href="classplansys2_1_1PlanSolverBase.html#a46b15daba177d8f5019dc17c0ac2ce37">tokenize</a> (const std::string &amp;command)</td></tr>
 <tr class="memdesc:a46b15daba177d8f5019dc17c0ac2ce37 pro_methods_classplansys2_1_1PlanSolverBase"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tokenize a command string.  <br /></td></tr>
@@ -259,6 +264,31 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>std::optional&lt;std::filesystem::path&gt; Created folder path if successful, std::nullopt on failure. </dd></dl>
+
+</div>
+</div>
+<a id="a70968ac4515f03f96dd4b1bd9681022f" name="a70968ac4515f03f96dd4b1bd9681022f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a70968ac4515f03f96dd4b1bd9681022f">&#9670;&#160;</a></span>create_run_folder()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; std::filesystem::path &gt; create_run_folder </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>node_namespace</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -389,6 +419,60 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>std::optional&lt;plansys2_msgs::msg::Plan&gt; The parsed plan if successful, nullopt otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a45807c05b75b3f7c350067fe3e43551a" name="a45807c05b75b3f7c350067fe3e43551a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a45807c05b75b3f7c350067fe3e43551a">&#9670;&#160;</a></span>popf_command()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string popf_command </td>
+          <td>(</td>
+          <td class="paramtype">const std::filesystem::path &amp;</td>          <td class="paramname"><span class="paramname"><em>domain_path</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::filesystem::path &amp;</td>          <td class="paramname"><span class="paramname"><em>problem_path</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac41899f427ded70b2792b5303a932ece" name="ac41899f427ded70b2792b5303a932ece"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac41899f427ded70b2792b5303a932ece">&#9670;&#160;</a></span>remove_run_folder()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void remove_run_folder </td>
+          <td>(</td>
+          <td class="paramtype">const std::filesystem::path &amp;</td>          <td class="paramname"><span class="paramname"><em>run_folder</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
