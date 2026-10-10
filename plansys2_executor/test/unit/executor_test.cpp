@@ -2563,10 +2563,16 @@ TEST(executor, executor_client_execute_plan_replan)
       }
     }
 
-    problem_client->setGoal(plansys2::Goal("(and(robot_at r2d2 wp1))"));
+    ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and(robot_at r2d2 wp1))")));
 
-    problem = problem_client->getProblem(true);
-    plan = planner_client->getPlan(domain, problem);
+    // Halfway through a move the robot is at no waypoint and there is no plan: retry
+    {
+      auto start = test_node_1->now();
+      do {
+        problem = problem_client->getProblem(true);
+        plan = planner_client->getPlan(domain, problem);
+      } while (!plan.has_value() && test_node_1->now() - start < 10s);
+    }
     ASSERT_FALSE(domain.empty());
     ASSERT_FALSE(problem.empty());
     ASSERT_TRUE(plan.has_value());

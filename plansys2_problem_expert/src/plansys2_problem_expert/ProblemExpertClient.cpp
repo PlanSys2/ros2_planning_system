@@ -87,6 +87,10 @@ ProblemExpertClient::ProblemExpertClient()
   problem_sub_ = node_->create_subscription<plansys2_msgs::msg::Problem>(
     "problem_expert/problem",
     rclcpp::QoS(100), [this](plansys2_msgs::msg::Problem::SharedPtr msg) {
+      // Published before this client's last change: it would bring the cache back (#438)
+      if (rclcpp::Time(msg->stamp, cache_valid_since_.get_clock_type()) < cache_valid_since_) {
+        return;
+      }
       cached_problem_ = msg->problem;
       problem_ts_ = msg->stamp;
     });
@@ -155,6 +159,8 @@ ProblemExpertClient::addInstance(const plansys2::Instance & instance)
   auto request = std::make_shared<plansys2_msgs::srv::AffectParam::Request>();
   request->param = instance;
 
+  invalidate_cache();
+
   auto future_result = add_problem_instance_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
@@ -192,6 +198,8 @@ ProblemExpertClient::removeInstance(const plansys2::Instance & instance)
 
   auto request = std::make_shared<plansys2_msgs::srv::AffectParam::Request>();
   request->param = instance;
+
+  invalidate_cache();
 
   auto future_result = remove_problem_instance_client_->async_send_request(request);
 
@@ -307,6 +315,8 @@ ProblemExpertClient::addPredicate(const plansys2::Predicate & predicate)
   auto request = std::make_shared<plansys2_msgs::srv::AffectNode::Request>();
   request->node = predicate;
 
+  invalidate_cache();
+
   auto future_result = add_problem_predicate_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
@@ -344,6 +354,8 @@ ProblemExpertClient::removePredicate(const plansys2::Predicate & predicate)
 
   auto request = std::make_shared<plansys2_msgs::srv::AffectNode::Request>();
   request->node = predicate;
+
+  invalidate_cache();
 
   auto future_result = remove_problem_predicate_client_->async_send_request(request);
 
@@ -487,6 +499,8 @@ ProblemExpertClient::addFunction(const plansys2::Function & function)
   auto request = std::make_shared<plansys2_msgs::srv::AffectNode::Request>();
   request->node = function;
 
+  invalidate_cache();
+
   auto future_result = add_problem_function_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(
@@ -527,6 +541,8 @@ ProblemExpertClient::removeFunction(const plansys2::Function & function)
 
   auto request = std::make_shared<plansys2_msgs::srv::AffectNode::Request>();
   request->node = function;
+
+  invalidate_cache();
 
   auto future_result = remove_problem_function_client_->async_send_request(request);
 
@@ -593,6 +609,8 @@ bool ProblemExpertClient::updateFunction(const plansys2::Function & function)
 
   auto request = std::make_shared<plansys2_msgs::srv::AffectNode::Request>();
   request->node = function;
+
+  invalidate_cache();
 
   auto future_result = update_problem_function_client_->async_send_request(request);
 
@@ -710,6 +728,8 @@ ProblemExpertClient::setGoal(const plansys2::Goal & goal)
   auto request = std::make_shared<plansys2_msgs::srv::AddProblemGoal::Request>();
   request->tree = goal;
 
+  invalidate_cache();
+
   auto future_result = add_problem_goal_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
@@ -784,6 +804,8 @@ ProblemExpertClient::clearGoal()
 
   auto request = std::make_shared<plansys2_msgs::srv::RemoveProblemGoal::Request>();
 
+  invalidate_cache();
+
   auto future_result = remove_problem_goal_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
@@ -821,6 +843,8 @@ ProblemExpertClient::clearKnowledge()
 
   auto request = std::make_shared<plansys2_msgs::srv::ClearProblemKnowledge::Request>();
 
+  invalidate_cache();
+
   auto future_result = clear_problem_knowledge_client_->async_send_request(request);
 
   if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
@@ -841,6 +865,13 @@ ProblemExpertClient::clearKnowledge()
         result.error_info);
     return false;
   }
+}
+
+void
+ProblemExpertClient::invalidate_cache()
+{
+  cached_problem_.clear();
+  cache_valid_since_ = node_->now();
 }
 
 std::tuple<std::string, rclcpp::Time>
@@ -913,6 +944,8 @@ ProblemExpertClient::addProblem(const std::string & problem_str)
 
   auto request = std::make_shared<plansys2_msgs::srv::AddProblem::Request>();
   request->problem = problem_str;
+
+  invalidate_cache();
 
   auto future_result = add_problem_client_->async_send_request(request);
 
