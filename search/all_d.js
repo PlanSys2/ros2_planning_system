@@ -57,6 +57,7 @@ var searchData=
   ['ispredicate_54',['isPredicate',['../classplansys2_1_1NodeVariant.html#a5ed24e776ccdff1eabd0113488b40d96',1,'plansys2::NodeVariant']]],
   ['isvalidfunction_55',['isValidFunction',['../classplansys2_1_1ProblemExpert.html#a2e608ff730bbf8ff55a953724d4e7f60',1,'plansys2::ProblemExpert']]],
   ['isvalidgoal_56',['isValidGoal',['../classplansys2_1_1ProblemExpert.html#a5d2a6db9aafa1748b9825931814bcbc7',1,'plansys2::ProblemExpert']]],
-  ['isvalidpredicate_57',['isValidPredicate',['../classplansys2_1_1ProblemExpert.html#ae84539f8129d3b00cee2b6cea5d002c5',1,'plansys2::ProblemExpert']]],
-  ['isvalidtype_58',['isValidType',['../classplansys2_1_1ProblemExpert.html#adae178bd83487411fb9e15ce74ee35e7',1,'plansys2::ProblemExpert']]]
+  ['isvalidname_57',['isValidName',['../namespaceparser_1_1pddl.html#a4809556bc9e3febff90ce54f7d930096',1,'parser::pddl']]],
+  ['isvalidpredicate_58',['isValidPredicate',['../classplansys2_1_1ProblemExpert.html#ae84539f8129d3b00cee2b6cea5d002c5',1,'plansys2::ProblemExpert']]],
+  ['isvalidtype_59',['isValidType',['../classplansys2_1_1ProblemExpert.html#adae178bd83487411fb9e15ce74ee35e7',1,'plansys2::ProblemExpert']]]
 ];

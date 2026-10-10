@@ -207,6 +207,8 @@ Functions</h2></td></tr>
 <tr class="memitem:ad41283509c5800a7f9008ec3fb150830" id="r_ad41283509c5800a7f9008ec3fb150830"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ad41283509c5800a7f9008ec3fb150830">getSubtreeChildren</a> (<a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;subtree, const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t tree_parent, uint32_t subtree_parent)</td></tr>
 <tr class="memitem:aa9c7a8d4f2da476de9fc90c0b41e117e" id="r_aa9c7a8d4f2da476de9fc90c0b41e117e"><td class="memItemLeft">std::vector&lt; uint32_t &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aa9c7a8d4f2da476de9fc90c0b41e117e">getSubtreeIds</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree)</td></tr>
 <tr class="memitem:a607ba52239457b7baa62db7263ce0328" id="r_a607ba52239457b7baa62db7263ce0328"><td class="memItemLeft">std::vector&lt; <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a607ba52239457b7baa62db7263ce0328">getSubtrees</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree)</td></tr>
+<tr class="memitem:a4809556bc9e3febff90ce54f7d930096" id="r_a4809556bc9e3febff90ce54f7d930096"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4809556bc9e3febff90ce54f7d930096">isValidName</a> (const std::string &amp;name)</td></tr>
+<tr class="memdesc:a4809556bc9e3febff90ce54f7d930096"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks that a string is a PDDL name: a letter followed by letters, digits, '-' or '_'.  <br /></td></tr>
 <tr class="memitem:a0eef8540a63ffbcee1a0f74c1c0a8361" id="r_a0eef8540a63ffbcee1a0f74c1c0a8361"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a0eef8540a63ffbcee1a0f74c1c0a8361">nameActionsToString</a> (const std::shared_ptr&lt; plansys2_msgs::msg::Action &gt; action)</td></tr>
 <tr class="memitem:a979fcdc0e20e2b60b278516b9def2cc6" id="r_a979fcdc0e20e2b60b278516b9def2cc6"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a979fcdc0e20e2b60b278516b9def2cc6">nameActionsToString</a> (const std::shared_ptr&lt; <a class="el" href="classplansys2__msgs_1_1msg_1_1DurativeAction.html">plansys2_msgs::msg::DurativeAction</a> &gt; action)</td></tr>
 <tr class="memitem:aed0e978c820273bc41b0e4d262d7c67d" id="r_aed0e978c820273bc41b0e4d262d7c67d"><td class="memItemLeft">std::ostream &amp;&#160;</td><td class="memItemRight"><a class="el" href="#aed0e978c820273bc41b0e4d262d7c67d">operator&lt;&lt;</a> (std::ostream &amp;stream, const <a class="el" href="classparser_1_1pddl_1_1Condition.html">Condition</a> *c)</td></tr>
@@ -1159,6 +1161,32 @@ template&lt;&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a4809556bc9e3febff90ce54f7d930096" name="a4809556bc9e3febff90ce54f7d930096"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4809556bc9e3febff90ce54f7d930096">&#9670;&#160;</a></span>isValidName()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> isValidName </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Checks that a string is a PDDL name: a letter followed by letters, digits, '-' or '_'. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>The candidate name </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if it can be used as a PDDL name </dd></dl>
 
 </div>
 </div>
