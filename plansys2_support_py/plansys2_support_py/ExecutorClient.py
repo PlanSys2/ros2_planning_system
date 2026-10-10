@@ -19,6 +19,7 @@ PlanSys2 Executor Client.
 This module provides specific classes for interacting with PlanSys2 Executor services.
 """
 
+import time
 from typing import Any, List, Optional
 
 from action_msgs.msg import GoalStatus
@@ -73,6 +74,12 @@ class ExecutorClient(Node):
         self.result_future: \
             Optional[Future[GetResultServiceResponse[Any]]] = None
         self.feedback: Any = None
+        # The ones the methods use; get_result() before any plan used to raise
+        self._goal_handle: Optional[ClientGoalHandle[Any, Any, Any]] = None
+        self._result_future: \
+            Optional[Future[GetResultServiceResponse[Any]]] = None
+        # Since when the executor's action server has been missing, while executing (#446)
+        self._server_lost_since: Optional[float] = None
 
         self.get_logger().debug(f'Executor Client "{node_name}" initialized')
 
@@ -305,6 +312,7 @@ class ExecutorClient(Node):
 
         self._goal_handle = goal_handle  # type: ignore[assignment]
         self._result_future = goal_handle.get_result_async()
+        self._server_lost_since = None
         self._executing_plan = True
         return True
 
@@ -326,6 +334,9 @@ class ExecutorClient(Node):
             True if plan is still executing, False if plan has finished.
 
         """
+        if self._result_future is None:
+            return False  # No plan, or its executor is gone
+
         # Get the result of the future, if complete
         rclpy.spin_until_future_complete(self, self._result_future, timeout_sec=0.10)
 
@@ -344,6 +355,20 @@ class ExecutorClient(Node):
 
             return False  # Plan finished
         else:
+            # A gone executor never answers: do not wait for it forever (#446)
+            if self._executing_plan and not self._execute_plan_action_client.server_is_ready():
+                now = time.monotonic()
+                if self._server_lost_since is None:
+                    self._server_lost_since = now
+                elif now - self._server_lost_since > 2.0:
+                    self.get_logger().error(
+                        'execute_and_check_plan: the executor is gone, the plan is lost')
+                    self._executing_plan = False
+                    self._server_lost_since = None
+                    self._result_future = None
+                    return False
+            else:
+                self._server_lost_since = None
             # Timed out, still processing, not complete yet
             return True
 

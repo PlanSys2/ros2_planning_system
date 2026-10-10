@@ -15,6 +15,7 @@
 #ifndef PLANSYS2_EXECUTOR__EXECUTORCLIENT_HPP_
 #define PLANSYS2_EXECUTOR__EXECUTORCLIENT_HPP_
 
+#include <chrono>
 #include <optional>
 #include <string>
 #include <memory>
@@ -180,6 +181,8 @@ private:
   bool goal_result_available_{false};
 
   bool executing_plan_{false};
+  // Since when the executor's action server has been missing, while executing (#446)
+  std::optional<std::chrono::steady_clock::time_point> server_lost_since_;
 };
 
 }  // namespace plansys2

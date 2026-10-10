@@ -132,6 +132,12 @@ class PlanSys2App(App):
         self._box_perf: Static | None = None
         self._box_know: Static | None = None
 
+        # Last rendered text of the panels fed by PlanSys2, and whether it is up (#446)
+        self._plan_text = '[dim]Waiting for plan…[/dim]'
+        self._know_text = '[dim]Waiting for knowledge…[/dim]'
+        self._executor_up = True
+        self._problem_expert_up = True
+
         # ROS processors
         self._proc_exec = ActionExecutionProcessor(self.node, self._exec_cb)
         self._proc_perf = PerformersProcessor(self.node, self._perf_cb)
@@ -190,6 +196,30 @@ class PlanSys2App(App):
             target=self._ros_spin, daemon=True
         )
         self._ros_thread.start()
+        self.set_interval(1.0, self._check_plansys2)
+
+    # ------------------------------------------------------------------
+    # PlanSys2 liveness: its topics lose their publishers when it goes down
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _with_banner(text: str, up: bool, who: str) -> str:
+        if up:
+            return text
+        return f'[bold red]{who} is not running: last known data[/bold red]\n\n{text}'
+
+    def _check_plansys2(self) -> None:
+        executor_up = self.node.count_publishers('executing_plan') > 0
+        problem_expert_up = self.node.count_publishers('problem_expert/knowledge') > 0
+        if executor_up != self._executor_up:
+            self._executor_up = executor_up
+            if self._box_plan is not None:
+                self._box_plan.update(
+                    self._with_banner(self._plan_text, executor_up, 'The executor'))
+        if problem_expert_up != self._problem_expert_up:
+            self._problem_expert_up = problem_expert_up
+            if self._box_know is not None:
+                self._box_know.update(
+                    self._with_banner(self._know_text, problem_expert_up, 'The problem expert'))
 
     # ------------------------------------------------------------------
     # ROS background spin
@@ -203,29 +233,40 @@ class PlanSys2App(App):
     # ------------------------------------------------------------------
     # ROS callbacks
     # ------------------------------------------------------------------
+    def _update_from_ros(self, update, text: str) -> None:
+        # Messages keep arriving while the app closes (Ctrl-C): drop them then
+        try:
+            self.call_from_thread(update, text)
+        except RuntimeError:
+            pass
+
     def _exec_cb(self, performers: dict, active: dict) -> None:
         if self._box_exec is None:
             return
         text = ActionExecutionProcessor.combined2text(performers, active)
-        self.call_from_thread(self._box_exec.update, text)
+        self._update_from_ros(self._box_exec.update, text)
 
     def _perf_cb(self, performers: dict) -> None:
         if self._box_perf is None:
             return
         text = PerformersProcessor.performers2text(performers)
-        self.call_from_thread(self._box_perf.update, text)
+        self._update_from_ros(self._box_perf.update, text)
 
     def _plan_cb(self, plan, info: dict) -> None:
         if self._box_plan is None:
             return
-        text = PlanMonitorProcessor.plan2text(plan, info)
-        self.call_from_thread(self._box_plan.update, text)
+        self._plan_text = PlanMonitorProcessor.plan2text(plan, info)
+        self._update_from_ros(
+            self._box_plan.update,
+            self._with_banner(self._plan_text, self._executor_up, 'The executor'))
 
     def _know_cb(self, msg) -> None:
         if self._box_know is None:
             return
-        text = KnowledgeProcessor.knowledge2text(msg)
-        self.call_from_thread(self._box_know.update, text)
+        self._know_text = KnowledgeProcessor.knowledge2text(msg)
+        self._update_from_ros(
+            self._box_know.update,
+            self._with_banner(self._know_text, self._problem_expert_up, 'The problem expert'))
 
     # ------------------------------------------------------------------
     # Shutdown
