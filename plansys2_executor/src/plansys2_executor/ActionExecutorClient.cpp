@@ -140,6 +140,7 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
         !committed_ && should_execute(msg->action, msg->arguments))
       {
         committed_ = true;
+        requester_ = msg->node_id;
         send_response(msg);
       }
       break;
@@ -157,6 +158,9 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
             "Performer [%s] failed to activate for action [%s]. Notifying executor.",
             get_name(), action_managed_.c_str());
           finish(false, 0.0, "Activation failed for performer " + std::string(get_name()));
+        } else {
+          requester_misses_ = 0;
+          requester_check_ = create_wall_timer(1s, [this]() {check_requester();});
         }
       }
       break;
@@ -181,6 +185,34 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
         get_logger(), "Msg %d type not recognized in %s executor performer",
         msg->type, get_name());
       break;
+  }
+}
+
+void
+ActionExecutorClient::check_requester()
+{
+  if (get_current_state().id() != lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE) {
+    requester_check_->cancel();
+    return;
+  }
+
+  // Names are fully qualified: compare the last part. A few misses in a row, as
+  // discovery may lag, before stopping
+  bool alive = false;
+  for (const auto & name : get_node_names()) {
+    if (name.substr(name.find_last_of('/') + 1) == requester_) {
+      alive = true;
+      break;
+    }
+  }
+  requester_misses_ = alive ? 0 : requester_misses_ + 1;
+
+  if (requester_misses_ >= 3) {
+    RCLCPP_ERROR(
+      get_logger(), "%s, which asked for %s, is gone: stopping the action",
+      requester_.c_str(), action_managed_.c_str());
+    requester_check_->cancel();
+    trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
   }
 }
 

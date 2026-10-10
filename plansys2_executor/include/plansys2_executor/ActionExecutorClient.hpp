@@ -207,6 +207,14 @@ protected:
   rclcpp::TimerBase::SharedPtr hearbeat_pub_;
   plansys2_msgs::msg::ActionPerformerStatus status_;
   rclcpp::Time start_time_;
+
+private:
+  // While running, the node that asked for the action must stay alive (#446)
+  void check_requester();
+
+  std::string requester_;
+  rclcpp::TimerBase::SharedPtr requester_check_;
+  int requester_misses_ {0};
 };
 
 }  // namespace plansys2

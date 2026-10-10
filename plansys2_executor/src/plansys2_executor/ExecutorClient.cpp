@@ -86,6 +86,22 @@ ExecutorClient::execute_and_check_plan()
   exec.spin_some();
 
   if (!goal_result_available_) {
+    // A gone executor never answers: do not wait for it forever (#446)
+    if (executing_plan_ && !action_client_->action_server_is_ready()) {
+      const auto now = std::chrono::steady_clock::now();
+      if (!server_lost_since_) {
+        server_lost_since_ = now;
+      } else if (now - server_lost_since_.value() > std::chrono::seconds(2)) {
+        RCLCPP_ERROR(
+          node_->get_logger(), "execute_and_check_plan: the executor is gone, the plan is lost");
+        executing_plan_ = false;
+        server_lost_since_.reset();
+        result_ = rclcpp_action::ClientGoalHandle<ExecutePlan>::WrappedResult();
+        return false;
+      }
+    } else {
+      server_lost_since_.reset();
+    }
     return true;  // Plan not finished
   }
 
@@ -168,6 +184,11 @@ ExecutorClient::on_new_goal_received(const plansys2_msgs::msg::Plan & plan)
 {
   auto goal = ExecutePlan::Goal();
   goal.plan = plan;
+
+  // The result of a previous plan does not belong to this one
+  result_ = rclcpp_action::ClientGoalHandle<ExecutePlan>::WrappedResult();
+  goal_result_available_ = false;
+  server_lost_since_.reset();
 
   auto send_goal_options = rclcpp_action::Client<ExecutePlan>::SendGoalOptions();
 

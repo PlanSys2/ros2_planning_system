@@ -89,3 +89,17 @@ foreach(scenario
     ENV GTEST_FILTER=ExecutorGoalHandlingTest.${scenario}
     TIMEOUT 120)
 endforeach()
+
+ament_add_gtest_executable(executor_gone_test executor_gone_test.cpp)
+target_compile_definitions(executor_gone_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(executor_gone_test ${PROJECT_NAME})
+foreach(scenario
+    PerformerSupervisionTest.performer_stops_when_its_executor_is_gone
+    PerformerSupervisionTest.performer_keeps_running_while_its_executor_lives
+    ExecutorClientSupervision.client_stops_waiting_when_the_executor_is_gone)
+  string(REGEX REPLACE ".*\\." "" short_name ${scenario})
+  ament_add_gtest_test(executor_gone_test
+    TEST_NAME executor_gone_${short_name}
+    ENV GTEST_FILTER=${scenario}
+    TIMEOUT 120)
+endforeach()

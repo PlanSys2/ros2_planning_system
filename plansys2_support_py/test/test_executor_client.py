@@ -686,6 +686,51 @@ class TestExecutorClient(unittest.TestCase):
         result = self.client.start_plan_execution(plan) if plan else False
         self.assertFalse(result)
 
+    def _running_plan(self):
+        """Pretend a plan is executing (#446: a gone executor never answers)."""
+        self.client._executing_plan = True
+        self.client._result_future = MagicMock()
+        self.client._result_future.result.return_value = None
+
+    def test_no_plan_has_no_result(self):
+        """Before any plan there is no result, and nothing is executing."""
+        self.assertIsNone(self.client.get_result())
+        self.assertFalse(self.client.execute_and_check_plan(verbose=False))
+
+    @patch('rclpy.spin_until_future_complete')
+    def test_executor_gone_ends_the_plan(self, _spin):
+        """A missing executor for over 2 s ends the plan without result."""
+        self._running_plan()
+        server = self.client._execute_plan_action_client
+        with patch.object(server, 'server_is_ready', return_value=False), \
+                patch('time.monotonic', side_effect=[0.0, 1.0, 3.0]):
+            self.assertTrue(self.client.execute_and_check_plan(verbose=False))
+            self.assertTrue(self.client.execute_and_check_plan(verbose=False))
+            self.assertFalse(self.client.execute_and_check_plan(verbose=False))
+        self.assertFalse(self.client.is_executing_plan())
+        self.assertIsNone(self.client.get_result())
+
+    @patch('rclpy.spin_until_future_complete')
+    def test_live_executor_keeps_the_plan(self, _spin):
+        """While the executor is there, the plan is still executing."""
+        self._running_plan()
+        server = self.client._execute_plan_action_client
+        with patch.object(server, 'server_is_ready', return_value=True):
+            for _ in range(5):
+                self.assertTrue(self.client.execute_and_check_plan(verbose=False))
+        self.assertTrue(self.client.is_executing_plan())
+
+    @patch('rclpy.spin_until_future_complete')
+    def test_short_executor_absence_is_tolerated(self, _spin):
+        """A brief absence (discovery) does not end the plan."""
+        self._running_plan()
+        server = self.client._execute_plan_action_client
+        with patch.object(server, 'server_is_ready', side_effect=[False, True, False, False]), \
+                patch('time.monotonic', side_effect=[0.0, 10.0, 11.0]):
+            for _ in range(4):
+                self.assertTrue(self.client.execute_and_check_plan(verbose=False))
+        self.assertTrue(self.client.is_executing_plan())
+
 
 if __name__ == '__main__':
     unittest.main()
