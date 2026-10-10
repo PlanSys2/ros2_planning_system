@@ -389,6 +389,14 @@ ExecutorNode::create_plan_runtime_info(PlanRuntineInfo & runtime_info)
   (*runtime_info.action_map)[":0"].at_end_effects_applied_time = now();
 
   for (const auto & plan_item : runtime_info.complete_plan.items) {
+    // The parsing below assumes "(name args...)"; anything else must not reach it
+    const auto & action = plan_item.action;
+    if (action.size() < 3 || action.front() != '(' || action.back() != ')' ||
+      action.find_first_not_of(" \t()") == std::string::npos)
+    {
+      throw std::runtime_error("malformed action in plan: [" + action + "]");
+    }
+
     auto index = BTBuilder::to_action_id(plan_item, 3);
     (*runtime_info.action_map)[index] = ActionExecutionInfo();
     (*runtime_info.action_map)[index].plan_item = plan_item;
@@ -403,6 +411,9 @@ ExecutorNode::create_plan_runtime_info(PlanRuntineInfo & runtime_info)
     } else {
       (*runtime_info.action_map)[index].action_info = domain_client_->getDurativeAction(
         action_name, get_action_params(plan_item.action));
+    }
+    if ((*runtime_info.action_map)[index].action_info.is_empty()) {
+      throw std::runtime_error("action not in the domain: " + plan_item.action);
     }
 
     action_name = (*runtime_info.action_map)[index].action_info.get_action_name();
@@ -438,17 +449,17 @@ ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
     bt_builder = bt_builder_loader_.createSharedInstance("plansys2::" + bt_builder_plugin);
   } catch (pluginlib::PluginlibException & ex) {
     RCLCPP_ERROR(get_logger(), "pluginlib error: %s", ex.what());
+    return false;
   }
 
-  if (bt_builder_plugin == "SimpleBTBuilder") {
-    bt_builder->initialize(action_bt_xml_);
-  } else if (bt_builder_plugin == "STNBTBuilder") {
-    bt_builder_plugin = "SimpleBTBuilder";
-    bt_builder->initialize(action_bt_xml_);
+  if (bt_builder_plugin == "STNBTBuilder") {
     RCLCPP_WARN(get_logger(), "STN disabled until fixed. Using SimpleBTBuilder instead");
+    bt_builder = bt_builder_loader_.createSharedInstance("plansys2::SimpleBTBuilder");
     // auto precision = this->get_parameter("action_time_precision").as_int();
     // bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
   }
+  // Every builder needs the action BT template (#431)
+  bt_builder->initialize(action_bt_xml_);
 
   auto bt_xml_tree = bt_builder->get_tree(runtime_info.complete_plan);
   if (bt_xml_tree.empty()) {
@@ -513,12 +524,27 @@ ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
 bool
 ExecutorNode::init_plan_for_execution(PlanRuntineInfo & runtime_info)
 {
+  // Anything wrong with the plan (unknown actions, bad BT...) fails the goal (#431)
+  try {
+    return init_plan_for_execution_impl(runtime_info);
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR(get_logger(), "Cannot set up the plan: %s", e.what());
+    return false;
+  }
+}
+
+bool
+ExecutorNode::init_plan_for_execution_impl(PlanRuntineInfo & runtime_info)
+{
   cancel_plan_requested_ = false;
   replan_requested_ = false;
 
   if (runtime_info.action_map != nullptr) {
     for (auto & entry : *runtime_info.action_map) {
       ActionExecutionInfo & action_info = entry.second;
+      if (!action_info.action_executor) {
+        continue;
+      }
       action_info.action_executor->cancel();
       action_info.action_executor->clean_up();
       action_info.action_executor = nullptr;
@@ -540,18 +566,42 @@ ExecutorNode::init_plan_for_execution(PlanRuntineInfo & runtime_info)
 bool
 ExecutorNode::replan_for_execution(PlanRuntineInfo & runtime_info)
 {
+  // Anything wrong with the plan (unknown actions, bad BT...) fails the goal (#431)
+  try {
+    return replan_for_execution_impl(runtime_info);
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR(get_logger(), "Cannot set up the plan: %s", e.what());
+    return false;
+  }
+}
+
+bool
+ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
+{
   cancel_plan_requested_ = false;
   replan_requested_ = false;
 
   std::map<std::string, ActionExecutionInfo> previous_action_map = *runtime_info.action_map;
 
-  create_plan_runtime_info(runtime_info);
-
-  bool plan_success = get_tree_from_plan(runtime_info);
+  bool plan_success = false;
+  try {
+    create_plan_runtime_info(runtime_info);
+    plan_success = get_tree_from_plan(runtime_info);
+  } catch (...) {
+    // The new plan is unusable: actions of the previous one must not keep running
+    for (auto & entry : previous_action_map) {
+      if (entry.second.action_executor) {
+        entry.second.action_executor->cancel();
+      }
+    }
+    throw;
+  }
 
   auto it = previous_action_map.begin();
   while (it != previous_action_map.end()) {
-    if (it->second.action_executor->get_internal_status() != ActionExecutor::RUNNING) {
+    if (!it->second.action_executor) {
+      it = previous_action_map.erase(it);
+    } else if (it->second.action_executor->get_internal_status() != ActionExecutor::RUNNING) {
       ActionExecutionInfo & action_info = it->second;
       action_info.action_executor->clean_up();
       action_info.action_executor = nullptr;
@@ -596,7 +646,10 @@ ExecutorNode::cancel_all_running_actions(PlanRuntineInfo & runtime_info)
   if (runtime_info.action_map != nullptr) {
     for (auto & entry : *runtime_info.action_map) {
       ActionExecutionInfo & action_info = entry.second;
-      if (action_info.action_executor->get_internal_status() == ActionExecutor::RUNNING) {
+      // A plan that failed to set up may have entries without executor
+      if (action_info.action_executor &&
+        action_info.action_executor->get_internal_status() == ActionExecutor::RUNNING)
+      {
         action_info.action_executor->cancel();
       }
     }
@@ -806,6 +859,13 @@ ExecutorNode::execution_cycle()
 
           current_goal_handle_ = new_goal_handle_;
 
+          if (current_goal_handle_->get_goal()->plan.items.empty()) {
+            // Nothing to do (#431)
+            result->result = plansys2_msgs::action::ExecutePlan::Result::SUCCESS;
+            current_goal_handle_->succeed(result);
+            break;
+          }
+
           runtime_info_ = PlanRuntineInfo();
           runtime_info_.complete_plan = current_goal_handle_->get_goal()->plan;
           runtime_info_.remaining_plan = current_goal_handle_->get_goal()->plan;
@@ -819,7 +879,7 @@ ExecutorNode::execution_cycle()
         break;
       case STATE_EXECUTING:
         {
-          BT::NodeStatus status;
+          BT::NodeStatus status = BT::NodeStatus::FAILURE;
           try {
             status = runtime_info_.current_tree->tree.tickOnce();
           } catch (std::exception & e) {

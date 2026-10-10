@@ -48,3 +48,17 @@ target_compile_definitions(bt_node_test_charging
 target_link_libraries(bt_node_test_charging
   ${PROJECT_NAME}
 )
+
+# One process per scenario: a failing setup must not take the others down, and the
+# executor node of one scenario must not leak into the next (#430)
+ament_add_gtest_executable(plan_setup_errors_test plan_setup_errors_test.cpp)
+target_compile_definitions(plan_setup_errors_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(plan_setup_errors_test ${PROJECT_NAME})
+foreach(scenario
+    valid_plan empty_plan unknown_action unknown_action_among_valid_ones malformed_action
+    unknown_bt_builder_plugin malformed_action_bt_xml sequential_bt_builder)
+  ament_add_gtest_test(plan_setup_errors_test
+    TEST_NAME plan_setup_errors_${scenario}
+    ENV GTEST_FILTER=PlanSetupErrorsTest.${scenario}
+    TIMEOUT 120)
+endforeach()
