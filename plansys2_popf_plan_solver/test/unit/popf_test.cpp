@@ -247,8 +247,7 @@ int count_processes_with(const std::string & pattern)
   return count;
 }
 
-// popf is started through `ros2 run`, so it is a grandchild of the solver: it must
-// not survive the call (#418)
+// popf, and anything it starts, must not survive the call (#418)
 TEST(popf_plan_solver, timeout_is_enforced_and_popf_is_killed)
 {
   const std::string ns = "popf_timeout_test_" + std::to_string(getpid());
@@ -303,6 +302,218 @@ TEST(popf_plan_solver, cancel_stops_popf)
 
   std::this_thread::sleep_for(500ms);
   ASSERT_EQ(count_processes_with(ns), 0);
+}
+
+// #441: popf I/O
+
+class TestablePOPFPlanSolver : public plansys2::POPFPlanSolver
+{
+public:
+  using POPFPlanSolver::parse_plan_result;
+};
+
+// A fresh folder for a test, removed first if a previous run left it
+std::filesystem::path fresh_folder(const std::string & name)
+{
+  auto path = std::filesystem::temp_directory_path() /
+    (name + "_" + std::to_string(getpid()));
+  std::filesystem::remove_all(path);
+  return path;
+}
+
+std::shared_ptr<plansys2::POPFPlanSolver> make_solver(
+  const std::string & node_name, const std::filesystem::path & output_dir = {},
+  const std::string & arguments = "")
+{
+  auto node = rclcpp_lifecycle::LifecycleNode::make_shared(node_name);
+  auto planner = std::make_shared<plansys2::POPFPlanSolver>();
+  planner->configure(node, "POPF");
+  if (!output_dir.empty()) {
+    node->set_parameter(rclcpp::Parameter("POPF.output_dir", output_dir.string()));
+  }
+  node->set_parameter(rclcpp::Parameter("POPF.arguments", arguments));
+  return planner;
+}
+
+// The robot starts at `room`: from kitchen the plan has 3 actions, from bedroom 2
+std::string problem_from(const std::string & room)
+{
+  auto problem = read_test_file("problem_simple_1.pddl");
+  const std::string init = "(robot_at leia kitchen)";
+  problem.replace(problem.find(init), init.size(), "(robot_at leia " + room + ")");
+  return problem;
+}
+
+TEST(popf_plan_solver, arguments_reach_popf)
+{
+  const auto domain = read_test_file("domain_simple.pddl");
+  const auto problem = read_test_file("problem_simple_1.pddl");
+
+  // popf rejects an unknown switch: no plan proves the argument got there
+  ASSERT_FALSE(make_solver("args_unknown", {}, "-x")->getPlan(domain, problem, "args_test"));
+
+  // Several arguments, one of them making popf more verbose
+  auto plan = make_solver("args_several", {}, "-T -v1")->getPlan(domain, problem, "args_test");
+  ASSERT_TRUE(plan);
+  ASSERT_EQ(plan->items.size(), 3u);
+
+  // The domain check does not use them: they are planning options
+  auto checker = make_solver("args_check", {}, "-x");
+  ASSERT_TRUE(checker->isDomainValid(read_test_file("domain_1_ok.pddl"), "args_test"));
+}
+
+TEST(popf_plan_solver, concurrent_runs_never_mix_their_files)
+{
+  // Two solvers, same output_dir and namespace, planning different problems at once
+  const auto output_dir = fresh_folder("popf_concurrent");
+  const auto domain = read_test_file("domain_simple.pddl");
+  auto from_kitchen = make_solver("concurrent_1", output_dir);
+  auto from_bedroom = make_solver("concurrent_2", output_dir);
+
+  auto run = [&](std::shared_ptr<plansys2::POPFPlanSolver> solver, const std::string & room,
+    size_t expected_size) {
+      int wrong = 0;
+      for (int i = 0; i < 15; i++) {
+        auto plan = solver->getPlan(domain, problem_from(room), "/shared/ns");
+        if (!plan || plan->items.size() != expected_size) {
+          wrong++;
+        }
+      }
+      return wrong;
+    };
+  auto kitchen = std::async(std::launch::async, run, from_kitchen, "kitchen", 3u);
+  auto bedroom = std::async(std::launch::async, run, from_bedroom, "bedroom", 2u);
+  ASSERT_EQ(kitchen.get(), 0);
+  ASSERT_EQ(bedroom.get(), 0);
+
+  std::filesystem::remove_all(output_dir);
+}
+
+TEST(popf_plan_solver, run_folders_are_removed_unless_kept)
+{
+  const auto output_dir = fresh_folder("popf_keep_files");
+  const auto domain = read_test_file("domain_simple.pddl");
+  const auto problem = read_test_file("problem_simple_1.pddl");
+  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("keep_files");
+  auto planner = std::make_shared<plansys2::POPFPlanSolver>();
+  planner->configure(node, "POPF");
+  node->set_parameter(rclcpp::Parameter("POPF.output_dir", output_dir.string()));
+
+  const auto ns_dir = output_dir / "ns";
+  ASSERT_TRUE(planner->getPlan(domain, problem, "ns"));
+  ASSERT_TRUE(planner->isDomainValid(domain, "ns"));
+  ASSERT_TRUE(std::filesystem::is_empty(ns_dir));
+
+  node->set_parameter(rclcpp::Parameter("POPF.keep_files", true));
+  ASSERT_TRUE(planner->getPlan(domain, problem, "ns"));
+  std::vector<std::filesystem::path> runs(
+    std::filesystem::directory_iterator(ns_dir), std::filesystem::directory_iterator{});
+  ASSERT_EQ(runs.size(), 1u);
+  for (const auto & file : {"domain.pddl", "problem.pddl", "plan"}) {
+    ASSERT_TRUE(std::filesystem::exists(runs[0] / file)) << file;
+  }
+
+  std::filesystem::remove_all(output_dir);
+}
+
+TEST(popf_plan_solver, parse_plan_result_tolerates_unexpected_lines)
+{
+  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("parse_test");
+  auto planner = std::make_shared<TestablePOPFPlanSolver>();
+  planner->configure(node, "POPF");
+  const auto folder = fresh_folder("popf_parse");
+  std::filesystem::create_directories(folder);
+  auto parse = [&](const std::string & content) {
+      std::ofstream(folder / "plan") << content;
+      return planner->parse_plan_result((folder / "plan").string());
+    };
+
+  // Empty lines, comments, warnings and malformed items around two good ones
+  auto plan = parse(
+    "Some header\n"
+    "b (2.000 | 5.000);;;; Solution Found\n"
+    "\n"
+    "   \n"
+    "; Time 0.00\n"
+    "   ; indented comment\n"
+    "0.000: (move leia kitchen bedroom)  [5.000]\n"
+    "Warning: something unexpected\n"
+    "0.000: (move leia\n"
+    "abc: (approach leia bedroom jack)  [5.000]\n"
+    "1.0: (approach leia bedroom jack)  []\n"
+    "5.001: (approach leia bedroom jack) [5.000]\r\n"
+    ")\n"
+    "[\n");
+  ASSERT_TRUE(plan);
+  ASSERT_EQ(plan->items.size(), 2u);
+  ASSERT_EQ(plan->items[0].action, "(move leia kitchen bedroom)");
+  ASSERT_FLOAT_EQ(plan->items[0].duration, 5.0);
+  ASSERT_EQ(plan->items[1].action, "(approach leia bedroom jack)");
+  ASSERT_FLOAT_EQ(plan->items[1].time, 5.001f);
+
+  // A solution with no actions is an empty plan, not a failure
+  plan = parse(";;;; Solution Found\n; Time 0.00\n");
+  ASSERT_TRUE(plan);
+  ASSERT_TRUE(plan->items.empty());
+
+  // Without "Solution Found" there is no plan, whatever follows
+  ASSERT_FALSE(parse("0.000: (move leia kitchen bedroom)  [5.000]\n"));
+  ASSERT_FALSE(parse(""));
+  ASSERT_FALSE(planner->parse_plan_result((folder / "missing").string()));
+
+  std::filesystem::remove_all(folder);
+}
+
+TEST(popf_plan_solver, unwritable_output_dir_fails_without_running_popf)
+{
+  const auto domain = read_test_file("domain_simple.pddl");
+  const auto problem = read_test_file("problem_simple_1.pddl");
+
+  // A read-only folder: no run folder can be created in it
+  const auto read_only = fresh_folder("popf_read_only");
+  std::filesystem::create_directories(read_only / "ns");
+  std::filesystem::permissions(read_only / "ns", std::filesystem::perms::owner_read |
+    std::filesystem::perms::owner_exec);
+  auto planner = make_solver("read_only", read_only);
+  ASSERT_FALSE(planner->getPlan(domain, problem, "ns"));
+  ASSERT_FALSE(planner->isDomainValid(domain, "ns"));
+  std::filesystem::permissions(read_only / "ns", std::filesystem::perms::owner_all);
+  std::filesystem::remove_all(read_only);
+
+  // A file where a folder should be
+  const auto file = fresh_folder("popf_not_a_folder");
+  std::ofstream(file) << "not a folder\n";
+  planner = make_solver("not_a_folder", file);
+  ASSERT_FALSE(planner->getPlan(domain, problem, "ns"));
+  ASSERT_FALSE(planner->isDomainValid(domain, "ns"));
+  std::filesystem::remove(file);
+}
+
+TEST(popf_plan_solver, output_dir_without_home_or_namespace)
+{
+  const auto domain = read_test_file("domain_simple.pddl");
+  const auto problem = read_test_file("problem_simple_1.pddl");
+
+  // Without a namespace the output_dir itself is created
+  const auto nested = fresh_folder("popf_no_ns") / "a" / "b";
+  ASSERT_TRUE(make_solver("no_ns", nested)->getPlan(domain, problem, ""));
+  ASSERT_TRUE(std::filesystem::is_directory(nested));
+  std::filesystem::remove_all(nested.parent_path().parent_path());
+
+  // HOME is only needed to expand ~
+  const std::string home = std::getenv("HOME") ? std::getenv("HOME") : "";
+  unsetenv("HOME");
+  const auto plain = fresh_folder("popf_no_home");
+  const bool plan_without_home = make_solver("no_home", plain)->getPlan(domain, problem,
+    "").has_value();
+  const bool tilde_without_home =
+    make_solver("tilde_no_home", "~/popf_tilde")->getPlan(domain, problem, "").has_value();
+  if (!home.empty()) {
+    setenv("HOME", home.c_str(), 1);
+  }
+  std::filesystem::remove_all(plain);
+  ASSERT_TRUE(plan_without_home);
+  ASSERT_FALSE(tilde_without_home);
 }
 
 int main(int argc, char ** argv)
