@@ -20,8 +20,13 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: rolling
-      - name: Install popf deps
-        run: apt-get update && apt-get install -y libfl-dev
+      # The image can be older than the packages rosdep installs: upgrade it first so
+      # all ROS packages come from the same sync (otherwise e.g. test_msgs fails to load)
+      - name: Upgrade image and install popf deps
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+          apt-get install -y libfl-dev
       - name: build and test
         uses: ros-tooling/action-ros-ci@0.4.8
         with:
