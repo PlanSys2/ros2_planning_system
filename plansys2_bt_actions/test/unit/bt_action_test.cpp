@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <chrono>
 #include <string>
 #include <vector>
 #include <memory>
@@ -33,6 +34,7 @@
 #include "test_msgs/action/fibonacci.hpp"
 #include "ament_index_cpp/get_package_share_path.hpp"
 
+#include "lifecycle_msgs/msg/state.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_cascade_lifecycle/rclcpp_cascade_lifecycle.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
@@ -465,6 +467,72 @@ TEST_F(BTActionsTestCase, cancel_bt_action)
     t.join();
 
     lc_node->shutdown();
+  }
+  plansys2::drain_ros(200ms);
+}
+
+// The blackboard keeps a pointer to the node: it must not keep the node alive (#427)
+TEST_F(BTActionsTestCase, bt_action_node_is_destroyed)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_bt_actions").string();
+  std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
+  std::vector<std::string> plugins = {
+    "plansys2_close_gripper_bt_node", "plansys2_open_gripper_bt_node"};
+
+  auto make_action = [&]() {
+      auto bt_action = std::make_shared<plansys2::BTAction>("assemble");
+      bt_action->set_parameter(rclcpp::Parameter("action_name", "assemble"));
+      bt_action->set_parameter(rclcpp::Parameter("rate", 10.0));
+      bt_action->set_parameter(rclcpp::Parameter("bt_xml_file", xml_file));
+      bt_action->set_parameter(rclcpp::Parameter("plugins", plugins));
+      return bt_action;
+    };
+
+  // Never configured
+  {
+    auto bt_action = make_action();
+    std::weak_ptr<plansys2::BTAction> weak = bt_action;
+    bt_action.reset();
+    ASSERT_TRUE(weak.expired());
+  }
+
+  // Configured, with its blackboard filled
+  {
+    auto bt_action = make_action();
+    std::weak_ptr<plansys2::BTAction> weak = bt_action;
+    bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    ASSERT_EQ(
+      bt_action->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
+    bt_action.reset();
+    ASSERT_TRUE(weak.expired());
+  }
+
+  // After executing an action, so the tree and its BT nodes were created
+  {
+    std::weak_ptr<plansys2::BTAction> weak;
+    {
+      auto bt_action = make_action();
+      weak = bt_action;
+      auto lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node_destroyed");
+      auto action_client =
+        plansys2::ActionExecutor::make_shared("(assemble r2d2 z p1 p2 p3)", lc_node);
+      bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+      rclcpp::experimental::executors::EventsExecutor exe;
+      exe.add_node(bt_action->get_node_base_interface());
+      exe.add_node(lc_node->get_node_base_interface());
+
+      auto start = std::chrono::steady_clock::now();
+      while (action_client->get_status() != BT::NodeStatus::SUCCESS &&
+        std::chrono::steady_clock::now() - start < 30s)
+      {
+        exe.spin_some();
+        action_client->tick(lc_node->now());
+      }
+      ASSERT_EQ(action_client->get_status(), BT::NodeStatus::SUCCESS);
+      lc_node->shutdown();
+    }
+    ASSERT_TRUE(weak.expired());
   }
   plansys2::drain_ros(200ms);
 }

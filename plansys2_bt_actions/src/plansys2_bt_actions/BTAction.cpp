@@ -77,7 +77,12 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
   blackboard_ = BT::Blackboard::create();
 
   // Put items in the blackboard
-  blackboard_->set<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node", shared_from_this());
+  // The blackboard (and the BT nodes that copy this pointer) are owned by this node,
+  // so they get a non-owning pointer to it: an owning one would keep the node alive
+  // forever (#427)
+  auto node = rclcpp_lifecycle::LifecycleNode::SharedPtr(
+    rclcpp_lifecycle::LifecycleNode::SharedPtr(), this);
+  blackboard_->set<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node", node);
   blackboard_->set<std::chrono::milliseconds>("server_timeout", default_server_timeout_);
   blackboard_->set<std::chrono::milliseconds>(
     "wait_for_service_timeout", wait_for_service_timeout_);
