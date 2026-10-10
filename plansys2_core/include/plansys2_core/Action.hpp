@@ -163,6 +163,11 @@ public:
   template<typename ActionT>
   ActionVariant & operator=(std::shared_ptr<ActionT> ptr)
   {
+    // A null action (e.g. one not found in the domain) leaves the variant empty
+    if (!ptr) {
+      action_.reset();
+      return *this;
+    }
     action_ = std::make_shared<ActionVariantType>(*ptr);
     return *this;
   }
@@ -187,14 +192,14 @@ public:
   plansys2_msgs::msg::Tree get_at_start_effects() const;
   plansys2_msgs::msg::Tree get_at_end_effects() const;
 
-  bool is_action() const {return std::holds_alternative<plansys2::Action>(*action_);}
+  bool is_action() const {return action_ && std::holds_alternative<plansys2::Action>(*action_);}
 
   bool is_durative_action() const
   {
-    return std::holds_alternative<plansys2::DurativeAction>(*action_);
+    return action_ && std::holds_alternative<plansys2::DurativeAction>(*action_);
   }
 
-  bool is_empty() const {return action_->index() == std::variant_npos;}
+  bool is_empty() const {return !action_ || action_->valueless_by_exception();}
 
 private:
   std::shared_ptr<ActionVariantType> action_;

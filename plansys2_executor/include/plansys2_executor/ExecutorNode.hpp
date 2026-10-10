@@ -282,6 +282,7 @@ protected:
    * @return True if initialization was successful, false otherwise.
    */
   bool init_plan_for_execution(PlanRuntineInfo & runtime_info);
+  bool init_plan_for_execution_impl(PlanRuntineInfo & runtime_info);
 
   /**
    * @brief Reinitializes runtime information for replanning.
@@ -290,6 +291,7 @@ protected:
    * @return True if reinitialization was successful, false otherwise.
    */
   bool replan_for_execution(PlanRuntineInfo & runtime_info);
+  bool replan_for_execution_impl(PlanRuntineInfo & runtime_info);
 
   /**
    * @brief Executes the current plan using the behavior tree.
