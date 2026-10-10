@@ -270,6 +270,37 @@ TEST(domain_expert_malformed, truncated_domains)
   ASSERT_EQ(domain_expert.getDomain(), before);
 }
 
+// Instance names end up verbatim in the generated problem (#419)
+TEST(problem_expert_malformed, invalid_instance_names_are_rejected)
+{
+  auto domain_expert =
+    std::make_shared<plansys2::DomainExpert>(read_file("domain_simple.pddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance("leia", "robot")));
+  const auto before = problem_expert.getProblem();
+
+  for (const std::string name : {
+    "", " ", "a b", "a)", "(a", "?x", "-a", "1room", "a;b", "a\tb", "a\nb", "r2d2 jack"})
+  {
+    SCOPED_TRACE("[" + name + "]");
+    ASSERT_FALSE(problem_expert.addInstance(plansys2::Instance(name, "robot")));
+    ASSERT_EQ(problem_expert.getProblem(), before);
+  }
+
+  for (const std::string name : {"r2d2", "R1", "room_1", "room-1"}) {
+    SCOPED_TRACE(name);
+    ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance(name, "robot")));
+  }
+
+  // What is generated can be loaded again
+  const auto problem = problem_expert.getProblem();
+  ASSERT_NE(problem.find("room-1"), std::string::npos);
+  auto other_domain = std::make_shared<plansys2::DomainExpert>(read_file("domain_simple.pddl"));
+  plansys2::ProblemExpert other(other_domain);
+  ASSERT_TRUE(other.addProblem(problem));
+  ASSERT_EQ(other.getInstances().size(), problem_expert.getInstances().size());
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

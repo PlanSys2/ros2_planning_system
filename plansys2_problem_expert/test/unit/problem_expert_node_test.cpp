@@ -1109,6 +1109,39 @@ TEST(problem_expert_node, big_and_malformed_goals_keep_node_alive)
   }
 }
 
+// add_problem_instance rejects names that would break the generated problem (#419)
+TEST(problem_expert_node, add_problem_instance_rejects_invalid_names)
+{
+  auto remap = domain_topic_remap("add_problem_instance_rejects_invalid_names");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp::executors::SingleThreadedExecutor exe;
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  ScopedSpinner spinner(exe);
+
+  for (const std::string name : {"", "a b", "a)", "?x"}) {
+    ASSERT_FALSE(problem_client->addInstance(plansys2::Instance(name, "robot"))) << name;
+  }
+  ASSERT_TRUE(problem_client->getInstances().empty());
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+
+  // The generated problem stays valid PDDL
+  const auto problem = problem_client->getProblem();
+  ASSERT_TRUE(problem_client->addProblem(problem));
+  ASSERT_EQ(problem_client->getInstances().size(), 1u);
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
