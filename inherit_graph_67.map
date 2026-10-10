@@ -1,17 +1,19 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" title=" " alt="" coords="5,153,53,179"/>
-<area shape="rect" id="Node000001" href="$classBTActionsTestCase.html" title=" " alt="" coords="112,5,250,31"/>
-<area shape="poly" id="edge118_Node000000_Node000001" title=" " alt="" coords="37,137,60,88,77,62,99,40,117,29,120,34,102,44,81,66,64,90,42,140"/>
-<area shape="rect" id="Node000002" href="$classExecutorLifecycleTest.html" title=" " alt="" coords="106,55,256,80"/>
-<area shape="poly" id="edge119_Node000000_Node000002" title=" " alt="" coords="46,139,70,113,99,89,121,79,124,83,102,94,73,117,50,143"/>
-<area shape="rect" id="Node000003" href="$classGraphExportToDOTTest.html" title=" " alt="" coords="101,104,261,130"/>
-<area shape="poly" id="edge120_Node000000_Node000003" title=" " alt="" coords="66,150,100,138,133,128,135,133,102,143,68,155"/>
-<area shape="rect" id="Node000004" href="$classPDDLParserTestCase.html" title=" " alt="" coords="106,153,256,179"/>
-<area shape="poly" id="edge121_Node000000_Node000004" title=" " alt="" coords="68,164,105,164,105,169,68,169"/>
-<area shape="rect" id="Node000005" href="$classPlanSetupErrorsTest.html" title=" " alt="" coords="110,203,252,228"/>
-<area shape="poly" id="edge122_Node000000_Node000005" title=" " alt="" coords="68,177,102,189,135,200,133,205,100,194,66,182"/>
-<area shape="rect" id="Node000006" href="$classPlanSolverBaseTest.html" title=" " alt="" coords="111,252,251,278"/>
-<area shape="poly" id="edge123_Node000000_Node000006" title=" " alt="" coords="50,189,73,215,102,239,124,249,121,254,99,243,70,219,46,193"/>
-<area shape="rect" id="Node000007" href="$classTerminalTestCase.html" title=" " alt="" coords="117,301,244,327"/>
-<area shape="poly" id="edge124_Node000000_Node000007" title=" " alt="" coords="42,193,64,242,81,267,102,288,120,298,117,303,99,292,77,270,60,245,37,195"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,179,53,204"/>
+<area shape="rect" id="Node000001" href="$classBTActionsTestCase.html" title=" " alt="" coords="119,5,258,31"/>
+<area shape="poly" id="edge118_Node000000_Node000001" title=" " alt="" coords="34,163,55,101,74,68,99,40,117,29,120,33,102,44,78,71,60,103,39,164"/>
+<area shape="rect" id="Node000002" href="$classExecutorGoalHandlingTest.html" title=" " alt="" coords="101,55,276,80"/>
+<area shape="poly" id="edge119_Node000000_Node000002" title=" " alt="" coords="40,163,64,125,80,106,99,89,119,79,122,83,102,94,84,110,68,128,45,166"/>
+<area shape="rect" id="Node000003" href="$classExecutorLifecycleTest.html" title=" " alt="" coords="114,104,263,130"/>
+<area shape="poly" id="edge120_Node000000_Node000003" title=" " alt="" coords="56,166,99,138,127,128,129,133,102,143,59,171"/>
+<area shape="rect" id="Node000004" href="$classGraphExportToDOTTest.html" title=" " alt="" coords="108,153,268,179"/>
+<area shape="poly" id="edge121_Node000000_Node000004" title=" " alt="" coords="68,183,107,176,108,182,69,188"/>
+<area shape="rect" id="Node000005" href="$classPDDLParserTestCase.html" title=" " alt="" coords="113,203,264,228"/>
+<area shape="poly" id="edge122_Node000000_Node000005" title=" " alt="" coords="69,195,113,202,112,207,68,200"/>
+<area shape="rect" id="Node000006" href="$classPlanSetupErrorsTest.html" title=" " alt="" coords="118,252,259,278"/>
+<area shape="poly" id="edge123_Node000000_Node000006" title=" " alt="" coords="59,212,102,238,129,249,127,254,99,243,57,216"/>
+<area shape="rect" id="Node000007" href="$classPlanSolverBaseTest.html" title=" " alt="" coords="118,301,258,327"/>
+<area shape="poly" id="edge124_Node000000_Node000007" title=" " alt="" coords="45,217,69,254,84,272,102,288,122,298,119,303,99,292,80,276,64,257,41,220"/>
+<area shape="rect" id="Node000008" href="$classTerminalTestCase.html" title=" " alt="" coords="125,351,252,376"/>
+<area shape="poly" id="edge125_Node000000_Node000008" title=" " alt="" coords="39,219,60,279,78,311,102,337,126,351,123,355,99,342,74,314,55,282,34,221"/>
 </map>

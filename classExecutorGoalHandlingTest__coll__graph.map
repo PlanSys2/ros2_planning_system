@@ -1,0 +1,21 @@
+<map id="ExecutorGoalHandlingTest" name="ExecutorGoalHandlingTest">
+<area shape="rect" id="Node000001" title=" " alt="" coords="344,247,519,272"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="77,5,125,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="140,15,181,18,228,26,277,41,321,65,344,85,364,109,396,160,417,209,429,245,424,247,412,211,391,163,360,112,340,89,318,70,275,46,227,31,180,23,140,21"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="26,55,176,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="192,85,257,103,290,117,321,133,355,160,384,190,424,244,420,248,380,194,351,164,318,138,288,122,255,109,190,91"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="24,120,178,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="194,153,257,169,321,190,372,217,413,244,410,248,369,221,319,195,255,174,192,159"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="29,186,173,226"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="189,214,320,233,373,243,372,249,319,238,188,219"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="14,251,188,276"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="203,260,343,258,343,263,203,265"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="61,309,141,335"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="156,322,234,321,277,316,319,308,367,291,407,270,409,275,369,296,320,313,278,322,234,326,156,328"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="11,360,191,415"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="206,379,263,368,319,349,349,332,376,311,417,271,421,275,380,315,352,337,321,354,264,374,207,384"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="5,440,197,466"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="211,443,267,430,318,406,355,374,385,337,407,300,422,272,427,274,412,303,389,340,359,378,321,410,268,435,213,448"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="23,490,179,530"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="194,509,259,498,290,486,318,470,342,448,363,423,394,366,414,312,425,272,430,273,420,313,399,368,367,426,346,452,321,474,292,491,260,503,195,515"/>
+</map>

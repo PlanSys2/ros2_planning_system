@@ -17,7 +17,7 @@ var searchData=
   ['solvers_5f_14',['solvers_',['../classplansys2__support__py_1_1Planner_1_1PlannerNode.html#a2987dfae0eff6cfa39a749e301ddb400',1,'plansys2_support_py::Planner::PlannerNode']]],
   ['specialized_5farguments_15',['specialized_arguments',['../classplansys2__support__py_1_1ActionExecutorClient_1_1ActionExecutorClient.html#a9fdd963b17f59763402a2be33286c978',1,'plansys2_support_py::ActionExecutorClient::ActionExecutorClient']]],
   ['specialized_5farguments_5f_16',['specialized_arguments_',['../classplansys2_1_1ActionExecutorClient.html#af90a0be9830ccc44a96a20a1b87404a0',1,'plansys2::ActionExecutorClient']]],
-  ['spinner_5f_17',['spinner_',['../classExecutorLifecycleTest.html#a4e23e12b6bce129fbb20f4ef661b3a66',1,'ExecutorLifecycleTest::spinner_'],['../classPlanSetupErrorsTest.html#a4e23e12b6bce129fbb20f4ef661b3a66',1,'PlanSetupErrorsTest::spinner_']]],
+  ['spinner_5f_17',['spinner_',['../classExecutorGoalHandlingTest.html#a4e23e12b6bce129fbb20f4ef661b3a66',1,'ExecutorGoalHandlingTest::spinner_'],['../classExecutorLifecycleTest.html#a4e23e12b6bce129fbb20f4ef661b3a66',1,'ExecutorLifecycleTest::spinner_'],['../classPlanSetupErrorsTest.html#a4e23e12b6bce129fbb20f4ef661b3a66',1,'PlanSetupErrorsTest::spinner_']]],
   ['start_5f_18',['start_',['../classMoveAction.html#a31acf00c7a89c7da47adf98e29d2b702',1,'MoveAction']]],
   ['start_5faction_5fbt_5fxml_5f_19',['start_action_bt_xml_',['../classplansys2_1_1ExecutorNode.html#ae95010ec547544d04713d4176ad2ebcb',1,'plansys2::ExecutorNode']]],
   ['start_5fexecution_5f_20',['start_execution_',['../classplansys2_1_1ActionExecutor.html#afcc12f1b92a193808235ae8026e4627e',1,'plansys2::ActionExecutor']]],
