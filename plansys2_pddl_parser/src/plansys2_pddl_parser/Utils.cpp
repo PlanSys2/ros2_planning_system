@@ -203,6 +203,18 @@ bool validateTree(const plansys2_msgs::msg::Tree & tree, std::string & error)
   return true;
 }
 
+bool isValidName(const std::string & name)
+{
+  auto is_letter = [](char c) {return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');};
+  if (name.empty() || !is_letter(name[0])) {
+    return false;
+  }
+  return std::all_of(
+    name.begin(), name.end(), [&](char c) {
+      return is_letter(c) || (c >= '0' && c <= '9') || c == '-' || c == '_';
+    });
+}
+
 std::string getReducedString(const std::string & expr)
 {
   std::regex nts_chars("[\n\t]*", std::regex_constants::ECMAScript);

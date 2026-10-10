@@ -54,6 +54,14 @@ int getMaxNesting(const std::string & expr);
 bool validateTree(const plansys2_msgs::msg::Tree & tree, std::string & error);
 
 /**
+ * \brief Checks that a string is a PDDL name: a letter followed by letters, digits,
+ *        '-' or '_'.
+ * \param[in] name The candidate name
+ * \return true if it can be used as a PDDL name
+ */
+bool isValidName(const std::string & name);
+
+/**
  * \param[in] expr The expression to be reduced
  * \return The reduced expression
  */

@@ -55,6 +55,12 @@ ProblemExpert::addInstance(const plansys2::Instance & instance)
     return false;
   }
 
+  // Names end up verbatim in the generated problem: they must be PDDL names (#419)
+  if (!parser::pddl::isValidName(lowercase_instance.name)) {
+    std::cerr << "Invalid instance name [" << lowercase_instance.name << "]" << std::endl;
+    return false;
+  }
+
   std::optional<plansys2::Instance> existing_instance = getInstance(lowercase_instance.name);
   bool exist_instance = existing_instance.has_value();
 
