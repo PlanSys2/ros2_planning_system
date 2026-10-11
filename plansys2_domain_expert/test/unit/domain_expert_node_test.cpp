@@ -65,7 +65,7 @@ TEST(domain_expert, lifecycle)
       ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
 
@@ -137,7 +137,7 @@ TEST(domain_expert, lifecycle_error)
       ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_2_error.pddl"});
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
 
@@ -210,7 +210,7 @@ TEST(domain_expert, change_domain_valid)
       ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     ExecutorSpinner spinner(exe);
@@ -261,7 +261,7 @@ TEST(domain_expert, change_domain_invalid_rejected)
       ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     ExecutorSpinner spinner(exe);
@@ -302,7 +302,7 @@ TEST(domain_expert, change_domain_rejected_when_unconfigured)
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
     exe.add_node(domain_node->get_node_base_interface());
     ExecutorSpinner spinner(exe);
 
@@ -332,7 +332,7 @@ TEST(domain_expert, change_domain_rejected_when_inactive)
       ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
     exe.add_node(domain_node->get_node_base_interface());
     ExecutorSpinner spinner(exe);
 
@@ -371,7 +371,7 @@ TEST(domain_expert, change_domain_empty_rejected)
       ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
     exe.add_node(domain_node->get_node_base_interface());
     ExecutorSpinner spinner(exe);
 
@@ -411,7 +411,7 @@ TEST(domain_expert, change_domain_sequence_publishes_each_accepted_domain)
         published.push_back(msg->data);
       });
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(test_node);
     ExecutorSpinner spinner(exe);

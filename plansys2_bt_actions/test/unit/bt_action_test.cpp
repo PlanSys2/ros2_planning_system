@@ -309,7 +309,7 @@ TEST_F(BTActionsTestCase, bt_action)
 
     bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
     exe.add_node(bt_action->get_node_base_interface());
     exe.add_node(lc_node->get_node_base_interface());
 
@@ -352,7 +352,7 @@ TEST_F(BTActionsTestCase, bt_action_old_constructor)
 
     bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
     exe.add_node(bt_action->get_node_base_interface());
     exe.add_node(lc_node->get_node_base_interface());
 
@@ -396,7 +396,7 @@ TEST_F(BTActionsTestCase, cancel_bt_action)
 
     bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::SingleThreadedExecutor exe;
     exe.add_node(bt_action->get_node_base_interface());
     exe.add_node(lc_node->get_node_base_interface());
 
@@ -518,7 +518,7 @@ TEST_F(BTActionsTestCase, bt_action_node_is_destroyed)
         plansys2::ActionExecutor::make_shared("(assemble r2d2 z p1 p2 p3)", lc_node);
       bt_action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-      rclcpp::experimental::executors::EventsExecutor exe;
+      rclcpp::executors::SingleThreadedExecutor exe;
       exe.add_node(bt_action->get_node_base_interface());
       exe.add_node(lc_node->get_node_base_interface());
 

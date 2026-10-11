@@ -32,7 +32,8 @@ int main(int argc, char ** argv)
 
   rclcpp::init(argc, argv);
 
-  rclcpp::experimental::executors::EventsExecutor exe;
+  // EventsExecutor is deprecated; EventsCBGExecutor delays bursts of actions_hub messages (#449)
+  rclcpp::executors::SingleThreadedExecutor exe;
 
   auto main_node = rclcpp::Node::make_shared("plansys2");
   bool real_time = false;
