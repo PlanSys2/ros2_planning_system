@@ -12,3 +12,10 @@ install(DIRECTORY
 
 ament_add_gtest(validate_tree_test validate_tree_test.cpp)
 target_link_libraries(validate_tree_test ${PROJECT_NAME})
+
+# Tests discover only nodes on this host: parallel jobs do not mix
+get_property(_tests DIRECTORY PROPERTY TESTS)
+if(_tests)
+  set_tests_properties(${_tests}
+    PROPERTIES ENVIRONMENT "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST")
+endif()

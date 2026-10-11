@@ -4,3 +4,10 @@ install(DIRECTORY pddl
 
 ament_add_gtest(test_5 test_5.cpp)
 target_link_libraries(test_5 ${PROJECT_NAME})
+
+# Tests discover only nodes on this host: parallel jobs do not mix
+get_property(_tests DIRECTORY PROPERTY TESTS)
+if(_tests)
+  set_tests_properties(${_tests}
+    PROPERTIES ENVIRONMENT "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST")
+endif()
