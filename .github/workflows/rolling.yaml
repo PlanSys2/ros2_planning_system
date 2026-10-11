@@ -40,7 +40,7 @@ jobs:
           branch_coverage = 1
           lcov_quiet = 1
           lcov_follow = 1
-          ignore_errors = inconsistent,corrupt,empty,gcov,missing
+          ignore_errors = inconsistent,corrupt,empty,gcov,missing,mismatch,negative
           EOF
       - name: build and test
         uses: ros-tooling/action-ros-ci@0.4.8
