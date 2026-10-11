@@ -71,6 +71,9 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
   this->declare_parameter<std::string>("default_end_action_bt_xml_filename", "");
   this->declare_parameter<std::string>("bt_builder_plugin", "");
   this->declare_parameter<int>("action_time_precision", 3);
+  // STNBTBuilder: true starts each action as soon as its dependencies happened, as durations
+  // are uncertain in robotics; false keeps the planned times as minimums
+  this->declare_parameter<bool>("stn_relaxed_timing", true);
   this->declare_parameter<bool>("enable_dotgraph_legend", true);
   this->declare_parameter<bool>("print_graph", false);
   this->declare_parameter("action_timeouts.actions", std::vector<std::string>{});
@@ -457,13 +460,13 @@ ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
   }
 
   if (bt_builder_plugin == "STNBTBuilder") {
-    RCLCPP_WARN(get_logger(), "STN disabled until fixed. Using SimpleBTBuilder instead");
-    bt_builder = bt_builder_loader_.createSharedInstance("plansys2::SimpleBTBuilder");
-    // auto precision = this->get_parameter("action_time_precision").as_int();
-    // bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
+    // Start and end of each action are separate BT units
+    auto precision = this->get_parameter("action_time_precision").as_int();
+    bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
+  } else {
+    // Every builder needs the action BT template (#431)
+    bt_builder->initialize(action_bt_xml_);
   }
-  // Every builder needs the action BT template (#431)
-  bt_builder->initialize(action_bt_xml_);
 
   auto bt_xml_tree = bt_builder->get_tree(runtime_info.complete_plan);
   if (bt_xml_tree.empty()) {
@@ -503,6 +506,7 @@ ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
   blackboard->set("domain_client", domain_client_);
   blackboard->set("problem_client", problem_client_);
   blackboard->set("bt_builder", bt_builder);
+  blackboard->set("stn_relaxed_timing", this->get_parameter("stn_relaxed_timing").as_bool());
   // Added blackboard keys for compatibility with other nodes
   blackboard->set("bt_loop_duration", std::chrono::milliseconds(200));
   blackboard->set("server_timeout", std::chrono::milliseconds(250));

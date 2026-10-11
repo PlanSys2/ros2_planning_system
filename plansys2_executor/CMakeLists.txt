@@ -43,6 +43,7 @@ set(EXECUTOR_SOURCES
   src/plansys2_executor/behavior_tree/apply_atstart_effect_node.cpp
   src/plansys2_executor/behavior_tree/restore_atstart_effect_node.cpp
   src/plansys2_executor/behavior_tree/apply_atend_effect_node.cpp
+  src/plansys2_executor/behavior_tree/stn_dependency.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${EXECUTOR_SOURCES})

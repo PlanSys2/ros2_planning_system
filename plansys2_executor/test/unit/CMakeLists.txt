@@ -104,6 +104,10 @@ foreach(scenario
     TIMEOUT 120)
 endforeach()
 
+ament_add_gtest(stn_dependency_test stn_dependency_test.cpp)
+target_compile_definitions(stn_dependency_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(stn_dependency_test ${PROJECT_NAME})
+
 # Tests discover only nodes on this host: parallel jobs do not mix
 get_property(_tests DIRECTORY PROPERTY TESTS)
 if(_tests)

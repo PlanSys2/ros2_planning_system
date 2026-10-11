@@ -71,11 +71,10 @@ public:
   }
 
 private:
-  Node::Ptr get_node(const std::string & node_id, const std::string & node_type);
-
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
   Graph::Ptr action_graph_;
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  bool relaxed_timing_ {true};
 };
 
 }  // namespace plansys2

@@ -23,6 +23,7 @@
 #include "behaviortree_cpp/action_node.h"
 
 #include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/BTBuilder.hpp"
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
 
@@ -70,6 +71,9 @@ public:
 
 private:
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
+  Graph::Ptr action_graph_;
+  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  bool relaxed_timing_ {true};
 };
 
 }  // namespace plansys2
