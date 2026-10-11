@@ -22,3 +22,9 @@ target_link_libraries(types_test
   ${PROJECT_NAME}
   ament_index_cpp::ament_index_cpp
 )
+# Tests discover only nodes on this host: parallel jobs do not mix
+get_property(_tests DIRECTORY PROPERTY TESTS)
+if(_tests)
+  set_tests_properties(${_tests}
+    PROPERTIES ENVIRONMENT "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST")
+endif()

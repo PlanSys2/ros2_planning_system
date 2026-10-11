@@ -49,3 +49,10 @@ install(TARGETS ${plugin_libs}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
+
+# Tests discover only nodes on this host: parallel jobs do not mix
+get_property(_tests DIRECTORY PROPERTY TESTS)
+if(_tests)
+  set_tests_properties(${_tests}
+    PROPERTIES ENVIRONMENT "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST")
+endif()

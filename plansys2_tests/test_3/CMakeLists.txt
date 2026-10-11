@@ -11,3 +11,10 @@ target_link_libraries(test_3
   plansys2_planner::plansys2_planner
   plansys2_pddl_parser::plansys2_pddl_parser
 )
+
+# Tests discover only nodes on this host: parallel jobs do not mix
+get_property(_tests DIRECTORY PROPERTY TESTS)
+if(_tests)
+  set_tests_properties(${_tests}
+    PROPERTIES ENVIRONMENT "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST")
+endif()
