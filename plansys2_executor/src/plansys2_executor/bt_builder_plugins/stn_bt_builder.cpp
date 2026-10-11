@@ -98,6 +98,9 @@ STNBTBuilder::get_dotgraph(
   bool enable_legend,
   bool enable_print_graph)
 {
+  if (!stn_) {
+    return "";  // No plan yet
+  }
   if (enable_print_graph) {
     print_graph(stn_);
   }
@@ -1380,6 +1383,9 @@ STNBTBuilder::get_action_status(
   ActionStamped action_stamped,
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map)
 {
+  if (!action_map) {
+    return ActionExecutor::IDLE;  // Nothing is executing yet
+  }
   auto index = "(" + action_stamped.action.get_action_string() + "):" +
     std::to_string(static_cast<int>(action_stamped.time * 1000));
   if (action_map->find(index) != action_map->end()) {

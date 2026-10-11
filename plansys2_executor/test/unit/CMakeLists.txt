@@ -61,6 +61,13 @@ foreach(scenario
     TEST_NAME plan_setup_errors_${scenario}
     ENV GTEST_FILTER=PlanSetupErrorsTest.${scenario}
     TIMEOUT 120)
+  # The same scenario with STNBTBuilder
+  if(NOT scenario STREQUAL "malformed_action_bt_xml")  # A template STNBTBuilder does not use
+    ament_add_gtest_test(plan_setup_errors_test
+      TEST_NAME plan_setup_errors_${scenario}_stn
+      ENV GTEST_FILTER=PlanSetupErrorsTest.${scenario} PLANSYS2_TEST_BT_BUILDER=STNBTBuilder
+      TIMEOUT 120)
+  endif()
 endforeach()
 
 ament_add_gtest_executable(executor_lifecycle_test executor_lifecycle_test.cpp)
@@ -73,6 +80,11 @@ foreach(scenario
   ament_add_gtest_test(executor_lifecycle_test
     TEST_NAME executor_lifecycle_${scenario}
     ENV GTEST_FILTER=ExecutorLifecycleTest.${scenario}
+    TIMEOUT 120)
+  # The same scenario with STNBTBuilder
+  ament_add_gtest_test(executor_lifecycle_test
+    TEST_NAME executor_lifecycle_${scenario}_stn
+    ENV GTEST_FILTER=ExecutorLifecycleTest.${scenario} PLANSYS2_TEST_BT_BUILDER=STNBTBuilder
     TIMEOUT 120)
 endforeach()
 
@@ -87,6 +99,11 @@ foreach(scenario
   ament_add_gtest_test(executor_goal_handling_test
     TEST_NAME executor_goal_handling_${scenario}
     ENV GTEST_FILTER=ExecutorGoalHandlingTest.${scenario}
+    TIMEOUT 120)
+  # The same scenario with STNBTBuilder
+  ament_add_gtest_test(executor_goal_handling_test
+    TEST_NAME executor_goal_handling_${scenario}_stn
+    ENV GTEST_FILTER=ExecutorGoalHandlingTest.${scenario} PLANSYS2_TEST_BT_BUILDER=STNBTBuilder
     TIMEOUT 120)
 endforeach()
 
@@ -118,6 +135,13 @@ foreach(scenario
     ENV GTEST_FILTER=ExecutorStnTest.${scenario}
     TIMEOUT 120)
 endforeach()
+
+ament_add_gtest(stn_btbuilder_tests stn_btbuilder_tests.cpp)
+target_compile_definitions(stn_btbuilder_tests PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(stn_btbuilder_tests
+  ${PROJECT_NAME}
+  bt_builder_plugins
+)
 
 # Tests discover only nodes on this host: parallel jobs do not mix
 get_property(_tests DIRECTORY PROPERTY TESTS)
