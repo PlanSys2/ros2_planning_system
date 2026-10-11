@@ -108,6 +108,17 @@ ament_add_gtest(stn_dependency_test stn_dependency_test.cpp)
 target_compile_definitions(stn_dependency_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 target_link_libraries(stn_dependency_test ${PROJECT_NAME})
 
+ament_add_gtest_executable(executor_stn_test executor_stn_test.cpp)
+target_compile_definitions(executor_stn_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(executor_stn_test ${PROJECT_NAME})
+foreach(scenario
+    stn_executes_an_action_during_another simple_builder_cannot_run_required_concurrency)
+  ament_add_gtest_test(executor_stn_test
+    TEST_NAME executor_stn_${scenario}
+    ENV GTEST_FILTER=ExecutorStnTest.${scenario}
+    TIMEOUT 120)
+endforeach()
+
 # Tests discover only nodes on this host: parallel jobs do not mix
 get_property(_tests DIRECTORY PROPERTY TESTS)
 if(_tests)
