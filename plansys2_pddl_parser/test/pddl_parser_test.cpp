@@ -939,3 +939,29 @@ TEST(PDDLParserTestCase, instance_add_metric)
   EXPECT_ANY_THROW(instance.addMetric("optimize", "(spent)"));
   EXPECT_ANY_THROW(instance.addMetric("minimize", "(fuel r2)"));
 }
+
+TEST(PDDLParserTestCase, sub_types_names_nested_and_cyclic)
+{
+  parser::pddl::Type robot("robot"), ground("ground"), soft("soft"), infantry("infantry"),
+  drone("drone");
+  robot.insertSubtype(&drone);
+  robot.insertSubtype(&ground);
+  ground.insertSubtype(&soft);
+  soft.insertSubtype(&infantry);
+
+  std::vector<std::string> names;
+  robot.getSubTypesNames(names);
+  ASSERT_EQ(names, (std::vector<std::string>{"drone", "ground", "soft", "infantry"}));
+
+  names.clear();
+  infantry.getSubTypesNames(names);
+  ASSERT_TRUE(names.empty());
+
+  // A cycle of types does not loop forever
+  parser::pddl::Type a("a"), b("b");
+  a.subtypes.push_back(&b);
+  b.subtypes.push_back(&a);
+  names.clear();
+  a.getSubTypesNames(names);
+  ASSERT_EQ(names, (std::vector<std::string>{"b", "a"}));
+}

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <string>
+#include <utility>
 #include <vector>
 #include <memory>
 
@@ -1335,6 +1336,57 @@ TEST(problem_expert, metric_follows_domain_updates)
   ASSERT_TRUE(problem_expert.setMetric(plansys2::Metric("minimize (total-time)")));
   ASSERT_TRUE(problem_expert.updateDomain(read_test_pddl("domain_simple.pddl")));
   ASSERT_EQ(parser::pddl::toString(problem_expert.getMetric()), "minimize (total-time)");
+}
+
+// Objects of a subtype of a subtype fit where the ancestor is expected
+TEST(problem_expert, nested_sub_types)
+{
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(
+    read_test_pddl("domain_deep_types.pddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  for (const auto & [name, type] : std::vector<std::pair<std::string, std::string>>{
+    {"d1", "drone"}, {"t1", "tank"}, {"i1", "infantry"}, {"a1", "artillery"}, {"z", "zone"}})
+  {
+    ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam(name, type))) << name;
+  }
+
+  const std::vector<std::pair<std::string, bool>> predicates = {
+    {"(at d1 z)", true},       // child of robot
+    {"(at t1 z)", true},       // grandchild
+    {"(at i1 z)", true},       // great-grandchild
+    {"(at a1 z)", true},
+    {"(armored t1)", true},
+    {"(armored i1)", true},
+    {"(armored d1)", false},   // a drone is not ground
+    {"(light i1)", true},
+    {"(light t1)", false},     // a tank is not soft
+    {"(at z z)", false},       // a zone is not a robot
+    {"(captured i1)", false},  // nor a zone
+  };
+  for (const auto & [predicate, valid] : predicates) {
+    EXPECT_EQ(
+      problem_expert.addPredicate(parser::pddl::fromStringPredicate(predicate)), valid) <<
+      predicate;
+  }
+
+  EXPECT_TRUE(problem_expert.addFunction(plansys2::Function("(= (ammo i1) 5)")));
+  EXPECT_TRUE(problem_expert.addFunction(plansys2::Function("(= (ammo t1) 4)")));
+  EXPECT_FALSE(problem_expert.addFunction(plansys2::Function("(= (ammo d1) 1)")));
+
+  EXPECT_TRUE(problem_expert.setGoal(plansys2::Goal("(and (at i1 z) (armored a1))")));
+  EXPECT_FALSE(problem_expert.setGoal(plansys2::Goal("(and (armored d1))")));
+
+  // The same from a whole problem
+  plansys2::ProblemExpert problem_expert2(domain_expert);
+  ASSERT_TRUE(
+    problem_expert2.addProblem(
+      "(define (problem p) (:domain deep_types)"
+      "(:objects d1 - drone t1 - tank i1 - infantry z - zone)"
+      "(:init (at d1 z) (at t1 z) (at i1 z) (armored i1) (light i1) (= (ammo t1) 4))"
+      "(:goal (and (captured z))))"));
+  ASSERT_EQ(problem_expert2.getPredicates().size(), 5u);
+  ASSERT_EQ(problem_expert2.getFunctions().size(), 1u);
 }
 
 int main(int argc, char ** argv)

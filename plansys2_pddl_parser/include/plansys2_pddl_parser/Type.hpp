@@ -13,6 +13,7 @@
 // limitations under the License.
 #pragma once
 
+#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
@@ -53,10 +54,16 @@ public:
 
   virtual std::string getName() const {return name;}
 
+  // All the descendants, not only the children: an object of a grandchild type is also of this
+  // type. Names already listed are skipped, which also stops on a cycle of types
   virtual void getSubTypesNames(std::vector<std::string> & typesNames) const
   {
     for (auto subtype : subtypes) {
+      if (std::find(typesNames.begin(), typesNames.end(), subtype->name) != typesNames.end()) {
+        continue;
+      }
       typesNames.push_back(subtype->name);
+      subtype->getSubTypesNames(typesNames);
     }
   }
 

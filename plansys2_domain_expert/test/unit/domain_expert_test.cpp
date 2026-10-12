@@ -13,6 +13,8 @@
 // limitations under the License.
 
 #include <string>
+#include <set>
+#include <algorithm>
 #include <vector>
 #include <regex>
 #include <iostream>
@@ -499,6 +501,58 @@ TEST(domain_expert, sub_types)
   } else {
     FAIL() << "No `teleportation_time` function found in the domain";
   }
+}
+
+// Subtypes of subtypes: an infantry is a soft, a ground and a robot
+TEST(domain_expert, nested_sub_types)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_deep_types.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  plansys2::DomainExpert domain_expert(domain_str);
+
+  auto sorted = [](std::vector<std::string> v) {
+      std::sort(v.begin(), v.end());
+      return v;
+    };
+  const std::vector<std::string> robot_subtypes =
+    sorted({"drone", "ground", "tank", "soft", "infantry", "artillery"});
+  const std::vector<std::string> ground_subtypes =
+    sorted({"tank", "soft", "infantry", "artillery"});
+  const std::vector<std::string> soft_subtypes = sorted({"infantry", "artillery"});
+  const std::vector<std::string> none;
+
+  auto at = domain_expert.getPredicate("at");
+  ASSERT_TRUE(at.has_value());
+  ASSERT_EQ(sorted(at->parameters[0].sub_types), robot_subtypes);
+  ASSERT_EQ(at->parameters[1].sub_types, none);
+
+  auto armored = domain_expert.getPredicate("armored");
+  ASSERT_TRUE(armored.has_value());
+  ASSERT_EQ(sorted(armored->parameters[0].sub_types), ground_subtypes);
+
+  auto light = domain_expert.getPredicate("light");
+  ASSERT_TRUE(light.has_value());
+  ASSERT_EQ(sorted(light->parameters[0].sub_types), soft_subtypes);
+
+  auto ammo = domain_expert.getFunction("ammo");
+  ASSERT_TRUE(ammo.has_value());
+  ASSERT_EQ(sorted(ammo->parameters[0].sub_types), ground_subtypes);
+
+  auto move = domain_expert.getDurativeAction("move");
+  ASSERT_NE(move, nullptr);
+  ASSERT_EQ(sorted(move->parameters[0].sub_types), robot_subtypes);
+
+  auto capture = domain_expert.getAction("capture");
+  ASSERT_NE(capture, nullptr);
+  ASSERT_EQ(capture->parameters[0].sub_types, none);
+
+  // No subtype is listed twice
+  auto all = at->parameters[0].sub_types;
+  ASSERT_EQ(std::set<std::string>(all.begin(), all.end()).size(), all.size());
 }
 
 int main(int argc, char ** argv)
