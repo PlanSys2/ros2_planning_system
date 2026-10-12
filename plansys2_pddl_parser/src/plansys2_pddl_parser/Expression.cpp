@@ -46,14 +46,25 @@ plansys2_msgs::msg::Node::SharedPtr FunctionExpression::getTree(
   node->node_type = plansys2_msgs::msg::Node::FUNCTION;
   node->node_id = tree.nodes.size();
   node->name = fun->name;
+  const int declared = d.funcs.index(fun->name);
   for (unsigned i = 0; i < fun->params.size(); ++i) {
     plansys2_msgs::msg::Param param;
-    if (i < replace.size()) {
-      param.name = replace[fun->params[i]];
-    } else {
-      param.name = "?" + std::to_string(fun->params[i]);
+    const int index = fun->params[i];
+    ConstExpression * constant = nullptr;
+    if (i < constants.size()) {
+      constant = dynamic_cast<ConstExpression *>(constants[i]);
     }
-    param.type = d.types[fun->params[i]]->name;
+    if (index >= 0 && static_cast<size_t>(index) < replace.size()) {
+      param.name = replace[index];
+    } else if (index < 0 && constant) {
+      param.name = d.types[constant->tid]->constants[constant->constant];
+    } else {
+      param.name = "?" + std::to_string(index);
+    }
+    // The type the function declares for this argument
+    if (declared >= 0 && i < d.funcs[declared]->params.size()) {
+      param.type = d.types[d.funcs[declared]->params[i]]->name;
+    }
     node->parameters.push_back(param);
   }
   tree.nodes.push_back(*node);

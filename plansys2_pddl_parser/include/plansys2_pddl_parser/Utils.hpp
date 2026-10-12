@@ -146,6 +146,10 @@ std::string toStringParameter(const plansys2_msgs::msg::Tree & tree, uint32_t no
 
 std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
 
+std::string toStringForall(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+
+std::string toStringImply(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+
 /// This function creates a complete tree.
 /**
  * This function recursivelly extracts the logic expressions and predicates from the expression.

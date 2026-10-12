@@ -14,6 +14,9 @@ uint8 NUMBER = 9
 uint8 CONSTANT = 10
 uint8 PARAMETER = 11
 uint8 EXISTS = 12
+# Values are unique across node, expression and modifier types
+uint8 FORALL = 27
+uint8 IMPLY = 28
 
 # Expression types
 uint8 COMP_EQ = 13

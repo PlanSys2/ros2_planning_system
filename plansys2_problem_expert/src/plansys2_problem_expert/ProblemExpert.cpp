@@ -188,7 +188,7 @@ ProblemExpert::addPredicate(const plansys2::Predicate & predicate)
 {
   if (!existPredicate(predicate)) {
     if (isValidPredicate(predicate)) {
-      predicates_.push_back(predicate);
+      predicates_.push_back(withInstanceTypes(predicate));
       return true;
     } else {
       return false;
@@ -196,6 +196,22 @@ ProblemExpert::addPredicate(const plansys2::Predicate & predicate)
   } else {
     return true;
   }
+}
+
+plansys2_msgs::msg::Node
+ProblemExpert::withInstanceTypes(const plansys2_msgs::msg::Node & node)
+{
+  // Parameters keep the type of their instance, not the one the predicate declares, so a
+  // state alone tells the type of each object (what exists and forall range over).
+  // Equality of nodes compares names only
+  plansys2_msgs::msg::Node ret = node;
+  for (auto & param : ret.parameters) {
+    auto instance = getInstance(param.name);
+    if (instance.has_value()) {
+      param.type = instance->type;
+    }
+  }
+  return ret;
 }
 
 bool
@@ -252,7 +268,7 @@ ProblemExpert::addFunction(const plansys2::Function & function)
 {
   if (!existFunction(function)) {
     if (isValidFunction(function)) {
-      functions_.push_back(function);
+      functions_.push_back(withInstanceTypes(function));
       return true;
     } else {
       return false;
@@ -430,11 +446,32 @@ ProblemExpert::getGoal()
   return goal_;
 }
 
+plansys2::Goal
+ProblemExpert::withSubTypes(const plansys2::Goal & goal)
+{
+  // A goal written as text has the types of its exists and forall variables, but not their
+  // subtypes, which say what objects they range over: they come from the domain
+  plansys2::Goal ret = goal;
+  for (auto & node : ret.nodes) {
+    if (node.node_type != plansys2_msgs::msg::Node::EXISTS &&
+      node.node_type != plansys2_msgs::msg::Node::FORALL)
+    {
+      continue;
+    }
+    for (auto & param : node.parameters) {
+      if (!param.type.empty() && param.sub_types.empty()) {
+        param.sub_types = domain_expert_->getSubTypes(param.type);
+      }
+    }
+  }
+  return ret;
+}
+
 bool
 ProblemExpert::setGoal(const plansys2::Goal & goal)
 {
   if (isValidGoal(goal)) {
-    goal_ = goal;
+    goal_ = withSubTypes(goal);
     return true;
   } else {
     return false;
@@ -448,7 +485,7 @@ bool ProblemExpert::isGoalSatisfied(const plansys2::Goal & goal)
     std::cerr << "Malformed goal: " << error << std::endl;
     return false;
   }
-  return check(goal, predicates_, functions_);
+  return check(withSubTypes(goal), predicates_, functions_);
 }
 
 bool
@@ -571,93 +608,63 @@ ProblemExpert::existFunction(const plansys2::Function & function)
 }
 
 bool
-ProblemExpert::isValidPredicate(const plansys2::Predicate & predicate)
+ProblemExpert::argumentsFit(
+  const plansys2_msgs::msg::Node & node, const plansys2_msgs::msg::Node & model,
+  const std::map<std::string, plansys2_msgs::msg::Param> & bound)
 {
-  bool valid = false;
-
-  const std::optional<plansys2::Predicate> & model_predicate =
-    domain_expert_->getPredicate(predicate.name);
-  if (model_predicate) {
-    if (model_predicate.value().parameters.size() == predicate.parameters.size()) {
-      bool same_types = true;
-      size_t i = 0;
-      while (same_types && i < predicate.parameters.size()) {
-        auto arg_type = getInstance(predicate.parameters[i].name);
-
-        if (!arg_type.has_value()) {
-          // It might be a constant, so we check if the type is correct
-          same_types = false;
-          auto constants = domain_expert_->getConstants(model_predicate.value().parameters[i].type);
-          for (auto constant : constants) {
-            if (constant == predicate.parameters[i].name) {
-              same_types = true;
-              break;
-            }
-          }
-        } else if (arg_type.value().type != model_predicate.value().parameters[i].type) {
-          bool isSubtype = false;
-          for (std::string subType : model_predicate.value().parameters[i].sub_types) {
-            if (arg_type.value().type == subType) {
-              isSubtype = true;
-              break;
-            }
-          }
-          if (!isSubtype) {
-            same_types = false;
-          }
-        }
-        i++;
-      }
-      valid = same_types;
-    }
+  if (model.parameters.size() != node.parameters.size()) {
+    return false;
   }
 
-  return valid;
+  for (size_t i = 0; i < node.parameters.size(); i++) {
+    const auto & expected = model.parameters[i];
+    auto fits = [&expected](const std::string & type) {
+        return type == expected.type ||
+               std::find(expected.sub_types.begin(), expected.sub_types.end(), type) !=
+               expected.sub_types.end();
+      };
+
+    // A variable of an exists or forall: its type, if it has one, must fit
+    auto variable = bound.find(node.parameters[i].name);
+    if (variable != bound.end()) {
+      if (!variable->second.type.empty() && !fits(variable->second.type)) {
+        return false;
+      }
+      continue;
+    }
+
+    auto arg_type = getInstance(node.parameters[i].name);
+    if (arg_type.has_value()) {
+      if (!fits(arg_type.value().type)) {
+        return false;
+      }
+    } else {
+      // It might be a constant of the right type
+      auto constants = domain_expert_->getConstants(expected.type);
+      if (std::find(constants.begin(), constants.end(), node.parameters[i].name) ==
+        constants.end())
+      {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool
+ProblemExpert::isValidPredicate(const plansys2::Predicate & predicate)
+{
+  const std::optional<plansys2::Predicate> & model_predicate =
+    domain_expert_->getPredicate(predicate.name);
+  return model_predicate && argumentsFit(predicate, model_predicate.value());
 }
 
 bool
 ProblemExpert::isValidFunction(const plansys2::Function & function)
 {
-  bool valid = false;
-
   const std::optional<plansys2::Function> & model_function =
     domain_expert_->getFunction(function.name);
-  if (model_function) {
-    if (model_function.value().parameters.size() == function.parameters.size()) {
-      bool same_types = true;
-      size_t i = 0;
-      while (same_types && i < function.parameters.size()) {
-        auto arg_type = getInstance(function.parameters[i].name);
-
-        if (!arg_type.has_value()) {
-          // It might be a constant, so we check if the type is correct
-          same_types = false;
-          auto constants = domain_expert_->getConstants(model_function.value().parameters[i].type);
-          for (auto constant : constants) {
-            if (constant == function.parameters[i].name) {
-              same_types = true;
-              break;
-            }
-          }
-        } else if (arg_type.value().type != model_function.value().parameters[i].type) {
-          bool isSubtype = false;
-          for (std::string subType : model_function.value().parameters[i].sub_types) {
-            if (arg_type.value().type == subType) {
-              isSubtype = true;
-              break;
-            }
-          }
-          if (!isSubtype) {
-            same_types = false;
-          }
-        }
-        i++;
-      }
-      valid = same_types;
-    }
-  }
-
-  return valid;
+  return model_function && argumentsFit(function, model_function.value());
 }
 
 bool
@@ -784,7 +791,8 @@ bool
 ProblemExpert::checkPredicateTreeTypes(
   const plansys2_msgs::msg::Tree & tree,
   std::shared_ptr<DomainExpert> & domain_expert,
-  uint32_t node_id)
+  uint32_t node_id,
+  const std::map<std::string, plansys2_msgs::msg::Param> & bound)
 {
   if (node_id >= tree.nodes.size()) {
     return false;
@@ -795,7 +803,7 @@ ProblemExpert::checkPredicateTreeTypes(
         bool ret = true;
 
         for (auto & child_id : tree.nodes[node_id].children) {
-          ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id);
+          ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id, bound);
         }
         return ret;
       }
@@ -804,28 +812,48 @@ ProblemExpert::checkPredicateTreeTypes(
         bool ret = true;
 
         for (auto & child_id : tree.nodes[node_id].children) {
-          ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id);
+          ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id, bound);
         }
         return ret;
       }
 
     case plansys2_msgs::msg::Node::NOT: {
-        return checkPredicateTreeTypes(tree, domain_expert, tree.nodes[node_id].children[0]);
+        return checkPredicateTreeTypes(tree, domain_expert, tree.nodes[node_id].children[0], bound);
       }
 
     case plansys2_msgs::msg::Node::PREDICATE: {
-        return isValidPredicate(tree.nodes[node_id]);
+        auto model = domain_expert->getPredicate(tree.nodes[node_id].name);
+        return model && argumentsFit(tree.nodes[node_id], model.value(), bound);
       }
 
     case plansys2_msgs::msg::Node::FUNCTION: {
-        return isValidFunction(tree.nodes[node_id]);
+        auto model = domain_expert->getFunction(tree.nodes[node_id].name);
+        return model && argumentsFit(tree.nodes[node_id], model.value(), bound);
+      }
+
+    case plansys2_msgs::msg::Node::EXISTS:
+    case plansys2_msgs::msg::Node::FORALL: {
+        // The body may use the variables in place of instances
+        auto inner = bound;
+        for (const auto & variable : tree.nodes[node_id].parameters) {
+          inner[variable.name] = variable;
+        }
+        return checkPredicateTreeTypes(
+          tree, domain_expert, tree.nodes[node_id].children[0], inner);
+      }
+
+    case plansys2_msgs::msg::Node::IMPLY: {
+        return checkPredicateTreeTypes(
+          tree, domain_expert, tree.nodes[node_id].children[0], bound) &&
+               checkPredicateTreeTypes(
+          tree, domain_expert, tree.nodes[node_id].children[1], bound);
       }
 
     case plansys2_msgs::msg::Node::EXPRESSION: {
         bool ret = true;
 
         for (auto & child_id : tree.nodes[node_id].children) {
-          ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id);
+          ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id, bound);
         }
         return ret;
       }
@@ -834,7 +862,7 @@ ProblemExpert::checkPredicateTreeTypes(
         bool ret = true;
 
         for (auto & child_id : tree.nodes[node_id].children) {
-          ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id);
+          ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id, bound);
         }
         return ret;
       }

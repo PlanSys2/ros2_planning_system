@@ -110,6 +110,17 @@ DomainExpert::getTypes()
 }
 
 std::vector<std::string>
+DomainExpert::getSubTypes(const std::string & type)
+{
+  std::vector<std::string> ret;
+  int index = domain_->types.index(type);  // getType() would add an unknown type
+  if (index >= 0) {
+    domain_->types[index]->getSubTypesNames(ret);
+  }
+  return ret;
+}
+
+std::vector<std::string>
 DomainExpert::getConstants(const std::string & type)
 {
   if (!domain_->typed) {return std::vector<std::string>();}

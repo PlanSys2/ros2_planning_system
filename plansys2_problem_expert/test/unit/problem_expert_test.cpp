@@ -1389,6 +1389,89 @@ TEST(problem_expert, nested_sub_types)
   ASSERT_EQ(problem_expert2.getFunctions().size(), 1u);
 }
 
+// Goals with forall, exists and imply over typed variables (#314)
+TEST(problem_expert, quantified_goals)
+{
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(
+    read_test_pddl("domain_quantifiers.pddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+  ASSERT_TRUE(problem_expert.addProblem(read_test_pddl("problem_quantifiers.pddl")));
+
+  // The goal of the problem: every zone with a hostile robot is owned
+  auto goal = problem_expert.getGoal();
+  ASSERT_FALSE(goal.nodes.empty());
+  ASSERT_FALSE(problem_expert.isGoalSatisfied(goal));  // z2 has e1 and is not owned
+
+  const std::vector<std::pair<std::string, bool>> valid = {
+    {"(and (forall (?r - robot) (available ?r)))", true},
+    {"(and (exists (?g - ground) (at ?g z1)))", true},
+    {"(and (imply (hostile e1) (owned z2)))", true},
+    {"(and (forall (?z - zone) (exists (?i - infantry) (at ?i ?z))))", true},
+    {"(and (not (exists (?e - robot) (and (hostile ?e) (at ?e z1)))))", true},
+    // a variable of a subtype where the ancestor is expected
+    {"(and (forall (?t - tank) (at ?t z1)))", true},
+    // wrong: unknown predicate, wrong arity, a zone where a robot goes, unknown object
+    {"(and (forall (?r - robot) (flying ?r)))", false},
+    {"(and (forall (?r - robot) (at ?r)))", false},
+    {"(and (forall (?z - zone) (available ?z)))", false},
+    {"(and (exists (?r - robot) (at ?r z9)))", false},
+    {"(and (imply (hostile e1) (owned e1)))", false},
+  };
+  for (const auto & [expression, expected] : valid) {
+    EXPECT_EQ(problem_expert.isValidGoal(plansys2::Goal(expression)), expected) << expression;
+  }
+
+  // Satisfaction against the state
+  const std::vector<std::pair<std::string, bool>> satisfied = {
+    {"(and (exists (?g - ground) (at ?g z1)))", true},
+    {"(and (forall (?r - robot) (available ?r)))", false},  // t1 and e1 are not
+    {"(and (forall (?i - infantry) (available ?i)))", true},
+    {"(and (not (exists (?e - robot) (and (hostile ?e) (at ?e z1)))))", true},
+    {"(and (not (exists (?e - robot) (and (hostile ?e) (at ?e z2)))))", false},
+    {"(and (imply (hostile e1) (owned z2)))", false},
+  };
+  for (const auto & [expression, expected] : satisfied) {
+    EXPECT_EQ(problem_expert.isGoalSatisfied(plansys2::Goal(expression)), expected) <<
+      expression;
+  }
+
+  ASSERT_TRUE(problem_expert.addPredicate(parser::pddl::fromStringPredicate("(owned z2)")));
+  ASSERT_TRUE(problem_expert.isGoalSatisfied(goal));
+
+  // The goal goes into the problem for the planner, and back
+  plansys2::ProblemExpert problem_expert2(domain_expert);
+  ASSERT_TRUE(problem_expert2.addProblem(problem_expert.getProblem()));
+  ASSERT_EQ(
+    parser::pddl::toString(problem_expert2.getGoal()), parser::pddl::toString(goal));
+}
+
+// The state keeps the type of each object, so a state alone says what forall ranges over
+TEST(problem_expert, predicates_keep_instance_types)
+{
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(
+    read_test_pddl("domain_quantifiers.pddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance("t1", "tank")));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance("z1", "zone")));
+
+  ASSERT_TRUE(problem_expert.addPredicate(parser::pddl::fromStringPredicate("(at t1 z1)")));
+  auto predicates = problem_expert.getPredicates();
+  ASSERT_EQ(predicates.size(), 1u);
+  ASSERT_EQ(predicates[0].parameters[0].type, "tank");
+  ASSERT_EQ(predicates[0].parameters[1].type, "zone");
+
+  // Also when the predicate comes with the type it declares, as from a problem
+  auto declared = parser::pddl::fromStringPredicate("(hostile t1)");
+  declared.parameters[0].type = "robot";
+  ASSERT_TRUE(problem_expert.addPredicate(declared));
+  ASSERT_EQ(problem_expert.getPredicate("(hostile t1)")->parameters[0].type, "tank");
+
+  // Equality is by name: the predicate is found and removed without types
+  ASSERT_TRUE(problem_expert.existPredicate(parser::pddl::fromStringPredicate("(at t1 z1)")));
+  ASSERT_TRUE(problem_expert.removePredicate(parser::pddl::fromStringPredicate("(at t1 z1)")));
+  ASSERT_EQ(problem_expert.getPredicates().size(), 1u);
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

@@ -1312,6 +1312,64 @@ class TestParser(unittest.TestCase):
         # Should return empty list or minimal results
         self.assertIsInstance(result, list)
 
+    def test_get_node_type_forall_imply(self):
+        """Test node types of forall and imply, and predicates named like them."""
+        self.assertEqual(Parser.get_node_type('(forall (?x - t) (p ?x))'), Node.FORALL)
+        self.assertEqual(Parser.get_node_type('(imply (a) (b))'), Node.IMPLY)
+        self.assertEqual(Parser.get_node_type('(and (forall (?x) (p ?x)))'), Node.AND)
+        self.assertEqual(
+            Parser.get_node_type('(forall_done x)', Node.PREDICATE), Node.PREDICATE)
+        self.assertEqual(Parser.get_node_type('(implying x)', Node.PREDICATE), Node.PREDICATE)
+
+    def test_node_from_string_forall_typed_list(self):
+        """Test that '- type' applies to the variables before it."""
+        node = Parser.node_from_string_forall('(forall (?a ?b - robot ?z - zone ?o) (at ?a ?z))')
+        self.assertEqual(node.node_type, Node.FORALL)
+        self.assertEqual(
+            [(p.name, p.type) for p in node.parameters],
+            [('?a', 'robot'), ('?b', 'robot'), ('?z', 'zone'), ('?o', '')])
+
+    def test_tree_from_string_forall(self):
+        """Test that the variable list of a forall is not a child."""
+        tree = Parser.tree_from_string('(forall (?r - robot) (at ?r wp1))')
+        self.assertEqual(len(tree.nodes), 2)
+        self.assertEqual(tree.nodes[0].node_type, Node.FORALL)
+        self.assertEqual(list(tree.nodes[0].children), [1])
+        self.assertEqual(tree.nodes[1].node_type, Node.PREDICATE)
+        self.assertEqual(tree.nodes[1].name, 'at')
+
+    def test_tree_from_string_imply(self):
+        """Test that imply has its two conditions as children."""
+        tree = Parser.tree_from_string('(imply (a x) (b y))')
+        self.assertEqual(tree.nodes[0].node_type, Node.IMPLY)
+        self.assertEqual(len(tree.nodes[0].children), 2)
+        self.assertEqual(tree.nodes[1].name, 'a')
+        self.assertEqual(tree.nodes[2].name, 'b')
+
+    def test_forall_imply_round_trip(self):
+        """Test that forall and imply print as they are read, as in C++."""
+        for expr in [
+            '(forall (?r - robot ?z - zone) (at ?r ?z))',
+            '(imply (a x) (b y))',
+            '(not (imply (a x) (b y)))',
+            '(not (forall (?e - robot) (imply (hostile ?e) (not (at ?e z)))))',
+            '(forall (?o) (p ?o))',
+        ]:
+            with self.subTest(expr=expr):
+                self.assertEqual(Parser.tree_to_string(Parser.tree_from_string(expr)), expr)
+
+    def test_tree_to_string_forall_object_type(self):
+        """Test that the type object, of untyped variables, is not printed."""
+        tree = Parser.tree_from_string('(forall (?o - object) (p ?o))')
+        self.assertEqual(Parser.tree_to_string(tree), '(forall (?o) (p ?o))')
+
+    def test_node_to_dict_forall_imply(self):
+        """Test the names of the new node types."""
+        tree = Parser.tree_from_string('(imply (a x) (forall (?o) (p ?o)))')
+        types = [Parser.node_to_dict(n)['node_type_name'] for n in tree.nodes]
+        self.assertIn('IMPLY', types)
+        self.assertIn('FORALL', types)
+
 
 if __name__ == '__main__':
     unittest.main()

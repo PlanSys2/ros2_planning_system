@@ -74,6 +74,14 @@ public:
   std::vector<std::string> getTypes();
 
   /**
+   * @brief Get every type below a given type: its children, their children, and so on.
+   *
+   * @param[in] type The name of the type.
+   * @return std::vector<std::string> The names of its descendants; empty for an unknown type.
+   */
+  std::vector<std::string> getSubTypes(const std::string & type);
+
+  /**
    * @brief Get the constants defined for a given type.
    *
    * @param[in] type The name of the type.

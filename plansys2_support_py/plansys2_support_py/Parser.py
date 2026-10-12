@@ -79,6 +79,8 @@ class Parser:
             (r'\(\s*or[ (]', Node.OR),
             (r'\(\s*not[ (]', Node.NOT),
             (r'\(\s*exists[ (]', Node.EXISTS),
+            (r'\(\s*forall[ (]', Node.FORALL),
+            (r'\(\s*imply[ (]', Node.IMPLY),
             (r'^\s*\(?\s*\?\w+', Node.PARAMETER),
         ]
 
@@ -297,8 +299,17 @@ class Parser:
             Expression with operator removed.
 
         """
-        # Check for 'exists'
+        # Check for 'forall': the keyword goes with its variable list. It goes before the
+        # operators, whose pattern finds 'or' inside 'forall'
         first_paren = expr.find('(')
+        forall_pos = expr.find('forall')
+        if forall_pos != -1 and (first_paren == -1 or forall_pos < first_paren):
+            end_list = expr.find(')', forall_pos)
+            if end_list == -1:
+                raise ValueError("Malformed 'forall' expression: missing closing parenthesis")
+            return expr[end_list + 1:].lstrip()
+
+        # Check for 'exists'
         exists_pos = expr.find('exists')
 
         if exists_pos != -1 and (first_paren == -1 or exists_pos < first_paren):
@@ -308,7 +319,7 @@ class Parser:
 
         # Remove other operators
         operator_pattern = (
-            r'[\+\-\*/=<>]=?|<=|>=|and|or|not|'
+            r'[\+\-\*/=<>]=?|<=|>=|and|or|not|imply|'
             r'assign|increase|decrease|scale-up|scale-down'
         )
         match = re.search(operator_pattern, expr)
@@ -496,6 +507,47 @@ class Parser:
         return node
 
     @staticmethod
+    def node_from_string_forall(forall: str) -> Node:
+        """
+        Create a Node from a forall expression.
+
+        Parameters
+        ----------
+        forall : str
+            The forall expression string, e.g. '(forall (?a ?b - robot) (body))'.
+
+        Returns
+        -------
+        Node
+            Node message with FORALL type; '- type' applies to the variables before it.
+
+        """
+        node = Node()
+        node.node_type = Node.FORALL
+        node.value = 0.0
+
+        start = forall.find('(', forall.find('forall'))
+        end = forall.find(')', start) if start != -1 else -1
+        if end == -1:
+            return node
+
+        tokens = forall[start + 1:end].split()
+        untyped = 0
+        i = 0
+        while i < len(tokens):
+            if tokens[i] == '-' and i + 1 < len(tokens):
+                for k in range(untyped, len(node.parameters)):
+                    node.parameters[k].type = tokens[i + 1]
+                untyped = len(node.parameters)
+                i += 2
+            else:
+                param = Parser.param_from_string(tokens[i])
+                node.parameters.append(param)  # type: ignore[union-attr]
+                i += 1
+
+        return node
+
+    @staticmethod
     def tree_from_string(
             expr: str, negate: bool = False,
             parent: int = Node.UNKNOWN) -> Tree:
@@ -551,7 +603,7 @@ class Parser:
 
         # Determine default node type based on parent
         default_node_type: int = Node.UNKNOWN
-        if parent in [Node.AND, Node.OR, Node.NOT]:
+        if parent in [Node.AND, Node.OR, Node.NOT, Node.FORALL, Node.IMPLY]:
             default_node_type = Node.PREDICATE
         elif parent in [Node.EXPRESSION, Node.FUNCTION_MODIFIER]:
             default_node_type = Node.FUNCTION
@@ -573,7 +625,7 @@ class Parser:
 
             return node
 
-        elif node_type == Node.OR:
+        elif node_type in (Node.OR, Node.IMPLY):
             node = Node()
             node.node_type = node_type
             node.node_id = len(tree.nodes)
@@ -658,6 +710,20 @@ class Parser:
             node.value = float(wexpr)
             node.negate = negate
             tree.nodes.append(node)  # type: ignore[union-attr]
+            return node
+
+        elif node_type == Node.FORALL:
+            node = Parser.node_from_string_forall(wexpr)
+            node.node_id = len(tree.nodes)
+            node.negate = negate
+            tree.nodes.append(node)  # type: ignore[union-attr]
+
+            subexprs = Parser.get_sub_expr(wexpr)
+            for subexpr in subexprs:
+                child = Parser._from_string_recursive(tree, subexpr, negate, node_type)
+                if child:
+                    tree.nodes[node.node_id].children.append(child.node_id)  # type: ignore[index]
+
             return node
 
         elif node_type == Node.EXISTS:
@@ -759,6 +825,10 @@ class Parser:
             return Parser._to_string_parameter(tree, node_id, negate)
         elif node.node_type == Node.EXISTS:
             return Parser._to_string_exists(tree, node_id, negate)
+        elif node.node_type == Node.FORALL:
+            return Parser._to_string_forall(tree, node_id, negate)
+        elif node.node_type == Node.IMPLY:
+            return Parser._to_string_imply(tree, node_id, negate)
 
         return ''
 
@@ -1152,6 +1222,76 @@ class Parser:
         return result
 
     @staticmethod
+    def _to_string_forall(tree: Tree, node_id: int, negate: bool) -> str:
+        """
+        Convert forall node to string.
+
+        Parameters
+        ----------
+        tree : Tree
+            The tree structure.
+        node_id : int
+            Node identifier.
+        negate : bool
+            Whether to negate.
+
+        Returns
+        -------
+        str
+            String representation, as in C++: untyped variables are of type object.
+
+        """
+        if node_id >= len(tree.nodes):
+            return ''
+
+        node = tree.nodes[node_id]  # type: ignore[index]
+        if not node.children:
+            return ''
+
+        params = []
+        for param in node.parameters:
+            if param.type and param.type != 'object':
+                params.append(f'{param.name} - {param.type}')
+            else:
+                params.append(param.name)
+
+        body = ''.join(Parser.tree_to_string(tree, child_id, False) for child_id in node.children)
+        result = f'(forall ({" ".join(params)}) {body})'
+        return f'(not {result})' if negate else result
+
+    @staticmethod
+    def _to_string_imply(tree: Tree, node_id: int, negate: bool) -> str:
+        """
+        Convert imply node to string.
+
+        Parameters
+        ----------
+        tree : Tree
+            The tree structure.
+        node_id : int
+            Node identifier.
+        negate : bool
+            Whether to negate.
+
+        Returns
+        -------
+        str
+            String representation.
+
+        """
+        if node_id >= len(tree.nodes):
+            return ''
+
+        node = tree.nodes[node_id]  # type: ignore[index]
+        if len(node.children) != 2:
+            return ''
+
+        left = Parser.tree_to_string(tree, node.children[0], False)
+        right = Parser.tree_to_string(tree, node.children[1], False)
+        result = f'(imply {left} {right})'
+        return f'(not {result})' if negate else result
+
+    @staticmethod
     def param_to_dict(param: Param) -> Dict[str, Any]:
         """
         Convert a plansys2_msgs.msg.Param to a dictionary.
@@ -1212,7 +1352,7 @@ class Parser:
             0: 'UNKNOWN', 1: 'AND', 2: 'OR', 3: 'NOT', 4: 'ACTION',
             5: 'PREDICATE', 6: 'FUNCTION', 7: 'EXPRESSION',
             8: 'FUNCTION_MODIFIER', 9: 'NUMBER', 10: 'CONSTANT',
-            11: 'PARAMETER', 12: 'EXISTS'
+            11: 'PARAMETER', 12: 'EXISTS', 27: 'FORALL', 28: 'IMPLY'
         }
 
         # Expression type constants and names mapping

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <memory>
@@ -1387,6 +1388,208 @@ TEST(utils, evaluate_not_comparisons)
     EXPECT_TRUE(success) << expression;
     EXPECT_EQ(value, expected) << expression;
   }
+}
+
+// forall, typed exists and imply. Types as in domain_quantifiers.pddl:
+// robot > drone, ground > tank, infantry; and zone
+namespace
+{
+const std::map<std::string, std::vector<std::string>> kSubtypes = {
+  {"robot", {"drone", "ground", "tank", "infantry"}},
+  {"ground", {"tank", "infantry"}},
+};
+const std::map<std::string, std::string> kObjects = {
+  {"d1", "drone"}, {"t1", "tank"}, {"i1", "infantry"}, {"e1", "tank"},
+  {"z1", "zone"}, {"z2", "zone"},
+};
+
+// A tree whose quantified variables carry the subtypes of their type, as from the domain
+plansys2_msgs::msg::Tree typed_tree(const std::string & expression)
+{
+  auto tree = parser::pddl::fromString(expression);
+  for (auto & node : tree.nodes) {
+    for (auto & param : node.parameters) {
+      auto it = kSubtypes.find(param.type);
+      if (it != kSubtypes.end()) {param.sub_types = it->second;}
+    }
+  }
+  return tree;
+}
+
+// A state whose parameters have the types of their objects, as the problem expert keeps them
+std::vector<plansys2::Predicate> typed_state(const std::vector<std::string> & preds)
+{
+  std::vector<plansys2::Predicate> ret;
+  for (const auto & p : preds) {
+    auto pred = parser::pddl::fromStringPredicate(p);
+    for (auto & param : pred.parameters) {
+      auto it = kObjects.find(param.name);
+      if (it != kObjects.end()) {param.type = it->second;}
+    }
+    ret.push_back(pred);
+  }
+  return ret;
+}
+
+std::pair<bool, bool> typed_truth(
+  const std::string & expression, std::vector<plansys2::Predicate> predicates)
+{
+  std::vector<plansys2::Function> functions;
+  auto result = plansys2::evaluate(typed_tree(expression), predicates, functions);
+  return {std::get<0>(result), std::get<1>(result)};
+}
+}  // namespace
+
+TEST(utils, evaluate_forall_exists_typed)
+{
+  const auto s = typed_state(
+    {"(at i1 z1)", "(at t1 z1)", "(at e1 z2)", "(hostile e1)",
+      "(available d1)", "(available t1)", "(available i1)", "(available e1)", "(owned z1)"});
+
+  const std::vector<std::pair<std::string, bool>> cases = {
+    // forall ranges over the objects of the type and its subtypes, not over the zones
+    {"(forall (?r - robot) (available ?r))", true},
+    {"(forall (?g - ground) (at ?g z1))", false},
+    {"(forall (?i - infantry) (at ?i z1))", true},
+    {"(forall (?t - tank) (available ?t))", true},
+    {"(not (forall (?g - ground) (at ?g z1)))", true},
+    {"(not (forall (?r - robot) (available ?r)))", false},
+    // without a type, zones are objects too
+    {"(forall (?o) (available ?o))", false},
+    // exists with a type
+    {"(exists (?d - drone) (at ?d z1))", false},
+    {"(exists (?g - ground) (at ?g z2))", true},
+    {"(exists (?z - zone) (owned ?z))", true},
+    {"(exists (?r - robot) (owned ?r))", false},
+    // combined
+    {"(forall (?z - zone) (exists (?r - robot) (at ?r ?z)))", true},
+    {"(exists (?z - zone) (forall (?g - ground) (at ?g ?z)))", false},
+    {"(forall (?z - zone) (imply (owned ?z) (exists (?i - infantry) (at ?i ?z))))", true},
+    // "no hostile robot in the zone", as capture says it
+    {"(not (exists (?e - robot) (and (hostile ?e) (at ?e z1))))", true},
+    {"(not (exists (?e - robot) (and (hostile ?e) (at ?e z2))))", false},
+    {"(forall (?e - robot) (imply (hostile ?e) (not (at ?e z1))))", true},
+    {"(forall (?e - robot) (imply (hostile ?e) (not (at ?e z2))))", false},
+    {"(not (exists (?r - robot) (not (available ?r))))", true},
+    // a type without objects: everything holds for none, and none exists
+    {"(forall (?a - artillery) (at ?a z1))", true},
+    {"(exists (?a - artillery) (at ?a z1))", false},
+    {"(not (forall (?a - artillery) (at ?a z1)))", false},
+    // two variables
+    {"(exists (?g - ground ?z - zone) (and (hostile ?g) (at ?g ?z)))", true},
+    {"(forall (?g - ground ?z - zone) (imply (at ?g ?z) (available ?g)))", true},
+  };
+  for (const auto & [expression, expected] : cases) {
+    auto [success, value] = typed_truth(expression, s);
+    EXPECT_TRUE(success) << expression;
+    EXPECT_EQ(value, expected) << expression;
+  }
+}
+
+TEST(utils, evaluate_imply)
+{
+  const auto s = state({"(a x)", "(b y)"});
+  const std::vector<std::pair<std::string, bool>> cases = {
+    {"(imply (a x) (b y))", true},    // true -> true
+    {"(imply (a x) (c x))", false},   // true -> false
+    {"(imply (c x) (b y))", true},    // false -> true
+    {"(imply (c x) (d x))", true},    // false -> false
+    {"(not (imply (a x) (b y)))", false},
+    {"(not (imply (a x) (c x)))", true},
+    {"(not (imply (c x) (d x)))", false},
+    {"(imply (and (a x) (b y)) (or (c x) (b y)))", true},
+    {"(imply (not (c x)) (not (a x)))", false},
+    {"(and (a x) (imply (b y) (a x)))", true},
+  };
+  for (const auto & [expression, expected] : cases) {
+    auto [success, value] = truth(expression, s);
+    EXPECT_TRUE(success) << expression;
+    EXPECT_EQ(value, expected) << expression;
+  }
+}
+
+// A forall in an effect applies its body to every object of the type, and only to them
+TEST(utils, apply_forall_effect)
+{
+  auto predicates = typed_state(
+    {"(available d1)", "(available t1)", "(available i1)", "(owned z1)", "(owned z2)"});
+  std::vector<plansys2::Function> functions;
+
+  auto effect = typed_tree("(and (forall (?g - ground) (not (available ?g))))");
+  auto result = plansys2::evaluate(effect, predicates, functions, true);
+  ASSERT_TRUE(std::get<0>(result));
+
+  auto has = [&predicates](const std::string & p) {
+      auto pred = parser::pddl::fromStringPredicate(p);
+      return std::any_of(
+        predicates.begin(), predicates.end(),
+        [&pred](const auto & q) {return parser::pddl::checkNodeEquality(q, pred);});
+    };
+  ASSERT_TRUE(has("(available d1)"));  // a drone is not ground
+  ASSERT_FALSE(has("(available t1)"));
+  ASSERT_FALSE(has("(available i1)"));
+  ASSERT_TRUE(has("(owned z1)"));
+  ASSERT_TRUE(has("(owned z2)"));
+  ASSERT_EQ(predicates.size(), 3u);
+}
+
+TEST(utils, evaluate_forall_client)
+{
+  {
+    std::vector<plansys2::Predicate> predicates;
+    std::vector<plansys2::Function> functions;
+    rclcpp::NodeOptions problem_node_options;
+    problem_node_options.arguments(
+      {"--ros-args", "-r", "domain_expert/domain:=domain_expert/domain_evaluate_forall_client"});
+    auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(problem_node_options);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+    std::string pkgpath =
+      ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+    problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_quantifiers.pddl"});
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+    rclcpp::executors::SingleThreadedExecutor exe;
+    exe.add_node(problem_node->get_node_base_interface());
+    bool finish = false;
+    std::thread t([&]() {
+        while (!finish) {exe.spin_some();}
+      });
+
+    for (const auto & [name, type] : kObjects) {
+      ASSERT_TRUE(problem_client->addInstance(plansys2::Instance(name, type))) << name;
+    }
+    for (const auto & p : {"(at i1 z1)", "(at e1 z2)", "(hostile e1)", "(available i1)"}) {
+      ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate(p))) << p;
+    }
+
+    auto client_truth = [&](const std::string & expression) {
+        auto r = plansys2::evaluate(
+          typed_tree(expression), problem_client, predicates, functions, false, false);
+        EXPECT_TRUE(std::get<0>(r)) << expression;
+        return std::get<1>(r);
+      };
+
+    // The instances of the problem expert, with their types
+    EXPECT_TRUE(client_truth("(not (exists (?e - robot) (and (hostile ?e) (at ?e z1))))"));
+    EXPECT_FALSE(client_truth("(not (exists (?e - robot) (and (hostile ?e) (at ?e z2))))"));
+    EXPECT_TRUE(client_truth("(forall (?i - infantry) (available ?i))"));
+    EXPECT_FALSE(client_truth("(forall (?g - ground) (available ?g))"));  // t1 and e1 are not
+    EXPECT_TRUE(client_truth("(forall (?e - robot) (imply (hostile ?e) (at ?e z2)))"));
+    // d1 is in no predicate, but the problem expert knows it
+    EXPECT_FALSE(client_truth("(forall (?r - robot) (exists (?z - zone) (at ?r ?z)))"));
+
+    // The state changes: what the conditions say follows it
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate("(at e1 z1)")));
+    EXPECT_FALSE(client_truth("(not (exists (?e - robot) (and (hostile ?e) (at ?e z1))))"));
+    ASSERT_TRUE(problem_client->removeInstance(plansys2::Instance("e1", "tank")));
+    EXPECT_TRUE(client_truth("(not (exists (?e - robot) (and (hostile ?e) (at ?e z1))))"));
+
+    finish = true;
+    t.join();
+  }
+  plansys2::drain_ros(2s);
 }
 
 int main(int argc, char ** argv)

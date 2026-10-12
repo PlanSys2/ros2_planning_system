@@ -555,6 +555,42 @@ TEST(domain_expert, nested_sub_types)
   ASSERT_EQ(std::set<std::string>(all.begin(), all.end()).size(), all.size());
 }
 
+// Actions with forall, exists and imply: getting them threw UnsupportedConstruct (#314)
+TEST(domain_expert, quantified_conditions_and_effects)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_quantifiers.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  plansys2::DomainExpert domain_expert(domain_str);
+
+  auto capture = domain_expert.getDurativeAction("capture", {"i1", "z1"});
+  ASSERT_NE(capture, nullptr);
+  ASSERT_EQ(
+    parser::pddl::toString(capture->at_start_requirements),
+    "(and (forall (?2 - robot) (imply (hostile ?2) (not (at ?2 z1)))))");
+  ASSERT_EQ(parser::pddl::toString(capture->over_all_requirements), "(and (at i1 z1))");
+
+  auto secure = domain_expert.getDurativeAction("secure", {"z1"});
+  ASSERT_NE(secure, nullptr);
+  ASSERT_EQ(
+    parser::pddl::toString(secure->at_start_requirements),
+    "(and (exists (?1 - ground) (at ?1 z1)))");
+  ASSERT_EQ(
+    parser::pddl::toString(secure->at_end_effects),
+    "(and (forall (?2 - robot) (not (available ?2))))");
+
+  // The quantified variables say what they range over
+  const auto & forall = secure->at_end_effects.nodes[1];
+  ASSERT_EQ(forall.node_type, plansys2_msgs::msg::Node::FORALL);
+  ASSERT_EQ(forall.parameters[0].type, "robot");
+  std::vector<std::string> subtypes = forall.parameters[0].sub_types;
+  std::sort(subtypes.begin(), subtypes.end());
+  ASSERT_EQ(subtypes, (std::vector<std::string>{"drone", "ground", "infantry", "tank"}));
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

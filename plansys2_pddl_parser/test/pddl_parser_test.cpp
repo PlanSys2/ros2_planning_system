@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <algorithm>
+#include <fstream>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -22,6 +23,7 @@
 #include "ament_index_cpp/get_package_share_path.hpp"
 #include "gtest/gtest.h"
 #include "plansys2_pddl_parser/Instance.hpp"
+#include "plansys2_pddl_parser/TemporalAction.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 
@@ -964,4 +966,156 @@ TEST(PDDLParserTestCase, sub_types_names_nested_and_cyclic)
   names.clear();
   a.getSubTypesNames(names);
   ASSERT_EQ(names, (std::vector<std::string>{"b", "a"}));
+}
+
+namespace
+{
+std::string read_parser_pddl(const std::string & name)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_pddl_parser").string();
+  std::ifstream ifs(pkgpath + "/pddl/" + name);
+  return std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+}
+
+std::vector<std::string> sorted(std::vector<std::string> v)
+{
+  std::sort(v.begin(), v.end());
+  return v;
+}
+}  // namespace
+
+TEST(PDDLParserTestCase, forall_imply_get_tree)
+{
+  parser::pddl::Domain domain(read_parser_pddl("domain_quantifiers.pddl"));
+
+  // capture: (at start (forall (?e - robot) (imply (hostile ?e) (not (at ?e ?z)))))
+  auto capture = dynamic_cast<parser::pddl::TemporalAction *>(domain.actions.get("capture"));
+  ASSERT_NE(capture, nullptr);
+  plansys2_msgs::msg::Tree tree;
+  capture->pre->getTree(tree, domain);
+  ASSERT_EQ(
+    parser::pddl::toString(tree),
+    "(and (forall (?2 - robot) (imply (hostile ?2) (not (at ?2 ?1)))))");
+  std::string error;
+  ASSERT_TRUE(parser::pddl::validateTree(tree, error)) << error;
+
+  const auto & forall = tree.nodes[1];
+  ASSERT_EQ(forall.node_type, plansys2_msgs::msg::Node::FORALL);
+  ASSERT_EQ(forall.parameters.size(), 1u);
+  ASSERT_EQ(forall.parameters[0].name, "?2");
+  ASSERT_EQ(forall.parameters[0].type, "robot");
+  ASSERT_EQ(
+    sorted(forall.parameters[0].sub_types),
+    sorted({"drone", "ground", "tank", "infantry"}));
+  ASSERT_EQ(forall.children.size(), 1u);
+  ASSERT_EQ(tree.nodes[forall.children[0]].node_type, plansys2_msgs::msg::Node::IMPLY);
+  ASSERT_EQ(tree.nodes[forall.children[0]].children.size(), 2u);
+
+  // With the arguments of the action, the variable stays a variable
+  plansys2_msgs::msg::Tree grounded;
+  capture->pre->getTree(grounded, domain, {"i1", "z1"});
+  ASSERT_EQ(
+    parser::pddl::toString(grounded),
+    "(and (forall (?2 - robot) (imply (hostile ?2) (not (at ?2 z1)))))");
+
+  // secure: an exists with a type in the condition, a forall in the effect
+  auto secure = dynamic_cast<parser::pddl::TemporalAction *>(domain.actions.get("secure"));
+  ASSERT_NE(secure, nullptr);
+  plansys2_msgs::msg::Tree pre;
+  secure->pre->getTree(pre, domain, {"z1"});
+  // ?z is the only argument of secure, but the second of at: it is replaced all the same
+  ASSERT_EQ(parser::pddl::toString(pre), "(and (exists (?1 - ground) (at ?1 z1)))");
+  ASSERT_EQ(sorted(pre.nodes[1].parameters[0].sub_types), sorted({"tank", "infantry"}));
+
+  plansys2_msgs::msg::Tree eff;
+  secure->eff_e->getTree(eff, domain, {"z1"});
+  ASSERT_EQ(parser::pddl::toString(eff), "(and (forall (?2 - robot) (not (available ?2))))");
+  ASSERT_TRUE(parser::pddl::validateTree(eff, error)) << error;
+}
+
+TEST(PDDLParserTestCase, quantifiers_in_goal_and_printing)
+{
+  parser::pddl::Domain domain(read_parser_pddl("domain_quantifiers.pddl"));
+  parser::pddl::Instance instance(domain, read_parser_pddl("problem_quantifiers.pddl"));
+  ASSERT_NE(instance.goal, nullptr);
+
+  plansys2_msgs::msg::Tree goal;
+  instance.goal->getTree(goal, domain);
+  const std::string goal_str = parser::pddl::toString(goal);
+  ASSERT_NE(goal_str.find("(forall (?6 - zone) (imply (exists (?7 - robot)"), std::string::npos) <<
+    goal_str;
+  ASSERT_NE(goal_str.find("(owned ?6)"), std::string::npos) << goal_str;
+  // Objects keep their names, variables do not take an object's name
+  ASSERT_EQ(goal_str.find("z1"), std::string::npos) << goal_str;
+
+  // The problem, printed as PlanSys2 sends it to the planner, parses again to the same goal
+  std::ostringstream instance_os;
+  instance_os << instance;
+  parser::pddl::Domain domain2(read_parser_pddl("domain_quantifiers.pddl"));
+  parser::pddl::Instance instance2(domain2, instance_os.str());
+
+  plansys2_msgs::msg::Tree goal2;
+  instance2.goal->getTree(goal2, domain2);
+  ASSERT_EQ(parser::pddl::toString(goal2), goal_str);
+}
+
+TEST(PDDLParserTestCase, forall_imply_from_and_to_string)
+{
+  using plansys2_msgs::msg::Node;
+  ASSERT_EQ(parser::pddl::getNodeType("(forall (?x - t) (p ?x))"), Node::FORALL);
+  ASSERT_EQ(parser::pddl::getNodeType("(forall(?x)(p ?x))"), Node::FORALL);
+  ASSERT_EQ(parser::pddl::getNodeType("(imply (a) (b))"), Node::IMPLY);
+  ASSERT_EQ(parser::pddl::getNodeType("(and (forall (?x) (p ?x)))"), Node::AND);
+  ASSERT_EQ(parser::pddl::getNodeType("(not (imply (a) (b)))"), Node::NOT);
+  // Predicates whose name starts like a keyword
+  ASSERT_EQ(parser::pddl::getNodeType("(forall_done x)", Node::PREDICATE), Node::PREDICATE);
+  ASSERT_EQ(parser::pddl::getNodeType("(implying x)", Node::PREDICATE), Node::PREDICATE);
+
+  // Typed lists: "- type" applies to the variables before it
+  auto tree = parser::pddl::fromString("(forall (?a ?b - robot ?z - zone ?o) (at ?a ?z))");
+  ASSERT_EQ(tree.nodes.size(), 2u);
+  ASSERT_EQ(tree.nodes[0].node_type, Node::FORALL);
+  const auto & params = tree.nodes[0].parameters;
+  ASSERT_EQ(params.size(), 4u);
+  ASSERT_EQ(params[0].name, "?a");
+  ASSERT_EQ(params[0].type, "robot");
+  ASSERT_EQ(params[1].type, "robot");
+  ASSERT_EQ(params[2].name, "?z");
+  ASSERT_EQ(params[2].type, "zone");
+  ASSERT_EQ(params[3].name, "?o");
+  ASSERT_EQ(params[3].type, "");
+  ASSERT_EQ(
+    parser::pddl::toString(tree), "(forall (?a - robot ?b - robot ?z - zone ?o) (at ?a ?z))");
+
+  // exists reads typed lists too
+  auto ex = parser::pddl::fromString("(exists (?r - robot) (at ?r z))");
+  ASSERT_EQ(ex.nodes[0].parameters.size(), 1u);
+  ASSERT_EQ(ex.nodes[0].parameters[0].type, "robot");
+  ASSERT_EQ(parser::pddl::toString(ex), "(exists (?r - robot) (at ?r z))");
+
+  // Round trips, nested and negated
+  const std::vector<std::string> round_trips = {
+    "(imply (a x) (b y))",
+    "(not (imply (a x) (b y)))",
+    "(not (forall (?e - robot) (imply (hostile ?e) (not (at ?e z)))))",
+    "(forall (?z - zone) (exists (?r) (at ?r ?z)))",
+    "(and (a x)(forall (?o) (or (p ?o)(q ?o))))",
+    "(imply (forall (?o) (p ?o)) (exists (?o) (q ?o)))",
+  };
+  for (const auto & expr : round_trips) {
+    auto t = parser::pddl::fromString(expr);
+    std::string error;
+    EXPECT_TRUE(parser::pddl::validateTree(t, error)) << expr << ": " << error;
+    EXPECT_EQ(parser::pddl::toString(t), expr) << expr;
+  }
+
+  // The structure is checked
+  plansys2_msgs::msg::Tree bad;
+  bad = parser::pddl::fromString("(imply (a x) (b y))");
+  bad.nodes[0].children.pop_back();
+  std::string error;
+  ASSERT_FALSE(parser::pddl::validateTree(bad, error));
+  bad = parser::pddl::fromString("(forall (?o) (p ?o))");
+  bad.nodes[0].children.push_back(bad.nodes[0].children[0]);
+  ASSERT_FALSE(parser::pddl::validateTree(bad, error));
 }

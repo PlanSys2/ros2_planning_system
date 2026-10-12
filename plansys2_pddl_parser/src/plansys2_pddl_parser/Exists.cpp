@@ -22,13 +22,20 @@ void Exists::PDDLPrint(
   std::ostream & s, unsigned indent, const TokenStruct<std::string> & ts, const Domain & d) const
 {
   tabindent(s, indent);
-  s << "( exists ";
+  s << "( exists (";
 
   TokenStruct<std::string> fstruct(ts);
 
+  // The same names the body prints for its variables
   for (unsigned i = 0; i < params.size(); ++i) {
-    s << " ?" + std::to_string(params[i]);
+    if (params[i] >= 0 && static_cast<size_t>(params[i]) < ts.size()) {
+      s << " " << ts[params[i]];
+    } else {
+      s << " ?" << params[i];
+    }
+    if (d.typed && i < types.size()) {s << " - " << d.types[types[i]]->name;}
   }
+  s << " )\n";
 
   if (cond) {
     cond->PDDLPrint(s, indent + 1, fstruct, d);
@@ -57,11 +64,23 @@ plansys2_msgs::msg::Node::SharedPtr Exists::getTree(
     } else {
       param.name = "?" + std::to_string(params[i]);
     }
+    if (i < types.size()) {
+      param.type = d.types[types[i]]->name;
+      d.types[types[i]]->getSubTypesNames(param.sub_types);
+    }
     node->parameters.push_back(param);
   }
 
   tree.nodes.push_back(*node);
-  plansys2_msgs::msg::Node::SharedPtr child = cond->getTree(tree, d, replace);
+  plansys2_msgs::msg::Node::SharedPtr child;
+  if (cond) {
+    child = cond->getTree(tree, d, replace);
+  } else {
+    child = std::make_shared<plansys2_msgs::msg::Node>();
+    child->node_type = plansys2_msgs::msg::Node::AND;
+    child->node_id = tree.nodes.size();
+    tree.nodes.push_back(*child);
+  }
   tree.nodes[node->node_id].children.push_back(child->node_id);
 
   return node;
@@ -74,6 +93,7 @@ void Exists::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
 
   TokenStruct<std::string> es = f.parseTypedList(true, d.types);
   params = incvec(ts.size(), ts.size() + es.size());
+  types = d.convertTypes(es.types);
 
   unsigned int count = 0;
   for (auto & tm : es.tokenMap) {
