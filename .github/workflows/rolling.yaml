@@ -13,6 +13,28 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-26.04
+    # Coverage doubles the time (instrumented build and tests, and lcov): pull requests are
+    # built without it, pushes to rolling and the weekly run measure it for Codecov
+    env:
+      COLCON_DEFAULTS_PR: |
+        {
+          "test": {
+            "parallel-workers" : 1
+          }
+        }
+      # action-ros-ci 0.4 dropped colcon-mixin-name: the mixin goes in the defaults
+      COLCON_DEFAULTS_COVERAGE: |
+        {
+          "build": {
+            "mixin": ["coverage-gcc"]
+          },
+          "lcov-result": {
+            "lcov-config-file": "/tmp/plansys2_lcovrc"
+          },
+          "test": {
+            "parallel-workers" : 1
+          }
+        }
     container:
       image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-resolute-ros-rolling-ros-base:master
     steps:
@@ -30,6 +52,7 @@ jobs:
       # colcon lcov-result gives lcov its own configuration in every step, merging the
       # package reports included: lcov 2 rejects some of them for gcc line mismatches
       - name: lcov configuration
+        if: github.event_name != 'pull_request'
         run: |
           cat > /tmp/plansys2_lcovrc << 'EOF'
           geninfo_auto_base = 1
@@ -48,21 +71,10 @@ jobs:
           package-name: plansys2_bringup plansys2_bt_actions plansys2_core plansys2_domain_expert plansys2_executor plansys2_lifecycle_manager plansys2_msgs plansys2_pddl_parser plansys2_planner plansys2_popf_plan_solver plansys2_problem_expert plansys2_support_py plansys2_terminal plansys2_tests plansys2_tools plansys2_tui_cli
           target-ros2-distro: rolling
           vcs-repo-file-url: ${GITHUB_WORKSPACE}/dependency_repos.repos
-          # action-ros-ci 0.4 dropped colcon-mixin-name: the mixin goes in the defaults
-          colcon-defaults: |
-            {
-              "build": {
-                "mixin": ["coverage-gcc"]
-              },
-              "lcov-result": {
-                "lcov-config-file": "/tmp/plansys2_lcovrc"
-              },
-              "test": {
-                "parallel-workers" : 1
-              }
-            }
+          colcon-defaults: ${{ github.event_name == 'pull_request' && env.COLCON_DEFAULTS_PR || env.COLCON_DEFAULTS_COVERAGE }}
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
       - name: Codecov
+        if: github.event_name != 'pull_request'
         uses: codecov/codecov-action@v5.4.0
         with:
           files: ros_ws/lcov/total_coverage.info
