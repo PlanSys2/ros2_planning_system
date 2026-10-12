@@ -18,6 +18,7 @@
 #include <map>
 #include <set>
 #include <tuple>
+#include <utility>
 
 #include "ament_index_cpp/get_package_share_path.hpp"
 
@@ -1224,6 +1225,168 @@ TEST(utils, replace_children_param) {
   ASSERT_EQ(
     str2,
     "(exists (bedroom bathroom) (and (robot_at ?0 bedroom)(connected bedroom bathroom)))");
+}
+
+// Truth value of an expression against a state: (success, value)
+namespace
+{
+std::pair<bool, bool> truth(
+  const std::string & expression,
+  std::vector<plansys2::Predicate> predicates,
+  std::vector<plansys2::Function> functions = {})
+{
+  plansys2_msgs::msg::Tree tree;
+  parser::pddl::fromString(tree, expression);
+  auto result = plansys2::evaluate(tree, predicates, functions);
+  return {std::get<0>(result), std::get<1>(result)};
+}
+
+std::vector<plansys2::Predicate> state(const std::vector<std::string> & preds)
+{
+  std::vector<plansys2::Predicate> ret;
+  for (const auto & p : preds) {
+    ret.push_back(parser::pddl::fromStringPredicate(p));
+  }
+  return ret;
+}
+}  // namespace
+
+TEST(utils, evaluate_not_and_or_de_morgan)
+{
+  const auto s = state({"(a x)", "(b y)"});
+  const std::vector<std::pair<std::string, bool>> cases = {
+    // and / or without not, for reference
+    {"(and (a x) (b y))", true},
+    {"(and (a x) (c x))", false},
+    {"(or (a x) (c x))", true},
+    {"(or (c x) (d x))", false},
+    // not over and: true if any part is false
+    {"(not (and (a x) (c x)))", true},
+    {"(not (and (c x) (d x)))", true},
+    {"(not (and (a x) (b y)))", false},
+    // not over or: true only if every part is false
+    {"(not (or (a x) (c x)))", false},
+    {"(not (or (c x) (a x)))", false},
+    {"(not (or (c x) (d x)))", true},
+    // double negation
+    {"(not (not (and (a x) (b y))))", true},
+    {"(not (not (and (a x) (c x))))", false},
+    {"(not (not (or (c x) (a x))))", true},
+    // nested
+    {"(not (and (a x) (or (c x) (b y))))", false},
+    {"(not (and (a x) (or (c x) (d y))))", true},
+    {"(not (or (c x) (and (a x) (b y))))", false},
+    {"(not (or (c x) (and (a x) (c y))))", true},
+    {"(and (a x) (not (c x)) (not (and (b y) (c y))))", true},
+    {"(or (c x) (not (or (a x) (b y))))", false},
+    // a single child
+    {"(not (and (a x)))", false},
+    {"(not (or (c x)))", true},
+  };
+  for (const auto & [expression, expected] : cases) {
+    auto [success, value] = truth(expression, s);
+    EXPECT_TRUE(success) << expression;
+    EXPECT_EQ(value, expected) << expression;
+  }
+}
+
+TEST(utils, evaluate_not_exists)
+{
+  const auto s = state({"(a x)", "(b y)", "(link x y)"});
+  const std::vector<std::pair<std::string, bool>> cases = {
+    {"(exists (?1) (a ?1))", true},
+    {"(exists (?1) (c ?1))", false},
+    // not exists: true only if no object satisfies the body
+    {"(not (exists (?1) (a ?1)))", false},
+    {"(not (exists (?1) (b ?1)))", false},
+    {"(not (exists (?1) (c ?1)))", true},
+    {"(not (exists (?1) (and (a ?1) (b ?1))))", true},
+    {"(not (exists (?1 ?2) (and (a ?1) (b ?2))))", false},
+    {"(not (exists (?1 ?2) (and (a ?1) (link ?2 ?1))))", true},
+    {"(not (exists (?1 ?2) (link ?1 ?2)))", false},
+    // a negated body
+    {"(exists (?1) (not (a ?1)))", true},
+    {"(not (exists (?1) (not (link x ?1))))", false},
+    // not exists inside and / or, as in action preconditions
+    {"(and (a x) (not (exists (?1) (c ?1))))", true},
+    {"(and (a x) (not (exists (?1) (b ?1))))", false},
+    {"(or (c x) (not (exists (?1) (c ?1))))", true},
+    // double negation
+    {"(not (not (exists (?1) (a ?1))))", true},
+    {"(not (not (exists (?1) (c ?1))))", false},
+  };
+  for (const auto & [expression, expected] : cases) {
+    auto [success, value] = truth(expression, s);
+    EXPECT_TRUE(success) << expression;
+    EXPECT_EQ(value, expected) << expression;
+  }
+
+  // With no objects at all, nothing exists
+  EXPECT_EQ(truth("(exists (?1) (a ?1))", {}).second, false);
+  EXPECT_EQ(truth("(not (exists (?1) (a ?1)))", {}).second, true);
+}
+
+// #394: (= (f) (g)) was never true
+TEST(utils, evaluate_numeric_equality)
+{
+  std::vector<plansys2::Function> functions = {
+    parser::pddl::fromStringFunction("(= (photos) 3)"),
+    parser::pddl::fromStringFunction("(= (markers) 3)"),
+    parser::pddl::fromStringFunction("(= (seen) 2)"),
+    parser::pddl::fromStringFunction("(= (dist x y) 1.5)"),
+    parser::pddl::fromStringFunction("(= (tenth) 0.1)"),
+    parser::pddl::fromStringFunction("(= (big) 1000000000000)"),
+  };
+  const std::vector<std::pair<std::string, bool>> cases = {
+    {"(= (photos) (markers))", true},
+    {"(= (photos) (seen))", false},
+    {"(= (photos) 3)", true},
+    {"(= 3 (photos))", true},
+    {"(= (photos) 4)", false},
+    {"(= (photos) (+ (seen) 1))", true},
+    {"(= (* (dist x y) 2) (markers))", true},
+    {"(= (dist x y) 1.5)", true},
+    {"(= 2 2)", true},
+    {"(= 2 3)", false},
+    // rounding: 0.1 + 0.1 + 0.1 is not exactly 0.3
+    {"(= (+ (+ (tenth) (tenth)) (tenth)) 0.3)", true},
+    {"(= (big) 1000000000000.0001)", true},
+    {"(= (big) 1000000010000)", false},
+    // negated
+    {"(not (= (photos) (markers)))", false},
+    {"(not (= (photos) (seen)))", true},
+    {"(and (= (photos) (markers)) (not (= (seen) (markers))))", true},
+  };
+  for (const auto & [expression, expected] : cases) {
+    auto [success, value] = truth(expression, {}, functions);
+    EXPECT_TRUE(success) << expression;
+    EXPECT_EQ(value, expected) << expression;
+  }
+
+  // A function without a value cannot be compared
+  EXPECT_FALSE(truth("(= (photos) (missing))", {}, functions).first);
+}
+
+// Comparisons under not: only the comparison is negated, not the numbers
+TEST(utils, evaluate_not_comparisons)
+{
+  std::vector<plansys2::Function> functions = {
+    parser::pddl::fromStringFunction("(= (battery) 30)"),
+  };
+  const std::vector<std::pair<std::string, bool>> cases = {
+    {"(not (> (battery) 20))", false},
+    {"(not (< (battery) 20))", true},
+    {"(not (>= (battery) 30))", false},
+    {"(not (<= (battery) 29))", true},
+    {"(not (> (- (battery) 15) 10))", false},
+    {"(not (and (> (battery) 20) (< (battery) 40)))", false},
+    {"(not (or (> (battery) 40) (< (battery) 20)))", true},
+  };
+  for (const auto & [expression, expected] : cases) {
+    auto [success, value] = truth(expression, {}, functions);
+    EXPECT_TRUE(success) << expression;
+    EXPECT_EQ(value, expected) << expression;
+  }
 }
 
 int main(int argc, char ** argv)
