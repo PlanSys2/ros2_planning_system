@@ -209,6 +209,12 @@ public:
     Terminal::process_set_goal(command, os);
   }
 
+  void process_set_metric(std::vector<std::string> & command, std::ostringstream & os)
+  {
+    method_executed_["process_set_metric"] = true;
+    Terminal::process_set_metric(command, os);
+  }
+
   void process_set(std::vector<std::string> & command, std::ostringstream & os)
   {
     method_executed_["process_set"] = true;
@@ -478,6 +484,58 @@ TEST_F(TerminalTestCase, load_popf_plugin)
       ASSERT_EQ(ins_1.value().name, "leia");
       ASSERT_EQ(ins_1.value().type, "robot");
 
+      terminal_node->reset_executions();
+    }
+
+    // Metric: set, get and remove
+    {
+      std::ostringstream os;
+      std::string command("get problem metric");
+      terminal_node->process_command(command, os);
+      ASSERT_EQ(os.str(), "Metric: none\n");
+      terminal_node->reset_executions();
+    }
+
+    {
+      std::ostringstream os;
+      std::string command("set metric minimize (* 2 (total-time))");
+      terminal_node->process_command(command, os);
+      ASSERT_TRUE(terminal_node->method_executed_["process_set_metric"]);
+      ASSERT_TRUE(os.str().empty()) << os.str();
+
+      auto metric = problem_client->getMetric();
+      ASSERT_EQ(metric.optimization, plansys2_msgs::msg::Metric::MINIMIZE);
+      ASSERT_FALSE(metric.tree.nodes.empty());
+      terminal_node->reset_executions();
+    }
+
+    {
+      std::ostringstream os;
+      std::string command("get problem metric");
+      terminal_node->process_command(command, os);
+      ASSERT_EQ(os.str(), "Metric: minimize (*  2.000000 (total-time))\n");
+      terminal_node->reset_executions();
+    }
+
+    {
+      // Not a metric, or a function the domain does not have: the metric stays
+      for (std::string command : {"set metric optimize (total-time)", "set metric minimize",
+          "set metric minimize (battery leia)"})
+      {
+        std::ostringstream os;
+        terminal_node->process_command(command, os);
+        ASSERT_FALSE(os.str().empty()) << command;
+        ASSERT_FALSE(problem_client->getMetric().tree.nodes.empty()) << command;
+      }
+      terminal_node->reset_executions();
+    }
+
+    {
+      std::ostringstream os;
+      std::string command("remove metric");
+      terminal_node->process_command(command, os);
+      ASSERT_TRUE(os.str().empty());
+      ASSERT_TRUE(problem_client->getMetric().tree.nodes.empty());
       terminal_node->reset_executions();
     }
 

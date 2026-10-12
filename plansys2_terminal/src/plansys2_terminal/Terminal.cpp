@@ -89,11 +89,14 @@ char * completion_generator(const char * text, int state)
   std::vector<std::string> vocabulary{"get", "set", "remove", "run",
     "check", "source", "help", "?", "quit"};
   std::vector<std::string> vocabulary_check{"actors"};
-  std::vector<std::string> vocabulary_set{"instance", "predicate", "function", "goal"};
+  std::vector<std::string> vocabulary_set{
+    "instance", "predicate", "function", "goal", "metric"};
   std::vector<std::string> vocabulary_get{"model", "problem", "domain", "plan"};
-  std::vector<std::string> vocabulary_remove{"instance", "predicate", "function", "goal"};
+  std::vector<std::string> vocabulary_remove{
+    "instance", "predicate", "function", "goal", "metric"};
   std::vector<std::string> vocabulary_run{"action", "num_actions", "plan-file"};
-  std::vector<std::string> vocabulary_get_problem{"instances", "predicates", "functions", "goal"};
+  std::vector<std::string> vocabulary_get_problem{
+    "instances", "predicates", "functions", "goal", "metric"};
   std::vector<std::string> vocabulary_get_model{"types", "predicates", "functions", "actions",
     "predicate", "function", "action", "derived", "deriveds"};
   // The help is initialized with all possible commands in the vocabulary
@@ -525,9 +528,12 @@ Terminal::process_get_problem(std::vector<std::string> & command, std::ostringst
     } else if (command[0] == "goal") {
       auto goal = problem_client_->getGoal();
       os << "Goal: " << parser::pddl::toString(goal) << std::endl;
+    } else if (command[0] == "metric") {
+      auto metric = parser::pddl::toString(problem_client_->getMetric());
+      os << "Metric: " << (metric.empty() ? "none" : metric) << std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\tget problem [instances|predicates|functions|goal]..." <<
+    os << "\tUsage: \n\t\tget problem [instances|predicates|functions|goal|metric]..." <<
       std::endl;
   }
 }
@@ -676,6 +682,22 @@ Terminal::process_set_goal(std::vector<std::string> & command, std::ostringstrea
 }
 
 void
+Terminal::process_set_metric(std::vector<std::string> & command, std::ostringstream & os)
+{
+  std::string total_expr;
+  for (const auto & token : command) {
+    total_expr += " " + token;
+  }
+
+  plansys2::Metric metric(total_expr);
+  if (metric.tree.nodes.empty()) {
+    os << "\tUsage: \n\t\tset metric minimize|maximize <expression>" << std::endl;
+  } else if (!problem_client_->setMetric(metric)) {
+    os << "Could not set the metric [" << parser::pddl::toString(metric) << "]" << std::endl;
+  }
+}
+
+void
 Terminal::process_set(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
@@ -691,12 +713,15 @@ Terminal::process_set(std::vector<std::string> & command, std::ostringstream & o
     } else if (command[0] == "goal") {
       pop_front(command);
       process_set_goal(command, os);
+    } else if (command[0] == "metric") {
+      pop_front(command);
+      process_set_metric(command, os);
     } else {
-      os << "\tUsage: \n\t\tset [instance|predicate|function|goal]..." <<
+      os << "\tUsage: \n\t\tset [instance|predicate|function|goal|metric]..." <<
         std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\tset [instance|predicate|function|goal]..." <<
+    os << "\tUsage: \n\t\tset [instance|predicate|function|goal|metric]..." <<
       std::endl;
   }
 }
@@ -802,12 +827,14 @@ Terminal::process_remove(std::vector<std::string> & command, std::ostringstream 
       process_remove_function(command, os);
     } else if (command[0] == "goal") {
       problem_client_->clearGoal();
+    } else if (command[0] == "metric") {
+      problem_client_->clearMetric();
     } else {
-      os << "\tUsage: \n\t\tremove [instance|predicate|function|goal]..." <<
+      os << "\tUsage: \n\t\tremove [instance|predicate|function|goal|metric]..." <<
         std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\tremove [instance|predicate|function|goal]..." <<
+    os << "\tUsage: \n\t\tremove [instance|predicate|function|goal|metric]..." <<
       std::endl;
   }
 }
@@ -1045,19 +1072,21 @@ Terminal::process_help(std::vector<std::string> & command, std::ostringstream & 
   cmd_set << "\t set instance <object> <type>" << std::endl <<
     "\t set predicate <predicate>" << std::endl <<
     "\t set function (= <function> <value>)" << std::endl <<
-    "\t set goal <goal_formula>" << std::endl;
+    "\t set goal <goal_formula>" << std::endl <<
+    "\t set metric minimize|maximize <expression>" << std::endl;
   std::ostringstream cmd_get;
   cmd_get << "\t get model   types | predicates | functions | actions |" << std::endl <<
     "\t             predicate <predicate_name> | function <function_name> |" << std::endl <<
     "\t             action <action_name> " << std::endl <<
-    "\t get problem  instances | predicates | functions | goal " << std::endl <<
+    "\t get problem  instances | predicates | functions | goal | metric" << std::endl <<
     "\t get domain" << std::endl <<
     "\t get plan" << std::endl;
   std::ostringstream cmd_rem;
   cmd_rem << "\t remove instance <object>" << std::endl <<
     "\t remove predicate <predicate>" << std::endl <<
     "\t remove function <function>" << std::endl <<
-    "\t remove goal" << std::endl;
+    "\t remove goal" << std::endl <<
+    "\t remove metric" << std::endl;
 
   std::ostringstream cmd_run;
   cmd_run << "\t run action <action>" << std::endl <<

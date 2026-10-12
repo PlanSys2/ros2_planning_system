@@ -18,14 +18,17 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
+from plansys2_msgs.msg import Metric
 from plansys2_msgs.msg import Node as PlanSys2Node
 from plansys2_msgs.msg import Param, Tree
 from plansys2_msgs.srv import (AddProblem, AddProblemGoal, AffectNode,
                                AffectParam, ClearProblemKnowledge, ExistNode,
                                GetNodeDetails, GetProblem, GetProblemGoal,
                                GetProblemInstanceDetails, GetProblemInstances,
-                               GetStates, IsProblemGoalSatisfied,
-                               RemoveProblemGoal)
+                               GetProblemMetric, GetStates,
+                               IsProblemGoalSatisfied, RemoveProblemGoal,
+                               RemoveProblemMetric, SetProblemMetric)
+from plansys2_support_py.Parser import Parser
 from plansys2_support_py.ProblemExpertClient import ProblemExpertClient
 
 import rclpy
@@ -147,6 +150,11 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_goal_response.success = True
         mock_goal_response.tree = mock_tree
 
+        # Mock metric response
+        mock_metric_response = GetProblemMetric.Response()
+        mock_metric_response.success = True
+        mock_metric_response.metric = Parser.metric_from_string('minimize (total-time)')
+
         # Mock instances response
         mock_node1 = PlanSys2Node()
         mock_node1.name = 'robot1'
@@ -195,6 +203,7 @@ class TestProblemExpertClient(unittest.TestCase):
         responses = [
             mock_problem_response,
             mock_goal_response,
+            mock_metric_response,
             mock_instances_response,
             mock_instance_details_response,
             mock_predicates_response,
@@ -220,6 +229,8 @@ class TestProblemExpertClient(unittest.TestCase):
 
                 # Verify print was called (information was printed)
                 self.assertTrue(mock_print.called)
+                printed = ' '.join(str(c.args[0]) for c in mock_print.call_args_list)
+                self.assertIn('Problem Metric: minimize (total-time)', printed)
 
     @patch.object(Client, 'wait_for_service')
     @patch.object(Client, 'call_async')
@@ -804,6 +815,112 @@ class TestProblemExpertClient(unittest.TestCase):
             result = self.client.is_problem_goal_satisfied(goal)
 
         self.assertTrue(result)
+
+    def _respond(self, mock_call_async, mock_wait_for_service, response):
+        """Make the next service call answer with response."""
+        mock_wait_for_service.return_value = True
+        mock_future = MagicMock()
+        mock_future.done.return_value = True
+        mock_future.result.return_value = response
+        mock_call_async.return_value = mock_future
+
+    @patch.object(Client, 'wait_for_service')
+    @patch.object(Client, 'call_async')
+    def test_set_problem_metric_from_string(self, mock_call_async, mock_wait_for_service):
+        """Test that a string metric is parsed and sent."""
+        response = SetProblemMetric.Response()
+        response.success = True
+        self._respond(mock_call_async, mock_wait_for_service, response)
+
+        with patch('rclpy.spin_until_future_complete'):
+            result = self.client.set_problem_metric('maximize (+ (fuel r1) (total-time))')
+
+        self.assertTrue(result)
+        request = mock_call_async.call_args.args[0]
+        self.assertIsInstance(request, SetProblemMetric.Request)
+        self.assertEqual(request.metric.optimization, Metric.MAXIMIZE)
+        self.assertEqual(request.metric.tree.nodes[0].node_type, PlanSys2Node.EXPRESSION)
+
+    @patch.object(Client, 'wait_for_service')
+    @patch.object(Client, 'call_async')
+    def test_set_problem_metric_from_message(self, mock_call_async, mock_wait_for_service):
+        """Test that a Metric message is sent as it is."""
+        response = SetProblemMetric.Response()
+        response.success = True
+        self._respond(mock_call_async, mock_wait_for_service, response)
+
+        metric = Parser.metric_from_string('minimize (total-time)')
+        with patch('rclpy.spin_until_future_complete'):
+            self.assertTrue(self.client.set_problem_metric(metric))
+        self.assertEqual(mock_call_async.call_args.args[0].metric, metric)
+
+    @patch.object(Client, 'wait_for_service')
+    @patch.object(Client, 'call_async')
+    def test_set_problem_metric_invalid_string(self, mock_call_async, mock_wait_for_service):
+        """Test that an invalid metric string never reaches the service."""
+        for metric in ['', 'optimize (total-time)', 'minimize (> (a) 1)', 'minimize (+ (a)']:
+            with self.subTest(metric=metric):
+                self.assertFalse(self.client.set_problem_metric(metric))
+        mock_call_async.assert_not_called()
+
+    @patch.object(Client, 'wait_for_service')
+    @patch.object(Client, 'call_async')
+    def test_set_problem_metric_rejected(self, mock_call_async, mock_wait_for_service):
+        """Test a metric the problem expert rejects."""
+        response = SetProblemMetric.Response()
+        response.success = False
+        response.error_info = 'Metric not valid'
+        self._respond(mock_call_async, mock_wait_for_service, response)
+
+        with patch('rclpy.spin_until_future_complete'):
+            self.assertFalse(self.client.set_problem_metric('minimize (battery r9)'))
+
+    @patch.object(Client, 'wait_for_service')
+    @patch.object(Client, 'call_async')
+    def test_get_problem_metric(self, mock_call_async, mock_wait_for_service):
+        """Test getting the metric, set or not."""
+        response = GetProblemMetric.Response()
+        response.success = True
+        response.metric = Parser.metric_from_string('minimize (total-time)')
+        self._respond(mock_call_async, mock_wait_for_service, response)
+
+        with patch('rclpy.spin_until_future_complete'):
+            metric = self.client.get_problem_metric()
+        self.assertEqual(Parser.metric_to_string(metric), 'minimize (total-time)')
+
+        response.metric = Metric()
+        with patch('rclpy.spin_until_future_complete'):
+            metric = self.client.get_problem_metric()
+        self.assertIsNotNone(metric)
+        self.assertEqual(Parser.metric_to_string(metric), '')
+
+        response.success = False
+        with patch('rclpy.spin_until_future_complete'):
+            self.assertIsNone(self.client.get_problem_metric())
+
+    @patch.object(Client, 'wait_for_service')
+    @patch.object(Client, 'call_async')
+    def test_remove_problem_metric(self, mock_call_async, mock_wait_for_service):
+        """Test removing the metric."""
+        response = RemoveProblemMetric.Response()
+        response.success = True
+        self._respond(mock_call_async, mock_wait_for_service, response)
+
+        with patch('rclpy.spin_until_future_complete'):
+            self.assertTrue(self.client.remove_problem_metric())
+        self.assertIsInstance(mock_call_async.call_args.args[0], RemoveProblemMetric.Request)
+
+        response.success = False
+        with patch('rclpy.spin_until_future_complete'):
+            self.assertFalse(self.client.remove_problem_metric())
+
+    @patch.object(Client, 'wait_for_service')
+    def test_metric_service_not_available(self, mock_wait_for_service):
+        """Test the metric methods when the problem expert is not there."""
+        mock_wait_for_service.return_value = False
+        self.assertFalse(self.client.set_problem_metric('minimize (total-time)'))
+        self.assertIsNone(self.client.get_problem_metric())
+        self.assertFalse(self.client.remove_problem_metric())
 
 
 if __name__ == '__main__':

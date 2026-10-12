@@ -19,8 +19,9 @@ PlanSys2 Problem Expert Client.
 This module provides specific classes for interacting with PlanSys2 Problem Expert services.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
+from plansys2_msgs.msg import Metric
 from plansys2_msgs.msg import Node as PlanSys2Node  # Avoid name conflict
 from plansys2_msgs.msg import Param, Tree
 # Problem Expert services
@@ -28,8 +29,10 @@ from plansys2_msgs.srv import (AddProblem, AddProblemGoal, AffectNode,
                                AffectParam, ClearProblemKnowledge, ExistNode,
                                GetNodeDetails, GetProblem, GetProblemGoal,
                                GetProblemInstanceDetails, GetProblemInstances,
-                               GetStates, IsProblemGoalSatisfied,
-                               RemoveProblemGoal)
+                               GetProblemMetric, GetStates,
+                               IsProblemGoalSatisfied, RemoveProblemGoal,
+                               RemoveProblemMetric, SetProblemMetric)
+from plansys2_support_py.Parser import Parser
 
 import rclpy
 from rclpy.client import Client
@@ -449,6 +452,82 @@ class ProblemExpertClient(Node):
             self.get_logger().error(f'Failed to remove the current problem goal: {error_msg}')
             return False
 
+    def set_problem_metric(self, metric: Union[Metric, str]) -> bool:
+        """
+        Set the metric of the problem: what the planner optimizes.
+
+        Parameters
+        ----------
+        metric : Union[Metric, str]
+            The metric, or a string such as 'minimize (+ (fuel-used) (total-time))'.
+
+        Returns
+        -------
+        bool: True if the metric was valid and set, False otherwise.
+
+        """
+        if isinstance(metric, str):
+            text = metric
+            metric = Parser.metric_from_string(metric)
+            if not metric.tree.nodes:
+                self.get_logger().error(f'Not a valid metric: {text}')
+                return False
+
+        service_name = f'{self._namespace_prefix}/problem_expert/set_problem_metric'
+        request = SetProblemMetric.Request()
+        request.metric = metric
+
+        response = self._create_and_call_service(SetProblemMetric, service_name, request)
+        if response and response.success:
+            self.get_logger().debug(
+                f'Successfully set the problem metric: {Parser.metric_to_string(metric)}')
+            return True
+        else:
+            error_msg = response.error_info if response else 'Service call failed'
+            self.get_logger().error(f'Failed to set the problem metric: {error_msg}')
+            return False
+
+    def get_problem_metric(self) -> Optional[Metric]:
+        """
+        Get the metric of the problem.
+
+        Returns
+        -------
+        Optional[Metric]: The metric, with an empty tree if there is none; None if failed.
+
+        """
+        service_name = f'{self._namespace_prefix}/problem_expert/get_problem_metric'
+        request = GetProblemMetric.Request()
+
+        response = self._create_and_call_service(GetProblemMetric, service_name, request)
+        if response and response.success:
+            return response.metric
+        else:
+            error_msg = response.error_info if response else 'Service call failed'
+            self.get_logger().error(f'Failed to get the problem metric: {error_msg}')
+            return None
+
+    def remove_problem_metric(self) -> bool:
+        """
+        Remove the metric of the problem.
+
+        Returns
+        -------
+        bool: True if successful, False otherwise.
+
+        """
+        service_name = f'{self._namespace_prefix}/problem_expert/remove_problem_metric'
+        request = RemoveProblemMetric.Request()
+
+        response = self._create_and_call_service(RemoveProblemMetric, service_name, request)
+        if response and response.success:
+            self.get_logger().debug('Successfully removed the problem metric')
+            return True
+        else:
+            error_msg = response.error_info if response else 'Service call failed'
+            self.get_logger().error(f'Failed to remove the problem metric: {error_msg}')
+            return False
+
     def clear_problem_knowledge(self) -> bool:
         """
         Clear the instances, predicates, and functions.
@@ -669,6 +748,11 @@ class ProblemExpertClient(Node):
         # Get problem goal
         goal = self.get_problem_goal()
         print(f'Problem Goal: {goal}')
+
+        # Get problem metric
+        metric = self.get_problem_metric()
+        if metric is not None:
+            print(f'Problem Metric: {Parser.metric_to_string(metric) or "none"}')
 
         # Get instances
         instances = self.get_problem_instances()

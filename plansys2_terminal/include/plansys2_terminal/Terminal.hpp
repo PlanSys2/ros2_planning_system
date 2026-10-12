@@ -73,6 +73,7 @@ protected:
   virtual void process_set_predicate(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_set_function(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_set_goal(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_set_metric(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_set(std::vector<std::string> & command, std::ostringstream & os);
 
   virtual void process_remove_instance(std::vector<std::string> & command, std::ostringstream & os);
