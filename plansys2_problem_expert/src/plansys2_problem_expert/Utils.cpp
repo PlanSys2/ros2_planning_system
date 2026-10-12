@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
+#include <cmath>
 #include <tuple>
 #include <memory>
 #include <string>
@@ -44,24 +46,13 @@ std::tuple<bool, bool, double> evaluate_node(
   }
 
   switch (tree.nodes[node_id].node_type) {
-    case plansys2_msgs::msg::Node::AND: {
-        bool success = true;
-        bool truth_value = true;
-
-        for (auto & child_id : tree.nodes[node_id].children) {
-          std::tuple<bool, bool, double> result =
-            evaluate_node(
-            tree, problem_client, predicates, functions, apply, use_state, child_id,
-            negate);
-          success = success && std::get<0>(result);
-          truth_value = truth_value && std::get<1>(result);
-        }
-        return std::make_tuple(success, truth_value, 0);
-      }
-
+    case plansys2_msgs::msg::Node::AND:
     case plansys2_msgs::msg::Node::OR: {
+        // Children come back already negated: by De Morgan, (not (and a b)) is true if any
+        // negated child is, and (not (or a b)) if all of them are
+        const bool all = (tree.nodes[node_id].node_type == plansys2_msgs::msg::Node::AND) != negate;
         bool success = true;
-        bool truth_value = false;
+        bool truth_value = all;
 
         for (auto & child_id : tree.nodes[node_id].children) {
           std::tuple<bool, bool, double> result =
@@ -69,7 +60,8 @@ std::tuple<bool, bool, double> evaluate_node(
             tree, problem_client, predicates, functions, apply, use_state, child_id,
             negate);
           success = success && std::get<0>(result);
-          truth_value = truth_value || std::get<1>(result);
+          truth_value = all ? (truth_value && std::get<1>(result)) :
+            (truth_value || std::get<1>(result));
         }
         return std::make_tuple(success, truth_value, 0);
       }
@@ -163,12 +155,13 @@ std::tuple<bool, bool, double> evaluate_node(
       }
 
     case plansys2_msgs::msg::Node::EXPRESSION: {
+        // Numbers are not negated: only the comparison is
         std::tuple<bool, bool, double> left = evaluate_node(
           tree, problem_client, predicates,
-          functions, apply, use_state, tree.nodes[node_id].children[0], negate);
+          functions, apply, use_state, tree.nodes[node_id].children[0], false);
         std::tuple<bool, bool, double> right = evaluate_node(
           tree, problem_client, predicates,
-          functions, apply, use_state, tree.nodes[node_id].children[1], negate);
+          functions, apply, use_state, tree.nodes[node_id].children[1], false);
 
         if (!std::get<0>(left) || !std::get<0>(right)) {
           return std::make_tuple(false, false, 0);
@@ -206,7 +199,6 @@ std::tuple<bool, bool, double> evaluate_node(
           case plansys2_msgs::msg::Node::COMP_EQ: {
               auto c_t = plansys2_msgs::msg::Node::CONSTANT;
               auto p_t = plansys2_msgs::msg::Node::PARAMETER;
-              auto n_t = plansys2_msgs::msg::Node::NUMBER;
               auto c0 = tree.nodes[tree.nodes[node_id].children[0]];
               auto c1 = tree.nodes[tree.nodes[node_id].children[1]];
               auto c0_type = c0.node_type;
@@ -219,10 +211,15 @@ std::tuple<bool, bool, double> evaluate_node(
                   negate ^ (c1_name == c0_name),
                   0);
               }
-              if (c0_type == n_t && c1_type == n_t) {
-                return std::make_tuple(true, negate ^ (std::get<2>(left) == std::get<2>(right)), 0);
+              if (c0_type == c_t || c0_type == p_t || c1_type == c_t || c1_type == p_t) {
+                break;  // an object is not equal to a number
               }
-              break;
+              // Numbers, functions and arithmetic: equal up to rounding
+              const double l = std::get<2>(left);
+              const double r = std::get<2>(right);
+              const bool equal =
+                std::abs(l - r) <= 1e-9 * std::max({1.0, std::abs(l), std::abs(r)});
+              return std::make_tuple(true, negate ^ equal, 0);
             }
           case plansys2_msgs::msg::Node::ARITH_MULT:
             return std::make_tuple(true, false, std::get<2>(left) * std::get<2>(right));
@@ -255,11 +252,11 @@ std::tuple<bool, bool, double> evaluate_node(
         }
         std::tuple<bool, bool, double> left = evaluate_node(
           tree, problem_client, predicates,
-          functions, apply, use_state, tree.nodes[node_id].children[0], negate);
+          functions, apply, use_state, tree.nodes[node_id].children[0], false);
         std::tuple<bool, bool, double> right = evaluate_node(
           tree, problem_client,
           predicates, functions, apply, use_state, tree.nodes[node_id].children[1],
-          negate);
+          false);
 
         if (!std::get<0>(left) || !std::get<0>(right)) {
           return std::make_tuple(false, false, 0);
@@ -382,11 +379,15 @@ std::tuple<bool, bool, double> evaluate_node(
             use_state,
             tree_replaced.nodes[node_id].children[0],
             negate);
-          if (std::get<1>(result)) {
+          // The body comes back negated under not: (not (exists ...)) needs it true for all
+          if (!negate && std::get<1>(result)) {
+            return result;
+          }
+          if (negate && !std::get<1>(result)) {
             return result;
           }
         }
-        return std::make_tuple(true, false, 0);
+        return std::make_tuple(true, negate, 0);
       }
 
     default:
