@@ -22,6 +22,7 @@
 #include "ament_index_cpp/get_package_share_path.hpp"
 #include "gtest/gtest.h"
 #include "plansys2_pddl_parser/Instance.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 using namespace std::chrono_literals;
@@ -782,4 +783,159 @@ TEST(PDDLParserTestCase, get_subtree)
   ASSERT_EQ(subtree[5].nodes.size(), 11);
   ASSERT_EQ(subtree[5].nodes[0].node_id, 0);
   ASSERT_EQ(subtree[5].nodes[0].node_type, plansys2_msgs::msg::Node::OR);
+}
+
+TEST(PDDLParserTestCase, metric_from_string)
+{
+  using plansys2_msgs::msg::Metric;
+  using parser::pddl::metricFromString;
+  using parser::pddl::toString;
+
+  auto m = metricFromString("minimize (total-time)");
+  ASSERT_EQ(m.optimization, Metric::MINIMIZE);
+  ASSERT_EQ(m.tree.nodes.size(), 1u);
+  ASSERT_EQ(m.tree.nodes[0].node_type, plansys2_msgs::msg::Node::FUNCTION);
+  ASSERT_EQ(m.tree.nodes[0].name, "total-time");
+  ASSERT_EQ(toString(m), "minimize (total-time)");
+
+  // A function at the root is a function, not a predicate
+  m = metricFromString("maximize (cost)");
+  ASSERT_EQ(m.optimization, Metric::MAXIMIZE);
+  ASSERT_EQ(m.tree.nodes[0].node_type, plansys2_msgs::msg::Node::FUNCTION);
+  ASSERT_EQ(toString(m), "maximize (cost)");
+
+  // Nested arithmetic, functions with arguments, numbers
+  m = metricFromString("minimize (+ (spent) (* 100 (/ (fuel r1) (- (total-time) 2))))");
+  ASSERT_FALSE(m.tree.nodes.empty());
+  ASSERT_EQ(
+    toString(m),
+    "minimize (+  (spent) (*  100.000000 (/  (fuel r1) (-  (total-time) 2.000000))))");
+
+  // As written in a problem, with blanks around
+  ASSERT_EQ(
+    toString(metricFromString("  (:metric minimize (total-time))\n")),
+    "minimize (total-time)");
+  ASSERT_EQ(
+    toString(metricFromString("( :metric\n\tmaximize\n\t(+ (a) (b)) )")),
+    "maximize (+  (a) (b))");
+
+  // A bare number
+  ASSERT_EQ(toString(metricFromString("minimize 3")), "minimize 3.000000");
+
+  // Round trip
+  m = metricFromString("maximize (- (score) (* 2 (total-time)))");
+  auto m2 = metricFromString(toString(m));
+  ASSERT_EQ(toString(m2), toString(m));
+  ASSERT_EQ(m2.optimization, m.optimization);
+
+  // Not metrics: empty tree, and nothing to print
+  const std::vector<std::string> invalid = {
+    "", "   ", "minimize", "maximize   ", "(total-time)", "optimize (total-time)",
+    "Minimize (total-time)", "minimize (> (cost) 3)", "minimize (and (cost))",
+    "minimize (or (a) (b))", "minimize (not (cost))", "minimize (+ (cost) (> (a) 1))",
+    "minimize (+ (cost) (total-time)", "minimize (+ (cost) (total-time)))",
+    "minimize (exists (?r - robot) (cost))", "minimize (increase (cost) 1)",
+    "(:metric minimize (total-time)", "(:metric)",
+  };
+  for (const auto & s : invalid) {
+    m = metricFromString(s);
+    EXPECT_TRUE(m.tree.nodes.empty()) << "[" << s << "]";
+    EXPECT_EQ(toString(m), "") << "[" << s << "]";
+  }
+}
+
+namespace
+{
+const char kMetricDomain[] =
+  "(define (domain metrics) (:requirements :strips :typing :fluents)"
+  "(:types robot)"
+  "(:predicates (done ?r - robot))"
+  "(:functions (fuel ?r - robot) (spent))"
+  "(:action work :parameters (?r - robot) :precondition (and (>= (fuel ?r) 1))"
+  " :effect (and (done ?r) (decrease (fuel ?r) 1) (increase (spent) 3))))";
+
+std::string metric_problem(const std::string & metric)
+{
+  return "(define (problem p) (:domain metrics) (:objects r1 r2 - robot)"
+         "(:init (= (fuel r1) 5) (= (fuel r2) 2) (= (spent) 0))"
+         "(:goal (and (done r1) (done r2)))" + metric + ")";
+}
+
+std::string print_instance(const parser::pddl::Instance & instance)
+{
+  std::ostringstream os;
+  os << instance;
+  return os.str();
+}
+}  // namespace
+
+TEST(PDDLParserTestCase, instance_metric_parse_and_print)
+{
+  // A classical domain with fluents: a metric was rejected before
+  {
+    parser::pddl::Domain domain(kMetricDomain);
+    parser::pddl::Instance instance(domain, metric_problem("(:metric minimize (spent))"));
+    ASSERT_TRUE(instance.metric);
+    ASSERT_FALSE(instance.maximize);
+    ASSERT_NE(print_instance(instance).find("( :metric minimize ( spent ) )"), std::string::npos);
+  }
+  {
+    parser::pddl::Domain domain(kMetricDomain);
+    parser::pddl::Instance instance(
+      domain, metric_problem("(:metric maximize (- (fuel r1) (* 2 (+ (spent) (total-time)))))"));
+    ASSERT_TRUE(instance.metric);
+    ASSERT_TRUE(instance.maximize);
+    const std::string printed = print_instance(instance);
+    const std::string expected =
+      "( :metric maximize ( - ( fuel r1 ) ( * 2.0000000000 ( + ( spent ) ( total-time ) ) ) ) )";
+    ASSERT_NE(printed.find(expected), std::string::npos) << printed;
+
+    // What is printed parses again to the same metric
+    parser::pddl::Domain domain2(kMetricDomain);
+    parser::pddl::Instance instance2(domain2, printed);
+    ASSERT_NE(print_instance(instance2).find(expected), std::string::npos);
+  }
+  // No metric: nothing printed
+  {
+    parser::pddl::Domain domain(kMetricDomain);
+    parser::pddl::Instance instance(domain, metric_problem(""));
+    ASSERT_FALSE(instance.metric);
+    ASSERT_EQ(print_instance(instance).find(":metric"), std::string::npos);
+  }
+  // Malformed metrics throw (and are caught by who reads the problem)
+  const std::vector<std::string> bad = {
+    "(:metric optimize (spent))",           // unknown optimization
+    "(:metric minimize (battery r1))",      // unknown function
+    "(:metric minimize (fuel r9))",         // unknown object
+    "(:metric minimize (spent) (spent))",   // two expressions
+    "(:metric minimize)",                   // no expression
+    "(:metric (spent))",                    // no optimization
+  };
+  for (const auto & m : bad) {
+    parser::pddl::Domain domain(kMetricDomain);
+    EXPECT_ANY_THROW(parser::pddl::Instance instance(domain, metric_problem(m))) << m;
+  }
+}
+
+TEST(PDDLParserTestCase, instance_add_metric)
+{
+  parser::pddl::Domain domain(kMetricDomain);
+  parser::pddl::Instance instance(domain);
+  instance.addObject("r1", "robot");
+
+  instance.addMetric("minimize", "(+ (spent) (fuel r1))");
+  ASSERT_TRUE(instance.metric);
+  ASSERT_NE(
+    print_instance(instance).find("( :metric minimize ( + ( spent ) ( fuel r1 ) ) )"),
+    std::string::npos);
+
+  // A second metric replaces the first one
+  instance.addMetric("maximize", "(total-time)");
+  ASSERT_TRUE(instance.maximize);
+  const std::string printed = print_instance(instance);
+  ASSERT_NE(printed.find("( :metric maximize ( total-time ) )"), std::string::npos);
+  ASSERT_EQ(printed.find("minimize"), std::string::npos);
+
+  EXPECT_ANY_THROW(instance.addMetric("optimize", "(spent)"));
+  EXPECT_ANY_THROW(instance.addMetric("minimize", "(fuel r2)"));
 }

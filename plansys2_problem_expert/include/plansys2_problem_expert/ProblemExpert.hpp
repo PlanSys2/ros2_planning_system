@@ -193,7 +193,30 @@ public:
   bool clearGoal();
 
   /**
-   * @brief Clear all knowledge (instances, predicates, functions, and goal) from the problem.
+   * @brief Get the metric of the problem: what the planner optimizes.
+   *
+   * @return plansys2::Metric The metric, with an empty tree if there is none.
+   */
+  plansys2::Metric getMetric();
+
+  /**
+   * @brief Set the metric of the problem.
+   *
+   * @param[in] metric The metric: minimize or maximize a numeric expression over the
+   *            functions of the domain and (total-time).
+   * @return true if the metric was valid and set, false otherwise.
+   */
+  bool setMetric(const plansys2::Metric & metric);
+
+  /**
+   * @brief Remove the metric of the problem.
+   *
+   * @return true if the metric was cleared.
+   */
+  bool clearMetric();
+
+  /**
+   * @brief Clear all knowledge (instances, predicates, functions, goal, metric) of the problem.
    *
    * @return true if the knowledge was successfully cleared, false otherwise.
    */
@@ -255,8 +278,17 @@ public:
   bool isValidGoal(const plansys2::Goal & goal);
 
   /**
+   * @brief Check if a metric is valid: arithmetic over numbers, (total-time) and functions
+   *        of the domain whose arguments are instances of the problem.
+   *
+   * @param[in] metric The metric to check.
+   * @return true if the metric is valid, false otherwise.
+   */
+  bool isValidMetric(const plansys2::Metric & metric);
+
+  /**
    * @brief Replace the domain this problem is checked against, given as PDDL content.
-   *        Knowledge (instances, predicates, functions, goal) that is no longer
+   *        Knowledge (instances, predicates, functions, goal, metric) that is no longer
    *        consistent with the new domain is pruned; everything that remains valid
    *        is left untouched. If the PDDL is invalid, nothing is changed.
    *
@@ -310,6 +342,7 @@ private:
   std::vector<plansys2::Predicate> predicates_;
   std::vector<plansys2::Function> functions_;
   plansys2::Goal goal_;
+  plansys2::Metric metric_;
 
   std::shared_ptr<DomainExpert> domain_expert_;
 };

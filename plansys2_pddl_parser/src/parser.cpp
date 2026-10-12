@@ -32,12 +32,18 @@ int main(int argc, char * argv[])
   std::string instance_str(
     (std::istreambuf_iterator<char>(instance_ifs)), std::istreambuf_iterator<char>());
 
-  // Read multiagent domain and instance
-  parser::pddl::Domain domain(domain_str);
+  // Read multiagent domain and instance; malformed input is an error, not an abort
+  try {
+    parser::pddl::Domain domain(domain_str);
 
-  std::cout << domain << std::endl;
+    std::cout << domain << std::endl;
 
-  parser::pddl::Instance instance(domain, instance_str);
+    parser::pddl::Instance instance(domain, instance_str);
 
-  std::cout << instance << std::endl;
+    std::cout << instance << std::endl;
+  } catch (const std::exception & ex) {
+    std::cerr << "Error: " << ex.what() << std::endl;
+    return 1;
+  }
+  return 0;
 }

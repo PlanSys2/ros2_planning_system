@@ -1635,5 +1635,81 @@ bool compare_str_case_insensitive(const std::string & a, const std::string & b)
           });
 }
 
+plansys2_msgs::msg::Metric metricFromString(const std::string & metric)
+{
+  plansys2_msgs::msg::Metric ret;
+  const char * blanks = " \t\r\n";
+
+  std::string s = metric;
+  auto trim = [&](std::string & str) {
+      str.erase(0, str.find_first_not_of(blanks));
+      str.erase(str.find_last_not_of(blanks) + 1);
+    };
+  trim(s);
+
+  // (:metric minimize <expr>) -> minimize <expr>
+  if (!s.empty() && s.front() == '(') {
+    std::string inner = s.substr(1);
+    trim(inner);
+    if (inner.rfind(":metric", 0) == 0 && s.back() == ')') {
+      s = inner.substr(7, inner.size() - 8);
+      trim(s);
+    }
+  }
+
+  const auto split = s.find_first_of(blanks);
+  if (split == std::string::npos) {
+    return ret;
+  }
+  const std::string optimization = s.substr(0, split);
+  std::string expr = s.substr(split);
+  trim(expr);
+
+  if (optimization == "minimize") {
+    ret.optimization = plansys2_msgs::msg::Metric::MINIMIZE;
+  } else if (optimization == "maximize") {
+    ret.optimization = plansys2_msgs::msg::Metric::MAXIMIZE;
+  } else {
+    return ret;
+  }
+
+  auto tree = fromString(expr, false, plansys2_msgs::msg::Node::EXPRESSION);
+  std::string error;
+  if (tree.nodes.empty() || !validateTree(tree, error)) {
+    return ret;
+  }
+  // Only numbers, functions and arithmetic: a comparison or a predicate is not a metric
+  for (const auto & node : tree.nodes) {
+    switch (node.node_type) {
+      case plansys2_msgs::msg::Node::FUNCTION:
+      case plansys2_msgs::msg::Node::NUMBER:
+        break;
+      case plansys2_msgs::msg::Node::EXPRESSION:
+        if (node.expression_type != plansys2_msgs::msg::Node::ARITH_ADD &&
+          node.expression_type != plansys2_msgs::msg::Node::ARITH_SUB &&
+          node.expression_type != plansys2_msgs::msg::Node::ARITH_MULT &&
+          node.expression_type != plansys2_msgs::msg::Node::ARITH_DIV)
+        {
+          return ret;
+        }
+        break;
+      default:
+        return ret;
+    }
+  }
+  ret.tree = tree;
+  return ret;
+}
+
+std::string toString(const plansys2_msgs::msg::Metric & metric)
+{
+  if (metric.tree.nodes.empty()) {
+    return {};
+  }
+  const std::string optimization =
+    metric.optimization == plansys2_msgs::msg::Metric::MAXIMIZE ? "maximize" : "minimize";
+  return optimization + " " + toString(metric.tree);
+}
+
 }  // namespace pddl
 }  // namespace parser

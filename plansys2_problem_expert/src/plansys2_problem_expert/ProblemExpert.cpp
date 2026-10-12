@@ -17,6 +17,7 @@
 #include <optional>
 #include <algorithm>
 #include <stdexcept>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <memory>
@@ -98,6 +99,13 @@ ProblemExpert::removeInstance(const plansys2::Instance & instance)
   removeInvalidPredicates(predicates_, instance);
   removeInvalidFunctions(functions_, instance);
   removeInvalidGoals(instance);
+
+  // A metric is dropped in full: removing a term of it would change what is optimized
+  if (!metric_.tree.nodes.empty() && !isValidMetric(metric_)) {
+    std::cerr << "Metric removed: it refers to the removed instance " << instance.name <<
+      std::endl;
+    clearMetric();
+  }
 
   return found;
 }
@@ -450,6 +458,30 @@ ProblemExpert::clearGoal()
   return true;
 }
 
+plansys2::Metric
+ProblemExpert::getMetric()
+{
+  return metric_;
+}
+
+bool
+ProblemExpert::setMetric(const plansys2::Metric & metric)
+{
+  if (isValidMetric(metric)) {
+    metric_ = metric;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool
+ProblemExpert::clearMetric()
+{
+  metric_ = plansys2::Metric();
+  return true;
+}
+
 bool
 ProblemExpert::clearKnowledge()
 {
@@ -457,6 +489,7 @@ ProblemExpert::clearKnowledge()
   predicates_.clear();
   functions_.clear();
   clearGoal();
+  clearMetric();
 
   return true;
 }
@@ -640,6 +673,54 @@ ProblemExpert::isValidGoal(const plansys2::Goal & goal)
 }
 
 bool
+ProblemExpert::isValidMetric(const plansys2::Metric & metric)
+{
+  if (metric.optimization != plansys2_msgs::msg::Metric::MINIMIZE &&
+    metric.optimization != plansys2_msgs::msg::Metric::MAXIMIZE)
+  {
+    std::cerr << "Invalid metric optimization: " << static_cast<int>(metric.optimization) <<
+      std::endl;
+    return false;
+  }
+
+  std::string error;
+  if (metric.tree.nodes.empty() || !parser::pddl::validateTree(metric.tree, error)) {
+    std::cerr << "Malformed metric: " << error << std::endl;
+    return false;
+  }
+
+  for (const auto & node : metric.tree.nodes) {
+    switch (node.node_type) {
+      case plansys2_msgs::msg::Node::NUMBER:
+        break;
+      case plansys2_msgs::msg::Node::EXPRESSION:
+        if (node.expression_type != plansys2_msgs::msg::Node::ARITH_ADD &&
+          node.expression_type != plansys2_msgs::msg::Node::ARITH_SUB &&
+          node.expression_type != plansys2_msgs::msg::Node::ARITH_MULT &&
+          node.expression_type != plansys2_msgs::msg::Node::ARITH_DIV)
+        {
+          std::cerr << "Invalid metric: comparisons are not numeric expressions" << std::endl;
+          return false;
+        }
+        break;
+      case plansys2_msgs::msg::Node::FUNCTION:
+        if (node.name == "total-time" && node.parameters.empty()) {
+          break;
+        }
+        if (!isValidFunction(node)) {
+          std::cerr << "Invalid metric function: " << parser::pddl::toString(node) << std::endl;
+          return false;
+        }
+        break;
+      default:
+        std::cerr << "Invalid metric: only numbers, functions and arithmetic" << std::endl;
+        return false;
+    }
+  }
+  return true;
+}
+
+bool
 ProblemExpert::updateDomain(const std::string & domain)
 {
   if (!domain_expert_->changeDomain(domain)) {
@@ -689,6 +770,11 @@ ProblemExpert::updateDomain(const std::string & domain)
   // would silently change its logical meaning.
   if (goal_was_set && (goal_.nodes.empty() || !isValidGoal(goal_))) {
     clearGoal();
+  }
+
+  // The same for the metric
+  if (!metric_.tree.nodes.empty() && !isValidMetric(metric_)) {
+    clearMetric();
   }
 
   return true;
@@ -814,6 +900,16 @@ ProblemExpert::getProblem()
   const std::string gs = parser::pddl::toString(goal_);
   problem.addGoal(gs);
 
+  if (!metric_.tree.nodes.empty()) {
+    const std::string optimization =
+      metric_.optimization == plansys2_msgs::msg::Metric::MAXIMIZE ? "maximize" : "minimize";
+    try {
+      problem.addMetric(optimization, parser::pddl::toString(metric_.tree));
+    } catch (const std::exception & ex) {
+      std::cerr << "Metric left out of the problem: " << ex.what() << std::endl;
+    }
+  }
+
   std::ostringstream stream;
   stream << problem;
   return stream.str();
@@ -872,6 +968,7 @@ ProblemExpert::addProblem(const std::string & problem_str)
   auto prev_predicates = predicates_;
   auto prev_functions = functions_;
   auto prev_goal = goal_;
+  auto prev_metric = metric_;
   try {
     std::cout << "Parsed problem: " << problem << std::endl;
 
@@ -943,12 +1040,30 @@ ProblemExpert::addProblem(const std::string & problem_str)
         std::cout << "Goal insertion failed" << std::endl;
       }
     }
+
+    // Without :metric the metric set before is kept, as the goal
+    if (problem.metric && problem.metric_expr) {
+      std::ostringstream expr;
+      problem.metric_expr->PDDLPrint(expr, 0, problem.ts, domain);
+      plansys2::Metric metric;
+      metric.optimization = problem.maximize ?
+        plansys2_msgs::msg::Metric::MAXIMIZE : plansys2_msgs::msg::Metric::MINIMIZE;
+      metric.tree = parser::pddl::fromString(
+        expr.str(), false, plansys2_msgs::msg::Node::EXPRESSION);
+      std::cout << "Adding metric: " << parser::pddl::toString(metric) << std::endl;
+      if (setMetric(metric)) {
+        std::cout << "Metric insertion ok" << std::endl;
+      } else {
+        std::cout << "Metric insertion failed" << std::endl;
+      }
+    }
   } catch (const std::exception & ex) {
     std::cerr << "Error adding problem: " << ex.what() << std::endl;
     instances_ = prev_instances;
     predicates_ = prev_predicates;
     functions_ = prev_functions;
     goal_ = prev_goal;
+    metric_ = prev_metric;
     return false;
   }
 

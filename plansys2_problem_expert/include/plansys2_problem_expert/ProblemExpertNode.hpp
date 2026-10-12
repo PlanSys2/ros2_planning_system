@@ -33,10 +33,13 @@
 #include "plansys2_msgs/srv/get_problem_goal.hpp"
 #include "plansys2_msgs/srv/get_problem_instance_details.hpp"
 #include "plansys2_msgs/srv/get_problem_instances.hpp"
+#include "plansys2_msgs/srv/get_problem_metric.hpp"
 #include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_msgs/srv/get_states.hpp"
 #include "plansys2_msgs/srv/is_problem_goal_satisfied.hpp"
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
+#include "plansys2_msgs/srv/remove_problem_metric.hpp"
+#include "plansys2_msgs/srv/set_problem_metric.hpp"
 #include "plansys2_msgs/srv/clear_problem_knowledge.hpp"
 
 #include "rclcpp/rclcpp.hpp"
@@ -303,6 +306,42 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::RemoveProblemGoal::Response> response);
 
   /**
+   * @brief Service callback to set the problem metric.
+   *
+   * @param[in] request_header ROS service request header.
+   * @param[in] request Service request containing the metric.
+   * @param[out] response Service response with success status and error information.
+   */
+  void set_problem_metric_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::SetProblemMetric::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::SetProblemMetric::Response> response);
+
+  /**
+   * @brief Service callback to get the problem metric.
+   *
+   * @param[in] request_header ROS service request header.
+   * @param[in] request Empty service request.
+   * @param[out] response Service response containing the metric and success status.
+   */
+  void get_problem_metric_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::GetProblemMetric::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::GetProblemMetric::Response> response);
+
+  /**
+   * @brief Service callback to remove the problem metric.
+   *
+   * @param[in] request_header ROS service request header.
+   * @param[in] request Empty service request.
+   * @param[out] response Service response with success status and error information.
+   */
+  void remove_problem_metric_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::RemoveProblemMetric::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::RemoveProblemMetric::Response> response);
+
+  /**
    * @brief Service callback to clear all problem knowledge.
    *
    * @param[in] request_header ROS service request header.
@@ -450,6 +489,12 @@ private:
     is_problem_goal_satisfied_service_;
   rclcpp::Service<plansys2_msgs::srv::RemoveProblemGoal>::SharedPtr
     remove_problem_goal_service_;
+  rclcpp::Service<plansys2_msgs::srv::SetProblemMetric>::SharedPtr
+    set_problem_metric_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetProblemMetric>::SharedPtr
+    get_problem_metric_service_;
+  rclcpp::Service<plansys2_msgs::srv::RemoveProblemMetric>::SharedPtr
+    remove_problem_metric_service_;
   rclcpp::Service<plansys2_msgs::srv::ClearProblemKnowledge>::SharedPtr
     clear_problem_knowledge_service_;
   rclcpp::Service<plansys2_msgs::srv::AffectParam>::SharedPtr

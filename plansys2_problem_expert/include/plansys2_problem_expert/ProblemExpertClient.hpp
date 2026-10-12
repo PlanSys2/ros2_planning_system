@@ -39,6 +39,9 @@
 #include "plansys2_msgs/srv/get_states.hpp"
 #include "plansys2_msgs/srv/is_problem_goal_satisfied.hpp"
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
+#include "plansys2_msgs/srv/remove_problem_metric.hpp"
+#include "plansys2_msgs/srv/set_problem_metric.hpp"
+#include "plansys2_msgs/srv/get_problem_metric.hpp"
 #include "plansys2_msgs/srv/clear_problem_knowledge.hpp"
 
 #include "rclcpp/rclcpp.hpp"
@@ -213,7 +216,29 @@ public:
   bool clearGoal();
 
   /**
-   * @brief Clear all knowledge (instances, predicates, functions, and goal) from the problem.
+   * @brief Get the metric of the problem: what the planner optimizes.
+   *
+   * @return plansys2::Metric The metric, with an empty tree if there is none.
+   */
+  plansys2::Metric getMetric();
+
+  /**
+   * @brief Set the metric of the problem.
+   *
+   * @param[in] metric The metric, e.g. plansys2::Metric("minimize (+ (cost) (total-time))").
+   * @return true if the metric was valid and set, false otherwise.
+   */
+  bool setMetric(const plansys2::Metric & metric);
+
+  /**
+   * @brief Remove the metric of the problem.
+   *
+   * @return true if the metric was cleared, false otherwise.
+   */
+  bool clearMetric();
+
+  /**
+   * @brief Clear all knowledge (instances, predicates, functions, goal, metric) of the problem.
    *
    * @return true if the knowledge was successfully cleared, false otherwise.
    */
@@ -294,6 +319,12 @@ private:
     get_problem_client_;
   rclcpp::Client<plansys2_msgs::srv::RemoveProblemGoal>::SharedPtr
     remove_problem_goal_client_;
+  rclcpp::Client<plansys2_msgs::srv::SetProblemMetric>::SharedPtr
+    set_problem_metric_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblemMetric>::SharedPtr
+    get_problem_metric_client_;
+  rclcpp::Client<plansys2_msgs::srv::RemoveProblemMetric>::SharedPtr
+    remove_problem_metric_client_;
   rclcpp::Client<plansys2_msgs::srv::ClearProblemKnowledge>::SharedPtr
     clear_problem_knowledge_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr

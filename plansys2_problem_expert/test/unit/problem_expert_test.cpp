@@ -1097,6 +1097,246 @@ TEST(problem_expert, update_domain_rejects_invalid_pddl_and_keeps_everything)
   ASSERT_EQ(problem_expert.getPredicates().size(), 1u);
 }
 
+// Metric: what the planner optimizes. domain_simple has (room_distance ?r1 ?r2 - room)
+namespace
+{
+plansys2::ProblemExpert make_metric_problem(std::shared_ptr<plansys2::DomainExpert> & domain)
+{
+  domain = std::make_shared<plansys2::DomainExpert>(read_test_pddl("domain_simple.pddl"));
+  plansys2::ProblemExpert problem_expert(domain);
+  problem_expert.addInstance(parser::pddl::fromStringParam("r2d2", "robot"));
+  problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room"));
+  problem_expert.addInstance(parser::pddl::fromStringParam("kitchen", "room"));
+  return problem_expert;
+}
+}  // namespace
+
+TEST(problem_expert, metric_set_get_clear)
+{
+  std::shared_ptr<plansys2::DomainExpert> domain;
+  auto problem_expert = make_metric_problem(domain);
+
+  // No metric at the start
+  ASSERT_TRUE(problem_expert.getMetric().tree.nodes.empty());
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getMetric()), "");
+
+  ASSERT_TRUE(problem_expert.setMetric(plansys2::Metric("minimize (total-time)")));
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getMetric()), "minimize (total-time)");
+
+  ASSERT_TRUE(
+    problem_expert.setMetric(plansys2::Metric("minimize (room_distance bedroom kitchen)")));
+  ASSERT_EQ(
+    parser::pddl::toString(problem_expert.getMetric()),
+    "minimize (room_distance bedroom kitchen)");
+
+  // A new metric replaces the old one
+  ASSERT_TRUE(
+    problem_expert.setMetric(
+      plansys2::Metric("maximize (+ (room_distance bedroom kitchen) (* 2 (total-time)))")));
+  auto metric = problem_expert.getMetric();
+  ASSERT_EQ(metric.optimization, plansys2_msgs::msg::Metric::MAXIMIZE);
+  ASSERT_EQ(
+    parser::pddl::toString(metric),
+    "maximize (+  (room_distance bedroom kitchen) (*  2.000000 (total-time)))");
+
+  // A plain number is a valid, if useless, metric
+  ASSERT_TRUE(problem_expert.setMetric(plansys2::Metric("minimize 0")));
+
+  ASSERT_TRUE(problem_expert.clearMetric());
+  ASSERT_TRUE(problem_expert.getMetric().tree.nodes.empty());
+  // Clearing twice is fine
+  ASSERT_TRUE(problem_expert.clearMetric());
+}
+
+TEST(problem_expert, metric_invalid_is_rejected_and_keeps_the_previous)
+{
+  std::shared_ptr<plansys2::DomainExpert> domain;
+  auto problem_expert = make_metric_problem(domain);
+
+  const std::string valid = "minimize (room_distance bedroom kitchen)";
+  ASSERT_TRUE(problem_expert.setMetric(plansys2::Metric(valid)));
+
+  const std::vector<std::string> invalid = {
+    "",                                                // nothing
+    "minimize",                                        // no expression
+    "optimize (total-time)",                           // unknown optimization
+    "minimize (battery r2d2)",                         // function not in the domain
+    "minimize (room_distance r2d2 kitchen)",           // argument of the wrong type
+    "minimize (room_distance bedroom hall)",           // unknown instance
+    "minimize (room_distance bedroom)",                // wrong arity
+    "minimize (> (room_distance bedroom kitchen) 3)",  // a comparison, not a number
+    "minimize (robot_at r2d2 bedroom)",                // a predicate has no value
+    "minimize (and (total-time))",                     // logic is not arithmetic
+    "minimize (+ (total-time) (total-time)",           // unbalanced
+  };
+  for (const auto & m : invalid) {
+    EXPECT_FALSE(problem_expert.setMetric(plansys2::Metric(m))) << m;
+    EXPECT_EQ(parser::pddl::toString(problem_expert.getMetric()), valid) << m;
+  }
+
+  // Built by hand: an optimization that does not exist, and a broken tree
+  plansys2::Metric bad_optimization("minimize (total-time)");
+  bad_optimization.optimization = 7;
+  ASSERT_FALSE(problem_expert.setMetric(bad_optimization));
+
+  plansys2::Metric broken_tree("minimize (+ (total-time) 1)");
+  broken_tree.tree.nodes[0].children.push_back(42);
+  ASSERT_FALSE(problem_expert.setMetric(broken_tree));
+
+  ASSERT_FALSE(problem_expert.isValidMetric(plansys2::Metric()));
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getMetric()), valid);
+}
+
+TEST(problem_expert, metric_in_get_problem)
+{
+  std::shared_ptr<plansys2::DomainExpert> domain;
+  auto problem_expert = make_metric_problem(domain);
+  ASSERT_TRUE(
+    problem_expert.setGoal(plansys2::Goal("(and (robot_at r2d2 kitchen))")));
+
+  // Without a metric the problem has no :metric section
+  ASSERT_EQ(problem_expert.getProblem().find(":metric"), std::string::npos);
+
+  ASSERT_TRUE(
+    problem_expert.setMetric(
+      plansys2::Metric("maximize (- (room_distance bedroom kitchen) (* 2 (total-time)))")));
+  const std::string problem = problem_expert.getProblem();
+  const std::string expected =
+    "( :metric maximize ( - ( room_distance bedroom kitchen ) "
+    "( * 2 ( total-time ) ) ) )\n)\n";
+  ASSERT_GE(problem.size(), expected.size());
+  ASSERT_EQ(problem.substr(problem.size() - expected.size()), expected);
+
+  // The problem PlanSys2 builds can be read back, metric included
+  auto domain2 = std::make_shared<plansys2::DomainExpert>(read_test_pddl("domain_simple.pddl"));
+  plansys2::ProblemExpert problem_expert2(domain2);
+  ASSERT_TRUE(problem_expert2.addProblem(problem));
+  ASSERT_EQ(
+    parser::pddl::toString(problem_expert2.getMetric()),
+    parser::pddl::toString(problem_expert.getMetric()));
+
+  ASSERT_TRUE(problem_expert.clearMetric());
+  ASSERT_EQ(problem_expert.getProblem().find(":metric"), std::string::npos);
+}
+
+TEST(problem_expert, metric_cleared_with_the_knowledge)
+{
+  std::shared_ptr<plansys2::DomainExpert> domain;
+  auto problem_expert = make_metric_problem(domain);
+  ASSERT_TRUE(problem_expert.setMetric(plansys2::Metric("minimize (total-time)")));
+
+  ASSERT_TRUE(problem_expert.clearKnowledge());
+  ASSERT_TRUE(problem_expert.getMetric().tree.nodes.empty());
+}
+
+TEST(problem_expert, metric_dropped_only_when_an_instance_it_uses_is_removed)
+{
+  std::shared_ptr<plansys2::DomainExpert> domain;
+  auto problem_expert = make_metric_problem(domain);
+
+  ASSERT_TRUE(
+    problem_expert.setMetric(
+      plansys2::Metric("minimize (+ (room_distance bedroom kitchen) (total-time))")));
+
+  // r2d2 is not in the metric: it stays
+  ASSERT_TRUE(problem_expert.removeInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_FALSE(problem_expert.getMetric().tree.nodes.empty());
+
+  // kitchen is: the whole metric goes, not just its term
+  ASSERT_TRUE(problem_expert.removeInstance(parser::pddl::fromStringParam("kitchen", "room")));
+  ASSERT_TRUE(problem_expert.getMetric().tree.nodes.empty());
+
+  // A metric on total-time uses no instance
+  ASSERT_TRUE(problem_expert.setMetric(plansys2::Metric("minimize (total-time)")));
+  ASSERT_TRUE(problem_expert.removeInstance(parser::pddl::fromStringParam("bedroom", "room")));
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getMetric()), "minimize (total-time)");
+}
+
+TEST(problem_expert, metric_from_add_problem)
+{
+  auto domain = std::make_shared<plansys2::DomainExpert>(read_test_pddl("domain_simple.pddl"));
+  plansys2::ProblemExpert problem_expert(domain);
+
+  const std::string head =
+    "(define (problem p) (:domain simple)"
+    "(:objects r2d2 - robot bedroom kitchen - room)"
+    "(:init (robot_at r2d2 bedroom) (= (room_distance bedroom kitchen) 10))"
+    "(:goal (and (robot_at r2d2 kitchen)))";
+
+  // Old style: only total-time
+  ASSERT_TRUE(problem_expert.addProblem(head + "(:metric minimize (total-time)))"));
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getMetric()), "minimize (total-time)");
+
+  // Any numeric expression, with objects, upper case and maximize
+  ASSERT_TRUE(
+    problem_expert.addProblem(
+      head + "(:metric MAXIMIZE (* (room_distance Bedroom kitchen) (total-time))))"));
+  auto metric = problem_expert.getMetric();
+  ASSERT_EQ(metric.optimization, plansys2_msgs::msg::Metric::MAXIMIZE);
+  ASSERT_EQ(
+    parser::pddl::toString(metric), "maximize (*  (room_distance bedroom kitchen) (total-time))");
+
+  // Without :metric the previous metric is kept, as the goal
+  ASSERT_TRUE(problem_expert.addProblem(head + ")"));
+  ASSERT_EQ(
+    parser::pddl::toString(problem_expert.getMetric()),
+    "maximize (*  (room_distance bedroom kitchen) (total-time))");
+
+  // Malformed metrics reject the whole problem and change nothing
+  const auto instances = problem_expert.getInstances().size();
+  const std::vector<std::string> bad = {
+    "(:metric optimize (total-time)))",
+    "(:metric minimize (room_distance bedroom hall)))",
+    "(:metric minimize (battery r2d2)))",
+    "(:metric minimize))",
+    "(:metric minimize (total-time) 3))",
+  };
+  const std::string head_new_object =
+    "(define (problem p) (:domain simple)"
+    "(:objects r2d2 - robot bedroom kitchen hall2 - room)"
+    "(:init (robot_at r2d2 bedroom))"
+    "(:goal (and (robot_at r2d2 kitchen)))";
+  for (const auto & m : bad) {
+    EXPECT_FALSE(problem_expert.addProblem(head_new_object + m)) << m;
+    EXPECT_FALSE(problem_expert.existInstance("hall2")) << m;
+    EXPECT_EQ(problem_expert.getInstances().size(), instances) << m;
+    EXPECT_EQ(
+      parser::pddl::toString(problem_expert.getMetric()),
+      "maximize (*  (room_distance bedroom kitchen) (total-time))") << m;
+  }
+
+  // A metric that parses but has the wrong types is left out, as an invalid goal:
+  // the problem is added and the previous metric stays
+  ASSERT_TRUE(
+    problem_expert.addProblem(head + "(:metric minimize (room_distance r2d2 kitchen)))"));
+  ASSERT_EQ(
+    parser::pddl::toString(problem_expert.getMetric()),
+    "maximize (*  (room_distance bedroom kitchen) (total-time))");
+}
+
+TEST(problem_expert, metric_follows_domain_updates)
+{
+  std::shared_ptr<plansys2::DomainExpert> domain;
+  auto problem_expert = make_metric_problem(domain);
+
+  // A change that does not touch the metric keeps it
+  ASSERT_TRUE(
+    problem_expert.setMetric(plansys2::Metric("minimize (room_distance bedroom kitchen)")));
+  ASSERT_TRUE(
+    problem_expert.updateDomain(read_test_pddl("domain_simple_v2_extra_requirement.pddl")));
+  ASSERT_FALSE(problem_expert.getMetric().tree.nodes.empty());
+
+  // A domain without room_distance cannot keep it
+  ASSERT_TRUE(
+    problem_expert.updateDomain(read_test_pddl("domain_simple_v4_removed_function.pddl")));
+  ASSERT_TRUE(problem_expert.getMetric().tree.nodes.empty());
+
+  // total-time is in every domain
+  ASSERT_TRUE(problem_expert.setMetric(plansys2::Metric("minimize (total-time)")));
+  ASSERT_TRUE(problem_expert.updateDomain(read_test_pddl("domain_simple.pddl")));
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getMetric()), "minimize (total-time)");
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

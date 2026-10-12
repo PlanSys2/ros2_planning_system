@@ -152,6 +152,27 @@ ProblemExpertNode::ProblemExpertNode(const rclcpp::NodeOptions & options)
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
 
+  set_problem_metric_service_ = create_service<plansys2_msgs::srv::SetProblemMetric>(
+    "problem_expert/set_problem_metric",
+    std::bind(
+      &ProblemExpertNode::set_problem_metric_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+
+  get_problem_metric_service_ = create_service<plansys2_msgs::srv::GetProblemMetric>(
+    "problem_expert/get_problem_metric",
+    std::bind(
+      &ProblemExpertNode::get_problem_metric_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+
+  remove_problem_metric_service_ = create_service<plansys2_msgs::srv::RemoveProblemMetric>(
+    "problem_expert/remove_problem_metric",
+    std::bind(
+      &ProblemExpertNode::remove_problem_metric_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
+
   clear_problem_knowledge_service_ = create_service<plansys2_msgs::srv::ClearProblemKnowledge>(
     "problem_expert/clear_problem_knowledge",
     std::bind(
@@ -680,6 +701,80 @@ ProblemExpertNode::remove_problem_goal_service_callback(
 }
 
 void
+ProblemExpertNode::set_problem_metric_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::SetProblemMetric::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::SetProblemMetric::Response> response)
+{
+  (void)request_header;
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    response->success = problem_expert_->setMetric(request->metric);
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
+
+      plansys2_msgs::msg::Problem problem_msg;
+      problem_msg.problem = problem_expert_->getProblem();
+      problem_msg.stamp = now();
+      problem_pub_->publish(problem_msg);
+    } else {
+      response->error_info = "Metric not valid";
+    }
+  }
+}
+
+void
+ProblemExpertNode::get_problem_metric_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::GetProblemMetric::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::GetProblemMetric::Response> response)
+{
+  (void)request_header;
+  (void)request;
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    response->success = true;
+    response->metric = problem_expert_->getMetric();
+  }
+}
+
+void
+ProblemExpertNode::remove_problem_metric_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::RemoveProblemMetric::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::RemoveProblemMetric::Response> response)
+{
+  (void)request;
+  (void)request_header;
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    response->success = problem_expert_->clearMetric();
+
+    if (response->success) {
+      update_pub_->publish(std_msgs::msg::Empty());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
+
+      plansys2_msgs::msg::Problem problem_msg;
+      problem_msg.problem = problem_expert_->getProblem();
+      problem_msg.stamp = now();
+      problem_pub_->publish(problem_msg);
+    } else {
+      response->error_info = "Error clearing metric";
+    }
+  }
+}
+
+void
 ProblemExpertNode::clear_problem_knowledge_service_callback(
   const std::shared_ptr<rmw_request_id_t> request_header,
   const std::shared_ptr<plansys2_msgs::srv::ClearProblemKnowledge::Request> request,
@@ -896,6 +991,7 @@ ProblemExpertNode::get_knowledge_as_msg() const
 
   auto goal = problem_expert_->getGoal();
   ret_msgs->goal = parser::pddl::toString(goal);
+  ret_msgs->metric = parser::pddl::toString(problem_expert_->getMetric());
 
   return ret_msgs;
 }
