@@ -19,6 +19,7 @@
 #include <iostream>
 #include <limits>
 #include <regex>
+#include <sstream>
 #include <utility>
 
 namespace parser
@@ -55,6 +56,12 @@ static void printN(std::ostream & s, uint8_t node_type)
       break;
     case plansys2_msgs::msg::Node::EXISTS:
       s << "NODE TYPE EXISTS" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::FORALL:
+      s << "NODE TYPE FORALL" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::IMPLY:
+      s << "NODE TYPE IMPLY" << std::endl;
       break;
     case plansys2_msgs::msg::Node::COMP_GE:
       s << "NODE TYPE COMP GE" << std::endl;
@@ -161,6 +168,12 @@ bool validateTree(const plansys2_msgs::msg::Tree & tree, std::string & error)
         min_children = 1;
         max_children = node.children.size();
         break;
+      case plansys2_msgs::msg::Node::FORALL:
+        min_children = max_children = 1;
+        break;
+      case plansys2_msgs::msg::Node::IMPLY:
+        min_children = max_children = 2;
+        break;
       case plansys2_msgs::msg::Node::EXPRESSION:
         min_children = max_children = 2;
         break;
@@ -258,6 +271,20 @@ uint8_t getNodeType(const std::string & expr, uint8_t default_node_type)
     if (static_cast<int>(match.position()) < first) {
       first = static_cast<int>(match.position());
       node_type = plansys2_msgs::msg::Node::EXISTS;
+    }
+  }
+
+  if (std::regex_search(expr, match, std::regex("\\(\\s*forall[ (]"))) {
+    if (static_cast<int>(match.position()) < first) {
+      first = static_cast<int>(match.position());
+      node_type = plansys2_msgs::msg::Node::FORALL;
+    }
+  }
+
+  if (std::regex_search(expr, match, std::regex("\\(\\s*imply[ (]"))) {
+    if (static_cast<int>(match.position()) < first) {
+      first = static_cast<int>(match.position());
+      node_type = plansys2_msgs::msg::Node::IMPLY;
     }
   }
 
@@ -479,28 +506,29 @@ void removeOperatorBeforeParenthesis(std::string & wexpr)
   // Find the position of the first parenthesis
   std::string::size_type first_parenthesis = wexpr.find("(");
 
-  // Check if "exists" appears before the first parenthesis
-  size_t exists_pos = wexpr.find("exists");
-  // Ensure "exists" is found and appears before the first parenthesis
-  if (exists_pos != std::string::npos &&
-    (first_parenthesis == std::string::npos || exists_pos < first_parenthesis))
-  {
-    size_t begin_exists = exists_pos + 6;  // Move past "exists"
-    size_t end_exists = wexpr.find(")", begin_exists);  // Find the first closing parenthesis
-    if (end_exists != std::string::npos) {  // Ensure a closing parenthesis exists
-      // Remove "exists" and the first parenthesis
-      wexpr = wexpr.substr(end_exists + 1, std::string::npos);
-      // Trim whitespace after the closing parenthesis
-      wexpr.erase(0, wexpr.find_first_not_of(" \t\n\r"));
-    } else {
-      throw std::runtime_error("Malformed 'exists' expression: missing closing parenthesis");
+  // A quantifier before the first parenthesis: remove it with its variable list. It goes
+  // first, as the operator regex below would find "or" inside "forall"
+  for (const std::string quantifier : {"exists", "forall"}) {
+    size_t quantifier_pos = wexpr.find(quantifier);
+    if (quantifier_pos != std::string::npos &&
+      (first_parenthesis == std::string::npos || quantifier_pos < first_parenthesis))
+    {
+      size_t begin = quantifier_pos + quantifier.size();
+      size_t end = wexpr.find(")", begin);  // the end of the variable list
+      if (end != std::string::npos) {
+        wexpr = wexpr.substr(end + 1, std::string::npos);
+        wexpr.erase(0, wexpr.find_first_not_of(" \t\n\r"));
+      } else {
+        throw std::runtime_error(
+                "Malformed '" + quantifier + "' expression: missing closing parenthesis");
+      }
+      return;
     }
-    return;
   }
 
   // Define a regex to match the operators
   std::regex operator_regex(
-    R"([\+\-\*\/=<>]=?|<=|>=|and|or|not|assign|increase|decrease|scale-up|scale-down)");
+    R"([\+\-\*\/=<>]=?|<=|>=|and|or|not|imply|assign|increase|decrease|scale-up|scale-down)");
 
   // Search for the first operator in the string
   std::smatch match;
@@ -628,6 +656,12 @@ std::string toString(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bo
       break;
     case plansys2_msgs::msg::Node::EXISTS:
       ret = toStringExists(tree, node_id, negate);
+      break;
+    case plansys2_msgs::msg::Node::FORALL:
+      ret = toStringForall(tree, node_id, negate);
+      break;
+    case plansys2_msgs::msg::Node::IMPLY:
+      ret = toStringImply(tree, node_id, negate);
       break;
     default:
       std::cerr << "Unsupported node to string conversion" << std::endl;
@@ -896,7 +930,12 @@ std::string toStringParameter(const plansys2_msgs::msg::Tree & tree, uint32_t no
   return tree.nodes[node_id].parameters[0].name;
 }
 
-std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate)
+namespace
+{
+// (exists (?a ?b - t) ...) or (forall ...); the variables keep their types when known
+std::string toStringQuantifier(
+  const std::string & quantifier, const plansys2_msgs::msg::Tree & tree, uint32_t node_id,
+  bool negate)
 {
   if (node_id >= tree.nodes.size()) {
     return {};
@@ -910,11 +949,15 @@ std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_
   if (negate) {
     ret = "(not ";
   }
-  ret += "(exists (";
+  ret += "(" + quantifier + " (";
 
   bool first_param = true;
   for (const auto & param : tree.nodes[node_id].parameters) {
     ret += first_param ? param.name : " " + param.name;
+    // object, the type of untyped variables, is left out: the text stays as written
+    if (!param.type.empty() && param.type != "object") {
+      ret += " - " + param.type;
+    }
     first_param = false;
   }
   ret += ") ";
@@ -928,6 +971,32 @@ std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_
     ret += ")";
   }
 
+  return ret;
+}
+}  // namespace
+
+std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate)
+{
+  return toStringQuantifier("exists", tree, node_id, negate);
+}
+
+std::string toStringForall(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate)
+{
+  return toStringQuantifier("forall", tree, node_id, negate);
+}
+
+std::string toStringImply(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate)
+{
+  if (node_id >= tree.nodes.size() || tree.nodes[node_id].children.size() != 2) {
+    return {};
+  }
+
+  std::string ret = negate ? "(not (imply " : "(imply ";
+  ret += toString(tree, tree.nodes[node_id].children[0], false) + " ";
+  ret += toString(tree, tree.nodes[node_id].children[1], false) + ")";
+  if (negate) {
+    ret += ")";
+  }
   return ret;
 }
 
@@ -958,6 +1027,8 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
       default_node_type = plansys2_msgs::msg::Node::FUNCTION;
       break;
     case plansys2_msgs::msg::Node::EXISTS:
+    case plansys2_msgs::msg::Node::FORALL:
+    case plansys2_msgs::msg::Node::IMPLY:
       default_node_type = plansys2_msgs::msg::Node::PREDICATE;
       break;
   }
@@ -983,7 +1054,8 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
 
         return node;
       }
-    case plansys2_msgs::msg::Node::OR: {
+    case plansys2_msgs::msg::Node::OR:
+    case plansys2_msgs::msg::Node::IMPLY: {
         auto node = std::make_shared<plansys2_msgs::msg::Node>();
         node->node_type = node_type;
         node->node_id = tree.nodes.size();
@@ -1084,8 +1156,10 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
         return node;
       }
 
-    case plansys2_msgs::msg::Node::EXISTS: {
+    case plansys2_msgs::msg::Node::EXISTS:
+    case plansys2_msgs::msg::Node::FORALL: {
         auto node = std::make_shared<plansys2_msgs::msg::Node>(fromStringExists(wexpr));
+        node->node_type = node_type;
         node->node_id = tree.nodes.size();
         node->negate = negate;
         tree.nodes.push_back(*node);
@@ -1176,31 +1250,37 @@ plansys2_msgs::msg::Node fromStringPredicate(const std::string & predicate)
 
 plansys2_msgs::msg::Node fromStringExists(const std::string & exists)
 {
+  // Also for forall: the caller sets the node type. "- type" applies to the variables before it
   plansys2_msgs::msg::Node ret;
   ret.node_type = plansys2_msgs::msg::Node::EXISTS;
-
-  std::vector<std::string> tokens;
-  size_t start = 0;
-  size_t end_exists = exists.find(")", start);
-  size_t end = 0;
-
-  while (end < end_exists) {
-    end = exists.find(" ", start);
-    tokens.push_back(
-      exists.substr(start, (end == std::string::npos) ? std::string::npos : end - start));
-    start = ((end > (std::string::npos - 1)) ? std::string::npos : end + 1);
-  }
-
-  tokens.back().pop_back();
-  tokens[1].erase(0, 1);
-
-  for (size_t i = 1; i < tokens.size(); i++) {
-    plansys2_msgs::msg::Param param;
-    param.name = tokens[i];
-    ret.parameters.push_back(param);
-  }
-
   ret.value = 0;
+
+  size_t open = exists.find("(", exists.find_first_of("ef"));
+  size_t close = (open == std::string::npos) ? std::string::npos : exists.find(")", open);
+  if (close == std::string::npos) {
+    return ret;
+  }
+
+  std::stringstream list(exists.substr(open + 1, close - open - 1));
+  std::vector<std::string> tokens;
+  for (std::string token; list >> token; ) {
+    tokens.push_back(token);
+  }
+
+  size_t untyped = 0;  // first variable still without a type
+  for (size_t i = 0; i < tokens.size(); i++) {
+    if (tokens[i] == "-" && i + 1 < tokens.size()) {
+      for (size_t k = untyped; k < ret.parameters.size(); k++) {
+        ret.parameters[k].type = tokens[i + 1];
+      }
+      untyped = ret.parameters.size();
+      i++;
+    } else {
+      plansys2_msgs::msg::Param param;
+      param.name = tokens[i];
+      ret.parameters.push_back(param);
+    }
+  }
 
   return ret;
 }

@@ -30,12 +30,13 @@ class Exists : public ParamCond
 {
 public:
   Condition * cond;
+  IntVec types;  // type of each variable in params
 
   Exists()
   : cond(0) {}
 
   Exists(const Exists * e, Domain & d)
-  : ParamCond(e), cond(0)
+  : ParamCond(e), cond(0), types(e->types)
   {
     if (e->cond) {cond = e->cond->copy(d);}
   }

@@ -30,12 +30,13 @@ class Forall : public ParamCond
 {
 public:
   Condition * cond;
+  unsigned base = 0;  // index of the first variable in the scope of the body
 
   Forall()
   : cond(0) {}
 
   Forall(const Forall * f, Domain & d)
-  : ParamCond(f), cond(0)
+  : ParamCond(f), cond(0), base(f->base)
   {
     if (f->cond) {cond = f->cond->copy(d);}
   }

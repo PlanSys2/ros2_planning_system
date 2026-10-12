@@ -335,28 +335,41 @@ std::tuple<bool, bool, double> evaluate_node(
         [[fallthrough]];
       }
 
-    case plansys2_msgs::msg::Node::EXISTS: {
-        std::vector<plansys2::Instance> instances;
+    case plansys2_msgs::msg::Node::EXISTS:
+    case plansys2_msgs::msg::Node::FORALL: {
+        const auto & node = tree.nodes[node_id];
+
+        // The objects each variable ranges over: those of its type or of a subtype. In the
+        // state, an object's types are those its predicates and functions give it; an
+        // object of unknown type is not discarded
+        std::map<std::string, std::set<std::string>> object_types;
         if (use_state == false) {
-          instances = problem_client->getInstances();
-        } else {
-          for (auto predicate : predicates) {
-            std::for_each(
-              predicate.parameters.begin(), predicate.parameters.end(),
-              [&](auto p) {
-                if (std::find(instances.begin(), instances.end(), p) == instances.end()) {
-                  instances.push_back(p);
-                }
-              });
+          for (const auto & instance : problem_client->getInstances()) {
+            object_types[instance.name].insert(instance.type);
           }
+        } else {
+          auto collect = [&object_types](const plansys2_msgs::msg::Node & n) {
+              for (const auto & p : n.parameters) {
+                auto & types = object_types[p.name];
+                if (!p.type.empty()) {types.insert(p.type);}
+              }
+            };
+          std::for_each(predicates.begin(), predicates.end(), collect);
+          std::for_each(functions.begin(), functions.end(), collect);
         }
+
         std::vector<std::vector<std::string>> parameters_vector;
-        for (size_t i = 0; i < tree.nodes[node_id].parameters.size(); i++) {
-          std::vector<std::string> p_vector;
-          std::for_each(
-            instances.begin(), instances.end(),
-            [&](auto i) {p_vector.push_back(i.name);});
-          parameters_vector.push_back(p_vector);
+        for (const auto & var : node.parameters) {
+          std::vector<std::string> candidates;
+          for (const auto & [name, types] : object_types) {
+            bool fits = var.type.empty() || types.empty();
+            for (const auto & type : types) {
+              fits = fits || type == var.type ||
+                std::find(var.sub_types.begin(), var.sub_types.end(), type) != var.sub_types.end();
+            }
+            if (fits) {candidates.push_back(name);}
+          }
+          parameters_vector.push_back(candidates);
         }
 
         std::vector<std::vector<std::string>> possible_parameters_values;
@@ -364,10 +377,32 @@ std::tuple<bool, bool, double> evaluate_node(
         plansys2::cart_product(
           possible_parameters_values, aux, parameters_vector.begin(), parameters_vector.end());
 
-        for (auto parameters_values : possible_parameters_values) {
+        // A forall in an effect applies its body for every object
+        const bool is_forall = node.node_type == plansys2_msgs::msg::Node::FORALL;
+        if (apply && is_forall) {
+          bool success = true;
+          for (const auto & parameters_values : possible_parameters_values) {
+            std::map<std::string, std::string> replace;
+            for (size_t i = 0; i < node.parameters.size(); i++) {
+              replace[node.parameters[i].name] = parameters_values[i];
+            }
+            auto tree_replaced = plansys2::replace_children_param(tree, node_id, replace);
+            auto result = evaluate_node(
+              tree_replaced, problem_client, predicates, functions, apply, use_state,
+              tree_replaced.nodes[node_id].children[0], negate);
+            success = success && std::get<0>(result);
+          }
+          return std::make_tuple(success, true, 0);
+        }
+
+        // The body comes back negated under not, so (not (exists ...)) needs it true for all
+        // objects, and (not (forall ...)) for one
+        const bool need_all = is_forall != negate;
+        bool success = true;
+        for (const auto & parameters_values : possible_parameters_values) {
           std::map<std::string, std::string> replace;
-          for (size_t i = 0; i < tree.nodes[node_id].parameters.size(); i++) {
-            replace[tree.nodes[node_id].parameters[i].name] = parameters_values[i];
+          for (size_t i = 0; i < node.parameters.size(); i++) {
+            replace[node.parameters[i].name] = parameters_values[i];
           }
           auto tree_replaced = plansys2::replace_children_param(tree, node_id, replace);
           std::tuple<bool, bool, double> result = evaluate_node(
@@ -375,19 +410,34 @@ std::tuple<bool, bool, double> evaluate_node(
             problem_client,
             predicates,
             functions,
-            apply,
+            false,
             use_state,
             tree_replaced.nodes[node_id].children[0],
             negate);
-          // The body comes back negated under not: (not (exists ...)) needs it true for all
-          if (!negate && std::get<1>(result)) {
-            return result;
+          success = success && std::get<0>(result);
+          if (need_all && !std::get<1>(result)) {
+            return std::make_tuple(success, false, 0);
           }
-          if (negate && !std::get<1>(result)) {
-            return result;
+          if (!need_all && std::get<1>(result)) {
+            return std::make_tuple(success, true, 0);
           }
         }
-        return std::make_tuple(true, negate, 0);
+        // No object left: everything holds for none, and none exists
+        return std::make_tuple(success, need_all, 0);
+      }
+
+    case plansys2_msgs::msg::Node::IMPLY: {
+        // (imply a b) is (or (not a) b); under not, (and a (not b))
+        std::tuple<bool, bool, double> left = evaluate_node(
+          tree, problem_client, predicates, functions, false, use_state,
+          tree.nodes[node_id].children[0], !negate);
+        std::tuple<bool, bool, double> right = evaluate_node(
+          tree, problem_client, predicates, functions, false, use_state,
+          tree.nodes[node_id].children[1], negate);
+        const bool truth_value = negate ?
+          (std::get<1>(left) && std::get<1>(right)) :
+          (std::get<1>(left) || std::get<1>(right));
+        return std::make_tuple(std::get<0>(left) && std::get<0>(right), truth_value, 0);
       }
 
     default:

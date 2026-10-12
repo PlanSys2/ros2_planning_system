@@ -18,6 +18,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <map>
 #include <memory>
 
 #include "plansys2_msgs/msg/tree.hpp"
@@ -304,12 +305,27 @@ private:
    * @param[in] tree The tree to check.
    * @param[in] domain_expert The domain expert to use for validation.
    * @param[in] node_id The ID of the current node being checked (default: 0).
+   * @param[in] bound Variables of the exists and forall above the node, by name.
    * @return true if all predicates and functions in the tree are valid, false otherwise.
    */
   bool checkPredicateTreeTypes(
     const plansys2_msgs::msg::Tree & tree,
     std::shared_ptr<DomainExpert> & domain_expert_,
-    uint32_t node_id = 0);
+    uint32_t node_id = 0,
+    const std::map<std::string, plansys2_msgs::msg::Param> & bound = {});
+
+  /**
+   * @brief Check the arguments of a predicate or function against its model in the domain:
+   *        instances or constants of the expected type, or variables bound by exists/forall.
+   *
+   * @param[in] node The predicate or function.
+   * @param[in] model The predicate or function as the domain declares it.
+   * @param[in] bound Variables of the exists and forall above the node, by name.
+   * @return true if every argument fits, false otherwise.
+   */
+  bool argumentsFit(
+    const plansys2_msgs::msg::Node & node, const plansys2_msgs::msg::Node & model,
+    const std::map<std::string, plansys2_msgs::msg::Param> & bound = {});
 
   /**
    * @brief Remove predicates that reference a specific instance.
@@ -337,6 +353,23 @@ private:
    * @param[in] instance The instance to check for references.
    */
   void removeInvalidGoals(const plansys2::Instance & instance);
+
+  /**
+   * @brief A copy of a predicate or function whose parameters get the type of their
+   *        instance.
+   *
+   * @param[in] node The predicate or function.
+   * @return plansys2_msgs::msg::Node The node with the types of its instances.
+   */
+  plansys2_msgs::msg::Node withInstanceTypes(const plansys2_msgs::msg::Node & node);
+
+  /**
+   * @brief A copy of a goal whose exists and forall variables get the subtypes of their type.
+   *
+   * @param[in] goal The goal.
+   * @return plansys2::Goal The goal with the subtypes from the domain.
+   */
+  plansys2::Goal withSubTypes(const plansys2::Goal & goal);
 
   std::vector<plansys2::Instance> instances_;
   std::vector<plansys2::Predicate> predicates_;
