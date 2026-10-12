@@ -1,12 +1,6 @@
 <map id="Imply" name="Imply">
-<area shape="rect" id="Node000001" title=" " alt="" coords="44,177,96,203"/>
-<area shape="rect" id="Node000002" href="$classparser_1_1pddl_1_1ParamCond.html" title=" " alt="" coords="96,102,185,128"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="120,141,83,179,79,175,116,137"/>
-<area shape="rect" id="Node000003" href="$classparser_1_1pddl_1_1Condition.html" title=" " alt="" coords="5,5,81,31"/>
-<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="45,47,46,85,51,127,67,176,62,177,46,128,41,86,40,47"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="68,40,130,99,126,103,64,44"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="108,5,162,31"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="139,46,142,101,137,102,134,46"/>
-<area shape="rect" id="Node000005" title=" " alt="" coords="186,5,279,31"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="216,45,185,80,158,104,154,100,181,76,212,41"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="17,122,69,148"/>
+<area shape="rect" id="Node000002" href="$classparser_1_1pddl_1_1Condition.html" title=" " alt="" coords="5,5,81,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="43,47,43,55,43,98,45,122,39,122,38,98,38,55,38,46"/>
+<area shape="poly" id="edge2_Node000001_Node000002" title=" " alt="" coords="46,47,46,122,40,122,40,47"/>
 </map>

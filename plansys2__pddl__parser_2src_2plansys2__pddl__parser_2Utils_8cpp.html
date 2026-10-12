@@ -108,27 +108,30 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <code>#include &lt;iostream&gt;</code><br />
 <code>#include &lt;limits&gt;</code><br />
 <code>#include &lt;regex&gt;</code><br />
+<code>#include &lt;sstream&gt;</code><br />
 <code>#include &lt;utility&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for Utils.cpp:</div>
 <div class="dyncontent">
 <div class="center"><img src="plansys2__pddl__parser_2src_2plansys2__pddl__parser_2Utils_8cpp__incl.png" border="0" usemap="#aplansys2__pddl__parser_2src_2plansys2__pddl__parser_2Utils_8cpp" loading="lazy" alt=""/></div>
 <map name="aplansys2__pddl__parser_2src_2plansys2__pddl__parser_2Utils_8cpp" id="aplansys2__pddl__parser_2src_2plansys2__pddl__parser_2Utils_8cpp">
-<area shape="rect" title=" " alt="" coords="789,5,961,61"/>
+<area shape="rect" title=" " alt="" coords="832,5,1004,61"/>
 <area shape="rect" href="plansys2__pddl__parser_2include_2plansys2__pddl__parser_2Utils_8hpp.html" title=" " alt="" coords="468,109,615,150"/>
-<area shape="poly" title=" " alt="" coords="789,61,627,107,625,102,788,56"/>
+<area shape="poly" title=" " alt="" coords="832,59,631,109,629,103,830,53"/>
 <area shape="rect" title=" " alt="" coords="639,116,714,142"/>
-<area shape="poly" title=" " alt="" coords="819,64,717,112,714,107,816,59"/>
+<area shape="poly" title=" " alt="" coords="849,64,722,113,721,108,847,59"/>
 <area shape="rect" title=" " alt="" coords="738,116,815,142"/>
-<area shape="poly" title=" " alt="" coords="848,63,802,108,798,104,845,60"/>
+<area shape="poly" title=" " alt="" coords="878,64,808,110,805,106,875,59"/>
 <area shape="rect" title=" " alt="" coords="839,116,911,142"/>
-<area shape="poly" title=" " alt="" coords="878,62,878,101,872,101,872,62"/>
+<area shape="poly" title=" " alt="" coords="908,63,889,104,884,101,903,60"/>
 <area shape="rect" title=" " alt="" coords="934,116,986,142"/>
-<area shape="poly" title=" " alt="" coords="902,60,942,104,938,107,898,63"/>
+<area shape="poly" title=" " alt="" coords="932,60,951,101,946,104,928,63"/>
 <area shape="rect" title=" " alt="" coords="1010,116,1062,142"/>
-<area shape="poly" title=" " alt="" coords="923,59,1004,106,1002,111,920,64"/>
-<area shape="rect" title=" " alt="" coords="1087,116,1138,142"/>
-<area shape="poly" title=" " alt="" coords="955,59,1076,107,1077,107,1075,112,1074,111,953,64"/>
+<area shape="poly" title=" " alt="" coords="954,59,1011,105,1008,109,950,64"/>
+<area shape="rect" title=" " alt="" coords="1086,116,1154,142"/>
+<area shape="poly" title=" " alt="" coords="977,59,1082,107,1080,112,975,64"/>
+<area shape="rect" title=" " alt="" coords="1179,116,1230,142"/>
+<area shape="poly" title=" " alt="" coords="1005,54,1085,77,1168,107,1169,107,1167,112,1166,111,1083,82,1004,59"/>
 <area shape="rect" title=" " alt="" coords="5,205,73,231"/>
 <area shape="poly" title=" " alt="" coords="468,138,292,158,188,176,85,200,80,202,78,197,84,195,187,171,291,153,468,133"/>
 <area shape="rect" title=" " alt="" coords="96,205,150,231"/>
@@ -212,8 +215,10 @@ Functions</h2></td></tr>
 <tr class="memitem:a6f3891ff3c1da75a74556a07fad78295" id="r_a6f3891ff3c1da75a74556a07fad78295"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#a6f3891ff3c1da75a74556a07fad78295">toStringConstant</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:a833460dc6f8014c0c2893b82f72f7474" id="r_a833460dc6f8014c0c2893b82f72f7474"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#a833460dc6f8014c0c2893b82f72f7474">toStringExists</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:afb31c68a7897f38656ed020523e91d89" id="r_afb31c68a7897f38656ed020523e91d89"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#afb31c68a7897f38656ed020523e91d89">toStringExpression</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
+<tr class="memitem:ab95b666635a28c18838bda6fab9841c7" id="r_ab95b666635a28c18838bda6fab9841c7"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#ab95b666635a28c18838bda6fab9841c7">toStringForall</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:a9998171782b4f4aeaa8c5164bdb578bf" id="r_a9998171782b4f4aeaa8c5164bdb578bf"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#a9998171782b4f4aeaa8c5164bdb578bf">toStringFunction</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:a9fe13725f8f32b7a8731ea8b2ae63212" id="r_a9fe13725f8f32b7a8731ea8b2ae63212"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#a9fe13725f8f32b7a8731ea8b2ae63212">toStringFunctionModifier</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
+<tr class="memitem:af7c051d9ebe08d1ba58a2eb22ace7bf7" id="r_af7c051d9ebe08d1ba58a2eb22ace7bf7"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#af7c051d9ebe08d1ba58a2eb22ace7bf7">toStringImply</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:ab2774723adc14458495795d25e3f9f4d" id="r_ab2774723adc14458495795d25e3f9f4d"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#ab2774723adc14458495795d25e3f9f4d">toStringNot</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:add2e805ddbc424a84bc261ca1437d290" id="r_add2e805ddbc424a84bc261ca1437d290"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#add2e805ddbc424a84bc261ca1437d290">toStringNumber</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:a108e3a69fd0c7cd29ac860c43b00d0f8" id="r_a108e3a69fd0c7cd29ac860c43b00d0f8"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#a108e3a69fd0c7cd29ac860c43b00d0f8">toStringOr</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>

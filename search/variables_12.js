@@ -15,5 +15,5 @@ var searchData=
   ['ts_12',['ts',['../classparser_1_1pddl_1_1Instance.html#adfa1bf317d799e0cfbbbd9946a84140c',1,'parser::pddl::Instance']]],
   ['type_13',['type',['../structplansys2_1_1ActionStamped.html#a073e4c2f96ce8a9b10d1b0d1fe78f2eb',1,'plansys2::ActionStamped']]],
   ['typed_14',['typed',['../classparser_1_1pddl_1_1Domain.html#abe1b3addc579b03c8439a98339895d69',1,'parser::pddl::Domain']]],
-  ['types_15',['types',['../structplansys2_1_1Domain.html#af36856bc3dc14a797c7ea8ab8a2ec3db',1,'plansys2::Domain::types'],['../classparser_1_1pddl_1_1Domain.html#aae76cbdad7c2af5b93b3c9060cf0bda5',1,'parser::pddl::Domain::types'],['../classparser_1_1pddl_1_1TokenStruct.html#ab099f36bc4238a5fa2155b195753f6b8',1,'parser::pddl::TokenStruct::types']]]
+  ['types_15',['types',['../structplansys2_1_1Domain.html#af36856bc3dc14a797c7ea8ab8a2ec3db',1,'plansys2::Domain::types'],['../classparser_1_1pddl_1_1Domain.html#aae76cbdad7c2af5b93b3c9060cf0bda5',1,'parser::pddl::Domain::types'],['../classparser_1_1pddl_1_1Exists.html#a6008614ee848abf69a6ebacdfec9b1ee',1,'parser::pddl::Exists::types'],['../classparser_1_1pddl_1_1TokenStruct.html#ab099f36bc4238a5fa2155b195753f6b8',1,'parser::pddl::TokenStruct::types']]]
 ];

@@ -113,6 +113,7 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:adaaaaaa0403061f8dfe219ea4c70ca69" id="r_adaaaaaa0403061f8dfe219ea4c70ca69"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#adaaaaaa0403061f8dfe219ea4c70ca69">get_reduced_string</a> (str expr)</td></tr>
 <tr class="memitem:ae9b5486495936c12e6140ea568d5481b" id="r_ae9b5486495936c12e6140ea568d5481b"><td class="memItemLeft">List[str]&#160;</td><td class="memItemRight"><a class="el" href="#ae9b5486495936c12e6140ea568d5481b">get_sub_expr</a> (str expr)</td></tr>
 <tr class="memitem:a0c97055227108d56806c464c9e4667f9" id="r_a0c97055227108d56806c464c9e4667f9"><td class="memItemLeft">Node&#160;</td><td class="memItemRight"><a class="el" href="#a0c97055227108d56806c464c9e4667f9">node_from_string_exists</a> (str exists)</td></tr>
+<tr class="memitem:a966ae8004daaa23f69120cfaab3718e1" id="r_a966ae8004daaa23f69120cfaab3718e1"><td class="memItemLeft">Node&#160;</td><td class="memItemRight"><a class="el" href="#a966ae8004daaa23f69120cfaab3718e1">node_from_string_forall</a> (str forall)</td></tr>
 <tr class="memitem:ad0ed1a342e147952bb0d914f9c0e1a69" id="r_ad0ed1a342e147952bb0d914f9c0e1a69"><td class="memItemLeft">Node&#160;</td><td class="memItemRight"><a class="el" href="#ad0ed1a342e147952bb0d914f9c0e1a69">node_from_string_function</a> (str function)</td></tr>
 <tr class="memitem:ac76441fb4d31c2d82a46332201bf0c5d" id="r_ac76441fb4d31c2d82a46332201bf0c5d"><td class="memItemLeft">Node&#160;</td><td class="memItemRight"><a class="el" href="#ac76441fb4d31c2d82a46332201bf0c5d">node_from_string_predicate</a> (str predicate)</td></tr>
 <tr class="memitem:a94935d9163db3ea5e0e7e0127dc6eb02" id="r_a94935d9163db3ea5e0e7e0127dc6eb02"><td class="memItemLeft">Dict[str, Any]&#160;</td><td class="memItemRight"><a class="el" href="#a94935d9163db3ea5e0e7e0127dc6eb02">node_to_dict</a> (Node node)</td></tr>
@@ -132,8 +133,10 @@ Static Protected Member Functions</h2></td></tr>
 <tr class="memitem:a61d8aa4d080ab39cb0c956ad29f197a6" id="r_a61d8aa4d080ab39cb0c956ad29f197a6"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#a61d8aa4d080ab39cb0c956ad29f197a6">_to_string_constant</a> (<a class="el" href="classTree.html">Tree</a> tree, <a class="el" href="classint.html">int</a> node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:afbc31e7b0c0dd3fa55679e09a6cef7fb" id="r_afbc31e7b0c0dd3fa55679e09a6cef7fb"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#afbc31e7b0c0dd3fa55679e09a6cef7fb">_to_string_exists</a> (<a class="el" href="classTree.html">Tree</a> tree, <a class="el" href="classint.html">int</a> node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:a2faafa7f1b178c2e223af5e1d993b996" id="r_a2faafa7f1b178c2e223af5e1d993b996"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#a2faafa7f1b178c2e223af5e1d993b996">_to_string_expression</a> (<a class="el" href="classTree.html">Tree</a> tree, <a class="el" href="classint.html">int</a> node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
+<tr class="memitem:abeb28b73c93b7798b92f927c6ff30114" id="r_abeb28b73c93b7798b92f927c6ff30114"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#abeb28b73c93b7798b92f927c6ff30114">_to_string_forall</a> (<a class="el" href="classTree.html">Tree</a> tree, <a class="el" href="classint.html">int</a> node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:a0314c5a64f752d8d849f6318ab65d158" id="r_a0314c5a64f752d8d849f6318ab65d158"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#a0314c5a64f752d8d849f6318ab65d158">_to_string_function</a> (<a class="el" href="classTree.html">Tree</a> tree, <a class="el" href="classint.html">int</a> node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:aa91a24dc4305a7dd6d69eee55b038141" id="r_aa91a24dc4305a7dd6d69eee55b038141"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#aa91a24dc4305a7dd6d69eee55b038141">_to_string_function_modifier</a> (<a class="el" href="classTree.html">Tree</a> tree, <a class="el" href="classint.html">int</a> node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
+<tr class="memitem:a13fe4e3e8d42062c98620f04da1c05bb" id="r_a13fe4e3e8d42062c98620f04da1c05bb"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#a13fe4e3e8d42062c98620f04da1c05bb">_to_string_imply</a> (<a class="el" href="classTree.html">Tree</a> tree, <a class="el" href="classint.html">int</a> node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:a6bb4b01c2742b6300dce2d88e5b9e2eb" id="r_a6bb4b01c2742b6300dce2d88e5b9e2eb"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#a6bb4b01c2742b6300dce2d88e5b9e2eb">_to_string_not</a> (<a class="el" href="classTree.html">Tree</a> tree, <a class="el" href="classint.html">int</a> node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:a5a11a80bf432c8245f43399a6c90d19d" id="r_a5a11a80bf432c8245f43399a6c90d19d"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#a5a11a80bf432c8245f43399a6c90d19d">_to_string_number</a> (<a class="el" href="classTree.html">Tree</a> tree, <a class="el" href="classint.html">int</a> node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
 <tr class="memitem:a977cfc63a6f13bdee4175cfe0ba68fb7" id="r_a977cfc63a6f13bdee4175cfe0ba68fb7"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#a977cfc63a6f13bdee4175cfe0ba68fb7">_to_string_or</a> (<a class="el" href="classTree.html">Tree</a> tree, <a class="el" href="classint.html">int</a> node_id, <a class="el" href="classbool.html">bool</a> negate)</td></tr>
@@ -435,6 +438,55 @@ str
 </pre> 
 </div>
 </div>
+<a id="abeb28b73c93b7798b92f927c6ff30114" name="abeb28b73c93b7798b92f927c6ff30114"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abeb28b73c93b7798b92f927c6ff30114">&#9670;&#160;</a></span>_to_string_forall()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"> str _to_string_forall </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classTree.html">Tree</a></td>          <td class="paramname"><span class="paramname"><em>tree</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classint.html">int</a></td>          <td class="paramname"><span class="paramname"><em>node_id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classbool.html">bool</a></td>          <td class="paramname"><span class="paramname"><em>negate</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<pre class="fragment">Convert forall node to string.
+
+Parameters
+----------
+tree : Tree
+    The tree structure.
+node_id : int
+    Node identifier.
+negate : bool
+    Whether to negate.
+
+Returns
+-------
+str
+    String representation, as in C++: untyped variables are of type object.
+</pre> 
+</div>
+</div>
 <a id="a0314c5a64f752d8d849f6318ab65d158" name="a0314c5a64f752d8d849f6318ab65d158"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0314c5a64f752d8d849f6318ab65d158">&#9670;&#160;</a></span>_to_string_function()</h2>
 
@@ -516,6 +568,55 @@ str
 </table>
 </div><div class="memdoc">
 <pre class="fragment">Convert function modifier node to string.
+
+Parameters
+----------
+tree : Tree
+    The tree structure.
+node_id : int
+    Node identifier.
+negate : bool
+    Whether to negate.
+
+Returns
+-------
+str
+    String representation.
+</pre> 
+</div>
+</div>
+<a id="a13fe4e3e8d42062c98620f04da1c05bb" name="a13fe4e3e8d42062c98620f04da1c05bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a13fe4e3e8d42062c98620f04da1c05bb">&#9670;&#160;</a></span>_to_string_imply()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"> str _to_string_imply </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classTree.html">Tree</a></td>          <td class="paramname"><span class="paramname"><em>tree</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classint.html">int</a></td>          <td class="paramname"><span class="paramname"><em>node_id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classbool.html">bool</a></td>          <td class="paramname"><span class="paramname"><em>negate</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<pre class="fragment">Convert imply node to string.
 
 Parameters
 ----------
@@ -1039,6 +1140,42 @@ Returns
 -------
 Node
     Node message with EXISTS type.
+</pre> 
+</div>
+</div>
+<a id="a966ae8004daaa23f69120cfaab3718e1" name="a966ae8004daaa23f69120cfaab3718e1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a966ae8004daaa23f69120cfaab3718e1">&#9670;&#160;</a></span>node_from_string_forall()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"> Node node_from_string_forall </td>
+          <td>(</td>
+          <td class="paramtype">str</td>          <td class="paramname"><span class="paramname"><em>forall</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<pre class="fragment">Create a Node from a forall expression.
+
+Parameters
+----------
+forall : str
+    The forall expression string, e.g. '(forall (?a ?b - robot) (body))'.
+
+Returns
+-------
+Node
+    Node message with FORALL type; '- type' applies to the variables before it.
 </pre> 
 </div>
 </div>

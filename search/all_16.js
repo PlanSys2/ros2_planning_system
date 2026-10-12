@@ -52,7 +52,7 @@ var searchData=
   ['resultcode_49',['ResultCode',['../executor__goal__handling__test_8cpp.html#a2e96f245126d4aa92c372c401feb6139',1,'executor_goal_handling_test.cpp']]],
   ['return_5ffailure_50',['return_failure',['../classplansys2__bt__tests_1_1OnFeedbackFail.html#aa8c606d6d002357ee13b09e5e8449798',1,'plansys2_bt_tests::OnFeedbackFail']]],
   ['returntype_51',['returnType',['../classparser_1_1pddl_1_1Function.html#a30f0eb77494e95a86fe48db2c170684b',1,'parser::pddl::Function']]],
-  ['right_52',['right',['../classparser_1_1pddl_1_1CompositeExpression.html#a9e2b758cfb0c936d236a93531d54dc5b',1,'parser::pddl::CompositeExpression']]],
+  ['right_52',['right',['../classparser_1_1pddl_1_1CompositeExpression.html#a9e2b758cfb0c936d236a93531d54dc5b',1,'parser::pddl::CompositeExpression::right'],['../classparser_1_1pddl_1_1Imply.html#af3fcd7b0016044a892c6d647d062937e',1,'parser::pddl::Imply::right']]],
   ['robot_5fat_53',['robot_at',['../classExecutorGoalHandlingTest.html#af6e5fd3c11dcc8f24e753f238d49a410',1,'ExecutorGoalHandlingTest::robot_at()'],['../classExecutorLifecycleTest.html#af6e5fd3c11dcc8f24e753f238d49a410',1,'ExecutorLifecycleTest::robot_at()']]],
   ['roots_54',['roots',['../structplansys2_1_1ActionGraph.html#a31df302a7190ef6b6a6a101721967278',1,'plansys2::ActionGraph']]],
   ['ros_20messages_55',['Representing PDDL Expressions with ROS Messages',['../dir_91541d6d0404cac86c224625f0047142.html#autotoc_md20',1,'']]],
