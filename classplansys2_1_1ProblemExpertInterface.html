@@ -133,7 +133,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ad23ac3403d344ad9c951292fd41e09d8" id="r_ad23ac3403d344ad9c951292fd41e09d8"><td class="memItemLeft">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad23ac3403d344ad9c951292fd41e09d8">clearGoal</a> ()=0</td></tr>
 <tr class="memdesc:ad23ac3403d344ad9c951292fd41e09d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear the current goal from the problem.  <br /></td></tr>
 <tr class="memitem:a8ed80c3e88db8e49e50fa07db4550e3a" id="r_a8ed80c3e88db8e49e50fa07db4550e3a"><td class="memItemLeft">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a8ed80c3e88db8e49e50fa07db4550e3a">clearKnowledge</a> ()=0</td></tr>
-<tr class="memdesc:a8ed80c3e88db8e49e50fa07db4550e3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear all knowledge (instances, predicates, functions, and goal) from the problem.  <br /></td></tr>
+<tr class="memdesc:a8ed80c3e88db8e49e50fa07db4550e3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear all knowledge (instances, predicates, functions, goal, metric) of the problem.  <br /></td></tr>
+<tr class="memitem:a8bf52f118a112502c249720968b3cb35" id="r_a8bf52f118a112502c249720968b3cb35"><td class="memItemLeft">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a8bf52f118a112502c249720968b3cb35">clearMetric</a> ()=0</td></tr>
+<tr class="memdesc:a8bf52f118a112502c249720968b3cb35"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove the metric of the problem.  <br /></td></tr>
 <tr class="memitem:add9b4836b544d2809c25f40a9b449b75" id="r_add9b4836b544d2809c25f40a9b449b75"><td class="memItemLeft">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#add9b4836b544d2809c25f40a9b449b75">existFunction</a> (const <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &amp;function)=0</td></tr>
 <tr class="memdesc:add9b4836b544d2809c25f40a9b449b75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a function exists in the problem.  <br /></td></tr>
 <tr class="memitem:aa71e747f53c9b0566aeb8fce97fff67d" id="r_aa71e747f53c9b0566aeb8fce97fff67d"><td class="memItemLeft">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa71e747f53c9b0566aeb8fce97fff67d">existPredicate</a> (const <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &amp;predicate)=0</td></tr>
@@ -148,6 +150,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a7189fb9cc05ec7b9e191188b5b97df0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a specific instance by name.  <br /></td></tr>
 <tr class="memitem:adabfe62486a09168380dd8b7076609b8" id="r_adabfe62486a09168380dd8b7076609b8"><td class="memItemLeft">virtual std::vector&lt; <a class="el" href="classplansys2_1_1Instance.html">plansys2::Instance</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#adabfe62486a09168380dd8b7076609b8">getInstances</a> ()=0</td></tr>
 <tr class="memdesc:adabfe62486a09168380dd8b7076609b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get all instances in the problem.  <br /></td></tr>
+<tr class="memitem:a76d0645e8d03af74fd360fce73f8be4a" id="r_a76d0645e8d03af74fd360fce73f8be4a"><td class="memItemLeft">virtual <a class="el" href="classplansys2_1_1Metric.html">plansys2::Metric</a>&#160;</td><td class="memItemRight"><a class="el" href="#a76d0645e8d03af74fd360fce73f8be4a">getMetric</a> ()=0</td></tr>
+<tr class="memdesc:a76d0645e8d03af74fd360fce73f8be4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the metric of the problem: what the planner optimizes.  <br /></td></tr>
 <tr class="memitem:ac6d9319d9211e87c663dcea6532047a1" id="r_ac6d9319d9211e87c663dcea6532047a1"><td class="memItemLeft">virtual std::optional&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ac6d9319d9211e87c663dcea6532047a1">getPredicate</a> (const std::string &amp;expr)=0</td></tr>
 <tr class="memdesc:ac6d9319d9211e87c663dcea6532047a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a specific predicate by its expression.  <br /></td></tr>
 <tr class="memitem:aea53aefe5e377d230f1af44141bb2ab4" id="r_aea53aefe5e377d230f1af44141bb2ab4"><td class="memItemLeft">virtual std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#aea53aefe5e377d230f1af44141bb2ab4">getPredicates</a> ()=0</td></tr>
@@ -166,6 +170,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:aaf1da791448cba48c8dda677953d01f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a predicate from the problem.  <br /></td></tr>
 <tr class="memitem:a04ff349a45541ff82a2ea1d4655e7455" id="r_a04ff349a45541ff82a2ea1d4655e7455"><td class="memItemLeft">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a04ff349a45541ff82a2ea1d4655e7455">setGoal</a> (const <a class="el" href="classplansys2_1_1Goal.html">plansys2::Goal</a> &amp;goal)=0</td></tr>
 <tr class="memdesc:a04ff349a45541ff82a2ea1d4655e7455"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a new goal for the problem.  <br /></td></tr>
+<tr class="memitem:ac6204f913709c8dede6761252cac7cd0" id="r_ac6204f913709c8dede6761252cac7cd0"><td class="memItemLeft">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac6204f913709c8dede6761252cac7cd0">setMetric</a> (const <a class="el" href="classplansys2_1_1Metric.html">plansys2::Metric</a> &amp;metric)=0</td></tr>
+<tr class="memdesc:ac6204f913709c8dede6761252cac7cd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the metric of the problem.  <br /></td></tr>
 <tr class="memitem:ae13aa2f58abfb9668c8dd9de2537fd47" id="r_ae13aa2f58abfb9668c8dd9de2537fd47"><td class="memItemLeft">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#ae13aa2f58abfb9668c8dd9de2537fd47">updateFunction</a> (const <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &amp;function)=0</td></tr>
 <tr class="memdesc:ae13aa2f58abfb9668c8dd9de2537fd47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the value of an existing function.  <br /></td></tr>
 </table>
@@ -390,10 +396,40 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Clear all knowledge (instances, predicates, functions, and goal) from the problem. </p>
+<p>Clear all knowledge (instances, predicates, functions, goal, metric) of the problem. </p>
 <dl class="section return"><dt>Returns</dt><dd>true if the knowledge was successfully cleared, false otherwise. </dd></dl>
 
 <p>Implemented in <a class="el" href="classplansys2_1_1ProblemExpert.html#ab04667a88fa1754f1439880f08514370">ProblemExpert</a>, and <a class="el" href="classplansys2_1_1ProblemExpertClient.html#ab04667a88fa1754f1439880f08514370">ProblemExpertClient</a>.</p>
+
+</div>
+</div>
+<a id="a8bf52f118a112502c249720968b3cb35" name="a8bf52f118a112502c249720968b3cb35"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8bf52f118a112502c249720968b3cb35">&#9670;&#160;</a></span>clearMetric()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="classbool.html">bool</a> clearMetric </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel pure-virtual">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Remove the metric of the problem. </p>
+<dl class="section return"><dt>Returns</dt><dd>true if the metric was cleared. </dd></dl>
+
+<p>Implemented in <a class="el" href="classplansys2_1_1ProblemExpert.html#a8aa12d704f03f9cdb62ace16f76eae9a">ProblemExpert</a>, and <a class="el" href="classplansys2_1_1ProblemExpertClient.html#a8aa12d704f03f9cdb62ace16f76eae9a">ProblemExpertClient</a>.</p>
 
 </div>
 </div>
@@ -628,6 +664,36 @@ Public Member Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>std::vector&lt;plansys2::Instance&gt; Vector containing all instances in the problem. </dd></dl>
 
 <p>Implemented in <a class="el" href="classplansys2_1_1ProblemExpert.html#adfbc5177c7986c3f24fa35c381da9032">ProblemExpert</a>, and <a class="el" href="classplansys2_1_1ProblemExpertClient.html#adfbc5177c7986c3f24fa35c381da9032">ProblemExpertClient</a>.</p>
+
+</div>
+</div>
+<a id="a76d0645e8d03af74fd360fce73f8be4a" name="a76d0645e8d03af74fd360fce73f8be4a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a76d0645e8d03af74fd360fce73f8be4a">&#9670;&#160;</a></span>getMetric()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="classplansys2_1_1Metric.html">plansys2::Metric</a> getMetric </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel pure-virtual">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the metric of the problem: what the planner optimizes. </p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="classplansys2_1_1Metric.html" title="Represents the metric of the problem: what the planner optimizes.">plansys2::Metric</a> The metric, with an empty tree if there is none. </dd></dl>
+
+<p>Implemented in <a class="el" href="classplansys2_1_1ProblemExpert.html#a231ee9afce60cb83837fd88e9073cb12">ProblemExpert</a>, and <a class="el" href="classplansys2_1_1ProblemExpertClient.html#a231ee9afce60cb83837fd88e9073cb12">ProblemExpertClient</a>.</p>
 
 </div>
 </div>
@@ -904,6 +970,42 @@ Public Member Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>true if the goal was successfully set, false otherwise. </dd></dl>
 
 <p>Implemented in <a class="el" href="classplansys2_1_1ProblemExpert.html#a998ac8e71bd42b5ad5a76f9046d6d690">ProblemExpert</a>, and <a class="el" href="classplansys2_1_1ProblemExpertClient.html#a998ac8e71bd42b5ad5a76f9046d6d690">ProblemExpertClient</a>.</p>
+
+</div>
+</div>
+<a id="ac6204f913709c8dede6761252cac7cd0" name="ac6204f913709c8dede6761252cac7cd0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac6204f913709c8dede6761252cac7cd0">&#9670;&#160;</a></span>setMetric()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="classbool.html">bool</a> setMetric </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2_1_1Metric.html">plansys2::Metric</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>metric</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel pure-virtual">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set the metric of the problem. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">metric</td><td>The metric: minimize or maximize a numeric expression over the functions of the domain and (total-time). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the metric was valid and set, false otherwise. </dd></dl>
+
+<p>Implemented in <a class="el" href="classplansys2_1_1ProblemExpert.html#a23ad18c8dbb76bd9d76c0c443302c77e">ProblemExpert</a>, and <a class="el" href="classplansys2_1_1ProblemExpertClient.html#a23ad18c8dbb76bd9d76c0c443302c77e">ProblemExpertClient</a>.</p>
 
 </div>
 </div>

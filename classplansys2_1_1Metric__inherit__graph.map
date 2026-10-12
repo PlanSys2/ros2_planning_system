@@ -1,0 +1,5 @@
+<map id="Metric" name="Metric">
+<area shape="rect" id="Node000001" title="Represents the metric of the problem: what the planner optimizes." alt="" coords="5,79,63,105"/>
+<area shape="rect" id="Node000002" href="$classplansys2__msgs_1_1msg_1_1Metric.html" title=" " alt="" coords="5,5,63,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="37,46,37,79,31,79,31,46"/>
+</map>

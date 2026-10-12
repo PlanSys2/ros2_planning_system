@@ -165,6 +165,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a52a71c4a3b651c46bba2162349dcc924"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to get details about a specific problem instance.  <br /></td></tr>
 <tr class="memitem:a6cf0134b6921767fae94a5a7a7870773" id="r_a6cf0134b6921767fae94a5a7a7870773"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a6cf0134b6921767fae94a5a7a7870773">get_problem_instances_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::GetProblemInstances::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::GetProblemInstances::Response &gt; response)</td></tr>
 <tr class="memdesc:a6cf0134b6921767fae94a5a7a7870773"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to get all problem instances.  <br /></td></tr>
+<tr class="memitem:ab19202a2d372e23361b0992545296764" id="r_ab19202a2d372e23361b0992545296764"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ab19202a2d372e23361b0992545296764">get_problem_metric_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::GetProblemMetric::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::GetProblemMetric::Response &gt; response)</td></tr>
+<tr class="memdesc:ab19202a2d372e23361b0992545296764"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to get the problem metric.  <br /></td></tr>
 <tr class="memitem:a33908d248ab70653d5e8cb3faa0f6aba" id="r_a33908d248ab70653d5e8cb3faa0f6aba"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a33908d248ab70653d5e8cb3faa0f6aba">get_problem_predicate_details_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::GetNodeDetails::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::GetNodeDetails::Response &gt; response)</td></tr>
 <tr class="memdesc:a33908d248ab70653d5e8cb3faa0f6aba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to get details about a specific problem predicate.  <br /></td></tr>
 <tr class="memitem:a4d38d337c3f24a4ac5452de857baf3bc" id="r_a4d38d337c3f24a4ac5452de857baf3bc"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a4d38d337c3f24a4ac5452de857baf3bc">get_problem_predicates_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::GetStates::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::GetStates::Response &gt; response)</td></tr>
@@ -193,8 +195,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:abfa0235f83a49d05060ede3d7cc858a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to remove the problem goal.  <br /></td></tr>
 <tr class="memitem:a0c74e44d357dc594210558d893e90aa9" id="r_a0c74e44d357dc594210558d893e90aa9"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a0c74e44d357dc594210558d893e90aa9">remove_problem_instance_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::AffectParam::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::AffectParam::Response &gt; response)</td></tr>
 <tr class="memdesc:a0c74e44d357dc594210558d893e90aa9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to remove a problem instance.  <br /></td></tr>
+<tr class="memitem:afdc000247bf7a25eb8b2ae7576b829e9" id="r_afdc000247bf7a25eb8b2ae7576b829e9"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#afdc000247bf7a25eb8b2ae7576b829e9">remove_problem_metric_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::RemoveProblemMetric::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::RemoveProblemMetric::Response &gt; response)</td></tr>
+<tr class="memdesc:afdc000247bf7a25eb8b2ae7576b829e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to remove the problem metric.  <br /></td></tr>
 <tr class="memitem:a2e5d667bd4592da9a14ddf5a5fef7b85" id="r_a2e5d667bd4592da9a14ddf5a5fef7b85"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a2e5d667bd4592da9a14ddf5a5fef7b85">remove_problem_predicate_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::AffectNode::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::AffectNode::Response &gt; response)</td></tr>
 <tr class="memdesc:a2e5d667bd4592da9a14ddf5a5fef7b85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to remove a problem predicate.  <br /></td></tr>
+<tr class="memitem:a7ddcf447ef0a9a6239b55b3bc9b2c13a" id="r_a7ddcf447ef0a9a6239b55b3bc9b2c13a"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a7ddcf447ef0a9a6239b55b3bc9b2c13a">set_problem_metric_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::SetProblemMetric::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::SetProblemMetric::Response &gt; response)</td></tr>
+<tr class="memdesc:a7ddcf447ef0a9a6239b55b3bc9b2c13a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to set the problem metric.  <br /></td></tr>
 <tr class="memitem:ab2b64477760bed32a91e8ac33737c065" id="r_ab2b64477760bed32a91e8ac33737c065"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ab2b64477760bed32a91e8ac33737c065">update_problem_function_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::AffectNode::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::AffectNode::Response &gt; response)</td></tr>
 <tr class="memdesc:ab2b64477760bed32a91e8ac33737c065"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to update a problem function's value.  <br /></td></tr>
 </table>
@@ -761,6 +767,42 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ab19202a2d372e23361b0992545296764" name="ab19202a2d372e23361b0992545296764"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab19202a2d372e23361b0992545296764">&#9670;&#160;</a></span>get_problem_metric_service_callback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void get_problem_metric_service_callback </td>
+          <td>(</td>
+          <td class="paramtype">const std::shared_ptr&lt; rmw_request_id_t &gt;</td>          <td class="paramname"><span class="paramname"><em>request_header</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::shared_ptr&lt; plansys2_msgs::srv::GetProblemMetric::Request &gt;</td>          <td class="paramname"><span class="paramname"><em>request</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::shared_ptr&lt; plansys2_msgs::srv::GetProblemMetric::Response &gt;</td>          <td class="paramname"><span class="paramname"><em>response</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Service callback to get the problem metric. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">request_header</td><td>ROS service request header. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">request</td><td>Empty service request. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">response</td><td>Service response containing the metric and success status. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a33908d248ab70653d5e8cb3faa0f6aba" name="a33908d248ab70653d5e8cb3faa0f6aba"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a33908d248ab70653d5e8cb3faa0f6aba">&#9670;&#160;</a></span>get_problem_predicate_details_service_callback()</h2>
 
@@ -1169,6 +1211,42 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="afdc000247bf7a25eb8b2ae7576b829e9" name="afdc000247bf7a25eb8b2ae7576b829e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afdc000247bf7a25eb8b2ae7576b829e9">&#9670;&#160;</a></span>remove_problem_metric_service_callback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void remove_problem_metric_service_callback </td>
+          <td>(</td>
+          <td class="paramtype">const std::shared_ptr&lt; rmw_request_id_t &gt;</td>          <td class="paramname"><span class="paramname"><em>request_header</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::shared_ptr&lt; plansys2_msgs::srv::RemoveProblemMetric::Request &gt;</td>          <td class="paramname"><span class="paramname"><em>request</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::shared_ptr&lt; plansys2_msgs::srv::RemoveProblemMetric::Response &gt;</td>          <td class="paramname"><span class="paramname"><em>response</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Service callback to remove the problem metric. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">request_header</td><td>ROS service request header. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">request</td><td>Empty service request. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">response</td><td>Service response with success status and error information. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a2e5d667bd4592da9a14ddf5a5fef7b85" name="a2e5d667bd4592da9a14ddf5a5fef7b85"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2e5d667bd4592da9a14ddf5a5fef7b85">&#9670;&#160;</a></span>remove_problem_predicate_service_callback()</h2>
 
@@ -1198,6 +1276,42 @@ Public Member Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">request_header</td><td>ROS service request header. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">request</td><td>Service request containing the predicate node to remove. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">response</td><td>Service response with success status and error information. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a7ddcf447ef0a9a6239b55b3bc9b2c13a" name="a7ddcf447ef0a9a6239b55b3bc9b2c13a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ddcf447ef0a9a6239b55b3bc9b2c13a">&#9670;&#160;</a></span>set_problem_metric_service_callback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void set_problem_metric_service_callback </td>
+          <td>(</td>
+          <td class="paramtype">const std::shared_ptr&lt; rmw_request_id_t &gt;</td>          <td class="paramname"><span class="paramname"><em>request_header</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::shared_ptr&lt; plansys2_msgs::srv::SetProblemMetric::Request &gt;</td>          <td class="paramname"><span class="paramname"><em>request</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::shared_ptr&lt; plansys2_msgs::srv::SetProblemMetric::Response &gt;</td>          <td class="paramname"><span class="paramname"><em>response</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Service callback to set the problem metric. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">request_header</td><td>ROS service request header. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">request</td><td>Service request containing the metric. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">response</td><td>Service response with success status and error information. </td></tr>
   </table>
   </dd>
