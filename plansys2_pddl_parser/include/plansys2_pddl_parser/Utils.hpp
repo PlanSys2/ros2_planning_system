@@ -22,6 +22,7 @@
 
 #include "plansys2_msgs/msg/action.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
+#include "plansys2_msgs/msg/metric.hpp"
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/param.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
@@ -224,6 +225,16 @@ bool checkParamTypeEquivalence(
   const plansys2_msgs::msg::Param & first, const plansys2_msgs::msg::Param & second);
 
 bool compare_str_case_insensitive(const std::string & a, const std::string & b);
+
+/// Parses a metric: "minimize <expr>" or "maximize <expr>", optionally as "(:metric ...)".
+/**
+ * \param[in] metric The metric as a string, e.g. "minimize (+ (cost) (* 10 (total-time)))"
+ * \return The metric, with an empty tree if the string is not a valid metric
+*/
+plansys2_msgs::msg::Metric metricFromString(const std::string & metric);
+
+/// The metric as "minimize <expr>" or "maximize <expr>"; empty if there is no metric.
+std::string toString(const plansys2_msgs::msg::Metric & metric);
 
 
 }  // namespace pddl

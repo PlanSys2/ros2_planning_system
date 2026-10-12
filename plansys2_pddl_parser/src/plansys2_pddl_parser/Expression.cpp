@@ -120,6 +120,10 @@ Expression * createExpression(Stringreader & f, TokenStruct<std::string> & ts, D
       CompositeExpression * ce = new CompositeExpression(s);
       ce->parse(f, ts, d);
       return ce;
+    } else if (s == "total-time") {
+      f.next();
+      f.assert_token(")");
+      return new TotalTimeExpression();
     } else {
       // It is a function expression
       f.c -= s.size();

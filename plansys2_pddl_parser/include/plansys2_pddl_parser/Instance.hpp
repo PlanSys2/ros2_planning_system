@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "plansys2_pddl_parser/Domain.hpp"
+#include "plansys2_pddl_parser/Expression.hpp"
 // #undef DOMAIN_DEBUG
 // #define DOMAIN_DEBUG true
 namespace parser
@@ -33,7 +34,9 @@ public:
   GroundVec init;              // initial state
   Condition * goal = nullptr;  // Goal condition
   TokenStruct<std::string> ts;
-  bool metric;
+  bool metric;                           // whether there is a :metric
+  bool maximize = false;                 // maximize or minimize the metric
+  Expression * metric_expr = nullptr;    // what the metric optimizes
 
   explicit Instance(Domain & dom)
   : d(dom), metric(false) {}
@@ -45,6 +48,7 @@ public:
   {
     for (unsigned i = 0; i < init.size(); ++i) {delete init[i];}
     if (nullptr != goal) {delete goal;}
+    if (nullptr != metric_expr) {delete metric_expr;}
   }
 
   void parse(const std::string & s)
@@ -175,25 +179,23 @@ public:
     f.assert_token(")");
   }
 
-  // for the moment only parse total-cost/total-time
+  // (:metric minimize|maximize <numeric expression>), the expression may use (total-time)
   void parseMetric(Stringreader & f)
   {
-    if (!d.temp && !d.costs) {
-      throw std::runtime_error("metric only defined for temporal actions or actions with costs");
-    }
-
-    metric = true;
-
     f.next();
-    f.assert_token("minimize");
-    f.assert_token("(");
-    if (d.temp) {
-      f.assert_token("total-time");
-    } else {
-      f.assert_token("total-cost");
+    std::string optimization = f.getToken();
+    if (optimization != "minimize" && optimization != "maximize") {
+      f.tokenExit(optimization);
     }
+
+    Expression * expr = createExpression(f, ts, d);
+    f.next();
     f.assert_token(")");
-    f.assert_token(")");
+
+    if (nullptr != metric_expr) {delete metric_expr;}
+    metric_expr = expr;
+    maximize = optimization == "maximize";
+    metric = true;
   }
 
   // add an object of a certain type
@@ -270,6 +272,14 @@ public:
     parseGoal(f);
   }
 
+  // Set the metric: optimization is "minimize" or "maximize", s a numeric expression
+  void addMetric(const std::string & optimization, const std::string & s)
+  {
+    std::string ss = optimization + " " + s + ")";
+    Stringreader f(ss);
+    parseMetric(f);
+  }
+
   friend std::ostream & operator<<(std::ostream & os, const Instance & o) {return o.print(os);}
   virtual std::ostream & print(std::ostream & stream) const
   {
@@ -301,14 +311,10 @@ public:
     if (nullptr != goal) {goal->PDDLPrint(stream, 1, ts /* TokenStruct< std::string >() */, d);}
     stream << ")\n";
 
-    if (metric) {
-      stream << "( :metric minimize ( total-";
-      if (d.temp) {
-        stream << "time";
-      } else {
-        stream << "cost";
-      }
-      stream << " ) )\n";
+    if (metric && nullptr != metric_expr) {
+      stream << "( :metric " << (maximize ? "maximize" : "minimize") << " ";
+      metric_expr->PDDLPrint(stream, 0, ts, d);
+      stream << " )\n";
     }
 
     stream << ")\n";

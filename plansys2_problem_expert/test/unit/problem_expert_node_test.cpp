@@ -1209,6 +1209,16 @@ TEST(problem_expert_node, cached_problem_follows_the_client_changes)
         return client->setGoal(plansys2::Goal("(and (robot_at r2d2 kitchen))"));
       }},
     {"clearGoal", [&]() {return client->clearGoal();}},
+    {"setMetric", [&]() {
+        return client->setMetric(plansys2::Metric("minimize (room_distance kitchen bedroom)"));
+      }},
+    {"setMetric again", [&]() {
+        return client->setMetric(plansys2::Metric("maximize (total-time)"));
+      }},
+    {"clearMetric", [&]() {return client->clearMetric();}},
+    {"setMetric before the instances go", [&]() {
+        return client->setMetric(plansys2::Metric("minimize (total-time)"));
+      }},
     {"removePredicate", [&]() {
         return client->removePredicate(plansys2::Predicate("(robot_at r2d2 kitchen)"));
       }},
@@ -1231,6 +1241,71 @@ TEST(problem_expert_node, cached_problem_follows_the_client_changes)
       ASSERT_EQ(cached, client->getProblem()) << name << " in round " << round;
     }
   }
+}
+
+TEST(problem_expert_node, metric_services)
+{
+  NodesWithClient nodes("metric_services");
+  auto & client = nodes.problem_client;
+
+  auto listener = rclcpp::Node::make_shared("metric_services_listener");
+  plansys2_msgs::msg::Knowledge last_knowledge;
+  auto knowledge_sub = listener->create_subscription<plansys2_msgs::msg::Knowledge>(
+    "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
+    [&last_knowledge](const plansys2_msgs::msg::Knowledge::SharedPtr msg) {
+      last_knowledge = *msg;
+    });
+  auto knowledge_metric = [&]() {
+      for (int i = 0; i < 20; i++) {
+        rclcpp::spin_some(listener);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      }
+      return last_knowledge.metric;
+    };
+
+  ASSERT_TRUE(client->addInstance(plansys2::Instance("r2d2", "robot")));
+  ASSERT_TRUE(client->addInstance(plansys2::Instance("kitchen", "room")));
+  ASSERT_TRUE(client->addInstance(plansys2::Instance("bedroom", "room")));
+
+  ASSERT_TRUE(client->getMetric().tree.nodes.empty());
+  ASSERT_EQ(knowledge_metric(), "");
+
+  // Invalid metrics do not reach the problem
+  ASSERT_FALSE(client->setMetric(plansys2::Metric("minimize (room_distance kitchen hall)")));
+  ASSERT_FALSE(client->setMetric(plansys2::Metric("minimize (robot_at r2d2 kitchen)")));
+  ASSERT_FALSE(client->setMetric(plansys2::Metric()));
+  ASSERT_TRUE(client->getMetric().tree.nodes.empty());
+
+  ASSERT_TRUE(
+    client->setMetric(
+      plansys2::Metric("minimize (+ (room_distance kitchen bedroom) (* 10 (total-time)))")));
+  auto metric = client->getMetric();
+  ASSERT_EQ(metric.optimization, plansys2_msgs::msg::Metric::MINIMIZE);
+  ASSERT_EQ(
+    parser::pddl::toString(metric),
+    "minimize (+  (room_distance kitchen bedroom) (*  10.000000 (total-time)))");
+  ASSERT_EQ(knowledge_metric(), parser::pddl::toString(metric));
+  ASSERT_NE(
+    client->getProblem().find(
+      "( :metric minimize ( + ( room_distance kitchen bedroom ) "
+      "( * 10 ( total-time ) ) ) )"),
+    std::string::npos);
+
+  ASSERT_TRUE(client->clearMetric());
+  ASSERT_TRUE(client->getMetric().tree.nodes.empty());
+  ASSERT_EQ(knowledge_metric(), "");
+  ASSERT_EQ(client->getProblem().find(":metric"), std::string::npos);
+
+  // From a whole problem
+  ASSERT_TRUE(
+    client->addProblem(
+      "(define (problem p) (:domain simple) (:objects r2d2 - robot kitchen bedroom - room)"
+      "(:init (robot_at r2d2 kitchen)) (:goal (and (robot_at r2d2 bedroom)))"
+      "(:metric maximize (total-time)))"));
+  ASSERT_EQ(parser::pddl::toString(client->getMetric()), "maximize (total-time)");
+
+  ASSERT_TRUE(client->clearKnowledge());
+  ASSERT_TRUE(client->getMetric().tree.nodes.empty());
 }
 
 TEST(problem_expert_node, problem_messages_older_than_a_change_are_ignored)

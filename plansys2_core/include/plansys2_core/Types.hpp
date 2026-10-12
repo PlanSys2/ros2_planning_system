@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "plansys2_msgs/msg/derived.hpp"
+#include "plansys2_msgs/msg/metric.hpp"
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/param.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
@@ -450,6 +451,40 @@ public:
    */
   Goal(const plansys2_msgs::msg::Tree & goal)  // NOLINT(runtime/explicit)
   : plansys2_msgs::msg::Tree(goal)
+  {
+  }
+};
+
+/**
+ * @class plansys2::Metric
+ * @brief Represents the metric of the problem: what the planner optimizes.
+ *
+ * Inherits from plansys2_msgs::msg::Metric. An empty tree means that there is no metric.
+ */
+class Metric : public plansys2_msgs::msg::Metric
+{
+public:
+  /**
+   * @brief Default constructor: no metric.
+   */
+  Metric()
+  : plansys2_msgs::msg::Metric() {}
+
+  /**
+   * @brief Construct a Metric from a string such as "minimize (+ (cost) (total-time))".
+   * @param[in] metric The metric as a string, optionally as "(:metric ...)".
+   */
+  explicit Metric(const std::string & metric)
+  : plansys2_msgs::msg::Metric(parser::pddl::metricFromString(metric))
+  {
+  }
+
+  /**
+   * @brief Construct a Metric from an existing Metric message.
+   * @param[in] metric The Metric message.
+   */
+  Metric(const plansys2_msgs::msg::Metric & metric)  // NOLINT(runtime/explicit)
+  : plansys2_msgs::msg::Metric(metric)
   {
   }
 };

@@ -270,6 +270,40 @@ class DurationExpression : public Expression
   Condition * copy(Domain &) {return new DurationExpression();}
 };
 
+// (total-time): the makespan of the plan, only meaningful in a :metric
+class TotalTimeExpression : public Expression
+{
+public:
+  void PDDLPrint(
+    std::ostream & s, unsigned, const TokenStruct<std::string> &,
+    const Domain &) const override
+  {
+    s << "( total-time )";
+  }
+
+  plansys2_msgs::msg::Node::SharedPtr getTree(
+    plansys2_msgs::msg::Tree & tree, const Domain &,
+    const std::vector<std::string> & = {}) const override
+  {
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::FUNCTION;
+    node->node_id = tree.nodes.size();
+    node->name = "total-time";
+    tree.nodes.push_back(*node);
+    return node;
+  }
+
+  std::string info() const {return "total-time";}
+
+  double evaluate() {return -1;}
+
+  double evaluate(Instance &, const StringVec &) {return evaluate();}
+
+  IntSet params() {return IntSet();}
+
+  Condition * copy(Domain &) {return new TotalTimeExpression();}
+};
+
 class ParamExpression : public Expression
 {
 public:
