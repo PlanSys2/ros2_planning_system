@@ -99,10 +99,11 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <h1 class="doxsection"><a class="anchor" id="autotoc_md7"></a>
 1. How to debug errors in PDDL?</h1>
 <p>Working with PDDL is difficult. If the PDDL domain is not well designed, or predicates or instances are missing, it is impossible to generate a plan. Plansys2 will notify you, but it is difficult to debug and solve the problem.</p>
-<p>When it is required to generate a plan, Plansys2 generates a file with the domain, <span class="tt">/tmp/${namespace}/domain.pddl</span> and another with the problem <span class="tt">/tmp/${namespace}/domain.pddl</span>. In addition, the output of the plan solver (popf) is saved in /tmp/${namespace}/plan.pddl.</p>
-<p>It is possible to execute the plan solver in isolation using the command:</p>
-<div class="fragment"><div class="line">ros2 run popf popf /tmp/${namespace}/domain.pddl /tmp/${namespace}/problem.pddl</div>
-</div><!-- fragment --><p>Use <span class="tt">ros2 run popf popf -h</span> for more help. </p>
+<p>Kairos, the default plan solver, reports errors in the domain and the problem with their line and column in the log of the planner and of the domain expert. To work on them outside PlanSys2, save the domain (<span class="tt">get domain</span> in the terminal, or the service <span class="tt">/domain_expert/get_domain</span>) and the problem (the service <span class="tt">/problem_expert/get_problem</span>) and run Kairos on them:</p>
+<div class="fragment"><div class="line">kairos check domain.pddl problem.pddl   # errors and warnings, and the PDDL features used</div>
+<div class="line">kairos domain.pddl problem.pddl -v      # the plan, with the progress of the search</div>
+</div><!-- fragment --><p>If the goal cannot be reached, Kairos says which part of it no action can achieve.</p>
+<p>With POPF as plan solver, PlanSys2 writes the domain to <span class="tt">/tmp/${namespace}/domain.pddl</span>, the problem to <span class="tt">/tmp/${namespace}/problem.pddl</span> and the output of POPF to <span class="tt">/tmp/${namespace}/plan.pddl</span>, and POPF can be run in isolation with <span class="tt">ros2 run popf popf /tmp/${namespace}/domain.pddl /tmp/${namespace}/problem.pddl</span>. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->
