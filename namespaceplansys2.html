@@ -96,7 +96,8 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">plansys2 Namespace Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -211,6 +212,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure that represents a state vector in the planning system.  <a href="structplansys2_1_1StateVec.html#details">More...</a><br /></td></tr>
 <tr class="memitem:STNBTBuilder" id="r_STNBTBuilder"><td class="memItemLeft">class &#160;</td><td class="memItemRight"><a class="el" href="classplansys2_1_1STNBTBuilder.html">STNBTBuilder</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Behavior tree builder that uses Simple Temporal Networks (STN) to manage temporal constraints.  <a href="classplansys2_1_1STNBTBuilder.html#details">More...</a><br /></td></tr>
+<tr class="memitem:StnDependency" id="r_StnDependency"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structplansys2_1_1StnDependency.html">StnDependency</a></td></tr>
 <tr class="memitem:TreeInfo" id="r_TreeInfo"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structplansys2_1_1TreeInfo.html">TreeInfo</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains information about a behavior tree for plan execution.  <a href="structplansys2_1_1TreeInfo.html#details">More...</a><br /></td></tr>
 <tr class="memitem:WaitAction" id="r_WaitAction"><td class="memItemLeft">class &#160;</td><td class="memItemRight"><a class="el" href="classplansys2_1_1WaitAction.html">WaitAction</a></td></tr>
@@ -220,6 +222,7 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-typedef-members" class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
+<tr class="memitem:adc723289ab3ed347857fa1a5307734fc" id="r_adc723289ab3ed347857fa1a5307734fc"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#adc723289ab3ed347857fa1a5307734fc">ActionMap</a> = std::map&lt;std::string, <a class="el" href="structplansys2_1_1ActionExecutionInfo.html">ActionExecutionInfo</a>&gt;</td></tr>
 <tr class="memitem:abed964da0e282db0e79c4ceb1e3cd8cd" id="r_abed964da0e282db0e79c4ceb1e3cd8cd"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#abed964da0e282db0e79c4ceb1e3cd8cd">CallbackReturnT</a></td></tr>
 <tr class="memitem:a38354d810b434081b5312da939c726b6" id="r_a38354d810b434081b5312da939c726b6"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a38354d810b434081b5312da939c726b6">ExecutePlan</a> = plansys2_msgs::action::ExecutePlan</td></tr>
 </table><table class="memberdecls">
@@ -269,6 +272,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:a485e6dd35f6cace344f0cf829ca1fcc7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a PDDL expression represented as a tree.  <br /></td></tr>
 <tr class="memitem:ab40238981569796eb68ae3c3a62fb584" id="r_ab40238981569796eb68ae3c3a62fb584"><td class="memItemLeft">std::tuple&lt; <a class="el" href="classbool.html">bool</a>, <a class="el" href="classbool.html">bool</a>, double &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ab40238981569796eb68ae3c3a62fb584">evaluate</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt; &amp;predicates, std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt; &amp;functions, <a class="el" href="classbool.html">bool</a> apply=false, uint32_t node_id=0)</td></tr>
 <tr class="memdesc:ab40238981569796eb68ae3c3a62fb584"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a PDDL expression represented as a tree using only local state.  <br /></td></tr>
+<tr class="memitem:aa7e00850519c4ebec006112ac60a2cd1" id="r_aa7e00850519c4ebec006112ac60a2cd1"><td class="memItemLeft"><a class="el" href="structplansys2_1_1Node.html#abf2fb63266a358aa04393a2bb62c9478">Node::Ptr</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa7e00850519c4ebec006112ac60a2cd1">find_stn_node</a> (const <a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> &amp;graph, const std::string &amp;action_id, const std::string &amp;type)</td></tr>
 <tr class="memitem:a3badc6789891cf9c42d6f777150fe2ab" id="r_a3badc6789891cf9c42d6f777150fe2ab"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a3badc6789891cf9c42d6f777150fe2ab">get_action_expression</a> (const std::string &amp;input)</td></tr>
 <tr class="memdesc:a3badc6789891cf9c42d6f777150fe2ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse the action expression from an input string.  <br /></td></tr>
 <tr class="memitem:a9293b830d5b15986fed31f60dfc957b3" id="r_a9293b830d5b15986fed31f60dfc957b3"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a9293b830d5b15986fed31f60dfc957b3">get_action_name</a> (const std::string &amp;input)</td></tr>
@@ -288,23 +292,45 @@ Functions</h2></td></tr>
 <tr class="memitem:a53fcc777201afa76a12b79464de9d514" id="r_a53fcc777201afa76a12b79464de9d514"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a53fcc777201afa76a12b79464de9d514">operator==</a> (const <a class="el" href="classplansys2_1_1NodeVariant.html">NodeVariant</a> &amp;lhs, const <a class="el" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp;rhs)</td></tr>
 <tr class="memitem:ae39d64692b209053c066ca40d35f98d1" id="r_ae39d64692b209053c066ca40d35f98d1"><td class="memItemLeft">std::pair&lt; std::string, <a class="el" href="classint.html">int</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ae39d64692b209053c066ca40d35f98d1">parse_action</a> (const std::string &amp;input)</td></tr>
 <tr class="memdesc:ae39d64692b209053c066ca40d35f98d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse the action expression and time (optional) from an input string.  <br /></td></tr>
+<tr class="memitem:a31d28eecabd8fb6fabfc6f2794926da2" id="r_a31d28eecabd8fb6fabfc6f2794926da2"><td class="memItemLeft">std::optional&lt; <a class="el" href="structplansys2_1_1StnDependency.html">StnDependency</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a31d28eecabd8fb6fabfc6f2794926da2">parse_stn_dependency</a> (const std::string &amp;text)</td></tr>
 <tr class="memitem:a4a891994cae8c4503e433efd09c3b5cf" id="r_a4a891994cae8c4503e433efd09c3b5cf"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a4a891994cae8c4503e433efd09c3b5cf">remove_comments</a> (const std::string &amp;pddl)</td></tr>
 <tr class="memdesc:a4a891994cae8c4503e433efd09c3b5cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove the comments from a PDDL string.  <br /></td></tr>
 <tr class="memitem:a80e3c06e33f16b9a00bc5bad92a626c1" id="r_a80e3c06e33f16b9a00bc5bad92a626c1"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a80e3c06e33f16b9a00bc5bad92a626c1">replace</a> (std::string &amp;str, const std::string &amp;from, const std::string &amp;to)</td></tr>
 <tr class="memdesc:a80e3c06e33f16b9a00bc5bad92a626c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replaces all occurrences of a substring in a string.  <br /></td></tr>
 <tr class="memitem:ab575d035ca09922efd613f4a9c328cee" id="r_ab575d035ca09922efd613f4a9c328cee"><td class="memItemLeft"><a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a>&#160;</td><td class="memItemRight"><a class="el" href="#ab575d035ca09922efd613f4a9c328cee">replace_children_param</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, const uint32_t &amp;node_id, const std::map&lt; std::string, std::string &gt; &amp;replace)</td></tr>
 <tr class="memdesc:ab575d035ca09922efd613f4a9c328cee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace parameter names in children nodes of a PDDL expression tree.  <br /></td></tr>
+<tr class="memitem:a6d1404795432e77ceb6268bc9eb708e4" id="r_a6d1404795432e77ceb6268bc9eb708e4"><td class="memItemLeft">std::optional&lt; double &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a6d1404795432e77ceb6268bc9eb708e4">seconds_since_parent</a> (<a class="el" href="#adc723289ab3ed347857fa1a5307734fc">ActionMap</a> &amp;action_map, const <a class="el" href="structplansys2_1_1StnDependency.html">StnDependency</a> &amp;dependency, const rclcpp::Time &amp;now)</td></tr>
 <tr class="memitem:ac0dc8a4e35bbe986c34479a396cf04e2" id="r_ac0dc8a4e35bbe986c34479a396cf04e2"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac0dc8a4e35bbe986c34479a396cf04e2">startup_function</a> (std::map&lt; std::string, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1LifecycleServiceClient.html">LifecycleServiceClient</a> &gt; &gt; &amp;manager_nodes, std::chrono::seconds timeout)</td></tr>
 <tr class="memdesc:ac0dc8a4e35bbe986c34479a396cf04e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Starts up all managed nodes using their <a class="el" href="classplansys2_1_1LifecycleServiceClient.html" title="Client node to manage the lifecycle of another ROS2 node.">LifecycleServiceClient</a> interfaces.  <br /></td></tr>
+<tr class="memitem:a42b49d0e3a5fc862035352348c5d1874" id="r_a42b49d0e3a5fc862035352348c5d1874"><td class="memItemLeft">std::pair&lt; double, double &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a42b49d0e3a5fc862035352348c5d1874">stn_bounds</a> (const <a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> &amp;graph, const <a class="el" href="structplansys2_1_1StnDependency.html">StnDependency</a> &amp;dependency)</td></tr>
 <tr class="memitem:a620c02081274310f595099a5595910d7" id="r_a620c02081274310f595099a5595910d7"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a620c02081274310f595099a5595910d7">substr_without_empty_lines</a> (std::string string, std::size_t init_pos, std::size_t end_pos)</td></tr>
 <tr class="memdesc:a620c02081274310f595099a5595910d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a substring without empty lines.  <br /></td></tr>
 <tr class="memitem:ac06656f4bf3bdcf5400e75f2c4ca59cb" id="r_ac06656f4bf3bdcf5400e75f2c4ca59cb"><td class="memItemLeft">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ac06656f4bf3bdcf5400e75f2c4ca59cb">tokenize</a> (const std::string &amp;string, const std::string &amp;delim)</td></tr>
 <tr class="memdesc:ac06656f4bf3bdcf5400e75f2c4ca59cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits a string into tokens based on a delimiter.  <br /></td></tr>
+<tr class="memitem:af2567c35d6f459fc430dd979b190e43d" id="r_af2567c35d6f459fc430dd979b190e43d"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#af2567c35d6f459fc430dd979b190e43d">update_stn_on_event</a> (const <a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> &amp;graph, const std::shared_ptr&lt; <a class="el" href="classplansys2_1_1BTBuilder.html">BTBuilder</a> &gt; &amp;builder, <a class="el" href="#adc723289ab3ed347857fa1a5307734fc">ActionMap</a> &amp;action_map, const std::string &amp;action_id, <a class="el" href="#a21d5e8f8cdaa838586b31007df0a950b">ActionType</a> type, const rclcpp::Time &amp;now)</td></tr>
 <tr class="memitem:a8e07ddf5b5b0e71f767a82424f50286b" id="r_a8e07ddf5b5b0e71f767a82424f50286b"><td class="memTemplParams" colspan="2">template&lt;typename FutureT, typename WaitTimeT&gt; </td></tr>
 <tr class="memitem:a8e07ddf5b5b0e71f767a82424f50286b template"><td class="memItemLeft">std::future_status&#160;</td><td class="memItemRight"><a class="el" href="#a8e07ddf5b5b0e71f767a82424f50286b">wait_for_result</a> (FutureT &amp;future, WaitTimeT time_to_wait)</td></tr>
 <tr class="memdesc:a8e07ddf5b5b0e71f767a82424f50286b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waits for a future to be ready or until a timeout occurs.  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:ab2b292b60274ec6942456abde226d08f" id="r_ab2b292b60274ec6942456abde226d08f"><td class="memItemLeft">constexpr <a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight"><a class="el" href="#ab2b292b60274ec6942456abde226d08f">kStnActionIdPrecision</a> = 3</td></tr>
 </table>
 <a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Typedef Documentation</h2>
+<a id="adc723289ab3ed347857fa1a5307734fc" name="adc723289ab3ed347857fa1a5307734fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc723289ab3ed347857fa1a5307734fc">&#9670;&#160;</a></span>ActionMap</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="#adc723289ab3ed347857fa1a5307734fc">ActionMap</a> = std::map&lt;std::string, <a class="el" href="structplansys2_1_1ActionExecutionInfo.html">ActionExecutionInfo</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="abed964da0e282db0e79c4ceb1e3cd8cd" name="abed964da0e282db0e79c4ceb1e3cd8cd"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abed964da0e282db0e79c4ceb1e3cd8cd">&#9670;&#160;</a></span>CallbackReturnT</h2>
 
@@ -902,6 +928,32 @@ template&lt;typename NodeT&gt; </div>
 
 </div>
 </div>
+<a id="aa7e00850519c4ebec006112ac60a2cd1" name="aa7e00850519c4ebec006112ac60a2cd1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7e00850519c4ebec006112ac60a2cd1">&#9670;&#160;</a></span>find_stn_node()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structplansys2_1_1Node.html#abf2fb63266a358aa04393a2bb62c9478">Node::Ptr</a> find_stn_node </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>graph</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>action_id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>type</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a3badc6789891cf9c42d6f777150fe2ab" name="a3badc6789891cf9c42d6f777150fe2ab"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3badc6789891cf9c42d6f777150fe2ab">&#9670;&#160;</a></span>get_action_expression()</h2>
 
@@ -1169,6 +1221,23 @@ template&lt;typename NodeT&gt; </div>
 
 </div>
 </div>
+<a id="a31d28eecabd8fb6fabfc6f2794926da2" name="a31d28eecabd8fb6fabfc6f2794926da2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a31d28eecabd8fb6fabfc6f2794926da2">&#9670;&#160;</a></span>parse_stn_dependency()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; <a class="el" href="structplansys2_1_1StnDependency.html">StnDependency</a> &gt; parse_stn_dependency </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>text</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a4a891994cae8c4503e433efd09c3b5cf" name="a4a891994cae8c4503e433efd09c3b5cf"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4a891994cae8c4503e433efd09c3b5cf">&#9670;&#160;</a></span>remove_comments()</h2>
 
@@ -1269,6 +1338,32 @@ template&lt;typename NodeT&gt; </div>
 
 </div>
 </div>
+<a id="a6d1404795432e77ceb6268bc9eb708e4" name="a6d1404795432e77ceb6268bc9eb708e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d1404795432e77ceb6268bc9eb708e4">&#9670;&#160;</a></span>seconds_since_parent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; double &gt; seconds_since_parent </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#adc723289ab3ed347857fa1a5307734fc">ActionMap</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>action_map</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structplansys2_1_1StnDependency.html">StnDependency</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>dependency</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const rclcpp::Time &amp;</td>          <td class="paramname"><span class="paramname"><em>now</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="ac0dc8a4e35bbe986c34479a396cf04e2" name="ac0dc8a4e35bbe986c34479a396cf04e2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac0dc8a4e35bbe986c34479a396cf04e2">&#9670;&#160;</a></span>startup_function()</h2>
 
@@ -1297,6 +1392,27 @@ template&lt;typename NodeT&gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if all nodes started successfully, false otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a42b49d0e3a5fc862035352348c5d1874" name="a42b49d0e3a5fc862035352348c5d1874"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a42b49d0e3a5fc862035352348c5d1874">&#9670;&#160;</a></span>stn_bounds()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::pair&lt; double, double &gt; stn_bounds </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>graph</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structplansys2_1_1StnDependency.html">StnDependency</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>dependency</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -1368,6 +1484,47 @@ template&lt;typename NodeT&gt; </div>
 
 </div>
 </div>
+<a id="af2567c35d6f459fc430dd979b190e43d" name="af2567c35d6f459fc430dd979b190e43d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af2567c35d6f459fc430dd979b190e43d">&#9670;&#160;</a></span>update_stn_on_event()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> update_stn_on_event </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>graph</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::shared_ptr&lt; <a class="el" href="classplansys2_1_1BTBuilder.html">BTBuilder</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>builder</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#adc723289ab3ed347857fa1a5307734fc">ActionMap</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>action_map</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>action_id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#a21d5e8f8cdaa838586b31007df0a950b">ActionType</a></td>          <td class="paramname"><span class="paramname"><em>type</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const rclcpp::Time &amp;</td>          <td class="paramname"><span class="paramname"><em>now</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a8e07ddf5b5b0e71f767a82424f50286b" name="a8e07ddf5b5b0e71f767a82424f50286b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8e07ddf5b5b0e71f767a82424f50286b">&#9670;&#160;</a></span>wait_for_result()</h2>
 
@@ -1405,6 +1562,29 @@ template&lt;typename FutureT, typename WaitTimeT&gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>std::future_status Status of the future after waiting. </dd></dl>
+
+</div>
+</div>
+<a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
+<a id="ab2b292b60274ec6942456abde226d08f" name="ab2b292b60274ec6942456abde226d08f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab2b292b60274ec6942456abde226d08f">&#9670;&#160;</a></span>kStnActionIdPrecision</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classint.html">int</a> kStnActionIdPrecision = 3</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel constexpr">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>

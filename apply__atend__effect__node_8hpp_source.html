@@ -124,51 +124,58 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &quot;<a class="code" href="ProblemExpertClient_8hpp.html">plansys2_problem_expert/ProblemExpertClient.hpp</a>&quot;</span></div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#include &quot;<a class="code" href="ActionExecutor_8hpp.html">plansys2_executor/ActionExecutor.hpp</a>&quot;</span></div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &quot;<a class="code" href="plansys2__problem__expert_2include_2plansys2__problem__expert_2Utils_8hpp.html">plansys2_problem_expert/Utils.hpp</a>&quot;</span></div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &quot;<a class="code" href="execute__action__node_8hpp.html">plansys2_executor/behavior_tree/execute_action_node.hpp</a>&quot;</span></div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a></div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>{</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span></div>
-<div class="foldopen" id="foldopen00042" data-start="{" data-end="};">
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="classplansys2_1_1ApplyAtEndEffect.html">   42</a></span><span class="keyword">class </span><a class="code hl_function" href="classplansys2_1_1ApplyAtEndEffect.html#aaf028bcf4e2f7f6937a1ab012b64b4ad">ApplyAtEndEffect</a> : <span class="keyword">public</span> BT::ActionNodeBase</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>{</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  <a class="code hl_function" href="classplansys2_1_1ApplyAtEndEffect.html#aaf028bcf4e2f7f6937a1ab012b64b4ad">ApplyAtEndEffect</a>(<span class="keyword">const</span> std::string &amp; xml_tag_name, <span class="keyword">const</span> BT::NodeConfig &amp; conf);</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span></div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="classplansys2_1_1ApplyAtEndEffect.html#ade0430439247877006d7df950f94918a">   56</a></span>  <span class="keywordtype">void</span> <a class="code hl_function" href="classplansys2_1_1ApplyAtEndEffect.html#ade0430439247877006d7df950f94918a">halt</a>() {}</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span></div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>  BT::NodeStatus <a class="code hl_function" href="classplansys2_1_1ApplyAtEndEffect.html#ad1ad196c7c6fc6353381e3e557e43c20">tick</a>() <span class="keyword">override</span>;</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span></div>
-<div class="foldopen" id="foldopen00069" data-start="{" data-end="}">
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno"><a class="line" href="classplansys2_1_1ApplyAtEndEffect.html#ae08882e38fd72d3d471a49825f95adbb">   69</a></span>  <span class="keyword">static</span> BT::PortsList <a class="code hl_function" href="classplansys2_1_1ApplyAtEndEffect.html#ae08882e38fd72d3d471a49825f95adbb">providedPorts</a>()</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  {</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="keywordflow">return</span> BT::PortsList(</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>      {</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>        BT::InputPort&lt;std::string&gt;(<span class="stringliteral">&quot;action&quot;</span>, <span class="stringliteral">&quot;Action whose at end reqs must stop&quot;</span>),</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>      });</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  }</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &quot;<a class="code" href="BTBuilder_8hpp.html">plansys2_executor/BTBuilder.hpp</a>&quot;</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="preprocessor">#include &quot;<a class="code" href="plansys2__problem__expert_2include_2plansys2__problem__expert_2Utils_8hpp.html">plansys2_problem_expert/Utils.hpp</a>&quot;</span></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &quot;<a class="code" href="execute__action__node_8hpp.html">plansys2_executor/behavior_tree/execute_action_node.hpp</a>&quot;</span></div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>{</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span></div>
+<div class="foldopen" id="foldopen00043" data-start="{" data-end="};">
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno"><a class="line" href="classplansys2_1_1ApplyAtEndEffect.html">   43</a></span><span class="keyword">class </span><a class="code hl_function" href="classplansys2_1_1ApplyAtEndEffect.html#aaf028bcf4e2f7f6937a1ab012b64b4ad">ApplyAtEndEffect</a> : <span class="keyword">public</span> BT::ActionNodeBase</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>{</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>  <a class="code hl_function" href="classplansys2_1_1ApplyAtEndEffect.html#aaf028bcf4e2f7f6937a1ab012b64b4ad">ApplyAtEndEffect</a>(<span class="keyword">const</span> std::string &amp; xml_tag_name, <span class="keyword">const</span> BT::NodeConfig &amp; conf);</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span></div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno"><a class="line" href="classplansys2_1_1ApplyAtEndEffect.html#ade0430439247877006d7df950f94918a">   57</a></span>  <span class="keywordtype">void</span> <a class="code hl_function" href="classplansys2_1_1ApplyAtEndEffect.html#ade0430439247877006d7df950f94918a">halt</a>() {}</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span></div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  BT::NodeStatus <a class="code hl_function" href="classplansys2_1_1ApplyAtEndEffect.html#ad1ad196c7c6fc6353381e3e557e43c20">tick</a>() <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span></div>
+<div class="foldopen" id="foldopen00070" data-start="{" data-end="}">
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="classplansys2_1_1ApplyAtEndEffect.html#ae08882e38fd72d3d471a49825f95adbb">   70</a></span>  <span class="keyword">static</span> BT::PortsList <a class="code hl_function" href="classplansys2_1_1ApplyAtEndEffect.html#ae08882e38fd72d3d471a49825f95adbb">providedPorts</a>()</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  {</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keywordflow">return</span> BT::PortsList(</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>      {</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>        BT::InputPort&lt;std::string&gt;(<span class="stringliteral">&quot;action&quot;</span>, <span class="stringliteral">&quot;Action whose at end reqs must stop&quot;</span>),</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>      });</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  }</div>
 </div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span> </div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  std::shared_ptr&lt;std::map&lt;std::string, ActionExecutionInfo&gt;&gt; action_map_;</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  std::shared_ptr&lt;plansys2::ProblemExpertClient&gt; problem_client_;</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>};</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  std::shared_ptr&lt;std::map&lt;std::string, ActionExecutionInfo&gt;&gt; action_map_;</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  std::shared_ptr&lt;plansys2::ProblemExpertClient&gt; problem_client_;</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>  <a class="code hl_typedef" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> action_graph_;</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>  std::shared_ptr&lt;BTBuilder&gt; bt_builder_;</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  <span class="keywordtype">bool</span> relaxed_timing_ {<span class="keyword">true</span>};</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>};</div>
 </div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>}  <span class="comment">// namespace plansys2</span></div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_EXECUTOR__BEHAVIOR_TREE__APPLY_ATEND_EFFECT_NODE_HPP_</span></div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span> </div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>}  <span class="comment">// namespace plansys2</span></div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_EXECUTOR__BEHAVIOR_TREE__APPLY_ATEND_EFFECT_NODE_HPP_</span></div>
 <div class="ttc" id="aActionExecutor_8hpp_html"><div class="ttname"><a href="ActionExecutor_8hpp.html">ActionExecutor.hpp</a></div></div>
+<div class="ttc" id="aBTBuilder_8hpp_html"><div class="ttname"><a href="BTBuilder_8hpp.html">BTBuilder.hpp</a></div></div>
 <div class="ttc" id="aProblemExpertClient_8hpp_html"><div class="ttname"><a href="ProblemExpertClient_8hpp.html">ProblemExpertClient.hpp</a></div></div>
-<div class="ttc" id="aclassplansys2_1_1ApplyAtEndEffect_html_aaf028bcf4e2f7f6937a1ab012b64b4ad"><div class="ttname"><a href="classplansys2_1_1ApplyAtEndEffect.html#aaf028bcf4e2f7f6937a1ab012b64b4ad">plansys2::ApplyAtEndEffect::ApplyAtEndEffect</a></div><div class="ttdeci">ApplyAtEndEffect(const std::string &amp;xml_tag_name, const BT::NodeConfig &amp;conf)</div><div class="ttdoc">Constructor for the ApplyAtEndEffect node.</div><div class="ttdef"><b>Definition</b> apply_atend_effect_node.cpp:25</div></div>
-<div class="ttc" id="aclassplansys2_1_1ApplyAtEndEffect_html_ad1ad196c7c6fc6353381e3e557e43c20"><div class="ttname"><a href="classplansys2_1_1ApplyAtEndEffect.html#ad1ad196c7c6fc6353381e3e557e43c20">plansys2::ApplyAtEndEffect::tick</a></div><div class="ttdeci">BT::NodeStatus tick() override</div><div class="ttdoc">Main execution method for the BT node.</div><div class="ttdef"><b>Definition</b> apply_atend_effect_node.cpp:40</div></div>
-<div class="ttc" id="aclassplansys2_1_1ApplyAtEndEffect_html_ade0430439247877006d7df950f94918a"><div class="ttname"><a href="classplansys2_1_1ApplyAtEndEffect.html#ade0430439247877006d7df950f94918a">plansys2::ApplyAtEndEffect::halt</a></div><div class="ttdeci">void halt()</div><div class="ttdoc">Halt method (required by the BT framework).</div><div class="ttdef"><b>Definition</b> apply_atend_effect_node.hpp:56</div></div>
-<div class="ttc" id="aclassplansys2_1_1ApplyAtEndEffect_html_ae08882e38fd72d3d471a49825f95adbb"><div class="ttname"><a href="classplansys2_1_1ApplyAtEndEffect.html#ae08882e38fd72d3d471a49825f95adbb">plansys2::ApplyAtEndEffect::providedPorts</a></div><div class="ttdeci">static BT::PortsList providedPorts()</div><div class="ttdoc">Creates list of BT ports.</div><div class="ttdef"><b>Definition</b> apply_atend_effect_node.hpp:69</div></div>
+<div class="ttc" id="aclassplansys2_1_1ApplyAtEndEffect_html_aaf028bcf4e2f7f6937a1ab012b64b4ad"><div class="ttname"><a href="classplansys2_1_1ApplyAtEndEffect.html#aaf028bcf4e2f7f6937a1ab012b64b4ad">plansys2::ApplyAtEndEffect::ApplyAtEndEffect</a></div><div class="ttdeci">ApplyAtEndEffect(const std::string &amp;xml_tag_name, const BT::NodeConfig &amp;conf)</div><div class="ttdoc">Constructor for the ApplyAtEndEffect node.</div><div class="ttdef"><b>Definition</b> apply_atend_effect_node.cpp:26</div></div>
+<div class="ttc" id="aclassplansys2_1_1ApplyAtEndEffect_html_ad1ad196c7c6fc6353381e3e557e43c20"><div class="ttname"><a href="classplansys2_1_1ApplyAtEndEffect.html#ad1ad196c7c6fc6353381e3e557e43c20">plansys2::ApplyAtEndEffect::tick</a></div><div class="ttdeci">BT::NodeStatus tick() override</div><div class="ttdoc">Main execution method for the BT node.</div><div class="ttdef"><b>Definition</b> apply_atend_effect_node.cpp:46</div></div>
+<div class="ttc" id="aclassplansys2_1_1ApplyAtEndEffect_html_ade0430439247877006d7df950f94918a"><div class="ttname"><a href="classplansys2_1_1ApplyAtEndEffect.html#ade0430439247877006d7df950f94918a">plansys2::ApplyAtEndEffect::halt</a></div><div class="ttdeci">void halt()</div><div class="ttdoc">Halt method (required by the BT framework).</div><div class="ttdef"><b>Definition</b> apply_atend_effect_node.hpp:57</div></div>
+<div class="ttc" id="aclassplansys2_1_1ApplyAtEndEffect_html_ae08882e38fd72d3d471a49825f95adbb"><div class="ttname"><a href="classplansys2_1_1ApplyAtEndEffect.html#ae08882e38fd72d3d471a49825f95adbb">plansys2::ApplyAtEndEffect::providedPorts</a></div><div class="ttdeci">static BT::PortsList providedPorts()</div><div class="ttdoc">Creates list of BT ports.</div><div class="ttdef"><b>Definition</b> apply_atend_effect_node.hpp:70</div></div>
 <div class="ttc" id="aexecute__action__node_8hpp_html"><div class="ttname"><a href="execute__action__node_8hpp.html">execute_action_node.hpp</a></div></div>
 <div class="ttc" id="anamespaceplansys2_html"><div class="ttname"><a href="namespaceplansys2.html">plansys2</a></div><div class="ttdef"><b>Definition</b> BTAction.hpp:33</div></div>
 <div class="ttc" id="aplansys2__problem__expert_2include_2plansys2__problem__expert_2Utils_8hpp_html"><div class="ttname"><a href="plansys2__problem__expert_2include_2plansys2__problem__expert_2Utils_8hpp.html">Utils.hpp</a></div></div>
+<div class="ttc" id="astructplansys2_1_1Graph_html_aab36d6f074aeaecee07215524fb99f17"><div class="ttname"><a href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">plansys2::Graph::Ptr</a></div><div class="ttdeci">std::shared_ptr&lt; Graph &gt; Ptr</div><div class="ttdef"><b>Definition</b> BTBuilder.hpp:97</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -124,47 +124,53 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &quot;behaviortree_cpp/action_node.h&quot;</span></div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#include &quot;<a class="code" href="ActionExecutor_8hpp.html">plansys2_executor/ActionExecutor.hpp</a>&quot;</span></div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="preprocessor">#include &quot;<a class="code" href="execute__action__node_8hpp.html">plansys2_executor/behavior_tree/execute_action_node.hpp</a>&quot;</span></div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a></div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>{</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span></div>
-<div class="foldopen" id="foldopen00036" data-start="{" data-end="};">
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno"><a class="line" href="classplansys2_1_1WaitAction.html">   36</a></span><span class="keyword">class </span><a class="code hl_function" href="classplansys2_1_1WaitAction.html#af1ff9c4589a6e85877d690bc417f0e39">WaitAction</a> : <span class="keyword">public</span> BT::ActionNodeBase</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>{</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  <a class="code hl_function" href="classplansys2_1_1WaitAction.html#af1ff9c4589a6e85877d690bc417f0e39">WaitAction</a>(<span class="keyword">const</span> std::string &amp; xml_tag_name, <span class="keyword">const</span> BT::NodeConfig &amp; conf);</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span></div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="classplansys2_1_1WaitAction.html#ade0430439247877006d7df950f94918a">   50</a></span>  <span class="keywordtype">void</span> <a class="code hl_function" href="classplansys2_1_1WaitAction.html#ade0430439247877006d7df950f94918a">halt</a>() {}</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span></div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  BT::NodeStatus <a class="code hl_function" href="classplansys2_1_1WaitAction.html#ad1ad196c7c6fc6353381e3e557e43c20">tick</a>() <span class="keyword">override</span>;</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span></div>
-<div class="foldopen" id="foldopen00063" data-start="{" data-end="}">
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno"><a class="line" href="classplansys2_1_1WaitAction.html#ae08882e38fd72d3d471a49825f95adbb">   63</a></span>  <span class="keyword">static</span> BT::PortsList <a class="code hl_function" href="classplansys2_1_1WaitAction.html#ae08882e38fd72d3d471a49825f95adbb">providedPorts</a>()</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  {</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    <span class="keywordflow">return</span> BT::PortsList(</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>      {</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>        BT::InputPort&lt;std::string&gt;(<span class="stringliteral">&quot;action&quot;</span>, <span class="stringliteral">&quot;Action to be executed&quot;</span>),</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>      });</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  }</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &quot;<a class="code" href="BTBuilder_8hpp.html">plansys2_executor/BTBuilder.hpp</a>&quot;</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &quot;<a class="code" href="execute__action__node_8hpp.html">plansys2_executor/behavior_tree/execute_action_node.hpp</a>&quot;</span></div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a></div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>{</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span></div>
+<div class="foldopen" id="foldopen00037" data-start="{" data-end="};">
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="classplansys2_1_1WaitAction.html">   37</a></span><span class="keyword">class </span><a class="code hl_function" href="classplansys2_1_1WaitAction.html#af1ff9c4589a6e85877d690bc417f0e39">WaitAction</a> : <span class="keyword">public</span> BT::ActionNodeBase</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>{</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  <a class="code hl_function" href="classplansys2_1_1WaitAction.html#af1ff9c4589a6e85877d690bc417f0e39">WaitAction</a>(<span class="keyword">const</span> std::string &amp; xml_tag_name, <span class="keyword">const</span> BT::NodeConfig &amp; conf);</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="classplansys2_1_1WaitAction.html#ade0430439247877006d7df950f94918a">   51</a></span>  <span class="keywordtype">void</span> <a class="code hl_function" href="classplansys2_1_1WaitAction.html#ade0430439247877006d7df950f94918a">halt</a>() {}</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span></div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  BT::NodeStatus <a class="code hl_function" href="classplansys2_1_1WaitAction.html#ad1ad196c7c6fc6353381e3e557e43c20">tick</a>() <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span></div>
+<div class="foldopen" id="foldopen00064" data-start="{" data-end="}">
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno"><a class="line" href="classplansys2_1_1WaitAction.html#ae08882e38fd72d3d471a49825f95adbb">   64</a></span>  <span class="keyword">static</span> BT::PortsList <a class="code hl_function" href="classplansys2_1_1WaitAction.html#ae08882e38fd72d3d471a49825f95adbb">providedPorts</a>()</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  {</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <span class="keywordflow">return</span> BT::PortsList(</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>      {</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>        BT::InputPort&lt;std::string&gt;(<span class="stringliteral">&quot;action&quot;</span>, <span class="stringliteral">&quot;Action to be executed&quot;</span>),</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>      });</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  }</div>
 </div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  std::shared_ptr&lt;std::map&lt;std::string, ActionExecutionInfo&gt;&gt; action_map_;</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>};</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  std::shared_ptr&lt;std::map&lt;std::string, ActionExecutionInfo&gt;&gt; action_map_;</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  <a class="code hl_typedef" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> action_graph_;</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  <span class="keywordtype">bool</span> relaxed_timing_ {<span class="keyword">true</span>};</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>};</div>
 </div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span> </div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>}  <span class="comment">// namespace plansys2</span></div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span> </div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_EXECUTOR__BEHAVIOR_TREE__WAIT_ACTION_NODE_HPP_</span></div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>}  <span class="comment">// namespace plansys2</span></div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_EXECUTOR__BEHAVIOR_TREE__WAIT_ACTION_NODE_HPP_</span></div>
 <div class="ttc" id="aActionExecutor_8hpp_html"><div class="ttname"><a href="ActionExecutor_8hpp.html">ActionExecutor.hpp</a></div></div>
-<div class="ttc" id="aclassplansys2_1_1WaitAction_html_ad1ad196c7c6fc6353381e3e557e43c20"><div class="ttname"><a href="classplansys2_1_1WaitAction.html#ad1ad196c7c6fc6353381e3e557e43c20">plansys2::WaitAction::tick</a></div><div class="ttdeci">BT::NodeStatus tick() override</div><div class="ttdoc">Main execution method for the BT node.</div><div class="ttdef"><b>Definition</b> wait_action_node.cpp:35</div></div>
-<div class="ttc" id="aclassplansys2_1_1WaitAction_html_ade0430439247877006d7df950f94918a"><div class="ttname"><a href="classplansys2_1_1WaitAction.html#ade0430439247877006d7df950f94918a">plansys2::WaitAction::halt</a></div><div class="ttdeci">void halt()</div><div class="ttdoc">Halt method (required by the BT framework).</div><div class="ttdef"><b>Definition</b> wait_action_node.hpp:50</div></div>
-<div class="ttc" id="aclassplansys2_1_1WaitAction_html_ae08882e38fd72d3d471a49825f95adbb"><div class="ttname"><a href="classplansys2_1_1WaitAction.html#ae08882e38fd72d3d471a49825f95adbb">plansys2::WaitAction::providedPorts</a></div><div class="ttdeci">static BT::PortsList providedPorts()</div><div class="ttdoc">Creates list of BT ports.</div><div class="ttdef"><b>Definition</b> wait_action_node.hpp:63</div></div>
-<div class="ttc" id="aclassplansys2_1_1WaitAction_html_af1ff9c4589a6e85877d690bc417f0e39"><div class="ttname"><a href="classplansys2_1_1WaitAction.html#af1ff9c4589a6e85877d690bc417f0e39">plansys2::WaitAction::WaitAction</a></div><div class="ttdeci">WaitAction(const std::string &amp;xml_tag_name, const BT::NodeConfig &amp;conf)</div><div class="ttdoc">Constructor for the WaitAction node.</div><div class="ttdef"><b>Definition</b> wait_action_node.cpp:24</div></div>
+<div class="ttc" id="aBTBuilder_8hpp_html"><div class="ttname"><a href="BTBuilder_8hpp.html">BTBuilder.hpp</a></div></div>
+<div class="ttc" id="aclassplansys2_1_1WaitAction_html_ad1ad196c7c6fc6353381e3e557e43c20"><div class="ttname"><a href="classplansys2_1_1WaitAction.html#ad1ad196c7c6fc6353381e3e557e43c20">plansys2::WaitAction::tick</a></div><div class="ttdeci">BT::NodeStatus tick() override</div><div class="ttdoc">Main execution method for the BT node.</div><div class="ttdef"><b>Definition</b> wait_action_node.cpp:40</div></div>
+<div class="ttc" id="aclassplansys2_1_1WaitAction_html_ade0430439247877006d7df950f94918a"><div class="ttname"><a href="classplansys2_1_1WaitAction.html#ade0430439247877006d7df950f94918a">plansys2::WaitAction::halt</a></div><div class="ttdeci">void halt()</div><div class="ttdoc">Halt method (required by the BT framework).</div><div class="ttdef"><b>Definition</b> wait_action_node.hpp:51</div></div>
+<div class="ttc" id="aclassplansys2_1_1WaitAction_html_ae08882e38fd72d3d471a49825f95adbb"><div class="ttname"><a href="classplansys2_1_1WaitAction.html#ae08882e38fd72d3d471a49825f95adbb">plansys2::WaitAction::providedPorts</a></div><div class="ttdeci">static BT::PortsList providedPorts()</div><div class="ttdoc">Creates list of BT ports.</div><div class="ttdef"><b>Definition</b> wait_action_node.hpp:64</div></div>
+<div class="ttc" id="aclassplansys2_1_1WaitAction_html_af1ff9c4589a6e85877d690bc417f0e39"><div class="ttname"><a href="classplansys2_1_1WaitAction.html#af1ff9c4589a6e85877d690bc417f0e39">plansys2::WaitAction::WaitAction</a></div><div class="ttdeci">WaitAction(const std::string &amp;xml_tag_name, const BT::NodeConfig &amp;conf)</div><div class="ttdoc">Constructor for the WaitAction node.</div><div class="ttdef"><b>Definition</b> wait_action_node.cpp:25</div></div>
 <div class="ttc" id="aexecute__action__node_8hpp_html"><div class="ttname"><a href="execute__action__node_8hpp.html">execute_action_node.hpp</a></div></div>
 <div class="ttc" id="anamespaceplansys2_html"><div class="ttname"><a href="namespaceplansys2.html">plansys2</a></div><div class="ttdef"><b>Definition</b> BTAction.hpp:33</div></div>
+<div class="ttc" id="astructplansys2_1_1Graph_html_aab36d6f074aeaecee07215524fb99f17"><div class="ttname"><a href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">plansys2::Graph::Ptr</a></div><div class="ttdeci">std::shared_ptr&lt; Graph &gt; Ptr</div><div class="ttdef"><b>Definition</b> BTBuilder.hpp:97</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -192,7 +192,6 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:ac38157d534f023147a5e68e661b109fa" id="r_ac38157d534f023147a5e68e661b109fa"><td class="memItemLeft">std::set&lt; <a class="el" href="classint.html">int</a> &gt;::iterator&#160;</td><td class="memItemRight"><a class="el" href="#ac38157d534f023147a5e68e661b109fa">get_happening</a> (<a class="el" href="classint.html">int</a> time, const std::set&lt; <a class="el" href="classint.html">int</a> &gt; &amp;happenings) const</td></tr>
 <tr class="memdesc:ac38157d534f023147a5e68e661b109fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds the happening time for a given time point.  <br /></td></tr>
 <tr class="memitem:ad05754a639d99465897137d5630aef88" id="r_ad05754a639d99465897137d5630aef88"><td class="memItemLeft">std::set&lt; <a class="el" href="classint.html">int</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ad05754a639d99465897137d5630aef88">get_happenings</a> (const plansys2_msgs::msg::Plan &amp;plan) const</td></tr>
-<tr class="memdesc:ad05754a639d99465897137d5630aef88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the set of happening times in a plan.  <br /></td></tr>
 <tr class="memitem:a20afd0a2bbc7c086cac28e26dd58ac16" id="r_a20afd0a2bbc7c086cac28e26dd58ac16"><td class="memItemLeft"><a class="el" href="structplansys2_1_1StateVec.html">StateVec</a>&#160;</td><td class="memItemRight"><a class="el" href="#a20afd0a2bbc7c086cac28e26dd58ac16">get_intersection</a> (const <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &amp;X_1, const <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &amp;X_2) const</td></tr>
 <tr class="memdesc:a20afd0a2bbc7c086cac28e26dd58ac16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the intersection of two states.  <br /></td></tr>
 <tr class="memitem:a7724dd906c935b915343aed51b9a9379" id="r_a7724dd906c935b915343aed51b9a9379"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a7724dd906c935b915343aed51b9a9379">get_node_dotgraph</a> (<a class="el" href="structplansys2_1_1Node.html#abf2fb63266a358aa04393a2bb62c9478">Node::Ptr</a> node, std::shared_ptr&lt; std::map&lt; std::string, <a class="el" href="structplansys2_1_1ActionExecutionInfo.html">ActionExecutionInfo</a> &gt; &gt; action_map)</td></tr>
@@ -217,6 +216,8 @@ Protected Member Functions</h2></td></tr>
 <tr class="memdesc:af06875c466bfa51a1562eda07e621aa8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes an empty graph with nodes for the initial state, actions, and goal.  <br /></td></tr>
 <tr class="memitem:a57621941654d88f40f624b3418f90baf" id="r_a57621941654d88f40f624b3418f90baf"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a57621941654d88f40f624b3418f90baf">is_end</a> (const std::tuple&lt; <a class="el" href="structplansys2_1_1Node.html#abf2fb63266a358aa04393a2bb62c9478">Node::Ptr</a>, double, double &gt; &amp;edge, const <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &amp;action) const</td></tr>
 <tr class="memdesc:a57621941654d88f40f624b3418f90baf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if an edge represents the end of a durative action.  <br /></td></tr>
+<tr class="memitem:afd78573dcd8cb99ce55cdbc6ff75ff39" id="r_afd78573dcd8cb99ce55cdbc6ff75ff39"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#afd78573dcd8cb99ce55cdbc6ff75ff39">is_executable</a> (const plansys2_msgs::msg::Plan &amp;plan) const</td></tr>
+<tr class="memdesc:afd78573dcd8cb99ce55cdbc6ff75ff39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the set of happening times in a plan.  <br /></td></tr>
 <tr class="memitem:a5dfbb354ab627d822484d6e35783eb5c" id="r_a5dfbb354ab627d822484d6e35783eb5c"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5dfbb354ab627d822484d6e35783eb5c">is_match</a> (const <a class="el" href="structplansys2_1_1Node.html#abf2fb63266a358aa04393a2bb62c9478">Node::Ptr</a> node, const <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &amp;action) const</td></tr>
 <tr class="memdesc:a5dfbb354ab627d822484d6e35783eb5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if a node matches an action.  <br /></td></tr>
 <tr class="memitem:a090748d5837caddfcb35f5353af8b3c5" id="r_a090748d5837caddfcb35f5353af8b3c5"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a090748d5837caddfcb35f5353af8b3c5">print_arcs</a> (const <a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">plansys2::Graph::Ptr</a> graph) const</td></tr>
@@ -1004,16 +1005,6 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Gets the set of happening times in a plan. </p>
-<p>Happening times are timepoints where actions start or end.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">plan</td><td>The plan to analyze. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Set of integer timepoints representing happenings. </dd></dl>
-
 </div>
 </div>
 <a id="a20afd0a2bbc7c086cac28e26dd58ac16" name="a20afd0a2bbc7c086cac28e26dd58ac16"></a>
@@ -1589,6 +1580,41 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the edge connects to the end node of the action. </dd></dl>
+
+</div>
+</div>
+<a id="afd78573dcd8cb99ce55cdbc6ff75ff39" name="afd78573dcd8cb99ce55cdbc6ff75ff39"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd78573dcd8cb99ce55cdbc6ff75ff39">&#9670;&#160;</a></span>is_executable()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> is_executable </td>
+          <td>(</td>
+          <td class="paramtype">const plansys2_msgs::msg::Plan &amp;</td>          <td class="paramname"><span class="paramname"><em>plan</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets the set of happening times in a plan. </p>
+<p>Happening times are timepoints where actions start or end.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">plan</td><td>The plan to analyze. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Set of integer timepoints representing happenings. </dd></dl>
 
 </div>
 </div>

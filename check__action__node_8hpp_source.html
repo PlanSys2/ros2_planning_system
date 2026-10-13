@@ -153,27 +153,25 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 </div>
 <div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
 <div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  <a class="code hl_typedef" href="structplansys2_1_1Node.html#abf2fb63266a358aa04393a2bb62c9478">Node::Ptr</a> get_node(<span class="keyword">const</span> std::string &amp; node_id, <span class="keyword">const</span> std::string &amp; node_type);</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span> </div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  std::shared_ptr&lt;std::map&lt;std::string, ActionExecutionInfo&gt;&gt; action_map_;</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  <a class="code hl_typedef" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> action_graph_;</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>};</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  std::shared_ptr&lt;std::map&lt;std::string, ActionExecutionInfo&gt;&gt; action_map_;</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  <a class="code hl_typedef" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> action_graph_;</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  <span class="keywordtype">bool</span> relaxed_timing_ {<span class="keyword">true</span>};</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>};</div>
 </div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>}  <span class="comment">// namespace plansys2</span></div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_EXECUTOR__BEHAVIOR_TREE__CHECK_ACTION_NODE_HPP_</span></div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span> </div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>}  <span class="comment">// namespace plansys2</span></div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_EXECUTOR__BEHAVIOR_TREE__CHECK_ACTION_NODE_HPP_</span></div>
 <div class="ttc" id="aActionExecutor_8hpp_html"><div class="ttname"><a href="ActionExecutor_8hpp.html">ActionExecutor.hpp</a></div></div>
 <div class="ttc" id="aBTBuilder_8hpp_html"><div class="ttname"><a href="BTBuilder_8hpp.html">BTBuilder.hpp</a></div></div>
-<div class="ttc" id="aclassplansys2_1_1CheckAction_html_ad1ad196c7c6fc6353381e3e557e43c20"><div class="ttname"><a href="classplansys2_1_1CheckAction.html#ad1ad196c7c6fc6353381e3e557e43c20">plansys2::CheckAction::tick</a></div><div class="ttdeci">BT::NodeStatus tick() override</div><div class="ttdoc">Main execution method for the BT node.</div><div class="ttdef"><b>Definition</b> check_action_node.cpp:38</div></div>
+<div class="ttc" id="aclassplansys2_1_1CheckAction_html_ad1ad196c7c6fc6353381e3e557e43c20"><div class="ttname"><a href="classplansys2_1_1CheckAction.html#ad1ad196c7c6fc6353381e3e557e43c20">plansys2::CheckAction::tick</a></div><div class="ttdeci">BT::NodeStatus tick() override</div><div class="ttdoc">Main execution method for the BT node.</div><div class="ttdef"><b>Definition</b> check_action_node.cpp:40</div></div>
 <div class="ttc" id="aclassplansys2_1_1CheckAction_html_ade0430439247877006d7df950f94918a"><div class="ttname"><a href="classplansys2_1_1CheckAction.html#ade0430439247877006d7df950f94918a">plansys2::CheckAction::halt</a></div><div class="ttdeci">void halt()</div><div class="ttdoc">Halt method (required by the BT framework).</div><div class="ttdef"><b>Definition</b> check_action_node.hpp:52</div></div>
 <div class="ttc" id="aclassplansys2_1_1CheckAction_html_ae08882e38fd72d3d471a49825f95adbb"><div class="ttname"><a href="classplansys2_1_1CheckAction.html#ae08882e38fd72d3d471a49825f95adbb">plansys2::CheckAction::providedPorts</a></div><div class="ttdeci">static BT::PortsList providedPorts()</div><div class="ttdoc">Creates list of BT ports.</div><div class="ttdef"><b>Definition</b> check_action_node.hpp:65</div></div>
-<div class="ttc" id="aclassplansys2_1_1CheckAction_html_ae65cb8d81a3ecee8bb7ac4be916c6153"><div class="ttname"><a href="classplansys2_1_1CheckAction.html#ae65cb8d81a3ecee8bb7ac4be916c6153">plansys2::CheckAction::CheckAction</a></div><div class="ttdeci">CheckAction(const std::string &amp;xml_tag_name, const BT::NodeConfig &amp;conf)</div><div class="ttdoc">Constructor for the CheckAction node.</div><div class="ttdef"><b>Definition</b> check_action_node.cpp:25</div></div>
+<div class="ttc" id="aclassplansys2_1_1CheckAction_html_ae65cb8d81a3ecee8bb7ac4be916c6153"><div class="ttname"><a href="classplansys2_1_1CheckAction.html#ae65cb8d81a3ecee8bb7ac4be916c6153">plansys2::CheckAction::CheckAction</a></div><div class="ttdeci">CheckAction(const std::string &amp;xml_tag_name, const BT::NodeConfig &amp;conf)</div><div class="ttdoc">Constructor for the CheckAction node.</div><div class="ttdef"><b>Definition</b> check_action_node.cpp:26</div></div>
 <div class="ttc" id="aexecute__action__node_8hpp_html"><div class="ttname"><a href="execute__action__node_8hpp.html">execute_action_node.hpp</a></div></div>
 <div class="ttc" id="anamespaceplansys2_html"><div class="ttname"><a href="namespaceplansys2.html">plansys2</a></div><div class="ttdef"><b>Definition</b> BTAction.hpp:33</div></div>
 <div class="ttc" id="astructplansys2_1_1Graph_html_aab36d6f074aeaecee07215524fb99f17"><div class="ttname"><a href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">plansys2::Graph::Ptr</a></div><div class="ttdeci">std::shared_ptr&lt; Graph &gt; Ptr</div><div class="ttdef"><b>Definition</b> BTBuilder.hpp:97</div></div>
-<div class="ttc" id="astructplansys2_1_1Node_html_abf2fb63266a358aa04393a2bb62c9478"><div class="ttname"><a href="structplansys2_1_1Node.html#abf2fb63266a358aa04393a2bb62c9478">plansys2::Node::Ptr</a></div><div class="ttdeci">std::shared_ptr&lt; Node &gt; Ptr</div><div class="ttdef"><b>Definition</b> BTBuilder.hpp:76</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
