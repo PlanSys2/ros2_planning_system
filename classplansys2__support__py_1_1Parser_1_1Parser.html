@@ -112,6 +112,8 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a4f1c17c774ba853bef879fcd04f7677b" id="r_a4f1c17c774ba853bef879fcd04f7677b"><td class="memItemLeft"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4f1c17c774ba853bef879fcd04f7677b">get_parenthesis</a> (str expr, <a class="el" href="classint.html">int</a> start)</td></tr>
 <tr class="memitem:adaaaaaa0403061f8dfe219ea4c70ca69" id="r_adaaaaaa0403061f8dfe219ea4c70ca69"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#adaaaaaa0403061f8dfe219ea4c70ca69">get_reduced_string</a> (str expr)</td></tr>
 <tr class="memitem:ae9b5486495936c12e6140ea568d5481b" id="r_ae9b5486495936c12e6140ea568d5481b"><td class="memItemLeft">List[str]&#160;</td><td class="memItemRight"><a class="el" href="#ae9b5486495936c12e6140ea568d5481b">get_sub_expr</a> (str expr)</td></tr>
+<tr class="memitem:a55773c73180cda9ab4bf90117789426d" id="r_a55773c73180cda9ab4bf90117789426d"><td class="memItemLeft">Metric&#160;</td><td class="memItemRight"><a class="el" href="#a55773c73180cda9ab4bf90117789426d">metric_from_string</a> (str metric)</td></tr>
+<tr class="memitem:ac43c7e594e6f52f31b7eb480214e43f5" id="r_ac43c7e594e6f52f31b7eb480214e43f5"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#ac43c7e594e6f52f31b7eb480214e43f5">metric_to_string</a> (Metric metric)</td></tr>
 <tr class="memitem:a0c97055227108d56806c464c9e4667f9" id="r_a0c97055227108d56806c464c9e4667f9"><td class="memItemLeft">Node&#160;</td><td class="memItemRight"><a class="el" href="#a0c97055227108d56806c464c9e4667f9">node_from_string_exists</a> (str exists)</td></tr>
 <tr class="memitem:a966ae8004daaa23f69120cfaab3718e1" id="r_a966ae8004daaa23f69120cfaab3718e1"><td class="memItemLeft">Node&#160;</td><td class="memItemRight"><a class="el" href="#a966ae8004daaa23f69120cfaab3718e1">node_from_string_forall</a> (str forall)</td></tr>
 <tr class="memitem:ad0ed1a342e147952bb0d914f9c0e1a69" id="r_ad0ed1a342e147952bb0d914f9c0e1a69"><td class="memItemLeft">Node&#160;</td><td class="memItemRight"><a class="el" href="#ad0ed1a342e147952bb0d914f9c0e1a69">node_from_string_function</a> (str function)</td></tr>
@@ -1104,6 +1106,79 @@ Returns
 -------
 List[str]
     List of sub-expression strings.
+</pre> 
+</div>
+</div>
+<a id="a55773c73180cda9ab4bf90117789426d" name="a55773c73180cda9ab4bf90117789426d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a55773c73180cda9ab4bf90117789426d">&#9670;&#160;</a></span>metric_from_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"> Metric metric_from_string </td>
+          <td>(</td>
+          <td class="paramtype">str</td>          <td class="paramname"><span class="paramname"><em>metric</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<pre class="fragment">Create a Metric from a string, as the C++ metricFromString.
+
+Parameters
+----------
+metric : str
+    'minimize &lt;expr&gt;' or 'maximize &lt;expr&gt;', optionally as '(:metric ...)'. The
+    expression is arithmetic over numbers, functions and (total-time).
+
+Returns
+-------
+Metric
+    The metric; its tree is empty if the string is not a valid metric.
+</pre> 
+</div>
+</div>
+<a id="ac43c7e594e6f52f31b7eb480214e43f5" name="ac43c7e594e6f52f31b7eb480214e43f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac43c7e594e6f52f31b7eb480214e43f5">&#9670;&#160;</a></span>metric_to_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"> str metric_to_string </td>
+          <td>(</td>
+          <td class="paramtype">Metric</td>          <td class="paramname"><span class="paramname"><em>metric</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<pre class="fragment">Convert a Metric to 'minimize &lt;expr&gt;' or 'maximize &lt;expr&gt;'.
+
+Parameters
+----------
+metric : Metric
+    The metric.
+
+Returns
+-------
+str
+    The metric as a string; empty if there is no metric.
 </pre> 
 </div>
 </div>

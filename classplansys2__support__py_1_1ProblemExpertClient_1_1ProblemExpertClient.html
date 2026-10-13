@@ -144,6 +144,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a71820630e690fa1dd7a291941c3b85b1" id="r_a71820630e690fa1dd7a291941c3b85b1"><td class="memItemLeft">Optional[str]&#160;</td><td class="memItemRight"><a class="el" href="#a71820630e690fa1dd7a291941c3b85b1">get_problem_goal</a> (self)</td></tr>
 <tr class="memitem:acd40b72ffada75dca6050c3136990eef" id="r_acd40b72ffada75dca6050c3136990eef"><td class="memItemLeft">Optional[Param]&#160;</td><td class="memItemRight"><a class="el" href="#acd40b72ffada75dca6050c3136990eef">get_problem_instance</a> (self, str instance)</td></tr>
 <tr class="memitem:ac901e388e6d630fc48f706cc69982376" id="r_ac901e388e6d630fc48f706cc69982376"><td class="memItemLeft">Optional[List[Param]]&#160;</td><td class="memItemRight"><a class="el" href="#ac901e388e6d630fc48f706cc69982376">get_problem_instances</a> (self)</td></tr>
+<tr class="memitem:adf582d9725eba021e63215537a3783a6" id="r_adf582d9725eba021e63215537a3783a6"><td class="memItemLeft">Optional[Metric]&#160;</td><td class="memItemRight"><a class="el" href="#adf582d9725eba021e63215537a3783a6">get_problem_metric</a> (self)</td></tr>
 <tr class="memitem:ad07c026f93d93c9ecba19e0b57af542a" id="r_ad07c026f93d93c9ecba19e0b57af542a"><td class="memItemLeft">Optional[PlanSys2Node]&#160;</td><td class="memItemRight"><a class="el" href="#ad07c026f93d93c9ecba19e0b57af542a">get_problem_predicate</a> (self, str predicate)</td></tr>
 <tr class="memitem:a8c821ba635de0b7e7e5aaca4e3c03b14" id="r_a8c821ba635de0b7e7e5aaca4e3c03b14"><td class="memItemLeft">Optional[List[PlanSys2Node]]&#160;</td><td class="memItemRight"><a class="el" href="#a8c821ba635de0b7e7e5aaca4e3c03b14">get_problem_predicates</a> (self)</td></tr>
 <tr class="memitem:a89307849939949d62bc8c80b63026649" id="r_a89307849939949d62bc8c80b63026649"><td class="memItemLeft">Optional[<a class="el" href="classbool.html">bool</a>]&#160;</td><td class="memItemRight"><a class="el" href="#a89307849939949d62bc8c80b63026649">is_problem_goal_satisfied</a> (self, <a class="el" href="classTree.html">Tree</a> goal)</td></tr>
@@ -151,7 +152,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a01063004a5175971f9de269b306e1085" id="r_a01063004a5175971f9de269b306e1085"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a01063004a5175971f9de269b306e1085">remove_problem_function</a> (self, PlanSys2Node function)</td></tr>
 <tr class="memitem:a051b526fae40dfe45a833e043349a5d4" id="r_a051b526fae40dfe45a833e043349a5d4"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a051b526fae40dfe45a833e043349a5d4">remove_problem_goal</a> (self)</td></tr>
 <tr class="memitem:ac1c511defb303e49fdc27d52082456d2" id="r_ac1c511defb303e49fdc27d52082456d2"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac1c511defb303e49fdc27d52082456d2">remove_problem_instance</a> (self, Param instance)</td></tr>
+<tr class="memitem:ab95326eee4f8ea60ca36eacbaa7274cf" id="r_ab95326eee4f8ea60ca36eacbaa7274cf"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#ab95326eee4f8ea60ca36eacbaa7274cf">remove_problem_metric</a> (self)</td></tr>
 <tr class="memitem:ae47983678d24a07fa5d77b410ffa76ef" id="r_ae47983678d24a07fa5d77b410ffa76ef"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#ae47983678d24a07fa5d77b410ffa76ef">remove_problem_predicate</a> (self, PlanSys2Node predicate)</td></tr>
+<tr class="memitem:a0c015c155341209ce6195d64639dbdde" id="r_a0c015c155341209ce6195d64639dbdde"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a0c015c155341209ce6195d64639dbdde">set_problem_metric</a> (self, Union[Metric, str] metric)</td></tr>
 <tr class="memitem:ab80e277af21f8690c0bd3528136f73ab" id="r_ab80e277af21f8690c0bd3528136f73ab"><td class="memItemLeft">Optional[<a class="el" href="classbool.html">bool</a>]&#160;</td><td class="memItemRight"><a class="el" href="#ab80e277af21f8690c0bd3528136f73ab">update_problem_function</a> (self, PlanSys2Node function)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pro-methods" class="groupheader"><a id="pro-methods" name="pro-methods"></a>
@@ -653,6 +656,28 @@ Optional[List[Param]]: List of instance or None if failed.
 </pre> 
 </div>
 </div>
+<a id="adf582d9725eba021e63215537a3783a6" name="adf582d9725eba021e63215537a3783a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf582d9725eba021e63215537a3783a6">&#9670;&#160;</a></span>get_problem_metric()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> Optional[Metric] get_problem_metric </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Get the metric of the problem.
+
+Returns
+-------
+Optional[Metric]: The metric, with an empty tree if there is none; None if failed.
+</pre> 
+</div>
+</div>
 <a id="ad07c026f93d93c9ecba19e0b57af542a" name="ad07c026f93d93c9ecba19e0b57af542a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad07c026f93d93c9ecba19e0b57af542a">&#9670;&#160;</a></span>get_problem_predicate()</h2>
 
@@ -836,6 +861,28 @@ bool: True if successful, False otherwise.
 </pre> 
 </div>
 </div>
+<a id="ab95326eee4f8ea60ca36eacbaa7274cf" name="ab95326eee4f8ea60ca36eacbaa7274cf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab95326eee4f8ea60ca36eacbaa7274cf">&#9670;&#160;</a></span>remove_problem_metric()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> <a class="el" href="classbool.html">bool</a> remove_problem_metric </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Remove the metric of the problem.
+
+Returns
+-------
+bool: True if successful, False otherwise.
+</pre> 
+</div>
+</div>
 <a id="ae47983678d24a07fa5d77b410ffa76ef" name="ae47983678d24a07fa5d77b410ffa76ef"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae47983678d24a07fa5d77b410ffa76ef">&#9670;&#160;</a></span>remove_problem_predicate()</h2>
 
@@ -864,6 +911,37 @@ predicate : PlanSys2Node
 Returns
 -------
 bool: True if successful, False otherwise.
+</pre> 
+</div>
+</div>
+<a id="a0c015c155341209ce6195d64639dbdde" name="a0c015c155341209ce6195d64639dbdde"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c015c155341209ce6195d64639dbdde">&#9670;&#160;</a></span>set_problem_metric()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> <a class="el" href="classbool.html">bool</a> set_problem_metric </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Union[Metric, str]</td>          <td class="paramname"><span class="paramname"><em>metric</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Set the metric of the problem: what the planner optimizes.
+
+Parameters
+----------
+metric : Union[Metric, str]
+    The metric, or a string such as 'minimize (+ (fuel-used) (total-time))'.
+
+Returns
+-------
+bool: True if the metric was valid and set, False otherwise.
 </pre> 
 </div>
 </div>

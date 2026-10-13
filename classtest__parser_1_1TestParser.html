@@ -184,6 +184,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6dc0ea85b20ff5b86a075442ba3cfc0b" id="r_a6dc0ea85b20ff5b86a075442ba3cfc0b"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a6dc0ea85b20ff5b86a075442ba3cfc0b">test_get_sub_expr_with_space_before_opening_paren</a> (self)</td></tr>
 <tr class="memitem:a7e3124bae30eb077bef6977798357cfa" id="r_a7e3124bae30eb077bef6977798357cfa"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a7e3124bae30eb077bef6977798357cfa">test_get_sub_expr_with_tokens_only</a> (self)</td></tr>
 <tr class="memitem:acfcc274a712c67134f2c790c3fc8c2a7" id="r_acfcc274a712c67134f2c790c3fc8c2a7"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#acfcc274a712c67134f2c790c3fc8c2a7">test_get_sub_expr_with_trailing_spaces</a> (self)</td></tr>
+<tr class="memitem:a467b179b4100997a503f44dd6b16ef97" id="r_a467b179b4100997a503f44dd6b16ef97"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a467b179b4100997a503f44dd6b16ef97">test_metric_from_string</a> (self)</td></tr>
+<tr class="memitem:abd264e8cb81524e85bcb93f84253dc7f" id="r_abd264e8cb81524e85bcb93f84253dc7f"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#abd264e8cb81524e85bcb93f84253dc7f">test_metric_from_string_invalid</a> (self)</td></tr>
+<tr class="memitem:a8f2f88d98a86d4c148ac36922cc682de" id="r_a8f2f88d98a86d4c148ac36922cc682de"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a8f2f88d98a86d4c148ac36922cc682de">test_metric_round_trip</a> (self)</td></tr>
 <tr class="memitem:a2021feb34b32632ff63559327c1d9498" id="r_a2021feb34b32632ff63559327c1d9498"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a2021feb34b32632ff63559327c1d9498">test_node_from_string_exists_simple</a> (self)</td></tr>
 <tr class="memitem:a82da785dd3633fdef51d5ee9e66cf67a" id="r_a82da785dd3633fdef51d5ee9e66cf67a"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a82da785dd3633fdef51d5ee9e66cf67a">test_node_from_string_exists_single_param</a> (self)</td></tr>
 <tr class="memitem:addaf902a63c4992d079e4ce7763b9216" id="r_addaf902a63c4992d079e4ce7763b9216"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#addaf902a63c4992d079e4ce7763b9216">test_node_from_string_exists_with_dash_type</a> (self)</td></tr>
@@ -1300,6 +1303,57 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <pre class="fragment">Test extracting sub-expressions with trailing spaces.</pre> 
+</div>
+</div>
+<a id="a467b179b4100997a503f44dd6b16ef97" name="a467b179b4100997a503f44dd6b16ef97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a467b179b4100997a503f44dd6b16ef97">&#9670;&#160;</a></span>test_metric_from_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">test_metric_from_string </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Test metrics as the C++ metricFromString reads them.</pre> 
+</div>
+</div>
+<a id="abd264e8cb81524e85bcb93f84253dc7f" name="abd264e8cb81524e85bcb93f84253dc7f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd264e8cb81524e85bcb93f84253dc7f">&#9670;&#160;</a></span>test_metric_from_string_invalid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">test_metric_from_string_invalid </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Test strings that are not metrics: empty tree, nothing to print.</pre> 
+</div>
+</div>
+<a id="a8f2f88d98a86d4c148ac36922cc682de" name="a8f2f88d98a86d4c148ac36922cc682de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f2f88d98a86d4c148ac36922cc682de">&#9670;&#160;</a></span>test_metric_round_trip()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">test_metric_round_trip </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Test that a printed metric reads back the same.</pre> 
 </div>
 </div>
 <a id="a2021feb34b32632ff63559327c1d9498" name="a2021feb34b32632ff63559327c1d9498"></a>
