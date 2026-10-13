@@ -291,14 +291,15 @@ public:
   std::map<std::string, bool> method_executed_;
 };
 
-TEST_F(TerminalTestCase, load_popf_plugin)
+// The planner with no plan_solver_plugins: the default solver, Kairos
+TEST_F(TerminalTestCase, load_default_plugin)
 {
   {
     rclcpp::NodeOptions options;
     options.enable_rosout(false);
     options.arguments({"--ros-args", "--disable-rosout-logs", "--disable-stdout-logs"});
 
-    auto test_node = rclcpp::Node::make_shared("terminal_node_test_load_popf_plugin", options);
+    auto test_node = rclcpp::Node::make_shared("terminal_node_test_load_default_plugin", options);
 
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>(options);
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(options);

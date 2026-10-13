@@ -26,7 +26,6 @@
 #include "plansys2_planner/PlannerNode.hpp"
 #include "plansys2_pddl_parser/Domain.hpp"
 #include "plansys2_pddl_parser/Instance.hpp"
-#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 
@@ -111,12 +110,24 @@ PlannerNode::on_configure(const rclcpp_lifecycle::State & state)
       }
     }
   } else {
-    auto default_solver = std::make_shared<plansys2::POPFPlanSolver>();
-    default_solver->configure(solver_node, "POPF");
-    solvers_.insert({"POPF", default_solver});
-    RCLCPP_INFO(
-      get_logger(), "Created default solver : %s of type %s",
-      "POPF", "plansys2/POPFPlanSolver");
+    // No solver configured: Kairos, as a plugin, so the planner does not link any solver
+    const std::string default_id = "KAIROS";
+    const std::string default_type = "plansys2/KairosPlanSolver";
+    try {
+      plansys2::PlanSolverBase::Ptr default_solver =
+        lp_loader_.createUniqueInstance(default_type);
+      default_solver->configure(solver_node, default_id);
+      solvers_.insert({default_id, default_solver});
+      RCLCPP_INFO(
+        get_logger(), "Created default solver : %s of type %s",
+        default_id.c_str(), default_type.c_str());
+    } catch (const std::exception & ex) {
+      RCLCPP_ERROR(
+        get_logger(), "Failed to create the default solver %s (is "
+        "plansys2_kairos_plan_solver installed? Otherwise set plan_solver_plugins): %s",
+        default_type.c_str(), ex.what());
+      return CallbackReturnT::FAILURE;
+    }
   }
 
   RCLCPP_INFO(get_logger(), "[%s] Solver Timeout %g", get_name(), solver_timeout_.seconds());

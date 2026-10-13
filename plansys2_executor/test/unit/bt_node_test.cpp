@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <chrono>
 #include <string>
 #include <vector>
 #include <regex>
@@ -58,6 +59,8 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 #include "gtest/gtest.h"
+
+using namespace std::chrono_literals;  // NOLINT
 
 
 class ROS2Environment : public ::testing::Environment

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <chrono>
 #include <string>
 #include <vector>
 #include <regex>
@@ -36,6 +37,8 @@
 #include "pluginlib/class_list_macros.hpp"
 
 #include "rclcpp/rclcpp.hpp"
+
+using namespace std::chrono_literals;  // NOLINT
 
 class ROS2Environment : public ::testing::Environment
 {

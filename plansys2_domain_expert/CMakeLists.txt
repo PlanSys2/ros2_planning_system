@@ -12,7 +12,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_core REQUIRED)
-find_package(plansys2_popf_plan_solver REQUIRED)
+find_package(kairos REQUIRED)
 find_package(std_msgs REQUIRED)
 
 set(DOMAIN_EXPERT_SOURCES
@@ -32,10 +32,11 @@ target_link_libraries(${PROJECT_NAME}
   plansys2_core::plansys2_core
   ${plansys2_msgs_TARGETS}
   plansys2_pddl_parser::plansys2_pddl_parser
-  plansys2_popf_plan_solver::plansys2_popf_plan_solver
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
   ${std_msgs_TARGETS}
+  PRIVATE
+  kairos::kairos
 )
 
 add_executable(domain_expert_node
@@ -90,7 +91,7 @@ ament_export_dependencies(
   ament_index_cpp
   plansys2_msgs
   plansys2_core
-  plansys2_popf_plan_solver
+  kairos
   std_msgs
 )
 

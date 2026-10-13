@@ -14,7 +14,6 @@ find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_domain_expert REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
-find_package(plansys2_popf_plan_solver REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
 
@@ -40,7 +39,6 @@ target_link_libraries(${PROJECT_NAME}
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
   PRIVATE
-  plansys2_popf_plan_solver::plansys2_popf_plan_solver
 )
 target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 
@@ -99,7 +97,6 @@ ament_export_dependencies(
   plansys2_msgs
   plansys2_domain_expert
   plansys2_problem_expert
-  plansys2_popf_plan_solver
   pluginlib
   lifecycle_msgs
 )

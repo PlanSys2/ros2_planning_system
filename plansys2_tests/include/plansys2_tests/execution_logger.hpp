@@ -21,6 +21,7 @@
 
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 #include "plansys2_msgs/msg/action_execution.hpp"
+#include "plansys2_msgs/msg/plan.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -54,6 +55,12 @@ public:
   bool before(const std::string & op1, const std::string & op2);
   bool sorted(const std::list<std::string> & actions);
   bool is_executed(const std::string & action_full_name);
+
+  // The id the executor gives a plan item: "<action>:<start in ms>"
+  static std::string id(const plansys2_msgs::msg::PlanItem & item);
+  // The ids of the plan, in start order; with filter, only the actions that contain it
+  static std::list<std::string> plan_order(
+    const plansys2_msgs::msg::Plan & plan, const std::string & filter = "");
 
 private:
   rclcpp::Subscription<plansys2_msgs::msg::ActionExecution>::SharedPtr action_execution_sub_;

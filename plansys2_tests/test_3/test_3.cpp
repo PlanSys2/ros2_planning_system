@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ament_index_cpp/get_package_share_path.hpp"
 
@@ -188,95 +190,42 @@ TEST(test_3, test_3)
 
   ASSERT_EQ(result.value().result, plansys2_msgs::action::ExecutePlan::Result::SUCCESS);
 
-  ASSERT_TRUE(
-    execution_logger->sorted(
-  {
-    "(move robot1 assembly_zone body_car_zone):0",
-    "(transport robot1 body_car_1 body_car_zone assembly_zone):2000",
-    "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 car1):5002",
-    "(move robot1 assembly_zone wheels_zone):10003",
-    "(transport robot1 wheel_2 wheels_zone assembly_zone):12004",
-    "(move robot1 assembly_zone sterwheel_zone):15005",
-    "(transport robot1 sterwheel_3 sterwheel_zone assembly_zone):17006",
-    "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 car3):20008"
-  }));
+  // Each robot runs its actions in the order of the plan, whichever planner made it
+  for (const std::string robot : {"robot1", "robot2", "robot3"}) {
+    auto order = plansys2_tests::ExecutionLogger::plan_order(plan.value(), " " + robot + " ");
+    if (order.size() > 1) {
+      ASSERT_TRUE(execution_logger->sorted(order)) << robot;
+    }
+  }
 
-  ASSERT_TRUE(
-    execution_logger->sorted(
-  {
-    "(move robot2 assembly_zone sterwheel_zone):0",
-    "(transport robot2 sterwheel_1 sterwheel_zone assembly_zone):2000",
-    "(move robot2 assembly_zone body_car_zone):5002",
-    "(transport robot2 body_car_2 body_car_zone assembly_zone):7003",
-    "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 car2):15005"
-  }));
-
-  ASSERT_TRUE(
-    execution_logger->sorted(
-  {
-    "(move robot3 assembly_zone wheels_zone):0",
-    "(transport robot3 wheel_1 wheels_zone assembly_zone):2000",
-    "(move robot3 assembly_zone sterwheel_zone):5002",
-    "(transport robot3 sterwheel_2 sterwheel_zone assembly_zone):7003",
-    "(move robot3 assembly_zone body_car_zone):10004",
-    "(transport robot3 body_car_3 body_car_zone assembly_zone):12005",
-    "(move robot3 assembly_zone wheels_zone):15006",
-    "(transport robot3 wheel_3 wheels_zone assembly_zone):17007"
-  }));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot1 body_car_1 body_car_zone assembly_zone):2000",
-      "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 car1):5002"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot2 sterwheel_1 sterwheel_zone assembly_zone):2000",
-      "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 car1):5002"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot3 wheel_1 wheels_zone assembly_zone):2000",
-      "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 car1):5002"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot1 wheel_2 wheels_zone assembly_zone):12004",
-      "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 car2):15005"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot2 body_car_2 body_car_zone assembly_zone):7003",
-      "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 car2):15005"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot3 sterwheel_2 sterwheel_zone assembly_zone):7003",
-      "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 car2):15005"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot1 sterwheel_3 sterwheel_zone assembly_zone):17006",
-      "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 car3):20008"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot3 body_car_3 body_car_zone assembly_zone):12005",
-      "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 car3):20008"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot3 wheel_3 wheels_zone assembly_zone):17007",
-      "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 car3):20008"
-  ));
+  // Every piece is transported before the assembly that uses it, by whichever robot
+  auto tokens = [](const std::string & action) {
+      std::vector<std::string> ret;
+      std::string clean = action.substr(1, action.size() - 2);
+      for (size_t start = 0, end; start < clean.size(); start = end + 1) {
+        end = clean.find(' ', start);
+        if (end == std::string::npos) {end = clean.size();}
+        ret.push_back(clean.substr(start, end - start));
+      }
+      return ret;
+    };
+  int checked = 0;
+  for (const auto & assemble : plan.value().items) {
+    auto args = tokens(assemble.action);
+    if (args[0] != "assemble") {continue;}
+    for (const auto & transport : plan.value().items) {
+      auto targs = tokens(transport.action);
+      if (targs[0] == "transport" && std::find(args.begin(), args.end(), targs[2]) != args.end()) {
+        ASSERT_TRUE(
+          execution_logger->before(
+            plansys2_tests::ExecutionLogger::id(transport),
+            plansys2_tests::ExecutionLogger::id(assemble))) << transport.action << " / " <<
+          assemble.action;
+        checked++;
+      }
+    }
+  }
+  ASSERT_GT(checked, 0);
   finish = true;
   t.join();
 }

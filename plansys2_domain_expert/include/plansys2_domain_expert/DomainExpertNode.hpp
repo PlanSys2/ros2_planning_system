@@ -19,7 +19,6 @@
 #include <string>
 
 #include "plansys2_domain_expert/DomainExpert.hpp"
-#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 #include "std_msgs/msg/string.hpp"
 #include "plansys2_msgs/srv/change_domain.hpp"
@@ -283,7 +282,7 @@ private:
   /**
    * @brief Build a DomainExpert from a PDDL string and validate it the same way
    *        on_configure() validates model_file: via the planner's validate_domain
-   *        service, or the local POPF solver, depending on how this node was
+   *        service, or locally with Kairos, depending on how this node was
    *        configured.
    *
    * @param[in] domain The candidate domain, in PDDL.
@@ -328,7 +327,8 @@ private:
 
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::String>::SharedPtr domain_pub_;
 
-  std::unique_ptr<plansys2::POPFPlanSolver> popf_plan_solver_;
+  // Validate domains here, with Kairos, instead of asking the planner node
+  bool validate_locally_ = false;
 };
 
 }  // namespace plansys2

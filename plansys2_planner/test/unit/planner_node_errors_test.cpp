@@ -156,6 +156,13 @@ protected:
 
   void start_planner()
   {
+    // These tests need a solver that takes its time on problem_hard_unsolvable, as POPF:
+    // Kairos, the default, proves it unsolvable at once
+    if (planner_->get_parameter("plan_solver_plugins").as_string_array().empty()) {
+      planner_->set_parameter({"plan_solver_plugins", std::vector<std::string>{"POPF"}});
+      plansys2::declare_parameter_if_not_declared(
+        planner_, "POPF.plugin", rclcpp::ParameterValue(std::string("plansys2/POPFPlanSolver")));
+    }
     planner_->trigger_transition(Transition::TRANSITION_CONFIGURE);
     planner_->trigger_transition(Transition::TRANSITION_ACTIVATE);
     ASSERT_EQ(planner_->get_current_state().id(), State::PRIMARY_STATE_ACTIVE);

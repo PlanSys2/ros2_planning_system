@@ -16,6 +16,7 @@
 #include <memory>
 #include <vector>
 
+#include "kairos/kairos.hpp"
 #include "plansys2_core/Utils.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_msgs/msg/node.hpp"
@@ -142,20 +143,16 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
           " service client: waiting for service to appear...");
     }
   } else {
-    popf_plan_solver_ = std::make_unique<plansys2::POPFPlanSolver>();
-    // The solver is owned by this node, so it gets a non-owning pointer to it: an
-    // owning one would keep the node alive forever (#422)
-    auto solver_node = rclcpp_lifecycle::LifecycleNode::SharedPtr(
-      rclcpp_lifecycle::LifecycleNode::SharedPtr(), this);
-    popf_plan_solver_->configure(solver_node, "POPF");
+    validate_locally_ = true;
   }
 
   // Build the joint domain from all model_files first (extendDomain() merges
   // predicates/actions/etc, not naive string concatenation), then validate the whole
   // joint result once via validateDomain() — the same helper
   // change_domain_service_callback() uses — instead of duplicating the
-  // validate-via-planner-or-POPF logic here too.
+  // validate-via-planner-or-locally logic here too.
   std::shared_ptr<DomainExpert> joint_domain_expert;
+  std::string single_domain;  // one model file is validated as written
   for (size_t i = 0; i < model_files.size(); i++) {
     std::ifstream domain_ifs(model_files[i]);
     std::string domain_str((
@@ -164,13 +161,16 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
 
     if (i == 0) {
       joint_domain_expert = std::make_shared<DomainExpert>(domain_str);
+      single_domain = domain_str;
     } else {
       joint_domain_expert->extendDomain(domain_str);
     }
   }
 
   std::string error;
-  if (!validateDomain(joint_domain_expert->getDomain(), domain_expert_, error)) {
+  const std::string to_validate =
+    model_files.size() == 1 ? single_domain : joint_domain_expert->getDomain();
+  if (!validateDomain(to_validate, domain_expert_, error)) {
     RCLCPP_ERROR_STREAM(get_logger(), error);
     return CallbackReturnT::FAILURE;
   }
@@ -549,9 +549,23 @@ DomainExpertNode::validateDomain(
     if (!check_valid) {
       error = response->error_info.empty() ? "PDDL syntax error" : response->error_info;
     }
-  } else if (popf_plan_solver_) {
-    check_valid = popf_plan_solver_->isDomainValid(candidate->getDomain(), get_namespace());
-    if (!check_valid) {
+  } else if (validate_locally_) {
+    // Kairos checks the PDDL as given (syntax, declarations, types, arities), with no
+    // planner process, and says where each problem is. Not the text DomainExpert rebuilds:
+    // its parser is lenient, e.g. it closes a missing parenthesis
+    const std::string & text = domain;
+    const auto report = kairos::check_domain(text);
+    for (const auto & d : report.diagnostics) {
+      const auto message = kairos::to_string(d, text);
+      if (d.severity == kairos::Severity::Error) {
+        RCLCPP_ERROR(get_logger(), "%s", message.c_str());
+        if (error.empty()) {error = message;}
+      } else if (d.severity == kairos::Severity::Warning) {
+        RCLCPP_WARN(get_logger(), "%s", message.c_str());
+      }
+    }
+    check_valid = report.valid;
+    if (!check_valid && error.empty()) {
       error = "PDDL syntax error";
     }
   } else {

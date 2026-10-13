@@ -43,6 +43,8 @@
 
 #include "lifecycle_msgs/msg/state.hpp"
 
+using namespace std::chrono_literals;  // NOLINT
+
 namespace
 {
 
