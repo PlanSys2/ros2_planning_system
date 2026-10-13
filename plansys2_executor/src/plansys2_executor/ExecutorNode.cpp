@@ -448,7 +448,7 @@ ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
 {
   auto bt_builder_plugin = this->get_parameter("bt_builder_plugin").as_string();
   if (bt_builder_plugin.empty()) {
-    bt_builder_plugin = "SimpleBTBuilder";
+    bt_builder_plugin = "STNBTBuilder";
   }
 
   std::shared_ptr<plansys2::BTBuilder> bt_builder;
