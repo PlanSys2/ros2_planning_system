@@ -18,7 +18,7 @@
   <depend>plansys2_pddl_parser</depend>
   <depend>plansys2_msgs</depend>
   <depend>plansys2_core</depend>
-  <depend>plansys2_popf_plan_solver</depend>
+  <depend>kairos</depend>
   <depend>std_msgs</depend>
 
 

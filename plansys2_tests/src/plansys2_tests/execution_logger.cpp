@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
 #include <utility>
+#include <vector>
 #include <string>
 #include <list>
 
@@ -160,5 +162,28 @@ ExecutionLogger::sorted(const std::list<std::string> & actions)
   return true;
 }
 
+
+std::string
+ExecutionLogger::id(const plansys2_msgs::msg::PlanItem & item)
+{
+  return item.action + ":" + std::to_string(static_cast<int>(item.time * 1000));
+}
+
+std::list<std::string>
+ExecutionLogger::plan_order(const plansys2_msgs::msg::Plan & plan, const std::string & filter)
+{
+  std::vector<plansys2_msgs::msg::PlanItem> items(plan.items.begin(), plan.items.end());
+  std::stable_sort(
+    items.begin(), items.end(),
+    [](const auto & a, const auto & b) {return a.time < b.time;});
+
+  std::list<std::string> ret;
+  for (const auto & item : items) {
+    if (filter.empty() || item.action.find(filter) != std::string::npos) {
+      ret.push_back(id(item));
+    }
+  }
+  return ret;
+}
 
 }  // namespace plansys2_tests

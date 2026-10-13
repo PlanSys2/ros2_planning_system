@@ -138,16 +138,10 @@ TEST(test_2, test_2)
 
   ASSERT_EQ(result.value().result, plansys2_msgs::action::ExecutePlan::Result::SUCCESS);
 
+  // The actions run in the order of the plan, whichever planner made it
+  ASSERT_GE(plan.value().items.size(), 2u);
   ASSERT_TRUE(
-    execution_logger->sorted(
-  {
-    "(askcharge leia zone_1_1 zone_recharge):0",
-    "(charge leia zone_recharge):1",
-    "(move leia zone_recharge room_2):5002",
-    "(move leia room_2 corridor_1):10003",
-    "(move leia corridor_1 room_1):15004",
-    "(move leia room_1 zone_1_2):20005"
-  }));
+    execution_logger->sorted(plansys2_tests::ExecutionLogger::plan_order(plan.value())));
 
   finish = true;
   t.join();

@@ -16,7 +16,6 @@
   <depend>plansys2_msgs</depend>
   <depend>plansys2_executor</depend>
 
-  <exec_depend>popf</exec_depend>
 
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>

@@ -26,6 +26,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 
+using namespace std::chrono_literals;  // NOLINT
+
 
 class ROS2Environment : public ::testing::Environment
 {

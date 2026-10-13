@@ -33,6 +33,7 @@
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_planner/PlannerNode.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
+#include "plansys2_core/Utils.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
 
 #include "plansys2_executor/ActionExecutor.hpp"
@@ -152,12 +153,22 @@ public:
   }
 };
 
+// These tests check the BT built from a known plan, the one POPF finds: they use POPF, not
+// the default solver, so the plan does not change with it
+void use_popf(std::shared_ptr<plansys2::PlannerNode> planner_node)
+{
+  planner_node->set_parameter({"plan_solver_plugins", std::vector<std::string>{"POPF"}});
+  plansys2::declare_parameter_if_not_declared(
+    planner_node, "POPF.plugin", rclcpp::ParameterValue(std::string("plansys2/POPFPlanSolver")));
+}
+
 TEST(simple_btbuilder_tests, test_plan_1)
 {
   auto test_node = rclcpp::Node::make_shared("test_plan_1");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  use_popf(planner_node);
 
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
   auto planner_client = std::make_shared<plansys2::PlannerClient>();
@@ -402,6 +413,7 @@ TEST(simple_btbuilder_tests, test_plan_2)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  use_popf(planner_node);
 
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
   auto planner_client = std::make_shared<plansys2::PlannerClient>();
@@ -612,6 +624,7 @@ TEST(simple_btbuilder_tests, test_plan_3)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  use_popf(planner_node);
 
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
   auto planner_client = std::make_shared<plansys2::PlannerClient>();
@@ -704,6 +717,7 @@ TEST(simple_btbuilder_tests, test_plan_4)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  use_popf(planner_node);
 
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
   auto planner_client = std::make_shared<plansys2::PlannerClient>();
@@ -823,6 +837,7 @@ TEST(simple_btbuilder_tests, test_plan_5)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  use_popf(planner_node);
 
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
   auto planner_client = std::make_shared<plansys2::PlannerClient>();
@@ -937,6 +952,7 @@ TEST(simple_btbuilder_tests, test_plan_6)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  use_popf(planner_node);
 
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
   auto planner_client = std::make_shared<plansys2::PlannerClient>();

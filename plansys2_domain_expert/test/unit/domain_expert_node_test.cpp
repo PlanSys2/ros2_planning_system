@@ -39,6 +39,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
+using namespace std::chrono_literals;  // NOLINT
+
 
 class ROS2Environment : public ::testing::Environment
 {
@@ -472,8 +474,7 @@ TEST(domain_expert, change_domain_sequence_publishes_each_accepted_domain)
   plansys2::drain_ros(200ms);
 }
 
-// The POPF solver used for validation keeps a pointer to the node: it must not keep
-// the node alive (#422)
+// Nothing used for validation may keep the node alive (#422, when it was a POPF solver)
 TEST(domain_expert, domain_expert_node_is_destroyed)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
@@ -514,14 +515,23 @@ TEST(domain_expert, malformed_domains_do_not_kill_the_node)
   std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
 
   // As model_file: configure fails, the process lives on
-  for (const std::string file : {"domain_no_predicates.pddl", "domain_2_error.pddl"}) {
-    SCOPED_TRACE(file);
+  {
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/" + file});
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_2_error.pddl"});
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     ASSERT_EQ(
       domain_node->get_current_state().id(),
       lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
+  }
+
+  // No predicates and an empty action is odd but valid PDDL (POPF rejected it, Kairos does not)
+  {
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_no_predicates.pddl"});
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    ASSERT_EQ(
+      domain_node->get_current_state().id(),
+      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
   }
 
   // Through change_domain: rejected, the current domain stays
@@ -535,7 +545,7 @@ TEST(domain_expert, malformed_domains_do_not_kill_the_node)
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
   for (const std::string domain : {
-    read_file(pkgpath + "/pddl/domain_no_predicates.pddl"),
+    read_file(pkgpath + "/pddl/domain_2_error.pddl"),
     std::string("hello world"),
     std::string("(define (domain d) (:requirements :strips)"),
     std::string("(")})
