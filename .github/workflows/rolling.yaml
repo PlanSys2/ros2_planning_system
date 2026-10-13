@@ -38,10 +38,9 @@ jobs:
     container:
       image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-resolute-ros-rolling-ros-base:master
     steps:
+      # The ref under test: a pull request brings its own dependency_repos.repos
       - name: Repo checkout
         uses: actions/checkout@v6
-        with:
-          ref: rolling
       # The image can be older than the packages rosdep installs: upgrade it first so
       # all ROS packages come from the same sync (otherwise e.g. test_msgs fails to load)
       - name: Upgrade image and install popf deps
