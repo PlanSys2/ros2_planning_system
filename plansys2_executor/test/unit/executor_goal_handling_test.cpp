@@ -17,6 +17,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstdlib>
 #include <functional>
 #include <future>
 #include <memory>
@@ -121,6 +122,10 @@ protected:
     domain_node_ = std::make_shared<plansys2::DomainExpertNode>();
     problem_node_ = std::make_shared<plansys2::ProblemExpertNode>();
     executor_node_ = std::make_shared<plansys2::ExecutorNode>();
+    // CTest runs this suite with each BT builder (see CMakeLists.txt)
+    if (const char * builder = std::getenv("PLANSYS2_TEST_BT_BUILDER")) {
+      executor_node_->set_parameter({"bt_builder_plugin", std::string(builder)});
+    }
     move_node_ = std::make_shared<MoveAction>("move_performer", performer_ticks);
     move_node_->set_parameter({"action_name", "move"});
     move_node_->set_parameter({"rate", 20.0});

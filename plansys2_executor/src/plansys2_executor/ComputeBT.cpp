@@ -310,7 +310,7 @@ ComputeBT::computeBTCallback(
 
   auto bt_builder_plugin = this->get_parameter("bt_builder_plugin").as_string();
   if (bt_builder_plugin.empty()) {
-    bt_builder_plugin = "SimpleBTBuilder";
+    bt_builder_plugin = "STNBTBuilder";
   }
   RCLCPP_INFO(get_logger(), "bt_builder_plugin: %s", bt_builder_plugin.c_str());
 

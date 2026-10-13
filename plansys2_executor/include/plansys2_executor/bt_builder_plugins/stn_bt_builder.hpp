@@ -163,6 +163,9 @@ protected:
    * @param[in] plan The plan to analyze.
    * @return Set of integer timepoints representing happenings.
    */
+  // Whether every snap action of the plan applies at its happening from the current state
+  bool is_executable(const plansys2_msgs::msg::Plan & plan) const;
+
   std::set<int> get_happenings(const plansys2_msgs::msg::Plan & plan) const;
 
   /**

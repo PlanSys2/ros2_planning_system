@@ -148,7 +148,9 @@ ExecutionLogger::sorted(const std::list<std::string> & actions)
       return false;
     }
 
-    if (!before(*it, *it2)) {
+    // Started in order: STNBTBuilder may start an action before the previous one ends,
+    // when it only needs what that one does at its start
+    if (!started_before(*it, *it2)) {
       return false;
     }
     ++it;

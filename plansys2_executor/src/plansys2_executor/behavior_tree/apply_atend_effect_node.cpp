@@ -17,6 +17,7 @@
 #include <memory>
 
 #include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
+#include "plansys2_executor/behavior_tree/stn_dependency.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
 
 namespace plansys2
@@ -34,6 +35,11 @@ ApplyAtEndEffect::ApplyAtEndEffect(
   problem_client_ =
     config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
     "problem_client");
+  // Only the STN builder needs these
+  config().blackboard->get("action_graph", action_graph_);
+  config().blackboard->get("bt_builder", bt_builder_);
+  config().blackboard->get("node", node_);
+  config().blackboard->get("stn_relaxed_timing", relaxed_timing_);
 }
 
 BT::NodeStatus
@@ -46,7 +52,19 @@ ApplyAtEndEffect::tick()
 
   if (!(*action_map_)[action].at_end_effects_applied) {
     (*action_map_)[action].at_end_effects_applied = true;
+    auto now = node_ ? node_->now() : rclcpp::Clock(RCL_ROS_TIME).now();
+    (*action_map_)[action].at_end_effects_applied_time = now;
     apply(effect, problem_client_, 0);
+
+    // STNBTBuilder: the network takes the actual time of this event
+    if (!relaxed_timing_ && !update_stn_on_event(
+        action_graph_, bt_builder_, *action_map_, action, ActionType::END, now))
+    {
+      // Actual durations differ from the planned ones: the order still holds
+      RCLCPP_WARN(
+        rclcpp::get_logger("stn_bt"), "%s: the planned times no longer hold, keeping the order",
+        action.c_str());
+    }
   }
 
   return BT::NodeStatus::SUCCESS;

@@ -17,6 +17,7 @@
 #include <memory>
 
 #include "plansys2_executor/behavior_tree/wait_action_node.hpp"
+#include "plansys2_executor/behavior_tree/stn_dependency.hpp"
 
 namespace plansys2
 {
@@ -29,6 +30,10 @@ WaitAction::WaitAction(
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
     "action_map");
+  // Only the STN builder needs these
+  config().blackboard->get("action_graph", action_graph_);
+  config().blackboard->get("node", node_);
+  config().blackboard->get("stn_relaxed_timing", relaxed_timing_);
 }
 
 BT::NodeStatus
@@ -36,6 +41,31 @@ WaitAction::tick()
 {
   std::string action;
   getInput("action", action);
+
+  // STNBTBuilder: wait for the parent event and the time bounds between both
+  if (auto dependency = parse_stn_dependency(action)) {
+    if (dependency->parent_id == dependency->child_id) {
+      return BT::NodeStatus::SUCCESS;  // Start and end of the same action
+    }
+    auto now = node_ ? node_->now() : rclcpp::Clock(RCL_ROS_TIME).now();
+    auto elapsed = seconds_since_parent(*action_map_, dependency.value(), now);
+    if (!elapsed) {
+      return BT::NodeStatus::RUNNING;
+    }
+    auto [lower, upper] = stn_bounds(action_graph_, dependency.value());
+    constexpr double kTolerance = 1e-3;
+    if (!relaxed_timing_ && elapsed.value() < lower - kTolerance) {
+      return BT::NodeStatus::RUNNING;  // Not before its planned time
+    }
+    if (!relaxed_timing_ && elapsed.value() > upper + kTolerance) {
+      // Real durations are never exact: being late does not break the order, which is kept
+      RCLCPP_WARN(
+        rclcpp::get_logger("stn_bt"), "%s: %.3f s since %s %s, later than its window [%.3f, %.3f]",
+        action.c_str(), elapsed.value(), dependency->parent_id.c_str(),
+        dependency->parent_type.c_str(), lower, upper);
+    }
+    return BT::NodeStatus::SUCCESS;
+  }
 
   if ((*action_map_).find(action) == (*action_map_).end()) {
     return BT::NodeStatus::RUNNING;  // Not started yet

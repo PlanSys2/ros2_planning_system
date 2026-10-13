@@ -77,6 +77,11 @@ CHECK_PREV_ACTIONS
 std::string
 STNBTBuilder::get_tree(const plansys2_msgs::msg::Plan & plan)
 {
+  // A tree for a plan that cannot run from the current state would wait forever
+  if (!is_executable(plan)) {
+    return {};
+  }
+
   stn_ = build_stn(plan);
 
   if (!propagate(stn_)) {
@@ -93,6 +98,9 @@ STNBTBuilder::get_dotgraph(
   bool enable_legend,
   bool enable_print_graph)
 {
+  if (!stn_) {
+    return "";  // No plan yet
+  }
   if (enable_print_graph) {
     print_graph(stn_);
   }
@@ -143,6 +151,35 @@ STNBTBuilder::get_dotgraph(
   ss << "}";
 
   return ss.str();
+}
+
+bool
+STNBTBuilder::is_executable(const plansys2_msgs::msg::Plan & plan) const
+{
+  auto happenings = get_happenings(plan);
+  auto simple_plan = get_simple_plan(plan);
+  auto states = get_states(happenings, simple_plan);
+
+  // Every snap action must be applicable at its happening, as get_threat assumes
+  for (const auto & item : simple_plan) {
+    if (item.first < 0) {
+      continue;  // The initial state
+    }
+    auto happening = get_happening(item.first, happenings);
+    auto previous = happening == happenings.end() ?
+      happenings.end() : get_previous(*happening, happenings);
+    if (previous == happenings.end() || states.find(*previous) == states.end()) {
+      return false;
+    }
+    auto state = states.at(*previous);
+    if (!can_apply(item, simple_plan, *happening, state)) {
+      std::cerr << "STNBTBuilder: " << item.second.expression << " (" <<
+        to_string(item.second.type) << ") cannot be applied: the plan cannot be executed" <<
+        std::endl;
+      return false;
+    }
+  }
+  return true;
 }
 
 Graph::Ptr
@@ -227,7 +264,9 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
           return std::get<0>(arc_in) == node;
         });
 
-      child->input_arcs.erase(*it);
+      if (it != child->input_arcs.end()) {
+        child->input_arcs.erase(it);
+      }
       child->input_arcs.insert(std::make_tuple(node, lower, upper));
     }
 
@@ -1344,6 +1383,9 @@ STNBTBuilder::get_action_status(
   ActionStamped action_stamped,
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map)
 {
+  if (!action_map) {
+    return ActionExecutor::IDLE;  // Nothing is executing yet
+  }
   auto index = "(" + action_stamped.action.get_action_string() + "):" +
     std::to_string(static_cast<int>(action_stamped.time * 1000));
   if (action_map->find(index) != action_map->end()) {

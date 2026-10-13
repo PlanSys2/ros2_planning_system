@@ -59,8 +59,15 @@ foreach(scenario
     unknown_bt_builder_plugin malformed_action_bt_xml sequential_bt_builder)
   ament_add_gtest_test(plan_setup_errors_test
     TEST_NAME plan_setup_errors_${scenario}
-    ENV GTEST_FILTER=PlanSetupErrorsTest.${scenario}
+    ENV GTEST_FILTER=PlanSetupErrorsTest.${scenario} PLANSYS2_TEST_BT_BUILDER=SimpleBTBuilder
     TIMEOUT 120)
+  # The same scenario with STNBTBuilder
+  if(NOT scenario STREQUAL "malformed_action_bt_xml")  # A template STNBTBuilder does not use
+    ament_add_gtest_test(plan_setup_errors_test
+      TEST_NAME plan_setup_errors_${scenario}_stn
+      ENV GTEST_FILTER=PlanSetupErrorsTest.${scenario} PLANSYS2_TEST_BT_BUILDER=STNBTBuilder
+      TIMEOUT 120)
+  endif()
 endforeach()
 
 ament_add_gtest_executable(executor_lifecycle_test executor_lifecycle_test.cpp)
@@ -72,7 +79,12 @@ foreach(scenario
     cleanup_and_configure_again plan_services_during_execution)
   ament_add_gtest_test(executor_lifecycle_test
     TEST_NAME executor_lifecycle_${scenario}
-    ENV GTEST_FILTER=ExecutorLifecycleTest.${scenario}
+    ENV GTEST_FILTER=ExecutorLifecycleTest.${scenario} PLANSYS2_TEST_BT_BUILDER=SimpleBTBuilder
+    TIMEOUT 120)
+  # The same scenario with STNBTBuilder
+  ament_add_gtest_test(executor_lifecycle_test
+    TEST_NAME executor_lifecycle_${scenario}_stn
+    ENV GTEST_FILTER=ExecutorLifecycleTest.${scenario} PLANSYS2_TEST_BT_BUILDER=STNBTBuilder
     TIMEOUT 120)
 endforeach()
 
@@ -86,7 +98,12 @@ foreach(scenario
     cancel_a_goal_waiting_to_start cancel_as_the_plan_ends_does_not_reach_the_next_goal)
   ament_add_gtest_test(executor_goal_handling_test
     TEST_NAME executor_goal_handling_${scenario}
-    ENV GTEST_FILTER=ExecutorGoalHandlingTest.${scenario}
+    ENV GTEST_FILTER=ExecutorGoalHandlingTest.${scenario} PLANSYS2_TEST_BT_BUILDER=SimpleBTBuilder
+    TIMEOUT 120)
+  # The same scenario with STNBTBuilder
+  ament_add_gtest_test(executor_goal_handling_test
+    TEST_NAME executor_goal_handling_${scenario}_stn
+    ENV GTEST_FILTER=ExecutorGoalHandlingTest.${scenario} PLANSYS2_TEST_BT_BUILDER=STNBTBuilder
     TIMEOUT 120)
 endforeach()
 
@@ -103,6 +120,28 @@ foreach(scenario
     ENV GTEST_FILTER=${scenario}
     TIMEOUT 120)
 endforeach()
+
+ament_add_gtest(stn_dependency_test stn_dependency_test.cpp)
+target_compile_definitions(stn_dependency_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(stn_dependency_test ${PROJECT_NAME})
+
+ament_add_gtest_executable(executor_stn_test executor_stn_test.cpp)
+target_compile_definitions(executor_stn_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(executor_stn_test ${PROJECT_NAME})
+foreach(scenario
+    stn_executes_an_action_during_another simple_builder_cannot_run_required_concurrency)
+  ament_add_gtest_test(executor_stn_test
+    TEST_NAME executor_stn_${scenario}
+    ENV GTEST_FILTER=ExecutorStnTest.${scenario}
+    TIMEOUT 120)
+endforeach()
+
+ament_add_gtest(stn_btbuilder_tests stn_btbuilder_tests.cpp)
+target_compile_definitions(stn_btbuilder_tests PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(stn_btbuilder_tests
+  ${PROJECT_NAME}
+  bt_builder_plugins
+)
 
 # Tests discover only nodes on this host: parallel jobs do not mix
 get_property(_tests DIRECTORY PROPERTY TESTS)
