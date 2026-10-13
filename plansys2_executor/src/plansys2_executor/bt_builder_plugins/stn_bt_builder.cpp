@@ -486,6 +486,15 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
         return (a.second.expression == action.expression) && (a.second.type == ActionType::END);
       });
 
+    // An action with no duration (a non-durative one, as some planners give it) has no
+    // interval: its overall conditions hold at its only happening
+    if (duration == 0) {
+      auto overall_action = std::make_pair(time, start_action->second);
+      overall_action.second.type = ActionType::OVERALL;
+      overall_actions.push_back(overall_action);
+      continue;
+    }
+
     // Compute the overall actions
     int prev = time;
     for (auto iter = start_action; iter != simple_plan.end(); ++iter) {

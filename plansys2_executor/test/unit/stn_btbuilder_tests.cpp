@@ -277,6 +277,23 @@ TEST_F(STNBTBuilderTest, numeric_conditions_and_non_durative_actions)
   EXPECT_NE(parser::pddl::toString(init).find("battery r1"), std::string::npos);
 }
 
+TEST_F(STNBTBuilderTest, a_non_durative_action_with_no_duration)
+{
+  // Planners give non-durative actions a duration of 0, not only 0.001
+  auto plan = make_plan({
+    {0.0, "(move r1 kitchen bedroom)", 5.0}, {5.001, "(switch_on r1 bedroom)", 0.0}});
+  EXPECT_TRUE(builder_->is_executable(plan));
+  auto tree = builder_->get_tree(plan);
+  ASSERT_FALSE(tree.empty());
+  EXPECT_NE(tree.find("(switch_on r1 bedroom):5001"), std::string::npos) << tree;
+
+  // Alone in the plan, as in a plan of a domain with no durative actions
+  plan = make_plan({{0.0, "(switch_on r1 kitchen)", 0.0}});
+  tree = builder_->get_tree(plan);
+  ASSERT_FALSE(tree.empty());
+  EXPECT_NE(tree.find("(switch_on r1 kitchen):0"), std::string::npos) << tree;
+}
+
 TEST_F(STNBTBuilderTest, a_plan_that_cannot_run_gets_no_tree)
 {
   // Mending without a lit match
