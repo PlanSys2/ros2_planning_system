@@ -17,7 +17,7 @@
 
 import unittest
 
-from plansys2_msgs.msg import Node, Param, Tree
+from plansys2_msgs.msg import Metric, Node, Param, Tree
 from plansys2_support_py.Parser import Parser
 
 
@@ -1369,6 +1369,42 @@ class TestParser(unittest.TestCase):
         types = [Parser.node_to_dict(n)['node_type_name'] for n in tree.nodes]
         self.assertIn('IMPLY', types)
         self.assertIn('FORALL', types)
+
+    def test_metric_from_string(self):
+        """Test metrics as the C++ metricFromString reads them."""
+        metric = Parser.metric_from_string('minimize (total-time)')
+        self.assertEqual(metric.optimization, Metric.MINIMIZE)
+        self.assertEqual(len(metric.tree.nodes), 1)
+        self.assertEqual(metric.tree.nodes[0].node_type, Node.FUNCTION)
+        self.assertEqual(metric.tree.nodes[0].name, 'total-time')
+
+        metric = Parser.metric_from_string('  (:metric maximize (+ (spent) (* 100 (total-time))))')
+        self.assertEqual(metric.optimization, Metric.MAXIMIZE)
+        self.assertEqual(metric.tree.nodes[0].node_type, Node.EXPRESSION)
+        self.assertEqual(metric.tree.nodes[0].expression_type, Node.ARITH_ADD)
+
+        self.assertEqual(len(Parser.metric_from_string('minimize 3').tree.nodes), 1)
+
+    def test_metric_from_string_invalid(self):
+        """Test strings that are not metrics: empty tree, nothing to print."""
+        for text in ['', '   ', 'minimize', '(total-time)', 'optimize (total-time)',
+                     'Minimize (total-time)', 'minimize (> (cost) 3)', 'minimize (and (cost))',
+                     'minimize (not (cost))', 'minimize (+ (cost) (total-time)',
+                     'minimize (+ (cost) (total-time)))', '(:metric)']:
+            with self.subTest(text=text):
+                metric = Parser.metric_from_string(text)
+                self.assertEqual(len(metric.tree.nodes), 0)
+                self.assertEqual(Parser.metric_to_string(metric), '')
+
+    def test_metric_round_trip(self):
+        """Test that a printed metric reads back the same."""
+        for text in ['minimize (total-time)', 'maximize (- (score) (* 2 (total-time)))']:
+            with self.subTest(text=text):
+                metric = Parser.metric_from_string(text)
+                again = Parser.metric_from_string(Parser.metric_to_string(metric))
+                self.assertEqual(again.optimization, metric.optimization)
+                self.assertEqual(
+                    Parser.metric_to_string(again), Parser.metric_to_string(metric))
 
 
 if __name__ == '__main__':

@@ -18,7 +18,7 @@
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-from plansys2_msgs.msg import Node, Param, Tree
+from plansys2_msgs.msg import Metric, Node, Param, Tree
 
 
 class Parser:
@@ -546,6 +546,87 @@ class Parser:
                 i += 1
 
         return node
+
+    @staticmethod
+    def metric_from_string(metric: str) -> Metric:
+        """
+        Create a Metric from a string, as the C++ metricFromString.
+
+        Parameters
+        ----------
+        metric : str
+            'minimize <expr>' or 'maximize <expr>', optionally as '(:metric ...)'. The
+            expression is arithmetic over numbers, functions and (total-time).
+
+        Returns
+        -------
+        Metric
+            The metric; its tree is empty if the string is not a valid metric.
+
+        """
+        ret = Metric()
+        text = metric.strip()
+
+        # (:metric minimize <expr>) -> minimize <expr>
+        if text.startswith('(') and text.endswith(')'):
+            inner = text[1:].lstrip()
+            if inner.startswith(':metric'):
+                text = inner[len(':metric'):-1].strip()
+
+        parts = text.split(None, 1)
+        if len(parts) != 2 or parts[0] not in ('minimize', 'maximize'):
+            return ret
+        optimization, expr = parts
+
+        # Balanced parentheses, as the C++ parser requires
+        depth = 0
+        for char in expr:
+            depth += 1 if char == '(' else -1 if char == ')' else 0
+            if depth < 0:
+                return ret
+        if depth != 0:
+            return ret
+
+        try:
+            tree = Parser.tree_from_string(expr, parent=Node.EXPRESSION)
+        except (ValueError, IndexError):
+            return ret
+
+        # Only numbers, functions and arithmetic: a comparison or a predicate is not a metric
+        arithmetic = (Node.ARITH_ADD, Node.ARITH_SUB, Node.ARITH_MULT, Node.ARITH_DIV)
+        if not tree.nodes:
+            return ret
+        for node in tree.nodes:
+            if node.node_type == Node.EXPRESSION:
+                if node.expression_type not in arithmetic or len(node.children) != 2:
+                    return ret
+            elif node.node_type not in (Node.FUNCTION, Node.NUMBER):
+                return ret
+
+        ret.optimization = Metric.MAXIMIZE if optimization == 'maximize' else Metric.MINIMIZE
+        ret.tree = tree
+        return ret
+
+    @staticmethod
+    def metric_to_string(metric: Metric) -> str:
+        """
+        Convert a Metric to 'minimize <expr>' or 'maximize <expr>'.
+
+        Parameters
+        ----------
+        metric : Metric
+            The metric.
+
+        Returns
+        -------
+        str
+            The metric as a string; empty if there is no metric.
+
+        """
+        if not metric.tree.nodes:
+            return ''
+        optimization = 'maximize' if metric.optimization == Metric.MAXIMIZE else 'minimize'
+        return f'{optimization} {Parser.tree_to_string(metric.tree)}'
 
     @staticmethod
     def tree_from_string(

@@ -290,7 +290,7 @@ class PlanMonitorProcessor:
 
 # ---------------------------------------------------------------------------
 # KnowledgeProcessor
-# Receives the problem expert knowledge (instances/predicates/functions/goal).
+# Receives the problem expert knowledge (instances/predicates/functions/goal/metric).
 # ---------------------------------------------------------------------------
 class KnowledgeProcessor:
     """Subscribe to ``problem_expert/knowledge``."""
@@ -348,5 +348,12 @@ class KnowledgeProcessor:
             lines.append(f'  [magenta]{goal_text}[/magenta]')
         else:
             lines.append('  [dim](none)[/dim]')
+
+        # Metric, only when the problem has one
+        metric_text = msg.metric.strip() if msg.metric else ''
+        if metric_text:
+            lines.append('')
+            lines.append('[bold underline]Metric[/bold underline]')
+            lines.append(f'  [blue]{metric_text}[/blue]')
 
         return '\n'.join(lines)
