@@ -21,10 +21,16 @@
 
   <exec_depend>launch_ros</exec_depend>
 
-  <test_depend>ament_lint_common</test_depend>
+  <test_depend>ament_index_python</test_depend>
   <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
   <test_depend>launch</test_depend>
   <test_depend>launch_testing</test_depend>
+  <test_depend>launch_testing_ament_cmake</test_depend>
+  <test_depend>lifecycle_msgs</test_depend>
+  <test_depend>plansys2_msgs</test_depend>
+  <test_depend>plansys2_popf_plan_solver</test_depend>
+  <test_depend>rclpy</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

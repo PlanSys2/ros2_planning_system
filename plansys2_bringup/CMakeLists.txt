@@ -31,6 +31,10 @@ target_compile_definitions(plansys2_node PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTI
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+
+  find_package(launch_testing_ament_cmake REQUIRED)
+  add_launch_test(test/test_monolithic_responsive.py TIMEOUT 180)
+  add_launch_test(test/test_monolithic_real_time.py TIMEOUT 60)
 endif()
 
 install(DIRECTORY launch params

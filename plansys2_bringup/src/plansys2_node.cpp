@@ -12,10 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <sched.h>
+
+#include <algorithm>
+#include <cerrno>
 #include <chrono>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <map>
+#include <thread>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -32,13 +38,33 @@ int main(int argc, char ** argv)
 
   rclcpp::init(argc, argv);
 
-  // EventsExecutor is deprecated; EventsCBGExecutor delays bursts of actions_hub messages (#449)
-  rclcpp::executors::SingleThreadedExecutor exe;
+  // Several threads, so a long plan or a call between nodes does not block the rest
+  rclcpp::executors::MultiThreadedExecutor exe(
+    rclcpp::ExecutorOptions(), std::max(4u, std::thread::hardware_concurrency()));
 
   auto main_node = rclcpp::Node::make_shared("plansys2");
   bool real_time = false;
   main_node->declare_parameter("use_real_time", real_time);
   main_node->get_parameter("use_real_time", real_time);
+
+  if (real_time) {
+    // Before any thread starts: they all inherit the policy
+    sched_param sch;
+    sch.sched_priority = 80;
+    if (sched_setscheduler(0, SCHED_FIFO, &sch) == -1) {
+      RCLCPP_ERROR(
+        main_node->get_logger(), "Failed to set PlanSys2 to execute in Real Time: %s",
+        std::strerror(errno));
+      RCLCPP_ERROR(
+        main_node->get_logger(),
+        "Set use_real_time param to false or give your system the permissions");
+      rclcpp::shutdown();
+      return 1;
+    }
+    RCLCPP_INFO(main_node->get_logger(), "Set PlanSys2 to execute in Real Time");
+  } else {
+    RCLCPP_INFO(main_node->get_logger(), "Set PlanSys2 to execute with normal priority");
+  }
 
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
@@ -65,41 +91,20 @@ int main(int argc, char ** argv)
     exe.add_node(manager_node.second);
   }
 
-  std::shared_future<bool> startup_future = std::async(
-    std::launch::async,
-    std::bind(plansys2::startup_function, manager_nodes, std::chrono::seconds(5)));
-  exe.spin_until_future_complete(startup_future);
+  // spin_until_future_complete() would use one thread: spin with all of them from the start
+  std::thread spin_thread([&exe]() {exe.spin();});
 
-  if (!startup_future.get()) {
+  if (!plansys2::startup_function(manager_nodes, std::chrono::seconds(5))) {
     RCLCPP_ERROR(
       rclcpp::get_logger("plansys2_bringup"),
       "Failed to start plansys2!");
+    exe.cancel();
+    spin_thread.join();
     rclcpp::shutdown();
     return -1;
   }
 
-  if (real_time) {
-    RCLCPP_INFO(main_node->get_logger(), "Set PlanSys2 to execute in Real Time");
-    auto rt_thread = std::thread(
-      [&]() {
-        sched_param sch;
-        sch.sched_priority = 80;
-
-        if (sched_setscheduler(0, SCHED_FIFO, &sch) == -1) {
-          RCLCPP_ERROR(main_node->get_logger(), "Failed to tet PlanSys2 to execute in Real Time.");
-          RCLCPP_ERROR(main_node->get_logger(), "Set use_real_time param to false");
-          RCLCPP_ERROR(main_node->get_logger(), "or set your system to have permissions.");
-          throw std::runtime_error{std::string("failed to set sched: ") + std::strerror(errno)};
-        }
-
-        exe.spin();
-    });
-
-    rt_thread.join();
-  } else {
-    RCLCPP_INFO(main_node->get_logger(), "Set PlanSys2 to execute with normal priority");
-    exe.spin();
-  }
+  spin_thread.join();
 
   rclcpp::shutdown();
   return 0;
