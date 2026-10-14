@@ -1,0 +1,9 @@
+<map id="FakeValidator" name="FakeValidator">
+<area shape="rect" id="Node000001" title=" " alt="" coords="85,102,186,128"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,58,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="58,39,124,99,120,103,54,43"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="82,5,189,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="138,46,138,101,133,101,133,46"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="213,5,309,31"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="237,43,189,80,156,104,152,99,186,76,233,39"/>
+</map>
