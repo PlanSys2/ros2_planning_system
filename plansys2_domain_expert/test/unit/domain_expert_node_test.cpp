@@ -34,6 +34,8 @@
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "lifecycle_msgs/srv/change_state.hpp"
+#include "plansys2_msgs/srv/validate_domain.hpp"
 #include "std_msgs/msg/string.hpp"
 
 #include "rclcpp/rclcpp.hpp"
@@ -554,6 +556,119 @@ TEST(domain_expert, malformed_domains_do_not_kill_the_node)
     ASSERT_FALSE(domain_client->changeDomain(domain));
     ASSERT_EQ(domain_client->getName(), "plansys2");
   }
+}
+
+// Answers planner/validate_domain as the planner node would
+class FakeValidator : public rclcpp::Node
+{
+public:
+  FakeValidator()
+  : Node("fake_domain_validator")
+  {
+    service_ = create_service<plansys2_msgs::srv::ValidateDomain>(
+      "planner/validate_domain",
+      [this](
+        const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Request>,
+        std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Response> response) {
+        calls++;
+        response->success = accept;
+        response->error_info = accept ? "" : "rejected by the planner";
+      });
+  }
+
+  std::atomic<bool> accept {true};
+  std::atomic<int> calls {0};
+
+private:
+  rclcpp::Service<plansys2_msgs::srv::ValidateDomain>::SharedPtr service_;
+};
+
+// The domain expert spins in one thread, as in its own process: it used to wait for the
+// planner's answer that only its own blocked thread could take
+TEST(domain_expert, validate_with_planner_single_threaded)
+{
+  plansys2::drain_ros(300ms);
+  {
+    std::string pkgpath =
+      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    auto validator = std::make_shared<FakeValidator>();
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    domain_node->set_parameter({"validate_using_planner_node", true});
+
+    rclcpp::executors::SingleThreadedExecutor exe;
+    exe.add_node(domain_node->get_node_base_interface());
+    ExecutorSpinner spinner(exe);
+    // The planner runs apart, as in its own process
+    rclcpp::executors::SingleThreadedExecutor planner_exe;
+    planner_exe.add_node(validator);
+    ExecutorSpinner planner_spinner(planner_exe);
+
+    // Through the lifecycle service, so on_configure runs in the executor's thread
+    auto test_node = rclcpp::Node::make_shared("validate_single_threaded_test");
+    auto change_state = test_node->create_client<lifecycle_msgs::srv::ChangeState>(
+      "domain_expert/change_state");
+    ASSERT_TRUE(change_state->wait_for_service(5s));
+    auto request = std::make_shared<lifecycle_msgs::srv::ChangeState::Request>();
+    request->transition.id = lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE;
+    auto start = std::chrono::steady_clock::now();
+    auto future = change_state->async_send_request(request);
+    ASSERT_EQ(
+      rclcpp::spin_until_future_complete(test_node, future, 10s),
+      rclcpp::FutureReturnCode::SUCCESS);
+    ASSERT_TRUE(future.get()->success);
+    ASSERT_LT(std::chrono::steady_clock::now() - start, 2s);
+    ASSERT_EQ(validator->calls, 1);
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+    // A change of domain is validated the same way, inside a service callback
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+    std::ifstream new_domain_ifs(pkgpath + "/pddl/domain_charging.pddl");
+    std::string new_domain((
+        std::istreambuf_iterator<char>(new_domain_ifs)),
+      std::istreambuf_iterator<char>());
+    start = std::chrono::steady_clock::now();
+    ASSERT_TRUE(domain_client->changeDomain(new_domain));
+    ASSERT_LT(std::chrono::steady_clock::now() - start, 2s);
+    ASSERT_EQ(domain_client->getName(), "charging");
+    ASSERT_EQ(validator->calls, 2);
+
+    // The planner's verdict is kept
+    validator->accept = false;
+    std::ifstream old_domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+    std::string old_domain((
+        std::istreambuf_iterator<char>(old_domain_ifs)),
+      std::istreambuf_iterator<char>());
+    ASSERT_FALSE(domain_client->changeDomain(old_domain));
+    ASSERT_EQ(domain_client->getName(), "charging");
+    ASSERT_EQ(validator->calls, 3);
+  }
+  plansys2::drain_ros(200ms);
+}
+
+// It used to wait for the planner forever
+TEST(domain_expert, validate_with_planner_absent)
+{
+  plansys2::drain_ros(300ms);
+  {
+    std::string pkgpath =
+      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    domain_node->set_parameter({"validate_using_planner_node", true});
+
+    rclcpp::executors::SingleThreadedExecutor exe;
+    exe.add_node(domain_node->get_node_base_interface());
+    ExecutorSpinner spinner(exe);
+
+    auto start = std::chrono::steady_clock::now();
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    ASSERT_LT(std::chrono::steady_clock::now() - start, 8s);
+    ASSERT_EQ(
+      domain_node->get_current_state().id(),
+      lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
+  }
+  plansys2::drain_ros(200ms);
 }
 
 int main(int argc, char ** argv)

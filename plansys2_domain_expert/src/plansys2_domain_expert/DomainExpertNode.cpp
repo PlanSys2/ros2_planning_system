@@ -30,7 +30,10 @@ DomainExpertNode::DomainExpertNode(const rclcpp::NodeOptions & options)
   declare_parameter("model_file", "");
   declare_parameter("validate_using_planner_node", false);
 
-  validate_domain_callback_group_ = create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+  validate_domain_callback_group_ =
+    create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive, false);
+  validate_domain_executor_.add_callback_group(
+    validate_domain_callback_group_, get_node_base_interface());
 
   get_name_service_ = create_service<plansys2_msgs::srv::GetDomainName>(
     "domain_expert/get_domain_name",
@@ -136,11 +139,12 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   if (validate_using_planner_node) {
     validate_domain_client_ = create_client<plansys2_msgs::srv::ValidateDomain>(
       "planner/validate_domain", rclcpp::ServicesQoS(), validate_domain_callback_group_);
-    while (!validate_domain_client_->wait_for_service(std::chrono::seconds(3))) {
-      RCLCPP_INFO_STREAM(
+    if (!validate_domain_client_->wait_for_service(std::chrono::seconds(5))) {
+      RCLCPP_ERROR_STREAM(
         get_logger(),
-        validate_domain_client_->get_service_name() <<
-          " service client: waiting for service to appear...");
+        validate_domain_client_->get_service_name() << " not available: is the planner running?");
+      validate_domain_client_.reset();
+      return CallbackReturnT::FAILURE;
     }
   } else {
     validate_locally_ = true;
@@ -539,7 +543,11 @@ DomainExpertNode::validateDomain(
     auto request = std::make_shared<plansys2_msgs::srv::ValidateDomain::Request>();
     request->domain = candidate->getDomain();
     auto future_result = validate_domain_client_->async_send_request(std::move(request));
-    if (future_result.wait_for(std::chrono::seconds(3)) != std::future_status::ready) {
+    // Spun here: with a single-threaded executor nothing else would take the answer
+    if (validate_domain_executor_.spin_until_future_complete(
+        future_result, std::chrono::seconds(3)) != rclcpp::FutureReturnCode::SUCCESS)
+    {
+      validate_domain_client_->remove_pending_request(future_result);
       error = "Timed out waiting for service: " +
         std::string(validate_domain_client_->get_service_name());
       return false;

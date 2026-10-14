@@ -14,7 +14,6 @@
 
 #include <sched.h>
 
-#include <algorithm>
 #include <cerrno>
 #include <chrono>
 #include <cstring>
@@ -22,6 +21,7 @@
 #include <string>
 #include <map>
 #include <thread>
+#include <vector>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -37,10 +37,6 @@ int main(int argc, char ** argv)
   setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
   rclcpp::init(argc, argv);
-
-  // Several threads, so a long plan or a call between nodes does not block the rest
-  rclcpp::executors::MultiThreadedExecutor exe(
-    rclcpp::ExecutorOptions(), std::max(4u, std::thread::hardware_concurrency()));
 
   auto main_node = rclcpp::Node::make_shared("plansys2");
   bool real_time = false;
@@ -72,11 +68,6 @@ int main(int argc, char ** argv)
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
-  exe.add_node(domain_node->get_node_base_interface());
-  exe.add_node(problem_node->get_node_base_interface());
-  exe.add_node(planner_node->get_node_base_interface());
-  exe.add_node(executor_node->get_node_base_interface());
-
   std::map<std::string, std::shared_ptr<plansys2::LifecycleServiceClient>> manager_nodes;
   manager_nodes["domain_expert"] = std::make_shared<plansys2::LifecycleServiceClient>(
     "domain_expert_lc_mngr", "domain_expert");
@@ -87,25 +78,48 @@ int main(int argc, char ** argv)
   manager_nodes["executor"] = std::make_shared<plansys2::LifecycleServiceClient>(
     "executor_lc_mngr", "executor");
 
+  // One single-threaded executor per node, as when launched apart: a plan only blocks the planner
+  std::vector<std::shared_ptr<rclcpp::executors::SingleThreadedExecutor>> executors;
+  auto add_executor = [&executors]() {
+      executors.push_back(std::make_shared<rclcpp::executors::SingleThreadedExecutor>());
+      return executors.back();
+    };
+  add_executor()->add_node(domain_node->get_node_base_interface());
+  add_executor()->add_node(problem_node->get_node_base_interface());
+  add_executor()->add_node(planner_node->get_node_base_interface());
+  add_executor()->add_node(executor_node->get_node_base_interface());
+  auto managers_executor = add_executor();
   for (auto & manager_node : manager_nodes) {
     manager_node.second->init();
-    exe.add_node(manager_node.second);
+    managers_executor->add_node(manager_node.second);
   }
 
-  // spin_until_future_complete() would use one thread: spin with all of them from the start
-  std::thread spin_thread([&exe]() {exe.spin();});
+  std::vector<std::thread> spin_threads;
+  for (auto & exe : executors) {
+    spin_threads.emplace_back([exe]() {exe->spin();});
+  }
+  auto stop_spinning = [&]() {
+      for (auto & exe : executors) {
+        exe->cancel();
+      }
+      for (auto & thread : spin_threads) {
+        thread.join();
+      }
+    };
 
   if (!plansys2::startup_function(manager_nodes, std::chrono::seconds(startup_timeout))) {
     RCLCPP_ERROR(
       rclcpp::get_logger("plansys2_bringup"),
       "Failed to start plansys2!");
-    exe.cancel();
-    spin_thread.join();
+    stop_spinning();
     rclcpp::shutdown();
     return -1;
   }
 
-  spin_thread.join();
+  // Until shutdown: Ctrl-C ends every spin()
+  for (auto & thread : spin_threads) {
+    thread.join();
+  }
 
   rclcpp::shutdown();
   return 0;
