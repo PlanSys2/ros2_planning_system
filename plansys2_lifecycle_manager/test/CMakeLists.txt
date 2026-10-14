@@ -1,5 +1,11 @@
-ament_add_gtest(lf_manager_test lf_manager_test.cpp)
+ament_add_gtest(lf_manager_test lf_manager_test.cpp TIMEOUT 120)
 target_link_libraries(lf_manager_test
+  ${PROJECT_NAME}
+  rclcpp_lifecycle::rclcpp_lifecycle
+)
+
+ament_add_gtest(lf_manager_shutdown_test lf_manager_shutdown_test.cpp TIMEOUT 60)
+target_link_libraries(lf_manager_shutdown_test
   ${PROJECT_NAME}
   rclcpp_lifecycle::rclcpp_lifecycle
 )

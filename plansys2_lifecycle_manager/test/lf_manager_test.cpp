@@ -15,6 +15,7 @@
 #include <memory>
 #include <string>
 #include <map>
+#include <vector>
 
 #include "gtest/gtest.h"
 
@@ -26,7 +27,37 @@
 
 #include "plansys2_lifecycle_manager/lifecycle_manager.hpp"
 
+#include "fake_lifecycle_node.hpp"
+
 using namespace std::chrono_literals;
+using lifecycle_msgs::msg::State;
+using lifecycle_msgs::msg::Transition;
+using ClientMap = std::map<std::string, std::shared_ptr<plansys2::LifecycleServiceClient>>;
+
+namespace
+{
+
+const std::vector<std::string> kNodes = {"planner", "domain_expert", "problem_expert", "executor"};
+
+// Clients for the four PlanSys2 keys, managing the nodes prefix + key
+ClientMap make_clients(const std::string & prefix, Spinner & spinner)
+{
+  ClientMap clients;
+  for (const auto & key : kNodes) {
+    clients[key] = std::make_shared<plansys2::LifecycleServiceClient>(
+      prefix + key + "_lc_mngr", prefix + key);
+    clients[key]->init();
+    spinner.add(clients[key]);
+  }
+  return clients;
+}
+
+double seconds_since(std::chrono::steady_clock::time_point start)
+{
+  return std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+}
+
+}  // namespace
 
 TEST(lifecycle_manager, lf_client)
 {
@@ -143,6 +174,197 @@ TEST(lifecycle_manager, lf_startup)
 
   finish = true;
   t.join();
+}
+
+TEST(lifecycle_manager, client_without_node)
+{
+  Spinner spinner;
+  auto client = std::make_shared<plansys2::LifecycleServiceClient>("nobody_client", "nobody");
+  client->init();
+  spinner.add(client);
+  spinner.start();
+
+  auto start = std::chrono::steady_clock::now();
+  ASSERT_EQ(client->get_state(1s), State::PRIMARY_STATE_UNKNOWN);
+  ASSERT_FALSE(client->change_state(Transition::TRANSITION_CONFIGURE, 1s));
+  ASSERT_LT(seconds_since(start), 4.0);
+}
+
+TEST(lifecycle_manager, client_without_init)
+{
+  auto client = std::make_shared<plansys2::LifecycleServiceClient>("noinit_client", "noinit");
+  ASSERT_EQ(client->get_state(1s), State::PRIMARY_STATE_UNKNOWN);
+  ASSERT_FALSE(client->change_state(Transition::TRANSITION_CONFIGURE, 1s));
+}
+
+TEST(lifecycle_manager, client_with_slow_node)
+{
+  // Answers after 3 s: the client must give up at its timeout, not wait for the answer
+  Spinner fake_spinner;
+  auto fake = std::make_shared<FakeLifecycleNode>("slow");
+  fake->state = State::PRIMARY_STATE_INACTIVE;
+  fake->get_state_delay = 3s;
+  fake->change_state_delay = 3s;
+  fake_spinner.add(fake);
+  fake_spinner.start();
+
+  Spinner spinner;
+  auto client = std::make_shared<plansys2::LifecycleServiceClient>("slow_client", "slow");
+  client->init();
+  spinner.add(client);
+  spinner.start();
+
+  auto start = std::chrono::steady_clock::now();
+  ASSERT_EQ(client->get_state(1s), State::PRIMARY_STATE_UNKNOWN);
+  ASSERT_LT(seconds_since(start), 2.5);
+
+  start = std::chrono::steady_clock::now();
+  ASSERT_FALSE(client->change_state(Transition::TRANSITION_CONFIGURE, 1s));
+  ASSERT_LT(seconds_since(start), 2.5);
+
+  // Once it answers fast again, late answers do not get mixed up with new requests
+  fake->get_state_delay = 0ms;
+  std::this_thread::sleep_for(4s);
+  ASSERT_EQ(client->get_state(1s), State::PRIMARY_STATE_INACTIVE);
+  fake->state = State::PRIMARY_STATE_ACTIVE;
+  ASSERT_EQ(client->get_state(1s), State::PRIMARY_STATE_ACTIVE);
+}
+
+TEST(lifecycle_manager, startup_missing_client)
+{
+  Spinner spinner;
+  auto clients = make_clients("missing_", spinner);
+  auto planner = rclcpp_lifecycle::LifecycleNode::make_shared("missing_planner");
+  spinner.add(planner);
+  spinner.start();
+
+  auto without_executor = clients;
+  without_executor.erase("executor");
+  ASSERT_FALSE(plansys2::startup_function(without_executor, 1s));
+  ASSERT_EQ(without_executor.size(), 3u);
+  // Checked before touching any node
+  ASSERT_EQ(planner->get_current_state().id(), State::PRIMARY_STATE_UNCONFIGURED);
+
+  auto null_problem_expert = clients;
+  null_problem_expert["problem_expert"] = nullptr;
+  ASSERT_FALSE(plansys2::startup_function(null_problem_expert, 1s));
+  ASSERT_EQ(planner->get_current_state().id(), State::PRIMARY_STATE_UNCONFIGURED);
+
+  ClientMap empty;
+  ASSERT_FALSE(plansys2::startup_function(empty, 1s));
+}
+
+TEST(lifecycle_manager, startup_configure_fails)
+{
+  Spinner spinner;
+  auto clients = make_clients("cfgfail_", spinner);
+  auto planner = rclcpp_lifecycle::LifecycleNode::make_shared("cfgfail_planner");
+  auto domain = rclcpp_lifecycle::LifecycleNode::make_shared("cfgfail_domain_expert");
+  auto problem = std::make_shared<FailingLifecycleNode>("cfgfail_problem_expert", true, false);
+  auto executor = rclcpp_lifecycle::LifecycleNode::make_shared("cfgfail_executor");
+  spinner.add(planner);
+  spinner.add(domain);
+  spinner.add(problem);
+  spinner.add(executor);
+  spinner.start();
+
+  auto start = std::chrono::steady_clock::now();
+  ASSERT_FALSE(plansys2::startup_function(clients, 2s));
+  ASSERT_LT(seconds_since(start), 10.0);
+
+  ASSERT_EQ(planner->get_current_state().id(), State::PRIMARY_STATE_INACTIVE);
+  ASSERT_EQ(domain->get_current_state().id(), State::PRIMARY_STATE_INACTIVE);
+  ASSERT_EQ(problem->get_current_state().id(), State::PRIMARY_STATE_UNCONFIGURED);
+  // Stops at the first failure
+  ASSERT_EQ(executor->get_current_state().id(), State::PRIMARY_STATE_UNCONFIGURED);
+}
+
+TEST(lifecycle_manager, startup_activate_fails)
+{
+  Spinner spinner;
+  auto clients = make_clients("actfail_", spinner);
+  auto planner = rclcpp_lifecycle::LifecycleNode::make_shared("actfail_planner");
+  auto domain = rclcpp_lifecycle::LifecycleNode::make_shared("actfail_domain_expert");
+  auto problem = rclcpp_lifecycle::LifecycleNode::make_shared("actfail_problem_expert");
+  auto executor = std::make_shared<FailingLifecycleNode>("actfail_executor", false, true);
+  spinner.add(planner);
+  spinner.add(domain);
+  spinner.add(problem);
+  spinner.add(executor);
+  spinner.start();
+
+  ASSERT_FALSE(plansys2::startup_function(clients, 2s));
+  ASSERT_EQ(domain->get_current_state().id(), State::PRIMARY_STATE_ACTIVE);
+  ASSERT_EQ(problem->get_current_state().id(), State::PRIMARY_STATE_ACTIVE);
+  ASSERT_EQ(planner->get_current_state().id(), State::PRIMARY_STATE_ACTIVE);
+  ASSERT_EQ(executor->get_current_state().id(), State::PRIMARY_STATE_INACTIVE);
+}
+
+TEST(lifecycle_manager, startup_node_not_running)
+{
+  Spinner spinner;
+  auto clients = make_clients("absent_", spinner);
+  auto planner = rclcpp_lifecycle::LifecycleNode::make_shared("absent_planner");
+  auto domain = rclcpp_lifecycle::LifecycleNode::make_shared("absent_domain_expert");
+  auto problem = rclcpp_lifecycle::LifecycleNode::make_shared("absent_problem_expert");
+  // No executor node at all
+  spinner.add(planner);
+  spinner.add(domain);
+  spinner.add(problem);
+  spinner.start();
+
+  auto start = std::chrono::steady_clock::now();
+  ASSERT_FALSE(plansys2::startup_function(clients, 1s));
+  ASSERT_LT(seconds_since(start), 6.0);
+  ASSERT_EQ(problem->get_current_state().id(), State::PRIMARY_STATE_INACTIVE);
+}
+
+TEST(lifecycle_manager, startup_state_never_reached)
+{
+  // The planner accepts the transition but always reports unconfigured: it used to loop forever
+  Spinner spinner;
+  auto clients = make_clients("stuck_", spinner);
+  auto fake_planner = std::make_shared<FakeLifecycleNode>("stuck_planner");
+  auto domain = rclcpp_lifecycle::LifecycleNode::make_shared("stuck_domain_expert");
+  spinner.add(fake_planner);
+  spinner.add(domain);
+  spinner.start();
+
+  auto start = std::chrono::steady_clock::now();
+  ASSERT_FALSE(plansys2::startup_function(clients, 1s));
+  ASSERT_LT(seconds_since(start), 5.0);
+  ASSERT_GT(fake_planner->get_state_calls.load(), 1);
+  ASSERT_EQ(domain->get_current_state().id(), State::PRIMARY_STATE_UNCONFIGURED);
+}
+
+TEST(lifecycle_manager, startup_state_reached_late)
+{
+  // The planner reports inactive a bit after accepting the transition: startup waits for it
+  Spinner spinner;
+  auto clients = make_clients("late_", spinner);
+  auto fake_planner = std::make_shared<FakeLifecycleNode>("late_planner");
+  std::weak_ptr<FakeLifecycleNode> weak_fake = fake_planner;
+  fake_planner->on_change_state = [weak_fake]() {
+      std::thread([weak_fake]() {
+          std::this_thread::sleep_for(500ms);
+          if (auto fake = weak_fake.lock()) {
+            fake->state = fake->state == State::PRIMARY_STATE_UNCONFIGURED ?
+            State::PRIMARY_STATE_INACTIVE : State::PRIMARY_STATE_ACTIVE;
+          }
+        }).detach();
+    };
+  auto domain = rclcpp_lifecycle::LifecycleNode::make_shared("late_domain_expert");
+  auto problem = rclcpp_lifecycle::LifecycleNode::make_shared("late_problem_expert");
+  auto executor = rclcpp_lifecycle::LifecycleNode::make_shared("late_executor");
+  spinner.add(fake_planner);
+  spinner.add(domain);
+  spinner.add(problem);
+  spinner.add(executor);
+  spinner.start();
+
+  ASSERT_TRUE(plansys2::startup_function(clients, 3s));
+  ASSERT_EQ(fake_planner->state.load(), State::PRIMARY_STATE_ACTIVE);
+  ASSERT_EQ(executor->get_current_state().id(), State::PRIMARY_STATE_ACTIVE);
 }
 
 int main(int argc, char ** argv)
