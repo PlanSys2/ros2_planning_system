@@ -35,6 +35,7 @@ if(BUILD_TESTING)
   find_package(launch_testing_ament_cmake REQUIRED)
   add_launch_test(test/test_monolithic_responsive.py TIMEOUT 180)
   add_launch_test(test/test_monolithic_real_time.py TIMEOUT 60)
+  add_launch_test(test/test_bringup_problem_file.py TIMEOUT 300)
 endif()
 
 install(DIRECTORY launch params

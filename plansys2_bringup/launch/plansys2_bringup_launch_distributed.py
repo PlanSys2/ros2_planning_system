@@ -42,7 +42,8 @@ def generate_launch_description():
 
     declare_problem_file_cmd = DeclareLaunchArgument(
         'problem_file',
-        description='PDDL Problem file')
+        default_value='',
+        description='PDDL Problem file (optional)')
 
     declare_namespace_cmd = DeclareLaunchArgument(
         'namespace',
