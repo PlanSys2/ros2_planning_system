@@ -1,0 +1,7 @@
+<map id="plansys2_lifecycle_manager/test/fake_lifecycle_node.hpp" name="plansys2_lifecycle_manager/test/fake_lifecycle_node.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="95,5,282,61"/>
+<area shape="rect" id="Node000002" href="$lf__manager__shutdown__test_8cpp.html" title=" " alt="" coords="5,109,178,165"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="154,74,120,110,116,107,150,71"/>
+<area shape="rect" id="Node000003" href="$lf__manager__test_8cpp.html" title=" " alt="" coords="201,109,374,165"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="228,70,263,106,259,110,224,74"/>
+</map>

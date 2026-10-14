@@ -8,7 +8,7 @@ var searchData=
   ['actionstamped_5',['ActionStamped',['../structplansys2_1_1ActionStamped.html#acee7dad8acade33f785fdd115c99e759',1,'plansys2::ActionStamped']]],
   ['actionvariant_6',['ActionVariant',['../classplansys2_1_1ActionVariant.html#acab582b99ef0fe82772e56bad5c83010',1,'plansys2::ActionVariant::ActionVariant()'],['../classplansys2_1_1ActionVariant.html#a2677b43ef2ba06223fc79bbf947cd3b2',1,'plansys2::ActionVariant::ActionVariant(ActionT action)']]],
   ['actt_7',['ActT',['../classActT.html#a2ccbf56685240aa976366a73963d496a',1,'ActT::ActT()'],['../classActT.html#a21a826ffe1c158ee3f46889b7b81dd55',1,'ActT::ActT(const std::string name)']]],
-  ['add_8',['add',['../classparser_1_1pddl_1_1And.html#af7bd910d7198404c2233f6d916e2eb95',1,'parser::pddl::And::add()'],['../classparser_1_1pddl_1_1Oneof.html#af7bd910d7198404c2233f6d916e2eb95',1,'parser::pddl::Oneof::add()']]],
+  ['add_8',['add',['../classSpinner.html#a7f9975e8ef6c56c5f080e0cc64cae612',1,'Spinner::add()'],['../classparser_1_1pddl_1_1And.html#af7bd910d7198404c2233f6d916e2eb95',1,'parser::pddl::And::add()'],['../classparser_1_1pddl_1_1Oneof.html#af7bd910d7198404c2233f6d916e2eb95',1,'parser::pddl::Oneof::add()']]],
   ['add_5faction_5fto_5fbt_9',['add_action_to_bt',['../classplansys2_1_1SequentialBTBuilder.html#a108f2de765bf04655b956d2f53c42129',1,'plansys2::SequentialBTBuilder']]],
   ['add_5fdomain_10',['add_domain',['../classplansys2_1_1DomainReader.html#af2d726f5c59e463a13adbc2b68e8e36a',1,'plansys2::DomainReader']]],
   ['add_5fdomain_5ftest_11',['add_domain_test',['../classDomainReaderTest.html#ab533b37e0ee6123621c98c4eed3138ab',1,'DomainReaderTest']]],

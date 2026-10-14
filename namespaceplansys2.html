@@ -300,8 +300,8 @@ Functions</h2></td></tr>
 <tr class="memitem:ab575d035ca09922efd613f4a9c328cee" id="r_ab575d035ca09922efd613f4a9c328cee"><td class="memItemLeft"><a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a>&#160;</td><td class="memItemRight"><a class="el" href="#ab575d035ca09922efd613f4a9c328cee">replace_children_param</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, const uint32_t &amp;node_id, const std::map&lt; std::string, std::string &gt; &amp;replace)</td></tr>
 <tr class="memdesc:ab575d035ca09922efd613f4a9c328cee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace parameter names in children nodes of a PDDL expression tree.  <br /></td></tr>
 <tr class="memitem:a6d1404795432e77ceb6268bc9eb708e4" id="r_a6d1404795432e77ceb6268bc9eb708e4"><td class="memItemLeft">std::optional&lt; double &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a6d1404795432e77ceb6268bc9eb708e4">seconds_since_parent</a> (<a class="el" href="#adc723289ab3ed347857fa1a5307734fc">ActionMap</a> &amp;action_map, const <a class="el" href="structplansys2_1_1StnDependency.html">StnDependency</a> &amp;dependency, const rclcpp::Time &amp;now)</td></tr>
-<tr class="memitem:ac0dc8a4e35bbe986c34479a396cf04e2" id="r_ac0dc8a4e35bbe986c34479a396cf04e2"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac0dc8a4e35bbe986c34479a396cf04e2">startup_function</a> (std::map&lt; std::string, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1LifecycleServiceClient.html">LifecycleServiceClient</a> &gt; &gt; &amp;manager_nodes, std::chrono::seconds timeout)</td></tr>
-<tr class="memdesc:ac0dc8a4e35bbe986c34479a396cf04e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Starts up all managed nodes using their <a class="el" href="classplansys2_1_1LifecycleServiceClient.html" title="Client node to manage the lifecycle of another ROS2 node.">LifecycleServiceClient</a> interfaces.  <br /></td></tr>
+<tr class="memitem:a906900bd315de77223070c04df473b24" id="r_a906900bd315de77223070c04df473b24"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a906900bd315de77223070c04df473b24">startup_function</a> (const std::map&lt; std::string, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1LifecycleServiceClient.html">LifecycleServiceClient</a> &gt; &gt; &amp;manager_nodes, std::chrono::seconds timeout)</td></tr>
+<tr class="memdesc:a906900bd315de77223070c04df473b24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Starts up all managed nodes using their <a class="el" href="classplansys2_1_1LifecycleServiceClient.html" title="Client node to manage the lifecycle of another ROS2 node.">LifecycleServiceClient</a> interfaces.  <br /></td></tr>
 <tr class="memitem:a42b49d0e3a5fc862035352348c5d1874" id="r_a42b49d0e3a5fc862035352348c5d1874"><td class="memItemLeft">std::pair&lt; double, double &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a42b49d0e3a5fc862035352348c5d1874">stn_bounds</a> (const <a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> &amp;graph, const <a class="el" href="structplansys2_1_1StnDependency.html">StnDependency</a> &amp;dependency)</td></tr>
 <tr class="memitem:a620c02081274310f595099a5595910d7" id="r_a620c02081274310f595099a5595910d7"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a620c02081274310f595099a5595910d7">substr_without_empty_lines</a> (std::string string, std::size_t init_pos, std::size_t end_pos)</td></tr>
 <tr class="memdesc:a620c02081274310f595099a5595910d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a substring without empty lines.  <br /></td></tr>
@@ -1364,8 +1364,8 @@ template&lt;typename NodeT&gt; </div>
 
 </div>
 </div>
-<a id="ac0dc8a4e35bbe986c34479a396cf04e2" name="ac0dc8a4e35bbe986c34479a396cf04e2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac0dc8a4e35bbe986c34479a396cf04e2">&#9670;&#160;</a></span>startup_function()</h2>
+<a id="a906900bd315de77223070c04df473b24" name="a906900bd315de77223070c04df473b24"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a906900bd315de77223070c04df473b24">&#9670;&#160;</a></span>startup_function()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1373,7 +1373,7 @@ template&lt;typename NodeT&gt; </div>
         <tr>
           <td class="memname"><a class="el" href="classbool.html">bool</a> startup_function </td>
           <td>(</td>
-          <td class="paramtype">std::map&lt; std::string, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1LifecycleServiceClient.html">LifecycleServiceClient</a> &gt; &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>manager_nodes</em></span>, </td>
+          <td class="paramtype">const std::map&lt; std::string, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1LifecycleServiceClient.html">LifecycleServiceClient</a> &gt; &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>manager_nodes</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1384,9 +1384,10 @@ template&lt;typename NodeT&gt; </div>
 </div><div class="memdoc">
 
 <p>Starts up all managed nodes using their <a class="el" href="classplansys2_1_1LifecycleServiceClient.html" title="Client node to manage the lifecycle of another ROS2 node.">LifecycleServiceClient</a> interfaces. </p>
+<p>Configures planner, domain_expert, problem_expert and executor, then activates them, checking each state. Every wait is bounded and stops if ROS shuts down.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">manager_nodes</td><td>Map of node names to their <a class="el" href="classplansys2_1_1LifecycleServiceClient.html" title="Client node to manage the lifecycle of another ROS2 node.">LifecycleServiceClient</a> instances. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">manager_nodes</td><td>Map of node names to their <a class="el" href="classplansys2_1_1LifecycleServiceClient.html" title="Client node to manage the lifecycle of another ROS2 node.">LifecycleServiceClient</a> instances. It must contain the four nodes above. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">timeout</td><td>Timeout for each startup operation. </td></tr>
   </table>
   </dd>

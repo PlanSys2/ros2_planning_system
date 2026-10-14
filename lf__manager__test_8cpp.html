@@ -97,6 +97,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div id="doc-content">
 <div class="header">
   <div class="summary">
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">lf_manager_test.cpp File Reference</div></div>
 </div><!--header-->
@@ -104,59 +105,108 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="textblock"><code>#include &lt;memory&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
 <code>#include &lt;map&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
 <code>#include &quot;gtest/gtest.h&quot;</code><br />
 <code>#include &quot;lifecycle_msgs/msg/state.hpp&quot;</code><br />
 <code>#include &quot;lifecycle_msgs/msg/transition.hpp&quot;</code><br />
 <code>#include &quot;rclcpp/rclcpp.hpp&quot;</code><br />
 <code>#include &quot;rclcpp_lifecycle/lifecycle_node.hpp&quot;</code><br />
 <code>#include &quot;<a class="el" href="lifecycle__manager_8hpp_source.html">plansys2_lifecycle_manager/lifecycle_manager.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="fake__lifecycle__node_8hpp_source.html">fake_lifecycle_node.hpp</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for lf_manager_test.cpp:</div>
 <div class="dyncontent">
 <div class="center"><img src="lf__manager__test_8cpp__incl.png" border="0" usemap="#aplansys2__lifecycle__manager_2test_2lf__manager__test_8cpp" loading="lazy" alt=""/></div>
 <map name="aplansys2__lifecycle__manager_2test_2lf__manager__test_8cpp" id="aplansys2__lifecycle__manager_2test_2lf__manager__test_8cpp">
-<area shape="rect" title=" " alt="" coords="260,5,432,61"/>
-<area shape="rect" title=" " alt="" coords="5,205,73,231"/>
-<area shape="poly" title=" " alt="" coords="289,64,199,111,128,157,69,198,66,194,125,152,196,107,286,59"/>
-<area shape="rect" title=" " alt="" coords="96,205,150,231"/>
-<area shape="poly" title=" " alt="" coords="311,64,250,111,149,197,146,193,247,107,308,60"/>
-<area shape="rect" title=" " alt="" coords="173,205,220,231"/>
-<area shape="poly" title=" " alt="" coords="326,63,218,195,214,191,322,60"/>
-<area shape="rect" title=" " alt="" coords="668,116,762,142"/>
-<area shape="poly" title=" " alt="" coords="433,52,650,106,660,109,659,114,649,112,432,57"/>
-<area shape="rect" title=" " alt="" coords="244,198,380,238"/>
-<area shape="poly" title=" " alt="" coords="341,62,330,110,319,183,313,182,324,108,336,61"/>
-<area shape="rect" title=" " alt="" coords="404,198,540,238"/>
-<area shape="poly" title=" " alt="" coords="349,61,355,104,362,127,373,148,393,170,417,187,413,192,389,174,369,151,357,129,350,106,343,62"/>
-<area shape="rect" title=" " alt="" coords="1141,205,1260,231"/>
-<area shape="poly" title=" " alt="" coords="433,48,519,71,564,87,607,107,622,117,633,128,642,138,657,147,725,171,784,183,837,187,888,187,995,183,1058,185,1130,195,1146,198,1145,204,1129,200,1057,191,995,188,888,192,837,193,783,188,724,176,655,152,639,143,629,132,619,121,604,111,562,92,517,76,431,53"/>
-<area shape="rect" title=" " alt="" coords="786,109,948,150"/>
-<area shape="poly" title=" " alt="" coords="433,46,772,106,771,111,432,51"/>
-<area shape="rect" href="lifecycle__manager_8hpp.html" title=" " alt="" coords="383,109,594,150"/>
-<area shape="poly" title=" " alt="" coords="388,59,448,98,445,103,385,64"/>
-<area shape="poly" title=" " alt="" coords="383,144,240,165,162,181,85,200,80,202,78,197,84,195,161,176,239,160,382,139"/>
-<area shape="poly" title=" " alt="" coords="383,148,276,169,162,200,160,201,158,196,161,195,274,164,382,143"/>
-<area shape="poly" title=" " alt="" coords="393,153,314,173,233,200,232,201,230,196,231,195,313,168,392,148"/>
-<area shape="poly" title=" " alt="" coords="450,153,367,193,365,188,447,148"/>
-<area shape="poly" title=" " alt="" coords="487,151,481,183,476,182,482,150"/>
-<area shape="poly" title=" " alt="" coords="594,145,613,147,758,161,872,166,985,174,1130,195,1146,198,1145,204,1129,200,985,180,872,172,758,166,612,152,594,150"/>
-<area shape="rect" title=" " alt="" coords="904,205,964,231"/>
-<area shape="poly" title=" " alt="" coords="594,145,893,195,897,196,895,201,892,200,593,150"/>
-<area shape="rect" title=" " alt="" coords="988,198,1117,238"/>
-<area shape="poly" title=" " alt="" coords="594,144,613,147,792,168,872,178,973,194,972,200,871,183,791,173,612,152,593,150"/>
-<area shape="rect" title=" " alt="" coords="565,198,694,238"/>
-<area shape="poly" title=" " alt="" coords="522,148,587,187,584,192,519,152"/>
-<area shape="rect" title=" " alt="" coords="718,205,880,231"/>
-<area shape="poly" title=" " alt="" coords="560,148,741,198,740,203,559,153"/>
+<area shape="rect" title=" " alt="" coords="994,5,1167,61"/>
+<area shape="rect" title=" " alt="" coords="1312,205,1380,231"/>
+<area shape="poly" title=" " alt="" coords="1143,59,1186,81,1228,107,1282,150,1326,192,1322,196,1279,154,1224,111,1183,86,1141,64"/>
+<area shape="rect" title=" " alt="" coords="273,205,326,231"/>
+<area shape="poly" title=" " alt="" coords="994,46,809,70,701,88,595,112,465,149,339,200,338,201,336,196,337,195,463,144,593,106,700,83,809,65,994,40"/>
+<area shape="rect" title=" " alt="" coords="1590,205,1636,231"/>
+<area shape="poly" title=" " alt="" coords="1153,59,1270,107,1313,128,1358,147,1419,163,1468,170,1518,177,1579,195,1580,196,1578,201,1577,200,1516,182,1467,175,1418,168,1356,152,1311,133,1268,111,1151,64"/>
+<area shape="rect" title=" " alt="" coords="5,205,63,231"/>
+<area shape="poly" title=" " alt="" coords="994,39,863,44,694,56,507,78,321,112,252,131,183,155,74,201,72,196,181,150,250,126,320,106,507,73,694,51,862,39,994,33"/>
+<area shape="rect" title=" " alt="" coords="1413,116,1506,142"/>
+<area shape="poly" title=" " alt="" coords="1168,51,1395,106,1405,109,1404,114,1393,112,1167,56"/>
+<area shape="rect" title=" " alt="" coords="618,198,754,238"/>
+<area shape="poly" title=" " alt="" coords="1023,64,743,193,741,188,1021,59"/>
+<area shape="rect" title=" " alt="" coords="1660,198,1797,238"/>
+<area shape="poly" title=" " alt="" coords="1168,52,1249,76,1332,107,1367,128,1382,138,1402,147,1466,167,1520,177,1575,183,1645,195,1645,200,1574,189,1519,182,1465,173,1400,152,1379,142,1364,132,1330,111,1247,81,1166,57"/>
+<area shape="rect" title=" " alt="" coords="1169,205,1288,231"/>
+<area shape="poly" title=" " alt="" coords="1142,59,1173,80,1200,107,1212,127,1220,149,1229,189,1224,190,1215,150,1207,129,1196,111,1170,84,1139,64"/>
+<area shape="rect" title=" " alt="" coords="87,198,248,238"/>
+<area shape="poly" title=" " alt="" coords="994,41,885,48,749,61,601,82,455,112,392,129,330,151,224,194,222,189,328,146,390,124,453,106,601,77,749,56,884,43,994,36"/>
+<area shape="rect" href="lifecycle__manager_8hpp.html" title=" " alt="" coords="976,109,1186,150"/>
+<area shape="poly" title=" " alt="" coords="1083,62,1083,94,1078,94,1078,62"/>
+<area shape="rect" href="fake__lifecycle__node_8hpp.html" title=" " alt="" coords="606,116,766,142"/>
+<area shape="poly" title=" " alt="" coords="995,58,752,115,751,110,993,52"/>
+<area shape="poly" title=" " alt="" coords="1152,148,1302,195,1305,197,1304,202,1300,200,1151,153"/>
+<area shape="poly" title=" " alt="" coords="975,141,608,169,436,186,339,200,335,201,333,196,337,195,436,181,607,164,975,135"/>
+<area shape="poly" title=" " alt="" coords="1187,138,1403,162,1505,178,1579,195,1580,196,1579,201,1577,200,1504,183,1402,167,1186,143"/>
+<area shape="poly" title=" " alt="" coords="986,153,770,200,769,194,985,148"/>
+<area shape="poly" title=" " alt="" coords="1186,137,1395,159,1646,195,1645,200,1394,164,1186,142"/>
+<area shape="poly" title=" " alt="" coords="1116,148,1196,195,1194,199,1113,152"/>
+<area shape="rect" title=" " alt="" coords="778,205,839,231"/>
+<area shape="poly" title=" " alt="" coords="1005,153,930,174,852,200,849,201,847,196,850,195,929,169,1003,148"/>
+<area shape="rect" title=" " alt="" coords="863,198,992,238"/>
+<area shape="poly" title=" " alt="" coords="1047,153,976,192,974,188,1045,148"/>
+<area shape="rect" title=" " alt="" coords="1016,198,1145,238"/>
+<area shape="poly" title=" " alt="" coords="1083,150,1083,182,1078,182,1078,150"/>
+<area shape="rect" title=" " alt="" coords="1404,205,1565,231"/>
+<area shape="poly" title=" " alt="" coords="1173,148,1413,199,1412,204,1172,153"/>
+<area shape="poly" title=" " alt="" coords="766,134,1050,159,1196,176,1301,195,1308,197,1306,202,1300,200,1195,181,1049,164,766,139"/>
+<area shape="poly" title=" " alt="" coords="606,143,479,164,408,180,339,200,336,201,335,196,337,195,407,175,478,159,605,137"/>
+<area shape="poly" title=" " alt="" coords="606,134,499,138,366,148,219,168,146,182,75,200,71,201,69,196,73,195,145,177,218,163,365,143,499,132,606,128"/>
+<area shape="poly" title=" " alt="" coords="689,143,689,183,683,183,683,143"/>
+<area shape="poly" title=" " alt="" coords="767,136,947,159,1159,195,1173,198,1172,204,1157,200,946,164,766,142"/>
+<area shape="poly" title=" " alt="" coords="606,145,263,200,263,195,605,140"/>
+<area shape="poly" title=" " alt="" coords="705,140,780,194,777,198,702,145"/>
+<area shape="poly" title=" " alt="" coords="721,140,859,190,857,195,719,145"/>
+<area shape="poly" title=" " alt="" coords="748,140,1001,194,1000,199,747,145"/>
+<area shape="rect" title=" " alt="" coords="533,205,594,231"/>
+<area shape="poly" title=" " alt="" coords="670,145,595,198,592,194,667,140"/>
+<area shape="rect" title=" " alt="" coords="350,205,427,231"/>
+<area shape="poly" title=" " alt="" coords="637,145,545,169,440,200,435,202,433,197,439,195,543,164,635,140"/>
+<area shape="rect" title=" " alt="" coords="452,205,509,231"/>
+<area shape="poly" title=" " alt="" coords="656,145,522,200,520,201,518,196,520,195,654,140"/>
 </map>
 </div>
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-typedef-members" class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a4a46217d0aa2ebd6c1b8c28e504d8fc3" id="r_a4a46217d0aa2ebd6c1b8c28e504d8fc3"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a4a46217d0aa2ebd6c1b8c28e504d8fc3">ClientMap</a> = std::map&lt;std::string, std::shared_ptr&lt;<a class="el" href="classplansys2_1_1LifecycleServiceClient.html">plansys2::LifecycleServiceClient</a>&gt;&gt;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a3c04138a5bfe5d72780bb7e82a18e627" id="r_a3c04138a5bfe5d72780bb7e82a18e627"><td class="memItemLeft"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight"><a class="el" href="#a3c04138a5bfe5d72780bb7e82a18e627">main</a> (<a class="el" href="classint.html">int</a> argc, char **argv)</td></tr>
+<tr class="memitem:ae4cc4b8ae20aaf43145f038d7a36523d" id="r_ae4cc4b8ae20aaf43145f038d7a36523d"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ae4cc4b8ae20aaf43145f038d7a36523d">TEST</a> (lifecycle_manager, client_with_slow_node)</td></tr>
+<tr class="memitem:a7d42f1f5f5a78d6ff5762318b11fa8e1" id="r_a7d42f1f5f5a78d6ff5762318b11fa8e1"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a7d42f1f5f5a78d6ff5762318b11fa8e1">TEST</a> (lifecycle_manager, client_without_init)</td></tr>
+<tr class="memitem:a1cea4158308d024a99f14e5fbfb711ae" id="r_a1cea4158308d024a99f14e5fbfb711ae"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a1cea4158308d024a99f14e5fbfb711ae">TEST</a> (lifecycle_manager, client_without_node)</td></tr>
 <tr class="memitem:a339a151b4f67df67442e50022108793e" id="r_a339a151b4f67df67442e50022108793e"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a339a151b4f67df67442e50022108793e">TEST</a> (lifecycle_manager, lf_client)</td></tr>
 <tr class="memitem:aab204deb0e468af37ddda8457d4639b7" id="r_aab204deb0e468af37ddda8457d4639b7"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#aab204deb0e468af37ddda8457d4639b7">TEST</a> (lifecycle_manager, lf_startup)</td></tr>
+<tr class="memitem:a5b0c5fff75b717ca090d24f4ae6b7e3b" id="r_a5b0c5fff75b717ca090d24f4ae6b7e3b"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a5b0c5fff75b717ca090d24f4ae6b7e3b">TEST</a> (lifecycle_manager, startup_activate_fails)</td></tr>
+<tr class="memitem:a7da1552a6ebff34ec73652a6193491f9" id="r_a7da1552a6ebff34ec73652a6193491f9"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a7da1552a6ebff34ec73652a6193491f9">TEST</a> (lifecycle_manager, startup_configure_fails)</td></tr>
+<tr class="memitem:ad6185598c1ec693aecca03bd94ef991f" id="r_ad6185598c1ec693aecca03bd94ef991f"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ad6185598c1ec693aecca03bd94ef991f">TEST</a> (lifecycle_manager, startup_missing_client)</td></tr>
+<tr class="memitem:a7e5b7c5f5fca4d517ca46c7996adca90" id="r_a7e5b7c5f5fca4d517ca46c7996adca90"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a7e5b7c5f5fca4d517ca46c7996adca90">TEST</a> (lifecycle_manager, startup_node_not_running)</td></tr>
+<tr class="memitem:ab71e9b2a71f1cc4c3e7531242a4c074e" id="r_ab71e9b2a71f1cc4c3e7531242a4c074e"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ab71e9b2a71f1cc4c3e7531242a4c074e">TEST</a> (lifecycle_manager, startup_state_never_reached)</td></tr>
+<tr class="memitem:a8364c2536f0a34d3edb814b264139f03" id="r_a8364c2536f0a34d3edb814b264139f03"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a8364c2536f0a34d3edb814b264139f03">TEST</a> (lifecycle_manager, startup_state_reached_late)</td></tr>
 </table>
+<a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Typedef Documentation</h2>
+<a id="a4a46217d0aa2ebd6c1b8c28e504d8fc3" name="a4a46217d0aa2ebd6c1b8c28e504d8fc3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a46217d0aa2ebd6c1b8c28e504d8fc3">&#9670;&#160;</a></span>ClientMap</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="#a4a46217d0aa2ebd6c1b8c28e504d8fc3">ClientMap</a> = std::map&lt;std::string, std::shared_ptr&lt;<a class="el" href="classplansys2_1_1LifecycleServiceClient.html">plansys2::LifecycleServiceClient</a>&gt;&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
 <a id="a3c04138a5bfe5d72780bb7e82a18e627" name="a3c04138a5bfe5d72780bb7e82a18e627"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3c04138a5bfe5d72780bb7e82a18e627">&#9670;&#160;</a></span>main()</h2>
@@ -179,8 +229,71 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ae4cc4b8ae20aaf43145f038d7a36523d" name="ae4cc4b8ae20aaf43145f038d7a36523d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae4cc4b8ae20aaf43145f038d7a36523d">&#9670;&#160;</a></span>TEST() <span class="overload">[1/11]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">lifecycle_manager</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">client_with_slow_node</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7d42f1f5f5a78d6ff5762318b11fa8e1" name="a7d42f1f5f5a78d6ff5762318b11fa8e1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d42f1f5f5a78d6ff5762318b11fa8e1">&#9670;&#160;</a></span>TEST() <span class="overload">[2/11]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">lifecycle_manager</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">client_without_init</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1cea4158308d024a99f14e5fbfb711ae" name="a1cea4158308d024a99f14e5fbfb711ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1cea4158308d024a99f14e5fbfb711ae">&#9670;&#160;</a></span>TEST() <span class="overload">[3/11]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">lifecycle_manager</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">client_without_node</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a339a151b4f67df67442e50022108793e" name="a339a151b4f67df67442e50022108793e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a339a151b4f67df67442e50022108793e">&#9670;&#160;</a></span>TEST() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a339a151b4f67df67442e50022108793e">&#9670;&#160;</a></span>TEST() <span class="overload">[4/11]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -201,7 +314,7 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a id="aab204deb0e468af37ddda8457d4639b7" name="aab204deb0e468af37ddda8457d4639b7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aab204deb0e468af37ddda8457d4639b7">&#9670;&#160;</a></span>TEST() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aab204deb0e468af37ddda8457d4639b7">&#9670;&#160;</a></span>TEST() <span class="overload">[5/11]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -215,6 +328,132 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">lf_startup</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a5b0c5fff75b717ca090d24f4ae6b7e3b" name="a5b0c5fff75b717ca090d24f4ae6b7e3b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5b0c5fff75b717ca090d24f4ae6b7e3b">&#9670;&#160;</a></span>TEST() <span class="overload">[6/11]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">lifecycle_manager</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">startup_activate_fails</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7da1552a6ebff34ec73652a6193491f9" name="a7da1552a6ebff34ec73652a6193491f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7da1552a6ebff34ec73652a6193491f9">&#9670;&#160;</a></span>TEST() <span class="overload">[7/11]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">lifecycle_manager</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">startup_configure_fails</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad6185598c1ec693aecca03bd94ef991f" name="ad6185598c1ec693aecca03bd94ef991f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad6185598c1ec693aecca03bd94ef991f">&#9670;&#160;</a></span>TEST() <span class="overload">[8/11]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">lifecycle_manager</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">startup_missing_client</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7e5b7c5f5fca4d517ca46c7996adca90" name="a7e5b7c5f5fca4d517ca46c7996adca90"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7e5b7c5f5fca4d517ca46c7996adca90">&#9670;&#160;</a></span>TEST() <span class="overload">[9/11]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">lifecycle_manager</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">startup_node_not_running</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab71e9b2a71f1cc4c3e7531242a4c074e" name="ab71e9b2a71f1cc4c3e7531242a4c074e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab71e9b2a71f1cc4c3e7531242a4c074e">&#9670;&#160;</a></span>TEST() <span class="overload">[10/11]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">lifecycle_manager</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">startup_state_never_reached</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a8364c2536f0a34d3edb814b264139f03" name="a8364c2536f0a34d3edb814b264139f03"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8364c2536f0a34d3edb814b264139f03">&#9670;&#160;</a></span>TEST() <span class="overload">[11/11]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">TEST </td>
+          <td>(</td>
+          <td class="paramtype">lifecycle_manager</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">startup_state_reached_late</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">

@@ -45,7 +45,7 @@ var searchData=
   ['actionvarianttype_42',['ActionVariantType',['../classplansys2_1_1ActionVariant.html#a4f6ecb2e30584de8aecc0b3b13cb3e57',1,'plansys2::ActionVariant']]],
   ['actionvec_43',['ActionVec',['../namespaceparser_1_1pddl.html#abb2c37031acf07f3dc66f4829a533986',1,'parser::pddl']]],
   ['actt_44',['ActT',['../classActT.html',1,'ActT'],['../classActT.html#a2ccbf56685240aa976366a73963d496a',1,'ActT::ActT()'],['../classActT.html#a21a826ffe1c158ee3f46889b7b81dd55',1,'ActT::ActT(const std::string name)']]],
-  ['add_45',['add',['../classparser_1_1pddl_1_1And.html#af7bd910d7198404c2233f6d916e2eb95',1,'parser::pddl::And::add()'],['../classparser_1_1pddl_1_1Oneof.html#af7bd910d7198404c2233f6d916e2eb95',1,'parser::pddl::Oneof::add()']]],
+  ['add_45',['add',['../classSpinner.html#a7f9975e8ef6c56c5f080e0cc64cae612',1,'Spinner::add()'],['../classparser_1_1pddl_1_1And.html#af7bd910d7198404c2233f6d916e2eb95',1,'parser::pddl::And::add()'],['../classparser_1_1pddl_1_1Oneof.html#af7bd910d7198404c2233f6d916e2eb95',1,'parser::pddl::Oneof::add()']]],
   ['add_5faction_5fto_5fbt_46',['add_action_to_bt',['../classplansys2_1_1SequentialBTBuilder.html#a108f2de765bf04655b956d2f53c42129',1,'plansys2::SequentialBTBuilder']]],
   ['add_5fdomain_47',['add_domain',['../classplansys2_1_1DomainReader.html#af2d726f5c59e463a13adbc2b68e8e36a',1,'plansys2::DomainReader']]],
   ['add_5fdomain_5ftest_48',['add_domain_test',['../classDomainReaderTest.html#ab533b37e0ee6123621c98c4eed3138ab',1,'DomainReaderTest']]],

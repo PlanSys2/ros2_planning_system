@@ -1,23 +1,33 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" title=" " alt="" coords="5,228,83,254"/>
-<area shape="rect" id="Node000001" href="$classtest__action__executor__client_1_1TestActionExecutorClient.html" title=" " alt="" coords="131,5,298,31"/>
-<area shape="poly" id="edge137_Node000000_Node000001" title=" " alt="" coords="47,212,56,173,71,127,95,80,129,40,145,29,148,34,132,44,100,83,76,129,61,175,52,213"/>
-<area shape="rect" id="Node000002" href="$classtest__domain__expert__client_1_1TestDomainExpertClient.html" title=" " alt="" coords="134,55,294,80"/>
-<area shape="poly" id="edge138_Node000000_Node000002" title=" " alt="" coords="52,212,79,150,101,117,129,89,147,79,150,83,132,94,106,121,84,153,56,214"/>
-<area shape="rect" id="Node000003" href="$classtest__executor__client_1_1TestExecutorClient.html" title=" " alt="" coords="149,104,280,130"/>
-<area shape="poly" id="edge139_Node000000_Node000003" title=" " alt="" coords="59,213,88,175,108,155,129,139,151,128,153,133,132,143,111,159,93,178,63,217"/>
-<area shape="rect" id="Node000004" href="$classtest__parser_1_1TestParser.html" title=" " alt="" coords="172,153,257,179"/>
-<area shape="poly" id="edge140_Node000000_Node000004" title=" " alt="" coords="76,217,130,188,170,174,172,179,132,193,78,222"/>
-<area shape="rect" id="Node000005" href="$classtest__plan__solver__base_1_1TestPlanSolverBase.html" title=" " alt="" coords="144,203,284,228"/>
-<area shape="poly" id="edge141_Node000000_Node000005" title=" " alt="" coords="98,230,143,223,144,229,98,236"/>
-<area shape="rect" id="Node000006" href="$classtest__planner__client_1_1TestPlannerClient.html" title=" " alt="" coords="152,252,276,278"/>
-<area shape="poly" id="edge142_Node000000_Node000006" title=" " alt="" coords="98,246,152,253,151,259,98,251"/>
-<area shape="rect" id="Node000007" href="$classtest__planner__node_1_1TestPlannerNode.html" title=" " alt="" coords="153,301,276,327"/>
-<area shape="poly" id="edge143_Node000000_Node000007" title=" " alt="" coords="79,260,132,288,161,298,159,303,130,293,77,265"/>
-<area shape="rect" id="Node000008" href="$classtest__plugin__provider_1_1TestPluginDescriptor.html" title=" " alt="" coords="143,351,286,376"/>
-<area shape="poly" id="edge144_Node000000_Node000008" title=" " alt="" coords="64,265,93,303,132,337,153,348,151,352,129,342,89,306,59,268"/>
-<area shape="rect" id="Node000009" href="$classtest__plugin__provider_1_1TestPluginProvider.html" title=" " alt="" coords="149,400,280,426"/>
-<area shape="poly" id="edge145_Node000000_Node000009" title=" " alt="" coords="57,267,84,328,106,360,132,387,150,397,147,402,129,391,102,363,80,331,52,270"/>
-<area shape="rect" id="Node000010" href="$classtest__problem__expert__client_1_1TestProblemExpertClient.html" title=" " alt="" coords="132,449,296,475"/>
-<area shape="poly" id="edge146_Node000000_Node000010" title=" " alt="" coords="52,268,61,306,77,352,100,397,132,436,148,447,145,451,129,440,95,400,72,354,56,308,47,270"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,327,53,352"/>
+<area shape="rect" id="Node000001" href="$classBTActionsTestCase.html" title=" " alt="" coords="119,5,258,31"/>
+<area shape="poly" id="edge124_Node000000_Node000001" title=" " alt="" coords="31,311,39,246,53,165,73,90,85,61,99,40,117,27,120,31,103,44,90,63,78,92,59,167,45,247,36,311"/>
+<area shape="rect" id="Node000002" href="$classExecutorGoalHandlingTest.html" title=" " alt="" coords="101,55,276,80"/>
+<area shape="poly" id="edge125_Node000000_Node000002" title=" " alt="" coords="27,311,30,264,40,204,62,143,78,115,99,90,114,79,117,83,102,93,82,118,67,145,45,205,35,264,33,311"/>
+<area shape="rect" id="Node000003" href="$classExecutorLifecycleTest.html" title=" " alt="" coords="114,104,263,130"/>
+<area shape="poly" id="edge126_Node000000_Node000003" title=" " alt="" coords="30,311,35,272,47,226,68,179,82,158,99,139,115,128,118,132,102,143,86,161,72,182,52,228,41,273,35,312"/>
+<area shape="rect" id="Node000004" href="$classExecutorStnTest.html" title=" " alt="" coords="130,153,247,179"/>
+<area shape="poly" id="edge127_Node000000_Node000004" title=" " alt="" coords="34,311,55,249,74,216,99,188,128,172,130,177,102,192,78,219,60,251,39,312"/>
+<area shape="rect" id="Node000005" href="$classGraphExportToDOTTest.html" title=" " alt="" coords="108,203,268,228"/>
+<area shape="poly" id="edge128_Node000000_Node000005" title=" " alt="" coords="40,311,64,273,80,254,99,237,119,227,122,231,102,242,84,258,68,276,45,314"/>
+<area shape="rect" id="Node000006" href="$classPDDLParserTestCase.html" title=" " alt="" coords="113,252,264,278"/>
+<area shape="poly" id="edge129_Node000000_Node000006" title=" " alt="" coords="56,314,99,286,127,276,129,281,102,291,59,319"/>
+<area shape="rect" id="Node000007" href="$classPerformerSupervisionTest.html" title=" " alt="" coords="102,301,274,327"/>
+<area shape="poly" id="edge130_Node000000_Node000007" title=" " alt="" coords="67,331,103,325,104,330,68,336"/>
+<area shape="rect" id="Node000008" href="$classPlanSetupErrorsTest.html" title=" " alt="" coords="118,351,259,376"/>
+<area shape="poly" id="edge131_Node000000_Node000008" title=" " alt="" coords="68,343,117,350,117,355,68,348"/>
+<area shape="rect" id="Node000009" href="$classPlanSolverBaseTest.html" title=" " alt="" coords="118,400,258,426"/>
+<area shape="poly" id="edge132_Node000000_Node000009" title=" " alt="" coords="59,360,102,386,129,397,127,402,99,391,57,364"/>
+<area shape="rect" id="Node000010" href="$classPlannerErrorsTest.html" title=" " alt="" coords="126,449,251,475"/>
+<area shape="poly" id="edge133_Node000000_Node000010" title=" " alt="" coords="45,365,69,402,84,420,102,436,126,448,124,453,99,440,80,424,64,405,41,368"/>
+<area shape="rect" id="Node000011" href="$classPlannerNodeTest.html" title=" " alt="" coords="127,499,250,524"/>
+<area shape="poly" id="edge134_Node000000_Node000011" title=" " alt="" coords="39,367,60,427,78,459,102,485,128,500,125,504,99,490,74,462,55,430,34,369"/>
+<area shape="rect" id="Node000012" href="$classSTNBTBuilderTest.html" title=" " alt="" coords="123,548,254,574"/>
+<area shape="poly" id="edge135_Node000000_Node000012" title=" " alt="" coords="35,367,41,405,53,450,72,496,86,517,102,535,123,548,121,553,99,539,82,520,68,499,47,452,36,406,30,368"/>
+<area shape="rect" id="Node000014" href="$classStnDependencyTest.html" title=" " alt="" coords="119,597,258,623"/>
+<area shape="poly" id="edge137_Node000000_Node000014" title=" " alt="" coords="33,368,36,415,46,473,67,533,83,560,102,584,120,596,117,601,99,588,78,563,62,535,41,475,30,416,27,368"/>
+<area shape="rect" id="Node000015" href="$classTerminalTestCase.html" title=" " alt="" coords="125,647,252,672"/>
+<area shape="poly" id="edge138_Node000000_Node000015" title=" " alt="" coords="36,368,45,432,59,512,78,586,90,614,103,634,126,648,123,653,99,637,85,617,73,588,53,513,39,433,31,368"/>
+<area shape="rect" id="Node000013" href="$classSTNNodesTest.html" title=" " alt="" coords="324,548,436,574"/>
+<area shape="poly" id="edge136_Node000012_Node000013" title=" " alt="" coords="269,558,323,558,323,564,269,564"/>
 </map>
