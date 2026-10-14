@@ -74,7 +74,19 @@ class ScopedSpinner
 {
 public:
   explicit ScopedSpinner(rclcpp::Executor & exe)
-  : thread_([this, &exe]() {while (!finish_) {exe.spin_once(10ms);}}) {}
+  : thread_([this, &exe]() {
+        while (!finish_) {
+          try {
+            exe.spin_once(10ms);
+          } catch (const std::exception & e) {
+            // As executor_node's main: the action server may throw while rclcpp shuts down
+            if (rclcpp::ok()) {
+              ADD_FAILURE() << "Spinning failed: " << e.what();
+            }
+            return;
+          }
+        }
+      }) {}
   ~ScopedSpinner()
   {
     finish_ = true;
@@ -328,6 +340,27 @@ TEST_F(ExecutorLifecycleTest, plan_services_during_execution)
   ASSERT_EQ(result->result, ExecutePlan::Result::SUCCESS);
   ASSERT_TRUE(robot_at("assembly_zone"));
   ASSERT_GT(answers, 20);
+}
+
+// Ctrl-C with a plan in execution: publishing feedback or finishing the goal after
+// rclcpp::shutdown() used to throw from the execution thread and abort the process
+TEST_F(ExecutorLifecycleTest, shutdown_during_a_plan)
+{
+  // Different moments of the execution cycle
+  for (auto delay : {300ms, 410ms, 520ms, 635ms, 750ms, 865ms, 980ms, 1095ms}) {
+    if (!rclcpp::ok()) {
+      rclcpp::init(0, nullptr);
+    }
+    start(200);  // 10 s per action
+    ASSERT_TRUE(executor_client_->start_plan_execution(move_plan("wheels_zone", "assembly_zone")));
+    std::this_thread::sleep_for(delay);
+    ASSERT_EQ(move_node_->finished, 0);
+
+    rclcpp::shutdown();
+    std::this_thread::sleep_for(200ms);
+    // Destroys the executor node too: its destructor fails the goal it was running
+    stop();
+  }
 }
 
 int main(int argc, char ** argv)

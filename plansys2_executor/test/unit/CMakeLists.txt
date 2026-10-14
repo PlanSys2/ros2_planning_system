@@ -76,7 +76,7 @@ target_link_libraries(executor_lifecycle_test ${PROJECT_NAME})
 foreach(scenario
     node_is_destroyed_after_a_plan node_is_destroyed_while_active goals_rejected_unless_active
     deactivate_during_a_plan_fails_it reactivations_run_a_single_execution_thread
-    cleanup_and_configure_again plan_services_during_execution)
+    cleanup_and_configure_again plan_services_during_execution shutdown_during_a_plan)
   ament_add_gtest_test(executor_lifecycle_test
     TEST_NAME executor_lifecycle_${scenario}
     ENV GTEST_FILTER=ExecutorLifecycleTest.${scenario} PLANSYS2_TEST_BT_BUILDER=SimpleBTBuilder

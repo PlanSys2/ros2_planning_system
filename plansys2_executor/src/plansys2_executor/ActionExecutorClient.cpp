@@ -198,8 +198,18 @@ ActionExecutorClient::check_requester()
 
   // Names are fully qualified: compare the last part. A few misses in a row, as
   // discovery may lag, before stopping
+  std::vector<std::string> names;
+  try {
+    names = get_node_names();
+  } catch (const std::exception & e) {
+    // The context is gone once rclcpp shuts down: nothing to supervise
+    if (rclcpp::ok()) {
+      RCLCPP_ERROR(get_logger(), "Failed to look for %s: %s", requester_.c_str(), e.what());
+    }
+    return;
+  }
   bool alive = false;
-  for (const auto & name : get_node_names()) {
+  for (const auto & name : names) {
     if (name.substr(name.find_last_of('/') + 1) == requester_) {
       alive = true;
       break;
