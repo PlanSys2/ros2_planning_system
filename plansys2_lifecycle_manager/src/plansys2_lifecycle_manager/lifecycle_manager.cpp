@@ -16,6 +16,8 @@
 #include <memory>
 #include <string>
 #include <map>
+#include <thread>
+#include <vector>
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
@@ -52,6 +54,10 @@ LifecycleServiceClient::init()
 unsigned int
 LifecycleServiceClient::get_state(std::chrono::seconds time_out)
 {
+  if (!client_get_state_) {
+    RCLCPP_ERROR(get_logger(), "init() was not called");
+    return lifecycle_msgs::msg::State::PRIMARY_STATE_UNKNOWN;
+  }
   auto request = std::make_shared<lifecycle_msgs::srv::GetState::Request>();
   if (!client_get_state_->wait_for_service(time_out)) {
     RCLCPP_ERROR(
@@ -63,17 +69,16 @@ LifecycleServiceClient::get_state(std::chrono::seconds time_out)
   // We send the service request for asking the current
   // state of the lc_talker node.
   auto future_result = client_get_state_->async_send_request(request);
-  // Let's wait until we have the answer from the node.
-  // If the request times out, we return an unknown state.
+  // Never get() before it is ready: it would block forever if the node does not answer
   auto future_status = wait_for_result(future_result, time_out);
-  auto state = future_result.get();
-
   if (future_status != std::future_status::ready) {
+    client_get_state_->remove_pending_request(future_result);
     RCLCPP_ERROR(
       get_logger(), "Server time out while getting current state for node %s",
       managed_node_.c_str());
     return lifecycle_msgs::msg::State::PRIMARY_STATE_UNKNOWN;
   }
+  auto state = future_result.get();
   // We have an successful answer. So let's print the current state.
   if (state != nullptr) {
     RCLCPP_INFO(
@@ -92,6 +97,10 @@ LifecycleServiceClient::change_state(std::uint8_t transition, std::chrono::secon
 {
   auto request = std::make_shared<lifecycle_msgs::srv::ChangeState::Request>();
   request->transition.id = transition;
+  if (!client_change_state_) {
+    RCLCPP_ERROR(get_logger(), "init() was not called");
+    return false;
+  }
   if (!client_change_state_->wait_for_service(time_out)) {
     RCLCPP_ERROR(
       get_logger(),
@@ -105,8 +114,9 @@ LifecycleServiceClient::change_state(std::uint8_t transition, std::chrono::secon
   // If the request times out, we return an unknown state.
   auto future_status = wait_for_result(future_result, time_out);
   if (future_status != std::future_status::ready) {
+    client_change_state_->remove_pending_request(future_result);
     RCLCPP_ERROR(
-      get_logger(), "Server time out while getting current state for node %s",
+      get_logger(), "Server time out while changing the state of node %s",
       managed_node_.c_str());
     return false;
   }
@@ -117,122 +127,82 @@ LifecycleServiceClient::change_state(std::uint8_t transition, std::chrono::secon
     return true;
   } else {
     RCLCPP_WARN(
-      get_logger(), "Failed to trigger transition %u", static_cast<unsigned int>(transition));
+      get_logger(), "Failed to trigger transition %u in node %s",
+      static_cast<unsigned int>(transition), managed_node_.c_str());
     return false;
   }
 }
 
+namespace
+{
+
+// Polls the state until it is the expected one, the time is up or ROS shuts down
 bool
-startup_function(
-  std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes,
+wait_for_state(
+  LifecycleServiceClient & client, const std::string & name, unsigned int expected,
   std::chrono::seconds timeout)
 {
-  // configure planner
-  {
-    if (!manager_nodes["planner"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
-        timeout))
-    {
-      return false;
+  const auto deadline = std::chrono::steady_clock::now() + timeout;
+  while (rclcpp::ok()) {
+    if (client.get_state(timeout) == expected) {
+      return true;
     }
+    if (std::chrono::steady_clock::now() >= deadline) {
+      break;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+  RCLCPP_ERROR(
+    client.get_logger(), "Node %s did not reach the state %u", name.c_str(), expected);
+  return false;
+}
 
-    while (manager_nodes["planner"]->get_state() !=
-      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE)
-    {
-      std::cerr << "Waiting for inactive state for planner" << std::endl;
+}  // namespace
+
+bool
+startup_function(
+  const std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes,
+  std::chrono::seconds timeout)
+{
+  using lifecycle_msgs::msg::State;
+  using lifecycle_msgs::msg::Transition;
+
+  // Configured in this order (the domain expert may validate with the planner), then activated
+  const std::vector<std::string> configure_order =
+  {"planner", "domain_expert", "problem_expert", "executor"};
+  const std::vector<std::string> activate_order =
+  {"domain_expert", "problem_expert", "planner", "executor"};
+
+  for (const auto & name : configure_order) {
+    auto it = manager_nodes.find(name);
+    if (it == manager_nodes.end() || it->second == nullptr) {
+      RCLCPP_ERROR(
+        rclcpp::get_logger("plansys2_lifecycle_manager"),
+        "No lifecycle client for node %s", name.c_str());
+      return false;
     }
   }
 
-  // configure domain_expert
-  {
-    if (!manager_nodes["domain_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
-        timeout))
+  for (const auto & name : configure_order) {
+    auto & client = *manager_nodes.at(name);
+    if (!rclcpp::ok() ||
+      !client.change_state(Transition::TRANSITION_CONFIGURE, timeout) ||
+      !wait_for_state(client, name, State::PRIMARY_STATE_INACTIVE, timeout))
     {
       return false;
-    }
-
-    while (manager_nodes["domain_expert"]->get_state() !=
-      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE)
-    {
-      std::cerr << "Waiting for inactive state for domain_expert" << std::endl;
     }
   }
 
-  // configure problem_expert
-  {
-    if (!manager_nodes["problem_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
-        timeout))
+  for (const auto & name : activate_order) {
+    auto & client = *manager_nodes.at(name);
+    if (!rclcpp::ok() ||
+      !client.change_state(Transition::TRANSITION_ACTIVATE, timeout) ||
+      !wait_for_state(client, name, State::PRIMARY_STATE_ACTIVE, timeout))
     {
       return false;
-    }
-
-    while (manager_nodes["problem_expert"]->get_state() !=
-      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE)
-    {
-      std::cerr << "Waiting for inactive state for problem_expert" << std::endl;
     }
   }
 
-  // configure executor
-  {
-    if (!manager_nodes["executor"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
-        timeout))
-    {
-      return false;
-    }
-
-    while (manager_nodes["executor"]->get_state() !=
-      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE)
-    {
-      std::cerr << "Waiting for inactive state for planner" << std::endl;
-    }
-  }
-
-  // activate
-  {
-    if (!rclcpp::ok()) {
-      return false;
-    }
-    if (!manager_nodes["domain_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
-        timeout))
-    {
-      return false;
-    }
-    if (!manager_nodes["problem_expert"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
-        timeout))
-    {
-      return false;
-    }
-    if (!manager_nodes["planner"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
-        timeout))
-    {
-      return false;
-    }
-    if (!manager_nodes["executor"]->change_state(
-        lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE,
-        timeout))
-    {
-      return false;
-    }
-    if (!manager_nodes["domain_expert"]->get_state()) {
-      return false;
-    }
-    if (!manager_nodes["problem_expert"]->get_state()) {
-      return false;
-    }
-    if (!manager_nodes["planner"]->get_state()) {
-      return false;
-    }
-    if (!manager_nodes["executor"]->get_state()) {
-      return false;
-    }
-  }
   return true;
 }
 

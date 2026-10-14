@@ -46,6 +46,7 @@ int main(int argc, char ** argv)
   bool real_time = false;
   main_node->declare_parameter("use_real_time", real_time);
   main_node->get_parameter("use_real_time", real_time);
+  const auto startup_timeout = main_node->declare_parameter("startup_timeout", 5);
 
   if (real_time) {
     // Before any thread starts: they all inherit the policy
@@ -94,7 +95,7 @@ int main(int argc, char ** argv)
   // spin_until_future_complete() would use one thread: spin with all of them from the start
   std::thread spin_thread([&exe]() {exe.spin();});
 
-  if (!plansys2::startup_function(manager_nodes, std::chrono::seconds(5))) {
+  if (!plansys2::startup_function(manager_nodes, std::chrono::seconds(startup_timeout))) {
     RCLCPP_ERROR(
       rclcpp::get_logger("plansys2_bringup"),
       "Failed to start plansys2!");

@@ -1,6 +1,10 @@
 plansys2:
   ros__parameters:
     use_real_time: false
+    startup_timeout: 5  # seconds for each lifecycle transition at startup
+lifecycle_manager:
+  ros__parameters:
+    startup_timeout: 5  # seconds for each lifecycle transition at startup
 planner_client:
   ros__parameters:
     plan_solver_timeout: 15.0

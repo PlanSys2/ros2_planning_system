@@ -27,6 +27,9 @@ int main(int argc, char ** argv)
 
   rclcpp::init(argc, argv);
 
+  auto main_node = rclcpp::Node::make_shared("lifecycle_manager");
+  const auto startup_timeout = main_node->declare_parameter("startup_timeout", 5);
+
   std::map<std::string, std::shared_ptr<plansys2::LifecycleServiceClient>> manager_nodes;
   manager_nodes["domain_expert"] = std::make_shared<plansys2::LifecycleServiceClient>(
     "domain_expert_lc_mngr", "domain_expert");
@@ -46,7 +49,8 @@ int main(int argc, char ** argv)
 
   std::shared_future<bool> startup_future = std::async(
     std::launch::async,
-    std::bind(plansys2::startup_function, manager_nodes, std::chrono::seconds(5)));
+    std::bind(
+      plansys2::startup_function, manager_nodes, std::chrono::seconds(startup_timeout)));
   exe.spin_until_future_complete(startup_future);
 
   if (!startup_future.get()) {

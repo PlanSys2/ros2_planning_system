@@ -107,13 +107,17 @@ private:
 /**
  * @brief Starts up all managed nodes using their LifecycleServiceClient interfaces.
  *
- * @param[in,out] manager_nodes Map of node names to their LifecycleServiceClient instances.
+ * Configures planner, domain_expert, problem_expert and executor, then activates them,
+ * checking each state. Every wait is bounded and stops if ROS shuts down.
+ *
+ * @param[in] manager_nodes Map of node names to their LifecycleServiceClient instances.
+ *   It must contain the four nodes above.
  * @param[in] timeout Timeout for each startup operation.
  * @return true if all nodes started successfully, false otherwise.
  */
 bool
 startup_function(
-  std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes,
+  const std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes,
   std::chrono::seconds timeout);
 
 }  // namespace plansys2
