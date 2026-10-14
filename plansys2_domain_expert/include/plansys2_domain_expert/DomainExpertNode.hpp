@@ -324,6 +324,8 @@ private:
   rclcpp::Client<plansys2_msgs::srv::ValidateDomain>::SharedPtr
     validate_domain_client_;
   rclcpp::CallbackGroup::SharedPtr validate_domain_callback_group_;
+  // Takes the planner's answers, so validation never depends on the node's executor threads
+  rclcpp::executors::SingleThreadedExecutor validate_domain_executor_;
 
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::String>::SharedPtr domain_pub_;
 
