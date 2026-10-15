@@ -78,7 +78,7 @@ var searchData=
   ['start_5fexecution_5fthread_75',['start_execution_thread',['../classplansys2_1_1ExecutorNode.html#a5d7e85abba1e52e7b09c7c0157ba08d2',1,'plansys2::ExecutorNode']]],
   ['start_5fplan_5fexecution_76',['start_plan_execution',['../classplansys2_1_1ExecutorClient.html#a847440ce254f4c75cfc80b8046eda65e',1,'plansys2::ExecutorClient::start_plan_execution()'],['../classplansys2__support__py_1_1ExecutorClient_1_1ExecutorClient.html#a6e1e925e56bb599edc452ddf41a1462d',1,'plansys2_support_py.ExecutorClient.ExecutorClient.start_plan_execution()']]],
   ['start_5fplanner_77',['start_planner',['../classPlannerErrorsTest.html#a030db8d3bce3ac425aed096a20070526',1,'PlannerErrorsTest']]],
-  ['start_5fserver_78',['start_server',['../classMoveServer.html#af2693a5bca6590f846d4c29004b740ce',1,'MoveServer']]],
+  ['start_5fserver_78',['start_server',['../classMoveServer.html#af2693a5bca6590f846d4c29004b740ce',1,'MoveServer::start_server()'],['../classQuickServer.html#af2693a5bca6590f846d4c29004b740ce',1,'QuickServer::start_server()']]],
   ['start_5ftime_5f_79',['start_time_',['../classplansys2_1_1ActionExecutorClient.html#ab53a0d9b64b85d0bf5300ee1f5ff6d0c',1,'plansys2::ActionExecutorClient']]],
   ['started_5fbefore_80',['started_before',['../classplansys2__tests_1_1ExecutionLogger.html#a879dff24fe31b25f70baeeb3200525fd',1,'plansys2_tests::ExecutionLogger']]],
   ['startup_5ffunction_81',['startup_function',['../namespaceplansys2.html#a906900bd315de77223070c04df473b24',1,'plansys2']]],
