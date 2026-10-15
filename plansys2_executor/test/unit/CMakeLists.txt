@@ -76,7 +76,7 @@ target_link_libraries(executor_lifecycle_test ${PROJECT_NAME})
 foreach(scenario
     node_is_destroyed_after_a_plan node_is_destroyed_while_active goals_rejected_unless_active
     deactivate_during_a_plan_fails_it reactivations_run_a_single_execution_thread
-    cleanup_and_configure_again plan_services_during_execution shutdown_during_a_plan)
+    cleanup_and_configure_again plan_services_during_execution)
   ament_add_gtest_test(executor_lifecycle_test
     TEST_NAME executor_lifecycle_${scenario}
     ENV GTEST_FILTER=ExecutorLifecycleTest.${scenario} PLANSYS2_TEST_BT_BUILDER=SimpleBTBuilder
@@ -86,6 +86,17 @@ foreach(scenario
     TEST_NAME executor_lifecycle_${scenario}_stn
     ENV GTEST_FILTER=ExecutorLifecycleTest.${scenario} PLANSYS2_TEST_BT_BUILDER=STNBTBuilder
     TIMEOUT 120)
+endforeach()
+
+# Ctrl-C at different moments of the execution cycle, one process each
+foreach(delay 300 410 520 635 750 865 980 1095)
+  foreach(builder SimpleBTBuilder STNBTBuilder)
+    ament_add_gtest_test(executor_lifecycle_test
+      TEST_NAME executor_lifecycle_shutdown_during_a_plan_${delay}ms_${builder}
+      ENV GTEST_FILTER=ExecutorLifecycleTest.shutdown_during_a_plan
+      PLANSYS2_TEST_BT_BUILDER=${builder} PLANSYS2_TEST_SHUTDOWN_DELAY_MS=${delay}
+      TIMEOUT 60)
+  endforeach()
 endforeach()
 
 ament_add_gtest_executable(executor_goal_handling_test executor_goal_handling_test.cpp)
