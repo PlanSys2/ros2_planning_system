@@ -11,9 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include <iomanip>
 
 #include "plansys2_pddl_parser/Domain.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 namespace parser
 {
@@ -27,7 +27,7 @@ void GroundFunc<double>::PDDLPrint(
   tabindent(s, indent);
   s << "( = ";
   TypeGround::PDDLPrint(s, 0, ts, d);
-  s << " " << std::fixed << std::setprecision(10) << static_cast<double>(value) << " )";
+  s << " " << numberToString(static_cast<double>(value), 10) << " )";
 }
 
 template<>

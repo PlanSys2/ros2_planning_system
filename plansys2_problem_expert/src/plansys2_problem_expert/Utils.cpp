@@ -306,9 +306,14 @@ std::tuple<bool, bool, double> evaluate_node(
               success = false;
             }
           } else {
-            std::stringstream ss;
-            ss << "(= " << parser::pddl::toString(tree, left_id) << " " << value << ")";
-            problem_client->updateFunction(parser::pddl::fromStringFunction(ss.str()));
+            // Straight into a node, as fromStringFunction would build it: through text
+            // the value lost precision
+            plansys2::Function function;
+            function.node_type = plansys2_msgs::msg::Node::FUNCTION;
+            function.name = tree.nodes[left_id].name;
+            function.parameters = tree.nodes[left_id].parameters;
+            function.value = value;
+            success = problem_client->updateFunction(function);
           }
         }
 

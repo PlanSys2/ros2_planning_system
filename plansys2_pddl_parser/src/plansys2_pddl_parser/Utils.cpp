@@ -15,6 +15,9 @@
 #include "plansys2_pddl_parser/Utils.hpp"
 
 #include <algorithm>
+#include <array>
+#include <charconv>
+#include <cmath>
 #include <functional>
 #include <iostream>
 #include <limits>
@@ -740,7 +743,30 @@ std::string toStringNumber(const plansys2_msgs::msg::Tree & tree, uint32_t node_
     return {};
   }
 
-  return std::to_string(tree.nodes[node_id].value);
+  return numberToString(tree.nodes[node_id].value);
+}
+
+std::string numberToString(double value, int decimals)
+{
+  if (!std::isfinite(value)) {
+    return std::to_string(value);  // Not representable in PDDL anyway
+  }
+
+  // Fixed notation needs up to ~310 digits before and ~330 after the point
+  std::array<char, 1024> buffer;
+  char * const first = buffer.data();
+  char * const last = first + buffer.size();
+  if (decimals >= 0) {
+    auto written = std::to_chars(first, last, value, std::chars_format::fixed, decimals);
+    double read_back = 0.0;
+    std::from_chars(first, written.ptr, read_back);
+    if (read_back == value) {
+      return std::string(first, written.ptr);
+    }
+  }
+  // The shortest fixed form that reads back the same value
+  auto written = std::to_chars(first, last, value, std::chars_format::fixed);
+  return std::string(first, written.ptr);
 }
 
 std::string toStringAnd(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate)
