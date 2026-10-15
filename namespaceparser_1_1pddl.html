@@ -214,6 +214,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ad04fb36ae94c9f352ecda7f96bbb0405"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses a metric: "minimize &lt;expr&gt;" or "maximize &lt;expr&gt;", optionally as "(:metric ...)".  <br /></td></tr>
 <tr class="memitem:a0eef8540a63ffbcee1a0f74c1c0a8361" id="r_a0eef8540a63ffbcee1a0f74c1c0a8361"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a0eef8540a63ffbcee1a0f74c1c0a8361">nameActionsToString</a> (const std::shared_ptr&lt; plansys2_msgs::msg::Action &gt; action)</td></tr>
 <tr class="memitem:a979fcdc0e20e2b60b278516b9def2cc6" id="r_a979fcdc0e20e2b60b278516b9def2cc6"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a979fcdc0e20e2b60b278516b9def2cc6">nameActionsToString</a> (const std::shared_ptr&lt; <a class="el" href="classplansys2__msgs_1_1msg_1_1DurativeAction.html">plansys2_msgs::msg::DurativeAction</a> &gt; action)</td></tr>
+<tr class="memitem:a3b6e0bf57b8d9c07cf1f580f70c434bb" id="r_a3b6e0bf57b8d9c07cf1f580f70c434bb"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a3b6e0bf57b8d9c07cf1f580f70c434bb">numberToString</a> (double value, <a class="el" href="classint.html">int</a> decimals=6)</td></tr>
+<tr class="memdesc:a3b6e0bf57b8d9c07cf1f580f70c434bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a number for PDDL, in fixed notation and whatever the locale.  <br /></td></tr>
 <tr class="memitem:aed0e978c820273bc41b0e4d262d7c67d" id="r_aed0e978c820273bc41b0e4d262d7c67d"><td class="memItemLeft">std::ostream &amp;&#160;</td><td class="memItemRight"><a class="el" href="#aed0e978c820273bc41b0e4d262d7c67d">operator&lt;&lt;</a> (std::ostream &amp;stream, const <a class="el" href="classparser_1_1pddl_1_1Condition.html">Condition</a> *c)</td></tr>
 <tr class="memitem:ae04e40e9c664c0e652ed721492dac3f0" id="r_ae04e40e9c664c0e652ed721492dac3f0"><td class="memItemLeft">std::ostream &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ae04e40e9c664c0e652ed721492dac3f0">operator&lt;&lt;</a> (std::ostream &amp;stream, const <a class="el" href="classparser_1_1pddl_1_1Type.html">Type</a> *t)</td></tr>
 <tr class="memitem:adce38298fc0ff84bd84bf9f7ea0dd00a" id="r_adce38298fc0ff84bd84bf9f7ea0dd00a"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#adce38298fc0ff84bd84bf9f7ea0dd00a">removeOperatorBeforeParenthesis</a> (std::string &amp;wexpr)</td></tr>
@@ -1254,6 +1256,37 @@ template&lt;&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3b6e0bf57b8d9c07cf1f580f70c434bb" name="a3b6e0bf57b8d9c07cf1f580f70c434bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b6e0bf57b8d9c07cf1f580f70c434bb">&#9670;&#160;</a></span>numberToString()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string numberToString </td>
+          <td>(</td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>value</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classint.html">int</a></td>          <td class="paramname"><span class="paramname"><em>decimals</em></span><span class="paramdefsep"> = </span><span class="paramdefval">6</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Writes a number for PDDL, in fixed notation and whatever the locale. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>The number. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">decimals</td><td>Decimals written when they are enough to read back the same value; otherwise, as many digits as needed are written. Negative: always the shortest form. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The number as text, e.g. "200.000000" or "0.0000001" ("200" if shortest). </dd></dl>
 
 </div>
 </div>
