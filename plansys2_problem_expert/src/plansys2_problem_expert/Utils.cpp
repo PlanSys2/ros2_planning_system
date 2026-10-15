@@ -117,7 +117,12 @@ std::tuple<bool, bool, double> evaluate_node(
                   &parser::pddl::checkNodeEquality, std::placeholders::_1,
                   tree.nodes[node_id], true)) != predicates.end());
           } else {
-            value = negate ^ problem_client->existPredicate(tree.nodes[node_id]);
+            auto exist = problem_client->tryExistPredicate(tree.nodes[node_id]);
+            // Without an answer it cannot be taken as true, neither negated
+            if (!exist.has_value()) {
+              return std::make_tuple(false, false, 0);
+            }
+            value = negate ^ exist.value();
           }
         }
 
@@ -349,7 +354,12 @@ std::tuple<bool, bool, double> evaluate_node(
         // object of unknown type is not discarded
         std::map<std::string, std::set<std::string>> object_types;
         if (use_state == false) {
-          for (const auto & instance : problem_client->getInstances()) {
+          auto instances = problem_client->tryGetInstances();
+          // Without the objects, neither exists nor forall can be decided
+          if (!instances.has_value()) {
+            return std::make_tuple(false, false, 0);
+          }
+          for (const auto & instance : instances.value()) {
             object_types[instance.name].insert(instance.type);
           }
         } else {
