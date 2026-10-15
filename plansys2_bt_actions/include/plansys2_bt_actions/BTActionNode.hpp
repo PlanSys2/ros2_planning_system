@@ -370,21 +370,28 @@ protected:
   void cancel_goal()
   {
     if (goal_handle_) {
-      future_cancel_handle_ = action_client_->async_cancel_goal(goal_handle_);
-      if (callback_group_executor_.spin_until_future_complete(future_cancel_handle_,
-          server_timeout_) != rclcpp::FutureReturnCode::SUCCESS)
-      {
-        RCLCPP_ERROR(
-          node_->get_logger(), "Failed to cancel action server for %s", action_name_.c_str());
-      }
+      // The goal may have finished meanwhile: rclcpp_action then forgets it and throws
+      try {
+        future_cancel_handle_ = action_client_->async_cancel_goal(goal_handle_);
+        if (callback_group_executor_.spin_until_future_complete(future_cancel_handle_,
+            server_timeout_) != rclcpp::FutureReturnCode::SUCCESS)
+        {
+          RCLCPP_ERROR(
+            node_->get_logger(), "Failed to cancel action server for %s", action_name_.c_str());
+        }
 
-      auto future_result = action_client_->async_get_result(goal_handle_);
-      if (callback_group_executor_.spin_until_future_complete(future_result, server_timeout_) !=
-        rclcpp::FutureReturnCode::SUCCESS)
-      {
-        RCLCPP_ERROR(
-        node_->get_logger(),
-        "Failed to get result for %s in node halt!", action_name_.c_str());
+        auto future_result = action_client_->async_get_result(goal_handle_);
+        if (callback_group_executor_.spin_until_future_complete(future_result, server_timeout_) !=
+          rclcpp::FutureReturnCode::SUCCESS)
+        {
+          RCLCPP_ERROR(
+            node_->get_logger(),
+            "Failed to get result for %s in node halt!", action_name_.c_str());
+        }
+      } catch (const rclcpp_action::exceptions::UnknownGoalHandleError &) {
+        RCLCPP_DEBUG(
+          node_->get_logger(), "Goal for %s already finished: nothing to cancel",
+          action_name_.c_str());
       }
 
       on_cancelled();

@@ -50,6 +50,26 @@ public:
 };
 
 
+// Sends the goal, then fails on the next tick: the goal is cancelled while executing
+class FailOnSecondTick : public plansys2::BtActionNode<test_msgs::action::Fibonacci>
+{
+public:
+  using Fibonacci = test_msgs::action::Fibonacci;
+  explicit FailOnSecondTick(
+    const std::string & xml_tag_name,
+    const std::string & action_name,
+    const BT::NodeConfig & conf)
+  : plansys2::BtActionNode<Fibonacci>(xml_tag_name, action_name, conf) {}
+
+  BT::NodeStatus on_tick() override
+  {
+    return ++ticks_ < 2 ? BT::NodeStatus::RUNNING : BT::NodeStatus::FAILURE;
+  }
+
+private:
+  int ticks_ {0};
+};
+
 class OnFeedbackFail : public plansys2::BtActionNode<test_msgs::action::Fibonacci>
 {
 public:
