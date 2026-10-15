@@ -236,6 +236,8 @@ Protected Member Functions</h2></td></tr>
 <tr class="memdesc:a2461f762fd73278a6f0062fd53ec33f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executes the current plan using the behavior tree.  <br /></td></tr>
 <tr class="memitem:aedef5c7fe2c8d0b1febc0372e1d79ff2" id="r_aedef5c7fe2c8d0b1febc0372e1d79ff2"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aedef5c7fe2c8d0b1febc0372e1d79ff2">execution_cycle</a> ()</td></tr>
 <tr class="memdesc:aedef5c7fe2c8d0b1febc0372e1d79ff2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Main execution cycle that runs in a separate thread.  <br /></td></tr>
+<tr class="memitem:a682c48aedb690fa409daa860a356f314" id="r_a682c48aedb690fa409daa860a356f314"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a682c48aedb690fa409daa860a356f314">execution_step</a> ()</td></tr>
+<tr class="memitem:a2a07b3f5f9267af0b5029d077e9aa471" id="r_a2a07b3f5f9267af0b5029d077e9aa471"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a2a07b3f5f9267af0b5029d077e9aa471">fail_current_goals</a> ()</td></tr>
 <tr class="memitem:a2c9594135eec0d93dc55bbd2b5252f7c" id="r_a2c9594135eec0d93dc55bbd2b5252f7c"><td class="memItemLeft">std::vector&lt; plansys2_msgs::msg::ActionExecutionInfo &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a2c9594135eec0d93dc55bbd2b5252f7c">get_feedback_info</a> (std::shared_ptr&lt; std::map&lt; std::string, <a class="el" href="structplansys2_1_1ActionExecutionInfo.html">ActionExecutionInfo</a> &gt; &gt; action_map)</td></tr>
 <tr class="memdesc:a2c9594135eec0d93dc55bbd2b5252f7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs feedback information about action execution.  <br /></td></tr>
 <tr class="memitem:a3173c50e86050dd4f4c0ff8cd7a04bf5" id="r_a3173c50e86050dd4f4c0ff8cd7a04bf5"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a3173c50e86050dd4f4c0ff8cd7a04bf5">get_ordered_subgoals</a> (<a class="el" href="structplansys2_1_1PlanRuntineInfo.html">PlanRuntineInfo</a> &amp;runtime_info)</td></tr>
@@ -607,6 +609,56 @@ Static Protected Attributes</h2></td></tr>
 
 <p>Main execution cycle that runs in a separate thread. </p>
 <p>Manages the state machine for plan execution, including processing new plans, executing current plans, handling cancellations, and reporting results. </p>
+
+</div>
+</div>
+<a id="a682c48aedb690fa409daa860a356f314" name="a682c48aedb690fa409daa860a356f314"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a682c48aedb690fa409daa860a356f314">&#9670;&#160;</a></span>execution_step()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void execution_step </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a2a07b3f5f9267af0b5029d077e9aa471" name="a2a07b3f5f9267af0b5029d077e9aa471"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a07b3f5f9267af0b5029d077e9aa471">&#9670;&#160;</a></span>fail_current_goals()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void fail_current_goals </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
