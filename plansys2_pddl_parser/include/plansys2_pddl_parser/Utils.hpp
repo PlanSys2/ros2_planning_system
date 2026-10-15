@@ -128,6 +128,13 @@ std::string toStringFunction(const plansys2_msgs::msg::Tree & tree, uint32_t nod
 
 std::string toStringNumber(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
 
+/// @brief Writes a number for PDDL, in fixed notation and whatever the locale.
+/// @param[in] value The number.
+/// @param[in] decimals Decimals written when they are enough to read back the same value;
+///   otherwise, as many digits as needed are written. Negative: always the shortest form.
+/// @return The number as text, e.g. "200.000000" or "0.0000001" ("200" if shortest).
+std::string numberToString(double value, int decimals = 6);
+
 std::string toStringAnd(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
 
 std::string toStringOr(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);

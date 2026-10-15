@@ -1472,6 +1472,38 @@ TEST(problem_expert, predicates_keep_instance_types)
   ASSERT_EQ(problem_expert.getPredicates().size(), 1u);
 }
 
+// The problem keeps the functions' precision: ten decimals, or more digits when needed
+TEST(problem_expert, functions_keep_precision)
+{
+  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("kitchen", "room")));
+
+  for (double value : {1234567.891, 1e-12, -0.5}) {
+    auto function = parser::pddl::fromStringFunction("(room_distance bedroom kitchen)");
+    function.value = value;
+    ASSERT_TRUE(problem_expert.updateFunction(function) || problem_expert.addFunction(function));
+    const auto problem = problem_expert.getProblem();
+    const auto expected = parser::pddl::numberToString(value, 10);
+    ASSERT_NE(problem.find("( room_distance bedroom kitchen ) " + expected + " )"),
+      std::string::npos) << problem;
+    // Read back through the parser, the same value
+    plansys2::ProblemExpert reread(domain_expert);
+    ASSERT_TRUE(reread.addProblem(problem));
+    auto function_read = reread.getFunction("(room_distance bedroom kitchen)");
+    ASSERT_TRUE(function_read.has_value());
+    ASSERT_EQ(function_read->value, value);
+  }
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

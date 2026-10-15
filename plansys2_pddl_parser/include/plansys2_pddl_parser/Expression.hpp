@@ -21,6 +21,7 @@
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
 #include "plansys2_pddl_parser/Condition.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 namespace parser
 {
@@ -210,16 +211,14 @@ public:
 
   std::string info() const
   {
-    std::ostringstream os;
-    os << value;
-    return os.str();
+    return numberToString(value, -1);
   }
 
   void PDDLPrint(
     std::ostream & s, unsigned, const TokenStruct<std::string> &,
     const Domain &) const override
   {
-    s << value;
+    s << numberToString(value, -1);
   }
 
   plansys2_msgs::msg::Node::SharedPtr getTree(

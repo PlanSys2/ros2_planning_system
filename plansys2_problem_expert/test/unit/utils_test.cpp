@@ -18,6 +18,7 @@
 #include <memory>
 #include <map>
 #include <set>
+#include <atomic>
 #include <tuple>
 #include <utility>
 
@@ -764,6 +765,69 @@ TEST(utils, evaluate_function_mod_client)
     func = problem_client->getFunction("(room_distance bedroom kitchen)");
     ASSERT_TRUE(func.has_value());
     ASSERT_EQ(func.value().value, 10.0);
+
+    finish = true;
+    t.join();
+  }
+  plansys2::drain_ros(2s);
+}
+
+// Each modifier, applied through the problem expert, keeps the exact value (it went through
+// text with six digits: 1234567.891 became 1.23457e+06, and the update failed silently)
+TEST(utils, evaluate_function_mod_client_precision)
+{
+  {
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+
+    std::string pkgpath =
+      ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+    rclcpp::executors::SingleThreadedExecutor exe;
+    exe.add_node(domain_node->get_node_base_interface());
+    exe.add_node(problem_node->get_node_base_interface());
+    std::atomic<bool> finish {false};
+    std::thread t([&]() {
+        while (!finish) {exe.spin_some();}
+      });
+
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
+    ASSERT_TRUE(
+      problem_client->addFunction(plansys2::Function("(= (room_distance bedroom kitchen) 1.0)")));
+
+    // modifier, operand, expected value
+    const std::vector<std::tuple<std::string, double, double>> steps = {
+      {"assign", 1234567.891, 1234567.891},
+      {"increase", 1e-7, 1234567.891 + 1e-7},
+      {"decrease", 2234567.891, 1234567.891 + 1e-7 - 2234567.891},
+      {"scale-up", -2.5, (1234567.891 + 1e-7 - 2234567.891) * -2.5},
+      {"scale-down", 3.0, (1234567.891 + 1e-7 - 2234567.891) * -2.5 / 3.0},
+      {"assign", 1e-7, 1e-7},
+    };
+    for (const auto & [modifier, operand, value] : steps) {
+      plansys2_msgs::msg::Tree tree;
+      parser::pddl::fromString(
+        tree, "(" + modifier + " (room_distance bedroom kitchen) " +
+        parser::pddl::numberToString(operand) + ")", false,
+        plansys2_msgs::msg::Node::EXPRESSION);
+      ASSERT_EQ(tree.nodes[2].value, operand) << modifier;
+
+      auto result = plansys2::evaluate(tree, problem_client, true);
+      ASSERT_TRUE(std::get<0>(result)) << modifier;
+      ASSERT_EQ(std::get<2>(result), value) << modifier;
+
+      auto func = problem_client->getFunction("(room_distance bedroom kitchen)");
+      ASSERT_TRUE(func.has_value()) << modifier;
+      ASSERT_EQ(func->value, value) << modifier;
+    }
 
     finish = true;
     t.join();

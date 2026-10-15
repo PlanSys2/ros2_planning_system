@@ -888,8 +888,10 @@ TEST(PDDLParserTestCase, instance_metric_parse_and_print)
     ASSERT_TRUE(instance.metric);
     ASSERT_TRUE(instance.maximize);
     const std::string printed = print_instance(instance);
+    // As in the problem expert: numbers in the metric no longer take the format of the
+    // functions printed before them
     const std::string expected =
-      "( :metric maximize ( - ( fuel r1 ) ( * 2.0000000000 ( + ( spent ) ( total-time ) ) ) ) )";
+      "( :metric maximize ( - ( fuel r1 ) ( * 2 ( + ( spent ) ( total-time ) ) ) ) )";
     ASSERT_NE(printed.find(expected), std::string::npos) << printed;
 
     // What is printed parses again to the same metric
@@ -1118,4 +1120,53 @@ TEST(PDDLParserTestCase, forall_imply_from_and_to_string)
   bad = parser::pddl::fromString("(forall (?o) (p ?o))");
   bad.nodes[0].children.push_back(bad.nodes[0].children[0]);
   ASSERT_FALSE(parser::pddl::validateTree(bad, error));
+}
+
+// Six decimals when they are exact, as many digits as needed when not, never exponents
+TEST(PDDLParserTestCase, number_to_string)
+{
+  using parser::pddl::numberToString;
+  ASSERT_EQ(numberToString(200), "200.000000");
+  ASSERT_EQ(numberToString(1.5), "1.500000");
+  ASSERT_EQ(numberToString(0), "0.000000");
+  ASSERT_EQ(numberToString(-2.25), "-2.250000");
+  ASSERT_EQ(numberToString(1234567.891), "1234567.891000");
+  ASSERT_EQ(numberToString(1e-7), "0.0000001");
+  ASSERT_EQ(numberToString(-1e-7), "-0.0000001");
+  ASSERT_EQ(numberToString(0.1 + 0.2), "0.30000000000000004");
+  ASSERT_EQ(numberToString(1e20), "100000000000000000000.000000");
+  ASSERT_EQ(numberToString(10, 10), "10.0000000000");
+  ASSERT_EQ(numberToString(1e-12, 10), "0.000000000001");
+  ASSERT_EQ(numberToString(2, -1), "2");
+  ASSERT_EQ(numberToString(1.5, -1), "1.5");
+  ASSERT_EQ(numberToString(1234567.891, -1), "1234567.891");
+  ASSERT_EQ(numberToString(1e-7, -1), "0.0000001");
+
+  // Whatever the value, the text reads back the same and has no exponent
+  for (double v : {1e-7, 1234567.891, -98765.4321e-9, 1.0 / 3.0, 2.0 / 3.0e8, 1e300, 1e-300,
+      -0.0, 123456789012345.6789})
+  {
+    for (int decimals : {6, 10, -1}) {
+      const auto text = numberToString(v, decimals);
+      ASSERT_EQ(text.find_first_of("eE"), std::string::npos) << text;
+      ASSERT_EQ(std::stod(text), v) << text;
+    }
+  }
+}
+
+// Numbers in trees, domains and problems keep their precision
+TEST(PDDLParserTestCase, numbers_keep_precision_in_text)
+{
+  for (const std::string & number : {"0.0000001", "1234567.891000", "-2.500000"}) {
+    const std::string expr = "(>  (battery_level r1) " + number + ")";
+    auto tree = parser::pddl::fromString(expr);
+    ASSERT_EQ(parser::pddl::toString(tree), expr);
+  }
+
+  parser::pddl::ValueExpression small(1e-7);
+  ASSERT_EQ(small.info(), "0.0000001");
+  parser::pddl::ValueExpression big(1234567.891);
+  ASSERT_EQ(big.info(), "1234567.891");
+  parser::pddl::ValueExpression integer(2);
+  ASSERT_EQ(integer.info(), "2");
 }
