@@ -22,7 +22,14 @@ int main(int argc, char ** argv)
   rclcpp::init(argc, argv);
   auto node = std::make_shared<plansys2::ExecutorNode>();
 
-  rclcpp::spin(node->get_node_base_interface());
+  try {
+    rclcpp::spin(node->get_node_base_interface());
+  } catch (const std::exception & e) {
+    // The action server may throw while rclcpp shuts down (Ctrl-C): only then it is fine
+    if (rclcpp::ok()) {
+      throw;
+    }
+  }
 
   rclcpp::shutdown();
 

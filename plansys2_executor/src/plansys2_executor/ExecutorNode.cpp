@@ -898,176 +898,190 @@ ExecutorNode::execution_cycle()
 {
   rclcpp::Rate rate(50);
   while (rclcpp::ok() && node_running_) {
-    auto feedback = std::make_shared<ExecutePlan::Feedback>();
-    auto result = std::make_shared<ExecutePlan::Result>();
-
-    switch (executor_state_) {
-      case STATE_IDLE:
-        if (auto goal = take_new_goal()) {
-          // A domain change before this plan started does not affect it
-          domain_changed_ = false;
-
-          {
-            std::lock_guard<std::mutex> lock(goal_mutex_);
-            current_goal_handle_ = goal;
-          }
-
-          // Cancelled while waiting to start (#436)
-          if (current_goal_handle_->is_canceling()) {
-            result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
-            current_goal_handle_->canceled(result);
-            break;
-          }
-
-          if (current_goal_handle_->get_goal()->plan.items.empty()) {
-            // Nothing to do (#431)
-            result->result = plansys2_msgs::action::ExecutePlan::Result::SUCCESS;
-            current_goal_handle_->succeed(result);
-            break;
-          }
-
-          runtime_info_ = PlanRuntineInfo();
-          runtime_info_.complete_plan = current_goal_handle_->get_goal()->plan;
-          runtime_info_.remaining_plan = current_goal_handle_->get_goal()->plan;
-
-          if (!init_plan_for_execution(runtime_info_)) {
-            executor_state_ = STATE_ABORTING;
-          } else {
-            update_snapshot();
-            executor_state_ = STATE_EXECUTING;
-          }
-        }
+    try {
+      execution_step();
+    } catch (const std::exception & e) {
+      // Publishing or finishing a goal throws once rclcpp shuts down (Ctrl-C): just stop
+      if (!rclcpp::ok()) {
         break;
-      case STATE_EXECUTING:
-        {
-          BT::NodeStatus status = BT::NodeStatus::FAILURE;
-          try {
-            status = runtime_info_.current_tree->tree.tickOnce();
-          } catch (std::exception & e) {
-            std::cerr << e.what() << std::endl;
-            executor_state_ = STATE_FAILED;
-          }
-
-          auto feedback_info_msgs = get_feedback_info(runtime_info_.action_map);
-          feedback->action_execution_status = feedback_info_msgs;
-          // rclcpp_action only takes feedback from executing goals
-          if (!current_goal_handle_->is_canceling()) {
-            current_goal_handle_->publish_feedback(feedback);
-          }
-          for (const auto & msg : feedback_info_msgs) {
-            execution_info_pub_->publish(msg);
-          }
-
-          update_plan(runtime_info_);
-          update_snapshot();
-          remaining_plan_pub_->publish(runtime_info_.remaining_plan);
-          executing_plan_pub_->publish(runtime_info_.complete_plan);
-
-          std_msgs::msg::String dotgraph_msg;
-          dotgraph_msg.data = runtime_info_.current_tree->bt_builder->get_dotgraph(
-            runtime_info_.action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
-            this->get_parameter("print_graph").as_bool());
-          dotgraph_pub_->publish(dotgraph_msg);
-
-          if (status == BT::NodeStatus::SUCCESS) {
-            executor_state_ = STATE_SUCCEDED;
-          } else if (status == BT::NodeStatus::FAILURE) {
-            executor_state_ = STATE_FAILED;
-          } else if (domain_changed_.exchange(false)) {
-            RCLCPP_WARN(
-              get_logger(),
-              "[%s] Domain changed while executing a plan, cancelling execution", get_name());
-            executor_state_ = STATE_ABORTING;
-          } else if (current_goal_handle_->is_canceling()) {
-            // Checked on the goal itself, so a late cancel never leaks to the next one (#436)
-            executor_state_ = STATE_CANCELLED;
-          } else if (new_plan_received_) {
-            executor_state_ = STATE_REPLANNING;
-          }
-        }
-        break;
-      case STATE_REPLANNING:
-        {
-          auto goal = take_new_goal();
-          if (!goal) {
-            executor_state_ = STATE_EXECUTING;
-            break;
-          }
-
-          // The running goal is replaced by the new one
-          result->result = plansys2_msgs::action::ExecutePlan::Result::PREEMPT;
-          result->action_execution_status = get_feedback_info(runtime_info_.action_map);
-          finish_replaced_goal(current_goal_handle_, result);
-
-          {
-            std::lock_guard<std::mutex> lock(goal_mutex_);
-            current_goal_handle_ = goal;
-          }
-
-          // Cancelled while waiting to start (#436)
-          if (current_goal_handle_->is_canceling()) {
-            executor_state_ = STATE_CANCELLED;
-            break;
-          }
-
-          runtime_info_.complete_plan = current_goal_handle_->get_goal()->plan;
-          runtime_info_.remaining_plan = current_goal_handle_->get_goal()->plan;
-
-          if (!replan_for_execution(runtime_info_)) {
-            executor_state_ = STATE_ERROR;
-          } else {
-            update_snapshot();
-            executor_state_ = STATE_EXECUTING;
-          }
-        }
-        break;
-      case STATE_ABORTING:
-        cancel_all_running_actions(runtime_info_);
-
-        result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
-        result->action_execution_status = get_feedback_info(runtime_info_.action_map);
-
-        current_goal_handle_->abort(result);
-        executor_state_ = STATE_IDLE;
-        break;
-      case STATE_CANCELLED:
-        cancel_all_running_actions(runtime_info_);
-
-        result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
-        result->action_execution_status = get_feedback_info(runtime_info_.action_map);
-
-        current_goal_handle_->canceled(result);
-        executor_state_ = STATE_IDLE;
-        break;
-      case STATE_FAILED:
-        cancel_all_running_actions(runtime_info_);
-
-        result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
-        result->action_execution_status = get_feedback_info(runtime_info_.action_map);
-
-        // A failed plan is not a succeeded goal (#436)
-        current_goal_handle_->abort(result);
-        executor_state_ = STATE_IDLE;
-        break;
-      case STATE_ERROR:
-        cancel_all_running_actions(runtime_info_);
-
-        result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
-        result->action_execution_status = get_feedback_info(runtime_info_.action_map);
-
-        current_goal_handle_->abort(result);
-        executor_state_ = STATE_IDLE;
-        break;
-      case STATE_SUCCEDED:
-        result->result = plansys2_msgs::action::ExecutePlan::Result::SUCCESS;
-        result->action_execution_status = get_feedback_info(runtime_info_.action_map);
-
-        current_goal_handle_->succeed(result);
-        executor_state_ = STATE_IDLE;
-        break;
+      }
+      RCLCPP_ERROR(get_logger(), "Plan execution failed: %s", e.what());
+      fail_current_goals();
     }
-
     rate.sleep();
+  }
+}
+
+void
+ExecutorNode::execution_step()
+{
+  auto feedback = std::make_shared<ExecutePlan::Feedback>();
+  auto result = std::make_shared<ExecutePlan::Result>();
+
+  switch (executor_state_) {
+    case STATE_IDLE:
+      if (auto goal = take_new_goal()) {
+        // A domain change before this plan started does not affect it
+        domain_changed_ = false;
+
+        {
+          std::lock_guard<std::mutex> lock(goal_mutex_);
+          current_goal_handle_ = goal;
+        }
+
+        // Cancelled while waiting to start (#436)
+        if (current_goal_handle_->is_canceling()) {
+          result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
+          current_goal_handle_->canceled(result);
+          break;
+        }
+
+        if (current_goal_handle_->get_goal()->plan.items.empty()) {
+          // Nothing to do (#431)
+          result->result = plansys2_msgs::action::ExecutePlan::Result::SUCCESS;
+          current_goal_handle_->succeed(result);
+          break;
+        }
+
+        runtime_info_ = PlanRuntineInfo();
+        runtime_info_.complete_plan = current_goal_handle_->get_goal()->plan;
+        runtime_info_.remaining_plan = current_goal_handle_->get_goal()->plan;
+
+        if (!init_plan_for_execution(runtime_info_)) {
+          executor_state_ = STATE_ABORTING;
+        } else {
+          update_snapshot();
+          executor_state_ = STATE_EXECUTING;
+        }
+      }
+      break;
+    case STATE_EXECUTING:
+      {
+        BT::NodeStatus status = BT::NodeStatus::FAILURE;
+        try {
+          status = runtime_info_.current_tree->tree.tickOnce();
+        } catch (std::exception & e) {
+          std::cerr << e.what() << std::endl;
+          executor_state_ = STATE_FAILED;
+        }
+
+        auto feedback_info_msgs = get_feedback_info(runtime_info_.action_map);
+        feedback->action_execution_status = feedback_info_msgs;
+        // rclcpp_action only takes feedback from executing goals
+        if (!current_goal_handle_->is_canceling()) {
+          current_goal_handle_->publish_feedback(feedback);
+        }
+        for (const auto & msg : feedback_info_msgs) {
+          execution_info_pub_->publish(msg);
+        }
+
+        update_plan(runtime_info_);
+        update_snapshot();
+        remaining_plan_pub_->publish(runtime_info_.remaining_plan);
+        executing_plan_pub_->publish(runtime_info_.complete_plan);
+
+        std_msgs::msg::String dotgraph_msg;
+        dotgraph_msg.data = runtime_info_.current_tree->bt_builder->get_dotgraph(
+          runtime_info_.action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
+          this->get_parameter("print_graph").as_bool());
+        dotgraph_pub_->publish(dotgraph_msg);
+
+        if (status == BT::NodeStatus::SUCCESS) {
+          executor_state_ = STATE_SUCCEDED;
+        } else if (status == BT::NodeStatus::FAILURE) {
+          executor_state_ = STATE_FAILED;
+        } else if (domain_changed_.exchange(false)) {
+          RCLCPP_WARN(
+            get_logger(),
+            "[%s] Domain changed while executing a plan, cancelling execution", get_name());
+          executor_state_ = STATE_ABORTING;
+        } else if (current_goal_handle_->is_canceling()) {
+          // Checked on the goal itself, so a late cancel never leaks to the next one (#436)
+          executor_state_ = STATE_CANCELLED;
+        } else if (new_plan_received_) {
+          executor_state_ = STATE_REPLANNING;
+        }
+      }
+      break;
+    case STATE_REPLANNING:
+      {
+        auto goal = take_new_goal();
+        if (!goal) {
+          executor_state_ = STATE_EXECUTING;
+          break;
+        }
+
+        // The running goal is replaced by the new one
+        result->result = plansys2_msgs::action::ExecutePlan::Result::PREEMPT;
+        result->action_execution_status = get_feedback_info(runtime_info_.action_map);
+        finish_replaced_goal(current_goal_handle_, result);
+
+        {
+          std::lock_guard<std::mutex> lock(goal_mutex_);
+          current_goal_handle_ = goal;
+        }
+
+        // Cancelled while waiting to start (#436)
+        if (current_goal_handle_->is_canceling()) {
+          executor_state_ = STATE_CANCELLED;
+          break;
+        }
+
+        runtime_info_.complete_plan = current_goal_handle_->get_goal()->plan;
+        runtime_info_.remaining_plan = current_goal_handle_->get_goal()->plan;
+
+        if (!replan_for_execution(runtime_info_)) {
+          executor_state_ = STATE_ERROR;
+        } else {
+          update_snapshot();
+          executor_state_ = STATE_EXECUTING;
+        }
+      }
+      break;
+    case STATE_ABORTING:
+      cancel_all_running_actions(runtime_info_);
+
+      result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
+      result->action_execution_status = get_feedback_info(runtime_info_.action_map);
+
+      current_goal_handle_->abort(result);
+      executor_state_ = STATE_IDLE;
+      break;
+    case STATE_CANCELLED:
+      cancel_all_running_actions(runtime_info_);
+
+      result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
+      result->action_execution_status = get_feedback_info(runtime_info_.action_map);
+
+      current_goal_handle_->canceled(result);
+      executor_state_ = STATE_IDLE;
+      break;
+    case STATE_FAILED:
+      cancel_all_running_actions(runtime_info_);
+
+      result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
+      result->action_execution_status = get_feedback_info(runtime_info_.action_map);
+
+      // A failed plan is not a succeeded goal (#436)
+      current_goal_handle_->abort(result);
+      executor_state_ = STATE_IDLE;
+      break;
+    case STATE_ERROR:
+      cancel_all_running_actions(runtime_info_);
+
+      result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
+      result->action_execution_status = get_feedback_info(runtime_info_.action_map);
+
+      current_goal_handle_->abort(result);
+      executor_state_ = STATE_IDLE;
+      break;
+    case STATE_SUCCEDED:
+      result->result = plansys2_msgs::action::ExecutePlan::Result::SUCCESS;
+      result->action_execution_status = get_feedback_info(runtime_info_.action_map);
+
+      current_goal_handle_->succeed(result);
+      executor_state_ = STATE_IDLE;
+      break;
   }
 }
 
@@ -1099,19 +1113,40 @@ ExecutorNode::stop_execution_thread()
   }
 
   // Nothing executes plans from now on: fail the goals in progress or waiting
+  fail_current_goals();
+}
+
+void
+ExecutorNode::fail_current_goals()
+{
   auto result = std::make_shared<ExecutePlan::Result>();
   result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
-  if (executor_state_ != STATE_IDLE && current_goal_handle_ && current_goal_handle_->is_active()) {
-    cancel_all_running_actions(runtime_info_);
-    result->action_execution_status = get_feedback_info(runtime_info_.action_map);
-    current_goal_handle_->abort(result);
+  // After shutdown (e.g. from the destructor) goal handles throw: nobody would get the result
+  try {
+    if (executor_state_ != STATE_IDLE && current_goal_handle_ &&
+      current_goal_handle_->is_active())
+    {
+      cancel_all_running_actions(runtime_info_);
+      result->action_execution_status = get_feedback_info(runtime_info_.action_map);
+      current_goal_handle_->abort(result);
+    }
+  } catch (const std::exception & e) {
+    if (rclcpp::ok()) {
+      RCLCPP_ERROR(get_logger(), "Failed to abort the plan in execution: %s", e.what());
+    }
   }
   executor_state_ = STATE_IDLE;
 
   std::lock_guard<std::mutex> lock(goal_mutex_);
-  if (new_plan_received_ && new_goal_handle_ && new_goal_handle_->is_active()) {
-    result->action_execution_status.clear();
-    new_goal_handle_->abort(result);
+  try {
+    if (new_plan_received_ && new_goal_handle_ && new_goal_handle_->is_active()) {
+      result->action_execution_status.clear();
+      new_goal_handle_->abort(result);
+    }
+  } catch (const std::exception & e) {
+    if (rclcpp::ok()) {
+      RCLCPP_ERROR(get_logger(), "Failed to abort the waiting plan: %s", e.what());
+    }
   }
   new_plan_received_ = false;
 }

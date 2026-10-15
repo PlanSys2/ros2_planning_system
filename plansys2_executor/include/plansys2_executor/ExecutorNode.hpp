@@ -270,6 +270,9 @@ protected:
    */
   void execution_cycle();
 
+  // One step of execution_cycle's state machine
+  void execution_step();
+
   /**
    * @brief Updates the remaining plan based on action execution status.
    *
@@ -415,6 +418,8 @@ protected:
   void start_execution_thread();
   // Stops execution_cycle and fails the goals it was handling
   void stop_execution_thread();
+  // Aborts the running and the waiting goal, if any, and returns to idle
+  void fail_current_goals();
 
   // Groot2 monitor
   std::unique_ptr<BT::Groot2Publisher> groot_monitor_;

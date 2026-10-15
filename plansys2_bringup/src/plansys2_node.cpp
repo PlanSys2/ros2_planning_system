@@ -96,7 +96,18 @@ int main(int argc, char ** argv)
 
   std::vector<std::thread> spin_threads;
   for (auto & exe : executors) {
-    spin_threads.emplace_back([exe]() {exe->spin();});
+    spin_threads.emplace_back(
+      [exe]() {
+        try {
+          exe->spin();
+        } catch (const std::exception & e) {
+          // The executor's action server may throw while rclcpp shuts down: only then it is fine
+          if (rclcpp::ok()) {
+            RCLCPP_ERROR(rclcpp::get_logger("plansys2_bringup"), "Spin failed: %s", e.what());
+            rclcpp::shutdown();
+          }
+        }
+      });
   }
   auto stop_spinning = [&]() {
       for (auto & exe : executors) {
