@@ -343,24 +343,23 @@ TEST_F(ExecutorLifecycleTest, plan_services_during_execution)
 }
 
 // Ctrl-C with a plan in execution: publishing feedback or finishing the goal after
-// rclcpp::shutdown() used to throw from the execution thread and abort the process
+// rclcpp::shutdown() used to throw from the execution thread and abort the process.
+// CTest runs it at several moments of the execution cycle, each in its own process, as
+// rclcpp is not meant to be initialized again in the same process (see CMakeLists.txt)
 TEST_F(ExecutorLifecycleTest, shutdown_during_a_plan)
 {
-  // Different moments of the execution cycle
-  for (auto delay : {300ms, 410ms, 520ms, 635ms, 750ms, 865ms, 980ms, 1095ms}) {
-    if (!rclcpp::ok()) {
-      rclcpp::init(0, nullptr);
-    }
-    start(200);  // 10 s per action
-    ASSERT_TRUE(executor_client_->start_plan_execution(move_plan("wheels_zone", "assembly_zone")));
-    std::this_thread::sleep_for(delay);
-    ASSERT_EQ(move_node_->finished, 0);
+  const char * delay_ms = std::getenv("PLANSYS2_TEST_SHUTDOWN_DELAY_MS");
+  const auto delay = std::chrono::milliseconds(delay_ms ? std::atoi(delay_ms) : 500);
 
-    rclcpp::shutdown();
-    std::this_thread::sleep_for(200ms);
-    // Destroys the executor node too: its destructor fails the goal it was running
-    stop();
-  }
+  start(200);  // 10 s per action
+  ASSERT_TRUE(executor_client_->start_plan_execution(move_plan("wheels_zone", "assembly_zone")));
+  std::this_thread::sleep_for(delay);
+  ASSERT_EQ(move_node_->finished, 0);
+
+  rclcpp::shutdown();
+  std::this_thread::sleep_for(200ms);
+  // Destroys the executor node too: its destructor fails the goal it was running
+  stop();
 }
 
 int main(int argc, char ** argv)

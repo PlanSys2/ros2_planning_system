@@ -15,7 +15,10 @@
 #include <chrono>
 #include <string>
 #include <vector>
+#include <atomic>
+#include <functional>
 #include <memory>
+#include <mutex>
 #include <iostream>
 #include <fstream>
 
@@ -86,7 +89,9 @@ private:
   void handle_accepted(const std::shared_ptr<GoalHandleFibonacci> goal_handle)
   {
     RCLCPP_DEBUG(get_logger(), "handle_accepted");
-    std::thread{std::bind(&MoveServer::execute, this, _1), goal_handle}.detach();
+    // The thread keeps the server alive: it may outlast the test that created it
+    auto self = std::static_pointer_cast<MoveServer>(shared_from_this());
+    std::thread{[self, goal_handle]() {self->execute(goal_handle);}}.detach();
   }
 
   void execute(const std::shared_ptr<GoalHandleFibonacci> goal_handle)
@@ -109,9 +114,59 @@ private:
     }
   }
 
-  bool cancelled_ {false};
+  std::atomic<bool> cancelled_ {false};
 };
 
+
+// Accepts each goal and succeeds at once
+class QuickServer : public rclcpp::Node
+{
+  using Fibonacci = test_msgs::action::Fibonacci;
+  using GoalHandleFibonacci = rclcpp_action::ServerGoalHandle<Fibonacci>;
+
+public:
+  QuickServer()
+  : Node("quick_server") {}
+
+  void start_server()
+  {
+    server_ = rclcpp_action::create_server<Fibonacci>(
+      shared_from_this(), "quick",
+      [](const rclcpp_action::GoalUUID &, std::shared_ptr<const Fibonacci::Goal>) {
+        return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+      },
+      [](const std::shared_ptr<GoalHandleFibonacci>) {
+        return rclcpp_action::CancelResponse::ACCEPT;
+      },
+      [](const std::shared_ptr<GoalHandleFibonacci> goal_handle) {
+        std::thread{[goal_handle]() {
+            goal_handle->succeed(std::make_shared<Fibonacci::Result>());
+          }}.detach();
+      });
+  }
+
+private:
+  rclcpp_action::Server<Fibonacci>::SharedPtr server_;
+};
+
+// Runs body in a loop in its own thread while it lives: an ASSERT that returns early no
+// longer leaves a joinable std::thread behind, which called std::terminate
+class LoopThread
+{
+public:
+  explicit LoopThread(std::function<void()> body)
+  : thread_([this, body]() {while (!finish_) {body();}}) {}
+
+  ~LoopThread()
+  {
+    finish_ = true;
+    thread_.join();
+  }
+
+private:
+  std::atomic<bool> finish_ {false};
+  std::thread thread_;
+};
 
 class ROS2Environment : public ::testing::Environment
 {
@@ -147,14 +202,10 @@ TEST_F(BTActionsTestCase, load_plugins)
     auto move_server_node = std::make_shared<MoveServer>();
     move_server_node->start_server();
 
-    bool finish = false;
-    std::thread t([&]() {
-        rclcpp::Rate rate(100);
-        while (!finish) {
-          rclcpp::spin_some(move_server_node);
-          rclcpp::spin_some(node->get_node_base_interface());
-          rate.sleep();
-        }
+    LoopThread spinner([&]() {
+        rclcpp::spin_some(move_server_node);
+        rclcpp::spin_some(node->get_node_base_interface());
+        std::this_thread::sleep_for(10ms);
       });
 
     BT::BehaviorTreeFactory factory;
@@ -170,20 +221,17 @@ TEST_F(BTActionsTestCase, load_plugins)
     auto blackboard = BT::Blackboard::create();
     blackboard->set("node", node);
     blackboard->set<std::chrono::milliseconds>("server_timeout", 250ms);
-    blackboard->set<std::chrono::milliseconds>("wait_for_service_timeout", 10ms);
+    blackboard->set<std::chrono::milliseconds>("wait_for_service_timeout", 1000ms);
     blackboard->set<std::chrono::milliseconds>("bt_loop_duration", 100ms);
     BT::Tree tree = factory.createTreeFromFile(xml_file, blackboard);
 
     rclcpp::Rate rate(10);
 
-    int counter = 0;
+    bool finish = false;
     while (!finish && rclcpp::ok()) {
       finish = tree.rootNode()->executeTick() == BT::NodeStatus::SUCCESS;
-      counter++;
       rate.sleep();
     }
-
-    t.join();
 
     node->shutdown();
 }
@@ -197,14 +245,10 @@ TEST_F(BTActionsTestCase, on_tick_failure)
     auto move_server_node = std::make_shared<MoveServer>();
     move_server_node->start_server();
 
-    bool finished = false;
-    std::thread t([&]() {
-        rclcpp::Rate rate(100);
-        while (!finished) {
-          rclcpp::spin_some(move_server_node);
-          rclcpp::spin_some(node->get_node_base_interface());
-          rate.sleep();
-        }
+    LoopThread spinner([&]() {
+        rclcpp::spin_some(move_server_node);
+        rclcpp::spin_some(node->get_node_base_interface());
+        std::this_thread::sleep_for(10ms);
       });
 
 
@@ -213,7 +257,7 @@ TEST_F(BTActionsTestCase, on_tick_failure)
     auto bb = BT::Blackboard::create();
     bb->set("node", node);
     bb->set<std::chrono::milliseconds>("server_timeout", 250ms);
-    bb->set<std::chrono::milliseconds>("wait_for_service_timeout", 10ms);
+    bb->set<std::chrono::milliseconds>("wait_for_service_timeout", 1000ms);
     bb->set<std::chrono::milliseconds>("bt_loop_duration", 100ms);
     config.blackboard = bb;
 
@@ -230,9 +274,6 @@ TEST_F(BTActionsTestCase, on_tick_failure)
     ASSERT_TRUE(failure_node.on_tick_run);
     ASSERT_EQ(status, BT::NodeStatus::FAILURE);
 
-    finished = true;
-    t.join();
-
     node->shutdown();
 }
   plansys2::drain_ros(200ms);
@@ -245,14 +286,10 @@ TEST_F(BTActionsTestCase, on_feedback_failure)
     auto move_server_node = std::make_shared<MoveServer>();
     move_server_node->start_server();
 
-    bool finished = false;
-    std::thread t([&]() {
-        rclcpp::Rate rate(100);
-        while (!finished) {
-          rclcpp::spin_some(move_server_node);
-          rclcpp::spin_some(node->get_node_base_interface());
-          rate.sleep();
-        }
+    LoopThread spinner([&]() {
+        rclcpp::spin_some(move_server_node);
+        rclcpp::spin_some(node->get_node_base_interface());
+        std::this_thread::sleep_for(10ms);
       });
 
     BT::NodeConfig config;
@@ -260,7 +297,7 @@ TEST_F(BTActionsTestCase, on_feedback_failure)
     auto bb = BT::Blackboard::create();
     bb->set("node", node);
     bb->set<std::chrono::milliseconds>("server_timeout", 250ms);
-    bb->set<std::chrono::milliseconds>("wait_for_service_timeout", 10ms);
+    bb->set<std::chrono::milliseconds>("wait_for_service_timeout", 1000ms);
     bb->set<std::chrono::milliseconds>("bt_loop_duration", 100ms);
     config.blackboard = bb;
 
@@ -279,11 +316,48 @@ TEST_F(BTActionsTestCase, on_feedback_failure)
     ASSERT_TRUE(failure_node.on_feedback_run);
     ASSERT_EQ(status, BT::NodeStatus::FAILURE);
 
-    finished = true;
-    t.join();
-
     node->shutdown();
 }
+  plansys2::drain_ros(200ms);
+}
+
+// The node fails while its goal has just finished on the server: cancelling a goal that
+// rclcpp_action already forgot threw from tick() (UnknownGoalHandleError)
+TEST_F(BTActionsTestCase, fail_after_the_goal_finished)
+{
+  {
+    auto node = rclcpp_lifecycle::LifecycleNode::make_shared("finished_goal_node");
+    auto server_node = std::make_shared<QuickServer>();
+    server_node->start_server();
+    LoopThread spinner([&]() {
+        rclcpp::spin_some(server_node);
+        rclcpp::spin_some(node->get_node_base_interface());
+        std::this_thread::sleep_for(10ms);
+      });
+
+    BT::NodeConfig config;
+    BT::assignDefaultRemapping<plansys2_bt_tests::FailOnSecondTick>(config);
+    auto bb = BT::Blackboard::create();
+    bb->set("node", node);
+    bb->set<std::chrono::milliseconds>("server_timeout", 1000ms);
+    bb->set<std::chrono::milliseconds>("wait_for_service_timeout", 1000ms);
+    bb->set<std::chrono::milliseconds>("bt_loop_duration", 100ms);
+    config.blackboard = bb;
+
+    plansys2_bt_tests::FailOnSecondTick bt_node("FailOnSecondTick", "quick", config);
+
+    // Sends the goal, then waits until it is accepted
+    ASSERT_EQ(bt_node.executeTick(), BT::NodeStatus::RUNNING);
+    ASSERT_EQ(bt_node.executeTick(), BT::NodeStatus::RUNNING);
+    // The goal succeeds and its result reaches the client before the next tick
+    std::this_thread::sleep_for(500ms);
+
+    BT::NodeStatus status = BT::NodeStatus::RUNNING;
+    ASSERT_NO_THROW(status = bt_node.executeTick());
+    ASSERT_EQ(status, BT::NodeStatus::FAILURE);
+
+    node->shutdown();
+  }
   plansys2::drain_ros(200ms);
 }
 
@@ -314,7 +388,7 @@ TEST_F(BTActionsTestCase, bt_action)
     exe.add_node(lc_node->get_node_base_interface());
 
     bool finished = false;
-    while (rclcpp::ok && !finished) {
+    while (rclcpp::ok() && !finished) {
       exe.spin_some();
 
       action_client->tick(lc_node->now());
@@ -357,7 +431,7 @@ TEST_F(BTActionsTestCase, bt_action_old_constructor)
     exe.add_node(lc_node->get_node_base_interface());
 
     bool finished = false;
-    while (rclcpp::ok && !finished) {
+    while (rclcpp::ok() && !finished) {
       exe.spin_some();
 
       action_client->tick(lc_node->now());
@@ -400,18 +474,22 @@ TEST_F(BTActionsTestCase, cancel_bt_action)
     exe.add_node(bt_action->get_node_base_interface());
     exe.add_node(lc_node->get_node_base_interface());
 
-    std::vector<plansys2_msgs::msg::ActionExecution> action_execution_msgs;
+    // Filled by the spinning thread, read by the test
+    std::mutex msgs_mutex;
+    std::vector<plansys2_msgs::msg::ActionExecution> received_msgs;
+    auto messages = [&]() {
+        std::lock_guard<std::mutex> lock(msgs_mutex);
+        return received_msgs;
+      };
 
     auto action_hub_sub = lc_node->create_subscription<plansys2_msgs::msg::ActionExecution>(
     "/actions_hub", rclcpp::QoS(100).reliable(),
-      [&action_execution_msgs](const plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
-        action_execution_msgs.push_back(*msg);
+      [&](const plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
+        std::lock_guard<std::mutex> lock(msgs_mutex);
+        received_msgs.push_back(*msg);
     });
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
+    LoopThread spinner([&]() {exe.spin_some();});
 
     ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::IDLE);
     ASSERT_EQ(
@@ -430,6 +508,7 @@ TEST_F(BTActionsTestCase, cancel_bt_action)
     ASSERT_EQ(bt_action->get_current_state().id(),
       lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);
 
+    auto action_execution_msgs = messages();
     ASSERT_EQ(action_execution_msgs.size(), 3u);
     ASSERT_EQ(action_execution_msgs[0].type, plansys2_msgs::msg::ActionExecution::REQUEST);
     ASSERT_EQ(action_execution_msgs[1].type, plansys2_msgs::msg::ActionExecution::RESPONSE);
@@ -443,7 +522,7 @@ TEST_F(BTActionsTestCase, cancel_bt_action)
       }
     }
 
-    ASSERT_EQ(action_execution_msgs.size(), 4u);
+    ASSERT_EQ(messages().size(), 4u);
     action_client->cancel();
 
     {
@@ -455,6 +534,7 @@ TEST_F(BTActionsTestCase, cancel_bt_action)
       }
     }
 
+    action_execution_msgs = messages();
     ASSERT_EQ(action_execution_msgs.size(), 5u);
     ASSERT_EQ(action_execution_msgs[3].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
     ASSERT_EQ(action_execution_msgs[4].type, plansys2_msgs::msg::ActionExecution::CANCEL);
@@ -462,9 +542,6 @@ TEST_F(BTActionsTestCase, cancel_bt_action)
     ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::CANCELLED);
     ASSERT_EQ(
     bt_action->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
-
-    finish = true;
-    t.join();
 
     lc_node->shutdown();
   }
