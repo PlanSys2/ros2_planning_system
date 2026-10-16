@@ -116,19 +116,19 @@ Collaboration diagram for FakeLifecycleNode:</div>
 <div class="dyncontent">
 <div class="center"><img src="classFakeLifecycleNode__coll__graph.png" border="0" usemap="#aFakeLifecycleNode_coll__map" loading="lazy" alt="Collaboration graph"/></div>
 <map name="aFakeLifecycleNode_coll__map" id="aFakeLifecycleNode_coll__map">
-<area shape="rect" title=" " alt="" coords="274,122,408,148"/>
+<area shape="rect" title=" " alt="" coords="282,122,416,148"/>
 <area shape="rect" title=" " alt="" coords="5,5,58,31"/>
-<area shape="poly" title=" " alt="" coords="60,38,106,68,160,96,218,113,274,124,273,129,217,118,159,101,103,73,57,43"/>
+<area shape="poly" title=" " alt="" coords="59,39,103,69,155,96,219,115,282,126,281,131,218,120,153,101,100,73,56,43"/>
 <area shape="rect" title=" " alt="" coords="82,5,203,31"/>
-<area shape="poly" title=" " alt="" coords="159,43,181,71,209,96,241,112,274,122,273,127,239,117,206,101,177,75,155,46"/>
+<area shape="poly" title=" " alt="" coords="156,43,174,71,199,96,239,116,282,126,281,131,237,121,196,101,169,75,151,46"/>
 <area shape="rect" title=" " alt="" coords="226,5,333,31"/>
-<area shape="poly" title=" " alt="" coords="263,45,259,56,253,78,253,87,258,97,271,110,288,120,285,124,268,114,254,100,248,88,247,77,254,54,259,43"/>
-<area shape="rect" title=" " alt="" coords="381,5,474,31"/>
-<area shape="poly" title=" " alt="" coords="425,47,416,74,400,100,386,114,370,124,367,120,382,109,396,97,411,72,420,45"/>
-<area shape="rect" title=" " alt="" coords="522,5,640,31"/>
-<area shape="poly" title=" " alt="" coords="579,47,569,75,549,100,525,112,490,121,408,132,407,127,489,116,523,107,546,96,564,73,574,45"/>
-<area shape="rect" title=" " alt="" coords="670,5,766,31"/>
-<area shape="poly" title=" " alt="" coords="717,47,707,75,699,89,688,100,667,112,638,120,564,131,483,136,408,138,408,132,483,131,564,126,637,115,665,107,685,96,695,86,703,73,712,45"/>
+<area shape="poly" title=" " alt="" coords="256,44,249,56,242,78,243,87,249,97,264,111,283,121,280,126,261,116,244,100,238,88,237,77,244,54,251,41"/>
+<area shape="rect" title=" " alt="" coords="406,5,500,31"/>
+<area shape="poly" title=" " alt="" coords="451,47,442,74,426,100,408,114,389,124,387,119,406,110,421,97,437,72,446,46"/>
+<area shape="rect" title=" " alt="" coords="547,5,665,31"/>
+<area shape="poly" title=" " alt="" coords="605,47,595,75,576,100,548,113,508,123,416,133,415,128,507,117,546,108,572,96,590,73,600,45"/>
+<area shape="rect" title=" " alt="" coords="695,5,792,31"/>
+<area shape="poly" title=" " alt="" coords="742,47,733,75,724,89,713,101,670,113,592,122,416,134,416,128,592,117,669,107,710,96,720,86,728,73,737,45"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -142,6 +142,7 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a948d3971ee75f49672cad416eb8308c6" id="r_a948d3971ee75f49672cad416eb8308c6"><td class="memItemLeft">std::atomic&lt; <a class="el" href="classbool.html">bool</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a948d3971ee75f49672cad416eb8308c6">change_state_success</a> {true}</td></tr>
 <tr class="memitem:a3ba73104acbcfbb6344d1acc565baf2e" id="r_a3ba73104acbcfbb6344d1acc565baf2e"><td class="memItemLeft">std::atomic&lt; <a class="el" href="classint.html">int</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a3ba73104acbcfbb6344d1acc565baf2e">get_state_calls</a> {0}</td></tr>
 <tr class="memitem:a06e5fe2b460f025c3604a5ac6ea852f8" id="r_a06e5fe2b460f025c3604a5ac6ea852f8"><td class="memItemLeft">std::chrono::milliseconds&#160;</td><td class="memItemRight"><a class="el" href="#a06e5fe2b460f025c3604a5ac6ea852f8">get_state_delay</a> {0}</td></tr>
+<tr class="memitem:ab0b74f966827ef3b13f32c7bebdd9798" id="r_ab0b74f966827ef3b13f32c7bebdd9798"><td class="memItemLeft">std::atomic&lt; <a class="el" href="classbool.html">bool</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ab0b74f966827ef3b13f32c7bebdd9798">lose_change_state_response</a> {false}</td></tr>
 <tr class="memitem:a3baf481f499d0d95669ebb4c8b1fb842" id="r_a3baf481f499d0d95669ebb4c8b1fb842"><td class="memItemLeft">std::function&lt; void()&gt;&#160;</td><td class="memItemRight"><a class="el" href="#a3baf481f499d0d95669ebb4c8b1fb842">on_change_state</a></td></tr>
 <tr class="memitem:a669b8b8416abb151d4c0b424822538a0" id="r_a669b8b8416abb151d4c0b424822538a0"><td class="memItemLeft">std::atomic&lt; uint8_t &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a669b8b8416abb151d4c0b424822538a0">state</a> {lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED}</td></tr>
 </table>
@@ -222,6 +223,20 @@ Public Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">std::chrono::milliseconds get_state_delay {0}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab0b74f966827ef3b13f32c7bebdd9798" name="ab0b74f966827ef3b13f32c7bebdd9798"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab0b74f966827ef3b13f32c7bebdd9798">&#9670;&#160;</a></span>lose_change_state_response</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::atomic&lt;<a class="el" href="classbool.html">bool</a>&gt; lose_change_state_response {false}</td>
         </tr>
       </table>
 </div><div class="memdoc">
