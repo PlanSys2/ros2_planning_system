@@ -367,6 +367,52 @@ TEST(lifecycle_manager, startup_state_reached_late)
   ASSERT_EQ(executor->get_current_state().id(), State::PRIMARY_STATE_ACTIVE);
 }
 
+TEST(lifecycle_manager, startup_with_lost_responses)
+{
+  // The planner makes each transition but its response is lost: startup sees its state
+  Spinner spinner;
+  auto clients = make_clients("lost_", spinner);
+  auto fake_planner = std::make_shared<FakeLifecycleNode>("lost_planner");
+  fake_planner->lose_change_state_response = true;
+  std::weak_ptr<FakeLifecycleNode> weak_fake = fake_planner;
+  fake_planner->on_change_state = [weak_fake]() {
+      if (auto fake = weak_fake.lock()) {
+        fake->state = fake->state == State::PRIMARY_STATE_UNCONFIGURED ?
+          State::PRIMARY_STATE_INACTIVE : State::PRIMARY_STATE_ACTIVE;
+      }
+    };
+  auto domain = rclcpp_lifecycle::LifecycleNode::make_shared("lost_domain_expert");
+  auto problem = rclcpp_lifecycle::LifecycleNode::make_shared("lost_problem_expert");
+  auto executor = rclcpp_lifecycle::LifecycleNode::make_shared("lost_executor");
+  spinner.add(fake_planner);
+  spinner.add(domain);
+  spinner.add(problem);
+  spinner.add(executor);
+  spinner.start();
+
+  ASSERT_TRUE(plansys2::startup_function(clients, 1s));
+  ASSERT_EQ(fake_planner->state.load(), State::PRIMARY_STATE_ACTIVE);
+  ASSERT_EQ(executor->get_current_state().id(), State::PRIMARY_STATE_ACTIVE);
+}
+
+TEST(lifecycle_manager, startup_with_lost_response_of_a_transition_not_made)
+{
+  // No response and no change: it is a failure, after waiting for the state
+  Spinner spinner;
+  auto clients = make_clients("lost_failed_", spinner);
+  auto fake_planner = std::make_shared<FakeLifecycleNode>("lost_failed_planner");
+  fake_planner->lose_change_state_response = true;
+  auto domain = rclcpp_lifecycle::LifecycleNode::make_shared("lost_failed_domain_expert");
+  spinner.add(fake_planner);
+  spinner.add(domain);
+  spinner.start();
+
+  auto start = std::chrono::steady_clock::now();
+  ASSERT_FALSE(plansys2::startup_function(clients, 1s));
+  ASSERT_LT(seconds_since(start), 5.0);
+  ASSERT_EQ(domain->get_current_state().id(), State::PRIMARY_STATE_UNCONFIGURED);
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

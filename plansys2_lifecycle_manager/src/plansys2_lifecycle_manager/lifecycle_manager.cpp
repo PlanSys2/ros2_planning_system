@@ -157,6 +157,25 @@ wait_for_state(
   return false;
 }
 
+// Triggers a transition and waits for its state. A lost response (DDS may drop it while the
+// nodes are still discovering each other) is not a failure if the node got there anyway
+bool
+transition_to(
+  LifecycleServiceClient & client, const std::string & name, std::uint8_t transition,
+  unsigned int expected, std::chrono::seconds timeout)
+{
+  if (!client.change_state(transition, timeout)) {
+    if (!rclcpp::ok() || !wait_for_state(client, name, expected, timeout)) {
+      return false;
+    }
+    RCLCPP_WARN(
+      client.get_logger(), "No answer to the transition of %s, but it made it: going on",
+      name.c_str());
+    return true;
+  }
+  return wait_for_state(client, name, expected, timeout);
+}
+
 }  // namespace
 
 bool
@@ -186,8 +205,8 @@ startup_function(
   for (const auto & name : configure_order) {
     auto & client = *manager_nodes.at(name);
     if (!rclcpp::ok() ||
-      !client.change_state(Transition::TRANSITION_CONFIGURE, timeout) ||
-      !wait_for_state(client, name, State::PRIMARY_STATE_INACTIVE, timeout))
+      !transition_to(
+        client, name, Transition::TRANSITION_CONFIGURE, State::PRIMARY_STATE_INACTIVE, timeout))
     {
       return false;
     }
@@ -196,8 +215,8 @@ startup_function(
   for (const auto & name : activate_order) {
     auto & client = *manager_nodes.at(name);
     if (!rclcpp::ok() ||
-      !client.change_state(Transition::TRANSITION_ACTIVATE, timeout) ||
-      !wait_for_state(client, name, State::PRIMARY_STATE_ACTIVE, timeout))
+      !transition_to(
+        client, name, Transition::TRANSITION_ACTIVATE, State::PRIMARY_STATE_ACTIVE, timeout))
     {
       return false;
     }
