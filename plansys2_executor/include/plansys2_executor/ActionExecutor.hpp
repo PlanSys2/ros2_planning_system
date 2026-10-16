@@ -15,6 +15,8 @@
 #ifndef PLANSYS2_EXECUTOR__ACTIONEXECUTOR_HPP_
 #define PLANSYS2_EXECUTOR__ACTIONEXECUTOR_HPP_
 
+#include <atomic>
+#include <mutex>
 #include <string>
 #include <memory>
 #include <vector>
@@ -72,7 +74,9 @@ public:
     const std::string & action,
     rclcpp_lifecycle::LifecycleNode::SharedPtr node)
   {
-    return std::make_shared<ActionExecutor>(action, node);
+    auto ret = std::make_shared<ActionExecutor>(action, node);
+    *ret->self_ = ret;
+    return ret;
   }
 
   /**
@@ -130,7 +134,7 @@ public:
    *
    * @return Status The current status enum value.
    */
-  Status get_internal_status() const {return state_;}
+  Status get_internal_status() const {return state_.load();}
 
   /**
    * @brief Set the internal execution status.
@@ -260,9 +264,28 @@ protected:
    */
   void wait_timeout();
 
+  // The confirmed performer is still there; it fails the action if it is gone
+  void check_performer();
+
+  // Starts asking for performers, with a new request id
+  void start_dealing();
+
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
 
-  Status state_;
+  // Callbacks reach the executor through this, outliving it: one running while the
+  // executor is destroyed finds it gone instead of using freed memory
+  std::shared_ptr<std::weak_ptr<ActionExecutor>> self_ =
+    std::make_shared<std::weak_ptr<ActionExecutor>>();
+  // A timer whose callback runs on this executor, only while it exists
+  rclcpp::TimerBase::SharedPtr create_timer(void (ActionExecutor::* callback)());
+
+  std::atomic<Status> state_;
+  // Hub messages, BT ticks and cancel come from different threads
+  std::mutex mutex_;
+  std::string request_id_;
+  int activation_failures_ {0};
+  int performer_misses_ {0};
+  rclcpp::TimerBase::SharedPtr performer_check_;
   rclcpp::Time state_time_;
   rclcpp::Time start_execution_;
 

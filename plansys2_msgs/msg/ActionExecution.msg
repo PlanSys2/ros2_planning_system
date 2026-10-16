@@ -8,6 +8,9 @@ int16 CANCEL=7
 
 int16 type
 string node_id
+# Set by the requester in REQUEST and carried by every message of that request, so each
+# message reaches the request it belongs to
+string request_id
 
 string action
 string[] arguments

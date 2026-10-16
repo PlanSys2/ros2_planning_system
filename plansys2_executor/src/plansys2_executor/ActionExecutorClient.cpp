@@ -140,17 +140,26 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
         !committed_ && should_execute(msg->action, msg->arguments))
       {
         committed_ = true;
+        committed_request_id_ = msg->request_id;
         requester_ = msg->node_id;
+        commitment_timeout_ = create_wall_timer(
+          5s, [this]() {
+            RCLCPP_WARN(
+              get_logger(), "No answer from %s to our response: available again",
+              requester_.c_str());
+            release_commitment();
+          });
         send_response(msg);
       }
       break;
     case plansys2_msgs::msg::ActionExecution::CONFIRM:
       if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE &&
-        committed_ && msg->node_id == get_name())
+        committed_ && msg->node_id == get_name() && msg->request_id == committed_request_id_)
       {
         current_arguments_ = msg->arguments;
+        current_request_id_ = msg->request_id;
+        release_commitment();
         trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-        committed_ = false;
         // If activation failed, notify the executor so it can retry with another performer
         if (get_current_state().id() != lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE) {
           RCLCPP_ERROR(
@@ -165,13 +174,13 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
       }
       break;
     case plansys2_msgs::msg::ActionExecution::REJECT:
-      if (msg->node_id == get_name()) {
-        committed_ = false;
+      if (committed_ && msg->node_id == get_name() && msg->request_id == committed_request_id_) {
+        release_commitment();
       }
       break;
     case plansys2_msgs::msg::ActionExecution::CANCEL:
       if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE &&
-        msg->node_id == get_name())
+        msg->node_id == get_name() && msg->request_id == current_request_id_)
       {
         trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
       }
@@ -185,6 +194,17 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
         get_logger(), "Msg %d type not recognized in %s executor performer",
         msg->type, get_name());
       break;
+  }
+}
+
+void
+ActionExecutorClient::release_commitment()
+{
+  committed_ = false;
+  committed_request_id_.clear();
+  if (commitment_timeout_) {
+    commitment_timeout_->cancel();
+    commitment_timeout_ = nullptr;
   }
 }
 
@@ -270,6 +290,7 @@ ActionExecutorClient::send_feedback(float completion, const std::string & status
   plansys2_msgs::msg::ActionExecution msg_resp;
   msg_resp.type = plansys2_msgs::msg::ActionExecution::FEEDBACK;
   msg_resp.node_id = get_name();
+  msg_resp.request_id = current_request_id_;
   msg_resp.action = action_managed_;
   msg_resp.arguments = current_arguments_;
   msg_resp.completion = completion;
@@ -288,6 +309,7 @@ ActionExecutorClient::finish(bool success, float completion, const std::string &
   plansys2_msgs::msg::ActionExecution msg_resp;
   msg_resp.type = plansys2_msgs::msg::ActionExecution::FINISH;
   msg_resp.node_id = get_name();
+  msg_resp.request_id = current_request_id_;
   msg_resp.action = action_managed_;
   msg_resp.arguments = current_arguments_;
   msg_resp.completion = completion;

@@ -12,6 +12,20 @@ target_link_libraries(action_execution_test
   ${PROJECT_NAME}
 )
 
+ament_add_gtest_executable(action_protocol_test action_protocol_test.cpp)
+target_link_libraries(action_protocol_test ${PROJECT_NAME})
+foreach(scenario
+    late_response_is_rejected performer_without_answer_is_available_again same_action_twice
+    second_performer_is_rejected_and_free finish_after_cancel_is_ignored
+    messages_of_another_request_are_ignored activation_failures_are_bounded
+    long_action_without_feedback_runs_once gone_performer_fails_the_action
+    no_performer_times_out_without_ticks)
+  ament_add_gtest_test(action_protocol_test
+    TEST_NAME action_protocol_${scenario}
+    ENV GTEST_FILTER=ActionProtocolTest.${scenario}
+    TIMEOUT 90)
+endforeach()
+
 ament_add_gtest(execution_tree_test execution_tree_test.cpp)
 target_compile_definitions(execution_tree_test
   PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")

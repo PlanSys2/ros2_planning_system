@@ -23,8 +23,17 @@
 namespace plansys2
 {
 
-using std::placeholders::_1;
 using namespace std::chrono_literals;
+
+namespace
+{
+// Looking for a performer this long fails the action
+constexpr double kDealingTimeout = 30.0;
+// A performer that fails to activate is replaced this many times before failing the action
+constexpr int kMaxActivationFailures = 3;
+// Checks in a row without the confirmed performer before failing the action
+constexpr int kMaxPerformerMisses = 3;
+}  // namespace
 
 ActionExecutor::ActionExecutor(
   const std::string & action,
@@ -35,7 +44,11 @@ ActionExecutor::ActionExecutor(
     "actions_hub", rclcpp::QoS(100).reliable());
   action_hub_sub_ = node_->create_subscription<plansys2_msgs::msg::ActionExecution>(
     "actions_hub", rclcpp::QoS(100).reliable(),
-    std::bind(&ActionExecutor::action_hub_callback, this, _1));
+    [self = self_](plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
+      if (auto executor = self->lock()) {
+        executor->action_hub_callback(msg);
+      }
+    });
 
   state_time_ = node_->now();
 
@@ -57,14 +70,28 @@ ActionExecutor::clean_up()
   if (action_hub_sub_ != nullptr) {
     action_hub_sub_->clear_on_new_message_callback();
   }
+  if (waiting_timer_) {
+    waiting_timer_->cancel();
+  }
+  if (performer_check_) {
+    performer_check_->cancel();
+  }
 }
 
 void
 ActionExecutor::action_hub_callback(plansys2_msgs::msg::ActionExecution::SharedPtr msg)
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   last_msg_ = msg;
 
-  switch (last_msg_->type) {
+  // Only the messages of our own request: not those of another executor of the same action
+  if (msg->request_id != request_id_ || msg->action != action_name_ ||
+    msg->arguments != action_params_)
+  {
+    return;
+  }
+
+  switch (msg->type) {
     case plansys2_msgs::msg::ActionExecution::REQUEST:
     case plansys2_msgs::msg::ActionExecution::CONFIRM:
     case plansys2_msgs::msg::ActionExecution::REJECT:
@@ -72,65 +99,62 @@ ActionExecutor::action_hub_callback(plansys2_msgs::msg::ActionExecution::SharedP
       // These cases have no meaning requester
       break;
     case plansys2_msgs::msg::ActionExecution::RESPONSE:
-      if (last_msg_->arguments == action_params_ && last_msg_->action == action_name_) {
-        if (state_ == DEALING) {
-          confirm_performer(last_msg_->node_id);
-          current_performer_id_ = last_msg_->node_id;
-          state_ = RUNNING;
-          waiting_timer_ = nullptr;
-          start_execution_ = node_->now();
-          state_time_ = node_->now();
-        } else {
-          reject_performer(last_msg_->node_id);
+      if (state_ == DEALING) {
+        confirm_performer(msg->node_id);
+        current_performer_id_ = msg->node_id;
+        state_ = RUNNING;
+        if (waiting_timer_) {
+          waiting_timer_->cancel();
         }
+        waiting_timer_ = nullptr;
+        start_execution_ = node_->now();
+        state_time_ = node_->now();
+        performer_misses_ = 0;
+        performer_check_ = create_timer(&ActionExecutor::check_performer);
+      } else {
+        // Someone else answered first, or the action is over: it must not wait for us
+        reject_performer(msg->node_id);
       }
       break;
     case plansys2_msgs::msg::ActionExecution::FEEDBACK:
-      if (state_ != RUNNING || last_msg_->arguments != action_params_ ||
-        last_msg_->action != action_name_ || last_msg_->node_id != current_performer_id_)
-      {
+      if (state_ != RUNNING || msg->node_id != current_performer_id_) {
         return;
       }
-      feedback_ = last_msg_->status;
-      completion_ = last_msg_->completion;
+      feedback_ = msg->status;
+      completion_ = msg->completion;
       state_time_ = node_->now();
 
       break;
     case plansys2_msgs::msg::ActionExecution::FINISH:
-      if (last_msg_->arguments == action_params_ &&
-        last_msg_->action == action_name_ && last_msg_->node_id == current_performer_id_)
-      {
-        feedback_ = last_msg_->status;
-        completion_ = last_msg_->completion;
-        state_time_ = node_->now();
+      // Late ones, e.g. after a cancel, do not change how the action ended
+      if (state_ != RUNNING || msg->node_id != current_performer_id_) {
+        return;
+      }
+      feedback_ = msg->status;
+      completion_ = msg->completion;
+      state_time_ = node_->now();
+      if (performer_check_) {
+        performer_check_->cancel();
+      }
 
-        if (last_msg_->success) {
-          state_ = SUCCESS;
-          action_hub_pub_->on_deactivate();
-        } else if (last_msg_->completion == 0.0) {
-          // Performer failed before doing any work (likely activation failure) - retry
-          RCLCPP_WARN(
-            node_->get_logger(),
-            "Performer [%s] for action [%s] failed before starting. Retrying.",
-            current_performer_id_.c_str(), action_.c_str());
-          current_performer_id_ = "";
-          state_ = DEALING;
-          state_time_ = node_->now();
-          completion_ = 0.0;
-          feedback_ = "";
-          request_for_performers();
-          waiting_timer_ = node_->create_wall_timer(
-            1s, std::bind(&ActionExecutor::wait_timeout, this));
-        } else {
-          state_ = FAILURE;
-          action_hub_pub_->on_deactivate();
-        }
+      if (msg->success) {
+        state_ = SUCCESS;
+      } else if (msg->completion == 0.0 && ++activation_failures_ <= kMaxActivationFailures) {
+        // Performer failed before doing any work (likely activation failure): another one
+        RCLCPP_WARN(
+          node_->get_logger(),
+          "Performer [%s] for action [%s] failed before starting. Retrying (%d of %d).",
+          current_performer_id_.c_str(), action_.c_str(), activation_failures_,
+          kMaxActivationFailures);
+        start_dealing();
+      } else {
+        state_ = FAILURE;
       }
       break;
     default:
       RCLCPP_ERROR(
         node_->get_logger(), "Msg %d type not recognized in %s executor requester",
-        last_msg_->type, action_.c_str());
+        msg->type, action_.c_str());
       break;
   }
 }
@@ -141,6 +165,7 @@ ActionExecutor::confirm_performer(const std::string & node_id)
   plansys2_msgs::msg::ActionExecution msg;
   msg.type = plansys2_msgs::msg::ActionExecution::CONFIRM;
   msg.node_id = node_id;
+  msg.request_id = request_id_;
   msg.action = action_name_;
   msg.arguments = action_params_;
 
@@ -153,6 +178,7 @@ ActionExecutor::reject_performer(const std::string & node_id)
   plansys2_msgs::msg::ActionExecution msg;
   msg.type = plansys2_msgs::msg::ActionExecution::REJECT;
   msg.node_id = node_id;
+  msg.request_id = request_id_;
   msg.action = action_name_;
   msg.arguments = action_params_;
 
@@ -165,10 +191,43 @@ ActionExecutor::request_for_performers()
   plansys2_msgs::msg::ActionExecution msg;
   msg.type = plansys2_msgs::msg::ActionExecution::REQUEST;
   msg.node_id = node_->get_name();
+  msg.request_id = request_id_;
   msg.action = action_name_;
   msg.arguments = action_params_;
 
   action_hub_pub_->publish(msg);
+}
+
+void
+ActionExecutor::start_dealing()
+{
+  static std::atomic<uint64_t> requests {0};
+  // Unique also against requests of a previous run of the executor
+  request_id_ = std::string(node_->get_fully_qualified_name()) + ":" +
+    std::to_string(node_->now().nanoseconds()) + ":" + std::to_string(requests++);
+
+  current_performer_id_ = "";
+  state_ = DEALING;
+  state_time_ = node_->now();
+  completion_ = 0.0;
+  feedback_ = "";
+
+  request_for_performers();
+  if (waiting_timer_) {
+    waiting_timer_->cancel();
+  }
+  waiting_timer_ = create_timer(&ActionExecutor::wait_timeout);
+}
+
+rclcpp::TimerBase::SharedPtr
+ActionExecutor::create_timer(void (ActionExecutor::* callback)())
+{
+  return node_->create_wall_timer(
+    1s, [self = self_, callback]() {
+      if (auto executor = self->lock()) {
+        ((*executor).*callback)();
+      }
+    });
 }
 
 BT::NodeStatus
@@ -204,59 +263,12 @@ BT::NodeStatus
 ActionExecutor::tick(const rclcpp::Time & now)
 {
   (void)now;
-  switch (state_) {
-    case IDLE:
-      state_ = DEALING;
-      state_time_ = node_->now();
-
-      action_hub_pub_->on_activate();
-
-      completion_ = 0.0;
-      feedback_ = "";
-
-      request_for_performers();
-      waiting_timer_ = node_->create_wall_timer(
-        1s, std::bind(&ActionExecutor::wait_timeout, this));
-      break;
-    case DEALING:
-      {
-        auto time_since_dealing = (node_->now() - state_time_).seconds();
-        if (time_since_dealing > 30.0) {
-          RCLCPP_ERROR(
-            node_->get_logger(),
-            "Aborting %s. Timeout after requesting for 30 seconds", action_.c_str());
-          state_ = FAILURE;
-        }
-      }
-      break;
-
-    case RUNNING:
-      {
-        // If the confirmed performer never sends any feedback within 5 seconds, it likely
-        // failed silently (e.g. activation error not reported). Retry with a new request.
-        auto elapsed_no_feedback = (node_->now() - state_time_).seconds();
-        if (elapsed_no_feedback > 5.0 && completion_ == 0.0) {
-          RCLCPP_WARN(
-            node_->get_logger(),
-            "Performer [%s] for action [%s] never sent feedback after 5s. Retrying.",
-            current_performer_id_.c_str(), action_.c_str());
-          current_performer_id_ = "";
-          state_ = DEALING;
-          state_time_ = node_->now();
-          completion_ = 0.0;
-          feedback_ = "";
-          request_for_performers();
-          waiting_timer_ = node_->create_wall_timer(
-            1s, std::bind(&ActionExecutor::wait_timeout, this));
-        }
-      }
-      break;
-    case SUCCESS:
-    case FAILURE:
-    case CANCELLED:
-      break;
-    default:
-      break;
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (state_ == IDLE) {
+    // Active for the whole life of the executor: a late answer must still get its REJECT
+    action_hub_pub_->on_activate();
+    activation_failures_ = 0;
+    start_dealing();
   }
 
   return get_status();
@@ -265,14 +277,19 @@ ActionExecutor::tick(const rclcpp::Time & now)
 void
 ActionExecutor::cancel()
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   state_ = CANCELLED;
   // Stop asking for performers (#436)
   if (waiting_timer_) {
     waiting_timer_->cancel();
   }
+  if (performer_check_) {
+    performer_check_->cancel();
+  }
   plansys2_msgs::msg::ActionExecution msg;
   msg.type = plansys2_msgs::msg::ActionExecution::CANCEL;
   msg.node_id = current_performer_id_;
+  msg.request_id = request_id_;
   msg.action = action_name_;
   msg.arguments = action_params_;
 
@@ -319,11 +336,57 @@ ActionExecutor::get_params(const std::string & action_expr)
 void
 ActionExecutor::wait_timeout()
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   if (state_ != DEALING) {
+    return;
+  }
+  // Here and not in tick: it holds even if the BT is no longer ticked (#365)
+  if ((node_->now() - state_time_).seconds() > kDealingTimeout) {
+    RCLCPP_ERROR(
+      node_->get_logger(), "Aborting %s. Timeout after requesting for %.0f seconds",
+      action_.c_str(), kDealingTimeout);
+    state_ = FAILURE;
+    waiting_timer_->cancel();
     return;
   }
   RCLCPP_WARN(node_->get_logger(), "No action performer for %s. retrying", action_.c_str());
   request_for_performers();
+}
+
+void
+ActionExecutor::check_performer()
+{
+  std::vector<std::string> names;
+  try {
+    names = node_->get_node_names();
+  } catch (const std::exception &) {
+    // The context is gone once rclcpp shuts down: nothing to supervise
+    return;
+  }
+
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (state_ != RUNNING) {
+    performer_check_->cancel();
+    return;
+  }
+
+  // Names are fully qualified: compare the last part. A few misses in a row, as discovery
+  // may lag. An action may run long without feedback, but not without its performer
+  bool alive = false;
+  for (const auto & name : names) {
+    if (name.substr(name.find_last_of('/') + 1) == current_performer_id_) {
+      alive = true;
+      break;
+    }
+  }
+  performer_misses_ = alive ? 0 : performer_misses_ + 1;
+  if (performer_misses_ >= kMaxPerformerMisses) {
+    RCLCPP_ERROR(
+      node_->get_logger(), "Performer [%s] of %s is gone: the action fails",
+      current_performer_id_.c_str(), action_.c_str());
+    state_ = FAILURE;
+    performer_check_->cancel();
+  }
 }
 
 }  // namespace plansys2
