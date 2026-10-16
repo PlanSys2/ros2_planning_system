@@ -47,14 +47,22 @@ ApplyAtStartEffect::tick()
   std::string action;
   getInput("action", action);
 
-  if (!(*action_map_)[action].at_start_effects_applied) {
-    (*action_map_)[action].at_start_effects_applied = true;
-    auto now = node_ ? node_->now() : rclcpp::Clock(RCL_ROS_TIME).now();
-    (*action_map_)[action].at_start_effects_applied_time = now;
+  auto & info = (*action_map_)[action];
+  if (!info.at_start_effects_applied) {
     // A non-durative action has no start effects, but its start still happens
-    if (!(*action_map_)[action].action_info.is_action()) {
-      apply((*action_map_)[action].action_info.get_at_start_effects(), problem_client_, 0);
+    if (!info.action_info.is_action()) {
+      info.at_start_changes.clear();
+      if (!apply(info.action_info.get_at_start_effects(), problem_client_, info.at_start_changes)) {
+        // Half applied effects are taken back: the action does not start
+        undo(info.at_start_changes, problem_client_);
+        info.at_start_changes.clear();
+        info.execution_error_info = "Error applying at start effects";
+        return BT::NodeStatus::FAILURE;
+      }
     }
+    info.at_start_effects_applied = true;
+    auto now = node_ ? node_->now() : rclcpp::Clock(RCL_ROS_TIME).now();
+    info.at_start_effects_applied_time = now;
 
     // STNBTBuilder: the network takes the actual time of this event
     if (!relaxed_timing_ && !update_stn_on_event(

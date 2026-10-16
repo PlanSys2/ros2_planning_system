@@ -29,6 +29,7 @@
 #include "plansys2_msgs/msg/plan_item.hpp"
 #include "plansys2_core/Action.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
+#include "plansys2_problem_expert/FactChange.hpp"
 #include "behaviortree_cpp/behavior_tree.h"
 
 #include "rclcpp/rclcpp.hpp"
@@ -318,6 +319,8 @@ struct ActionExecutionInfo
   bool at_end_effects_applied = {false};
   rclcpp::Time at_start_effects_applied_time;
   rclcpp::Time at_end_effects_applied_time;
+  // What the at start effects changed, to take it back if the action does not end
+  std::vector<plansys2::FactChange> at_start_changes;
   ActionVariant action_info;
   std::string execution_error_info;
   double duration;

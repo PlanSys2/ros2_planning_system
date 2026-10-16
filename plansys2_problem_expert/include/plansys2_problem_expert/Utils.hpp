@@ -23,8 +23,10 @@
 #include <set>
 #include <utility>
 
+#include "plansys2_problem_expert/FactChange.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
+#include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
 
 namespace plansys2
@@ -147,6 +149,39 @@ bool apply(
   std::vector<plansys2::Predicate> & predicates,
   std::vector<plansys2::Function> & functions,
   uint32_t node_id = 0);
+
+/**
+ * @brief Apply a PDDL expression through the problem client, recording what it changes.
+ *
+ * @param[in] tree The root node of the PDDL expression.
+ * @param[in] problem_client The problem expert client.
+ * @param[out] changes The facts the expression changed, appended in order. A fact that
+ *             already had the value the expression gives it is not recorded.
+ * @param[in] node_id Node identifier in the tree.
+ * @return bool Indicates whether the execution was successful.
+ */
+bool apply(
+  const plansys2_msgs::msg::Tree & tree,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
+  std::vector<FactChange> & changes,
+  uint32_t node_id = 0);
+
+/**
+ * @brief Take back the changes recorded by apply, in reverse order.
+ *
+ * A fact changed since by someone else keeps that change: a predicate that is already as it
+ * was is left alone, an increase or decrease is taken back as a delta, and an assignment or
+ * scale overwritten since is kept.
+ *
+ * @param[in] changes The changes recorded by apply.
+ * @param[in] problem_client The problem expert client.
+ * @param[out] kept If not null, the functions kept because they were overwritten since.
+ * @return bool false if the problem expert did not take some of the changes back.
+ */
+bool undo(
+  const std::vector<FactChange> & changes,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
+  std::vector<std::string> * kept = nullptr);
 
 /**
  * @brief Parse the action expression and time (optional) from an input string.
