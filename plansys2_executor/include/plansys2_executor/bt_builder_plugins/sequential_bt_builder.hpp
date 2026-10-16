@@ -47,6 +47,8 @@ public:
 
 protected:
   std::string bt_action_;
+  // The last plan built, for the dotgraph
+  plansys2_msgs::msg::Plan plan_;
 };
 
 }  // namespace plansys2
