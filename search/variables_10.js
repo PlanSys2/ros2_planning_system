@@ -8,13 +8,14 @@ var searchData=
   ['replan_5frequested_5f_5',['replan_requested_',['../classplansys2_1_1ExecutorNode.html#acfd3b5cfa7c93a13497019ed40beb8f9',1,'plansys2::ExecutorNode']]],
   ['request_5f_6',['request_',['../classplansys2_1_1BtServiceNode.html#a34a7897e1524e85bea67940326c07c55',1,'plansys2::BtServiceNode']]],
   ['request_5fsent_5f_7',['request_sent_',['../classplansys2_1_1BtServiceNode.html#aedce1b686d6e8fdeed5c9b1c57fc9bc9',1,'plansys2::BtServiceNode']]],
-  ['requirements_8',['requirements',['../structplansys2_1_1Domain.html#a6646e0760d9927201618ed8ac4c44d04',1,'plansys2::Domain']]],
-  ['result_5f_9',['result_',['../classplansys2_1_1BtActionNode.html#afee7065920d66bc200c65cb27c72c568',1,'plansys2::BtActionNode']]],
-  ['result_5ffuture_10',['result_future',['../classplansys2__support__py_1_1ExecutorClient_1_1ExecutorClient.html#a68caf9e4bfd070ef5baa8dcd29266220',1,'plansys2_support_py::ExecutorClient::ExecutorClient']]],
-  ['return_5ffailure_11',['return_failure',['../classplansys2__bt__tests_1_1OnFeedbackFail.html#aa8c606d6d002357ee13b09e5e8449798',1,'plansys2_bt_tests::OnFeedbackFail']]],
-  ['returntype_12',['returnType',['../classparser_1_1pddl_1_1Function.html#a30f0eb77494e95a86fe48db2c170684b',1,'parser::pddl::Function']]],
-  ['right_13',['right',['../classparser_1_1pddl_1_1CompositeExpression.html#a9e2b758cfb0c936d236a93531d54dc5b',1,'parser::pddl::CompositeExpression::right'],['../classparser_1_1pddl_1_1Imply.html#af3fcd7b0016044a892c6d647d062937e',1,'parser::pddl::Imply::right']]],
-  ['roots_14',['roots',['../structplansys2_1_1ActionGraph.html#a31df302a7190ef6b6a6a101721967278',1,'plansys2::ActionGraph']]],
-  ['runtime_5f_15',['runtime_',['../classMoveAction.html#a34633988207aabcad6fc42a7225dbbde',1,'MoveAction']]],
-  ['runtime_5finfo_5f_16',['runtime_info_',['../classplansys2_1_1ExecutorNode.html#a01e3aef2cf9e82a13d58903773e5c98b',1,'plansys2::ExecutorNode']]]
+  ['requests_5f_8',['requests_',['../classPartialProblemExpert.html#a3ff29ca84933f6d14153edb6e6f7ebc9',1,'PartialProblemExpert']]],
+  ['requirements_9',['requirements',['../structplansys2_1_1Domain.html#a6646e0760d9927201618ed8ac4c44d04',1,'plansys2::Domain']]],
+  ['result_5f_10',['result_',['../classplansys2_1_1BtActionNode.html#afee7065920d66bc200c65cb27c72c568',1,'plansys2::BtActionNode']]],
+  ['result_5ffuture_11',['result_future',['../classplansys2__support__py_1_1ExecutorClient_1_1ExecutorClient.html#a68caf9e4bfd070ef5baa8dcd29266220',1,'plansys2_support_py::ExecutorClient::ExecutorClient']]],
+  ['return_5ffailure_12',['return_failure',['../classplansys2__bt__tests_1_1OnFeedbackFail.html#aa8c606d6d002357ee13b09e5e8449798',1,'plansys2_bt_tests::OnFeedbackFail']]],
+  ['returntype_13',['returnType',['../classparser_1_1pddl_1_1Function.html#a30f0eb77494e95a86fe48db2c170684b',1,'parser::pddl::Function']]],
+  ['right_14',['right',['../classparser_1_1pddl_1_1CompositeExpression.html#a9e2b758cfb0c936d236a93531d54dc5b',1,'parser::pddl::CompositeExpression::right'],['../classparser_1_1pddl_1_1Imply.html#af3fcd7b0016044a892c6d647d062937e',1,'parser::pddl::Imply::right']]],
+  ['roots_15',['roots',['../structplansys2_1_1ActionGraph.html#a31df302a7190ef6b6a6a101721967278',1,'plansys2::ActionGraph']]],
+  ['runtime_5f_16',['runtime_',['../classMoveAction.html#a34633988207aabcad6fc42a7225dbbde',1,'MoveAction']]],
+  ['runtime_5finfo_5f_17',['runtime_info_',['../classplansys2_1_1ExecutorNode.html#a01e3aef2cf9e82a13d58903773e5c98b',1,'plansys2::ExecutorNode']]]
 ];

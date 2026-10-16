@@ -1,0 +1,11 @@
+<map id="PartialProblemExpert" name="PartialProblemExpert">
+<area shape="rect" id="Node000001" title=" " alt="" coords="277,88,419,114"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="57,5,109,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="125,21,186,32,254,50,292,67,326,85,323,90,290,72,252,55,185,37,124,26"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,55,161,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="176,77,277,89,276,95,176,82"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="6,105,160,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="175,125,252,117,285,112,286,117,253,122,175,131"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="35,185,131,211"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="146,184,198,170,252,152,292,132,325,112,328,116,294,137,254,157,200,175,147,189"/>
+</map>
