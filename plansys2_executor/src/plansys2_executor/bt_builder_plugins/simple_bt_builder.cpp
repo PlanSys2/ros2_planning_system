@@ -74,9 +74,15 @@ SimpleBTBuilder::is_action_executable(
     return check(action.action.get_overall_requirements(), predicates, functions);
   }
 
-  return check(action.action.get_at_start_requirements(), predicates, functions) &&
-         check(action.action.get_at_end_requirements(), predicates, functions) &&
-         check(action.action.get_overall_requirements(), predicates, functions);
+  if (!check(action.action.get_at_start_requirements(), predicates, functions)) {
+    return false;
+  }
+  // Over all and at end requirements hold after the start: its effects may give them
+  auto started_predicates = predicates;
+  auto started_functions = functions;
+  apply(action.action.get_at_start_effects(), started_predicates, started_functions);
+  return check(action.action.get_overall_requirements(), started_predicates, started_functions) &&
+         check(action.action.get_at_end_requirements(), started_predicates, started_functions);
 }
 
 ActionNode::Ptr
@@ -437,6 +443,32 @@ SimpleBTBuilder::build_action_graph(const plansys2_msgs::msg::Plan & current_pla
     // Check any requirements that do not have satisfying nodes.
     // These should be satisfied by the initial state.
     remove_existing_requirements(requirements, predicates, functions);
+
+    // Over all and at end requirements may be given by the action's own at start effects
+    if (!requirements.empty() && !new_node->action.action.is_action()) {
+      auto started_predicates = predicates;
+      auto started_functions = functions;
+      apply(
+        new_node->action.action.get_at_start_effects(), started_predicates, started_functions);
+      std::set<std::string> after_start;
+      for (const auto & req : over_all_requirements) {
+        after_start.insert(parser::pddl::toString(req));
+      }
+      for (const auto & req : at_end_requirements) {
+        after_start.insert(parser::pddl::toString(req));
+      }
+      auto req_it = requirements.begin();
+      while (req_it != requirements.end()) {
+        if (after_start.count(parser::pddl::toString(*req_it)) > 0 &&
+          check(*req_it, started_predicates, started_functions))
+        {
+          req_it = requirements.erase(req_it);
+        } else {
+          ++req_it;
+        }
+      }
+    }
+
     for (const auto & req : requirements) {
       std::cerr << "[ERROR] requirement not met: [" <<
         parser::pddl::toString(req) << "]" << std::endl;

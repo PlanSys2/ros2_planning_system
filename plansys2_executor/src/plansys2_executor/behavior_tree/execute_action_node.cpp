@@ -35,6 +35,16 @@ ExecuteAction::ExecuteAction(
 void
 ExecuteAction::halt()
 {
+  // Halted by the BT (an over all requirement failed, or the plan stops): the performer stops
+  std::string action;
+  getInput("action", action);
+  auto it = action_map_->find(action);
+  if (it != action_map_->end() && it->second.action_executor) {
+    auto status = it->second.action_executor->get_internal_status();
+    if (status == ActionExecutor::RUNNING || status == ActionExecutor::DEALING) {
+      it->second.action_executor->cancel();
+    }
+  }
 }
 
 BT::NodeStatus

@@ -245,6 +245,8 @@ ActionExecutor::get_status()
       return BT::NodeStatus::SUCCESS;
       break;
     case FAILURE:
+    // A BT node must not return IDLE once it started: BT.CPP throws
+    case CANCELLED:
       return BT::NodeStatus::FAILURE;
       break;
     default:

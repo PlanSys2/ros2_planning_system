@@ -1020,6 +1020,10 @@ TEST(executor, action_real_action_1)
   // Test CheckAtEndReq and ApplyAtEndEffect
     (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].at_start_effects_applied =
       false;
+    // The halted action was cancelled: a new tree gets a new executor, as a new plan does
+    (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].action_executor =
+      plansys2::ActionExecutor::make_shared(
+      "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
 
     ApplyAtStartEffectTest::test_status = BT::NodeStatus::IDLE;
 
@@ -1295,6 +1299,10 @@ TEST(executor, action_real_action_1_with_restore)
   // Test CheckAtEndReq and ApplyAtEndEffect
     (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].at_start_effects_applied =
       false;
+    // The halted action was cancelled: a new tree gets a new executor, as a new plan does
+    (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].action_executor =
+      plansys2::ActionExecutor::make_shared(
+      "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
 
     ApplyAtStartEffectTest::test_status = BT::NodeStatus::IDLE;
 
@@ -1559,6 +1567,10 @@ TEST(executor, action_real_action_2)
   // Test CheckAtEndReq and ApplyAtEndEffect
     (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].at_start_effects_applied =
       false;
+    // The halted action was cancelled: a new tree gets a new executor, as a new plan does
+    (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].action_executor =
+      plansys2::ActionExecutor::make_shared(
+      "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
 
     ApplyAtStartEffectTest::test_status = BT::NodeStatus::IDLE;
 
@@ -1581,7 +1593,8 @@ TEST(executor, action_real_action_2)
       problem_client->existPredicate(
         plansys2::Predicate(
           "(robot_at r2d2 assembly_zone)")));
-      ASSERT_FALSE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
+      // A non-durative action has no start effects: all of them come at the end
+      ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
 
       while (ExecuteActionTest::test_status != BT::NodeStatus::SUCCESS) {
         status = tree.tickOnce();

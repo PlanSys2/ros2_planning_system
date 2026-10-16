@@ -28,6 +28,7 @@
 
 #include "ament_index_cpp/get_package_share_path.hpp"
 #include "gtest/gtest.h"
+#include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_executor/ActionExecutorClient.hpp"
@@ -129,8 +130,11 @@ protected:
     move_node_ = std::make_shared<MoveAction>("move_performer", performer_ticks);
     move_node_->set_parameter({"action_name", "move"});
     move_node_->set_parameter({"rate", 20.0});
-    domain_node_->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
-    problem_node_->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
+    domain_node_->set_parameter({"model_file", pkgpath + "/pddl/" + domain_});
+    problem_node_->set_parameter({"model_file", pkgpath + "/pddl/" + domain_});
+    if (before_configure_) {
+      before_configure_(pkgpath);
+    }
 
     client_node_ = rclcpp::Node::make_shared("goal_handling_client");
     action_client_ = rclcpp_action::create_client<ExecutePlan>(client_node_, "execute_plan");
@@ -278,6 +282,9 @@ protected:
   std::unique_ptr<rclcpp::executors::SingleThreadedExecutor> exe_;
   std::unique_ptr<ScopedSpinner> spinner_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
+  std::string domain_ {"factory3.pddl"};
+  // Parameters of the executor that are read when it is configured
+  std::function<void(const std::string & pkgpath)> before_configure_;
 };
 
 TEST_F(ExecutorGoalHandlingTest, succeeded_plan_reports_only_its_actions)
@@ -565,6 +572,113 @@ TEST_F(ExecutorGoalHandlingTest, at_start_effects_stay_if_restore_is_disabled)
   ASSERT_FALSE(robot_at("wheels_zone"));
   ASSERT_FALSE(robot_at("assembly_zone"));
   ASSERT_FALSE(robot_available());
+}
+
+// An over all requirement that stops holding in the middle of the action fails it, and its
+// performer stops: the cache of the check sees changes made by others
+TEST_F(ExecutorGoalHandlingTest, over_all_violated_mid_action_stops_it)
+{
+  start(60);  // 3 s per action
+  auto handle = send({"wheels_zone", "assembly_zone"});
+  ASSERT_NE(handle, nullptr);
+  ASSERT_TRUE(wait_until([this]() {return left("wheels_zone");}));
+  std::this_thread::sleep_for(500ms);
+
+  ASSERT_TRUE(problem_client_->removePredicate(plansys2::Predicate("(battery_full r2d2)")));
+  auto result = result_of(handle, 5s);
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result->code, ResultCode::ABORTED);
+
+  // Halted, not left running in the background
+  ASSERT_TRUE(
+    wait_until(
+      [this]() {
+        return move_node_->get_current_state().id() ==
+               lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE;
+      }, 3s));
+  std::this_thread::sleep_for(3s);
+  ASSERT_EQ(move_node_->finished, 0);
+}
+
+// At start requirements that never hold fail the action after a while, instead of waiting
+// for ever
+TEST_F(ExecutorGoalHandlingTest, at_start_requirements_time_out)
+{
+  // The second move needs the door of steering_wheels_zone, closed while the first one runs
+  domain_ = "start_gives_over_all.pddl";
+  start(40);  // 2 s per action
+  executor_node_->set_parameter({"at_start_requirements_timeout", 2.0});
+  for (const auto & zone : kZones) {
+    ASSERT_TRUE(problem_client_->addPredicate(plansys2::Predicate("(door_open " + zone + ")")));
+  }
+
+  auto handle = send({"wheels_zone", "steering_wheels_zone", "assembly_zone"});
+  ASSERT_NE(handle, nullptr);
+  ASSERT_TRUE(wait_until([this]() {return move_node_->started > 0;}));
+  ASSERT_TRUE(
+    problem_client_->removePredicate(plansys2::Predicate("(door_open steering_wheels_zone)")));
+
+  auto begin = std::chrono::steady_clock::now();
+  auto result = result_of(handle, 15s);
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result->code, ResultCode::ABORTED);
+  // The first move ends (2 s), then the second waits its 2 s
+  ASSERT_GE(std::chrono::steady_clock::now() - begin, 3s);
+  ASSERT_EQ(move_node_->started, 1);
+  ASSERT_TRUE(robot_at("steering_wheels_zone"));
+}
+
+// An over all requirement given by the at start effects of the action itself does not keep
+// the action from starting
+TEST_F(ExecutorGoalHandlingTest, at_start_effect_gives_over_all)
+{
+  domain_ = "start_gives_over_all.pddl";
+  start(3);
+  ASSERT_TRUE(problem_client_->addPredicate(plansys2::Predicate("(door_open wheels_zone)")));
+  auto handle = send({"wheels_zone", "assembly_zone"});
+  ASSERT_NE(handle, nullptr);
+  auto result = result_of(handle, 10s);
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result->code, ResultCode::SUCCEEDED);
+  ASSERT_TRUE(robot_at("assembly_zone"));
+}
+
+// The duration limit counts from the start of the action, not from the start of the plan
+TEST_F(ExecutorGoalHandlingTest, timeout_counts_from_action_start)
+{
+  before_configure_ = [this](const std::string & pkgpath) {
+      executor_node_->set_parameter(
+        {"default_action_bt_xml_filename",
+          pkgpath + "/test_behavior_trees/test_action_timeout_bt.xml"});
+      // The STN builder runs the action in its end part
+      executor_node_->set_parameter(
+        {"default_end_action_bt_xml_filename",
+          pkgpath + "/test_behavior_trees/test_action_timeout_end_bt.xml"});
+      executor_node_->set_parameter(
+        {"action_timeouts.actions", std::vector<std::string>({"move"})});
+      executor_node_->declare_parameter<double>(
+        "action_timeouts.move.duration_overrun_percentage", 0.0);
+    };
+  // No performer for 6 s, more than the 5 s the action may last: then it takes 0.15 s
+  start(3, false);
+  auto handle = send({"wheels_zone", "assembly_zone"});
+  ASSERT_NE(handle, nullptr);
+  std::this_thread::sleep_for(6s);
+  move_node_->trigger_transition(Transition::TRANSITION_CONFIGURE);
+
+  auto result = result_of(handle, 10s);
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result->code, ResultCode::SUCCEEDED);
+  ASSERT_TRUE(robot_at("assembly_zone"));
+
+  // An action that does last more than its 5 s still fails
+  move_node_->ticks_needed_ = 140;  // 7 s
+  place_robot("wheels_zone");
+  auto slow = send({"wheels_zone", "assembly_zone"});
+  ASSERT_NE(slow, nullptr);
+  auto slow_result = result_of(slow, 15s);
+  ASSERT_TRUE(slow_result.has_value());
+  ASSERT_EQ(slow_result->code, ResultCode::ABORTED);
 }
 
 int main(int argc, char ** argv)

@@ -38,7 +38,6 @@ CheckTimeout::CheckTimeout(
     "problem_client");
 
   node_ = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
-  start_ = node_->now();
 }
 
 BT::NodeStatus
@@ -47,13 +46,15 @@ CheckTimeout::tick()
   std::string action;
   getInput("action", action);
 
-  if ((*action_map_)[action].action_executor != nullptr) {
+  auto executor = (*action_map_)[action].action_executor;
+  // From the actual start of the action, not from the creation of the tree
+  if (executor != nullptr && executor->get_internal_status() == ActionExecutor::RUNNING) {
     double duration = (*action_map_)[action].duration;
     double duration_overrun_percentage = (*action_map_)[action].duration_overrun_percentage;
     if (duration_overrun_percentage >= 0) {
       double max_duration = (1.0 + duration_overrun_percentage / 100.0) * duration;
       auto current_time = node_->now();
-      auto elapsed_time = (current_time - start_).seconds();
+      auto elapsed_time = (current_time - executor->get_start_time()).seconds();
       if (elapsed_time > max_duration) {
         RCLCPP_ERROR_STREAM(
           node_->get_logger(),

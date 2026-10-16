@@ -70,8 +70,14 @@ public:
   }
 
 private:
+  // Whether the over all requirements hold in the state after the at start effects
+  bool holds_after_start(
+    const ActionExecutionInfo & info, const plansys2_msgs::msg::Tree & reqs_oa);
+
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
+  rclcpp::Time waiting_since_;
+  rclcpp::Time last_log_;
 };
 
 }  // namespace plansys2

@@ -79,6 +79,9 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
   // A plan that fails, is cancelled or is replaced takes back the at start effects of the
   // actions that started and did not end
   this->declare_parameter<bool>("restore_at_start_effects", true);
+  // An action whose at start requirements do not hold this long fails, instead of waiting for
+  // ever (0: no limit)
+  this->declare_parameter<double>("at_start_requirements_timeout", 30.0);
   this->declare_parameter("action_timeouts.actions", std::vector<std::string>{});
   // Declaring individual action parameters so they can be queried on the command line
   auto action_timeouts_actions = this->get_parameter("action_timeouts.actions").as_string_array();
