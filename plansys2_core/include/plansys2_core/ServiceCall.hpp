@@ -1,0 +1,66 @@
+// Copyright 2026 Intelligent Robotics Lab
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef PLANSYS2_CORE__SERVICECALL_HPP_
+#define PLANSYS2_CORE__SERVICECALL_HPP_
+
+#include <chrono>
+#include <memory>
+
+#include "rclcpp/rclcpp.hpp"
+
+namespace plansys2
+{
+
+/**
+ * @brief Call a service spinning node until the response arrives.
+ *
+ * @return The response, or nullptr if the service is not available within service_timeout or
+ *         does not answer within response_timeout.
+ */
+template<typename ServiceT>
+typename ServiceT::Response::SharedPtr
+call_service(
+  rclcpp::Node::SharedPtr node,
+  std::shared_ptr<rclcpp::Client<ServiceT>> client,
+  typename ServiceT::Request::SharedPtr request,
+  std::chrono::nanoseconds service_timeout = std::chrono::seconds(5),
+  std::chrono::nanoseconds response_timeout = std::chrono::seconds(1))
+{
+  if (!client->wait_for_service(service_timeout)) {
+    if (rclcpp::ok()) {
+      RCLCPP_ERROR_STREAM(
+        node->get_logger(), client->get_service_name() << ": service not available");
+    }
+    return nullptr;
+  }
+
+  auto future = client->async_send_request(request);
+  if (rclcpp::spin_until_future_complete(node, future, response_timeout) !=
+    rclcpp::FutureReturnCode::SUCCESS)
+  {
+    // Otherwise the late response would stay pending forever
+    client->remove_pending_request(future);
+    if (rclcpp::ok()) {
+      RCLCPP_ERROR_STREAM(node->get_logger(), client->get_service_name() << ": no response");
+    }
+    return nullptr;
+  }
+
+  return future.get();
+}
+
+}  // namespace plansys2
+
+#endif  // PLANSYS2_CORE__SERVICECALL_HPP_

@@ -15,6 +15,7 @@
 #ifndef PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTCLIENT_HPP_
 #define PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTCLIENT_HPP_
 
+#include <memory>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -71,9 +72,17 @@ public:
   /**
    * @brief Get all instances in the problem.
    *
-   * @return std::vector<plansys2::Instance> Vector containing all instances in the problem.
+   * @return std::vector<plansys2::Instance> Vector containing all instances in the problem,
+   *         empty also if the problem expert does not answer.
    */
   std::vector<plansys2::Instance> getInstances();
+
+  /**
+   * @brief Get all instances in the problem, telling apart an empty problem from no answer.
+   *
+   * @return The instances, or std::nullopt if the problem expert does not answer.
+   */
+  std::optional<std::vector<plansys2::Instance>> tryGetInstances();
 
   /**
    * @brief Add a new instance to the problem.
@@ -126,9 +135,18 @@ public:
    * @brief Check if a predicate exists in the problem.
    *
    * @param[in] predicate The predicate to check.
-   * @return true if the predicate exists, false otherwise.
+   * @return true if the predicate exists, false otherwise (also if the problem expert does
+   *         not answer).
    */
   bool existPredicate(const plansys2::Predicate & predicate);
+
+  /**
+   * @brief Check if a predicate exists in the problem, telling apart "no" from no answer.
+   *
+   * @param[in] predicate The predicate to check.
+   * @return Whether the predicate exists, or std::nullopt if the problem expert does not answer.
+   */
+  std::optional<bool> tryExistPredicate(const plansys2::Predicate & predicate);
 
   /**
    * @brief Get a specific predicate by its expression.
@@ -165,9 +183,18 @@ public:
    * @brief Check if a function exists in the problem.
    *
    * @param[in] function The function to check.
-   * @return true if the function exists, false otherwise.
+   * @return true if the function exists, false otherwise (also if the problem expert does
+   *         not answer).
    */
   bool existFunction(const plansys2::Function & function);
+
+  /**
+   * @brief Check if a function exists in the problem, telling apart "no" from no answer.
+   *
+   * @param[in] function The function to check.
+   * @return Whether the function exists, or std::nullopt if the problem expert does not answer.
+   */
+  std::optional<bool> tryExistFunction(const plansys2::Function & function);
 
   /**
    * @brief Update the value of an existing function.
@@ -288,6 +315,11 @@ public:
 private:
   // Called before every change: the cache must not return the problem from before it (#438)
   void invalidate_cache();
+  // Sends a request that changes the problem: true if the problem expert applied it
+  template<typename ServiceT>
+  bool call_change(
+    std::shared_ptr<rclcpp::Client<ServiceT>> client,
+    typename ServiceT::Request::SharedPtr request);
   // Problem messages stamped earlier than this are older than our last change
   rclcpp::Time cache_valid_since_ {0, 0, RCL_ROS_TIME};
 

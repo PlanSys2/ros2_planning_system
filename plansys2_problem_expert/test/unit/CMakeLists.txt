@@ -4,6 +4,11 @@ target_link_libraries(utils_test
   ament_index_cpp::ament_index_cpp
 )
 
+ament_add_gtest(client_no_answer_test client_no_answer_test.cpp TIMEOUT 120)
+target_link_libraries(client_no_answer_test
+  ${PROJECT_NAME}
+)
+
 ament_add_gtest(problem_expert_test problem_expert_test.cpp)
 target_link_libraries(problem_expert_test
   ${PROJECT_NAME}
