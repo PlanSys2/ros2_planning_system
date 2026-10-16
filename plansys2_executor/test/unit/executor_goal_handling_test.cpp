@@ -61,6 +61,14 @@ public:
   std::atomic<bool> succeed {true};
   std::atomic<int> started {0};
   std::atomic<int> finished {0};
+  std::atomic<int> activations {0};
+
+  using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+  CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override
+  {
+    activations++;
+    return ActionExecutorClient::on_activate(state);
+  }
 
 private:
   void do_work() override
@@ -679,6 +687,59 @@ TEST_F(ExecutorGoalHandlingTest, timeout_counts_from_action_start)
   auto slow_result = result_of(slow, 15s);
   ASSERT_TRUE(slow_result.has_value());
   ASSERT_EQ(slow_result->code, ResultCode::ABORTED);
+}
+
+// A new plan that also has the running action keeps it running: its performer is neither
+// restarted nor asked twice, and the rest of the old plan never starts
+TEST_F(ExecutorGoalHandlingTest, replan_keeps_the_common_running_action)
+{
+  // The robot leaves its zone at the end: a plan made while it moves may still have the move
+  domain_ = "move_at_end.pddl";
+  start(60);  // 3 s per action
+  auto first = send({"wheels_zone", "steering_wheels_zone", "assembly_zone"});
+  ASSERT_NE(first, nullptr);
+  ASSERT_TRUE(wait_until([this]() {return move_node_->started > 0;}));
+  std::this_thread::sleep_for(1s);
+
+  auto second = send({"wheels_zone", "steering_wheels_zone"});
+  ASSERT_NE(second, nullptr);
+  auto first_result = result_of(first, 10s);
+  ASSERT_TRUE(first_result.has_value());
+  ASSERT_EQ(first_result->result->result, ExecutePlan::Result::PREEMPT);
+
+  auto second_result = result_of(second);
+  ASSERT_TRUE(second_result.has_value());
+  ASSERT_EQ(second_result->code, ResultCode::SUCCEEDED);
+  ASSERT_EQ(move_node_->activations, 1);
+  ASSERT_EQ(move_node_->finished, 1);
+  ASSERT_TRUE(robot_at("steering_wheels_zone"));
+
+  // The second move of the old plan does not start later
+  std::this_thread::sleep_for(4s);
+  ASSERT_EQ(move_node_->activations, 1);
+  ASSERT_TRUE(robot_at("steering_wheels_zone"));
+}
+
+// A new plan without the running action stops it before going on
+TEST_F(ExecutorGoalHandlingTest, replan_stops_the_dropped_running_action)
+{
+  start(60);
+  auto first = send({"wheels_zone", "assembly_zone"});
+  ASSERT_NE(first, nullptr);
+  ASSERT_TRUE(wait_until([this]() {return left("wheels_zone");}));
+
+  move_node_->ticks_needed_ = 3;
+  auto second = send({"wheels_zone", "steering_wheels_zone"});
+  ASSERT_NE(second, nullptr);
+  auto second_result = result_of(second);
+  ASSERT_TRUE(second_result.has_value());
+  ASSERT_EQ(second_result->code, ResultCode::SUCCEEDED);
+
+  // Activated once for each plan, and only the second one finished
+  ASSERT_EQ(move_node_->activations, 2);
+  ASSERT_EQ(move_node_->finished, 1);
+  ASSERT_TRUE(robot_at("steering_wheels_zone"));
+  ASSERT_FALSE(robot_at("assembly_zone"));
 }
 
 int main(int argc, char ** argv)

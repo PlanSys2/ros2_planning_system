@@ -614,6 +614,17 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
 
   std::map<std::string, ActionExecutionInfo> previous_action_map = *runtime_info.action_map;
 
+  // The actions that go on are taken out of the old tree: when it is destroyed, it halts its
+  // nodes, and that would cancel them
+  for (auto & [action_id, info] : *runtime_info.action_map) {
+    if (info.action_executor &&
+      info.action_executor->get_internal_status() == ActionExecutor::RUNNING &&
+      new_ids.count(action_id.substr(0, action_id.find(':')) + ":0") > 0)
+    {
+      info.action_executor = nullptr;
+    }
+  }
+
   bool plan_success = false;
   try {
     create_plan_runtime_info(runtime_info);

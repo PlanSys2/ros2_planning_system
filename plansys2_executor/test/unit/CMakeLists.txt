@@ -128,7 +128,8 @@ foreach(scenario
     cancelled_action_takes_back_its_at_start_effects
     replaced_plan_takes_back_its_at_start_effects at_start_effects_stay_if_restore_is_disabled
     over_all_violated_mid_action_stops_it at_start_requirements_time_out
-    at_start_effect_gives_over_all timeout_counts_from_action_start)
+    at_start_effect_gives_over_all timeout_counts_from_action_start
+    replan_keeps_the_common_running_action replan_stops_the_dropped_running_action)
   ament_add_gtest_test(executor_goal_handling_test
     TEST_NAME executor_goal_handling_${scenario}
     ENV GTEST_FILTER=ExecutorGoalHandlingTest.${scenario} PLANSYS2_TEST_BT_BUILDER=SimpleBTBuilder
