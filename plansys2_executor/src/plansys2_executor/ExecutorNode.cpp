@@ -76,6 +76,9 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
   this->declare_parameter<bool>("stn_relaxed_timing", true);
   this->declare_parameter<bool>("enable_dotgraph_legend", true);
   this->declare_parameter<bool>("print_graph", false);
+  // A plan that fails, is cancelled or is replaced takes back the at start effects of the
+  // actions that started and did not end
+  this->declare_parameter<bool>("restore_at_start_effects", true);
   this->declare_parameter("action_timeouts.actions", std::vector<std::string>{});
   // Declaring individual action parameters so they can be queried on the command line
   auto action_timeouts_actions = this->get_parameter("action_timeouts.actions").as_string_array();
@@ -589,6 +592,21 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
   cancel_plan_requested_ = false;
   replan_requested_ = false;
 
+  // Actions that do not go on in the new plan are taken back first: the new plan is checked
+  // against the state, and it starts from where they began
+  std::set<std::string> new_ids;
+  for (const auto & item : runtime_info.remaining_plan.items) {
+    new_ids.insert(BTBuilder::to_action_id(item, 3));
+  }
+  for (auto & [action_id, info] : *runtime_info.action_map) {
+    const bool goes_on = info.action_executor &&
+      info.action_executor->get_internal_status() == ActionExecutor::RUNNING &&
+      new_ids.count(action_id.substr(0, action_id.find(':')) + ":0") > 0;
+    if (!goes_on) {
+      restore_at_start_effects(action_id, info);
+    }
+  }
+
   std::map<std::string, ActionExecutionInfo> previous_action_map = *runtime_info.action_map;
 
   bool plan_success = false;
@@ -630,6 +648,7 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
       match_it->second.at_end_effects_applied = action_info.second.at_end_effects_applied;
       match_it->second.at_start_effects_applied_time =
         action_info.second.at_start_effects_applied_time;
+      match_it->second.at_start_changes = action_info.second.at_start_changes;
       match_it->second.execution_error_info = action_info.second.execution_error_info;
       match_it->second.duration = action_info.second.duration;
       match_it->second.duration_overrun_percentage =
@@ -665,6 +684,38 @@ ExecutorNode::cancel_all_running_actions(PlanRuntineInfo & runtime_info)
       }
     }
   }
+}
+
+void
+ExecutorNode::restore_at_start_effects(std::map<std::string, ActionExecutionInfo> & action_map)
+{
+  for (auto & [action_id, info] : action_map) {
+    restore_at_start_effects(action_id, info);
+  }
+}
+
+void
+ExecutorNode::restore_at_start_effects(const std::string & action_id, ActionExecutionInfo & info)
+{
+  if (!info.at_start_effects_applied || info.at_end_effects_applied ||
+    !get_parameter("restore_at_start_effects").as_bool())
+  {
+    return;
+  }
+
+  RCLCPP_INFO(get_logger(), "Taking back the at start effects of %s", action_id.c_str());
+  std::vector<std::string> kept;
+  if (!undo(info.at_start_changes, problem_client_, &kept)) {
+    RCLCPP_ERROR(
+      get_logger(), "Could not take back all the at start effects of %s", action_id.c_str());
+  }
+  for (const auto & function : kept) {
+    RCLCPP_WARN(
+      get_logger(), "%s: %s changed since the action started, it keeps its value",
+      action_id.c_str(), function.c_str());
+  }
+  info.at_start_changes.clear();
+  info.at_start_effects_applied = false;
 }
 
 std::vector<plansys2_msgs::msg::ActionExecutionInfo>
@@ -1043,6 +1094,9 @@ ExecutorNode::execution_step()
 
       result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
       result->action_execution_status = get_feedback_info(runtime_info_.action_map);
+      if (runtime_info_.action_map) {
+        restore_at_start_effects(*runtime_info_.action_map);
+      }
 
       current_goal_handle_->abort(result);
       executor_state_ = STATE_IDLE;
@@ -1052,6 +1106,9 @@ ExecutorNode::execution_step()
 
       result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
       result->action_execution_status = get_feedback_info(runtime_info_.action_map);
+      if (runtime_info_.action_map) {
+        restore_at_start_effects(*runtime_info_.action_map);
+      }
 
       current_goal_handle_->canceled(result);
       executor_state_ = STATE_IDLE;
@@ -1061,6 +1118,9 @@ ExecutorNode::execution_step()
 
       result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
       result->action_execution_status = get_feedback_info(runtime_info_.action_map);
+      if (runtime_info_.action_map) {
+        restore_at_start_effects(*runtime_info_.action_map);
+      }
 
       // A failed plan is not a succeeded goal (#436)
       current_goal_handle_->abort(result);
@@ -1071,6 +1131,9 @@ ExecutorNode::execution_step()
 
       result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
       result->action_execution_status = get_feedback_info(runtime_info_.action_map);
+      if (runtime_info_.action_map) {
+        restore_at_start_effects(*runtime_info_.action_map);
+      }
 
       current_goal_handle_->abort(result);
       executor_state_ = STATE_IDLE;

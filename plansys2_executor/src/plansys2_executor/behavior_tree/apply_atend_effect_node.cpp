@@ -50,11 +50,16 @@ ApplyAtEndEffect::tick()
 
   auto effect = (*action_map_)[action].action_info.get_at_end_effects();
 
-  if (!(*action_map_)[action].at_end_effects_applied) {
-    (*action_map_)[action].at_end_effects_applied = true;
+  auto & info = (*action_map_)[action];
+  if (!info.at_end_effects_applied) {
+    if (!apply(effect, problem_client_, 0)) {
+      info.execution_error_info = "Error applying at end effects";
+      return BT::NodeStatus::FAILURE;
+    }
+    info.at_end_effects_applied = true;
+    info.at_start_changes.clear();
     auto now = node_ ? node_->now() : rclcpp::Clock(RCL_ROS_TIME).now();
-    (*action_map_)[action].at_end_effects_applied_time = now;
-    apply(effect, problem_client_, 0);
+    info.at_end_effects_applied_time = now;
 
     // STNBTBuilder: the network takes the actual time of this event
     if (!relaxed_timing_ && !update_stn_on_event(

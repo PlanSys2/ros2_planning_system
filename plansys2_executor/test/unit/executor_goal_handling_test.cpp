@@ -197,6 +197,17 @@ protected:
     return problem_client_->existPredicate(plansys2::Predicate("(robot_at r2d2 " + zone + ")"));
   }
 
+  bool robot_available()
+  {
+    return problem_client_->existPredicate(plansys2::Predicate("(robot_available r2d2)"));
+  }
+
+  // The move started: its at start effects took the robot out of `zone`
+  bool left(const std::string & zone)
+  {
+    return move_node_->started > 0 && !robot_at(zone) && !robot_available();
+  }
+
   std::shared_future<GoalHandle::SharedPtr> send_async(const std::vector<std::string> & zones)
   {
     ExecutePlan::Goal goal;
@@ -467,6 +478,93 @@ TEST_F(ExecutorGoalHandlingTest, cancel_as_the_plan_ends_does_not_reach_the_next
     // The next goal is not affected
     expect_plan_succeeds(from, to);
   }
+}
+
+// The at start effects of an action that does not end are taken back: the robot is where it
+// was, instead of nowhere, and a new plan can start from there
+TEST_F(ExecutorGoalHandlingTest, failed_action_takes_back_its_at_start_effects)
+{
+  start(3);
+  move_node_->succeed = false;
+  auto handle = send({"wheels_zone", "assembly_zone"});
+  ASSERT_NE(handle, nullptr);
+  auto result = result_of(handle);
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result->code, ResultCode::ABORTED);
+
+  ASSERT_TRUE(robot_at("wheels_zone"));
+  ASSERT_FALSE(robot_at("assembly_zone"));
+  ASSERT_TRUE(robot_available());
+
+  // No need to put the robot back by hand
+  move_node_->succeed = true;
+  auto again = send({"wheels_zone", "assembly_zone"});
+  ASSERT_NE(again, nullptr);
+  auto again_result = result_of(again);
+  ASSERT_TRUE(again_result.has_value());
+  ASSERT_EQ(again_result->code, ResultCode::SUCCEEDED);
+  ASSERT_TRUE(robot_at("assembly_zone"));
+  ASSERT_FALSE(robot_at("wheels_zone"));
+}
+
+TEST_F(ExecutorGoalHandlingTest, cancelled_action_takes_back_its_at_start_effects)
+{
+  start(60);  // 3 s per action
+  auto handle = send({"wheels_zone", "assembly_zone"});
+  ASSERT_NE(handle, nullptr);
+  ASSERT_TRUE(wait_until([this]() {return left("wheels_zone");}));
+  ASSERT_TRUE(cancel(handle));
+  auto result = result_of(handle, 10s);
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result->code, ResultCode::CANCELED);
+
+  ASSERT_TRUE(robot_at("wheels_zone"));
+  ASSERT_TRUE(robot_available());
+  // And they stay so: the cancelled action never ends
+  std::this_thread::sleep_for(3500ms);
+  ASSERT_TRUE(robot_at("wheels_zone"));
+  ASSERT_FALSE(robot_at("assembly_zone"));
+}
+
+TEST_F(ExecutorGoalHandlingTest, replaced_plan_takes_back_its_at_start_effects)
+{
+  start(60);
+  auto first = send({"wheels_zone", "assembly_zone"});
+  ASSERT_NE(first, nullptr);
+  ASSERT_TRUE(wait_until([this]() {return left("wheels_zone");}));
+
+  // The new plan starts from where the robot was before the replaced move
+  move_node_->ticks_needed_ = 3;
+  auto second = send({"wheels_zone", "steering_wheels_zone"});
+  ASSERT_NE(second, nullptr);
+
+  auto first_result = result_of(first, 10s);
+  ASSERT_TRUE(first_result.has_value());
+  ASSERT_EQ(first_result->result->result, ExecutePlan::Result::PREEMPT);
+
+  auto second_result = result_of(second);
+  ASSERT_TRUE(second_result.has_value());
+  ASSERT_EQ(second_result->code, ResultCode::SUCCEEDED);
+  ASSERT_TRUE(robot_at("steering_wheels_zone"));
+  ASSERT_FALSE(robot_at("wheels_zone"));
+  ASSERT_FALSE(robot_at("assembly_zone"));
+}
+
+TEST_F(ExecutorGoalHandlingTest, at_start_effects_stay_if_restore_is_disabled)
+{
+  start(3);
+  executor_node_->set_parameter({"restore_at_start_effects", false});
+  move_node_->succeed = false;
+  auto handle = send({"wheels_zone", "assembly_zone"});
+  ASSERT_NE(handle, nullptr);
+  auto result = result_of(handle);
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result->code, ResultCode::ABORTED);
+
+  // As before: the robot is nowhere
+  ASSERT_FALSE(robot_at("wheels_zone"));
+  ASSERT_FALSE(robot_at("assembly_zone"));
+  ASSERT_FALSE(robot_available());
 }
 
 int main(int argc, char ** argv)

@@ -45,15 +45,12 @@ RestoreAtStartEffect::tick()
     return BT::NodeStatus::FAILURE;
   }
 
-  auto effect = (*action_map_)[action].action_info.get_at_start_effects();
-
-  if ((*action_map_)[action].at_start_effects_applied) {
-    (*action_map_)[action].at_start_effects_applied = false;
-
-    std::vector<plansys2::Predicate> predicates;
-    std::vector<plansys2::Function> functions;
-    evaluate(
-      effect, problem_client_, predicates, functions, true, false, 0, true);
+  auto & info = (*action_map_)[action];
+  if (info.at_start_effects_applied) {
+    // Each fact goes back to its value before the action, unless someone else changed it
+    undo(info.at_start_changes, problem_client_);
+    info.at_start_changes.clear();
+    info.at_start_effects_applied = false;
   }
 
   return BT::NodeStatus::SUCCESS;

@@ -326,6 +326,23 @@ protected:
   void cancel_all_running_actions(PlanRuntineInfo & runtime_info);
 
   /**
+   * @brief Takes back the at start effects of the actions that started and did not end.
+   *
+   * Does nothing if the parameter restore_at_start_effects is false.
+   *
+   * @param[in,out] action_map The actions of the plan.
+   */
+  void restore_at_start_effects(std::map<std::string, ActionExecutionInfo> & action_map);
+
+  /**
+   * @brief Takes back the at start effects of one action, if it started and did not end.
+   *
+   * @param[in] action_id The id of the action, for the log.
+   * @param[in,out] info The execution information of the action.
+   */
+  void restore_at_start_effects(const std::string & action_id, ActionExecutionInfo & info);
+
+  /**
    * @brief Add Groot2 monitor to publish BT status changes
    * @param tree BT to monitor
    * @param server_port Groot2 Server port, first of the pair (server_port, publisher_port)

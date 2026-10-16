@@ -20,6 +20,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <optional>
 #include <utility>
 
 #include "plansys2_problem_expert/Utils.hpp"
@@ -39,7 +40,8 @@ std::tuple<bool, bool, double> evaluate_node(
   bool apply,
   bool use_state,
   uint32_t node_id,
-  bool negate)
+  bool negate,
+  std::vector<FactChange> * changes)
 {
   if (tree.nodes.empty()) {  // No expression
     return std::make_tuple(true, true, 0);
@@ -58,7 +60,7 @@ std::tuple<bool, bool, double> evaluate_node(
           std::tuple<bool, bool, double> result =
             evaluate_node(
             tree, problem_client, predicates, functions, apply, use_state, child_id,
-            negate);
+            negate, changes);
           success = success && std::get<0>(result);
           truth_value = all ? (truth_value && std::get<1>(result)) :
             (truth_value || std::get<1>(result));
@@ -70,7 +72,7 @@ std::tuple<bool, bool, double> evaluate_node(
         return evaluate_node(
           tree, problem_client, predicates, functions, apply, use_state,
           tree.nodes[node_id].children[0],
-          !negate);
+          !negate, changes);
       }
 
     case plansys2_msgs::msg::Node::PREDICATE: {
@@ -96,11 +98,25 @@ std::tuple<bool, bool, double> evaluate_node(
               }
             }
           } else {
+            // Only real changes are recorded: a fact that already held is left alone on undo
+            std::optional<bool> existed;
+            if (changes) {
+              existed = problem_client->tryExistPredicate(tree.nodes[node_id]);
+              if (!existed.has_value()) {
+                return std::make_tuple(false, false, 0);
+              }
+            }
             if (negate) {
               success = success && problem_client->removePredicate(tree.nodes[node_id]);
               value = false;
             } else {
               success = success && problem_client->addPredicate(tree.nodes[node_id]);
+            }
+            if (changes && success && existed.value() == negate) {
+              FactChange change;
+              change.fact = tree.nodes[node_id];
+              change.existed_before = existed.value();
+              changes->push_back(change);
             }
           }
         } else {
@@ -163,10 +179,10 @@ std::tuple<bool, bool, double> evaluate_node(
         // Numbers are not negated: only the comparison is
         std::tuple<bool, bool, double> left = evaluate_node(
           tree, problem_client, predicates,
-          functions, apply, use_state, tree.nodes[node_id].children[0], false);
+          functions, apply, use_state, tree.nodes[node_id].children[0], false, changes);
         std::tuple<bool, bool, double> right = evaluate_node(
           tree, problem_client, predicates,
-          functions, apply, use_state, tree.nodes[node_id].children[1], false);
+          functions, apply, use_state, tree.nodes[node_id].children[1], false, changes);
 
         if (!std::get<0>(left) || !std::get<0>(right)) {
           return std::make_tuple(false, false, 0);
@@ -257,11 +273,11 @@ std::tuple<bool, bool, double> evaluate_node(
         }
         std::tuple<bool, bool, double> left = evaluate_node(
           tree, problem_client, predicates,
-          functions, apply, use_state, tree.nodes[node_id].children[0], false);
+          functions, apply, use_state, tree.nodes[node_id].children[0], false, changes);
         std::tuple<bool, bool, double> right = evaluate_node(
           tree, problem_client,
           predicates, functions, apply, use_state, tree.nodes[node_id].children[1],
-          false);
+          false, changes);
 
         if (!std::get<0>(left) || !std::get<0>(right)) {
           return std::make_tuple(false, false, 0);
@@ -319,6 +335,14 @@ std::tuple<bool, bool, double> evaluate_node(
             function.parameters = tree.nodes[left_id].parameters;
             function.value = value;
             success = problem_client->updateFunction(function);
+            if (changes && success && value != std::get<2>(left)) {
+              FactChange change;
+              change.fact = function;
+              change.value_before = std::get<2>(left);
+              change.value_after = value;
+              change.modifier_type = tree.nodes[node_id].modifier_type;
+              changes->push_back(change);
+            }
           }
         }
 
@@ -404,7 +428,7 @@ std::tuple<bool, bool, double> evaluate_node(
             auto tree_replaced = plansys2::replace_children_param(tree, node_id, replace);
             auto result = evaluate_node(
               tree_replaced, problem_client, predicates, functions, apply, use_state,
-              tree_replaced.nodes[node_id].children[0], negate);
+              tree_replaced.nodes[node_id].children[0], negate, changes);
             success = success && std::get<0>(result);
           }
           return std::make_tuple(success, true, 0);
@@ -428,7 +452,7 @@ std::tuple<bool, bool, double> evaluate_node(
             false,
             use_state,
             tree_replaced.nodes[node_id].children[0],
-            negate);
+            negate, changes);
           success = success && std::get<0>(result);
           if (need_all && !std::get<1>(result)) {
             return std::make_tuple(success, false, 0);
@@ -445,10 +469,10 @@ std::tuple<bool, bool, double> evaluate_node(
         // (imply a b) is (or (not a) b); under not, (and a (not b))
         std::tuple<bool, bool, double> left = evaluate_node(
           tree, problem_client, predicates, functions, false, use_state,
-          tree.nodes[node_id].children[0], !negate);
+          tree.nodes[node_id].children[0], !negate, changes);
         std::tuple<bool, bool, double> right = evaluate_node(
           tree, problem_client, predicates, functions, false, use_state,
-          tree.nodes[node_id].children[1], negate);
+          tree.nodes[node_id].children[1], negate, changes);
         const bool truth_value = negate ?
           (std::get<1>(left) && std::get<1>(right)) :
           (std::get<1>(left) || std::get<1>(right));
@@ -461,6 +485,18 @@ std::tuple<bool, bool, double> evaluate_node(
   }
 
   return std::make_tuple(false, false, 0);
+}
+
+// Trees may come from outside (e.g. services): walk them only if they are sound
+bool sound_tree(const plansys2_msgs::msg::Tree & tree, uint32_t node_id)
+{
+  std::string error;
+  if (node_id >= tree.nodes.size() || !parser::pddl::validateTree(tree, error)) {
+    std::cerr << "evaluate: malformed tree: " <<
+      (error.empty() ? "node id out of range" : error) << std::endl;
+    return false;
+  }
+  return true;
 }
 
 }  // namespace
@@ -479,16 +515,12 @@ std::tuple<bool, bool, double> evaluate(
     return std::make_tuple(true, true, 0);
   }
 
-  // Trees may come from outside (e.g. services): walk them only if they are sound
-  std::string error;
-  if (node_id >= tree.nodes.size() || !parser::pddl::validateTree(tree, error)) {
-    std::cerr << "evaluate: malformed tree: " <<
-      (error.empty() ? "node id out of range" : error) << std::endl;
+  if (!sound_tree(tree, node_id)) {
     return std::make_tuple(false, false, 0);
   }
 
   return evaluate_node(
-    tree, problem_client, predicates, functions, apply, use_state, node_id, negate);
+    tree, problem_client, predicates, functions, apply, use_state, node_id, negate, nullptr);
 }
 
 std::tuple<bool, bool, double> evaluate(
@@ -542,6 +574,79 @@ bool apply(
   std::tuple<bool, bool, double> ret = evaluate(tree, problem_client, true, node_id);
 
   return std::get<0>(ret);
+}
+
+bool apply(
+  const plansys2_msgs::msg::Tree & tree,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
+  std::vector<FactChange> & changes,
+  uint32_t node_id)
+{
+  if (tree.nodes.empty()) {
+    return true;
+  }
+  if (!sound_tree(tree, node_id)) {
+    return false;
+  }
+
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
+  auto ret = evaluate_node(
+    tree, problem_client, predicates, functions, true, false, node_id, false, &changes);
+  return std::get<0>(ret);
+}
+
+bool undo(
+  const std::vector<FactChange> & changes,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
+  std::vector<std::string> * kept)
+{
+  bool success = true;
+  for (auto it = changes.rbegin(); it != changes.rend(); ++it) {
+    const auto & change = *it;
+    if (change.fact.node_type == plansys2_msgs::msg::Node::PREDICATE) {
+      auto exists = problem_client->tryExistPredicate(change.fact);
+      if (!exists.has_value()) {
+        success = false;
+      } else if (exists.value() != change.existed_before) {
+        // Otherwise it already is as before, whoever put it back
+        success = (change.existed_before ? problem_client->addPredicate(change.fact) :
+          problem_client->removePredicate(change.fact)) && success;
+      }
+      continue;
+    }
+
+    std::string expression = "(" + change.fact.name;
+    for (const auto & param : change.fact.parameters) {
+      expression += " " + param.name;
+    }
+    expression += ")";
+
+    auto current = problem_client->getFunction(expression);
+    if (!current.has_value()) {
+      success = false;
+      continue;
+    }
+
+    plansys2::Function function = change.fact;
+    const double tolerance = 1e-9 * std::max(1.0, std::abs(change.value_after));
+    const bool additive = change.modifier_type == plansys2_msgs::msg::Node::INCREASE ||
+      change.modifier_type == plansys2_msgs::msg::Node::DECREASE;
+    if (std::abs(current->value - change.value_after) <= tolerance) {
+      function.value = change.value_before;
+    } else if (additive) {
+      // Changed since by someone else: only this change is taken back
+      function.value = current->value - (change.value_after - change.value_before);
+    } else {
+      // An assignment or a scale overwritten since: the new value stays
+      if (kept) {
+        kept->push_back(expression);
+      }
+      continue;
+    }
+    success = problem_client->updateFunction(function) && success;
+  }
+  return success;
 }
 
 bool apply(
