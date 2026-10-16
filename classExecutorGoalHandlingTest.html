@@ -141,10 +141,12 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a995ea666b2a41ecefa953bf64eec8ab9" id="r_a995ea666b2a41ecefa953bf64eec8ab9"><td class="memItemLeft">GoalHandle::SharedPtr&#160;</td><td class="memItemRight"><a class="el" href="#a995ea666b2a41ecefa953bf64eec8ab9">accepted</a> (std::shared_future&lt; GoalHandle::SharedPtr &gt; future)</td></tr>
 <tr class="memitem:a33569333342d3a5e27baa5c4aab7ee25" id="r_a33569333342d3a5e27baa5c4aab7ee25"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a33569333342d3a5e27baa5c4aab7ee25">cancel</a> (const GoalHandle::SharedPtr &amp;handle)</td></tr>
 <tr class="memitem:a25d0826ff057dc5fefb17c44bdee8d64" id="r_a25d0826ff057dc5fefb17c44bdee8d64"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a25d0826ff057dc5fefb17c44bdee8d64">expect_plan_succeeds</a> (const std::string &amp;from, const std::string &amp;to)</td></tr>
+<tr class="memitem:a263ad81f8e08c43256ada8ac12880928" id="r_a263ad81f8e08c43256ada8ac12880928"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a263ad81f8e08c43256ada8ac12880928">left</a> (const std::string &amp;zone)</td></tr>
 <tr class="memitem:a519a3b9edc8d69584f716032f6c82f85" id="r_a519a3b9edc8d69584f716032f6c82f85"><td class="memItemLeft">std::vector&lt; rclcpp_lifecycle::LifecycleNode::SharedPtr &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a519a3b9edc8d69584f716032f6c82f85">lifecycle_nodes</a> ()</td></tr>
 <tr class="memitem:abb31519e87a61d50ef0f2a81cae9461e" id="r_abb31519e87a61d50ef0f2a81cae9461e"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#abb31519e87a61d50ef0f2a81cae9461e">place_robot</a> (const std::string &amp;zone)</td></tr>
 <tr class="memitem:ad066eef663f038e2a256f6c1649f09fc" id="r_ad066eef663f038e2a256f6c1649f09fc"><td class="memItemLeft">std::optional&lt; GoalHandle::WrappedResult &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ad066eef663f038e2a256f6c1649f09fc">result_of</a> (const GoalHandle::SharedPtr &amp;handle, std::chrono::seconds timeout=30s)</td></tr>
 <tr class="memitem:af6e5fd3c11dcc8f24e753f238d49a410" id="r_af6e5fd3c11dcc8f24e753f238d49a410"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#af6e5fd3c11dcc8f24e753f238d49a410">robot_at</a> (const std::string &amp;zone)</td></tr>
+<tr class="memitem:a25fac6e13d51c2c02cff1fb363d5b3d4" id="r_a25fac6e13d51c2c02cff1fb363d5b3d4"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a25fac6e13d51c2c02cff1fb363d5b3d4">robot_available</a> ()</td></tr>
 <tr class="memitem:ab535fb198a39f593fc4e521d5109540a" id="r_ab535fb198a39f593fc4e521d5109540a"><td class="memItemLeft">GoalHandle::SharedPtr&#160;</td><td class="memItemRight"><a class="el" href="#ab535fb198a39f593fc4e521d5109540a">send</a> (const std::vector&lt; std::string &gt; &amp;zones)</td></tr>
 <tr class="memitem:afc1d71a6a9557c881ea83c3e43677dfe" id="r_afc1d71a6a9557c881ea83c3e43677dfe"><td class="memItemLeft">std::shared_future&lt; GoalHandle::SharedPtr &gt;&#160;</td><td class="memItemRight"><a class="el" href="#afc1d71a6a9557c881ea83c3e43677dfe">send_async</a> (const std::vector&lt; std::string &gt; &amp;zones)</td></tr>
 <tr class="memitem:a29dd313e6ddecbb25425b61309e72096" id="r_a29dd313e6ddecbb25425b61309e72096"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a29dd313e6ddecbb25425b61309e72096">start</a> (<a class="el" href="classint.html">int</a> performer_ticks, <a class="el" href="classbool.html">bool</a> configure_performer=true)</td></tr>
@@ -232,6 +234,31 @@ Protected Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>to</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a263ad81f8e08c43256ada8ac12880928" name="a263ad81f8e08c43256ada8ac12880928"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a263ad81f8e08c43256ada8ac12880928">&#9670;&#160;</a></span>left()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> left </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>zone</em></span></td><td>)</td>
+          <td></td>
         </tr>
       </table>
   </td>
@@ -335,6 +362,31 @@ Protected Attributes</h2></td></tr>
           <td class="memname"><a class="el" href="classbool.html">bool</a> robot_at </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>zone</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a25fac6e13d51c2c02cff1fb363d5b3d4" name="a25fac6e13d51c2c02cff1fb363d5b3d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a25fac6e13d51c2c02cff1fb363d5b3d4">&#9670;&#160;</a></span>robot_available()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> robot_available </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>

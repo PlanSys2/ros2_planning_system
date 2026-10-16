@@ -1,0 +1,17 @@
+<map id="EffectUndoTest" name="EffectUndoTest">
+<area shape="rect" id="Node000001" title=" " alt="" coords="311,193,422,219"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="62,5,110,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="125,16,162,19,205,26,249,40,288,63,318,93,340,130,355,165,364,192,359,194,350,167,335,132,314,97,285,67,246,45,204,31,162,24,125,21"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="11,55,161,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="176,86,233,102,288,127,329,159,357,191,353,195,325,163,285,131,231,107,175,91"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="9,120,163,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="179,152,287,176,332,190,330,195,286,181,178,157"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="8,186,164,226"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="179,204,310,204,310,209,179,209"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="5,251,167,276"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="182,251,286,232,332,217,334,222,287,237,183,256"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="33,300,139,326"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="154,309,220,299,253,290,285,277,306,265,325,249,353,218,357,221,329,253,309,269,288,282,255,295,221,305,155,314"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="57,353,115,379"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="130,367,166,367,207,362,248,352,285,334,313,308,334,276,359,218,364,221,339,278,317,311,288,338,250,357,208,368,167,372,130,372"/>
+</map>

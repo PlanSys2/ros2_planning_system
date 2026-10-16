@@ -7,6 +7,8 @@ var searchData=
   ['validate_5ftree_5ftest_2ecpp_4',['validate_tree_test.cpp',['../validate__tree__test_8cpp.html',1,'']]],
   ['validatetree_5',['validateTree',['../namespaceparser_1_1pddl.html#abcaa411db2e4e0dbc31ce5f63ed52a12',1,'parser::pddl']]],
   ['value_6',['value',['../classparser_1_1pddl_1_1ValueExpression.html#aee90379adb0307effb138f4871edbc5c',1,'parser::pddl::ValueExpression::value'],['../classparser_1_1pddl_1_1GroundFunc.html#a4fc7f59e3113e19697159919a5aad095',1,'parser::pddl::GroundFunc::value']]],
-  ['valueexpression_7',['ValueExpression',['../classparser_1_1pddl_1_1ValueExpression.html',1,'ValueExpression'],['../classparser_1_1pddl_1_1ValueExpression.html#a7cca88d5b32501771bcc1a19b45838b5',1,'parser::pddl::ValueExpression::ValueExpression()']]],
-  ['version_8',['version',['../namespacesetup.html#a4c7a521b8f1a0769c09bfa4a1fca7dab',1,'setup']]]
+  ['value_5fafter_7',['value_after',['../structplansys2_1_1FactChange.html#a55a69d78a53f0ac0ef4207cd05ad7ab2',1,'plansys2::FactChange']]],
+  ['value_5fbefore_8',['value_before',['../structplansys2_1_1FactChange.html#a4c2a7ca6777d2c5583bc8f4016af80c5',1,'plansys2::FactChange']]],
+  ['valueexpression_9',['ValueExpression',['../classparser_1_1pddl_1_1ValueExpression.html',1,'ValueExpression'],['../classparser_1_1pddl_1_1ValueExpression.html#a7cca88d5b32501771bcc1a19b45838b5',1,'parser::pddl::ValueExpression::ValueExpression()']]],
+  ['version_10',['version',['../namespacesetup.html#a4c7a521b8f1a0769c09bfa4a1fca7dab',1,'setup']]]
 ];

@@ -163,6 +163,8 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Client interface for the <a class="el" href="namespaceplansys2.html">plansys2</a> executor node.  <a href="classplansys2_1_1ExecutorClient.html#details">More...</a><br /></td></tr>
 <tr class="memitem:ExecutorNode" id="r_ExecutorNode"><td class="memItemLeft">class &#160;</td><td class="memItemRight"><a class="el" href="classplansys2_1_1ExecutorNode.html">ExecutorNode</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">ROS2 Lifecycle node that manages plan execution.  <a href="classplansys2_1_1ExecutorNode.html#details">More...</a><br /></td></tr>
+<tr class="memitem:FactChange" id="r_FactChange"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structplansys2_1_1FactChange.html">FactChange</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A change an applied effect made to one fact, to take it back later.  <a href="structplansys2_1_1FactChange.html#details">More...</a><br /></td></tr>
 <tr class="memitem:Function" id="r_Function"><td class="memItemLeft">class &#160;</td><td class="memItemRight"><a class="el" href="classplansys2_1_1Function.html">Function</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a function in the planning domain.  <a href="classplansys2_1_1Function.html#details">More...</a><br /></td></tr>
 <tr class="memitem:Goal" id="r_Goal"><td class="memItemLeft">class &#160;</td><td class="memItemRight"><a class="el" href="classplansys2_1_1Goal.html">Goal</a></td></tr>
@@ -244,6 +246,8 @@ Enumerations</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ae0d408f5c696ebe7fffe4932fc042527" id="r_ae0d408f5c696ebe7fffe4932fc042527"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#ae0d408f5c696ebe7fffe4932fc042527">add_tabs</a> (<a class="el" href="classint.html">int</a> level)</td></tr>
+<tr class="memitem:a59e55f4d7905c9b54f226dac860368e8" id="r_a59e55f4d7905c9b54f226dac860368e8"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a59e55f4d7905c9b54f226dac860368e8">apply</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt; problem_client, std::vector&lt; <a class="el" href="structplansys2_1_1FactChange.html">FactChange</a> &gt; &amp;changes, uint32_t node_id=0)</td></tr>
+<tr class="memdesc:a59e55f4d7905c9b54f226dac860368e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a PDDL expression through the problem client, recording what it changes.  <br /></td></tr>
 <tr class="memitem:a578d8b816105e47be824adaec61e64f9" id="r_a578d8b816105e47be824adaec61e64f9"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a578d8b816105e47be824adaec61e64f9">apply</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt; problem_client, uint32_t node_id=0)</td></tr>
 <tr class="memdesc:a578d8b816105e47be824adaec61e64f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a PDDL expression represented as a tree.  <br /></td></tr>
 <tr class="memitem:a653bfabbb8ee22e2ff5c25ebe6482ba2" id="r_a653bfabbb8ee22e2ff5c25ebe6482ba2"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a653bfabbb8ee22e2ff5c25ebe6482ba2">apply</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt; &amp;predicates, std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt; &amp;functions, uint32_t node_id=0)</td></tr>
@@ -310,6 +314,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:a620c02081274310f595099a5595910d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a substring without empty lines.  <br /></td></tr>
 <tr class="memitem:ac06656f4bf3bdcf5400e75f2c4ca59cb" id="r_ac06656f4bf3bdcf5400e75f2c4ca59cb"><td class="memItemLeft">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ac06656f4bf3bdcf5400e75f2c4ca59cb">tokenize</a> (const std::string &amp;string, const std::string &amp;delim)</td></tr>
 <tr class="memdesc:ac06656f4bf3bdcf5400e75f2c4ca59cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits a string into tokens based on a delimiter.  <br /></td></tr>
+<tr class="memitem:a0a3c2a70b4a2bf7be631f51b8312d0c1" id="r_a0a3c2a70b4a2bf7be631f51b8312d0c1"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a0a3c2a70b4a2bf7be631f51b8312d0c1">undo</a> (const std::vector&lt; <a class="el" href="structplansys2_1_1FactChange.html">FactChange</a> &gt; &amp;changes, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt; problem_client, std::vector&lt; std::string &gt; *kept=nullptr)</td></tr>
+<tr class="memdesc:a0a3c2a70b4a2bf7be631f51b8312d0c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Take back the changes recorded by apply, in reverse order.  <br /></td></tr>
 <tr class="memitem:af2567c35d6f459fc430dd979b190e43d" id="r_af2567c35d6f459fc430dd979b190e43d"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#af2567c35d6f459fc430dd979b190e43d">update_stn_on_event</a> (const <a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> &amp;graph, const std::shared_ptr&lt; <a class="el" href="classplansys2_1_1BTBuilder.html">BTBuilder</a> &gt; &amp;builder, <a class="el" href="#adc723289ab3ed347857fa1a5307734fc">ActionMap</a> &amp;action_map, const std::string &amp;action_id, <a class="el" href="#a21d5e8f8cdaa838586b31007df0a950b">ActionType</a> type, const rclcpp::Time &amp;now)</td></tr>
 <tr class="memitem:a8e07ddf5b5b0e71f767a82424f50286b" id="r_a8e07ddf5b5b0e71f767a82424f50286b"><td class="memTemplParams" colspan="2">template&lt;typename FutureT, typename WaitTimeT&gt; </td></tr>
 <tr class="memitem:a8e07ddf5b5b0e71f767a82424f50286b template"><td class="memItemLeft">std::future_status&#160;</td><td class="memItemRight"><a class="el" href="#a8e07ddf5b5b0e71f767a82424f50286b">wait_for_result</a> (FutureT &amp;future, WaitTimeT time_to_wait)</td></tr>
@@ -417,8 +423,51 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="a59e55f4d7905c9b54f226dac860368e8" name="a59e55f4d7905c9b54f226dac860368e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59e55f4d7905c9b54f226dac860368e8">&#9670;&#160;</a></span>apply() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> apply </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>tree</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>problem_client</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="structplansys2_1_1FactChange.html">FactChange</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>changes</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>node_id</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply a PDDL expression through the problem client, recording what it changes. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">tree</td><td>The root node of the PDDL expression. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">problem_client</td><td>The problem expert client. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">changes</td><td>The facts the expression changed, appended in order. A fact that already had the value the expression gives it is not recorded. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">node_id</td><td><a class="el" href="structplansys2_1_1Node.html" title="Node in the temporal planning graph.">Node</a> identifier in the tree. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>bool Indicates whether the execution was successful. </dd></dl>
+
+</div>
+</div>
 <a id="a578d8b816105e47be824adaec61e64f9" name="a578d8b816105e47be824adaec61e64f9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a578d8b816105e47be824adaec61e64f9">&#9670;&#160;</a></span>apply() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a578d8b816105e47be824adaec61e64f9">&#9670;&#160;</a></span>apply() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -456,7 +505,7 @@ Variables</h2></td></tr>
 </div>
 </div>
 <a id="a653bfabbb8ee22e2ff5c25ebe6482ba2" name="a653bfabbb8ee22e2ff5c25ebe6482ba2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a653bfabbb8ee22e2ff5c25ebe6482ba2">&#9670;&#160;</a></span>apply() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a653bfabbb8ee22e2ff5c25ebe6482ba2">&#9670;&#160;</a></span>apply() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1526,6 +1575,44 @@ template&lt;typename NodeT&gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>std::vector&lt;std::string&gt; Vector containing the resulting tokens. </dd></dl>
+
+</div>
+</div>
+<a id="a0a3c2a70b4a2bf7be631f51b8312d0c1" name="a0a3c2a70b4a2bf7be631f51b8312d0c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0a3c2a70b4a2bf7be631f51b8312d0c1">&#9670;&#160;</a></span>undo()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> undo </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="structplansys2_1_1FactChange.html">FactChange</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>changes</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>problem_client</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; std::string &gt; *</td>          <td class="paramname"><span class="paramname"><em>kept</em></span><span class="paramdefsep"> = </span><span class="paramdefval">nullptr</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Take back the changes recorded by apply, in reverse order. </p>
+<p>A fact changed since by someone else keeps that change: a predicate that is already as it was is left alone, an increase or decrease is taken back as a delta, and an assignment or scale overwritten since is kept.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">changes</td><td>The changes recorded by apply. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">problem_client</td><td>The problem expert client. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">kept</td><td>If not null, the functions kept because they were overwritten since. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>bool false if the problem expert did not take some of the changes back. </dd></dl>
 
 </div>
 </div>

@@ -98,7 +98,7 @@ var searchData=
   ['append_95',['append',['../classparser_1_1pddl_1_1TokenStruct.html#a5a69e5aa851eb5bd8db890c0c37fc943',1,'parser::pddl::TokenStruct']]],
   ['appendaction_96',['appendAction',['../classplansys2_1_1DerivedResolutionGraph.html#a6ad8de3cad3c7bf4d8d3f16cd1b5519a',1,'plansys2::DerivedResolutionGraph']]],
   ['appendactions_97',['appendActions',['../classplansys2_1_1DerivedResolutionGraph.html#ab7a9560a0404c7956639afa307d3e7d0',1,'plansys2::DerivedResolutionGraph']]],
-  ['apply_98',['apply',['../namespaceplansys2.html#a578d8b816105e47be824adaec61e64f9',1,'plansys2::apply(const plansys2_msgs::msg::Tree &amp;tree, std::shared_ptr&lt; plansys2::ProblemExpertClient &gt; problem_client, uint32_t node_id=0)'],['../namespaceplansys2.html#a653bfabbb8ee22e2ff5c25ebe6482ba2',1,'plansys2::apply(const plansys2_msgs::msg::Tree &amp;tree, std::vector&lt; plansys2::Predicate &gt; &amp;predicates, std::vector&lt; plansys2::Function &gt; &amp;functions, uint32_t node_id=0)']]],
+  ['apply_98',['apply',['../namespaceplansys2.html#a578d8b816105e47be824adaec61e64f9',1,'plansys2::apply(const plansys2_msgs::msg::Tree &amp;tree, std::shared_ptr&lt; plansys2::ProblemExpertClient &gt; problem_client, uint32_t node_id=0)'],['../namespaceplansys2.html#a653bfabbb8ee22e2ff5c25ebe6482ba2',1,'plansys2::apply(const plansys2_msgs::msg::Tree &amp;tree, std::vector&lt; plansys2::Predicate &gt; &amp;predicates, std::vector&lt; plansys2::Function &gt; &amp;functions, uint32_t node_id=0)'],['../namespaceplansys2.html#a59e55f4d7905c9b54f226dac860368e8',1,'plansys2::apply(const plansys2_msgs::msg::Tree &amp;tree, std::shared_ptr&lt; plansys2::ProblemExpertClient &gt; problem_client, std::vector&lt; FactChange &gt; &amp;changes, uint32_t node_id=0)']]],
   ['apply_5fatend_5feffect_5fnode_2ecpp_99',['apply_atend_effect_node.cpp',['../apply__atend__effect__node_8cpp.html',1,'']]],
   ['apply_5fatend_5feffect_5fnode_2ehpp_100',['apply_atend_effect_node.hpp',['../apply__atend__effect__node_8hpp.html',1,'']]],
   ['apply_5fatstart_5feffect_5fnode_2ecpp_101',['apply_atstart_effect_node.cpp',['../apply__atstart__effect__node_8cpp.html',1,'']]],
@@ -114,7 +114,8 @@ var searchData=
   ['at_111',['at',['../classStnDependencyTest.html#a24cad8651846604c79f4e9e85aba8405',1,'StnDependencyTest']]],
   ['at_5fend_5feffects_5fapplied_112',['at_end_effects_applied',['../structplansys2_1_1ActionExecutionInfo.html#aa4dfef57ee227f83fa217c5db7592c5a',1,'plansys2::ActionExecutionInfo']]],
   ['at_5fend_5feffects_5fapplied_5ftime_113',['at_end_effects_applied_time',['../structplansys2_1_1ActionExecutionInfo.html#a777f0a8056f4eac217d1e8163ac318a1',1,'plansys2::ActionExecutionInfo']]],
-  ['at_5fstart_5feffects_5fapplied_114',['at_start_effects_applied',['../structplansys2_1_1ActionExecutionInfo.html#a19eba18809d8f4a244e13097765fd83d',1,'plansys2::ActionExecutionInfo']]],
-  ['at_5fstart_5feffects_5fapplied_5ftime_115',['at_start_effects_applied_time',['../structplansys2_1_1ActionExecutionInfo.html#ac20ef741e1a7e38b38e485caa0af2890',1,'plansys2::ActionExecutionInfo']]],
-  ['attributes_116',['attributes',['../classplansys2__support__py_1_1core_1_1PluginProvider_1_1PluginDescriptor.html#ae3234fe8267b5af67d7633a6f9a359c9',1,'plansys2_support_py::core::PluginProvider::PluginDescriptor']]]
+  ['at_5fstart_5fchanges_114',['at_start_changes',['../structplansys2_1_1ActionExecutionInfo.html#a497ae45186a731f07f280e555b250882',1,'plansys2::ActionExecutionInfo']]],
+  ['at_5fstart_5feffects_5fapplied_115',['at_start_effects_applied',['../structplansys2_1_1ActionExecutionInfo.html#a19eba18809d8f4a244e13097765fd83d',1,'plansys2::ActionExecutionInfo']]],
+  ['at_5fstart_5feffects_5fapplied_5ftime_116',['at_start_effects_applied_time',['../structplansys2_1_1ActionExecutionInfo.html#ac20ef741e1a7e38b38e485caa0af2890',1,'plansys2::ActionExecutionInfo']]],
+  ['attributes_117',['attributes',['../classplansys2__support__py_1_1core_1_1PluginProvider_1_1PluginDescriptor.html#ae3234fe8267b5af67d7633a6f9a359c9',1,'plansys2_support_py::core::PluginProvider::PluginDescriptor']]]
 ];
