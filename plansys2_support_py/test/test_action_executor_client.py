@@ -320,17 +320,91 @@ class TestActionExecutorClient(unittest.TestCase):
     def test_action_hub_callback_reject(self):
         """Test action hub callback with REJECT message."""
         self.client.commited = True
+        self.client.committed_request_id = 'req'
 
         # Create REJECT message
         msg = ActionExecution()
         msg.type = ActionExecution.REJECT
         msg.node_id = 'test_action_executor'
+        msg.request_id = 'req'
 
         # Call callback
         self.client.action_hub_callback(msg)
 
         # Verify commited flag is reset
         self.assertFalse(self.client.commited)
+
+    def configure(self):
+        """Configure the client for 'move', leaving it inactive."""
+        self.client.set_parameters([
+            rclpy.parameter.Parameter('action_name', rclpy.Parameter.Type.STRING, 'move'),
+            rclpy.parameter.Parameter('rate', rclpy.Parameter.Type.DOUBLE, 1.0),
+            rclpy.parameter.Parameter('specialized_arguments',
+                                      rclpy.Parameter.Type.STRING_ARRAY, [])
+        ])
+        self.client.trigger_configure()
+
+    def request(self, request_id):
+        """Build a REQUEST for move."""
+        msg = ActionExecution()
+        msg.type = ActionExecution.REQUEST
+        msg.node_id = 'executor'
+        msg.request_id = request_id
+        msg.action = 'move'
+        msg.arguments = ['robot1', 'wp1', 'wp2']
+        return msg
+
+    def test_response_carries_the_request_id(self):
+        """The response belongs to the request it answers."""
+        self.configure()
+        with patch.object(self.client.action_hub_pub, 'publish') as publish:
+            self.client.action_hub_callback(self.request('req_1'))
+        self.assertTrue(self.client.commited)
+        self.assertEqual(publish.call_args[0][0].type, ActionExecution.RESPONSE)
+        self.assertEqual(publish.call_args[0][0].request_id, 'req_1')
+
+    def test_answers_of_another_request_are_ignored(self):
+        """Only the CONFIRM or REJECT of our request counts."""
+        self.configure()
+        with patch.object(self.client.action_hub_pub, 'publish'):
+            self.client.action_hub_callback(self.request('req_1'))
+
+        reject = ActionExecution()
+        reject.type = ActionExecution.REJECT
+        reject.node_id = 'test_action_executor'
+        reject.request_id = 'req_0'
+        self.client.action_hub_callback(reject)
+        self.assertTrue(self.client.commited)
+
+        reject.request_id = 'req_1'
+        self.client.action_hub_callback(reject)
+        self.assertFalse(self.client.commited)
+
+    def test_commitment_expires(self):
+        """Without CONFIRM or REJECT the client takes requests again."""
+        self.configure()
+        with patch.object(self.client.action_hub_pub, 'publish') as publish:
+            self.client.action_hub_callback(self.request('lost'))
+            self.assertIsNotNone(self.client.commitment_timeout)
+            self.client.action_hub_callback(self.request('next'))
+            self.assertEqual(publish.call_count, 1)
+
+            self.client.commitment_expired()
+            self.assertFalse(self.client.commited)
+            self.assertIsNone(self.client.commitment_timeout)
+            self.client.action_hub_callback(self.request('next'))
+            self.assertEqual(publish.call_count, 2)
+
+    def test_feedback_and_finish_carry_the_request_id(self):
+        """What the client sends while executing belongs to the confirmed request."""
+        self.configure()
+        self.client.current_request_id = 'req_7'
+        self.client.current_arguments = ['robot1', 'wp1', 'wp2']
+        with patch.object(self.client.action_hub_pub, 'publish') as publish:
+            self.client.send_feedback(0.5, 'moving')
+            self.assertEqual(publish.call_args[0][0].request_id, 'req_7')
+            self.client.finish(True, 1.0, 'done')
+            self.assertEqual(publish.call_args[0][0].request_id, 'req_7')
 
 
 if __name__ == '__main__':

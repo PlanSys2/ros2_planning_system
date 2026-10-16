@@ -49,6 +49,26 @@ class ActionExecutorClient(LifecycleNode):
         self.status.status_stamp = self.get_clock().now().to_msg()
         self.status.node_name = self.get_name()
         self.commited = False
+        # The request we answered and wait to be confirmed or rejected for
+        self.committed_request_id = ''
+        # A lost CONFIRM or REJECT does not keep us committed for ever
+        self.commitment_timeout = None
+        # The request we execute: its feedback and finish carry it
+        self.current_request_id = ''
+
+    def release_commitment(self):
+        """Stop waiting for a CONFIRM or REJECT."""
+        self.commited = False
+        self.committed_request_id = ''
+        if self.commitment_timeout is not None:
+            self.commitment_timeout.cancel()
+            self.destroy_timer(self.commitment_timeout)
+            self.commitment_timeout = None
+
+    def commitment_expired(self):
+        """Become available again: nobody answered our response."""
+        self.get_logger().warning('No answer to our response: available again')
+        self.release_commitment()
 
     def on_configure(
         self, state: LifecycleState
@@ -175,22 +195,28 @@ class ActionExecutorClient(LifecycleNode):
             should_exec = self.should_execute(msg.action, msg.arguments)
             if state_inactive and not self.commited and should_exec:
                 self.commited = True
+                self.committed_request_id = msg.request_id
+                self.commitment_timeout = self.create_timer(5.0, self.commitment_expired)
                 self.send_response(msg)
         elif msg.type == ActionExecution.CONFIRM:
             curr_state = self._state_machine.current_state[0]
             state_inactive = curr_state == State.PRIMARY_STATE_INACTIVE
             node_match = msg.node_id == self.get_name()
-            if state_inactive and self.commited and node_match:
+            request_match = msg.request_id == self.committed_request_id
+            if state_inactive and self.commited and node_match and request_match:
                 self.current_arguments = msg.arguments
+                self.current_request_id = msg.request_id
+                self.release_commitment()
                 self.trigger_activate()
-                self.commited = False
         elif msg.type == ActionExecution.REJECT:
-            if msg.node_id == self.get_name():
-                self.commited = False
+            node_match = msg.node_id == self.get_name()
+            if self.commited and node_match and msg.request_id == self.committed_request_id:
+                self.release_commitment()
         elif msg.type == ActionExecution.CANCEL:
             curr_state = self._state_machine.current_state[0]
             state_active = curr_state == State.PRIMARY_STATE_ACTIVE
             node_match = msg.node_id == self.get_name()
+            node_match = node_match and msg.request_id == self.current_request_id
             if state_active and node_match:
                 self.trigger_deactivate()
         elif (msg.type in [ActionExecution.RESPONSE,
@@ -283,6 +309,7 @@ class ActionExecutorClient(LifecycleNode):
         msg_resp = ActionExecution()
         msg_resp.type = ActionExecution.FEEDBACK
         msg_resp.node_id = self.get_name()
+        msg_resp.request_id = self.current_request_id
         msg_resp.action = self.action_managed
         msg_resp.arguments = self.current_arguments
         msg_resp.completion = completion
@@ -311,6 +338,7 @@ class ActionExecutorClient(LifecycleNode):
         msg_resp = ActionExecution()
         msg_resp.type = ActionExecution.FINISH
         msg_resp.node_id = self.get_name()
+        msg_resp.request_id = self.current_request_id
         msg_resp.action = self.action_managed
         msg_resp.arguments = self.current_arguments
         msg_resp.completion = completion

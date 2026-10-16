@@ -212,7 +212,16 @@ private:
   // While running, the node that asked for the action must stay alive (#446)
   void check_requester();
 
+  // Not waiting any more for a CONFIRM or REJECT
+  void release_commitment();
+
   std::string requester_;
+  // The request we answered and wait to be confirmed or rejected for
+  std::string committed_request_id_;
+  // A lost CONFIRM or REJECT does not keep us committed for ever
+  rclcpp::TimerBase::SharedPtr commitment_timeout_;
+  // The request we execute: its feedback and finish carry it
+  std::string current_request_id_;
   rclcpp::TimerBase::SharedPtr requester_check_;
   int requester_misses_ {0};
 };
