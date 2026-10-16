@@ -47,8 +47,6 @@ public:
 
 protected:
   std::string bt_action_;
-  std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 };
 
 }  // namespace plansys2

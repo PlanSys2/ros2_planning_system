@@ -445,8 +445,6 @@ protected:
   std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> get_graph_tabular(
     const plansys2::ActionGraph::Ptr & graph) const;
 
-  std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 
   ActionGraph::Ptr graph_;
   std::string bt_;

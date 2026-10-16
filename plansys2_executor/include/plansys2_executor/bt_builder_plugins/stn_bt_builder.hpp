@@ -504,8 +504,6 @@ protected:
    */
   std::string t(const int & level) const;
 
-  std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 
   Graph::Ptr stn_;
   std::string bt_start_action_;

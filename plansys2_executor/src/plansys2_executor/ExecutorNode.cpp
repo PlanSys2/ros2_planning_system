@@ -461,6 +461,8 @@ ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
     RCLCPP_ERROR(get_logger(), "pluginlib error: %s", ex.what());
     return false;
   }
+  // Our clients: otherwise each plan would create, and later destroy, two more nodes
+  bt_builder->set_clients(domain_client_, problem_client_);
 
   if (bt_builder_plugin == "STNBTBuilder") {
     // Start and end of each action are separate BT units

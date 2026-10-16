@@ -36,8 +36,6 @@ namespace plansys2
 
 SimpleBTBuilder::SimpleBTBuilder()
 {
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
 }
 
 void
@@ -340,8 +338,8 @@ SimpleBTBuilder::build_action_graph(const plansys2_msgs::msg::Plan & current_pla
   auto graph = ActionGraph::make_shared();
 
   auto action_sequence = get_plan_actions(current_plan);
-  auto predicates = problem_client_->getPredicates();
-  auto functions = problem_client_->getFunctions();
+  auto predicates = problem_client()->getPredicates();
+  auto functions = problem_client()->getFunctions();
 
   // Get root actions that can be run in parallel
   graph->roots = get_roots(action_sequence, predicates, functions, node_counter);
@@ -430,8 +428,8 @@ SimpleBTBuilder::build_action_graph(const plansys2_msgs::msg::Plan & current_pla
     // Compute the state up to the new node
     // The effects of the new node are not applied
     std::list<ActionNode::Ptr> used_nodes;
-    predicates = problem_client_->getPredicates();
-    functions = problem_client_->getFunctions();
+    predicates = problem_client()->getPredicates();
+    functions = problem_client()->getFunctions();
     get_state(new_node, used_nodes, predicates, functions);
     new_node->predicates = predicates;
     new_node->functions = functions;
@@ -824,14 +822,14 @@ SimpleBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan)
 
     action_stamped.time = item.time;
     action_stamped.duration = item.duration;
-    auto actions = domain_client_->getActions();
+    auto actions = domain_client()->getActions();
     if (std::find(actions.begin(), actions.end(), get_action_name(item.action)) != actions.end()) {
       action_stamped.action =
-        domain_client_->getAction(
+        domain_client()->getAction(
         get_action_name(item.action), get_action_params(item.action));
     } else {
       action_stamped.action =
-        domain_client_->getDurativeAction(
+        domain_client()->getDurativeAction(
         get_action_name(item.action), get_action_params(item.action));
     }
 

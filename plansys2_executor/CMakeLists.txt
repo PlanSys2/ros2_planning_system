@@ -28,6 +28,7 @@ find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 
 set(EXECUTOR_SOURCES
+  src/plansys2_executor/BTBuilder.cpp
   src/plansys2_executor/ExecutorClient.cpp
   src/plansys2_executor/ActionExecutor.cpp
   src/plansys2_executor/ActionExecutorClient.cpp
@@ -104,6 +105,7 @@ target_include_directories(bt_builder_plugins PUBLIC
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
 target_link_libraries(bt_builder_plugins
   PUBLIC
+  ${PROJECT_NAME}
   Eigen3::Eigen
   ${plansys2_msgs_TARGETS}
   plansys2_core::plansys2_core
