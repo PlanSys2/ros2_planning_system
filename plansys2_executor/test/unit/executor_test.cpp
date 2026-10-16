@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <atomic>
 #include <string>
 #include <vector>
 #include <regex>
@@ -2669,10 +2670,21 @@ TEST(executor, executor_client_execute_plan_multi_replan)
         current_plan = *plan;
     });
 
-    bool finish = false;
+    std::atomic<bool> finish {false};
     std::thread t([&]() {
         while (!finish) {exe.spin_some();}
       });
+    // A failed ASSERT returns early: the thread must be joined anyway, or the test aborts
+    struct Joiner
+    {
+      std::atomic<bool> & finish;
+      std::thread & thread;
+      ~Joiner()
+      {
+        finish = true;
+        if (thread.joinable()) {thread.join();}
+      }
+    } joiner{finish, t};
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -2784,7 +2796,8 @@ TEST(executor, executor_client_execute_plan_multi_replan)
     auto result = executor_client->getResult().value();
 
     ASSERT_EQ(result.result, plansys2_msgs::action::ExecutePlan::Result::SUCCESS);
-    ASSERT_EQ(result.action_execution_status.size(), 6u);
+    // As many as in the last plan, which depends on how far the first one got
+    ASSERT_EQ(result.action_execution_status.size(), plan.value().items.size());
     for (const auto & action_status : result.action_execution_status) {
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }

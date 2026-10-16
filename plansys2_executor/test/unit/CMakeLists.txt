@@ -26,6 +26,9 @@ foreach(scenario
     TIMEOUT 90)
 endforeach()
 
+ament_add_gtest(action_executor_churn_test action_executor_churn_test.cpp TIMEOUT 120)
+target_link_libraries(action_executor_churn_test ${PROJECT_NAME})
+
 ament_add_gtest(execution_tree_test execution_tree_test.cpp)
 target_compile_definitions(execution_tree_test
   PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
