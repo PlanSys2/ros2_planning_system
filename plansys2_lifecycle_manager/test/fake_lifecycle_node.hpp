@@ -49,18 +49,26 @@ public:
     change_state_ = create_service<lifecycle_msgs::srv::ChangeState>(
       name + "/change_state",
       [this](
-        const std::shared_ptr<lifecycle_msgs::srv::ChangeState::Request>,
-        std::shared_ptr<lifecycle_msgs::srv::ChangeState::Response> response) {
+        std::shared_ptr<rclcpp::Service<lifecycle_msgs::srv::ChangeState>> service,
+        std::shared_ptr<rmw_request_id_t> header,
+        const std::shared_ptr<lifecycle_msgs::srv::ChangeState::Request>) {
         std::this_thread::sleep_for(change_state_delay);
-        response->success = change_state_success;
         if (on_change_state) {
           on_change_state();
         }
+        // As DDS may drop it while the nodes are still discovering each other
+        if (lose_change_state_response) {
+          return;
+        }
+        lifecycle_msgs::srv::ChangeState::Response response;
+        response.success = change_state_success;
+        service->send_response(*header, response);
       });
   }
 
   std::atomic<uint8_t> state {lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED};
   std::atomic<bool> change_state_success {true};
+  std::atomic<bool> lose_change_state_response {false};
   std::chrono::milliseconds get_state_delay {0};
   std::chrono::milliseconds change_state_delay {0};
   std::function<void()> on_change_state;
