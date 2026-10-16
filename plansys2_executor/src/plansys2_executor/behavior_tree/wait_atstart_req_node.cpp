@@ -62,10 +62,10 @@ WaitAtStartReq::tick()
 
   std::string unmet;
   const plansys2_msgs::msg::Tree * reqs = nullptr;
-  if (!check(reqs_as, problem_client_)) {
+  if (!check_in_expert(reqs_as, problem_client_)) {
     unmet = "at start";
     reqs = &reqs_as;
-  } else if (!check(reqs_oa, problem_client_) && !holds_after_start(info, reqs_oa)) {
+  } else if (!check_in_expert(reqs_oa, problem_client_) && !holds_after_start(info, reqs_oa)) {
     unmet = "over all";
     reqs = &reqs_oa;
   } else {
