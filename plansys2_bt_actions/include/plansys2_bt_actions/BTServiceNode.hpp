@@ -67,10 +67,7 @@ public:
       RCLCPP_ERROR(
         node_->get_logger(), "\"%s\" service server not available after waiting for %.2fs",
         service_name_.c_str(), wait_for_service_timeout_.count() / 1000.0);
-      throw std::runtime_error(
-              std::string(
-                "Service server %s not available",
-                service_name_.c_str()));
+      throw std::runtime_error("Service server " + service_name_ + " not available");
     }
 
     RCLCPP_DEBUG(
@@ -108,11 +105,16 @@ public:
    */
   void createROSInterfaces()
   {
+    // The service_name port, if given, overrides the name passed to the constructor
     std::string service_new;
-    getInput("service_name", service_new);
+    if (!getInput("service_name", service_new) || service_new.empty()) {
+      service_new = service_name_;
+    }
     if (service_new != service_name_ || !service_client_) {
       service_name_ = service_new;
-      node_ = config().blackboard->template get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
+      if (!config().blackboard->get("node", node_) || !node_) {
+        throw BT::RuntimeError(service_node_name_ + ": no 'node' in the blackboard");
+      }
 
       callback_group_ = node_->create_callback_group(
         rclcpp::CallbackGroupType::MutuallyExclusive, false);
@@ -188,6 +190,9 @@ public:
    */
   void halt() override
   {
+    if (request_sent_) {
+      service_client_->prune_pending_requests();
+    }
     request_sent_ = false;
     resetStatus();
   }
@@ -242,6 +247,8 @@ public:
     RCLCPP_WARN(
       node_->get_logger(),
       "Node timed out while executing service call to %s.", service_name_.c_str());
+    // A late response would stay pending for ever
+    service_client_->prune_pending_requests();
     request_sent_ = false;
     return BT::NodeStatus::FAILURE;
   }
