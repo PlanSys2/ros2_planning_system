@@ -447,7 +447,17 @@ TEST(popf_plan_solver, parse_plan_result_tolerates_unexpected_lines)
   ASSERT_EQ(plan->items[0].action, "(move leia kitchen bedroom)");
   ASSERT_FLOAT_EQ(plan->items[0].duration, 5.0);
   ASSERT_EQ(plan->items[1].action, "(approach leia bedroom jack)");
-  ASSERT_FLOAT_EQ(plan->items[1].time, 5.001f);
+  ASSERT_DOUBLE_EQ(plan->items[1].time, 5.001);
+
+  // A number out of range is a bad line, not an exception; long times keep their decimals
+  plan = parse(
+    ";;;; Solution Found\n"
+    "0.000: (move leia kitchen bedroom)  [1" + std::string(400, '0') + ".000]\n"
+    "172800.003: (approach leia bedroom jack)  [86400.001]\n");
+  ASSERT_TRUE(plan);
+  ASSERT_EQ(plan->items.size(), 1u);
+  ASSERT_DOUBLE_EQ(plan->items[0].time, 172800.003);
+  ASSERT_DOUBLE_EQ(plan->items[0].duration, 86400.001);
 
   // A solution with no actions is an empty plan, not a failure
   plan = parse(";;;; Solution Found\n; Time 0.00\n");

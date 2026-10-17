@@ -72,7 +72,7 @@ struct ActionGraph
   static Ptr make_shared() {return std::make_shared<ActionGraph>();}
 
   std::list<ActionNode::Ptr> roots;
-  std::map<float, std::list<ActionNode::Ptr>> levels;
+  std::map<double, std::list<ActionNode::Ptr>> levels;
 
   // Arcs point both ways, so the nodes would keep each other alive (#430)
   ~ActionGraph()

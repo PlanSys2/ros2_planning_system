@@ -51,7 +51,7 @@ public:
 };
 
 plansys2::Node::Ptr make_node(
-  int num, const std::string & expression, float time, plansys2::ActionType type)
+  int num, const std::string & expression, double time, plansys2::ActionType type)
 {
   auto node = plansys2::Node::make_shared(num);
   node->action.expression = expression;

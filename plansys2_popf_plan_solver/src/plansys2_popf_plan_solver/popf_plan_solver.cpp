@@ -14,6 +14,7 @@
 
 
 #include <cerrno>
+#include <charconv>
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
@@ -231,10 +232,19 @@ POPFPlanSolver::parse_plan_result(const std::string & plan_path)
       continue;
     }
 
+    // from_chars: double and whatever the locale (stof read "0.500" as 0 with a comma decimal)
+    auto to_double = [](const std::string & text, double & value) {
+        const auto [ptr, ec] = std::from_chars(text.data(), text.data() + text.size(), value);
+        return ec == std::errc() && ptr == text.data() + text.size();
+      };
     plansys2_msgs::msg::PlanItem item;
-    item.time = std::stof(match[1].str());
     item.action = match[2].str();
-    item.duration = std::stof(match[3].str());
+    if (!to_double(match[1].str(), item.time) || !to_double(match[3].str(), item.duration)) {
+      RCLCPP_WARN(
+        lc_node_->get_logger(), "Ignoring a line with a wrong number in the popf plan: %s",
+        line.c_str());
+      continue;
+    }
     plan.items.push_back(item);
   }
 

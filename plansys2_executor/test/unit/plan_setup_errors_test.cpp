@@ -70,7 +70,7 @@ private:
 plansys2_msgs::msg::Plan make_plan(const std::vector<std::string> & actions)
 {
   plansys2_msgs::msg::Plan plan;
-  float time = 0.0;
+  double time = 0.0;
   for (const auto & action : actions) {
     plansys2_msgs::msg::PlanItem item;
     item.time = time;

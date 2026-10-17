@@ -207,6 +207,9 @@ public:
    */
   void domain_topic_callback(const std_msgs::msg::String::SharedPtr msg);
 
+  // Decimals of the times in the action ids, from action_time_precision
+  int action_time_precision();
+
 protected:
   /**
    * @brief Extracts ordered sub-goals from a plan.

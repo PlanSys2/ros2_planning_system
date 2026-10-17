@@ -45,7 +45,7 @@ SimpleBTBuilder::initialize(
   int precision)
 {
   (void)bt_action_2;
-  (void)precision;
+  action_time_precision_ = precision;
   if (bt_action_1 != "") {
     bt_action_ = bt_action_1;
   } else {
@@ -385,7 +385,7 @@ SimpleBTBuilder::build_action_graph(const plansys2_msgs::msg::Plan & current_pla
     auto new_node = ActionNode::make_shared();
     new_node->action = *action_sequence.begin();
     new_node->node_num = node_counter++;
-    float time = new_node->action.time;
+    double time = new_node->action.time;
 
     auto level = graph->levels.find(time);
     if (level == graph->levels.end()) {
@@ -676,7 +676,7 @@ SimpleBTBuilder::get_flow_tree(
   int l = level;
 
   const std::string action_id = "(" + node->action.action.get_action_string() + "):" +
-    std::to_string(static_cast<int>(node->action.time * 1000));
+    std::to_string(to_int_time(node->action.time, action_time_precision_));
 
   if (std::find(used_nodes.begin(), used_nodes.end(), action_id) != used_nodes.end()) {
     return t(l) + "<WaitAction action=\"" + action_id + "\"/>\n";
@@ -781,7 +781,7 @@ ActionExecutor::Status SimpleBTBuilder::get_action_status(
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map)
 {
   auto index = "(" + action_stamped.action.get_action_string() + "):" +
-    std::to_string(static_cast<int>(action_stamped.time * 1000));
+    std::to_string(to_int_time(action_stamped.time, action_time_precision_));
   if ((*action_map)[index].action_executor) {
     return (*action_map)[index].action_executor->get_internal_status();
   } else {
@@ -862,13 +862,13 @@ SimpleBTBuilder::execution_block(const ActionNode::Ptr & node, int l)
   std::string ret_aux = bt_action_;
 
   const std::string action_id = "(" + node->action.action.get_action_string() + "):" +
-    std::to_string(static_cast<int>(action.time * 1000));
+    std::to_string(to_int_time(action.time, action_time_precision_));
 
   std::string wait_actions;
   for (const auto & previous_node : node->in_arcs) {
     const std::string parent_action_id = "(" +
       previous_node->action.action.get_action_string() + "):" +
-      std::to_string(static_cast<int>( previous_node->action.time * 1000));
+      std::to_string(to_int_time(previous_node->action.time, action_time_precision_));
     wait_actions = wait_actions + t(1) + "<WaitAction action=\"" + parent_action_id + "\"/>";
 
     if (previous_node != *node->in_arcs.rbegin()) {

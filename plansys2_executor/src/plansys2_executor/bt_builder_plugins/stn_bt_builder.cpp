@@ -295,6 +295,7 @@ Graph::Ptr
 STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
 {
   auto graph = Graph::make_shared();
+  graph->action_time_precision = action_time_precision_;
   auto action_sequence = get_plan_actions(plan);
 
   // Add a node to represent the initial state
@@ -374,10 +375,10 @@ STNBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan) const
   return ret;
 }
 
-std::set<int>
+std::set<int64_t>
 STNBTBuilder::get_happenings(const plansys2_msgs::msg::Plan & plan) const
 {
-  std::set<int> happenings;
+  std::set<int64_t> happenings;
   happenings.insert(-1);
   auto action_sequence = get_plan_actions(plan);
   for (const auto & action : action_sequence) {
@@ -389,8 +390,8 @@ STNBTBuilder::get_happenings(const plansys2_msgs::msg::Plan & plan) const
   return happenings;
 }
 
-std::set<int>::iterator
-STNBTBuilder::get_happening(int time, const std::set<int> & happenings) const
+std::set<int64_t>::iterator
+STNBTBuilder::get_happening(int64_t time, const std::set<int64_t> & happenings) const
 {
   // This function returns an iterator pointing to either
   //   1. the first element that is equal to the key or
@@ -413,8 +414,8 @@ STNBTBuilder::get_happening(int time, const std::set<int> & happenings) const
   return it;
 }
 
-std::set<int>::iterator
-STNBTBuilder::get_previous(int time, const std::set<int> & happenings) const
+std::set<int64_t>::iterator
+STNBTBuilder::get_previous(int64_t time, const std::set<int64_t> & happenings) const
 {
   auto it = get_happening(time, happenings);
 
@@ -427,10 +428,10 @@ STNBTBuilder::get_previous(int time, const std::set<int> & happenings) const
   return happenings.end();
 }
 
-std::multimap<int, ActionStamped>
+std::multimap<int64_t, ActionStamped>
 STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
 {
-  std::multimap<int, ActionStamped> simple_plan;
+  std::multimap<int64_t, ActionStamped> simple_plan;
   auto action_sequence = get_plan_actions(plan);
 
   // Add an action to represent the initial state
@@ -445,7 +446,7 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
   simple_plan.insert(std::make_pair(-1, init_action));
 
   // Add the snap actions
-  int max_time = -1;
+  int64_t max_time = -1;
   for (auto action : action_sequence) {
     auto time = to_int_time(action.time, action_time_precision_ + 1);
     auto duration = to_int_time(action.duration, action_time_precision_ + 1);
@@ -469,7 +470,7 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
   simple_plan.insert(std::make_pair(max_time, goal_action));
 
   // Create the overall actions
-  std::vector<std::pair<int, ActionStamped>> overall_actions;
+  std::vector<std::pair<int64_t, ActionStamped>> overall_actions;
   for (const auto & action : action_sequence) {
     auto time = to_int_time(action.time, action_time_precision_ + 1);
     auto duration = to_int_time(action.duration, action_time_precision_ + 1);
@@ -478,7 +479,7 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
     auto it = simple_plan.equal_range(time);
     auto start_action = std::find_if(
       it.first, it.second,
-      [&](std::pair<int, ActionStamped> a) {
+      [&](std::pair<int64_t, ActionStamped> a) {
         return (a.second.expression == action.expression) && (a.second.type == ActionType::START);
       });
 
@@ -486,7 +487,7 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
     it = simple_plan.equal_range(time + duration);
     auto end_action = std::find_if(
       it.first, it.second,
-      [&](std::pair<int, ActionStamped> a) {
+      [&](std::pair<int64_t, ActionStamped> a) {
         return (a.second.expression == action.expression) && (a.second.type == ActionType::END);
       });
 
@@ -500,10 +501,10 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
     }
 
     // Compute the overall actions
-    int prev = time;
+    int64_t prev = time;
     for (auto iter = start_action; iter != simple_plan.end(); ++iter) {
       if (iter->first != prev) {
-        int time = prev + (iter->first - prev) / 2;
+        int64_t time = prev + (iter->first - prev) / 2;
         auto overall_action = std::make_pair(time, start_action->second);
         overall_action.second.type = ActionType::OVERALL;
         overall_actions.push_back(overall_action);
@@ -523,12 +524,12 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
   return simple_plan;
 }
 
-std::map<int, StateVec>
+std::map<int64_t, StateVec>
 STNBTBuilder::get_states(
-  const std::set<int> & happenings,
-  const std::multimap<int, ActionStamped> & plan) const
+  const std::set<int64_t> & happenings,
+  const std::multimap<int64_t, ActionStamped> & plan) const
 {
-  std::map<int, StateVec> states;
+  std::map<int64_t, StateVec> states;
 
   StateVec state_vec;
   state_vec.predicates = initial_predicates();
@@ -660,12 +661,12 @@ STNBTBuilder::is_match(
   return (t_1 == t_2) && (node->action.expression == action.expression);
 }
 
-std::vector<std::pair<int, ActionStamped>>
+std::vector<std::pair<int64_t, ActionStamped>>
 STNBTBuilder::get_parents(
-  const std::pair<int, ActionStamped> & action,
-  const std::multimap<int, ActionStamped> & plan,
-  const std::set<int> & happenings,
-  const std::map<int, StateVec> & states) const
+  const std::pair<int64_t, ActionStamped> & action,
+  const std::multimap<int64_t, ActionStamped> & plan,
+  const std::set<int64_t> & happenings,
+  const std::map<int64_t, StateVec> & states) const
 {
   auto parents = get_satisfy(action, plan, happenings, states);
   auto threats = get_threat(action, plan, happenings, states);
@@ -674,14 +675,14 @@ STNBTBuilder::get_parents(
   return parents;
 }
 
-std::vector<std::pair<int, ActionStamped>>
+std::vector<std::pair<int64_t, ActionStamped>>
 STNBTBuilder::get_satisfy(
-  const std::pair<int, ActionStamped> & action,
-  const std::multimap<int, ActionStamped> & plan,
-  const std::set<int> & happenings,
-  const std::map<int, StateVec> & states) const
+  const std::pair<int64_t, ActionStamped> & action,
+  const std::multimap<int64_t, ActionStamped> & plan,
+  const std::set<int64_t> & happenings,
+  const std::map<int64_t, StateVec> & states) const
 {
-  std::vector<std::pair<int, ActionStamped>> ret;
+  std::vector<std::pair<int64_t, ActionStamped>> ret;
 
   auto H_it = get_happening(action.first, happenings);
   if (H_it == happenings.end()) {
@@ -744,14 +745,14 @@ STNBTBuilder::get_satisfy(
   return ret;
 }
 
-std::vector<std::pair<int, ActionStamped>>
+std::vector<std::pair<int64_t, ActionStamped>>
 STNBTBuilder::get_threat(
-  const std::pair<int, ActionStamped> & action,
-  const std::multimap<int, ActionStamped> & plan,
-  const std::set<int> & happenings,
-  const std::map<int, StateVec> & states) const
+  const std::pair<int64_t, ActionStamped> & action,
+  const std::multimap<int64_t, ActionStamped> & plan,
+  const std::set<int64_t> & happenings,
+  const std::map<int64_t, StateVec> & states) const
 {
-  std::vector<std::pair<int, ActionStamped>> ret;
+  std::vector<std::pair<int64_t, ActionStamped>> ret;
 
   auto H_it = get_happening(action.first, happenings);
   if (H_it == happenings.end()) {
@@ -865,9 +866,9 @@ STNBTBuilder::get_threat(
 
 bool
 STNBTBuilder::can_apply(
-  const std::pair<int, ActionStamped> & action,
-  const std::multimap<int, ActionStamped> & plan,
-  const int & time,
+  const std::pair<int64_t, ActionStamped> & action,
+  const std::multimap<int64_t, ActionStamped> & plan,
+  const int64_t & time,
   StateVec & state) const
 {
   auto X = state;
@@ -1436,7 +1437,7 @@ STNBTBuilder::get_action_status(
     return ActionExecutor::IDLE;  // Nothing is executing yet
   }
   auto index = "(" + action_stamped.action.get_action_string() + "):" +
-    std::to_string(static_cast<int>(action_stamped.time * 1000));
+    std::to_string(to_int_time(action_stamped.time, action_time_precision_));
   if (action_map->find(index) != action_map->end()) {
     if ((*action_map)[index].action_executor) {
       return (*action_map)[index].action_executor->get_internal_status();

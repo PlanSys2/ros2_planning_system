@@ -15,6 +15,8 @@
 #ifndef PLANSYS2_EXECUTOR__BTBUILDER_HPP_
 #define PLANSYS2_EXECUTOR__BTBUILDER_HPP_
 
+#include <cmath>
+#include <cstdint>
 #include <map>
 #include <set>
 #include <tuple>
@@ -62,9 +64,9 @@ enum struct ActionType
  */
 struct ActionStamped
 {
-  float time;
+  double time;
   std::string expression;
-  float duration;
+  double duration;
   ActionType type;
   ActionVariant action;
 
@@ -105,6 +107,8 @@ struct Graph
   static Ptr make_shared() {return std::make_shared<Graph>();}
 
   std::list<Node::Ptr> nodes;
+  // Decimals of the action ids of its nodes, those of the action map
+  int action_time_precision = 3;
 
   // Arcs point both ways, so the nodes would keep each other alive (#430)
   ~Graph()
@@ -222,10 +226,10 @@ public:
    * @param[in] power The power of 10 to multiply by (precision).
    * @return The time as an integer with the specified precision.
    */
-  static int to_int_time(float time, int power)
+  static int64_t to_int_time(double time, int power)
   {
-    float scale = pow(10.0, static_cast<float>(power));
-    return static_cast<int>(time * scale);
+    // Rounded: truncating made 4.9999 and 4.9990 the same time, and 5.0005 earlier than 5.0004
+    return std::llround(time * std::pow(10.0, power));
   }
 
   /**
@@ -290,7 +294,16 @@ public:
   void set_initial_state(
     std::vector<plansys2::Predicate> predicates, std::vector<plansys2::Function> functions);
 
+  /**
+   * @brief Decimals of the times in the action ids, as given to initialize.
+   * @return The decimals.
+   */
+  int get_action_time_precision() const {return action_time_precision_;}
+
 protected:
+  // Decimals of the action ids; the executor gives its action_time_precision to initialize
+  int action_time_precision_ = 3;
+
   // The clients set, or our own ones, created the first time they are needed
   std::shared_ptr<plansys2::DomainExpertClient> domain_client() const;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client() const;

@@ -16,6 +16,7 @@
 #include <filesystem>
 #include <fstream>
 #include <future>
+#include <iomanip>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -90,6 +91,7 @@ void expect_valid(
   bool temporal)
 {
   std::ostringstream text;
+  text << std::fixed << std::setprecision(6);
   for (const auto & item : msg.items) {
     if (temporal) {
       text << item.time << ": " << item.action << " [" << item.duration << "]\n";
@@ -289,6 +291,46 @@ TEST(kairos_plan_solver, sequential_numeric_plan)
   }
   EXPECT_EQ(plan->items[2].action, "(refuel r3)");
   expect_valid(kSeqDomain, kSeqProblem, *plan, false);
+}
+
+// Each move takes a day and a few ms: in float32 the later times lose the ms
+TEST(kairos_plan_solver, long_plans_keep_their_decimals)
+{
+  const char * domain =
+    R"(
+(define (domain days)
+  (:requirements :strips :typing :durative-actions)
+  (:types room)
+  (:predicates (at ?r - room) (connected ?a ?b - room))
+  (:durative-action move
+    :parameters (?a ?b - room)
+    :duration (= ?duration 86400.003)
+    :condition (and (at start (at ?a)) (over all (connected ?a ?b)))
+    :effect (and (at start (not (at ?a))) (at end (at ?b)))))
+)";
+  const char * problem =
+    R"(
+(define (problem days1)
+  (:domain days)
+  (:objects r1 r2 r3 r4 - room)
+  (:init (at r1) (connected r1 r2) (connected r2 r3) (connected r3 r4))
+  (:goal (at r4)))
+)";
+  auto f = make_solver();
+  auto plan = f.solver->getPlan(domain, problem);
+  ASSERT_TRUE(plan);
+  ASSERT_EQ(plan->items.size(), 3u);
+  for (size_t i = 0; i < plan->items.size(); i++) {
+    EXPECT_NEAR(plan->items[i].duration, 86400.003, 1e-6);
+    if (i > 0) {
+      // The next one starts after the previous one ends, by less than a ms
+      const auto gap = plan->items[i].time -
+        (plan->items[i - 1].time + plan->items[i - 1].duration);
+      EXPECT_GT(gap, 0.0);
+      EXPECT_LT(gap, 0.01);
+    }
+  }
+  expect_valid(domain, problem, *plan, true);
 }
 
 TEST(kairos_plan_solver, derived_predicates)

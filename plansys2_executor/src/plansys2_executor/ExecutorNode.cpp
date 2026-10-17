@@ -423,7 +423,7 @@ ExecutorNode::create_plan_runtime_info(PlanRuntineInfo & runtime_info)
       throw std::runtime_error("malformed action in plan: [" + action + "]");
     }
 
-    auto index = BTBuilder::to_action_id(plan_item, 3);
+    auto index = BTBuilder::to_action_id(plan_item, action_time_precision());
     (*runtime_info.action_map)[index] = ActionExecutionInfo();
     (*runtime_info.action_map)[index].plan_item = plan_item;
     (*runtime_info.action_map)[index].action_executor =
@@ -488,11 +488,10 @@ ExecutorNode::get_tree_from_plan(
 
   if (bt_builder_plugin == "STNBTBuilder") {
     // Start and end of each action are separate BT units
-    auto precision = this->get_parameter("action_time_precision").as_int();
-    bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
+    bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, action_time_precision());
   } else {
-    // Every builder needs the action BT template (#431)
-    bt_builder->initialize(action_bt_xml_);
+    // Every builder needs the action BT template (#431), and the precision of the ids
+    bt_builder->initialize(action_bt_xml_, "", action_time_precision());
   }
 
   auto bt_xml_tree = bt_builder->get_tree(runtime_info.complete_plan);
@@ -672,7 +671,7 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
   // against the state, and it starts from where they began
   std::set<std::string> new_ids;
   for (const auto & item : runtime_info.remaining_plan.items) {
-    new_ids.insert(BTBuilder::to_action_id(item, 3));
+    new_ids.insert(BTBuilder::to_action_id(item, action_time_precision()));
   }
   for (auto & [action_id, info] : *runtime_info.action_map) {
     const bool goes_on = info.action_executor &&
@@ -817,7 +816,8 @@ ExecutorNode::skip_finished_actions(
     RCLCPP_INFO(
       get_logger(), "%s is already done: the new plan was computed while it ran",
       it->action.c_str());
-    skipped.emplace_back(BTBuilder::to_action_id(*it, 3), previous_action_map.at(previous_id));
+    skipped.emplace_back(
+      BTBuilder::to_action_id(*it, action_time_precision()), previous_action_map.at(previous_id));
     items.erase(it);
   }
   runtime_info.remaining_plan = runtime_info.complete_plan;
@@ -1415,6 +1415,19 @@ void ExecutorNode::reset_groot_monitor()
   if (groot_monitor_) {
     groot_monitor_.reset();
   }
+}
+
+int
+ExecutorNode::action_time_precision()
+{
+  // One precision for every action id: the builders and the action map must agree
+  const auto precision = get_parameter("action_time_precision").as_int();
+  if (precision < 0 || precision > 9) {
+    RCLCPP_WARN_ONCE(
+      get_logger(), "action_time_precision must be between 0 and 9 (%ld), using 3", precision);
+    return 3;
+  }
+  return static_cast<int>(precision);
 }
 
 }  // namespace plansys2

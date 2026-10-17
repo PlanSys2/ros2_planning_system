@@ -86,7 +86,7 @@ private:
   double duration_;
 };
 
-plansys2_msgs::msg::PlanItem item(float time, const std::string & action, float duration)
+plansys2_msgs::msg::PlanItem item(double time, const std::string & action, double duration)
 {
   plansys2_msgs::msg::PlanItem plan_item;
   plan_item.time = time;

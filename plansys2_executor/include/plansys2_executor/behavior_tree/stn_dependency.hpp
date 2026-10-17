@@ -30,9 +30,6 @@ namespace plansys2
 
 using ActionMap = std::map<std::string, ActionExecutionInfo>;
 
-// Precision of the action ids in the action map
-constexpr int kStnActionIdPrecision = 3;
-
 // The STN builder writes "<child id> <START|END> <parent id> <INIT|START|END>"
 struct StnDependency
 {

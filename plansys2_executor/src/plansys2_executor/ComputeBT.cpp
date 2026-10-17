@@ -277,7 +277,7 @@ ComputeBT::computeBTCallback(
   // Once for the whole plan: it was asked for every action
   const auto actions = domain_client_->getActions();
   for (const auto & plan_item : plan.value().items) {
-    auto index = BTBuilder::to_action_id(plan_item, 3);
+    auto index = BTBuilder::to_action_id(plan_item, action_time_precision());
 
 
     (*action_map)[index] = ActionExecutionInfo();
@@ -326,10 +326,9 @@ ComputeBT::computeBTCallback(
   }
 
   if (bt_builder_plugin == "SimpleBTBuilder") {
-    bt_builder->initialize(action_bt_xml_);
+    bt_builder->initialize(action_bt_xml_, "", action_time_precision());
   } else if (bt_builder_plugin == "STNBTBuilder") {
-    auto precision = this->get_parameter("action_time_precision").as_int();
-    bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, precision);
+    bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, action_time_precision());
   }
 
   auto bt_xml_tree = bt_builder->get_tree(plan.value());
@@ -460,6 +459,19 @@ void ComputeBT::reset_groot_monitor()
   if (groot_monitor_) {
     groot_monitor_.reset();
   }
+}
+
+int
+ComputeBT::action_time_precision()
+{
+  // One precision for every action id: the builders and the action map must agree
+  const auto precision = get_parameter("action_time_precision").as_int();
+  if (precision < 0 || precision > 9) {
+    RCLCPP_WARN_ONCE(
+      get_logger(), "action_time_precision must be between 0 and 9 (%ld), using 3", precision);
+    return 3;
+  }
+  return static_cast<int>(precision);
 }
 
 }  // namespace plansys2
