@@ -172,6 +172,12 @@ TEST(domain_expert, get_constants)
 
   ASSERT_EQ(consts1, test_consts1);
   ASSERT_EQ(consts2, test_consts2);
+
+  // Asking for a type that does not exist does not add it
+  const auto types = domain_expert.getTypes();
+  ASSERT_TRUE(domain_expert.getConstants("spaceship").empty());
+  ASSERT_TRUE(domain_expert.getConstants("").empty());
+  ASSERT_EQ(domain_expert.getTypes(), types);
 }
 
 TEST(domain_expert, get_predicates)

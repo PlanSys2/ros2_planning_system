@@ -125,7 +125,10 @@ DomainExpert::getConstants(const std::string & type)
 {
   if (!domain_->typed) {return std::vector<std::string>();}
 
-  return domain_->getType(type)->constants.tokens;
+  // types.index, not getType: asking for a type must not add it to the domain
+  const int i = domain_->types.index(type);
+  if (i < 0) {return std::vector<std::string>();}
+  return domain_->types[i]->constants.tokens;
 }
 
 std::vector<plansys2::Predicate>

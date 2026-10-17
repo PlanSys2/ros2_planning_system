@@ -253,6 +253,36 @@ TEST(domain_expert, change_domain_valid)
   plansys2::drain_ros(200ms);
 }
 
+TEST(domain_expert, get_constants_through_the_client)
+{
+  plansys2::drain_ros(300ms);
+  {
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+
+    std::string pkgpath =
+      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_constants.pddl"});
+    rclcpp::executors::SingleThreadedExecutor exe;
+
+    exe.add_node(domain_node->get_node_base_interface());
+    ExecutorSpinner spinner(exe);
+
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+    // The service did not exist: the client waited for it for ever
+    ASSERT_EQ(domain_client->getConstants("robot"), std::vector<std::string>({"leia", "lema"}));
+    ASSERT_EQ(domain_client->getConstants("person"), std::vector<std::string>({"jack", "john"}));
+    const auto types = domain_client->getTypes();
+    ASSERT_TRUE(domain_client->getConstants("spaceship").empty());
+    ASSERT_TRUE(domain_client->getConstants("").empty());
+    ASSERT_EQ(domain_client->getTypes(), types);
+  }
+  plansys2::drain_ros(200ms);
+}
+
 TEST(domain_expert, change_domain_invalid_rejected)
 {
   plansys2::drain_ros(300ms);
