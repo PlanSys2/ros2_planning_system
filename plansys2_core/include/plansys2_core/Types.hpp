@@ -29,7 +29,8 @@
 #include "plansys2_msgs/msg/tree.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
 
-namespace std
+// Hash helpers: in plansys2, as only specializations can be added to std
+namespace plansys2
 {
 template<typename T>
 inline void hash_combine(std::size_t & seed, const T & value)
@@ -41,13 +42,13 @@ inline std::size_t hash_node(const plansys2_msgs::msg::Node & node)
 {
   std::size_t seed = 0;
 
-  hash_combine(seed, node.name);
-  hash_combine(seed, node.node_type);
-  hash_combine(seed, node.children.size());
-  hash_combine(seed, node.parameters.size());
+  plansys2::hash_combine(seed, node.name);
+  plansys2::hash_combine(seed, node.node_type);
+  plansys2::hash_combine(seed, node.children.size());
+  plansys2::hash_combine(seed, node.parameters.size());
 
   for (const auto & param : node.parameters) {
-    hash_combine(seed, param.name);
+    plansys2::hash_combine(seed, param.name);
   }
   return seed;
 }
@@ -79,7 +80,7 @@ std::size_t unordered_container_hash(const std::unordered_map<Key, T, Hash, KeyE
   return h;
 }
 
-}  // namespace std
+}  // namespace plansys2
 
 namespace plansys2
 {
@@ -290,10 +291,10 @@ public:
     }
 
     normalized_hash_ = 0;
-    std::hash_combine(normalized_hash_, std::hash_node(normalized_predicate_));
-    std::hash_combine(normalized_hash_, normalized_preconditions_.nodes.size());
+    plansys2::hash_combine(normalized_hash_, plansys2::hash_node(normalized_predicate_));
+    plansys2::hash_combine(normalized_hash_, normalized_preconditions_.nodes.size());
     for (auto & node : normalized_preconditions_.nodes) {
-      std::hash_combine(normalized_hash_, std::hash_node(node));
+      plansys2::hash_combine(normalized_hash_, plansys2::hash_node(node));
     }
   }
 
@@ -333,8 +334,7 @@ public:
 private:
   mutable plansys2_msgs::msg::Node normalized_predicate_;
   mutable plansys2_msgs::msg::Tree normalized_preconditions_;
-  mutable bool normalized_cache_;
-  mutable std::size_t normalized_hash_;
+  mutable std::size_t normalized_hash_ {0};
 
   static std::string
   nodeToString(const plansys2_msgs::msg::Node & node)
@@ -499,7 +499,7 @@ struct hash<plansys2_msgs::msg::Node>
 {
   std::size_t operator()(const plansys2_msgs::msg::Node & node) const noexcept
   {
-    return hash_node(node);
+    return plansys2::hash_node(node);
   }
 };
 
@@ -517,7 +517,7 @@ struct hash<plansys2::Predicate>
 {
   std::size_t operator()(const plansys2::Predicate & pred) const noexcept
   {
-    return hash_node(pred);
+    return plansys2::hash_node(pred);
   }
 };
 
@@ -537,7 +537,10 @@ struct hash<plansys2::Derived>
 template<>
 struct hash<plansys2::Function>
 {
-  std::size_t operator()(const plansys2::Function & func) const noexcept {return hash_node(func);}
+  std::size_t operator()(const plansys2::Function & func) const noexcept
+  {
+    return plansys2::hash_node(func);
+  }
 };
 }  // namespace std
 

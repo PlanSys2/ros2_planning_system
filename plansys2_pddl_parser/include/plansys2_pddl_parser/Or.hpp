@@ -26,32 +26,28 @@ namespace parser
 namespace pddl
 {
 
+// (or c1 c2 ...): one or more conditions
 class Or : public Condition
 {
 public:
-  Condition * first, * second;
+  CondVec conds;
 
-  Or()
-  : first(0), second(0) {}
+  Or() = default;
 
   Or(const Or * o, Domain & d)
-  : first(0), second(0)
   {
-    if (o->first) {first = o->first->copy(d);}
-    if (o->second) {second = o->second->copy(d);}
+    for (auto cond : o->conds) {conds.push_back(cond->copy(d));}
   }
 
   ~Or()
   {
-    if (first) {delete first;}
-    if (second) {delete second;}
+    for (auto cond : conds) {delete cond;}
   }
 
   void print(std::ostream & s) const
   {
     s << "OR:\n";
-    if (first) {first->print(s);}
-    if (second) {second->print(s);}
+    for (auto cond : conds) {cond->print(s);}
   }
 
   void PDDLPrint(
@@ -64,10 +60,11 @@ public:
 
   void parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d);
 
+  void add(Condition * cond) {conds.push_back(cond);}
+
   void addParams(int m, unsigned n)
   {
-    first->addParams(m, n);
-    second->addParams(m, n);
+    for (auto cond : conds) {cond->addParams(m, n);}
   }
 
   Condition * copy(Domain & d) {return new Or(this, d);}

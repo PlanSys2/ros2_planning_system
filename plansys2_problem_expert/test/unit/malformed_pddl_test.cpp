@@ -239,10 +239,6 @@ INSTANTIATE_TEST_SUITE_P(
     std::make_pair("unbalanced_open", "(define (domain d) (:requirements :strips)"),
     std::make_pair("unbalanced_close", "(define (domain d)))))"),
     std::make_pair(
-      "no_predicates_section",
-      "(define (domain d) (:requirements :strips :typing) (:types thing)\n"
-      "  (:action a :parameters (?t - thing) :precondition (and) :effect (and)))"),
-    std::make_pair(
       "unknown_function_in_effect",
       "(define (domain d) (:requirements :strips :typing :fluents) (:types thing)\n"
       "  (:predicates (p ?t - thing)) (:functions (f ?t - thing))\n"

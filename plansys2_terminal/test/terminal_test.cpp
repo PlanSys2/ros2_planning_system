@@ -514,7 +514,7 @@ TEST_F(TerminalTestCase, load_default_plugin)
       std::ostringstream os;
       std::string command("get problem metric");
       terminal_node->process_command(command, os);
-      ASSERT_EQ(os.str(), "Metric: minimize (*  2.000000 (total-time))\n");
+      ASSERT_EQ(os.str(), "Metric: minimize (* 2.000000 (total-time))\n");
       terminal_node->reset_executions();
     }
 

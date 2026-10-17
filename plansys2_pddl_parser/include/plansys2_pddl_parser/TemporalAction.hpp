@@ -14,6 +14,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "plansys2_msgs/msg/node.hpp"
@@ -32,6 +33,10 @@ class Instance;
 class TemporalAction : public Action
 {
 public:
+  // (= ?duration e), or the bounds of (<= ?duration e), (>= ?duration e)...: the operator and
+  // the expression of each
+  std::vector<std::pair<std::string, Expression *>> durationConstraints;
+  // The duration, or its upper bound (the lower one if there is no upper)
   Expression * durationExpr;
   // pre_s and eff_s inherited from Action
   And * pre_o, * pre_e, * eff_e;
@@ -43,7 +48,7 @@ public:
 
   ~TemporalAction()
   {
-    if (durationExpr) {delete durationExpr;}
+    for (auto & constraint : durationConstraints) {delete constraint.second;}
     if (pre_o) {delete pre_o;}
     if (pre_e) {delete pre_e;}
     if (eff_e) {delete eff_e;}
@@ -52,7 +57,7 @@ public:
   void print(std::ostream & s) const
   {
     s << name << params << "\n";
-    s << "Duration: " << durationExpr->info() << "\n";
+    if (durationExpr) {s << "Duration: " << durationExpr->info() << "\n";}
     s << "Pre_s: " << pre;
     s << "Eff_s: " << eff;
     s << "Pre_o: " << pre_o;
@@ -70,6 +75,10 @@ public:
   }
 
   Expression * parseDuration(Stringreader & f, TokenStruct<std::string> & ts, Domain & d);
+
+  // One (op ?duration e), its '(' and operator already read
+  void parseDurationConstraint(
+    Stringreader & f, TokenStruct<std::string> & ts, Domain & d, const std::string & op);
 
   void printCondition(
     std::ostream & s, const TokenStruct<std::string> & ts, const Domain & d, const std::string & t,

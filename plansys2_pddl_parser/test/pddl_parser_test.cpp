@@ -185,8 +185,8 @@ TEST(PDDLParserTestCase, exists_get_tree)
 
   ASSERT_EQ(
     str,
-    "(and (exists (?1) (and (robot_at ?0 ?1)(charging_point_at ?1)))(and (>  (battery_level ?0) "
-    "1.000000)(<  (battery_level ?0) 200.000000)))");
+    "(and (exists (?1) (and (robot_at ?0 ?1)(charging_point_at ?1)))(and (> (battery_level ?0) "
+    "1.000000)(< (battery_level ?0) 200.000000)))");
 
   plansys2_msgs::msg::Tree tree2;
   std::vector<std::string> replace = {"rob1"};
@@ -194,8 +194,8 @@ TEST(PDDLParserTestCase, exists_get_tree)
   std::string str2 = parser::pddl::toString(tree2);
   ASSERT_EQ(
     str2,
-    "(and (exists (?1) (and (robot_at rob1 ?1)(charging_point_at ?1)))(and (>  (battery_level "
-    "rob1) 1.000000)(<  (battery_level rob1) 200.000000)))");
+    "(and (exists (?1) (and (robot_at rob1 ?1)(charging_point_at ?1)))(and (> (battery_level "
+    "rob1) 1.000000)(< (battery_level rob1) 200.000000)))");
 
   auto action2 = domain.actions.get("action_test5");
   plansys2_msgs::msg::Tree tree3;
@@ -207,14 +207,15 @@ TEST(PDDLParserTestCase, exists_get_tree)
   plansys2_msgs::msg::Tree action_test6_tree;
   action_test6->pre->getTree(action_test6_tree, domain);
   std::string action_test6_tree_str = parser::pddl::toString(action_test6_tree);
+  // Each exists has its own scope: its variables follow the action parameters
   ASSERT_EQ(
     action_test6_tree_str,
     "(and "
     "(exists (?1 ?2) (and (robot_at ?0 ?1)(connected ?1 ?2)))"
-    "(exists (?3) (and (battery_full ?3)))"
-    "(exists (?4) (and (battery_full ?4)))"
-    "(exists (?5 ?6) (and (connected ?5 ?6)))"
-    "(exists (?7) (and (battery_full ?7))))"
+    "(exists (?1) (and (battery_full ?1)))"
+    "(exists (?1) (and (battery_full ?1)))"
+    "(exists (?1 ?2) (and (connected ?1 ?2)))"
+    "(exists (?1) (and (battery_full ?1))))"
   );
 
   auto action_test7 = domain.actions.get("action_test7");
@@ -223,7 +224,7 @@ TEST(PDDLParserTestCase, exists_get_tree)
   std::string action_test7_tree_str = parser::pddl::toString(action_test7_tree);
   ASSERT_EQ(
     action_test7_tree_str,
-    "(or (=  ?0 rob1)(not (exists (?2) (and (not (battery_full ?2))))))");
+    "(or (= ?0 rob1)(not (exists (?2) (and (not (battery_full ?2))))))");
 }
 
 TEST(PDDLParserTestCase, check_node_equality)
@@ -288,8 +289,9 @@ TEST(PDDLParserTestCase, check_node_equality)
   ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate6, false));
   ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate6, predicate1, false));
 
+  // PDDL is case insensitive (#256)
   auto predicate1capital = parser::pddl::fromStringPredicate("(PREDICATE A B)");
-  ASSERT_FALSE(parser::pddl::checkNodeEquality(predicate1, predicate1capital));
+  ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate1capital));
 }
 
 TEST(PDDLParserTestCase, check_action_equality)
@@ -625,8 +627,8 @@ TEST(PDDLParserTestCase, from_string)
   ASSERT_EQ(tree.nodes[1].parameters.size(), 1);
   ASSERT_EQ(tree.nodes[1].parameters[0].name, "?a");
 
-  // Should it be a function or a constant? IMO, it could be both.
-  ASSERT_EQ(tree.nodes[2].node_type, plansys2_msgs::msg::Node::FUNCTION);
+  // A bare name is an object: functions go in parentheses
+  ASSERT_EQ(tree.nodes[2].node_type, plansys2_msgs::msg::Node::CONSTANT);
   ASSERT_EQ(tree.nodes[2].node_id, 2);
 
   expr = "(= 3 5)";
@@ -811,7 +813,7 @@ TEST(PDDLParserTestCase, metric_from_string)
   ASSERT_FALSE(m.tree.nodes.empty());
   ASSERT_EQ(
     toString(m),
-    "minimize (+  (spent) (*  100.000000 (/  (fuel r1) (-  (total-time) 2.000000))))");
+    "minimize (+ (spent) (* 100.000000 (/ (fuel r1) (- (total-time) 2.000000))))");
 
   // As written in a problem, with blanks around
   ASSERT_EQ(
@@ -819,7 +821,7 @@ TEST(PDDLParserTestCase, metric_from_string)
     "minimize (total-time)");
   ASSERT_EQ(
     toString(metricFromString("( :metric\n\tmaximize\n\t(+ (a) (b)) )")),
-    "maximize (+  (a) (b))");
+    "maximize (+ (a) (b))");
 
   // A bare number
   ASSERT_EQ(toString(metricFromString("minimize 3")), "minimize 3.000000");
@@ -1031,7 +1033,7 @@ TEST(PDDLParserTestCase, forall_imply_get_tree)
 
   plansys2_msgs::msg::Tree eff;
   secure->eff_e->getTree(eff, domain, {"z1"});
-  ASSERT_EQ(parser::pddl::toString(eff), "(and (forall (?2 - robot) (not (available ?2))))");
+  ASSERT_EQ(parser::pddl::toString(eff), "(and (forall (?1 - robot) (not (available ?1))))");
   ASSERT_TRUE(parser::pddl::validateTree(eff, error)) << error;
 }
 
@@ -1158,7 +1160,7 @@ TEST(PDDLParserTestCase, number_to_string)
 TEST(PDDLParserTestCase, numbers_keep_precision_in_text)
 {
   for (const std::string & number : {"0.0000001", "1234567.891000", "-2.500000"}) {
-    const std::string expr = "(>  (battery_level r1) " + number + ")";
+    const std::string expr = "(> (battery_level r1) " + number + ")";
     auto tree = parser::pddl::fromString(expr);
     ASSERT_EQ(parser::pddl::toString(tree), expr);
   }

@@ -69,20 +69,20 @@ struct hash<plansys2::Action>
   std::size_t operator()(const plansys2::Action & action) const noexcept
   {
     std::size_t seed = 0;
-    hash_combine(seed, action.name);
-    hash_combine(seed, action.parameters.size());
-    hash_combine(seed, action.preconditions.nodes.size());
-    hash_combine(seed, action.effects.nodes.size());
+    plansys2::hash_combine(seed, action.name);
+    plansys2::hash_combine(seed, action.parameters.size());
+    plansys2::hash_combine(seed, action.preconditions.nodes.size());
+    plansys2::hash_combine(seed, action.effects.nodes.size());
 
     for (const auto & param : action.parameters) {
-      hash_combine(seed, param.name);
+      plansys2::hash_combine(seed, param.name);
     }
 
     for (auto node : action.preconditions.nodes) {
-      hash_combine(seed, node);
+      plansys2::hash_combine(seed, node);
     }
     for (auto node : action.effects.nodes) {
-      hash_combine(seed, node);
+      plansys2::hash_combine(seed, node);
     }
 
     return seed;
@@ -95,32 +95,32 @@ struct hash<plansys2::DurativeAction>
   std::size_t operator()(const plansys2::DurativeAction & action) const noexcept
   {
     std::size_t seed = 0;
-    hash_combine(seed, action.name);
-    hash_combine(seed, action.parameters.size());
-    hash_combine(seed, action.at_start_requirements.nodes.size());
-    hash_combine(seed, action.over_all_requirements.nodes.size());
-    hash_combine(seed, action.at_end_requirements.nodes.size());
-    hash_combine(seed, action.at_start_effects.nodes.size());
-    hash_combine(seed, action.at_end_effects.nodes.size());
+    plansys2::hash_combine(seed, action.name);
+    plansys2::hash_combine(seed, action.parameters.size());
+    plansys2::hash_combine(seed, action.at_start_requirements.nodes.size());
+    plansys2::hash_combine(seed, action.over_all_requirements.nodes.size());
+    plansys2::hash_combine(seed, action.at_end_requirements.nodes.size());
+    plansys2::hash_combine(seed, action.at_start_effects.nodes.size());
+    plansys2::hash_combine(seed, action.at_end_effects.nodes.size());
 
     for (const auto & param : action.parameters) {
-      hash_combine(seed, param.name);
+      plansys2::hash_combine(seed, param.name);
     }
 
     for (auto node : action.at_start_requirements.nodes) {
-      hash_combine(seed, node);
+      plansys2::hash_combine(seed, node);
     }
     for (auto node : action.over_all_requirements.nodes) {
-      hash_combine(seed, node);
+      plansys2::hash_combine(seed, node);
     }
     for (auto node : action.at_end_requirements.nodes) {
-      hash_combine(seed, node);
+      plansys2::hash_combine(seed, node);
     }
     for (auto node : action.at_start_effects.nodes) {
-      hash_combine(seed, node);
+      plansys2::hash_combine(seed, node);
     }
     for (auto node : action.at_end_effects.nodes) {
-      hash_combine(seed, node);
+      plansys2::hash_combine(seed, node);
     }
 
     return seed;

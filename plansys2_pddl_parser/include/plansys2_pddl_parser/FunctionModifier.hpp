@@ -115,5 +115,35 @@ public:
   Condition * copy(Domain & d) {return new Increase(this, d);}
 };
 
+class ScaleUp : public FunctionModifier
+{
+public:
+  explicit ScaleUp(int val = 1)
+  : FunctionModifier("scale-up", val) {}
+
+  explicit ScaleUp(Function * f, const IntVec & p = IntVec())
+  : FunctionModifier("scale-up", f, p) {}
+
+  ScaleUp(const FunctionModifier * i, Domain & d)
+  : FunctionModifier("scale-up", i, d) {}
+
+  Condition * copy(Domain & d) {return new ScaleUp(this, d);}
+};
+
+class ScaleDown : public FunctionModifier
+{
+public:
+  explicit ScaleDown(int val = 1)
+  : FunctionModifier("scale-down", val) {}
+
+  explicit ScaleDown(Function * f, const IntVec & p = IntVec())
+  : FunctionModifier("scale-down", f, p) {}
+
+  ScaleDown(const FunctionModifier * i, Domain & d)
+  : FunctionModifier("scale-down", i, d) {}
+
+  Condition * copy(Domain & d) {return new ScaleDown(this, d);}
+};
+
 }  // namespace pddl
 }  // namespace parser

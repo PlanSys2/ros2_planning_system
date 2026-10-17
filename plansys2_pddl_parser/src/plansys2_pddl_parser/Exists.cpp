@@ -24,19 +24,13 @@ void Exists::PDDLPrint(
   tabindent(s, indent);
   s << "( exists (";
 
-  TokenStruct<std::string> fstruct(ts);
-
-  // The same names the body prints for its variables
   for (unsigned i = 0; i < params.size(); ++i) {
-    if (params[i] >= 0 && static_cast<size_t>(params[i]) < ts.size()) {
-      s << " " << ts[params[i]];
-    } else {
-      s << " ?" << params[i];
-    }
+    s << " " << (i < names.size() ? names[i] : "?" + std::to_string(params[i]));
     if (d.typed && i < types.size()) {s << " - " << d.types[types[i]]->name;}
   }
   s << " )\n";
 
+  const TokenStruct<std::string> fstruct = printScope(ts, base, names);
   if (cond) {
     cond->PDDLPrint(s, indent + 1, fstruct, d);
   } else {
@@ -54,16 +48,10 @@ plansys2_msgs::msg::Node::SharedPtr Exists::getTree(
   plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
   node->node_type = plansys2_msgs::msg::Node::EXISTS;
   node->node_id = tree.nodes.size();
+  // The variables keep their index as name, as the body refers to them
   for (unsigned i = 0; i < params.size(); ++i) {
     plansys2_msgs::msg::Param param;
-    if (i < replace.size() && params[i] >= 0 && static_cast<size_t>(params[i]) < replace.size()) {
-      if (params[i] >= 0) {
-        // param has a variable value; replace by action-args
-        param.name = replace[params[i]];
-      }
-    } else {
-      param.name = "?" + std::to_string(params[i]);
-    }
+    param.name = "?" + std::to_string(params[i]);
     if (i < types.size()) {
       param.type = d.types[types[i]]->name;
       d.types[types[i]]->getSubTypesNames(param.sub_types);
@@ -91,24 +79,20 @@ void Exists::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
   f.next();
   f.assert_token("(");
 
+  // The variables are only in the scope of the body
   TokenStruct<std::string> es = f.parseTypedList(true, d.types);
-  params = incvec(ts.size(), ts.size() + es.size());
+  assertUnique(es, "variable");
+  base = ts.size();
+  params = incvec(base, base + es.size());
   types = d.convertTypes(es.types);
-
-  unsigned int count = 0;
-  for (auto & tm : es.tokenMap) {
-    if(ts.tokenMap.count(tm.first)) {
-      ts.tokenMap[tm.first] = ts.size() + count;
-      count++;
-    }
-  }
-  ts.append(es);
+  names = es.tokens;
+  TokenStruct<std::string> scope = quantifierScope(ts, es);
 
   f.next();
   f.assert_token("(");
   if (f.getChar() != ')') {
     cond = d.createCondition(f);
-    cond->parse(f, ts, d);
+    cond->parse(f, scope, d);
   } else {
     ++f.c;
   }

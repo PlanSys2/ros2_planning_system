@@ -19,6 +19,9 @@ target_link_libraries(graph_test ${PROJECT_NAME})
 ament_add_gtest(state_test state_test.cpp)
 target_link_libraries(state_test ${PROJECT_NAME})
 
+ament_add_gtest(state_consistency_test state_consistency_test.cpp)
+target_link_libraries(state_consistency_test ${PROJECT_NAME})
+
 set(TEST_PDDL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pddl)
 
 install(DIRECTORY

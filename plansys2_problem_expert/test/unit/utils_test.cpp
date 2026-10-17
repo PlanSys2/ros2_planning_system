@@ -1276,7 +1276,7 @@ TEST(utils, replace_children_param) {
   ASSERT_EQ(
     str,
     "(and (exists (bedroom) (and (robot_at ?0 bedroom)(charging_point_at bedroom)))"
-    "(and (>  (battery_level ?0) 1.000000)(<  (battery_level ?0) 200.000000)))");
+    "(and (> (battery_level ?0) 1.000000)(< (battery_level ?0) 200.000000)))");
 
   auto action2 = domain.actions.get("action_test2");
   plansys2_msgs::msg::Tree tree3;

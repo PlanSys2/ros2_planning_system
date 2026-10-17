@@ -13,6 +13,7 @@
 // limitations under the License.
 #pragma once
 
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -188,12 +189,12 @@ public:
       f.tokenExit(optimization);
     }
 
-    Expression * expr = createExpression(f, ts, d);
+    std::unique_ptr<Expression> expr(createExpression(f, ts, d));
     f.next();
     f.assert_token(")");
 
     if (nullptr != metric_expr) {delete metric_expr;}
-    metric_expr = expr;
+    metric_expr = expr.release();
     maximize = optimization == "maximize";
     metric = true;
   }

@@ -235,6 +235,35 @@ TEST(problem_expert_trees, total_cost_modifier_is_a_no_op)
   ASSERT_TRUE(functions.empty());
 }
 
+TEST(problem_expert_trees, total_cost_is_tracked_only_if_the_problem_sets_it)
+{
+  // As the parser builds it now: (increase (total-cost) 5)
+  auto tree = parser::pddl::fromString(
+    "(and (robot_at r2d2 kitchen)(increase (total-cost) 5))");
+  ASSERT_EQ(tree.nodes.size(), 5u);
+  ASSERT_EQ(tree.nodes[3].name, "total-cost");
+
+  // Not set: a no-op, the rest is applied
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
+  ASSERT_TRUE(plansys2::apply(tree, predicates, functions));
+  ASSERT_EQ(predicates.size(), 1u);
+  ASSERT_TRUE(functions.empty());
+
+  // Set: it adds up
+  predicates.clear();
+  functions.push_back(plansys2::Function("(= (total-cost) 2)"));
+  ASSERT_TRUE(plansys2::apply(tree, predicates, functions));
+  ASSERT_TRUE(plansys2::apply(tree, predicates, functions));
+  ASSERT_EQ(functions.size(), 1u);
+  ASSERT_DOUBLE_EQ(functions[0].value, 12.0);
+
+  // Another missing function is still an error
+  auto other = parser::pddl::fromString("(and (increase (fuel r2d2) 5))");
+  functions.clear();
+  ASSERT_FALSE(plansys2::apply(other, predicates, functions));
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

@@ -581,7 +581,7 @@ TEST(domain_expert, quantified_conditions_and_effects)
     "(and (exists (?1 - ground) (at ?1 z1)))");
   ASSERT_EQ(
     parser::pddl::toString(secure->at_end_effects),
-    "(and (forall (?2 - robot) (not (available ?2))))");
+    "(and (forall (?1 - robot) (not (available ?1))))");
 
   // The quantified variables say what they range over
   const auto & forall = secure->at_end_effects.nodes[1];

@@ -13,6 +13,12 @@ install(DIRECTORY
 ament_add_gtest(validate_tree_test validate_tree_test.cpp)
 target_link_libraries(validate_tree_test ${PROJECT_NAME})
 
+ament_add_gtest(string_utils_test string_utils_test.cpp)
+target_link_libraries(string_utils_test ${PROJECT_NAME})
+
+ament_add_gtest(grammar_test grammar_test.cpp)
+target_link_libraries(grammar_test ament_index_cpp::ament_index_cpp ${PROJECT_NAME})
+
 # Tests discover only nodes on this host: parallel jobs do not mix
 get_property(_tests DIRECTORY PROPERTY TESTS)
 if(_tests)

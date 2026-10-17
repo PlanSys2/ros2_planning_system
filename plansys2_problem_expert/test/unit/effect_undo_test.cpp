@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
 #include <atomic>
 #include <memory>
 #include <string>
@@ -225,20 +226,107 @@ TEST_F(EffectUndoTest, forall_effects_go_back)
   ASSERT_TRUE(holds("(robot_at r2 kitchen)"));
 }
 
-TEST_F(EffectUndoTest, a_failed_effect_keeps_what_it_changed)
+TEST_F(EffectUndoTest, a_failed_numeric_effect_changes_nothing)
 {
-  // The function does not exist: the effect fails after moving the robot, and the change
-  // made is recorded so that the caller can take it back
+  // The function does not exist: the numeric effects are computed first, so the effect fails
+  // before moving the robot, with nothing to take back
   std::vector<plansys2::FactChange> changes;
   ASSERT_FALSE(
     plansys2::apply(
       tree_of(
         "(and (not (robot_at r1 kitchen)) (increase (room_distance bedroom kitchen) 1))"),
       client_, changes));
-  ASSERT_EQ(changes.size(), 1u);
-
-  ASSERT_TRUE(plansys2::undo(changes, client_));
+  ASSERT_TRUE(changes.empty());
   ASSERT_TRUE(holds("(robot_at r1 kitchen)"));
+}
+
+TEST_F(EffectUndoTest, adding_a_fact_wins_over_deleting_it)
+{
+  for (const std::string effect : {
+    "(and (robot_at r1 bedroom) (not (robot_at r1 bedroom)))",
+    "(and (not (robot_at r1 bedroom)) (robot_at r1 bedroom))"})
+  {
+    std::vector<plansys2::FactChange> changes;
+    ASSERT_TRUE(plansys2::apply(tree_of(effect), client_, changes)) << effect;
+    EXPECT_TRUE(holds("(robot_at r1 bedroom)")) << effect;
+    ASSERT_TRUE(plansys2::undo(changes, client_));
+    EXPECT_FALSE(holds("(robot_at r1 bedroom)")) << effect;
+  }
+  // Also for a fact that held: it still holds
+  std::vector<plansys2::FactChange> changes;
+  ASSERT_TRUE(
+    plansys2::apply(
+      tree_of("(and (not (robot_at r1 kitchen)) (robot_at r1 kitchen))"), client_, changes));
+  EXPECT_TRUE(holds("(robot_at r1 kitchen)"));
+  EXPECT_TRUE(changes.empty());
+}
+
+TEST_F(EffectUndoTest, numeric_effects_use_the_values_before_the_action)
+{
+  ASSERT_TRUE(client_->addFunction(plansys2::Function("(= (room_distance bedroom kitchen) 0)")));
+  std::vector<plansys2::FactChange> changes;
+  ASSERT_TRUE(
+    plansys2::apply(
+      tree_of(
+        "(and (increase (room_distance kitchen bedroom) 1)"
+        " (assign (room_distance bedroom kitchen) (room_distance kitchen bedroom)))"),
+      client_, changes));
+  EXPECT_DOUBLE_EQ(distance(), 11.0);
+  auto other = client_->getFunction("(room_distance bedroom kitchen)");
+  ASSERT_TRUE(other.has_value());
+  EXPECT_DOUBLE_EQ(other->value, 10.0);  // The value before the action
+  ASSERT_TRUE(plansys2::undo(changes, client_));
+  EXPECT_DOUBLE_EQ(distance(), 10.0);
+  EXPECT_DOUBLE_EQ(client_->getFunction("(room_distance bedroom kitchen)")->value, 0.0);
+}
+
+TEST_F(EffectUndoTest, increases_of_the_same_function_add_up)
+{
+  std::vector<plansys2::FactChange> changes;
+  ASSERT_TRUE(
+    plansys2::apply(
+      tree_of(
+        "(and (increase (room_distance kitchen bedroom) 1)"
+        " (increase (room_distance kitchen bedroom) 2)"
+        " (decrease (room_distance kitchen bedroom) 0.5))"),
+      client_, changes));
+  EXPECT_DOUBLE_EQ(distance(), 12.5);
+  ASSERT_EQ(changes.size(), 1u);  // One change for the function
+  ASSERT_TRUE(plansys2::undo(changes, client_));
+  EXPECT_DOUBLE_EQ(distance(), 10.0);
+
+  // An assign and an increase: the increase goes on top of what is assigned
+  ASSERT_TRUE(
+    plansys2::apply(
+      tree_of(
+        "(and (assign (room_distance kitchen bedroom) 3)"
+        " (increase (room_distance kitchen bedroom) 2))"),
+      client_));
+  EXPECT_DOUBLE_EQ(distance(), 5.0);
+}
+
+TEST(EffectSemantics, with_a_local_state)
+{
+  std::vector<plansys2::Predicate> predicates = {plansys2::Predicate("(robot_at r1 kitchen)")};
+  std::vector<plansys2::Function> functions = {
+    plansys2::Function("(= (x) 1)"), plansys2::Function("(= (y) 0)")};
+  plansys2_msgs::msg::Tree effect;
+  parser::pddl::fromString(
+    effect,
+    "(and (not (robot_at r1 kitchen)) (robot_at r1 kitchen) (robot_at r1 hall)"
+    " (not (robot_at r1 hall)) (increase (x) 1) (assign (y) (x)) (increase (x) 1))",
+    false, plansys2_msgs::msg::Node::AND);
+  ASSERT_TRUE(plansys2::apply(effect, predicates, functions));
+  auto has = [&](const std::string & text) {
+      return std::find_if(
+        predicates.begin(), predicates.end(), [&](const plansys2::Predicate & p) {
+          return parser::pddl::toString(p) == text;
+        }) != predicates.end();
+    };
+  EXPECT_TRUE(has("(robot_at r1 kitchen)"));
+  EXPECT_TRUE(has("(robot_at r1 hall)"));
+  EXPECT_DOUBLE_EQ(functions[0].value, 3.0);
+  EXPECT_DOUBLE_EQ(functions[1].value, 1.0);  // x before the action
 }
 
 int main(int argc, char ** argv)

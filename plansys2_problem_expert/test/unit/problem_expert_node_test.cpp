@@ -1283,7 +1283,7 @@ TEST(problem_expert_node, metric_services)
   ASSERT_EQ(metric.optimization, plansys2_msgs::msg::Metric::MINIMIZE);
   ASSERT_EQ(
     parser::pddl::toString(metric),
-    "minimize (+  (room_distance kitchen bedroom) (*  10.000000 (total-time)))");
+    "minimize (+ (room_distance kitchen bedroom) (* 10.000000 (total-time)))");
   ASSERT_EQ(knowledge_metric(), parser::pddl::toString(metric));
   ASSERT_NE(
     client->getProblem().find(
