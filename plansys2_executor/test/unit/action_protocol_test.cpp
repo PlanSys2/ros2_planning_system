@@ -328,6 +328,23 @@ TEST_F(ActionProtocolTest, same_action_twice)
   ASSERT_EQ(count(ActionExecution::REJECT), 0);
 }
 
+// PDDL is case insensitive: a performer of Move runs move (#256)
+TEST_F(ActionProtocolTest, action_names_are_case_insensitive)
+{
+  auto node = std::make_shared<QuickMove>("upper_case_move");
+  node->set_parameter({"action_name", "Move"});
+  nodes_.push_back(node);
+  exe_.add_node(node->get_node_base_interface());
+  node->trigger_transition(Transition::TRANSITION_CONFIGURE);
+  std::this_thread::sleep_for(500ms);
+
+  auto executor = new_executor();
+  ASSERT_TRUE(
+    tick_until(
+      executor, [&]() {return executor->get_internal_status() == Status::SUCCESS;}, 5s));
+  ASSERT_EQ(node->executions, 1);
+}
+
 // Two performers for the same action: one runs it, the other is rejected and stays free
 TEST_F(ActionProtocolTest, second_performer_is_rejected_and_free)
 {

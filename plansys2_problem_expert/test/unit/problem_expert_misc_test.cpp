@@ -165,6 +165,26 @@ TEST(problem_expert_misc, a_problem_is_added_as_a_whole)
   EXPECT_TRUE(expert->addProblem(head + ")"));
 }
 
+TEST(problem_expert_misc, names_are_case_insensitive)
+{
+  // A predicate written in another case is the domain's (#256)
+  auto domain = std::make_shared<plansys2::DomainExpert>(
+    "(define (domain d) (:requirements :strips :typing) (:types robot)"
+    "(:predicates (notFilling ?r - robot))"
+    "(:action fill :parameters (?r - robot) :precondition (notFilling ?r)"
+    " :effect (not (notFilling ?r))))");
+  plansys2::ProblemExpert expert(domain);
+  ASSERT_TRUE(expert.addInstance(plansys2::Instance("R2D2", "robot")));
+  ASSERT_TRUE(expert.addPredicate(plansys2::Predicate("(notFilling R2D2)")));
+  EXPECT_TRUE(expert.existPredicate(plansys2::Predicate("(notfilling r2d2)")));
+  EXPECT_TRUE(plansys2::check(parser::pddl::fromString("(notfilling r2d2)"), expert));
+  auto action = domain->getAction("fill", {"r2d2"});
+  ASSERT_NE(action, nullptr);
+  EXPECT_TRUE(plansys2::check(action->preconditions, expert));
+  EXPECT_TRUE(expert.removePredicate(plansys2::Predicate("(NOTFILLING r2d2)")));
+  EXPECT_FALSE(expert.existPredicate(plansys2::Predicate("(notFilling R2D2)")));
+}
+
 TEST(problem_expert_misc, action_expressions)
 {
   EXPECT_EQ(plansys2::get_action_name("(move r2d2 kitchen bedroom)"), "move");

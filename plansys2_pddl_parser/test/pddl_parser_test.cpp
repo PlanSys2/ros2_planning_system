@@ -289,8 +289,9 @@ TEST(PDDLParserTestCase, check_node_equality)
   ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate6, false));
   ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate6, predicate1, false));
 
+  // PDDL is case insensitive (#256)
   auto predicate1capital = parser::pddl::fromStringPredicate("(PREDICATE A B)");
-  ASSERT_FALSE(parser::pddl::checkNodeEquality(predicate1, predicate1capital));
+  ASSERT_TRUE(parser::pddl::checkNodeEquality(predicate1, predicate1capital));
 }
 
 TEST(PDDLParserTestCase, check_action_equality)

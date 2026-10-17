@@ -85,7 +85,8 @@ ActionExecutor::action_hub_callback(plansys2_msgs::msg::ActionExecution::SharedP
   last_msg_ = msg;
 
   // Only the messages of our own request: not those of another executor of the same action
-  if (msg->request_id != request_id_ || msg->action != action_name_ ||
+  if (msg->request_id != request_id_ ||
+    !parser::pddl::compare_str_case_insensitive(msg->action, action_name_) ||
     msg->arguments != action_params_)
   {
     return;

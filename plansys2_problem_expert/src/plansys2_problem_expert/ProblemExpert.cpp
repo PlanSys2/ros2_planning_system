@@ -89,7 +89,7 @@ ProblemExpert::removeInstance(const plansys2::Instance & instance)
   size_t i = 0;
 
   while (!found && i < instances_.size()) {
-    if (instances_[i].name == instance.name) {
+    if (parser::pddl::compare_str_case_insensitive(instances_[i].name, instance.name)) {
       found = true;
       instances_.erase(instances_.begin() + i);
     }
@@ -118,7 +118,7 @@ ProblemExpert::getInstance(const std::string & instance_name)
   bool found = false;
   size_t i = 0;
   while (i < instances_.size() && !found) {
-    if (instances_[i].name == instance_name) {
+    if (parser::pddl::compare_str_case_insensitive(instances_[i].name, instance_name)) {
       found = true;
       ret = instances_[i];
     }
@@ -349,7 +349,7 @@ ProblemExpert::removeInvalidPredicates(
     if (std::find_if(
         rit->parameters.begin(), rit->parameters.end(),
         [&](const plansys2_msgs::msg::Param & param) {
-          return param.name == instance.name;
+          return parser::pddl::compare_str_case_insensitive(param.name, instance.name);
         }) != rit->parameters.end())
     {
       predicates.erase(std::next(rit).base());
@@ -366,7 +366,7 @@ ProblemExpert::removeInvalidFunctions(
     if (std::find_if(
         rit->parameters.begin(), rit->parameters.end(),
         [&](const plansys2_msgs::msg::Param & param) {
-          return param.name == instance.name;
+          return parser::pddl::compare_str_case_insensitive(param.name, instance.name);
         }) != rit->parameters.end())
     {
       functions.erase(std::next(rit).base());
@@ -386,11 +386,13 @@ bool isJunction(const plansys2_msgs::msg::Node & node)
 bool mentions(const plansys2_msgs::msg::Tree & tree, uint32_t id, const std::string & name)
 {
   const auto & node = tree.nodes[id];
-  if (node.node_type == plansys2_msgs::msg::Node::CONSTANT && node.name == name) {
+  if (node.node_type == plansys2_msgs::msg::Node::CONSTANT &&
+    parser::pddl::compare_str_case_insensitive(node.name, name))
+  {
     return true;
   }
   for (const auto & param : node.parameters) {
-    if (param.name == name) {return true;}
+    if (parser::pddl::compare_str_case_insensitive(param.name, name)) {return true;}
   }
   for (auto child : node.children) {
     if (mentions(tree, child, name)) {return true;}
@@ -565,7 +567,7 @@ ProblemExpert::existInstance(const std::string & name)
   size_t i = 0;
 
   while (!found && i < instances_.size()) {
-    if (instances_[i].name == name) {
+    if (parser::pddl::compare_str_case_insensitive(instances_[i].name, name)) {
       found = true;
     }
     i++;

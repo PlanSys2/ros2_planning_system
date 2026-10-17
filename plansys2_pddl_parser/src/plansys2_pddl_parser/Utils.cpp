@@ -1578,7 +1578,8 @@ bool checkNodeEquality(
     first.node_type == plansys2_msgs::msg::Node::PREDICATE ||
     first.node_type == plansys2_msgs::msg::Node::FUNCTION)
   {
-    if (first.name != second.name) {
+    // PDDL is case insensitive (#256)
+    if (!compare_str_case_insensitive(first.name, second.name)) {
       return false;
     }
   }
@@ -1628,7 +1629,7 @@ bool checkParamEquality(
   {
     return true;
   }
-  return first.name == second.name;
+  return compare_str_case_insensitive(first.name, second.name);
 }
 
 bool checkActionEquality(

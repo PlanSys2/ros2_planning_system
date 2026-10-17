@@ -561,6 +561,22 @@ TEST(StringUtils, a_bare_name_in_an_expression_is_an_object)
   EXPECT_EQ(tree.nodes[1].node_type, Node::FUNCTION);
 }
 
+TEST(StringUtils, names_are_case_insensitive)
+{
+  // PDDL is case insensitive (#256)
+  EXPECT_TRUE(
+    parser::pddl::checkNodeEquality(
+      parser::pddl::fromStringPredicate("(notFilling R2D2)"),
+      parser::pddl::fromStringPredicate("(notfilling r2d2)")));
+  EXPECT_TRUE(
+    parser::pddl::checkTreeEquality(fromString("(> (Battery R1) 2)"),
+    fromString("(> (battery r1) 2)")));
+  EXPECT_FALSE(
+    parser::pddl::checkNodeEquality(
+      parser::pddl::fromStringPredicate("(notFilling r2d2)"),
+      parser::pddl::fromStringPredicate("(notfilling r2d3)")));
+}
+
 TEST(StringUtils, reading_is_fast)
 {
   // No regex compiled per call: a goal of 50 facts and comparisons, read 200 times

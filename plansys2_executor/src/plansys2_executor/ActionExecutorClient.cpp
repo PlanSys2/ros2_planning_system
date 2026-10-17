@@ -22,6 +22,7 @@
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 
 #include "plansys2_executor/ActionExecutorClient.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 namespace plansys2
 {
@@ -250,7 +251,8 @@ bool
 ActionExecutorClient::should_execute(
   const std::string & action, const std::vector<std::string> & args)
 {
-  if (action != action_managed_) {
+  // PDDL is case insensitive: Move performs move (#256)
+  if (!parser::pddl::compare_str_case_insensitive(action, action_managed_)) {
     return false;
   }
 
@@ -263,7 +265,7 @@ ActionExecutorClient::should_execute(
 
     for (size_t i = 0; i < specialized_arguments_.size() && i < args.size(); i++) {
       if (specialized_arguments_[i] != "" && args[i] != "" &&
-        specialized_arguments_[i] != args[i])
+        !parser::pddl::compare_str_case_insensitive(specialized_arguments_[i], args[i]))
       {
         return false;
       }
