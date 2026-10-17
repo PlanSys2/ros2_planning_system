@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <string>
+#include <tuple>
 #include <map>
 #include <memory>
 
@@ -34,11 +35,11 @@ ApplyAtStartEffect::ApplyAtStartEffect(
   problem_client_ =
     config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
     "problem_client");
-  // Only the STN builder needs these
-  config().blackboard->get("action_graph", action_graph_);
-  config().blackboard->get("bt_builder", bt_builder_);
-  config().blackboard->get("node", node_);
-  config().blackboard->get("stn_relaxed_timing", relaxed_timing_);
+  // Only the STN builder needs these: they may be missing
+  std::ignore = config().blackboard->get("action_graph", action_graph_);
+  std::ignore = config().blackboard->get("bt_builder", bt_builder_);
+  std::ignore = config().blackboard->get("node", node_);
+  std::ignore = config().blackboard->get("stn_relaxed_timing", relaxed_timing_);
 }
 
 BT::NodeStatus

@@ -14,6 +14,7 @@
 
 #include <sstream>
 #include <string>
+#include <tuple>
 #include <map>
 #include <memory>
 
@@ -33,7 +34,8 @@ CheckAction::CheckAction(
     "action_map");
   action_graph_ = config().blackboard->get<Graph::Ptr>("action_graph");
   node_ = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
-  config().blackboard->get("stn_relaxed_timing", relaxed_timing_);
+  // Only with the STN builder: it may be missing
+  std::ignore = config().blackboard->get("stn_relaxed_timing", relaxed_timing_);
 }
 
 BT::NodeStatus

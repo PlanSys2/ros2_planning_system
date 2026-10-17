@@ -121,11 +121,12 @@ public:
   }
 
   MoveAction(const std::string & id, const std::chrono::nanoseconds & rate)
-  : ActionExecutorClient(id, rate),
+  : ActionExecutorClient(id),
     executions_(0),
     cycles_(0),
     runtime_(0)
   {
+    set_parameter({"rate", 1.0 / std::chrono::duration<double>(rate).count()});
   }
 
   void set_runtime(double runtime)
@@ -211,8 +212,9 @@ public:
   }
 
   TransportAction(const std::string & id, const std::chrono::nanoseconds & rate)
-  : ActionExecutorClient(id, rate)
+  : ActionExecutorClient(id)
   {
+    set_parameter({"rate", 1.0 / std::chrono::duration<double>(rate).count()});
     executions_ = 0;
     cycles_ = 0;
   }
@@ -301,7 +303,6 @@ TEST(executor, action_executor_client)
     exe.add_node(transport_action_node->get_node_base_interface());
 
     std::vector<plansys2_msgs::msg::ActionExecution> history_msgs;
-    bool confirmed = false;
     auto actions_sub = aux_node->create_subscription<plansys2_msgs::msg::ActionExecution>(
     "actions_hub",
     rclcpp::QoS(100).reliable(), [&](plansys2_msgs::msg::ActionExecution::UniquePtr msg) {
@@ -406,7 +407,6 @@ TEST(executor, action_executor_client_old_constructor)
     exe.add_node(transport_action_node->get_node_base_interface());
 
     std::vector<plansys2_msgs::msg::ActionExecution> history_msgs;
-    bool confirmed = false;
     auto actions_sub = aux_node->create_subscription<plansys2_msgs::msg::ActionExecution>(
     "actions_hub",
     rclcpp::QoS(100).reliable(), [&](plansys2_msgs::msg::ActionExecution::UniquePtr msg) {
@@ -1035,12 +1035,10 @@ TEST(executor, action_real_action_1)
     try {
       auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
-      auto status = BT::NodeStatus::RUNNING;
-
       ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
 
       while (ApplyAtStartEffectTest::test_status != BT::NodeStatus::SUCCESS) {
-        status = tree.tickOnce();
+        tree.tickOnce();
       }
 
       ASSERT_FALSE(
@@ -1050,12 +1048,12 @@ TEST(executor, action_real_action_1)
       ASSERT_FALSE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
 
       while (ExecuteActionTest::test_status != BT::NodeStatus::SUCCESS) {
-        status = tree.tickOnce();
+        tree.tickOnce();
         ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
       }
 
       while (ApplyAtEndEffectTest::test_status != BT::NodeStatus::SUCCESS) {
-        status = tree.tickOnce();
+        tree.tickOnce();
       }
 
       ASSERT_TRUE(
@@ -1314,12 +1312,10 @@ TEST(executor, action_real_action_1_with_restore)
     try {
       auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
-      auto status = BT::NodeStatus::RUNNING;
-
       ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
 
       while (ApplyAtStartEffectTest::test_status != BT::NodeStatus::SUCCESS) {
-        status = tree.tickOnce();
+        tree.tickOnce();
       }
 
       ASSERT_FALSE(
@@ -1329,12 +1325,12 @@ TEST(executor, action_real_action_1_with_restore)
       ASSERT_FALSE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
 
       while (ExecuteActionTest::test_status != BT::NodeStatus::SUCCESS) {
-        status = tree.tickOnce();
+        tree.tickOnce();
         ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
       }
 
       while (ApplyAtEndEffectTest::test_status != BT::NodeStatus::SUCCESS) {
-        status = tree.tickOnce();
+        tree.tickOnce();
       }
 
       ASSERT_TRUE(
@@ -1582,12 +1578,10 @@ TEST(executor, action_real_action_2)
     try {
       auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
-      auto status = BT::NodeStatus::RUNNING;
-
       ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
 
       while (ApplyAtStartEffectTest::test_status != BT::NodeStatus::SUCCESS) {
-        status = tree.tickOnce();
+        tree.tickOnce();
       }
 
       ASSERT_FALSE(
@@ -1598,12 +1592,12 @@ TEST(executor, action_real_action_2)
       ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
 
       while (ExecuteActionTest::test_status != BT::NodeStatus::SUCCESS) {
-        status = tree.tickOnce();
+        tree.tickOnce();
         ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
       }
 
       while (ApplyAtEndEffectTest::test_status != BT::NodeStatus::SUCCESS) {
-        status = tree.tickOnce();
+        tree.tickOnce();
       }
 
       ASSERT_TRUE(
@@ -1767,10 +1761,8 @@ TEST(executor, cancel_bt_execution)
     try {
       auto tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
-      auto status = BT::NodeStatus::RUNNING;
-
       ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
-      status = tree.tickOnce();
+      tree.tickOnce();
 
       ASSERT_EQ(ApplyAtStartEffectTest::test_status, BT::NodeStatus::SUCCESS);
       ASSERT_FALSE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
@@ -1779,10 +1771,10 @@ TEST(executor, cancel_bt_execution)
         plansys2::Predicate(
           "(robot_at r2d2 steering_wheels_zone)")));
 
-      status = tree.tickOnce();
+      tree.tickOnce();
       ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
       ASSERT_EQ(ExecuteActionTest::test_status, BT::NodeStatus::RUNNING);
-      status = tree.tickOnce();
+      tree.tickOnce();
       ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
       ASSERT_EQ(ExecuteActionTest::test_status, BT::NodeStatus::RUNNING);
 
@@ -1802,9 +1794,9 @@ TEST(executor, cancel_bt_execution)
 
       tree = factory.createTreeFromText(bt_xml_tree, blackboard);
 
-      status = tree.tickOnce();
-      status = tree.tickOnce();
-      status = tree.tickOnce();
+      tree.tickOnce();
+      tree.tickOnce();
+      tree.tickOnce();
       ASSERT_EQ(ApplyAtStartEffectTest::test_status, BT::NodeStatus::SUCCESS);
       ASSERT_EQ(CheckOverAllReqTest::test_status, BT::NodeStatus::SUCCESS);
       ASSERT_EQ(ExecuteActionTest::test_status, BT::NodeStatus::RUNNING);
@@ -3122,7 +3114,6 @@ TEST(executor, executor_client_ordered_sub_goals)
     ASSERT_TRUE(plan.has_value());
 
 
-    int subgoal_checked = false;
     {
       rclcpp::Rate rate(10);
       auto start = test_node_1->now();

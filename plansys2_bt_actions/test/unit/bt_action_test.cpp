@@ -72,15 +72,15 @@ private:
   rclcpp_action::Server<Fibonacci>::SharedPtr move_action_server_;
 
   rclcpp_action::GoalResponse handle_goal(
-    const rclcpp_action::GoalUUID & uuid,
-    std::shared_ptr<const Fibonacci::Goal> goal)
+    const rclcpp_action::GoalUUID &,
+    std::shared_ptr<const Fibonacci::Goal>)
   {
     RCLCPP_DEBUG(get_logger(), "handle_goal");
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   }
 
   rclcpp_action::CancelResponse handle_cancel(
-    const std::shared_ptr<GoalHandleFibonacci> goal_handle)
+    const std::shared_ptr<GoalHandleFibonacci>)
   {
     cancelled_ = true;
     return rclcpp_action::CancelResponse::ACCEPT;

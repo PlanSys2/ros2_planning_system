@@ -87,7 +87,7 @@ ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
   get_parameter_or<std::vector<std::string>>(
     "specialized_arguments", specialized_arguments_, std::vector<std::string>({}));
 
-  double rate;
+  double rate = 1.0;  // If the parameter cannot be read
   get_parameter("rate", rate);
 
   period_ = std::chrono::duration_cast<std::chrono::steady_clock::duration>(

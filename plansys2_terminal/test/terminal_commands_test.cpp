@@ -83,9 +83,10 @@ class EndlessMove : public plansys2::ActionExecutorClient
 {
 public:
   EndlessMove()
-  : plansys2::ActionExecutorClient("endless_move", 100ms)
+  : plansys2::ActionExecutorClient("endless_move")
   {
     set_parameter({"action_name", "move"});
+    set_parameter({"rate", 10.0});
   }
 
   std::atomic<int> works{0};
@@ -129,7 +130,7 @@ TEST(terminal_commands, plan_files)
   EXPECT_FLOAT_EQ(plan->items[2].duration, 0.0);  // No duration
 
   // Each of these used to abort the terminal, or to make up a duration
-  for (const std::string & line : {
+  for (const char * line : {
     "0.000 (move leia a b) [5]", "x: (move leia a b) [5]", "0: (move leia a b) [five]",
     "0: (move leia a b) 5", "0: (move leia a b) [5] more", "0: move leia a b [5]",
     "0: (move leia a b [5]", "(move leia a b): 0 [5]", "0: (move leia a b) [5"})

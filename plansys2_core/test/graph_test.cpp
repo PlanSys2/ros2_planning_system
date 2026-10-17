@@ -1563,8 +1563,6 @@ TEST(graph_test, graph_derived_action_suave)
   int total_size = 0;
   for (const auto & scc : sccs) {
     total_size += scc.size();
-    for (const auto & node : scc) {
-    }
   }
   ASSERT_EQ(total_size, 54);
 

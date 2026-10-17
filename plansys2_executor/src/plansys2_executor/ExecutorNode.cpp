@@ -501,10 +501,15 @@ ExecutorNode::get_tree_from_plan(
     this->get_parameter("print_graph").as_bool());
   dotgraph_pub_->publish(dotgraph_msg);
 
-  std::filesystem::path tp = std::filesystem::temp_directory_path();
-  std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
-  out << bt_xml_tree;
-  out.close();
+  // The last tree, to look at: in the temporary directory, one per namespace
+  {
+    std::error_code error;
+    const auto dir = std::filesystem::temp_directory_path(error) / "plansys2" /
+      std::filesystem::path(get_namespace()).relative_path();
+    std::filesystem::create_directories(dir, error);
+    std::ofstream out(dir / "bt.xml");
+    out << bt_xml_tree;
+  }
 
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<ExecuteAction>("ExecuteAction");

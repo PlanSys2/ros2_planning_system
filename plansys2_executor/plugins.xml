@@ -1,5 +1,5 @@
 <class_libraries>
-  <library path="bt_builder_plugins">
+  <library path="plansys2_bt_builder_plugins">
     <class type="plansys2::SimpleBTBuilder" base_class_type="plansys2::BTBuilder">
       <description></description>
     </class>

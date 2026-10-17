@@ -1,6 +1,10 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 
 project(plansys2_terminal)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -35,6 +39,8 @@ target_link_libraries(terminal
   readline
 )
 target_compile_definitions(terminal PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+# libplansys2_terminal.so, not a generic libterminal.so in lib/
+set_target_properties(terminal PROPERTIES OUTPUT_NAME plansys2_terminal)
 
 add_executable(${PROJECT_NAME}
   src/terminal_node.cpp)

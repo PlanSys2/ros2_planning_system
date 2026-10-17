@@ -239,10 +239,11 @@ public:
     Terminal::process_remove(command, os);
   }
 
-  void execute_plan()
+  using Terminal::execute_plan;
+  void execute_plan(int items = -1) override
   {
     method_executed_["execute_plan"] = true;
-    Terminal::execute_plan();
+    Terminal::execute_plan(items);
   }
 
   void process_run(std::vector<std::string> & command, std::ostringstream & os)
@@ -275,10 +276,11 @@ public:
     Terminal::process_check_actors(command, os);
   }
 
-  void process_command(std::string & command, std::ostringstream & os)
+  bool process_command(
+    std::string & command, std::ostringstream & os, bool inside_source = false) override
   {
     method_executed_["process_command"] = true;
-    Terminal::process_command(command, os);
+    return Terminal::process_command(command, os, inside_source);
   }
 
   void reset_executions()

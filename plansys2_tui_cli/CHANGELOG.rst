@@ -4,24 +4,19 @@ Changelog for package plansys2_tui_cli
 
 3.1.0 (2026-07-28)
 ------------------
-* Fix missing module in plansys2_tui dependencies
-* Fix test import
-* Fix publish execution Info. TUI and CLI
-* Contributors: Francisco Martín Rico, SamueleSandrini
-
-* Fix CI
-* Fix CI
 * Merge pull request `#404 <https://github.com/PlanSys2/ros2_planning_system/issues/404>`_ from JRL-CARI-CNR-UNIBS/rolling-pr-tui
   Fix missing module in plansys2_tui dependencies
 * Fix missing module in plansys2_tui dependencies
 * Merge pull request `#401 <https://github.com/PlanSys2/ros2_planning_system/issues/401>`_ from PlanSys2/tui_and_cli
   Fix publish execution Info. TUI and CLI
+* Fix publish execution Info. TUI and CLI
 * Fix test import
 * Potential fix for pull request finding
   Co-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>
 * Potential fix for pull request finding
   Co-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>
-* Fix publish execution Info. TUI and CLI
+* Fix CI
+* Fix CI
 * Contributors: Francisco Martín Rico, SamueleSandrini
 
 3.0.0 (2025-06-06)

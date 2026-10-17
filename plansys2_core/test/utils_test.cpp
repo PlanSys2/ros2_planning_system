@@ -54,7 +54,7 @@ class PlannerTest : public plansys2::PlanSolverBase
 {
 public:
   void configure(
-    rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node, const std::string & plugin_name)
+    rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node, const std::string &)
   {
     lc_node_ = lc_node;
   }
@@ -72,13 +72,13 @@ public:
   }
 
   std::optional<plansys2_msgs::msg::Plan> getPlan(
-    const std::string & domain, const std::string & problem,
-    const std::string & node_namespace = "", const rclcpp::Duration solver_timeoutt = 15s)
+    const std::string &, const std::string &,
+    const std::string & = "", const rclcpp::Duration = 15s)
   {
     return {};
   }
 
-  bool isDomainValid(const std::string & domain, const std::string & node_namespace)
+  bool isDomainValid(const std::string &, const std::string &)
   {
     return true;
   }

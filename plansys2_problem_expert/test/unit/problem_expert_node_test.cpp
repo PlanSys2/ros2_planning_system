@@ -1023,7 +1023,7 @@ TEST(problem_expert_node, problem_file_that_cannot_be_loaded_fails_configure)
 {
   std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
 
-  for (const std::string file :
+  for (const std::string & file :
     {pkgpath + "/pddl/problem_malformed_truncated.pddl", pkgpath + "/pddl/does_not_exist.pddl"})
   {
     SCOPED_TRACE(file);

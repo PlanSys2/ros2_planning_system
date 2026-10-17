@@ -71,8 +71,8 @@ public:
   : Node("test_planner_node") {}
 
   void validate_domain_service_callback(
-    const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Request> request,
+    const std::shared_ptr<rmw_request_id_t>,
+    const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Request>,
     const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Response> response)
   {
     response->success = true;

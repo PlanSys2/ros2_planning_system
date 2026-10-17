@@ -576,7 +576,7 @@ TEST(domain_expert, malformed_domains_do_not_kill_the_node)
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  for (const std::string domain : {
+  for (const std::string & domain : {
     read_file(pkgpath + "/pddl/domain_2_error.pddl"),
     std::string("hello world"),
     std::string("(define (domain d) (:requirements :strips)"),

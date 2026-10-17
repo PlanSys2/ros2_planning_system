@@ -64,7 +64,7 @@ PlannerNode::on_configure(const rclcpp_lifecycle::State & state)
   // owning one would keep the node alive forever (#422)
   auto solver_node = rclcpp_lifecycle::LifecycleNode::SharedPtr(
     rclcpp_lifecycle::LifecycleNode::SharedPtr(), this);
-  double timeout;
+  double timeout = 15.0;  // If the parameter cannot be read
 
   RCLCPP_INFO(get_logger(), "[%s] Configuring...", get_name());
 
