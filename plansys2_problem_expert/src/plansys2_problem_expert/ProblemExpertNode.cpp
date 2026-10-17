@@ -284,6 +284,12 @@ ProblemExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   for (size_t i = 1; i < domains.size(); i++) {
     domain_expert->extendDomain(domains[i]);
   }
+  // A domain read in part would have no actions: as the domain expert, do not start
+  if (!domain_expert->getParseError().empty()) {
+    RCLCPP_ERROR(
+      get_logger(), "PlanSys2 cannot read this domain: %s", domain_expert->getParseError().c_str());
+    return CallbackReturnT::FAILURE;
+  }
 
   problem_expert_ = std::make_shared<ProblemExpert>(domain_expert);
 

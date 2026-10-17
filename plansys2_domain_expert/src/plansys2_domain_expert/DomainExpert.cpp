@@ -39,11 +39,43 @@ DomainExpert::extendDomain(const std::string & domain)
 
   domain_ = std::make_shared<parser::pddl::Domain>();
 
+  // Kept to be told: a domain read in part has no actions, and plans fail much later
+  parse_error_.clear();
   try {
     domain_->parse(domains_.get_joint_domain());
   } catch (const std::exception & e) {
+    parse_error_ = e.what();
     std::cerr << "Error parsing PDDL: " << e.what() << std::endl;
   }
+}
+
+std::vector<std::string>
+DomainExpert::getUnsupported()
+{
+  // Building the trees of each action is what throws for a construct with no tree
+  std::vector<std::string> ret;
+  for (const auto & action : getActions()) {
+    try {
+      getAction(action);
+    } catch (const std::exception & e) {
+      ret.push_back("action " + action + ": " + e.what());
+    }
+  }
+  for (const auto & action : getDurativeActions()) {
+    try {
+      getDurativeAction(action);
+    } catch (const std::exception & e) {
+      ret.push_back("durative action " + action + ": " + e.what());
+    }
+  }
+  for (const auto & derived : getDerivedPredicates()) {
+    try {
+      getDerivedPredicate(derived.predicate.name);
+    } catch (const std::exception & e) {
+      ret.push_back("derived predicate " + derived.predicate.name + ": " + e.what());
+    }
+  }
+  return ret;
 }
 
 bool

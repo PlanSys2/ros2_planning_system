@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <fstream>
 #include <map>
 #include <string>
 #include <set>
@@ -647,6 +648,31 @@ TEST(domain_expert, multiline_predicates)
   EXPECT_EQ(reparsed.getPredicates().size(), 3u);
   ASSERT_TRUE(reparsed.getPredicate("bar").has_value());
   EXPECT_EQ(reparsed.getPredicate("bar")->parameters.size(), 3u);
+}
+
+// What PlanSys2 cannot read or execute is said, not left as a domain without actions
+TEST(domain_expert, unreadable_and_unsupported_are_reported)
+{
+  const std::string pkgpath =
+    ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+  auto read = [&](const std::string & file) {
+      std::ifstream ifs(pkgpath + "/pddl/" + file);
+      return std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    };
+
+  plansys2::DomainExpert preference(read("domain_preference.pddl"));
+  EXPECT_NE(preference.getParseError().find("preference"), std::string::npos)
+    << preference.getParseError();
+
+  plansys2::DomainExpert when(read("domain_when.pddl"));
+  EXPECT_TRUE(when.getParseError().empty()) << when.getParseError();
+  const auto unsupported = when.getUnsupported();
+  ASSERT_EQ(unsupported.size(), 1u);
+  EXPECT_NE(unsupported[0].find("action push"), std::string::npos) << unsupported[0];
+
+  plansys2::DomainExpert simple(read("domain_simple.pddl"));
+  EXPECT_TRUE(simple.getParseError().empty());
+  EXPECT_TRUE(simple.getUnsupported().empty());
 }
 
 int main(int argc, char ** argv)

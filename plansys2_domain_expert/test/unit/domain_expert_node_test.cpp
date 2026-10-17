@@ -123,6 +123,23 @@ TEST(domain_expert, lifecycle_error)
   plansys2::drain_ros(200ms);
 }
 
+// Kairos plans these domains, so it accepts them; PlanSys2 could not keep or execute them, and
+// started anyway, without their actions
+TEST(domain_expert, a_domain_plansys2_cannot_represent_fails_at_startup)
+{
+  const std::string pkgpath =
+    ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+  for (const char * file : {"domain_when.pddl", "domain_preference.pddl"}) {
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/" + std::string(file)});
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    EXPECT_EQ(
+      domain_node->get_current_state().id(),
+      lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED) << file;
+  }
+  plansys2::drain_ros(200ms);
+}
+
 // change_domain: hot domain swap. See refactor_dynamic_domain.md for the design and
 // for the threading fix these tests exercise (the deferred-response callback +
 // background thread in change_domain_service_callback()).

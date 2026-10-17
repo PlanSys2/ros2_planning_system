@@ -199,6 +199,20 @@ public:
     const std::vector<std::string> & params = {});
 
   /**
+   * @brief Why the PlanSys2 parser could not read the domain.
+   *
+   * @return The error, or an empty string if it could.
+   */
+  const std::string & getParseError() const {return parse_error_;}
+
+  /**
+   * @brief The actions and derived predicates that PlanSys2 cannot represent.
+   *
+   * @return One line for each, saying which and why; empty if there are none.
+   */
+  std::vector<std::string> getUnsupported();
+
+  /**
    * @brief Get the current domain definition as a string,
    *
    *        which can be used to save to a file or initialize another domain.
@@ -228,6 +242,7 @@ public:
 private:
   std::shared_ptr<parser::pddl::Domain> domain_;
   DomainReader domains_;
+  std::string parse_error_;
 };
 
 }  // namespace plansys2
