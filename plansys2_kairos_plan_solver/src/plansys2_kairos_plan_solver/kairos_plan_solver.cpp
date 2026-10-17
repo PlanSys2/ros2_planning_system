@@ -102,6 +102,11 @@ plansys2_msgs::msg::Plan to_msg(const kairos::Plan & plan)
     item.duration = step.duration;
     msg.items.push_back(std::move(item));
   }
+  // Lost before: when a PDDL+ plan ends, and its cost
+  msg.has_end = plan.end.has_value();
+  msg.end = plan.end.value_or(0.0);
+  msg.has_cost = plan.cost.has_value();
+  msg.cost = plan.cost.value_or(0.0);
   return msg;
 }
 

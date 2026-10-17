@@ -291,6 +291,11 @@ TEST(kairos_plan_solver, sequential_numeric_plan)
   }
   EXPECT_EQ(plan->items[2].action, "(refuel r3)");
   expect_valid(kSeqDomain, kSeqProblem, *plan, false);
+
+  // Without a metric, the cost of a sequential plan is its length; only PDDL+ plans have an end
+  EXPECT_TRUE(plan->has_cost);
+  EXPECT_DOUBLE_EQ(plan->cost, 4.0);
+  EXPECT_FALSE(plan->has_end);
 }
 
 // Each move takes a day and a few ms: in float32 the later times lose the ms
@@ -330,6 +335,9 @@ TEST(kairos_plan_solver, long_plans_keep_their_decimals)
       EXPECT_LT(gap, 0.01);
     }
   }
+  // The makespan, three days and some ms
+  EXPECT_TRUE(plan->has_cost);
+  EXPECT_NEAR(plan->cost, plan->items[2].time + plan->items[2].duration, 1e-6);
   expect_valid(domain, problem, *plan, true);
 }
 
