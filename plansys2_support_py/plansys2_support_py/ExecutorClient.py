@@ -26,17 +26,15 @@ from action_msgs.msg import GoalStatus
 from plansys2_msgs.action import ExecutePlan
 from plansys2_msgs.msg import ActionExecutionInfo, Plan, Tree
 from plansys2_msgs.srv import GetOrderedSubGoals, GetPlan
+from plansys2_support_py.ClientBase import ClientBase
 
-import rclpy
 from rclpy.action import ActionClient
 from rclpy.action.client import ClientGoalHandle
-from rclpy.client import Client
-from rclpy.node import Node
 from rclpy.task import Future
 from rclpy.type_support import GetResultServiceResponse
 
 
-class ExecutorClient(Node):
+class ExecutorClient(ClientBase):
     """
     Executor client for PlanSys2.
 
@@ -56,25 +54,18 @@ class ExecutorClient(Node):
             Namespace prefix for services.
 
         """
-        super().__init__(node_name=node_name, namespace=namespace)
-
-        # Setup namespace prefix
-        self._namespace_prefix = f'/{namespace}' if namespace else ''
+        super().__init__(node_name, namespace)
 
         # Action client for plan execution
         self._execute_plan_action_client: ActionClient = ActionClient(
-            self,
+            self._calls_node,
             ExecutePlan,
-            f'{self._namespace_prefix}/execute_plan'
+            'execute_plan'
         )
 
         # State variables for plan execution
         self._executing_plan = False
-        self.goal_handle: Optional[ClientGoalHandle[Any, Any, Any]] = None
-        self.result_future: \
-            Optional[Future[GetResultServiceResponse[Any]]] = None
-        self.feedback: Any = None
-        # The ones the methods use; get_result() before any plan used to raise
+        self._feedback: Any = None
         self._goal_handle: Optional[ClientGoalHandle[Any, Any, Any]] = None
         self._result_future: \
             Optional[Future[GetResultServiceResponse[Any]]] = None
@@ -82,45 +73,6 @@ class ExecutorClient(Node):
         self._server_lost_since: Optional[float] = None
 
         self.get_logger().debug(f'Executor Client "{node_name}" initialized')
-
-    def _create_and_call_service(self, service_type, service_name: str, request):
-        """
-        Create a service client for the given service, call it and return the response.
-
-        Parameters
-        ----------
-        service_type : Type
-            The ROS2 service type class.
-        service_name : str
-            The name/topic of the service.
-        request : Any
-            The service request object.
-
-        Returns
-        -------
-        Any
-            The service response or None if failed.
-
-        """
-        try:
-            client: Client = self.create_client(service_type, service_name)
-
-            if not client.wait_for_service(timeout_sec=5.0):
-                self.get_logger().error(f'Service {service_name} not available')
-                return None
-
-            future = client.call_async(request)
-            rclpy.spin_until_future_complete(self, future, timeout_sec=10.0)
-
-            if future.done():
-                return future.result()
-            else:
-                self.get_logger().error(f'Service call to {service_name} timed out')
-                return None
-
-        except Exception as e:
-            self.get_logger().error(f'Error calling service {service_name}: {str(e)}')
-            return None
 
     def get_ordered_sub_goals(self) -> Optional[List[Tree]]:
         """
@@ -135,7 +87,7 @@ class ExecutorClient(Node):
             List of sub-goals as Tree objects, or None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/executor/get_ordered_sub_goals'
+        service_name = 'executor/get_ordered_sub_goals'
         request = GetOrderedSubGoals.Request()
 
         response = self._create_and_call_service(GetOrderedSubGoals, service_name, request)
@@ -159,7 +111,7 @@ class ExecutorClient(Node):
             The current plan or None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/executor/get_plan'
+        service_name = 'executor/get_plan'
         request = GetPlan.Request()
         request.domain = ''
         request.problem = ''
@@ -186,7 +138,7 @@ class ExecutorClient(Node):
             The remaining plan or None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/executor/get_remaining_plan'
+        service_name = 'executor/get_remaining_plan'
         request = GetPlan.Request()
         request.domain = ''
         request.problem = ''
@@ -303,7 +255,9 @@ class ExecutorClient(Node):
         )
 
         # Wait for goal acceptance
-        rclpy.spin_until_future_complete(self, send_goal_future, timeout_sec=3.0)
+        if not self._wait_for(send_goal_future, 3.0):
+            self.get_logger().error('Plan execution goal got no answer')
+            return False
         goal_handle = send_goal_future.result()
 
         if goal_handle is None or not goal_handle.accepted:
@@ -311,6 +265,7 @@ class ExecutorClient(Node):
             return False
 
         self._goal_handle = goal_handle  # type: ignore[assignment]
+        self._feedback = None
         self._result_future = goal_handle.get_result_async()
         self._server_lost_since = None
         self._executing_plan = True
@@ -338,7 +293,7 @@ class ExecutorClient(Node):
             return False  # No plan, or its executor is gone
 
         # Get the result of the future, if complete
-        rclpy.spin_until_future_complete(self, self._result_future, timeout_sec=0.10)
+        self._wait_for(self._result_future, 0.10)
 
         # Get the result
         result_response = self._result_future.result()
@@ -464,6 +419,30 @@ class ExecutorClient(Node):
             self.get_logger().info('Plan Cancelled')
         else:
             self.get_logger().error(f'Invalid status value {result_response.status}')
+
+    def cancel_plan_execution(self) -> bool:
+        """
+        Cancel the plan in execution, as the C++ cancel_plan_execution.
+
+        Returns
+        -------
+        bool
+            True if the executor accepted to cancel it; False if there was no plan running or
+            the executor did not answer.
+
+        """
+        goal_handle = self._goal_handle
+        running = (self._executing_plan and goal_handle is not None and
+                   self._result_future is not None and not self._result_future.done())
+        self._executing_plan = False
+        if not running:
+            return False
+        cancel_future = goal_handle.cancel_goal_async()
+        if not self._wait_for(cancel_future, 3.0):
+            self.get_logger().error('Failed to cancel action server for execute_plan')
+            return False
+        response = cancel_future.result()
+        return response is not None and len(response.goals_canceling) > 0
 
     def is_executing_plan(self) -> bool:
         """

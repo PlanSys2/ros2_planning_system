@@ -60,12 +60,17 @@ class TestDomainExpertClient(unittest.TestCase):
         """Test that the client initializes correctly."""
         self.assertIsNotNone(self.client)
         self.assertEqual(self.client.get_name(), 'test_domain_expert_client')
-        self.assertEqual(self.client._namespace_prefix, '')
+        # Relative names: the namespace and the remappings apply
+        self.assertEqual(
+            self.client._calls_node.resolve_service_name('domain_expert/get_domain'),
+            '/domain_expert/get_domain')
 
     def test_initialization_with_namespace(self):
         """Test that the client initializes correctly with namespace."""
         client = DomainExpertClient('test_client', namespace='test_namespace')
-        self.assertEqual(client._namespace_prefix, '/test_namespace')
+        self.assertEqual(
+            client._calls_node.resolve_service_name('domain_expert/get_domain'),
+            '/test_namespace/domain_expert/get_domain')
         client.destroy_node()
 
     @patch.object(Client, 'wait_for_service')
