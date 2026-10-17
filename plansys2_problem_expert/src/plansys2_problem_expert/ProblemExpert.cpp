@@ -728,6 +728,12 @@ ProblemExpert::isValidMetric(const plansys2::Metric & metric)
   return true;
 }
 
+std::string
+ProblemExpert::getDomain()
+{
+  return domain_expert_->getDomain();
+}
+
 bool
 ProblemExpert::updateDomain(const std::string & domain)
 {

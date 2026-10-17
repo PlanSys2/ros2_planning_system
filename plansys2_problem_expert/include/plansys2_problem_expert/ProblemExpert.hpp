@@ -296,6 +296,13 @@ public:
    * @param[in] domain The new domain, in PDDL.
    * @return true if the domain was replaced, false if the PDDL was invalid.
    */
+  /**
+   * @brief The domain the problem is checked against, as text.
+   *
+   * @return std::string The joint domain.
+   */
+  std::string getDomain();
+
   bool updateDomain(const std::string & domain);
 
 private:

@@ -273,10 +273,11 @@ public:
    * @param[in] request Service request containing the new domain, in PDDL.
    * @param[out] response Service response with success status and error information.
    */
+  // Answered once the problem expert took the new domain, without blocking the node meanwhile
   void change_domain_service_callback(
-    const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Request> request,
-    const std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Response> response);
+    std::shared_ptr<rclcpp::Service<plansys2_msgs::srv::ChangeDomain>> service,
+    std::shared_ptr<rmw_request_id_t> request_header,
+    std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Request> request);
 
 private:
   /**
@@ -326,6 +327,14 @@ private:
   rclcpp::CallbackGroup::SharedPtr validate_domain_callback_group_;
   // Takes the planner's answers, so validation never depends on the node's executor threads
   rclcpp::executors::SingleThreadedExecutor validate_domain_executor_;
+  // The problem expert takes a new domain before this node answers that it changed
+  rclcpp::Client<plansys2_msgs::srv::ChangeDomain>::SharedPtr problem_update_domain_client_;
+  // One change at a time: another one waits for the problem expert
+  bool change_in_progress_ {false};
+  rclcpp::TimerBase::SharedPtr change_timeout_;
+
+  // Takes the domain already validated and tells the others
+  void take_domain(std::shared_ptr<DomainExpert> domain_expert);
 
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::String>::SharedPtr domain_pub_;
 

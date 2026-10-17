@@ -34,6 +34,8 @@ DomainExpertNode::DomainExpertNode(const rclcpp::NodeOptions & options)
     create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive, false);
   validate_domain_executor_.add_callback_group(
     validate_domain_callback_group_, get_node_base_interface());
+  problem_update_domain_client_ = create_client<plansys2_msgs::srv::ChangeDomain>(
+    "problem_expert/update_domain");
 
   get_name_service_ = create_service<plansys2_msgs::srv::GetDomainName>(
     "domain_expert/get_domain_name",
@@ -111,10 +113,13 @@ DomainExpertNode::DomainExpertNode(const rclcpp::NodeOptions & options)
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
   change_domain_service_ = create_service<plansys2_msgs::srv::ChangeDomain>(
-    "domain_expert/change_domain", std::bind(
-      &DomainExpertNode::change_domain_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    "domain_expert/change_domain",
+    [this](
+      std::shared_ptr<rclcpp::Service<plansys2_msgs::srv::ChangeDomain>> service,
+      std::shared_ptr<rmw_request_id_t> header,
+      std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Request> request) {
+      change_domain_service_callback(service, header, request);
+    });
   domain_pub_ = create_publisher<std_msgs::msg::String>(
     "domain_expert/domain",
     rclcpp::QoS(100).transient_local());
@@ -590,48 +595,105 @@ DomainExpertNode::validateDomain(
 }
 
 void
-DomainExpertNode::change_domain_service_callback(
-  const std::shared_ptr<rmw_request_id_t> request_header,
-  const std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Request> request,
-  const std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Response> response)
+DomainExpertNode::take_domain(std::shared_ptr<DomainExpert> domain_expert)
 {
-  (void)request_header;
-
-  // Subscribers only learn about the change from domain_pub_, so it must be active
-  if (domain_expert_ == nullptr || !domain_pub_->is_activated()) {
-    response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
-    return;
-  }
-
-  if (request->domain.find_first_not_of(" \t\r\n") == std::string::npos) {
-    response->success = false;
-    response->error_info = "Empty domain";
-    RCLCPP_WARN_STREAM(
-      get_logger(), "[" << get_name() << "] Rejected domain change: " << response->error_info);
-    return;
-  }
-
-  std::shared_ptr<DomainExpert> validated_domain_expert;
-  std::string error;
-  if (!validateDomain(request->domain, validated_domain_expert, error)) {
-    response->success = false;
-    response->error_info = error;
-    RCLCPP_WARN_STREAM(
-      get_logger(), "[" << get_name() << "] Rejected domain change: " << error);
-    return;
-  }
-
   // Swap in the instance validateDomain() already parsed instead of parsing again
-  domain_expert_ = validated_domain_expert;
+  domain_expert_ = domain_expert;
 
   std_msgs::msg::String domain_msg;
   domain_msg.data = domain_expert_->getDomain();
   domain_pub_->publish(domain_msg);
 
   RCLCPP_INFO(get_logger(), "[%s] Domain changed", get_name());
-  response->success = true;
+}
+
+void
+DomainExpertNode::change_domain_service_callback(
+  std::shared_ptr<rclcpp::Service<plansys2_msgs::srv::ChangeDomain>> service,
+  std::shared_ptr<rmw_request_id_t> request_header,
+  std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Request> request)
+{
+  auto respond = [this, service, request_header](bool success, const std::string & error) {
+      plansys2_msgs::srv::ChangeDomain::Response response;
+      response.success = success;
+      response.error_info = error;
+      if (!success) {
+        RCLCPP_WARN_STREAM(
+          get_logger(), "[" << get_name() << "] Rejected domain change: " << error);
+      }
+      service->send_response(*request_header, response);
+    };
+
+  // Subscribers only learn about the change from domain_pub_, so it must be active
+  if (domain_expert_ == nullptr || !domain_pub_->is_activated()) {
+    respond(false, "Requesting service in non-active state");
+    return;
+  }
+
+  if (request->domain.find_first_not_of(" \t\r\n") == std::string::npos) {
+    respond(false, "Empty domain");
+    return;
+  }
+
+  if (change_in_progress_) {
+    respond(false, "Another domain change is in progress");
+    return;
+  }
+
+  std::shared_ptr<DomainExpert> validated_domain_expert;
+  std::string error;
+  if (!validateDomain(request->domain, validated_domain_expert, error)) {
+    respond(false, error);
+    return;
+  }
+
+  // Without a problem expert there is nobody to wait for
+  if (!problem_update_domain_client_->service_is_ready()) {
+    RCLCPP_WARN(get_logger(), "No problem expert: the domain changes without it");
+    take_domain(validated_domain_expert);
+    respond(true, "");
+    return;
+  }
+
+  // The problem expert first, so that when we answer it already works with the new domain;
+  // if it cannot take it, nothing changes
+  change_in_progress_ = true;
+  auto answered = std::make_shared<bool>(false);
+  auto update = std::make_shared<plansys2_msgs::srv::ChangeDomain::Request>();
+  update->domain = validated_domain_expert->getDomain();
+  auto pending = problem_update_domain_client_->async_send_request(
+    update,
+    [this, answered, respond, validated_domain_expert](
+      rclcpp::Client<plansys2_msgs::srv::ChangeDomain>::SharedFuture future) {
+      if (*answered) {
+        return;
+      }
+      *answered = true;
+      change_in_progress_ = false;
+      change_timeout_.reset();
+      auto result = future.get();
+      if (!result->success) {
+        respond(
+          false, result->error_info.empty() ? "The problem expert could not take the domain" :
+          result->error_info);
+        return;
+      }
+      take_domain(validated_domain_expert);
+      respond(true, "");
+    });
+
+  auto request_id = pending.request_id;
+  change_timeout_ = create_wall_timer(
+    std::chrono::seconds(5), [this, answered, respond, request_id]() {
+      change_timeout_->cancel();
+      if (*answered) {
+        return;
+      }
+      *answered = true;
+      change_in_progress_ = false;
+      problem_update_domain_client_->remove_pending_request(request_id);
+      respond(false, "The problem expert did not answer");
+    });
 }
 
 }  // namespace plansys2

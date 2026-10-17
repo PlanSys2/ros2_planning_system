@@ -238,6 +238,13 @@ ProblemExpertNode::ProblemExpertNode(const rclcpp::NodeOptions & options)
     "domain_expert/domain",
     rclcpp::QoS(100).transient_local(),
     std::bind(&ProblemExpertNode::domain_topic_callback, this, std::placeholders::_1));
+
+  // The domain expert asks here before it takes a new domain: it answers once this one did
+  update_domain_service_ = create_service<plansys2_msgs::srv::ChangeDomain>(
+    "problem_expert/update_domain",
+    std::bind(
+      &ProblemExpertNode::update_domain_service_callback, this, std::placeholders::_1,
+      std::placeholders::_2, std::placeholders::_3));
 }
 
 
@@ -286,6 +293,15 @@ ProblemExpertNode::on_configure(const rclcpp_lifecycle::State & state)
     if (!problem_expert_->addProblem(problem_str)) {
       RCLCPP_ERROR(get_logger(), "Cannot load problem_file %s", problem_file.c_str());
       return CallbackReturnT::FAILURE;
+    }
+  }
+
+  // The domain expert changed its domain before we were configured: take its domain
+  if (!last_domain_.empty() && last_domain_ != problem_expert_->getDomain()) {
+    if (problem_expert_->updateDomain(last_domain_)) {
+      RCLCPP_INFO(get_logger(), "[%s] Took the current domain of the domain expert", get_name());
+    } else {
+      RCLCPP_ERROR(get_logger(), "[%s] The current domain could not be loaded", get_name());
     }
   }
 
@@ -803,14 +819,17 @@ ProblemExpertNode::clear_problem_knowledge_service_callback(
   }
 }
 
-void
+bool
 ProblemExpertNode::applyNewDomain(const std::string & domain)
 {
+  if (domain == problem_expert_->getDomain()) {
+    return true;
+  }
   if (!problem_expert_->updateDomain(domain)) {
     RCLCPP_ERROR_STREAM(
       get_logger(), "[" << get_name() << "] Failed to update domain: the new domain could not "
         "be loaded, problem knowledge left unchanged");
-    return;
+    return false;
   }
 
   update_pub_->publish(std_msgs::msg::Empty());
@@ -822,24 +841,41 @@ ProblemExpertNode::applyNewDomain(const std::string & domain)
   problem_pub_->publish(problem_msg);
 
   RCLCPP_INFO(get_logger(), "[%s] Reconciled problem knowledge with new domain", get_name());
+  return true;
+}
+
+void
+ProblemExpertNode::update_domain_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Response> response)
+{
+  (void)request_header;
+  last_domain_ = request->domain;
+  if (problem_expert_ == nullptr) {
+    // Taken when configured
+    response->success = true;
+    return;
+  }
+  response->success = applyNewDomain(request->domain);
+  if (!response->success) {
+    response->error_info = "The problem expert could not load the domain";
+  }
 }
 
 void
 ProblemExpertNode::domain_topic_callback(const std_msgs::msg::String::SharedPtr msg)
 {
+  last_domain_ = msg->data;
+  // Not configured yet: on_configure takes it if it is not the one of model_file
   if (problem_expert_ == nullptr) {
-    // Not configured yet: this node will pick up its starting domain from
-    // model_file on its own first on_configure(), same as always.
     return;
   }
 
-  if (!domain_baseline_seen_) {
-    // The transient_local replay of whatever domain_expert already has: this node
-    // just loaded that same domain from model_file, so there is nothing to do.
-    domain_baseline_seen_ = true;
+  // By content: the replay of the domain we already have changes nothing, a newer one does
+  if (msg->data == problem_expert_->getDomain()) {
     return;
   }
-
   RCLCPP_INFO(
     get_logger(), "[%s] Domain changed, reconciling problem knowledge...", get_name());
   applyNewDomain(msg->data);
