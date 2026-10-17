@@ -30,6 +30,7 @@
 #include "ament_index_cpp/get_package_share_path.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_executor/ActionExecutorClient.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
@@ -85,22 +86,6 @@ private:
   double duration_;
 };
 
-class ScopedSpinner
-{
-public:
-  explicit ScopedSpinner(rclcpp::Executor & exe)
-  : thread_([this, &exe]() {while (!finish_) {exe.spin_once(10ms);}}) {}
-  ~ScopedSpinner()
-  {
-    finish_ = true;
-    thread_.join();
-  }
-
-private:
-  std::atomic<bool> finish_ {false};
-  std::thread thread_;
-};
-
 plansys2_msgs::msg::PlanItem item(float time, const std::string & action, float duration)
 {
   plansys2_msgs::msg::PlanItem plan_item;
@@ -131,7 +116,7 @@ protected:
     for (auto node : nodes()) {
       exe_.add_node(node->get_node_base_interface());
     }
-    spinner_ = std::make_unique<ScopedSpinner>(exe_);
+    spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
     for (auto node : nodes()) {
       node->trigger_transition(Transition::TRANSITION_CONFIGURE);
     }
@@ -188,7 +173,7 @@ protected:
   std::shared_ptr<TimedPerformer> light_;
   std::shared_ptr<TimedPerformer> mend_;
   rclcpp::executors::SingleThreadedExecutor exe_;
-  std::unique_ptr<ScopedSpinner> spinner_;
+  std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   std::shared_ptr<plansys2::ExecutorClient> executor_client_;
 };

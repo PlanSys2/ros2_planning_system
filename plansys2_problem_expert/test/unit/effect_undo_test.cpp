@@ -13,16 +13,15 @@
 // limitations under the License.
 
 #include <algorithm>
-#include <atomic>
 #include <memory>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "ament_index_cpp/get_package_share_path.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/transition.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
@@ -51,7 +50,7 @@ protected:
 
     exe_.add_node(domain_node_->get_node_base_interface());
     exe_.add_node(problem_node_->get_node_base_interface());
-    spin_thread_ = std::thread([this]() {while (!finish_) {exe_.spin_some(10ms);}});
+    spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
 
     client_ = std::make_shared<plansys2::ProblemExpertClient>();
     for (const auto & robot : {"r1", "r2"}) {
@@ -67,8 +66,7 @@ protected:
   void TearDown() override
   {
     client_.reset();
-    finish_ = true;
-    spin_thread_.join();
+    spinner_.reset();
   }
 
   static plansys2_msgs::msg::Tree tree_of(const std::string & expression)
@@ -100,8 +98,7 @@ protected:
   std::shared_ptr<plansys2::ProblemExpertNode> problem_node_;
   std::shared_ptr<plansys2::ProblemExpertClient> client_;
   rclcpp::executors::SingleThreadedExecutor exe_;
-  std::atomic<bool> finish_ {false};
-  std::thread spin_thread_;
+  std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 
 TEST_F(EffectUndoTest, predicates_go_back)

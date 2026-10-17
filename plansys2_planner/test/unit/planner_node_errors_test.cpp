@@ -15,7 +15,6 @@
 // Planner errors are reported instead of killing or misconfiguring the process (#434).
 // rclcpp is started with plan_solver_timeout:=2.0 for every node (see main).
 
-#include <atomic>
 #include <chrono>
 #include <cstdarg>
 #include <fstream>
@@ -23,7 +22,6 @@
 #include <mutex>
 #include <stdexcept>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "ament_index_cpp/get_package_share_path.hpp"
@@ -31,6 +29,7 @@
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_core/PlanSolverBase.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_core/Utils.hpp"
 #include "plansys2_msgs/srv/get_plan.hpp"
 #include "plansys2_msgs/srv/get_plan_array.hpp"
@@ -85,22 +84,6 @@ public:
   void remove_solver(const std::string & id) {solvers_.erase(id);}
 };
 
-class ScopedSpinner
-{
-public:
-  explicit ScopedSpinner(rclcpp::Executor & exe)
-  : thread_([this, &exe]() {while (!finish_) {exe.spin_once(10ms);}}) {}
-  ~ScopedSpinner()
-  {
-    finish_ = true;
-    thread_.join();
-  }
-
-private:
-  std::atomic<bool> finish_ {false};
-  std::thread thread_;
-};
-
 // Log lines captured from every logger
 std::mutex log_mutex;
 std::vector<std::string> log_lines;
@@ -145,7 +128,7 @@ protected:
       "planner/validate_domain");
     exe_.add_node(planner_->get_node_base_interface());
     exe_.add_node(client_node_);
-    spinner_ = std::make_unique<ScopedSpinner>(exe_);
+    spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
   }
 
   void TearDown() override
@@ -196,7 +179,7 @@ protected:
   rclcpp::Client<plansys2_msgs::srv::GetPlanArray>::SharedPtr get_plan_array_;
   rclcpp::Client<plansys2_msgs::srv::ValidateDomain>::SharedPtr validate_;
   rclcpp::executors::SingleThreadedExecutor exe_;
-  std::unique_ptr<ScopedSpinner> spinner_;
+  std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 
 // A wrong plugin used to exit(-1) from on_configure

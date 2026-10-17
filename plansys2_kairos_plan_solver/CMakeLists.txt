@@ -59,6 +59,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_ros REQUIRED)
   find_package(ament_index_cpp REQUIRED)
   add_subdirectory(test)
 endif()

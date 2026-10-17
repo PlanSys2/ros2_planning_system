@@ -52,6 +52,7 @@
 #include "plansys2_executor/behavior_tree/restore_atstart_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_core/Utils.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
@@ -309,11 +310,7 @@ TEST(executor, action_executor_client)
         history_msgs.push_back(*msg);
     });
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     std::string bt_xml_tree =
       R"(
@@ -361,10 +358,6 @@ TEST(executor, action_executor_client)
     ASSERT_EQ(transport_action_node->executions_, 3);
     ASSERT_EQ(transport_action_node->cycles_, 15);
   // ASSERT_EQ(history_msgs.size(), 64);
-
-
-    finish = true;
-    t.join();
 }
   plansys2::drain_ros(200ms);
 }
@@ -413,11 +406,7 @@ TEST(executor, action_executor_client_old_constructor)
         history_msgs.push_back(*msg);
     });
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     std::string bt_xml_tree =
       R"(
@@ -465,10 +454,6 @@ TEST(executor, action_executor_client_old_constructor)
     ASSERT_EQ(transport_action_node->executions_, 3);
     ASSERT_EQ(transport_action_node->cycles_, 15);
   // ASSERT_EQ(history_msgs.size(), 64);
-
-
-    finish = true;
-    t.join();
 }
   plansys2::drain_ros(200ms);
 }
@@ -495,36 +480,16 @@ TEST(executor, action_executor)
     exe.add_node(problem_node->get_node_base_interface());
     exe.add_node(planner_node->get_node_base_interface());
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot2", "robot")));
@@ -607,9 +572,6 @@ TEST(executor, action_executor)
 
     bt_builder->initialize();
     auto tree_str = bt_builder->get_tree(plan.value());
-
-    finish = true;
-    t.join();
 }
   plansys2::drain_ros(200ms);
 }
@@ -856,11 +818,7 @@ TEST(executor, action_real_action_1)
     exe.add_node(test_lf_node->get_node_base_interface());
 
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -869,26 +827,10 @@ TEST(executor, action_real_action_1)
 
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
@@ -1079,9 +1021,6 @@ TEST(executor, action_real_action_1)
     CheckAtEndReqTest::halted_ = false;
     ApplyAtStartEffectTest::halted_ = false;
     ApplyAtEndEffectTest::halted_ = false;
-
-    finish = true;
-    t.join();
 }
   plansys2::drain_ros(200ms);
 }
@@ -1117,11 +1056,7 @@ TEST(executor, action_real_action_1_with_restore)
     exe.add_node(test_lf_node->get_node_base_interface());
 
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -1130,26 +1065,10 @@ TEST(executor, action_real_action_1_with_restore)
 
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
@@ -1358,9 +1277,6 @@ TEST(executor, action_real_action_1_with_restore)
     ApplyAtStartEffectTest::halted_ = false;
     RestoreAtStartEffectTest::halted_ = false;
     ApplyAtEndEffectTest::halted_ = false;
-
-    finish = true;
-    t.join();
 }
   plansys2::drain_ros(200ms);
 }
@@ -1397,11 +1313,7 @@ TEST(executor, action_real_action_2)
     exe.add_node(test_lf_node->get_node_base_interface());
 
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -1410,26 +1322,10 @@ TEST(executor, action_real_action_2)
 
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
@@ -1625,9 +1521,6 @@ TEST(executor, action_real_action_2)
     CheckAtEndReqTest::halted_ = false;
     ApplyAtStartEffectTest::halted_ = false;
     ApplyAtEndEffectTest::halted_ = false;
-
-    finish = true;
-    t.join();
 }
   plansys2::drain_ros(200ms);
 }
@@ -1663,11 +1556,7 @@ TEST(executor, cancel_bt_execution)
     exe.add_node(test_lf_node->get_node_base_interface());
 
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -1676,26 +1565,10 @@ TEST(executor, cancel_bt_execution)
 
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
@@ -1819,9 +1692,6 @@ TEST(executor, cancel_bt_execution)
     CheckAtEndReqTest::halted_ = false;
     ApplyAtStartEffectTest::halted_ = false;
     ApplyAtEndEffectTest::halted_ = false;
-
-    finish = true;
-    t.join();
 }
   plansys2::drain_ros(200ms);
 }
@@ -1867,11 +1737,7 @@ TEST(executor, executor_client_execute_plan)
     exe.add_node(move_action_node->get_node_base_interface());
     exe.add_node(test_lf_node->get_node_base_interface());
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -1880,27 +1746,11 @@ TEST(executor, executor_client_execute_plan)
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
@@ -1979,9 +1829,6 @@ TEST(executor, executor_client_execute_plan)
     for (const auto & action_status : result.action_execution_status) {
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }
-
-    finish = true;
-    t.join();
 }
   plansys2::drain_ros(200ms);
 }
@@ -2022,11 +1869,7 @@ TEST(executor, executor_client_execute_plan_2)
     exe.add_node(test_lf_node->get_node_base_interface());
 
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -2035,27 +1878,11 @@ TEST(executor, executor_client_execute_plan_2)
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
@@ -2130,9 +1957,6 @@ TEST(executor, executor_client_execute_plan_2)
     for (const auto & action_status : result.action_execution_status) {
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }
-
-    finish = true;
-    t.join();
 }
   plansys2::drain_ros(200ms);
 }
@@ -2174,21 +1998,19 @@ TEST(executor, executor_client_execute_plan_3)
     exe.add_node(test_lf_node->get_node_base_interface());
     exe.add_node(test_node_1->get_node_base_interface());
 
-    int changes_plan = 0;
-    plansys2_msgs::msg::Plan current_plan;
+    // Written by the spinning thread, read by the test
+    std::atomic<int> changes_plan {0};
+    std::atomic<size_t> current_plan_size {0};
     auto current_plan_sub = test_node_1->create_subscription<plansys2_msgs::msg::Plan>(
     "/remaining_plan", rclcpp::QoS(100),
-      [&current_plan, &changes_plan](plansys2_msgs::msg::Plan::SharedPtr plan) {
-        if (plan->items.size() != current_plan.items.size()) {
+      [&current_plan_size, &changes_plan](plansys2_msgs::msg::Plan::SharedPtr plan) {
+        if (plan->items.size() != current_plan_size) {
           changes_plan++;
         }
-        current_plan = *plan;
+        current_plan_size = plan->items.size();
     });
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -2197,27 +2019,11 @@ TEST(executor, executor_client_execute_plan_3)
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance{"r2d2", "robot"}));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance{"wp1", "waypoint"}));
@@ -2267,11 +2073,8 @@ TEST(executor, executor_client_execute_plan_3)
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }
 
-    ASSERT_EQ(changes_plan, 5);
-    ASSERT_EQ(current_plan.items.size(), 0);
-
-    finish = true;
-    t.join();
+    ASSERT_EQ(changes_plan.load(), 5);
+    ASSERT_EQ(current_plan_size.load(), 0u);
 }
   plansys2::drain_ros(200ms);
 }
@@ -2313,21 +2116,19 @@ TEST(executor, executor_client_execute_plan_two_plans)
     exe.add_node(test_lf_node->get_node_base_interface());
     exe.add_node(test_node_1->get_node_base_interface());
 
-    int changes_plan = 0;
-    plansys2_msgs::msg::Plan current_plan;
+    // Written by the spinning thread, read by the test
+    std::atomic<int> changes_plan {0};
+    std::atomic<size_t> current_plan_size {0};
     auto current_plan_sub = test_node_1->create_subscription<plansys2_msgs::msg::Plan>(
     "/remaining_plan", rclcpp::QoS(100),
-      [&current_plan, &changes_plan](plansys2_msgs::msg::Plan::SharedPtr plan) {
-        if (plan->items.size() != current_plan.items.size()) {
+      [&current_plan_size, &changes_plan](plansys2_msgs::msg::Plan::SharedPtr plan) {
+        if (plan->items.size() != current_plan_size) {
           changes_plan++;
         }
-        current_plan = *plan;
+        current_plan_size = plan->items.size();
     });
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -2336,27 +2137,11 @@ TEST(executor, executor_client_execute_plan_two_plans)
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance{"r2d2", "robot"}));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance{"wp1", "waypoint"}));
@@ -2406,8 +2191,8 @@ TEST(executor, executor_client_execute_plan_two_plans)
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }
 
-    ASSERT_EQ(changes_plan, 5);
-    ASSERT_EQ(current_plan.items.size(), 0);
+    ASSERT_EQ(changes_plan.load(), 5);
+    ASSERT_EQ(current_plan_size.load(), 0u);
 
     problem_client->setGoal(plansys2::Goal("(and(robot_at r2d2 wp1))"));
 
@@ -2440,11 +2225,8 @@ TEST(executor, executor_client_execute_plan_two_plans)
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }
 
-    ASSERT_EQ(changes_plan, 10);
-    ASSERT_EQ(current_plan.items.size(), 0);
-
-    finish = true;
-    t.join();
+    ASSERT_EQ(changes_plan.load(), 10);
+    ASSERT_EQ(current_plan_size.load(), 0u);
 }
   plansys2::drain_ros(200ms);
 }
@@ -2486,21 +2268,19 @@ TEST(executor, executor_client_execute_plan_replan)
     exe.add_node(test_lf_node->get_node_base_interface());
     exe.add_node(test_node_1->get_node_base_interface());
 
-    int changes_plan = 0;
-    plansys2_msgs::msg::Plan current_plan;
+    // Written by the spinning thread, read by the test
+    std::atomic<int> changes_plan {0};
+    std::atomic<size_t> current_plan_size {0};
     auto current_plan_sub = test_node_1->create_subscription<plansys2_msgs::msg::Plan>(
     "/remaining_plan", rclcpp::QoS(100),
-      [&current_plan, &changes_plan](plansys2_msgs::msg::Plan::SharedPtr plan) {
-        if (plan->items.size() != current_plan.items.size()) {
+      [&current_plan_size, &changes_plan](plansys2_msgs::msg::Plan::SharedPtr plan) {
+        if (plan->items.size() != current_plan_size) {
           changes_plan++;
         }
-        current_plan = *plan;
+        current_plan_size = plan->items.size();
     });
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -2509,27 +2289,11 @@ TEST(executor, executor_client_execute_plan_replan)
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance{"r2d2", "robot"}));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance{"wp1", "waypoint"}));
@@ -2608,11 +2372,8 @@ TEST(executor, executor_client_execute_plan_replan)
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }
 
-    ASSERT_EQ(changes_plan, 5);
-    ASSERT_EQ(current_plan.items.size(), 0);
-
-    finish = true;
-    t.join();
+    ASSERT_EQ(changes_plan.load(), 5);
+    ASSERT_EQ(current_plan_size.load(), 0u);
 }
   plansys2::drain_ros(200ms);
 }
@@ -2665,32 +2426,19 @@ TEST(executor, executor_client_execute_plan_multi_replan)
     exe.add_node(test_lf_node->get_node_base_interface());
     exe.add_node(test_node_1->get_node_base_interface());
 
-    int changes_plan = 0;
-    plansys2_msgs::msg::Plan current_plan;
+    // Written by the spinning thread, read by the test
+    std::atomic<int> changes_plan {0};
+    std::atomic<size_t> current_plan_size {0};
     auto current_plan_sub = test_node_1->create_subscription<plansys2_msgs::msg::Plan>(
     "/remaining_plan", rclcpp::QoS(100),
-      [&current_plan, &changes_plan](plansys2_msgs::msg::Plan::SharedPtr plan) {
-        if (plan->items.size() != current_plan.items.size()) {
+      [&current_plan_size, &changes_plan](plansys2_msgs::msg::Plan::SharedPtr plan) {
+        if (plan->items.size() != current_plan_size) {
           changes_plan++;
         }
-        current_plan = *plan;
+        current_plan_size = plan->items.size();
     });
 
-    std::atomic<bool> finish {false};
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-    // A failed ASSERT returns early: the thread must be joined anyway, or the test aborts
-    struct Joiner
-    {
-      std::atomic<bool> & finish;
-      std::thread & thread;
-      ~Joiner()
-      {
-        finish = true;
-        if (thread.joinable()) {thread.join();}
-      }
-    } joiner{finish, t};
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -2701,27 +2449,11 @@ TEST(executor, executor_client_execute_plan_multi_replan)
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance{"r2d2", "robot"}));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance{"c3po", "robot"}));
@@ -2808,11 +2540,8 @@ TEST(executor, executor_client_execute_plan_multi_replan)
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }
 
-    ASSERT_GE(changes_plan, 6);
-    ASSERT_EQ(current_plan.items.size(), 0);
-
-    finish = true;
-    t.join();
+    ASSERT_GE(changes_plan.load(), 6);
+    ASSERT_EQ(current_plan_size.load(), 0u);
 }
   plansys2::drain_ros(200ms);
 }
@@ -2852,20 +2581,7 @@ void replan_with_the_same_plan(
   exe.add_node(executor_node->get_node_base_interface());
   exe.add_node(move_action_node->get_node_base_interface());
 
-  std::atomic<bool> finish {false};
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
-  struct Joiner
-  {
-    std::atomic<bool> & finish;
-    std::thread & thread;
-    ~Joiner()
-    {
-      finish = true;
-      if (thread.joinable()) {thread.join();}
-    }
-  } joiner{finish, t};
+  plansys2::testing::ExecutorThread spinner(exe);
 
   for (auto transition : {lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
       lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE})
@@ -3030,10 +2746,7 @@ TEST(executor, executor_client_ordered_sub_goals)
     exe.add_node(patrol_action_node->get_node_base_interface());
     exe.add_node(test_lf_node->get_node_base_interface());
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -3043,27 +2756,11 @@ TEST(executor, executor_client_ordered_sub_goals)
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wp0", "waypoint")));
@@ -3139,9 +2836,6 @@ TEST(executor, executor_client_ordered_sub_goals)
       // }
       }
     }
-
-    finish = true;
-    t.join();
 }
   plansys2::drain_ros(200ms);
 }
@@ -3182,11 +2876,7 @@ TEST(executor, executor_client_cancel_plan)
     exe.add_node(test_lf_node->get_node_base_interface());
 
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -3195,27 +2885,11 @@ TEST(executor, executor_client_cancel_plan)
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
@@ -3264,20 +2938,15 @@ TEST(executor, executor_client_cancel_plan)
 
     ASSERT_FALSE(executor_client->getResult().has_value());
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 2.0) {
-        rate.sleep();
-      }
-    }
-
+    // The performer goes back to inactive
+    plansys2::testing::wait_for(
+      [&]() {
+        return move_action_node->get_current_state().id() ==
+               lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE;
+      });
     ASSERT_EQ(
     move_action_node->get_current_state().id(),
     lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
-
-    finish = true;
-    t.join();
   }
   plansys2::drain_ros(200ms);
 }
@@ -3328,10 +2997,7 @@ TEST(executor, action_timeout)
     exe.add_node(move_action_node->get_node_base_interface());
     exe.add_node(test_lf_node->get_node_base_interface());
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -3340,27 +3006,11 @@ TEST(executor, action_timeout)
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("wheels_zone", "zone")));
@@ -3415,20 +3065,15 @@ TEST(executor, action_timeout)
     result.action_execution_status[0].status,
     plansys2_msgs::msg::ActionExecutionInfo::CANCELLED);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node_1->now();
-      while ((test_node_1->now() - start).seconds() < 2.0) {
-        rate.sleep();
-      }
-    }
-
+    // The performer goes back to inactive
+    plansys2::testing::wait_for(
+      [&]() {
+        return move_action_node->get_current_state().id() ==
+               lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE;
+      });
     ASSERT_EQ(
     move_action_node->get_current_state().id(),
     lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
-
-    finish = true;
-    t.join();
   }
   plansys2::drain_ros(200ms);
 }

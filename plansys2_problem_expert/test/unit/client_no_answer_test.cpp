@@ -18,7 +18,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "gtest/gtest.h"
@@ -29,6 +28,7 @@
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_core/Utils.hpp"
 
 #include "rclcpp/rclcpp.hpp"
@@ -127,13 +127,12 @@ protected:
     server_ = std::make_shared<PartialProblemExpert>();
     client_ = std::make_shared<plansys2::ProblemExpertClient>();
     exe_.add_node(server_);
-    spin_thread_ = std::thread([this]() {exe_.spin();});
+    spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
   }
 
   void TearDown() override
   {
-    exe_.cancel();
-    spin_thread_.join();
+    spinner_.reset();
     exe_.remove_node(server_);
     client_.reset();
     server_.reset();
@@ -143,7 +142,7 @@ protected:
   std::shared_ptr<PartialProblemExpert> server_;
   std::shared_ptr<plansys2::ProblemExpertClient> client_;
   rclcpp::executors::SingleThreadedExecutor exe_;
-  std::thread spin_thread_;
+  std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 
 TEST_F(ClientNoAnswerTest, try_methods_tell_no_answer_apart)

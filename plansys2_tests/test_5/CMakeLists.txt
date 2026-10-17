@@ -2,7 +2,7 @@ install(DIRECTORY pddl
   DESTINATION share/${PROJECT_NAME}/test_5
 )
 
-ament_add_gtest(test_5 test_5.cpp)
+ament_add_ros_isolated_gtest(test_5 test_5.cpp TIMEOUT 80)
 target_link_libraries(test_5 ${PROJECT_NAME})
 
 # Tests discover only nodes on this host: parallel jobs do not mix

@@ -1,11 +1,11 @@
-ament_add_gtest(terminal_test terminal_test.cpp TIMEOUT 500)
+ament_add_ros_isolated_gtest(terminal_test terminal_test.cpp TIMEOUT 150)
 target_link_libraries(terminal_test
   terminal
   readline
   ament_index_cpp::ament_index_cpp
 )
 
-ament_add_gtest(terminal_commands_test terminal_commands_test.cpp TIMEOUT 120)
+ament_add_ros_isolated_gtest(terminal_commands_test terminal_commands_test.cpp TIMEOUT 60)
 target_link_libraries(terminal_commands_test
   terminal
   readline

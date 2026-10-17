@@ -27,6 +27,8 @@
 #include "lifecycle_msgs/srv/change_state.hpp"
 #include "lifecycle_msgs/srv/get_state.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
+
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
@@ -43,7 +45,7 @@ public:
         const std::shared_ptr<lifecycle_msgs::srv::GetState::Request>,
         std::shared_ptr<lifecycle_msgs::srv::GetState::Response> response) {
         get_state_calls++;
-        std::this_thread::sleep_for(get_state_delay);
+        std::this_thread::sleep_for(get_state_delay.load());
         response->current_state.id = state;
       });
     change_state_ = create_service<lifecycle_msgs::srv::ChangeState>(
@@ -52,7 +54,7 @@ public:
         std::shared_ptr<rclcpp::Service<lifecycle_msgs::srv::ChangeState>> service,
         std::shared_ptr<rmw_request_id_t> header,
         const std::shared_ptr<lifecycle_msgs::srv::ChangeState::Request>) {
-        std::this_thread::sleep_for(change_state_delay);
+        std::this_thread::sleep_for(change_state_delay.load());
         if (on_change_state) {
           on_change_state();
         }
@@ -69,8 +71,8 @@ public:
   std::atomic<uint8_t> state {lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED};
   std::atomic<bool> change_state_success {true};
   std::atomic<bool> lose_change_state_response {false};
-  std::chrono::milliseconds get_state_delay {0};
-  std::chrono::milliseconds change_state_delay {0};
+  std::atomic<std::chrono::milliseconds> get_state_delay {std::chrono::milliseconds(0)};
+  std::atomic<std::chrono::milliseconds> change_state_delay {std::chrono::milliseconds(0)};
   std::function<void()> on_change_state;
   std::atomic<int> get_state_calls {0};
 
@@ -103,39 +105,24 @@ private:
   bool fail_activate_;
 };
 
-// Spins an executor in its own thread while it lives
+// Spins the nodes added to it in its own thread from start() until it is destroyed
 class Spinner
 {
 public:
-  Spinner()
-  : exe_(std::make_shared<rclcpp::executors::MultiThreadedExecutor>(
-        rclcpp::ExecutorOptions(), 4)) {}
-
-  ~Spinner()
-  {
-    exe_->cancel();
-    if (thread_.joinable()) {
-      thread_.join();
-    }
-  }
-
   // Keeps the node alive until the executor stops
   template<typename NodeT>
   void add(std::shared_ptr<NodeT> node)
   {
     keep_alive_.push_back(node);
-    exe_->add_node(node->get_node_base_interface());
+    exe_.add_node(node->get_node_base_interface());
   }
 
-  void start()
-  {
-    thread_ = std::thread([this]() {exe_->spin();});
-  }
+  void start() {thread_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);}
 
 private:
-  std::shared_ptr<rclcpp::executors::MultiThreadedExecutor> exe_;
-  std::thread thread_;
   std::vector<std::shared_ptr<void>> keep_alive_;
+  rclcpp::executors::SingleThreadedExecutor exe_;
+  std::unique_ptr<plansys2::testing::ExecutorThread> thread_;
 };
 
 #endif  // FAKE_LIFECYCLE_NODE_HPP_

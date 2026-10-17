@@ -29,6 +29,7 @@
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_core/Utils.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_executor/ActionExecutorClient.hpp"
@@ -236,7 +237,7 @@ TEST(terminal_commands, interrupt_cancels_the_plan)
     exe.add_node(planner_node->get_node_base_interface());
     exe.add_node(executor_node->get_node_base_interface());
     exe.add_node(mover->get_node_base_interface());
-    std::thread spinner([&]() {exe.spin();});
+    plansys2::testing::ExecutorThread spinner(exe);
 
     for (auto transition : {Transition::TRANSITION_CONFIGURE, Transition::TRANSITION_ACTIVATE}) {
       domain_node->trigger_transition(transition);
@@ -257,10 +258,7 @@ TEST(terminal_commands, interrupt_cancels_the_plan)
     }
 
     std::thread ctrl_c([&]() {
-        const auto end = std::chrono::steady_clock::now() + 20s;
-        while (mover->works < 3 && std::chrono::steady_clock::now() < end) {
-          std::this_thread::sleep_for(20ms);
-        }
+        plansys2::testing::wait_for([&]() {return mover->works >= 3;}, 20s);
         plansys2_terminal::interrupt();
       });
     const auto start = std::chrono::steady_clock::now();
@@ -270,20 +268,14 @@ TEST(terminal_commands, interrupt_cancels_the_plan)
     EXPECT_GE(mover->works, 3);
 
     // The performer is told to stop: it does no more work
-    const auto deadline = std::chrono::steady_clock::now() + 5s;
-    while (mover->get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE &&
-      std::chrono::steady_clock::now() < deadline)
-    {
-      std::this_thread::sleep_for(20ms);
-    }
+    plansys2::testing::wait_for(
+      [&]() {
+        return mover->get_current_state().id() != lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE;
+      }, 5s);
     EXPECT_NE(mover->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);
 
     // And the terminal still works
     EXPECT_NE(terminal->run("get problem instances").find("Instances: 3"), std::string::npos);
-
-    terminal.reset();
-    exe.cancel();
-    spinner.join();
   }
   plansys2::drain_ros(500ms);
 }

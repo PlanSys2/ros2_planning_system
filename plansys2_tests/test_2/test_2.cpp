@@ -27,12 +27,12 @@
 #include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_tests/test_action_node.hpp"
 #include "plansys2_tests/execution_logger.hpp"
 
 TEST(test_2, test_2)
 {
-  auto test_node = rclcpp::Node::make_shared("test_node");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
@@ -65,36 +65,17 @@ TEST(test_2, test_2)
   exe.add_node(charge_node->get_node_base_interface());
   exe.add_node(execution_logger->get_node_base_interface());
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+  plansys2::testing::ExecutorThread spinner(exe);
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
-
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
 
   problem_client->addInstance(plansys2::Instance("leia", "robot"));
   problem_client->addInstance(plansys2::Instance("room_1", "room"));
@@ -127,6 +108,8 @@ TEST(test_2, test_2)
   ASSERT_FALSE(problem.empty());
   ASSERT_TRUE(plan.has_value());
 
+  // The logger must hear every action from its start
+  ASSERT_TRUE(plansys2::testing::wait_for([&]() {return execution_logger->connected();}));
   ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
 
   rclcpp::Rate rate(5);
@@ -142,9 +125,6 @@ TEST(test_2, test_2)
   ASSERT_GE(plan.value().items.size(), 2u);
   ASSERT_TRUE(
     execution_logger->sorted(plansys2_tests::ExecutionLogger::plan_order(plan.value())));
-
-  finish = true;
-  t.join();
 }
 
 int main(int argc, char ** argv)

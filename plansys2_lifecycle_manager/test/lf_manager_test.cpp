@@ -25,6 +25,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_lifecycle_manager/lifecycle_manager.hpp"
 
 #include "fake_lifecycle_node.hpp"
@@ -68,15 +69,17 @@ TEST(lifecycle_manager, lf_client)
   exe->add_node(test_node->get_node_base_interface());
   exe->add_node(client_node->get_node_base_interface());
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe->spin_some();}
-    });
+  plansys2::testing::ExecutorThread spinner(*exe);
 
   client_node->init();
 
-  auto start = test_node->now();
-  while ((test_node->now() - start).seconds() < 1.0) {}
+  // The client must see both lifecycle services of the node
+  ASSERT_TRUE(
+    plansys2::testing::wait_for(
+      [&]() {
+        return client_node->count_services("test/get_state") > 0 &&
+               client_node->count_services("test/change_state") > 0;
+      }));
 
   ASSERT_EQ(
     test_node->get_current_state().id(),
@@ -93,9 +96,6 @@ TEST(lifecycle_manager, lf_client)
 
   ASSERT_TRUE(client_node->change_state(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE));
   ASSERT_EQ(client_node->get_state(1s), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
-
-  finish = true;
-  t.join();
 }
 
 TEST(lifecycle_manager, lf_startup)
@@ -139,13 +139,17 @@ TEST(lifecycle_manager, lf_startup)
   exe.add_node(pl_node->get_node_base_interface());
   exe.add_node(ex_node->get_node_base_interface());
 
-  auto start = de_node->now();
-  while ((de_node->now() - start).seconds() < 1.0) {}
+  plansys2::testing::ExecutorThread spinner(exe);
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+  // Each manager must see the lifecycle services of its node
+  for (const auto & [name, manager_node] : manager_nodes) {
+    ASSERT_TRUE(
+      plansys2::testing::wait_for(
+        [&]() {
+          return manager_node->count_services(name + "/get_state") > 0 &&
+                 manager_node->count_services(name + "/change_state") > 0;
+        })) << name;
+  }
 
   std::shared_future<bool> startup_future = std::async(
     std::launch::async,
@@ -168,12 +172,6 @@ TEST(lifecycle_manager, lf_startup)
   ASSERT_EQ(
     ex_node->get_current_state().id(),
     lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);
-
-  start = de_node->now();
-  while ((de_node->now() - start).seconds() < 1.0) {}
-
-  finish = true;
-  t.join();
 }
 
 TEST(lifecycle_manager, client_without_node)
@@ -224,6 +222,7 @@ TEST(lifecycle_manager, client_with_slow_node)
 
   // Once it answers fast again, late answers do not get mixed up with new requests
   fake->get_state_delay = 0ms;
+  // Kept: the late answers come when the fake ends its delays, with nothing to observe
   std::this_thread::sleep_for(4s);
   ASSERT_EQ(client->get_state(1s), State::PRIMARY_STATE_INACTIVE);
   fake->state = State::PRIMARY_STATE_ACTIVE;

@@ -35,6 +35,7 @@
 
 #include "plansys2_terminal/Terminal.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_core/Utils.hpp"
 
 #include "gtest/gtest.h"
@@ -301,8 +302,6 @@ TEST_F(TerminalTestCase, load_default_plugin)
     options.enable_rosout(false);
     options.arguments({"--ros-args", "--disable-rosout-logs", "--disable-stdout-logs"});
 
-    auto test_node = rclcpp::Node::make_shared("terminal_node_test_load_default_plugin", options);
-
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>(options);
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(options);
     auto planner_node = std::make_shared<plansys2::PlannerNode>(options);
@@ -322,23 +321,12 @@ TEST_F(TerminalTestCase, load_default_plugin)
     exe.add_node(planner_node->get_node_base_interface());
     exe.add_node(executor_node->get_node_base_interface());
 
-    std::thread t([&]() {
-        exe.spin();
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
@@ -348,14 +336,6 @@ TEST_F(TerminalTestCase, load_default_plugin)
 
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     auto terminal_node = std::make_shared<TerminalTest>(options);
     terminal_node->init();
@@ -655,30 +635,11 @@ TEST_F(TerminalTestCase, load_default_plugin)
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
     executor_node->trigger_transition(
       lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
-    exe.cancel();
-    t.join();
 }
 
   plansys2::drain_ros(2s);
@@ -690,8 +651,6 @@ TEST_F(TerminalTestCase, add_problem)
     rclcpp::NodeOptions options;
     options.enable_rosout(false);
     options.arguments({"--ros-args", "--disable-rosout-logs", "--disable-stdout-logs"});
-
-    auto test_node = rclcpp::Node::make_shared("terminal_node_test_add_problem", options);
 
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>(options);
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(options);
@@ -712,22 +671,11 @@ TEST_F(TerminalTestCase, add_problem)
     exe.add_node(planner_node->get_node_base_interface());
     exe.add_node(executor_node->get_node_base_interface());
 
-    std::thread t([&]() {
-        exe.spin();
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
@@ -737,14 +685,6 @@ TEST_F(TerminalTestCase, add_problem)
 
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     auto terminal_node = std::make_shared<TerminalTest>(options);
     terminal_node->set_parameter({"problem_file", pkgpath + "/pddl/problem_charging.pddl"});
@@ -778,37 +718,11 @@ TEST_F(TerminalTestCase, add_problem)
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
     executor_node->trigger_transition(
       lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
-    exe.cancel();
-    t.join();
-
-    test_node.reset();
-    domain_node.reset();
-    problem_node.reset();
-    planner_node.reset();
-    executor_node.reset();
-    terminal_node.reset();
   }
   plansys2::drain_ros(2s);
 }
@@ -820,9 +734,6 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
     options.enable_rosout(false);
     options.arguments({"--ros-args", "--disable-rosout-logs", "--disable-stdout-logs"});
 
-
-    auto test_node = rclcpp::Node::make_shared("terminal_node_test_add_problem_empty_domain",
-    options);
 
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>(options);
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(options);
@@ -843,22 +754,11 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
     exe.add_node(planner_node->get_node_base_interface());
     exe.add_node(executor_node->get_node_base_interface());
 
-    std::thread t([&]() {
-        exe.spin();
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
@@ -868,14 +768,6 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
 
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     auto terminal_node = std::make_shared<TerminalTest>(options);
     terminal_node->set_parameter({"problem_file", pkgpath + "/pddl/problem_empty_domain.pddl"});
@@ -890,37 +782,11 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
     executor_node->trigger_transition(
       lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
-    exe.cancel();
-    t.join();
-
-    test_node.reset();
-    domain_node.reset();
-    problem_node.reset();
-    planner_node.reset();
-    executor_node.reset();
-    terminal_node.reset();
   }
   plansys2::drain_ros(2s);
 }
@@ -931,8 +797,6 @@ TEST_F(TerminalTestCase, check_actors)
     rclcpp::NodeOptions options;
     options.enable_rosout(false);
     options.arguments({"--ros-args", "--disable-rosout-logs", "--disable-stdout-logs"});
-
-    auto test_node = rclcpp::Node::make_shared("terminal_node_test_check_actors", options);
 
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>(options);
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(options);
@@ -973,10 +837,7 @@ TEST_F(TerminalTestCase, check_actors)
     exe.add_node(ask_charge_actor_1_node->get_node_base_interface());
     exe.add_node(charge_actor_1_node->get_node_base_interface());
 
-    std::thread t([&]() {
-        exe.spin();
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -986,14 +847,6 @@ TEST_F(TerminalTestCase, check_actors)
     ask_charge_actor_1_node->trigger_transition(
     lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     charge_actor_1_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 1.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_EQ(
     domain_node->get_current_state().id(),
@@ -1028,14 +881,6 @@ TEST_F(TerminalTestCase, check_actors)
 
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 1.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_EQ(
     domain_node->get_current_state().id(),
@@ -1076,21 +921,6 @@ TEST_F(TerminalTestCase, check_actors)
     "\t[charge] charge\tREADY\n"
     "\t[move_1] move\tREADY\n"
     "\t[move_2] move\tREADY\n");
-
-    exe.cancel();
-    t.join();
-
-    test_node.reset();
-    domain_node.reset();
-    problem_node.reset();
-    planner_node.reset();
-    executor_node.reset();
-    terminal_node.reset();
-
-    move_actor_1_node.reset();
-    move_actor_2_node.reset();
-    ask_charge_actor_1_node.reset();
-    charge_actor_1_node.reset();
   }
 
   plansys2::drain_ros(2s);
@@ -1102,8 +932,6 @@ TEST_F(TerminalTestCase, source_run_plan)
     rclcpp::NodeOptions options;
     options.enable_rosout(false);
     options.arguments({"--ros-args", "--disable-rosout-logs", "--disable-stdout-logs"});
-
-    auto test_node = rclcpp::Node::make_shared("terminal_node_test_source_run_plan", options);
 
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>(options);
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(options);
@@ -1144,10 +972,7 @@ TEST_F(TerminalTestCase, source_run_plan)
     exe.add_node(ask_charge_actor_1_node->get_node_base_interface());
     exe.add_node(charge_actor_1_node->get_node_base_interface());
 
-    std::thread t([&]() {
-        exe.spin();
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -1157,14 +982,6 @@ TEST_F(TerminalTestCase, source_run_plan)
     ask_charge_actor_1_node->trigger_transition(
     lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     charge_actor_1_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 1.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_EQ(
     domain_node->get_current_state().id(),
@@ -1196,14 +1013,6 @@ TEST_F(TerminalTestCase, source_run_plan)
 
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 2.0) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_EQ(
     domain_node->get_current_state().id(),
@@ -1278,37 +1087,11 @@ TEST_F(TerminalTestCase, source_run_plan)
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 1.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
     executor_node->trigger_transition(
       lifecycle_msgs::msg::Transition::TRANSITION_INACTIVE_SHUTDOWN);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 1.5) {
-        rate.sleep();
-      }
-    }
-
-    exe.cancel();
-    t.join();
-
-    test_node.reset();
-    domain_node.reset();
-    problem_node.reset();
-    planner_node.reset();
-    executor_node.reset();
-    terminal_node.reset();
   }
 
   plansys2::drain_ros(2s);

@@ -15,18 +15,17 @@
 // exists and forall: the same answers as trying every combination of objects, and fast with many
 
 #include <algorithm>
-#include <atomic>
 #include <chrono>
 #include <fstream>
 #include <memory>
 #include <random>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "ament_index_cpp/get_package_share_path.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
@@ -246,10 +245,7 @@ TEST(quantifiers, exists_through_the_client)
   rclcpp::executors::SingleThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
-  std::atomic<bool> finish{false};
-  std::thread spinner([&]() {
-      while (!finish) {exe.spin_some(std::chrono::milliseconds(10));}
-    });
+  plansys2::testing::ExecutorThread spinner(exe);
 
   auto client = std::make_shared<plansys2::ProblemExpertClient>();
   for (const auto & robot : {"rob0", "rob1", "rob2"}) {
@@ -272,10 +268,6 @@ TEST(quantifiers, exists_through_the_client)
     plansys2::check(
       tree("(exists (?r - robot ?a - room ?b - room) (and (robot_at ?r ?a)(robot_at ?r ?b)))"),
       client));
-
-  client.reset();
-  finish = true;
-  spinner.join();
 }
 
 int main(int argc, char ** argv)

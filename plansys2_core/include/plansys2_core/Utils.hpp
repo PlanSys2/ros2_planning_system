@@ -50,9 +50,12 @@ std::string substr_without_empty_lines(
 std::string remove_comments(const std::string & pddl);
 
 /**
- * @brief Drain ROS messages for a given time. Useful in tests to ensure all messages are processed.
- * @param[in] n The node to use for spinning.
- * @param[in] total The total time to drain messages.
+ * @brief Wait between tests for the middleware to forget the entities of the last one.
+ *
+ * It only waits: the nodes destroyed by a test take a while to disappear from discovery, and
+ * the next test could see them.
+ *
+ * @param[in] total How long to wait.
  */
 void drain_ros(std::chrono::milliseconds total = 200ms);
 

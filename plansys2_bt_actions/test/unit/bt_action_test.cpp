@@ -32,6 +32,7 @@
 #include "../behavior_tree/FailureNodes.hpp"
 
 #include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_core/Utils.hpp"
 
 #include "test_msgs/action/fibonacci.hpp"
@@ -149,25 +150,6 @@ private:
   rclcpp_action::Server<Fibonacci>::SharedPtr server_;
 };
 
-// Runs body in a loop in its own thread while it lives: an ASSERT that returns early no
-// longer leaves a joinable std::thread behind, which called std::terminate
-class LoopThread
-{
-public:
-  explicit LoopThread(std::function<void()> body)
-  : thread_([this, body]() {while (!finish_) {body();}}) {}
-
-  ~LoopThread()
-  {
-    finish_ = true;
-    thread_.join();
-  }
-
-private:
-  std::atomic<bool> finish_ {false};
-  std::thread thread_;
-};
-
 class ROS2Environment : public ::testing::Environment
 {
 public:
@@ -202,11 +184,10 @@ TEST_F(BTActionsTestCase, load_plugins)
     auto move_server_node = std::make_shared<MoveServer>();
     move_server_node->start_server();
 
-    LoopThread spinner([&]() {
-        rclcpp::spin_some(move_server_node);
-        rclcpp::spin_some(node->get_node_base_interface());
-        std::this_thread::sleep_for(10ms);
-      });
+    rclcpp::executors::SingleThreadedExecutor exe;
+    exe.add_node(move_server_node);
+    exe.add_node(node->get_node_base_interface());
+    plansys2::testing::ExecutorThread spinner(exe);
 
     BT::BehaviorTreeFactory factory;
     BT::SharedLibrary loader;
@@ -245,11 +226,10 @@ TEST_F(BTActionsTestCase, on_tick_failure)
     auto move_server_node = std::make_shared<MoveServer>();
     move_server_node->start_server();
 
-    LoopThread spinner([&]() {
-        rclcpp::spin_some(move_server_node);
-        rclcpp::spin_some(node->get_node_base_interface());
-        std::this_thread::sleep_for(10ms);
-      });
+    rclcpp::executors::SingleThreadedExecutor exe;
+    exe.add_node(move_server_node);
+    exe.add_node(node->get_node_base_interface());
+    plansys2::testing::ExecutorThread spinner(exe);
 
 
     BT::NodeConfig config;
@@ -286,11 +266,10 @@ TEST_F(BTActionsTestCase, on_feedback_failure)
     auto move_server_node = std::make_shared<MoveServer>();
     move_server_node->start_server();
 
-    LoopThread spinner([&]() {
-        rclcpp::spin_some(move_server_node);
-        rclcpp::spin_some(node->get_node_base_interface());
-        std::this_thread::sleep_for(10ms);
-      });
+    rclcpp::executors::SingleThreadedExecutor exe;
+    exe.add_node(move_server_node);
+    exe.add_node(node->get_node_base_interface());
+    plansys2::testing::ExecutorThread spinner(exe);
 
     BT::NodeConfig config;
     BT::assignDefaultRemapping<plansys2_bt_tests::OnFeedbackFail>(config);
@@ -329,11 +308,10 @@ TEST_F(BTActionsTestCase, fail_after_the_goal_finished)
     auto node = rclcpp_lifecycle::LifecycleNode::make_shared("finished_goal_node");
     auto server_node = std::make_shared<QuickServer>();
     server_node->start_server();
-    LoopThread spinner([&]() {
-        rclcpp::spin_some(server_node);
-        rclcpp::spin_some(node->get_node_base_interface());
-        std::this_thread::sleep_for(10ms);
-      });
+    rclcpp::executors::SingleThreadedExecutor exe;
+    exe.add_node(server_node);
+    exe.add_node(node->get_node_base_interface());
+    plansys2::testing::ExecutorThread spinner(exe);
 
     BT::NodeConfig config;
     BT::assignDefaultRemapping<plansys2_bt_tests::FailOnSecondTick>(config);
@@ -350,6 +328,7 @@ TEST_F(BTActionsTestCase, fail_after_the_goal_finished)
     ASSERT_EQ(bt_node.executeTick(), BT::NodeStatus::RUNNING);
     ASSERT_EQ(bt_node.executeTick(), BT::NodeStatus::RUNNING);
     // The goal succeeds and its result reaches the client before the next tick
+    // Kept: the result waits in the client's own executor, which only a tick spins
     std::this_thread::sleep_for(500ms);
 
     BT::NodeStatus status = BT::NodeStatus::RUNNING;
@@ -395,9 +374,13 @@ TEST_F(BTActionsTestCase, bt_action)
       finished = action_client->get_status() == BT::NodeStatus::SUCCESS;
     }
 
-    auto start = lc_node->now();
-    while ( (lc_node->now() - start).seconds() < 2) {
-      exe.spin_some();
+    // The performer deactivates when it finishes
+    const auto end = std::chrono::steady_clock::now() + 10s;
+    while (bt_action->get_current_state().id() !=
+      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE &&
+      std::chrono::steady_clock::now() < end)
+    {
+      exe.spin_some(10ms);
     }
 
     lc_node->shutdown();
@@ -438,9 +421,13 @@ TEST_F(BTActionsTestCase, bt_action_old_constructor)
       finished = action_client->get_status() == BT::NodeStatus::SUCCESS;
     }
 
-    auto start = lc_node->now();
-    while ( (lc_node->now() - start).seconds() < 2) {
-      exe.spin_some();
+    // The performer deactivates when it finishes
+    const auto end = std::chrono::steady_clock::now() + 10s;
+    while (bt_action->get_current_state().id() !=
+      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE &&
+      std::chrono::steady_clock::now() < end)
+    {
+      exe.spin_some(10ms);
     }
 
     lc_node->shutdown();
@@ -489,20 +476,24 @@ TEST_F(BTActionsTestCase, cancel_bt_action)
         received_msgs.push_back(*msg);
     });
 
-    LoopThread spinner([&]() {exe.spin_some();});
+    plansys2::testing::ExecutorThread spinner(exe);
+
+    // The test hears the hub of the client and the one of the performer
+    ASSERT_TRUE(
+      plansys2::testing::wait_for(
+        [&]() {return action_hub_sub->get_publisher_count() >= 2;}));
 
     ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::IDLE);
     ASSERT_EQ(
     bt_action->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = lc_node->now();
-      while ((lc_node->now() - start).seconds() < 0.5) {
+    // Request, response and confirm
+    plansys2::testing::wait_for(
+      [&]() {
         action_client->tick(lc_node->now());
-        rate.sleep();
-      }
-    }
+        return messages().size() >= 3u &&
+               action_client->get_internal_status() == plansys2::ActionExecutor::Status::RUNNING;
+      });
 
     ASSERT_EQ(action_client->get_internal_status(), plansys2::ActionExecutor::Status::RUNNING);
     ASSERT_EQ(bt_action->get_current_state().id(),
@@ -513,26 +504,27 @@ TEST_F(BTActionsTestCase, cancel_bt_action)
     ASSERT_EQ(action_execution_msgs[0].type, plansys2_msgs::msg::ActionExecution::REQUEST);
     ASSERT_EQ(action_execution_msgs[1].type, plansys2_msgs::msg::ActionExecution::RESPONSE);
     ASSERT_EQ(action_execution_msgs[2].type, plansys2_msgs::msg::ActionExecution::CONFIRM);
-    {
-      rclcpp::Rate rate(10);
-      auto start = lc_node->now();
-      while ((lc_node->now() - start).seconds() < 1.0) {
+    // The first feedback, at 1 Hz
+    plansys2::testing::wait_for(
+      [&]() {
         action_client->tick(lc_node->now());
-        rate.sleep();
-      }
-    }
+        return messages().size() >= 4u;
+      });
 
     ASSERT_EQ(messages().size(), 4u);
     action_client->cancel();
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = lc_node->now();
-      while ((lc_node->now() - start).seconds() < 1.0) {
+    plansys2::testing::wait_for(
+      [&]() {
         action_client->tick(lc_node->now());
-        rate.sleep();
-      }
-    }
+        return messages().size() >= 5u &&
+               action_client->get_internal_status() ==
+               plansys2::ActionExecutor::Status::CANCELLED &&
+               bt_action->get_current_state().id() ==
+               lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE;
+      });
+    // Kept: time for an unexpected extra message to show up
+    std::this_thread::sleep_for(300ms);
 
     action_execution_msgs = messages();
     ASSERT_EQ(action_execution_msgs.size(), 5u);

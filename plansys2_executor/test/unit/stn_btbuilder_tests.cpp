@@ -30,6 +30,7 @@
 #include "Eigen/Dense"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
@@ -74,22 +75,6 @@ public:
   using STNBTBuilder::prune_paths;
 };
 
-class ScopedSpinner
-{
-public:
-  explicit ScopedSpinner(rclcpp::Executor & exe)
-  : thread_([this, &exe]() {while (!finish_) {exe.spin_once(10ms);}}) {}
-  ~ScopedSpinner()
-  {
-    finish_ = true;
-    thread_.join();
-  }
-
-private:
-  std::atomic<bool> finish_ {false};
-  std::thread thread_;
-};
-
 plansys2_msgs::msg::Plan make_plan(
   const std::vector<std::tuple<float, std::string, float>> & items)
 {
@@ -119,7 +104,7 @@ protected:
     problem_node_->set_parameter({"model_file", pddl});
     exe_.add_node(domain_node_->get_node_base_interface());
     exe_.add_node(problem_node_->get_node_base_interface());
-    spinner_ = std::make_unique<ScopedSpinner>(exe_);
+    spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
     for (auto node : {std::static_pointer_cast<rclcpp_lifecycle::LifecycleNode>(domain_node_),
         std::static_pointer_cast<rclcpp_lifecycle::LifecycleNode>(problem_node_)})
     {
@@ -176,7 +161,7 @@ protected:
   std::shared_ptr<plansys2::DomainExpertNode> domain_node_;
   std::shared_ptr<plansys2::ProblemExpertNode> problem_node_;
   rclcpp::executors::SingleThreadedExecutor exe_;
-  std::unique_ptr<ScopedSpinner> spinner_;
+  std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_;
   std::shared_ptr<TestableSTN> builder_;
 };

@@ -7,6 +7,9 @@ target_link_libraries(utils_test
 ament_add_gtest(plan_solver_base_test plan_solver_base_test.cpp TIMEOUT 120)
 target_link_libraries(plan_solver_base_test ${PROJECT_NAME})
 
+ament_add_ros_isolated_gtest(test_utils_test test_utils_test.cpp TIMEOUT 60)
+target_link_libraries(test_utils_test ${PROJECT_NAME} ${std_msgs_TARGETS})
+
 ament_add_gtest(types_test types_test.cpp)
 target_link_libraries(types_test ${PROJECT_NAME})
 

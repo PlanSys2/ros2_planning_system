@@ -22,6 +22,7 @@
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_core/Utils.hpp"
 
 #include "rclcpp/rclcpp.hpp"
@@ -105,34 +106,13 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
     exe.add_node(problem_node->get_node_base_interface());
     exe.add_node(planner_node->get_node_base_interface());
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {
-          exe.spin_some();
-        }
-      });
+    plansys2::testing::ExecutorThread spinner(exe);
 
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     plansys2_msgs::msg::Plan plan;
 
@@ -247,9 +227,6 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
 )";
 
     EXPECT_EQ(bt_string, expected_bt_string);
-
-    finish = true;
-    t.join();
 }
   plansys2::drain_ros(200ms);
 }

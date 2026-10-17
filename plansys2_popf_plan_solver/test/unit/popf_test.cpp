@@ -21,7 +21,6 @@
 #include <fstream>
 #include <filesystem>
 #include <future>
-#include <thread>
 #include <chrono>
 
 #include "ament_index_cpp/get_package_share_path.hpp"
@@ -31,6 +30,7 @@
 
 #include "pluginlib/class_loader.hpp"
 #include "plansys2_core/PlanSolverBase.hpp"
+#include "plansys2_core/TestUtils.hpp"
 
 void test_plan_generation(const std::string & argument = "")
 {
@@ -265,7 +265,8 @@ TEST(popf_plan_solver, timeout_is_enforced_and_popf_is_killed)
   ASSERT_GE(elapsed, 2s);
   ASSERT_LT(elapsed, 5s);
 
-  std::this_thread::sleep_for(500ms);
+  // popf and its children are gone within 500 ms
+  plansys2::testing::wait_for([&]() {return count_processes_with(ns) == 0;}, 500ms);
   ASSERT_EQ(count_processes_with(ns), 0);
 
   // The solver is still usable after a timeout
@@ -290,17 +291,14 @@ TEST(popf_plan_solver, cancel_stops_popf)
     });
 
   // Wait until popf is actually running
-  auto start = std::chrono::steady_clock::now();
-  while (count_processes_with(ns) == 0 && std::chrono::steady_clock::now() - start < 10s) {
-    std::this_thread::sleep_for(50ms);
-  }
+  plansys2::testing::wait_for([&]() {return count_processes_with(ns) > 0;});
   ASSERT_GT(count_processes_with(ns), 0);
 
   planner->cancel();
   ASSERT_EQ(future.wait_for(5s), std::future_status::ready);
   ASSERT_FALSE(future.get());
 
-  std::this_thread::sleep_for(500ms);
+  plansys2::testing::wait_for([&]() {return count_processes_with(ns) == 0;}, 500ms);
   ASSERT_EQ(count_processes_with(ns), 0);
 }
 

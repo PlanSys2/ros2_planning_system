@@ -25,6 +25,7 @@
 
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/ActionExecutorClient.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -73,10 +74,15 @@ TEST(ActionExecutorChurn, create_and_destroy_while_spinning)
   rclcpp::executors::SingleThreadedExecutor exe;
   exe.add_node(node->get_node_base_interface());
   exe.add_node(performer->get_node_base_interface());
-  std::atomic<bool> finish {false};
-  std::thread spin([&]() {while (!finish) {exe.spin_some(5ms);}});
+  plansys2::testing::ExecutorThread spinner(exe);
   performer->trigger_transition(Transition::TRANSITION_CONFIGURE);
-  std::this_thread::sleep_for(500ms);
+  // The performer listens and answers on the actions hub
+  ASSERT_TRUE(
+    plansys2::testing::wait_for(
+      [&]() {
+        return node->count_subscribers("/actions_hub") >= 1u &&
+               node->count_publishers("/actions_hub") >= 1u;
+      }));
 
   const char * env = std::getenv("PLANSYS2_TEST_CHURN_ROUNDS");
   const int rounds = env ? std::atoi(env) : 200;
@@ -100,8 +106,6 @@ TEST(ActionExecutorChurn, create_and_destroy_while_spinning)
     executor.reset();
   }
 
-  finish = true;
-  spin.join();
   // The performer was reached in part of the rounds, not only asked
   EXPECT_GT(ran, 0);
 }

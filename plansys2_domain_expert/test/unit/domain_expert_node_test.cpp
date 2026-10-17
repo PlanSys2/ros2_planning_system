@@ -30,6 +30,7 @@
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_core/Utils.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
@@ -61,7 +62,6 @@ public:
 TEST(domain_expert, lifecycle)
 {
   {
-    auto test_node = rclcpp::Node::make_shared("get_action_from_string");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
@@ -72,35 +72,15 @@ TEST(domain_expert, lifecycle)
     rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
-
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_EQ(
     domain_node->get_current_state().id(),
     lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_EQ(
     domain_node->get_current_state().id(),
@@ -109,23 +89,12 @@ TEST(domain_expert, lifecycle)
     ASSERT_EQ(domain_client->getDomain(), domain_client->getDomain(true));
     auto domain_str = domain_client->getDomain();
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     std::ifstream domain_ifs_p(pkgpath + "/pddl/domain_simple_processed.pddl");
     std::string domain_str_p((
         std::istreambuf_iterator<char>(domain_ifs_p)),
       std::istreambuf_iterator<char>());
 
     ASSERT_EQ(domain_str, domain_str_p);
-
-    finish = true;
-    t.join();
   }
   plansys2::drain_ros(200ms);
 }
@@ -133,7 +102,6 @@ TEST(domain_expert, lifecycle)
 TEST(domain_expert, lifecycle_error)
 {
   {
-    auto test_node = rclcpp::Node::make_shared("get_action_from_string");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
@@ -144,69 +112,24 @@ TEST(domain_expert, lifecycle_error)
     rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
-
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_EQ(
     domain_node->get_current_state().id(),
     lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
-
-    finish = true;
-    t.join();
   }
   plansys2::drain_ros(200ms);
 }
 
-
 // change_domain: hot domain swap. See refactor_dynamic_domain.md for the design and
 // for the threading fix these tests exercise (the deferred-response callback +
 // background thread in change_domain_service_callback()).
-//
-// Unlike the tests above, these join their spinning thread via RAII rather than a
-// manual `finish = true; t.join();` at the bottom: an ASSERT_* failure returns from
-// the test immediately, and a std::thread destroyed while still joinable calls
-// std::terminate(), aborting the whole binary instead of just failing this test.
-class ExecutorSpinner
-{
-public:
-  explicit ExecutorSpinner(rclcpp::Executor & exe)
-  : finish_(false), thread_(
-      [this, &exe]() {
-        // spin_once blocks until there is work, so this does not burn a core
-        while (!finish_) {exe.spin_once(std::chrono::milliseconds(10));}
-      }) {}
-
-  ~ExecutorSpinner()
-  {
-    finish_ = true;
-    if (thread_.joinable()) {
-      thread_.join();
-    }
-  }
-
-private:
-  std::atomic<bool> finish_;
-  std::thread thread_;
-};
-
 TEST(domain_expert, change_domain_valid)
 {
   plansys2::drain_ros(300ms);
   {
-    auto test_node = rclcpp::Node::make_shared("change_domain_valid");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
@@ -217,18 +140,10 @@ TEST(domain_expert, change_domain_valid)
     rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
-    ExecutorSpinner spinner(exe);
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 1.0) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_EQ(domain_client->getName(), "plansys2");
 
@@ -267,7 +182,7 @@ TEST(domain_expert, get_constants_through_the_client)
     rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
-    ExecutorSpinner spinner(exe);
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
@@ -287,7 +202,6 @@ TEST(domain_expert, change_domain_invalid_rejected)
 {
   plansys2::drain_ros(300ms);
   {
-    auto test_node = rclcpp::Node::make_shared("change_domain_invalid_rejected");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
 
@@ -298,18 +212,10 @@ TEST(domain_expert, change_domain_invalid_rejected)
     rclcpp::executors::SingleThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
-    ExecutorSpinner spinner(exe);
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 1.0) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_EQ(domain_client->getName(), "plansys2");
 
@@ -338,7 +244,7 @@ TEST(domain_expert, change_domain_rejected_when_unconfigured)
 
     rclcpp::executors::SingleThreadedExecutor exe;
     exe.add_node(domain_node->get_node_base_interface());
-    ExecutorSpinner spinner(exe);
+    plansys2::testing::ExecutorThread spinner(exe);
 
     // Node was never configured: domain_expert_ is still null.
     ASSERT_EQ(
@@ -368,7 +274,7 @@ TEST(domain_expert, change_domain_rejected_when_inactive)
 
     rclcpp::executors::SingleThreadedExecutor exe;
     exe.add_node(domain_node->get_node_base_interface());
-    ExecutorSpinner spinner(exe);
+    plansys2::testing::ExecutorThread spinner(exe);
 
     const std::string new_domain = read_file(pkgpath + "/pddl/domain_charging.pddl");
 
@@ -407,7 +313,7 @@ TEST(domain_expert, change_domain_empty_rejected)
 
     rclcpp::executors::SingleThreadedExecutor exe;
     exe.add_node(domain_node->get_node_base_interface());
-    ExecutorSpinner spinner(exe);
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
@@ -448,7 +354,7 @@ TEST(domain_expert, change_domain_sequence_publishes_each_accepted_domain)
     rclcpp::executors::SingleThreadedExecutor exe;
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(test_node);
-    ExecutorSpinner spinner(exe);
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
@@ -458,22 +364,17 @@ TEST(domain_expert, change_domain_sequence_publishes_each_accepted_domain)
     const std::string error = read_file(pkgpath + "/pddl/domain_2_error.pddl");
 
     auto wait_published = [&](size_t n) {
-        auto start = std::chrono::steady_clock::now();
-        while (std::chrono::steady_clock::now() - start < 5s) {
-          {
+        return plansys2::testing::wait_for(
+          [&]() {
             std::lock_guard<std::mutex> lock(mutex);
-            if (published.size() >= n) {
-              return true;
-            }
-          }
-          std::this_thread::sleep_for(10ms);
-        }
-        return false;
+            return published.size() >= n;
+          }, 5s);
       };
 
     // Activation publishes the initial domain. Nodes left alive by earlier tests may
     // also replay their transient_local domains on match, so count from a baseline.
     ASSERT_TRUE(wait_published(1));
+    // Kept: late replays have no end to wait for
     std::this_thread::sleep_for(1s);
     size_t base;
     {
@@ -494,6 +395,7 @@ TEST(domain_expert, change_domain_sequence_publishes_each_accepted_domain)
     ASSERT_TRUE(domain_client->getPredicate("robot_talk").has_value());
     ASSERT_TRUE(wait_published(base + 2));
 
+    // Kept: time for an unexpected extra message to show up
     std::this_thread::sleep_for(300ms);
     const std::string served = domain_client->getDomain();
     std::lock_guard<std::mutex> lock(mutex);
@@ -572,7 +474,7 @@ TEST(domain_expert, malformed_domains_do_not_kill_the_node)
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
   rclcpp::executors::SingleThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
-  ExecutorSpinner spinner(exe);
+  plansys2::testing::ExecutorThread spinner(exe);
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
@@ -628,11 +530,11 @@ TEST(domain_expert, validate_with_planner_single_threaded)
 
     rclcpp::executors::SingleThreadedExecutor exe;
     exe.add_node(domain_node->get_node_base_interface());
-    ExecutorSpinner spinner(exe);
+    plansys2::testing::ExecutorThread spinner(exe);
     // The planner runs apart, as in its own process
     rclcpp::executors::SingleThreadedExecutor planner_exe;
     planner_exe.add_node(validator);
-    ExecutorSpinner planner_spinner(planner_exe);
+    plansys2::testing::ExecutorThread planner_spinner(planner_exe);
 
     // Through the lifecycle service, so on_configure runs in the executor's thread
     auto test_node = rclcpp::Node::make_shared("validate_single_threaded_test");
@@ -689,7 +591,7 @@ TEST(domain_expert, validate_with_planner_absent)
 
     rclcpp::executors::SingleThreadedExecutor exe;
     exe.add_node(domain_node->get_node_base_interface());
-    ExecutorSpinner spinner(exe);
+    plansys2::testing::ExecutorThread spinner(exe);
 
     auto start = std::chrono::steady_clock::now();
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);

@@ -30,6 +30,7 @@
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_executor/ActionExecutorClient.hpp"
 #include "plansys2_executor/ExecutorNode.hpp"
@@ -88,22 +89,6 @@ private:
   int ticks_ {0};
 };
 
-class ScopedSpinner
-{
-public:
-  explicit ScopedSpinner(rclcpp::Executor & exe)
-  : thread_([this, &exe]() {while (!finish_) {exe.spin_once(10ms);}}) {}
-  ~ScopedSpinner()
-  {
-    finish_ = true;
-    thread_.join();
-  }
-
-private:
-  std::atomic<bool> finish_ {false};
-  std::thread thread_;
-};
-
 const std::vector<std::string> kZones = {"wheels_zone", "steering_wheels_zone", "assembly_zone"};
 
 plansys2_msgs::msg::Plan move_plan(const std::vector<std::string> & zones)
@@ -152,7 +137,7 @@ protected:
       exe_->add_node(node->get_node_base_interface());
     }
     exe_->add_node(client_node_);
-    spinner_ = std::make_unique<ScopedSpinner>(*exe_);
+    spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(*exe_);
 
     for (rclcpp_lifecycle::LifecycleNode::SharedPtr node : {
       std::static_pointer_cast<rclcpp_lifecycle::LifecycleNode>(domain_node_),
@@ -288,7 +273,7 @@ protected:
   rclcpp::Node::SharedPtr client_node_;
   rclcpp_action::Client<ExecutePlan>::SharedPtr action_client_;
   std::unique_ptr<rclcpp::executors::SingleThreadedExecutor> exe_;
-  std::unique_ptr<ScopedSpinner> spinner_;
+  std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   std::string domain_ {"factory3.pddl"};
   // Parameters of the executor that are read when it is configured

@@ -364,6 +364,7 @@ TEST(kairos_plan_solver, cancel_stops_the_search)
   const auto start = std::chrono::steady_clock::now();
   auto future = std::async(
     std::launch::async, [&]() {return f.solver->getPlan(domain, hard, "", 30s);});
+  // Kept: cancel once the search is running, which is not observable
   std::this_thread::sleep_for(200ms);
   f.solver->cancel();
   ASSERT_EQ(future.wait_for(2s), std::future_status::ready);
@@ -387,6 +388,7 @@ TEST(kairos_plan_solver, cancel_keeps_the_best_plan)
   const auto problem = read_pddl("elevator_problem.pddl");
   auto future = std::async(
     std::launch::async, [&]() {return f.solver->getPlan(domain, problem, "", 30s);});
+  // Kept: time for the search to find a first plan, which is not observable
   std::this_thread::sleep_for(100ms);
   f.solver->cancel();
   ASSERT_EQ(future.wait_for(5s), std::future_status::ready);

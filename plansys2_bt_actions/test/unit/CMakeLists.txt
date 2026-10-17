@@ -32,7 +32,7 @@ foreach(bt_plugin ${plugin_libs})
   target_compile_definitions(${bt_plugin} PRIVATE BT_PLUGIN_EXPORT)
 endforeach()
 
-ament_add_gtest(bt_action_node_test bt_action_node_test.cpp TIMEOUT 120)
+ament_add_ros_isolated_gtest(bt_action_node_test bt_action_node_test.cpp TIMEOUT 60)
 target_link_libraries(bt_action_node_test
   ${PROJECT_NAME}
   ${test_msgs_TARGETS}
@@ -42,7 +42,7 @@ target_link_libraries(bt_action_node_test
 )
 
 # The test plugins are found in this directory: they are not installed
-ament_add_gtest(bt_action_test bt_action_test.cpp
+ament_add_ros_isolated_gtest(bt_action_test bt_action_test.cpp TIMEOUT 60
   APPEND_LIBRARY_DIRS ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(bt_action_test
   ${PROJECT_NAME}
