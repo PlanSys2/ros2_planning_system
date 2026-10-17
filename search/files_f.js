@@ -41,5 +41,6 @@ var searchData=
   ['problemexpertclient_2epy_38',['ProblemExpertClient.py',['../ProblemExpertClient_8py.html',1,'']]],
   ['problemexpertinterface_2ehpp_39',['ProblemExpertInterface.hpp',['../ProblemExpertInterface_8hpp.html',1,'']]],
   ['problemexpertnode_2ecpp_40',['ProblemExpertNode.cpp',['../ProblemExpertNode_8cpp.html',1,'']]],
-  ['problemexpertnode_2ehpp_41',['ProblemExpertNode.hpp',['../ProblemExpertNode_8hpp.html',1,'']]]
+  ['problemexpertnode_2ehpp_41',['ProblemExpertNode.hpp',['../ProblemExpertNode_8hpp.html',1,'']]],
+  ['python_5fsolvers_2epy_42',['python_solvers.py',['../python__solvers_8py.html',1,'']]]
 ];

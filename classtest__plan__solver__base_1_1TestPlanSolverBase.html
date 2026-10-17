@@ -146,8 +146,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7353e6493aae840275f20cd0815948d3" id="r_a7353e6493aae840275f20cd0815948d3"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a7353e6493aae840275f20cd0815948d3">test_execute_planner_stderr_output</a> (self)</td></tr>
 <tr class="memitem:aa5de2688f336bcdcfc72303b1fe80c34" id="r_aa5de2688f336bcdcfc72303b1fe80c34"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#aa5de2688f336bcdcfc72303b1fe80c34">test_execute_planner_successful_command</a> (self)</td></tr>
 <tr class="memitem:af90e5ba47559dad2f47944c7d03cd11d" id="r_af90e5ba47559dad2f47944c7d03cd11d"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#af90e5ba47559dad2f47944c7d03cd11d">test_execute_planner_timeout</a> (self)</td></tr>
+<tr class="memitem:a24213edc4736cc6008645b0f466e2753" id="r_a24213edc4736cc6008645b0f466e2753"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a24213edc4736cc6008645b0f466e2753">test_execute_planner_timeout_in_wall_time</a> (self)</td></tr>
 <tr class="memitem:a6ea7f045a7458bdf12ec9bcb69c1f7f0" id="r_a6ea7f045a7458bdf12ec9bcb69c1f7f0"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a6ea7f045a7458bdf12ec9bcb69c1f7f0">test_execute_planner_unconfigured_node</a> (self)</td></tr>
 <tr class="memitem:a6a1c86d579f4decc1f88155f088b71fe" id="r_a6a1c86d579f4decc1f88155f088b71fe"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a6a1c86d579f4decc1f88155f088b71fe">test_execute_planner_very_fast_command</a> (self)</td></tr>
+<tr class="memitem:a84dd3207e43a8c3e684a518a5975bbc7" id="r_a84dd3207e43a8c3e684a518a5975bbc7"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a84dd3207e43a8c3e684a518a5975bbc7">test_execute_planner_with_a_lot_of_stderr</a> (self)</td></tr>
 <tr class="memitem:a9d476b4ddf937be0a09b38e5d9160989" id="r_a9d476b4ddf937be0a09b38e5d9160989"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a9d476b4ddf937be0a09b38e5d9160989">test_execute_planner_with_shell_injection_protection</a> (self)</td></tr>
 <tr class="memitem:aae34aaf90ffd5f78ef709c72d3e34669" id="r_aae34aaf90ffd5f78ef709c72d3e34669"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#aae34aaf90ffd5f78ef709c72d3e34669">test_initialization</a> (self)</td></tr>
 <tr class="memitem:a32821c709772bfbe5b4912b4db776d04" id="r_a32821c709772bfbe5b4912b4db776d04"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a32821c709772bfbe5b4912b4db776d04">test_multiple_sequential_executions</a> (self)</td></tr>
@@ -504,6 +506,23 @@ Public Attributes</h2></td></tr>
 <pre class="fragment">Test planner execution with timeout.</pre> 
 </div>
 </div>
+<a id="a24213edc4736cc6008645b0f466e2753" name="a24213edc4736cc6008645b0f466e2753"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24213edc4736cc6008645b0f466e2753">&#9670;&#160;</a></span>test_execute_planner_timeout_in_wall_time()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">test_execute_planner_timeout_in_wall_time </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">The timeout does not use the node clock, which may be simulated and stopped.</pre> 
+</div>
+</div>
 <a id="a6ea7f045a7458bdf12ec9bcb69c1f7f0" name="a6ea7f045a7458bdf12ec9bcb69c1f7f0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6ea7f045a7458bdf12ec9bcb69c1f7f0">&#9670;&#160;</a></span>test_execute_planner_unconfigured_node()</h2>
 
@@ -536,6 +555,23 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <pre class="fragment">Test with a command that completes almost instantly.</pre> 
+</div>
+</div>
+<a id="a84dd3207e43a8c3e684a518a5975bbc7" name="a84dd3207e43a8c3e684a518a5975bbc7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a84dd3207e43a8c3e684a518a5975bbc7">&#9670;&#160;</a></span>test_execute_planner_with_a_lot_of_stderr()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">test_execute_planner_with_a_lot_of_stderr </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">A planner that writes much to stderr is not blocked on a full pipe.</pre> 
 </div>
 </div>
 <a id="a9d476b4ddf937be0a09b38e5d9160989" name="a9d476b4ddf937be0a09b38e5d9160989"></a>

@@ -141,7 +141,7 @@ Directories</h2></td></tr>
 <tr class="memitem:test" id="r_test"><td class="memItemLeft"><span class="iconfolder"><div class="folder-icon"></div></span>&#160;</td><td class="memItemRight"><a class="el" href="dir_d51e60fd1088f21b957aba4523254a7b.html">test</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><h1 class="doxsection"><a class="anchor" id="autotoc_md27"></a>
+<div class="textblock"><h1 class="doxsection"><a class="anchor" id="autotoc_md28"></a>
 Problem Expert</h1>
 <p>The Problem Expert module is responsible for maintaining the instances, predicates and goals of the PDDL problem.</p>
 <p>The main class is <a href="include/plansys2_problem_expert/ProblemExpertNode.hpp"><span class="tt">plansys2::ProblemExpertNode</span></a>, which is instantiated from <a href="src/ProblemExpertNode.cpp"><span class="tt">ProblemExpertNode.cpp</span></a>. <span class="tt"><a class="el" href="classplansys2_1_1ProblemExpertNode.html" title="ROS 2 Lifecycle node that manages the PDDL problem representation and operations.">plansys2::ProblemExpertNode</a></span> is a <span class="tt">rclcpp_lifecycle::LifecycleNode</span>, but currently the functionality is in the active phase.</p>
@@ -149,7 +149,7 @@ Problem Expert</h1>
 <p>The Problem Expert is dynamic and volatile, accessing its functionality through ROS2 services. To facilitate the task of the application developer, an <a href="include/plansys2_problem_expert/ProblemExpertClient.hpp"><span class="tt">plansys2::ProblemExpertClient</span></a> class has been implemented that hides the complexity of handling ROS2 messages and services. Its API is similar to that of <a href="include/plansys2_problem_expert/ProblemExpert.hpp"><span class="tt">plansys2::ProblemExpert</span></a>, since both have to implement the <a href="include/include/plansys2_problem_expert/ProblemExpertInterface.hpp"><span class="tt">plansys2::ProblemExpertInterface</span></a> interface.</p>
 <p>The Problem Expert instantiates a <a href="include/include/plansys2_domain_expert/DomainExpertClient.hpp"><span class="tt">plansys2::DomainExpertClient</span></a>, and every update query is verified against domain to check if it is valid.</p>
 <p>Every update in the Problem, is notified publishing a <span class="tt">std_msgs::msg::Empty</span> in <span class="tt">/problem_expert/update_notify</span>. It helps other modules and applications to be aware of updates, being not necessary to do polling to check it.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md28"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md29"></a>
 Services</h1>
 <ul>
 <li><span class="tt">/problem_expert/add_problem_function</span> [<a href="../plansys2_msgs/srv/AffectNode.srv"><span class="tt">plansys2_msgs::srv::AffectNode</span></a>]</li>
@@ -174,7 +174,7 @@ Services</h1>
 <li><span class="tt">/problem_expert/remove_problem_predicate</span> [<a href="../plansys2_msgs/srv/AffectNode.srv"><span class="tt">plansys2_msgs::srv::AffectNode</span></a>]</li>
 <li><span class="tt">/problem_expert/update_problem_function</span> [<a href="../plansys2_msgs/srv/AffectNode.srv"><span class="tt">plansys2_msgs::srv::AffectNode</span></a>]</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md29"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md30"></a>
 Published topics</h1>
 <ul>
 <li><span class="tt">/problem_expert/update_notify</span> [<span class="tt">std_msgs::msg::Empty</span>] </li>

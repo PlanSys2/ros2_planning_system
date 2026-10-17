@@ -97,7 +97,9 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div id="doc-content">
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Classes</a>  </div>
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">plansys2_support_py.Parser Namespace Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -105,9 +107,364 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:Parser" id="r_Parser"><td class="memItemLeft">class &#160;</td><td class="memItemRight"><a class="el" href="classplansys2__support__py_1_1Parser_1_1Parser.html">Parser</a></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:aa568120b5001ab621c1739b87ac171fd" id="r_aa568120b5001ab621c1739b87ac171fd"><td class="memItemLeft">Tuple[str, <a class="el" href="classint.html">int</a>]&#160;</td><td class="memItemRight"><a class="el" href="#aa568120b5001ab621c1739b87ac171fd">_head_token</a> (str text)</td></tr>
+<tr class="memitem:a36a20990fb14d3d29ef9f5c04153bc70" id="r_a36a20990fb14d3d29ef9f5c04153bc70"><td class="memItemLeft"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight"><a class="el" href="#a36a20990fb14d3d29ef9f5c04153bc70">_skip_blanks</a> (str text, <a class="el" href="classint.html">int</a> pos)</td></tr>
+<tr class="memitem:a4200650eb9d180796f7429ea20cc09ee" id="r_a4200650eb9d180796f7429ea20cc09ee"><td class="memItemLeft">List[str]&#160;</td><td class="memItemRight"><a class="el" href="#a4200650eb9d180796f7429ea20cc09ee">_split_blanks</a> (str text)</td></tr>
+<tr class="memitem:af968e3b9c735354c1099245b5b5b7edc" id="r_af968e3b9c735354c1099245b5b5b7edc"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#af968e3b9c735354c1099245b5b5b7edc">_token_at</a> (str text, <a class="el" href="classint.html">int</a> pos)</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a30eecf7daab1e23e4311d6cddf2bc7ac" id="r_a30eecf7daab1e23e4311d6cddf2bc7ac"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a30eecf7daab1e23e4311d6cddf2bc7ac">_ASCII_LOWER</a> = str.maketrans('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')</td></tr>
+<tr class="memitem:a535efd3d830501ecdd48ce97064bca62" id="r_a535efd3d830501ecdd48ce97064bca62"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a535efd3d830501ecdd48ce97064bca62">_BLANK_SPLIT</a> = re.compile('[ \t\n\r\f\v]+')</td></tr>
+<tr class="memitem:aab583dfb0450ecf4b6f2d8ae049f0772" id="r_aab583dfb0450ecf4b6f2d8ae049f0772"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#aab583dfb0450ecf4b6f2d8ae049f0772">_BLANKS</a> = ' \t\n\r\f\v'</td></tr>
+<tr class="memitem:aa4ffec46161dd364343860e9c0c442ec" id="r_aa4ffec46161dd364343860e9c0c442ec"><td class="memItemLeft">tuple&#160;</td><td class="memItemRight"><a class="el" href="#aa4ffec46161dd364343860e9c0c442ec">_COMPARISONS</a> = (Node.COMP_GE, Node.COMP_GT, Node.COMP_LE, Node.COMP_LT, Node.COMP_EQ)</td></tr>
+<tr class="memitem:a24255f1a08aea3b30282492f68857f01" id="r_a24255f1a08aea3b30282492f68857f01"><td class="memItemLeft">dict&#160;</td><td class="memItemRight"><a class="el" href="#a24255f1a08aea3b30282492f68857f01">_EXPRESSIONS</a></td></tr>
+<tr class="memitem:ac2cc5d25b8bacf13d3ef67da170e7b51" id="r_ac2cc5d25b8bacf13d3ef67da170e7b51"><td class="memItemLeft">dict&#160;</td><td class="memItemRight"><a class="el" href="#ac2cc5d25b8bacf13d3ef67da170e7b51">_LOGIC</a></td></tr>
+<tr class="memitem:a8095a9dfc2dc3d5ae5615e6c9be4f76e" id="r_a8095a9dfc2dc3d5ae5615e6c9be4f76e"><td class="memItemLeft">dict&#160;</td><td class="memItemRight"><a class="el" href="#a8095a9dfc2dc3d5ae5615e6c9be4f76e">_MODIFIERS</a></td></tr>
+<tr class="memitem:a59847cc783aeab2415328ccdbef208f2" id="r_a59847cc783aeab2415328ccdbef208f2"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a59847cc783aeab2415328ccdbef208f2">_NAME</a> = re.compile(r'[a-zA-Z][a-zA-Z0-9_-]*')</td></tr>
+<tr class="memitem:a68ab29333a7ac7f28ecebaaa185fb6e7" id="r_a68ab29333a7ac7f28ecebaaa185fb6e7"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a68ab29333a7ac7f28ecebaaa185fb6e7">_NUMBER</a> = re.compile(r'-?([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?')</td></tr>
+<tr class="memitem:ac145ccec0cc0efcf80181869c0b614bb" id="r_ac145ccec0cc0efcf80181869c0b614bb"><td class="memItemLeft"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac145ccec0cc0efcf80181869c0b614bb">MAX_NESTING_DEPTH</a> = 256</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">Parser utilities for PlanSys2 PDDL structures.</pre> </div></div><!-- contents -->
+<div class="textblock"><pre class="fragment">Parser utilities for PlanSys2 PDDL structures.</pre> </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="aa568120b5001ab621c1739b87ac171fd" name="aa568120b5001ab621c1739b87ac171fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa568120b5001ab621c1739b87ac171fd">&#9670;&#160;</a></span>_head_token()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"> Tuple[str, <a class="el" href="classint.html">int</a>] _head_token </td>
+          <td>(</td>
+          <td class="paramtype">str</td>          <td class="paramname"><span class="paramname"><em>text</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a36a20990fb14d3d29ef9f5c04153bc70" name="a36a20990fb14d3d29ef9f5c04153bc70"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a36a20990fb14d3d29ef9f5c04153bc70">&#9670;&#160;</a></span>_skip_blanks()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"> <a class="el" href="classint.html">int</a> _skip_blanks </td>
+          <td>(</td>
+          <td class="paramtype">str</td>          <td class="paramname"><span class="paramname"><em>text</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classint.html">int</a></td>          <td class="paramname"><span class="paramname"><em>pos</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a4200650eb9d180796f7429ea20cc09ee" name="a4200650eb9d180796f7429ea20cc09ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4200650eb9d180796f7429ea20cc09ee">&#9670;&#160;</a></span>_split_blanks()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"> List[str] _split_blanks </td>
+          <td>(</td>
+          <td class="paramtype">str</td>          <td class="paramname"><span class="paramname"><em>text</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="af968e3b9c735354c1099245b5b5b7edc" name="af968e3b9c735354c1099245b5b5b7edc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af968e3b9c735354c1099245b5b5b7edc">&#9670;&#160;</a></span>_token_at()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"> str _token_at </td>
+          <td>(</td>
+          <td class="paramtype">str</td>          <td class="paramname"><span class="paramname"><em>text</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classint.html">int</a></td>          <td class="paramname"><span class="paramname"><em>pos</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
+<a id="a30eecf7daab1e23e4311d6cddf2bc7ac" name="a30eecf7daab1e23e4311d6cddf2bc7ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a30eecf7daab1e23e4311d6cddf2bc7ac">&#9670;&#160;</a></span>_ASCII_LOWER</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">_ASCII_LOWER = str.maketrans('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a535efd3d830501ecdd48ce97064bca62" name="a535efd3d830501ecdd48ce97064bca62"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a535efd3d830501ecdd48ce97064bca62">&#9670;&#160;</a></span>_BLANK_SPLIT</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">_BLANK_SPLIT = re.compile('[ \t\n\r\f\v]+')</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aab583dfb0450ecf4b6f2d8ae049f0772" name="aab583dfb0450ecf4b6f2d8ae049f0772"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab583dfb0450ecf4b6f2d8ae049f0772">&#9670;&#160;</a></span>_BLANKS</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">str _BLANKS = ' \t\n\r\f\v'</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa4ffec46161dd364343860e9c0c442ec" name="aa4ffec46161dd364343860e9c0c442ec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa4ffec46161dd364343860e9c0c442ec">&#9670;&#160;</a></span>_COMPARISONS</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">tuple _COMPARISONS = (Node.COMP_GE, Node.COMP_GT, Node.COMP_LE, Node.COMP_LT, Node.COMP_EQ)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a24255f1a08aea3b30282492f68857f01" name="a24255f1a08aea3b30282492f68857f01"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24255f1a08aea3b30282492f68857f01">&#9670;&#160;</a></span>_EXPRESSIONS</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">dict _EXPRESSIONS</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=  {</div>
+<div class="line">    <span class="stringliteral">&#39;&gt;=&#39;</span>: Node.COMP_GE, <span class="stringliteral">&#39;&gt;&#39;</span>: Node.COMP_GT, <span class="stringliteral">&#39;&lt;=&#39;</span>: Node.COMP_LE, <span class="stringliteral">&#39;&lt;&#39;</span>: Node.COMP_LT,</div>
+<div class="line">    <span class="stringliteral">&#39;=&#39;</span>: Node.COMP_EQ, <span class="stringliteral">&#39;*&#39;</span>: Node.ARITH_MULT, <span class="stringliteral">&#39;/&#39;</span>: Node.ARITH_DIV, <span class="stringliteral">&#39;+&#39;</span>: Node.ARITH_ADD,</div>
+<div class="line">    <span class="stringliteral">&#39;-&#39;</span>: Node.ARITH_SUB,</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ac2cc5d25b8bacf13d3ef67da170e7b51" name="ac2cc5d25b8bacf13d3ef67da170e7b51"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac2cc5d25b8bacf13d3ef67da170e7b51">&#9670;&#160;</a></span>_LOGIC</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">dict _LOGIC</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=  {</div>
+<div class="line">    <span class="stringliteral">&#39;and&#39;</span>: Node.AND, <span class="stringliteral">&#39;or&#39;</span>: Node.OR, <span class="stringliteral">&#39;not&#39;</span>: Node.NOT, <span class="stringliteral">&#39;exists&#39;</span>: Node.EXISTS,</div>
+<div class="line">    <span class="stringliteral">&#39;forall&#39;</span>: Node.FORALL, <span class="stringliteral">&#39;imply&#39;</span>: Node.IMPLY,</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a8095a9dfc2dc3d5ae5615e6c9be4f76e" name="a8095a9dfc2dc3d5ae5615e6c9be4f76e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8095a9dfc2dc3d5ae5615e6c9be4f76e">&#9670;&#160;</a></span>_MODIFIERS</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">dict _MODIFIERS</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=  {</div>
+<div class="line">    <span class="stringliteral">&#39;assign&#39;</span>: Node.ASSIGN, <span class="stringliteral">&#39;increase&#39;</span>: Node.INCREASE, <span class="stringliteral">&#39;decrease&#39;</span>: Node.DECREASE,</div>
+<div class="line">    <span class="stringliteral">&#39;scale-up&#39;</span>: Node.SCALE_UP, <span class="stringliteral">&#39;scale-down&#39;</span>: Node.SCALE_DOWN,</div>
+<div class="line">}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a59847cc783aeab2415328ccdbef208f2" name="a59847cc783aeab2415328ccdbef208f2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59847cc783aeab2415328ccdbef208f2">&#9670;&#160;</a></span>_NAME</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">_NAME = re.compile(r'[a-zA-Z][a-zA-Z0-9_-]*')</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a68ab29333a7ac7f28ecebaaa185fb6e7" name="a68ab29333a7ac7f28ecebaaa185fb6e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a68ab29333a7ac7f28ecebaaa185fb6e7">&#9670;&#160;</a></span>_NUMBER</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">_NUMBER = re.compile(r'-?([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?')</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac145ccec0cc0efcf80181869c0b614bb" name="ac145ccec0cc0efcf80181869c0b614bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac145ccec0cc0efcf80181869c0b614bb">&#9670;&#160;</a></span>MAX_NESTING_DEPTH</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classint.html">int</a> MAX_NESTING_DEPTH = 256</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+</div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.18.0

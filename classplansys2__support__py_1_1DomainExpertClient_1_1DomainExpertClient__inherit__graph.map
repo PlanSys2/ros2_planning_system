@@ -1,5 +1,7 @@
 <map id="DomainExpertClient" name="DomainExpertClient">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,79,140,105"/>
-<area shape="rect" id="Node000002" href="$classNode.html" title=" " alt="" coords="46,5,99,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="75,46,75,79,70,79,70,46"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,153,140,178"/>
+<area shape="rect" id="Node000002" href="$classplansys2__support__py_1_1ClientBase_1_1ClientBase.html" title=" " alt="" coords="30,79,115,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="75,120,75,152,70,152,70,120"/>
+<area shape="rect" id="Node000003" href="$classNode.html" title=" " alt="" coords="46,5,99,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="75,46,75,79,70,79,70,46"/>
 </map>

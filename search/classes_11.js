@@ -8,7 +8,7 @@ var searchData=
   ['silentexecutor_5',['SilentExecutor',['../classSilentExecutor.html',1,'']]],
   ['simplebtbuilder_6',['SimpleBTBuilder',['../classplansys2_1_1SimpleBTBuilder.html',1,'plansys2']]],
   ['simplebtbuildertest_7',['SimpleBTBuilderTest',['../classSimpleBTBuilderTest.html',1,'']]],
-  ['spinner_8',['Spinner',['../classSpinner.html',1,'']]],
+  ['spinner_8',['Spinner',['../classSpinner.html',1,'Spinner'],['../classtest__clients__live_1_1Spinner.html',1,'Spinner']]],
   ['state_9',['State',['../classplansys2_1_1State.html',1,'plansys2']]],
   ['statevec_10',['StateVec',['../structplansys2_1_1StateVec.html',1,'plansys2']]],
   ['stnbtbuilder_11',['STNBTBuilder',['../classplansys2_1_1STNBTBuilder.html',1,'plansys2']]],

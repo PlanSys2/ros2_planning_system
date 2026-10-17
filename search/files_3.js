@@ -10,13 +10,14 @@ var searchData=
   ['check_5ftimeout_5fnode_2ecpp_7',['check_timeout_node.cpp',['../check__timeout__node_8cpp.html',1,'']]],
   ['check_5ftimeout_5fnode_2ehpp_8',['check_timeout_node.hpp',['../check__timeout__node_8hpp.html',1,'']]],
   ['client_5fno_5fanswer_5ftest_2ecpp_9',['client_no_answer_test.cpp',['../client__no__answer__test_8cpp.html',1,'']]],
-  ['closegripper_2ecpp_10',['CloseGripper.cpp',['../CloseGripper_8cpp.html',1,'']]],
-  ['closegripper_2ehpp_11',['CloseGripper.hpp',['../CloseGripper_8hpp.html',1,'']]],
-  ['compute_5fbt_2ecpp_12',['compute_bt.cpp',['../compute__bt_8cpp.html',1,'']]],
-  ['compute_5fbt_5flaunch_2epy_13',['compute_bt_launch.py',['../compute__bt__launch_8py.html',1,'']]],
-  ['computebt_2ecpp_14',['ComputeBT.cpp',['../ComputeBT_8cpp.html',1,'']]],
-  ['computebt_2ehpp_15',['ComputeBT.hpp',['../ComputeBT_8hpp.html',1,'']]],
-  ['conditer_2ehpp_16',['CondIter.hpp',['../CondIter_8hpp.html',1,'']]],
-  ['condition_2ehpp_17',['Condition.hpp',['../Condition_8hpp.html',1,'']]],
-  ['conftest_2epy_18',['conftest.py',['../conftest_8py.html',1,'']]]
+  ['clientbase_2epy_10',['ClientBase.py',['../ClientBase_8py.html',1,'']]],
+  ['closegripper_2ecpp_11',['CloseGripper.cpp',['../CloseGripper_8cpp.html',1,'']]],
+  ['closegripper_2ehpp_12',['CloseGripper.hpp',['../CloseGripper_8hpp.html',1,'']]],
+  ['compute_5fbt_2ecpp_13',['compute_bt.cpp',['../compute__bt_8cpp.html',1,'']]],
+  ['compute_5fbt_5flaunch_2epy_14',['compute_bt_launch.py',['../compute__bt__launch_8py.html',1,'']]],
+  ['computebt_2ecpp_15',['ComputeBT.cpp',['../ComputeBT_8cpp.html',1,'']]],
+  ['computebt_2ehpp_16',['ComputeBT.hpp',['../ComputeBT_8hpp.html',1,'']]],
+  ['conditer_2ehpp_17',['CondIter.hpp',['../CondIter_8hpp.html',1,'']]],
+  ['condition_2ehpp_18',['Condition.hpp',['../Condition_8hpp.html',1,'']]],
+  ['conftest_2epy_19',['conftest.py',['../conftest_8py.html',1,'']]]
 ];
