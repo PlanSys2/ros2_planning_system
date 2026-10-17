@@ -18,6 +18,8 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <utility>
+#include <optional>
 #include <map>
 #include <tuple>
 #include <atomic>
@@ -307,9 +309,15 @@ protected:
    * @brief Builds a behavior tree from the current plan.
    *
    * @param[in,out] runtime_info Runtime information containing the plan.
+   * @param[in] initial_state The state the plan starts from, if not the current one.
+   * @param[in] report_errors Whether a plan that cannot be executed is an error to log.
    * @return True if tree creation was successful, false otherwise.
    */
-  bool get_tree_from_plan(PlanRuntineInfo & runtime_info);
+  bool get_tree_from_plan(
+    PlanRuntineInfo & runtime_info,
+    const std::optional<std::pair<std::vector<plansys2::Predicate>,
+    std::vector<plansys2::Function>>> & initial_state = std::nullopt,
+    bool report_errors = true);
 
   /**
    * @brief Creates runtime information structures for a plan.
@@ -317,6 +325,21 @@ protected:
    * @param[out] runtime_info Runtime information to create.
    */
   void create_plan_runtime_info(PlanRuntineInfo & runtime_info);
+
+  /**
+   * @brief Take out of a new plan the actions the previous one just finished.
+   *
+   * A plan computed while an action ran can reach the executor after it ended: it starts with
+   * that action, whose requirements hold no more. The first time each such action appears is
+   * taken out; a later one is the plan doing it again.
+   *
+   * @param[in,out] runtime_info Runtime information with the new plan.
+   * @param[in] previous_action_map The actions of the previous plan.
+   * @return The actions taken out, with their new ids and the information of when they ran.
+   */
+  std::vector<std::pair<std::string, ActionExecutionInfo>> skip_finished_actions(
+    PlanRuntineInfo & runtime_info,
+    const std::map<std::string, ActionExecutionInfo> & previous_action_map);
 
   /**
    * @brief Cancels all currently running actions.

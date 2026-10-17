@@ -17,6 +17,7 @@
 #include <vector>
 #include <regex>
 #include <iostream>
+#include <functional>
 #include <memory>
 #include <fstream>
 #include <map>
@@ -2821,6 +2822,130 @@ TEST(executor, executor_client_execute_plan_multi_replan)
     finish = true;
     t.join();
 }
+  plansys2::drain_ros(200ms);
+}
+
+namespace
+{
+// Runs a plan, and when ready() holds, while it runs, sends the same plan again: it was
+// computed from the state before, as a plan computed while the first one ran
+void replan_with_the_same_plan(
+  const std::string & domain_file, const std::string & type,
+  const std::vector<std::string> & facts, const std::string & goal,
+  const std::string & done_fact, const std::function<bool(
+    plansys2::ProblemExpertClient &)> & ready)
+{
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto planner_node = std::make_shared<plansys2::PlannerNode>();
+  auto executor_node = std::make_shared<ExecutorNodeTest>();
+  auto move_action_node = MoveAction::make_shared("move_action_performer_1");
+  move_action_node->set_parameter({"action_name", "move"});
+  move_action_node->set_parameter({"rate", 10.0});
+  move_action_node->set_runtime(1.0);
+
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
+
+  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/" + domain_file});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/" + domain_file});
+
+  rclcpp::executors::SingleThreadedExecutor exe;
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(planner_node->get_node_base_interface());
+  exe.add_node(executor_node->get_node_base_interface());
+  exe.add_node(move_action_node->get_node_base_interface());
+
+  std::atomic<bool> finish {false};
+  std::thread t([&]() {
+      while (!finish) {exe.spin_some();}
+    });
+  struct Joiner
+  {
+    std::atomic<bool> & finish;
+    std::thread & thread;
+    ~Joiner()
+    {
+      finish = true;
+      if (thread.joinable()) {thread.join();}
+    }
+  } joiner{finish, t};
+
+  for (auto transition : {lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
+      lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE})
+  {
+    domain_node->trigger_transition(transition);
+    problem_node->trigger_transition(transition);
+    planner_node->trigger_transition(transition);
+    executor_node->trigger_transition(transition);
+  }
+  move_action_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance{"r2d2", "robot"}));
+  for (const auto & wp : {"wp1", "wp2", "wp3", "wp4"}) {
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance{wp, type}));
+  }
+  for (const auto & fact : facts) {
+    ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate(fact)));
+  }
+  ASSERT_TRUE(problem_client->setGoal(plansys2::Goal(goal)));
+
+  auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
+  ASSERT_TRUE(plan.has_value());
+  ASSERT_EQ(plan->items.size(), 3u);
+
+  ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
+  const auto deadline = std::chrono::steady_clock::now() + 20s;
+  while (!ready(*problem_client) && std::chrono::steady_clock::now() < deadline) {
+    executor_client->execute_and_check_plan();
+    std::this_thread::sleep_for(10ms);
+  }
+  ASSERT_TRUE(ready(*problem_client));
+  ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
+
+  while (executor_client->execute_and_check_plan() &&
+    std::chrono::steady_clock::now() < deadline + 20s)
+  {
+    std::this_thread::sleep_for(20ms);
+  }
+  ASSERT_TRUE(executor_client->getResult().has_value());
+  EXPECT_EQ(
+    executor_client->getResult()->result, plansys2_msgs::action::ExecutePlan::Result::SUCCESS);
+  EXPECT_TRUE(problem_client->existPredicate(plansys2::Predicate(done_fact)));
+  // Each move once: none is done again
+  EXPECT_EQ(move_action_node->executions_, 3);
+}
+}  // namespace
+
+// The race of executor_client_execute_plan_multi_replan: the plan reaches the executor after
+// its first action ended
+TEST(executor, replan_with_an_action_that_just_finished)
+{
+  replan_with_the_same_plan(
+    "simple_move_example.pddl", "waypoint",
+    {"(connected wp1 wp2)", "(connected wp2 wp3)", "(connected wp3 wp4)", "(robot_at r2d2 wp1)"},
+    "(and (robot_at r2d2 wp4))", "(robot_at r2d2 wp4)",
+    [](plansys2::ProblemExpertClient & problem) {
+      return problem.existPredicate(plansys2::Predicate("(robot_at r2d2 wp2)"));
+    });
+  plansys2::drain_ros(200ms);
+}
+
+// Or while it runs, with its at start effects applied: its at start requirements hold no more
+TEST(executor, replan_with_an_action_that_started)
+{
+  replan_with_the_same_plan(
+    "domain_simple_2.pddl", "room",
+    {"(connected wp1 wp2)", "(connected wp2 wp3)", "(connected wp3 wp4)", "(robot_at r2d2 wp1)",
+      "(battery_full r2d2)"},
+    "(and (robot_at r2d2 wp4))", "(robot_at r2d2 wp4)",
+    [](plansys2::ProblemExpertClient & problem) {
+      return !problem.existPredicate(plansys2::Predicate("(robot_at r2d2 wp1)"));
+    });
   plansys2::drain_ros(200ms);
 }
 

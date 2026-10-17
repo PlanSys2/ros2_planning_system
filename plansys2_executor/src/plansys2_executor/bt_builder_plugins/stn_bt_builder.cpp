@@ -297,8 +297,8 @@ STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
   auto action_sequence = get_plan_actions(plan);
 
   // Add a node to represent the initial state
-  auto predicates = problem_client()->getPredicates();
-  auto functions = problem_client()->getFunctions();
+  auto predicates = initial_predicates();
+  auto functions = initial_functions();
 
   auto init_action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
   init_action->at_end_effects = from_state(predicates, functions);
@@ -428,8 +428,8 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
   auto action_sequence = get_plan_actions(plan);
 
   // Add an action to represent the initial state
-  auto predicates = problem_client()->getPredicates();
-  auto functions = problem_client()->getFunctions();
+  auto predicates = initial_predicates();
+  auto functions = initial_functions();
 
   auto init_action_ = std::make_shared<plansys2_msgs::msg::DurativeAction>();
   init_action_->at_end_effects = from_state(predicates, functions);
@@ -525,8 +525,8 @@ STNBTBuilder::get_states(
   std::map<int, StateVec> states;
 
   StateVec state_vec;
-  state_vec.predicates = problem_client()->getPredicates();
-  state_vec.functions = problem_client()->getFunctions();
+  state_vec.predicates = initial_predicates();
+  state_vec.functions = initial_functions();
   states.insert(std::make_pair(-1, state_vec));
 
   for (const auto & time : happenings) {
@@ -726,8 +726,8 @@ STNBTBuilder::get_satisfy(
     t_2 = t_1;
   }
 
-  auto predicates = problem_client()->getPredicates();
-  auto functions = problem_client()->getFunctions();
+  auto predicates = initial_predicates();
+  auto functions = initial_functions();
 
   for (const auto & r : R_a) {
     if (check(r, predicates, functions)) {

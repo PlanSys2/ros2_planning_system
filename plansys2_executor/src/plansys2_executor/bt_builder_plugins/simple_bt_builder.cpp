@@ -344,8 +344,8 @@ SimpleBTBuilder::build_action_graph(const plansys2_msgs::msg::Plan & current_pla
   auto graph = ActionGraph::make_shared();
 
   auto action_sequence = get_plan_actions(current_plan);
-  auto predicates = problem_client()->getPredicates();
-  auto functions = problem_client()->getFunctions();
+  auto predicates = initial_predicates();
+  auto functions = initial_functions();
 
   // Get root actions that can be run in parallel
   graph->roots = get_roots(action_sequence, predicates, functions, node_counter);
@@ -434,8 +434,8 @@ SimpleBTBuilder::build_action_graph(const plansys2_msgs::msg::Plan & current_pla
     // Compute the state up to the new node
     // The effects of the new node are not applied
     std::list<ActionNode::Ptr> used_nodes;
-    predicates = problem_client()->getPredicates();
-    functions = problem_client()->getFunctions();
+    predicates = initial_predicates();
+    functions = initial_functions();
     get_state(new_node, used_nodes, predicates, functions);
     new_node->predicates = predicates;
     new_node->functions = functions;

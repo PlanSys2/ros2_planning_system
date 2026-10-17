@@ -20,9 +20,13 @@
 #include <tuple>
 #include <list>
 #include <memory>
+#include <optional>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "plansys2_core/Action.hpp"
+#include "plansys2_core/Types.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_msgs/msg/plan.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
@@ -274,12 +278,31 @@ public:
     return action.expression + ":" + std::to_string(to_int_time(action.time, precision));
   }
 
+  /**
+   * @brief Set the state the plan starts from, instead of the current one.
+   *
+   * On a replan, the actions that go on started before the new plan: it starts from the state
+   * before their at start effects.
+   *
+   * @param[in] predicates The predicates of that state.
+   * @param[in] functions The functions of that state.
+   */
+  void set_initial_state(
+    std::vector<plansys2::Predicate> predicates, std::vector<plansys2::Function> functions);
+
 protected:
   // The clients set, or our own ones, created the first time they are needed
   std::shared_ptr<plansys2::DomainExpertClient> domain_client() const;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client() const;
 
+  // The state the plan starts from: the one set, or that of the problem expert now
+  std::vector<plansys2::Predicate> initial_predicates() const;
+  std::vector<plansys2::Function> initial_functions() const;
+
 private:
+  std::optional<std::pair<std::vector<plansys2::Predicate>, std::vector<plansys2::Function>>>
+  initial_state_;
+
   // Mutable: creating them when first used does not change what the builder is
   mutable std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   mutable std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;

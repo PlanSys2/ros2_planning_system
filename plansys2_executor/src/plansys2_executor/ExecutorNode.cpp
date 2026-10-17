@@ -22,6 +22,9 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <utility>
+#include <optional>
+#include <cmath>
 
 #include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
@@ -450,7 +453,11 @@ ExecutorNode::create_plan_runtime_info(PlanRuntineInfo & runtime_info)
 }
 
 bool
-ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
+ExecutorNode::get_tree_from_plan(
+  PlanRuntineInfo & runtime_info,
+  const std::optional<std::pair<std::vector<plansys2::Predicate>,
+  std::vector<plansys2::Function>>> & initial_state,
+  bool report_errors)
 {
   auto bt_builder_plugin = this->get_parameter("bt_builder_plugin").as_string();
   if (bt_builder_plugin.empty()) {
@@ -466,6 +473,9 @@ ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
   }
   // Our clients: otherwise each plan would create, and later destroy, two more nodes
   bt_builder->set_clients(domain_client_, problem_client_);
+  if (initial_state) {
+    bt_builder->set_initial_state(initial_state->first, initial_state->second);
+  }
 
   if (bt_builder_plugin == "STNBTBuilder") {
     // Start and end of each action are separate BT units
@@ -478,7 +488,9 @@ ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
 
   auto bt_xml_tree = bt_builder->get_tree(runtime_info.complete_plan);
   if (bt_xml_tree.empty()) {
-    RCLCPP_ERROR(get_logger(), "Error computing behavior tree!");
+    if (report_errors) {
+      RCLCPP_ERROR(get_logger(), "Error computing behavior tree!");
+    }
     return false;
   }
 
@@ -591,6 +603,51 @@ ExecutorNode::replan_for_execution(PlanRuntineInfo & runtime_info)
   }
 }
 
+namespace
+{
+// The facts as they were before these changes, as undo does on the problem expert
+void undo_in_state(
+  const std::vector<FactChange> & changes, std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions)
+{
+  for (auto change = changes.rbegin(); change != changes.rend(); ++change) {
+    if (change->fact.node_type == plansys2_msgs::msg::Node::PREDICATE) {
+      auto it = std::find_if(
+        predicates.begin(), predicates.end(), [&](const plansys2::Predicate & p) {
+          return parser::pddl::checkNodeEquality(p, change->fact);
+        });
+      if (change->existed_before && it == predicates.end()) {
+        plansys2::Predicate fact(change->fact);
+        fact.negate = false;
+        predicates.push_back(fact);
+      } else if (!change->existed_before && it != predicates.end()) {
+        predicates.erase(it);
+      }
+      continue;
+    }
+    auto it = std::find_if(
+      functions.begin(), functions.end(), [&](const plansys2::Function & f) {
+        return parser::pddl::checkNodeEquality(f, change->fact);
+      });
+    if (it == functions.end()) {
+      continue;
+    }
+    if (change->modifier_type == plansys2_msgs::msg::Node::INCREASE ||
+      change->modifier_type == plansys2_msgs::msg::Node::DECREASE)
+    {
+      it->value -= change->value_after - change->value_before;
+    } else if (std::fabs(it->value - change->value_after) < 1e-9) {
+      it->value = change->value_before;
+    }
+  }
+}
+
+std::string action_expression(const std::string & action_id)
+{
+  return action_id.substr(0, action_id.find(':'));
+}
+}  // namespace
+
 bool
 ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
 {
@@ -614,6 +671,22 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
 
   std::map<std::string, ActionExecutionInfo> previous_action_map = *runtime_info.action_map;
 
+  // The actions that go on started before the new plan: it starts from the state before their
+  // at start effects, or it would not hold their at start requirements
+  std::optional<std::pair<std::vector<plansys2::Predicate>, std::vector<plansys2::Function>>>
+  initial_state;
+  for (auto & [action_id, info] : *runtime_info.action_map) {
+    const bool goes_on = info.action_executor &&
+      info.action_executor->get_internal_status() == ActionExecutor::RUNNING &&
+      new_ids.count(action_expression(action_id) + ":0") > 0;
+    if (goes_on && info.at_start_effects_applied && !info.at_start_changes.empty()) {
+      if (!initial_state) {
+        initial_state.emplace(problem_client_->getPredicates(), problem_client_->getFunctions());
+      }
+      undo_in_state(info.at_start_changes, initial_state->first, initial_state->second);
+    }
+  }
+
   // The actions that go on are taken out of the old tree: when it is destroyed, it halts its
   // nodes, and that would cancel them
   for (auto & [action_id, info] : *runtime_info.action_map) {
@@ -625,10 +698,19 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
     }
   }
 
+  // Actions done in the previous plan that the new one, computed while they ran, still has
+  std::vector<std::pair<std::string, ActionExecutionInfo>> done_again;
   bool plan_success = false;
   try {
     create_plan_runtime_info(runtime_info);
-    plan_success = get_tree_from_plan(runtime_info);
+    plan_success = get_tree_from_plan(runtime_info, initial_state, false);
+    if (!plan_success) {
+      done_again = skip_finished_actions(runtime_info, previous_action_map);
+      if (!done_again.empty()) {
+        create_plan_runtime_info(runtime_info);
+      }
+      plan_success = get_tree_from_plan(runtime_info, initial_state);
+    }
   } catch (...) {
     // The new plan is unusable: actions of the previous one must not keep running
     for (auto & entry : previous_action_map) {
@@ -676,11 +758,56 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
     }
   }
 
+  // They count as done in this plan too
+  for (auto & [action_id, info] : done_again) {
+    (*runtime_info.action_map)[action_id] = info;
+  }
+
   if (!plan_success) {
     return false;
   }
 
   return true;
+}
+
+std::vector<std::pair<std::string, ActionExecutionInfo>>
+ExecutorNode::skip_finished_actions(
+  PlanRuntineInfo & runtime_info,
+  const std::map<std::string, ActionExecutionInfo> & previous_action_map)
+{
+  // The first time each one appears: a later one is the plan doing it again
+  std::vector<std::pair<std::string, ActionExecutionInfo>> skipped;
+  std::vector<std::string> done;
+  for (const auto & [action_id, info] : previous_action_map) {
+    if (action_id != ":0" && info.action_executor && info.at_end_effects_applied &&
+      info.action_executor->get_internal_status() == ActionExecutor::SUCCESS)
+    {
+      done.push_back(action_id);
+    }
+  }
+  if (done.empty()) {
+    return skipped;
+  }
+
+  auto & items = runtime_info.complete_plan.items;
+  std::stable_sort(
+    items.begin(), items.end(), [](const auto & a, const auto & b) {return a.time < b.time;});
+  for (const auto & previous_id : done) {
+    auto it = std::find_if(
+      items.begin(), items.end(), [&](const plansys2_msgs::msg::PlanItem & item) {
+        return item.action == action_expression(previous_id);
+      });
+    if (it == items.end()) {
+      continue;
+    }
+    RCLCPP_INFO(
+      get_logger(), "%s is already done: the new plan was computed while it ran",
+      it->action.c_str());
+    skipped.emplace_back(BTBuilder::to_action_id(*it, 3), previous_action_map.at(previous_id));
+    items.erase(it);
+  }
+  runtime_info.remaining_plan = runtime_info.complete_plan;
+  return skipped;
 }
 
 void
