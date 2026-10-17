@@ -1079,6 +1079,9 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
     case plansys2_msgs::msg::Node::FUNCTION: {
         if (wexpr.empty() || wexpr.front() != '(') {
           // A bare name is an object, as in (= ?r r2d2): functions go in parentheses
+          if (!isValidName(wexpr)) {
+            throw std::runtime_error("Wrong name [" + wexpr + "]");
+          }
           auto node = std::make_shared<plansys2_msgs::msg::Node>();
           node->node_type = plansys2_msgs::msg::Node::CONSTANT;
           node->node_id = tree.nodes.size();
@@ -1166,12 +1169,17 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
       }
 
     case plansys2_msgs::msg::Node::PARAMETER: {
+        // (?x) is ?x
+        std::string name = wexpr;
+        while (name.size() > 2 && name.front() == '(' && name.back() == ')') {
+          name = getReducedString(name.substr(1, name.size() - 2));
+        }
         auto node = std::make_shared<plansys2_msgs::msg::Node>();
         node->node_type = node_type;
         node->node_id = tree.nodes.size();
-        node->name = wexpr;
+        node->name = name;
         node->negate = negate;
-        node->parameters.push_back(fromStringParam(wexpr));
+        node->parameters.push_back(fromStringParam(name));
         tree.nodes.push_back(*node);
 
         return node;
