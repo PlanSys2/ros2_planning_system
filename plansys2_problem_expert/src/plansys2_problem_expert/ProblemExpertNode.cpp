@@ -263,19 +263,26 @@ ProblemExpertNode::on_configure(const rclcpp_lifecycle::State & state)
 
   auto model_files = tokenize(model_file, ":");
 
-  std::ifstream domain_first_ifs(model_files[0]);
-  std::string domain_first_str((
-      std::istreambuf_iterator<char>(domain_first_ifs)),
-    std::istreambuf_iterator<char>());
+  // Every domain file must be there and readable
+  std::vector<std::string> domains;
+  for (const auto & file : model_files) {
+    std::ifstream domain_ifs(file);
+    if (file.empty() || !domain_ifs) {
+      RCLCPP_ERROR(get_logger(), "Cannot read model_file [%s]", file.c_str());
+      return CallbackReturnT::FAILURE;
+    }
+    domains.emplace_back(
+      (std::istreambuf_iterator<char>(domain_ifs)), std::istreambuf_iterator<char>());
+  }
+  if (domains.empty()) {
+    RCLCPP_ERROR(get_logger(), "No model_file given");
+    return CallbackReturnT::FAILURE;
+  }
 
-  auto domain_expert = std::make_shared<DomainExpert>(domain_first_str);
+  auto domain_expert = std::make_shared<DomainExpert>(domains[0]);
 
-  for (size_t i = 1; i < model_files.size(); i++) {
-    std::ifstream domain_ifs(model_files[i]);
-    std::string domain_str((
-        std::istreambuf_iterator<char>(domain_ifs)),
-      std::istreambuf_iterator<char>());
-    domain_expert->extendDomain(domain_str);
+  for (size_t i = 1; i < domains.size(); i++) {
+    domain_expert->extendDomain(domains[i]);
   }
 
   problem_expert_ = std::make_shared<ProblemExpert>(domain_expert);
@@ -339,6 +346,8 @@ ProblemExpertNode::on_cleanup(const rclcpp_lifecycle::State & state)
 {
   (void)state;
   RCLCPP_INFO(get_logger(), "[%s] Cleaning up...", get_name());
+  // Unconfigured: the knowledge goes, and the services answer that they are not active
+  problem_expert_.reset();
   RCLCPP_INFO(get_logger(), "[%s] Cleaned up", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -951,6 +960,12 @@ ProblemExpertNode::remove_problem_function_service_callback(
     response->success = problem_expert_->removeFunction(request->node);
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
+
+      plansys2_msgs::msg::Problem problem_msg;
+      problem_msg.problem = problem_expert_->getProblem();
+      problem_msg.stamp = now();
+      problem_pub_->publish(problem_msg);
     } else {
       response->error_info = "Error removing function";
     }
@@ -1002,6 +1017,12 @@ ProblemExpertNode::update_problem_function_service_callback(
     response->success = problem_expert_->updateFunction(request->node);
     if (response->success) {
       update_pub_->publish(std_msgs::msg::Empty());
+      knowledge_pub_->publish(*get_knowledge_as_msg());
+
+      plansys2_msgs::msg::Problem problem_msg;
+      problem_msg.problem = problem_expert_->getProblem();
+      problem_msg.stamp = now();
+      problem_pub_->publish(problem_msg);
     } else {
       response->error_info = "Function not valid";
     }

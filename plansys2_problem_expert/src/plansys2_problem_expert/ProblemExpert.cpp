@@ -143,14 +143,17 @@ ProblemExpert::getPredicates()
     for (auto d : derived) {
       std::vector<std::vector<std::string>> parameters_vector;
       for (size_t i = 0; i < d.predicate.parameters.size(); i++) {
+        // Objects of the type, or of any of its subtypes
+        const auto & type = d.predicate.parameters[i].type;
+        const auto sub_types = domain_expert_->getSubTypes(type);
         std::vector<std::string> p_vector;
-        std::for_each(
-          instances_.begin(), instances_.end(),
-          [&](auto instance) {
-            if (d.predicate.parameters[i].type == instance.type) {
-              p_vector.push_back(instance.name);
-            }
-          });
+        for (const auto & instance : instances_) {
+          if (instance.type == type || type.empty() || type == "object" ||
+            std::find(sub_types.begin(), sub_types.end(), instance.type) != sub_types.end())
+          {
+            p_vector.push_back(instance.name);
+          }
+        }
         parameters_vector.push_back(p_vector);
       }
       std::vector<std::vector<std::string>> possible_parameters_values;
@@ -371,73 +374,82 @@ ProblemExpert::removeInvalidFunctions(
   }
 }
 
-void ProblemExpert::removeInvalidGoals(const plansys2::Instance & instance)
+namespace
 {
-  // Get subgoals.
-  auto subgoals = parser::pddl::getSubtrees(goal_);
+bool isJunction(const plansys2_msgs::msg::Node & node)
+{
+  return node.node_type == plansys2_msgs::msg::Node::AND ||
+         node.node_type == plansys2_msgs::msg::Node::OR;
+}
 
-  // Check for subgoals before continuing.
-  if (subgoals.empty()) {
-    return;
+// Whether the object appears anywhere in this part of the goal
+bool mentions(const plansys2_msgs::msg::Tree & tree, uint32_t id, const std::string & name)
+{
+  const auto & node = tree.nodes[id];
+  if (node.node_type == plansys2_msgs::msg::Node::CONSTANT && node.name == name) {
+    return true;
   }
+  for (const auto & param : node.parameters) {
+    if (param.name == name) {return true;}
+  }
+  for (auto child : node.children) {
+    if (mentions(tree, child, name)) {return true;}
+  }
+  return false;
+}
 
-  // Remove invalid subgoals.
-  for (auto rit = subgoals.rbegin(); rit != subgoals.rend(); ++rit) {
-    // Get predicates.
-    std::vector<plansys2_msgs::msg::Node> predicates;
-    parser::pddl::getPredicates(predicates, *rit);
+// Whether this part goes: and and or, from the root, keep what does not name the object;
+// anything else that names it (not, quantifiers, comparisons...) goes as a whole, as pruning
+// inside them could make the goal stronger
+bool goes(const plansys2_msgs::msg::Tree & tree, uint32_t id, const std::string & name)
+{
+  const auto & node = tree.nodes[id];
+  if (!isJunction(node)) {
+    return mentions(tree, id, name);
+  }
+  if (node.children.empty()) {
+    return false;
+  }
+  for (auto child : node.children) {
+    if (!goes(tree, child, name)) {return false;}
+  }
+  return true;
+}
 
-    // Check predicates for removed instance.
-    bool params_valid = true;
-    for (const auto & predicate : predicates) {
-      if (std::find_if(
-          predicate.parameters.begin(), predicate.parameters.end(),
-          [&](const plansys2_msgs::msg::Param & param) {
-            return param.name == instance.name;
-          }) != predicate.parameters.end())
-      {
-        params_valid = false;
-        break;
-      }
-    }
-
-    // Remove invalid subgoal.
-    if (!params_valid) {
-      subgoals.erase(std::next(rit).base());
+uint32_t copyWithout(
+  const plansys2_msgs::msg::Tree & tree, uint32_t id, const std::string & name,
+  plansys2_msgs::msg::Tree & out, bool prune = true)
+{
+  auto node = tree.nodes[id];
+  node.node_id = out.nodes.size();
+  node.children.clear();
+  out.nodes.push_back(node);
+  // Only junctions reached through junctions are pruned: the rest is copied as it is
+  const bool prune_children = prune && isJunction(node);
+  for (auto child : tree.nodes[id].children) {
+    if (prune_children && goes(tree, child, name)) {
       continue;
     }
-
-    // Get functions.
-    std::vector<plansys2_msgs::msg::Node> functions;
-    parser::pddl::getFunctions(functions, *rit);
-
-    // Check functions for removed instance.
-    params_valid = true;
-    for (const auto & function : functions) {
-      if (std::find_if(
-          function.parameters.begin(), function.parameters.end(),
-          [&](const plansys2_msgs::msg::Param & param) {
-            return param.name == instance.name;
-          }) != function.parameters.end())
-      {
-        params_valid = false;
-        break;
-      }
-    }
-
-    // Remove invalid subgoal.
-    if (!params_valid) {
-      subgoals.erase(std::next(rit).base());
-    }
+    const auto child_id = copyWithout(tree, child, name, out, prune_children);
+    out.nodes[node.node_id].children.push_back(child_id);
   }
+  return node.node_id;
+}
+}  // namespace
 
-  // Create a new goal from the remaining subgoals.
-  auto tree = parser::pddl::fromSubtrees(subgoals, goal_.nodes[0].node_type);
-  if (tree) {
-    goal_ = plansys2::Goal(*tree);
-  } else {
+void ProblemExpert::removeInvalidGoals(const plansys2::Instance & instance)
+{
+  if (goal_.nodes.empty()) {
+    return;
+  }
+  // Without the object, what names it can not hold: it goes, the rest of the goal stays
+  if (goes(goal_, 0, instance.name)) {
     goal_.nodes.clear();
+    return;
   }
+  plansys2_msgs::msg::Tree pruned;
+  copyWithout(goal_, 0, instance.name, pruned);
+  goal_ = plansys2::Goal(pruned);
 }
 
 plansys2::Goal
@@ -898,10 +910,7 @@ ProblemExpert::getProblem()
 
   for (const auto & instance : instances_) {
     bool is_constant = domain.getType(instance.type)->parseConstant(instance.name).first;
-    if (is_constant) {
-      std::cout << "Skipping adding constant to problem :object: " << instance.name << " " <<
-        instance.type << std::endl;
-    } else {
+    if (!is_constant) {  // Constants are in the domain
       problem.addObject(instance.name, instance.type);
     }
   }
@@ -979,9 +988,6 @@ ProblemExpert::addProblem(const std::string & problem_str)
 
     lc_problem = remove_comments(lc_problem);
 
-    std::cout << "Domain:\n" << domain << std::endl;
-    std::cout << "Problem:\n" << lc_problem << std::endl;
-
     std::string domain_name = problem.getDomainName(lc_problem);
     if (domain_name.empty()) {
       std::cerr << "Domain name is empty" << std::endl;
@@ -998,23 +1004,22 @@ ProblemExpert::addProblem(const std::string & problem_str)
     return false;
   }
 
-  // Converting the parsed problem can still fail: leave the knowledge as it was
+  // Converting the parsed problem can still fail: then nothing of it is kept
   auto prev_instances = instances_;
   auto prev_predicates = predicates_;
   auto prev_functions = functions_;
   auto prev_goal = goal_;
   auto prev_metric = metric_;
   try {
-    std::cout << "Parsed problem: " << problem << std::endl;
-
     for (unsigned i = 0; i < domain.types.size(); ++i) {
       if (domain.types[i]->constants.size() ) {
         for (unsigned j = 0; j < domain.types[i]->constants.size(); ++j) {
           plansys2::Instance instance;
           instance.name = domain.types[i]->constants[j];
           instance.type = domain.types[i]->name;
-          std::cout << "Adding constant: " << instance.name << " " << instance.type << std::endl;
-          addInstance(instance);
+          if (!addInstance(instance)) {
+            throw std::runtime_error("Wrong constant " + instance.name);
+          }
         }
       }
     }
@@ -1025,8 +1030,9 @@ ProblemExpert::addProblem(const std::string & problem_str)
           plansys2::Instance instance;
           instance.name = domain.types[i]->objects[j];
           instance.type = domain.types[i]->name;
-          std::cout << "Adding instance: " << instance.name << " " << instance.type << std::endl;
-          addInstance(instance);
+          if (!addInstance(instance)) {
+            throw std::runtime_error("Wrong object " + instance.name);
+          }
         }
       }
     }
@@ -1037,25 +1043,17 @@ ProblemExpert::addProblem(const std::string & problem_str)
       switch (tree_node->node_type) {
         case plansys2_msgs::msg::Node::PREDICATE: {
             plansys2::Predicate pred_node(*tree_node);
-            std::cout << "Adding predicate: " <<
-              parser::pddl::toString(tree, tree_node->node_id) << std::endl;
             if (!addPredicate(pred_node)) {
-              std::cerr << "Failed to add predicate: " << parser::pddl::toString(
-                tree,
-                tree_node->node_id) <<
-                std::endl;
+              throw std::runtime_error(
+                      "Wrong predicate " + parser::pddl::toString(tree, tree_node->node_id));
             }
           }
           break;
         case plansys2_msgs::msg::Node::FUNCTION: {
             plansys2::Function func_node(*tree_node);
-            std::cout << "Adding function: " <<
-              parser::pddl::toString(tree, tree_node->node_id) << std::endl;
             if (!addFunction(func_node)) {
-              std::cerr << "Failed to add function: " << parser::pddl::toString(
-                tree,
-                tree_node->node_id) <<
-                std::endl;
+              throw std::runtime_error(
+                      "Wrong function " + parser::pddl::toString(tree, tree_node->node_id));
             }
           }
           break;
@@ -1068,11 +1066,8 @@ ProblemExpert::addProblem(const std::string & problem_str)
     if (problem.goal) {
       plansys2_msgs::msg::Tree goal;
       problem.goal->getTree(goal, domain);
-      std::cout << "Adding Goal: " << parser::pddl::toString(goal) << std::endl;
-      if (setGoal(goal)) {
-        std::cout << "Goal insertion ok" << std::endl;
-      } else {
-        std::cout << "Goal insertion failed" << std::endl;
+      if (!setGoal(goal)) {
+        throw std::runtime_error("Wrong goal " + parser::pddl::toString(goal));
       }
     }
 
@@ -1085,11 +1080,8 @@ ProblemExpert::addProblem(const std::string & problem_str)
         plansys2_msgs::msg::Metric::MAXIMIZE : plansys2_msgs::msg::Metric::MINIMIZE;
       metric.tree = parser::pddl::fromString(
         expr.str(), false, plansys2_msgs::msg::Node::EXPRESSION);
-      std::cout << "Adding metric: " << parser::pddl::toString(metric) << std::endl;
-      if (setMetric(metric)) {
-        std::cout << "Metric insertion ok" << std::endl;
-      } else {
-        std::cout << "Metric insertion failed" << std::endl;
+      if (!setMetric(metric)) {
+        throw std::runtime_error("Wrong metric " + parser::pddl::toString(metric));
       }
     }
   } catch (const std::exception & ex) {

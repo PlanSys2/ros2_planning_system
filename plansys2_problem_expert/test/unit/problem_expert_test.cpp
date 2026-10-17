@@ -1306,10 +1306,13 @@ TEST(problem_expert, metric_from_add_problem)
       "maximize (* (room_distance bedroom kitchen) (total-time))") << m;
   }
 
-  // A metric that parses but has the wrong types is left out, as an invalid goal:
-  // the problem is added and the previous metric stays
-  ASSERT_TRUE(
-    problem_expert.addProblem(head + "(:metric minimize (room_distance r2d2 kitchen)))"));
+  // A metric that parses but has the wrong types rejects the whole problem: nothing of it
+  // is kept, and the previous metric stays
+  ASSERT_FALSE(
+    problem_expert.addProblem(
+      head_new_object + "(:metric minimize (room_distance r2d2 kitchen)))"));
+  ASSERT_FALSE(problem_expert.existInstance("hall2"));
+  ASSERT_EQ(problem_expert.getInstances().size(), instances);
   ASSERT_EQ(
     parser::pddl::toString(problem_expert.getMetric()),
     "maximize (* (room_distance bedroom kitchen) (total-time))");

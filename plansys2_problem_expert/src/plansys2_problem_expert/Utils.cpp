@@ -16,6 +16,7 @@
 #include <cmath>
 #include <tuple>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <set>
@@ -826,24 +827,14 @@ std::string get_action_name(const std::string & input)
 
 std::vector<std::string> get_action_params(const std::string & input)
 {
+  // The tokens after the name: none for (move)
+  std::istringstream tokens(get_action_expression(input));
+  std::string token;
+  tokens >> token;  // The name
   std::vector<std::string> ret;
-
-  auto expr = get_action_expression(input);
-
-  size_t delim = expr.find(" ");
-  if (delim != std::string::npos) {
-    expr.erase(expr.begin(), expr.begin() + delim + 1);
+  while (tokens >> token) {
+    ret.push_back(token);
   }
-
-  size_t start = 0, end = 0;
-  while (end != std::string::npos) {
-    end = expr.find(" ", start);
-    auto param = expr.substr(
-      start, (end == std::string::npos) ? std::string::npos : end - start);
-    ret.push_back(param);
-    start = ((end > (std::string::npos - 1)) ? std::string::npos : end + 1);
-  }
-
   return ret;
 }
 
