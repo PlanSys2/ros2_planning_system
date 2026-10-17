@@ -169,7 +169,8 @@ public:
    */
   size_t getInferredPredicateRefCount(const plansys2::Predicate & predicate) const
   {
-    return inferred_predicate_refcount_.at(predicate);
+    auto it = inferred_predicate_refcount_.find(predicate);
+    return it == inferred_predicate_refcount_.end() ? 0 : it->second;
   }
 
   /**
@@ -189,15 +190,18 @@ public:
     return instances_.insert(std::move(instance)).second;
   }
 
+  // The union keeps a fact while it is asserted or inferred
   bool addPredicate(const plansys2::Predicate & predicate)
   {
-    return predicates_.insert(predicate).second &&
-           union_predicates_inferred_predicates_.insert(predicate).second;
+    if (!predicates_.insert(predicate).second) {
+      return false;
+    }
+    union_predicates_inferred_predicates_.insert(predicate);
+    return true;
   }
   bool addPredicate(plansys2::Predicate && predicate)
   {
-    return predicates_.insert(predicate).second &&
-           union_predicates_inferred_predicates_.insert(predicate).second;
+    return addPredicate(static_cast<const plansys2::Predicate &>(predicate));
   }
 
   bool addInferredPredicate(
@@ -221,18 +225,24 @@ public:
 
   auto removePredicate(const std::unordered_set<plansys2::Predicate>::const_iterator it)
   {
-    union_predicates_inferred_predicates_.erase(*it);
+    if (inferred_predicates_.find(*it) == inferred_predicates_.end()) {
+      union_predicates_inferred_predicates_.erase(*it);
+    }
     return predicates_.erase(it);
   }
   bool removePredicate(const plansys2::Predicate & predicate)
   {
-    return predicates_.erase(predicate) == 1 &&
-           union_predicates_inferred_predicates_.erase(predicate) == 1;
+    if (predicates_.erase(predicate) != 1) {
+      return false;
+    }
+    if (inferred_predicates_.find(predicate) == inferred_predicates_.end()) {
+      union_predicates_inferred_predicates_.erase(predicate);
+    }
+    return true;
   }
   bool removePredicate(plansys2::Predicate && predicate)
   {
-    return predicates_.erase(predicate) == 1 &&
-           union_predicates_inferred_predicates_.erase(predicate) == 1;
+    return removePredicate(static_cast<const plansys2::Predicate &>(predicate));
   }
 
   auto removeFunction(const std::unordered_set<plansys2::Function>::const_iterator it)
@@ -320,7 +330,7 @@ public:
     derived_predicates_ = derived_predicates;
   }
 
-  bool hasDerivedPredicates() {return derived_predicates_.getEdgeNumber() == 0;}
+  bool hasDerivedPredicates() const {return derived_predicates_.getDerivedPredicatesNumber() > 0;}
 
   void reserveInferredPredicates(size_t size)
   {
@@ -418,11 +428,11 @@ struct hash<plansys2::State>
   std::size_t operator()(const plansys2::State & state) const
   {
     std::size_t seed = 0;
-    seed ^= unordered_container_hash(state.instances_);
-    seed ^= unordered_container_hash(state.functions_);
-    seed ^= unordered_container_hash(state.predicates_);
-    seed ^= unordered_container_hash(state.inferred_predicates_);
-    seed ^= unordered_container_hash(state.union_predicates_inferred_predicates_);
+    seed ^= plansys2::unordered_container_hash(state.instances_);
+    seed ^= plansys2::unordered_container_hash(state.functions_);
+    seed ^= plansys2::unordered_container_hash(state.predicates_);
+    seed ^= plansys2::unordered_container_hash(state.inferred_predicates_);
+    seed ^= plansys2::unordered_container_hash(state.union_predicates_inferred_predicates_);
     seed ^= std::hash<decltype(state.derived_predicates_)>{}(state.derived_predicates_);
     return seed;
   }

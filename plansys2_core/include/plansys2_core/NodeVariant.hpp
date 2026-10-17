@@ -241,29 +241,32 @@ inline std::ostream & operator<<(std::ostream & os, const NodeVariant & node)
 
 }  // namespace plansys2
 
-namespace std
+namespace plansys2
 {
 
 inline std::size_t hash_node_variant(const plansys2_msgs::msg::Node & node)
 {
   std::size_t seed = 0;
 
-  hash_combine(seed, node.name);
-  hash_combine(seed, node.node_type);
-  hash_combine(seed, node.parameters.size());
+  plansys2::hash_combine(seed, node.name);
+  plansys2::hash_combine(seed, node.node_type);
+  plansys2::hash_combine(seed, node.parameters.size());
 
   return seed;
 }
+}  // namespace plansys2
 
+namespace std
+{
 template<>
 struct hash<plansys2::NodeVariant>
 {
   std::size_t operator()(const plansys2::NodeVariant & nv) const noexcept
   {
     if (nv.isPredicate()) {
-      return hash_node_variant(nv.getPredicateNode());
+      return plansys2::hash_node_variant(nv.getPredicateNode());
     } else if (nv.isFunction()) {
-      return hash_node_variant(nv.getFunctionNode());
+      return plansys2::hash_node_variant(nv.getFunctionNode());
     }
     return nv.hash();
   }

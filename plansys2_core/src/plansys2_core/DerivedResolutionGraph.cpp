@@ -14,7 +14,11 @@
 
 #include "plansys2_core/DerivedResolutionGraph.hpp"
 
+#include <algorithm>
 #include <fstream>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 namespace plansys2
 {
@@ -182,7 +186,9 @@ void DerivedResolutionGraph::depthFirstTraverse(
   const NodeVariant & start, const std::function<void(const NodeVariant &)> & func,
   std::unordered_set<NodeVariant> & visited, bool check_dependencies) const
 {
-  dfsHelper(start, func, visited, check_dependencies);
+  const auto components = check_dependencies ? computeComponents() :
+    std::unordered_map<NodeVariant, size_t>();
+  dfsHelper(start, func, visited, check_dependencies, &components);
 }
 
 void DerivedResolutionGraph::depthFirstTraverse(
@@ -190,24 +196,39 @@ void DerivedResolutionGraph::depthFirstTraverse(
   bool check_dependencies) const
 {
   std::unordered_set<NodeVariant> visited;
-  dfsHelper(start, func, visited, check_dependencies);
+  const auto components = check_dependencies ? computeComponents() :
+    std::unordered_map<NodeVariant, size_t>();
+  dfsHelper(start, func, visited, check_dependencies, &components);
 }
 
 void DerivedResolutionGraph::depthFirstTraverseFromNodes(
   const std::function<void(const NodeVariant &)> & func, bool check_dependencies,
   const std::vector<NodeVariant> & start_nodes) const
 {
+  const auto components = check_dependencies ? computeComponents() :
+    std::unordered_map<NodeVariant, size_t>();
+
   std::unordered_set<NodeVariant> visited;
-  std::vector<NodeVariant> stack =
-    start_nodes.empty() ? std::vector<NodeVariant>(getRoots().begin(), getRoots().end()) :
-    start_nodes;
+  std::vector<NodeVariant> stack = start_nodes;
+  if (start_nodes.empty()) {
+    // The roots, and the cycles nothing else leads to
+    stack.assign(getRoots().begin(), getRoots().end());
+    const auto all_components = check_dependencies ? components : computeComponents();
+    for (const auto & node : nodes_) {
+      bool source = !roots_.count(node);
+      for (const auto & parent : getNodeInEdges(node)) {
+        source = source && all_components.at(parent) == all_components.at(node);
+      }
+      if (source) {stack.push_back(node);}
+    }
+  }
 
   while (!stack.empty()) {
     NodeVariant node = stack.back();
     stack.pop_back();
 
     if (visited.count(node)) {continue;}
-    if (check_dependencies && !parentsVisited(node, visited)) {
+    if (check_dependencies && !parentsVisited(node, visited, &components)) {
       continue;  // skip nodes whose dependencies aren't met
     }
     visited.insert(node);
@@ -528,9 +549,10 @@ void DerivedResolutionGraph::invertedDfsHelper(
 
 void DerivedResolutionGraph::dfsHelper(
   const NodeVariant & node, const std::function<void(const NodeVariant &)> & func,
-  std::unordered_set<NodeVariant> & visited, bool check_dependencies) const
+  std::unordered_set<NodeVariant> & visited, bool check_dependencies,
+  const std::unordered_map<NodeVariant, size_t> * components) const
 {
-  if (visited.count(node) || (check_dependencies && !parentsVisited(node, visited))) {
+  if (visited.count(node) || (check_dependencies && !parentsVisited(node, visited, components))) {
     return;  // Skip this node if dependencies are not satisfied
   }
   visited.insert(node);
@@ -538,22 +560,85 @@ void DerivedResolutionGraph::dfsHelper(
   auto it = adj_list_.find(node);
   if (it != adj_list_.end()) {
     for (const auto & neighbor : it->second) {
-      dfsHelper(neighbor, func, visited, check_dependencies);
+      dfsHelper(neighbor, func, visited, check_dependencies, components);
     }
   }
 }
 
 bool DerivedResolutionGraph::parentsVisited(
-  const NodeVariant & node, const std::unordered_set<NodeVariant> & visited) const
+  const NodeVariant & node, const std::unordered_set<NodeVariant> & visited,
+  const std::unordered_map<NodeVariant, size_t> * components) const
 {
   auto it = parent_nodes_.find(node);
   if (it == parent_nodes_.end()) {
     return true;                                // No parents
   }
   for (const auto & p : it->second) {
+    if (components && components->count(p) && components->count(node) &&
+      components->at(p) == components->at(node))
+    {
+      continue;  // In the same cycle
+    }
     if (!visited.count(p)) {return false;}
   }
   return true;
+}
+
+std::unordered_map<NodeVariant, size_t> DerivedResolutionGraph::computeComponents() const
+{
+  // Tarjan, iterative: deep graphs must not overflow the stack
+  std::unordered_map<NodeVariant, size_t> component, index, low;
+  std::unordered_set<NodeVariant> on_stack;
+  std::vector<NodeVariant> stack;
+  size_t next_index = 0;
+  size_t next_component = 0;
+
+  struct Frame
+  {
+    NodeVariant node;
+    std::vector<NodeVariant> pending;
+  };
+
+  for (const auto & root : nodes_) {
+    if (index.count(root)) {continue;}
+    std::vector<Frame> frames;
+    auto open = [&](const NodeVariant & n) {
+        index[n] = low[n] = next_index++;
+        stack.push_back(n);
+        on_stack.insert(n);
+        const auto & out = getNodeOutEdges(n);
+        frames.push_back({n, std::vector<NodeVariant>(out.begin(), out.end())});
+      };
+    open(root);
+    while (!frames.empty()) {
+      if (!frames.back().pending.empty()) {
+        const NodeVariant next = frames.back().pending.back();
+        frames.back().pending.pop_back();
+        if (!index.count(next)) {
+          open(next);
+        } else if (on_stack.count(next)) {
+          low[frames.back().node] = std::min(low[frames.back().node], index[next]);
+        }
+        continue;
+      }
+      const NodeVariant node = frames.back().node;
+      frames.pop_back();
+      if (low[node] == index[node]) {
+        while (true) {
+          const NodeVariant member = stack.back();
+          stack.pop_back();
+          on_stack.erase(member);
+          component[member] = next_component;
+          if (member == node) {break;}
+        }
+        next_component++;
+      }
+      if (!frames.empty()) {
+        low[frames.back().node] = std::min(low[frames.back().node], low[node]);
+      }
+    }
+  }
+  return component;
 }
 
 void DerivedResolutionGraph::exportToDOT(const std::string & filename) const

@@ -211,7 +211,9 @@ void State::initInferredPredicates()
 void State::removeInferredPredicate(const plansys2::Predicate & predicate)
 {
   inferred_predicates_.erase(predicate);
-  union_predicates_inferred_predicates_.erase(predicate);
+  if (predicates_.find(predicate) == predicates_.end()) {  // Still there if asserted
+    union_predicates_inferred_predicates_.erase(predicate);
+  }
   inferred_predicate_refcount_.erase(predicate);
 }
 
