@@ -214,6 +214,12 @@ ProblemExpertClient::getInstance(const std::string & name)
 std::vector<plansys2::Predicate>
 ProblemExpertClient::getPredicates()
 {
+  return tryGetPredicates().value_or(std::vector<plansys2::Predicate>{});
+}
+
+std::optional<std::vector<plansys2::Predicate>>
+ProblemExpertClient::tryGetPredicates()
+{
   auto request = std::make_shared<plansys2_msgs::srv::GetStates::Request>();
 
   auto result = call_service<plansys2_msgs::srv::GetStates>(

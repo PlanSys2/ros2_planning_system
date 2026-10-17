@@ -116,6 +116,13 @@ public:
   std::vector<plansys2::Predicate> getPredicates();
 
   /**
+   * @brief Get the predicates of the problem, telling an empty problem from no answer.
+   *
+   * @return The predicates, or std::nullopt if the problem expert does not answer.
+   */
+  std::optional<std::vector<plansys2::Predicate>> tryGetPredicates();
+
+  /**
    * @brief Add a new predicate to the problem.
    *
    * @param[in] predicate The predicate to be added.
