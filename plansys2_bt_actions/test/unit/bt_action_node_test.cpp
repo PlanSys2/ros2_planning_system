@@ -23,6 +23,8 @@
 
 #include "behaviortree_cpp/bt_factory.h"
 #include "gtest/gtest.h"
+#include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_bt_actions/BTAction.hpp"
 #include "plansys2_bt_actions/BTActionNode.hpp"
 #include "plansys2_bt_actions/BTServiceNode.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -284,6 +286,30 @@ TEST_F(BtActionNodeTest, no_node_in_the_blackboard)
   } catch (const std::exception & e) {
     EXPECT_NE(std::string(e.what()).find("node"), std::string::npos) << e.what();
   }
+}
+
+// BTActions created with the same parent blackboard share its '@' keys (#315)
+TEST(BTActionBlackboard, actions_share_the_parent_blackboard)
+{
+  auto parent = BT::Blackboard::create();
+  auto first = std::make_shared<plansys2::BTAction>("first_bt_action", parent);
+  auto second = std::make_shared<plansys2::BTAction>("second_bt_action", parent);
+  auto alone = std::make_shared<plansys2::BTAction>("alone_bt_action");
+  for (auto & action : {first, second, alone}) {
+    action->set_parameter({"action_name", "move"});
+    action->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    ASSERT_NE(action->getBlackboard(), nullptr);
+  }
+
+  first->getBlackboard()->set<int>("@battery", 42);
+  ASSERT_EQ(second->getBlackboard()->get<int>("@battery"), 42);
+  ASSERT_EQ(parent->get<int>("battery"), 42);
+
+  // Each one keeps its own keys, and one without parent shares nothing
+  first->getBlackboard()->set<int>("local", 1);
+  int value = 0;
+  EXPECT_FALSE(second->getBlackboard()->get<int>("local", value));
+  EXPECT_FALSE(alone->getBlackboard()->get<int>("@battery", value));
 }
 
 int main(int argc, char ** argv)

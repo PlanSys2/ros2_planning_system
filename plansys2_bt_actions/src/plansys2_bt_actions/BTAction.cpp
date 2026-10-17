@@ -45,6 +45,12 @@ BTAction::BTAction(const std::string & action)
   declare_parameter<int>("wait_for_service_timeout", 1000);
 }
 
+BTAction::BTAction(const std::string & action, BT::Blackboard::Ptr parent)
+: BTAction(action)
+{
+  parent_blackboard_ = parent;
+}
+
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
 {
@@ -79,8 +85,10 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
     factory_.registerFromPlugin(loader.getOSName(plugin));
   }
 
-  // Create the blackboard that will be shared by all of the nodes in the tree
-  blackboard_ = BT::Blackboard::create();
+  // Create the blackboard that will be shared by all of the nodes in the tree, and with other
+  // BTActions through the parent, if given
+  blackboard_ = parent_blackboard_ ? BT::Blackboard::create(parent_blackboard_) :
+    BT::Blackboard::create();
 
   // Put items in the blackboard
   // The blackboard (and the BT nodes that copy this pointer) are owned by this node,

@@ -50,6 +50,18 @@ public:
   explicit BTAction(const std::string & action);
 
   /**
+   * @brief Constructor for a BTAction that shares a blackboard with others (#315).
+   *
+   * The blackboard of its tree is a child of parent: as in BehaviorTree.CPP, keys starting
+   * with '@' (e.g. "@battery") are those of parent, so they are shared by all the BTActions
+   * created with it in the same process.
+   *
+   * @param[in] action Name of the action this executor handles.
+   * @param[in] parent The blackboard to share.
+   */
+  BTAction(const std::string & action, BT::Blackboard::Ptr parent);
+
+  /**
    * @brief Get the name of the action.
    *
    * @return std::string The action name.
@@ -62,6 +74,13 @@ public:
    * @return std::string The path to the BT XML file.
    */
   const std::string & getBTFile() const {return bt_xml_file_;}
+
+  /**
+   * @brief Get the blackboard of the tree, once configured.
+   *
+   * @return BT::Blackboard::Ptr The blackboard, or nullptr before configure.
+   */
+  BT::Blackboard::Ptr getBlackboard() const {return blackboard_;}
 
 protected:
   using CallbackReturnT =
@@ -137,6 +156,8 @@ protected:
 private:
   BT::Tree tree_;
   BT::Blackboard::Ptr blackboard_;
+  // Shared with other BTActions, if given
+  BT::Blackboard::Ptr parent_blackboard_;
   std::string action_;
   std::string bt_xml_file_;
   std::vector<std::string> plugin_list_;
