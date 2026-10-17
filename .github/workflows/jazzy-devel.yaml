@@ -21,7 +21,8 @@ jobs:
             "mixin": ["coverage-gcc"]
           },
           "lcov-result": {
-            "lcov-config-file": "/tmp/plansys2_lcovrc"
+            "lcov-config-file": "/tmp/plansys2_lcovrc",
+            "filter": ["*/build/*", "*/test/*", "*/plansys2_tests/*"]
           },
           "test": {
             "parallel-workers" : 1
@@ -51,7 +52,9 @@ jobs:
           genhtml_num_spaces = 2
           genhtml_legend = 1
           function_coverage = 1
-          branch_coverage = 1
+          # Lines, not branches: gcc adds exception branches to almost every call, never taken,
+          # and Codecov counts every line with one of them as not covered
+          branch_coverage = 0
           lcov_quiet = 1
           lcov_follow = 1
           ignore_errors = inconsistent,corrupt,empty,gcov,missing,mismatch,negative

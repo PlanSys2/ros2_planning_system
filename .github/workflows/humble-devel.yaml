@@ -20,6 +20,9 @@ jobs:
           "build": {
             "mixin": ["coverage-gcc"]
           },
+          "lcov-result": {
+            "filter": ["*/build/*", "*/test/*", "*/plansys2_tests/*"]
+          },
           "test": {
             "parallel-workers" : 1
           }
