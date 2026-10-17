@@ -23,19 +23,8 @@ import os
 import sys
 import threading
 
-# Prefer vendored textual shipped inside this package (no system pip needed).
-_vendor_dir = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), '..', 'vendor')
-)
-if os.path.isdir(_vendor_dir) and _vendor_dir not in sys.path:
-    sys.path.insert(0, _vendor_dir)
-
 import rclpy
 from rclpy.executors import ExternalShutdownException
-
-from textual.app import App, ComposeResult
-from textual.containers import Horizontal, ScrollableContainer, Vertical
-from textual.widgets import Footer, Label, Static
 
 from ..controller.ros_controllers import (
     ActionExecutionProcessor,
@@ -43,11 +32,22 @@ from ..controller.ros_controllers import (
     PerformersProcessor,
     PlanMonitorProcessor,
 )
+from ..vendor import use_system_textual
+
+# The system Textual if it is as recent as the one shipped here (MIT, see vendor/), else ours
+if not use_system_textual():
+    _vendor_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'vendor'))
+    if _vendor_dir not in sys.path:
+        sys.path.insert(0, _vendor_dir)
+
+from textual.app import App, ComposeResult  # noqa: E402, I100
+from textual.containers import Horizontal, ScrollableContainer, Vertical  # noqa: E402
+from textual.widgets import Footer, Label, Static  # noqa: E402
 
 
 class PlanSys2App(App):
     """
-    PlanSys2 TUI — 4-quadrant layout:
+    PlanSys2 TUI, in four quadrants.
 
     ┌────────────────────┬─────────────────────┐
     │  Action Execution  │  Plan Monitor       │
@@ -137,6 +137,8 @@ class PlanSys2App(App):
         self._know_text = '[dim]Waiting for knowledge…[/dim]'
         self._executor_up = True
         self._problem_expert_up = True
+        self._pending: dict = {}
+        self._pending_lock = threading.Lock()
 
         # ROS processors
         self._proc_exec = ActionExecutionProcessor(self.node, self._exec_cb)
@@ -197,6 +199,14 @@ class PlanSys2App(App):
         )
         self._ros_thread.start()
         self.set_interval(1.0, self._check_plansys2)
+        self.set_interval(0.1, self._refresh_panels)
+
+    def _refresh_panels(self) -> None:
+        # The panels are drawn at most 10 times a second, not once per message
+        with self._pending_lock:
+            pending, self._pending = self._pending, {}
+        for box, text in pending.items():
+            box.update(text)
 
     # ------------------------------------------------------------------
     # PlanSys2 liveness: its topics lose their publishers when it goes down
@@ -233,31 +243,29 @@ class PlanSys2App(App):
     # ------------------------------------------------------------------
     # ROS callbacks
     # ------------------------------------------------------------------
-    def _update_from_ros(self, update, text: str) -> None:
-        # Messages keep arriving while the app closes (Ctrl-C): drop them then
-        try:
-            self.call_from_thread(update, text)
-        except RuntimeError:
-            pass
+    def _update_from_ros(self, box, text: str) -> None:
+        # The last text of each panel, drawn by _refresh_panels
+        with self._pending_lock:
+            self._pending[box] = text
 
     def _exec_cb(self, performers: dict, active: dict) -> None:
         if self._box_exec is None:
             return
         text = ActionExecutionProcessor.combined2text(performers, active)
-        self._update_from_ros(self._box_exec.update, text)
+        self._update_from_ros(self._box_exec, text)
 
     def _perf_cb(self, performers: dict) -> None:
         if self._box_perf is None:
             return
         text = PerformersProcessor.performers2text(performers)
-        self._update_from_ros(self._box_perf.update, text)
+        self._update_from_ros(self._box_perf, text)
 
     def _plan_cb(self, plan, info: dict) -> None:
         if self._box_plan is None:
             return
         self._plan_text = PlanMonitorProcessor.plan2text(plan, info)
         self._update_from_ros(
-            self._box_plan.update,
+            self._box_plan,
             self._with_banner(self._plan_text, self._executor_up, 'The executor'))
 
     def _know_cb(self, msg) -> None:
@@ -265,7 +273,7 @@ class PlanSys2App(App):
             return
         self._know_text = KnowledgeProcessor.knowledge2text(msg)
         self._update_from_ros(
-            self._box_know.update,
+            self._box_know,
             self._with_banner(self._know_text, self._problem_expert_up, 'The problem expert'))
 
     # ------------------------------------------------------------------

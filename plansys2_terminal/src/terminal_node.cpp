@@ -13,6 +13,7 @@
 // limitations under the License.
 
 
+#include <csignal>
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
@@ -21,7 +22,10 @@
 
 int main(int argc, char ** argv)
 {
-  rclcpp::init(argc, argv);
+  // Ctrl-C is ours: it cancels the plan in execution, or discards the line at the prompt,
+  // instead of shutting down ROS and leaving the terminal unable to do anything
+  rclcpp::init(argc, argv, rclcpp::InitOptions(), rclcpp::SignalHandlerOptions::None);
+  std::signal(SIGINT, [](int) {plansys2_terminal::interrupt();});
   auto terminal_node = std::make_shared<plansys2_terminal::Terminal>();
 
   terminal_node->run_console();

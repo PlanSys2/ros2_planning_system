@@ -23,6 +23,7 @@ from plansys2_support_py.ActionExecutorClient import ActionExecutorClient
 
 import rclpy
 from rclpy.lifecycle import TransitionCallbackReturn
+from rclpy.parameter import Parameter
 
 
 class TestActionExecutorClient(unittest.TestCase):
@@ -405,6 +406,74 @@ class TestActionExecutorClient(unittest.TestCase):
             self.assertEqual(publish.call_args[0][0].request_id, 'req_7')
             self.client.finish(True, 1.0, 'done')
             self.assertEqual(publish.call_args[0][0].request_id, 'req_7')
+
+    def _configured(self, rate, overrides):
+        client = ActionExecutorClient(
+            'test_action_executor_params', rate,
+            parameter_overrides=[Parameter('action_name', value='move')] + overrides)
+        self.assertEqual(client.on_configure(None), TransitionCallbackReturn.SUCCESS)
+        return client
+
+    def test_rate_is_in_hz(self):
+        """The rate parameter is in Hz, as in C++; the constructor takes the period."""
+        client = self._configured(0.5, [])
+        try:
+            self.assertEqual(client.get_parameter('rate').value, 2.0)
+            client.on_activate(None)
+            self.assertEqual(client.timer.timer_period_ns, 500_000_000)
+        finally:
+            client.destroy_node()
+        client = self._configured(0.5, [Parameter('rate', value=10.0)])
+        try:
+            client.on_activate(None)
+            self.assertEqual(client.timer.timer_period_ns, 100_000_000)
+        finally:
+            client.destroy_node()
+
+    def test_rate_must_be_positive(self):
+        """A rate that is not positive takes the one of the constructor."""
+        client = self._configured(0.25, [Parameter('rate', value=0.0)])
+        try:
+            client.on_activate(None)
+            self.assertEqual(client.timer.timer_period_ns, 250_000_000)
+        finally:
+            client.destroy_node()
+
+    def test_specialized_arguments_from_parameters(self):
+        """specialized_arguments is a list of strings, as set from a launch file."""
+        client = self._configured(
+            1.0, [Parameter('specialized_arguments', value=['r1', ''])])
+        try:
+            self.assertEqual(client.specialized_arguments, ['r1', ''])
+            self.assertEqual(list(client.status.specialized_arguments), ['r1', ''])
+            self.assertTrue(client.should_execute('move', ['r1', 'kitchen']))
+            self.assertFalse(client.should_execute('move', ['r2', 'kitchen']))
+        finally:
+            client.destroy_node()
+        client = self._configured(1.0, [])
+        try:
+            self.assertEqual(client.specialized_arguments, [])
+            self.assertTrue(client.should_execute('move', ['r2', 'kitchen']))
+        finally:
+            client.destroy_node()
+
+    def test_should_execute_with_other_number_of_arguments(self):
+        """More or fewer arguments than the specialized ones do not raise."""
+        self.client.action_managed = 'move'
+        self.client.specialized_arguments = ['r1', 'a', 'b']
+        self.assertTrue(self.client.should_execute('move', ['r1']))
+        self.assertFalse(self.client.should_execute('move', ['r2']))
+        self.client.specialized_arguments = ['r1']
+        self.assertTrue(self.client.should_execute('move', ['r1', 'a', 'b']))
+        self.assertTrue(self.client.should_execute('move', []))
+
+    def test_should_execute_is_case_insensitive(self):
+        """PDDL names are case insensitive: Move with R1 is move with r1."""
+        self.client.action_managed = 'move'
+        self.client.specialized_arguments = ['r1']
+        self.assertTrue(self.client.should_execute('Move', ['R1']))
+        self.assertFalse(self.client.should_execute('Move', ['R2']))
+        self.assertFalse(self.client.should_execute('moves', ['r1']))
 
 
 if __name__ == '__main__':

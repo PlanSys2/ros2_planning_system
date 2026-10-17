@@ -152,6 +152,7 @@ DomainExpertClient::getConstants(const std::string & type)
   }
 
   auto request = std::make_shared<plansys2_msgs::srv::GetDomainConstants::Request>();
+  request->type = type;
 
   auto future_result = get_constants_client_->async_send_request(request);
 

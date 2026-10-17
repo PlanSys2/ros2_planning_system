@@ -49,6 +49,12 @@ DomainExpertNode::DomainExpertNode(const rclcpp::NodeOptions & options)
       &DomainExpertNode::get_domain_types_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
+  get_constants_service_ = create_service<plansys2_msgs::srv::GetDomainConstants>(
+    "domain_expert/get_domain_constants",
+    std::bind(
+      &DomainExpertNode::get_domain_constants_service_callback,
+      this, std::placeholders::_1, std::placeholders::_2,
+      std::placeholders::_3));
   get_domain_actions_service_ = create_service<plansys2_msgs::srv::GetDomainActions>(
     "domain_expert/get_domain_actions",
     std::bind(
@@ -280,6 +286,23 @@ DomainExpertNode::get_domain_types_service_callback(
   } else {
     response->success = true;
     response->types = domain_expert_->getTypes();
+  }
+}
+
+void
+DomainExpertNode::get_domain_constants_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::GetDomainConstants::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::GetDomainConstants::Response> response)
+{
+  (void)request_header;
+  if (domain_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = "Requesting service in non-active state";
+    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+  } else {
+    response->success = true;
+    response->constants = domain_expert_->getConstants(request->type);
   }
 }
 

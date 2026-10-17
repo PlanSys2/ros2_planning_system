@@ -14,6 +14,7 @@
 
 #include <unistd.h>
 
+#include <QBrush>
 #include <QDebug>
 #include <QTime>
 #include <QTimer>
@@ -128,12 +129,23 @@ RQTPerformers::update_performer_row(
       break;
   }
 
+  row->setText(1, QString(performer.action.c_str()));
+
+  std::string join_args;
+  for (const auto & arg : performer.specialized_arguments) {
+    join_args += (join_args.empty() ? "" : " : ") + arg;
+  }
+  row->setText(4, QString(join_args.c_str()));
+
+  // A performer that stops publishing gets older: the age is updated on every tick
   auto elapsed = (node_->now() - performer.status_stamp).seconds();
-  row->setText(3, QString::number(elapsed));
+  row->setText(3, QString::number(elapsed, 'f', 1));
   if (elapsed > 5.0) {
     row->setBackground(3, Qt::red);
   } else if (elapsed > 2.0) {
     row->setBackground(3, Qt::yellow);
+  } else {
+    row->setBackground(3, QBrush());
   }
 }
 
@@ -142,17 +154,7 @@ RQTPerformers::add_new_row(const plansys2_msgs::msg::ActionPerformerStatus & per
 {
   auto instance_item = new QTreeWidgetItem();
   instance_item->setText(0, QString(performer.node_name.c_str()));
-  instance_item->setText(1, QString(performer.action.c_str()));
   update_performer_row(instance_item, performer);
-
-  std::string join_args;
-  for (const auto & arg : performer.specialized_arguments) {
-    join_args = join_args + " : " + arg;
-  }
-  join_args.erase(0, 3);  // remove leading " : "
-
-  instance_item->setText(4, QString(join_args.c_str()));
-
   performers_tree_->addTopLevelItem(instance_item);
 }
 
@@ -160,9 +162,6 @@ void
 RQTPerformers::spin_loop()
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  if (!need_update_) {
-    return;
-  }
   need_update_ = false;
 
   for (const auto & performer : performers_info_) {

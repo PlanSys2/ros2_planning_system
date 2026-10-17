@@ -39,6 +39,9 @@ char ** completer(const char * text, int start, int end);
 std::optional<plansys2_msgs::msg::Plan>
 parse_plan(const std::string planfile);
 
+// Ctrl-C: cancels the plan in execution; safe to call from a signal handler
+void interrupt();
+
 class Terminal : public rclcpp::Node
 {
 public:
@@ -99,6 +102,9 @@ protected:
     bool inside_source = false);
 
   virtual void process_source(std::vector<std::string> & command, std::ostringstream & os);
+
+  virtual bool dispatch_command(
+    std::vector<std::string> & tokens, std::ostringstream & os, bool inside_source);
 
   virtual void process_help(std::vector<std::string> & command, std::ostringstream & os);
 

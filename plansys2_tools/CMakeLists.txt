@@ -13,6 +13,7 @@ find_package(plansys2_msgs REQUIRED)
 find_package(qt_gui_cpp REQUIRED)
 find_package(rqt_gui_cpp REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
+find_package(plansys2_pddl_parser REQUIRED)
 
 # Newer qt_gui_cpp is Qt6-only and no longer sets this variable, but it does
 # find Qt6 for us: follow whatever Qt it brought in
@@ -81,6 +82,7 @@ target_include_directories(rqt_plansys2_knowledge PUBLIC
 target_link_libraries(rqt_plansys2_knowledge
   PUBLIC
   plansys2_problem_expert::plansys2_problem_expert
+  plansys2_pddl_parser::plansys2_pddl_parser
   ${plansys2_msgs_TARGETS}
   rqt_gui_cpp::rqt_gui_cpp
   rclcpp::rclcpp
@@ -174,14 +176,15 @@ install(TARGETS
   EXPORT rqt_plansys2
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
+# Where ros2 run looks for them
 install(PROGRAMS
   scripts/rqt_plansys2_knowledge
   scripts/rqt_plansys2_performers
   scripts/rqt_plansys2_plan
-  DESTINATION bin
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 install(FILES plugin_knowledge.xml plugin_performers.xml plugin_plan.xml
@@ -198,7 +201,6 @@ endif()
 pluginlib_export_plugin_description_file(rqt_gui "plugin_knowledge.xml")
 pluginlib_export_plugin_description_file(rqt_gui "plugin_performers.xml")
 pluginlib_export_plugin_description_file(rqt_gui "plugin_plan.xml")
-ament_export_libraries(rqt_plansys2)
 ament_export_targets(rqt_plansys2)
 ament_export_dependencies(
   Qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}
@@ -207,6 +209,7 @@ ament_export_dependencies(
   qt_gui_cpp
   rqt_gui_cpp
   plansys2_problem_expert
+  plansys2_pddl_parser
 )
 
 ament_package()

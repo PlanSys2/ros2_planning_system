@@ -19,14 +19,17 @@ import copy
 
 from lifecycle_msgs.msg import State
 from plansys2_msgs.msg import ActionExecution, ActionPerformerStatus
+from plansys2_support_py.Parser import Parser
+from rclpy.exceptions import ParameterUninitializedException
 from rclpy.lifecycle import LifecycleNode, LifecycleState, TransitionCallbackReturn
+from rclpy.parameter import Parameter
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy
 
 
 class ActionExecutorClient(LifecycleNode):
     """Client for executing actions in PlanSys2."""
 
-    def __init__(self, node_name, rate):
+    def __init__(self, node_name, rate, **kwargs):
         """
         Initialize the ActionExecutorClient.
 
@@ -35,14 +38,18 @@ class ActionExecutorClient(LifecycleNode):
         node_name : str
             Name of the node.
         rate : float
-            Rate for the timer callback.
+            Period of do_work in seconds, as the C++ constructor. The 'rate' parameter, in Hz as
+            in C++, overrides it.
+        **kwargs
+            Passed to the node, such as namespace or parameter_overrides.
 
         """
-        super().__init__(node_name)
+        super().__init__(node_name, **kwargs)
 
+        self._default_rate = 1.0 / rate if rate > 0.0 else 1.0
         self.declare_parameter('action_name', '')
-        self.declare_parameter('specialized_arguments', [])
-        self.declare_parameter('rate', rate)
+        self.declare_parameter('specialized_arguments', Parameter.Type.STRING_ARRAY)
+        self.declare_parameter('rate', self._default_rate)
 
         self.status = ActionPerformerStatus()
         self.status.state = ActionPerformerStatus.NOT_READY
@@ -109,8 +116,15 @@ class ActionExecutorClient(LifecycleNode):
             return TransitionCallbackReturn.FAILURE
 
         self.rate = self.get_parameter('rate').value
-        specialized_args = self.get_parameter('specialized_arguments')
-        self.specialized_arguments = specialized_args.value
+        if not isinstance(self.rate, (int, float)) or self.rate <= 0.0:
+            self.get_logger().error(
+                f'rate must be a positive number of Hz ({self.rate}), using {self._default_rate}')
+            self.rate = self._default_rate
+        try:
+            specialized_args = self.get_parameter('specialized_arguments').value
+        except ParameterUninitializedException:
+            specialized_args = None  # Declared without a value: not specialized
+        self.specialized_arguments = list(specialized_args) if specialized_args else []
 
         self.action_hub_pub = self.create_publisher(
             ActionExecution, 'actions_hub',
@@ -152,7 +166,7 @@ class ActionExecutorClient(LifecycleNode):
         """
         self.status.state = ActionPerformerStatus.RUNNING
         self.status.status_stamp = self.get_clock().now().to_msg()
-        self.timer = self.create_timer(self.rate, self.do_work)
+        self.timer = self.create_timer(1.0 / self.rate, self.do_work)
 
         return TransitionCallbackReturn.SUCCESS
 
@@ -247,7 +261,8 @@ class ActionExecutorClient(LifecycleNode):
             True if action should be executed.
 
         """
-        if action != self.action_managed:
+        # PDDL is case insensitive: Move performs move (#256)
+        if not Parser.compare_str_case_insensitive(action, self.action_managed):
             return False
         if len(self.specialized_arguments) > 0:
             if len(self.specialized_arguments) != len(args):
@@ -257,11 +272,9 @@ class ActionExecutorClient(LifecycleNode):
                     f'{len(self.specialized_arguments)}'
                 )
                 self.get_logger().warning(warning_msg)
-            for i in range(0, len(self.specialized_arguments)):
-                spec_arg_empty = self.specialized_arguments[i] == ''
-                arg_empty = args[i] == ''
-                args_differ = self.specialized_arguments[i] != args[i]
-                if not spec_arg_empty and not arg_empty and args_differ:
+            for specialized, arg in zip(self.specialized_arguments, args):
+                args_differ = not Parser.compare_str_case_insensitive(specialized, arg)
+                if specialized != '' and arg != '' and args_differ:
                     return False
         return True
 

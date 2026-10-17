@@ -23,6 +23,7 @@
 #include "std_msgs/msg/string.hpp"
 #include "plansys2_msgs/srv/change_domain.hpp"
 #include "plansys2_msgs/srv/get_domain_name.hpp"
+#include "plansys2_msgs/srv/get_domain_constants.hpp"
 #include "plansys2_msgs/srv/get_domain_types.hpp"
 #include "plansys2_msgs/srv/get_domain_actions.hpp"
 #include "plansys2_msgs/srv/get_domain_action_details.hpp"
@@ -129,6 +130,18 @@ public:
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::GetDomainTypes::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::GetDomainTypes::Response> response);
+
+  /**
+   * @brief Service callback to retrieve the constants of a type.
+   *
+   * @param[in] request_header ROS service request header.
+   * @param[in] request Service request with the type.
+   * @param[out] response Service response containing its constants and success status.
+   */
+  void get_domain_constants_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::GetDomainConstants::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::GetDomainConstants::Response> response);
 
   /**
    * @brief Service callback to retrieve all non-durative actions in the domain.
@@ -300,6 +313,7 @@ private:
 
   rclcpp::Service<plansys2_msgs::srv::GetDomainName>::SharedPtr get_name_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainTypes>::SharedPtr get_types_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetDomainConstants>::SharedPtr get_constants_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_domain_actions_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr
     get_domain_action_details_service_;

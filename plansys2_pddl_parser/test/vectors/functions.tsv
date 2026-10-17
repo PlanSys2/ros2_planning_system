@@ -1,0 +1,16 @@
+# text	name	parameters	value
+(battery r1)	battery	r1	0
+(battery r1) 1.5	battery	r1	1.5
+(= (battery r1) 1.5)	battery	r1	1.5
+ (= (battery r1) 100)	battery	r1	100
+(= (battery r1) -2.5)	battery	r1	-2.5
+(= (battery r1) 1e-7)	battery	r1	0.0000001
+(= (battery r1) 1.5e3)	battery	r1	1500
+(= (battery r1) +4)	battery	r1	4
+(= (distance wp1 wp2) 3)	distance	wp1 wp2	3
+(=\t(distance\nwp1 wp2)\n3)	distance	wp1 wp2	3
+(= (total-cost) 0)	total-cost		0
+(time)	time		0
+(robot-speed r_1) 0.25	robot-speed	r_1	0.25
+(distance ?a ?b) 1.5	distance	?a ?b	1.5
+(Battery R1) 2	Battery	R1	2

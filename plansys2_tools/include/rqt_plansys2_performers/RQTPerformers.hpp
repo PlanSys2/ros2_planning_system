@@ -75,7 +75,7 @@ private:
 
   std::map<std::string, plansys2_msgs::msg::ActionPerformerStatus::UniquePtr> performers_info_;
   rclcpp::Subscription<plansys2_msgs::msg::ActionPerformerStatus>::SharedPtr performers_sub_;
-  bool need_update_;
+  bool need_update_ {false};
   std::mutex mutex_;
 
   void performers_callback(plansys2_msgs::msg::ActionPerformerStatus::UniquePtr msg);

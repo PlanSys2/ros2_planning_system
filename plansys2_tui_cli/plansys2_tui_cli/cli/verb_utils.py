@@ -24,8 +24,10 @@ _TAGS = {
     'bold': '1', 'dim': '2', 'underline': '4', 'italic': '3',
 }
 
-_OPEN_TAG_RE = re.compile(r'\[([a-zA-Z_ ]+)\]')
-_CLOSE_TAG_RE = re.compile(r'\[/([a-zA-Z_ ]+)\]')
+# A tag not escaped: "\\[move]" is text, as rich.markup.escape writes it
+_OPEN_TAG_RE = re.compile(r'(?<!\\)\[([a-zA-Z_ ]+)\]')
+_CLOSE_TAG_RE = re.compile(r'(?<!\\)\[/([a-zA-Z_ ]+)\]')
+_ESCAPED_RE = re.compile(r'\\(\[)')
 
 
 def bbcode_to_ansi(s: str, enable_color: bool) -> str:
@@ -33,7 +35,7 @@ def bbcode_to_ansi(s: str, enable_color: bool) -> str:
     if not enable_color:
         s = _OPEN_TAG_RE.sub('', s)
         s = _CLOSE_TAG_RE.sub('', s)
-        return s
+        return _ESCAPED_RE.sub(r'\1', s)
 
     # Handle Rich-style tags, including composite ones like "[bold underline]...[/bold underline]".
     # We parse space-separated style tokens and, if all are known, emit a single ANSI sequence
@@ -54,10 +56,11 @@ def bbcode_to_ansi(s: str, enable_color: bool) -> str:
         ansi_codes = ';'.join(codes)
         return f'\033[{ansi_codes}m{content}\033[0m'
 
-    pattern = re.compile(r'\[([a-zA-Z_ ]+)\](.*?)\[/\s*\1\]', re.DOTALL | re.IGNORECASE)
+    pattern = re.compile(
+        r'(?<!\\)\[([a-zA-Z_ ]+)\](.*?)(?<!\\)\[/\s*\1\]', re.DOTALL | re.IGNORECASE)
     s = pattern.sub(_replace_tags, s)
 
-    # strip any unmatched / unknown tags
+    # strip any unmatched / unknown tags, and unescape the text
     s = _OPEN_TAG_RE.sub('', s)
     s = _CLOSE_TAG_RE.sub('', s)
-    return s
+    return _ESCAPED_RE.sub(r'\1', s)

@@ -55,12 +55,17 @@ class TestPlannerClient(unittest.TestCase):
         """Test that the client initializes correctly."""
         self.assertIsNotNone(self.client)
         self.assertEqual(self.client.get_name(), 'test_planner_client')
-        self.assertEqual(self.client._namespace_prefix, '')
+        # Relative names: the namespace and the remappings apply
+        self.assertEqual(
+            self.client._calls_node.resolve_service_name('planner/get_plan'),
+            '/planner/get_plan')
 
     def test_initialization_with_namespace(self):
         """Test that the client initializes correctly with namespace."""
         client = PlannerClient('test_client', namespace='test_namespace')
-        self.assertEqual(client._namespace_prefix, '/test_namespace')
+        self.assertEqual(
+            client._calls_node.resolve_service_name('planner/get_plan'),
+            '/test_namespace/planner/get_plan')
         client.destroy_node()
 
     @patch.object(Client, 'wait_for_service')

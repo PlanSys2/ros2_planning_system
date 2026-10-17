@@ -1,0 +1,15 @@
+(define (domain move)
+(:requirements :strips :typing :durative-actions)
+(:types robot room)
+(:constants base - room)
+(:predicates
+  (robot_at ?r - robot ?ro - room)
+  (connected ?a ?b - room)
+)
+(:durative-action move
+  :parameters (?r - robot ?a ?b - room)
+  :duration (= ?duration 1)
+  :condition (and (at start (robot_at ?r ?a)) (over all (connected ?a ?b)))
+  :effect (and (at start (not (robot_at ?r ?a))) (at end (robot_at ?r ?b)))
+)
+)
