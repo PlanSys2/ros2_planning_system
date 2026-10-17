@@ -21,6 +21,7 @@
 #include "plansys2_problem_expert/ProblemExpert.hpp"
 
 #include "std_msgs/msg/empty.hpp"
+#include "plansys2_msgs/srv/change_domain.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "plansys2_msgs/msg/knowledge.hpp"
 #include "plansys2_msgs/msg/problem.hpp"
@@ -354,11 +355,11 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::ClearProblemKnowledge::Response> response);
 
   /**
-   * @brief Callback for domain_expert/domain: how this node picks up a runtime domain
-   *        change (see DomainExpertNode::change_domain_service_callback()) — no
-   *        direct call from domain_expert is involved, this node just reacts to a
-   *        domain being published, the same way any other DomainExpertClient
-   *        subscriber would find out about it.
+   * @brief Callback for domain_expert/domain: the domain the domain expert has.
+   *
+   * A domain change reaches this node first through problem_expert/update_domain, before
+   * the domain expert answers it. The topic is for the domain changed while this node was
+   * not there, or not configured: it is taken if it is not the one this node has.
    *
    * @param[in] msg The current domain, in PDDL.
    */
@@ -447,14 +448,21 @@ private:
    *
    * @param[in] domain The new domain, in PDDL.
    */
-  void applyNewDomain(const std::string & domain);
+  bool applyNewDomain(const std::string & domain);
+
+  void update_domain_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Response> response);
 
   std::shared_ptr<ProblemExpert> problem_expert_;
 
   // domain_topic_callback(): true once the first (transient_local replay / baseline)
   // domain message has been seen, so every later message is known to be a genuine
   // runtime change. Never reset — set once, for the lifetime of this node.
-  bool domain_baseline_seen_ {false};
+  // The last domain received from the domain expert, also before being configured
+  std::string last_domain_;
+  rclcpp::Service<plansys2_msgs::srv::ChangeDomain>::SharedPtr update_domain_service_;
 
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr domain_sub_;
 

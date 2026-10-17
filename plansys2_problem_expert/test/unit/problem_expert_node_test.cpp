@@ -748,11 +748,9 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
   plansys2::drain_ros(200ms);
 }
 
-// Hot domain swap: DomainExpertClient::changeDomain() is the only entry point. It
-// republishes the new domain on domain_expert/domain (transient_local); ProblemExpertNode
-// watches that topic (ProblemExpertNode::domain_topic_callback()) and reconciles its
-// own knowledge in place, asynchronously, with no RPC between the two nodes. See
-// refactor_dynamic_domain.md for the design.
+// Hot domain swap: DomainExpertClient::changeDomain() is the only entry point. The domain
+// expert asks ProblemExpertNode (problem_expert/update_domain) to reconcile its knowledge
+// before it answers, and then republishes the new domain on domain_expert/domain.
 TEST(problem_expert_node, reconcile_with_domain_preserves_and_prunes)
 {
   {

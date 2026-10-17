@@ -15,6 +15,23 @@ target_link_libraries(check_in_expert_test
   ament_index_cpp::ament_index_cpp
 )
 
+ament_add_gtest_executable(domain_change_test domain_change_test.cpp)
+target_link_libraries(domain_change_test
+  ${PROJECT_NAME}
+  ament_index_cpp::ament_index_cpp
+)
+foreach(scenario
+    DomainChangeTest.new_domain_works_as_soon_as_the_change_returns
+    DomainChangeTest.problem_expert_configured_late_takes_the_current_domain
+    DomainChangeTest.same_domain_again_keeps_the_problem
+    DomainChangeRejectedTest.domain_stays_if_the_problem_expert_rejects_it)
+  string(REGEX REPLACE ".*\\." "" name ${scenario})
+  ament_add_gtest_test(domain_change_test
+    TEST_NAME domain_change_${name}
+    ENV GTEST_FILTER=${scenario}
+    TIMEOUT 120)
+endforeach()
+
 ament_add_gtest(effect_undo_test effect_undo_test.cpp)
 target_link_libraries(effect_undo_test
   ${PROJECT_NAME}
