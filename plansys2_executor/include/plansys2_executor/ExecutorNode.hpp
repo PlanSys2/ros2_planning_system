@@ -15,6 +15,7 @@
 #ifndef PLANSYS2_EXECUTOR__EXECUTORNODE_HPP_
 #define PLANSYS2_EXECUTOR__EXECUTORNODE_HPP_
 
+#include <chrono>
 #include <memory>
 #include <vector>
 #include <string>
@@ -275,6 +276,9 @@ protected:
   // One step of execution_cycle's state machine
   void execution_step();
 
+  // The period of feedback_rate; 5 Hz if it is not positive
+  std::chrono::nanoseconds feedback_period();
+
   /**
    * @brief Updates the remaining plan based on action execution status.
    *
@@ -383,6 +387,7 @@ protected:
   pluginlib::ClassLoader<plansys2::BTBuilder> bt_builder_loader_;
 
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
+  ActionHub::Ptr action_hub_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   std::shared_ptr<plansys2::PlannerClient> planner_client_;
 
@@ -401,6 +406,10 @@ protected:
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr domain_sub_;
 
   rclcpp::TimerBase::SharedPtr execution_timer_;
+
+  // What execution_step published last, to publish only what changed or is due
+  std::optional<plansys2_msgs::msg::Plan> last_executing_plan_;
+  std::chrono::steady_clock::time_point next_feedback_time_;
 
   bool cancel_plan_requested_;
   bool replan_requested_;

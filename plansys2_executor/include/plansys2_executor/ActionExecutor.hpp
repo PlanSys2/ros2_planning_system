@@ -16,8 +16,10 @@
 #define PLANSYS2_EXECUTOR__ACTIONEXECUTOR_HPP_
 
 #include <atomic>
+#include <map>
 #include <mutex>
 #include <string>
+#include <utility>
 #include <memory>
 #include <vector>
 
@@ -38,6 +40,60 @@
 namespace plansys2
 {
 
+class ActionExecutor;
+
+/**
+ * @class plansys2::ActionHub
+ * @brief The actions_hub publisher and subscription of a node, shared by its action executors.
+ *
+ * Each executor had its own: a plan of N actions made N publishers and N subscriptions, and
+ * every message was delivered N times. The hub delivers each one to the executors alive, which
+ * keep only those of their request.
+ */
+class ActionHub : public std::enable_shared_from_this<ActionHub>
+{
+public:
+  using Ptr = std::shared_ptr<ActionHub>;
+
+  /**
+   * @brief The hub of a node, created the first time and kept while someone holds it.
+   *
+   * @param[in] node The lifecycle node.
+   * @return The hub.
+   */
+  static Ptr get(rclcpp_lifecycle::LifecycleNode::SharedPtr node);
+
+  explicit ActionHub(rclcpp_lifecycle::LifecycleNode::SharedPtr node);
+
+  /**
+   * @brief Publish a message on actions_hub.
+   * @param[in] msg The message.
+   */
+  void publish(const plansys2_msgs::msg::ActionExecution & msg);
+
+  /**
+   * @brief Deliver the messages of actions_hub to an executor, until it is removed or destroyed.
+   * @param[in] executor The executor.
+   */
+  void add(const std::weak_ptr<ActionExecutor> & executor);
+
+  /**
+   * @brief Stop delivering messages to an executor.
+   * @param[in] executor The executor.
+   */
+  void remove(const ActionExecutor * executor);
+
+private:
+  // The subscription holds the hub weakly: it may run while the hub is destroyed
+  void subscribe(rclcpp_lifecycle::LifecycleNode::SharedPtr node);
+  void dispatch(plansys2_msgs::msg::ActionExecution::SharedPtr msg);
+
+  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecution>::SharedPtr pub_;
+  rclcpp::Subscription<plansys2_msgs::msg::ActionExecution>::SharedPtr sub_;
+  std::mutex mutex_;
+  std::vector<std::pair<const ActionExecutor *, std::weak_ptr<ActionExecutor>>> executors_;
+};
+
 /**
  * @class plansys2::ActionExecutor
  * @brief Class that manages the execution of a PDDL action by communicating with action performers.
@@ -48,6 +104,9 @@ namespace plansys2
  */
 class ActionExecutor
 {
+  // It delivers the messages of actions_hub to action_hub_callback
+  friend class ActionHub;
+
 public:
   /**
    * @brief Status enumeration representing the action execution state.
@@ -77,6 +136,7 @@ public:
   {
     auto ret = std::make_shared<ActionExecutor>(action, node);
     *ret->self_ = ret;
+    ret->hub_->add(ret);
     return ret;
   }
 
@@ -298,9 +358,7 @@ protected:
   std::string feedback_;
   float completion_;
 
-  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecution>::SharedPtr
-    action_hub_pub_;
-  rclcpp::Subscription<plansys2_msgs::msg::ActionExecution>::SharedPtr action_hub_sub_;
+  ActionHub::Ptr hub_;
 
   rclcpp::TimerBase::SharedPtr waiting_timer_;
 };

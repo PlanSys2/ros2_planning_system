@@ -91,8 +91,24 @@ SimpleBTBuilder::get_node_satisfy(
   const ActionNode::Ptr & node,
   const ActionNode::Ptr & current)
 {
+  std::map<const ActionNode *, ActionNode::Ptr> memo;
+  return get_node_satisfy(requirement, node, current, memo);
+}
+
+ActionNode::Ptr
+SimpleBTBuilder::get_node_satisfy(
+  const plansys2_msgs::msg::Tree & requirement,
+  const ActionNode::Ptr & node,
+  const ActionNode::Ptr & current,
+  std::map<const ActionNode *, ActionNode::Ptr> & memo)
+{
   if (node == current) {
     return nullptr;
+  }
+  // The answer of a node does not depend on the path to it: many paths reach the same node
+  auto known = memo.find(node.get());
+  if (known != memo.end()) {
+    return known->second;
   }
 
   ActionNode::Ptr ret = nullptr;
@@ -119,13 +135,14 @@ SimpleBTBuilder::get_node_satisfy(
 
   // Traverse the rest of the graph.
   for (const auto & arc : node->out_arcs) {
-    auto node_ret = get_node_satisfy(requirement, arc, current);
+    auto node_ret = get_node_satisfy(requirement, arc, current, memo);
 
     if (node_ret != nullptr) {
       ret = node_ret;
     }
   }
 
+  memo[node.get()] = ret;
   return ret;
 }
 
@@ -135,7 +152,19 @@ SimpleBTBuilder::get_node_contradict(
   const ActionNode::Ptr & current,
   std::list<ActionNode::Ptr> & contradictions)
 {
-  if (node == current) {
+  std::set<const ActionNode *> visited;
+  get_node_contradict(node, current, contradictions, visited);
+}
+
+void
+SimpleBTBuilder::get_node_contradict(
+  const ActionNode::Ptr & node,
+  const ActionNode::Ptr & current,
+  std::list<ActionNode::Ptr> & contradictions,
+  std::set<const ActionNode *> & visited)
+{
+  // Once per node: many paths reach the same one
+  if (node == current || !visited.insert(node.get()).second) {
     return;
   }
 
@@ -158,7 +187,7 @@ SimpleBTBuilder::get_node_contradict(
 
   // Traverse the rest of the graph
   for (const auto & arc : node->out_arcs) {
-    get_node_contradict(arc, current, contradictions);
+    get_node_contradict(arc, current, contradictions, visited);
   }
 }
 
@@ -209,8 +238,9 @@ SimpleBTBuilder::get_node_satisfy(
   const ActionNode::Ptr & current)
 {
   ActionNode::Ptr ret;
+  std::map<const ActionNode *, ActionNode::Ptr> memo;
   for (const auto & root : graph->roots) {
-    auto node_satisfy = get_node_satisfy(requirement, root, current);
+    auto node_satisfy = get_node_satisfy(requirement, root, current, memo);
     if (node_satisfy != nullptr) {
       ret = node_satisfy;
     }
@@ -225,9 +255,9 @@ SimpleBTBuilder::get_node_contradict(
   const ActionNode::Ptr & current)
 {
   std::list<ActionNode::Ptr> ret;
-
+  std::set<const ActionNode *> visited;
   for (const auto & root : graph->roots) {
-    get_node_contradict(root, current, ret);
+    get_node_contradict(root, current, ret, visited);
   }
 
   return ret;
@@ -615,8 +645,9 @@ SimpleBTBuilder::get_dotgraph(
 
   // define the edges
   std::set<std::string> edges;
+  std::set<const ActionNode *> visited;
   for (const auto & graph_root : graph_->roots) {
-    get_flow_dotgraph(graph_root, edges);
+    get_flow_dotgraph(graph_root, edges, visited);
   }
 
   tab_level = 1;
@@ -688,11 +719,25 @@ SimpleBTBuilder::get_flow_dotgraph(
   ActionNode::Ptr node,
   std::set<std::string> & edges)
 {
+  std::set<const ActionNode *> visited;
+  get_flow_dotgraph(node, edges, visited);
+}
+
+void
+SimpleBTBuilder::get_flow_dotgraph(
+  ActionNode::Ptr node,
+  std::set<std::string> & edges,
+  std::set<const ActionNode *> & visited)
+{
+  // Once per node: it runs on every feedback, and many paths reach the same one
+  if (!visited.insert(node.get()).second) {
+    return;
+  }
   for (const auto & arc : node->out_arcs) {
     std::string edge = std::to_string(node->node_num) + "->" + std::to_string(arc->node_num) +
       ";\n";
     edges.insert(edge);
-    get_flow_dotgraph(arc, edges);
+    get_flow_dotgraph(arc, edges, visited);
   }
 }
 
@@ -849,12 +894,13 @@ SimpleBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan)
 {
   std::vector<ActionStamped> ret;
 
+  // Once for the whole plan: it was asked for every action
+  const auto actions = domain_client()->getActions();
   for (auto & item : plan.items) {
     ActionStamped action_stamped;
 
     action_stamped.time = item.time;
     action_stamped.duration = item.duration;
-    auto actions = domain_client()->getActions();
     if (std::find(actions.begin(), actions.end(), get_action_name(item.action)) != actions.end()) {
       action_stamped.action =
         domain_client()->getAction(

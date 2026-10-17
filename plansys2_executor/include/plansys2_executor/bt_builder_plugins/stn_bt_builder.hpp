@@ -22,6 +22,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <optional>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -359,6 +360,7 @@ protected:
    * @param[in] previous The node to prune paths from.
    */
   void prune_paths(Node::Ptr current, Node::Ptr previous) const;
+  void prune_paths(Node::Ptr current, Node::Ptr previous, std::set<const Node *> & visited) const;
 
   /**
    * @brief Checks if there's a path between two nodes.
@@ -368,6 +370,7 @@ protected:
    * @return True if a path exists, false otherwise.
    */
   bool check_paths(Node::Ptr current, Node::Ptr previous) const;
+  bool check_paths(Node::Ptr current, Node::Ptr previous, std::set<const Node *> & visited) const;
 
   /**
    * @brief Computes the distance matrix for an STN.
@@ -431,6 +434,8 @@ protected:
    * @param[in,out] edges Set to collect edge definitions.
    */
   void get_flow_dotgraph(Node::Ptr node, std::set<std::string> & edges);
+  void get_flow_dotgraph(
+    Node::Ptr node, std::set<std::string> & edges, std::set<const Node *> & visited);
 
   /**
    * @brief Generates DOT graph node definition for a single action node.
@@ -506,6 +511,9 @@ protected:
 
 
   Graph::Ptr stn_;
+  // get_plan_actions of the last plan: building a tree asked for it, and the domain, five times
+  mutable std::optional<std::pair<plansys2_msgs::msg::Plan, std::vector<ActionStamped>>>
+  plan_actions_;
   std::string bt_start_action_;
   std::string bt_end_action_;
   int action_time_precision_;

@@ -274,6 +274,8 @@ ComputeBT::computeBTCallback(
   auto action_map = std::make_shared<std::map<std::string, ActionExecutionInfo>>();
   auto action_timeout_actions = this->get_parameter("action_timeouts.actions").as_string_array();
 
+  // Once for the whole plan: it was asked for every action
+  const auto actions = domain_client_->getActions();
   for (const auto & plan_item : plan.value().items) {
     auto index = BTBuilder::to_action_id(plan_item, 3);
 
@@ -283,7 +285,6 @@ ComputeBT::computeBTCallback(
     (*action_map)[index].action_executor =
       ActionExecutor::make_shared(plan_item.action, shared_from_this());
 
-    auto actions = domain_client_->getActions();
     std::string action_name_ = get_action_name(plan_item.action);
     if (std::find(actions.begin(), actions.end(), action_name_) != actions.end()) {
       (*action_map)[index].action_info = domain_client_->getAction(

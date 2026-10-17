@@ -134,8 +134,9 @@ STNBTBuilder::get_dotgraph(
 
   // define the edges
   std::set<std::string> edges;
+  std::set<const Node *> visited;
   for (const auto & graph_root : stn_->nodes) {
-    get_flow_dotgraph(graph_root, edges);
+    get_flow_dotgraph(graph_root, edges, visited);
   }
 
   for (const auto & edge : edges) {
@@ -343,15 +344,19 @@ STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
 std::vector<ActionStamped>
 STNBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan) const
 {
+  if (plan_actions_ && plan_actions_->first == plan) {
+    return plan_actions_->second;
+  }
   std::vector<ActionStamped> ret;
 
+  // Once for the whole plan: it was asked for every action
+  const auto actions = domain_client()->getActions();
   for (auto & item : plan.items) {
     ActionStamped action_stamped;
     action_stamped.time = item.time;
     action_stamped.expression = item.action;
     action_stamped.duration = item.duration;
     action_stamped.type = ActionType::DURATIVE;
-    auto actions = domain_client()->getActions();
     if (std::find(actions.begin(), actions.end(), get_action_name(item.action)) != actions.end()) {
       action_stamped.action =
         domain_client()->getAction(
@@ -365,6 +370,7 @@ STNBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan) const
     ret.push_back(action_stamped);
   }
 
+  plan_actions_.emplace(plan, ret);
   return ret;
 }
 
@@ -1013,9 +1019,21 @@ STNBTBuilder::get_effects(const ActionStamped & action) const
 void
 STNBTBuilder::prune_paths(Node::Ptr current, Node::Ptr previous) const
 {
+  std::set<const Node *> visited;
+  prune_paths(current, previous, visited);
+}
+
+void
+STNBTBuilder::prune_paths(
+  Node::Ptr current, Node::Ptr previous, std::set<const Node *> & visited) const
+{
+  // Once per node: removing the arcs to current is done the first time
+  if (!visited.insert(previous.get()).second) {
+    return;
+  }
   // Traverse the graph from the previous node to the root
   for (auto & in : previous->input_arcs) {
-    prune_paths(current, std::get<0>(in));
+    prune_paths(current, std::get<0>(in), visited);
   }
 
   // Don't remove the link between the start and end node
@@ -1063,9 +1081,21 @@ STNBTBuilder::prune_paths(Node::Ptr current, Node::Ptr previous) const
 bool
 STNBTBuilder::check_paths(Node::Ptr current, Node::Ptr previous) const
 {
+  std::set<const Node *> visited;
+  return check_paths(current, previous, visited);
+}
+
+bool
+STNBTBuilder::check_paths(
+  Node::Ptr current, Node::Ptr previous, std::set<const Node *> & visited) const
+{
+  // A node already seen did not reach previous
+  if (!visited.insert(current.get()).second) {
+    return false;
+  }
   // Traverse the graph from the current node to the root
   for (auto & in : current->input_arcs) {
-    if (check_paths(std::get<0>(in), previous)) {
+    if (check_paths(std::get<0>(in), previous, visited)) {
       return true;
     }
   }
@@ -1341,12 +1371,24 @@ STNBTBuilder::get_flow_dotgraph(
   Node::Ptr node,
   std::set<std::string> & edges)
 {
+  std::set<const Node *> visited;
+  get_flow_dotgraph(node, edges, visited);
+}
+
+void
+STNBTBuilder::get_flow_dotgraph(
+  Node::Ptr node, std::set<std::string> & edges, std::set<const Node *> & visited)
+{
+  // Once per node: it runs on every feedback, from every node
+  if (!visited.insert(node.get()).second) {
+    return;
+  }
   for (const auto & arc : node->output_arcs) {
     auto child = std::get<0>(arc);
     std::string edge = std::to_string(node->node_num) + "->" + std::to_string(child->node_num) +
       ";\n";
     edges.insert(edge);
-    get_flow_dotgraph(child, edges);
+    get_flow_dotgraph(child, edges, visited);
   }
 }
 

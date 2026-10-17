@@ -338,6 +338,18 @@ protected:
    */
   void get_flow_dotgraph(ActionNode::Ptr node, std::set<std::string> & edges);
 
+private:
+  // The traversals above, once per node: the graph is a DAG that many paths cross
+  ActionNode::Ptr get_node_satisfy(
+    const plansys2_msgs::msg::Tree & requirement, const ActionNode::Ptr & node,
+    const ActionNode::Ptr & current, std::map<const ActionNode *, ActionNode::Ptr> & memo);
+  void get_node_contradict(
+    const ActionNode::Ptr & node, const ActionNode::Ptr & current,
+    std::list<ActionNode::Ptr> & parents, std::set<const ActionNode *> & visited);
+  void get_flow_dotgraph(
+    ActionNode::Ptr node, std::set<std::string> & edges, std::set<const ActionNode *> & visited);
+
+protected:
   /**
    * @brief Generates DOT graph node definition for a single action node.
    *

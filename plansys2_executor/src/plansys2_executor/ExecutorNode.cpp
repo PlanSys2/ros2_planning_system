@@ -79,6 +79,8 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
   this->declare_parameter<bool>("stn_relaxed_timing", true);
   this->declare_parameter<bool>("enable_dotgraph_legend", true);
   this->declare_parameter<bool>("print_graph", false);
+  // Feedback, execution info, remaining plan and dot graph, in Hz; the tree ticks at 50 Hz
+  this->declare_parameter<double>("feedback_rate", 5.0);
   // A plan that fails, is cancelled or is replaced takes back the at start effects of the
   // actions that started and did not end
   this->declare_parameter<bool>("restore_at_start_effects", true);
@@ -210,6 +212,9 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
   planner_client_ = std::make_shared<plansys2::PlannerClient>();
 
+  // One actions_hub publisher and subscription for all the actions, kept between plans
+  action_hub_ = ActionHub::get(non_owning_this());
+
   // A new subscription gets the latched domain again: that is not a change
   domain_baseline_seen_ = false;
   domain_sub_ = create_subscription<std_msgs::msg::String>(
@@ -261,6 +266,7 @@ ExecutorNode::on_cleanup(const rclcpp_lifecycle::State & state)
   dotgraph_pub_.reset();
   executing_plan_pub_.reset();
   remaining_plan_pub_.reset();
+  action_hub_.reset();
   RCLCPP_INFO(get_logger(), "[%s] Cleaned up", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -275,6 +281,7 @@ ExecutorNode::on_shutdown(const rclcpp_lifecycle::State & state)
   dotgraph_pub_.reset();
   executing_plan_pub_.reset();
   remaining_plan_pub_.reset();
+  action_hub_.reset();
   RCLCPP_INFO(get_logger(), "[%s] Shutted down", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -323,8 +330,9 @@ ExecutorNode::get_ordered_subgoals(PlanRuntineInfo & runtime_info)
     }
   }
 
+  // Once for the whole plan: it was asked for every action
+  const auto actions = domain_client_->getActions();
   for (const auto & plan_item : runtime_info.complete_plan.items) {
-    auto actions = domain_client_->getActions();
     std::string action_name = get_action_name(plan_item.action);
     if (std::find(actions.begin(), actions.end(), action_name) != actions.end()) {
       std::shared_ptr<plansys2_msgs::msg::Action> action =
@@ -404,6 +412,8 @@ ExecutorNode::create_plan_runtime_info(PlanRuntineInfo & runtime_info)
   (*runtime_info.action_map)[":0"].at_start_effects_applied_time = now();
   (*runtime_info.action_map)[":0"].at_end_effects_applied_time = now();
 
+  // Once for the whole plan: it was asked for every action
+  const auto actions = domain_client_->getActions();
   for (const auto & plan_item : runtime_info.complete_plan.items) {
     // The parsing below assumes "(name args...)"; anything else must not reach it
     const auto & action = plan_item.action;
@@ -419,7 +429,6 @@ ExecutorNode::create_plan_runtime_info(PlanRuntineInfo & runtime_info)
     (*runtime_info.action_map)[index].action_executor =
       ActionExecutor::make_shared(plan_item.action, non_owning_this());
 
-    auto actions = domain_client_->getActions();
     std::string action_name = get_action_name(plan_item.action);
     if (std::find(actions.begin(), actions.end(), action_name) != actions.end()) {
       (*runtime_info.action_map)[index].action_info = domain_client_->getAction(
@@ -1092,6 +1101,17 @@ ExecutorNode::finish_replaced_goal(
   }
 }
 
+std::chrono::nanoseconds
+ExecutorNode::feedback_period()
+{
+  double rate = get_parameter("feedback_rate").as_double();
+  if (!(rate > 0.0)) {
+    rate = 5.0;
+  }
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(
+    std::chrono::duration<double>(1.0 / rate));
+}
+
 void
 ExecutorNode::execution_cycle()
 {
@@ -1144,6 +1164,7 @@ ExecutorNode::execution_step()
 
         runtime_info_ = PlanRuntineInfo();
         runtime_info_.complete_plan = current_goal_handle_->get_goal()->plan;
+        last_executing_plan_.reset();  // A new goal publishes its plan
         runtime_info_.remaining_plan = current_goal_handle_->get_goal()->plan;
 
         if (!init_plan_for_execution(runtime_info_)) {
@@ -1164,26 +1185,42 @@ ExecutorNode::execution_step()
           executor_state_ = STATE_FAILED;
         }
 
-        auto feedback_info_msgs = get_feedback_info(runtime_info_.action_map);
-        feedback->action_execution_status = feedback_info_msgs;
-        // rclcpp_action only takes feedback from executing goals
-        if (!current_goal_handle_->is_canceling()) {
-          current_goal_handle_->publish_feedback(feedback);
-        }
-        for (const auto & msg : feedback_info_msgs) {
-          execution_info_pub_->publish(msg);
-        }
-
         update_plan(runtime_info_);
         update_snapshot();
-        remaining_plan_pub_->publish(runtime_info_.remaining_plan);
-        executing_plan_pub_->publish(runtime_info_.complete_plan);
 
-        std_msgs::msg::String dotgraph_msg;
-        dotgraph_msg.data = runtime_info_.current_tree->bt_builder->get_dotgraph(
-          runtime_info_.action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
-          this->get_parameter("print_graph").as_bool());
-        dotgraph_pub_->publish(dotgraph_msg);
+        // Latched: once per plan
+        if (!last_executing_plan_ || *last_executing_plan_ != runtime_info_.complete_plan) {
+          executing_plan_pub_->publish(runtime_info_.complete_plan);
+          last_executing_plan_ = runtime_info_.complete_plan;
+        }
+
+        // The tree ticks at 50 Hz; what is published for others goes at feedback_rate, and
+        // when the plan ends, so that its last state is seen
+        const auto now = std::chrono::steady_clock::now();
+        const bool ending = status != BT::NodeStatus::RUNNING;
+        if (ending || now >= next_feedback_time_) {
+          next_feedback_time_ = now + feedback_period();
+
+          auto feedback_info_msgs = get_feedback_info(runtime_info_.action_map);
+          feedback->action_execution_status = feedback_info_msgs;
+          // rclcpp_action only takes feedback from executing goals
+          if (!current_goal_handle_->is_canceling()) {
+            current_goal_handle_->publish_feedback(feedback);
+          }
+          for (const auto & msg : feedback_info_msgs) {
+            execution_info_pub_->publish(msg);
+          }
+          remaining_plan_pub_->publish(runtime_info_.remaining_plan);
+
+          // Building it costs: only for someone listening
+          if (dotgraph_pub_->get_subscription_count() > 0) {
+            std_msgs::msg::String dotgraph_msg;
+            dotgraph_msg.data = runtime_info_.current_tree->bt_builder->get_dotgraph(
+              runtime_info_.action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
+              this->get_parameter("print_graph").as_bool());
+            dotgraph_pub_->publish(dotgraph_msg);
+          }
+        }
 
         if (status == BT::NodeStatus::SUCCESS) {
           executor_state_ = STATE_SUCCEDED;
@@ -1227,6 +1264,7 @@ ExecutorNode::execution_step()
         }
 
         runtime_info_.complete_plan = current_goal_handle_->get_goal()->plan;
+        last_executing_plan_.reset();  // A new goal publishes its plan
         runtime_info_.remaining_plan = current_goal_handle_->get_goal()->plan;
 
         if (!replan_for_execution(runtime_info_)) {

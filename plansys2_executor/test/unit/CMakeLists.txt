@@ -12,6 +12,17 @@ target_link_libraries(action_execution_test
   ${PROJECT_NAME}
 )
 
+ament_add_ros_isolated_gtest(executor_rates_test executor_rates_test.cpp TIMEOUT 120)
+target_compile_definitions(executor_rates_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(executor_rates_test ${PROJECT_NAME})
+
+# A traversal that follows every path does not end: the timeout says so
+ament_add_gtest(graph_traversal_test graph_traversal_test.cpp TIMEOUT 60)
+target_link_libraries(graph_traversal_test ${PROJECT_NAME} bt_builder_plugins)
+
+ament_add_ros_isolated_gtest(action_hub_test action_hub_test.cpp TIMEOUT 60)
+target_link_libraries(action_hub_test ${PROJECT_NAME})
+
 ament_add_gtest_executable(action_protocol_test action_protocol_test.cpp)
 target_link_libraries(action_protocol_test ${PROJECT_NAME})
 foreach(scenario

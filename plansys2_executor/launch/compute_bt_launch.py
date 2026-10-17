@@ -132,7 +132,7 @@ def generate_launch_description():
     compute_bt_cmd = Node(
         package='plansys2_executor',
         executable='compute_bt',
-        name='compute_bt',
+        # No name=: it renames every node of the process, the clients too
         namespace=namespace,
         output='screen',
         parameters=[
