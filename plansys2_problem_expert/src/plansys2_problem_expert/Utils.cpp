@@ -121,6 +121,28 @@ private:
   plansys2::ProblemExpert & expert_;
 };
 
+// The effects of an action happen at once (PDDL): numeric values are computed from the state
+// before it, deletes go before adds (adding a fact wins over deleting it), and the values are
+// written at the end. ALL applies each effect as it is found
+enum class ApplyPhase {ALL, NUMERIC, DELETES, ADDS};
+
+// A numeric effect, computed in the NUMERIC phase and written at the end
+struct NumericUpdate
+{
+  plansys2_msgs::msg::Node function;
+  uint8_t modifier_type;
+  double before;  // The value before the action
+  double value;   // assign and scale: the new value
+  double delta;   // increase and decrease: what is added
+};
+
+// What the NUMERIC phase finds: the numeric effects, and the facts added (not deleted then)
+struct ApplyPlan
+{
+  std::vector<NumericUpdate> numeric;
+  std::vector<plansys2_msgs::msg::Node> adds;
+};
+
 std::tuple<bool, bool, double> evaluate_node(
   const plansys2_msgs::msg::Tree & tree,
   FactSource * source,
@@ -130,7 +152,9 @@ std::tuple<bool, bool, double> evaluate_node(
   bool use_state,
   uint32_t node_id,
   bool negate,
-  std::vector<FactChange> * changes)
+  std::vector<FactChange> * changes,
+  ApplyPhase phase = ApplyPhase::ALL,
+  ApplyPlan * plan = nullptr)
 {
   if (tree.nodes.empty()) {  // No expression
     return std::make_tuple(true, true, 0);
@@ -149,7 +173,7 @@ std::tuple<bool, bool, double> evaluate_node(
           std::tuple<bool, bool, double> result =
             evaluate_node(
             tree, source, predicates, functions, apply, use_state, child_id,
-            negate, changes);
+            negate, changes, phase, plan);
           success = success && std::get<0>(result);
           truth_value = all ? (truth_value && std::get<1>(result)) :
             (truth_value || std::get<1>(result));
@@ -161,7 +185,7 @@ std::tuple<bool, bool, double> evaluate_node(
         return evaluate_node(
           tree, source, predicates, functions, apply, use_state,
           tree.nodes[node_id].children[0],
-          !negate, changes);
+          !negate, changes, phase, plan);
       }
 
     case plansys2_msgs::msg::Node::PREDICATE: {
@@ -169,6 +193,19 @@ std::tuple<bool, bool, double> evaluate_node(
         bool value = true;
 
         if (apply) {
+          if (phase == ApplyPhase::NUMERIC && plan && !negate) {
+            plan->adds.push_back(tree.nodes[node_id]);
+          }
+          const bool also_added = phase == ApplyPhase::DELETES && negate && plan &&
+            std::any_of(
+            plan->adds.begin(), plan->adds.end(), [&](const plansys2_msgs::msg::Node & n) {
+              return parser::pddl::checkNodeEquality(n, tree.nodes[node_id], true);
+            });
+          if ((phase == ApplyPhase::NUMERIC) || (phase == ApplyPhase::DELETES && !negate) ||
+            (phase == ApplyPhase::ADDS && negate) || also_added)
+          {
+            return std::make_tuple(true, !negate, 0);  // Applied in another phase
+          }
           if (use_state) {
             auto it =
               std::find_if(
@@ -268,10 +305,12 @@ std::tuple<bool, bool, double> evaluate_node(
         // Numbers are not negated: only the comparison is
         std::tuple<bool, bool, double> left = evaluate_node(
           tree, source, predicates,
-          functions, apply, use_state, tree.nodes[node_id].children[0], false, changes);
+          functions, apply, use_state, tree.nodes[node_id].children[0], false, changes, phase,
+            plan);
         std::tuple<bool, bool, double> right = evaluate_node(
           tree, source, predicates,
-          functions, apply, use_state, tree.nodes[node_id].children[1], false, changes);
+          functions, apply, use_state, tree.nodes[node_id].children[1], false, changes, phase,
+            plan);
 
         if (!std::get<0>(left) || !std::get<0>(right)) {
           return std::make_tuple(false, false, 0);
@@ -356,17 +395,21 @@ std::tuple<bool, bool, double> evaluate_node(
       }
 
     case plansys2_msgs::msg::Node::FUNCTION_MODIFIER: {
+        if (apply && (phase == ApplyPhase::DELETES || phase == ApplyPhase::ADDS)) {
+          return std::make_tuple(true, false, 0);  // Written at the end
+        }
         if (tree.nodes[node_id].children.size() < 2) {
           // total-cost modifiers carry only the value: costs are not tracked here
           return std::make_tuple(true, true, 0);
         }
         std::tuple<bool, bool, double> left = evaluate_node(
           tree, source, predicates,
-          functions, apply, use_state, tree.nodes[node_id].children[0], false, changes);
+          functions, apply, use_state, tree.nodes[node_id].children[0], false, changes, phase,
+            plan);
         std::tuple<bool, bool, double> right = evaluate_node(
           tree, source,
           predicates, functions, apply, use_state, tree.nodes[node_id].children[1],
-          false, changes);
+          false, changes, phase, plan);
 
         if (!std::get<0>(left) || !std::get<0>(right)) {
           // (total-cost) is tracked only if the problem sets it
@@ -408,7 +451,18 @@ std::tuple<bool, bool, double> evaluate_node(
             break;
         }
 
-        if (success && apply) {
+        if (success && apply && phase != ApplyPhase::ALL) {
+          // Computed from the state before the action, written at the end
+          if (phase == ApplyPhase::NUMERIC && plan) {
+            NumericUpdate update;
+            update.function = tree.nodes[tree.nodes[node_id].children[0]];
+            update.modifier_type = tree.nodes[node_id].modifier_type;
+            update.before = std::get<2>(left);
+            update.value = value;
+            update.delta = value - std::get<2>(left);
+            plan->numeric.push_back(update);
+          }
+        } else if (success && apply) {
           uint32_t left_id = tree.nodes[node_id].children[0];
           if (use_state) {
             auto it =
@@ -524,7 +578,7 @@ std::tuple<bool, bool, double> evaluate_node(
             auto tree_replaced = plansys2::replace_children_param(tree, node_id, replace);
             auto result = evaluate_node(
               tree_replaced, source, predicates, functions, apply, use_state,
-              tree_replaced.nodes[node_id].children[0], negate, changes);
+              tree_replaced.nodes[node_id].children[0], negate, changes, phase, plan);
             success = success && std::get<0>(result);
           }
           return std::make_tuple(success, true, 0);
@@ -548,7 +602,7 @@ std::tuple<bool, bool, double> evaluate_node(
             false,
             use_state,
             tree_replaced.nodes[node_id].children[0],
-            negate, changes);
+            negate, changes, phase, plan);
           success = success && std::get<0>(result);
           if (need_all && !std::get<1>(result)) {
             return std::make_tuple(success, false, 0);
@@ -565,10 +619,10 @@ std::tuple<bool, bool, double> evaluate_node(
         // (imply a b) is (or (not a) b); under not, (and a (not b))
         std::tuple<bool, bool, double> left = evaluate_node(
           tree, source, predicates, functions, false, use_state,
-          tree.nodes[node_id].children[0], !negate, changes);
+          tree.nodes[node_id].children[0], !negate, changes, phase, plan);
         std::tuple<bool, bool, double> right = evaluate_node(
           tree, source, predicates, functions, false, use_state,
-          tree.nodes[node_id].children[1], negate, changes);
+          tree.nodes[node_id].children[1], negate, changes, phase, plan);
         const bool truth_value = negate ?
           (std::get<1>(left) && std::get<1>(right)) :
           (std::get<1>(left) || std::get<1>(right));
@@ -595,6 +649,95 @@ bool sound_tree(const plansys2_msgs::msg::Tree & tree, uint32_t node_id)
   return true;
 }
 
+// Applies the effects at once: see ApplyPhase
+std::tuple<bool, bool, double> apply_node(
+  const plansys2_msgs::msg::Tree & tree,
+  FactSource * source,
+  std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions,
+  bool use_state,
+  uint32_t node_id,
+  std::vector<FactChange> * changes,
+  bool negate = false)
+{
+  ApplyPlan plan;
+  auto computed = evaluate_node(
+    tree, source, predicates, functions, true, use_state, node_id, negate, changes,
+    ApplyPhase::NUMERIC, &plan);
+  if (!std::get<0>(computed)) {
+    return std::make_tuple(false, false, 0);
+  }
+  auto deleted = evaluate_node(
+    tree, source, predicates, functions, true, use_state, node_id, negate, changes,
+    ApplyPhase::DELETES, &plan);
+  auto added = evaluate_node(
+    tree, source, predicates, functions, true, use_state, node_id, negate, changes,
+    ApplyPhase::ADDS);
+  bool success = std::get<0>(deleted) && std::get<0>(added);
+
+  // Each function once: its assign or scale (the last one), plus what increases and decreases add
+  const auto & numeric = plan.numeric;
+  std::vector<bool> written(numeric.size(), false);
+  for (size_t i = 0; i < numeric.size(); i++) {
+    if (written[i]) {continue;}
+    double result = numeric[i].before;
+    double added_value = 0.0;
+    uint8_t modifier = plansys2_msgs::msg::Node::INCREASE;
+    for (size_t j = i; j < numeric.size(); j++) {
+      if (written[j] ||
+        !parser::pddl::checkNodeEquality(numeric[j].function, numeric[i].function, true))
+      {
+        continue;
+      }
+      written[j] = true;
+      const auto type = numeric[j].modifier_type;
+      if (type == plansys2_msgs::msg::Node::INCREASE ||
+        type == plansys2_msgs::msg::Node::DECREASE)
+      {
+        added_value += numeric[j].delta;
+      } else {
+        result = numeric[j].value;
+        modifier = type;
+      }
+    }
+    const double value = result + added_value;
+
+    if (use_state) {
+      auto it = std::find_if(
+        functions.begin(), functions.end(),
+        std::bind(
+          &parser::pddl::checkNodeEquality, std::placeholders::_1, numeric[i].function, true));
+      if (it != functions.end()) {
+        it->value = value;
+      } else {
+        success = false;
+      }
+      continue;
+    }
+
+    // Straight into a node, as fromStringFunction would build it: through text
+    // the value lost precision
+    plansys2::Function function;
+    function.node_type = plansys2_msgs::msg::Node::FUNCTION;
+    function.name = numeric[i].function.name;
+    function.parameters = numeric[i].function.parameters;
+    function.value = value;
+    const bool updated = source->update(function);
+    success = success && updated;
+    if (changes && updated && value != numeric[i].before) {
+      FactChange change;
+      change.fact = function;
+      change.value_before = numeric[i].before;
+      change.value_after = value;
+      change.modifier_type = modifier;
+      changes->push_back(change);
+    }
+  }
+  // What an application always gave: the truth of what it applied, and for a modifier the
+  // value it computed
+  return std::make_tuple(success, std::get<1>(added), std::get<2>(computed));
+}
+
 }  // namespace
 
 std::tuple<bool, bool, double> evaluate(
@@ -616,6 +759,11 @@ std::tuple<bool, bool, double> evaluate(
   }
 
   ClientSource source(problem_client);
+  if (apply) {
+    return apply_node(
+      tree, problem_client ? &source : nullptr, predicates, functions, use_state, node_id,
+      nullptr, negate);
+  }
   return evaluate_node(
     tree, problem_client ? &source : nullptr, predicates, functions, apply, use_state, node_id,
     negate, nullptr);
@@ -690,8 +838,7 @@ bool apply(
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   ClientSource source(problem_client);
-  auto ret = evaluate_node(
-    tree, &source, predicates, functions, true, false, node_id, false, &changes);
+  auto ret = apply_node(tree, &source, predicates, functions, false, node_id, &changes);
   return std::get<0>(ret);
 }
 
