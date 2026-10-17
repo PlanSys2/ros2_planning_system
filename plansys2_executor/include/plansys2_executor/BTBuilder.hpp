@@ -30,6 +30,9 @@
 namespace plansys2
 {
 
+class DomainExpertClient;
+class ProblemExpertClient;
+
 /**
  * @brief Enumeration of action types in a plan.
  *
@@ -147,6 +150,20 @@ public:
   virtual ~BTBuilder() = default;
 
   /**
+   * @brief Set the clients the builder uses, usually those of its executor.
+   *
+   * Without them the builder creates its own clients, two more nodes for each plan: built
+   * and destroyed in the execution thread, they could abort the process when that happens
+   * during a shutdown.
+   *
+   * @param[in] domain_client The domain expert client.
+   * @param[in] problem_client The problem expert client.
+   */
+  void set_clients(
+    std::shared_ptr<plansys2::DomainExpertClient> domain_client,
+    std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
+
+  /**
    * @brief Initialize the builder with behavior tree templates.
    *
    * @param[in] bt_action_1 XML template for regular actions, default empty.
@@ -256,6 +273,16 @@ public:
   {
     return action.expression + ":" + std::to_string(to_int_time(action.time, precision));
   }
+
+protected:
+  // The clients set, or our own ones, created the first time they are needed
+  std::shared_ptr<plansys2::DomainExpertClient> domain_client() const;
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client() const;
+
+private:
+  // Mutable: creating them when first used does not change what the builder is
+  mutable std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
+  mutable std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 };
 
 }  // namespace plansys2

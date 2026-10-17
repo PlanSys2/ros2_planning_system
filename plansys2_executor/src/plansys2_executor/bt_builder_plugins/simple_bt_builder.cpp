@@ -36,8 +36,6 @@ namespace plansys2
 
 SimpleBTBuilder::SimpleBTBuilder()
 {
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
 }
 
 void
@@ -76,9 +74,15 @@ SimpleBTBuilder::is_action_executable(
     return check(action.action.get_overall_requirements(), predicates, functions);
   }
 
-  return check(action.action.get_at_start_requirements(), predicates, functions) &&
-         check(action.action.get_at_end_requirements(), predicates, functions) &&
-         check(action.action.get_overall_requirements(), predicates, functions);
+  if (!check(action.action.get_at_start_requirements(), predicates, functions)) {
+    return false;
+  }
+  // Over all and at end requirements hold after the start: its effects may give them
+  auto started_predicates = predicates;
+  auto started_functions = functions;
+  apply(action.action.get_at_start_effects(), started_predicates, started_functions);
+  return check(action.action.get_overall_requirements(), started_predicates, started_functions) &&
+         check(action.action.get_at_end_requirements(), started_predicates, started_functions);
 }
 
 ActionNode::Ptr
@@ -340,8 +344,8 @@ SimpleBTBuilder::build_action_graph(const plansys2_msgs::msg::Plan & current_pla
   auto graph = ActionGraph::make_shared();
 
   auto action_sequence = get_plan_actions(current_plan);
-  auto predicates = problem_client_->getPredicates();
-  auto functions = problem_client_->getFunctions();
+  auto predicates = problem_client()->getPredicates();
+  auto functions = problem_client()->getFunctions();
 
   // Get root actions that can be run in parallel
   graph->roots = get_roots(action_sequence, predicates, functions, node_counter);
@@ -430,8 +434,8 @@ SimpleBTBuilder::build_action_graph(const plansys2_msgs::msg::Plan & current_pla
     // Compute the state up to the new node
     // The effects of the new node are not applied
     std::list<ActionNode::Ptr> used_nodes;
-    predicates = problem_client_->getPredicates();
-    functions = problem_client_->getFunctions();
+    predicates = problem_client()->getPredicates();
+    functions = problem_client()->getFunctions();
     get_state(new_node, used_nodes, predicates, functions);
     new_node->predicates = predicates;
     new_node->functions = functions;
@@ -439,6 +443,32 @@ SimpleBTBuilder::build_action_graph(const plansys2_msgs::msg::Plan & current_pla
     // Check any requirements that do not have satisfying nodes.
     // These should be satisfied by the initial state.
     remove_existing_requirements(requirements, predicates, functions);
+
+    // Over all and at end requirements may be given by the action's own at start effects
+    if (!requirements.empty() && !new_node->action.action.is_action()) {
+      auto started_predicates = predicates;
+      auto started_functions = functions;
+      apply(
+        new_node->action.action.get_at_start_effects(), started_predicates, started_functions);
+      std::set<std::string> after_start;
+      for (const auto & req : over_all_requirements) {
+        after_start.insert(parser::pddl::toString(req));
+      }
+      for (const auto & req : at_end_requirements) {
+        after_start.insert(parser::pddl::toString(req));
+      }
+      auto req_it = requirements.begin();
+      while (req_it != requirements.end()) {
+        if (after_start.count(parser::pddl::toString(*req_it)) > 0 &&
+          check(*req_it, started_predicates, started_functions))
+        {
+          req_it = requirements.erase(req_it);
+        } else {
+          ++req_it;
+        }
+      }
+    }
+
     for (const auto & req : requirements) {
       std::cerr << "[ERROR] requirement not met: [" <<
         parser::pddl::toString(req) << "]" << std::endl;
@@ -824,14 +854,14 @@ SimpleBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan)
 
     action_stamped.time = item.time;
     action_stamped.duration = item.duration;
-    auto actions = domain_client_->getActions();
+    auto actions = domain_client()->getActions();
     if (std::find(actions.begin(), actions.end(), get_action_name(item.action)) != actions.end()) {
       action_stamped.action =
-        domain_client_->getAction(
+        domain_client()->getAction(
         get_action_name(item.action), get_action_params(item.action));
     } else {
       action_stamped.action =
-        domain_client_->getDurativeAction(
+        domain_client()->getDurativeAction(
         get_action_name(item.action), get_action_params(item.action));
     }
 

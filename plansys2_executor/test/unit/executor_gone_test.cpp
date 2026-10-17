@@ -150,10 +150,13 @@ TEST_F(PerformerSupervisionTest, performer_stops_when_its_executor_is_gone)
   start(200);  // 10 s per action
   ASSERT_TRUE(performer_active());
 
-  // The executor vanishes without cancelling anything
+  // The executor vanishes without cancelling anything. Not destroyed while spinning: rclcpp
+  // with Fast DDS may then read a freed reader of it in the wait set
+  spinner_.reset();
   exe_.remove_node(executor_node_->get_node_base_interface());
   action_.reset();
   executor_node_.reset();
+  spinner_ = std::make_unique<ScopedSpinner>(exe_);
 
   ASSERT_TRUE(wait_until([this]() {return !performer_active();}, 8s));
   ASSERT_EQ(performer_->finished, 0);

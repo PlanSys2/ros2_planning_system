@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <atomic>
 #include <string>
 #include <vector>
 #include <regex>
@@ -1019,6 +1020,10 @@ TEST(executor, action_real_action_1)
   // Test CheckAtEndReq and ApplyAtEndEffect
     (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].at_start_effects_applied =
       false;
+    // The halted action was cancelled: a new tree gets a new executor, as a new plan does
+    (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].action_executor =
+      plansys2::ActionExecutor::make_shared(
+      "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
 
     ApplyAtStartEffectTest::test_status = BT::NodeStatus::IDLE;
 
@@ -1294,6 +1299,10 @@ TEST(executor, action_real_action_1_with_restore)
   // Test CheckAtEndReq and ApplyAtEndEffect
     (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].at_start_effects_applied =
       false;
+    // The halted action was cancelled: a new tree gets a new executor, as a new plan does
+    (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].action_executor =
+      plansys2::ActionExecutor::make_shared(
+      "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
 
     ApplyAtStartEffectTest::test_status = BT::NodeStatus::IDLE;
 
@@ -1558,6 +1567,10 @@ TEST(executor, action_real_action_2)
   // Test CheckAtEndReq and ApplyAtEndEffect
     (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].at_start_effects_applied =
       false;
+    // The halted action was cancelled: a new tree gets a new executor, as a new plan does
+    (*action_map)["(move r2d2 steering_wheels_zone assembly_zone):0"].action_executor =
+      plansys2::ActionExecutor::make_shared(
+      "(move r2d2 steering_wheels_zone assembly_zone)", test_lf_node);
 
     ApplyAtStartEffectTest::test_status = BT::NodeStatus::IDLE;
 
@@ -1580,7 +1593,8 @@ TEST(executor, action_real_action_2)
       problem_client->existPredicate(
         plansys2::Predicate(
           "(robot_at r2d2 assembly_zone)")));
-      ASSERT_FALSE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
+      // A non-durative action has no start effects: all of them come at the end
+      ASSERT_TRUE(problem_client->existPredicate(plansys2::Predicate("(robot_available r2d2)")));
 
       while (ExecuteActionTest::test_status != BT::NodeStatus::SUCCESS) {
         status = tree.tickOnce();
@@ -2669,10 +2683,21 @@ TEST(executor, executor_client_execute_plan_multi_replan)
         current_plan = *plan;
     });
 
-    bool finish = false;
+    std::atomic<bool> finish {false};
     std::thread t([&]() {
         while (!finish) {exe.spin_some();}
       });
+    // A failed ASSERT returns early: the thread must be joined anyway, or the test aborts
+    struct Joiner
+    {
+      std::atomic<bool> & finish;
+      std::thread & thread;
+      ~Joiner()
+      {
+        finish = true;
+        if (thread.joinable()) {thread.join();}
+      }
+    } joiner{finish, t};
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -2784,7 +2809,8 @@ TEST(executor, executor_client_execute_plan_multi_replan)
     auto result = executor_client->getResult().value();
 
     ASSERT_EQ(result.result, plansys2_msgs::action::ExecutePlan::Result::SUCCESS);
-    ASSERT_EQ(result.action_execution_status.size(), 6u);
+    // As many as in the last plan, which depends on how far the first one got
+    ASSERT_EQ(result.action_execution_status.size(), plan.value().items.size());
     for (const auto & action_status : result.action_execution_status) {
       ASSERT_EQ(action_status.status, plansys2_msgs::msg::ActionExecutionInfo::SUCCEEDED);
     }

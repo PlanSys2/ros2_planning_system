@@ -320,6 +320,9 @@ ComputeBT::computeBTCallback(
   } catch (pluginlib::PluginlibException & ex) {
     RCLCPP_ERROR(get_logger(), "pluginlib error: %s", ex.what());
   }
+  if (bt_builder) {
+    bt_builder->set_clients(domain_client_, problem_client_);
+  }
 
   if (bt_builder_plugin == "SimpleBTBuilder") {
     bt_builder->initialize(action_bt_xml_);

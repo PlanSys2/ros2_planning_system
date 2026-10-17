@@ -485,7 +485,8 @@ bool ProblemExpert::isGoalSatisfied(const plansys2::Goal & goal)
     std::cerr << "Malformed goal: " << error << std::endl;
     return false;
   }
-  return check(withSubTypes(goal), predicates_, functions_);
+  // As the clients see it: derived predicates, and quantifiers over all the instances
+  return check(withSubTypes(goal), *this);
 }
 
 bool

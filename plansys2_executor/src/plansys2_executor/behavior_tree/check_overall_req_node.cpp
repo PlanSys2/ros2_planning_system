@@ -54,7 +54,7 @@ CheckOverAllReq::tick()
   auto reqs = (*action_map_)[action].action_info.get_overall_requirements();
   last_check_problem_ts_ = node->now();
 
-  if (!check(reqs, problem_client_)) {
+  if (!check_in_expert(reqs, problem_client_)) {
     (*action_map_)[action].execution_error_info = "Error checking over all requirements";
 
     RCLCPP_ERROR_STREAM(

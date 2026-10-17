@@ -43,42 +43,73 @@ WaitAtStartReq::tick()
   std::string action;
   getInput("action", action);
 
-  if (action_map_ != nullptr && (*action_map_)[action].action_executor != nullptr &&
-    (*action_map_)[action].action_executor->get_internal_status() == ActionExecutor::RUNNING)
+  auto & info = (*action_map_)[action];
+  if (info.action_executor != nullptr &&
+    info.action_executor->get_internal_status() == ActionExecutor::RUNNING)
   {
     return BT::NodeStatus::SUCCESS;
   }
 
   auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
-
-  auto reqs_as = (*action_map_)[action].action_info.get_at_start_requirements();
-  auto reqs_oa = (*action_map_)[action].action_info.get_overall_requirements();
-
-  bool check_as = check(reqs_as, problem_client_);
-  if (!check_as) {
-    (*action_map_)[action].execution_error_info = "Error checking at start reqs";
-
-    RCLCPP_ERROR_STREAM(
-      node->get_logger(),
-      "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-        parser::pddl::toString(reqs_as));
-
-    return BT::NodeStatus::RUNNING;
+  auto now = node->now();
+  if (status() != BT::NodeStatus::RUNNING) {
+    waiting_since_ = now;
+    last_log_ = rclcpp::Time(0, 0, now.get_clock_type());
   }
 
-  bool check_oa = check(reqs_oa, problem_client_);
-  if (!check_oa) {
-    (*action_map_)[action].execution_error_info = "Error checking over all reqs";
+  auto reqs_as = info.action_info.get_at_start_requirements();
+  auto reqs_oa = info.action_info.get_overall_requirements();
 
-    RCLCPP_ERROR_STREAM(
-      node->get_logger(),
-      "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-        parser::pddl::toString(reqs_oa));
-
-    return BT::NodeStatus::RUNNING;
+  std::string unmet;
+  const plansys2_msgs::msg::Tree * reqs = nullptr;
+  if (!check_in_expert(reqs_as, problem_client_)) {
+    unmet = "at start";
+    reqs = &reqs_as;
+  } else if (!check_in_expert(reqs_oa, problem_client_) && !holds_after_start(info, reqs_oa)) {
+    unmet = "over all";
+    reqs = &reqs_oa;
+  } else {
+    return BT::NodeStatus::SUCCESS;
   }
 
-  return BT::NodeStatus::SUCCESS;
+  info.execution_error_info = "Error checking " + unmet + " reqs";
+
+  double timeout = 30.0;
+  if (node->has_parameter("at_start_requirements_timeout")) {
+    timeout = node->get_parameter("at_start_requirements_timeout").as_double();
+  }
+  const double waiting = (now - waiting_since_).seconds();
+  if (timeout > 0.0 && waiting > timeout) {
+    RCLCPP_ERROR_STREAM(
+      node->get_logger(),
+      "[" << action << "] Its " << unmet << " requirements did not hold in " << timeout <<
+        " s: " << parser::pddl::toString(*reqs));
+    return BT::NodeStatus::FAILURE;
+  }
+
+  // Waiting is normal for a while: not an error on every tick
+  if ((now - last_log_).seconds() >= 5.0) {
+    RCLCPP_WARN_STREAM(
+      node->get_logger(),
+      "[" << action << "] Waiting for its " << unmet << " requirements: " <<
+        parser::pddl::toString(*reqs));
+    last_log_ = now;
+  }
+  return BT::NodeStatus::RUNNING;
+}
+
+bool
+WaitAtStartReq::holds_after_start(
+  const ActionExecutionInfo & info, const plansys2_msgs::msg::Tree & reqs_oa)
+{
+  // Over all requirements hold once the action started: its at start effects may give them
+  if (info.action_info.is_action()) {
+    return false;
+  }
+  auto predicates = problem_client_->getPredicates();
+  auto functions = problem_client_->getFunctions();
+  apply(info.action_info.get_at_start_effects(), predicates, functions);
+  return check(reqs_oa, predicates, functions);
 }
 
 }  // namespace plansys2

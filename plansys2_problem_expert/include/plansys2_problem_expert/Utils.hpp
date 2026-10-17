@@ -32,6 +32,8 @@
 namespace plansys2
 {
 
+class ProblemExpert;
+
 /**
  * @brief Evaluate a PDDL expression represented as a tree.
  *
@@ -103,6 +105,36 @@ std::tuple<bool, bool, double> evaluate(
 bool check(
   const plansys2_msgs::msg::Tree & tree,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
+  uint32_t node_id = 0);
+
+/**
+ * @brief Check a PDDL expression in the problem expert with a single call.
+ *
+ * Same result as check() with the client, which makes one call per predicate, function and
+ * quantified object.
+ *
+ * @param[in] tree The root node of the PDDL expression.
+ * @param[in] problem_client The problem expert client.
+ * @return bool Truth value of the PDDL expression; false without an answer.
+ */
+bool check_in_expert(
+  const plansys2_msgs::msg::Tree & tree,
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client);
+
+/**
+ * @brief Check a PDDL expression in a problem expert, as its clients would.
+ *
+ * Unlike checking its predicates and functions as a local state, derived predicates are
+ * evaluated and quantifiers range over all the instances, also those without facts.
+ *
+ * @param[in] tree The root node of the PDDL expression.
+ * @param[in] expert The problem expert.
+ * @param[in] node_id Node identifier in the tree (default: 0).
+ * @return bool Truth value of the PDDL expression.
+ */
+bool check(
+  const plansys2_msgs::msg::Tree & tree,
+  plansys2::ProblemExpert & expert,
   uint32_t node_id = 0);
 
 /**

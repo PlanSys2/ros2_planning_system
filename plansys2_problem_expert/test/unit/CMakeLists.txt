@@ -9,6 +9,12 @@ target_link_libraries(client_no_answer_test
   ${PROJECT_NAME}
 )
 
+ament_add_gtest(check_in_expert_test check_in_expert_test.cpp)
+target_link_libraries(check_in_expert_test
+  ${PROJECT_NAME}
+  ament_index_cpp::ament_index_cpp
+)
+
 ament_add_gtest(effect_undo_test effect_undo_test.cpp)
 target_link_libraries(effect_undo_test
   ${PROJECT_NAME}

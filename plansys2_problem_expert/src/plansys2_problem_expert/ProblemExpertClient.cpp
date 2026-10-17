@@ -110,6 +110,8 @@ ProblemExpertClient::ProblemExpertClient()
     });
 
   problem_ts_ = node_->now();
+  // Same clock as the times it is compared with
+  update_time_ = node_->now();
 }
 
 template<typename ServiceT>

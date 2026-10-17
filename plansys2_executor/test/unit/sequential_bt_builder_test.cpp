@@ -166,6 +166,7 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
   <BehaviorTree ID="MainTree">
     <Sequence name="MainSequence">
       <Sequence name="(start_robot bluerov):0">
+        <WaitAtStartReq action="(start_robot bluerov):0"/>
         <ApplyAtStartEffect action="(start_robot bluerov):0"/>
         <ReactiveSequence name="(start_robot bluerov):0">
             <CheckOverAllReq action="(start_robot bluerov):0"/>
@@ -176,6 +177,7 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
       </Sequence>
       <Sequence name="(reconfigure1 f_maintain_motion fd_all_thrusters):0">
         <WaitAction action="(start_robot bluerov):0"/>
+        <WaitAtStartReq action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
         <ApplyAtStartEffect action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
         <ReactiveSequence name="(reconfigure1 f_maintain_motion fd_all_thrusters):0">
             <CheckOverAllReq action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
@@ -185,8 +187,8 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
         <ApplyAtEndEffect action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
       </Sequence>
       <Sequence name="(reconfigure1 f_generate_search_path fd_spiral_high):0">
-        <WaitAction action="(start_robot bluerov):0"/>
         <WaitAction action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
+        <WaitAtStartReq action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
         <ApplyAtStartEffect action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
         <ReactiveSequence name="(reconfigure1 f_generate_search_path fd_spiral_high):0">
             <CheckOverAllReq action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
@@ -196,9 +198,8 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
         <ApplyAtEndEffect action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
       </Sequence>
       <Sequence name="(search_pipeline pipeline bluerov):0">
-        <WaitAction action="(start_robot bluerov):0"/>
-        <WaitAction action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
         <WaitAction action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
+        <WaitAtStartReq action="(search_pipeline pipeline bluerov):0"/>
         <ApplyAtStartEffect action="(search_pipeline pipeline bluerov):0"/>
         <ReactiveSequence name="(search_pipeline pipeline bluerov):0">
             <CheckOverAllReq action="(search_pipeline pipeline bluerov):0"/>
@@ -208,10 +209,8 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
         <ApplyAtEndEffect action="(search_pipeline pipeline bluerov):0"/>
       </Sequence>
       <Sequence name="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0">
-        <WaitAction action="(start_robot bluerov):0"/>
-        <WaitAction action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
-        <WaitAction action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
         <WaitAction action="(search_pipeline pipeline bluerov):0"/>
+        <WaitAtStartReq action="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"/>
         <ApplyAtStartEffect action="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"/>
         <ReactiveSequence name="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0">
             <CheckOverAllReq action="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"/>
@@ -221,11 +220,8 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
         <ApplyAtEndEffect action="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"/>
       </Sequence>
       <Sequence name="(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0">
-        <WaitAction action="(start_robot bluerov):0"/>
-        <WaitAction action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
-        <WaitAction action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
-        <WaitAction action="(search_pipeline pipeline bluerov):0"/>
         <WaitAction action="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"/>
+        <WaitAtStartReq action="(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"/>
         <ApplyAtStartEffect action="(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"/>
         <ReactiveSequence name="(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0">
             <CheckOverAllReq action="(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"/>
@@ -235,12 +231,8 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
         <ApplyAtEndEffect action="(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"/>
       </Sequence>
       <Sequence name="(inspect_pipeline pipeline bluerov):0">
-        <WaitAction action="(start_robot bluerov):0"/>
-        <WaitAction action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
-        <WaitAction action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
-        <WaitAction action="(search_pipeline pipeline bluerov):0"/>
-        <WaitAction action="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"/>
         <WaitAction action="(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"/>
+        <WaitAtStartReq action="(inspect_pipeline pipeline bluerov):0"/>
         <ApplyAtStartEffect action="(inspect_pipeline pipeline bluerov):0"/>
         <ReactiveSequence name="(inspect_pipeline pipeline bluerov):0">
             <CheckOverAllReq action="(inspect_pipeline pipeline bluerov):0"/>
@@ -260,6 +252,43 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
     t.join();
 }
   plansys2::drain_ros(200ms);
+}
+
+TEST(sequential_btbuilder_tests, dotgraph_is_the_plan_in_order)
+{
+  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("sequential_dotgraph");
+  auto btbuilder = std::make_shared<SequentialBTBuilderTest>();
+
+  plansys2_msgs::msg::Plan plan;
+  for (const auto & action : {"(move r a b)", "(move r b c)", "(move r c d)"}) {
+    plansys2_msgs::msg::PlanItem item;
+    item.action = action;
+    item.time = plan.items.size() * 5.0;
+    plan.items.push_back(item);
+  }
+  btbuilder->get_tree(plan);
+
+  // The first one ended, the second one runs, the third one waits
+  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
+  (*action_map)["(move r a b):0"].action_executor =
+    plansys2::ActionExecutor::make_shared("(move r a b)", node);
+  (*action_map)["(move r a b):0"].action_executor->set_internal_status(
+    plansys2::ActionExecutor::SUCCESS);
+  (*action_map)["(move r b c):5000"].action_executor =
+    plansys2::ActionExecutor::make_shared("(move r b c)", node);
+  (*action_map)["(move r b c):5000"].action_executor->set_internal_status(
+    plansys2::ActionExecutor::RUNNING);
+
+  auto dot = btbuilder->get_dotgraph(action_map);
+  EXPECT_NE(dot.find("0 [label=\"(move r a b)\",labeljust=c,style=filled,color=green4"),
+    std::string::npos) << dot;
+  EXPECT_NE(dot.find("1 [label=\"(move r b c)\",labeljust=c,style=filled,color=blue"),
+    std::string::npos) << dot;
+  EXPECT_NE(dot.find("2 [label=\"(move r c d)\",labeljust=c,style=filled,color=yellow3"),
+    std::string::npos) << dot;
+  EXPECT_NE(dot.find("0->1;"), std::string::npos) << dot;
+  EXPECT_NE(dot.find("1->2;"), std::string::npos) << dot;
+  EXPECT_EQ(dot.find("0->2;"), std::string::npos) << dot;
 }
 
 int main(int argc, char ** argv)

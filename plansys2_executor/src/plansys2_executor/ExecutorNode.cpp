@@ -79,6 +79,9 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
   // A plan that fails, is cancelled or is replaced takes back the at start effects of the
   // actions that started and did not end
   this->declare_parameter<bool>("restore_at_start_effects", true);
+  // An action whose at start requirements do not hold this long fails, instead of waiting for
+  // ever (0: no limit)
+  this->declare_parameter<double>("at_start_requirements_timeout", 30.0);
   this->declare_parameter("action_timeouts.actions", std::vector<std::string>{});
   // Declaring individual action parameters so they can be queried on the command line
   auto action_timeouts_actions = this->get_parameter("action_timeouts.actions").as_string_array();
@@ -461,6 +464,8 @@ ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
     RCLCPP_ERROR(get_logger(), "pluginlib error: %s", ex.what());
     return false;
   }
+  // Our clients: otherwise each plan would create, and later destroy, two more nodes
+  bt_builder->set_clients(domain_client_, problem_client_);
 
   if (bt_builder_plugin == "STNBTBuilder") {
     // Start and end of each action are separate BT units
@@ -608,6 +613,17 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
   }
 
   std::map<std::string, ActionExecutionInfo> previous_action_map = *runtime_info.action_map;
+
+  // The actions that go on are taken out of the old tree: when it is destroyed, it halts its
+  // nodes, and that would cancel them
+  for (auto & [action_id, info] : *runtime_info.action_map) {
+    if (info.action_executor &&
+      info.action_executor->get_internal_status() == ActionExecutor::RUNNING &&
+      new_ids.count(action_id.substr(0, action_id.find(':')) + ":0") > 0)
+    {
+      info.action_executor = nullptr;
+    }
+  }
 
   bool plan_success = false;
   try {
