@@ -18,8 +18,6 @@
 
 from __future__ import annotations
 
-from rclpy.qos import QoSDurabilityPolicy, QoSProfile, QoSReliabilityPolicy
-
 from plansys2_msgs.msg import (
     ActionExecution,
     ActionExecutionInfo,
@@ -27,6 +25,8 @@ from plansys2_msgs.msg import (
     Knowledge,
     Plan,
 )
+from rclpy.qos import QoSDurabilityPolicy, QoSProfile, QoSReliabilityPolicy
+from rich.markup import escape
 
 # ---------------------------------------------------------------------------
 # QoS profiles
@@ -95,6 +95,11 @@ def _fmt_args(args) -> str:
     return ' '.join(args) if args else ''
 
 
+# Text from ROS is shown as it is: "[move]" or "[/x]" in it are not markup
+def _e(text) -> str:
+    return escape(str(text))
+
+
 # ---------------------------------------------------------------------------
 # ActionExecutionProcessor
 # Performer-centric view: subscribes to both performers_status and
@@ -142,7 +147,7 @@ class ActionExecutionProcessor:
             color = _PERFORMER_STATE_COLOR.get(perf.state, 'white')
             state_label = _PERFORMER_STATE_LABEL.get(perf.state, str(perf.state))
             lines.append(
-                f'[bold]{node_name}[/bold]  [{color}]{state_label}[/{color}]'
+                f'[bold]{_e(node_name)}[/bold]  [{color}]{state_label}[/{color}]'
             )
             if perf.state == ActionPerformerStatus.RUNNING:
                 # find matching active action by node_id == node_name
@@ -152,7 +157,7 @@ class ActionExecutionProcessor:
                     type_color = _ACTION_TYPE_COLOR.get(exec_msg.type, 'white')
                     args_str = _fmt_args(exec_msg.arguments)
                     action_str = f'{exec_msg.action} {args_str}'.strip()
-                    lines.append(f'  action : [white]{action_str}[/white]')
+                    lines.append(f'  action : [white]{_e(action_str)}[/white]')
                     lines.append(
                         f'  type   : [{type_color}]{type_label}[/{type_color}]'
                     )
@@ -163,7 +168,7 @@ class ActionExecutionProcessor:
                         bar = '█' * filled + '░' * (bar_len - filled)
                         lines.append(f'  [{bar}] {pct}%')
                         if exec_msg.status:
-                            lines.append(f'  [dim]{exec_msg.status}[/dim]')
+                            lines.append(f'  [dim]{_e(exec_msg.status)}[/dim]')
                     elif exec_msg.type == ActionExecution.RESPONSE:
                         ok = '[green]OK[/green]' if exec_msg.success else '[red]FAIL[/red]'
                         lines.append(f'  result : {ok}')
@@ -204,10 +209,10 @@ class PerformersProcessor:
             args_str = _fmt_args(msg.specialized_arguments)
             action_str = f'{msg.action} {args_str}'.strip() if msg.action else '—'
             lines.append(
-                f'[bold]{node_name}[/bold]  '
+                f'[bold]{_e(node_name)}[/bold]  '
                 f'[{color}]{state_label}[/{color}]'
             )
-            lines.append(f'  action : {action_str}')
+            lines.append(f'  action : {_e(action_str)}')
             lines.append('')
         return '\n'.join(lines).rstrip()
 
@@ -278,12 +283,12 @@ class PlanMonitorProcessor:
                 lines.append(
                     f'[{color}]{status_label:12}[/{color}] '
                     f'[{bar}] {pct:3d}%  '
-                    f'[bold]{action_str}[/bold]'
+                    f'[bold]{_e(action_str)}[/bold]'
                 )
             else:
                 empty_bar = '░' * bar_len
                 lines.append(
-                    f'[dim]PENDING       [{empty_bar}]   0%  {action_str}[/dim]'
+                    f'[dim]PENDING       [{empty_bar}]   0%  {_e(action_str)}[/dim]'
                 )
         return '\n'.join(lines)
 
@@ -318,7 +323,7 @@ class KnowledgeProcessor:
         lines.append('[bold underline]Instances[/bold underline]')
         if msg.instances:
             for inst in msg.instances:
-                lines.append(f'  [cyan]{inst}[/cyan]')
+                lines.append(f'  [cyan]{_e(inst)}[/cyan]')
         else:
             lines.append('  [dim](none)[/dim]')
         lines.append('')
@@ -327,7 +332,7 @@ class KnowledgeProcessor:
         lines.append('[bold underline]Predicates[/bold underline]')
         if msg.predicates:
             for pred in msg.predicates:
-                lines.append(f'  [green]{pred}[/green]')
+                lines.append(f'  [green]{_e(pred)}[/green]')
         else:
             lines.append('  [dim](none)[/dim]')
         lines.append('')
@@ -336,7 +341,7 @@ class KnowledgeProcessor:
         lines.append('[bold underline]Functions[/bold underline]')
         if msg.functions:
             for func in msg.functions:
-                lines.append(f'  [yellow]{func}[/yellow]')
+                lines.append(f'  [yellow]{_e(func)}[/yellow]')
         else:
             lines.append('  [dim](none)[/dim]')
         lines.append('')
@@ -345,7 +350,7 @@ class KnowledgeProcessor:
         lines.append('[bold underline]Goal[/bold underline]')
         goal_text = msg.goal.strip() if msg.goal else ''
         if goal_text:
-            lines.append(f'  [magenta]{goal_text}[/magenta]')
+            lines.append(f'  [magenta]{_e(goal_text)}[/magenta]')
         else:
             lines.append('  [dim](none)[/dim]')
 
@@ -354,6 +359,6 @@ class KnowledgeProcessor:
         if metric_text:
             lines.append('')
             lines.append('[bold underline]Metric[/bold underline]')
-            lines.append(f'  [blue]{metric_text}[/blue]')
+            lines.append(f'  [blue]{_e(metric_text)}[/blue]')
 
         return '\n'.join(lines)

@@ -64,7 +64,7 @@ class KnowledgeVerb(VerbExtension):
 
         with NodeStrategy(args) as node:
             try:
-                _sub = KnowledgeProcessor(node, self._callback)
+                self._sub = KnowledgeProcessor(node, self._callback)
 
                 t_end = time.time() + args.duration
                 while time.time() < t_end:

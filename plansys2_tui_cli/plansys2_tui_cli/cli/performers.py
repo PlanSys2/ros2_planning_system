@@ -54,7 +54,7 @@ class PerformersVerb(VerbExtension):
     def main(self, *, args):
         with NodeStrategy(args) as node:
             try:
-                _sub = PerformersProcessor(node, self._callback)
+                self._sub = PerformersProcessor(node, self._callback)
 
                 t_end = time.time() + args.duration
                 while time.time() < t_end:

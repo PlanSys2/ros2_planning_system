@@ -22,7 +22,7 @@ setup(
     maintainer='Francisco Martín Rico',
     maintainer_email='fmrico@gmail.com',
     description='PlanSys2 TUI (Textual) and ros2cli tools.',
-    license='Apache-2.0',
+    license='Apache-2.0 AND MIT',  # MIT: the Textual in vendor/
     extras_require={
         'test': [
             'pytest',

@@ -54,7 +54,7 @@ class ExecutionMonitorVerb(VerbExtension):
     def main(self, *, args):
         with NodeStrategy(args) as node:
             try:
-                _sub = ActionExecutionProcessor(node, self._callback)
+                self._sub = ActionExecutionProcessor(node, self._callback)
 
                 t_end = time.time() + args.duration
                 while time.time() < t_end:

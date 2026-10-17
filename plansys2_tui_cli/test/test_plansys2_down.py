@@ -14,6 +14,7 @@
 
 """The TUI shows when PlanSys2 is down and closes cleanly (#446)."""
 
+import threading
 import unittest
 from unittest.mock import MagicMock
 
@@ -30,6 +31,8 @@ def bare_app():
     app._box_plan = MagicMock()
     app._box_know = MagicMock()
     app.node = MagicMock()
+    app._pending = {}
+    app._pending_lock = threading.Lock()
     return app
 
 
@@ -65,9 +68,12 @@ class TestPlanSys2Down(unittest.TestCase):
         app._box_plan.update.assert_called_with('plan')
 
     def test_messages_after_closing_are_dropped(self):
+        # They only leave their text: nothing calls into the closed app
         app = bare_app()
         app.call_from_thread = MagicMock(side_effect=RuntimeError('App is not running'))
-        app._update_from_ros(app._box_plan.update, 'late message')
+        app._update_from_ros(app._box_plan, 'late message')
+        app.call_from_thread.assert_not_called()
+        app._box_plan.update.assert_not_called()
 
 
 if __name__ == '__main__':

@@ -8,6 +8,8 @@
   <maintainer email="fmrico@gmail.com">Francisco Martín Rico</maintainer>
 
   <license>Apache-2.0</license>
+  <!-- Textual, shipped in plansys2_tui_cli/vendor -->
+  <license file="plansys2_tui_cli/vendor/textual/LICENSE">MIT</license>
 
   <author>Francisco Martín Rico</author>
 
@@ -17,6 +19,9 @@
   <exec_depend>ros2cli</exec_depend>
   <exec_depend>python3-rich</exec_depend>
   <exec_depend>python3-platformdirs</exec_depend>
+  <!-- Needed by Textual -->
+  <exec_depend>python3-pygments</exec_depend>
+  <exec_depend>python3-typing-extensions</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
