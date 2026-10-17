@@ -152,23 +152,31 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 </div>
 <div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
 <div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  std::shared_ptr&lt;std::map&lt;std::string, ActionExecutionInfo&gt;&gt; action_map_;</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  std::shared_ptr&lt;plansys2::ProblemExpertClient&gt; problem_client_;</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>};</div>
-</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  <span class="comment">// Whether the over all requirements hold in the state after the at start effects</span></div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  <span class="keywordtype">bool</span> holds_after_start(</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    <span class="keyword">const</span> <a class="code hl_struct" href="structplansys2_1_1ActionExecutionInfo.html">ActionExecutionInfo</a> &amp; info, <span class="keyword">const</span> <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp; reqs_oa);</div>
 <div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span> </div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>}  <span class="comment">// namespace plansys2</span></div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_EXECUTOR__BEHAVIOR_TREE__WAIT_ATSTART_REQ_NODE_HPP_</span></div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  std::shared_ptr&lt;std::map&lt;std::string, ActionExecutionInfo&gt;&gt; action_map_;</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  std::shared_ptr&lt;plansys2::ProblemExpertClient&gt; problem_client_;</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  rclcpp::Time waiting_since_;</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  rclcpp::Time last_log_;</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>};</div>
+</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>}  <span class="comment">// namespace plansys2</span></div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_EXECUTOR__BEHAVIOR_TREE__WAIT_ATSTART_REQ_NODE_HPP_</span></div>
 <div class="ttc" id="aActionExecutor_8hpp_html"><div class="ttname"><a href="ActionExecutor_8hpp.html">ActionExecutor.hpp</a></div></div>
 <div class="ttc" id="aProblemExpertClient_8hpp_html"><div class="ttname"><a href="ProblemExpertClient_8hpp.html">ProblemExpertClient.hpp</a></div></div>
 <div class="ttc" id="aclassplansys2_1_1WaitAtStartReq_html_a7f47971e66e96c75260a71c88be76af2"><div class="ttname"><a href="classplansys2_1_1WaitAtStartReq.html#a7f47971e66e96c75260a71c88be76af2">plansys2::WaitAtStartReq::WaitAtStartReq</a></div><div class="ttdeci">WaitAtStartReq(const std::string &amp;xml_tag_name, const BT::NodeConfig &amp;conf)</div><div class="ttdoc">Constructor for the WaitAtStartReq node.</div><div class="ttdef"><b>Definition</b> wait_atstart_req_node.cpp:26</div></div>
 <div class="ttc" id="aclassplansys2_1_1WaitAtStartReq_html_ad1ad196c7c6fc6353381e3e557e43c20"><div class="ttname"><a href="classplansys2_1_1WaitAtStartReq.html#ad1ad196c7c6fc6353381e3e557e43c20">plansys2::WaitAtStartReq::tick</a></div><div class="ttdeci">BT::NodeStatus tick() override</div><div class="ttdoc">Main execution method for the BT node.</div><div class="ttdef"><b>Definition</b> wait_atstart_req_node.cpp:41</div></div>
 <div class="ttc" id="aclassplansys2_1_1WaitAtStartReq_html_ade0430439247877006d7df950f94918a"><div class="ttname"><a href="classplansys2_1_1WaitAtStartReq.html#ade0430439247877006d7df950f94918a">plansys2::WaitAtStartReq::halt</a></div><div class="ttdeci">void halt()</div><div class="ttdoc">Halt method (required by the BT framework).</div><div class="ttdef"><b>Definition</b> wait_atstart_req_node.hpp:51</div></div>
 <div class="ttc" id="aclassplansys2_1_1WaitAtStartReq_html_ae08882e38fd72d3d471a49825f95adbb"><div class="ttname"><a href="classplansys2_1_1WaitAtStartReq.html#ae08882e38fd72d3d471a49825f95adbb">plansys2::WaitAtStartReq::providedPorts</a></div><div class="ttdeci">static BT::PortsList providedPorts()</div><div class="ttdoc">Creates list of BT ports.</div><div class="ttdef"><b>Definition</b> wait_atstart_req_node.hpp:64</div></div>
+<div class="ttc" id="aclassplansys2__msgs_1_1msg_1_1Tree_html"><div class="ttname"><a href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a></div></div>
 <div class="ttc" id="aexecute__action__node_8hpp_html"><div class="ttname"><a href="execute__action__node_8hpp.html">execute_action_node.hpp</a></div></div>
 <div class="ttc" id="anamespaceplansys2_html"><div class="ttname"><a href="namespaceplansys2.html">plansys2</a></div><div class="ttdef"><b>Definition</b> BTAction.hpp:33</div></div>
 <div class="ttc" id="aplansys2__problem__expert_2include_2plansys2__problem__expert_2Utils_8hpp_html"><div class="ttname"><a href="plansys2__problem__expert_2include_2plansys2__problem__expert_2Utils_8hpp.html">Utils.hpp</a></div></div>
+<div class="ttc" id="astructplansys2_1_1ActionExecutionInfo_html"><div class="ttname"><a href="structplansys2_1_1ActionExecutionInfo.html">plansys2::ActionExecutionInfo</a></div><div class="ttdoc">Structure that holds execution information for an action.</div><div class="ttdef"><b>Definition</b> ActionExecutor.hpp:315</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

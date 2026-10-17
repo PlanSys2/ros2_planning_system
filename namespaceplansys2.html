@@ -257,10 +257,14 @@ Functions</h2></td></tr>
 <tr class="memdesc:aa56499be025cb779ecafe600974c3d57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Call a service spinning node until the response arrives.  <br /></td></tr>
 <tr class="memitem:a6930e08203498bd3ced55ddae4ca75c9" id="r_a6930e08203498bd3ced55ddae4ca75c9"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a6930e08203498bd3ced55ddae4ca75c9">cart_product</a> (std::vector&lt; std::vector&lt; std::string &gt; &gt; &amp;rvvi, std::vector&lt; std::string &gt; &amp;rvi, std::vector&lt; std::vector&lt; std::string &gt; &gt;::const_iterator me, std::vector&lt; std::vector&lt; std::string &gt; &gt;::const_iterator end)</td></tr>
 <tr class="memdesc:a6930e08203498bd3ced55ddae4ca75c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the Cartesian product of vectors of strings.  <br /></td></tr>
+<tr class="memitem:a23034216da78ed1a264c778ac9653fcd" id="r_a23034216da78ed1a264c778ac9653fcd"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a23034216da78ed1a264c778ac9653fcd">check</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, <a class="el" href="classplansys2_1_1ProblemExpert.html">plansys2::ProblemExpert</a> &amp;expert, uint32_t node_id=0)</td></tr>
+<tr class="memdesc:a23034216da78ed1a264c778ac9653fcd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check a PDDL expression in a problem expert, as its clients would.  <br /></td></tr>
 <tr class="memitem:a2ac7782fa865d3e78d6a46dd99505b76" id="r_a2ac7782fa865d3e78d6a46dd99505b76"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a2ac7782fa865d3e78d6a46dd99505b76">check</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt; problem_client, uint32_t node_id=0)</td></tr>
 <tr class="memdesc:a2ac7782fa865d3e78d6a46dd99505b76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check a PDDL expression represented as a tree.  <br /></td></tr>
 <tr class="memitem:af8e6d4215dbba3a006f04d0b37bcfbed" id="r_af8e6d4215dbba3a006f04d0b37bcfbed"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#af8e6d4215dbba3a006f04d0b37bcfbed">check</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt; &amp;predicates, std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt; &amp;functions, uint32_t node_id=0)</td></tr>
 <tr class="memdesc:af8e6d4215dbba3a006f04d0b37bcfbed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check a PDDL expression represented as a tree using local state.  <br /></td></tr>
+<tr class="memitem:a812072ba5d7a456fea3aa6b639deece3" id="r_a812072ba5d7a456fea3aa6b639deece3"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a812072ba5d7a456fea3aa6b639deece3">check_in_expert</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt; problem_client)</td></tr>
+<tr class="memdesc:a812072ba5d7a456fea3aa6b639deece3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check a PDDL expression in the problem expert with a single call.  <br /></td></tr>
 <tr class="memitem:a99c87b1b4cd092c28797a7768a43181f" id="r_a99c87b1b4cd092c28797a7768a43181f"><td class="memTemplParams" colspan="2">template&lt;class toT, class fromT&gt; </td></tr>
 <tr class="memitem:a99c87b1b4cd092c28797a7768a43181f template"><td class="memItemLeft">std::vector&lt; toT &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a99c87b1b4cd092c28797a7768a43181f">convertUnorderedSetToVector</a> (const std::unordered_set&lt; fromT &gt; &amp;in_unordered_set)</td></tr>
 <tr class="memitem:ae04a364e2f01f7717195b0aef933a8b9" id="r_ae04a364e2f01f7717195b0aef933a8b9"><td class="memTemplParams" colspan="2">template&lt;class toT, class fromT&gt; </td></tr>
@@ -632,8 +636,46 @@ template&lt;typename ServiceT&gt; </div>
 
 </div>
 </div>
+<a id="a23034216da78ed1a264c778ac9653fcd" name="a23034216da78ed1a264c778ac9653fcd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a23034216da78ed1a264c778ac9653fcd">&#9670;&#160;</a></span>check() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> check </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>tree</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classplansys2_1_1ProblemExpert.html">plansys2::ProblemExpert</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>expert</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>node_id</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check a PDDL expression in a problem expert, as its clients would. </p>
+<p>Unlike checking its predicates and functions as a local state, derived predicates are evaluated and quantifiers range over all the instances, also those without facts.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">tree</td><td>The root node of the PDDL expression. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">expert</td><td>The problem expert. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">node_id</td><td><a class="el" href="structplansys2_1_1Node.html" title="Node in the temporal planning graph.">Node</a> identifier in the tree (default: 0). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>bool Truth value of the PDDL expression. </dd></dl>
+
+</div>
+</div>
 <a id="a2ac7782fa865d3e78d6a46dd99505b76" name="a2ac7782fa865d3e78d6a46dd99505b76"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2ac7782fa865d3e78d6a46dd99505b76">&#9670;&#160;</a></span>check() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ac7782fa865d3e78d6a46dd99505b76">&#9670;&#160;</a></span>check() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -671,7 +713,7 @@ template&lt;typename ServiceT&gt; </div>
 </div>
 </div>
 <a id="af8e6d4215dbba3a006f04d0b37bcfbed" name="af8e6d4215dbba3a006f04d0b37bcfbed"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af8e6d4215dbba3a006f04d0b37bcfbed">&#9670;&#160;</a></span>check() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#af8e6d4215dbba3a006f04d0b37bcfbed">&#9670;&#160;</a></span>check() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -710,6 +752,38 @@ template&lt;typename ServiceT&gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>bool Truth value of the PDDL expression. </dd></dl>
+
+</div>
+</div>
+<a id="a812072ba5d7a456fea3aa6b639deece3" name="a812072ba5d7a456fea3aa6b639deece3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a812072ba5d7a456fea3aa6b639deece3">&#9670;&#160;</a></span>check_in_expert()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> check_in_expert </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>tree</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>problem_client</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check a PDDL expression in the problem expert with a single call. </p>
+<p>Same result as <a class="el" href="#a2ac7782fa865d3e78d6a46dd99505b76" title="Check a PDDL expression represented as a tree.">check()</a> with the client, which makes one call per predicate, function and quantified object.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">tree</td><td>The root node of the PDDL expression. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">problem_client</td><td>The problem expert client. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>bool Truth value of the PDDL expression; false without an answer. </dd></dl>
 
 </div>
 </div>
@@ -1693,7 +1767,7 @@ template&lt;typename FutureT, typename WaitTimeT&gt; </div>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>std::future_status <a class="el" href="action__protocol__test_8cpp.html#a4a898a36bcf28eff8375d3bffabc0296">Status</a> of the future after waiting. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>std::future_status <a class="el" href="action__executor__churn__test_8cpp.html#a4a898a36bcf28eff8375d3bffabc0296">Status</a> of the future after waiting. </dd></dl>
 
 </div>
 </div>

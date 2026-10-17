@@ -1,0 +1,17 @@
+<map id="CheckInExpertTest" name="CheckInExpertTest">
+<area shape="rect" id="Node000001" title=" " alt="" coords="311,193,442,219"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="62,5,110,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="125,16,162,20,204,28,248,42,288,64,320,94,344,130,373,192,368,194,340,133,316,98,285,68,246,47,203,33,161,25,125,22"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="11,55,161,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="177,88,233,104,288,128,332,159,365,191,361,195,329,163,285,132,231,109,176,94"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="9,120,163,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="178,153,287,176,337,190,335,195,286,181,177,158"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="8,186,164,226"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="179,204,310,204,310,209,179,209"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="5,251,167,276"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="181,250,286,232,337,217,339,222,287,237,182,256"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="33,300,139,326"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="154,308,220,298,253,290,285,277,329,249,361,218,365,221,333,253,288,282,255,295,221,304,155,313"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="57,353,115,379"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="130,366,166,365,206,360,247,350,285,332,315,307,339,275,368,218,372,221,343,278,319,310,288,337,249,355,207,366,166,371,130,371"/>
+</map>

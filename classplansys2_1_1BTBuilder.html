@@ -100,6 +100,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="classplansys2_1_1BTBuilder-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">BTBuilder Class Reference<span class="mlabels"><span class="mlabel abstract">abstract</span></span></div></div>
 </div><!--header-->
@@ -146,6 +147,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a9f6c858a9b6ef4e3d33175d2099bb59a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the builder with behavior tree templates.  <br /></td></tr>
 <tr class="memitem:a95418f6bc3d3bcc8168a949d5e072c49" id="r_a95418f6bc3d3bcc8168a949d5e072c49"><td class="memItemLeft">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a95418f6bc3d3bcc8168a949d5e072c49">propagate</a> (<a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> graph)=0</td></tr>
 <tr class="memdesc:a95418f6bc3d3bcc8168a949d5e072c49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Propagate temporal constraints through the graph.  <br /></td></tr>
+<tr class="memitem:aed032a39047201205eae57040a67544a" id="r_aed032a39047201205eae57040a67544a"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aed032a39047201205eae57040a67544a">set_clients</a> (std::shared_ptr&lt; <a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &gt; domain_client, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt; problem_client)</td></tr>
+<tr class="memdesc:aed032a39047201205eae57040a67544a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the clients the builder uses, usually those of its executor.  <br /></td></tr>
 <tr class="memitem:a796975e9d061360d50983d3154b225e0" id="r_a796975e9d061360d50983d3154b225e0"><td class="memItemLeft">virtual&#160;</td><td class="memItemRight"><a class="el" href="#a796975e9d061360d50983d3154b225e0">~BTBuilder</a> ()=default</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
@@ -158,6 +161,11 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memdesc:a06fe6872f390844927050053f3b9114c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a floating point time to an integer with specified precision.  <br /></td></tr>
 <tr class="memitem:a3ac872ad088e5683ba3394260b361945" id="r_a3ac872ad088e5683ba3394260b361945"><td class="memItemLeft">static std::string&#160;</td><td class="memItemRight"><a class="el" href="#a3ac872ad088e5683ba3394260b361945">to_string</a> (const <a class="el" href="namespaceplansys2.html#a21d5e8f8cdaa838586b31007df0a950b">ActionType</a> &amp;action_type)</td></tr>
 <tr class="memdesc:a3ac872ad088e5683ba3394260b361945"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert an action type to its string representation.  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-pro-methods" class="groupheader"><a id="pro-methods" name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:ac112d607051000a90f75129505eb0177" id="r_ac112d607051000a90f75129505eb0177"><td class="memItemLeft">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ac112d607051000a90f75129505eb0177">domain_client</a> () const</td></tr>
+<tr class="memitem:a00cf7b0ed017e96e8a59a3f03a563965" id="r_a00cf7b0ed017e96e8a59a3f03a563965"><td class="memItemLeft">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a00cf7b0ed017e96e8a59a3f03a563965">problem_client</a> () const</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Interface for behavior tree builder implementations. </p>
@@ -204,6 +212,31 @@ Static Public Member Functions</h2></td></tr>
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="ac112d607051000a90f75129505eb0177" name="ac112d607051000a90f75129505eb0177"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac112d607051000a90f75129505eb0177">&#9670;&#160;</a></span>domain_client()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &gt; domain_client </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a1561508c63200190f6f2b1427fdb7240" name="a1561508c63200190f6f2b1427fdb7240"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1561508c63200190f6f2b1427fdb7240">&#9670;&#160;</a></span>get_dotgraph()</h2>
 
@@ -363,6 +396,31 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a00cf7b0ed017e96e8a59a3f03a563965" name="a00cf7b0ed017e96e8a59a3f03a563965"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a00cf7b0ed017e96e8a59a3f03a563965">&#9670;&#160;</a></span>problem_client()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt; problem_client </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a95418f6bc3d3bcc8168a949d5e072c49" name="a95418f6bc3d3bcc8168a949d5e072c49"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a95418f6bc3d3bcc8168a949d5e072c49">&#9670;&#160;</a></span>propagate()</h2>
 
@@ -396,6 +454,37 @@ Static Public Member Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>True if propagation was successful, false if inconsistencies were found. </dd></dl>
 
 <p>Implemented in <a class="el" href="classplansys2_1_1SequentialBTBuilder.html#a291d62802a5f41e77c1ff7a74ef01084">SequentialBTBuilder</a>, <a class="el" href="classplansys2_1_1SimpleBTBuilder.html#acce6983df946e736e0d75b469bdb53ea">SimpleBTBuilder</a>, and <a class="el" href="classplansys2_1_1STNBTBuilder.html#ac195b7590b813224911b7851a1f9813d">STNBTBuilder</a>.</p>
+
+</div>
+</div>
+<a id="aed032a39047201205eae57040a67544a" name="aed032a39047201205eae57040a67544a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aed032a39047201205eae57040a67544a">&#9670;&#160;</a></span>set_clients()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void set_clients </td>
+          <td>(</td>
+          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>domain_client</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>problem_client</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the clients the builder uses, usually those of its executor. </p>
+<p>Without them the builder creates its own clients, two more nodes for each plan: built and destroyed in the execution thread, they could abort the process when that happens during a shutdown.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">domain_client</td><td>The domain expert client. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">problem_client</td><td>The problem expert client. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -550,8 +639,9 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<hr/>The documentation for this class was generated from the following file:<ul>
+<hr/>The documentation for this class was generated from the following files:<ul>
 <li>plansys2_executor/include/plansys2_executor/<a class="el" href="BTBuilder_8hpp_source.html">BTBuilder.hpp</a></li>
+<li>plansys2_executor/src/plansys2_executor/<a class="el" href="BTBuilder_8cpp.html">BTBuilder.cpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

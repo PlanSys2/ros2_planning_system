@@ -128,17 +128,13 @@ Collaboration diagram for SimpleBTBuilder:</div>
 <div class="dyncontent">
 <div class="center"><img src="classplansys2_1_1SimpleBTBuilder__coll__graph.png" border="0" usemap="#aSimpleBTBuilder_coll__map" loading="lazy" alt="Collaboration graph"/></div>
 <map name="aSimpleBTBuilder_coll__map" id="aSimpleBTBuilder_coll__map">
-<area shape="rect" title="Simple implementation of a behavior tree builder." alt="" coords="329,128,447,154"/>
-<area shape="rect" href="classplansys2_1_1BTBuilder.html" title="Interface for behavior tree builder implementations." alt="" coords="54,5,133,31"/>
-<area shape="poly" title=" " alt="" coords="149,19,225,32,267,44,306,61,328,76,349,93,378,126,374,129,345,97,325,80,303,66,265,49,224,37,148,24"/>
-<area shape="rect" title=" " alt="" coords="18,55,169,96"/>
-<area shape="poly" title=" " alt="" coords="185,86,305,110,352,125,350,130,304,115,184,91"/>
-<area shape="rect" title=" " alt="" coords="16,120,171,161"/>
-<area shape="poly" title=" " alt="" coords="186,138,328,138,328,144,186,144"/>
-<area shape="rect" title=" " alt="" coords="5,185,182,211"/>
-<area shape="poly" title=" " alt="" coords="197,185,304,167,352,152,353,157,305,172,198,191"/>
-<area shape="rect" title=" " alt="" coords="67,257,120,283"/>
-<area shape="poly" title=" " alt="" coords="135,269,216,261,261,250,303,233,328,215,349,193,377,152,382,155,353,196,331,219,306,237,263,256,217,267,136,274"/>
+<area shape="rect" title="Simple implementation of a behavior tree builder." alt="" coords="137,122,256,148"/>
+<area shape="rect" href="classplansys2_1_1BTBuilder.html" title="Interface for behavior tree builder implementations." alt="" coords="5,5,84,31"/>
+<area shape="poly" title=" " alt="" coords="74,38,182,120,179,124,71,42"/>
+<area shape="rect" title=" " alt="" coords="108,5,285,31"/>
+<area shape="poly" title=" " alt="" coords="199,47,199,122,194,122,194,47"/>
+<area shape="rect" title=" " alt="" coords="308,5,362,31"/>
+<area shape="poly" title=" " alt="" coords="314,44,250,100,217,124,214,120,247,96,310,40"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -157,6 +153,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aeb9febb1eb94c60ed89d40e6b92c19c4" id="r_aeb9febb1eb94c60ed89d40e6b92c19c4"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#aeb9febb1eb94c60ed89d40e6b92c19c4">SimpleBTBuilder</a> ()</td></tr>
 <tr class="memdesc:aeb9febb1eb94c60ed89d40e6b92c19c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for <a class="el" href="classplansys2_1_1SimpleBTBuilder.html" title="Simple implementation of a behavior tree builder.">SimpleBTBuilder</a>.  <br /></td></tr>
 <tr class="inherit_header pub_methods_classplansys2_1_1BTBuilder"><td colspan="2">Public Member Functions inherited from <a class="el" href="classplansys2_1_1BTBuilder.html">BTBuilder</a></td></tr>
+<tr class="memitem:aed032a39047201205eae57040a67544a pub_methods_classplansys2_1_1BTBuilder" id="r_aed032a39047201205eae57040a67544a"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="classplansys2_1_1BTBuilder.html#aed032a39047201205eae57040a67544a">set_clients</a> (std::shared_ptr&lt; <a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &gt; domain_client, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt; problem_client)</td></tr>
+<tr class="memdesc:aed032a39047201205eae57040a67544a pub_methods_classplansys2_1_1BTBuilder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the clients the builder uses, usually those of its executor.  <br /></td></tr>
 <tr class="memitem:a796975e9d061360d50983d3154b225e0 pub_methods_classplansys2_1_1BTBuilder" id="r_a796975e9d061360d50983d3154b225e0"><td class="memItemLeft">virtual&#160;</td><td class="memItemRight"><a class="el" href="classplansys2_1_1BTBuilder.html#a796975e9d061360d50983d3154b225e0">~BTBuilder</a> ()=default</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pro-methods" class="groupheader"><a id="pro-methods" name="pro-methods"></a>
@@ -213,14 +211,15 @@ Protected Member Functions</h2></td></tr>
 <tr class="memdesc:ab561a76808a9da752d59387c8ac0c79e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes requirements that are already satisfied in the current state.  <br /></td></tr>
 <tr class="memitem:a9b1fecd54747480af35d09b1598b4fdc" id="r_a9b1fecd54747480af35d09b1598b4fdc"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a9b1fecd54747480af35d09b1598b4fdc">t</a> (<a class="el" href="classint.html">int</a> level)</td></tr>
 <tr class="memdesc:a9b1fecd54747480af35d09b1598b4fdc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper function to generate indentation.  <br /></td></tr>
+<tr class="inherit_header pro_methods_classplansys2_1_1BTBuilder"><td colspan="2">Protected Member Functions inherited from <a class="el" href="classplansys2_1_1BTBuilder.html">BTBuilder</a></td></tr>
+<tr class="memitem:ac112d607051000a90f75129505eb0177 pro_methods_classplansys2_1_1BTBuilder" id="r_ac112d607051000a90f75129505eb0177"><td class="memItemLeft">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="classplansys2_1_1BTBuilder.html#ac112d607051000a90f75129505eb0177">domain_client</a> () const</td></tr>
+<tr class="memitem:a00cf7b0ed017e96e8a59a3f03a563965 pro_methods_classplansys2_1_1BTBuilder" id="r_a00cf7b0ed017e96e8a59a3f03a563965"><td class="memItemLeft">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="classplansys2_1_1BTBuilder.html#a00cf7b0ed017e96e8a59a3f03a563965">problem_client</a> () const</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pro-attribs" class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:a80a9603dda571df02f19de8f2774c784" id="r_a80a9603dda571df02f19de8f2774c784"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a80a9603dda571df02f19de8f2774c784">bt_</a></td></tr>
 <tr class="memitem:a4a039d8f9ca81ce2230be1271b00ad47" id="r_a4a039d8f9ca81ce2230be1271b00ad47"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a4a039d8f9ca81ce2230be1271b00ad47">bt_action_</a></td></tr>
-<tr class="memitem:a1352b80d17d6b124f0e7a38863a11043" id="r_a1352b80d17d6b124f0e7a38863a11043"><td class="memItemLeft">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a1352b80d17d6b124f0e7a38863a11043">domain_client_</a></td></tr>
 <tr class="memitem:a61add6b1167006fc98f3e9059c8e4d42" id="r_a61add6b1167006fc98f3e9059c8e4d42"><td class="memItemLeft"><a class="el" href="structplansys2_1_1ActionGraph.html#af6cd0c1cfb253c14dadbb30a8101398d">ActionGraph::Ptr</a>&#160;</td><td class="memItemRight"><a class="el" href="#a61add6b1167006fc98f3e9059c8e4d42">graph_</a></td></tr>
-<tr class="memitem:a45bf57a43bf4da22724ee8a15e2a1765" id="r_a45bf57a43bf4da22724ee8a15e2a1765"><td class="memItemLeft">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a45bf57a43bf4da22724ee8a15e2a1765">problem_client_</a></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-inherited" class="groupheader"><a id="inherited" name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -420,7 +419,7 @@ Additional Inherited Members</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd><a class="el" href="action__protocol__test_8cpp.html#a4a898a36bcf28eff8375d3bffabc0296">Status</a> of the action. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="action__executor__churn__test_8cpp.html#a4a898a36bcf28eff8375d3bffabc0296">Status</a> of the action. </dd></dl>
 
 </div>
 </div>
@@ -1581,28 +1580,6 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="a1352b80d17d6b124f0e7a38863a11043" name="a1352b80d17d6b124f0e7a38863a11043"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1352b80d17d6b124f0e7a38863a11043">&#9670;&#160;</a></span>domain_client_</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::shared_ptr&lt;<a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a>&gt; domain_client_</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="a61add6b1167006fc98f3e9059c8e4d42" name="a61add6b1167006fc98f3e9059c8e4d42"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a61add6b1167006fc98f3e9059c8e4d42">&#9670;&#160;</a></span>graph_</h2>
 
@@ -1614,28 +1591,6 @@ Additional Inherited Members</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="structplansys2_1_1ActionGraph.html#af6cd0c1cfb253c14dadbb30a8101398d">ActionGraph::Ptr</a> graph_</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a45bf57a43bf4da22724ee8a15e2a1765" name="a45bf57a43bf4da22724ee8a15e2a1765"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a45bf57a43bf4da22724ee8a15e2a1765">&#9670;&#160;</a></span>problem_client_</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::shared_ptr&lt;<a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a>&gt; problem_client_</td>
         </tr>
       </table>
   </td>
