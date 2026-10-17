@@ -40,6 +40,11 @@ public:
 
   Derived(const Derived * z, Domain & d);
 
+  ~Derived()
+  {
+    delete cond;  // lifted belongs to the domain
+  }
+
   void print(std::ostream & stream) const
   {
     stream << "Derived ";

@@ -24,8 +24,8 @@ void Lifted::PDDLPrint(
   tabindent(s, indent);
   s << "( " << name;
   for (unsigned i = 0; i < params.size(); ++i) {
-    if (ts.size()) {
-      s << ts[i];
+    if (i < ts.size()) {
+      s << " " << ts[i];
     } else {
       s << " ?" << d.types[params[i]]->getName() << i;
     }

@@ -24,19 +24,13 @@ void Forall::PDDLPrint(
   tabindent(s, indent);
   s << "( forall (";
 
-  TokenStruct<std::string> fstruct(ts);
-
-  // The same names the body prints for its variables
   for (unsigned i = 0; i < params.size(); ++i) {
-    if (base + i < ts.size()) {
-      s << " " << ts[base + i];
-    } else {
-      s << " ?" << base + i;
-    }
+    s << " " << (i < names.size() ? names[i] : "?" + std::to_string(base + i));
     if (d.typed) {s << " - " << d.types[params[i]]->name;}
   }
   s << " )\n";
 
+  const TokenStruct<std::string> fstruct = printScope(ts, base, names);
   if (cond) {
     cond->PDDLPrint(s, indent + 1, fstruct, d);
   } else {
@@ -86,12 +80,13 @@ void Forall::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
   f.next();
   f.assert_token("(");
 
+  // The variables are only in the scope of the body
   TokenStruct<std::string> fs = f.parseTypedList(true, d.types);
+  assertUnique(fs, "variable");
   params = d.convertTypes(fs.types);
   base = ts.size();
-
-  TokenStruct<std::string> fstruct(ts);
-  fstruct.append(fs);
+  names = fs.tokens;
+  TokenStruct<std::string> fstruct = quantifierScope(ts, fs);
 
   f.next();
   f.assert_token("(");

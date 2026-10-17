@@ -62,6 +62,7 @@ void Derived::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
   f.assert_token("(");
   name = f.getToken(d.preds);
   TokenStruct<std::string> dstruct = f.parseTypedList(true, d.types);
+  assertUnique(dstruct, "parameter of " + name);
   params = d.convertTypes(dstruct.types);
 
   f.next();

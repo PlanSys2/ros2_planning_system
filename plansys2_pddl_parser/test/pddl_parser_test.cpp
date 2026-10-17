@@ -207,14 +207,15 @@ TEST(PDDLParserTestCase, exists_get_tree)
   plansys2_msgs::msg::Tree action_test6_tree;
   action_test6->pre->getTree(action_test6_tree, domain);
   std::string action_test6_tree_str = parser::pddl::toString(action_test6_tree);
+  // Each exists has its own scope: its variables follow the action parameters
   ASSERT_EQ(
     action_test6_tree_str,
     "(and "
     "(exists (?1 ?2) (and (robot_at ?0 ?1)(connected ?1 ?2)))"
-    "(exists (?3) (and (battery_full ?3)))"
-    "(exists (?4) (and (battery_full ?4)))"
-    "(exists (?5 ?6) (and (connected ?5 ?6)))"
-    "(exists (?7) (and (battery_full ?7))))"
+    "(exists (?1) (and (battery_full ?1)))"
+    "(exists (?1) (and (battery_full ?1)))"
+    "(exists (?1 ?2) (and (connected ?1 ?2)))"
+    "(exists (?1) (and (battery_full ?1))))"
   );
 
   auto action_test7 = domain.actions.get("action_test7");
@@ -1031,7 +1032,7 @@ TEST(PDDLParserTestCase, forall_imply_get_tree)
 
   plansys2_msgs::msg::Tree eff;
   secure->eff_e->getTree(eff, domain, {"z1"});
-  ASSERT_EQ(parser::pddl::toString(eff), "(and (forall (?2 - robot) (not (available ?2))))");
+  ASSERT_EQ(parser::pddl::toString(eff), "(and (forall (?1 - robot) (not (available ?1))))");
   ASSERT_TRUE(parser::pddl::validateTree(eff, error)) << error;
 }
 

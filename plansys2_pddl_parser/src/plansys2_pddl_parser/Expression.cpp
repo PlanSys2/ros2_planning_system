@@ -11,6 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "plansys2_pddl_parser/Instance.hpp"
 
 namespace parser
@@ -128,9 +132,9 @@ Expression * createExpression(Stringreader & f, TokenStruct<std::string> & ts, D
     std::string s = f.getToken();
     if (s == "+" || s == "-" || s == "*" || s == "/") {
       // It is a composite expression
-      CompositeExpression * ce = new CompositeExpression(s);
+      std::unique_ptr<CompositeExpression> ce(new CompositeExpression(s));
       ce->parse(f, ts, d);
-      return ce;
+      return ce.release();
     } else if (s == "total-time") {
       f.next();
       f.assert_token(")");
@@ -139,25 +143,24 @@ Expression * createExpression(Stringreader & f, TokenStruct<std::string> & ts, D
       // It is a function expression
       f.c -= s.size();
       Function * fun = d.funcs.get(f.getToken(d.funcs));
-      ParamCond * p = new Lifted(fun);
-      std::vector<Expression *> c(fun->params.size());
-      std::fill(c.begin(), c.end(), nullptr);
+      // Owned by the expression once built; freed here if the text is wrong
+      std::unique_ptr<FunctionExpression> expr(new FunctionExpression(new Lifted(fun)));
       for (unsigned i = 0; i < fun->params.size(); ++i) {
         f.next();
         std::string s = f.getToken();
         if (d.isConstant(s)) {
-          p->params[i] = -1;
+          expr->fun->params[i] = -1;
           IntPair ct = d.constantTypeIdConstId(s);
-          c[i] = new ConstExpression(ct.first, ct.second);
+          expr->constants[i] = new ConstExpression(ct.first, ct.second);
         } else if (ts.index(s) >= 0) {
-          p->params[i] = ts.index(s);
+          expr->fun->params[i] = ts.index(s);
         } else {
           f.tokenExit(s);
         }
       }
       f.next();
       f.assert_token(")");
-      return new FunctionExpression(p, c);
+      return expr.release();
     }
   } else if (f.getChar() == '?') {
     // It is a parameter variable
@@ -178,16 +181,17 @@ Expression * createExpression(Stringreader & f, TokenStruct<std::string> & ts, D
   } else {
     std::string s = f.getToken();
 
-    if (d.isConstant(s)) {
+    if (d.funcs.index(s) >= 0 && d.funcs.get(s)->params.empty()) {
+      // PDDL 2.1: a function without parameters may be written without parentheses
+      return new FunctionExpression(new Lifted(d.funcs.get(s)));
+    } else if (d.isConstant(s)) {
       // It is a constant!
       IntPair ct = d.constantTypeIdConstId(s);
       return new ConstExpression(ct.first, ct.second);
     } else if (s == "#t") {
-      // This construct is used in PDDL+ to model continuous evolution
-      // of some function within processes
+      // The time of continuous effects (PDDL 2.1) and processes (PDDL+)
       std::ostringstream os;
-      os << "\"" << s << "\" is supported only in PDDL+,"
-         << "and not supported by Plansys2" << std::endl;
+      os << "\"" << s << "\": continuous effects are not executed by PlanSys2 yet" << std::endl;
       f.printLine();
       std::cout << os.str();
       throw std::runtime_error(os.str());
