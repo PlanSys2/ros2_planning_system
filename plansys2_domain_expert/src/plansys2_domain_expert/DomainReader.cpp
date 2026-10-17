@@ -17,6 +17,7 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <cctype>
 #include <set>
 
 #include "plansys2_core/Utils.hpp"
@@ -25,6 +26,66 @@
 
 namespace plansys2
 {
+
+namespace
+{
+
+// The top level expressions of a block, line by line as written. One that takes several
+// lines is joined into one, so a predicate written over several lines is still one (#286)
+std::vector<std::string> split_expressions(const std::string & block)
+{
+  std::vector<std::string> ret;
+  std::string current;
+  int depth = 0;
+  for (const auto & line : tokenize(block, "\n")) {
+    if (depth == 0) {
+      current = line;
+    } else {
+      auto start = line.find_first_not_of(" \t\r");
+      if (start != std::string::npos) {
+        current += " " + line.substr(start);
+      }
+    }
+    for (char c : line) {
+      depth += (c == '(') - (c == ')');
+    }
+    if (depth <= 0) {
+      depth = 0;
+      if (current.find_first_not_of(" \t\r") != std::string::npos) {
+        ret.push_back(current);
+      }
+    }
+  }
+  return ret;
+}
+
+// The same expression whatever its blanks
+std::string expression_key(const std::string & expression)
+{
+  std::string collapsed;
+  for (char c : expression) {
+    if (std::isspace(static_cast<unsigned char>(c))) {
+      if (!collapsed.empty() && collapsed.back() != ' ') {
+        collapsed += ' ';
+      }
+    } else {
+      collapsed += c;
+    }
+  }
+  std::string ret;
+  for (size_t i = 0; i < collapsed.size(); i++) {
+    const char c = collapsed[i];
+    const bool after_open = !ret.empty() && ret.back() == '(';
+    const bool before_close = i + 1 < collapsed.size() && collapsed[i + 1] == ')';
+    if (c == ' ' && (ret.empty() || after_open || before_close)) {
+      continue;
+    }
+    ret += c;
+  }
+  return ret;
+}
+
+}  // namespace
 
 DomainReader::DomainReader()
 {
@@ -121,10 +182,15 @@ DomainReader::get_joint_domain() const
   }
 
   ret += "(:predicates\n";
+  // Each predicate once, a whole expression even if it was written over several lines
   std::set<std::string> preds_set;
+  std::set<std::string> preds_seen;
   for (auto & domain : domains_) {
-    std::vector<std::string> preds = tokenize(domain.predicates, "\n");
-    preds_set.insert(preds.begin(), preds.end());
+    for (const auto & pred : split_expressions(domain.predicates)) {
+      if (preds_seen.insert(expression_key(pred)).second) {
+        preds_set.insert(pred);
+      }
+    }
   }
   for (auto & pred : preds_set) {
     ret += pred + "\n";

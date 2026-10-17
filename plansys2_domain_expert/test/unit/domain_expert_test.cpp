@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <map>
 #include <string>
 #include <set>
 #include <algorithm>
@@ -589,6 +590,57 @@ TEST(domain_expert, quantified_conditions_and_effects)
   std::vector<std::string> subtypes = forall.parameters[0].sub_types;
   std::sort(subtypes.begin(), subtypes.end());
   ASSERT_EQ(subtypes, (std::vector<std::string>{"drone", "ground", "infantry", "tank"}));
+}
+
+// A predicate written over several lines is one predicate, also when two domains are joined
+// and one of them repeats it with other blanks (#286)
+TEST(domain_expert, multiline_predicates)
+{
+  const std::string domain_1 =
+    R"(
+(define (domain first)
+(:requirements :typing)
+(:types foobar)
+(:predicates
+    (foo ?foo - foobar)
+    (bar
+         ?foo - foobar  ; a comment between the lines
+         ?bar - foobar
+         ?baz - foobar
+    )
+)
+)
+)";
+  const std::string domain_2 =
+    R"(
+(define (domain second)
+(:requirements :typing)
+(:types foobar)
+(:predicates
+    (bar ?foo - foobar ?bar - foobar ?baz - foobar)
+    (qux
+      ?q - foobar)
+)
+)
+)";
+
+  plansys2::DomainExpert expert(domain_1);
+  expert.extendDomain(domain_2);
+
+  ASSERT_EQ(expert.getPredicates().size(), 3u);
+  for (const auto & [name, arity] : std::map<std::string, size_t>{{"foo", 1}, {"bar", 3},
+      {"qux", 1}})
+  {
+    auto predicate = expert.getPredicate(name);
+    ASSERT_TRUE(predicate.has_value()) << name;
+    EXPECT_EQ(predicate->parameters.size(), arity) << name;
+  }
+
+  // The joint domain is valid PDDL again
+  plansys2::DomainExpert reparsed(expert.getDomain());
+  EXPECT_EQ(reparsed.getPredicates().size(), 3u);
+  ASSERT_TRUE(reparsed.getPredicate("bar").has_value());
+  EXPECT_EQ(reparsed.getPredicate("bar")->parameters.size(), 3u);
 }
 
 int main(int argc, char ** argv)
