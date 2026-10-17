@@ -106,6 +106,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <code>#include &lt;vector&gt;</code><br />
 <code>#include &lt;algorithm&gt;</code><br />
 <code>#include &lt;iostream&gt;</code><br />
+<code>#include &lt;cctype&gt;</code><br />
 <code>#include &lt;set&gt;</code><br />
 <code>#include &quot;<a class="el" href="plansys2__core_2include_2plansys2__core_2Utils_8hpp_source.html">plansys2_core/Utils.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="DomainReader_8hpp_source.html">plansys2_domain_expert/DomainReader.hpp</a>&quot;</code><br />
@@ -114,29 +115,31 @@ Include dependency graph for DomainReader.cpp:</div>
 <div class="dyncontent">
 <div class="center"><img src="DomainReader_8cpp__incl.png" border="0" usemap="#aplansys2__domain__expert_2src_2plansys2__domain__expert_2DomainReader_8cpp" loading="lazy" alt=""/></div>
 <map name="aplansys2__domain__expert_2src_2plansys2__domain__expert_2DomainReader_8cpp" id="aplansys2__domain__expert_2src_2plansys2__domain__expert_2DomainReader_8cpp">
-<area shape="rect" title=" " alt="" coords="381,5,570,61"/>
-<area shape="rect" title=" " alt="" coords="176,198,229,223"/>
-<area shape="poly" title=" " alt="" coords="381,43,341,52,301,65,262,84,230,111,218,127,211,145,205,183,200,182,206,144,214,124,226,107,260,80,299,60,340,46,380,38"/>
-<area shape="rect" title=" " alt="" coords="478,116,546,142"/>
-<area shape="poly" title=" " alt="" coords="489,61,504,101,499,103,484,63"/>
-<area shape="rect" title=" " alt="" coords="292,198,350,223"/>
-<area shape="poly" title=" " alt="" coords="468,63,448,107,416,151,390,174,362,192,359,188,387,170,412,148,443,104,463,60"/>
-<area shape="rect" title=" " alt="" coords="570,116,645,142"/>
-<area shape="poly" title=" " alt="" coords="515,59,580,105,577,110,512,64"/>
-<area shape="rect" title=" " alt="" coords="669,116,741,142"/>
-<area shape="poly" title=" " alt="" coords="543,59,663,108,661,113,541,64"/>
-<area shape="rect" title=" " alt="" coords="765,116,805,142"/>
-<area shape="poly" title=" " alt="" coords="572,51,657,73,753,107,752,112,655,78,570,56"/>
-<area shape="rect" href="plansys2__core_2include_2plansys2__core_2Utils_8hpp.html" title=" " alt="" coords="5,116,165,142"/>
-<area shape="poly" title=" " alt="" coords="381,60,151,115,150,110,380,55"/>
-<area shape="rect" href="DomainReader_8hpp.html" title=" " alt="" coords="239,109,403,150"/>
-<area shape="poly" title=" " alt="" coords="432,64,368,103,365,98,430,59"/>
-<area shape="poly" title=" " alt="" coords="104,140,173,186,170,191,101,145"/>
-<area shape="poly" title=" " alt="" coords="122,140,278,192,277,197,121,145"/>
-<area shape="rect" title=" " alt="" coords="55,198,115,223"/>
-<area shape="poly" title=" " alt="" coords="88,143,88,182,82,182,82,143"/>
-<area shape="poly" title=" " alt="" coords="293,152,235,191,232,186,290,148"/>
-<area shape="poly" title=" " alt="" coords="324,150,324,182,318,182,318,150"/>
+<area shape="rect" title=" " alt="" coords="387,5,576,61"/>
+<area shape="rect" title=" " alt="" coords="119,198,172,223"/>
+<area shape="poly" title=" " alt="" coords="386,38,283,44,172,56,120,65,75,77,39,93,16,111,10,120,8,129,16,148,29,160,51,172,105,193,103,198,49,177,26,164,11,151,3,129,5,118,12,107,37,88,73,72,119,60,171,50,283,38,386,33"/>
+<area shape="rect" title=" " alt="" coords="447,116,516,142"/>
+<area shape="poly" title=" " alt="" coords="484,62,484,101,479,101,479,62"/>
+<area shape="rect" title=" " alt="" coords="262,198,320,223"/>
+<area shape="poly" title=" " alt="" coords="464,63,430,107,386,152,328,192,325,188,382,148,426,103,460,60"/>
+<area shape="rect" title=" " alt="" coords="540,116,615,142"/>
+<area shape="poly" title=" " alt="" coords="511,60,557,104,553,108,507,63"/>
+<area shape="rect" title=" " alt="" coords="639,116,711,142"/>
+<area shape="poly" title=" " alt="" coords="539,59,638,107,635,112,536,64"/>
+<area shape="rect" title=" " alt="" coords="735,116,794,142"/>
+<area shape="poly" title=" " alt="" coords="577,58,724,106,726,108,724,112,722,112,576,63"/>
+<area shape="rect" title=" " alt="" coords="818,116,857,142"/>
+<area shape="poly" title=" " alt="" coords="577,46,689,69,749,86,806,107,807,107,805,112,805,111,747,91,687,74,576,51"/>
+<area shape="rect" href="plansys2__core_2include_2plansys2__core_2Utils_8hpp.html" title=" " alt="" coords="26,116,185,142"/>
+<area shape="poly" title=" " alt="" coords="387,61,170,115,169,110,386,56"/>
+<area shape="rect" href="DomainReader_8hpp.html" title=" " alt="" coords="209,109,373,150"/>
+<area shape="poly" title=" " alt="" coords="428,64,346,104,343,99,425,59"/>
+<area shape="poly" title=" " alt="" coords="114,141,135,182,130,185,109,144"/>
+<area shape="poly" title=" " alt="" coords="135,140,250,189,247,194,133,145"/>
+<area shape="rect" title=" " alt="" coords="34,198,94,223"/>
+<area shape="poly" title=" " alt="" coords="102,144,80,185,75,182,97,141"/>
+<area shape="poly" title=" " alt="" coords="256,153,182,192,180,188,253,148"/>
+<area shape="poly" title=" " alt="" coords="294,150,294,182,288,182,288,150"/>
 </map>
 </div>
 </div><table class="memberdecls">
