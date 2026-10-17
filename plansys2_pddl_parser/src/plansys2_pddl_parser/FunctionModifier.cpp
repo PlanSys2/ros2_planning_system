@@ -75,7 +75,13 @@ plansys2_msgs::msg::Node::SharedPtr FunctionModifier::getTree(
     plansys2_msgs::msg::Node::SharedPtr child = modifiedGround->getTree(tree, d, replace);
     tree.nodes[node->node_id].children.push_back(child->node_id);
   } else {
-    std::cerr << "function modifier for total-cost not supported" << std::endl;
+    // (total-cost), the function of :action-costs
+    plansys2_msgs::msg::Node total_cost;
+    total_cost.node_type = plansys2_msgs::msg::Node::FUNCTION;
+    total_cost.name = "total-cost";
+    total_cost.node_id = tree.nodes.size();
+    tree.nodes.push_back(total_cost);
+    tree.nodes[node->node_id].children.push_back(total_cost.node_id);
   }
 
   plansys2_msgs::msg::Node::SharedPtr child = modifierExpr->getTree(tree, d, replace);

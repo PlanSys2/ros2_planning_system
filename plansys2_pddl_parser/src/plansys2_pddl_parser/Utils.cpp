@@ -21,7 +21,6 @@
 #include <functional>
 #include <iostream>
 #include <limits>
-#include <regex>
 #include <sstream>
 #include <utility>
 
@@ -181,7 +180,7 @@ bool validateTree(const plansys2_msgs::msg::Tree & tree, std::string & error)
         min_children = max_children = 2;
         break;
       case plansys2_msgs::msg::Node::FUNCTION_MODIFIER:
-        // A modifier of total-cost has only the value child
+        // Trees built before (total-cost) was a child have only the value
         min_children = 1;
         max_children = 2;
         break;
@@ -231,254 +230,206 @@ bool isValidName(const std::string & name)
     });
 }
 
+namespace
+{
+bool isBlank(char c)
+{
+  return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v';
+}
+
+// The token that starts at pos: up to a blank or a parenthesis. A symbolic operator
+// ends where its symbols end, as in "(=?a ?b)"; "-" or "+" before a digit is a sign
+std::string tokenAt(const std::string & s, size_t pos)
+{
+  if (pos < s.size() && std::string("<>=*/+-").find(s[pos]) != std::string::npos) {
+    const bool sign = (s[pos] == '-' || s[pos] == '+') && pos + 1 < s.size() &&
+      ((s[pos + 1] >= '0' && s[pos + 1] <= '9') || s[pos + 1] == '.');
+    if (!sign) {
+      const bool two = (s[pos] == '<' || s[pos] == '>') && pos + 1 < s.size() && s[pos + 1] == '=';
+      return s.substr(pos, two ? 2 : 1);
+    }
+  }
+  size_t end = pos;
+  while (end < s.size() && !isBlank(s[end]) && s[end] != '(' && s[end] != ')') {
+    end++;
+  }
+  return s.substr(pos, end - pos);
+}
+
+// The operator of an expression: the first token after its '(' (and its position),
+// or the first token itself when the text does not start with '('
+std::pair<std::string, int> headToken(const std::string & s)
+{
+  size_t pos = 0;
+  while (pos < s.size() && isBlank(s[pos])) {
+    pos++;
+  }
+  if (pos < s.size() && s[pos] == '(') {
+    pos++;
+    while (pos < s.size() && isBlank(s[pos])) {
+      pos++;
+    }
+  }
+  return {tokenAt(s, pos), static_cast<int>(pos)};
+}
+
+constexpr int kNotFound = std::numeric_limits<int>::max();
+
+uint8_t expressionType(const std::string & op)
+{
+  if (op == ">=") {return plansys2_msgs::msg::Node::COMP_GE;}
+  if (op == ">") {return plansys2_msgs::msg::Node::COMP_GT;}
+  if (op == "<=") {return plansys2_msgs::msg::Node::COMP_LE;}
+  if (op == "<") {return plansys2_msgs::msg::Node::COMP_LT;}
+  if (op == "=") {return plansys2_msgs::msg::Node::COMP_EQ;}
+  if (op == "*") {return plansys2_msgs::msg::Node::ARITH_MULT;}
+  if (op == "/") {return plansys2_msgs::msg::Node::ARITH_DIV;}
+  if (op == "+") {return plansys2_msgs::msg::Node::ARITH_ADD;}
+  if (op == "-") {return plansys2_msgs::msg::Node::ARITH_SUB;}
+  return plansys2_msgs::msg::Node::UNKNOWN;
+}
+
+uint8_t modifierType(const std::string & op)
+{
+  if (op == "assign") {return plansys2_msgs::msg::Node::ASSIGN;}
+  if (op == "increase") {return plansys2_msgs::msg::Node::INCREASE;}
+  if (op == "decrease") {return plansys2_msgs::msg::Node::DECREASE;}
+  if (op == "scale-up") {return plansys2_msgs::msg::Node::SCALE_UP;}
+  if (op == "scale-down") {return plansys2_msgs::msg::Node::SCALE_DOWN;}
+  return plansys2_msgs::msg::Node::UNKNOWN;
+}
+
+uint8_t logicType(const std::string & op)
+{
+  if (op == "and") {return plansys2_msgs::msg::Node::AND;}
+  if (op == "or") {return plansys2_msgs::msg::Node::OR;}
+  if (op == "not") {return plansys2_msgs::msg::Node::NOT;}
+  if (op == "exists") {return plansys2_msgs::msg::Node::EXISTS;}
+  if (op == "forall") {return plansys2_msgs::msg::Node::FORALL;}
+  if (op == "imply") {return plansys2_msgs::msg::Node::IMPLY;}
+  return plansys2_msgs::msg::Node::UNKNOWN;
+}
+}  // namespace
+
+bool parseNumber(const std::string & text, double & value)
+{
+  size_t begin = 0;
+  size_t end = text.size();
+  while (begin < end && isBlank(text[begin])) {
+    begin++;
+  }
+  while (end > begin && isBlank(text[end - 1])) {
+    end--;
+  }
+  if (begin < end && text[begin] == '+') {  // from_chars does not take '+'
+    begin++;
+    if (begin < end && text[begin] == '-') {
+      return false;
+    }
+  }
+  if (begin == end) {
+    return false;
+  }
+  // Digits, a point or a sign first: no "inf" or "nan" in PDDL
+  const char c = text[begin];
+  if (!((c >= '0' && c <= '9') || c == '.' || c == '-')) {
+    return false;
+  }
+  double parsed = 0.0;
+  const char * first = text.data() + begin;
+  const char * last = text.data() + end;
+  auto [ptr, ec] = std::from_chars(first, last, parsed, std::chars_format::general);
+  if (ec != std::errc() || ptr != last || !std::isfinite(parsed)) {
+    return false;
+  }
+  value = parsed;
+  return true;
+}
+
 std::string getReducedString(const std::string & expr)
 {
-  std::regex nts_chars("[\n\t]*", std::regex_constants::ECMAScript);
-  std::string ret = std::regex_replace(expr, nts_chars, "");
-  std::regex open_paren("\\( ", std::regex_constants::ECMAScript);
-  ret = std::regex_replace(ret, open_paren, "(");
-  std::regex close_paren(" \\)", std::regex_constants::ECMAScript);
-  ret = std::regex_replace(ret, close_paren, ")");
+  // One space between tokens, none after '(' or before ')', none at the ends
+  std::string ret;
+  ret.reserve(expr.size());
+  bool blank = false;
+  for (char c : expr) {
+    if (isBlank(c)) {
+      blank = true;
+      continue;
+    }
+    if (blank && !ret.empty() && ret.back() != '(' && c != ')') {
+      ret += ' ';
+    }
+    blank = false;
+    ret += c;
+  }
   return ret;
 }
 
 uint8_t getNodeType(const std::string & expr, uint8_t default_node_type)
 {
-  auto node_type = default_node_type;
-
-  std::smatch match;
-  int first = std::numeric_limits<int>::max();
-
-  if (std::regex_search(expr, match, std::regex("\\(\\s*and[ (]"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      node_type = plansys2_msgs::msg::Node::AND;
-    }
+  size_t start = 0;
+  while (start < expr.size() && isBlank(expr[start])) {
+    start++;
+  }
+  if (start == expr.size()) {
+    return default_node_type;
   }
 
-  if (std::regex_search(expr, match, std::regex("\\(\\s*or[ (]"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      node_type = plansys2_msgs::msg::Node::OR;
-    }
-  }
-
-  if (std::regex_search(expr, match, std::regex("\\(\\s*not[ (]"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      node_type = plansys2_msgs::msg::Node::NOT;
-    }
-  }
-
-  if (std::regex_search(expr, match, std::regex("\\(\\s*exists[ (]"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      node_type = plansys2_msgs::msg::Node::EXISTS;
-    }
-  }
-
-  if (std::regex_search(expr, match, std::regex("\\(\\s*forall[ (]"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      node_type = plansys2_msgs::msg::Node::FORALL;
-    }
-  }
-
-  if (std::regex_search(expr, match, std::regex("\\(\\s*imply[ (]"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      node_type = plansys2_msgs::msg::Node::IMPLY;
-    }
-  }
-
-  if (std::regex_search(expr, match, std::regex("^\\s*\\(?\\s*\\?\\w+"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
+  if (expr[start] != '(') {
+    const auto token = tokenAt(expr, start);
+    double value;
+    if (!token.empty() && token[0] == '?') {
       return plansys2_msgs::msg::Node::PARAMETER;
     }
-  }
-
-  std::tuple<uint8_t, int> modifier_search_result = getFunMod(expr);
-  if (std::get<0>(modifier_search_result) != plansys2_msgs::msg::Node::UNKNOWN) {
-    if (std::get<1>(modifier_search_result) < first) {
-      first = std::get<1>(modifier_search_result);
-      node_type = plansys2_msgs::msg::Node::FUNCTION_MODIFIER;
+    if (parseNumber(token, value)) {
+      return plansys2_msgs::msg::Node::NUMBER;
     }
+    return default_node_type;
   }
 
-  std::string wexpr = expr;
-  while (wexpr.size() > 0) {
-    std::regex num_regexp("[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)");
-
-    if (std::regex_search(wexpr, match, num_regexp)) {
-      bool valid_number = true;
-
-      // Ignore integer characters within a parameter or construct name.
-      // A valid number can only be preceded by a space or a left parenthesis.
-      if (match.position() > 0) {
-        valid_number = false;
-        if (isspace(wexpr.at(match.position() - 1))) {
-          valid_number = true;
-        } else if (wexpr.at(match.position() - 1) == '(') {
-          valid_number = true;
-        }
-      }
-
-      if (valid_number) {
-        if (static_cast<int>(match.position()) < first) {
-          first = static_cast<int>(match.position());
-          node_type = plansys2_msgs::msg::Node::NUMBER;
-        }
-        break;
-      } else {
-        wexpr.erase(wexpr.begin(), wexpr.begin() + match.position() + match.length());
-      }
-    } else {
-      break;
-    }
+  // The type is given by the operator, never by a name that contains it
+  const auto head = headToken(expr).first;
+  if (head.empty()) {
+    return default_node_type;
   }
-
-  // The number search must precede the expression search in order to differentiate between an
-  // addition or subtraction expression and a number with a "+" or "-" prefix.
-  std::tuple<uint8_t, int> expression_search_result = getExpr(expr);
-  if (std::get<0>(expression_search_result) != plansys2_msgs::msg::Node::UNKNOWN) {
-    if (std::get<1>(expression_search_result) < first) {
-      first = std::get<1>(expression_search_result);
-      node_type = plansys2_msgs::msg::Node::EXPRESSION;
-    }
+  if (head[0] == '?') {
+    return plansys2_msgs::msg::Node::PARAMETER;
   }
-
-  return node_type;
+  if (logicType(head) != plansys2_msgs::msg::Node::UNKNOWN) {
+    return logicType(head);
+  }
+  if (modifierType(head) != plansys2_msgs::msg::Node::UNKNOWN) {
+    return plansys2_msgs::msg::Node::FUNCTION_MODIFIER;
+  }
+  if (expressionType(head) != plansys2_msgs::msg::Node::UNKNOWN) {
+    return plansys2_msgs::msg::Node::EXPRESSION;
+  }
+  return default_node_type;
 }
 
 std::tuple<uint8_t, int> getExpr(const std::string & input)
 {
-  auto expr_type = plansys2_msgs::msg::Node::UNKNOWN;
-
-  std::smatch match;
-  int first = std::numeric_limits<int>::max();
-
-  if (std::regex_search(input, match, std::regex("\\s*>="))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      expr_type = plansys2_msgs::msg::Node::COMP_GE;
-    }
-  }
-
-  if (std::regex_search(input, match, std::regex("\\s*>"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      expr_type = plansys2_msgs::msg::Node::COMP_GT;
-    }
-  }
-
-  if (std::regex_search(input, match, std::regex("\\s*<="))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      expr_type = plansys2_msgs::msg::Node::COMP_LE;
-    }
-  }
-
-  if (std::regex_search(input, match, std::regex("\\s*<"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      expr_type = plansys2_msgs::msg::Node::COMP_LT;
-    }
-  }
-
-  if (std::regex_search(input, match, std::regex("\\s*="))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      expr_type = plansys2_msgs::msg::Node::COMP_EQ;
-    }
-  }
-
-  if (std::regex_search(input, match, std::regex("\\s*\\*"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      expr_type = plansys2_msgs::msg::Node::ARITH_MULT;
-    }
-  }
-
-  if (std::regex_search(input, match, std::regex("\\s*\\/"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      expr_type = plansys2_msgs::msg::Node::ARITH_DIV;
-    }
-  }
-
-  if (std::regex_search(input, match, std::regex("\\s*\\+"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      expr_type = plansys2_msgs::msg::Node::ARITH_ADD;
-    }
-  }
-
-  if (std::regex_search(input, match, std::regex("\\s*\\-\\s+"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      expr_type = plansys2_msgs::msg::Node::ARITH_SUB;
-    }
-  }
-
-  return std::make_tuple(expr_type, first);
+  const auto [head, position] = headToken(input);
+  const auto type = expressionType(head);
+  return std::make_tuple(type, type == plansys2_msgs::msg::Node::UNKNOWN ? kNotFound : position);
 }
 
 uint8_t getExprType(const std::string & input)
 {
-  std::tuple<uint8_t, int> result = getExpr(input);
-  return std::get<0>(result);
+  return std::get<0>(getExpr(input));
 }
 
 std::tuple<uint8_t, int> getFunMod(const std::string & input)
 {
-  auto fun_mod_type = plansys2_msgs::msg::Node::UNKNOWN;
-
-  std::smatch match;
-  int first = std::numeric_limits<int>::max();
-
-  if (std::regex_search(input, match, std::regex("assign"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      fun_mod_type = plansys2_msgs::msg::Node::ASSIGN;
-    }
-  }
-
-  if (std::regex_search(input, match, std::regex("increase"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      fun_mod_type = plansys2_msgs::msg::Node::INCREASE;
-    }
-  }
-
-  if (std::regex_search(input, match, std::regex("decrease"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      fun_mod_type = plansys2_msgs::msg::Node::DECREASE;
-    }
-  }
-
-  if (std::regex_search(input, match, std::regex("scale-up"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      fun_mod_type = plansys2_msgs::msg::Node::SCALE_UP;
-    }
-  }
-
-  if (std::regex_search(input, match, std::regex("scale-down"))) {
-    if (static_cast<int>(match.position()) < first) {
-      first = static_cast<int>(match.position());
-      fun_mod_type = plansys2_msgs::msg::Node::SCALE_DOWN;
-    }
-  }
-
-  return std::make_tuple(fun_mod_type, first);
+  const auto [head, position] = headToken(input);
+  const auto type = modifierType(head);
+  return std::make_tuple(type, type == plansys2_msgs::msg::Node::UNKNOWN ? kNotFound : position);
 }
 
 uint8_t getFunModType(const std::string & input)
 {
-  std::tuple<uint8_t, int> result = getFunMod(input);
-  return std::get<0>(result);
+  return std::get<0>(getFunMod(input));
 }
 
 int getParenthesis(const std::string & wexpr, int start)
@@ -506,47 +457,37 @@ int getParenthesis(const std::string & wexpr, int start)
 
 void removeOperatorBeforeParenthesis(std::string & wexpr)
 {
-  // Find the position of the first parenthesis
-  std::string::size_type first_parenthesis = wexpr.find("(");
+  // Only the operator that starts the text: a name that contains one is left alone
+  size_t start = 0;
+  while (start < wexpr.size() && isBlank(wexpr[start])) {
+    start++;
+  }
+  const auto op = tokenAt(wexpr, start);
+  size_t end = start + op.size();
 
-  // A quantifier before the first parenthesis: remove it with its variable list. It goes
-  // first, as the operator regex below would find "or" inside "forall"
-  for (const std::string quantifier : {"exists", "forall"}) {
-    size_t quantifier_pos = wexpr.find(quantifier);
-    if (quantifier_pos != std::string::npos &&
-      (first_parenthesis == std::string::npos || quantifier_pos < first_parenthesis))
-    {
-      size_t begin = quantifier_pos + quantifier.size();
-      size_t end = wexpr.find(")", begin);  // the end of the variable list
-      if (end != std::string::npos) {
-        wexpr = wexpr.substr(end + 1, std::string::npos);
-        wexpr.erase(0, wexpr.find_first_not_of(" \t\n\r"));
-      } else {
-        throw std::runtime_error(
-                "Malformed '" + quantifier + "' expression: missing closing parenthesis");
-      }
+  if (op == "exists" || op == "forall") {
+    // With its variable list
+    const size_t open = wexpr.find('(', end);
+    const size_t close = open == std::string::npos ? open : wexpr.find(')', open);
+    if (close == std::string::npos) {
+      throw std::runtime_error("Malformed '" + op + "' expression: missing variable list");
+    }
+    end = close + 1;
+  } else {
+    const bool is_operator = logicType(op) != plansys2_msgs::msg::Node::UNKNOWN ||
+      modifierType(op) != plansys2_msgs::msg::Node::UNKNOWN ||
+      expressionType(op) != plansys2_msgs::msg::Node::UNKNOWN;
+    if (!is_operator) {
       return;
     }
   }
 
-  // Define a regex to match the operators
-  std::regex operator_regex(
-    R"([\+\-\*\/=<>]=?|<=|>=|and|or|not|imply|assign|increase|decrease|scale-up|scale-down)");
-
-  // Search for the first operator in the string
-  std::smatch match;
-  if (std::regex_search(wexpr, match, operator_regex)) {
-    auto operator_pos = match.position();
-
-    // Check if the operator is before the first parenthesis
-    if (first_parenthesis == std::string::npos ||
-      static_cast<std::string::size_type>(operator_pos) < first_parenthesis)
-    {
-      // Remove the operator from the string
-      wexpr.erase(operator_pos, match.length());
-      wexpr.erase(0, wexpr.find_first_not_of(" \t\n\r"));
-    }
+  wexpr.erase(0, end);
+  size_t first = 0;
+  while (first < wexpr.size() && isBlank(wexpr[first])) {
+    first++;
   }
+  wexpr.erase(0, first);
 }
 
 std::vector<std::string> getSubExpr(const std::string & expr)
@@ -556,13 +497,16 @@ std::vector<std::string> getSubExpr(const std::string & expr)
   std::string wexpr(expr);
 
   // Remove first ( and last )
-  while (wexpr.back() == ' ') {
+  while (!wexpr.empty() && isBlank(wexpr.back())) {
     wexpr.pop_back();
   }
-  wexpr.pop_back();
-  while (wexpr.front() == ' ') {
+  while (!wexpr.empty() && isBlank(wexpr.front())) {
     wexpr.erase(0, 1);
   }
+  if (wexpr.size() < 2 || wexpr.front() != '(' || wexpr.back() != ')') {
+    return ret;
+  }
+  wexpr.pop_back();
   wexpr.erase(0, 1);
 
   removeOperatorBeforeParenthesis(wexpr);
@@ -843,54 +787,53 @@ std::string toStringExpression(const plansys2_msgs::msg::Tree & tree, uint32_t n
     return {};
   }
 
-  std::string ret;
-  if (negate) {
-    ret = "(not ";
-  }
-
+  std::string op;
+  bool comparison = true;
   switch (tree.nodes[node_id].expression_type) {
     case plansys2_msgs::msg::Node::COMP_GE:
-      ret += "(>= ";
+      op = ">=";
       break;
     case plansys2_msgs::msg::Node::COMP_GT:
-      ret += "(> ";
+      op = ">";
       break;
     case plansys2_msgs::msg::Node::COMP_LE:
-      ret += "(<= ";
+      op = "<=";
       break;
     case plansys2_msgs::msg::Node::COMP_LT:
-      ret += "(< ";
+      op = "<";
       break;
     case plansys2_msgs::msg::Node::COMP_EQ:
-      ret += "(= ";
+      op = "=";
       break;
     case plansys2_msgs::msg::Node::ARITH_MULT:
-      ret = "(* ";
+      op = "*";
+      comparison = false;
       break;
     case plansys2_msgs::msg::Node::ARITH_DIV:
-      ret = "(/ ";
+      op = "/";
+      comparison = false;
       break;
     case plansys2_msgs::msg::Node::ARITH_ADD:
-      ret = "(+ ";
+      op = "+";
+      comparison = false;
       break;
     case plansys2_msgs::msg::Node::ARITH_SUB:
-      ret = "(- ";
+      op = "-";
+      comparison = false;
       break;
     default:
-      ret = "(UNKNOWN ";
       std::cerr << "toStringExpression: Unknown expression type: ";
       printN(std::cerr, tree.nodes[node_id].expression_type);
-      std::cerr << std::endl;
-      break;
+      return {};
   }
 
+  // Only a comparison can be negated; its operands never are
+  const bool negated = negate && comparison;
+  std::string ret = negated ? "(not (" + op : "(" + op;
   for (auto child_id : tree.nodes[node_id].children) {
-    ret += " " + toString(tree, child_id, negate);
+    ret += " " + toString(tree, child_id, false);
   }
-  ret += ")";
-  if (negate) {
-    ret += ")";
-  }
+  ret += negated ? "))" : ")";
 
   return ret;
 }
@@ -898,11 +841,13 @@ std::string toStringExpression(const plansys2_msgs::msg::Tree & tree, uint32_t n
 std::string toStringFunctionModifier(
   const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate)
 {
+  (void)negate;  // An effect, never negated
   if (node_id >= tree.nodes.size()) {
     return {};
   }
 
-  if (tree.nodes[node_id].children.size() < 2) {
+  const auto & children = tree.nodes[node_id].children;
+  if (children.empty() || children.size() > 2) {
     return {};
   }
 
@@ -910,26 +855,31 @@ std::string toStringFunctionModifier(
 
   switch (tree.nodes[node_id].modifier_type) {
     case plansys2_msgs::msg::Node::ASSIGN:
-      ret = "(assign ";
+      ret = "(assign";
       break;
     case plansys2_msgs::msg::Node::INCREASE:
-      ret = "(increase ";
+      ret = "(increase";
       break;
     case plansys2_msgs::msg::Node::DECREASE:
-      ret = "(decrease ";
+      ret = "(decrease";
       break;
     case plansys2_msgs::msg::Node::SCALE_UP:
-      ret = "(scale-up ";
+      ret = "(scale-up";
       break;
     case plansys2_msgs::msg::Node::SCALE_DOWN:
-      ret = "(scale-down ";
+      ret = "(scale-down";
       break;
     default:
-      break;
+      std::cerr << "toStringFunctionModifier: Unknown modifier type: ";
+      printN(std::cerr, tree.nodes[node_id].modifier_type);
+      return {};
   }
 
-  for (auto child_id : tree.nodes[node_id].children) {
-    ret += toString(tree, child_id, negate);
+  if (children.size() == 1) {  // Only the value: the function is (total-cost)
+    ret += " (total-cost)";
+  }
+  for (auto child_id : children) {
+    ret += " " + toString(tree, child_id, false);
   }
   ret += ")";
 
@@ -1035,7 +985,8 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
     return nullptr;
   }
 
-  auto default_node_type = plansys2_msgs::msg::Node::UNKNOWN;
+  // At the root, as in a goal or a condition, a name is a predicate
+  auto default_node_type = plansys2_msgs::msg::Node::PREDICATE;
   switch (parent) {
     case plansys2_msgs::msg::Node::AND:
       default_node_type = plansys2_msgs::msg::Node::PREDICATE;
@@ -1126,6 +1077,16 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
         return node;
       }
     case plansys2_msgs::msg::Node::FUNCTION: {
+        if (wexpr.empty() || wexpr.front() != '(') {
+          // A bare name is an object, as in (= ?r r2d2): functions go in parentheses
+          auto node = std::make_shared<plansys2_msgs::msg::Node>();
+          node->node_type = plansys2_msgs::msg::Node::CONSTANT;
+          node->node_id = tree.nodes.size();
+          node->name = wexpr;
+          node->negate = negate;
+          tree.nodes.push_back(*node);
+          return node;
+        }
         auto node = std::make_shared<plansys2_msgs::msg::Node>(fromStringFunction(wexpr));
         node->node_id = tree.nodes.size();
         node->negate = negate;
@@ -1175,7 +1136,9 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
         auto node = std::make_shared<plansys2_msgs::msg::Node>();
         node->node_type = node_type;
         node->node_id = tree.nodes.size();
-        node->value = std::stod(wexpr);
+        if (!parseNumber(wexpr, node->value)) {
+          throw std::runtime_error("Wrong number [" + wexpr + "]");
+        }
         node->negate = negate;
         tree.nodes.push_back(*node);
 
@@ -1260,6 +1223,9 @@ plansys2_msgs::msg::Node fromStringPredicate(const std::string & predicate)
   while (iss >> token) {
     tokens.push_back(token);
   }
+  if (tokens.empty()) {
+    throw std::runtime_error("Empty predicate");
+  }
 
   ret.name = tokens[0];
 
@@ -1281,7 +1247,9 @@ plansys2_msgs::msg::Node fromStringExists(const std::string & exists)
   ret.node_type = plansys2_msgs::msg::Node::EXISTS;
   ret.value = 0;
 
-  size_t open = exists.find("(", exists.find_first_of("ef"));
+  // The variable list is the first '(' after the quantifier
+  const auto [quantifier, position] = headToken(exists);
+  size_t open = exists.find("(", static_cast<size_t>(position) + quantifier.size());
   size_t close = (open == std::string::npos) ? std::string::npos : exists.find(")", open);
   if (close == std::string::npos) {
     return ret;
@@ -1313,29 +1281,36 @@ plansys2_msgs::msg::Node fromStringExists(const std::string & exists)
 
 plansys2_msgs::msg::Node fromStringFunction(const std::string & function)
 {
+  // "(f a b)", "(f a b) 1.5" or "(= (f a b) 1.5)": the name, the parameters and the value
   plansys2_msgs::msg::Node ret;
   ret.node_type = plansys2_msgs::msg::Node::FUNCTION;
 
-  std::regex name_regexp("[a-zA-Z][a-zA-Z0-9_\\-]*");
-  std::regex number_regexp("[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)");
-
-  std::smatch match;
-  std::string temp = function;
-
-  if (std::regex_search(temp, match, name_regexp)) {
-    ret.name = match.str(0);
-    temp = match.suffix().str();
+  std::vector<std::string> tokens;
+  for (size_t pos = 0; pos < function.size(); ) {
+    if (isBlank(function[pos]) || function[pos] == '(' || function[pos] == ')') {
+      pos++;
+      continue;
+    }
+    tokens.push_back(tokenAt(function, pos));
+    pos += tokens.back().size();
   }
 
-  while (std::regex_search(temp, match, name_regexp)) {
+  size_t i = 0;
+  if (i < tokens.size() && tokens[i] == "=") {
+    i++;
+  }
+  if (i < tokens.size()) {
+    ret.name = tokens[i++];
+  }
+  for (; i < tokens.size(); i++) {
+    double value;
+    if (parseNumber(tokens[i], value)) {
+      ret.value = value;
+      break;
+    }
     plansys2_msgs::msg::Param param;
-    param.name = match.str(0);
+    param.name = tokens[i];
     ret.parameters.push_back(param);
-    temp = match.suffix().str();
-  }
-
-  if (std::regex_search(temp, match, number_regexp)) {
-    ret.value = std::stod(match.str(0));
   }
 
   return ret;
@@ -1621,7 +1596,7 @@ bool checkNodeEquality(
   }
 
   if (first.node_type == plansys2_msgs::msg::Node::NUMBER) {
-    if (abs(first.value - second.value) > 1e-9) {
+    if (std::fabs(first.value - second.value) > 1e-9) {
       return false;
     }
   }

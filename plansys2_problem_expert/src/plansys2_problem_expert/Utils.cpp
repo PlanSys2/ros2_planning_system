@@ -368,6 +368,13 @@ std::tuple<bool, bool, double> evaluate_node(
           false, changes);
 
         if (!std::get<0>(left) || !std::get<0>(right)) {
+          // (total-cost) is tracked only if the problem sets it
+          const auto & target = tree.nodes[tree.nodes[node_id].children[0]];
+          if (target.node_type == plansys2_msgs::msg::Node::FUNCTION &&
+            target.name == "total-cost" && target.parameters.empty() && std::get<0>(right))
+          {
+            return std::make_tuple(true, true, 0);
+          }
           return std::make_tuple(false, false, 0);
         }
 

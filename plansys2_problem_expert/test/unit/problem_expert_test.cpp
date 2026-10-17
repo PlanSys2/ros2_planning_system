@@ -1138,7 +1138,7 @@ TEST(problem_expert, metric_set_get_clear)
   ASSERT_EQ(metric.optimization, plansys2_msgs::msg::Metric::MAXIMIZE);
   ASSERT_EQ(
     parser::pddl::toString(metric),
-    "maximize (+  (room_distance bedroom kitchen) (*  2.000000 (total-time)))");
+    "maximize (+ (room_distance bedroom kitchen) (* 2.000000 (total-time)))");
 
   // A plain number is a valid, if useless, metric
   ASSERT_TRUE(problem_expert.setMetric(plansys2::Metric("minimize 0")));
@@ -1275,13 +1275,13 @@ TEST(problem_expert, metric_from_add_problem)
   auto metric = problem_expert.getMetric();
   ASSERT_EQ(metric.optimization, plansys2_msgs::msg::Metric::MAXIMIZE);
   ASSERT_EQ(
-    parser::pddl::toString(metric), "maximize (*  (room_distance bedroom kitchen) (total-time))");
+    parser::pddl::toString(metric), "maximize (* (room_distance bedroom kitchen) (total-time))");
 
   // Without :metric the previous metric is kept, as the goal
   ASSERT_TRUE(problem_expert.addProblem(head + ")"));
   ASSERT_EQ(
     parser::pddl::toString(problem_expert.getMetric()),
-    "maximize (*  (room_distance bedroom kitchen) (total-time))");
+    "maximize (* (room_distance bedroom kitchen) (total-time))");
 
   // Malformed metrics reject the whole problem and change nothing
   const auto instances = problem_expert.getInstances().size();
@@ -1303,7 +1303,7 @@ TEST(problem_expert, metric_from_add_problem)
     EXPECT_EQ(problem_expert.getInstances().size(), instances) << m;
     EXPECT_EQ(
       parser::pddl::toString(problem_expert.getMetric()),
-      "maximize (*  (room_distance bedroom kitchen) (total-time))") << m;
+      "maximize (* (room_distance bedroom kitchen) (total-time))") << m;
   }
 
   // A metric that parses but has the wrong types is left out, as an invalid goal:
@@ -1312,7 +1312,7 @@ TEST(problem_expert, metric_from_add_problem)
     problem_expert.addProblem(head + "(:metric minimize (room_distance r2d2 kitchen)))"));
   ASSERT_EQ(
     parser::pddl::toString(problem_expert.getMetric()),
-    "maximize (*  (room_distance bedroom kitchen) (total-time))");
+    "maximize (* (room_distance bedroom kitchen) (total-time))");
 }
 
 TEST(problem_expert, metric_follows_domain_updates)

@@ -32,7 +32,6 @@ namespace parser
 namespace pddl
 {
 
-/// Removes newlines, duplicated spaces, tabs and spaces from parenthesis
 /// Deepest parenthesis nesting accepted in PDDL text: deeper input is rejected
 /// instead of risking a stack overflow in the recursive parsers
 constexpr int kMaxNestingDepth = 256;
@@ -63,14 +62,27 @@ bool validateTree(const plansys2_msgs::msg::Tree & tree, std::string & error);
 bool isValidName(const std::string & name);
 
 /**
+ * \brief Reads a whole text as a PDDL number, whatever the locale: an optional sign,
+ *        digits with an optional point, and an optional exponent ("1e-7").
+ * \param[in] text The text; blanks around it are ignored
+ * \param[out] value The number, only set when the text is one
+ * \return true if the text is a finite number
+ */
+bool parseNumber(const std::string & text, double & value);
+
+/**
+ * \brief Leaves one space between tokens, none after '(' or before ')' and none at the
+ *        ends; tabs and newlines count as spaces.
  * \param[in] expr The expression to be reduced
  * \return The reduced expression
  */
 std::string getReducedString(const std::string & expr);
 
-/// Returns node type corresponding to the string input
+/// Returns the node type of an expression, given by its operator (the first token
+/// after its '('), never by a name that contains one
 /**
- * \param[in] input The input string
+ * \param[in] expr The expression
+ * \param[in] def The type when there is no operator, e.g. PREDICATE or FUNCTION
  * \return The node type
  */
 uint8_t getNodeType(const std::string & expr, uint8_t def = plansys2_msgs::msg::Node::UNKNOWN);
@@ -80,7 +92,7 @@ uint8_t getNodeType(const std::string & expr, uint8_t def = plansys2_msgs::msg::
  * \param[in] input The input string
  * \return result <- tuple(uint8_t, int)
  *         result(0) The expression type
- *         result(1) The start position of the first occurrence
+ *         result(1) The position of the operator, INT_MAX if there is none
  */
 std::tuple<uint8_t, int> getExpr(const std::string & input);
 
@@ -96,7 +108,7 @@ uint8_t getExprType(const std::string & input);
  * \param[in] input The input string
  * \return result <- tuple(uint8_t, int)
  *         result(0) The function modifier type
- *         result(1) The start position of the first occurrence
+ *         result(1) The position of the modifier, INT_MAX if there is none
  */
 std::tuple<uint8_t, int> getFunMod(const std::string & input);
 
