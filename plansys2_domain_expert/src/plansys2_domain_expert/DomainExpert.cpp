@@ -27,6 +27,51 @@
 namespace plansys2
 {
 
+namespace
+{
+
+// The blocks of a domain that PlanSys2 does not read, "(:process heat)": the reader drops them
+std::vector<std::string> unread_blocks(const std::string & domain)
+{
+  static const std::vector<std::string> read = {
+    "domain", ":requirements", ":types", ":constants", ":predicates", ":functions", ":action",
+    ":durative-action", ":derived"};
+  std::vector<std::string> ret;
+  int depth = 0;
+  for (size_t i = 0; i < domain.size(); i++) {
+    if (domain[i] == ';') {
+      i = domain.find('\n', i);
+      if (i == std::string::npos) {
+        break;
+      }
+    } else if (domain[i] == ')') {
+      depth--;
+    } else if (domain[i] == '(' && ++depth == 2) {
+      // Its head, and the name after it
+      std::vector<std::string> words;
+      size_t j = i + 1;
+      while (words.size() < 2 && j < domain.size() && domain[j] != '(' && domain[j] != ')') {
+        const auto start = domain.find_first_not_of(" \t\r\n", j);
+        if (start == std::string::npos || domain[start] == '(' || domain[start] == ')') {
+          break;
+        }
+        j = domain.find_first_of(" \t\r\n()", start);
+        auto word = domain.substr(start, j - start);
+        std::transform(word.begin(), word.end(), word.begin(), ::tolower);
+        words.push_back(word);
+      }
+      if (!words.empty() && std::find(read.begin(), read.end(), words[0]) == read.end()) {
+        ret.push_back(
+          "(" + words[0] + (words.size() > 1 && words[0] != ":constraints" ? " " + words[1] : "") +
+          ")");
+      }
+    }
+  }
+  return ret;
+}
+
+}  // namespace
+
 DomainExpert::DomainExpert(const std::string & domain)
 {
   extendDomain(domain);
@@ -46,6 +91,15 @@ DomainExpert::extendDomain(const std::string & domain)
   } catch (const std::exception & e) {
     parse_error_ = e.what();
     std::cerr << "Error parsing PDDL: " << e.what() << std::endl;
+  }
+
+  // Dropped, they were lost: processes, events and constraints would just not happen
+  const auto unread = unread_blocks(domain);
+  if (parse_error_.empty() && !unread.empty()) {
+    parse_error_ = "PlanSys2 does not handle";
+    for (const auto & block : unread) {
+      parse_error_ += " " + block;
+    }
   }
 }
 

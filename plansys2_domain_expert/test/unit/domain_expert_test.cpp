@@ -21,6 +21,7 @@
 #include <regex>
 #include <iostream>
 #include <memory>
+#include <utility>
 
 #include "ament_index_cpp/get_package_share_path.hpp"
 
@@ -669,6 +670,22 @@ TEST(domain_expert, unreadable_and_unsupported_are_reported)
   const auto unsupported = when.getUnsupported();
   ASSERT_EQ(unsupported.size(), 1u);
   EXPECT_NE(unsupported[0].find("action push"), std::string::npos) << unsupported[0];
+
+  // PDDL+ and constraints: one clear line, not a parser token
+  const std::vector<std::pair<std::string, std::string>> plus = {
+    {"domain_process.pddl", "PlanSys2 does not handle (:process heat)"},
+    {"domain_event.pddl", "PlanSys2 does not handle (:event overheat)"},
+    {"domain_constraints.pddl", "PlanSys2 does not handle (:constraints)"}};
+  for (const auto & [file, error] : plus) {
+    plansys2::DomainExpert domain(read(file));
+    EXPECT_EQ(domain.getParseError(), error);
+  }
+
+  // All of them, in order, when there are several
+  plansys2::DomainExpert both(
+    read("domain_process.pddl").substr(0, read("domain_process.pddl").rfind(')')) +
+    " (:event overheat :parameters () :precondition (and) :effect (and)))");
+  EXPECT_EQ(both.getParseError(), "PlanSys2 does not handle (:process heat) (:event overheat)");
 
   plansys2::DomainExpert simple(read("domain_simple.pddl"));
   EXPECT_TRUE(simple.getParseError().empty());
