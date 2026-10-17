@@ -66,6 +66,10 @@ void RQTPlan::initPlugin(qt_gui_cpp::PluginContext & context)
   connect(controller_spin_timer_, SIGNAL(timeout()), this, SLOT(spin_loop()));
   controller_spin_timer_->start(100);
 
+  // Before the subscriptions: the latched plan may come at once
+  need_update_plan_ = false;
+  need_update_info_ = false;
+
   action_execution_info_ = node_->create_subscription<plansys2_msgs::msg::ActionExecutionInfo>(
     "action_execution_info", 100,
     std::bind(&RQTPlan::execution_info_callback, this, _1));
@@ -73,9 +77,6 @@ void RQTPlan::initPlugin(qt_gui_cpp::PluginContext & context)
   executing_plan_ = node_->create_subscription<plansys2_msgs::msg::Plan>(
     "executing_plan", rclcpp::QoS(100).transient_local(),
     std::bind(&RQTPlan::plan_callback, this, _1));
-
-  need_update_plan_ = false;
-  need_update_info_ = false;
 }
 
 void RQTPlan::shutdownPlugin()
