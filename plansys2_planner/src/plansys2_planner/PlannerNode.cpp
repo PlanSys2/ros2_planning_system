@@ -216,8 +216,14 @@ plansys2_msgs::msg::PlanArray
 PlannerNode::solve(
   const std::string & domain, const std::string & problem, std::string & error_info)
 {
+  // Only the solvers that plan with what the task uses; all of them if none does
+  const auto chosen = choose_solvers(pddl_requirements(domain, problem));
+
   std::map<std::string, std::future<std::optional<plansys2_msgs::msg::Plan>>> futures;
   for (auto & solver : solvers_) {
+    if (!chosen.count(solver.first)) {
+      continue;
+    }
     futures[solver.first] = std::async(std::launch::async,
       &plansys2::PlanSolverBase::getPlan, solver.second,
       domain, problem, get_namespace(), solver_timeout_);
@@ -246,7 +252,7 @@ PlannerNode::solve(
         reasons.push_back(
           id + " timed out after " + std::to_string(solver_timeout_.seconds()) + " s");
       } else {
-        reasons.push_back(id + " found no plan");
+        reasons.push_back(id + " found no plan" + chosen.at(id));
       }
     } catch (const std::exception & e) {
       RCLCPP_ERROR(get_logger(), "Solver %s failed: %s", id.c_str(), e.what());
@@ -272,6 +278,28 @@ PlannerNode::solve(
   }
 
   return plans;
+}
+
+std::map<std::string, std::string>
+PlannerNode::choose_solvers(const std::set<std::string> & needed) const
+{
+  std::map<std::string, std::string> chosen, all;
+  for (const auto & [id, solver] : solvers_) {
+    const auto missing = missing_requirements(needed, solver->supported_requirements());
+    if (missing.empty()) {
+      chosen[id] = "";
+    } else {
+      std::string text = " (it does not plan with";
+      for (const auto & requirement : missing) {
+        text += " " + requirement;
+      }
+      all[id] = text + ")";
+    }
+  }
+  if (chosen.empty()) {
+    return all;  // Each one may still find a plan, and if not, the reason says why
+  }
+  return chosen;
 }
 
 std::string
@@ -328,7 +356,9 @@ PlannerNode::validate_domain_service_callback(
 {
   (void)request_header;
   try {
-    response->success = solvers_.begin()->second->isDomainValid(
+    // The first solver that plans with what the domain uses
+    const auto chosen = choose_solvers(pddl_requirements(request->domain));
+    response->success = solvers_.at(chosen.begin()->first)->isDomainValid(
       request->domain, get_namespace());
     if (!response->success) {
       response->error_info = "Domain is not valid";

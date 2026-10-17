@@ -255,6 +255,15 @@ POPFPlanSolver::parse_plan_result(const std::string & plan_path)
   }
 }
 
+std::set<std::string>
+POPFPlanSolver::supported_requirements() const
+{
+  return {
+    ":strips", ":typing", ":equality", ":existential-preconditions", ":universal-preconditions",
+    ":quantified-preconditions", ":fluents", ":numeric-fluents", ":durative-actions",
+    ":timed-initial-literals", ":preferences"};
+}
+
 bool
 POPFPlanSolver::isDomainValid(
   const std::string & domain,

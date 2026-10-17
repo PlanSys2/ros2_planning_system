@@ -29,6 +29,7 @@
 #include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 #include "pluginlib/class_loader.hpp"
+#include "plansys2_core/PddlRequirements.hpp"
 #include "plansys2_core/PlanSolverBase.hpp"
 #include "plansys2_core/TestUtils.hpp"
 
@@ -470,6 +471,63 @@ TEST(popf_plan_solver, parse_plan_result_tolerates_unexpected_lines)
   ASSERT_FALSE(planner->parse_plan_result((folder / "missing").string()));
 
   std::filesystem::remove_all(folder);
+}
+
+// What popf declares is what it plans with: the planner gives it only those tasks
+TEST(popf_plan_solver, supported_requirements_are_what_popf_plans_with)
+{
+  auto planner = make_solver("popf_requirements");
+  const auto supported = planner->supported_requirements();
+  EXPECT_TRUE(
+    plansys2::missing_requirements(
+      plansys2::pddl_requirements(
+        read_test_file("domain_simple.pddl"), read_test_file("problem_simple_1.pddl")),
+      supported).empty());
+
+  // Each one alone, in a task popf solves without it
+  const std::string domain =
+    "(define (domain d) (:requirements :strips :negative-preconditions :conditional-effects)"
+    " (:predicates (ready) (open) (lit))";
+  const std::string problem = "(define (problem p) (:domain d) (:init (ready)) (:goal (lit)))";
+  const std::vector<std::pair<std::string, std::string>> unsupported = {
+    {":negative-preconditions",
+      " (:action open-it :parameters () :precondition (not (open)) :effect (and (lit))))"},
+    {":conditional-effects",
+      " (:action light :parameters () :precondition (ready) :effect (when (ready) (lit))))"},
+    {":disjunctive-preconditions",
+      " (:action light :parameters () :precondition (or (ready) (open)) :effect (lit)))"},
+  };
+  for (const auto & [requirement, action] : unsupported) {
+    EXPECT_EQ(
+      plansys2::missing_requirements(
+        plansys2::pddl_requirements(domain + action, problem), supported),
+      std::vector<std::string>{requirement});
+    EXPECT_FALSE(planner->getPlan(domain + action, problem, "popf_requirements")) << requirement;
+  }
+  EXPECT_TRUE(
+    planner->getPlan(
+      domain + " (:action light :parameters () :precondition (ready) :effect (lit)))", problem,
+      "popf_requirements"));
+
+  // Its parser rejects :action-costs; the same costs with :fluents plan
+  const std::string costs =
+    " (:predicates (ready) (lit)) (:functions (total-cost))"
+    " (:action light :parameters () :precondition (ready)"
+    "  :effect (and (lit) (increase (total-cost) 1))))";
+  const std::string cost_problem =
+    "(define (problem p) (:domain d) (:init (ready) (= (total-cost) 0)) (:goal (lit))"
+    " (:metric minimize (total-cost)))";
+  const std::string with_costs = "(define (domain d) (:requirements :strips :action-costs)" + costs;
+  EXPECT_EQ(
+    plansys2::missing_requirements(
+      plansys2::pddl_requirements(with_costs, cost_problem), supported),
+    std::vector<std::string>{":action-costs"});
+  EXPECT_FALSE(planner->getPlan(with_costs, cost_problem, "popf_requirements"));
+  const std::string with_fluents = "(define (domain d) (:requirements :strips :fluents)" + costs;
+  EXPECT_TRUE(
+    plansys2::missing_requirements(
+      plansys2::pddl_requirements(with_fluents, cost_problem), supported).empty());
+  EXPECT_TRUE(planner->getPlan(with_fluents, cost_problem, "popf_requirements"));
 }
 
 TEST(popf_plan_solver, unwritable_output_dir_fails_without_running_popf)

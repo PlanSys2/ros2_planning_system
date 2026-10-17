@@ -15,7 +15,9 @@
 #ifndef PLANSYS2_PLANNER__PLANNERNODE_HPP_
 #define PLANSYS2_PLANNER__PLANNERNODE_HPP_
 
+#include <map>
 #include <memory>
+#include <set>
 #include <unordered_map>
 #include <string>
 #include <vector>
@@ -23,6 +25,7 @@
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 
+#include "plansys2_core/PddlRequirements.hpp"
 #include "plansys2_core/PlanSolverBase.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
@@ -181,7 +184,10 @@ private:
   rclcpp::Service<plansys2_msgs::srv::GetPlanArray>::SharedPtr get_plan_array_service_;
   rclcpp::Service<plansys2_msgs::srv::ValidateDomain>::SharedPtr validate_domain_service_;
 
-  // Runs every solver; when none finds a plan, error_info says why (#434)
+  // The solvers that plan with all of needed, or all of them if none does, each with what it
+  // lacks (" (it does not plan with :time)"), empty if nothing
+  std::map<std::string, std::string> choose_solvers(const std::set<std::string> & needed) const;
+  // Runs the chosen solvers; when none finds a plan, error_info says why (#434)
   plansys2_msgs::msg::PlanArray solve(
     const std::string & domain, const std::string & problem, std::string & error_info);
   // "Invalid PDDL ..." if the domain or problem does not parse, empty otherwise

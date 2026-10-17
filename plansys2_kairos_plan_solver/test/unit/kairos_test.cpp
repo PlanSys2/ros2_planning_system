@@ -26,6 +26,7 @@
 #include "ament_index_cpp/get_package_share_path.hpp"
 #include "gtest/gtest.h"
 #include "kairos/kairos.hpp"
+#include "plansys2_core/PddlRequirements.hpp"
 #include "plansys2_core/PlanSolverBase.hpp"
 #include "plansys2_kairos_plan_solver/kairos_plan_solver.hpp"
 #include "pluginlib/class_loader.hpp"
@@ -277,6 +278,12 @@ TEST(kairos_plan_solver, more_domains_than_the_cache)
       }
     }
   }
+}
+
+TEST(kairos_plan_solver, plans_with_every_requirement)
+{
+  auto f = make_solver();
+  EXPECT_EQ(f.solver->supported_requirements(), plansys2::known_pddl_requirements());
 }
 
 TEST(kairos_plan_solver, sequential_numeric_plan)

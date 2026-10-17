@@ -18,6 +18,7 @@
 #include <filesystem>
 #include <optional>
 #include <memory>
+#include <set>
 #include <string>
 
 #include "plansys2_core/PlanSolverBase.hpp"
@@ -100,6 +101,16 @@ public:
   bool isDomainValid(
     const std::string & domain,
     const std::string & node_namespace = "");
+
+  /**
+   * @brief What popf gives valid plans for. Not: negated or disjunctive conditions, when,
+   * derived predicates, :action-costs (its parser rejects it; total-cost with :fluents works),
+   * ?duration inequalities and #t (it plans them at their bounds), constraints, object
+   * fluents and PDDL+.
+   *
+   * @return The requirements.
+   */
+  std::set<std::string> supported_requirements() const override;
 
 protected:
   /**

@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "kairos/kairos.hpp"
+#include "plansys2_core/PddlRequirements.hpp"
 #include "plansys2_kairos_plan_solver/kairos_plan_solver.hpp"
 #include "plansys2_msgs/msg/plan_item.hpp"
 #include "pluginlib/class_list_macros.hpp"
@@ -293,6 +294,11 @@ std::shared_ptr<const kairos::Domain> KairosPlanSolver::parse_domain(const std::
     domains_.pop_back();
   }
   return result;
+}
+
+std::set<std::string> KairosPlanSolver::supported_requirements() const
+{
+  return known_pddl_requirements();
 }
 
 bool KairosPlanSolver::isDomainValid(

@@ -19,6 +19,7 @@ find_package(plansys2_msgs REQUIRED)
 add_library(${PROJECT_NAME} SHARED
   src/plansys2_core/Action.cpp
   src/plansys2_core/DerivedResolutionGraph.cpp
+  src/plansys2_core/PddlRequirements.cpp
   src/plansys2_core/PlanSolverBase.cpp
   src/plansys2_core/State.cpp
   src/plansys2_core/Utils.cpp

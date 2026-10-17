@@ -20,6 +20,7 @@
 #include <mutex>
 #include <optional>
 #include <list>
+#include <set>
 #include <string>
 
 #include "plansys2_core/PlanSolverBase.hpp"
@@ -69,6 +70,9 @@ public:
   bool isDomainValid(
     const std::string & domain,
     const std::string & node_namespace = "") override;
+
+  /// @brief All of PDDL, PDDL+ included.
+  std::set<std::string> supported_requirements() const override;
 
 private:
   std::string param(const std::string & name) const {return plugin_name_ + "." + name;}
