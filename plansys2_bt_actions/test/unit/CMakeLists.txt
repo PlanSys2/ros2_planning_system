@@ -32,6 +32,15 @@ foreach(bt_plugin ${plugin_libs})
   target_compile_definitions(${bt_plugin} PRIVATE BT_PLUGIN_EXPORT)
 endforeach()
 
+ament_add_gtest(bt_action_node_test bt_action_node_test.cpp TIMEOUT 120)
+target_link_libraries(bt_action_node_test
+  ${PROJECT_NAME}
+  ${test_msgs_TARGETS}
+  rclcpp_action::rclcpp_action
+  rclcpp_lifecycle::rclcpp_lifecycle
+  behaviortree_cpp::behaviortree_cpp
+)
+
 ament_add_gtest(bt_action_test bt_action_test.cpp)
 target_link_libraries(bt_action_test
   ${PROJECT_NAME}

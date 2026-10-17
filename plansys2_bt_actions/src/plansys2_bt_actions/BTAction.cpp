@@ -59,6 +59,12 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
     RCLCPP_INFO_STREAM(get_logger(), "plugin: [" << plugin << "]");
   }
 
+  // First, as it reads rate: bt_loop_duration_ comes from it
+  auto ret = ActionExecutorClient::on_configure(previous_state);
+  if (ret != rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS) {
+    return ret;
+  }
+
   int default_server_timeout;
   get_parameter("server_timeout", default_server_timeout);
   default_server_timeout_ = std::chrono::milliseconds(default_server_timeout);
@@ -88,7 +94,7 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
     "wait_for_service_timeout", wait_for_service_timeout_);
   blackboard_->set<std::chrono::milliseconds>("bt_loop_duration", bt_loop_duration_);
 
-  return ActionExecutorClient::on_configure(previous_state);
+  return ret;
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
@@ -104,6 +110,10 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
 {
   // If a new tree is created, than the Groot2 Publisher must be destroyed
   reset_groot_monitor();
+
+  // Nothing of the previous activation: its message, its progress
+  blackboard_->set<std::string>("out_msg", "");
+  blackboard_->set<float>("completion", 0.0f);
 
   try {
     tree_ = factory_.createTreeFromFile(bt_xml_file_, blackboard_);
@@ -199,16 +209,24 @@ void BTAction::do_work()
 {
   if (!finished_) {
     BT::NodeStatus result;
+    // An exception ends the action once: there is no result to look at
     try {
       result = tree_.rootNode()->executeTick();
     } catch (const BT::LogicError & e) {
       RCLCPP_ERROR_STREAM(get_logger(), e.what());
+      finished_ = true;
       finish(false, 0.0, "BTAction behavior tree threw a BT::LogicError");
+      return;
     } catch (const BT::RuntimeError & e) {
       RCLCPP_ERROR_STREAM(get_logger(), e.what());
+      finished_ = true;
       finish(false, 0.0, "BTAction behavior tree threw a BT::RuntimeError");
+      return;
     } catch (const std::exception & e) {
-      finish(false, 0.0, "BTAction behavior tree threw an unknown exception");
+      RCLCPP_ERROR_STREAM(get_logger(), e.what());
+      finished_ = true;
+      finish(false, 0.0, "BTAction behavior tree threw an exception");
+      return;
     }
 
     std::string out_msg;
