@@ -18,12 +18,13 @@ var searchData=
   ['action_5fname_5f_15',['action_name_',['../classplansys2_1_1BtActionNode.html#ab071bd50ed42fb52e0d7341d7ec27378',1,'plansys2::BtActionNode::action_name_'],['../classplansys2_1_1ActionExecutor.html#ab071bd50ed42fb52e0d7341d7ec27378',1,'plansys2::ActionExecutor::action_name_']]],
   ['action_5fparams_5f_16',['action_params_',['../classplansys2_1_1ActionExecutor.html#ae6db1dd19a8d9aed4a8521a88500b9d0',1,'plansys2::ActionExecutor']]],
   ['action_5ftime_5fprecision_5f_17',['action_time_precision_',['../classplansys2_1_1STNBTBuilder.html#ab0243c71d78858105ef39bbb8666fbbc',1,'plansys2::STNBTBuilder']]],
-  ['actions_18',['actions',['../structplansys2_1_1Domain.html#a2cc1a4189bdbdaf509e3284ef38c914d',1,'plansys2::Domain::actions'],['../classparser_1_1pddl_1_1Domain.html#a2199b6e330b250368346cbab2749f5d9',1,'parser::pddl::Domain::actions']]],
+  ['actions_18',['actions',['../structplansys2_1_1Domain.html#a2cc1a4189bdbdaf509e3284ef38c914d',1,'plansys2::Domain::actions'],['../classparser_1_1pddl_1_1Domain.html#a2199b6e330b250368346cbab2749f5d9',1,'parser::pddl::Domain::actions'],['../classDomain.html#a2199b6e330b250368346cbab2749f5d9',1,'Domain::actions']]],
   ['activation_5ffailures_5f_19',['activation_failures_',['../classplansys2_1_1ActionExecutor.html#ae2ada1afc57bb56465007277e15a8bce',1,'plansys2::ActionExecutor']]],
-  ['adl_20',['adl',['../classparser_1_1pddl_1_1Domain.html#ae4dd3d6e93193d127f2d3bc53985e56e',1,'parser::pddl::Domain']]],
-  ['at_5fend_5feffects_5fapplied_21',['at_end_effects_applied',['../structplansys2_1_1ActionExecutionInfo.html#aa4dfef57ee227f83fa217c5db7592c5a',1,'plansys2::ActionExecutionInfo']]],
-  ['at_5fend_5feffects_5fapplied_5ftime_22',['at_end_effects_applied_time',['../structplansys2_1_1ActionExecutionInfo.html#a777f0a8056f4eac217d1e8163ac318a1',1,'plansys2::ActionExecutionInfo']]],
-  ['at_5fstart_5fchanges_23',['at_start_changes',['../structplansys2_1_1ActionExecutionInfo.html#a497ae45186a731f07f280e555b250882',1,'plansys2::ActionExecutionInfo']]],
-  ['at_5fstart_5feffects_5fapplied_24',['at_start_effects_applied',['../structplansys2_1_1ActionExecutionInfo.html#a19eba18809d8f4a244e13097765fd83d',1,'plansys2::ActionExecutionInfo']]],
-  ['at_5fstart_5feffects_5fapplied_5ftime_25',['at_start_effects_applied_time',['../structplansys2_1_1ActionExecutionInfo.html#ac20ef741e1a7e38b38e485caa0af2890',1,'plansys2::ActionExecutionInfo']]]
+  ['adl_20',['adl',['../classparser_1_1pddl_1_1Domain.html#ae4dd3d6e93193d127f2d3bc53985e56e',1,'parser::pddl::Domain::adl'],['../classDomain.html#ae4dd3d6e93193d127f2d3bc53985e56e',1,'Domain::adl']]],
+  ['args_21',['args',['../classparser_1_1pddl_1_1CompositeExpression.html#acbf88aec34f4eea5ba961d851eddfda4',1,'parser::pddl::CompositeExpression']]],
+  ['at_5fend_5feffects_5fapplied_22',['at_end_effects_applied',['../structplansys2_1_1ActionExecutionInfo.html#aa4dfef57ee227f83fa217c5db7592c5a',1,'plansys2::ActionExecutionInfo']]],
+  ['at_5fend_5feffects_5fapplied_5ftime_23',['at_end_effects_applied_time',['../structplansys2_1_1ActionExecutionInfo.html#a777f0a8056f4eac217d1e8163ac318a1',1,'plansys2::ActionExecutionInfo']]],
+  ['at_5fstart_5fchanges_24',['at_start_changes',['../structplansys2_1_1ActionExecutionInfo.html#a497ae45186a731f07f280e555b250882',1,'plansys2::ActionExecutionInfo']]],
+  ['at_5fstart_5feffects_5fapplied_25',['at_start_effects_applied',['../structplansys2_1_1ActionExecutionInfo.html#a19eba18809d8f4a244e13097765fd83d',1,'plansys2::ActionExecutionInfo']]],
+  ['at_5fstart_5feffects_5fapplied_5ftime_26',['at_start_effects_applied_time',['../structplansys2_1_1ActionExecutionInfo.html#ac20ef741e1a7e38b38e485caa0af2890',1,'plansys2::ActionExecutionInfo']]]
 ];

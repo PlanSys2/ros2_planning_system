@@ -1,0 +1,19 @@
+<map id="BtActionNodeTest" name="BtActionNodeTest">
+<area shape="rect" id="Node000001" title=" " alt="" coords="300,188,428,214"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="66,5,113,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="129,13,163,15,201,20,241,31,277,49,310,81,335,120,352,158,361,187,356,188,347,159,330,122,306,85,274,54,239,36,200,25,162,20,129,19"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="50,55,129,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="145,69,210,81,245,91,277,107,302,125,325,146,356,186,352,189,321,150,299,129,274,111,243,96,209,86,144,74"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="5,108,174,134"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="190,132,277,154,311,169,342,185,339,190,309,174,275,159,188,137"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="9,161,170,187"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="186,181,299,192,299,197,185,186"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="36,215,143,240"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="158,226,215,224,275,219,312,212,313,217,276,224,216,229,158,231"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="61,268,118,294"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="134,278,201,271,239,264,275,253,313,234,345,212,348,216,316,238,277,258,240,269,202,276,134,283"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="70,321,109,347"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="124,332,196,326,236,316,274,300,301,281,323,257,353,212,358,215,327,260,304,285,277,305,238,322,197,331,124,338"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="19,375,160,400"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="175,386,227,377,252,368,274,355,307,322,331,282,348,243,357,213,362,215,353,245,336,285,311,326,277,359,254,373,228,382,176,392"/>
+</map>

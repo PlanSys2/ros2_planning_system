@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">public</span>:</div>
 <div class="foldopen" id="foldopen00037" data-start="{" data-end="}">
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="classFakeLifecycleNode.html#ad4def936d366d89447cfaae761330a62">   37</a></span>  <span class="keyword">explicit</span> <a class="code hl_function" href="classFakeLifecycleNode.html#ad4def936d366d89447cfaae761330a62">FakeLifecycleNode</a>(<span class="keyword">const</span> std::string &amp; name)</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  : Node(name + <span class="stringliteral">&quot;_fake&quot;</span>)</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  : <a class="code hl_typedef" href="string__utils__test_8cpp.html#ac1afc544dc4a5683e7d6ca1df018cc66">Node</a>(name + <span class="stringliteral">&quot;_fake&quot;</span>)</div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>  {</div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    get_state_ = create_service&lt;lifecycle_msgs::srv::GetState&gt;(</div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>      name + <span class="stringliteral">&quot;/get_state&quot;</span>,</div>
@@ -280,6 +280,7 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <div class="ttc" id="aclassSpinner_html_a681f0064ac976972963341181830a548"><div class="ttname"><a href="classSpinner.html#a681f0064ac976972963341181830a548">Spinner::~Spinner</a></div><div class="ttdeci">~Spinner()</div><div class="ttdef"><b>Definition</b> fake_lifecycle_node.hpp:114</div></div>
 <div class="ttc" id="aclassSpinner_html_a7f9975e8ef6c56c5f080e0cc64cae612"><div class="ttname"><a href="classSpinner.html#a7f9975e8ef6c56c5f080e0cc64cae612">Spinner::add</a></div><div class="ttdeci">void add(std::shared_ptr&lt; NodeT &gt; node)</div><div class="ttdef"><b>Definition</b> fake_lifecycle_node.hpp:124</div></div>
 <div class="ttc" id="anamespacestd_html"><div class="ttname"><a href="namespacestd.html">std</a></div><div class="ttdef"><b>Definition</b> JSONUtils.hpp:50</div></div>
+<div class="ttc" id="astring__utils__test_8cpp_html_ac1afc544dc4a5683e7d6ca1df018cc66"><div class="ttname"><a href="string__utils__test_8cpp.html#ac1afc544dc4a5683e7d6ca1df018cc66">Node</a></div><div class="ttdeci">plansys2_msgs::msg::Node Node</div><div class="ttdef"><b>Definition</b> string_utils_test.cpp:30</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -283,7 +283,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:a485e6dd35f6cace344f0cf829ca1fcc7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a PDDL expression represented as a tree.  <br /></td></tr>
 <tr class="memitem:ab40238981569796eb68ae3c3a62fb584" id="r_ab40238981569796eb68ae3c3a62fb584"><td class="memItemLeft">std::tuple&lt; <a class="el" href="classbool.html">bool</a>, <a class="el" href="classbool.html">bool</a>, double &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ab40238981569796eb68ae3c3a62fb584">evaluate</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt; &amp;predicates, std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt; &amp;functions, <a class="el" href="classbool.html">bool</a> apply=false, uint32_t node_id=0)</td></tr>
 <tr class="memdesc:ab40238981569796eb68ae3c3a62fb584"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate a PDDL expression represented as a tree using only local state.  <br /></td></tr>
-<tr class="memitem:aa7e00850519c4ebec006112ac60a2cd1" id="r_aa7e00850519c4ebec006112ac60a2cd1"><td class="memItemLeft"><a class="el" href="structplansys2_1_1Node.html#abf2fb63266a358aa04393a2bb62c9478">Node::Ptr</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa7e00850519c4ebec006112ac60a2cd1">find_stn_node</a> (const <a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> &amp;graph, const std::string &amp;action_id, const std::string &amp;type)</td></tr>
+<tr class="memitem:aa7e00850519c4ebec006112ac60a2cd1" id="r_aa7e00850519c4ebec006112ac60a2cd1"><td class="memItemLeft">Node::Ptr&#160;</td><td class="memItemRight"><a class="el" href="#aa7e00850519c4ebec006112ac60a2cd1">find_stn_node</a> (const <a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> &amp;graph, const std::string &amp;action_id, const std::string &amp;type)</td></tr>
 <tr class="memitem:a3badc6789891cf9c42d6f777150fe2ab" id="r_a3badc6789891cf9c42d6f777150fe2ab"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a3badc6789891cf9c42d6f777150fe2ab">get_action_expression</a> (const std::string &amp;input)</td></tr>
 <tr class="memdesc:a3badc6789891cf9c42d6f777150fe2ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse the action expression from an input string.  <br /></td></tr>
 <tr class="memitem:a9293b830d5b15986fed31f60dfc957b3" id="r_a9293b830d5b15986fed31f60dfc957b3"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a9293b830d5b15986fed31f60dfc957b3">get_action_name</a> (const std::string &amp;input)</td></tr>
@@ -298,6 +298,10 @@ Functions</h2></td></tr>
 <tr class="memitem:a4fd0c820509754c2767490933fd260f4" id="r_a4fd0c820509754c2767490933fd260f4"><td class="memTemplParams" colspan="2">template&lt;typename NodeT&gt; </td></tr>
 <tr class="memitem:a4fd0c820509754c2767490933fd260f4 template"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a4fd0c820509754c2767490933fd260f4">get_plugin_type_param</a> (NodeT node, const std::string &amp;plugin_name)</td></tr>
 <tr class="memdesc:a4fd0c820509754c2767490933fd260f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the plugin type parameter for a given plugin name.  <br /></td></tr>
+<tr class="memitem:ac10a65714e4702c8c46a49cb0cb1fa8c" id="r_ac10a65714e4702c8c46a49cb0cb1fa8c"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:ac10a65714e4702c8c46a49cb0cb1fa8c template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ac10a65714e4702c8c46a49cb0cb1fa8c">hash_combine</a> (std::size_t &amp;seed, const T &amp;value)</td></tr>
+<tr class="memitem:ac37c9afa04d9dcc9e3f21f713f1a4e19" id="r_ac37c9afa04d9dcc9e3f21f713f1a4e19"><td class="memItemLeft">std::size_t&#160;</td><td class="memItemRight"><a class="el" href="#ac37c9afa04d9dcc9e3f21f713f1a4e19">hash_node</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp;node)</td></tr>
+<tr class="memitem:a13f7972e78dbccbe10067d718b8da027" id="r_a13f7972e78dbccbe10067d718b8da027"><td class="memItemLeft">std::size_t&#160;</td><td class="memItemRight"><a class="el" href="#a13f7972e78dbccbe10067d718b8da027">hash_node_variant</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp;node)</td></tr>
 <tr class="memitem:a9be7a44c06f7fbaaca0034565f40612f" id="r_a9be7a44c06f7fbaaca0034565f40612f"><td class="memItemLeft"><a class="el" href="classplansys2_1_1NodeVariant.html">plansys2::NodeVariant</a>&#160;</td><td class="memItemRight"><a class="el" href="#a9be7a44c06f7fbaaca0034565f40612f">nodeMsgToVariant</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp;node_msg)</td></tr>
 <tr class="memitem:a802bf86eb5981268d7cf80d034b4602c" id="r_a802bf86eb5981268d7cf80d034b4602c"><td class="memItemLeft">std::ostream &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a802bf86eb5981268d7cf80d034b4602c">operator&lt;&lt;</a> (std::ostream &amp;os, const <a class="el" href="classplansys2_1_1NodeVariant.html">NodeVariant</a> &amp;node)</td></tr>
 <tr class="memitem:a53fcc777201afa76a12b79464de9d514" id="r_a53fcc777201afa76a12b79464de9d514"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a53fcc777201afa76a12b79464de9d514">operator==</a> (const <a class="el" href="classplansys2_1_1NodeVariant.html">NodeVariant</a> &amp;lhs, const <a class="el" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp;rhs)</td></tr>
@@ -320,6 +324,12 @@ Functions</h2></td></tr>
 <tr class="memdesc:ac06656f4bf3bdcf5400e75f2c4ca59cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits a string into tokens based on a delimiter.  <br /></td></tr>
 <tr class="memitem:a0a3c2a70b4a2bf7be631f51b8312d0c1" id="r_a0a3c2a70b4a2bf7be631f51b8312d0c1"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#a0a3c2a70b4a2bf7be631f51b8312d0c1">undo</a> (const std::vector&lt; <a class="el" href="structplansys2_1_1FactChange.html">FactChange</a> &gt; &amp;changes, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt; problem_client, std::vector&lt; std::string &gt; *kept=nullptr)</td></tr>
 <tr class="memdesc:a0a3c2a70b4a2bf7be631f51b8312d0c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Take back the changes recorded by apply, in reverse order.  <br /></td></tr>
+<tr class="memitem:a3e2618160d1703cff92298d273e8f8d9" id="r_a3e2618160d1703cff92298d273e8f8d9"><td class="memTemplParams" colspan="2">template&lt;typename Key, typename T, typename Hash, typename KeyEqual, typename Alloc&gt; </td></tr>
+<tr class="memitem:a3e2618160d1703cff92298d273e8f8d9 template"><td class="memItemLeft">std::size_t&#160;</td><td class="memItemRight"><a class="el" href="#a3e2618160d1703cff92298d273e8f8d9">unordered_container_hash</a> (const std::unordered_map&lt; Key, T, Hash, KeyEqual, Alloc &gt; &amp;map)</td></tr>
+<tr class="memitem:aa9c1c698b8b1a9e98009943618fd1438" id="r_aa9c1c698b8b1a9e98009943618fd1438"><td class="memTemplParams" colspan="2">template&lt;typename UnorderedContainer&gt; </td></tr>
+<tr class="memitem:aa9c1c698b8b1a9e98009943618fd1438 template"><td class="memItemLeft">std::size_t&#160;</td><td class="memItemRight"><a class="el" href="#aa9c1c698b8b1a9e98009943618fd1438">unordered_container_hash</a> (const UnorderedContainer &amp;container)</td></tr>
+<tr class="memitem:a2cab78c0b7751b876e956f671f29b692" id="r_a2cab78c0b7751b876e956f671f29b692"><td class="memTemplParams" colspan="2">template&lt;typename NodeEdgesMap&gt; </td></tr>
+<tr class="memitem:a2cab78c0b7751b876e956f671f29b692 template"><td class="memItemLeft">std::size_t&#160;</td><td class="memItemRight"><a class="el" href="#a2cab78c0b7751b876e956f671f29b692">unordered_nodeedgesmap_hash</a> (const NodeEdgesMap &amp;map)</td></tr>
 <tr class="memitem:af2567c35d6f459fc430dd979b190e43d" id="r_af2567c35d6f459fc430dd979b190e43d"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="#af2567c35d6f459fc430dd979b190e43d">update_stn_on_event</a> (const <a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> &amp;graph, const std::shared_ptr&lt; <a class="el" href="classplansys2_1_1BTBuilder.html">BTBuilder</a> &gt; &amp;builder, <a class="el" href="#adc723289ab3ed347857fa1a5307734fc">ActionMap</a> &amp;action_map, const std::string &amp;action_id, <a class="el" href="#a21d5e8f8cdaa838586b31007df0a950b">ActionType</a> type, const rclcpp::Time &amp;now)</td></tr>
 <tr class="memitem:a8e07ddf5b5b0e71f767a82424f50286b" id="r_a8e07ddf5b5b0e71f767a82424f50286b"><td class="memTemplParams" colspan="2">template&lt;typename FutureT, typename WaitTimeT&gt; </td></tr>
 <tr class="memitem:a8e07ddf5b5b0e71f767a82424f50286b template"><td class="memItemLeft">std::future_status&#160;</td><td class="memItemRight"><a class="el" href="#a8e07ddf5b5b0e71f767a82424f50286b">wait_for_result</a> (FutureT &amp;future, WaitTimeT time_to_wait)</td></tr>
@@ -1102,7 +1112,7 @@ template&lt;typename NodeT&gt; </div>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structplansys2_1_1Node.html#abf2fb63266a358aa04393a2bb62c9478">Node::Ptr</a> find_stn_node </td>
+          <td class="memname">Node::Ptr find_stn_node </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>graph</em></span>, </td>
         </tr>
@@ -1300,6 +1310,63 @@ template&lt;typename NodeT&gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>String containing the plugin type. </dd></dl>
+
+</div>
+</div>
+<a id="ac10a65714e4702c8c46a49cb0cb1fa8c" name="ac10a65714e4702c8c46a49cb0cb1fa8c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac10a65714e4702c8c46a49cb0cb1fa8c">&#9670;&#160;</a></span>hash_combine()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void hash_combine </td>
+          <td>(</td>
+          <td class="paramtype">std::size_t &amp;</td>          <td class="paramname"><span class="paramname"><em>seed</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T &amp;</td>          <td class="paramname"><span class="paramname"><em>value</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac37c9afa04d9dcc9e3f21f713f1a4e19" name="ac37c9afa04d9dcc9e3f21f713f1a4e19"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac37c9afa04d9dcc9e3f21f713f1a4e19">&#9670;&#160;</a></span>hash_node()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::size_t hash_node </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>node</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a13f7972e78dbccbe10067d718b8da027" name="a13f7972e78dbccbe10067d718b8da027"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a13f7972e78dbccbe10067d718b8da027">&#9670;&#160;</a></span>hash_node_variant()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::size_t hash_node_variant </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>node</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -1687,6 +1754,63 @@ template&lt;typename NodeT&gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>bool false if the problem expert did not take some of the changes back. </dd></dl>
+
+</div>
+</div>
+<a id="a3e2618160d1703cff92298d273e8f8d9" name="a3e2618160d1703cff92298d273e8f8d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e2618160d1703cff92298d273e8f8d9">&#9670;&#160;</a></span>unordered_container_hash() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Key, typename T, typename Hash, typename KeyEqual, typename Alloc&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::size_t unordered_container_hash </td>
+          <td>(</td>
+          <td class="paramtype">const std::unordered_map&lt; Key, T, Hash, KeyEqual, Alloc &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>map</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa9c1c698b8b1a9e98009943618fd1438" name="aa9c1c698b8b1a9e98009943618fd1438"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa9c1c698b8b1a9e98009943618fd1438">&#9670;&#160;</a></span>unordered_container_hash() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename UnorderedContainer&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::size_t unordered_container_hash </td>
+          <td>(</td>
+          <td class="paramtype">const UnorderedContainer &amp;</td>          <td class="paramname"><span class="paramname"><em>container</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a2cab78c0b7751b876e956f671f29b692" name="a2cab78c0b7751b876e956f671f29b692"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2cab78c0b7751b876e956f671f29b692">&#9670;&#160;</a></span>unordered_nodeedgesmap_hash()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename NodeEdgesMap&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::size_t unordered_nodeedgesmap_hash </td>
+          <td>(</td>
+          <td class="paramtype">const NodeEdgesMap &amp;</td>          <td class="paramname"><span class="paramname"><em>map</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

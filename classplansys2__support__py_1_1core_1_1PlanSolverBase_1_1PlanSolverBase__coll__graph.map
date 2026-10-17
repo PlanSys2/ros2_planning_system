@@ -1,9 +1,9 @@
 <map id="PlanSolverBase" name="PlanSolverBase">
-<area shape="rect" id="Node000001" title=" " alt="" coords="47,102,161,128"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="75,102,189,128"/>
 <area shape="rect" id="Node000002" href="$classABC.html" title=" " alt="" coords="5,5,54,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="50,41,97,100,92,103,46,45"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="78,5,130,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="107,46,107,101,102,101,102,46"/>
-<area shape="rect" id="Node000004" href="$classbool.html" title=" " alt="" coords="172,5,218,31"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="188,47,167,80,134,104,131,99,164,76,183,44"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="55,39,121,99,117,103,52,43"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="78,5,186,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="135,46,135,101,130,101,130,46"/>
+<area shape="rect" id="Node000004" href="$classbool.html" title=" " alt="" coords="211,5,256,31"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="224,46,199,80,163,104,160,99,196,76,220,43"/>
 </map>

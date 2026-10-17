@@ -110,7 +110,6 @@ document.addEventListener('DOMContentLoaded', codefold.init);
 <code>#include &lt;functional&gt;</code><br />
 <code>#include &lt;iostream&gt;</code><br />
 <code>#include &lt;limits&gt;</code><br />
-<code>#include &lt;regex&gt;</code><br />
 <code>#include &lt;sstream&gt;</code><br />
 <code>#include &lt;utility&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
@@ -118,29 +117,27 @@ Include dependency graph for Utils.cpp:</div>
 <div class="dyncontent">
 <div class="center"><img src="plansys2__pddl__parser_2src_2plansys2__pddl__parser_2Utils_8cpp__incl.png" border="0" usemap="#aplansys2__pddl__parser_2src_2plansys2__pddl__parser_2Utils_8cpp" loading="lazy" alt=""/></div>
 <map name="aplansys2__pddl__parser_2src_2plansys2__pddl__parser_2Utils_8cpp" id="aplansys2__pddl__parser_2src_2plansys2__pddl__parser_2Utils_8cpp">
-<area shape="rect" title=" " alt="" coords="942,5,1114,61"/>
+<area shape="rect" title=" " alt="" coords="896,5,1068,61"/>
 <area shape="rect" href="plansys2__pddl__parser_2include_2plansys2__pddl__parser_2Utils_8hpp.html" title=" " alt="" coords="468,109,615,150"/>
-<area shape="poly" title=" " alt="" coords="942,52,630,111,629,106,941,47"/>
+<area shape="poly" title=" " alt="" coords="895,55,630,111,629,106,894,50"/>
 <area shape="rect" title=" " alt="" coords="639,116,714,142"/>
-<area shape="poly" title=" " alt="" coords="943,55,839,80,726,112,721,113,719,108,725,106,837,75,941,50"/>
+<area shape="poly" title=" " alt="" coords="896,60,726,112,721,113,719,108,725,106,894,55"/>
 <area shape="rect" title=" " alt="" coords="737,116,786,142"/>
-<area shape="poly" title=" " alt="" coords="942,61,872,84,799,111,798,112,796,107,797,107,870,79,941,56"/>
+<area shape="poly" title=" " alt="" coords="911,64,799,111,798,112,796,107,797,107,909,59"/>
 <area shape="rect" title=" " alt="" coords="810,116,884,142"/>
-<area shape="poly" title=" " alt="" coords="977,64,885,111,883,107,975,59"/>
+<area shape="poly" title=" " alt="" coords="944,64,878,110,875,105,941,59"/>
 <area shape="rect" title=" " alt="" coords="908,116,965,142"/>
-<area shape="poly" title=" " alt="" coords="1004,63,960,108,956,104,1000,60"/>
+<area shape="poly" title=" " alt="" coords="971,63,951,104,946,102,966,60"/>
 <area shape="rect" title=" " alt="" coords="990,116,1067,142"/>
-<area shape="poly" title=" " alt="" coords="1031,62,1031,101,1026,101,1026,62"/>
+<area shape="poly" title=" " alt="" coords="998,60,1018,102,1013,104,993,63"/>
 <area shape="rect" title=" " alt="" coords="1091,116,1163,142"/>
-<area shape="poly" title=" " alt="" coords="1059,60,1105,104,1102,108,1055,63"/>
+<area shape="poly" title=" " alt="" coords="1025,59,1097,106,1094,110,1022,64"/>
 <area shape="rect" title=" " alt="" coords="1186,116,1238,142"/>
-<area shape="poly" title=" " alt="" coords="1083,59,1177,107,1174,112,1080,64"/>
-<area shape="rect" title=" " alt="" coords="1262,116,1314,142"/>
-<area shape="poly" title=" " alt="" coords="1116,58,1252,107,1253,107,1251,112,1250,111,1114,63"/>
-<area shape="rect" title=" " alt="" coords="1338,116,1406,142"/>
-<area shape="poly" title=" " alt="" coords="1116,50,1218,74,1328,106,1332,108,1330,113,1326,112,1217,80,1114,55"/>
-<area shape="rect" title=" " alt="" coords="1431,116,1482,142"/>
-<area shape="poly" title=" " alt="" coords="1116,41,1260,65,1341,83,1420,106,1422,107,1420,112,1418,112,1339,88,1259,70,1115,47"/>
+<area shape="poly" title=" " alt="" coords="1058,59,1176,107,1177,107,1175,112,1174,111,1056,64"/>
+<area shape="rect" title=" " alt="" coords="1262,116,1330,142"/>
+<area shape="poly" title=" " alt="" coords="1069,53,1158,77,1252,106,1256,108,1254,113,1250,112,1156,82,1067,58"/>
+<area shape="rect" title=" " alt="" coords="1355,116,1406,142"/>
+<area shape="poly" title=" " alt="" coords="1069,43,1200,67,1273,85,1344,106,1346,107,1344,112,1342,112,1271,90,1199,72,1068,48"/>
 <area shape="rect" title=" " alt="" coords="5,205,73,231"/>
 <area shape="poly" title=" " alt="" coords="468,138,292,158,188,176,85,200,80,202,78,197,84,195,187,171,291,153,468,133"/>
 <area shape="rect" title=" " alt="" coords="96,205,150,231"/>
@@ -201,10 +198,11 @@ Functions</h2></td></tr>
 <tr class="memitem:aa1407117b80b1580a36bf543a883b7d3" id="r_aa1407117b80b1580a36bf543a883b7d3"><td class="memItemLeft"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#aa1407117b80b1580a36bf543a883b7d3">getMaxNesting</a> (const std::string &amp;expr)</td></tr>
 <tr class="memdesc:aa1407117b80b1580a36bf543a883b7d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the deepest parenthesis nesting in a PDDL text, ignoring comments.  <br /></td></tr>
 <tr class="memitem:a896d90877d0c87cb8966566293e9463d" id="r_a896d90877d0c87cb8966566293e9463d"><td class="memItemLeft">uint8_t&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#a896d90877d0c87cb8966566293e9463d">getNodeType</a> (const std::string &amp;expr, uint8_t def=plansys2_msgs::msg::Node::UNKNOWN)</td></tr>
-<tr class="memdesc:a896d90877d0c87cb8966566293e9463d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns node type corresponding to the string input.  <br /></td></tr>
+<tr class="memdesc:a896d90877d0c87cb8966566293e9463d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the node type of an expression, given by its operator (the first token after its '('), never by a name that contains one.  <br /></td></tr>
 <tr class="memitem:a79470b0c7c0bfe20beced91acb55035e" id="r_a79470b0c7c0bfe20beced91acb55035e"><td class="memItemLeft"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#a79470b0c7c0bfe20beced91acb55035e">getParenthesis</a> (const std::string &amp;wexpr, <a class="el" href="classint.html">int</a> start)</td></tr>
 <tr class="memitem:a9792fe99d312fb63a4d98a54b8dbe9b2" id="r_a9792fe99d312fb63a4d98a54b8dbe9b2"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#a9792fe99d312fb63a4d98a54b8dbe9b2">getPredicates</a> (std::vector&lt; <a class="el" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &gt; &amp;predicates, const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t node_id=0, <a class="el" href="classbool.html">bool</a> negate=false)</td></tr>
 <tr class="memitem:ac2db743653ce9f663a7fb5305fa805bf" id="r_ac2db743653ce9f663a7fb5305fa805bf"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#ac2db743653ce9f663a7fb5305fa805bf">getReducedString</a> (const std::string &amp;expr)</td></tr>
+<tr class="memdesc:ac2db743653ce9f663a7fb5305fa805bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leaves one space between tokens, none after '(' or before ')' and none at the ends; tabs and newlines count as spaces.  <br /></td></tr>
 <tr class="memitem:a1d5ed547f7db7547a59fc02905af1b8e" id="r_a1d5ed547f7db7547a59fc02905af1b8e"><td class="memItemLeft">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#a1d5ed547f7db7547a59fc02905af1b8e">getSubExpr</a> (const std::string &amp;expr)</td></tr>
 <tr class="memitem:ad41283509c5800a7f9008ec3fb150830" id="r_ad41283509c5800a7f9008ec3fb150830"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#ad41283509c5800a7f9008ec3fb150830">getSubtreeChildren</a> (<a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;subtree, const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, uint32_t tree_parent, uint32_t subtree_parent)</td></tr>
 <tr class="memitem:aa9c7a8d4f2da476de9fc90c0b41e117e" id="r_aa9c7a8d4f2da476de9fc90c0b41e117e"><td class="memItemLeft">std::vector&lt; uint32_t &gt;&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#aa9c7a8d4f2da476de9fc90c0b41e117e">getSubtreeIds</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree)</td></tr>
@@ -217,6 +215,8 @@ Functions</h2></td></tr>
 <tr class="memitem:a979fcdc0e20e2b60b278516b9def2cc6" id="r_a979fcdc0e20e2b60b278516b9def2cc6"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#a979fcdc0e20e2b60b278516b9def2cc6">nameActionsToString</a> (const std::shared_ptr&lt; <a class="el" href="classplansys2__msgs_1_1msg_1_1DurativeAction.html">plansys2_msgs::msg::DurativeAction</a> &gt; action)</td></tr>
 <tr class="memitem:a3b6e0bf57b8d9c07cf1f580f70c434bb" id="r_a3b6e0bf57b8d9c07cf1f580f70c434bb"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#a3b6e0bf57b8d9c07cf1f580f70c434bb">numberToString</a> (double value, <a class="el" href="classint.html">int</a> decimals=6)</td></tr>
 <tr class="memdesc:a3b6e0bf57b8d9c07cf1f580f70c434bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a number for PDDL, in fixed notation and whatever the locale.  <br /></td></tr>
+<tr class="memitem:a7cab4cd7465158df3b00defb80759dd8" id="r_a7cab4cd7465158df3b00defb80759dd8"><td class="memItemLeft"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#a7cab4cd7465158df3b00defb80759dd8">parseNumber</a> (const std::string &amp;text, double &amp;value)</td></tr>
+<tr class="memdesc:a7cab4cd7465158df3b00defb80759dd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads a whole text as a PDDL number, whatever the locale: an optional sign, digits with an optional point, and an optional exponent ("1e-7").  <br /></td></tr>
 <tr class="memitem:adce38298fc0ff84bd84bf9f7ea0dd00a" id="r_adce38298fc0ff84bd84bf9f7ea0dd00a"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#adce38298fc0ff84bd84bf9f7ea0dd00a">removeOperatorBeforeParenthesis</a> (std::string &amp;wexpr)</td></tr>
 <tr class="memitem:a3d8827bcfad2e70f3b85df9c90254c3b" id="r_a3d8827bcfad2e70f3b85df9c90254c3b"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="namespaceparser_1_1pddl.html#a3d8827bcfad2e70f3b85df9c90254c3b">toString</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Metric.html">plansys2_msgs::msg::Metric</a> &amp;metric)</td></tr>
 <tr class="memdesc:a3d8827bcfad2e70f3b85df9c90254c3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">The metric as "minimize &lt;expr&gt;" or "maximize &lt;expr&gt;"; empty if there is no metric.  <br /></td></tr>

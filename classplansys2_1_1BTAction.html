@@ -161,8 +161,12 @@ Collaboration diagram for BTAction:</div>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a4acf8b92d555c6fa1fb2dc3362faf73c" id="r_a4acf8b92d555c6fa1fb2dc3362faf73c"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a4acf8b92d555c6fa1fb2dc3362faf73c">BTAction</a> (const std::string &amp;action)</td></tr>
 <tr class="memdesc:a4acf8b92d555c6fa1fb2dc3362faf73c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classplansys2_1_1BTAction.html" title="Class that implements an action executor using Behavior Trees.">BTAction</a>.  <br /></td></tr>
+<tr class="memitem:aebf856392226f373e5ada3509ec10b54" id="r_aebf856392226f373e5ada3509ec10b54"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#aebf856392226f373e5ada3509ec10b54">BTAction</a> (const std::string &amp;action, BT::Blackboard::Ptr parent)</td></tr>
+<tr class="memdesc:aebf856392226f373e5ada3509ec10b54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for a <a class="el" href="classplansys2_1_1BTAction.html" title="Class that implements an action executor using Behavior Trees.">BTAction</a> that shares a blackboard with others (#315).  <br /></td></tr>
 <tr class="memitem:a5b923ec7a9973f25327deea7d4f4fa47" id="r_a5b923ec7a9973f25327deea7d4f4fa47"><td class="memItemLeft">const std::string &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a5b923ec7a9973f25327deea7d4f4fa47">getActionName</a> () const</td></tr>
 <tr class="memdesc:a5b923ec7a9973f25327deea7d4f4fa47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the name of the action.  <br /></td></tr>
+<tr class="memitem:af3ca4f519bd5eaee6e20031b95c2f1e4" id="r_af3ca4f519bd5eaee6e20031b95c2f1e4"><td class="memItemLeft">BT::Blackboard::Ptr&#160;</td><td class="memItemRight"><a class="el" href="#af3ca4f519bd5eaee6e20031b95c2f1e4">getBlackboard</a> () const</td></tr>
+<tr class="memdesc:af3ca4f519bd5eaee6e20031b95c2f1e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the blackboard of the tree, once configured.  <br /></td></tr>
 <tr class="memitem:ab3d28d55cbac7c92abf543ce652296e0" id="r_ab3d28d55cbac7c92abf543ce652296e0"><td class="memItemLeft">const std::string &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ab3d28d55cbac7c92abf543ce652296e0">getBTFile</a> () const</td></tr>
 <tr class="memdesc:ab3d28d55cbac7c92abf543ce652296e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the path to the <a class="el" href="namespaceBT.html">BT</a> XML file.  <br /></td></tr>
 <tr class="inherit_header pub_methods_classplansys2_1_1ActionExecutorClient"><td colspan="2">Public Member Functions inherited from <a class="el" href="classplansys2_1_1ActionExecutorClient.html">ActionExecutorClient</a></td></tr>
@@ -267,7 +271,7 @@ Additional Inherited Members</h2></td></tr>
 </div>
 <a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a4acf8b92d555c6fa1fb2dc3362faf73c" name="a4acf8b92d555c6fa1fb2dc3362faf73c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4acf8b92d555c6fa1fb2dc3362faf73c">&#9670;&#160;</a></span>BTAction()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a4acf8b92d555c6fa1fb2dc3362faf73c">&#9670;&#160;</a></span>BTAction() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -293,6 +297,37 @@ Additional Inherited Members</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">action</td><td>Name of the action this executor handles. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aebf856392226f373e5ada3509ec10b54" name="aebf856392226f373e5ada3509ec10b54"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aebf856392226f373e5ada3509ec10b54">&#9670;&#160;</a></span>BTAction() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">BTAction </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>action</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">BT::Blackboard::Ptr</td>          <td class="paramname"><span class="paramname"><em>parent</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Constructor for a <a class="el" href="classplansys2_1_1BTAction.html" title="Class that implements an action executor using Behavior Trees.">BTAction</a> that shares a blackboard with others (#315). </p>
+<p>The blackboard of its tree is a child of parent: as in BehaviorTree.CPP, keys starting with '@' (e.g. "@battery") are those of parent, so they are shared by all the BTActions created with it in the same process.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">action</td><td>Name of the action this executor handles. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">parent</td><td>The blackboard to share. </td></tr>
   </table>
   </dd>
 </dl>
@@ -385,6 +420,26 @@ Additional Inherited Members</h2></td></tr>
 
 <p>Get the name of the action. </p>
 <dl class="section return"><dt>Returns</dt><dd>std::string The action name. </dd></dl>
+
+</div>
+</div>
+<a id="af3ca4f519bd5eaee6e20031b95c2f1e4" name="af3ca4f519bd5eaee6e20031b95c2f1e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af3ca4f519bd5eaee6e20031b95c2f1e4">&#9670;&#160;</a></span>getBlackboard()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">BT::Blackboard::Ptr getBlackboard </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the blackboard of the tree, once configured. </p>
+<dl class="section return"><dt>Returns</dt><dd>BT::Blackboard::Ptr The blackboard, or nullptr before configure. </dd></dl>
 
 </div>
 </div>
