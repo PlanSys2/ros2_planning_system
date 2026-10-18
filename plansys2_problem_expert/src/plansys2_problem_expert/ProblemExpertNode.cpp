@@ -1103,8 +1103,17 @@ ProblemExpertNode::get_knowledge_as_msg() const
     ret_msgs->predicates.push_back(parser::pddl::toString(predicate));
   }
 
+  // With its value, as in :init: a number, or the object of an object fluent
   for (const auto & function : problem_expert_->getFunctions()) {
-    ret_msgs->functions.push_back(parser::pddl::toString(function));
+    std::string value = function.object;
+    if (value.empty()) {
+      value = parser::pddl::numberToString(function.value);
+      if (value.find('.') != std::string::npos) {
+        value.erase(value.find_last_not_of('0') + 1);
+        if (value.back() == '.') {value.pop_back();}
+      }
+    }
+    ret_msgs->functions.push_back("(= " + parser::pddl::toString(function) + " " + value + ")");
   }
 
   auto goal = problem_expert_->getGoal();

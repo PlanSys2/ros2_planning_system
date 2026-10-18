@@ -1192,6 +1192,55 @@ TEST(problem_expert_node, metric_services)
   ASSERT_TRUE(client->getMetric().tree.nodes.empty());
 }
 
+// The knowledge shows the functions with their values, as in :init, and follows them
+TEST(problem_expert_node, knowledge_has_the_function_values)
+{
+  NodesWithClient nodes("knowledge_function_values");
+  auto & client = nodes.problem_client;
+
+  auto listener = rclcpp::Node::make_shared("knowledge_function_values_listener");
+  plansys2_msgs::msg::Knowledge last_knowledge;
+  auto knowledge_sub = listener->create_subscription<plansys2_msgs::msg::Knowledge>(
+    "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
+    [&last_knowledge](const plansys2_msgs::msg::Knowledge::SharedPtr msg) {
+      last_knowledge = *msg;
+    });
+  rclcpp::executors::SingleThreadedExecutor listener_exe;
+  listener_exe.add_node(listener);
+  auto shown = [&](const std::vector<std::string> & expected) {
+      plansys2::testing::wait_for(
+        [&]() {
+          listener_exe.spin_some();
+          return last_knowledge.functions == expected;
+        });
+      return last_knowledge.functions;
+    };
+
+  ASSERT_TRUE(client->addInstance(plansys2::Instance("kitchen", "room")));
+  ASSERT_TRUE(client->addInstance(plansys2::Instance("bedroom", "room")));
+  ASSERT_TRUE(shown({}).empty());
+  ASSERT_TRUE(
+    client->addFunction(
+      parser::pddl::fromStringFunction("(= (room_distance kitchen bedroom) 3)")));
+
+  // No trailing zeros, the decimals it has, and integers as such
+  for (const auto & [text, value] : std::vector<std::pair<std::string, std::string>>{
+    {"1.5", "1.5"}, {"10", "10"}, {"0.125", "0.125"}, {"-2.25", "-2.25"}, {"0", "0"}})
+  {
+    ASSERT_TRUE(
+      client->updateFunction(
+        parser::pddl::fromStringFunction("(= (room_distance kitchen bedroom) " + text + ")")));
+    const std::vector<std::string> expected = {
+      "(= (room_distance kitchen bedroom) " + value + ")"};
+    EXPECT_EQ(shown(expected), expected) << text;
+  }
+
+  // What it shows reads back as the same function
+  const auto node = parser::pddl::fromStringFunction(last_knowledge.functions.at(0));
+  EXPECT_EQ(parser::pddl::toString(node), "(room_distance kitchen bedroom)");
+  EXPECT_DOUBLE_EQ(node.value, 0.0);
+}
+
 TEST(problem_expert_node, problem_messages_older_than_a_change_are_ignored)
 {
   NodesWithClient nodes("problem_messages_older_than_a_change_are_ignored");
