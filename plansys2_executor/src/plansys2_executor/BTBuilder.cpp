@@ -127,39 +127,48 @@ BTBuilder::timed_events() const
   return *timed_events_;
 }
 
+void
+BTBuilder::collect_dynamic() const
+{
+  if (dynamic_names_) {
+    return;
+  }
+  // What the effects of processes, events and continuous effects change, by name
+  dynamic_names_.emplace();
+  dynamic_functions_.emplace();
+  auto collect = [this](const plansys2_msgs::msg::Tree & effects) {
+      for (const auto & node : effects.nodes) {
+        if (node.node_type == plansys2_msgs::msg::Node::FUNCTION_MODIFIER &&
+          !node.children.empty())
+        {
+          dynamic_names_->insert(effects.nodes[node.children[0]].name);
+          dynamic_functions_->insert(effects.nodes[node.children[0]].name);
+        } else if (node.node_type == plansys2_msgs::msg::Node::PREDICATE) {
+          dynamic_names_->insert(node.name);
+        }
+      }
+    };
+  for (const auto & name : domain_client()->getProcesses()) {
+    if (auto process = domain_client()->getProcess(name)) {
+      collect(process->effects);
+    }
+  }
+  for (const auto & name : domain_client()->getEvents()) {
+    if (auto event = domain_client()->getEvent(name)) {
+      collect(event->effects);
+    }
+  }
+  for (const auto & name : domain_client()->getDurativeActions()) {
+    if (auto action = domain_client()->getDurativeAction(name)) {
+      collect(action->continuous_effects);
+    }
+  }
+}
+
 bool
 BTBuilder::reads_dynamic(const plansys2_msgs::msg::Tree & conditions) const
 {
-  if (!dynamic_names_) {
-    // What the effects of processes, events and continuous effects change, by name
-    dynamic_names_.emplace();
-    auto collect = [this](const plansys2_msgs::msg::Tree & effects) {
-        for (const auto & node : effects.nodes) {
-          if (node.node_type == plansys2_msgs::msg::Node::FUNCTION_MODIFIER &&
-            !node.children.empty())
-          {
-            dynamic_names_->insert(effects.nodes[node.children[0]].name);
-          } else if (node.node_type == plansys2_msgs::msg::Node::PREDICATE) {
-            dynamic_names_->insert(node.name);
-          }
-        }
-      };
-    for (const auto & name : domain_client()->getProcesses()) {
-      if (auto process = domain_client()->getProcess(name)) {
-        collect(process->effects);
-      }
-    }
-    for (const auto & name : domain_client()->getEvents()) {
-      if (auto event = domain_client()->getEvent(name)) {
-        collect(event->effects);
-      }
-    }
-    for (const auto & name : domain_client()->getDurativeActions()) {
-      if (auto action = domain_client()->getDurativeAction(name)) {
-        collect(action->continuous_effects);
-      }
-    }
-  }
+  collect_dynamic();
   if (dynamic_names_->empty()) {
     return false;
   }
@@ -171,6 +180,40 @@ BTBuilder::reads_dynamic(const plansys2_msgs::msg::Tree & conditions) const
     }
   }
   return false;
+}
+
+plansys2_msgs::msg::Tree
+BTBuilder::relax_dynamic(const plansys2_msgs::msg::Tree & conditions) const
+{
+  collect_dynamic();
+  if (dynamic_functions_->empty()) {
+    return conditions;
+  }
+  auto reads = [&](uint32_t root) {
+      std::vector<uint32_t> pending{root};
+      while (!pending.empty()) {
+        const auto & node = conditions.nodes[pending.back()];
+        pending.pop_back();
+        if (node.node_type == plansys2_msgs::msg::Node::FUNCTION &&
+          dynamic_functions_->count(node.name))
+        {
+          return true;
+        }
+        pending.insert(pending.end(), node.children.begin(), node.children.end());
+      }
+      return false;
+    };
+  auto ret = conditions;
+  for (uint32_t i = 0; i < ret.nodes.size(); i++) {
+    auto & node = ret.nodes[i];
+    if (node.node_type == plansys2_msgs::msg::Node::EXPRESSION && reads(i)) {
+      // An empty and holds
+      node.node_type = plansys2_msgs::msg::Node::AND;
+      node.children.clear();
+      node.negate = false;
+    }
+  }
+  return ret;
 }
 
 void

@@ -340,16 +340,22 @@ protected:
     derived_rules_.reset();
     timed_events_.reset();
     dynamic_names_.reset();
+    dynamic_functions_.reset();
   }
 
   // PDDL+: whether conditions read a fact the dynamics change (processes, events, continuous
   // effects). A discrete simulation of the plan cannot tell them: its tree waits for them
   bool reads_dynamic(const plansys2_msgs::msg::Tree & conditions) const;
 
+  // PDDL+: the conditions with the comparisons on what the dynamics change taken as held
+  plansys2_msgs::msg::Tree relax_dynamic(const plansys2_msgs::msg::Tree & conditions) const;
+
   // The timed facts of the problem, as events of the plan at their time, with only effects
   std::vector<ActionStamped> timed_events() const;
 
 private:
+  void collect_dynamic() const;
+
   std::optional<std::pair<std::vector<plansys2::Predicate>, std::vector<plansys2::Function>>>
   initial_state_;
 
@@ -359,6 +365,7 @@ private:
   mutable std::shared_ptr<const std::vector<plansys2::DerivedRule>> derived_rules_;
   mutable std::optional<std::vector<ActionStamped>> timed_events_;
   mutable std::optional<std::set<std::string>> dynamic_names_;
+  mutable std::optional<std::set<std::string>> dynamic_functions_;
 };
 
 }  // namespace plansys2

@@ -31,6 +31,31 @@
 namespace plansys2
 {
 
+namespace
+{
+// The functions the continuous effects of an action change, grounded
+std::set<std::string> continuous_functions(const ActionStamped & action)
+{
+  std::set<std::string> ret;
+  if (action.type != ActionType::START && action.type != ActionType::END) {
+    return ret;
+  }
+  const auto effects = action.action.get_continuous_effects();
+  for (const auto & node : effects.nodes) {
+    if (node.node_type == plansys2_msgs::msg::Node::FUNCTION_MODIFIER && !node.children.empty()) {
+      ret.insert(parser::pddl::toString(effects, node.children[0]));
+    }
+  }
+  return ret;
+}
+
+// Snaps of the same plan item: a plan may have the same action several times
+bool same_item(const ActionStamped & a, const ActionStamped & b)
+{
+  return a.expression == b.expression && a.time == b.time;
+}
+}  // namespace
+
 STNBTBuilder::STNBTBuilder()
 {
 }
@@ -207,7 +232,12 @@ STNBTBuilder::build_stn(const plansys2_msgs::msg::Plan & plan) const
     auto parents = get_parents(item, simple_plan, happenings, states);
 
     for (const auto & parent : parents) {
-      auto previous = get_nodes(parent.second, stn);
+      // A non-durative action runs whole in its performer: what follows waits for its end
+      auto after = parent.second;
+      if (after.type == ActionType::START && after.action.is_action()) {
+        after.type = ActionType::END;
+      }
+      auto previous = get_nodes(after, stn);
       for (auto & n : current) {
         for (auto & h : previous) {
           if (h->action.time == n->action.time) {
@@ -487,7 +517,7 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
     auto start_action = std::find_if(
       it.first, it.second,
       [&](std::pair<int64_t, ActionStamped> a) {
-        return (a.second.expression == action.expression) && (a.second.type == ActionType::START);
+        return same_item(a.second, action) && (a.second.type == ActionType::START);
       });
 
     // Find the end action
@@ -495,7 +525,7 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
     auto end_action = std::find_if(
       it.first, it.second,
       [&](std::pair<int64_t, ActionStamped> a) {
-        return (a.second.expression == action.expression) && (a.second.type == ActionType::END);
+        return same_item(a.second, action) && (a.second.type == ActionType::END);
       });
 
     // An action with no duration (a non-durative one, as some planners give it) has no
@@ -725,7 +755,7 @@ STNBTBuilder::get_satisfy(
         auto it = plan.equal_range(t_2);
         for (auto iter = it.first; iter != it.second; ++iter) {
           if (iter->first == action.first) {
-            if (iter->second.expression == action.second.expression) {
+            if (same_item(iter->second, action.second)) {
               continue;
             }
           }
@@ -776,6 +806,7 @@ STNBTBuilder::get_threat(
 
   auto R_a = get_ordering_conditions(action, happenings, states);
   auto E_a = get_threat_effects(action.second);
+  const auto rates_a = continuous_functions(action.second);
 
   while (t_2 >= 0) {
     H_it = get_previous(t_2, happenings);
@@ -800,11 +831,28 @@ STNBTBuilder::get_threat(
         it = plan.lower_bound(*std::next(H_it));
       }
 
+      // At its own happening, the plan order of the snap actions orders them
+      bool after_self = false;
+      auto order = [&](const std::pair<int64_t, ActionStamped> & other) {
+          if (t_2 != t_in || !after_self) {
+            ret.push_back(other);
+          }
+        };
       for (auto iter = plan.lower_bound(t_2); iter != it; ++iter) {
         if (iter->first == action.first) {
-          if (iter->second.expression == action.second.expression) {
+          if (same_item(iter->second, action.second)) {
+            after_self = after_self || t_2 == t_in;
             continue;
           }
+        }
+
+        // Two rates on the same function add up: they keep the order of the plan
+        const auto rates_k = continuous_functions(iter->second);
+        if (std::any_of(
+            rates_a.begin(), rates_a.end(), [&](const auto & f) {return rates_k.count(f) > 0;}))
+        {
+          order(*iter);
+          continue;
         }
 
         auto X_1_k = X_1;
@@ -824,13 +872,7 @@ STNBTBuilder::get_threat(
         if (action.second.type != ActionType::OVERALL &&
           !check(R_k, X_hat.predicates, X_hat.functions))
         {
-          if (t_2 != t_in) {
-            ret.push_back(*iter);
-          } else {
-            std::cerr << "get_threat: An action should not be threatened ";
-            std::cerr << "by another action at the same happening time. ";
-            std::cerr << "Check the plan validity." << std::endl;
-          }
+          order(*iter);
           continue;
         }
 
@@ -841,13 +883,7 @@ STNBTBuilder::get_threat(
         if (iter->second.type != ActionType::OVERALL &&
           !check(R_a, X_bar.predicates, X_bar.functions))
         {
-          if (t_2 != t_in) {
-            ret.push_back(*iter);
-          } else {
-            std::cerr << "get_threat: An action should not be threatened ";
-            std::cerr << "by another action at the same happening time. ";
-            std::cerr << "Check the plan validity." << std::endl;
-          }
+          order(*iter);
           continue;
         }
 
@@ -862,13 +898,7 @@ STNBTBuilder::get_threat(
           if (intersection.predicates.size() > 0 || intersection.functions.size() > 0 ||
             interfere(E_a, E_k))
           {
-            if (t_2 != t_in) {
-              ret.push_back(*iter);
-            } else {
-              std::cerr << "get_threat: An action should not be threatened ";
-              std::cerr << "by another action at the same happening time. ";
-              std::cerr << "Check the plan validity." << std::endl;
-            }
+            order(*iter);
           }
         }
       }
@@ -905,7 +935,7 @@ STNBTBuilder::can_apply(
         if (v[i]) {
           auto iter = std::next(it, i);
           if (iter->first == action.first) {
-            if (iter->second.expression == action.second.expression) {
+            if (same_item(iter->second, action.second)) {
               continue;
             }
           }
@@ -1009,17 +1039,18 @@ STNBTBuilder::get_intersection(
 plansys2_msgs::msg::Tree
 STNBTBuilder::get_conditions(const ActionStamped & action) const
 {
+  // PDDL+: a discrete simulation cannot tell what the dynamics change; the tree waits for it
   // A non-durative action requires its precondition when it starts: otherwise nothing orders it
   // after what makes it true, and it starts too early
   if (action.type == ActionType::START && action.action.is_action()) {
-    return action.action.get_overall_requirements();
+    return relax_dynamic(action.action.get_overall_requirements());
   }
   if (action.type == ActionType::START || action.type == ActionType::GOAL) {
-    return action.action.get_at_start_requirements();
+    return relax_dynamic(action.action.get_at_start_requirements());
   } else if (action.type == ActionType::OVERALL) {
-    return action.action.get_overall_requirements();
+    return relax_dynamic(action.action.get_overall_requirements());
   } else if (action.type == ActionType::END) {
-    return action.action.get_at_end_requirements();
+    return relax_dynamic(action.action.get_at_end_requirements());
   }
 
   return plansys2_msgs::msg::Tree();

@@ -81,6 +81,13 @@ WaitAtStartReq::tick()
     unmet = "over all";
     reqs = &reqs_oa;
   } else {
+    // Late: the rest of the plan shifts with it, so the planned intervals between actions hold
+    if (timed && !info.at_start_effects_applied) {
+      const double late = (now - plan_start).seconds() - info.plan_item.time;
+      if (late > 1e-3) {
+        config().blackboard->set("plan_start", plan_start + rclcpp::Duration::from_seconds(late));
+      }
+    }
     return BT::NodeStatus::SUCCESS;
   }
 

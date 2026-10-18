@@ -15,6 +15,8 @@
 // The orders the STN of a plan of the bank has to keep, whatever the performers take: the
 // executor runs actions as soon as their parents allow it
 
+#include <filesystem>
+#include <fstream>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -46,6 +48,7 @@ public:
   using STNBTBuilder::build_stn;
   using STNBTBuilder::check_paths;
   using STNBTBuilder::get_tree;
+  using STNBTBuilder::is_executable;
 };
 
 plansys2_msgs::msg::Plan make_plan(
@@ -87,11 +90,25 @@ protected:
     const auto it = std::find_if(
       cases.begin(), cases.end(), [&](const auto & c) {return c.name == name;});
     ASSERT_NE(it, cases.end()) << name;
+    load_files(it->domain_file.string(), it->problem);
+  }
 
+  void load_text(const std::string & domain, const std::string & problem)
+  {
+    const auto file = (std::filesystem::temp_directory_path() / "stn_bank_test.pddl").string();
+    {
+      std::ofstream out(file);
+      out << domain;
+    }
+    load_files(file, problem);
+  }
+
+  void load_files(const std::string & domain_file, const std::string & problem)
+  {
     domain_node_ = std::make_shared<plansys2::DomainExpertNode>();
     problem_node_ = std::make_shared<plansys2::ProblemExpertNode>();
-    domain_node_->set_parameter({"model_file", it->domain_file.string()});
-    problem_node_->set_parameter({"model_file", it->domain_file.string()});
+    domain_node_->set_parameter({"model_file", domain_file});
+    problem_node_->set_parameter({"model_file", domain_file});
     exe_.add_node(domain_node_->get_node_base_interface());
     exe_.add_node(problem_node_->get_node_base_interface());
     spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
@@ -101,7 +118,7 @@ protected:
       node->trigger_transition(Transition::TRANSITION_CONFIGURE);
       node->trigger_transition(Transition::TRANSITION_ACTIVATE);
     }
-    ASSERT_TRUE(std::make_shared<plansys2::ProblemExpertClient>()->addProblem(it->problem));
+    ASSERT_TRUE(std::make_shared<plansys2::ProblemExpertClient>()->addProblem(problem));
     builder_ = std::make_shared<TestableSTN>();
     builder_->initialize("", "", 3);
   }
@@ -260,6 +277,94 @@ TEST_F(STNBankTest, plan_items_bind_their_duration)
   // Unknown actions give nothing
   item.action = "(fly r1)";
   EXPECT_TRUE(plansys2::BTBuilder::plan_item_action(domain_client, actions, item).is_empty());
+}
+
+namespace
+{
+// PDDL+: the battery only grows with the continuous effect of recharge, and nothing discrete
+// orders two recharges in a row
+const char * kGreenhouse =
+  "(define (domain greenhouse) (:requirements :strips :typing :durative-actions"
+  " :numeric-fluents :continuous-effects :duration-inequalities :negative-preconditions)"
+  " (:types robot room tank)"
+  " (:predicates (robot_at ?r - robot ?l - room) (tank_in ?t - tank ?l - room)"
+  "  (valve_open ?t - tank))"
+  " (:functions (battery ?r - robot))"
+  " (:durative-action move :parameters (?r - robot ?from ?to - room)"
+  "  :duration (= ?duration 4)"
+  "  :condition (and (at start (robot_at ?r ?from)) (at start (>= (battery ?r) 20)))"
+  "  :effect (and (at start (not (robot_at ?r ?from))) (at end (robot_at ?r ?to))"
+  "   (decrease (battery ?r) (* #t 2))))"
+  " (:durative-action recharge :parameters (?r - robot ?l - room)"
+  "  :duration (and (>= ?duration 1) (<= ?duration 10))"
+  "  :condition (and (over all (robot_at ?r ?l)))"
+  "  :effect (and (increase (battery ?r) (* #t 5))))"
+  " (:action open_valve :parameters (?r - robot ?t - tank ?l - room)"
+  "  :precondition (and (robot_at ?r ?l) (tank_in ?t ?l) (not (valve_open ?t)))"
+  "  :effect (and (valve_open ?t)))"
+  " (:action close_valve :parameters (?r - robot ?t - tank ?l - room)"
+  "  :precondition (and (robot_at ?r ?l) (tank_in ?t ?l) (valve_open ?t))"
+  "  :effect (and (not (valve_open ?t)))))";
+
+const char * kWatering =
+  "(define (problem watering) (:domain greenhouse)"
+  " (:objects rover - robot dock nursery - room cistern - tank)"
+  " (:init (robot_at rover dock) (tank_in cistern nursery) (= (battery rover) 10))"
+  " (:goal (and (robot_at rover dock) (not (valve_open cistern)))))";
+
+// As Kairos plans it: happenings that interfere at the same time, in the order of the plan
+const std::vector<std::tuple<double, std::string, double>> kWateringPlan = {
+  {0.0, "(recharge rover dock)", 1.9}, {1.9, "(recharge rover dock)", 1.0},
+  {2.9, "(recharge rover dock)", 1.0}, {3.9, "(move rover dock nursery)", 4.0},
+  {7.9, "(open_valve rover cistern nursery)", 0.0},
+  {10.9, "(close_valve rover cistern nursery)", 0.0},
+  {10.9, "(move rover nursery dock)", 4.0}};
+}  // namespace
+
+// Two rates on the same function would add up: a recharge starts once the previous one ends
+TEST_F(STNBankTest, continuous_effects_on_a_function_keep_the_plan_order)
+{
+  load_text(kGreenhouse, kWatering);
+  auto graph = builder_->build_stn(make_plan(kWateringPlan));
+  EXPECT_TRUE(
+    after(
+      graph, {"(recharge rover dock)", 0.0, ActionType::END},
+      {"(recharge rover dock)", 1.9, ActionType::START}));
+  EXPECT_TRUE(
+    after(
+      graph, {"(recharge rover dock)", 1.9, ActionType::END},
+      {"(recharge rover dock)", 2.9, ActionType::START}));
+}
+
+// What the dynamics give cannot be simulated: the move is still ordered by what it deletes
+TEST_F(STNBankTest, a_condition_on_a_dynamic_function_keeps_the_other_orders)
+{
+  load_text(kGreenhouse, kWatering);
+  auto graph = builder_->build_stn(make_plan(kWateringPlan));
+  EXPECT_TRUE(
+    after(
+      graph, {"(recharge rover dock)", 2.9, ActionType::END},
+      {"(move rover dock nursery)", 3.9, ActionType::START}));
+  EXPECT_TRUE(
+    after(
+      graph, {"(move rover dock nursery)", 3.9, ActionType::END},
+      {"(open_valve rover cistern nursery)", 7.9, ActionType::START}));
+}
+
+// At the same time, the plan order: the valve is closed, all of it, before the robot leaves
+TEST_F(STNBankTest, interfering_happenings_at_the_same_time_in_the_plan_order)
+{
+  load_text(kGreenhouse, kWatering);
+  auto graph = builder_->build_stn(make_plan(kWateringPlan));
+  EXPECT_TRUE(
+    after(
+      graph, {"(close_valve rover cistern nursery)", 10.9, ActionType::END},
+      {"(move rover nursery dock)", 10.9, ActionType::START}));
+  EXPECT_FALSE(
+    after(
+      graph, {"(move rover nursery dock)", 10.9, ActionType::START},
+      {"(close_valve rover cistern nursery)", 10.9, ActionType::START}));
+  EXPECT_TRUE(builder_->is_executable(make_plan(kWateringPlan)));
 }
 
 int main(int argc, char ** argv)

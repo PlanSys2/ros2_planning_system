@@ -1215,6 +1215,9 @@ ExecutorNode::execution_step()
         if (runtime_info_.tree_done) {
           // PDDL+: the actions are done; the plan ends at its end, with its goal holding
           status = BT::NodeStatus::RUNNING;
+          // Shifted by the actions that started late
+          std::ignore = runtime_info_.current_tree->tree.rootBlackboard()->get(
+            "plan_start", runtime_info_.plan_start);
           const double elapsed = (now() - runtime_info_.plan_start).seconds();
           if (elapsed >= runtime_info_.complete_plan.end) {
             const double deadline = runtime_info_.complete_plan.end +
