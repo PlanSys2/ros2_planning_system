@@ -28,6 +28,7 @@
 #include "plansys2_pddl_parser/Domain.hpp"
 #include "plansys2_pddl_parser/Instance.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 #include "plansys2_core/Types.hpp"
 
@@ -513,6 +514,7 @@ ProblemExpert::clearKnowledge()
   clearGoal();
   clearMetric();
   timed_facts_.clear();
+  continuous_effects_.clear();
 
   return true;
 }
@@ -544,6 +546,129 @@ std::vector<ProblemExpert::TimedFact>
 ProblemExpert::getTimedFacts() const
 {
   return timed_facts_;
+}
+
+bool
+ProblemExpert::setContinuousEffect(
+  const std::string & id, const plansys2_msgs::msg::Tree & effects, bool active)
+{
+  if (!active) {
+    continuous_effects_.erase(id);
+    return true;
+  }
+  std::string error;
+  if (!effects.nodes.empty() && !parser::pddl::validateTree(effects, error)) {
+    std::cerr << "Malformed continuous effects of " << id << ": " << error << std::endl;
+    return false;
+  }
+  continuous_effects_[id] = effects;
+  return true;
+}
+
+void
+ProblemExpert::groundHappenings()
+{
+  std::string signature;
+  for (const auto & instance : instances_) {
+    signature += instance.name + ":" + instance.type + " ";
+  }
+  if (signature == happenings_instances_ && !happenings_instances_.empty()) {
+    return;
+  }
+  happenings_instances_ = signature.empty() ? " " : signature;
+  processes_.clear();
+  events_.clear();
+
+  // Each process and event for every combination of objects of its parameters' types
+  auto ground = [this](
+    const std::vector<std::string> & names, bool processes,
+    std::vector<plansys2_msgs::msg::Action> & out) {
+      for (const auto & name : names) {
+        auto model = processes ? domain_expert_->getProcess(name) : domain_expert_->getEvent(name);
+        if (!model) {
+          continue;
+        }
+        std::vector<std::vector<std::string>> objects;
+        for (const auto & param : model->parameters) {
+          const auto subs = domain_expert_->getSubTypes(param.type);
+          std::vector<std::string> fit;
+          for (const auto & instance : instances_) {
+            if (instance.type == param.type || param.type == "object" ||
+              std::find(subs.begin(), subs.end(), instance.type) != subs.end())
+            {
+              fit.push_back(instance.name);
+            }
+          }
+          objects.push_back(fit);
+        }
+        std::vector<std::vector<std::string>> combinations;
+        std::vector<std::string> combination;
+        cart_product(combinations, combination, objects.begin(), objects.end());
+        for (const auto & values : combinations) {
+          auto grounded = processes ? domain_expert_->getProcess(name, values) :
+            domain_expert_->getEvent(name, values);
+          if (grounded) {
+            out.push_back(*grounded);
+          }
+        }
+      }
+    };
+  ground(domain_expert_->getProcesses(), true, processes_);
+  ground(domain_expert_->getEvents(), false, events_);
+}
+
+bool
+ProblemExpert::stepDynamics(double dt)
+{
+  groundHappenings();
+  bool changed = false;
+
+  // What acts for dt: the running actions, and the processes whose precondition holds
+  std::vector<plansys2_msgs::msg::Tree> acting;
+  for (const auto & [id, effects] : continuous_effects_) {
+    (void)id;
+    acting.push_back(effects);
+  }
+  for (const auto & process : processes_) {
+    if (check(process.preconditions, *this)) {
+      acting.push_back(process.effects);
+    }
+  }
+  if (dt > 0.0 && !acting.empty()) {
+    // Perception measures some: their values stay as it gave them
+    std::vector<plansys2::Function> measured;
+    for (const auto & function : functions_) {
+      if (measured_functions_.count(function.name)) {
+        measured.push_back(function);
+      }
+    }
+    for (auto effects : acting) {
+      parser::pddl::bindTime(effects, dt);
+      apply(effects, *this);
+    }
+    for (const auto & function : measured) {
+      updateFunction(function);
+    }
+    changed = true;
+  }
+
+  // Then the events whose precondition holds, each once a step, until none does
+  std::set<size_t> fired;
+  for (int round = 0; round < 10; round++) {
+    bool any = false;
+    for (size_t i = 0; i < events_.size(); i++) {
+      if (!fired.count(i) && check(events_[i].preconditions, *this)) {
+        apply(events_[i].effects, *this);
+        fired.insert(i);
+        any = true;
+      }
+    }
+    if (!any) {
+      break;
+    }
+    changed = true;
+  }
+  return changed;
 }
 
 bool

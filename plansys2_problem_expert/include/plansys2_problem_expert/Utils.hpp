@@ -184,6 +184,19 @@ bool apply(
   uint32_t node_id = 0);
 
 /**
+ * @brief Apply effects to a problem expert itself, as its clients would.
+ *
+ * @param[in] tree The effects.
+ * @param[in] expert The problem expert.
+ * @param[in] node_id The node to apply, the root by default.
+ * @return true if they were applied.
+ */
+bool apply(
+  const plansys2_msgs::msg::Tree & tree,
+  plansys2::ProblemExpert & expert,
+  uint32_t node_id = 0);
+
+/**
  * @brief Apply a PDDL expression through the problem client, recording what it changes.
  *
  * @param[in] tree The root node of the PDDL expression.

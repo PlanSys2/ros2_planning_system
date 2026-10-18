@@ -1000,6 +1000,20 @@ void bindDuration(plansys2_msgs::msg::Tree & tree, double duration)
   }
 }
 
+void bindTime(plansys2_msgs::msg::Tree & tree, double time)
+{
+  for (auto & node : tree.nodes) {
+    if (node.node_type == plansys2_msgs::msg::Node::PARAMETER &&
+      (node.name == "#t" || (!node.parameters.empty() && node.parameters[0].name == "#t")))
+    {
+      node.node_type = plansys2_msgs::msg::Node::NUMBER;
+      node.name.clear();
+      node.parameters.clear();
+      node.value = time;
+    }
+  }
+}
+
 std::string toStringWhen(const plansys2_msgs::msg::Tree & tree, uint32_t node_id)
 {
   if (node_id >= tree.nodes.size() || tree.nodes[node_id].children.size() != 2) {

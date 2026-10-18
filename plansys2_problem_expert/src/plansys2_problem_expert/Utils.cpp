@@ -1171,6 +1171,23 @@ bool check(
   return std::get<1>(ret);
 }
 
+bool apply(
+  const plansys2_msgs::msg::Tree & tree,
+  plansys2::ProblemExpert & expert,
+  uint32_t node_id)
+{
+  if (tree.nodes.empty()) {
+    return true;
+  }
+  if (!sound_tree(tree, node_id)) {
+    return false;
+  }
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
+  ExpertSource source(expert);
+  return std::get<0>(apply_node(tree, &source, predicates, functions, false, node_id, nullptr));
+}
+
 bool undo(
   const std::vector<FactChange> & changes,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,

@@ -17,6 +17,7 @@
 
 #include <functional>
 #include <optional>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -277,6 +278,37 @@ public:
   bool applyTimedFacts();
 
   /**
+   * @brief The continuous effects of a running action, integrated while active.
+   * @param[in] id Who they are, the action.
+   * @param[in] effects (and (increase (f) (* #t rate))...), bound to its objects.
+   * @param[in] active false to stop them.
+   * @return false if they are not valid in the domain.
+   */
+  bool setContinuousEffect(
+    const std::string & id, const plansys2_msgs::msg::Tree & effects, bool active);
+
+  /// The continuous effects active now, by who they are
+  std::map<std::string, plansys2_msgs::msg::Tree> getContinuousEffects() const
+  {
+    return continuous_effects_;
+  }
+
+  /**
+   * @brief Functions perception measures: the dynamics never change them.
+   * @param[in] names Their names.
+   */
+  void setMeasuredFunctions(const std::set<std::string> & names) {measured_functions_ = names;}
+
+  /**
+   * @brief One step of the dynamics (PDDL+): the continuous effects of the running actions and
+   * the processes whose precondition holds act for dt, and then the events whose precondition
+   * holds happen.
+   * @param[in] dt Seconds since the last step.
+   * @return true if anything changed.
+   */
+  bool stepDynamics(double dt);
+
+  /**
    * @brief Check if an instance with the given name exists.
    *
    * @param[in] name The name of the instance to check.
@@ -425,6 +457,13 @@ private:
   plansys2::Goal goal_;
   plansys2::Metric metric_;
   std::vector<TimedFact> timed_facts_;
+  std::map<std::string, plansys2_msgs::msg::Tree> continuous_effects_;
+  std::set<std::string> measured_functions_;
+  // Processes and events over the instances, made again when the instances change
+  std::string happenings_instances_;
+  std::vector<plansys2_msgs::msg::Action> processes_;
+  std::vector<plansys2_msgs::msg::Action> events_;
+  void groundHappenings();
   std::function<double()> clock_ {[]() {return 0.0;}};
 
   std::shared_ptr<DomainExpert> domain_expert_;

@@ -53,6 +53,9 @@ target_link_libraries(derived_test ${PROJECT_NAME})
 ament_add_ros_isolated_gtest(object_fluents_test object_fluents_test.cpp TIMEOUT 60)
 target_link_libraries(object_fluents_test ${PROJECT_NAME})
 
+ament_add_ros_isolated_gtest(dynamics_test dynamics_test.cpp TIMEOUT 60)
+target_link_libraries(dynamics_test ${PROJECT_NAME})
+
 ament_add_ros_isolated_gtest(timed_facts_test timed_facts_test.cpp TIMEOUT 60)
 target_link_libraries(timed_facts_test
   ${PROJECT_NAME}

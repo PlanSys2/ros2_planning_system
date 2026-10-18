@@ -175,6 +175,9 @@ std::string toStringWhen(const plansys2_msgs::msg::Tree & tree, uint32_t node_id
 /// ?duration as a number: the duration a plan gives the action
 void bindDuration(plansys2_msgs::msg::Tree & tree, double duration);
 
+/// #t as a number: the time a continuous effect acts in one step of its integration
+void bindTime(plansys2_msgs::msg::Tree & tree, double time);
+
 /// This function creates a complete tree.
 /**
  * This function recursivelly extracts the logic expressions and predicates from the expression.

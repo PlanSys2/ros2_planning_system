@@ -49,6 +49,28 @@ ProblemExpertNode::ProblemExpertNode(const rclcpp::NodeOptions & options)
 {
   declare_parameter("model_file", "");
   declare_parameter("problem_file", "");
+  // PDDL+: the processes, events and continuous effects of running actions act on the problem,
+  // except on the functions perception measures
+  declare_parameter("simulate_dynamics", true);
+  declare_parameter("measured_functions", std::vector<std::string>{});
+
+  set_continuous_effect_service_ = create_service<plansys2_msgs::srv::SetContinuousEffect>(
+    "problem_expert/set_continuous_effect",
+    [this](
+      const std::shared_ptr<rmw_request_id_t>,
+      const std::shared_ptr<plansys2_msgs::srv::SetContinuousEffect::Request> request,
+      const std::shared_ptr<plansys2_msgs::srv::SetContinuousEffect::Response> response) {
+      if (problem_expert_ == nullptr) {
+        response->success = false;
+        response->error_info = "Requesting service in non-active state";
+        return;
+      }
+      response->success = problem_expert_->setContinuousEffect(
+        request->id, request->effects, request->active);
+      if (!response->success) {
+        response->error_info = "Continuous effects not valid";
+      }
+    });
 
   add_problem_service_ = create_service<plansys2_msgs::srv::AddProblem>(
     "problem_expert/add_problem",
@@ -296,6 +318,10 @@ ProblemExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   problem_expert_ = std::make_shared<ProblemExpert>(domain_expert);
   // Timed literals and fluents come by the time of the node, simulated or not
   problem_expert_->setClock([this]() {return now().seconds();});
+  {
+    const auto measured = get_parameter("measured_functions").as_string_array();
+    problem_expert_->setMeasuredFunctions(std::set<std::string>(measured.begin(), measured.end()));
+  }
 
   auto problem_file = get_parameter("problem_file").get_value<std::string>();
   if (!problem_file.empty()) {
@@ -335,10 +361,21 @@ ProblemExpertNode::on_activate(const rclcpp_lifecycle::State & state)
   knowledge_pub_->on_activate();
   problem_pub_->on_activate();
 
-  // Timed facts are applied when their time comes, as any other change
+  // Timed facts are applied when their time comes, and the dynamics act, as any other change
+  last_step_ = now();
   timed_facts_timer_ = create_wall_timer(
     50ms, [this]() {
-      if (problem_expert_ && problem_expert_->applyTimedFacts()) {
+      if (!problem_expert_) {
+        return;
+      }
+      const auto stamp = now();
+      const double dt = std::max(0.0, (stamp - last_step_).seconds());
+      last_step_ = stamp;
+      bool changed = problem_expert_->applyTimedFacts();
+      if (get_parameter("simulate_dynamics").as_bool()) {
+        changed = problem_expert_->stepDynamics(dt) || changed;
+      }
+      if (changed) {
         update_pub_->publish(std_msgs::msg::Empty());
         knowledge_pub_->publish(*get_knowledge_as_msg());
         plansys2_msgs::msg::Problem problem_msg;

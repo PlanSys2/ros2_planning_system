@@ -34,6 +34,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/State.msg"
   "msg/Tree.msg"
   "srv/AddProblem.srv"
+  "srv/SetContinuousEffect.srv"
   "srv/AddProblemGoal.srv"
   "srv/AffectNode.srv"
   "srv/AffectParam.srv"
