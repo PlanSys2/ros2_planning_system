@@ -85,7 +85,7 @@ private:
     bool asking {false};
     bool ready {false};
     std::map<std::string, std::string> types;
-    std::map<std::string, double> values;
+    std::map<std::string, std::string> values;
   };
   std::shared_ptr<Details> details_ {std::make_shared<Details>()};
   plansys2_msgs::msg::Knowledge::UniquePtr shown_msg_;

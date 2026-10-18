@@ -83,6 +83,14 @@ def test_functions(text, name, parameters, value):
     assert Parser.number_to_string(function.value, -1) == value
 
 
+@pytest.mark.parametrize('text,name,parameters,obj', rows('object_functions.tsv', 4))
+def test_object_functions(text, name, parameters, obj):
+    function = Parser.node_from_string_function(text)
+    assert function.name == name
+    assert ' '.join(p.name for p in function.parameters) == parameters
+    assert function.object == obj
+
+
 @pytest.mark.parametrize('text,value', rows('numbers.tsv', 2))
 def test_numbers(text, value):
     number = Parser.parse_number(text)

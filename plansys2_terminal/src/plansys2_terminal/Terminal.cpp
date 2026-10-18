@@ -450,6 +450,9 @@ Terminal::process_get_model_function(std::vector<std::string> & command, std::os
         os << "\t" << functions.value().parameters[i].type << " - " <<
           functions.value().parameters[i].name << std::endl;
       }
+      // An object fluent has objects of a type; the others, numbers
+      os << "Returns: " <<
+        (functions.value().object.empty() ? "number" : functions.value().object) << std::endl;
     } else {
       os << "Error when looking for params of " << command[0] << std::endl;
     }

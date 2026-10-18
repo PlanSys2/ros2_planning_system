@@ -9,5 +9,6 @@ starting with `#` are comments.
   the types of its nodes in order.
 - `node_types.tsv`: default type, text, node type.
 - `functions.tsv`: text, name, parameters (separated by spaces), value.
+- `object_functions.tsv`: text, name, parameters, the object of an object fluent (empty: none).
 - `numbers.tsv`: text, value (`-` if it is not a number).
 - `equality.tsv`: first text, second text, whether their trees are equal.

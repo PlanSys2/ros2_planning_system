@@ -28,8 +28,7 @@ namespace
 {
 // Not read yet: each one comes with its phase of the Kairos work
 const std::set<std::string> kNotRead = {
-  "continuous-effects", "object-fluents", "preferences", "processes-events",
-  "trajectory-constraints"};
+  "continuous-effects", "preferences", "processes-events", "trajectory-constraints"};
 
 std::vector<parser::pddl::BankCase> bank()
 {
@@ -110,5 +109,5 @@ TEST(pddl_bank, unsupported_tasks_fail_with_an_error)
     EXPECT_FALSE(error.empty());
     checked++;
   }
-  EXPECT_GE(checked, 15);
+  EXPECT_GE(checked, static_cast<int>(3 * kNotRead.size()));
 }

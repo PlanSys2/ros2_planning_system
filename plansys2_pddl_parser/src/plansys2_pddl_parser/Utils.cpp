@@ -1337,35 +1337,60 @@ plansys2_msgs::msg::Node fromStringExists(const std::string & exists)
 
 plansys2_msgs::msg::Node fromStringFunction(const std::string & function)
 {
-  // "(f a b)", "(f a b) 1.5" or "(= (f a b) 1.5)": the name, the parameters and the value
+  // "(f a b)", "(f a b) 1.5" or "(= (f a b) 1.5)": the name, the parameters and the value. The
+  // value of an object fluent is an object: "(= (pos r1) kitchen)"
   plansys2_msgs::msg::Node ret;
   ret.node_type = plansys2_msgs::msg::Node::FUNCTION;
 
-  std::vector<std::string> tokens;
+  // The tokens, and whether each one is inside the parentheses of the function
+  std::vector<std::pair<std::string, bool>> tokens;
+  int depth = 0;
+  int function_depth = -1;
   for (size_t pos = 0; pos < function.size(); ) {
-    if (isBlank(function[pos]) || function[pos] == '(' || function[pos] == ')') {
+    if (function[pos] == '(') {
+      depth++;
       pos++;
       continue;
     }
-    tokens.push_back(tokenAt(function, pos));
-    pos += tokens.back().size();
+    if (function[pos] == ')') {
+      if (depth == function_depth) {
+        function_depth = -2;  // Closed: what follows is the value
+      }
+      depth--;
+      pos++;
+      continue;
+    }
+    if (isBlank(function[pos])) {
+      pos++;
+      continue;
+    }
+    auto token = tokenAt(function, pos);
+    pos += token.size();
+    if (token == "=" && tokens.empty()) {
+      continue;
+    }
+    if (function_depth == -1) {
+      function_depth = depth;  // The name opens the function
+    }
+    tokens.emplace_back(token, function_depth >= 0);
   }
 
   size_t i = 0;
-  if (i < tokens.size() && tokens[i] == "=") {
-    i++;
-  }
   if (i < tokens.size()) {
-    ret.name = tokens[i++];
+    ret.name = tokens[i++].first;
   }
   for (; i < tokens.size(); i++) {
     double value;
-    if (parseNumber(tokens[i], value)) {
+    if (parseNumber(tokens[i].first, value)) {
       ret.value = value;
       break;
     }
+    if (!tokens[i].second) {
+      ret.object = tokens[i].first;  // After the function: its object
+      break;
+    }
     plansys2_msgs::msg::Param param;
-    param.name = tokens[i];
+    param.name = tokens[i].first;
     ret.parameters.push_back(param);
   }
 

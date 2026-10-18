@@ -106,12 +106,14 @@ RQTKnowledge::ask_details()
   std::thread(
     [problem = problem_, details = details_]() {
       std::map<std::string, std::string> types;
-      std::map<std::string, double> values;
+      std::map<std::string, std::string> values;
       for (const auto & instance : problem->getInstances()) {
         types[instance.name] = instance.type;
       }
+      // A number, or the object of an object fluent
       for (const auto & function : problem->getFunctions()) {
-        values[parser::pddl::toString(function)] = function.value;
+        values[parser::pddl::toString(function)] = function.object.empty() ?
+        QString::number(function.value).toStdString() : function.object;
       }
       std::lock_guard<std::mutex> lock(details->mutex);
       details->types = std::move(types);
@@ -155,7 +157,7 @@ void
 RQTKnowledge::render(const plansys2_msgs::msg::Knowledge & msg)
 {
   std::map<std::string, std::string> types;
-  std::map<std::string, double> values;
+  std::map<std::string, std::string> values;
   {
     std::lock_guard<std::mutex> lock(details_->mutex);
     types = details_->types;
@@ -195,7 +197,7 @@ RQTKnowledge::render(const plansys2_msgs::msg::Knowledge & msg)
     function_item->setText(0, QString("function"));
     function_item->setText(1, QString(function.c_str()));
     if (values.count(function)) {
-      function_item->setText(2, QString::number(values[function]));
+      function_item->setText(2, QString::fromStdString(values[function]));
     }
     function_item->setBackground(0, Qt::blue);
     function_item->setBackground(1, Qt::blue);

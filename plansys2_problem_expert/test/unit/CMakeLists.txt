@@ -47,6 +47,9 @@ target_link_libraries(effect_undo_test
   ament_index_cpp::ament_index_cpp
 )
 
+ament_add_ros_isolated_gtest(object_fluents_test object_fluents_test.cpp TIMEOUT 60)
+target_link_libraries(object_fluents_test ${PROJECT_NAME})
+
 ament_add_ros_isolated_gtest(timed_facts_test timed_facts_test.cpp TIMEOUT 60)
 target_link_libraries(timed_facts_test
   ${PROJECT_NAME}

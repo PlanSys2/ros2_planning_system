@@ -50,6 +50,7 @@ public:
   virtual bool add(const plansys2_msgs::msg::Node & predicate) = 0;
   virtual bool remove(const plansys2_msgs::msg::Node & predicate) = 0;
   virtual bool update(const plansys2::Function & function) = 0;
+  virtual bool add_function(const plansys2::Function & function) = 0;
 };
 
 // The facts of a problem expert, through its services
@@ -90,6 +91,10 @@ public:
   bool update(const plansys2::Function & function) override
   {
     return client_->updateFunction(function);
+  }
+  bool add_function(const plansys2::Function & function) override
+  {
+    return client_->addFunction(function);
   }
 
 private:
@@ -132,6 +137,10 @@ public:
   bool update(const plansys2::Function & function) override
   {
     return expert_.updateFunction(function);
+  }
+  bool add_function(const plansys2::Function & function) override
+  {
+    return expert_.addFunction(function);
   }
 
 private:
@@ -198,6 +207,14 @@ bool forEachTuple(
 // written at the end. ALL applies each effect as it is found
 enum class ApplyPhase {ALL, NUMERIC, DELETES, ADDS};
 
+// An object fluent set by an effect, read in the NUMERIC phase and written at the end
+struct ObjectUpdate
+{
+  plansys2_msgs::msg::Node function;
+  std::string before;  // Empty if it had none
+  std::string object;
+};
+
 // A numeric effect, computed in the NUMERIC phase and written at the end
 struct NumericUpdate
 {
@@ -213,9 +230,52 @@ struct ApplyPlan
 {
   std::vector<NumericUpdate> numeric;
   std::vector<plansys2_msgs::msg::Node> adds;
+  std::vector<ObjectUpdate> objects;
   // Conditional effects: whether each condition held before the action, by its text
   std::map<std::string, bool> conditions;
 };
+
+// The object a node stands for: a constant, a bound parameter, or the object an object fluent
+// has (std::nullopt if none, or if it is a number)
+std::optional<std::string> object_of(
+  const plansys2_msgs::msg::Tree & tree, uint32_t node_id, FactSource * source,
+  const std::vector<plansys2::Function> & functions, bool use_state)
+{
+  const auto & node = tree.nodes[node_id];
+  if (node.node_type == plansys2_msgs::msg::Node::CONSTANT) {
+    return node.name;
+  }
+  if (node.node_type == plansys2_msgs::msg::Node::PARAMETER) {
+    if (!node.parameters.empty() && node.parameters[0].name.front() != '?') {
+      return node.parameters[0].name;
+    }
+    return {};
+  }
+  if (node.node_type != plansys2_msgs::msg::Node::FUNCTION) {
+    return {};
+  }
+  std::optional<plansys2_msgs::msg::Node> function;
+  if (use_state) {
+    auto it = std::find_if(
+      functions.begin(), functions.end(),
+      std::bind(&parser::pddl::checkNodeEquality, std::placeholders::_1, node, true));
+    if (it != functions.end()) {
+      function = *it;
+    }
+  } else if (source) {
+    function = source->function(parser::pddl::toString(tree, node_id));
+  }
+  if (!function || function->object.empty()) {
+    return {};
+  }
+  return function->object;
+}
+
+bool is_object_node(const plansys2_msgs::msg::Node & node)
+{
+  return node.node_type == plansys2_msgs::msg::Node::CONSTANT ||
+         node.node_type == plansys2_msgs::msg::Node::PARAMETER;
+}
 
 std::tuple<bool, bool, double> evaluate_node(
   const plansys2_msgs::msg::Tree & tree,
@@ -405,6 +465,21 @@ std::tuple<bool, bool, double> evaluate_node(
       }
 
     case plansys2_msgs::msg::Node::EXPRESSION: {
+        // Objects: an object fluent, a constant or a parameter, compared by name. A fluent with
+        // no object yet is equal to none
+        if (tree.nodes[node_id].expression_type == plansys2_msgs::msg::Node::COMP_EQ) {
+          const auto first = tree.nodes[node_id].children[0];
+          const auto second = tree.nodes[node_id].children[1];
+          const auto first_object = object_of(tree, first, source, functions, use_state);
+          const auto second_object = object_of(tree, second, source, functions, use_state);
+          if (first_object || second_object || is_object_node(tree.nodes[first]) ||
+            is_object_node(tree.nodes[second]))
+          {
+            const bool equal = first_object && second_object && *first_object == *second_object;
+            return std::make_tuple(true, negate ^ equal, 0);
+          }
+        }
+
         // Numbers are not negated: only the comparison is
         std::tuple<bool, bool, double> left = evaluate_node(
           tree, source, predicates,
@@ -505,6 +580,28 @@ std::tuple<bool, bool, double> evaluate_node(
           // total-cost modifiers carry only the value: costs are not tracked here
           return std::make_tuple(true, true, 0);
         }
+
+        // An object fluent takes an object: read now, written at the end
+        const auto & assigned = tree.nodes[tree.nodes[node_id].children[1]];
+        if (tree.nodes[node_id].modifier_type == plansys2_msgs::msg::Node::ASSIGN &&
+          is_object_node(assigned))
+        {
+          const auto object = object_of(
+            tree, tree.nodes[node_id].children[1], source, functions, use_state);
+          if (!object) {
+            return std::make_tuple(false, false, 0);  // An unbound parameter
+          }
+          if (apply && phase == ApplyPhase::NUMERIC && plan) {
+            ObjectUpdate update;
+            update.function = tree.nodes[tree.nodes[node_id].children[0]];
+            update.before = object_of(
+              tree, tree.nodes[node_id].children[0], source, functions, use_state).value_or("");
+            update.object = *object;
+            plan->objects.push_back(update);
+          }
+          return std::make_tuple(true, true, 0);
+        }
+
         std::tuple<bool, bool, double> left = evaluate_node(
           tree, source, predicates,
           functions, apply, use_state, tree.nodes[node_id].children[0], false, changes, phase,
@@ -904,6 +1001,36 @@ std::tuple<bool, bool, double> apply_node(
       changes->push_back(change);
     }
   }
+  // Object fluents, each with its object; one it did not have yet is added
+  for (const auto & update : plan.objects) {
+    plansys2::Function function;
+    function.node_type = plansys2_msgs::msg::Node::FUNCTION;
+    function.name = update.function.name;
+    function.parameters = update.function.parameters;
+    function.object = update.object;
+    if (use_state) {
+      auto it = std::find_if(
+        functions.begin(), functions.end(),
+        std::bind(&parser::pddl::checkNodeEquality, std::placeholders::_1, function, true));
+      if (it != functions.end()) {
+        it->object = update.object;
+      } else {
+        functions.push_back(function);
+      }
+      continue;
+    }
+    const bool updated = source->update(function) || source->add_function(function);
+    success = success && updated;
+    if (changes && updated && update.before != update.object) {
+      FactChange change;
+      change.fact = function;
+      change.object_before = update.before;
+      change.object_after = update.object;
+      change.modifier_type = plansys2_msgs::msg::Node::ASSIGN;
+      changes->push_back(change);
+    }
+  }
+
   // What an application always gave: the truth of what it applied, and for a modifier the
   // value it computed
   return std::make_tuple(success, std::get<1>(added), std::get<2>(computed));
@@ -1072,6 +1199,24 @@ bool undo(
     auto current = problem_client->getFunction(expression);
     if (!current.has_value()) {
       success = false;
+      continue;
+    }
+
+    // An object fluent: back to its object, if nobody changed it since
+    if (!change.object_after.empty()) {
+      if (current->object != change.object_after) {
+        if (kept) {
+          kept->push_back(expression);
+        }
+        continue;
+      }
+      plansys2::Function function = change.fact;
+      if (change.object_before.empty()) {
+        success = problem_client->removeFunction(function) && success;
+      } else {
+        function.object = change.object_before;
+        success = problem_client->updateFunction(function) && success;
+      }
       continue;
     }
 

@@ -48,4 +48,6 @@ uint32[] children
 string name
 plansys2_msgs/Param[] parameters
 float64 value
+# An object fluent (a FUNCTION of an object type): the object it has; value is then unused
+string object
 bool negate

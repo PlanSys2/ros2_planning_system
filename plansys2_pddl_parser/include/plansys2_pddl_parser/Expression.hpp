@@ -461,5 +461,42 @@ public:
   Condition * copy(Domain &) {return new ConstExpression(constant, tid);}
 };
 
+// An object of the problem in an expression, as in (= (pos ?r) kitchen): a CONSTANT node
+class ObjectExpression : public Expression
+{
+public:
+  std::string object;
+  explicit ObjectExpression(const std::string & o)
+  : object(o) {}
+
+  std::string info() const {return object;}
+
+  void PDDLPrint(
+    std::ostream & s, unsigned, const TokenStruct<std::string> &, const Domain &) const override
+  {
+    s << object;
+  }
+
+  plansys2_msgs::msg::Node::SharedPtr getTree(
+    plansys2_msgs::msg::Tree & tree, const Domain &,
+    const std::vector<std::string> & = {}) const override
+  {
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::CONSTANT;
+    node->node_id = tree.nodes.size();
+    node->name = object;
+    tree.nodes.push_back(*node);
+    return node;
+  }
+
+  double evaluate() {return -1;}
+
+  double evaluate(Instance &, const StringVec &) {return evaluate();}
+
+  IntSet params() {return IntSet();}
+
+  Condition * copy(Domain &) {return new ObjectExpression(object);}
+};
+
 }  // namespace pddl
 }  // namespace parser

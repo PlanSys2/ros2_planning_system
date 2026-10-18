@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "plansys2_pddl_parser/Instance.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 namespace parser
 {
@@ -197,8 +198,12 @@ Expression * createExpression(Stringreader & f, TokenStruct<std::string> & ts, D
       throw std::runtime_error(os.str());
       return nullptr;
     } else {
-      // It is expected to be a number, whatever the locale
+      // A number, whatever the locale, or an object of the problem, compared with an object
+      // fluent
       double d;
+      if (!parseNumber(s, d) && isValidName(s)) {
+        return new ObjectExpression(s);
+      }
       if (!parseNumber(s, d)) {
         std::ostringstream os;
         os << "Expected a number, found \"" << s << "\"" << std::endl;

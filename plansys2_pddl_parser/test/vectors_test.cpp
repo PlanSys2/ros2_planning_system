@@ -125,6 +125,20 @@ TEST(vectors, functions)
   }
 }
 
+TEST(vectors, object_functions)
+{
+  for (const auto & row : rows("object_functions.tsv", 4)) {
+    const auto function = parser::pddl::fromStringFunction(row[0]);
+    std::string parameters;
+    for (const auto & p : function.parameters) {
+      parameters += (parameters.empty() ? "" : " ") + p.name;
+    }
+    EXPECT_EQ(function.name, row[1]) << row[0];
+    EXPECT_EQ(parameters, row[2]) << row[0];
+    EXPECT_EQ(function.object, row[3]) << row[0];
+  }
+}
+
 TEST(vectors, numbers)
 {
   for (const auto & row : rows("numbers.tsv", 2)) {

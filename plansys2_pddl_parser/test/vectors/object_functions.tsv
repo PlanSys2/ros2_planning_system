@@ -1,0 +1,8 @@
+# text	name	parameters	object
+(= (pos r1) kitchen)	pos	r1	kitchen
+(pos r1) kitchen	pos	r1	kitchen
+(=\t(pos\nr1)\nkitchen)	pos	r1	kitchen
+(= (carrier box1 r2) r1)	carrier	box1 r2	r1
+(= (leader) r3)	leader		r3
+(pos r1)	pos	r1	
+(= (pos r1) 3)	pos	r1	

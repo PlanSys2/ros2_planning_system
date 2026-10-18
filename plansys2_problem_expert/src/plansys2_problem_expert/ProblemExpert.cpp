@@ -697,7 +697,33 @@ ProblemExpert::isValidFunction(const plansys2::Function & function)
 {
   const std::optional<plansys2::Function> & model_function =
     domain_expert_->getFunction(function.name);
-  return model_function && argumentsFit(function, model_function.value());
+  if (!model_function || !argumentsFit(function, model_function.value())) {
+    return false;
+  }
+  if (function.object.empty()) {
+    return true;
+  }
+  // An object fluent has an object of its type: an instance, or a constant of the domain
+  const auto & type = model_function->object;
+  if (type.empty()) {
+    return false;  // A number, not an object
+  }
+  const auto sub_types = domain_expert_->getSubTypes(type);
+  auto fits = [&](const std::string & t) {
+      return t == type || type == "object" ||
+             std::find(sub_types.begin(), sub_types.end(), t) != sub_types.end();
+    };
+  for (const auto & instance : instances_) {
+    if (instance.name == function.object) {
+      return fits(instance.type);
+    }
+  }
+  for (const auto & constant : domain_expert_->getConstants(type)) {
+    if (constant == function.object) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool
@@ -910,6 +936,12 @@ ProblemExpert::checkPredicateTreeTypes(
         return true;
       }
 
+    // An object, compared with an object fluent or another object
+    case plansys2_msgs::msg::Node::CONSTANT:
+    case plansys2_msgs::msg::Node::PARAMETER: {
+        return true;
+      }
+
     default:
       // LCOV_EXCL_START
       std::cerr << "checkPredicateTreeTypes: Error parsing expresion [" <<
@@ -958,7 +990,11 @@ ProblemExpert::getProblem()
       function.name.begin(), function.name.end(),
       function.name.begin(), ::tolower);
 
-    problem.addInit(function.name, function.value, v);
+    if (function.object.empty()) {
+      problem.addInit(function.name, function.value, v);
+    } else {
+      problem.addInitObject(function.name, function.object, v);
+    }
   }
 
   // What is still to come, from now
@@ -1118,7 +1154,9 @@ ProblemExpert::addProblem(const std::string & problem_str)
     // A problem without :goal is valid: the goal can be set later
     if (problem.goal) {
       plansys2_msgs::msg::Tree goal;
-      problem.goal->getTree(goal, domain);
+      // The objects by name: a function in the goal has them as indexes, (box_pos ?3)
+      const std::vector<std::string> objects = problem.ts.tokens;
+      problem.goal->getTree(goal, domain, objects);
       if (!setGoal(goal)) {
         throw std::runtime_error("Wrong goal " + parser::pddl::toString(goal));
       }

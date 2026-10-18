@@ -305,6 +305,24 @@ public:
     init.push_back(gf);
   }
 
+  // add the object of an object fluent to the initial state
+  void addInitObject(const std::string & name, const std::string & object, const StringVec & v)
+  {
+    Function * function = d.funcs.get(name);
+    std::pair<bool, unsigned> p = d.types[function->returnType]->parseObject(object);
+    int index = static_cast<int>(p.second);
+    if (!p.first) {
+      std::pair<bool, int> q = d.types[function->returnType]->parseConstant(object);
+      if (!q.first) {
+        throw std::runtime_error("Unknown object " + object + " of " + name);
+      }
+      index = q.second;
+    }
+    GroundFunc<int> * gf = new GroundFunc<int>(function, index);
+    gf->insert(d, v);
+    init.push_back(gf);
+  }
+
   // add a fluent (predicate or function) to the initial state
   void addInit(TypeGround * g, const StringVec & v = StringVec())
   {

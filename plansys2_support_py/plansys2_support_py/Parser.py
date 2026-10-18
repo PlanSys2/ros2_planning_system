@@ -546,33 +546,54 @@ class Parser:
         Parameters
         ----------
         function : str
-            '(f a b)', '(f a b) 1.5' or '(= (f a b) 1.5)'.
+            '(f a b)', '(f a b) 1.5' or '(= (f a b) 1.5)'; the value of an object fluent is an
+            object: '(= (pos r1) kitchen)'.
 
         Returns
         -------
         Node
-            Node message with FUNCTION type, its parameters and its value.
+            Node message with FUNCTION type, its parameters and its value or object.
 
         """
         node = Node()
         node.node_type = Node.FUNCTION
         node.value = 0.0
+        # The tokens, and whether each one is inside the parentheses of the function
         tokens = []
+        depth = 0
+        function_depth = -1
         pos = 0
         while pos < len(function):
-            if function[pos] in _BLANKS or function[pos] in '()':
+            char = function[pos]
+            if char == '(':
+                depth += 1
                 pos += 1
                 continue
-            tokens.append(_token_at(function, pos))
-            pos += len(tokens[-1])
-        i = 1 if tokens and tokens[0] == '=' else 0
-        if i < len(tokens):
-            node.name = tokens[i]
-            i += 1
-        for token in tokens[i:]:
+            if char == ')':
+                if depth == function_depth:
+                    function_depth = -2  # Closed: what follows is the value
+                depth -= 1
+                pos += 1
+                continue
+            if char in _BLANKS:
+                pos += 1
+                continue
+            token = _token_at(function, pos)
+            pos += len(token)
+            if token == '=' and not tokens:
+                continue
+            if function_depth == -1:
+                function_depth = depth  # The name opens the function
+            tokens.append((token, function_depth >= 0))
+        if tokens:
+            node.name = tokens[0][0]
+        for token, inside in tokens[1:]:
             value = Parser.parse_number(token)
             if value is not None:
                 node.value = value
+                break
+            if not inside:
+                node.object = token  # After the function: its object
                 break
             node.parameters.append(Parser.param_from_string(token))  # type: ignore[union-attr]
         return node

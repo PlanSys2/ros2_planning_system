@@ -302,6 +302,10 @@ DomainExpert::getFunction(const std::string & function)
         domain_->types[domain_->funcs[i]->params[j]]->getSubTypesNames(param.sub_types);
         ret.parameters.push_back(param);
       }
+      // An object fluent: the type of the objects it has
+      if (domain_->funcs[i]->returnType >= 0) {
+        ret.object = domain_->types[domain_->funcs[i]->returnType]->name;
+      }
     }
     i++;
   }
