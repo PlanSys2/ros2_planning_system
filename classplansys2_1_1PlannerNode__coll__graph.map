@@ -1,9 +1,9 @@
 <map id="PlannerNode" name="PlannerNode">
-<area shape="rect" id="Node000001" title="ROS2 Lifecycle Node that manages the planning system and handles planning requests." alt="" coords="277,63,373,88"/>
+<area shape="rect" id="Node000001" title="ROS2 Lifecycle Node that manages the planning system and handles planning requests." alt="" coords="272,63,368,88"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="31,5,136,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,24,253,45,295,60,293,65,252,50,151,29"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,30,248,53,273,59,271,65,247,58,151,35"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="5,55,162,96"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="178,73,276,73,276,78,178,78"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="177,73,271,73,271,78,177,78"/>
 <area shape="rect" id="Node000004" title=" " alt="" coords="9,120,158,175"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="172,124,252,101,291,86,293,91,254,106,173,129"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="172,118,274,86,276,92,174,123"/>
 </map>

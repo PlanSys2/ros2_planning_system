@@ -1,7 +1,9 @@
 <map id="plansys2_executor/include/plansys2_executor/bt_builder_plugins/stn_bt_builder.hpp" name="plansys2_executor/include/plansys2_executor/bt_builder_plugins/stn_bt_builder.hpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="82,5,275,61"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="165,5,357,61"/>
 <area shape="rect" id="Node000002" href="$stn__bt__builder_8cpp.html" title=" " alt="" coords="5,109,160,180"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="147,74,115,110,111,107,143,71"/>
-<area shape="rect" id="Node000003" href="$stn__btbuilder__tests_8cpp.html" title=" " alt="" coords="184,124,368,165"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="214,70,260,122,256,125,210,74"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="205,72,141,111,138,106,202,67"/>
+<area shape="rect" id="Node000003" href="$graph__traversal__test_8cpp.html" title=" " alt="" coords="184,116,338,172"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="264,76,264,116,258,116,258,76"/>
+<area shape="rect" id="Node000004" href="$stn__btbuilder__tests_8cpp.html" title=" " alt="" coords="362,124,547,165"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="324,67,421,121,418,126,321,71"/>
 </map>

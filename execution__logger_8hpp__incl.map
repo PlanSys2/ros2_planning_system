@@ -1,17 +1,19 @@
 <map id="plansys2_tests/include/plansys2_tests/execution_logger.hpp" name="plansys2_tests/include/plansys2_tests/execution_logger.hpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="240,5,412,61"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="250,5,421,61"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,116,44,142"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="240,55,156,77,58,112,56,107,154,72,239,50"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="250,54,161,76,58,113,56,107,159,71,248,49"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="68,116,136,142"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="262,64,148,111,146,113,144,108,146,107,260,59"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="159,116,213,142"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="287,64,218,110,215,106,284,59"/>
-<area shape="rect" id="Node000005" title=" " alt="" coords="236,109,416,150"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="329,62,329,94,323,94,323,62"/>
-<area shape="rect" id="Node000006" title=" " alt="" coords="440,109,620,150"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="386,59,474,100,472,105,384,64"/>
-<area shape="rect" id="Node000007" title=" " alt="" coords="643,116,835,142"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="413,51,672,110,670,115,411,57"/>
-<area shape="rect" id="Node000008" title=" " alt="" coords="860,116,979,142"/>
-<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="413,41,612,67,848,106,863,110,861,115,847,112,611,72,412,46"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="267,64,148,111,146,113,144,108,146,107,265,59"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="159,116,215,142"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="294,64,221,110,218,106,291,59"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="239,116,293,142"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="317,63,286,106,281,103,313,60"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="316,109,496,150"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="358,60,384,95,380,98,354,63"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="520,109,700,150"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="416,59,539,101,537,106,414,64"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="723,116,915,142"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="422,48,742,110,741,116,421,54"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="940,116,1059,142"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="421,39,651,64,789,83,928,106,943,110,942,115,927,112,789,88,650,69,421,44"/>
 </map>

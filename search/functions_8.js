@@ -14,5 +14,6 @@ var searchData=
   ['hasinstance_11',['hasInstance',['../classplansys2_1_1State.html#a75d4da598146addd0309e41475108050',1,'plansys2::State::hasInstance(const plansys2::Instance &amp;instance)'],['../classplansys2_1_1State.html#a46456785aae6a06f02896fa62d0b9044',1,'plansys2::State::hasInstance(plansys2::Instance &amp;&amp;instance)']]],
   ['hasnext_12',['hasNext',['../classparser_1_1pddl_1_1CondIter.html#a634d758e1811c32295f5665e4f8a0178',1,'parser::pddl::CondIter']]],
   ['haspredicate_13',['hasPredicate',['../classplansys2_1_1State.html#a7d5e45309ee4d76869a5125de7bdc775',1,'plansys2::State::hasPredicate(const std::string &amp;predicate_str)'],['../classplansys2_1_1State.html#a75add7de51d40b2c4bbb51d181bc8e2a',1,'plansys2::State::hasPredicate(const plansys2::Predicate &amp;predicate)'],['../classplansys2_1_1State.html#a0be0a608e86c362cac10e78b348ef878',1,'plansys2::State::hasPredicate(plansys2::Predicate &amp;&amp;predicate)']]],
-  ['holds_14',['holds',['../classEffectUndoTest.html#a6cf00b2802aec3da7ccc42222439fc90',1,'EffectUndoTest']]]
+  ['holds_14',['holds',['../classEffectUndoTest.html#a6cf00b2802aec3da7ccc42222439fc90',1,'EffectUndoTest']]],
+  ['hub_5fhas_15',['hub_has',['../classActionProtocolTest.html#a0fb92275bb5e36219752a7654c0efd5b',1,'ActionProtocolTest']]]
 ];

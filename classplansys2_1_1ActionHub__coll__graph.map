@@ -1,0 +1,5 @@
+<map id="ActionHub" name="ActionHub">
+<area shape="rect" id="Node000001" title="The actions_hub publisher and subscription of a node, shared by its action executors." alt="" coords="33,94,116,120"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,144,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="77,62,77,93,72,93,72,62"/>
+</map>

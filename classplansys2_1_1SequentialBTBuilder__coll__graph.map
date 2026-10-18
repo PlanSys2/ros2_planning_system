@@ -1,9 +1,9 @@
 <map id="SequentialBTBuilder" name="SequentialBTBuilder">
-<area shape="rect" id="Node000001" title=" " alt="" coords="64,102,204,128"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="64,94,204,120"/>
 <area shape="rect" id="Node000002" href="$classplansys2_1_1BTBuilder.html" title="Interface for behavior tree builder implementations." alt="" coords="5,5,84,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="68,41,124,100,120,103,64,44"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="70,40,123,92,120,96,66,44"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="107,5,160,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="136,46,136,101,131,101,131,46"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="209,5,256,31"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="226,47,217,64,205,80,188,94,169,104,166,99,185,89,201,76,213,61,221,45"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="136,47,136,94,131,94,131,47"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="204,5,251,31"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="218,47,200,72,164,96,161,91,196,68,214,43"/>
 </map>

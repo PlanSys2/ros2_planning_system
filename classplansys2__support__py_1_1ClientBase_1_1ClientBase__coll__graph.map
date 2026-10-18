@@ -1,7 +1,7 @@
 <map id="ClientBase" name="ClientBase">
-<area shape="rect" id="Node000001" title=" " alt="" coords="25,102,110,128"/>
-<area shape="rect" id="Node000002" href="$classNode.html" title=" " alt="" coords="5,5,58,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="44,45,65,100,60,102,39,47"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="25,94,110,120"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,58,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="45,44,65,93,60,95,40,46"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="82,5,125,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="96,47,75,102,70,100,91,45"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="95,46,75,95,70,93,90,44"/>
 </map>

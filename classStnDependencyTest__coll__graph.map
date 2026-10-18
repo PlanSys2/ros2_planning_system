@@ -1,9 +1,9 @@
 <map id="StnDependencyTest" name="StnDependencyTest">
-<area shape="rect" id="Node000001" title=" " alt="" coords="48,117,186,143"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="48,109,186,135"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,13,53,38"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="51,49,109,115,105,118,47,52"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="52,48,108,107,104,110,49,52"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="77,13,157,38"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="120,54,120,116,114,116,114,54"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="120,54,120,108,114,108,114,54"/>
 <area shape="rect" id="Node000004" title=" " alt="" coords="181,5,338,46"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="221,58,135,119,132,114,218,53"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="219,57,137,111,134,106,216,53"/>
 </map>

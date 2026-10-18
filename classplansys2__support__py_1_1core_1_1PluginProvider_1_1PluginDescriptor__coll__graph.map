@@ -1,5 +1,7 @@
 <map id="PluginDescriptor" name="PluginDescriptor">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,122,122,148"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="44,5,83,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="66,47,66,122,61,122,61,47"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="12,94,128,120"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,44,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="24,46,29,69,38,81,50,91,46,95,34,85,24,71,19,47"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="94,5,139,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="105,46,79,95,74,92,100,44"/>
 </map>

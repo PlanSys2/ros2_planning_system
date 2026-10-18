@@ -1,11 +1,11 @@
 <map id="MockPlanSolver" name="MockPlanSolver">
-<area shape="rect" id="Node000001" title=" " alt="" coords="74,177,190,203"/>
-<area shape="rect" id="Node000002" href="$classplansys2__support__py_1_1core_1_1PlanSolverBase_1_1PlanSolverBase.html" title=" " alt="" coords="75,102,189,128"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="135,143,135,177,130,177,130,143"/>
-<area shape="rect" id="Node000003" href="$classABC.html" title=" " alt="" coords="5,5,54,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="55,39,121,99,117,103,52,43"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="78,5,186,31"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="135,46,135,101,130,101,130,46"/>
-<area shape="rect" id="Node000005" href="$classbool.html" title=" " alt="" coords="211,5,256,31"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="224,46,199,80,163,104,160,99,196,76,220,43"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="54,169,170,195"/>
+<area shape="rect" id="Node000002" href="$classplansys2__support__py_1_1core_1_1PlanSolverBase_1_1PlanSolverBase.html" title=" " alt="" coords="55,94,169,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="115,135,115,169,110,169,110,135"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,5,54,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="53,41,103,92,99,95,50,44"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="78,5,147,31"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="115,47,115,94,110,94,110,47"/>
+<area shape="rect" id="Node000005" href="$classbool.html" title=" " alt="" coords="175,5,220,31"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="188,46,170,72,138,96,135,91,166,68,184,43"/>
 </map>
