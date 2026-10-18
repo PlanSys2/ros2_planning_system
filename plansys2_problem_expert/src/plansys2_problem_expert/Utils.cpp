@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <iostream>
 #include <limits>
 #include <map>
 #include <optional>
@@ -1371,6 +1372,278 @@ std::vector<DerivedRule> make_derived_rules(
   return rules;
 }
 
+namespace
+{
+// The predicates a tree reads, each with whether it reads it negated
+void read_predicates(
+  const plansys2_msgs::msg::Tree & tree, uint32_t id, bool negated,
+  std::vector<std::pair<std::string, bool>> & read)
+{
+  if (id >= tree.nodes.size()) {
+    return;
+  }
+  const auto & node = tree.nodes[id];
+  switch (node.node_type) {
+    case plansys2_msgs::msg::Node::PREDICATE:
+      read.emplace_back(node.name, negated);
+      break;
+    case plansys2_msgs::msg::Node::NOT:
+      for (auto child : node.children) {
+        read_predicates(tree, child, !negated, read);
+      }
+      break;
+    case plansys2_msgs::msg::Node::IMPLY:
+      // (imply a b) is (or (not a) b)
+      if (node.children.size() == 2) {
+        read_predicates(tree, node.children[0], !negated, read);
+        read_predicates(tree, node.children[1], negated, read);
+      }
+      break;
+    default:
+      for (auto child : node.children) {
+        read_predicates(tree, child, negated, read);
+      }
+      break;
+  }
+}
+
+std::string fact_key(const plansys2::Predicate & predicate)
+{
+  std::string key = predicate.name;
+  for (const auto & param : predicate.parameters) {
+    key += " " + param.name;
+  }
+  return key;
+}
+
+std::string fact_key(const std::string & name, const std::vector<std::string> & args)
+{
+  std::string key = name;
+  for (const auto & arg : args) {
+    key += " " + arg;
+  }
+  return key;
+}
+
+// A literal of a rule body: a predicate, or an equality of two objects; arguments starting with
+// '?' are variables
+struct Literal
+{
+  std::string name;  // Empty for an equality
+  std::vector<std::string> args;
+  bool negated = false;
+};
+
+// The body as literals, if it is a conjunction of them (inside exists); false otherwise
+bool flatten(
+  const plansys2_msgs::msg::Tree & tree, uint32_t id, bool negated, std::vector<Literal> & out)
+{
+  if (id >= tree.nodes.size()) {
+    return false;
+  }
+  const auto & node = tree.nodes[id];
+  auto object = [](const plansys2_msgs::msg::Node & n) -> std::optional<std::string> {
+      if (n.node_type == plansys2_msgs::msg::Node::CONSTANT) {
+        return n.name;
+      }
+      if (n.node_type == plansys2_msgs::msg::Node::PARAMETER && !n.parameters.empty()) {
+        return n.parameters[0].name;
+      }
+      return {};
+    };
+  switch (node.node_type) {
+    case plansys2_msgs::msg::Node::AND:
+    case plansys2_msgs::msg::Node::EXISTS:
+      if (negated) {
+        return false;
+      }
+      for (auto child : node.children) {
+        if (!flatten(tree, child, false, out)) {
+          return false;
+        }
+      }
+      return true;
+    case plansys2_msgs::msg::Node::NOT:
+      return !negated && node.children.size() == 1 &&
+             flatten(tree, node.children[0], true, out);
+    case plansys2_msgs::msg::Node::PREDICATE: {
+        Literal literal;
+        literal.name = node.name;
+        literal.negated = negated;
+        for (const auto & param : node.parameters) {
+          literal.args.push_back(param.name);
+        }
+        out.push_back(literal);
+        return true;
+      }
+    case plansys2_msgs::msg::Node::EXPRESSION: {
+        if (node.expression_type != plansys2_msgs::msg::Node::COMP_EQ ||
+          node.children.size() != 2)
+        {
+          return false;
+        }
+        auto first = object(tree.nodes[node.children[0]]);
+        auto second = object(tree.nodes[node.children[1]]);
+        if (!first || !second) {
+          return false;
+        }
+        Literal literal;
+        literal.negated = negated;
+        literal.args = {*first, *second};
+        out.push_back(literal);
+        return true;
+      }
+    default:
+      return false;
+  }
+}
+
+// The facts so far, by predicate and by key
+struct FactIndex
+{
+  std::map<std::string, std::vector<std::vector<std::string>>> by_name;
+  std::set<std::string> keys;
+
+  bool add(const std::string & name, const std::vector<std::string> & args)
+  {
+    if (!keys.insert(fact_key(name, args)).second) {
+      return false;
+    }
+    by_name[name].push_back(args);
+    return true;
+  }
+};
+
+// What a rule of literals gives: its positive literals joined over the facts, then the negated
+// ones and the equalities checked
+void join(
+  const DerivedRule & rule, const std::vector<Literal> & literals, const FactIndex & facts,
+  std::vector<std::vector<std::string>> & heads)
+{
+  std::vector<const Literal *> positive, others;
+  for (const auto & literal : literals) {
+    (!literal.name.empty() && !literal.negated ? positive : others).push_back(&literal);
+  }
+  const size_t arity = rule.derived.predicate.parameters.size();
+  std::vector<std::set<std::string>> allowed(arity);
+  for (size_t i = 0; i < arity; i++) {
+    allowed[i] = std::set<std::string>(rule.objects[i].begin(), rule.objects[i].end());
+  }
+
+  std::map<std::string, std::string> binding;
+  auto value = [&binding](const std::string & arg) -> std::optional<std::string> {
+      if (arg.empty() || arg.front() != '?') {
+        return arg;
+      }
+      auto it = binding.find(arg);
+      if (it == binding.end()) {
+        return {};
+      }
+      return it->second;
+    };
+
+  // The head, once every variable it has is bound: the ones only in negations range over
+  // their objects
+  std::function<void(size_t)> finish = [&](size_t i) {
+      if (i == arity) {
+        for (const auto * literal : others) {
+          std::vector<std::string> args;
+          for (const auto & arg : literal->args) {
+            args.push_back(*value(arg));
+          }
+          const bool holds = literal->name.empty() ? args[0] == args[1] :
+            facts.keys.count(fact_key(literal->name, args)) > 0;
+          if (holds == literal->negated) {
+            return;
+          }
+        }
+        std::vector<std::string> head;
+        for (size_t k = 0; k < arity; k++) {
+          head.push_back(binding.at("?" + std::to_string(k)));
+        }
+        heads.push_back(head);
+        return;
+      }
+      const auto variable = "?" + std::to_string(i);
+      auto bound = binding.find(variable);
+      if (bound != binding.end()) {
+        if (allowed[i].count(bound->second)) {
+          finish(i + 1);
+        }
+        return;
+      }
+      for (const auto & object : rule.objects[i]) {
+        binding[variable] = object;
+        finish(i + 1);
+      }
+      binding.erase(variable);
+    };
+
+  std::function<void(size_t)> match = [&](size_t k) {
+      if (k == positive.size()) {
+        finish(0);
+        return;
+      }
+      const auto & literal = *positive[k];
+      auto candidates = facts.by_name.find(literal.name);
+      if (candidates == facts.by_name.end()) {
+        return;
+      }
+      for (const auto & args : candidates->second) {
+        if (args.size() != literal.args.size()) {
+          continue;
+        }
+        std::vector<std::string> bound_here;
+        bool fits = true;
+        for (size_t a = 0; a < args.size() && fits; a++) {
+          const auto & arg = literal.args[a];
+          auto current = value(arg);
+          if (current) {
+            fits = *current == args[a];
+          } else {
+            binding[arg] = args[a];
+            bound_here.push_back(arg);
+          }
+        }
+        if (fits) {
+          match(k + 1);
+        }
+        for (const auto & arg : bound_here) {
+          binding.erase(arg);
+        }
+      }
+    };
+  match(0);
+}
+
+// Whether a rule of literals can be joined: every variable not of the head in a positive literal
+bool joinable(const DerivedRule & rule, const std::vector<Literal> & literals)
+{
+  std::set<std::string> in_positive;
+  for (const auto & literal : literals) {
+    if (!literal.name.empty() && !literal.negated) {
+      in_positive.insert(literal.args.begin(), literal.args.end());
+    }
+  }
+  const size_t arity = rule.derived.predicate.parameters.size();
+  for (const auto & literal : literals) {
+    for (const auto & arg : literal.args) {
+      if (arg.empty() || arg.front() != '?' || in_positive.count(arg)) {
+        continue;
+      }
+      bool head = false;
+      for (size_t i = 0; i < arity && !head; i++) {
+        head = arg == "?" + std::to_string(i);
+      }
+      if (!head) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+}  // namespace
+
 std::vector<plansys2::Predicate> derive(
   const std::vector<DerivedRule> & rules,
   const std::vector<plansys2::Predicate> & predicates,
@@ -1383,47 +1656,123 @@ std::vector<plansys2::Predicate> derive(
   for (const auto & rule : rules) {
     names.insert(rule.derived.predicate.name);
   }
+
+  // Strata: a derived predicate after those it reads, and strictly after those it reads
+  // negated, which must be complete before (not q) means anything
+  std::map<std::string, size_t> stratum;
+  std::vector<std::vector<std::pair<std::string, bool>>> reads(rules.size());
+  for (size_t r = 0; r < rules.size(); r++) {
+    if (!rules[r].derived.preconditions.nodes.empty()) {
+      read_predicates(rules[r].derived.preconditions, 0, false, reads[r]);
+    }
+  }
+  bool stratified = true;
+  for (bool changed = true; changed && stratified; ) {
+    changed = false;
+    for (size_t r = 0; r < rules.size(); r++) {
+      const auto & head = rules[r].derived.predicate.name;
+      for (const auto & [name, negated] : reads[r]) {
+        if (!names.count(name)) {
+          continue;
+        }
+        const size_t needed = stratum[name] + (negated ? 1 : 0);
+        if (stratum[head] < needed) {
+          stratum[head] = needed;
+          changed = true;
+          // Deeper than there are predicates: a cycle through a negation
+          stratified = stratified && needed <= names.size();
+        }
+      }
+    }
+  }
+  if (!stratified) {
+    std::cerr << "derive: derived predicates negate each other in a cycle: "
+      "computed together" << std::endl;
+    stratum.clear();
+  }
+  std::map<size_t, std::vector<const DerivedRule *>> by_stratum;
+  for (const auto & rule : rules) {
+    by_stratum[stratum[rule.derived.predicate.name]].push_back(&rule);
+  }
+
   // The facts, without what was derived before: it is computed again
   std::vector<plansys2::Predicate> state;
+  FactIndex index;
   for (const auto & predicate : predicates) {
     if (!names.count(predicate.name)) {
       state.push_back(predicate);
+      std::vector<std::string> args;
+      for (const auto & param : predicate.parameters) {
+        args.push_back(param.name);
+      }
+      index.add(predicate.name, args);
     }
   }
   std::vector<plansys2::Function> values = functions;
 
-  // Each round, what the facts so far give, until nothing new
-  bool changed = true;
-  while (changed) {
-    changed = false;
-    for (const auto & rule : rules) {
-      std::vector<std::vector<std::string>> combinations;
-      std::vector<std::string> combination;
-      cart_product(combinations, combination, rule.objects.begin(), rule.objects.end());
-      for (const auto & values_of : combinations) {
-        plansys2::Predicate inferred;
-        inferred.node_type = plansys2_msgs::msg::Node::PREDICATE;
-        inferred.name = rule.derived.predicate.name;
-        std::map<std::string, std::string> replace;
-        for (size_t i = 0; i < values_of.size(); i++) {
-          replace["?" + std::to_string(i)] = values_of[i];
-          plansys2_msgs::msg::Param param;
-          param.name = values_of[i];
-          param.type = rule.derived.predicate.parameters[i].type;
-          inferred.parameters.push_back(param);
-        }
-        const bool known = std::any_of(
-          state.begin(), state.end(), [&inferred](const plansys2::Predicate & p) {
-            return parser::pddl::checkNodeEquality(p, inferred);
-          });
-        if (known || rule.derived.preconditions.nodes.empty()) {
+  auto add = [&](const DerivedRule & rule, const std::vector<std::string> & args) {
+      if (!index.add(rule.derived.predicate.name, args)) {
+        return false;
+      }
+      plansys2::Predicate inferred;
+      inferred.node_type = plansys2_msgs::msg::Node::PREDICATE;
+      inferred.name = rule.derived.predicate.name;
+      for (size_t i = 0; i < args.size(); i++) {
+        plansys2_msgs::msg::Param param;
+        param.name = args[i];
+        param.type = rule.derived.predicate.parameters[i].type;
+        inferred.parameters.push_back(param);
+      }
+      state.push_back(inferred);
+      return true;
+    };
+
+  // Rules of literals are joined over the facts; the rest, tried with every object
+  std::vector<std::optional<std::vector<Literal>>> bodies(rules.size());
+  for (size_t r = 0; r < rules.size(); r++) {
+    std::vector<Literal> literals;
+    if (!rules[r].derived.preconditions.nodes.empty() &&
+      flatten(rules[r].derived.preconditions, 0, false, literals) &&
+      joinable(rules[r], literals))
+    {
+      bodies[r] = literals;
+    }
+  }
+
+  // Each stratum, round after round, until nothing new
+  for (const auto & [level, level_rules] : by_stratum) {
+    (void)level;
+    for (bool changed = true; changed; ) {
+      changed = false;
+      for (const auto * rule : level_rules) {
+        if (rule->derived.preconditions.nodes.empty()) {
           continue;
         }
-        auto tree = replace_children_param(
-          rule.derived.preconditions, rule.derived.preconditions.nodes[0].node_id, replace);
-        if (check(tree, state, values)) {
-          state.push_back(inferred);
-          changed = true;
+        const auto & body = bodies[rule - rules.data()];
+        if (body) {
+          std::vector<std::vector<std::string>> heads;
+          join(*rule, *body, index, heads);
+          for (const auto & head : heads) {
+            changed = add(*rule, head) || changed;
+          }
+          continue;
+        }
+        std::vector<std::vector<std::string>> combinations;
+        std::vector<std::string> combination;
+        cart_product(combinations, combination, rule->objects.begin(), rule->objects.end());
+        for (const auto & values_of : combinations) {
+          if (index.keys.count(fact_key(rule->derived.predicate.name, values_of))) {
+            continue;
+          }
+          std::map<std::string, std::string> replace;
+          for (size_t i = 0; i < values_of.size(); i++) {
+            replace["?" + std::to_string(i)] = values_of[i];
+          }
+          auto tree = replace_children_param(
+            rule->derived.preconditions, rule->derived.preconditions.nodes[0].node_id, replace);
+          if (check(tree, state, values)) {
+            changed = add(*rule, values_of) || changed;
+          }
         }
       }
     }
