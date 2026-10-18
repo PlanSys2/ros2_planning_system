@@ -64,6 +64,8 @@ public:
   TokenStruct<Function *> funcs;   // functions
   TokenStruct<Action *> actions;   // actions
   TokenStruct<Derived *> derived;  // derived predicates
+  TokenStruct<Action *> processes;  // PDDL+: what acts while its precondition holds
+  TokenStruct<Action *> events;     // PDDL+: what happens when its precondition becomes true
   TokenStruct<Task *> tasks;       // tasks
 
   Domain()
@@ -97,6 +99,8 @@ public:
     for (unsigned i = 0; i < funcs.size(); ++i) {delete funcs[i];}
     for (unsigned i = 0; i < actions.size(); ++i) {delete actions[i];}
     for (unsigned i = 0; i < derived.size(); ++i) {delete derived[i];}
+    for (unsigned i = 0; i < processes.size(); ++i) {delete processes[i];}
+    for (unsigned i = 0; i < events.size(); ++i) {delete events[i];}
     for (unsigned i = 0; i < tasks.size(); ++i) {delete tasks[i];}
   }
 
@@ -137,6 +141,8 @@ public:
       parseAction(f);
     } else if (t == "durative-action") {
       parseDurativeAction(f);
+    } else if (t == "process" || t == "event") {
+      parseHappening(f, t);
     } else if (t == "derived") {
       parseDerived(f);
     } else {
@@ -373,6 +379,20 @@ public:
 
     if (DOMAIN_DEBUG) {std::cout << a.get() << "\n";}
     actions.insert(a.release());
+  }
+
+  // A process or an event: parameters, precondition and effect, as an action
+  void parseHappening(Stringreader & f, const std::string & keyword)
+  {
+    f.next();
+    std::unique_ptr<Action> a(new Action(f.getToken()));
+    a->keyword = keyword;
+    auto & list = keyword == "process" ? processes : events;
+    if (list.index(a->name) >= 0) {
+      throw std::runtime_error("Duplicate " + keyword + " \"" + a->name + "\"");
+    }
+    a->parse(f, types[0]->constants, *this);
+    list.insert(a.release());
   }
 
   void parseDerived(Stringreader & f)
@@ -689,6 +709,13 @@ public:
 
     for (unsigned i = 0; i < derived.size(); ++i) {
       derived[i]->PDDLPrint(os, 0, TokenStruct<std::string>(), *this);
+    }
+
+    for (unsigned i = 0; i < processes.size(); ++i) {
+      processes[i]->PDDLPrint(os, 0, TokenStruct<std::string>(), *this);
+    }
+    for (unsigned i = 0; i < events.size(); ++i) {
+      events[i]->PDDLPrint(os, 0, TokenStruct<std::string>(), *this);
     }
 
     print_addtional_blocks(os);

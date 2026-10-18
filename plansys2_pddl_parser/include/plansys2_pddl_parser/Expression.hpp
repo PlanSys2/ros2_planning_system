@@ -304,6 +304,43 @@ public:
   Condition * copy(Domain &) {return new ValueExpression(value);}
 };
 
+// #t, the time a continuous effect has acted: a PARAMETER node "#t", the step of its integration
+class TimeExpression : public Expression
+{
+public:
+  void PDDLPrint(
+    std::ostream & s, unsigned, const TokenStruct<std::string> &,
+    const Domain &) const override
+  {
+    s << "#t";
+  }
+
+  plansys2_msgs::msg::Node::SharedPtr getTree(
+    plansys2_msgs::msg::Tree & tree, const Domain &,
+    const std::vector<std::string> & = {}) const override
+  {
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::PARAMETER;
+    node->node_id = tree.nodes.size();
+    node->name = "#t";
+    plansys2_msgs::msg::Param node_param;
+    node_param.name = "#t";
+    node->parameters.push_back(node_param);
+    tree.nodes.push_back(*node);
+    return node;
+  }
+
+  std::string info() const {return "#t";}
+
+  double evaluate() {return -1;}
+
+  double evaluate(Instance &, const StringVec &) {return evaluate();}
+
+  IntSet params() {return IntSet();}
+
+  Condition * copy(Domain &) {return new TimeExpression();}
+};
+
 class DurationExpression : public Expression
 {
 public:

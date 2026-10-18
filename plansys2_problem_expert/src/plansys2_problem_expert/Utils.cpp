@@ -1407,15 +1407,6 @@ void read_predicates(
   }
 }
 
-std::string fact_key(const plansys2::Predicate & predicate)
-{
-  std::string key = predicate.name;
-  for (const auto & param : predicate.parameters) {
-    key += " " + param.name;
-  }
-  return key;
-}
-
 std::string fact_key(const std::string & name, const std::vector<std::string> & args)
 {
   std::string key = name;

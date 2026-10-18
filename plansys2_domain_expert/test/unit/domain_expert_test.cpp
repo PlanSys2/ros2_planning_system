@@ -703,25 +703,89 @@ TEST(domain_expert, unreadable_and_unsupported_are_reported)
     parser::pddl::toString(push->effects),
     "(and (pushed ?0 ?1)(when (not (locked ?1)) (open ?1)))");
 
-  // PDDL+ and constraints: one clear line, not a parser token
-  const std::vector<std::pair<std::string, std::string>> plus = {
-    {"domain_process.pddl", "PlanSys2 does not handle (:process heat)"},
-    {"domain_event.pddl", "PlanSys2 does not handle (:event overheat)"},
-    {"domain_constraints.pddl", "PlanSys2 does not handle (:constraints)"}};
-  for (const auto & [file, error] : plus) {
-    plansys2::DomainExpert domain(read(file));
-    EXPECT_EQ(domain.getParseError(), error);
-  }
-
-  // All of them, in order, when there are several
-  plansys2::DomainExpert both(
-    read("domain_process.pddl").substr(0, read("domain_process.pddl").rfind(')')) +
-    " (:event overheat :parameters () :precondition (and) :effect (and)))");
-  EXPECT_EQ(both.getParseError(), "PlanSys2 does not handle (:process heat) (:event overheat)");
+  // Constraints: one clear line, not a parser token
+  plansys2::DomainExpert constraints(read("domain_constraints.pddl"));
+  EXPECT_EQ(constraints.getParseError(), "PlanSys2 does not handle (:constraints)");
 
   plansys2::DomainExpert simple(read("domain_simple.pddl"));
   EXPECT_TRUE(simple.getParseError().empty());
   EXPECT_TRUE(simple.getUnsupported().empty());
+}
+
+// PDDL+: processes and events, kept in the domain and served as actions
+TEST(domain_expert, processes_and_events)
+{
+  const std::string pkgpath =
+    ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+  auto read = [&](const std::string & file) {
+      std::ifstream ifs(pkgpath + "/pddl/" + file);
+      return std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    };
+
+  plansys2::DomainExpert heating(read("domain_process.pddl"));
+  ASSERT_TRUE(heating.getParseError().empty()) << heating.getParseError();
+  EXPECT_TRUE(heating.getUnsupported().empty());
+  EXPECT_EQ(heating.getProcesses(), std::vector<std::string>{"heat"});
+  EXPECT_TRUE(heating.getEvents().empty());
+  auto heat = heating.getProcess("heat", {"kitchen"});
+  ASSERT_TRUE(heat);
+  EXPECT_EQ(heat->parameters.size(), 1u);
+  EXPECT_EQ(heat->parameters[0].type, "room");
+  EXPECT_EQ(parser::pddl::toString(heat->preconditions), "(and (heating kitchen))");
+  EXPECT_EQ(
+    parser::pddl::toString(heat->effects),
+    "(and (increase (temperature kitchen) (* #t 1.000000)))");
+  EXPECT_FALSE(heating.getProcess("cool"));
+  EXPECT_FALSE(heating.getEvent("heat"));
+  // The domain the planner gets has them
+  EXPECT_NE(heating.getDomain().find(":process heat"), std::string::npos) << heating.getDomain();
+
+  plansys2::DomainExpert both(
+    read("domain_process.pddl").substr(0, read("domain_process.pddl").rfind(')')) +
+    " (:event overheat :parameters (?r - room) :precondition (and (>= (temperature ?r) 30))"
+    " :effect (and (not (heating ?r)))))");
+  ASSERT_TRUE(both.getParseError().empty()) << both.getParseError();
+  EXPECT_EQ(both.getEvents(), std::vector<std::string>{"overheat"});
+  auto overheat = both.getEvent("overheat", {"lab"});
+  ASSERT_TRUE(overheat);
+  EXPECT_EQ(
+    parser::pddl::toString(overheat->preconditions),
+    "(and (>= (temperature lab) 30.000000))");
+  EXPECT_EQ(parser::pddl::toString(overheat->effects), "(and (not (heating lab)))");
+
+  // And read back from what it gives
+  plansys2::DomainExpert again(both.getDomain());
+  EXPECT_TRUE(again.getParseError().empty()) << again.getParseError();
+  EXPECT_EQ(again.getProcesses(), std::vector<std::string>{"heat"});
+  EXPECT_EQ(again.getEvents(), std::vector<std::string>{"overheat"});
+}
+
+// PDDL 2.1: an effect of a durative action that acts while it runs
+TEST(domain_expert, continuous_effects_of_a_durative_action)
+{
+  plansys2::DomainExpert domain(
+    "(define (domain tank) (:requirements :strips :typing :durative-actions :fluents"
+    " :continuous-effects) (:types tank)"
+    " (:predicates (open ?t - tank)) (:functions (level ?t - tank) (flow))"
+    " (:durative-action fill :parameters (?t - tank) :duration (<= ?duration 10)"
+    "  :condition (at start (open ?t))"
+    "  :effect (and (at end (not (open ?t))) (increase (level ?t) (* #t (flow)))"
+    "   (decrease (flow) (* #t 0.1)))))");
+  ASSERT_TRUE(domain.getParseError().empty()) << domain.getParseError();
+  EXPECT_TRUE(domain.getUnsupported().empty());
+  auto fill = domain.getDurativeAction("fill", {"t1"});
+  ASSERT_TRUE(fill);
+  EXPECT_EQ(
+    parser::pddl::toString(fill->continuous_effects),
+    "(and (increase (level t1) (* #t (flow)))(decrease (flow) (* #t 0.100000)))");
+  EXPECT_EQ(parser::pddl::toString(fill->at_end_effects), "(and (not (open t1)))");
+
+  // Read back from what it gives
+  plansys2::DomainExpert again(domain.getDomain());
+  ASSERT_TRUE(again.getParseError().empty()) << again.getParseError() << domain.getDomain();
+  EXPECT_EQ(
+    parser::pddl::toString(again.getDurativeAction("fill", {"t1"})->continuous_effects),
+    parser::pddl::toString(fill->continuous_effects));
 }
 
 int main(int argc, char ** argv)

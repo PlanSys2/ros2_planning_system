@@ -384,7 +384,8 @@ uint8_t getNodeType(const std::string & expr, uint8_t default_node_type)
   if (expr[start] != '(') {
     const auto token = tokenAt(expr, start);
     double value;
-    if (!token.empty() && token[0] == '?') {
+    // A variable, and #t: the time a continuous effect has acted
+    if (!token.empty() && (token[0] == '?' || token == "#t")) {
       return plansys2_msgs::msg::Node::PARAMETER;
     }
     if (parseNumber(token, value)) {

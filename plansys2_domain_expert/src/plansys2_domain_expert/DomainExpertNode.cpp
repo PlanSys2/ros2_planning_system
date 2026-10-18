@@ -55,6 +55,59 @@ DomainExpertNode::DomainExpertNode(const rclcpp::NodeOptions & options)
       &DomainExpertNode::get_domain_constants_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
+  // PDDL+: processes and events, served as actions are
+  using Names = plansys2_msgs::srv::GetDomainActions;
+  using Details = plansys2_msgs::srv::GetDomainActionDetails;
+  auto list = [this](bool processes) {
+      return [this, processes](
+        const std::shared_ptr<rmw_request_id_t>, const std::shared_ptr<Names::Request>,
+        const std::shared_ptr<Names::Response> response) {
+               if (domain_expert_ == nullptr) {
+                 response->success = false;
+                 response->error_info = "Requesting service in non-active state";
+                 return;
+               }
+               response->success = true;
+               response->actions = processes ? domain_expert_->getProcesses() :
+                 domain_expert_->getEvents();
+             };
+    };
+  auto details = [this](bool processes) {
+      return [this, processes](
+        const std::shared_ptr<rmw_request_id_t>, const std::shared_ptr<Details::Request> request,
+        const std::shared_ptr<Details::Response> response) {
+               if (domain_expert_ == nullptr) {
+                 response->success = false;
+                 response->error_info = "Requesting service in non-active state";
+                 return;
+               }
+               plansys2_msgs::msg::Action::SharedPtr found;
+               try {
+                 found = processes ?
+                   domain_expert_->getProcess(request->action, request->parameters) :
+                   domain_expert_->getEvent(request->action, request->parameters);
+               } catch (const std::exception & e) {
+                 response->success = false;
+                 response->error_info = e.what();
+                 return;
+               }
+               response->success = found != nullptr;
+               if (found) {
+                 response->action = *found;
+               } else {
+                 response->error_info = processes ? "Process not found" : "Event not found";
+               }
+             };
+    };
+  get_domain_processes_service_ =
+    create_service<Names>("domain_expert/get_domain_processes", list(true));
+  get_domain_process_details_service_ =
+    create_service<Details>("domain_expert/get_domain_process_details", details(true));
+  get_domain_events_service_ =
+    create_service<Names>("domain_expert/get_domain_events", list(false));
+  get_domain_event_details_service_ =
+    create_service<Details>("domain_expert/get_domain_event_details", details(false));
+
   get_domain_actions_service_ = create_service<plansys2_msgs::srv::GetDomainActions>(
     "domain_expert/get_domain_actions",
     std::bind(

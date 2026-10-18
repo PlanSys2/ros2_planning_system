@@ -84,3 +84,5 @@ UNKNOWN	(and (lit) (when (and (on ?l) (not (broken ?l))) (and (bright ?r) (not (
 UNKNOWN	(forall (?r - room) (when (dirty ?r) (not (dirty ?r))))	(forall (?r - room) (when (dirty ?r) (not (dirty ?r))))	FORALL WHEN PREDICATE NOT PREDICATE
 UNKNOWN	(when (>= (battery r1) 10) (increase (charged_count) 1))	(when (>= (battery r1) 10.000000) (increase (charged_count) 1.000000))	WHEN EXPRESSION FUNCTION NUMBER FUNCTION_MODIFIER FUNCTION NUMBER
 UNKNOWN	(when_done)	(when_done)	PREDICATE
+UNKNOWN	(increase (level t1) (* #t 2))	(increase (level t1) (* #t 2.000000))	FUNCTION_MODIFIER FUNCTION EXPRESSION PARAMETER NUMBER
+UNKNOWN	(and (increase (level) (* #t (flow))) (decrease (flow) (* 0.5 #t)))	(and (increase (level) (* #t (flow)))(decrease (flow) (* 0.500000 #t)))	AND FUNCTION_MODIFIER FUNCTION EXPRESSION PARAMETER FUNCTION FUNCTION_MODIFIER FUNCTION EXPRESSION NUMBER PARAMETER

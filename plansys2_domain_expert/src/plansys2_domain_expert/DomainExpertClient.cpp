@@ -60,6 +60,14 @@ DomainExpertClient::DomainExpertClient()
     "domain_expert/get_domain_function_details");
   get_action_details_client_ = node_->create_client<plansys2_msgs::srv::GetDomainActionDetails>(
     "domain_expert/get_domain_action_details");
+  get_processes_client_ = node_->create_client<plansys2_msgs::srv::GetDomainActions>(
+    "domain_expert/get_domain_processes");
+  get_process_details_client_ = node_->create_client<plansys2_msgs::srv::GetDomainActionDetails>(
+    "domain_expert/get_domain_process_details");
+  get_events_client_ = node_->create_client<plansys2_msgs::srv::GetDomainActions>(
+    "domain_expert/get_domain_events");
+  get_event_details_client_ = node_->create_client<plansys2_msgs::srv::GetDomainActionDetails>(
+    "domain_expert/get_domain_event_details");
   get_durative_action_details_client_ =
     node_->create_client<plansys2_msgs::srv::GetDomainDurativeActionDetails>(
     "domain_expert/get_domain_durative_action_details");
@@ -408,6 +416,71 @@ DomainExpertClient::getDerivedPredicate(
         result.error_info);
     return {};
   }
+}
+
+std::vector<std::string>
+DomainExpertClient::get_names(
+  rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr client)
+{
+  if (!client->wait_for_service(std::chrono::seconds(1))) {
+    return {};
+  }
+  auto request = std::make_shared<plansys2_msgs::srv::GetDomainActions::Request>();
+  auto future_result = client->async_send_request(request);
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
+    rclcpp::FutureReturnCode::SUCCESS)
+  {
+    return {};
+  }
+  return future_result.get()->actions;
+}
+
+plansys2_msgs::msg::Action::SharedPtr
+DomainExpertClient::get_details(
+  rclcpp::Client<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr client,
+  const std::string & name, const std::vector<std::string> & params)
+{
+  if (!client->wait_for_service(std::chrono::seconds(1))) {
+    return {};
+  }
+  auto request = std::make_shared<plansys2_msgs::srv::GetDomainActionDetails::Request>();
+  request->action = name;
+  request->parameters = params;
+  auto future_result = client->async_send_request(request);
+  if (rclcpp::spin_until_future_complete(node_, future_result, std::chrono::seconds(1)) !=
+    rclcpp::FutureReturnCode::SUCCESS)
+  {
+    return {};
+  }
+  auto result = future_result.get();
+  if (!result->success) {
+    return {};
+  }
+  return std::make_shared<plansys2_msgs::msg::Action>(result->action);
+}
+
+std::vector<std::string>
+DomainExpertClient::getProcesses()
+{
+  return get_names(get_processes_client_);
+}
+
+plansys2_msgs::msg::Action::SharedPtr
+DomainExpertClient::getProcess(const std::string & process, const std::vector<std::string> & params)
+{
+  return get_details(get_process_details_client_, process, params);
+}
+
+std::vector<std::string>
+DomainExpertClient::getEvents()
+{
+  return get_names(get_events_client_);
+}
+
+plansys2_msgs::msg::Action::SharedPtr
+DomainExpertClient::getEvent(const std::string & event, const std::vector<std::string> & params)
+{
+  return get_details(get_event_details_client_, event, params);
 }
 
 std::vector<std::string>

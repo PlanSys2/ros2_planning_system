@@ -163,6 +163,13 @@ public:
    *
    * @return std::vector<std::string> Vector containing the names of the actions.
    */
+  std::vector<std::string> getProcesses() override;
+  plansys2_msgs::msg::Action::SharedPtr getProcess(
+    const std::string & process, const std::vector<std::string> & params = {}) override;
+  std::vector<std::string> getEvents() override;
+  plansys2_msgs::msg::Action::SharedPtr getEvent(
+    const std::string & event, const std::vector<std::string> & params = {}) override;
+
   std::vector<std::string> getActions();
 
   /**

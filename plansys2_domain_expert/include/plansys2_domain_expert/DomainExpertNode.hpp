@@ -315,6 +315,13 @@ private:
   rclcpp::Service<plansys2_msgs::srv::GetDomainTypes>::SharedPtr get_types_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainConstants>::SharedPtr get_constants_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_domain_actions_service_;
+  // PDDL+: processes and events, as actions
+  rclcpp::Service<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_domain_processes_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr
+    get_domain_process_details_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_domain_events_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr
+    get_domain_event_details_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr
     get_domain_action_details_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainActions>::SharedPtr

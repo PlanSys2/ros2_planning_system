@@ -35,7 +35,7 @@ std::vector<std::string> unread_blocks(const std::string & domain)
 {
   static const std::vector<std::string> read = {
     "domain", ":requirements", ":types", ":constants", ":predicates", ":functions", ":action",
-    ":durative-action", ":derived"};
+    ":durative-action", ":derived", ":process", ":event"};
   std::vector<std::string> ret;
   int depth = 0;
   for (size_t i = 0; i < domain.size(); i++) {
@@ -120,6 +120,20 @@ DomainExpert::getUnsupported()
       getDurativeAction(action);
     } catch (const std::exception & e) {
       ret.push_back("durative action " + action + ": " + e.what());
+    }
+  }
+  for (const auto & process : getProcesses()) {
+    try {
+      getProcess(process);
+    } catch (const std::exception & e) {
+      ret.push_back("process " + process + ": " + e.what());
+    }
+  }
+  for (const auto & event : getEvents()) {
+    try {
+      getEvent(event);
+    } catch (const std::exception & e) {
+      ret.push_back("event " + event + ": " + e.what());
     }
   }
   for (const auto & derived : getDerivedPredicates()) {
@@ -381,6 +395,72 @@ DomainExpert::getDerivedPredicate(
   return ret;
 }
 
+namespace
+{
+// A process or an event as an action: parameters, precondition and effect
+plansys2_msgs::msg::Action::SharedPtr happening(
+  parser::pddl::Domain & domain, parser::pddl::TokenStruct<parser::pddl::Action *> & list,
+  const std::string & name, const std::vector<std::string> & params)
+{
+  std::string search = name;
+  std::transform(search.begin(), search.end(), search.begin(), ::tolower);
+  const int index = list.index(search);
+  if (index < 0) {
+    return {};
+  }
+  auto * found = list[index];
+  auto ret = std::make_shared<plansys2_msgs::msg::Action>();
+  ret->name = name;
+  for (unsigned j = 0; j < found->params.size(); j++) {
+    plansys2_msgs::msg::Param param;
+    param.name = j < params.size() ? params[j] : "?" + std::to_string(j);
+    param.type = domain.types[found->params[j]]->name;
+    domain.types[found->params[j]]->getSubTypesNames(param.sub_types);
+    ret->parameters.push_back(param);
+  }
+  if (found->pre) {
+    found->pre->getTree(ret->preconditions, domain, params);
+  }
+  if (found->eff) {
+    found->eff->getTree(ret->effects, domain, params);
+  }
+  return ret;
+}
+
+std::vector<std::string> names(const parser::pddl::TokenStruct<parser::pddl::Action *> & list)
+{
+  std::vector<std::string> ret;
+  for (unsigned i = 0; i < list.size(); i++) {
+    ret.push_back(list[i]->name);
+  }
+  return ret;
+}
+}  // namespace
+
+std::vector<std::string>
+DomainExpert::getProcesses()
+{
+  return names(domain_->processes);
+}
+
+plansys2_msgs::msg::Action::SharedPtr
+DomainExpert::getProcess(const std::string & process, const std::vector<std::string> & params)
+{
+  return happening(*domain_, domain_->processes, process, params);
+}
+
+std::vector<std::string>
+DomainExpert::getEvents()
+{
+  return names(domain_->events);
+}
+
+plansys2_msgs::msg::Action::SharedPtr
+DomainExpert::getEvent(const std::string & event, const std::vector<std::string> & params)
+{
+  return happening(*domain_, domain_->events, event, params);
+}
+
 std::vector<std::string>
 DomainExpert::getActions()
 {
@@ -518,6 +598,11 @@ DomainExpert::getDurativeAction(const std::string & action, const std::vector<st
       // Effects AtEnd
       if (action_obj->eff_e) {
         action_obj->eff_e->getTree(ret->at_end_effects, *domain_, params);
+      }
+
+      // Continuous effects, while it runs
+      if (action_obj->eff_c && !action_obj->eff_c->conds.empty()) {
+        action_obj->eff_c->getTree(ret->continuous_effects, *domain_, params);
       }
 
       // Duration: (and (<op> ?duration <expression>)...)

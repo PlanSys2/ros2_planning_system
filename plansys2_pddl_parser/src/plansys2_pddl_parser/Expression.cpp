@@ -191,12 +191,7 @@ Expression * createExpression(Stringreader & f, TokenStruct<std::string> & ts, D
       return new ConstExpression(ct.first, ct.second);
     } else if (s == "#t") {
       // The time of continuous effects (PDDL 2.1) and processes (PDDL+)
-      std::ostringstream os;
-      os << "\"" << s << "\": continuous effects are not executed by PlanSys2 yet" << std::endl;
-      f.printLine();
-      std::cout << os.str();
-      throw std::runtime_error(os.str());
-      return nullptr;
+      return new TimeExpression();
     } else {
       // A number, whatever the locale, or an object of the problem, compared with an object
       // fluent

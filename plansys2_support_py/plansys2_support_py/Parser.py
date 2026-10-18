@@ -305,7 +305,8 @@ class Parser:
             return default_node_type
         if expr[start] != '(':
             token = _token_at(expr, start)
-            if token.startswith('?'):
+            # A variable, and #t: the time a continuous effect has acted
+            if token.startswith('?') or token == '#t':
                 return Node.PARAMETER
             if Parser.parse_number(token) is not None:
                 return Node.NUMBER
