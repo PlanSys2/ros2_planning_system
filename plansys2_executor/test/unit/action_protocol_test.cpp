@@ -27,6 +27,7 @@
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/ActionExecutorClient.hpp"
 #include "plansys2_msgs/msg/action_execution.hpp"
@@ -177,14 +178,13 @@ protected:
       });
     exe_.add_node(recorder_);
 
-    spin_thread_ = std::thread([this]() {while (!finish_) {exe_.spin_some(10ms);}});
+    spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
   }
 
   // Nodes are destroyed once nothing spins them: destroying them while spinning may hang
   void TearDown() override
   {
-    finish_ = true;
-    spin_thread_.join();
+    spinner_.reset();
     executors_.clear();
     nodes_.clear();
   }
@@ -240,6 +240,16 @@ protected:
     return true;
   }
 
+  // Waits until the hub has the endpoints of `performers` performers and of the recorder
+  bool hub_has(size_t performers)
+  {
+    return plansys2::testing::wait_for(
+      [&]() {
+        return recorder_->count_publishers("/actions_hub") >= performers &&
+               recorder_->count_subscribers("/actions_hub") >= performers + 1;
+      });
+  }
+
   int count(uint8_t type)
   {
     std::lock_guard<std::mutex> lock(messages_mutex_);
@@ -258,8 +268,7 @@ protected:
   std::vector<plansys2::ActionExecutor::Ptr> executors_;
   std::vector<std::shared_ptr<void>> nodes_;
   rclcpp::executors::SingleThreadedExecutor exe_;
-  std::atomic<bool> finish_ {false};
-  std::thread spin_thread_;
+  std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 
 // A performer that answers after the action is over is rejected, so it does not keep waiting
@@ -268,7 +277,7 @@ TEST_F(ActionProtocolTest, late_response_is_rejected)
   auto quick = add_quick_move("quick_move");
   auto late = std::make_shared<FakePerformer>("late_move", 1500ms);
   add(late);
-  std::this_thread::sleep_for(500ms);
+  ASSERT_TRUE(hub_has(2));
 
   auto executor = new_executor();
   ASSERT_TRUE(
@@ -287,7 +296,8 @@ TEST_F(ActionProtocolTest, performer_without_answer_is_available_again)
   auto pub = requester->create_publisher<ActionExecution>(
     "actions_hub", rclcpp::QoS(100).reliable());
   add(requester);
-  std::this_thread::sleep_for(500ms);
+  // The recorder and the performer get what it publishes
+  ASSERT_TRUE(plansys2::testing::wait_for([&]() {return pub->get_subscription_count() >= 2u;}));
 
   ActionExecution request;
   request.type = ActionExecution::REQUEST;
@@ -316,7 +326,7 @@ TEST_F(ActionProtocolTest, performer_without_answer_is_available_again)
 TEST_F(ActionProtocolTest, same_action_twice)
 {
   auto quick = add_quick_move("quick_move");
-  std::this_thread::sleep_for(500ms);
+  ASSERT_TRUE(hub_has(1));
 
   for (int i = 1; i <= 3; i++) {
     auto executor = new_executor();
@@ -336,7 +346,7 @@ TEST_F(ActionProtocolTest, action_names_are_case_insensitive)
   nodes_.push_back(node);
   exe_.add_node(node->get_node_base_interface());
   node->trigger_transition(Transition::TRANSITION_CONFIGURE);
-  std::this_thread::sleep_for(500ms);
+  ASSERT_TRUE(hub_has(1));
 
   auto executor = new_executor();
   ASSERT_TRUE(
@@ -350,7 +360,7 @@ TEST_F(ActionProtocolTest, second_performer_is_rejected_and_free)
 {
   auto first = add_quick_move("move_1");
   auto second = add_quick_move("move_2");
-  std::this_thread::sleep_for(500ms);
+  ASSERT_TRUE(hub_has(2));
 
   for (int i = 1; i <= 4; i++) {
     auto executor = new_executor();
@@ -368,7 +378,7 @@ TEST_F(ActionProtocolTest, finish_after_cancel_is_ignored)
 {
   auto fake = std::make_shared<FakePerformer>("fake_move");
   add(fake);
-  std::this_thread::sleep_for(500ms);
+  ASSERT_TRUE(hub_has(1));
 
   auto executor = new_executor();
   ASSERT_TRUE(
@@ -384,7 +394,7 @@ TEST_F(ActionProtocolTest, messages_of_another_request_are_ignored)
 {
   auto fake = std::make_shared<FakePerformer>("fake_move");
   add(fake);
-  std::this_thread::sleep_for(500ms);
+  ASSERT_TRUE(hub_has(1));
 
   auto executor = new_executor();
   ASSERT_TRUE(
@@ -404,7 +414,7 @@ TEST_F(ActionProtocolTest, activation_failures_are_bounded)
   auto fake = std::make_shared<FakePerformer>("failing_move");
   fake->fail_when_confirmed = true;
   add(fake);
-  std::this_thread::sleep_for(500ms);
+  ASSERT_TRUE(hub_has(1));
 
   auto executor = new_executor();
   ASSERT_TRUE(
@@ -420,7 +430,7 @@ TEST_F(ActionProtocolTest, long_action_without_feedback_runs_once)
 {
   auto first = std::make_shared<FakePerformer>("silent_move");
   add(first);
-  std::this_thread::sleep_for(500ms);
+  ASSERT_TRUE(hub_has(1));
 
   auto executor = new_executor();
   ASSERT_TRUE(
@@ -444,7 +454,7 @@ TEST_F(ActionProtocolTest, gone_performer_fails_the_action)
   // Not kept by the fixture: it is destroyed in the middle of the test
   auto fake = std::make_shared<FakePerformer>("doomed_move");
   exe_.add_node(fake);
-  std::this_thread::sleep_for(500ms);
+  ASSERT_TRUE(hub_has(1));
 
   auto executor = new_executor();
   ASSERT_TRUE(

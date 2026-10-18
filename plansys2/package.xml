@@ -27,6 +27,7 @@
   <exec_depend>plansys2_support_py</exec_depend>
   <exec_depend>plansys2_terminal</exec_depend>
   <exec_depend>plansys2_tools</exec_depend>
+  <exec_depend>plansys2_tui_cli</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

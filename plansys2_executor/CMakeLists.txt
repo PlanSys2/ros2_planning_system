@@ -1,5 +1,9 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 project(plansys2_executor)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -119,6 +123,8 @@ target_link_libraries(bt_builder_plugins
   plansys2_pddl_parser::plansys2_pddl_parser
   pluginlib::pluginlib
 )
+# libplansys2_bt_builder_plugins.so, not a generic name in lib/
+set_target_properties(bt_builder_plugins PROPERTIES OUTPUT_NAME plansys2_bt_builder_plugins)
 
 pluginlib_export_plugin_description_file(plansys2_executor plugins.xml)
 
@@ -146,7 +152,7 @@ install(TARGETS bt_builder_plugins
   RUNTIME DESTINATION bin
 )
 
-install(TARGETS bt_builder_plugins executor_node compute_bt
+install(TARGETS executor_node compute_bt
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -155,6 +161,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_ros REQUIRED)
 
   add_subdirectory(test)
 endif()
@@ -163,6 +170,8 @@ ament_export_include_directories("include/${PROJECT_NAME}")
 ament_export_libraries(${PROJECT_NAME} bt_builder_plugins)
 ament_export_targets(export_${PROJECT_NAME} bt_builder_plugins)
 ament_export_dependencies(
+  eigen3_cmake_module
+  Eigen3
   rclcpp
   rclcpp_lifecycle
   lifecycle_msgs

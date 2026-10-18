@@ -15,7 +15,6 @@
 // A domain change is done once the problem expert works with the new domain, whenever the
 // problem expert was configured. Each scenario runs in its own process (see CMakeLists.txt).
 
-#include <atomic>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -25,6 +24,7 @@
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/transition.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_msgs/srv/change_domain.hpp"
@@ -50,7 +50,7 @@ protected:
 
     exe_.add_node(domain_node_->get_node_base_interface());
     exe_.add_node(problem_node_->get_node_base_interface());
-    spin_thread_ = std::thread([this]() {while (!finish_) {exe_.spin_some(10ms);}});
+    spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
 
     domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
     problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
@@ -58,8 +58,7 @@ protected:
 
   void TearDown() override
   {
-    finish_ = true;
-    spin_thread_.join();
+    spinner_.reset();
     domain_client_.reset();
     problem_client_.reset();
   }
@@ -103,8 +102,7 @@ protected:
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   rclcpp::executors::SingleThreadedExecutor exe_;
-  std::atomic<bool> finish_ {false};
-  std::thread spin_thread_;
+  std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 
 // Right after changeDomain() returns, the problem expert already takes the new domain:
@@ -130,6 +128,7 @@ TEST_F(DomainChangeTest, problem_expert_configured_late_takes_the_current_domain
 {
   up(domain_node_);
   ASSERT_TRUE(domain_client_->changeDomain(kitchen_));
+  // Kept: the domain topic reaching the unconfigured problem expert is not observable
   std::this_thread::sleep_for(500ms);
 
   up(problem_node_);
@@ -153,6 +152,7 @@ TEST_F(DomainChangeTest, same_domain_again_keeps_the_problem)
 
   domain_node_->trigger_transition(Transition::TRANSITION_DEACTIVATE);
   domain_node_->trigger_transition(Transition::TRANSITION_ACTIVATE);
+  // Kept: time for the replayed domain to arrive, which must change nothing
   std::this_thread::sleep_for(500ms);
 
   ASSERT_EQ(problem_client_->getInstances().size(), 2u);
@@ -177,8 +177,7 @@ TEST(DomainChangeRejectedTest, domain_stays_if_the_problem_expert_rejects_it)
   rclcpp::executors::SingleThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(fake_problem_expert);
-  std::atomic<bool> finish {false};
-  std::thread spin([&]() {while (!finish) {exe.spin_some(10ms);}});
+  plansys2::testing::ExecutorThread spinner(exe);
 
   domain_node->trigger_transition(Transition::TRANSITION_CONFIGURE);
   domain_node->trigger_transition(Transition::TRANSITION_ACTIVATE);
@@ -189,10 +188,6 @@ TEST(DomainChangeRejectedTest, domain_stays_if_the_problem_expert_rejects_it)
   std::string kitchen((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
   ASSERT_FALSE(domain_client->changeDomain(kitchen));
   ASSERT_EQ(domain_client->getName(), "simple");
-
-  domain_client.reset();
-  finish = true;
-  spin.join();
 }
 
 int main(int argc, char ** argv)

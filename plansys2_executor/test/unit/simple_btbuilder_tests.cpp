@@ -33,6 +33,7 @@
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_planner/PlannerNode.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_core/Utils.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
 
@@ -187,36 +188,16 @@ TEST(simple_btbuilder_tests, test_plan_1)
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(planner_node->get_node_base_interface());
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
-
+  plansys2::testing::ExecutorThread spinner(exe);
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
-
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
 
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("leia", "robot")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("entrance", "room")));
@@ -401,9 +382,6 @@ TEST(simple_btbuilder_tests, test_plan_1)
       std::bind(
         &parser::pddl::checkNodeEquality, std::placeholders::_1,
         parser::pddl::fromStringPredicate("(robot_at leia bathroom)"), true)) != predicates.end());
-
-  finish = true;
-  t.join();
 }
 
 
@@ -432,36 +410,16 @@ TEST(simple_btbuilder_tests, test_plan_2)
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(planner_node->get_node_base_interface());
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
-
+  plansys2::testing::ExecutorThread spinner(exe);
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
-
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
 
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot1", "robot")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("robot2", "robot")));
@@ -613,9 +571,6 @@ TEST(simple_btbuilder_tests, test_plan_2)
   EXPECT_TRUE(graph != nullptr);
 
   btbuilder->print_graph(graph);
-
-  finish = true;
-  t.join();
 }
 
 TEST(simple_btbuilder_tests, test_plan_3)
@@ -643,36 +598,16 @@ TEST(simple_btbuilder_tests, test_plan_3)
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(planner_node->get_node_base_interface());
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
-
+  plansys2::testing::ExecutorThread spinner(exe);
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
-
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
 
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("leia", "robot")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("ro1", "room")));
@@ -706,9 +641,6 @@ TEST(simple_btbuilder_tests, test_plan_3)
   auto bt = btbuilder->get_tree(plan.value());
 
   std::cerr << bt << std::endl;
-
-  finish = true;
-  t.join();
 }
 
 TEST(simple_btbuilder_tests, test_plan_4)
@@ -736,36 +668,16 @@ TEST(simple_btbuilder_tests, test_plan_4)
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(planner_node->get_node_base_interface());
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
-
+  plansys2::testing::ExecutorThread spinner(exe);
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
-
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
 
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
   ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("c3po", "robot")));
@@ -826,9 +738,6 @@ TEST(simple_btbuilder_tests, test_plan_4)
   std::cerr << bt << std::endl;
 
   // Todo: Test that the BT is correct
-
-  finish = true;
-  t.join();
 }
 
 TEST(simple_btbuilder_tests, test_plan_5)
@@ -856,35 +765,16 @@ TEST(simple_btbuilder_tests, test_plan_5)
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(planner_node->get_node_base_interface());
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+  plansys2::testing::ExecutorThread spinner(exe);
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
-
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
 
   std::ifstream problem_ifs(pkgpath + "/pddl/road_trip_problem.pddl");
   std::string problem_str((
@@ -906,7 +796,7 @@ TEST(simple_btbuilder_tests, test_plan_5)
 
   std::string line, word, action;
   std::string whitespace = " \n\r\t\f\v";
-  uint32_t root_num, node_num, level_num;
+  uint32_t root_num = 0, node_num = 0, level_num = 0;
   std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> expected_graph;
 
   while (std::getline(expected_graph_ifs, line)) {
@@ -941,9 +831,6 @@ TEST(simple_btbuilder_tests, test_plan_5)
     ASSERT_EQ(std::get<2>(tabulated_graph[i]), std::get<2>(expected_graph[i]));
     ASSERT_EQ(std::get<3>(tabulated_graph[i]), std::get<3>(expected_graph[i]));
   }
-
-  finish = true;
-  t.join();
 }
 
 TEST(simple_btbuilder_tests, test_plan_6)
@@ -971,35 +858,16 @@ TEST(simple_btbuilder_tests, test_plan_6)
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(planner_node->get_node_base_interface());
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+  plansys2::testing::ExecutorThread spinner(exe);
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
-
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
 
   std::ifstream problem_ifs(pkgpath + "/pddl/elevator_problem.pddl");
   std::string problem_str((
@@ -1021,7 +889,7 @@ TEST(simple_btbuilder_tests, test_plan_6)
 
   std::string line, word, action;
   std::string whitespace = " \n\r\t\f\v";
-  uint32_t root_num, node_num, level_num;
+  uint32_t root_num = 0, node_num = 0, level_num = 0;
   std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> expected_graph;
 
   while (std::getline(expected_graph_ifs, line)) {
@@ -1076,9 +944,6 @@ TEST(simple_btbuilder_tests, test_plan_6)
   for (const auto & node : nodes) {
     EXPECT_TRUE(node.expired());
   }
-
-  finish = true;
-  t.join();
 }
 
 namespace
@@ -1102,7 +967,6 @@ void link(const plansys2::Node::Ptr & from, const plansys2::Node::Ptr & to)
   from->output_arcs.insert({to, 0.0, 1.0});
   to->input_arcs.insert({from, 0.0, 1.0});
 }
-
 }  // namespace
 
 TEST(simple_btbuilder_tests, action_graph_diamond_is_freed)

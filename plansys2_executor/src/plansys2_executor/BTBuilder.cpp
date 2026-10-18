@@ -31,6 +31,25 @@ BTBuilder::set_clients(
   problem_client_ = problem_client;
 }
 
+void
+BTBuilder::set_initial_state(
+  std::vector<plansys2::Predicate> predicates, std::vector<plansys2::Function> functions)
+{
+  initial_state_ = std::make_pair(std::move(predicates), std::move(functions));
+}
+
+std::vector<plansys2::Predicate>
+BTBuilder::initial_predicates() const
+{
+  return initial_state_ ? initial_state_->first : problem_client()->getPredicates();
+}
+
+std::vector<plansys2::Function>
+BTBuilder::initial_functions() const
+{
+  return initial_state_ ? initial_state_->second : problem_client()->getFunctions();
+}
+
 std::shared_ptr<plansys2::DomainExpertClient>
 BTBuilder::domain_client() const
 {

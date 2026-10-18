@@ -27,6 +27,7 @@
 #include "plansys2_bt_actions/BTAction.hpp"
 #include "plansys2_bt_actions/BTActionNode.hpp"
 #include "plansys2_bt_actions/BTServiceNode.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -129,7 +130,7 @@ protected:
     server_ = std::make_shared<TestServer>();
     server_->start();
     exe_.add_node(server_);
-    spin_ = std::thread([this]() {while (!finish_) {exe_.spin_some(10ms);}});
+    spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
 
     blackboard_ = BT::Blackboard::create();
     blackboard_->set("node", node_);
@@ -140,12 +141,6 @@ protected:
     factory_.registerNodeType<Plain>("Plain");
     factory_.registerNodeType<PlainService>("PlainService");
     Plain::update_on_second_tick = false;
-  }
-
-  void TearDown() override
-  {
-    finish_ = true;
-    spin_.join();
   }
 
   // Ticks the tree every 100 ms until it ends, or the time is up
@@ -170,8 +165,7 @@ protected:
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
   std::shared_ptr<TestServer> server_;
   rclcpp::executors::SingleThreadedExecutor exe_;
-  std::atomic<bool> finish_ {false};
-  std::thread spin_;
+  std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
   BT::Blackboard::Ptr blackboard_;
   BT::BehaviorTreeFactory factory_;
 };
@@ -211,6 +205,7 @@ TEST_F(BtActionNodeTest, halt_then_tick_sends_a_new_goal)
   auto bt = tree("<Plain/>");
   for (int i = 0; i < 4; i++) {
     ASSERT_EQ(bt.tickOnce(), BT::NodeStatus::RUNNING);
+    // Kept: ticks spaced as in run(), while the goal runs
     std::this_thread::sleep_for(100ms);
   }
   ASSERT_EQ(server_->goals, 1);
@@ -254,8 +249,8 @@ TEST_F(BtActionNodeTest, service_node_keeps_its_service_name)
     "test_service",
     [&calls](const std::shared_ptr<test_msgs::srv::Empty::Request>,
     std::shared_ptr<test_msgs::srv::Empty::Response>) {calls++;});
+  // The node waits for its service
   exe_.add_node(service_node);
-  std::this_thread::sleep_for(300ms);
 
   auto bt = tree("<PlainService/>");
   ASSERT_EQ(run(bt), BT::NodeStatus::SUCCESS);

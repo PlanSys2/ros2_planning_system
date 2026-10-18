@@ -1,6 +1,10 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 
 project(plansys2_bt_actions)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -70,10 +74,11 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_ros REQUIRED)
   find_package(plansys2_msgs REQUIRED)
   find_package(test_msgs REQUIRED)
   find_package(geometry_msgs REQUIRED)
-  find_package(tf2_geometry_msgs)
+  find_package(tf2_geometry_msgs REQUIRED)
   add_subdirectory(test)
 endif()
 

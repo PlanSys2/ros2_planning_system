@@ -66,7 +66,7 @@ def generate_launch_description():
     executor_cmd = Node(
         package='plansys2_executor',
         executable='executor_node',
-        name='executor',
+        # No name=: it renames every node of the process, the clients too (four /executor)
         namespace=namespace,
         output='screen',
         parameters=[

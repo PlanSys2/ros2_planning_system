@@ -16,6 +16,7 @@
 
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "rclcpp/rclcpp.hpp"
@@ -90,19 +91,8 @@ std::string remove_comments(const std::string & pddl)
 
 void drain_ros(std::chrono::milliseconds total)
 {
-  auto drain_node = std::make_shared<rclcpp::Node>("__drain__");
-
-  rclcpp::executors::SingleThreadedExecutor ex;
-  ex.add_node(drain_node);
-
-  auto start = drain_node->now();
-  rclcpp::Rate r(200);  // 5 ms
-  while ((drain_node->now() - start).seconds() < std::chrono::duration<double>(total).count()) {
-    ex.spin_some();
-    r.sleep();
-  }
-
-  ex.remove_node(drain_node);
+  // Spinning a node of its own drained nothing: it is a wait, and says so
+  std::this_thread::sleep_for(total);
 }
 
 

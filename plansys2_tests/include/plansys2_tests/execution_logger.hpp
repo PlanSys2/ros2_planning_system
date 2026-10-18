@@ -17,6 +17,7 @@
 
 #include <list>
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include "plansys2_msgs/msg/action_execution_info.hpp"
@@ -40,14 +41,23 @@ public:
 
   ExecutionLogger();
 
-  const std::list<plansys2_msgs::msg::ActionExecution> & get_action_execution_log()
+  // Copies: the subscriptions fill the logs from the thread that spins this node
+  std::list<plansys2_msgs::msg::ActionExecution> get_action_execution_log() const
   {
+    std::lock_guard<std::mutex> lock(mutex_);
     return action_execution_log_;
   }
 
-  const std::list<plansys2_msgs::msg::ActionExecutionInfo> & get_action_execution_info_log()
+  std::list<plansys2_msgs::msg::ActionExecutionInfo> get_action_execution_info_log() const
   {
+    std::lock_guard<std::mutex> lock(mutex_);
     return action_execution_info_log_;
+  }
+
+  // Whether it hears the executor: before that, its messages are lost
+  bool connected() const
+  {
+    return action_execution_info_sub_->get_publisher_count() > 0;
   }
 
   bool finished_before(const std::string & op1, const std::string & op2);
@@ -67,6 +77,7 @@ private:
   rclcpp::Subscription<plansys2_msgs::msg::ActionExecutionInfo>::SharedPtr
     action_execution_info_sub_;
 
+  mutable std::mutex mutex_;
   std::list<plansys2_msgs::msg::ActionExecution> action_execution_log_;
   std::list<plansys2_msgs::msg::ActionExecutionInfo> action_execution_info_log_;
 };

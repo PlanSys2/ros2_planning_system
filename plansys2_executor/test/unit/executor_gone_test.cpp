@@ -26,6 +26,7 @@
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/ActionExecutorClient.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
@@ -75,22 +76,6 @@ private:
   int ticks_ {0};
 };
 
-class ScopedSpinner
-{
-public:
-  explicit ScopedSpinner(rclcpp::Executor & exe)
-  : thread_([this, &exe]() {while (!finish_) {exe.spin_once(10ms);}}) {}
-  ~ScopedSpinner()
-  {
-    finish_ = true;
-    thread_.join();
-  }
-
-private:
-  std::atomic<bool> finish_ {false};
-  std::thread thread_;
-};
-
 bool wait_until(const std::function<bool()> & condition, std::chrono::seconds timeout)
 {
   auto deadline = std::chrono::steady_clock::now() + timeout;
@@ -115,7 +100,7 @@ protected:
     executor_node_ = rclcpp_lifecycle::LifecycleNode::make_shared("fake_executor");
     exe_.add_node(performer_->get_node_base_interface());
     exe_.add_node(executor_node_->get_node_base_interface());
-    spinner_ = std::make_unique<ScopedSpinner>(exe_);
+    spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
     performer_->trigger_transition(Transition::TRANSITION_CONFIGURE);
 
     action_ = plansys2::ActionExecutor::make_shared("(move r2d2 a b)", executor_node_);
@@ -142,7 +127,7 @@ protected:
   rclcpp_lifecycle::LifecycleNode::SharedPtr executor_node_;
   plansys2::ActionExecutor::Ptr action_;
   rclcpp::executors::SingleThreadedExecutor exe_;
-  std::unique_ptr<ScopedSpinner> spinner_;
+  std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 
 TEST_F(PerformerSupervisionTest, performer_stops_when_its_executor_is_gone)
@@ -156,7 +141,7 @@ TEST_F(PerformerSupervisionTest, performer_stops_when_its_executor_is_gone)
   exe_.remove_node(executor_node_->get_node_base_interface());
   action_.reset();
   executor_node_.reset();
-  spinner_ = std::make_unique<ScopedSpinner>(exe_);
+  spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
 
   ASSERT_TRUE(wait_until([this]() {return !performer_active();}, 8s));
   ASSERT_EQ(performer_->finished, 0);
@@ -218,7 +203,7 @@ TEST(ExecutorClientSupervision, client_stops_waiting_when_the_executor_is_gone)
   auto silent = std::make_unique<SilentExecutor>();
   rclcpp::executors::SingleThreadedExecutor exe;
   exe.add_node(silent->node);
-  auto spinner = std::make_unique<ScopedSpinner>(exe);
+  auto spinner = std::make_unique<plansys2::testing::ExecutorThread>(exe);
 
   auto client = std::make_shared<plansys2::ExecutorClient>();
   ASSERT_TRUE(client->start_plan_execution(one_move()));
@@ -242,7 +227,7 @@ TEST(ExecutorClientSupervision, client_stops_waiting_when_the_executor_is_gone)
   // A new executor takes a new plan from the same client
   silent = std::make_unique<SilentExecutor>();
   exe.add_node(silent->node);
-  spinner = std::make_unique<ScopedSpinner>(exe);
+  spinner = std::make_unique<plansys2::testing::ExecutorThread>(exe);
   ASSERT_TRUE(client->start_plan_execution(one_move()));
   ASSERT_TRUE(client->execute_and_check_plan());
   spinner.reset();

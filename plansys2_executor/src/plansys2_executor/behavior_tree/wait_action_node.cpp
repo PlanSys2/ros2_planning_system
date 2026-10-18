@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <string>
+#include <tuple>
 #include <map>
 #include <memory>
 
@@ -30,10 +31,10 @@ WaitAction::WaitAction(
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
     "action_map");
-  // Only the STN builder needs these
-  config().blackboard->get("action_graph", action_graph_);
-  config().blackboard->get("node", node_);
-  config().blackboard->get("stn_relaxed_timing", relaxed_timing_);
+  // Only the STN builder needs these: they may be missing
+  std::ignore = config().blackboard->get("action_graph", action_graph_);
+  std::ignore = config().blackboard->get("node", node_);
+  std::ignore = config().blackboard->get("stn_relaxed_timing", relaxed_timing_);
 }
 
 BT::NodeStatus

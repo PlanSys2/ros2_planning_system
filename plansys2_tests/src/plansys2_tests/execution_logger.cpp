@@ -17,6 +17,7 @@
 #include <vector>
 #include <string>
 #include <list>
+#include <mutex>
 
 #include "plansys2_tests/execution_logger.hpp"
 
@@ -30,12 +31,14 @@ ExecutionLogger::ExecutionLogger()
 {
   action_execution_sub_ = create_subscription<plansys2_msgs::msg::ActionExecution>(
     "/actions_hub", 100,
-    [&](plansys2_msgs::msg::ActionExecution::UniquePtr msg) {
+    [this](plansys2_msgs::msg::ActionExecution::UniquePtr msg) {
+      std::lock_guard<std::mutex> lock(mutex_);
       action_execution_log_.push_back(std::move(*msg));
     });
   action_execution_info_sub_ = create_subscription<plansys2_msgs::msg::ActionExecutionInfo>(
     "/action_execution_info", 100,
-    [&](plansys2_msgs::msg::ActionExecutionInfo::UniquePtr msg) {
+    [this](plansys2_msgs::msg::ActionExecutionInfo::UniquePtr msg) {
+      std::lock_guard<std::mutex> lock(mutex_);
       action_execution_info_log_.push_back(std::move(*msg));
     });
 }
@@ -45,7 +48,7 @@ ExecutionLogger::finished_before(const std::string & op1, const std::string & op
 {
   bool op1_found = false;
   bool op2_found = false;
-  for (const auto & action : action_execution_info_log_) {
+  for (const auto & action : get_action_execution_info_log()) {
     op1_found = op1_found || (action.action_full_name == op1 &&
       action.completion > 0.9999999);
     op2_found = op2_found || (action.action_full_name == op2 &&
@@ -69,7 +72,7 @@ ExecutionLogger::started_before(const std::string & op1, const std::string & op2
 {
   bool op1_found = false;
   bool op2_found = false;
-  for (const auto & action : action_execution_info_log_) {
+  for (const auto & action : get_action_execution_info_log()) {
     op1_found = op1_found || (action.action_full_name == op1 &&
       action.completion > 0.0000001);
     op2_found = op2_found || (action.action_full_name == op2 &&
@@ -93,7 +96,7 @@ ExecutionLogger::before(const std::string & op1, const std::string & op2)
 {
   bool op1_found = false;
   bool op2_found = false;
-  for (const auto & action : action_execution_info_log_) {
+  for (const auto & action : get_action_execution_info_log()) {
     op1_found = op1_found || (action.action_full_name == op1 &&
       action.completion > 0.9999999);
     op2_found = op2_found || (action.action_full_name == op2 &&
@@ -117,7 +120,7 @@ ExecutionLogger::is_executed(const std::string & action_full_name)
 {
   bool executed = false;
   bool exist = false;
-  for (const auto & action : action_execution_info_log_) {
+  for (const auto & action : get_action_execution_info_log()) {
     exist = exist || action.action_full_name == action_full_name;
     executed = executed || (action.action_full_name == action_full_name &&
       action.completion > 0.000001);

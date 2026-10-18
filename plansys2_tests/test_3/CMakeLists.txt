@@ -2,7 +2,7 @@ install(DIRECTORY pddl
   DESTINATION share/${PROJECT_NAME}/test_3
 )
 
-ament_add_gtest(test_3 test_3.cpp TIMEOUT 300)
+ament_add_ros_isolated_gtest(test_3 test_3.cpp TIMEOUT 120)
 target_link_libraries(test_3
   ${PROJECT_NAME}
   ament_index_cpp::ament_index_cpp

@@ -7,38 +7,54 @@ on:
   push:
     branches:
       - humble-devel
+  schedule:
+    - cron: '0 0 * * 6'
   workflow_dispatch:
 jobs:
   build-and-test:
     runs-on: ubuntu-22.04
+    env:
+      # action-ros-ci 0.4 dropped colcon-mixin-name: the mixin goes in the defaults
+      COLCON_DEFAULTS: |
+        {
+          "build": {
+            "mixin": ["coverage-gcc"]
+          },
+          "lcov-result": {
+            "filter": ["*/build/*", "*/test/*", "*/plansys2_tests/*"]
+          },
+          "test": {
+            "parallel-workers" : 1
+          }
+        }
     container:
       image: ubuntu:jammy
     steps:
-      - name: Install popf deps
-        run: apt-get update && apt-get install libfl-dev
-      - name: Fix pip
-        run: pip3 install empy==3.3.4; pip3 install -U colcon-common-extensions
-      - name: Setup ROS 2
-        uses: ros-tooling/setup-ros@0.7.15
-      - name: build and test
-        uses: ros-tooling/action-ros-ci@0.4.5
+      - name: Repo checkout
+        uses: actions/checkout@v6
         with:
-          package-name: plansys2_bringup plansys2_bt_actions plansys2_domain_expert plansys2_executor plansys2_lifecycle_manager plansys2_msgs plansys2_pddl_parser plansys2_planner plansys2_popf_plan_solver plansys2_problem_expert plansys2_terminal plansys2_tests plansys2_tools
+          ref: humble-devel
+      - name: Install popf deps
+        run: apt-get update && apt-get install -y libfl-dev
+      - name: Setup ROS 2
+        uses: ros-tooling/setup-ros@0.7.19
+      - name: build and test
+        uses: ros-tooling/action-ros-ci@0.4.8
+        with:
+          package-name: plansys2_bringup plansys2_bt_actions plansys2_core plansys2_domain_expert plansys2_executor plansys2_lifecycle_manager plansys2_msgs plansys2_pddl_parser plansys2_planner plansys2_popf_plan_solver plansys2_problem_expert plansys2_terminal plansys2_tests plansys2_tools
+          # The branch to build: without it, action-ros-ci builds the ref that started the run
           ref: humble-devel
           target-ros2-distro: humble
-          colcon-defaults: |
-            {
-              "test": {
-                "parallel-workers" : 1
-              }
-            }
-          colcon-mixin-name: coverage-gcc
+          vcs-repo-file-url: ${GITHUB_WORKSPACE}/dependency_repos.repos
+          colcon-defaults: ${{ env.COLCON_DEFAULTS }}
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
       - name: Codecov
         uses: codecov/codecov-action@v5.4.0
         with:
-          file: ros_ws/lcov/total_coverage.info
+          files: ros_ws/lcov/total_coverage.info
           flags: unittests
           name: codecov-umbrella
-          # yml: ./codecov.yml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          # Only the merged report: searching picks up tests and dependencies
+          disable_search: true
           fail_ci_if_error: false

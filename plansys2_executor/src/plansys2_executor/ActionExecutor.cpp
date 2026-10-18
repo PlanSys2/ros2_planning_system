@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
+#include <map>
 #include <string>
 #include <memory>
 #include <vector>
@@ -35,20 +37,100 @@ constexpr int kMaxActivationFailures = 3;
 constexpr int kMaxPerformerMisses = 3;
 }  // namespace
 
+ActionHub::Ptr
+ActionHub::get(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
+{
+  static std::mutex registry_mutex;
+  static std::map<const rclcpp_lifecycle::LifecycleNode *, std::weak_ptr<ActionHub>> registry;
+
+  std::lock_guard<std::mutex> lock(registry_mutex);
+  for (auto it = registry.begin(); it != registry.end(); ) {
+    it = it->second.expired() ? registry.erase(it) : std::next(it);
+  }
+  auto & entry = registry[node.get()];
+  auto hub = entry.lock();
+  if (!hub) {
+    hub = std::make_shared<ActionHub>(node);
+    hub->subscribe(node);
+    entry = hub;
+  }
+  return hub;
+}
+
+ActionHub::ActionHub(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
+{
+  pub_ = node->create_publisher<plansys2_msgs::msg::ActionExecution>(
+    "actions_hub", rclcpp::QoS(100).reliable());
+  // Active for the whole life of the hub: a late answer must still get its REJECT
+  pub_->on_activate();
+}
+
+void
+ActionHub::subscribe(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
+{
+  sub_ = node->create_subscription<plansys2_msgs::msg::ActionExecution>(
+    "actions_hub", rclcpp::QoS(100).reliable(),
+    [hub = weak_from_this()](plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
+      if (auto alive = hub.lock()) {
+        alive->dispatch(msg);
+      }
+    });
+}
+
+void
+ActionHub::publish(const plansys2_msgs::msg::ActionExecution & msg)
+{
+  pub_->publish(msg);
+}
+
+void
+ActionHub::add(const std::weak_ptr<ActionExecutor> & executor)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (auto alive = executor.lock()) {
+    executors_.emplace_back(alive.get(), executor);
+  }
+}
+
+void
+ActionHub::remove(const ActionExecutor * executor)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  executors_.erase(
+    std::remove_if(
+      executors_.begin(), executors_.end(),
+      [executor](const auto & entry) {return entry.first == executor;}),
+    executors_.end());
+}
+
+void
+ActionHub::dispatch(plansys2_msgs::msg::ActionExecution::SharedPtr msg)
+{
+  // Outside the lock: an executor may add or remove executors while it handles the message
+  std::vector<std::shared_ptr<ActionExecutor>> alive;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto it = executors_.begin();
+    while (it != executors_.end()) {
+      if (auto executor = it->second.lock()) {
+        alive.push_back(executor);
+        ++it;
+      } else {
+        it = executors_.erase(it);
+      }
+    }
+  }
+  for (const auto & executor : alive) {
+    executor->action_hub_callback(msg);
+  }
+}
+
 ActionExecutor::ActionExecutor(
   const std::string & action,
   rclcpp_lifecycle::LifecycleNode::SharedPtr node)
 : node_(node), state_(IDLE), completion_(0.0)
 {
-  action_hub_pub_ = node_->create_publisher<plansys2_msgs::msg::ActionExecution>(
-    "actions_hub", rclcpp::QoS(100).reliable());
-  action_hub_sub_ = node_->create_subscription<plansys2_msgs::msg::ActionExecution>(
-    "actions_hub", rclcpp::QoS(100).reliable(),
-    [self = self_](plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
-      if (auto executor = self->lock()) {
-        executor->action_hub_callback(msg);
-      }
-    });
+  hub_ = ActionHub::get(node_);
 
   state_time_ = node_->now();
 
@@ -67,8 +149,8 @@ ActionExecutor::~ActionExecutor()
 void
 ActionExecutor::clean_up()
 {
-  if (action_hub_sub_ != nullptr) {
-    action_hub_sub_->clear_on_new_message_callback();
+  if (hub_) {
+    hub_->remove(this);
   }
   if (waiting_timer_) {
     waiting_timer_->cancel();
@@ -170,7 +252,7 @@ ActionExecutor::confirm_performer(const std::string & node_id)
   msg.action = action_name_;
   msg.arguments = action_params_;
 
-  action_hub_pub_->publish(msg);
+  hub_->publish(msg);
 }
 
 void
@@ -183,7 +265,7 @@ ActionExecutor::reject_performer(const std::string & node_id)
   msg.action = action_name_;
   msg.arguments = action_params_;
 
-  action_hub_pub_->publish(msg);
+  hub_->publish(msg);
 }
 
 void
@@ -196,7 +278,7 @@ ActionExecutor::request_for_performers()
   msg.action = action_name_;
   msg.arguments = action_params_;
 
-  action_hub_pub_->publish(msg);
+  hub_->publish(msg);
 }
 
 void
@@ -268,8 +350,6 @@ ActionExecutor::tick(const rclcpp::Time & now)
   (void)now;
   std::lock_guard<std::mutex> lock(mutex_);
   if (state_ == IDLE) {
-    // Active for the whole life of the executor: a late answer must still get its REJECT
-    action_hub_pub_->on_activate();
     activation_failures_ = 0;
     start_dealing();
   }
@@ -296,7 +376,7 @@ ActionExecutor::cancel()
   msg.action = action_name_;
   msg.arguments = action_params_;
 
-  action_hub_pub_->publish(msg);
+  hub_->publish(msg);
 }
 
 std::string

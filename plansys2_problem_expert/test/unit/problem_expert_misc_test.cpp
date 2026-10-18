@@ -20,7 +20,6 @@
 #include <fstream>
 #include <memory>
 #include <string>
-#include <thread>
 #include <utility>
 #include <vector>
 
@@ -28,6 +27,7 @@
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_msgs/msg/knowledge.hpp"
@@ -265,17 +265,15 @@ TEST_F(ProblemExpertNodeMisc, cleanup_and_function_topics)
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(test_node);
-  std::atomic<bool> finish{false};
-  std::thread spinner([&]() {
-      while (!finish) {exe.spin_some(10ms);}
-    });
+  plansys2::testing::ExecutorThread spinner(exe);
 
   auto wait_for = [](const std::atomic<int> & counter, int value) {
-      for (int i = 0; i < 200 && counter < value; i++) {
-        std::this_thread::sleep_for(10ms);
-      }
-      return counter >= value;
+      return plansys2::testing::wait_for([&]() {return counter >= value;});
     };
+  // problem_expert/problem is volatile: messages before matching are lost
+  ASSERT_TRUE(
+    plansys2::testing::wait_for(
+      [&]() {return test_node->count_publishers("problem_expert/problem") > 0;}));
 
   ASSERT_TRUE(client->addInstance(plansys2::Instance("kitchen", "room")));
   ASSERT_TRUE(client->addInstance(plansys2::Instance("bedroom", "room")));
@@ -305,7 +303,4 @@ TEST_F(ProblemExpertNodeMisc, cleanup_and_function_topics)
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   EXPECT_FALSE(client->getInstance("kitchen").has_value());
   EXPECT_TRUE(client->addInstance(plansys2::Instance("hall", "room")));
-
-  finish = true;
-  spinner.join();
 }

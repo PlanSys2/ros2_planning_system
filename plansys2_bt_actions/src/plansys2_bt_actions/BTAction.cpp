@@ -145,15 +145,19 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
   if (get_parameter("bt_file_logging").as_bool() ||
     get_parameter("bt_minitrace_logging").as_bool())
   {
-    auto temp_path = std::filesystem::temp_directory_path();
-    std::filesystem::path node_name_path = get_name();
-    std::filesystem::create_directories(temp_path / node_name_path);
+    // In the temporary directory, one file per execution: two in the same second do not mix
+    const auto dir = std::filesystem::temp_directory_path() / "plansys2" /
+      std::filesystem::path(get_fully_qualified_name()).relative_path();
+    std::filesystem::create_directories(dir);
 
-    auto now_time_t =
-      std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    const auto now = std::chrono::system_clock::now();
+    auto now_time_t = std::chrono::system_clock::to_time_t(now);
+    const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(
+      now.time_since_epoch()).count() % 1000;
     std::stringstream filename;
-    filename << "/tmp/" << get_name() << "/bt_trace_";
-    filename << std::put_time(std::localtime(&now_time_t), "%Y_%m_%d__%H_%M_%S");
+    filename << (dir / "bt_trace_").string();
+    filename << std::put_time(std::localtime(&now_time_t), "%Y_%m_%d__%H_%M_%S") << "_" <<
+      std::setw(3) << std::setfill('0') << millis;
 
     if (get_parameter("bt_file_logging").as_bool()) {
       std::string filename_extension = filename.str() + ".btlog";

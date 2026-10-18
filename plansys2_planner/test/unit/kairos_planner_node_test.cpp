@@ -12,18 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <atomic>
 #include <chrono>
 #include <fstream>
 #include <memory>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "ament_index_cpp/get_package_share_path.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_msgs/srv/get_plan.hpp"
 #include "plansys2_msgs/srv/get_plan_array.hpp"
 #include "plansys2_msgs/srv/validate_domain.hpp"
@@ -45,22 +44,6 @@ std::string read_pddl(const std::string & name)
   return std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
 }
 
-class ScopedSpinner
-{
-public:
-  explicit ScopedSpinner(rclcpp::Executor & exe)
-  : thread_([this, &exe]() {while (!finish_) {exe.spin_once(10ms);}}) {}
-  ~ScopedSpinner()
-  {
-    finish_ = true;
-    thread_.join();
-  }
-
-private:
-  std::atomic<bool> finish_ {false};
-  std::thread thread_;
-};
-
 }  // namespace
 
 // The planner node of PlanSys2 with Kairos as its solver, called through its services
@@ -78,7 +61,7 @@ protected:
       "planner/validate_domain");
     exe_.add_node(planner_->get_node_base_interface());
     exe_.add_node(client_);
-    spinner_ = std::make_unique<ScopedSpinner>(exe_);
+    spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
   }
 
   void TearDown() override
@@ -129,7 +112,7 @@ protected:
   rclcpp::Client<plansys2_msgs::srv::GetPlanArray>::SharedPtr get_plan_array_;
   rclcpp::Client<plansys2_msgs::srv::ValidateDomain>::SharedPtr validate_;
   rclcpp::executors::SingleThreadedExecutor exe_;
-  std::unique_ptr<ScopedSpinner> spinner_;
+  std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 
 // With no plan_solver_plugins the planner uses Kairos

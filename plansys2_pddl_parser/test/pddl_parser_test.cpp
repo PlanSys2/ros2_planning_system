@@ -63,10 +63,10 @@ TEST(PDDLParserTestCase, pddl_parser)
       std::cout << domain << std::endl;
       std::cout << instance << std::endl;
       okprint = true;
-    } catch (std::runtime_error e) {
+    } catch (const std::runtime_error & e) {
       std::cerr << e.what() << std::endl;
     }
-  } catch (std::runtime_error e) {
+  } catch (const std::runtime_error & e) {
     std::cerr << e.what() << std::endl;
   }
   ASSERT_TRUE(okparse);
@@ -102,10 +102,10 @@ TEST(PDDLParserTestCase, pddl_parser_suave)
       std::cout << domain << std::endl;
       std::cout << instance << std::endl;
       okprint = true;
-    } catch (std::runtime_error e) {
+    } catch (const std::runtime_error & e) {
       std::cerr << e.what() << std::endl;
     }
-  } catch (std::runtime_error e) {
+  } catch (const std::runtime_error & e) {
     std::cerr << e.what() << std::endl;
   }
   ASSERT_TRUE(okparse);
@@ -149,10 +149,10 @@ TEST(PDDLParserTestCase, pddl_parser_suave_extended_created)
       std::cout << domain << std::endl;
       std::cout << instance << std::endl;
       okprint = true;
-    } catch (std::runtime_error e) {
+    } catch (const std::runtime_error & e) {
       std::cerr << e.what() << std::endl;
     }
-  } catch (std::runtime_error e) {
+  } catch (const std::runtime_error & e) {
     std::cerr << e.what() << std::endl;
   }
   ASSERT_TRUE(okparse);
@@ -1159,8 +1159,8 @@ TEST(PDDLParserTestCase, number_to_string)
 // Numbers in trees, domains and problems keep their precision
 TEST(PDDLParserTestCase, numbers_keep_precision_in_text)
 {
-  for (const std::string & number : {"0.0000001", "1234567.891000", "-2.500000"}) {
-    const std::string expr = "(> (battery_level r1) " + number + ")";
+  for (const char * number : {"0.0000001", "1234567.891000", "-2.500000"}) {
+    const std::string expr = std::string("(> (battery_level r1) ") + number + ")";
     auto tree = parser::pddl::fromString(expr);
     ASSERT_EQ(parser::pddl::toString(tree), expr);
   }

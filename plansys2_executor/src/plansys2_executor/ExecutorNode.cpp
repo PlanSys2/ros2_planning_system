@@ -22,6 +22,9 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <utility>
+#include <optional>
+#include <cmath>
 
 #include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
@@ -76,6 +79,8 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
   this->declare_parameter<bool>("stn_relaxed_timing", true);
   this->declare_parameter<bool>("enable_dotgraph_legend", true);
   this->declare_parameter<bool>("print_graph", false);
+  // Feedback, execution info, remaining plan and dot graph, in Hz; the tree ticks at 50 Hz
+  this->declare_parameter<double>("feedback_rate", 5.0);
   // A plan that fails, is cancelled or is replaced takes back the at start effects of the
   // actions that started and did not end
   this->declare_parameter<bool>("restore_at_start_effects", true);
@@ -207,6 +212,9 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
   planner_client_ = std::make_shared<plansys2::PlannerClient>();
 
+  // One actions_hub publisher and subscription for all the actions, kept between plans
+  action_hub_ = ActionHub::get(non_owning_this());
+
   // A new subscription gets the latched domain again: that is not a change
   domain_baseline_seen_ = false;
   domain_sub_ = create_subscription<std_msgs::msg::String>(
@@ -258,6 +266,7 @@ ExecutorNode::on_cleanup(const rclcpp_lifecycle::State & state)
   dotgraph_pub_.reset();
   executing_plan_pub_.reset();
   remaining_plan_pub_.reset();
+  action_hub_.reset();
   RCLCPP_INFO(get_logger(), "[%s] Cleaned up", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -272,6 +281,7 @@ ExecutorNode::on_shutdown(const rclcpp_lifecycle::State & state)
   dotgraph_pub_.reset();
   executing_plan_pub_.reset();
   remaining_plan_pub_.reset();
+  action_hub_.reset();
   RCLCPP_INFO(get_logger(), "[%s] Shutted down", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -320,8 +330,9 @@ ExecutorNode::get_ordered_subgoals(PlanRuntineInfo & runtime_info)
     }
   }
 
+  // Once for the whole plan: it was asked for every action
+  const auto actions = domain_client_->getActions();
   for (const auto & plan_item : runtime_info.complete_plan.items) {
-    auto actions = domain_client_->getActions();
     std::string action_name = get_action_name(plan_item.action);
     if (std::find(actions.begin(), actions.end(), action_name) != actions.end()) {
       std::shared_ptr<plansys2_msgs::msg::Action> action =
@@ -401,6 +412,8 @@ ExecutorNode::create_plan_runtime_info(PlanRuntineInfo & runtime_info)
   (*runtime_info.action_map)[":0"].at_start_effects_applied_time = now();
   (*runtime_info.action_map)[":0"].at_end_effects_applied_time = now();
 
+  // Once for the whole plan: it was asked for every action
+  const auto actions = domain_client_->getActions();
   for (const auto & plan_item : runtime_info.complete_plan.items) {
     // The parsing below assumes "(name args...)"; anything else must not reach it
     const auto & action = plan_item.action;
@@ -416,7 +429,6 @@ ExecutorNode::create_plan_runtime_info(PlanRuntineInfo & runtime_info)
     (*runtime_info.action_map)[index].action_executor =
       ActionExecutor::make_shared(plan_item.action, non_owning_this());
 
-    auto actions = domain_client_->getActions();
     std::string action_name = get_action_name(plan_item.action);
     if (std::find(actions.begin(), actions.end(), action_name) != actions.end()) {
       (*runtime_info.action_map)[index].action_info = domain_client_->getAction(
@@ -450,7 +462,11 @@ ExecutorNode::create_plan_runtime_info(PlanRuntineInfo & runtime_info)
 }
 
 bool
-ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
+ExecutorNode::get_tree_from_plan(
+  PlanRuntineInfo & runtime_info,
+  const std::optional<std::pair<std::vector<plansys2::Predicate>,
+  std::vector<plansys2::Function>>> & initial_state,
+  bool report_errors)
 {
   auto bt_builder_plugin = this->get_parameter("bt_builder_plugin").as_string();
   if (bt_builder_plugin.empty()) {
@@ -466,6 +482,9 @@ ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
   }
   // Our clients: otherwise each plan would create, and later destroy, two more nodes
   bt_builder->set_clients(domain_client_, problem_client_);
+  if (initial_state) {
+    bt_builder->set_initial_state(initial_state->first, initial_state->second);
+  }
 
   if (bt_builder_plugin == "STNBTBuilder") {
     // Start and end of each action are separate BT units
@@ -478,7 +497,9 @@ ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
 
   auto bt_xml_tree = bt_builder->get_tree(runtime_info.complete_plan);
   if (bt_xml_tree.empty()) {
-    RCLCPP_ERROR(get_logger(), "Error computing behavior tree!");
+    if (report_errors) {
+      RCLCPP_ERROR(get_logger(), "Error computing behavior tree!");
+    }
     return false;
   }
 
@@ -489,10 +510,15 @@ ExecutorNode::get_tree_from_plan(PlanRuntineInfo & runtime_info)
     this->get_parameter("print_graph").as_bool());
   dotgraph_pub_->publish(dotgraph_msg);
 
-  std::filesystem::path tp = std::filesystem::temp_directory_path();
-  std::ofstream out(std::string("/tmp/") + get_namespace() + "/bt.xml");
-  out << bt_xml_tree;
-  out.close();
+  // The last tree, to look at: in the temporary directory, one per namespace
+  {
+    std::error_code error;
+    const auto dir = std::filesystem::temp_directory_path(error) / "plansys2" /
+      std::filesystem::path(get_namespace()).relative_path();
+    std::filesystem::create_directories(dir, error);
+    std::ofstream out(dir / "bt.xml");
+    out << bt_xml_tree;
+  }
 
   BT::BehaviorTreeFactory factory;
   factory.registerNodeType<ExecuteAction>("ExecuteAction");
@@ -591,6 +617,51 @@ ExecutorNode::replan_for_execution(PlanRuntineInfo & runtime_info)
   }
 }
 
+namespace
+{
+// The facts as they were before these changes, as undo does on the problem expert
+void undo_in_state(
+  const std::vector<FactChange> & changes, std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions)
+{
+  for (auto change = changes.rbegin(); change != changes.rend(); ++change) {
+    if (change->fact.node_type == plansys2_msgs::msg::Node::PREDICATE) {
+      auto it = std::find_if(
+        predicates.begin(), predicates.end(), [&](const plansys2::Predicate & p) {
+          return parser::pddl::checkNodeEquality(p, change->fact);
+        });
+      if (change->existed_before && it == predicates.end()) {
+        plansys2::Predicate fact(change->fact);
+        fact.negate = false;
+        predicates.push_back(fact);
+      } else if (!change->existed_before && it != predicates.end()) {
+        predicates.erase(it);
+      }
+      continue;
+    }
+    auto it = std::find_if(
+      functions.begin(), functions.end(), [&](const plansys2::Function & f) {
+        return parser::pddl::checkNodeEquality(f, change->fact);
+      });
+    if (it == functions.end()) {
+      continue;
+    }
+    if (change->modifier_type == plansys2_msgs::msg::Node::INCREASE ||
+      change->modifier_type == plansys2_msgs::msg::Node::DECREASE)
+    {
+      it->value -= change->value_after - change->value_before;
+    } else if (std::fabs(it->value - change->value_after) < 1e-9) {
+      it->value = change->value_before;
+    }
+  }
+}
+
+std::string action_expression(const std::string & action_id)
+{
+  return action_id.substr(0, action_id.find(':'));
+}
+}  // namespace
+
 bool
 ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
 {
@@ -614,6 +685,22 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
 
   std::map<std::string, ActionExecutionInfo> previous_action_map = *runtime_info.action_map;
 
+  // The actions that go on started before the new plan: it starts from the state before their
+  // at start effects, or it would not hold their at start requirements
+  std::optional<std::pair<std::vector<plansys2::Predicate>, std::vector<plansys2::Function>>>
+  initial_state;
+  for (auto & [action_id, info] : *runtime_info.action_map) {
+    const bool goes_on = info.action_executor &&
+      info.action_executor->get_internal_status() == ActionExecutor::RUNNING &&
+      new_ids.count(action_expression(action_id) + ":0") > 0;
+    if (goes_on && info.at_start_effects_applied && !info.at_start_changes.empty()) {
+      if (!initial_state) {
+        initial_state.emplace(problem_client_->getPredicates(), problem_client_->getFunctions());
+      }
+      undo_in_state(info.at_start_changes, initial_state->first, initial_state->second);
+    }
+  }
+
   // The actions that go on are taken out of the old tree: when it is destroyed, it halts its
   // nodes, and that would cancel them
   for (auto & [action_id, info] : *runtime_info.action_map) {
@@ -625,10 +712,19 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
     }
   }
 
+  // Actions done in the previous plan that the new one, computed while they ran, still has
+  std::vector<std::pair<std::string, ActionExecutionInfo>> done_again;
   bool plan_success = false;
   try {
     create_plan_runtime_info(runtime_info);
-    plan_success = get_tree_from_plan(runtime_info);
+    plan_success = get_tree_from_plan(runtime_info, initial_state, false);
+    if (!plan_success) {
+      done_again = skip_finished_actions(runtime_info, previous_action_map);
+      if (!done_again.empty()) {
+        create_plan_runtime_info(runtime_info);
+      }
+      plan_success = get_tree_from_plan(runtime_info, initial_state);
+    }
   } catch (...) {
     // The new plan is unusable: actions of the previous one must not keep running
     for (auto & entry : previous_action_map) {
@@ -676,11 +772,56 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
     }
   }
 
+  // They count as done in this plan too
+  for (auto & [action_id, info] : done_again) {
+    (*runtime_info.action_map)[action_id] = info;
+  }
+
   if (!plan_success) {
     return false;
   }
 
   return true;
+}
+
+std::vector<std::pair<std::string, ActionExecutionInfo>>
+ExecutorNode::skip_finished_actions(
+  PlanRuntineInfo & runtime_info,
+  const std::map<std::string, ActionExecutionInfo> & previous_action_map)
+{
+  // The first time each one appears: a later one is the plan doing it again
+  std::vector<std::pair<std::string, ActionExecutionInfo>> skipped;
+  std::vector<std::string> done;
+  for (const auto & [action_id, info] : previous_action_map) {
+    if (action_id != ":0" && info.action_executor && info.at_end_effects_applied &&
+      info.action_executor->get_internal_status() == ActionExecutor::SUCCESS)
+    {
+      done.push_back(action_id);
+    }
+  }
+  if (done.empty()) {
+    return skipped;
+  }
+
+  auto & items = runtime_info.complete_plan.items;
+  std::stable_sort(
+    items.begin(), items.end(), [](const auto & a, const auto & b) {return a.time < b.time;});
+  for (const auto & previous_id : done) {
+    auto it = std::find_if(
+      items.begin(), items.end(), [&](const plansys2_msgs::msg::PlanItem & item) {
+        return item.action == action_expression(previous_id);
+      });
+    if (it == items.end()) {
+      continue;
+    }
+    RCLCPP_INFO(
+      get_logger(), "%s is already done: the new plan was computed while it ran",
+      it->action.c_str());
+    skipped.emplace_back(BTBuilder::to_action_id(*it, 3), previous_action_map.at(previous_id));
+    items.erase(it);
+  }
+  runtime_info.remaining_plan = runtime_info.complete_plan;
+  return skipped;
 }
 
 void
@@ -960,6 +1101,17 @@ ExecutorNode::finish_replaced_goal(
   }
 }
 
+std::chrono::nanoseconds
+ExecutorNode::feedback_period()
+{
+  double rate = get_parameter("feedback_rate").as_double();
+  if (!(rate > 0.0)) {
+    rate = 5.0;
+  }
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(
+    std::chrono::duration<double>(1.0 / rate));
+}
+
 void
 ExecutorNode::execution_cycle()
 {
@@ -1012,6 +1164,7 @@ ExecutorNode::execution_step()
 
         runtime_info_ = PlanRuntineInfo();
         runtime_info_.complete_plan = current_goal_handle_->get_goal()->plan;
+        last_executing_plan_.reset();  // A new goal publishes its plan
         runtime_info_.remaining_plan = current_goal_handle_->get_goal()->plan;
 
         if (!init_plan_for_execution(runtime_info_)) {
@@ -1032,26 +1185,42 @@ ExecutorNode::execution_step()
           executor_state_ = STATE_FAILED;
         }
 
-        auto feedback_info_msgs = get_feedback_info(runtime_info_.action_map);
-        feedback->action_execution_status = feedback_info_msgs;
-        // rclcpp_action only takes feedback from executing goals
-        if (!current_goal_handle_->is_canceling()) {
-          current_goal_handle_->publish_feedback(feedback);
-        }
-        for (const auto & msg : feedback_info_msgs) {
-          execution_info_pub_->publish(msg);
-        }
-
         update_plan(runtime_info_);
         update_snapshot();
-        remaining_plan_pub_->publish(runtime_info_.remaining_plan);
-        executing_plan_pub_->publish(runtime_info_.complete_plan);
 
-        std_msgs::msg::String dotgraph_msg;
-        dotgraph_msg.data = runtime_info_.current_tree->bt_builder->get_dotgraph(
-          runtime_info_.action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
-          this->get_parameter("print_graph").as_bool());
-        dotgraph_pub_->publish(dotgraph_msg);
+        // Latched: once per plan
+        if (!last_executing_plan_ || *last_executing_plan_ != runtime_info_.complete_plan) {
+          executing_plan_pub_->publish(runtime_info_.complete_plan);
+          last_executing_plan_ = runtime_info_.complete_plan;
+        }
+
+        // The tree ticks at 50 Hz; what is published for others goes at feedback_rate, and
+        // when the plan ends, so that its last state is seen
+        const auto now = std::chrono::steady_clock::now();
+        const bool ending = status != BT::NodeStatus::RUNNING;
+        if (ending || now >= next_feedback_time_) {
+          next_feedback_time_ = now + feedback_period();
+
+          auto feedback_info_msgs = get_feedback_info(runtime_info_.action_map);
+          feedback->action_execution_status = feedback_info_msgs;
+          // rclcpp_action only takes feedback from executing goals
+          if (!current_goal_handle_->is_canceling()) {
+            current_goal_handle_->publish_feedback(feedback);
+          }
+          for (const auto & msg : feedback_info_msgs) {
+            execution_info_pub_->publish(msg);
+          }
+          remaining_plan_pub_->publish(runtime_info_.remaining_plan);
+
+          // Building it costs: only for someone listening
+          if (dotgraph_pub_->get_subscription_count() > 0) {
+            std_msgs::msg::String dotgraph_msg;
+            dotgraph_msg.data = runtime_info_.current_tree->bt_builder->get_dotgraph(
+              runtime_info_.action_map, this->get_parameter("enable_dotgraph_legend").as_bool(),
+              this->get_parameter("print_graph").as_bool());
+            dotgraph_pub_->publish(dotgraph_msg);
+          }
+        }
 
         if (status == BT::NodeStatus::SUCCESS) {
           executor_state_ = STATE_SUCCEDED;
@@ -1095,6 +1264,7 @@ ExecutorNode::execution_step()
         }
 
         runtime_info_.complete_plan = current_goal_handle_->get_goal()->plan;
+        last_executing_plan_.reset();  // A new goal publishes its plan
         runtime_info_.remaining_plan = current_goal_handle_->get_goal()->plan;
 
         if (!replan_for_execution(runtime_info_)) {

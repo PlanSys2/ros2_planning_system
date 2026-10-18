@@ -21,6 +21,7 @@
   <test_depend>plansys2_bringup</test_depend>
   <test_depend>plansys2_pddl_parser</test_depend>
   <test_depend>python3-pytest</test_depend>
+  <test_depend>ros2launch</test_depend>
 
   <export>
     <build_type>ament_python</build_type>
