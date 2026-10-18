@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The knowledge panel shows the goal, and the metric when the problem has one."""
+"""The knowledge panel shows the goal, and the metric and constraints when it has them."""
 
 import unittest
 
@@ -39,6 +39,17 @@ class TestKnowledgeText(unittest.TestCase):
         text = KnowledgeProcessor.knowledge2text(msg)
         self.assertIn('Goal', text)
         self.assertNotIn('Metric', text)
+        self.assertNotIn('Constraints', text)
+
+    def test_constraints_when_set(self):
+        msg = Knowledge()
+        msg.goal = '(and (robot_at r1 kitchen))'
+        msg.metric = 'minimize (is-violated tidy)'
+        msg.constraints = '(and (always (not (alarm)))(preference tidy (sometime (lit))))'
+        text = KnowledgeProcessor.knowledge2text(msg)
+        self.assertIn('Constraints', text)
+        self.assertIn('(always (not (alarm)))', text)
+        self.assertLess(text.index('Metric'), text.index('Constraints'))
 
 
 if __name__ == '__main__':

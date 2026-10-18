@@ -140,6 +140,12 @@ Expression * createExpression(Stringreader & f, TokenStruct<std::string> & ts, D
       f.next();
       f.assert_token(")");
       return new TotalTimeExpression();
+    } else if (s == "is-violated") {
+      f.next();
+      const auto name = f.getToken();
+      f.next();
+      f.assert_token(")");
+      return new ViolatedExpression(name);
     } else {
       // It is a function expression
       f.c -= s.size();

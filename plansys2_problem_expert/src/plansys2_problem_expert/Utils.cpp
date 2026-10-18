@@ -884,6 +884,10 @@ std::tuple<bool, bool, double> evaluate_node(
         return std::make_tuple(success, need_all, 0);
       }
 
+    // PDDL3: soft, it only counts for the plan; executing, it holds
+    case plansys2_msgs::msg::Node::PREFERENCE:
+      return std::make_tuple(true, true, 0);
+
     case plansys2_msgs::msg::Node::IMPLY: {
         // (imply a b) is (or (not a) b); under not, (and a (not b))
         std::tuple<bool, bool, double> left = evaluate_node(

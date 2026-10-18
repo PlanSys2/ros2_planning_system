@@ -144,8 +144,8 @@ TEST(dynamics, the_continuous_effects_of_running_actions)
   EXPECT_DOUBLE_EQ(w.value("(temperature lab)"), 14.0);
 
   // Ended: it acts no more
-  ASSERT_TRUE(w.problem->setContinuousEffect("(cool lab):0", {}, false));
-  ASSERT_TRUE(w.problem->setContinuousEffect("(cool lab):1", {}, false));
+  ASSERT_TRUE(w.problem->setContinuousEffect("(cool lab):0", plansys2_msgs::msg::Tree(), false));
+  ASSERT_TRUE(w.problem->setContinuousEffect("(cool lab):1", plansys2_msgs::msg::Tree(), false));
   EXPECT_TRUE(w.problem->getContinuousEffects().empty());
   EXPECT_FALSE(w.problem->stepDynamics(1.0));
   EXPECT_DOUBLE_EQ(w.value("(temperature lab)"), 14.0);
@@ -227,7 +227,7 @@ TEST(dynamics, the_node_runs_them)
     ASSERT_TRUE(
       plansys2::testing::wait_for(
         [&]() {return client->getFunction("(temperature lab)")->value < 15.0;}, 3s));
-    ASSERT_TRUE(client->setContinuousEffect("(cool lab):0", {}, false));
+    ASSERT_TRUE(client->setContinuousEffect("(cool lab):0", plansys2_msgs::msg::Tree(), false));
   }
   plansys2::drain_ros(200ms);
 }

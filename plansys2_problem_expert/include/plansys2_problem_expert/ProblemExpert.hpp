@@ -221,6 +221,26 @@ public:
   bool clearMetric();
 
   /**
+   * @brief PDDL3: the constraints the plan of the problem keeps, (always (safe))...
+   *
+   * @return The constraints, an empty tree if there are none.
+   */
+  plansys2_msgs::msg::Tree getConstraints();
+
+  /**
+   * @brief Set the constraints of the problem: modal constraints, in and, forall and
+   *        preferences, over the predicates and functions of the domain.
+   *
+   * @return true if they were valid and set.
+   */
+  bool setConstraints(const plansys2_msgs::msg::Tree & constraints);
+
+  /**
+   * @brief Remove the constraints of the problem.
+   */
+  bool clearConstraints();
+
+  /**
    * @brief Clear all knowledge (instances, predicates, functions, goal, metric) of the problem.
    *
    * @return true if the knowledge was successfully cleared, false otherwise.
@@ -358,6 +378,17 @@ public:
   bool isValidMetric(const plansys2::Metric & metric);
 
   /**
+   * @brief Check if constraints are valid: modal constraints over valid conditions.
+   */
+  bool isValidConstraints(const plansys2_msgs::msg::Tree & constraints);
+
+  /**
+   * @brief The names of the preferences of the goal and the constraints: what a metric can
+   *        read with (is-violated name).
+   */
+  std::set<std::string> getPreferenceNames();
+
+  /**
    * @brief Replace the domain this problem is checked against, given as PDDL content.
    *        Knowledge (instances, predicates, functions, goal, metric) that is no longer
    *        consistent with the new domain is pruned; everything that remains valid
@@ -456,6 +487,7 @@ private:
   std::vector<plansys2::Function> functions_;
   plansys2::Goal goal_;
   plansys2::Metric metric_;
+  plansys2_msgs::msg::Tree constraints_;
   std::vector<TimedFact> timed_facts_;
   std::map<std::string, plansys2_msgs::msg::Tree> continuous_effects_;
   std::set<std::string> measured_functions_;

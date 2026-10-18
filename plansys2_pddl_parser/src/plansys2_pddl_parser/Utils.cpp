@@ -68,6 +68,12 @@ static void printN(std::ostream & s, uint8_t node_type)
     case plansys2_msgs::msg::Node::WHEN:
       s << "NODE TYPE WHEN" << std::endl;
       break;
+    case plansys2_msgs::msg::Node::PREFERENCE:
+      s << "NODE TYPE PREFERENCE" << std::endl;
+      break;
+    case plansys2_msgs::msg::Node::CONSTRAINT:
+      s << "NODE TYPE CONSTRAINT" << std::endl;
+      break;
     case plansys2_msgs::msg::Node::COMP_GE:
       s << "NODE TYPE COMP GE" << std::endl;
       break;
@@ -180,6 +186,18 @@ bool validateTree(const plansys2_msgs::msg::Tree & tree, std::string & error)
       case plansys2_msgs::msg::Node::WHEN:
         min_children = max_children = 2;
         break;
+      case plansys2_msgs::msg::Node::PREFERENCE:
+        min_children = max_children = 1;
+        break;
+      case plansys2_msgs::msg::Node::CONSTRAINT: {
+          const auto [times, conds] = constraintArity(node.name);
+          if (conds == 0) {
+            error = "node " + std::to_string(id) + " is no constraint: " + node.name;
+            return false;
+          }
+          min_children = max_children = times + conds;
+          break;
+        }
       case plansys2_msgs::msg::Node::EXPRESSION:
         min_children = max_children = 2;
         break;
@@ -398,6 +416,12 @@ uint8_t getNodeType(const std::string & expr, uint8_t default_node_type)
   const auto head = headToken(expr).first;
   if (head.empty()) {
     return default_node_type;
+  }
+  std::string op;
+  std::vector<std::string> args;
+  if (splitModal(expr, op, args)) {
+    return op == "preference" ?
+           plansys2_msgs::msg::Node::PREFERENCE : plansys2_msgs::msg::Node::CONSTRAINT;
   }
   if (head[0] == '?') {
     return plansys2_msgs::msg::Node::PARAMETER;
@@ -618,6 +642,12 @@ std::string toString(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bo
       break;
     case plansys2_msgs::msg::Node::WHEN:
       ret = toStringWhen(tree, node_id);
+      break;
+    case plansys2_msgs::msg::Node::PREFERENCE:
+      ret = toStringPreference(tree, node_id, negate);
+      break;
+    case plansys2_msgs::msg::Node::CONSTRAINT:
+      ret = toStringConstraint(tree, node_id, negate);
       break;
     default:
       std::cerr << "Unsupported node to string conversion" << std::endl;
@@ -1014,6 +1044,112 @@ void bindTime(plansys2_msgs::msg::Tree & tree, double time)
   }
 }
 
+std::pair<unsigned, unsigned> constraintArity(const std::string & op)
+{
+  if (op == "always" || op == "sometime" || op == "at-most-once" || op == "at end") {
+    return {0, 1};
+  }
+  if (op == "within" || op == "hold-after") {return {1, 1};}
+  if (op == "sometime-after" || op == "sometime-before") {return {0, 2};}
+  if (op == "always-within") {return {1, 2};}
+  if (op == "hold-during") {return {2, 1};}
+  return {0, 0};
+}
+
+bool splitModal(const std::string & expr, std::string & op, std::vector<std::string> & args)
+{
+  auto [head, pos] = headToken(expr);
+  if (head != "preference" && head != "at" && constraintArity(head).second == 0) {
+    return false;
+  }
+  // The arguments after the operator: names and numbers, and texts in parentheses
+  std::string rest = getReducedString(expr);
+  if (rest.size() < 2 || rest.front() != '(' || rest.back() != ')') {
+    return false;
+  }
+  rest = rest.substr(1, rest.size() - 2);
+  rest.erase(0, rest.find(head) + head.size());
+  args.clear();
+  size_t i = 0;
+  while (i < rest.size()) {
+    if (isBlank(rest[i])) {
+      i++;
+    } else if (rest[i] == '(') {
+      const int last = getParenthesis(rest, static_cast<int>(i));
+      if (last >= static_cast<int>(rest.size())) {
+        return false;  // Unbalanced
+      }
+      args.push_back(rest.substr(i, static_cast<size_t>(last) - i + 1));
+      i = static_cast<size_t>(last) + 1;
+    } else {
+      const auto token = tokenAt(rest, i);
+      if (token.empty()) {
+        return false;
+      }
+      args.push_back(token);
+      i += token.size();
+    }
+  }
+  auto is_cond = [](const std::string & a) {return !a.empty() && a.front() == '(';};
+  double value;
+  if (head == "preference") {
+    // (preference [name] C)
+    if (args.empty() || args.size() > 2 || !is_cond(args.back()) ||
+      (args.size() == 2 && is_cond(args[0])))
+    {
+      return false;
+    }
+    op = head;
+    return true;
+  }
+  if (head == "at") {
+    if (args.size() != 2 || args[0] != "end" || !is_cond(args[1])) {
+      return false;
+    }
+    args.erase(args.begin());
+    op = "at end";
+    return true;
+  }
+  const auto [times, conds] = constraintArity(head);
+  if (args.size() != times + conds) {
+    return false;
+  }
+  for (size_t a = 0; a < args.size(); a++) {
+    if (a < times ? !parseNumber(args[a], value) : !is_cond(args[a])) {
+      return false;
+    }
+  }
+  op = head;
+  return true;
+}
+
+std::string toStringPreference(
+  const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate)
+{
+  if (node_id >= tree.nodes.size() || tree.nodes[node_id].children.size() != 1) {
+    return {};
+  }
+  const auto & node = tree.nodes[node_id];
+  std::string ret = "(preference " + (node.name.empty() ? "" : node.name + " ") +
+    toString(tree, node.children[0], false) + ")";
+  return negate ? "(not " + ret + ")" : ret;
+}
+
+std::string toStringConstraint(
+  const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate)
+{
+  if (node_id >= tree.nodes.size()) {
+    return {};
+  }
+  const auto & node = tree.nodes[node_id];
+  std::string ret = "(" + node.name;
+  for (const auto child : node.children) {
+    ret += " " + toString(tree, child, false);
+  }
+  ret += ")";
+  return negate ? "(not " + ret + ")" : ret;
+}
+
 std::string toStringWhen(const plansys2_msgs::msg::Tree & tree, uint32_t node_id)
 {
   if (node_id >= tree.nodes.size() || tree.nodes[node_id].children.size() != 2) {
@@ -1054,6 +1190,8 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
     case plansys2_msgs::msg::Node::FORALL:
     case plansys2_msgs::msg::Node::IMPLY:
     case plansys2_msgs::msg::Node::WHEN:
+    case plansys2_msgs::msg::Node::PREFERENCE:
+    case plansys2_msgs::msg::Node::CONSTRAINT:
       default_node_type = plansys2_msgs::msg::Node::PREDICATE;
       break;
   }
@@ -1107,6 +1245,31 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
 
         for (const auto & e : getSubExpr(wexpr)) {
           auto child = fromString(tree, e, false, node_type);
+          if (child) {
+            tree.nodes[node->node_id].children.push_back(child->node_id);
+          }
+        }
+        return node;
+      }
+    case plansys2_msgs::msg::Node::PREFERENCE:
+    case plansys2_msgs::msg::Node::CONSTRAINT: {
+        // Its conditions as written; the times of a constraint are its first children
+        std::string op;
+        std::vector<std::string> args;
+        splitModal(wexpr, op, args);
+        auto node = std::make_shared<plansys2_msgs::msg::Node>();
+        node->node_type = node_type;
+        node->node_id = tree.nodes.size();
+        node->negate = negate;
+        if (node_type == plansys2_msgs::msg::Node::PREFERENCE) {
+          node->name = args.size() == 2 ? args[0] : "";
+          args.erase(args.begin(), args.end() - 1);
+        } else {
+          node->name = op;
+        }
+        tree.nodes.push_back(*node);
+        for (const auto & arg : args) {
+          auto child = fromString(tree, arg, false, node_type);
           if (child) {
             tree.nodes[node->node_id].children.push_back(child->node_id);
           }

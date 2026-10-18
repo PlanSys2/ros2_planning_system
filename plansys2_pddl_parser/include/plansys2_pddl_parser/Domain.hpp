@@ -19,6 +19,7 @@
 #include <string>
 
 #include "plansys2_pddl_parser/And.hpp"
+#include "plansys2_pddl_parser/Constraint.hpp"
 #include "plansys2_pddl_parser/Derived.hpp"
 #include "plansys2_pddl_parser/EitherType.hpp"
 #include "plansys2_pddl_parser/Exists.hpp"
@@ -30,6 +31,7 @@
 #include "plansys2_pddl_parser/Not.hpp"
 #include "plansys2_pddl_parser/Oneof.hpp"
 #include "plansys2_pddl_parser/Or.hpp"
+#include "plansys2_pddl_parser/Preference.hpp"
 #include "plansys2_pddl_parser/Task.hpp"
 #include "plansys2_pddl_parser/TemporalAction.hpp"
 #include "plansys2_pddl_parser/When.hpp"
@@ -67,6 +69,7 @@ public:
   TokenStruct<Action *> processes;  // PDDL+: what acts while its precondition holds
   TokenStruct<Action *> events;     // PDDL+: what happens when its precondition becomes true
   TokenStruct<Task *> tasks;       // tasks
+  Condition * constraints = nullptr;  // PDDL3: what every plan of every problem keeps
 
   Domain()
   : equality(false),
@@ -102,6 +105,7 @@ public:
     for (unsigned i = 0; i < processes.size(); ++i) {delete processes[i];}
     for (unsigned i = 0; i < events.size(); ++i) {delete events[i];}
     for (unsigned i = 0; i < tasks.size(); ++i) {delete tasks[i];}
+    if (constraints) {delete constraints;}
   }
 
   virtual void parse(const std::string & s)
@@ -145,11 +149,35 @@ public:
       parseHappening(f, t);
     } else if (t == "derived") {
       parseDerived(f);
+    } else if (t == "constraints") {
+      parseConstraints(f, constraints);
     } else {
       return false;  // Unknown block type
     }
     // else if ( t == "axiom" ) parseAxiom( f );
     return true;
+  }
+
+  // (:constraints C), its "(:constraints" read; an empty one, (:constraints), is none. The
+  // names of a problem go in ts, as in its goal
+  void parseConstraints(Stringreader & f, Condition *& into)
+  {
+    TokenStruct<std::string> ts;
+    parseConstraints(f, into, ts);
+  }
+
+  void parseConstraints(Stringreader & f, Condition *& into, TokenStruct<std::string> & ts)
+  {
+    f.next();
+    if (f.getChar() != ')') {
+      f.assert_token("(");
+      std::unique_ptr<Condition> cond(createCondition(f));
+      cond->parse(f, ts, *this);
+      if (into) {delete into;}
+      into = cond.release();
+    }
+    f.next();
+    f.assert_token(")");
   }
 
   void parseRequirements(Stringreader & f)
@@ -718,6 +746,12 @@ public:
       events[i]->PDDLPrint(os, 0, TokenStruct<std::string>(), *this);
     }
 
+    if (constraints) {
+      os << "( :constraints\n";
+      constraints->PDDLPrint(os, 1, TokenStruct<std::string>(), *this);
+      os << "\n)\n";
+    }
+
     print_addtional_blocks(os);
 
     os << ")\n";
@@ -769,6 +803,28 @@ public:
     if (s == "oneof") {return new Oneof;}
     if (s == "or") {return new Or;}
     if (s == "when") {return new When;}
+    // A modal operator takes conditions or times, never names: a predicate may be called so
+    const auto mark = f.mark();
+    f.next();
+    if (s == "preference") {
+      if (f.getChar() != '(') {
+        f.getToken();
+        f.next();
+      }
+      const bool cond = f.getChar() == '(';
+      f.reset(mark);
+      if (cond) {return new Preference;}
+    } else if (s == "at" && f.getToken() == "end") {
+      f.next();
+      if (f.getChar() == '(') {return new Constraint("at end");}
+    } else if (Constraint::isOperator(s)) {
+      const char next = f.getChar();
+      f.reset(mark);
+      if (next == '(' || std::isdigit(static_cast<unsigned char>(next))) {
+        return new Constraint(s);
+      }
+    }
+    f.reset(mark);
     if (s == "=" || s == ">=" || s == ">" || s == "<=" || s == "<") {
       return new CompositeExpression(s);
     }

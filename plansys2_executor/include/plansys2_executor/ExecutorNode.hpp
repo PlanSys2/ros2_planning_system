@@ -33,6 +33,7 @@
 #include "plansys2_planner/PlannerClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
+#include "plansys2_executor/ConstraintMonitor.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
@@ -44,6 +45,7 @@
 #include "plansys2_msgs/action/execute_plan.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 #include "plansys2_msgs/srv/get_ordered_sub_goals.hpp"
+#include "plansys2_msgs/msg/knowledge.hpp"
 #include "plansys2_msgs/msg/plan.hpp"
 #include "std_msgs/msg/string.hpp"
 
@@ -88,6 +90,8 @@ struct PlanRuntineInfo
   // When its tree started, and whether it is done and the plan waits for its end (PDDL+)
   rclcpp::Time plan_start {0, 0, RCL_ROS_TIME};
   bool tree_done = false;
+  // PDDL3: the hard constraints of the domain and the problem, followed while it runs
+  std::shared_ptr<ConstraintMonitor> constraints;
 };
 
 /**
@@ -414,6 +418,9 @@ protected:
   rclcpp::Service<plansys2_msgs::srv::GetPlan>::SharedPtr get_plan_service_;
   rclcpp::Service<plansys2_msgs::srv::GetPlan>::SharedPtr get_remaining_plan_service_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr domain_sub_;
+  // Each change of the knowledge is a new state for the constraints
+  rclcpp::Subscription<plansys2_msgs::msg::Knowledge>::SharedPtr knowledge_sub_;
+  std::atomic<bool> knowledge_changed_ {true};
 
   rclcpp::TimerBase::SharedPtr execution_timer_;
 
@@ -430,6 +437,11 @@ protected:
   std::atomic<bool> domain_changed_ {false};
 
   std::atomic<bool> node_running_ {false};
+
+  // The constraints of the plan just set up, from the domain and the problem now
+  void start_constraints(PlanRuntineInfo & runtime_info);
+  // Whether the constraints hold now: the reason if they do not
+  std::optional<std::string> check_constraints(BT::NodeStatus status);
   std::thread execution_thread_;
 
   std::list<std::shared_ptr<GoalHandleExecutePlan>> goal_handlers_;

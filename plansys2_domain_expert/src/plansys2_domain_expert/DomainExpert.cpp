@@ -35,7 +35,7 @@ std::vector<std::string> unread_blocks(const std::string & domain)
 {
   static const std::vector<std::string> read = {
     "domain", ":requirements", ":types", ":constants", ":predicates", ":functions", ":action",
-    ":durative-action", ":derived", ":process", ":event"};
+    ":durative-action", ":derived", ":process", ":event", ":constraints"};
   std::vector<std::string> ret;
   int depth = 0;
   for (size_t i = 0; i < domain.size(); i++) {
@@ -62,8 +62,7 @@ std::vector<std::string> unread_blocks(const std::string & domain)
       }
       if (!words.empty() && std::find(read.begin(), read.end(), words[0]) == read.end()) {
         ret.push_back(
-          "(" + words[0] + (words.size() > 1 && words[0] != ":constraints" ? " " + words[1] : "") +
-          ")");
+          "(" + words[0] + (words.size() > 1 ? " " + words[1] : "") + ")");
       }
     }
   }
@@ -93,7 +92,7 @@ DomainExpert::extendDomain(const std::string & domain)
     std::cerr << "Error parsing PDDL: " << e.what() << std::endl;
   }
 
-  // Dropped, they were lost: processes, events and constraints would just not happen
+  // Dropped, they would be lost: what is in them would just not happen
   const auto unread = unread_blocks(domain);
   if (parse_error_.empty() && !unread.empty()) {
     parse_error_ = "PlanSys2 does not handle";

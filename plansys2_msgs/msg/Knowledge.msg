@@ -4,3 +4,5 @@ string[] predicates
 string[] functions
 string goal
 string metric
+# PDDL3: what the plan keeps, (always (safe)); empty if none
+string constraints

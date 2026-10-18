@@ -50,6 +50,9 @@ target_link_libraries(effect_undo_test
 ament_add_gtest(derived_test derived_test.cpp TIMEOUT 60)
 target_link_libraries(derived_test ${PROJECT_NAME})
 
+ament_add_gtest(constraints_test constraints_test.cpp TIMEOUT 60)
+target_link_libraries(constraints_test ${PROJECT_NAME})
+
 ament_add_ros_isolated_gtest(object_fluents_test object_fluents_test.cpp TIMEOUT 60)
 target_link_libraries(object_fluents_test ${PROJECT_NAME})
 

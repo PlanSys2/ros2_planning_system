@@ -661,9 +661,12 @@ TEST(domain_expert, unreadable_and_unsupported_are_reported)
       return std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     };
 
-  plansys2::DomainExpert preference(read("domain_preference.pddl"));
-  EXPECT_NE(preference.getParseError().find("preference"), std::string::npos)
-    << preference.getParseError();
+  // A name never declared: the error names it
+  plansys2::DomainExpert unknown(
+    "(define (domain d) (:requirements :strips) (:predicates (p))"
+    " (:action a :parameters () :precondition (and (undeclared)) :effect (and (p))))");
+  EXPECT_NE(unknown.getParseError().find("undeclared"), std::string::npos)
+    << unknown.getParseError();
 
   // ?duration, in the bounds and in an effect: the plan binds it
   plansys2::DomainExpert duration(read("domain_duration_effect.pddl"));
@@ -703,9 +706,31 @@ TEST(domain_expert, unreadable_and_unsupported_are_reported)
     parser::pddl::toString(push->effects),
     "(and (pushed ?0 ?1)(when (not (locked ?1)) (open ?1)))");
 
-  // Constraints: one clear line, not a parser token
+  // PDDL3: the constraints are kept in the domain, for the planner and the executor
   plansys2::DomainExpert constraints(read("domain_constraints.pddl"));
-  EXPECT_EQ(constraints.getParseError(), "PlanSys2 does not handle (:constraints)");
+  EXPECT_TRUE(constraints.getParseError().empty()) << constraints.getParseError();
+  EXPECT_NE(
+    constraints.getDomain().find("(:constraints (always (safe)))"), std::string::npos) <<
+    constraints.getDomain();
+
+  // Those of two domains hold both
+  constraints.extendDomain(
+    "(define (domain lights) (:requirements :strips :constraints) (:predicates (lit))"
+    " (:action light :parameters () :precondition (and) :effect (and (lit)))"
+    " (:constraints (sometime (lit))))");
+  EXPECT_TRUE(constraints.getParseError().empty()) << constraints.getParseError();
+  EXPECT_NE(
+    constraints.getDomain().find("(:constraints (and (always (safe)) (sometime (lit))))"),
+    std::string::npos) << constraints.getDomain();
+
+  // A preference in a precondition, in its tree
+  plansys2::DomainExpert preference(read("domain_preference.pddl"));
+  EXPECT_TRUE(preference.getParseError().empty()) << preference.getParseError();
+  EXPECT_TRUE(preference.getUnsupported().empty());
+  auto open_door = preference.getAction("open_door");
+  ASSERT_TRUE(open_door);
+  EXPECT_EQ(
+    parser::pddl::toString(open_door->preconditions), "(and (preference close (near ?0 ?1)))");
 
   plansys2::DomainExpert simple(read("domain_simple.pddl"));
   EXPECT_TRUE(simple.getParseError().empty());

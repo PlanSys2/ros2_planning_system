@@ -86,3 +86,28 @@ UNKNOWN	(when (>= (battery r1) 10) (increase (charged_count) 1))	(when (>= (batt
 UNKNOWN	(when_done)	(when_done)	PREDICATE
 UNKNOWN	(increase (level t1) (* #t 2))	(increase (level t1) (* #t 2.000000))	FUNCTION_MODIFIER FUNCTION EXPRESSION PARAMETER NUMBER
 UNKNOWN	(and (increase (level) (* #t (flow))) (decrease (flow) (* 0.5 #t)))	(and (increase (level) (* #t (flow)))(decrease (flow) (* 0.500000 #t)))	AND FUNCTION_MODIFIER FUNCTION EXPRESSION PARAMETER FUNCTION FUNCTION_MODIFIER FUNCTION EXPRESSION NUMBER PARAMETER
+UNKNOWN	(preference p1 (robot_at r1 hall))	(preference p1 (robot_at r1 hall))	PREFERENCE PREDICATE
+UNKNOWN	(preference (robot_at r1 hall))	(preference (robot_at r1 hall))	PREFERENCE PREDICATE
+UNKNOWN	(and (robot_at r1 hall) (preference g (item_at cup hall)))	(and (robot_at r1 hall)(preference g (item_at cup hall)))	AND PREDICATE PREFERENCE PREDICATE
+UNKNOWN	(preference p1 (and (p) (not (q))))	(preference p1 (and (p)(not (q))))	PREFERENCE AND PREDICATE NOT PREDICATE
+UNKNOWN	(always (robot_at r1 hall))	(always (robot_at r1 hall))	CONSTRAINT PREDICATE
+UNKNOWN	(sometime (carrying r1 cup))	(sometime (carrying r1 cup))	CONSTRAINT PREDICATE
+UNKNOWN	(at-most-once (robot_at r1 hall))	(at-most-once (robot_at r1 hall))	CONSTRAINT PREDICATE
+UNKNOWN	(at end (robot_at r1 dock))	(at end (robot_at r1 dock))	CONSTRAINT PREDICATE
+UNKNOWN	(at   end\t(robot_at r1 dock))	(at end (robot_at r1 dock))	CONSTRAINT PREDICATE
+UNKNOWN	(within 10 (robot_at r1 hall))	(within 10.000000 (robot_at r1 hall))	CONSTRAINT NUMBER PREDICATE
+UNKNOWN	(hold-after 4.5 (door_open d1))	(hold-after 4.500000 (door_open d1))	CONSTRAINT NUMBER PREDICATE
+UNKNOWN	(hold-during 2 5.5 (door_open d1))	(hold-during 2.000000 5.500000 (door_open d1))	CONSTRAINT NUMBER NUMBER PREDICATE
+UNKNOWN	(sometime-before (item_at tool kitchen) (item_at cup office))	(sometime-before (item_at tool kitchen) (item_at cup office))	CONSTRAINT PREDICATE PREDICATE
+UNKNOWN	(sometime-after (alarm) (alarm_off))	(sometime-after (alarm) (alarm_off))	CONSTRAINT PREDICATE PREDICATE
+UNKNOWN	(always-within 3 (alarm) (alarm_off))	(always-within 3.000000 (alarm) (alarm_off))	CONSTRAINT NUMBER PREDICATE PREDICATE
+UNKNOWN	(always (>= (battery r1) 5))	(always (>= (battery r1) 5.000000))	CONSTRAINT EXPRESSION FUNCTION NUMBER
+UNKNOWN	(and (always (not (alarm))) (preference safe (sometime (robot_at r1 lab))))	(and (always (not (alarm)))(preference safe (sometime (robot_at r1 lab))))	AND CONSTRAINT NOT PREDICATE PREFERENCE CONSTRAINT PREDICATE
+UNKNOWN	(forall (?r - room) (sometime (visited ?r)))	(forall (?r - room) (sometime (visited ?r)))	FORALL CONSTRAINT PREDICATE
+UNKNOWN	(always a b)	(always a b)	PREDICATE
+UNKNOWN	(at r1 kitchen)	(at r1 kitchen)	PREDICATE
+UNKNOWN	(at end kitchen)	(at end kitchen)	PREDICATE
+UNKNOWN	(within a b)	(within a b)	PREDICATE
+UNKNOWN	(preference a)	(preference a)	PREDICATE
+UNKNOWN	(sometime)	(sometime)	PREDICATE
+EXPRESSION	(+ (is-violated a) (* 2 (is-violated b)))	(+ (is-violated a) (* 2.000000 (is-violated b)))	EXPRESSION FUNCTION EXPRESSION NUMBER FUNCTION

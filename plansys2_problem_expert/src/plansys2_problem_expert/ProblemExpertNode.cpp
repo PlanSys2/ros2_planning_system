@@ -1119,6 +1119,7 @@ ProblemExpertNode::get_knowledge_as_msg() const
   auto goal = problem_expert_->getGoal();
   ret_msgs->goal = parser::pddl::toString(goal);
   ret_msgs->metric = parser::pddl::toString(problem_expert_->getMetric());
+  ret_msgs->constraints = parser::pddl::toString(problem_expert_->getConstraints());
 
   return ret_msgs;
 }

@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <mutex>
 #include <string>
@@ -124,24 +125,29 @@ TEST(domain_expert, lifecycle_error)
   plansys2::drain_ros(200ms);
 }
 
-// Kairos plans these domains, so it accepts them; PlanSys2 could not keep or execute them, and
-// started anyway, without their actions
+// A domain PlanSys2 cannot read fails at startup; those of the Kairos work it reads now
 TEST(domain_expert, a_domain_plansys2_cannot_represent_fails_at_startup)
 {
   const std::string pkgpath =
     ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
-  for (const char * file : {"domain_constraints.pddl", "domain_preference.pddl"}) {
+  {
+    const auto file = (std::filesystem::temp_directory_path() / "domain_unknown_block.pddl");
+    {
+      std::ofstream out(file);
+      out << "(define (domain d) (:requirements :strips) (:predicates (p))"
+        " (:action a :parameters () :precondition (and) :effect (and (p))) (:axiom (p)))";
+    }
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
-    domain_node->set_parameter({"model_file", pkgpath + "/pddl/" + std::string(file)});
+    domain_node->set_parameter({"model_file", file.string()});
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     EXPECT_EQ(
       domain_node->get_current_state().id(),
-      lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED) << file;
+      lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
   }
 
-  // Conditional effects and ?duration it represents now
+  // Conditional effects, ?duration, PDDL+, constraints and preferences it represents now
   for (const char * file : {"domain_when.pddl", "domain_duration_effect.pddl",
-      "domain_process.pddl"})
+      "domain_process.pddl", "domain_constraints.pddl", "domain_preference.pddl"})
   {
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/" + std::string(file)});

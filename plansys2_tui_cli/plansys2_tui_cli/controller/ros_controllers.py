@@ -361,4 +361,11 @@ class KnowledgeProcessor:
             lines.append('[bold underline]Metric[/bold underline]')
             lines.append(f'  [blue]{_e(metric_text)}[/blue]')
 
+        # Constraints, only when the problem has them
+        constraints_text = msg.constraints.strip() if msg.constraints else ''
+        if constraints_text:
+            lines.append('')
+            lines.append('[bold underline]Constraints[/bold underline]')
+            lines.append(f'  [red]{_e(constraints_text)}[/red]')
+
         return '\n'.join(lines)

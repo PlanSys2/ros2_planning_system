@@ -46,6 +46,7 @@ public:
   };
   std::vector<TimedInit> timedInit;
   Condition * goal = nullptr;  // Goal condition
+  Condition * constraints = nullptr;  // PDDL3: what the plan of this problem keeps
   TokenStruct<std::string> ts;
   bool metric;                           // whether there is a :metric
   bool maximize = false;                 // maximize or minimize the metric
@@ -62,6 +63,7 @@ public:
     for (unsigned i = 0; i < init.size(); ++i) {delete init[i];}
     for (auto & timed : timedInit) {delete timed.fact;}
     if (nullptr != goal) {delete goal;}
+    if (nullptr != constraints) {delete constraints;}
     if (nullptr != metric_expr) {delete metric_expr;}
   }
 
@@ -89,6 +91,8 @@ public:
         parseGoal(f);
       } else if (t == "metric") {
         parseMetric(f);
+      } else if (t == "constraints") {
+        d.parseConstraints(f, constraints, ts);
       } else {
         f.tokenExit(t);
       }
@@ -186,9 +190,9 @@ public:
   // (at <time> fact), its '(' read; false, and nothing read, if it is not one (a predicate at)
   bool parseTimedInit(Stringreader & f)
   {
-    const auto c = f.c;
+    const auto mark = f.mark();
     if (f.getToken() != "at") {
-      f.c = c;
+      f.reset(mark);
       return false;
     }
     f.next();
@@ -196,7 +200,7 @@ public:
     char * end = nullptr;
     const double time = std::strtod(number.c_str(), &end);
     if (number.empty() || end != number.c_str() + number.size()) {
-      f.c = c;
+      f.reset(mark);
       return false;
     }
     if (time < 0) {
@@ -360,6 +364,18 @@ public:
     parseGoal(f);
   }
 
+  // Set the constraints from their condition, s; an empty one removes them
+  void addConstraints(const std::string & s)
+  {
+    if (s.empty()) {
+      if (constraints) {delete constraints;}
+      constraints = nullptr;
+      return;
+    }
+    Stringreader f(s + ")");
+    d.parseConstraints(f, constraints, ts);
+  }
+
   // Set the metric: optimization is "minimize" or "maximize", s a numeric expression
   void addMetric(const std::string & optimization, const std::string & s)
   {
@@ -405,6 +421,12 @@ public:
     stream << "( :goal\n";
     if (nullptr != goal) {goal->PDDLPrint(stream, 1, ts /* TokenStruct< std::string >() */, d);}
     stream << ")\n";
+
+    if (nullptr != constraints) {
+      stream << "( :constraints\n";
+      constraints->PDDLPrint(stream, 1, ts, d);
+      stream << "\n)\n";
+    }
 
     if (metric && nullptr != metric_expr) {
       stream << "( :metric " << (maximize ? "maximize" : "minimize") << " ";

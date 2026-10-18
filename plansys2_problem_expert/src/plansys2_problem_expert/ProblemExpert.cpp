@@ -108,6 +108,13 @@ ProblemExpert::removeInstance(const plansys2::Instance & instance)
     clearMetric();
   }
 
+  // The constraints too: one less would allow what they forbid
+  if (!constraints_.nodes.empty() && !isValidConstraints(constraints_)) {
+    std::cerr << "Constraints removed: they refer to the removed instance " << instance.name <<
+      std::endl;
+    clearConstraints();
+  }
+
   return found;
 }
 
@@ -505,6 +512,29 @@ ProblemExpert::clearMetric()
   return true;
 }
 
+plansys2_msgs::msg::Tree
+ProblemExpert::getConstraints()
+{
+  return constraints_;
+}
+
+bool
+ProblemExpert::setConstraints(const plansys2_msgs::msg::Tree & constraints)
+{
+  if (!isValidConstraints(constraints)) {
+    return false;
+  }
+  constraints_ = withSubTypes(constraints);
+  return true;
+}
+
+bool
+ProblemExpert::clearConstraints()
+{
+  constraints_.nodes.clear();
+  return true;
+}
+
 bool
 ProblemExpert::clearKnowledge()
 {
@@ -513,6 +543,7 @@ ProblemExpert::clearKnowledge()
   functions_.clear();
   clearGoal();
   clearMetric();
+  clearConstraints();
   timed_facts_.clear();
   continuous_effects_.clear();
 
@@ -860,7 +891,78 @@ ProblemExpert::isValidGoal(const plansys2::Goal & goal)
     std::cerr << "Malformed goal: " << error << std::endl;
     return false;
   }
+  for (const auto & node : goal.nodes) {
+    if (node.node_type == plansys2_msgs::msg::Node::CONSTRAINT) {
+      std::cerr << "Invalid goal: (" << node.name << ") goes in the constraints" << std::endl;
+      return false;
+    }
+  }
   return checkPredicateTreeTypes(goal, domain_expert_);
+}
+
+bool
+ProblemExpert::isValidConstraints(const plansys2_msgs::msg::Tree & constraints)
+{
+  std::string error;
+  if (constraints.nodes.empty() || !parser::pddl::validateTree(constraints, error)) {
+    std::cerr << "Malformed constraints: " << error << std::endl;
+    return false;
+  }
+  // Modal constraints, in and, forall and preferences; their conditions inside, valid ones
+  std::vector<std::pair<uint32_t, bool>> pending = {{0, false}};
+  while (!pending.empty()) {
+    const auto [id, in_preference] = pending.back();
+    pending.pop_back();
+    const auto & node = constraints.nodes[id];
+    switch (node.node_type) {
+      case plansys2_msgs::msg::Node::AND:
+      case plansys2_msgs::msg::Node::FORALL:
+        for (auto child : node.children) {
+          pending.push_back({child, in_preference});
+        }
+        break;
+      case plansys2_msgs::msg::Node::PREFERENCE:
+        if (in_preference) {
+          std::cerr << "Invalid constraints: a preference in a preference" << std::endl;
+          return false;
+        }
+        pending.push_back({node.children[0], true});
+        break;
+      case plansys2_msgs::msg::Node::CONSTRAINT:
+        for (auto child : node.children) {
+          const auto & inner = constraints.nodes[child];
+          if (inner.node_type == plansys2_msgs::msg::Node::CONSTRAINT ||
+            inner.node_type == plansys2_msgs::msg::Node::PREFERENCE)
+          {
+            std::cerr << "Invalid constraints: (" << node.name << ") of a constraint" <<
+              std::endl;
+            return false;
+          }
+        }
+        break;
+      default:
+        std::cerr << "Invalid constraints: " << parser::pddl::toString(constraints, id) <<
+          " is no modal constraint" << std::endl;
+        return false;
+    }
+  }
+  return checkPredicateTreeTypes(constraints, domain_expert_);
+}
+
+std::set<std::string>
+ProblemExpert::getPreferenceNames()
+{
+  std::set<std::string> ret;
+  auto collect = [&ret](const plansys2_msgs::msg::Tree & tree) {
+      for (const auto & node : tree.nodes) {
+        if (node.node_type == plansys2_msgs::msg::Node::PREFERENCE && !node.name.empty()) {
+          ret.insert(node.name);
+        }
+      }
+    };
+  collect(goal_);
+  collect(constraints_);
+  return ret;
 }
 
 bool
@@ -896,6 +998,17 @@ ProblemExpert::isValidMetric(const plansys2::Metric & metric)
         break;
       case plansys2_msgs::msg::Node::FUNCTION:
         if (node.name == "total-time" && node.parameters.empty()) {
+          break;
+        }
+        // PDDL3: how much a preference of the problem is violated
+        if (node.name == "is-violated") {
+          if (node.parameters.size() != 1 ||
+            !getPreferenceNames().count(node.parameters[0].name))
+          {
+            std::cerr << "Invalid metric: no preference " << parser::pddl::toString(node) <<
+              std::endl;
+            return false;
+          }
           break;
         }
         if (!isValidFunction(node)) {
@@ -969,9 +1082,12 @@ ProblemExpert::updateDomain(const std::string & domain)
     clearGoal();
   }
 
-  // The same for the metric
+  // The same for the metric and the constraints
   if (!metric_.tree.nodes.empty() && !isValidMetric(metric_)) {
     clearMetric();
+  }
+  if (!constraints_.nodes.empty() && !isValidConstraints(constraints_)) {
+    clearConstraints();
   }
 
   return true;
@@ -1030,6 +1146,16 @@ ProblemExpert::checkPredicateTreeTypes(
         }
         return checkPredicateTreeTypes(
           tree, domain_expert, tree.nodes[node_id].children[0], inner);
+      }
+
+    // PDDL3: what is inside them is checked as any condition; a time is a number
+    case plansys2_msgs::msg::Node::PREFERENCE:
+    case plansys2_msgs::msg::Node::CONSTRAINT: {
+        bool ret = true;
+        for (auto & child_id : tree.nodes[node_id].children) {
+          ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id, bound);
+        }
+        return ret;
       }
 
     case plansys2_msgs::msg::Node::IMPLY: {
@@ -1147,6 +1273,14 @@ ProblemExpert::getProblem()
   const std::string gs = parser::pddl::toString(goal_);
   problem.addGoal(gs);
 
+  if (!constraints_.nodes.empty()) {
+    try {
+      problem.addConstraints(parser::pddl::toString(constraints_));
+    } catch (const std::exception & ex) {
+      std::cerr << "Constraints left out of the problem: " << ex.what() << std::endl;
+    }
+  }
+
   if (!metric_.tree.nodes.empty()) {
     const std::string optimization =
       metric_.optimization == plansys2_msgs::msg::Metric::MAXIMIZE ? "maximize" : "minimize";
@@ -1213,6 +1347,7 @@ ProblemExpert::addProblem(const std::string & problem_str)
   auto prev_functions = functions_;
   auto prev_goal = goal_;
   auto prev_metric = metric_;
+  auto prev_constraints = constraints_;
   auto prev_timed_facts = timed_facts_;
   try {
     for (unsigned i = 0; i < domain.types.size(); ++i) {
@@ -1287,6 +1422,16 @@ ProblemExpert::addProblem(const std::string & problem_str)
       }
     }
 
+    // Without :constraints those set before are kept, as the goal; before the metric, that
+    // reads their preferences
+    if (problem.constraints) {
+      plansys2_msgs::msg::Tree constraints;
+      problem.constraints->getTree(constraints, domain, problem.ts.tokens);
+      if (!setConstraints(constraints)) {
+        throw std::runtime_error("Wrong constraints " + parser::pddl::toString(constraints));
+      }
+    }
+
     // Without :metric the metric set before is kept, as the goal
     if (problem.metric && problem.metric_expr) {
       std::ostringstream expr;
@@ -1307,6 +1452,7 @@ ProblemExpert::addProblem(const std::string & problem_str)
     functions_ = prev_functions;
     goal_ = prev_goal;
     metric_ = prev_metric;
+    constraints_ = prev_constraints;
     timed_facts_ = prev_timed_facts;
     return false;
   }

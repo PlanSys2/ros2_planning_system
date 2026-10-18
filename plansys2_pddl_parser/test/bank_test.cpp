@@ -26,8 +26,8 @@
 
 namespace
 {
-// Not read yet: each one comes with its phase of the Kairos work
-const std::set<std::string> kNotRead = {"preferences", "trajectory-constraints"};
+// Not read yet: none
+const std::set<std::string> kNotRead = {};
 
 std::vector<parser::pddl::BankCase> bank()
 {

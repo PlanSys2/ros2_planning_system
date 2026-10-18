@@ -13,6 +13,9 @@ target_link_libraries(action_execution_test
 )
 
 # Orders the STN of plans of the bank has to keep
+ament_add_gtest(constraint_monitor_test constraint_monitor_test.cpp TIMEOUT 60)
+target_link_libraries(constraint_monitor_test ${PROJECT_NAME})
+
 ament_add_ros_isolated_gtest(stn_bank_test stn_bank_test.cpp TIMEOUT 60)
 target_compile_definitions(stn_bank_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 target_link_libraries(stn_bank_test ${PROJECT_NAME} bt_builder_plugins)

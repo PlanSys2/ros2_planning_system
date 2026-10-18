@@ -412,6 +412,48 @@ public:
   Condition * copy(Domain &) {return new TotalTimeExpression();}
 };
 
+// PDDL3: (is-violated name), how many times the preference called so is violated
+class ViolatedExpression : public Expression
+{
+public:
+  std::string name;
+
+  explicit ViolatedExpression(const std::string & n)
+  : name(n) {}
+
+  void PDDLPrint(
+    std::ostream & s, unsigned, const TokenStruct<std::string> &,
+    const Domain &) const override
+  {
+    s << "( is-violated " << name << " )";
+  }
+
+  plansys2_msgs::msg::Node::SharedPtr getTree(
+    plansys2_msgs::msg::Tree & tree, const Domain &,
+    const std::vector<std::string> & = {}) const override
+  {
+    auto node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::FUNCTION;
+    node->node_id = tree.nodes.size();
+    node->name = "is-violated";
+    plansys2_msgs::msg::Param param;
+    param.name = name;
+    node->parameters.push_back(param);
+    tree.nodes.push_back(*node);
+    return node;
+  }
+
+  std::string info() const {return "is-violated " + name;}
+
+  double evaluate() {return -1;}
+
+  double evaluate(Instance &, const StringVec &) {return evaluate();}
+
+  IntSet params() {return IntSet();}
+
+  Condition * copy(Domain &) {return new ViolatedExpression(name);}
+};
+
 class ParamExpression : public Expression
 {
 public:

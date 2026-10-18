@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "plansys2_msgs/msg/action.hpp"
@@ -171,6 +172,19 @@ std::string toStringImply(const plansys2_msgs::msg::Tree & tree, uint32_t node_i
 
 // "(when condition effect)"
 std::string toStringWhen(const plansys2_msgs::msg::Tree & tree, uint32_t node_id);
+
+/// PDDL3 modal constraint: how many times and conditions it takes; {0, 0} if it is not one
+std::pair<unsigned, unsigned> constraintArity(const std::string & op);
+
+/// A preference or a modal constraint, its operator ("at end" in full) and its arguments;
+/// false for anything else, such as a predicate called always
+bool splitModal(const std::string & expr, std::string & op, std::vector<std::string> & args);
+
+std::string toStringPreference(
+  const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+
+std::string toStringConstraint(
+  const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
 
 /// ?duration as a number: the duration a plan gives the action
 void bindDuration(plansys2_msgs::msg::Tree & tree, double duration);

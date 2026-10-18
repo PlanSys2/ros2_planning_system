@@ -225,6 +225,9 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
     "domain_expert/domain",
     rclcpp::QoS(100).transient_local(),
     std::bind(&ExecutorNode::domain_topic_callback, this, std::placeholders::_1));
+  knowledge_sub_ = create_subscription<plansys2_msgs::msg::Knowledge>(
+    "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
+    [this](plansys2_msgs::msg::Knowledge::SharedPtr) {knowledge_changed_ = true;});
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
@@ -564,6 +567,10 @@ ExecutorNode::is_timed(const PlanRuntineInfo & runtime_info)
   if (get_parameter("timed_execution").as_bool() || runtime_info.complete_plan.has_end) {
     return true;
   }
+  // PDDL3: (within 10 ...) is 10 s of the plan
+  if (runtime_info.constraints && runtime_info.constraints->timed()) {
+    return true;
+  }
   if (!domain_client_->getProcesses().empty() || !domain_client_->getEvents().empty()) {
     return true;
   }
@@ -591,9 +598,48 @@ ExecutorNode::stop_continuous_effects(PlanRuntineInfo & runtime_info)
       !info.action_info.get_continuous_effects().nodes.empty() &&
       info.at_start_effects_applied && !info.at_end_effects_applied)
     {
-      problem_client_->setContinuousEffect(id, {}, false);
+      problem_client_->setContinuousEffect(id, plansys2_msgs::msg::Tree(), false);
     }
   }
+}
+
+void
+ExecutorNode::start_constraints(PlanRuntineInfo & runtime_info)
+{
+  runtime_info.constraints = std::make_shared<ConstraintMonitor>(
+    domain_client_->getDomain(), problem_client_->getProblem());
+  if (runtime_info.constraints->empty()) {
+    runtime_info.constraints.reset();
+    return;
+  }
+  for (const auto & constraint : runtime_info.constraints->describe()) {
+    RCLCPP_INFO(get_logger(), "[%s] Following the constraint %s", get_name(), constraint.c_str());
+  }
+  knowledge_changed_ = true;  // The state it starts from
+}
+
+std::optional<std::string>
+ExecutorNode::check_constraints(BT::NodeStatus status)
+{
+  if (!runtime_info_.constraints) {
+    return {};
+  }
+  // From the start of the plan, shifted by the actions that started late
+  rclcpp::Time start = runtime_info_.plan_start;
+  std::ignore = runtime_info_.current_tree->tree.rootBlackboard()->get("plan_start", start);
+  const double t = (now() - start).seconds();
+
+  auto holds = [this](const plansys2_msgs::msg::Tree & condition) {
+      return check_in_expert(condition, problem_client_);
+    };
+  // At the end, the last state as it is, whether its message came or not
+  const bool done = status == BT::NodeStatus::SUCCESS;
+  auto violated = (knowledge_changed_.exchange(false) || done) ?
+    runtime_info_.constraints->update(t, holds) : runtime_info_.constraints->tick(t);
+  if (!violated && done) {
+    violated = runtime_info_.constraints->finish(t);
+  }
+  return violated;
 }
 
 bool
@@ -629,6 +675,7 @@ ExecutorNode::init_plan_for_execution_impl(PlanRuntineInfo & runtime_info)
 
   create_plan_runtime_info(runtime_info);
 
+  start_constraints(runtime_info);
   bool plan_success = get_tree_from_plan(runtime_info);
 
   if (!plan_success) {
@@ -749,6 +796,7 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
   std::vector<std::pair<std::string, ActionExecutionInfo>> done_again;
   bool plan_success = false;
   try {
+    start_constraints(runtime_info);
     create_plan_runtime_info(runtime_info);
     plan_success = get_tree_from_plan(runtime_info, initial_state, false);
     if (!plan_success) {
@@ -1241,6 +1289,14 @@ ExecutorNode::execution_step()
           if (status == BT::NodeStatus::SUCCESS && runtime_info_.complete_plan.has_end) {
             runtime_info_.tree_done = true;
             status = BT::NodeStatus::RUNNING;
+          }
+        }
+
+        if (status != BT::NodeStatus::FAILURE) {
+          if (auto violated = check_constraints(status)) {
+            RCLCPP_ERROR(
+              get_logger(), "[%s] Constraint violated: %s", get_name(), violated->c_str());
+            status = BT::NodeStatus::FAILURE;
           }
         }
 

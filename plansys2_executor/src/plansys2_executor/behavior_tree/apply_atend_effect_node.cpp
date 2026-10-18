@@ -69,7 +69,7 @@ ApplyAtEndEffect::tick()
     if (!info.action_info.is_empty() &&
       !info.action_info.get_continuous_effects().nodes.empty())
     {
-      problem_client_->setContinuousEffect(action, {}, false);
+      problem_client_->setContinuousEffect(action, plansys2_msgs::msg::Tree(), false);
     }
     if (!apply(effect, problem_client_, 0)) {
       info.execution_error_info = "Error applying at end effects";

@@ -32,8 +32,8 @@ using namespace std::chrono_literals;
 
 namespace
 {
-// Not representable yet: each one comes with its phase of the Kairos work
-const std::set<std::string> kNotLoaded = {"preferences", "trajectory-constraints"};
+// Not representable yet: none
+const std::set<std::string> kNotLoaded = {};
 
 std::vector<parser::pddl::BankCase> bank()
 {

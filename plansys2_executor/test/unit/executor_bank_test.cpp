@@ -15,9 +15,11 @@
 // Every solvable task of the bank that PlanSys2 loads is planned and executed to the end, and
 // its goal holds in the problem expert afterwards
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cstdlib>
+#include <functional>
 #include <memory>
 #include <set>
 #include <string>
@@ -49,8 +51,8 @@ using Transition = lifecycle_msgs::msg::Transition;
 namespace
 {
 
-// Not executable yet: each one comes with its phase of the Kairos work
-const std::set<std::string> kNotLoaded = {"preferences", "trajectory-constraints"};
+// Not executable yet: none
+const std::set<std::string> kNotLoaded = {};
 
 // Does any action at once: the executor applies its effects
 class Performer : public plansys2::ActionExecutorClient
@@ -123,7 +125,11 @@ struct Run
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner;
 };
 
-void execute(const parser::pddl::BankCase & task, const std::string & bt_builder)
+// Runs the task to its end; meanwhile, what the world does while the plan runs
+void execute(
+  const parser::pddl::BankCase & task, const std::string & bt_builder,
+  const std::function<void(plansys2::ProblemExpertClient &)> & meanwhile = {},
+  uint8_t expected = plansys2_msgs::action::ExecutePlan::Result::SUCCESS)
 {
   Run run;
   run.domain_node = std::make_shared<plansys2::DomainExpertNode>();
@@ -198,6 +204,9 @@ void execute(const parser::pddl::BankCase & task, const std::string & bt_builder
     };
 
   ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
+  if (meanwhile) {
+    meanwhile(*problem_client);
+  }
   const bool ended = plansys2::testing::wait_for(
     [&]() {return !executor_client->execute_and_check_plan();}, 20s);
   if (!ended) {
@@ -212,8 +221,10 @@ void execute(const parser::pddl::BankCase & task, const std::string & bt_builder
   auto result = executor_client->getResult();
   ASSERT_TRUE(result.has_value());
   describe(result->action_execution_status);
-  EXPECT_EQ(result->result, plansys2_msgs::action::ExecutePlan::Result::SUCCESS) << report;
-  EXPECT_TRUE(problem_client->isGoalSatisfied(problem_client->getGoal())) << report;
+  EXPECT_EQ(result->result, expected) << report;
+  if (expected == plansys2_msgs::action::ExecutePlan::Result::SUCCESS) {
+    EXPECT_TRUE(problem_client->isGoalSatisfied(problem_client->getGoal())) << report;
+  }
 
   run.spinner.reset();
 }
@@ -255,6 +266,22 @@ TEST_P(ExecutorBankTest, every_loaded_task_runs_to_its_goal)
   }
   const auto took = std::chrono::duration<double>(std::chrono::steady_clock::now() - start);
   EXPECT_LT(took.count(), 120.0);
+}
+
+// PDDL3: a hard constraint the world breaks while the plan runs fails the plan
+TEST_P(ExecutorBankTest, a_violated_constraint_fails_the_plan)
+{
+  const auto cases = parser::pddl::read_pddl_bank(
+    ament_index_cpp::get_package_share_path("plansys2_pddl_parser") / "bank");
+  const auto task = std::find_if(
+    cases.begin(), cases.end(), [](const auto & c) {return c.name == "trajectory-constraints/p2";});
+  ASSERT_NE(task, cases.end());
+  // (always (item_at book office)): somebody takes the book away
+  execute(
+    *task, GetParam(), [](plansys2::ProblemExpertClient & problem) {
+      ASSERT_TRUE(
+        problem.removePredicate(parser::pddl::fromStringPredicate("(item_at book office)")));
+    }, plansys2_msgs::action::ExecutePlan::Result::FAILURE);
 }
 
 INSTANTIATE_TEST_SUITE_P(

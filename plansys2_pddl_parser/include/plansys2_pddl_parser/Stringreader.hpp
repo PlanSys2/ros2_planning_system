@@ -88,6 +88,24 @@ public:
     return ret;
   }
 
+  // A position to come back to: reading on may cross lines, so the column alone is not enough
+  struct Mark
+  {
+    int current_line;
+    std::string s;
+    unsigned r, c;
+    bool eof;
+  };
+  Mark mark() const {return {current_line, s, r, c, eof};}
+  void reset(const Mark & m)
+  {
+    current_line = m.current_line;
+    s = m.s;
+    r = m.r;
+    c = m.c;
+    eof = m.eof;
+  }
+
   // characters to be ignored
   bool ignore(char c) {return c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\f';}
 
