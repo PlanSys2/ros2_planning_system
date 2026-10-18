@@ -18,3 +18,6 @@ string[] arguments
 bool success
 float32 completion
 string status
+
+# REQUEST: the duration the plan gives the action, in seconds (0 for a non-durative one)
+float64 planned_duration

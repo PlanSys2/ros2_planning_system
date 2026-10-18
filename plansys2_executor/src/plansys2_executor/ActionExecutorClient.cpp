@@ -158,6 +158,7 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
         committed_ && msg->node_id == get_name() && msg->request_id == committed_request_id_)
       {
         current_arguments_ = msg->arguments;
+        current_planned_duration_ = msg->planned_duration;
         current_request_id_ = msg->request_id;
         release_commitment();
         trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);

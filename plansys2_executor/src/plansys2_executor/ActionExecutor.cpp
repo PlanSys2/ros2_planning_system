@@ -251,6 +251,7 @@ ActionExecutor::confirm_performer(const std::string & node_id)
   msg.request_id = request_id_;
   msg.action = action_name_;
   msg.arguments = action_params_;
+  msg.planned_duration = planned_duration_;
 
   hub_->publish(msg);
 }
@@ -277,6 +278,7 @@ ActionExecutor::request_for_performers()
   msg.request_id = request_id_;
   msg.action = action_name_;
   msg.arguments = action_params_;
+  msg.planned_duration = planned_duration_;
 
   hub_->publish(msg);
 }

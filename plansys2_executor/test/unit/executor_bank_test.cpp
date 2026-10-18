@@ -48,7 +48,7 @@ namespace
 
 // Not executable yet: each one comes with its phase of the Kairos work
 const std::set<std::string> kNotLoaded = {
-  "continuous-effects", "duration-inequalities", "object-fluents", "preferences",
+  "continuous-effects", "object-fluents", "preferences",
   "processes-events", "timed-initial-literals", "trajectory-constraints"};
 
 // Does any action at once: the executor applies its effects

@@ -56,10 +56,12 @@ public:
   }
 
   std::atomic<int> executions {0};
+  std::atomic<double> planned_duration {-1.0};
 
 private:
   void do_work() override
   {
+    planned_duration = get_planned_duration();
     if (++cycles_ >= 3) {
       cycles_ = 0;
       executions++;
@@ -336,6 +338,34 @@ TEST_F(ActionProtocolTest, same_action_twice)
     ASSERT_EQ(quick->executions, i);
   }
   ASSERT_EQ(count(ActionExecution::REJECT), 0);
+}
+
+// The performer knows how long the plan gives the action, from the request on
+TEST_F(ActionProtocolTest, the_performer_gets_the_planned_duration)
+{
+  auto quick = add_quick_move("quick_move");
+  ASSERT_TRUE(hub_has(1));
+
+  for (double duration : {4.25, 0.0, 86400.003}) {
+    auto executor = new_executor();
+    executor->set_planned_duration(duration);
+    ASSERT_TRUE(
+      tick_until(
+        executor, [&]() {return executor->get_internal_status() == Status::SUCCESS;}, 5s));
+    EXPECT_DOUBLE_EQ(quick->planned_duration, duration);
+  }
+
+  std::lock_guard<std::mutex> lock(messages_mutex_);
+  int requests = 0;
+  for (const auto & msg : messages_) {
+    if (msg.type == ActionExecution::REQUEST || msg.type == ActionExecution::CONFIRM) {
+      EXPECT_TRUE(
+        msg.planned_duration == 4.25 || msg.planned_duration == 0.0 ||
+        msg.planned_duration == 86400.003) << msg.planned_duration;
+      requests++;
+    }
+  }
+  EXPECT_GE(requests, 6);
 }
 
 // PDDL is case insensitive: a performer of Move runs move (#256)

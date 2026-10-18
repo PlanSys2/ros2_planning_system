@@ -333,19 +333,12 @@ ExecutorNode::get_ordered_subgoals(PlanRuntineInfo & runtime_info)
   // Once for the whole plan: it was asked for every action
   const auto actions = domain_client_->getActions();
   for (const auto & plan_item : runtime_info.complete_plan.items) {
-    std::string action_name = get_action_name(plan_item.action);
-    if (std::find(actions.begin(), actions.end(), action_name) != actions.end()) {
-      std::shared_ptr<plansys2_msgs::msg::Action> action =
-        domain_client_->getAction(
-        action_name, get_action_params(plan_item.action));
-      apply(action->effects, local_predicates, local_functions);
-    } else {
-      std::shared_ptr<plansys2_msgs::msg::DurativeAction> action =
-        domain_client_->getDurativeAction(
-        action_name, get_action_params(plan_item.action));
-      apply(action->at_start_effects, local_predicates, local_functions);
-      apply(action->at_end_effects, local_predicates, local_functions);
+    const auto action = BTBuilder::plan_item_action(*domain_client_, actions, plan_item);
+    if (action.is_empty()) {
+      continue;
     }
+    apply(action.get_at_start_effects(), local_predicates, local_functions);
+    apply(action.get_at_end_effects(), local_predicates, local_functions);
 
 
     for (auto it = unordered_subgoals.begin(); it != unordered_subgoals.end(); ) {
@@ -429,20 +422,15 @@ ExecutorNode::create_plan_runtime_info(PlanRuntineInfo & runtime_info)
     (*runtime_info.action_map)[index].action_executor =
       ActionExecutor::make_shared(plan_item.action, non_owning_this());
 
-    std::string action_name = get_action_name(plan_item.action);
-    if (std::find(actions.begin(), actions.end(), action_name) != actions.end()) {
-      (*runtime_info.action_map)[index].action_info = domain_client_->getAction(
-        action_name, get_action_params(plan_item.action));
-    } else {
-      (*runtime_info.action_map)[index].action_info = domain_client_->getDurativeAction(
-        action_name, get_action_params(plan_item.action));
-    }
+    (*runtime_info.action_map)[index].action_info =
+      BTBuilder::plan_item_action(*domain_client_, actions, plan_item);
     if ((*runtime_info.action_map)[index].action_info.is_empty()) {
       throw std::runtime_error("action not in the domain: " + plan_item.action);
     }
 
-    action_name = (*runtime_info.action_map)[index].action_info.get_action_name();
+    std::string action_name = (*runtime_info.action_map)[index].action_info.get_action_name();
     (*runtime_info.action_map)[index].duration = plan_item.duration;
+    (*runtime_info.action_map)[index].action_executor->set_planned_duration(plan_item.duration);
 
     if (std::find(
         action_timeout_actions.begin(), action_timeout_actions.end(),

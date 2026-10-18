@@ -172,6 +172,9 @@ std::string toStringImply(const plansys2_msgs::msg::Tree & tree, uint32_t node_i
 // "(when condition effect)"
 std::string toStringWhen(const plansys2_msgs::msg::Tree & tree, uint32_t node_id);
 
+/// ?duration as a number: the duration a plan gives the action
+void bindDuration(plansys2_msgs::msg::Tree & tree, double duration);
+
 /// This function creates a complete tree.
 /**
  * This function recursivelly extracts the logic expressions and predicates from the expression.

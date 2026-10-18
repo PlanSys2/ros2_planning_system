@@ -359,15 +359,7 @@ STNBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan) const
     action_stamped.expression = item.action;
     action_stamped.duration = item.duration;
     action_stamped.type = ActionType::DURATIVE;
-    if (std::find(actions.begin(), actions.end(), get_action_name(item.action)) != actions.end()) {
-      action_stamped.action =
-        domain_client()->getAction(
-        get_action_name(item.action), get_action_params(item.action));
-    } else {
-      action_stamped.action =
-        domain_client()->getDurativeAction(
-        get_action_name(item.action), get_action_params(item.action));
-    }
+    action_stamped.action = plan_item_action(*domain_client(), actions, item);
 
     ret.push_back(action_stamped);
   }

@@ -306,6 +306,7 @@ public:
 
 class DurationExpression : public Expression
 {
+public:
   void PDDLPrint(
     std::ostream & s, unsigned, const TokenStruct<std::string> &,
     const Domain &) const override
@@ -313,11 +314,20 @@ class DurationExpression : public Expression
     s << "?duration";
   }
 
+  // A parameter: the duration a plan gives the action, bound with bindDuration
   plansys2_msgs::msg::Node::SharedPtr getTree(
-    plansys2_msgs::msg::Tree &, const Domain &,
+    plansys2_msgs::msg::Tree & tree, const Domain &,
     const std::vector<std::string> & = {}) const override
   {
-    throw UnsupportedConstruct("DurationExpression");
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::PARAMETER;
+    node->node_id = tree.nodes.size();
+    node->name = "?duration";
+    plansys2_msgs::msg::Param node_param;
+    node_param.name = "?duration";
+    node->parameters.push_back(node_param);
+    tree.nodes.push_back(*node);
+    return node;
   }
 
   std::string info() const {return "?duration";}

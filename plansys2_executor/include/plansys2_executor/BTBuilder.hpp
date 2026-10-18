@@ -285,6 +285,18 @@ public:
   }
 
   /**
+   * @brief The action of a plan item, from the domain, with ?duration bound to its duration.
+   *
+   * @param[in] domain_client Where the actions come from.
+   * @param[in] actions The non-durative actions of the domain.
+   * @param[in] item The plan item.
+   * @return The action; empty if the domain does not have it.
+   */
+  static plansys2::ActionVariant plan_item_action(
+    plansys2::DomainExpertClient & domain_client, const std::vector<std::string> & actions,
+    const plansys2_msgs::msg::PlanItem & item);
+
+  /**
    * @brief Set the state the plan starts from, instead of the current one.
    *
    * On a replan, the actions that go on started before the new plan: it starts from the state

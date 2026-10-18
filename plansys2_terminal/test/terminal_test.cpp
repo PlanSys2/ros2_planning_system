@@ -550,6 +550,10 @@ TEST_F(TerminalTestCase, load_default_plugin)
       std::vector<std::string> command = {"move"};
       terminal_node->process_get_model_action(command, os);
       ASSERT_TRUE(terminal_node->method_executed_["process_get_model_action"]);
+      // A durative action shows its duration
+      if (os.str().find("Type: durative-action") != std::string::npos) {
+        EXPECT_NE(os.str().find("Duration: (and (= ?duration "), std::string::npos) << os.str();
+      }
     }
 
     {

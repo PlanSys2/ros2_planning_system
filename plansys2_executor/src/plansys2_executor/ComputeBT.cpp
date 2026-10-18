@@ -285,16 +285,11 @@ ComputeBT::computeBTCallback(
     (*action_map)[index].action_executor =
       ActionExecutor::make_shared(plan_item.action, shared_from_this());
 
-    std::string action_name_ = get_action_name(plan_item.action);
-    if (std::find(actions.begin(), actions.end(), action_name_) != actions.end()) {
-      (*action_map)[index].action_info = domain_client_->getAction(
-        action_name_, get_action_params(plan_item.action));
-    } else {
-      (*action_map)[index].action_info = domain_client_->getDurativeAction(
-        action_name_, get_action_params(plan_item.action));
-    }
+    (*action_map)[index].action_info =
+      BTBuilder::plan_item_action(*domain_client_, actions, plan_item);
 
     (*action_map)[index].duration = plan_item.duration;
+    (*action_map)[index].action_executor->set_planned_duration(plan_item.duration);
     std::string action_name = (*action_map)[index].action_info.get_action_name();
     if (std::find(
         action_timeout_actions.begin(), action_timeout_actions.end(),

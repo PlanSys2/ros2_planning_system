@@ -665,12 +665,33 @@ TEST(domain_expert, unreadable_and_unsupported_are_reported)
   EXPECT_NE(preference.getParseError().find("preference"), std::string::npos)
     << preference.getParseError();
 
-  // ?duration in an effect: read, not executed yet
+  // ?duration, in the bounds and in an effect: the plan binds it
   plansys2::DomainExpert duration(read("domain_duration_effect.pddl"));
   EXPECT_TRUE(duration.getParseError().empty()) << duration.getParseError();
-  const auto unsupported = duration.getUnsupported();
-  ASSERT_EQ(unsupported.size(), 1u);
-  EXPECT_NE(unsupported[0].find("action charge"), std::string::npos) << unsupported[0];
+  EXPECT_TRUE(duration.getUnsupported().empty());
+  auto charge = duration.getDurativeAction("charge", {"r1"});
+  ASSERT_TRUE(charge);
+  EXPECT_EQ(
+    parser::pddl::toString(charge->duration),
+    "(and (>= ?duration 1.000000)(<= ?duration 8.000000))");
+  EXPECT_EQ(
+    parser::pddl::toString(charge->at_end_effects),
+    "(and (increase (battery r1) (* 10.000000 ?duration)))");
+  parser::pddl::bindDuration(charge->at_end_effects, 6.5);
+  parser::pddl::bindDuration(charge->duration, 6.5);
+  EXPECT_EQ(
+    parser::pddl::toString(charge->at_end_effects),
+    "(and (increase (battery r1) (* 10.000000 6.500000)))");
+  EXPECT_EQ(
+    parser::pddl::toString(charge->duration),
+    "(and (>= 6.500000 1.000000)(<= 6.500000 8.000000))");
+
+  // A fixed duration is a bound too
+  plansys2::DomainExpert fixed(read("domain_simple.pddl"));
+  auto move = fixed.getDurativeAction("move", {"r2d2", "kitchen", "bedroom"});
+  ASSERT_TRUE(move);
+  EXPECT_EQ(parser::pddl::toString(move->duration).rfind("(and (= ?duration ", 0), 0u)
+    << parser::pddl::toString(move->duration);
 
   // Conditional effects are
   plansys2::DomainExpert when(read("domain_when.pddl"));

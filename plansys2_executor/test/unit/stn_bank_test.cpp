@@ -25,11 +25,13 @@
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_core/TestUtils.hpp"
+#include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_executor/bt_builder_plugins/stn_bt_builder.hpp"
 #include "plansys2_pddl_parser/PddlBank.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
+#include "plansys2_problem_expert/Utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 using Transition = lifecycle_msgs::msg::Transition;
@@ -209,6 +211,34 @@ TEST_F(STNBankTest, required_concurrency_ends_in_order)
     after(
       graph, {"(pass_door r2 office_door corridor office)", 20.002, ActionType::END},
       {"(hold_door r3 office_door office corridor)", 20.002, ActionType::END}));
+}
+
+// The action of a plan item, with the duration the plan chose wherever it is read
+TEST_F(STNBankTest, plan_items_bind_their_duration)
+{
+  load("duration-inequalities/p1");
+  plansys2::DomainExpertClient domain_client;
+  const auto actions = domain_client.getActions();
+  plansys2_msgs::msg::PlanItem item;
+  item.action = "(charge r1 c1 dock)";
+  item.time = 0.0;
+  item.duration = 6.5;
+  auto action = plansys2::BTBuilder::plan_item_action(domain_client, actions, item);
+  ASSERT_TRUE(action.is_durative_action());
+  const auto effects = parser::pddl::toString(action.get_at_end_effects());
+  EXPECT_EQ(effects.find("?duration"), std::string::npos) << effects;
+  EXPECT_NE(effects.find("6.500000"), std::string::npos) << effects;
+
+  // The plan state follows: the charge gives 10 per second of it
+  std::vector<plansys2::Predicate> predicates;
+  auto battery = parser::pddl::fromStringFunction("(= (battery r1) 0)");
+  std::vector<plansys2::Function> functions = {battery};
+  ASSERT_TRUE(plansys2::apply(action.get_at_end_effects(), predicates, functions));
+  EXPECT_DOUBLE_EQ(functions[0].value, 65.0);
+
+  // Unknown actions give nothing
+  item.action = "(fly r1)";
+  EXPECT_TRUE(plansys2::BTBuilder::plan_item_action(domain_client, actions, item).is_empty());
 }
 
 int main(int argc, char ** argv)

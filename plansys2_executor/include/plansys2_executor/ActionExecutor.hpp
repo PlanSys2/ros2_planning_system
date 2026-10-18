@@ -254,6 +254,18 @@ public:
   float get_completion() const {return completion_;}
 
   /**
+   * @brief The duration the plan gives the action, sent to its performer.
+   * @param[in] duration In seconds; 0 for a non-durative action.
+   */
+  void set_planned_duration(double duration) {planned_duration_ = duration;}
+
+  /**
+   * @brief The duration the plan gives the action.
+   * @return In seconds.
+   */
+  double get_planned_duration() const {return planned_duration_;}
+
+  /**
    * @brief Clean up resources used by the executor.
    */
   void clean_up();
@@ -357,6 +369,7 @@ protected:
 
   std::string feedback_;
   float completion_;
+  double planned_duration_ {0.0};
 
   ActionHub::Ptr hub_;
 

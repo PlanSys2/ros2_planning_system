@@ -480,6 +480,7 @@ Terminal::process_get_model_action(std::vector<std::string> & command, std::ostr
         os << "\t" << durative_action->parameters[i].name << " - " <<
           durative_action->parameters[i].type << std::endl;
       }
+      os << "Duration: " << parser::pddl::toString(durative_action->duration) << std::endl;
       os << "AtStart requirements: " <<
         parser::pddl::toString(durative_action->at_start_requirements) << std::endl;
       os << "OverAll requirements: " <<

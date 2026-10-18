@@ -14,6 +14,7 @@
 
 #include "plansys2_executor/BTBuilder.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <set>
 #include <string>
@@ -52,6 +53,32 @@ std::vector<plansys2::Function>
 BTBuilder::initial_functions() const
 {
   return initial_state_ ? initial_state_->second : problem_client()->getFunctions();
+}
+
+plansys2::ActionVariant
+BTBuilder::plan_item_action(
+  plansys2::DomainExpertClient & domain_client, const std::vector<std::string> & actions,
+  const plansys2_msgs::msg::PlanItem & item)
+{
+  const auto name = get_action_name(item.action);
+  const auto params = get_action_params(item.action);
+  plansys2::ActionVariant ret;
+  if (std::find(actions.begin(), actions.end(), name) != actions.end()) {
+    ret = domain_client.getAction(name, params);
+    return ret;
+  }
+  auto action = domain_client.getDurativeAction(name, params);
+  if (action) {
+    // The duration the plan chose, wherever the action reads it
+    for (auto * tree : {&action->at_start_requirements, &action->over_all_requirements,
+        &action->at_end_requirements, &action->at_start_effects, &action->at_end_effects,
+        &action->duration})
+    {
+      parser::pddl::bindDuration(*tree, item.duration);
+    }
+  }
+  ret = action;
+  return ret;
 }
 
 void

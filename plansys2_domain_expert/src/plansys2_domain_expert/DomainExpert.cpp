@@ -515,6 +515,30 @@ DomainExpert::getDurativeAction(const std::string & action, const std::vector<st
       if (action_obj->eff_e) {
         action_obj->eff_e->getTree(ret->at_end_effects, *domain_, params);
       }
+
+      // Duration: (and (<op> ?duration <expression>)...)
+      if (!action_obj->durationConstraints.empty()) {
+        plansys2_msgs::msg::Node conjunction;
+        conjunction.node_type = plansys2_msgs::msg::Node::AND;
+        conjunction.node_id = 0;
+        ret->duration.nodes.push_back(conjunction);
+        for (const auto & [op, expression] : action_obj->durationConstraints) {
+          plansys2_msgs::msg::Node comparison;
+          comparison.node_type = plansys2_msgs::msg::Node::EXPRESSION;
+          comparison.expression_type = op == ">=" ? plansys2_msgs::msg::Node::COMP_GE :
+            op == ">" ? plansys2_msgs::msg::Node::COMP_GT :
+            op == "<=" ? plansys2_msgs::msg::Node::COMP_LE :
+            op == "<" ? plansys2_msgs::msg::Node::COMP_LT : plansys2_msgs::msg::Node::COMP_EQ;
+          comparison.node_id = ret->duration.nodes.size();
+          ret->duration.nodes[0].children.push_back(comparison.node_id);
+          ret->duration.nodes.push_back(comparison);
+          parser::pddl::DurationExpression duration_variable;
+          auto left = duration_variable.getTree(ret->duration, *domain_, params);
+          ret->duration.nodes[comparison.node_id].children.push_back(left->node_id);
+          auto right = expression->getTree(ret->duration, *domain_, params);
+          ret->duration.nodes[comparison.node_id].children.push_back(right->node_id);
+        }
+      }
     }
     i++;
   }

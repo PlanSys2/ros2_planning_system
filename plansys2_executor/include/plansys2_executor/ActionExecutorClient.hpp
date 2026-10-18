@@ -108,6 +108,13 @@ protected:
   const std::vector<std::string> & get_arguments() const {return current_arguments_;}
 
   /**
+   * @brief The duration the plan gives the current action, as the planner chose it.
+   *
+   * @return In seconds; 0 for a non-durative action.
+   */
+  double get_planned_duration() const {return current_planned_duration_;}
+
+  /**
    * @brief Get the name of the action this executor manages.
    *
    * @return std::stringThe action name.
@@ -195,6 +202,7 @@ protected:
   bool committed_;
 
   std::vector<std::string> current_arguments_;
+  double current_planned_duration_ {0.0};
   std::vector<std::string> specialized_arguments_;
 
   rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecution>::SharedPtr
