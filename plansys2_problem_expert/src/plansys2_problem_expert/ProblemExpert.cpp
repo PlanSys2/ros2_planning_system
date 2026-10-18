@@ -512,8 +512,60 @@ ProblemExpert::clearKnowledge()
   functions_.clear();
   clearGoal();
   clearMetric();
+  timed_facts_.clear();
 
   return true;
+}
+
+bool
+ProblemExpert::addTimedFact(const plansys2_msgs::msg::Node & fact, double delay, bool negated)
+{
+  if (fact.node_type == plansys2_msgs::msg::Node::PREDICATE) {
+    if (!isValidPredicate(fact)) {
+      return false;
+    }
+  } else if (fact.node_type == plansys2_msgs::msg::Node::FUNCTION) {
+    if (negated || !isValidFunction(fact)) {
+      return false;
+    }
+  } else {
+    return false;
+  }
+  TimedFact timed{clock_() + std::max(0.0, delay), negated, fact};
+  // In time order; facts at the same time, as given
+  auto it = std::upper_bound(
+    timed_facts_.begin(), timed_facts_.end(), timed,
+    [](const TimedFact & a, const TimedFact & b) {return a.at < b.at;});
+  timed_facts_.insert(it, timed);
+  return true;
+}
+
+std::vector<ProblemExpert::TimedFact>
+ProblemExpert::getTimedFacts() const
+{
+  return timed_facts_;
+}
+
+bool
+ProblemExpert::applyTimedFacts()
+{
+  const double now = clock_();
+  bool applied = false;
+  while (!timed_facts_.empty() && timed_facts_.front().at <= now) {
+    const auto timed = timed_facts_.front();
+    timed_facts_.erase(timed_facts_.begin());
+    if (timed.fact.node_type == plansys2_msgs::msg::Node::PREDICATE) {
+      if (timed.negated) {
+        removePredicate(timed.fact);
+      } else {
+        addPredicate(timed.fact);
+      }
+    } else if (!updateFunction(timed.fact)) {
+      addFunction(timed.fact);
+    }
+    applied = true;
+  }
+  return applied;
 }
 
 bool
@@ -909,6 +961,28 @@ ProblemExpert::getProblem()
     problem.addInit(function.name, function.value, v);
   }
 
+  // What is still to come, from now
+  const double now = clock_();
+  for (const auto & timed : timed_facts_) {
+    if (timed.at <= now) {
+      continue;  // Applied at once
+    }
+    StringVec v;
+    for (const auto & param : timed.fact.parameters) {
+      v.push_back(param.name);
+    }
+    std::string name = timed.fact.name;
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+    parser::pddl::TypeGround * ground = nullptr;
+    if (timed.fact.node_type == plansys2_msgs::msg::Node::PREDICATE) {
+      ground = new parser::pddl::TypeGround(domain.preds.get(name));
+    } else {
+      ground = new parser::pddl::GroundFunc<double>(domain.funcs.get(name), timed.fact.value);
+    }
+    ground->insert(domain, v);
+    problem.addTimedInit(timed.at - now, timed.negated, ground);
+  }
+
   const std::string gs = parser::pddl::toString(goal_);
   problem.addGoal(gs);
 
@@ -978,6 +1052,7 @@ ProblemExpert::addProblem(const std::string & problem_str)
   auto prev_functions = functions_;
   auto prev_goal = goal_;
   auto prev_metric = metric_;
+  auto prev_timed_facts = timed_facts_;
   try {
     for (unsigned i = 0; i < domain.types.size(); ++i) {
       if (domain.types[i]->constants.size() ) {
@@ -1030,6 +1105,16 @@ ProblemExpert::addProblem(const std::string & problem_str)
       }
     }
 
+    // Timed literals and fluents: from now
+    for (const auto & timed : problem.timedInit) {
+      plansys2_msgs::msg::Tree fact_tree;
+      auto fact = timed.fact->getTree(fact_tree, domain);
+      if (!addTimedFact(*fact, timed.time, timed.negated)) {
+        throw std::runtime_error(
+                "Wrong timed fact " + parser::pddl::toString(fact_tree, fact->node_id));
+      }
+    }
+
     // A problem without :goal is valid: the goal can be set later
     if (problem.goal) {
       plansys2_msgs::msg::Tree goal;
@@ -1059,6 +1144,7 @@ ProblemExpert::addProblem(const std::string & problem_str)
     functions_ = prev_functions;
     goal_ = prev_goal;
     metric_ = prev_metric;
+    timed_facts_ = prev_timed_facts;
     return false;
   }
 

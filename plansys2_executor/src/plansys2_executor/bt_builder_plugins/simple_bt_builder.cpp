@@ -52,6 +52,7 @@ SimpleBTBuilder::initialize(
     bt_action_ =
       R""""(<Sequence name="ACTION_ID">
 WAIT_PREV_ACTIONS
+  <WaitAtStartReq action="ACTION_ID"/>
   <ApplyAtStartEffect action="ACTION_ID"/>
   <ReactiveSequence name="ACTION_ID">
     <CheckOverAllReq action="ACTION_ID"/>
@@ -584,6 +585,18 @@ SimpleBTBuilder::build_action_graph(const plansys2_msgs::msg::Plan & current_pla
       new_node->predicates = predicates;
       new_node->functions = functions;
       remove_existing_requirements(requirements, predicates, functions);
+    }
+
+    // A timed fact gives them: its tree waits until the problem expert has it
+    if (!requirements.empty()) {
+      auto timed_predicates = predicates;
+      auto timed_functions = functions;
+      for (const auto & event : timed_events()) {
+        if (event.time <= new_node->action.time + 1e-6) {
+          apply_effects(event.action.get_at_end_effects(), timed_predicates, timed_functions);
+        }
+      }
+      remove_existing_requirements(requirements, timed_predicates, timed_functions);
     }
 
     for (const auto & req : requirements) {

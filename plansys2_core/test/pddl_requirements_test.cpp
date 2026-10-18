@@ -55,8 +55,8 @@ TEST(pddl_requirements, declared_but_unused_does_not_count)
   // What the syntax cannot show counts, and unknown ones, which a parser may reject
   EXPECT_EQ(
     plansys2::pddl_requirements(
-      "(define (domain d) (:requirements :strips :action-costs :timed-initial-fluents))"),
-    (Set{":action-costs", ":timed-initial-fluents"}));
+      "(define (domain d) (:requirements :strips :action-costs :multi-agent))"),
+    (Set{":action-costs", ":multi-agent"}));
 }
 
 TEST(pddl_requirements, conditions)
@@ -170,6 +170,12 @@ TEST(pddl_requirements, timed_initial_literals_only_in_the_init)
     plansys2::pddl_requirements(
       domain, "(define (problem x) (:domain d) (:init (p) (at 10.5 (not (p)))) (:goal (p)))"),
     Set{":timed-initial-literals"});
+  // A value at a time is a timed initial fluent
+  EXPECT_EQ(
+    plansys2::pddl_requirements(
+      "(define (domain d) (:functions (f)))",
+      "(define (problem x) (:domain d) (:init (= (f) 0) (at 2 (= (f) 5))) (:goal (p)))"),
+    (Set{":numeric-fluents", ":timed-initial-fluents"}));
   // A predicate called at, and at start/at end, are not
   EXPECT_EQ(
     plansys2::pddl_requirements(

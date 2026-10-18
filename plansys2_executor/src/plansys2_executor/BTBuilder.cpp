@@ -15,6 +15,7 @@
 #include "plansys2_executor/BTBuilder.hpp"
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <set>
 #include <string>
@@ -23,6 +24,8 @@
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
+#include "plansys2_pddl_parser/Domain.hpp"
+#include "plansys2_pddl_parser/Instance.hpp"
 
 namespace plansys2
 {
@@ -79,6 +82,49 @@ BTBuilder::plan_item_action(
   }
   ret = action;
   return ret;
+}
+
+std::vector<ActionStamped>
+BTBuilder::timed_events() const
+{
+  if (timed_events_) {
+    return *timed_events_;
+  }
+  timed_events_.emplace();
+  try {
+    parser::pddl::Domain domain(domain_client()->getDomain());
+    parser::pddl::Instance problem(domain);
+    problem.parse(problem_client()->getProblem());
+    for (const auto & timed : problem.timedInit) {
+      plansys2_msgs::msg::Tree fact_tree;
+      auto fact = timed.fact->getTree(fact_tree, domain);
+      const auto text = parser::pddl::toString(fact_tree, fact->node_id);
+      std::string effect;
+      if (fact->node_type == plansys2_msgs::msg::Node::FUNCTION) {
+        // Its value from then on
+        std::string function = "(" + fact->name;
+        for (const auto & param : fact->parameters) {
+          function += " " + param.name;
+        }
+        effect = "(and (assign " + function + ") " + std::to_string(fact->value) + "))";
+      } else {
+        effect = timed.negated ? "(and (not " + text + "))" : "(and " + text + ")";
+      }
+      auto action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
+      action->name = "timed";
+      action->at_end_effects = parser::pddl::fromString(effect);
+      ActionStamped event;
+      event.time = timed.time;
+      event.duration = 0.0;
+      event.expression = "(timed " + std::to_string(timed.time) + " " + effect + ")";
+      event.type = ActionType::TIMED;
+      event.action = action;
+      timed_events_->push_back(event);
+    }
+  } catch (const std::exception & e) {
+    std::cerr << "timed_events: the problem cannot be read: " << e.what() << std::endl;
+  }
+  return *timed_events_;
 }
 
 void

@@ -24,7 +24,7 @@ namespace plansys2
 
 /**
  * @brief Every PDDL requirement PlanSys2 knows, as written in PDDL (":conditional-effects"),
- * and ":either-types", which PDDL has no flag for.
+ * and ":either-types" and ":timed-initial-fluents", which PDDL has no flag for.
  * @return The requirements.
  */
 const std::set<std::string> & known_pddl_requirements();

@@ -29,7 +29,7 @@ namespace
 // Not read yet: each one comes with its phase of the Kairos work
 const std::set<std::string> kNotRead = {
   "continuous-effects", "object-fluents", "preferences", "processes-events",
-  "timed-initial-literals", "trajectory-constraints"};
+  "trajectory-constraints"};
 
 std::vector<parser::pddl::BankCase> bank()
 {

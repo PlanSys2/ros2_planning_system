@@ -49,7 +49,7 @@ namespace
 // Not executable yet: each one comes with its phase of the Kairos work
 const std::set<std::string> kNotLoaded = {
   "continuous-effects", "object-fluents", "preferences",
-  "processes-events", "timed-initial-literals", "trajectory-constraints"};
+  "processes-events", "trajectory-constraints"};
 
 // Does any action at once: the executor applies its effects
 class Performer : public plansys2::ActionExecutorClient

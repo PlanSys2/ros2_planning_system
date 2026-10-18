@@ -13,10 +13,13 @@
 // limitations under the License.
 #pragma once
 
+#include <cstdlib>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "plansys2_pddl_parser/Domain.hpp"
 #include "plansys2_pddl_parser/Expression.hpp"
@@ -33,6 +36,15 @@ public:
   Domain & d;
   std::string name;
   GroundVec init;              // initial state
+
+  // A timed initial literal or fluent: (at 10 (p)), (at 10 (not (p))), (at 10 (= (f) 3))
+  struct TimedInit
+  {
+    double time;
+    bool negated;
+    TypeGround * fact;
+  };
+  std::vector<TimedInit> timedInit;
   Condition * goal = nullptr;  // Goal condition
   TokenStruct<std::string> ts;
   bool metric;                           // whether there is a :metric
@@ -48,6 +60,7 @@ public:
   virtual ~Instance()
   {
     for (unsigned i = 0; i < init.size(); ++i) {delete init[i];}
+    for (auto & timed : timedInit) {delete timed.fact;}
     if (nullptr != goal) {delete goal;}
     if (nullptr != metric_expr) {delete metric_expr;}
   }
@@ -161,11 +174,67 @@ public:
   {
     for (f.next(); f.getChar() != ')'; f.next()) {
       f.assert_token("(");
-      parseGround(f, init);
+      if (!parseTimedInit(f)) {
+        parseGround(f, init);
+      }
     }
     ++f.c;
 
     for (unsigned i = 0; DOMAIN_DEBUG && i < init.size(); ++i) {std::cout << "  " << init[i];}
+  }
+
+  // (at <time> fact), its '(' read; false, and nothing read, if it is not one (a predicate at)
+  bool parseTimedInit(Stringreader & f)
+  {
+    const auto c = f.c;
+    if (f.getToken() != "at") {
+      f.c = c;
+      return false;
+    }
+    f.next();
+    const auto number = f.getToken();
+    char * end = nullptr;
+    const double time = std::strtod(number.c_str(), &end);
+    if (number.empty() || end != number.c_str() + number.size()) {
+      f.c = c;
+      return false;
+    }
+    if (time < 0) {
+      throw std::runtime_error("A timed initial literal before the start: " + number);
+    }
+    f.next();
+    f.assert_token("(");
+    bool negated = false;
+    const auto inner = f.c;
+    if (f.getToken() == "not") {
+      negated = true;
+      f.next();
+      f.assert_token("(");
+    } else {
+      f.c = inner;
+    }
+    GroundVec facts;
+    parseGround(f, facts);
+    if (negated) {
+      f.next();
+      f.assert_token(")");
+    }
+    f.next();
+    f.assert_token(")");
+    if (negated && (dynamic_cast<GroundFunc<double> *>(facts[0]) != nullptr ||
+      dynamic_cast<GroundFunc<int> *>(facts[0]) != nullptr))
+    {
+      delete facts[0];
+      throw std::runtime_error("A timed initial fluent cannot be negated");
+    }
+    timedInit.push_back({time, negated, reinterpret_cast<TypeGround *>(facts[0])});
+    return true;
+  }
+
+  // add a timed initial literal or fluent
+  void addTimedInit(double time, bool negated, TypeGround * fact)
+  {
+    timedInit.push_back({time, negated, fact});
   }
 
   virtual void parseGoal(Stringreader & f)
@@ -305,6 +374,13 @@ public:
       (reinterpret_cast<TypeGround *>(init[i]))->PDDLPrint(
         stream, 1, TokenStruct<std::string>(), d);
       stream << "\n";
+    }
+    for (const auto & timed : timedInit) {
+      std::ostringstream fact;
+      timed.fact->PDDLPrint(fact, 0, TokenStruct<std::string>(), d);
+      // Six decimals: the default precision of a stream drops them in long problems
+      stream << "\t( at " << std::to_string(timed.time) << " " <<
+        (timed.negated ? "( not " + fact.str() + " )" : fact.str()) << " )\n";
     }
     stream << ")\n";
 

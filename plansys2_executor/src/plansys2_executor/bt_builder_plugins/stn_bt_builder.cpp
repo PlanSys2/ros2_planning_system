@@ -380,6 +380,10 @@ STNBTBuilder::get_happenings(const plansys2_msgs::msg::Plan & plan) const
     happenings.insert(time);
     happenings.insert(time + duration);
   }
+  // The timed facts happen too
+  for (const auto & event : timed_events()) {
+    happenings.insert(to_int_time(event.time, action_time_precision_ + 1));
+  }
   return happenings;
 }
 
@@ -462,6 +466,12 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
   goal_action.type = ActionType::GOAL;
   simple_plan.insert(std::make_pair(max_time, goal_action));
 
+  // The timed facts, at their time: only effects, which the problem expert applies
+  for (const auto & event : timed_events()) {
+    simple_plan.insert(
+      std::make_pair(to_int_time(event.time, action_time_precision_ + 1), event));
+  }
+
   // Create the overall actions
   std::vector<std::pair<int64_t, ActionStamped>> overall_actions;
   for (const auto & action : action_sequence) {
@@ -535,7 +545,7 @@ STNBTBuilder::get_states(
       if (iter->second.type == ActionType::START) {
         apply_effects(
           iter->second.action.get_at_start_effects(), state_vec.predicates, state_vec.functions);
-      } else if (iter->second.type == ActionType::END) {
+      } else if (iter->second.type == ActionType::END || iter->second.type == ActionType::TIMED) {
         apply_effects(
           iter->second.action.get_at_end_effects(), state_vec.predicates, state_vec.functions);
       }
@@ -581,6 +591,11 @@ STNBTBuilder::get_nodes(
   const Graph::Ptr graph) const
 {
   std::vector<Node::Ptr> ret;
+
+  // A timed fact has no node: what needs it waits in its tree until the problem expert has it
+  if (action.type == ActionType::TIMED) {
+    return ret;
+  }
 
   if (action.type == ActionType::INIT) {
     auto it = std::find_if(
@@ -1141,7 +1156,10 @@ STNBTBuilder::get_effects(const ActionStamped & action) const
 {
   if (action.type == ActionType::START) {
     return action.action.get_at_start_effects();
-  } else if (action.type == ActionType::END || action.type == ActionType::INIT) {
+  }
+  const bool at_end = action.type == ActionType::END || action.type == ActionType::INIT ||
+    action.type == ActionType::TIMED;
+  if (at_end) {
     return action.action.get_at_end_effects();
   }
 

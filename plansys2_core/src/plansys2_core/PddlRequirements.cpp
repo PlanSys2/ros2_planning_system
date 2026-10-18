@@ -136,7 +136,10 @@ void scan(
       } else if (head == "not" && condition_depth >= 0 && at(i + 2) == "(" && at(i + 3) != "=") {
         needed.insert(":negative-preconditions");
       } else if (head == "at" && depth == init_depth + 1 && is_number(at(i + 2))) {
-        needed.insert(":timed-initial-literals");
+        // A value at a time is a timed initial fluent
+        needed.insert(
+          at(i + 3) == "(" && at(i + 4) == "=" ? ":timed-initial-fluents" :
+          ":timed-initial-literals");
       }
     } else if (token == ")") {
       if (depth == requirements_depth) {
@@ -181,7 +184,7 @@ const std::set<std::string> & known_pddl_requirements()
     ":conditional-effects", ":fluents", ":numeric-fluents", ":object-fluents", ":adl",
     ":durative-actions", ":duration-inequalities", ":continuous-effects", ":derived-predicates",
     ":timed-initial-literals", ":preferences", ":constraints", ":action-costs", ":time",
-    ":either-types"};
+    ":either-types", ":timed-initial-fluents"};
   return known;
 }
 
@@ -193,7 +196,8 @@ std::set<std::string> pddl_requirements(const std::string & domain, const std::s
     ":existential-preconditions", ":universal-preconditions", ":quantified-preconditions",
     ":conditional-effects", ":fluents", ":numeric-fluents", ":object-fluents", ":adl",
     ":durative-actions", ":duration-inequalities", ":continuous-effects", ":derived-predicates",
-    ":timed-initial-literals", ":preferences", ":constraints", ":time", ":either-types"};
+    ":timed-initial-literals", ":preferences", ":constraints", ":time", ":either-types",
+    ":timed-initial-fluents"};
 
   std::set<std::string> needed, declared;
   scan(domain, false, needed, declared);

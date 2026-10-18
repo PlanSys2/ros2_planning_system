@@ -15,8 +15,10 @@
 #ifndef PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERT_HPP_
 #define PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERT_HPP_
 
+#include <functional>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 #include <map>
 #include <memory>
@@ -239,6 +241,41 @@ public:
    */
   bool addProblem(const std::string & problem_str);
 
+  /// A fact that changes at a time: a timed initial literal, or fluent if it is a function
+  struct TimedFact
+  {
+    double at;  // When, by the clock
+    bool negated;  // A predicate that stops holding
+    plansys2_msgs::msg::Node fact;  // A predicate, or a function with its value
+  };
+
+  /**
+   * @brief The clock of the timed facts, in seconds; without one, always 0.
+   * @param[in] clock Gives the time now.
+   */
+  void setClock(std::function<double()> clock) {clock_ = std::move(clock);}
+
+  /**
+   * @brief Schedule a fact: a predicate that starts or stops holding, or a function value.
+   * @param[in] fact The predicate or the function, with its value.
+   * @param[in] delay Seconds from now.
+   * @param[in] negated For a predicate, whether it stops holding.
+   * @return false if the fact is not valid in the domain, or a function is negated.
+   */
+  bool addTimedFact(const plansys2_msgs::msg::Node & fact, double delay, bool negated = false);
+
+  /**
+   * @brief The facts still to come, by time.
+   * @return The facts, with the time each one comes by the clock.
+   */
+  std::vector<TimedFact> getTimedFacts() const;
+
+  /**
+   * @brief Apply the facts whose time has come.
+   * @return true if any was applied.
+   */
+  bool applyTimedFacts();
+
   /**
    * @brief Check if an instance with the given name exists.
    *
@@ -387,6 +424,8 @@ private:
   std::vector<plansys2::Function> functions_;
   plansys2::Goal goal_;
   plansys2::Metric metric_;
+  std::vector<TimedFact> timed_facts_;
+  std::function<double()> clock_ {[]() {return 0.0;}};
 
   std::shared_ptr<DomainExpert> domain_expert_;
 };

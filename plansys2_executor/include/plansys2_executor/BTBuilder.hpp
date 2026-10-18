@@ -55,7 +55,8 @@ enum struct ActionType
   START,
   OVERALL,
   END,
-  GOAL
+  GOAL,
+  TIMED  // A timed literal or fluent: only effects, at its time; the problem expert applies them
 };
 
 /**
@@ -255,6 +256,8 @@ public:
         return "END";
       case ActionType::GOAL:
         return "GOAL";
+      case ActionType::TIMED:
+        return "TIMED";
       default:
         return "UNKNOWN";
     }
@@ -330,8 +333,15 @@ protected:
   void apply_effects(
     const plansys2_msgs::msg::Tree & effects, std::vector<plansys2::Predicate> & predicates,
     std::vector<plansys2::Function> & functions) const;
-  // Forgets the derived predicate rules: a new plan reads them again, with its instances
-  void reset_derived_rules() const {derived_rules_.reset();}
+  // Forgets the derived predicate rules and the timed facts: a new plan reads them again
+  void reset_derived_rules() const
+  {
+    derived_rules_.reset();
+    timed_events_.reset();
+  }
+
+  // The timed facts of the problem, as events of the plan at their time, with only effects
+  std::vector<ActionStamped> timed_events() const;
 
 private:
   std::optional<std::pair<std::vector<plansys2::Predicate>, std::vector<plansys2::Function>>>
@@ -341,6 +351,7 @@ private:
   mutable std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   mutable std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   mutable std::shared_ptr<const std::vector<plansys2::DerivedRule>> derived_rules_;
+  mutable std::optional<std::vector<ActionStamped>> timed_events_;
 };
 
 }  // namespace plansys2

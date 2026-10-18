@@ -39,6 +39,8 @@ std::vector<std::string> tokenize(const std::string & string, const std::string 
   return tokens;
 }
 
+using namespace std::chrono_literals;  // NOLINT
+
 namespace plansys2
 {
 
@@ -292,6 +294,8 @@ ProblemExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   }
 
   problem_expert_ = std::make_shared<ProblemExpert>(domain_expert);
+  // Timed literals and fluents come by the time of the node, simulated or not
+  problem_expert_->setClock([this]() {return now().seconds();});
 
   auto problem_file = get_parameter("problem_file").get_value<std::string>();
   if (!problem_file.empty()) {
@@ -330,6 +334,19 @@ ProblemExpertNode::on_activate(const rclcpp_lifecycle::State & state)
   update_pub_->on_activate();
   knowledge_pub_->on_activate();
   problem_pub_->on_activate();
+
+  // Timed facts are applied when their time comes, as any other change
+  timed_facts_timer_ = create_wall_timer(
+    50ms, [this]() {
+      if (problem_expert_ && problem_expert_->applyTimedFacts()) {
+        update_pub_->publish(std_msgs::msg::Empty());
+        knowledge_pub_->publish(*get_knowledge_as_msg());
+        plansys2_msgs::msg::Problem problem_msg;
+        problem_msg.problem = problem_expert_->getProblem();
+        problem_msg.stamp = now();
+        problem_pub_->publish(problem_msg);
+      }
+    });
   RCLCPP_INFO(get_logger(), "[%s] Activated", get_name());
   return CallbackReturnT::SUCCESS;
 }
@@ -339,6 +356,7 @@ ProblemExpertNode::on_deactivate(const rclcpp_lifecycle::State & state)
 {
   (void)state;
   RCLCPP_INFO(get_logger(), "[%s] Deactivating...", get_name());
+  timed_facts_timer_.reset();
   update_pub_->on_deactivate();
   knowledge_pub_->on_deactivate();
   problem_pub_->on_deactivate();
