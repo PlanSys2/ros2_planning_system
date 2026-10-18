@@ -40,6 +40,8 @@ struct BankCase
   std::string name;  // "conditional-effects/p2"
   std::string domain;  // The PDDL text
   std::string problem;
+  std::filesystem::path domain_file;
+  std::filesystem::path problem_file;
   bool solvable = true;
   std::set<std::string> uses;  // The requirements it uses, as pddl_requirements reads them
   std::string description;
@@ -83,8 +85,10 @@ inline std::vector<BankCase> read_pddl_bank(const std::filesystem::path & root)
       BankCase task;
       task.feature = entry.path().filename().string();
       task.name = task.feature + "/" + std::filesystem::path(fields[1]).stem().string();
-      task.domain = read_bank_file(entry.path() / fields[0]);
-      task.problem = read_bank_file(entry.path() / fields[1]);
+      task.domain_file = entry.path() / fields[0];
+      task.problem_file = entry.path() / fields[1];
+      task.domain = read_bank_file(task.domain_file);
+      task.problem = read_bank_file(task.problem_file);
       task.solvable = fields[2] == "yes";
       std::stringstream uses(fields[3]);
       for (std::string requirement; uses >> requirement; ) {

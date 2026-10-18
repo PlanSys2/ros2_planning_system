@@ -155,6 +155,7 @@ STNBTBuilder::get_dotgraph(
 bool
 STNBTBuilder::is_executable(const plansys2_msgs::msg::Plan & plan) const
 {
+  reset_derived_rules();  // The instances of now
   auto happenings = get_happenings(plan);
   auto simple_plan = get_simple_plan(plan);
   auto states = get_states(happenings, simple_plan);
@@ -540,10 +541,10 @@ STNBTBuilder::get_states(
     auto it = plan.equal_range(time);
     for (auto iter = it.first; iter != it.second; ++iter) {
       if (iter->second.type == ActionType::START) {
-        apply(
+        apply_effects(
           iter->second.action.get_at_start_effects(), state_vec.predicates, state_vec.functions);
       } else if (iter->second.type == ActionType::END) {
-        apply(
+        apply_effects(
           iter->second.action.get_at_end_effects(), state_vec.predicates, state_vec.functions);
       }
     }
@@ -691,7 +692,7 @@ STNBTBuilder::get_satisfy(
   }
   auto t_2 = *H_it;
 
-  auto R_a = parser::pddl::getSubtrees(get_conditions(action.second));
+  auto R_a = parser::pddl::getSubtrees(get_ordering_conditions(action, happenings, states));
 
   while (t_2 >= 0) {
     H_it = get_previous(t_2, happenings);
@@ -721,7 +722,7 @@ STNBTBuilder::get_satisfy(
           auto E_k = get_effects(iter->second);
 
           auto X_hat = X_1;
-          apply(E_k, X_hat.predicates, X_hat.functions);
+          apply_effects(E_k, X_hat.predicates, X_hat.functions);
 
           // Check if action k satisfies action i
           if (check(r, X_hat.predicates, X_hat.functions)) {
@@ -762,8 +763,8 @@ STNBTBuilder::get_threat(
   auto t_in = *H_it;
   auto t_2 = *H_it;
 
-  auto R_a = get_conditions(action.second);
-  auto E_a = get_effects(action.second);
+  auto R_a = get_ordering_conditions(action, happenings, states);
+  auto E_a = get_threat_effects(action.second);
 
   while (t_2 >= 0) {
     H_it = get_previous(t_2, happenings);
@@ -802,11 +803,11 @@ STNBTBuilder::get_threat(
           continue;
         }
 
-        auto R_k = get_conditions(iter->second);
-        auto E_k = get_effects(iter->second);
+        auto R_k = get_ordering_conditions(*iter, happenings, states);
+        auto E_k = get_threat_effects(iter->second);
 
         auto X_hat = X_1_k;
-        apply(E_a, X_hat.predicates, X_hat.functions);
+        apply_effects(E_a, X_hat.predicates, X_hat.functions);
 
         // Check if the input action threatens action k
         if (action.second.type != ActionType::OVERALL &&
@@ -823,7 +824,7 @@ STNBTBuilder::get_threat(
         }
 
         auto X_bar = X_1_a;
-        apply(E_k, X_bar.predicates, X_bar.functions);
+        apply_effects(E_k, X_bar.predicates, X_bar.functions);
 
         // Check if action k threatens the input action
         if (iter->second.type != ActionType::OVERALL &&
@@ -839,14 +840,17 @@ STNBTBuilder::get_threat(
           continue;
         }
 
-        // Check if the input action and action k modify the same effect
+        // Check if the input action and action k modify the same effect: one adds what the other
+        // deletes, even if it already held, or both change it
         if (action.second.type != ActionType::OVERALL &&
           iter->second.type != ActionType::OVERALL)
         {
           auto DX_hat = get_diff(X_1_k, X_hat);
           auto DX_bar = get_diff(X_1_a, X_bar);
           auto intersection = get_intersection(DX_hat, DX_bar);
-          if (intersection.predicates.size() > 0 || intersection.functions.size() > 0) {
+          if (intersection.predicates.size() > 0 || intersection.functions.size() > 0 ||
+            interfere(E_a, E_k))
+          {
             if (t_2 != t_in) {
               ret.push_back(*iter);
             } else {
@@ -895,7 +899,7 @@ STNBTBuilder::can_apply(
             }
           }
           auto E = get_effects(iter->second);
-          apply(E, state.predicates, state.functions);
+          apply_effects(E, state.predicates, state.functions);
           if (check(R, state.predicates, state.functions)) {
             return true;
           }
@@ -994,6 +998,11 @@ STNBTBuilder::get_intersection(
 plansys2_msgs::msg::Tree
 STNBTBuilder::get_conditions(const ActionStamped & action) const
 {
+  // A non-durative action requires its precondition when it starts: otherwise nothing orders it
+  // after what makes it true, and it starts too early
+  if (action.type == ActionType::START && action.action.is_action()) {
+    return action.action.get_overall_requirements();
+  }
   if (action.type == ActionType::START || action.type == ActionType::GOAL) {
     return action.action.get_at_start_requirements();
   } else if (action.type == ActionType::OVERALL) {
@@ -1003,6 +1012,136 @@ STNBTBuilder::get_conditions(const ActionStamped & action) const
   }
 
   return plansys2_msgs::msg::Tree();
+}
+
+plansys2_msgs::msg::Tree
+STNBTBuilder::get_ordering_conditions(
+  const std::pair<int64_t, ActionStamped> & action, const std::set<int64_t> & happenings,
+  const std::map<int64_t, StateVec> & states) const
+{
+  const auto conditions = get_conditions(action.second);
+  const auto effects = get_effects(action.second);
+
+  // The conditional effects, outside quantifiers
+  std::vector<uint32_t> whens;
+  std::vector<uint32_t> pending;
+  if (!effects.nodes.empty()) {
+    pending.push_back(0);
+  }
+  while (!pending.empty()) {
+    const auto id = pending.back();
+    pending.pop_back();
+    const auto & node = effects.nodes[id];
+    if (node.node_type == plansys2_msgs::msg::Node::AND) {
+      pending.insert(pending.end(), node.children.begin(), node.children.end());
+    } else if (node.node_type == plansys2_msgs::msg::Node::WHEN) {
+      whens.push_back(id);
+    }
+  }
+  if (whens.empty()) {
+    return conditions;
+  }
+
+  // The state before its happening, as the plan has it
+  StateVec state{initial_predicates(), initial_functions()};
+  auto happening = get_happening(action.first, happenings);
+  if (happening != happenings.end()) {
+    auto previous = get_previous(*happening, happenings);
+    if (previous != happenings.end() && states.count(*previous)) {
+      state = states.at(*previous);
+    }
+  }
+
+  std::string text = "(and";
+  if (!conditions.nodes.empty()) {
+    if (conditions.nodes[0].node_type == plansys2_msgs::msg::Node::AND) {
+      for (auto child : conditions.nodes[0].children) {
+        text += " " + parser::pddl::toString(conditions, child);
+      }
+    } else {
+      text += " " + parser::pddl::toString(conditions);
+    }
+  }
+  for (auto id : whens) {
+    const auto condition = parser::pddl::toString(effects, effects.nodes[id].children[0]);
+    const bool held = check(parser::pddl::fromString(condition), state.predicates, state.functions);
+    text += held ? " " + condition : " (not " + condition + ")";
+  }
+  return parser::pddl::fromString(text + ")");
+}
+
+namespace
+{
+// The facts an effect adds and deletes, and the functions it changes, as written: conditional
+// effects as if they happened
+void written_effects(
+  const plansys2_msgs::msg::Tree & tree, uint32_t id, bool negate,
+  std::vector<plansys2_msgs::msg::Node> & adds, std::vector<plansys2_msgs::msg::Node> & deletes,
+  std::vector<plansys2_msgs::msg::Node> & functions)
+{
+  if (id >= tree.nodes.size()) {
+    return;
+  }
+  const auto & node = tree.nodes[id];
+  switch (node.node_type) {
+    case plansys2_msgs::msg::Node::AND:
+      for (auto child : node.children) {
+        written_effects(tree, child, negate, adds, deletes, functions);
+      }
+      break;
+    case plansys2_msgs::msg::Node::NOT:
+      written_effects(tree, node.children[0], !negate, adds, deletes, functions);
+      break;
+    case plansys2_msgs::msg::Node::WHEN:
+      written_effects(tree, node.children[1], negate, adds, deletes, functions);
+      break;
+    case plansys2_msgs::msg::Node::PREDICATE:
+      (negate ? deletes : adds).push_back(node);
+      break;
+    case plansys2_msgs::msg::Node::FUNCTION_MODIFIER:
+      if (!node.children.empty()) {
+        functions.push_back(tree.nodes[node.children[0]]);
+      }
+      break;
+    default:
+      break;
+  }
+}
+
+bool any_equal(
+  const std::vector<plansys2_msgs::msg::Node> & a, const std::vector<plansys2_msgs::msg::Node> & b)
+{
+  for (const auto & x : a) {
+    for (const auto & y : b) {
+      if (parser::pddl::checkNodeEquality(x, y)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+}  // namespace
+
+bool
+STNBTBuilder::interfere(
+  const plansys2_msgs::msg::Tree & first, const plansys2_msgs::msg::Tree & second)
+{
+  std::vector<plansys2_msgs::msg::Node> adds_1, deletes_1, functions_1;
+  std::vector<plansys2_msgs::msg::Node> adds_2, deletes_2, functions_2;
+  written_effects(first, 0, false, adds_1, deletes_1, functions_1);
+  written_effects(second, 0, false, adds_2, deletes_2, functions_2);
+  return any_equal(adds_1, deletes_2) || any_equal(deletes_1, adds_2) ||
+         any_equal(functions_1, functions_2);
+}
+
+plansys2_msgs::msg::Tree
+STNBTBuilder::get_threat_effects(const ActionStamped & action) const
+{
+  // A non-durative action runs for a while too, and its effects can come at any moment of it
+  if (action.type == ActionType::START && action.action.is_action()) {
+    return action.action.get_at_end_effects();
+  }
+  return get_effects(action);
 }
 
 plansys2_msgs::msg::Tree

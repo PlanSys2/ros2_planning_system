@@ -169,6 +169,9 @@ std::string toStringForall(const plansys2_msgs::msg::Tree & tree, uint32_t node_
 
 std::string toStringImply(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
 
+// "(when condition effect)"
+std::string toStringWhen(const plansys2_msgs::msg::Tree & tree, uint32_t node_id);
+
 /// This function creates a complete tree.
 /**
  * This function recursivelly extracts the logic expressions and predicates from the expression.

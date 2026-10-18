@@ -213,6 +213,8 @@ struct ApplyPlan
 {
   std::vector<NumericUpdate> numeric;
   std::vector<plansys2_msgs::msg::Node> adds;
+  // Conditional effects: whether each condition held before the action, by its text
+  std::map<std::string, bool> conditions;
 };
 
 std::tuple<bool, bool, double> evaluate_node(
@@ -258,6 +260,35 @@ std::tuple<bool, bool, double> evaluate_node(
           tree, source, predicates, functions, apply, use_state,
           tree.nodes[node_id].children[0],
           !negate, changes, phase, plan);
+      }
+
+    case plansys2_msgs::msg::Node::WHEN: {
+        // As a condition it asks for nothing
+        if (!apply) {
+          return std::make_tuple(true, true, 0);
+        }
+        // Its condition is read before the action changes anything: in the first phase, kept
+        // for the others by its text, bound by any forall around
+        const auto condition_id = tree.nodes[node_id].children[0];
+        const auto key = std::to_string(node_id) + parser::pddl::toString(tree, condition_id);
+        bool holds;
+        if (plan && phase != ApplyPhase::NUMERIC && plan->conditions.count(key)) {
+          holds = plan->conditions.at(key);
+        } else {
+          holds = std::get<1>(
+            evaluate_node(
+              tree, source, predicates, functions, false, use_state, condition_id, false,
+              nullptr));
+          if (plan) {
+            plan->conditions[key] = holds;
+          }
+        }
+        if (!holds) {
+          return std::make_tuple(true, true, 0);
+        }
+        return evaluate_node(
+          tree, source, predicates, functions, true, use_state, tree.nodes[node_id].children[1],
+          negate, changes, phase, plan);
       }
 
     case plansys2_msgs::msg::Node::PREDICATE: {
@@ -812,7 +843,7 @@ std::tuple<bool, bool, double> apply_node(
     ApplyPhase::DELETES, &plan);
   auto added = evaluate_node(
     tree, source, predicates, functions, true, use_state, node_id, negate, changes,
-    ApplyPhase::ADDS);
+    ApplyPhase::ADDS, &plan);
   bool success = std::get<0>(deleted) && std::get<0>(added);
 
   // Each function once: its assign or scale (the last one), plus what increases and decreases add
@@ -1163,6 +1194,96 @@ void cart_product(
     cart_product(rvvi, rvi, me + 1, end);
     rvi.pop_back();
   }
+}
+
+std::vector<DerivedRule> make_derived_rules(
+  const std::vector<plansys2::Derived> & derived,
+  const std::vector<plansys2::Instance> & instances,
+  const std::function<std::vector<std::string>(const std::string &)> & sub_types)
+{
+  std::vector<DerivedRule> rules;
+  for (const auto & d : derived) {
+    DerivedRule rule;
+    rule.derived = d;
+    for (const auto & param : d.predicate.parameters) {
+      // The subtypes the domain gives the parameter, or those asked for
+      auto subs = param.sub_types;
+      if (subs.empty() && sub_types) {
+        subs = sub_types(param.type);
+      }
+      std::vector<std::string> objects;
+      for (const auto & instance : instances) {
+        if (instance.type == param.type || param.type.empty() || param.type == "object" ||
+          std::find(subs.begin(), subs.end(), instance.type) != subs.end())
+        {
+          objects.push_back(instance.name);
+        }
+      }
+      rule.objects.push_back(objects);
+    }
+    rules.push_back(rule);
+  }
+  return rules;
+}
+
+std::vector<plansys2::Predicate> derive(
+  const std::vector<DerivedRule> & rules,
+  const std::vector<plansys2::Predicate> & predicates,
+  const std::vector<plansys2::Function> & functions)
+{
+  if (rules.empty()) {
+    return predicates;
+  }
+  std::set<std::string> names;
+  for (const auto & rule : rules) {
+    names.insert(rule.derived.predicate.name);
+  }
+  // The facts, without what was derived before: it is computed again
+  std::vector<plansys2::Predicate> state;
+  for (const auto & predicate : predicates) {
+    if (!names.count(predicate.name)) {
+      state.push_back(predicate);
+    }
+  }
+  std::vector<plansys2::Function> values = functions;
+
+  // Each round, what the facts so far give, until nothing new
+  bool changed = true;
+  while (changed) {
+    changed = false;
+    for (const auto & rule : rules) {
+      std::vector<std::vector<std::string>> combinations;
+      std::vector<std::string> combination;
+      cart_product(combinations, combination, rule.objects.begin(), rule.objects.end());
+      for (const auto & values_of : combinations) {
+        plansys2::Predicate inferred;
+        inferred.node_type = plansys2_msgs::msg::Node::PREDICATE;
+        inferred.name = rule.derived.predicate.name;
+        std::map<std::string, std::string> replace;
+        for (size_t i = 0; i < values_of.size(); i++) {
+          replace["?" + std::to_string(i)] = values_of[i];
+          plansys2_msgs::msg::Param param;
+          param.name = values_of[i];
+          param.type = rule.derived.predicate.parameters[i].type;
+          inferred.parameters.push_back(param);
+        }
+        const bool known = std::any_of(
+          state.begin(), state.end(), [&inferred](const plansys2::Predicate & p) {
+            return parser::pddl::checkNodeEquality(p, inferred);
+          });
+        if (known || rule.derived.preconditions.nodes.empty()) {
+          continue;
+        }
+        auto tree = replace_children_param(
+          rule.derived.preconditions, rule.derived.preconditions.nodes[0].node_id, replace);
+        if (check(tree, state, values)) {
+          state.push_back(inferred);
+          changed = true;
+        }
+      }
+    }
+  }
+  return state;
 }
 
 }  // namespace plansys2

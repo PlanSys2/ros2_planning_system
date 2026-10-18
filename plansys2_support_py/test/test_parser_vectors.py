@@ -24,7 +24,8 @@ import pytest
 TYPES = {
     name: getattr(Node, name) for name in (
         'UNKNOWN', 'AND', 'OR', 'NOT', 'PREDICATE', 'FUNCTION', 'EXPRESSION',
-        'FUNCTION_MODIFIER', 'NUMBER', 'CONSTANT', 'PARAMETER', 'EXISTS', 'FORALL', 'IMPLY')
+        'FUNCTION_MODIFIER', 'NUMBER', 'CONSTANT', 'PARAMETER', 'EXISTS', 'FORALL', 'IMPLY',
+        'WHEN')
 }
 NAMES = {value: name for name, value in TYPES.items()}
 

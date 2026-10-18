@@ -36,6 +36,8 @@
 namespace plansys2
 {
 
+struct DerivedRule;  // plansys2_problem_expert/Utils.hpp
+
 class DomainExpertClient;
 class ProblemExpertClient;
 
@@ -312,6 +314,13 @@ protected:
   std::vector<plansys2::Predicate> initial_predicates() const;
   std::vector<plansys2::Function> initial_functions() const;
 
+  // Applies effects to a simulated state, whose derived predicates follow
+  void apply_effects(
+    const plansys2_msgs::msg::Tree & effects, std::vector<plansys2::Predicate> & predicates,
+    std::vector<plansys2::Function> & functions) const;
+  // Forgets the derived predicate rules: a new plan reads them again, with its instances
+  void reset_derived_rules() const {derived_rules_.reset();}
+
 private:
   std::optional<std::pair<std::vector<plansys2::Predicate>, std::vector<plansys2::Function>>>
   initial_state_;
@@ -319,6 +328,7 @@ private:
   // Mutable: creating them when first used does not change what the builder is
   mutable std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   mutable std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
+  mutable std::shared_ptr<const std::vector<plansys2::DerivedRule>> derived_rules_;
 };
 
 }  // namespace plansys2

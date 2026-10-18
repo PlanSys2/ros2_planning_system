@@ -129,7 +129,7 @@ TEST(domain_expert, a_domain_plansys2_cannot_represent_fails_at_startup)
 {
   const std::string pkgpath =
     ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
-  for (const char * file : {"domain_when.pddl", "domain_preference.pddl"}) {
+  for (const char * file : {"domain_duration_effect.pddl", "domain_preference.pddl"}) {
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/" + std::string(file)});
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -137,6 +137,13 @@ TEST(domain_expert, a_domain_plansys2_cannot_represent_fails_at_startup)
       domain_node->get_current_state().id(),
       lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED) << file;
   }
+
+  // Conditional effects it represents now
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_when.pddl"});
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  EXPECT_EQ(
+    domain_node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
   plansys2::drain_ros(200ms);
 }
 

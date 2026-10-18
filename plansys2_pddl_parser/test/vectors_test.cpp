@@ -31,7 +31,8 @@ const std::map<std::string, uint8_t> kTypes = {
   {"PREDICATE", Node::PREDICATE}, {"FUNCTION", Node::FUNCTION},
   {"EXPRESSION", Node::EXPRESSION}, {"FUNCTION_MODIFIER", Node::FUNCTION_MODIFIER},
   {"NUMBER", Node::NUMBER}, {"CONSTANT", Node::CONSTANT}, {"PARAMETER", Node::PARAMETER},
-  {"EXISTS", Node::EXISTS}, {"FORALL", Node::FORALL}, {"IMPLY", Node::IMPLY}};
+  {"EXISTS", Node::EXISTS}, {"FORALL", Node::FORALL}, {"IMPLY", Node::IMPLY},
+  {"WHEN", Node::WHEN}};
 
 std::string typeName(uint8_t type)
 {

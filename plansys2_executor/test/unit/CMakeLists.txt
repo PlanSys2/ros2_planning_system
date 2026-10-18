@@ -12,6 +12,16 @@ target_link_libraries(action_execution_test
   ${PROJECT_NAME}
 )
 
+# Orders the STN of plans of the bank has to keep
+ament_add_ros_isolated_gtest(stn_bank_test stn_bank_test.cpp TIMEOUT 60)
+target_compile_definitions(stn_bank_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(stn_bank_test ${PROJECT_NAME} bt_builder_plugins)
+
+# The bank of plansys2_pddl_parser, planned by Kairos and executed to its goal
+ament_add_ros_isolated_gtest(executor_bank_test executor_bank_test.cpp TIMEOUT 240)
+target_compile_definitions(executor_bank_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(executor_bank_test ${PROJECT_NAME})
+
 ament_add_ros_isolated_gtest(executor_rates_test executor_rates_test.cpp TIMEOUT 120)
 target_compile_definitions(executor_rates_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 target_link_libraries(executor_rates_test ${PROJECT_NAME})

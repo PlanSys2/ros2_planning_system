@@ -34,7 +34,7 @@ namespace
 {
 // Not representable yet: each one comes with its phase of the Kairos work
 const std::set<std::string> kNotLoaded = {
-  "conditional-effects", "continuous-effects", "duration-inequalities", "object-fluents",
+  "continuous-effects", "duration-inequalities", "object-fluents",
   "preferences", "processes-events", "timed-initial-literals", "trajectory-constraints"};
 
 std::vector<parser::pddl::BankCase> bank()

@@ -665,11 +665,22 @@ TEST(domain_expert, unreadable_and_unsupported_are_reported)
   EXPECT_NE(preference.getParseError().find("preference"), std::string::npos)
     << preference.getParseError();
 
+  // ?duration in an effect: read, not executed yet
+  plansys2::DomainExpert duration(read("domain_duration_effect.pddl"));
+  EXPECT_TRUE(duration.getParseError().empty()) << duration.getParseError();
+  const auto unsupported = duration.getUnsupported();
+  ASSERT_EQ(unsupported.size(), 1u);
+  EXPECT_NE(unsupported[0].find("action charge"), std::string::npos) << unsupported[0];
+
+  // Conditional effects are
   plansys2::DomainExpert when(read("domain_when.pddl"));
   EXPECT_TRUE(when.getParseError().empty()) << when.getParseError();
-  const auto unsupported = when.getUnsupported();
-  ASSERT_EQ(unsupported.size(), 1u);
-  EXPECT_NE(unsupported[0].find("action push"), std::string::npos) << unsupported[0];
+  EXPECT_TRUE(when.getUnsupported().empty());
+  auto push = when.getAction("push");
+  ASSERT_TRUE(push);
+  EXPECT_EQ(
+    parser::pddl::toString(push->effects),
+    "(and (pushed ?0 ?1)(when (not (locked ?1)) (open ?1)))");
 
   // PDDL+ and constraints: one clear line, not a parser token
   const std::vector<std::pair<std::string, std::string>> plus = {

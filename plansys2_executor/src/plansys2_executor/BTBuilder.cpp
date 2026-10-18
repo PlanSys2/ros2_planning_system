@@ -15,9 +15,13 @@
 #include "plansys2_executor/BTBuilder.hpp"
 
 #include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
+#include "plansys2_problem_expert/Utils.hpp"
 
 namespace plansys2
 {
@@ -48,6 +52,33 @@ std::vector<plansys2::Function>
 BTBuilder::initial_functions() const
 {
   return initial_state_ ? initial_state_->second : problem_client()->getFunctions();
+}
+
+void
+BTBuilder::apply_effects(
+  const plansys2_msgs::msg::Tree & effects, std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions) const
+{
+  apply(effects, predicates, functions);
+
+  // Read once per plan; a domain without derived predicates pays nothing more
+  if (!derived_rules_) {
+    std::vector<plansys2::Derived> derived;
+    std::set<std::string> names;
+    for (const auto & d : domain_client()->getDerivedPredicates()) {
+      if (names.insert(d.predicate.name).second) {
+        for (const auto & rule : domain_client()->getDerivedPredicate(d.predicate.name)) {
+          derived.push_back(rule);
+        }
+      }
+    }
+    derived_rules_ = std::make_shared<const std::vector<plansys2::DerivedRule>>(
+      derived.empty() ? std::vector<plansys2::DerivedRule>{} :
+      make_derived_rules(derived, problem_client()->getInstances()));
+  }
+  if (!derived_rules_->empty()) {
+    predicates = derive(*derived_rules_, predicates, functions);
+  }
 }
 
 std::shared_ptr<plansys2::DomainExpertClient>

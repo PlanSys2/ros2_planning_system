@@ -42,7 +42,7 @@ _MODIFIERS = {
 }
 _LOGIC = {
     'and': Node.AND, 'or': Node.OR, 'not': Node.NOT, 'exists': Node.EXISTS,
-    'forall': Node.FORALL, 'imply': Node.IMPLY,
+    'forall': Node.FORALL, 'imply': Node.IMPLY, 'when': Node.WHEN,
 }
 _COMPARISONS = (Node.COMP_GE, Node.COMP_GT, Node.COMP_LE, Node.COMP_LT, Node.COMP_EQ)
 
@@ -155,7 +155,7 @@ class Parser:
                 limits = (1, children)
             elif node.node_type in (Node.NOT, Node.FORALL):
                 limits = (1, 1)
-            elif node.node_type in (Node.IMPLY, Node.EXPRESSION):
+            elif node.node_type in (Node.IMPLY, Node.WHEN, Node.EXPRESSION):
                 limits = (2, 2)
             elif node.node_type == Node.FUNCTION_MODIFIER:
                 # Trees built before (total-cost) was a child have only the value
@@ -796,6 +796,11 @@ class Parser:
             node = Parser._new_node(tree, node_type, negate)
             Parser._add_children(tree, node, wexpr, negate)
             return node
+        if node_type == Node.WHEN:
+            # Never negated: a condition and an effect, each as written
+            node = Parser._new_node(tree, node_type, False)
+            Parser._add_children(tree, node, wexpr, False)
+            return node
         if node_type == Node.NOT:
             node = Parser._new_node(tree, node_type, negate)
             subexprs = Parser.get_sub_expr(wexpr)
@@ -928,6 +933,7 @@ class Parser:
             Node.EXISTS: Parser._to_string_exists,
             Node.FORALL: Parser._to_string_forall,
             Node.IMPLY: Parser._to_string_imply,
+            Node.WHEN: Parser._to_string_when,
         }
         writer = writers.get(tree.nodes[node_id].node_type)  # type: ignore[index]
         return writer(tree, node_id, negate) if writer else ''
@@ -1310,6 +1316,36 @@ class Parser:
         return f'(not {result})' if negate else result
 
     @staticmethod
+    def _to_string_when(tree: Tree, node_id: int, negate: bool) -> str:
+        """
+        Convert a conditional effect to string: '(when condition effect)'.
+
+        Parameters
+        ----------
+        tree : Tree
+            The tree structure.
+        node_id : int
+            Node identifier.
+        negate : bool
+            Not used: a conditional effect is never negated.
+
+        Returns
+        -------
+        str
+            String representation.
+
+        """
+        del negate
+        if node_id >= len(tree.nodes):
+            return ''
+        node = tree.nodes[node_id]  # type: ignore[index]
+        if len(node.children) != 2:
+            return ''
+        condition = Parser.tree_to_string(tree, node.children[0], False)
+        effect = Parser.tree_to_string(tree, node.children[1], False)
+        return f'(when {condition} {effect})'
+
+    @staticmethod
     def compare_str_case_insensitive(first: str, second: str) -> bool:
         """
         Compare two names ignoring the case, as PDDL does.
@@ -1478,7 +1514,8 @@ class Parser:
             0: 'UNKNOWN', 1: 'AND', 2: 'OR', 3: 'NOT', 4: 'ACTION',
             5: 'PREDICATE', 6: 'FUNCTION', 7: 'EXPRESSION',
             8: 'FUNCTION_MODIFIER', 9: 'NUMBER', 10: 'CONSTANT',
-            11: 'PARAMETER', 12: 'EXISTS', 27: 'FORALL', 28: 'IMPLY'
+            11: 'PARAMETER', 12: 'EXISTS', 27: 'FORALL', 28: 'IMPLY',
+            29: 'WHEN'
         }
 
         # Expression type constants and names mapping

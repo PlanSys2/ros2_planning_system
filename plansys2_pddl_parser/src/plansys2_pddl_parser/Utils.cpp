@@ -65,6 +65,9 @@ static void printN(std::ostream & s, uint8_t node_type)
     case plansys2_msgs::msg::Node::IMPLY:
       s << "NODE TYPE IMPLY" << std::endl;
       break;
+    case plansys2_msgs::msg::Node::WHEN:
+      s << "NODE TYPE WHEN" << std::endl;
+      break;
     case plansys2_msgs::msg::Node::COMP_GE:
       s << "NODE TYPE COMP GE" << std::endl;
       break;
@@ -174,6 +177,7 @@ bool validateTree(const plansys2_msgs::msg::Tree & tree, std::string & error)
         min_children = max_children = 1;
         break;
       case plansys2_msgs::msg::Node::IMPLY:
+      case plansys2_msgs::msg::Node::WHEN:
         min_children = max_children = 2;
         break;
       case plansys2_msgs::msg::Node::EXPRESSION:
@@ -307,6 +311,7 @@ uint8_t logicType(const std::string & op)
   if (op == "exists") {return plansys2_msgs::msg::Node::EXISTS;}
   if (op == "forall") {return plansys2_msgs::msg::Node::FORALL;}
   if (op == "imply") {return plansys2_msgs::msg::Node::IMPLY;}
+  if (op == "when") {return plansys2_msgs::msg::Node::WHEN;}
   return plansys2_msgs::msg::Node::UNKNOWN;
 }
 }  // namespace
@@ -609,6 +614,9 @@ std::string toString(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bo
       break;
     case plansys2_msgs::msg::Node::IMPLY:
       ret = toStringImply(tree, node_id, negate);
+      break;
+    case plansys2_msgs::msg::Node::WHEN:
+      ret = toStringWhen(tree, node_id);
       break;
     default:
       std::cerr << "Unsupported node to string conversion" << std::endl;
@@ -976,6 +984,15 @@ std::string toStringImply(const plansys2_msgs::msg::Tree & tree, uint32_t node_i
   return ret;
 }
 
+std::string toStringWhen(const plansys2_msgs::msg::Tree & tree, uint32_t node_id)
+{
+  if (node_id >= tree.nodes.size() || tree.nodes[node_id].children.size() != 2) {
+    return {};
+  }
+  return "(when " + toString(tree, tree.nodes[node_id].children[0], false) + " " +
+         toString(tree, tree.nodes[node_id].children[1], false) + ")";
+}
+
 plansys2_msgs::msg::Node::SharedPtr fromString(
   plansys2_msgs::msg::Tree & tree, const std::string & expr, bool negate, uint8_t parent)
 {
@@ -1006,6 +1023,7 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
     case plansys2_msgs::msg::Node::EXISTS:
     case plansys2_msgs::msg::Node::FORALL:
     case plansys2_msgs::msg::Node::IMPLY:
+    case plansys2_msgs::msg::Node::WHEN:
       default_node_type = plansys2_msgs::msg::Node::PREDICATE;
       break;
   }
@@ -1048,6 +1066,21 @@ plansys2_msgs::msg::Node::SharedPtr fromString(
           }
         }
 
+        return node;
+      }
+    case plansys2_msgs::msg::Node::WHEN: {
+        // Never negated: a condition and an effect, each as written
+        auto node = std::make_shared<plansys2_msgs::msg::Node>();
+        node->node_type = node_type;
+        node->node_id = tree.nodes.size();
+        tree.nodes.push_back(*node);
+
+        for (const auto & e : getSubExpr(wexpr)) {
+          auto child = fromString(tree, e, false, node_type);
+          if (child) {
+            tree.nodes[node->node_id].children.push_back(child->node_id);
+          }
+        }
         return node;
       }
     case plansys2_msgs::msg::Node::NOT: {

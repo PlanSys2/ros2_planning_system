@@ -135,55 +135,25 @@ ProblemExpert::getInstance(const std::string & instance_name)
 std::vector<plansys2::Predicate>
 ProblemExpert::getPredicates()
 {
-  std::vector<plansys2::Predicate> ret = predicates_;
+  // With the derived predicates, to a fixpoint: they can read each other
+  return derive(derivedRules(), predicates_, functions_);
+}
 
-  auto derived_predicates = domain_expert_->getDerivedPredicates();
-  for (auto derived_name : derived_predicates) {
-    auto derived = domain_expert_->getDerivedPredicate(derived_name.predicate.name);
-    for (auto d : derived) {
-      std::vector<std::vector<std::string>> parameters_vector;
-      for (size_t i = 0; i < d.predicate.parameters.size(); i++) {
-        // Objects of the type, or of any of its subtypes
-        const auto & type = d.predicate.parameters[i].type;
-        const auto sub_types = domain_expert_->getSubTypes(type);
-        std::vector<std::string> p_vector;
-        for (const auto & instance : instances_) {
-          if (instance.type == type || type.empty() || type == "object" ||
-            std::find(sub_types.begin(), sub_types.end(), instance.type) != sub_types.end())
-          {
-            p_vector.push_back(instance.name);
-          }
-        }
-        parameters_vector.push_back(p_vector);
-      }
-      std::vector<std::vector<std::string>> possible_parameters_values;
-      std::vector<std::string> aux;
-      plansys2::cart_product(
-        possible_parameters_values, aux, parameters_vector.begin(), parameters_vector.end());
-
-      for (auto parameters_values : possible_parameters_values) {
-        std::map<std::string, std::string> replace;
-        for (size_t i = 0; i < d.predicate.parameters.size(); i++) {
-          replace["?" + std::to_string(i)] = parameters_values[i];
-        }
-        auto tree_replaced = plansys2::replace_children_param(
-          d.preconditions, d.preconditions.nodes[0].node_id, replace);
-        bool result = check(tree_replaced, predicates_, functions_);
-        if (result) {
-          plansys2::Predicate inferred_predicate;
-          inferred_predicate.node_type = plansys2_msgs::msg::Node::PREDICATE;
-          inferred_predicate.name = d.predicate.name;
-          for (size_t i = 0; i < d.predicate.parameters.size(); i++) {
-            plansys2_msgs::msg::Param param;
-            param.name = replace.at("?" + std::to_string(i));
-            inferred_predicate.parameters.push_back(param);
-          }
-          ret.push_back(inferred_predicate);
-        }
+std::vector<DerivedRule>
+ProblemExpert::derivedRules()
+{
+  std::vector<plansys2::Derived> derived;
+  std::set<std::string> names;
+  for (const auto & d : domain_expert_->getDerivedPredicates()) {
+    if (names.insert(d.predicate.name).second) {
+      for (const auto & rule : domain_expert_->getDerivedPredicate(d.predicate.name)) {
+        derived.push_back(rule);
       }
     }
   }
-  return ret;
+  return make_derived_rules(
+    derived, instances_,
+    [this](const std::string & type) {return domain_expert_->getSubTypes(type);});
 }
 
 bool
@@ -589,14 +559,10 @@ ProblemExpert::existPredicate(const plansys2::Predicate & predicate)
     i++;
   }
 
-  if (!found) {
-    std::vector<std::string> parameters_names;
-    std::for_each(
-      predicate.parameters.begin(), predicate.parameters.end(),
-      [&](auto p) {parameters_names.push_back(p.name);});
-    auto derived_predicates = domain_expert_->getDerivedPredicate(predicate.name, parameters_names);
-    for (auto derived : derived_predicates) {
-      if (check(derived.preconditions, predicates_, functions_)) {
+  // A derived one, only if it is
+  if (!found && !domain_expert_->getDerivedPredicate(predicate.name).empty()) {
+    for (const auto & p : derive(derivedRules(), predicates_, functions_)) {
+      if (parser::pddl::checkNodeEquality(p, predicate)) {
         found = true;
         break;
       }

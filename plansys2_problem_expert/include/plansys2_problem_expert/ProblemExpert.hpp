@@ -23,6 +23,7 @@
 
 #include "plansys2_msgs/msg/tree.hpp"
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
+#include "plansys2_problem_expert/Utils.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
 
 namespace plansys2
@@ -306,6 +307,9 @@ public:
   bool updateDomain(const std::string & domain);
 
 private:
+  // The derived predicates of the domain over the instances of the problem
+  std::vector<DerivedRule> derivedRules();
+
   /**
    * @brief Check if all predicates and functions in a tree are valid.
    *

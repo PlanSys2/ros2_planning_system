@@ -15,6 +15,7 @@
 #ifndef PLANSYS2_PROBLEM_EXPERT__UTILS_HPP_
 #define PLANSYS2_PROBLEM_EXPERT__UTILS_HPP_
 
+#include <functional>
 #include <tuple>
 #include <memory>
 #include <string>
@@ -303,6 +304,40 @@ void cart_product(
   std::vector<std::string> & rvi,
   std::vector<std::vector<std::string>>::const_iterator me,
   std::vector<std::vector<std::string>>::const_iterator end);
+
+/// A derived predicate rule, with the objects each of its parameters ranges over
+struct DerivedRule
+{
+  plansys2::Derived derived;
+  std::vector<std::vector<std::string>> objects;
+};
+
+/**
+ * @brief The rules of some derived predicates over some objects.
+ * @param[in] derived The rules, with ?0, ?1... as parameters.
+ * @param[in] instances The objects.
+ * @param[in] sub_types The subtypes of a type, if its parameter does not carry them: their
+ *   objects fit the type too.
+ * @return The rules.
+ */
+std::vector<DerivedRule> make_derived_rules(
+  const std::vector<plansys2::Derived> & derived,
+  const std::vector<plansys2::Instance> & instances,
+  const std::function<std::vector<std::string>(const std::string &)> & sub_types = {});
+
+/**
+ * @brief A state with its derived predicates, to a fixpoint: a rule can read other derived
+ * predicates, or its own (reachability). Derived predicates already in the state are
+ * recomputed.
+ * @param[in] rules The rules, from make_derived_rules.
+ * @param[in] predicates The state.
+ * @param[in] functions The functions of the state.
+ * @return The predicates of the state, the derived ones included.
+ */
+std::vector<plansys2::Predicate> derive(
+  const std::vector<DerivedRule> & rules,
+  const std::vector<plansys2::Predicate> & predicates,
+  const std::vector<plansys2::Function> & functions);
 }  // namespace plansys2
 
 

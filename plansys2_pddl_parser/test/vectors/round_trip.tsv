@@ -79,3 +79,8 @@ UNKNOWN	((
 UNKNOWN	)		
 UNKNOWN	(not)		
 UNKNOWN	(?x)	?x	PARAMETER
+UNKNOWN	(when (door_open d1) (robot_at r1 office))	(when (door_open d1) (robot_at r1 office))	WHEN PREDICATE PREDICATE
+UNKNOWN	(and (lit) (when (and (on ?l) (not (broken ?l))) (and (bright ?r) (not (dark ?r)))))	(and (lit)(when (and (on ?l)(not (broken ?l))) (and (bright ?r)(not (dark ?r)))))	AND PREDICATE WHEN AND PREDICATE NOT PREDICATE AND PREDICATE NOT PREDICATE
+UNKNOWN	(forall (?r - room) (when (dirty ?r) (not (dirty ?r))))	(forall (?r - room) (when (dirty ?r) (not (dirty ?r))))	FORALL WHEN PREDICATE NOT PREDICATE
+UNKNOWN	(when (>= (battery r1) 10) (increase (charged_count) 1))	(when (>= (battery r1) 10.000000) (increase (charged_count) 1.000000))	WHEN EXPRESSION FUNCTION NUMBER FUNCTION_MODIFIER FUNCTION NUMBER
+UNKNOWN	(when_done)	(when_done)	PREDICATE

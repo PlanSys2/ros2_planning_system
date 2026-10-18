@@ -17,6 +17,8 @@ uint8 EXISTS = 12
 # Values are unique across node, expression and modifier types
 uint8 FORALL = 27
 uint8 IMPLY = 28
+# Conditional effect: its children are the condition and the effect
+uint8 WHEN = 29
 
 # Expression types
 uint8 COMP_EQ = 13

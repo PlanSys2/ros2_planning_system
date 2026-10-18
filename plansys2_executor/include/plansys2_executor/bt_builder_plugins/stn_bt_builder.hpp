@@ -345,6 +345,21 @@ protected:
   plansys2_msgs::msg::Tree get_conditions(const ActionStamped & action) const;
 
   /**
+   * @brief The conditions that order an event: what it requires, and the condition of each of
+   * its conditional effects as it was in the plan, or its negation if it was false.
+   *
+   * Executed in another order, a conditional effect would give another outcome.
+   *
+   * @param[in] action The event.
+   * @param[in] happenings The happenings of the plan.
+   * @param[in] states The state at each happening.
+   * @return Tree representing the conditions.
+   */
+  plansys2_msgs::msg::Tree get_ordering_conditions(
+    const std::pair<int64_t, ActionStamped> & action, const std::set<int64_t> & happenings,
+    const std::map<int64_t, StateVec> & states) const;
+
+  /**
    * @brief Gets the effects produced by an action.
    *
    * Returns different effects based on the action type (start, end).
@@ -353,6 +368,26 @@ protected:
    * @return Tree representing the effects.
    */
   plansys2_msgs::msg::Tree get_effects(const ActionStamped & action) const;
+
+  /**
+   * @brief The effects an event can give while it runs, to find what it threatens: those of a
+   * non-durative action also at its start.
+   *
+   * @param[in] action The event.
+   * @return Tree representing the effects.
+   */
+  plansys2_msgs::msg::Tree get_threat_effects(const ActionStamped & action) const;
+
+  /**
+   * @brief Whether two effects cannot happen in either order: one adds a fact the other deletes,
+   * or both change a function. As written, whatever the state.
+   *
+   * @param[in] first The first effects.
+   * @param[in] second The second effects.
+   * @return True if their order changes the outcome.
+   */
+  static bool interfere(
+    const plansys2_msgs::msg::Tree & first, const plansys2_msgs::msg::Tree & second);
 
   /**
    * @brief Prunes redundant paths in the graph.
