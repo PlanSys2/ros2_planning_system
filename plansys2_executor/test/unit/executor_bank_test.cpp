@@ -15,11 +15,13 @@
 // Every solvable task of the bank that PlanSys2 loads is planned and executed to the end, and
 // its goal holds in the problem expert afterwards
 
+#include <atomic>
 #include <chrono>
 #include <cstdlib>
 #include <memory>
 #include <set>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "ament_index_cpp/get_package_share_path.hpp"
@@ -39,6 +41,7 @@
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "rosgraph_msgs/msg/clock.hpp"
 
 using namespace std::chrono_literals;  // NOLINT
 using Transition = lifecycle_msgs::msg::Transition;
@@ -47,9 +50,7 @@ namespace
 {
 
 // Not executable yet: each one comes with its phase of the Kairos work
-const std::set<std::string> kNotLoaded = {
-  "continuous-effects", "preferences",
-  "processes-events", "trajectory-constraints"};
+const std::set<std::string> kNotLoaded = {"preferences", "trajectory-constraints"};
 
 // Does any action at once: the executor applies its effects
 class Performer : public plansys2::ActionExecutorClient
@@ -66,9 +67,53 @@ private:
   void do_work() override {finish(true, 1.0, "done");}
 };
 
+// Time ten times faster than the wall: what a plan lasts (PDDL+, timed literals) does not slow
+// the tests. Every node reads it with use_sim_time; each isolated test has its ROS domain
+class FastClock
+{
+public:
+  explicit FastClock(double factor = 10.0)
+  : node_(rclcpp::Node::make_shared("bank_clock")),
+    publisher_(node_->create_publisher<rosgraph_msgs::msg::Clock>("/clock", 10))
+  {
+    publish();
+    thread_ = std::thread(
+      [this, factor]() {
+        while (running_) {
+          std::this_thread::sleep_for(5ms);
+          seconds_ += 0.005 * factor;
+          publish();
+        }
+      });
+  }
+
+  ~FastClock()
+  {
+    running_ = false;
+    thread_.join();
+  }
+
+  double seconds() const {return seconds_;}
+
+private:
+  void publish()
+  {
+    rosgraph_msgs::msg::Clock clock;
+    clock.clock = rclcpp::Time(static_cast<int64_t>(seconds_ * 1e9));
+    publisher_->publish(clock);
+  }
+
+  rclcpp::Node::SharedPtr node_;
+  rclcpp::Publisher<rosgraph_msgs::msg::Clock>::SharedPtr publisher_;
+  std::atomic<double> seconds_ {1000.0};
+  std::atomic<bool> running_ {true};
+  std::thread thread_;
+};
+
 // The nodes of PlanSys2 for one task, with a performer per action
 struct Run
 {
+  FastClock clock;
   std::shared_ptr<plansys2::DomainExpertNode> domain_node;
   std::shared_ptr<plansys2::ProblemExpertNode> problem_node;
   std::shared_ptr<plansys2::PlannerNode> planner_node;
@@ -91,9 +136,20 @@ void execute(const parser::pddl::BankCase & task, const std::string & bt_builder
   std::vector<rclcpp_lifecycle::LifecycleNode::SharedPtr> experts = {
     run.domain_node, run.problem_node, run.planner_node, run.executor_node};
   for (auto & node : experts) {
+    node->set_parameter({"use_sim_time", true});
     run.exe.add_node(node->get_node_base_interface());
   }
   run.spinner = std::make_unique<plansys2::testing::ExecutorThread>(run.exe);
+  ASSERT_TRUE(
+    plansys2::testing::wait_for(
+      [&]() {
+        for (auto & node : experts) {
+          if (node->now().seconds() < 999.0) {
+            return false;
+          }
+        }
+        return true;
+      }, 5s));
   for (auto transition : {Transition::TRANSITION_CONFIGURE, Transition::TRANSITION_ACTIVATE}) {
     for (auto & node : experts) {
       node->trigger_transition(transition);
@@ -116,6 +172,7 @@ void execute(const parser::pddl::BankCase & task, const std::string & bt_builder
   }
   for (const auto & action : actions) {
     auto performer = std::make_shared<Performer>("bank_" + action, action);
+    performer->set_parameter({"use_sim_time", true});
     run.exe.add_node(performer->get_node_base_interface());
     performer->trigger_transition(Transition::TRANSITION_CONFIGURE);
     run.performers.push_back(performer);

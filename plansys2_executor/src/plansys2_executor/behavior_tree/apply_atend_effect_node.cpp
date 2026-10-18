@@ -53,6 +53,24 @@ ApplyAtEndEffect::tick()
 
   auto & info = (*action_map_)[action];
   if (!info.at_end_effects_applied) {
+    // PDDL+: what acts while it runs needs all of its planned duration, however soon its
+    // performer is done
+    bool timed = false;
+    if (config().blackboard->get("timed_execution", timed) && timed &&
+      info.action_info.is_durative_action() && info.at_start_effects_applied)
+    {
+      auto now = node_ ? node_->now() : rclcpp::Clock(RCL_ROS_TIME).now();
+      if ((now - info.at_start_effects_applied_time).seconds() + 1e-3 < info.duration) {
+        return BT::NodeStatus::RUNNING;
+      }
+    }
+
+    // Its continuous effects end with it
+    if (!info.action_info.is_empty() &&
+      !info.action_info.get_continuous_effects().nodes.empty())
+    {
+      problem_client_->setContinuousEffect(action, {}, false);
+    }
     if (!apply(effect, problem_client_, 0)) {
       info.execution_error_info = "Error applying at end effects";
       return BT::NodeStatus::FAILURE;

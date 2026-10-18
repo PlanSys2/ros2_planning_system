@@ -61,6 +61,17 @@ ApplyAtStartEffect::tick()
         return BT::NodeStatus::FAILURE;
       }
     }
+    // Its continuous effects act from now on, integrated by the problem expert
+    const auto continuous = info.action_info.is_empty() ?
+      plansys2_msgs::msg::Tree() : info.action_info.get_continuous_effects();
+    if (!continuous.nodes.empty() &&
+      !problem_client_->setContinuousEffect(action, continuous, true))
+    {
+      undo(info.at_start_changes, problem_client_);
+      info.at_start_changes.clear();
+      info.execution_error_info = "Error starting its continuous effects";
+      return BT::NodeStatus::FAILURE;
+    }
     info.at_start_effects_applied = true;
     auto now = node_ ? node_->now() : rclcpp::Clock(RCL_ROS_TIME).now();
     info.at_start_effects_applied_time = now;

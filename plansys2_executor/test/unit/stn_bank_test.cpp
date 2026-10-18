@@ -45,6 +45,7 @@ class TestableSTN : public plansys2::STNBTBuilder
 public:
   using STNBTBuilder::build_stn;
   using STNBTBuilder::check_paths;
+  using STNBTBuilder::get_tree;
 };
 
 plansys2_msgs::msg::Plan make_plan(
@@ -211,6 +212,26 @@ TEST_F(STNBankTest, required_concurrency_ends_in_order)
     after(
       graph, {"(pass_door r2 office_door corridor office)", 20.002, ActionType::END},
       {"(hold_door r3 office_door office corridor)", 20.002, ActionType::END}));
+}
+
+// Each action is executed once in its tree, from its start: an end with another parent too
+// had its execution block there as well, and checked its requirements before its start
+TEST_F(STNBankTest, each_action_runs_once_in_its_tree)
+{
+  load("processes-events/p1");
+  const auto tree = builder_->get_tree(
+    make_plan({{0.0, "(start_charge r1 dock)", 0.0}, {10.0, "(move r1 dock hall)", 0.0}}));
+  ASSERT_FALSE(tree.empty());
+  for (const std::string action : {"(start_charge r1 dock):0", "(move r1 dock hall):10000"}) {
+    size_t count = 0;
+    for (auto pos = tree.find("<ExecuteAction action=\"" + action + "\"");
+      pos != std::string::npos;
+      pos = tree.find("<ExecuteAction action=\"" + action + "\"", pos + 1))
+    {
+      count++;
+    }
+    EXPECT_EQ(count, 1u) << action << "\n" << tree;
+  }
 }
 
 // The action of a plan item, with the duration the plan chose wherever it is read

@@ -87,6 +87,10 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
   // An action whose at start requirements do not hold this long fails, instead of waiting for
   // ever (0: no limit)
   this->declare_parameter<double>("at_start_requirements_timeout", 30.0);
+  // PDDL+ plans: actions at their planned times (always if the domain has processes, events or
+  // continuous effects), and how long the goal may take to hold once the plan has ended
+  this->declare_parameter<bool>("timed_execution", false);
+  this->declare_parameter<double>("plan_end_goal_timeout", 5.0);
   this->declare_parameter("action_timeouts.actions", std::vector<std::string>{});
   // Declaring individual action parameters so they can be queried on the command line
   auto action_timeouts_actions = this->get_parameter("action_timeouts.actions").as_string_array();
@@ -528,6 +532,10 @@ ExecutorNode::get_tree_from_plan(
   blackboard->set("problem_client", problem_client_);
   blackboard->set("bt_builder", bt_builder);
   blackboard->set("stn_relaxed_timing", this->get_parameter("stn_relaxed_timing").as_bool());
+  runtime_info.plan_start = now();
+  runtime_info.tree_done = false;
+  blackboard->set("plan_start", runtime_info.plan_start);
+  blackboard->set("timed_execution", is_timed(runtime_info));
   // Added blackboard keys for compatibility with other nodes
   blackboard->set("bt_loop_duration", std::chrono::milliseconds(200));
   blackboard->set("server_timeout", std::chrono::milliseconds(250));
@@ -548,6 +556,44 @@ ExecutorNode::get_tree_from_plan(
   }
 
   return runtime_info.current_tree != nullptr;
+}
+
+bool
+ExecutorNode::is_timed(const PlanRuntineInfo & runtime_info)
+{
+  if (get_parameter("timed_execution").as_bool() || runtime_info.complete_plan.has_end) {
+    return true;
+  }
+  if (!domain_client_->getProcesses().empty() || !domain_client_->getEvents().empty()) {
+    return true;
+  }
+  if (runtime_info.action_map) {
+    for (const auto & [id, info] : *runtime_info.action_map) {
+      (void)id;
+      if (!info.action_info.is_empty() &&
+        !info.action_info.get_continuous_effects().nodes.empty())
+      {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+void
+ExecutorNode::stop_continuous_effects(PlanRuntineInfo & runtime_info)
+{
+  if (!runtime_info.action_map) {
+    return;
+  }
+  for (const auto & [id, info] : *runtime_info.action_map) {
+    if (!info.action_info.is_empty() &&
+      !info.action_info.get_continuous_effects().nodes.empty() &&
+      info.at_start_effects_applied && !info.at_end_effects_applied)
+    {
+      problem_client_->setContinuousEffect(id, {}, false);
+    }
+  }
 }
 
 bool
@@ -1166,11 +1212,33 @@ ExecutorNode::execution_step()
     case STATE_EXECUTING:
       {
         BT::NodeStatus status = BT::NodeStatus::FAILURE;
-        try {
-          status = runtime_info_.current_tree->tree.tickOnce();
-        } catch (std::exception & e) {
-          std::cerr << e.what() << std::endl;
-          executor_state_ = STATE_FAILED;
+        if (runtime_info_.tree_done) {
+          // PDDL+: the actions are done; the plan ends at its end, with its goal holding
+          status = BT::NodeStatus::RUNNING;
+          const double elapsed = (now() - runtime_info_.plan_start).seconds();
+          if (elapsed >= runtime_info_.complete_plan.end) {
+            const double deadline = runtime_info_.complete_plan.end +
+              get_parameter("plan_end_goal_timeout").as_double();
+            if (problem_client_->isGoalSatisfied(problem_client_->getGoal())) {
+              status = BT::NodeStatus::SUCCESS;
+            } else if (elapsed > deadline) {
+              RCLCPP_ERROR(
+                get_logger(), "[%s] The goal does not hold at the end of the plan (%.3f s)",
+                get_name(), runtime_info_.complete_plan.end);
+              status = BT::NodeStatus::FAILURE;
+            }
+          }
+        } else {
+          try {
+            status = runtime_info_.current_tree->tree.tickOnce();
+          } catch (std::exception & e) {
+            std::cerr << e.what() << std::endl;
+            executor_state_ = STATE_FAILED;
+          }
+          if (status == BT::NodeStatus::SUCCESS && runtime_info_.complete_plan.has_end) {
+            runtime_info_.tree_done = true;
+            status = BT::NodeStatus::RUNNING;
+          }
         }
 
         update_plan(runtime_info_);
@@ -1264,6 +1332,7 @@ ExecutorNode::execution_step()
       }
       break;
     case STATE_ABORTING:
+      stop_continuous_effects(runtime_info_);
       cancel_all_running_actions(runtime_info_);
 
       result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
@@ -1276,6 +1345,7 @@ ExecutorNode::execution_step()
       executor_state_ = STATE_IDLE;
       break;
     case STATE_CANCELLED:
+      stop_continuous_effects(runtime_info_);
       cancel_all_running_actions(runtime_info_);
 
       result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
@@ -1288,6 +1358,7 @@ ExecutorNode::execution_step()
       executor_state_ = STATE_IDLE;
       break;
     case STATE_FAILED:
+      stop_continuous_effects(runtime_info_);
       cancel_all_running_actions(runtime_info_);
 
       result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
@@ -1301,6 +1372,7 @@ ExecutorNode::execution_step()
       executor_state_ = STATE_IDLE;
       break;
     case STATE_ERROR:
+      stop_continuous_effects(runtime_info_);
       cancel_all_running_actions(runtime_info_);
 
       result->result = plansys2_msgs::action::ExecutePlan::Result::FAILURE;
@@ -1313,6 +1385,7 @@ ExecutorNode::execution_step()
       executor_state_ = STATE_IDLE;
       break;
     case STATE_SUCCEDED:
+      stop_continuous_effects(runtime_info_);
       result->result = plansys2_msgs::action::ExecutePlan::Result::SUCCESS;
       result->action_execution_status = get_feedback_info(runtime_info_.action_map);
 

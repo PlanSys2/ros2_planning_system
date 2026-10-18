@@ -599,6 +599,13 @@ SimpleBTBuilder::build_action_graph(const plansys2_msgs::msg::Plan & current_pla
       remove_existing_requirements(requirements, timed_predicates, timed_functions);
     }
 
+    // PDDL+: the dynamics give them while the plan runs; its tree waits for them
+    requirements.erase(
+      std::remove_if(
+        requirements.begin(), requirements.end(),
+        [this](const plansys2_msgs::msg::Tree & req) {return reads_dynamic(req);}),
+      requirements.end());
+
     for (const auto & req : requirements) {
       std::cerr << "[ERROR] requirement not met: [" <<
         parser::pddl::toString(req) << "]" << std::endl;

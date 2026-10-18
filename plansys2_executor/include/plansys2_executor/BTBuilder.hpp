@@ -333,12 +333,18 @@ protected:
   void apply_effects(
     const plansys2_msgs::msg::Tree & effects, std::vector<plansys2::Predicate> & predicates,
     std::vector<plansys2::Function> & functions) const;
-  // Forgets the derived predicate rules and the timed facts: a new plan reads them again
+  // Forgets the derived predicate rules, the timed facts and the dynamic facts: a new plan reads
+  // them again
   void reset_derived_rules() const
   {
     derived_rules_.reset();
     timed_events_.reset();
+    dynamic_names_.reset();
   }
+
+  // PDDL+: whether conditions read a fact the dynamics change (processes, events, continuous
+  // effects). A discrete simulation of the plan cannot tell them: its tree waits for them
+  bool reads_dynamic(const plansys2_msgs::msg::Tree & conditions) const;
 
   // The timed facts of the problem, as events of the plan at their time, with only effects
   std::vector<ActionStamped> timed_events() const;
@@ -352,6 +358,7 @@ private:
   mutable std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   mutable std::shared_ptr<const std::vector<plansys2::DerivedRule>> derived_rules_;
   mutable std::optional<std::vector<ActionStamped>> timed_events_;
+  mutable std::optional<std::set<std::string>> dynamic_names_;
 };
 
 }  // namespace plansys2

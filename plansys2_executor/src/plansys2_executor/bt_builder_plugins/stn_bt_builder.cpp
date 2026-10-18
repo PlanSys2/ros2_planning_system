@@ -173,6 +173,10 @@ STNBTBuilder::is_executable(const plansys2_msgs::msg::Plan & plan) const
     }
     auto state = states.at(*previous);
     if (!can_apply(item, simple_plan, *happening, state)) {
+      // PDDL+: the dynamics give it while the plan runs; its tree waits for it
+      if (reads_dynamic(get_conditions(item.second))) {
+        continue;
+      }
       std::cerr << "STNBTBuilder: " << item.second.expression << " (" <<
         to_string(item.second.type) << ") cannot be applied: the plan cannot be executed" <<
         std::endl;
@@ -1314,17 +1318,21 @@ STNBTBuilder::get_flow(
   int l = level;
   const auto action_id = to_action_id(node->action, action_time_precision_);
 
-  if (used.find(node) != used.end()) {
-    std::string parent_id;
-    std::string parent_type;
-    if (prev_node) {
-      parent_id = to_action_id(prev_node->action, action_time_precision_);
-      parent_type = to_string(prev_node->action.type);
-    }
+  // Waits for its parent: the node runs where it was used, or from its own start
+  auto wait_for_parent = [&]() {
+      std::string parent_id;
+      std::string parent_type;
+      if (prev_node) {
+        parent_id = to_action_id(prev_node->action, action_time_precision_);
+        parent_type = to_string(prev_node->action.type);
+      }
+      return t(l) + "<WaitAction action=\"" +
+             action_id + " " + to_string(node->action.type) + " " +
+             parent_id + " " + parent_type + "\"/>\n";
+    };
 
-    return t(l) + "<WaitAction action=\"" +
-           action_id + " " + to_string(node->action.type) + " " +
-           parent_id + " " + parent_type + "\"/>\n";
+  if (used.find(node) != used.end()) {
+    return wait_for_parent();
   }
 
   bool is_special = false;
@@ -1340,6 +1348,15 @@ STNBTBuilder::get_flow(
 
   if (!is_special) {
     used.insert(node);
+  }
+
+  // An end reached from another parent than its start runs from its start: executed here too,
+  // its action would run, and check its requirements, before it starts
+  const bool leaf = node->output_arcs.empty() ||
+    (node->output_arcs.size() == 1 &&
+    std::get<0>(*node->output_arcs.begin())->action.type == ActionType::GOAL);
+  if (is_special && leaf) {
+    return wait_for_parent();
   }
 
   if (node->output_arcs.size() == 0) {

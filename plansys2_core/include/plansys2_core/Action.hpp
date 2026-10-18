@@ -191,6 +191,8 @@ public:
   plansys2_msgs::msg::Tree get_at_end_requirements() const;
   plansys2_msgs::msg::Tree get_at_start_effects() const;
   plansys2_msgs::msg::Tree get_at_end_effects() const;
+  // While it runs (PDDL 2.1), with #t: only durative actions have them
+  plansys2_msgs::msg::Tree get_continuous_effects() const;
 
   bool is_action() const {return action_ && std::holds_alternative<plansys2::Action>(*action_);}
 

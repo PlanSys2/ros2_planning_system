@@ -85,6 +85,9 @@ struct PlanRuntineInfo
   std::vector<plansys2_msgs::msg::Tree> ordered_sub_goals;
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map;
   TreeInfo::Ptr current_tree;
+  // When its tree started, and whether it is done and the plan waits for its end (PDDL+)
+  rclcpp::Time plan_start {0, 0, RCL_ROS_TIME};
+  bool tree_done = false;
 };
 
 /**
@@ -354,6 +357,10 @@ protected:
    * @param[in,out] runtime_info Runtime information containing the actions.
    */
   void cancel_all_running_actions(PlanRuntineInfo & runtime_info);
+  // The continuous effects still active of a plan's actions end, whatever ended the plan
+  void stop_continuous_effects(PlanRuntineInfo & runtime_info);
+  // PDDL+: what happens depends on time, so actions start at their planned times
+  bool is_timed(const PlanRuntineInfo & runtime_info);
 
   /**
    * @brief Takes back the at start effects of the actions that started and did not end.

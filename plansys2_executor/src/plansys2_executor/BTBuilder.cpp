@@ -75,7 +75,7 @@ BTBuilder::plan_item_action(
     // The duration the plan chose, wherever the action reads it
     for (auto * tree : {&action->at_start_requirements, &action->over_all_requirements,
         &action->at_end_requirements, &action->at_start_effects, &action->at_end_effects,
-        &action->duration})
+        &action->duration, &action->continuous_effects})
     {
       parser::pddl::bindDuration(*tree, item.duration);
     }
@@ -125,6 +125,52 @@ BTBuilder::timed_events() const
     std::cerr << "timed_events: the problem cannot be read: " << e.what() << std::endl;
   }
   return *timed_events_;
+}
+
+bool
+BTBuilder::reads_dynamic(const plansys2_msgs::msg::Tree & conditions) const
+{
+  if (!dynamic_names_) {
+    // What the effects of processes, events and continuous effects change, by name
+    dynamic_names_.emplace();
+    auto collect = [this](const plansys2_msgs::msg::Tree & effects) {
+        for (const auto & node : effects.nodes) {
+          if (node.node_type == plansys2_msgs::msg::Node::FUNCTION_MODIFIER &&
+            !node.children.empty())
+          {
+            dynamic_names_->insert(effects.nodes[node.children[0]].name);
+          } else if (node.node_type == plansys2_msgs::msg::Node::PREDICATE) {
+            dynamic_names_->insert(node.name);
+          }
+        }
+      };
+    for (const auto & name : domain_client()->getProcesses()) {
+      if (auto process = domain_client()->getProcess(name)) {
+        collect(process->effects);
+      }
+    }
+    for (const auto & name : domain_client()->getEvents()) {
+      if (auto event = domain_client()->getEvent(name)) {
+        collect(event->effects);
+      }
+    }
+    for (const auto & name : domain_client()->getDurativeActions()) {
+      if (auto action = domain_client()->getDurativeAction(name)) {
+        collect(action->continuous_effects);
+      }
+    }
+  }
+  if (dynamic_names_->empty()) {
+    return false;
+  }
+  for (const auto & node : conditions.nodes) {
+    if ((node.node_type == plansys2_msgs::msg::Node::PREDICATE ||
+      node.node_type == plansys2_msgs::msg::Node::FUNCTION) && dynamic_names_->count(node.name))
+    {
+      return true;
+    }
+  }
+  return false;
 }
 
 void

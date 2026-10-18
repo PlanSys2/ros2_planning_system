@@ -57,6 +57,18 @@ WaitAtStartReq::tick()
     last_log_ = rclcpp::Time(0, 0, now.get_clock_type());
   }
 
+  // PDDL+: what happens meanwhile depends on time, so an action starts at its planned time,
+  // not before; its requirements are waited for from then on
+  bool timed = false;
+  rclcpp::Time plan_start;
+  if (config().blackboard->get("timed_execution", timed) && timed &&
+    config().blackboard->get("plan_start", plan_start) &&
+    (now - plan_start).seconds() + 1e-3 < info.plan_item.time)
+  {
+    waiting_since_ = now;
+    return BT::NodeStatus::RUNNING;
+  }
+
   auto reqs_as = info.action_info.get_at_start_requirements();
   auto reqs_oa = info.action_info.get_overall_requirements();
 
