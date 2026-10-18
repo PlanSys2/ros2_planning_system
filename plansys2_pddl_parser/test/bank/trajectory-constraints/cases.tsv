@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:constraints	the robot must carry the cup at some point and visit the hall at most once
+domain.pddl	p2.pddl	yes	:constraints	always, sometime-before, at-most-once and sometime over a two-item delivery
+domain.pddl	p3.pddl	no	:constraints	fetching the cup needs two separate visits to the hall, at-most-once forbids it

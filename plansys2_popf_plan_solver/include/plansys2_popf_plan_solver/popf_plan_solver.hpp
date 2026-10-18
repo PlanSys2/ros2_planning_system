@@ -103,7 +103,8 @@ public:
     const std::string & node_namespace = "");
 
   /**
-   * @brief What popf gives valid plans for. Not: negated or disjunctive conditions, when,
+   * @brief What popf gives valid plans for. Not: negated, disjunctive or existential
+   * conditions, either types (it deems them unsolvable), when,
    * derived predicates, :action-costs (its parser rejects it; total-cost with :fluents works),
    * ?duration inequalities and #t (it plans them at their bounds), constraints, object
    * fluents and PDDL+.

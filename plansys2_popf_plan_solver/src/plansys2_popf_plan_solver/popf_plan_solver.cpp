@@ -259,9 +259,8 @@ std::set<std::string>
 POPFPlanSolver::supported_requirements() const
 {
   return {
-    ":strips", ":typing", ":equality", ":existential-preconditions", ":universal-preconditions",
-    ":quantified-preconditions", ":fluents", ":numeric-fluents", ":durative-actions",
-    ":timed-initial-literals", ":preferences"};
+    ":strips", ":typing", ":equality", ":universal-preconditions", ":fluents",
+    ":numeric-fluents", ":durative-actions", ":timed-initial-literals", ":preferences"};
 }
 
 bool

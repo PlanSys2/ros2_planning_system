@@ -216,8 +216,14 @@ plansys2_msgs::msg::PlanArray
 PlannerNode::solve(
   const std::string & domain, const std::string & problem, std::string & error_info)
 {
-  // Only the solvers that plan with what the task uses; all of them if none does
-  const auto chosen = choose_solvers(pddl_requirements(domain, problem));
+  // Only the solvers that plan with what the task uses: the others give wrong plans or crash
+  std::string unsupported;
+  const auto chosen = choose_solvers(pddl_requirements(domain, problem), unsupported);
+  plansys2_msgs::msg::PlanArray plans;
+  if (chosen.empty()) {
+    error_info = unsupported;
+    return plans;
+  }
 
   std::map<std::string, std::future<std::optional<plansys2_msgs::msg::Plan>>> futures;
   for (auto & solver : solvers_) {
@@ -240,7 +246,6 @@ PlannerNode::solve(
     }
   }
 
-  plansys2_msgs::msg::PlanArray plans;
   std::vector<std::string> reasons;
   for (auto & [id, future] : futures) {
     // A solver error must not escape the service callback (#434)
@@ -252,7 +257,7 @@ PlannerNode::solve(
         reasons.push_back(
           id + " timed out after " + std::to_string(solver_timeout_.seconds()) + " s");
       } else {
-        reasons.push_back(id + " found no plan" + chosen.at(id));
+        reasons.push_back(id + " found no plan");
       }
     } catch (const std::exception & e) {
       RCLCPP_ERROR(get_logger(), "Solver %s failed: %s", id.c_str(), e.what());
@@ -267,37 +272,42 @@ PlannerNode::solve(
     });
 
   if (plans.plan_array.empty()) {
+    error_info = "Plan not found";
+    for (size_t i = 0; i < reasons.size(); i++) {
+      error_info += (i == 0 ? ": " : "; ") + reasons[i];
+    }
     // Only now, so the check never costs anything when there is a plan
-    error_info = check_pddl(domain, problem);
-    if (error_info.empty()) {
-      error_info = "Plan not found";
-      for (size_t i = 0; i < reasons.size(); i++) {
-        error_info += (i == 0 ? ": " : "; ") + reasons[i];
-      }
+    const auto unreadable = check_pddl(domain, problem);
+    if (!unreadable.empty()) {
+      error_info = unreadable + ". " + error_info;
     }
   }
 
   return plans;
 }
 
-std::map<std::string, std::string>
-PlannerNode::choose_solvers(const std::set<std::string> & needed) const
+std::set<std::string>
+PlannerNode::choose_solvers(const std::set<std::string> & needed, std::string & why) const
 {
-  std::map<std::string, std::string> chosen, all;
-  for (const auto & [id, solver] : solvers_) {
+  std::set<std::string> chosen;
+  why = "No solver plans with what the task uses:";
+  std::string separator = " ";
+  // By id, so the message is always the same
+  const std::map<std::string, PlanSolverBase::Ptr> sorted(solvers_.begin(), solvers_.end());
+  for (const auto & [id, solver] : sorted) {
     const auto missing = missing_requirements(needed, solver->supported_requirements());
     if (missing.empty()) {
-      chosen[id] = "";
-    } else {
-      std::string text = " (it does not plan with";
-      for (const auto & requirement : missing) {
-        text += " " + requirement;
-      }
-      all[id] = text + ")";
+      chosen.insert(id);
+      continue;
     }
+    why += separator + id + " does not plan with";
+    for (const auto & requirement : missing) {
+      why += " " + requirement;
+    }
+    separator = "; ";
   }
-  if (chosen.empty()) {
-    return all;  // Each one may still find a plan, and if not, the reason says why
+  if (!chosen.empty()) {
+    why.clear();
   }
   return chosen;
 }
@@ -309,13 +319,13 @@ PlannerNode::check_pddl(const std::string & domain, const std::string & problem)
   try {
     parsed_domain.parse(domain);
   } catch (const std::exception & e) {
-    return std::string("Invalid PDDL domain: ") + e.what();
+    return std::string("PlanSys2 cannot read the domain: ") + e.what();
   }
   try {
     parser::pddl::Instance parsed_problem(parsed_domain);
     parsed_problem.parse(problem);
   } catch (const std::exception & e) {
-    return std::string("Invalid PDDL problem: ") + e.what();
+    return std::string("PlanSys2 cannot read the problem: ") + e.what();
   }
   return "";
 }
@@ -357,8 +367,14 @@ PlannerNode::validate_domain_service_callback(
   (void)request_header;
   try {
     // The first solver that plans with what the domain uses
-    const auto chosen = choose_solvers(pddl_requirements(request->domain));
-    response->success = solvers_.at(chosen.begin()->first)->isDomainValid(
+    std::string unsupported;
+    const auto chosen = choose_solvers(pddl_requirements(request->domain), unsupported);
+    if (chosen.empty()) {
+      response->success = false;
+      response->error_info = unsupported;
+      return;
+    }
+    response->success = solvers_.at(*chosen.begin())->isDomainValid(
       request->domain, get_namespace());
     if (!response->success) {
       response->error_info = "Domain is not valid";

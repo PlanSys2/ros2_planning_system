@@ -18,8 +18,10 @@
 #include <string>
 #include <vector>
 
+#include "ament_index_cpp/get_package_share_path.hpp"
 #include "gtest/gtest.h"
 #include "plansys2_core/PddlRequirements.hpp"
+#include "plansys2_pddl_parser/PddlBank.hpp"
 
 using Set = std::set<std::string>;
 
@@ -128,6 +130,16 @@ TEST(pddl_requirements, fluents)
     plansys2::pddl_requirements(
       "(define (domain d) (:types room robot) (:functions (at ?r - robot) - room (fuel)))"),
     (Set{":numeric-fluents", ":object-fluents"}));
+  // Only object fluents, two typed by one "- room"
+  EXPECT_EQ(
+    plansys2::pddl_requirements(
+      "(define (domain d) (:types room robot)"
+      " (:functions (at ?r - robot) (home ?r - robot) - room))"),
+    Set{":object-fluents"});
+  EXPECT_EQ(
+    plansys2::pddl_requirements(
+      "(define (domain d) (:functions (fuel) (load) - number (pos) - room))"),
+    (Set{":numeric-fluents", ":object-fluents"}));
 }
 
 TEST(pddl_requirements, pddl3_and_pddl_plus)
@@ -194,5 +206,19 @@ TEST(pddl_requirements, missing)
       " (:constraints (always (p))))"))
   {
     EXPECT_TRUE(plansys2::known_pddl_requirements().count(requirement)) << requirement;
+  }
+}
+
+// Every task of the bank uses what its line says, and its feature shows in it
+TEST(pddl_requirements, the_bank)
+{
+  const auto cases = parser::pddl::read_pddl_bank(
+    ament_index_cpp::get_package_share_path("plansys2_pddl_parser") / "bank");
+  ASSERT_GE(cases.size(), 60u);
+  for (const auto & task : cases) {
+    EXPECT_EQ(plansys2::pddl_requirements(task.domain, task.problem), task.uses) << task.name;
+    for (const auto & requirement : task.uses) {
+      EXPECT_TRUE(plansys2::known_pddl_requirements().count(requirement)) << task.name;
+    }
   }
 }

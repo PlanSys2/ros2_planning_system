@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	-	carry one box to the next room
+domain.pddl	p2.pddl	yes	-	swap two boxes across a four-room corridor
+domain.pddl	p3.pddl	no	-	target room is not connected to the map

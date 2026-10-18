@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:continuous-effects :durative-actions :numeric-fluents	the battery grows continuously while charging, one charge gives one move
+domain.pddl	p2.pddl	yes	:continuous-effects :durative-actions :numeric-fluents	two robots share one charger, one needs two charges for two moves
+domain.pddl	p3.pddl	no	:continuous-effects :durative-actions :numeric-fluents	the robot can charge but no corridor leads into the office

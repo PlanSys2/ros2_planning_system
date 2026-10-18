@@ -23,7 +23,8 @@ namespace plansys2
 {
 
 /**
- * @brief Every PDDL requirement PlanSys2 knows, as written in PDDL (":conditional-effects").
+ * @brief Every PDDL requirement PlanSys2 knows, as written in PDDL (":conditional-effects"),
+ * and ":either-types", which PDDL has no flag for.
  * @return The requirements.
  */
 const std::set<std::string> & known_pddl_requirements();
@@ -31,7 +32,7 @@ const std::set<std::string> & known_pddl_requirements();
 /**
  * @brief The requirements a task uses, without parsing it.
  *
- * Those its syntax shows: :derived, when, or, forall, exists, preference, :constraints,
+ * Those its syntax shows: :derived, when, or, forall, exists, either, preference, :constraints,
  * :process, :event, #t, ?duration inequalities, functions, negated conditions and timed initial
  * literals. Domains declare more than they use (:adl), so a declared requirement counts only if
  * the syntax cannot show it, as :action-costs.

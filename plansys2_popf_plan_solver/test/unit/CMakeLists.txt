@@ -1,5 +1,8 @@
-ament_add_ros_isolated_gtest(popf_test popf_test.cpp TIMEOUT 60)
+# Kairos validates the plans of the bank
+find_package(kairos REQUIRED)
+ament_add_ros_isolated_gtest(popf_test popf_test.cpp TIMEOUT 120)
 target_link_libraries(popf_test
+  kairos::kairos
   ${PROJECT_NAME}
   ament_index_cpp::ament_index_cpp
   dl

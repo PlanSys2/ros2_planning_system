@@ -1,3 +1,12 @@
+# The bank, through the experts: what reaches the planner is what was loaded
+find_package(kairos REQUIRED)
+ament_add_gtest(bank_roundtrip_test bank_roundtrip_test.cpp TIMEOUT 120)
+target_link_libraries(bank_roundtrip_test
+  ${PROJECT_NAME}
+  ament_index_cpp::ament_index_cpp
+  kairos::kairos
+)
+
 ament_add_ros_isolated_gtest(utils_test utils_test.cpp TIMEOUT 60)
 target_link_libraries(utils_test
   ${PROJECT_NAME}

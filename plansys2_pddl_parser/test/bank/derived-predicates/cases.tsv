@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:derived-predicates	calibrate so the derived ready holds, then pick
+domain.pddl	p2.pddl	yes	:derived-predicates	charge and calibrate to derive ready, then deliver two packages
+domain.pddl	p3.pddl	no	:derived-predicates	no calibration target, so ready is never derived and nothing can be picked

@@ -16,6 +16,13 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}/test
 )
 
+# One feature per directory: also read by the tests of the planner and the solvers
+install(DIRECTORY bank DESTINATION share/${PROJECT_NAME})
+
+ament_add_gtest(bank_test bank_test.cpp TIMEOUT 60)
+target_link_libraries(bank_test ${PROJECT_NAME})
+target_compile_definitions(bank_test PRIVATE BANK_DIR="${CMAKE_CURRENT_SOURCE_DIR}/bank")
+
 ament_add_gtest(validate_tree_test validate_tree_test.cpp)
 target_link_libraries(validate_tree_test ${PROJECT_NAME})
 

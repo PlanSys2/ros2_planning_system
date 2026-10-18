@@ -14,6 +14,8 @@
 
 #include <unistd.h>
 
+#include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <memory>
@@ -29,7 +31,9 @@
 #include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 #include "pluginlib/class_loader.hpp"
+#include "kairos/kairos.hpp"
 #include "plansys2_core/PddlRequirements.hpp"
+#include "plansys2_pddl_parser/PddlBank.hpp"
 #include "plansys2_core/PlanSolverBase.hpp"
 #include "plansys2_core/TestUtils.hpp"
 
@@ -528,6 +532,77 @@ TEST(popf_plan_solver, supported_requirements_are_what_popf_plans_with)
     plansys2::missing_requirements(
       plansys2::pddl_requirements(with_fluents, cost_problem), supported).empty());
   EXPECT_TRUE(planner->getPlan(with_fluents, cost_problem, "popf_requirements"));
+}
+
+// The plan message as Kairos reads it: temporal if the domain has durative actions
+kairos::Plan to_kairos(const plansys2_msgs::msg::Plan & msg, const std::string & domain)
+{
+  kairos::Plan plan;
+  plan.temporal = domain.find(":durative-action") != std::string::npos;
+  for (size_t i = 0; i < msg.items.size(); i++) {
+    std::istringstream words(msg.items[i].action.substr(1, msg.items[i].action.size() - 2));
+    kairos::PlanStep step;
+    words >> step.name;
+    for (std::string arg; words >> arg; ) {
+      step.args.push_back(arg);
+    }
+    step.time = plan.temporal ? msg.items[i].time : static_cast<double>(i);
+    step.duration = plan.temporal ? msg.items[i].duration : 0.0;
+    plan.steps.push_back(step);
+  }
+  return plan;
+}
+
+bool valid(const parser::pddl::BankCase & task, const plansys2_msgs::msg::Plan & plan)
+{
+  kairos::ValidateOptions options;
+  options.epsilon = 0.001;
+  return kairos::validate_plan(
+    task.domain, task.problem, to_kairos(plan, task.domain), options).valid();
+}
+
+// Every task of the bank: popf solves what it declares, and fails, at least once, on each
+// requirement it does not
+TEST(popf_plan_solver, the_bank)
+{
+  const auto cases = parser::pddl::read_pddl_bank(
+    ament_index_cpp::get_package_share_path("plansys2_pddl_parser") / "bank");
+  ASSERT_GE(cases.size(), 60u);
+  auto planner = make_solver("popf_bank");
+  const auto supported = planner->supported_requirements();
+
+  std::set<std::string> excluded, justified;
+  int solved = 0;
+  const auto all = std::chrono::steady_clock::now();
+  for (const auto & task : cases) {
+    SCOPED_TRACE(task.name);
+    const auto missing = plansys2::missing_requirements(task.uses, supported);
+    excluded.insert(missing.begin(), missing.end());
+    bool pending = false;  // A requirement still without a case where popf fails
+    for (const auto & requirement : missing) {
+      pending = pending || !justified.count(requirement);
+    }
+    if (!missing.empty() && !pending) {
+      continue;  // Enough: popf is not given these
+    }
+
+    const auto start = std::chrono::steady_clock::now();
+    const auto plan = planner->getPlan(task.domain, task.problem, "popf_bank", 3s);
+    const auto took = std::chrono::duration<double>(std::chrono::steady_clock::now() - start);
+    EXPECT_LT(took.count(), 3.5);
+    if (missing.empty()) {
+      ASSERT_EQ(plan.has_value(), task.solvable);
+      if (plan) {
+        EXPECT_TRUE(valid(task, *plan));
+        solved++;
+      }
+    } else if (task.solvable && !(plan && valid(task, *plan))) {
+      justified.insert(missing.begin(), missing.end());
+    }
+  }
+  EXPECT_EQ(justified, excluded);
+  EXPECT_GE(solved, 15);
+  EXPECT_LT(std::chrono::duration<double>(std::chrono::steady_clock::now() - all).count(), 40.0);
 }
 
 TEST(popf_plan_solver, unwritable_output_dir_fails_without_running_popf)

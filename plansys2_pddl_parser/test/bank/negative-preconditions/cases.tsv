@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:negative-preconditions	move into a room without alarm and visit it
+domain.pddl	p2.pddl	yes	:negative-preconditions	patrol four rooms detouring around the alarmed kitchen
+domain.pddl	p3.pddl	no	:negative-preconditions	the only target room has a permanent alarm so it cannot be entered

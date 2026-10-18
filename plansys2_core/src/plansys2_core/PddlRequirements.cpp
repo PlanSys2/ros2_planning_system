@@ -89,6 +89,7 @@ void scan(
   int condition_depth = -1;  // Inside a precondition, condition or goal
   bool condition_next = false;
   int functions_depth = -1;  // Directly inside (:functions ...)
+  int untyped_functions = 0;  // Declared since the last "- type"
   int init_depth = -1;  // Directly inside (:init ...)
   int requirements_depth = -1;
 
@@ -101,7 +102,7 @@ void scan(
       }
       depth++;
       if (depth == functions_depth + 1 && functions_depth >= 0) {
-        needed.insert(":numeric-fluents");  // A function, numeric unless typed otherwise
+        untyped_functions++;  // Typed by the next "- type", numeric without one
       }
       const auto & head = at(i + 1);
       if (head == ":requirements") {
@@ -124,6 +125,8 @@ void scan(
         needed.insert(":durative-actions");
       } else if (head == "or" || head == "imply") {
         needed.insert(":disjunctive-preconditions");
+      } else if (head == "either") {
+        needed.insert(":either-types");
       } else if (head == "exists") {
         needed.insert(":existential-preconditions");
       } else if (head == "forall") {
@@ -141,6 +144,10 @@ void scan(
       }
       if (depth == functions_depth) {
         functions_depth = -1;
+        if (untyped_functions > 0) {
+          needed.insert(":numeric-fluents");
+        }
+        untyped_functions = 0;
       }
       if (depth == init_depth) {
         init_depth = -1;
@@ -155,8 +162,11 @@ void scan(
       condition_next = true;
     } else if (token == "#t") {
       needed.insert(":continuous-effects");
-    } else if (depth == functions_depth && token == "-" && is_object_type(at(i + 1))) {
-      needed.insert(":object-fluents");
+    } else if (depth == functions_depth && token == "-") {
+      if (untyped_functions > 0) {
+        needed.insert(is_object_type(at(i + 1)) ? ":object-fluents" : ":numeric-fluents");
+      }
+      untyped_functions = 0;
     }
   }
 }
@@ -170,7 +180,8 @@ const std::set<std::string> & known_pddl_requirements()
     ":existential-preconditions", ":universal-preconditions", ":quantified-preconditions",
     ":conditional-effects", ":fluents", ":numeric-fluents", ":object-fluents", ":adl",
     ":durative-actions", ":duration-inequalities", ":continuous-effects", ":derived-predicates",
-    ":timed-initial-literals", ":preferences", ":constraints", ":action-costs", ":time"};
+    ":timed-initial-literals", ":preferences", ":constraints", ":action-costs", ":time",
+    ":either-types"};
   return known;
 }
 
@@ -182,7 +193,7 @@ std::set<std::string> pddl_requirements(const std::string & domain, const std::s
     ":existential-preconditions", ":universal-preconditions", ":quantified-preconditions",
     ":conditional-effects", ":fluents", ":numeric-fluents", ":object-fluents", ":adl",
     ":durative-actions", ":duration-inequalities", ":continuous-effects", ":derived-predicates",
-    ":timed-initial-literals", ":preferences", ":constraints", ":time"};
+    ":timed-initial-literals", ":preferences", ":constraints", ":time", ":either-types"};
 
   std::set<std::string> needed, declared;
   scan(domain, false, needed, declared);

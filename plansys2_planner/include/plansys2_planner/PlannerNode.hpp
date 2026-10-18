@@ -173,6 +173,10 @@ protected:
   pluginlib::ClassLoader<plansys2::PlanSolverBase> lp_loader_;
   SolverMap solvers_;
 
+  // Runs the chosen solvers; when none finds a plan, error_info says why (#434)
+  plansys2_msgs::msg::PlanArray solve(
+    const std::string & domain, const std::string & problem, std::string & error_info);
+
 private:
   std::vector<std::string> default_ids_;
   std::vector<std::string> default_types_;
@@ -184,13 +188,10 @@ private:
   rclcpp::Service<plansys2_msgs::srv::GetPlanArray>::SharedPtr get_plan_array_service_;
   rclcpp::Service<plansys2_msgs::srv::ValidateDomain>::SharedPtr validate_domain_service_;
 
-  // The solvers that plan with all of needed, or all of them if none does, each with what it
-  // lacks (" (it does not plan with :time)"), empty if nothing
-  std::map<std::string, std::string> choose_solvers(const std::set<std::string> & needed) const;
-  // Runs the chosen solvers; when none finds a plan, error_info says why (#434)
-  plansys2_msgs::msg::PlanArray solve(
-    const std::string & domain, const std::string & problem, std::string & error_info);
-  // "Invalid PDDL ..." if the domain or problem does not parse, empty otherwise
+  // The solvers that plan with all of needed; if none, why says what each one lacks
+  std::set<std::string> choose_solvers(
+    const std::set<std::string> & needed, std::string & why) const;
+  // "PlanSys2 cannot read ..." if its parser cannot read them, empty otherwise
   static std::string check_pddl(const std::string & domain, const std::string & problem);
 };
 

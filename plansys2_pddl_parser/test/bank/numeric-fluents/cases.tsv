@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:numeric-fluents	battery is enough for one move and one patrol
+domain.pddl	p2.pddl	yes	:numeric-fluents	low battery forces a detour to the charger before patrolling two rooms
+domain.pddl	p3.pddl	no	:numeric-fluents	two moves and a patrol need 25 battery units, only 24 and no charger

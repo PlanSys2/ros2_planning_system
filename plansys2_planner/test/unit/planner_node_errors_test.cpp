@@ -321,12 +321,17 @@ TEST_F(PlannerErrorsTest, error_info_tells_why_there_is_no_plan)
   auto response = get_plan("(define (domain broken", read_pddl("problem_simple_1.pddl"));
   ASSERT_TRUE(response);
   ASSERT_FALSE(response->success);
-  ASSERT_EQ(response->error_info.rfind("Invalid PDDL domain", 0), 0u) << response->error_info;
+  ASSERT_EQ(response->error_info.rfind("PlanSys2 cannot read the domain", 0), 0u)
+    << response->error_info;
+  // And what the solver said too
+  ASSERT_NE(response->error_info.find(". Plan not found: POPF found no plan"), std::string::npos)
+    << response->error_info;
 
   response = get_plan(domain, "(define (problem broken) (:domain simple) (:objects");
   ASSERT_TRUE(response);
   ASSERT_FALSE(response->success);
-  ASSERT_EQ(response->error_info.rfind("Invalid PDDL problem", 0), 0u) << response->error_info;
+  ASSERT_EQ(response->error_info.rfind("PlanSys2 cannot read the problem", 0), 0u)
+    << response->error_info;
 
   // Valid PDDL with no plan
   response = get_plan(domain, read_pddl("problem_simple_2.pddl"));
@@ -409,14 +414,14 @@ TEST_F(PlannerErrorsTest, solvers_are_chosen_by_what_the_task_uses)
   EXPECT_EQ(full->checks + unknown->checks, 1);
 }
 
-TEST_F(PlannerErrorsTest, with_no_solver_for_the_task_all_try_and_the_error_says_why)
+// With no solver for what the task uses, none is given it: they give wrong plans or crash
+TEST_F(PlannerErrorsTest, with_no_solver_for_the_task_none_tries_and_the_error_says_why)
 {
   start_planner();
   planner_->remove_solver("POPF");
-  auto first = std::make_shared<DeclaringSolver>(
-    "first", std::set<std::string>{":strips"}, false);
+  auto first = std::make_shared<DeclaringSolver>("first", std::set<std::string>{":strips"});
   auto second = std::make_shared<DeclaringSolver>(
-    "second", std::set<std::string>{":strips", ":time"}, false);
+    "second", std::set<std::string>{":strips", ":time"});
   planner_->add_solver("FIRST", first);
   planner_->add_solver("SECOND", second);
 
@@ -428,25 +433,31 @@ TEST_F(PlannerErrorsTest, with_no_solver_for_the_task_all_try_and_the_error_says
   auto response = get_plan(domain, problem);
   ASSERT_TRUE(response);
   EXPECT_FALSE(response->success);
-  EXPECT_EQ(first->plans, 1);
-  EXPECT_EQ(second->plans, 1);
-  EXPECT_NE(
-    response->error_info.find(
-      "FIRST found no plan (it does not plan with :derived-predicates :negative-preconditions)"),
-    std::string::npos) << response->error_info;
-  EXPECT_NE(
-    response->error_info.find("SECOND found no plan (it does not plan with :derived-predicates"),
-    std::string::npos) << response->error_info;
+  EXPECT_EQ(first->plans, 0);
+  EXPECT_EQ(second->plans, 0);
+  EXPECT_EQ(
+    response->error_info,
+    "No solver plans with what the task uses: FIRST does not plan with :derived-predicates "
+    ":negative-preconditions; SECOND does not plan with :derived-predicates "
+    ":negative-preconditions");
 
-  // Without anything special both are tried and nothing is blamed on the task
+  // Nor the domain check
+  auto validate = std::make_shared<plansys2_msgs::srv::ValidateDomain::Request>();
+  validate->domain = domain;
+  auto valid = call<plansys2_msgs::srv::ValidateDomain>(validate_, validate);
+  ASSERT_TRUE(valid);
+  EXPECT_FALSE(valid->success);
+  EXPECT_EQ(valid->error_info.rfind("No solver plans with what the task uses: FIRST", 0), 0u);
+  EXPECT_EQ(first->checks + second->checks, 0);
+
+  // Without anything special both plan
   response = get_plan(
     "(define (domain d) (:requirements :strips) (:predicates (p))"
     " (:action a :parameters () :precondition (and (p)) :effect (p)))", problem);
   ASSERT_TRUE(response);
-  EXPECT_EQ(first->plans, 2);
-  EXPECT_EQ(second->plans, 2);
-  EXPECT_EQ(response->error_info.find("does not plan with"), std::string::npos)
-    << response->error_info;
+  EXPECT_TRUE(response->success);
+  EXPECT_EQ(first->plans, 1);
+  EXPECT_EQ(second->plans, 1);
 }
 
 int main(int argc, char ** argv)

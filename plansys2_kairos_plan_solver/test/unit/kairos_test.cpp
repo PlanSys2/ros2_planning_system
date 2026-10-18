@@ -29,6 +29,7 @@
 #include "plansys2_core/PddlRequirements.hpp"
 #include "plansys2_core/PlanSolverBase.hpp"
 #include "plansys2_kairos_plan_solver/kairos_plan_solver.hpp"
+#include "plansys2_pddl_parser/PddlBank.hpp"
 #include "pluginlib/class_loader.hpp"
 
 using namespace std::chrono_literals;
@@ -278,6 +279,60 @@ TEST(kairos_plan_solver, more_domains_than_the_cache)
       }
     }
   }
+}
+
+// The plan message as Kairos reads it: temporal if the domain has durative actions
+kairos::Plan to_kairos(const plansys2_msgs::msg::Plan & msg, const std::string & domain)
+{
+  kairos::Plan plan;
+  plan.temporal = domain.find(":durative-action") != std::string::npos || msg.has_end;
+  for (size_t i = 0; i < msg.items.size(); i++) {
+    auto text = msg.items[i].action.substr(1, msg.items[i].action.size() - 2);
+    std::istringstream words(text);
+    kairos::PlanStep step;
+    words >> step.name;
+    for (std::string arg; words >> arg; ) {
+      step.args.push_back(arg);
+    }
+    step.time = plan.temporal ? msg.items[i].time : static_cast<double>(i);
+    step.duration = plan.temporal ? msg.items[i].duration : 0.0;
+    plan.steps.push_back(step);
+  }
+  if (msg.has_end) {
+    plan.end = msg.end;
+  }
+  return plan;
+}
+
+// Every task of the bank, each feature with solvable and unsolvable problems
+TEST(kairos_plan_solver, the_bank)
+{
+  const auto cases = parser::pddl::read_pddl_bank(
+    ament_index_cpp::get_package_share_path("plansys2_pddl_parser") / "bank");
+  ASSERT_GE(cases.size(), 60u);
+  auto f = make_solver("kairos_bank");
+  f.node->set_parameter(rclcpp::Parameter("KAIROS.anytime", false));  // The first plan is enough
+  const auto supported = f.solver->supported_requirements();
+
+  const auto all = std::chrono::steady_clock::now();
+  for (const auto & task : cases) {
+    SCOPED_TRACE(task.name);
+    EXPECT_TRUE(plansys2::missing_requirements(task.uses, supported).empty());
+    const auto start = std::chrono::steady_clock::now();
+    const auto plan = f.solver->getPlan(task.domain, task.problem, "", 5s);
+    EXPECT_LT(seconds_since(start), 2.0);
+    ASSERT_EQ(plan.has_value(), task.solvable);
+    if (plan) {
+      kairos::ValidateOptions options;
+      options.epsilon = 0.001;
+      const auto report =
+        kairos::validate_plan(task.domain, task.problem, to_kairos(*plan, task.domain), options);
+      EXPECT_TRUE(report.valid()) << (report.diagnostics.empty() ? "" :
+      kairos::to_string(report.diagnostics[0]));
+      EXPECT_TRUE(plan->has_cost);
+    }
+  }
+  EXPECT_LT(seconds_since(all), 15.0);
 }
 
 TEST(kairos_plan_solver, plans_with_every_requirement)
