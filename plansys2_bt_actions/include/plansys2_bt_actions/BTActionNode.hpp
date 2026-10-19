@@ -16,6 +16,7 @@
 #define PLANSYS2_BT_ACTIONS__BTACTIONNODE_HPP_
 
 #include <memory>
+#include <stdexcept>
 #include <string>
 
 #include "behaviortree_cpp/action_node.h"
@@ -112,7 +113,13 @@ public:
 
     RCLCPP_INFO(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
 
-    bool success_waiting = action_client_->wait_for_action_server(wait_for_service_timeout_);
+    // rclcpp shutting down during the wait throws: no server, not the end of the process
+    bool success_waiting = false;
+    try {
+      success_waiting = action_client_->wait_for_action_server(wait_for_service_timeout_);
+    } catch (const std::runtime_error &) {
+      return false;
+    }
 
     if (!success_waiting) {
       RCLCPP_ERROR(

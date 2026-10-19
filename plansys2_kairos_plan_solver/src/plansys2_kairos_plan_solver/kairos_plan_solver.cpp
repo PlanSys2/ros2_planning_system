@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "kairos/kairos.hpp"
+#include "plansys2_core/PddlRequirements.hpp"
 #include "plansys2_kairos_plan_solver/kairos_plan_solver.hpp"
 #include "plansys2_msgs/msg/plan_item.hpp"
 #include "pluginlib/class_list_macros.hpp"
@@ -97,11 +98,16 @@ plansys2_msgs::msg::Plan to_msg(const kairos::Plan & plan)
   msg.items.reserve(plan.steps.size());
   for (const auto & step : plan.steps) {
     plansys2_msgs::msg::PlanItem item;
-    item.time = static_cast<float>(step.time);
+    item.time = step.time;
     item.action = step.action();
-    item.duration = static_cast<float>(step.duration);
+    item.duration = step.duration;
     msg.items.push_back(std::move(item));
   }
+  // Lost before: when a PDDL+ plan ends, and its cost
+  msg.has_end = plan.end.has_value();
+  msg.end = plan.end.value_or(0.0);
+  msg.has_cost = plan.cost.has_value();
+  msg.cost = plan.cost.value_or(0.0);
   return msg;
 }
 
@@ -288,6 +294,11 @@ std::shared_ptr<const kairos::Domain> KairosPlanSolver::parse_domain(const std::
     domains_.pop_back();
   }
   return result;
+}
+
+std::set<std::string> KairosPlanSolver::supported_requirements() const
+{
+  return known_pddl_requirements();
 }
 
 bool KairosPlanSolver::isDomainValid(

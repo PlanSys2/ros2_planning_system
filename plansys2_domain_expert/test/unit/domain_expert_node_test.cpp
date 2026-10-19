@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <mutex>
 #include <string>
@@ -28,6 +29,7 @@
 
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 
 #include "plansys2_core/TestUtils.hpp"
@@ -123,6 +125,40 @@ TEST(domain_expert, lifecycle_error)
   plansys2::drain_ros(200ms);
 }
 
+// A domain PlanSys2 cannot read fails at startup; those of the Kairos work it reads now
+TEST(domain_expert, a_domain_plansys2_cannot_represent_fails_at_startup)
+{
+  const std::string pkgpath =
+    ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+  {
+    const auto file = (std::filesystem::temp_directory_path() / "domain_unknown_block.pddl");
+    {
+      std::ofstream out(file);
+      out << "(define (domain d) (:requirements :strips) (:predicates (p))"
+        " (:action a :parameters () :precondition (and) :effect (and (p))) (:axiom (p)))";
+    }
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    domain_node->set_parameter({"model_file", file.string()});
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    EXPECT_EQ(
+      domain_node->get_current_state().id(),
+      lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
+  }
+
+  // Conditional effects, ?duration, PDDL+, constraints and preferences it represents now
+  for (const char * file : {"domain_when.pddl", "domain_duration_effect.pddl",
+      "domain_process.pddl", "domain_constraints.pddl", "domain_preference.pddl"})
+  {
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/" + std::string(file)});
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    EXPECT_EQ(
+      domain_node->get_current_state().id(),
+      lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE) << file;
+  }
+  plansys2::drain_ros(200ms);
+}
+
 // change_domain: hot domain swap. See refactor_dynamic_domain.md for the design and
 // for the threading fix these tests exercise (the deferred-response callback +
 // background thread in change_domain_service_callback()).
@@ -194,6 +230,34 @@ TEST(domain_expert, get_constants_through_the_client)
     ASSERT_TRUE(domain_client->getConstants("spaceship").empty());
     ASSERT_TRUE(domain_client->getConstants("").empty());
     ASSERT_EQ(domain_client->getTypes(), types);
+  }
+  plansys2::drain_ros(200ms);
+}
+
+TEST(domain_expert, processes_and_events_through_the_client)
+{
+  plansys2::drain_ros(300ms);
+  {
+    auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+    std::string pkgpath =
+      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_process.pddl"});
+    rclcpp::executors::SingleThreadedExecutor exe;
+    exe.add_node(domain_node->get_node_base_interface());
+    plansys2::testing::ExecutorThread spinner(exe);
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+    EXPECT_EQ(domain_client->getProcesses(), std::vector<std::string>{"heat"});
+    EXPECT_TRUE(domain_client->getEvents().empty());
+    auto heat = domain_client->getProcess("heat", {"kitchen"});
+    ASSERT_TRUE(heat);
+    EXPECT_EQ(
+      parser::pddl::toString(heat->effects),
+      "(and (increase (temperature kitchen) (* #t 1.000000)))");
+    EXPECT_FALSE(domain_client->getProcess("cool"));
+    EXPECT_FALSE(domain_client->getEvent("heat"));
   }
   plansys2::drain_ros(200ms);
 }

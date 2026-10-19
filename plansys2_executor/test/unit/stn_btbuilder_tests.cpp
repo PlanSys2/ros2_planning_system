@@ -76,7 +76,7 @@ public:
 };
 
 plansys2_msgs::msg::Plan make_plan(
-  const std::vector<std::tuple<float, std::string, float>> & items)
+  const std::vector<std::tuple<double, std::string, double>> & items)
 {
   plansys2_msgs::msg::Plan plan;
   for (const auto & [time, action, duration] : items) {
@@ -300,7 +300,7 @@ TEST_F(STNBTBuilderTest, happenings_of_a_plan)
 {
   // Times with one more digit than the action ids: 0.001 s is 10
   auto happenings = builder_->get_happenings(matchcellar_plan());
-  EXPECT_EQ(happenings, (std::set<int>{-1, 0, 10, 20010, 50000}));
+  EXPECT_EQ(happenings, (std::set<int64_t>{-1, 0, 10, 20010, 50000}));
 
   // The happening at a time, or the last one before it
   EXPECT_EQ(*builder_->get_happening(10, happenings), 10);
@@ -313,6 +313,26 @@ TEST_F(STNBTBuilderTest, happenings_of_a_plan)
   EXPECT_EQ(*builder_->get_previous(0, happenings), -1);
   EXPECT_EQ(builder_->get_previous(-1, happenings), happenings.end());
   EXPECT_EQ(builder_->get_previous(-5, happenings), happenings.end());
+}
+
+TEST_F(STNBTBuilderTest, times_are_rounded_and_long_plans_fit)
+{
+  // Truncated, 1.001 s was 1.000 s: 1.001 * 1000 is 1000.99999
+  plansys2_msgs::msg::PlanItem item;
+  item.action = "(light_match m1)";
+  item.time = 1.001;
+  EXPECT_EQ(plansys2::BTBuilder::to_action_id(item, 3), "(light_match m1):1001");
+  item.time = 4.9999;
+  EXPECT_EQ(plansys2::BTBuilder::to_action_id(item, 3), "(light_match m1):5000");
+  EXPECT_EQ(plansys2::BTBuilder::to_action_id(item, 4), "(light_match m1):49999");
+  EXPECT_EQ(plansys2::BTBuilder::to_int_time(-0.0004, 3), 0);
+
+  // Three days in, in tenths of a ms: more than an int holds
+  auto happenings = builder_->get_happenings(
+    make_plan({{1.001, "(light_match m1)", 2.0005}, {259200.0007, "(mend_fuse f1 m1)", 2.0}}));
+  EXPECT_EQ(
+    happenings,
+    (std::set<int64_t>{-1, 10010, 30015, 2592000007LL, 2592020007LL}));
 }
 
 TEST_F(STNBTBuilderTest, the_induced_simple_plan_and_its_states)
@@ -514,7 +534,7 @@ protected:
     init.at_start_effects_applied = init.at_end_effects_applied = true;
     init.at_start_effects_applied_time = init.at_end_effects_applied_time = node_->now();
     for (const auto & item : plan.items) {
-      auto id = plansys2::BTBuilder::to_action_id(item, plansys2::kStnActionIdPrecision);
+      auto id = plansys2::BTBuilder::to_action_id(item, 3);
       auto & info = (*action_map_)[id];
       info.action_executor = plansys2::ActionExecutor::make_shared(item.action, node_);
       auto name = plansys2::get_action_name(item.action);

@@ -15,14 +15,18 @@
 #ifndef PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERT_HPP_
 #define PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERT_HPP_
 
+#include <functional>
 #include <optional>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 #include <map>
 #include <memory>
 
 #include "plansys2_msgs/msg/tree.hpp"
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
+#include "plansys2_problem_expert/Utils.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
 
 namespace plansys2
@@ -217,6 +221,26 @@ public:
   bool clearMetric();
 
   /**
+   * @brief PDDL3: the constraints the plan of the problem keeps, (always (safe))...
+   *
+   * @return The constraints, an empty tree if there are none.
+   */
+  plansys2_msgs::msg::Tree getConstraints();
+
+  /**
+   * @brief Set the constraints of the problem: modal constraints, in and, forall and
+   *        preferences, over the predicates and functions of the domain.
+   *
+   * @return true if they were valid and set.
+   */
+  bool setConstraints(const plansys2_msgs::msg::Tree & constraints);
+
+  /**
+   * @brief Remove the constraints of the problem.
+   */
+  bool clearConstraints();
+
+  /**
    * @brief Clear all knowledge (instances, predicates, functions, goal, metric) of the problem.
    *
    * @return true if the knowledge was successfully cleared, false otherwise.
@@ -237,6 +261,78 @@ public:
    * @return true if the problem was successfully added, false otherwise.
    */
   bool addProblem(const std::string & problem_str);
+
+  /// A fact that changes at a time: a timed initial literal, or fluent if it is a function
+  struct TimedFact
+  {
+    double at;  // When, by the clock
+    bool negated;  // A predicate that stops holding
+    plansys2_msgs::msg::Node fact;  // A predicate, or a function with its value
+  };
+
+  /**
+   * @brief The clock of the timed facts, in seconds; without one, always 0.
+   * @param[in] clock Gives the time now.
+   */
+  void setClock(std::function<double()> clock) {clock_ = std::move(clock);}
+
+  /**
+   * @brief Schedule a fact: a predicate that starts or stops holding, or a function value.
+   * @param[in] fact The predicate or the function, with its value.
+   * @param[in] delay Seconds from now.
+   * @param[in] negated For a predicate, whether it stops holding.
+   * @return false if the fact is not valid in the domain, or a function is negated.
+   */
+  bool addTimedFact(const plansys2_msgs::msg::Node & fact, double delay, bool negated = false);
+
+  /**
+   * @brief The facts still to come, by time.
+   * @return The facts, with the time each one comes by the clock.
+   */
+  std::vector<TimedFact> getTimedFacts() const;
+
+  /**
+   * @brief Apply the facts whose time has come.
+   * @return true if any was applied.
+   */
+  bool applyTimedFacts();
+
+  /**
+   * @brief The continuous effects of a running action, integrated while active.
+   * @param[in] id Who they are, the action.
+   * @param[in] effects (and (increase (f) (* #t rate))...), bound to its objects.
+   * @param[in] active false to stop them.
+   * @return false if they are not valid in the domain.
+   */
+  bool setContinuousEffect(
+    const std::string & id, const plansys2_msgs::msg::Tree & effects, bool active);
+
+  /// The continuous effects active now, by who they are
+  std::map<std::string, plansys2_msgs::msg::Tree> getContinuousEffects() const
+  {
+    return continuous_effects_;
+  }
+
+  /**
+   * @brief Functions perception measures: the dynamics never change them.
+   * @param[in] names Their names.
+   */
+  void setMeasuredFunctions(const std::set<std::string> & names) {measured_functions_ = names;}
+
+  /**
+   * @brief One step of the dynamics (PDDL+): the continuous effects of the running actions and
+   * the processes whose precondition holds act for dt, and then the events whose precondition
+   * holds happen.
+   * @param[in] dt Seconds since the last step.
+   * @return true if anything changed.
+   */
+  bool stepDynamics(double dt);
+
+  /**
+   * @brief What happened by itself since the last call: the events that fired and the timed
+   *        facts applied, as text, "event (float_switch cistern)".
+   */
+  std::vector<std::string> takeHappened();
 
   /**
    * @brief Check if an instance with the given name exists.
@@ -288,6 +384,17 @@ public:
   bool isValidMetric(const plansys2::Metric & metric);
 
   /**
+   * @brief Check if constraints are valid: modal constraints over valid conditions.
+   */
+  bool isValidConstraints(const plansys2_msgs::msg::Tree & constraints);
+
+  /**
+   * @brief The names of the preferences of the goal and the constraints: what a metric can
+   *        read with (is-violated name).
+   */
+  std::set<std::string> getPreferenceNames();
+
+  /**
    * @brief Replace the domain this problem is checked against, given as PDDL content.
    *        Knowledge (instances, predicates, functions, goal, metric) that is no longer
    *        consistent with the new domain is pruned; everything that remains valid
@@ -306,6 +413,9 @@ public:
   bool updateDomain(const std::string & domain);
 
 private:
+  // The derived predicates of the domain over the instances of the problem
+  std::vector<DerivedRule> derivedRules();
+
   /**
    * @brief Check if all predicates and functions in a tree are valid.
    *
@@ -383,6 +493,17 @@ private:
   std::vector<plansys2::Function> functions_;
   plansys2::Goal goal_;
   plansys2::Metric metric_;
+  plansys2_msgs::msg::Tree constraints_;
+  std::vector<TimedFact> timed_facts_;
+  std::map<std::string, plansys2_msgs::msg::Tree> continuous_effects_;
+  std::set<std::string> measured_functions_;
+  // Processes and events over the instances, made again when the instances change
+  std::string happenings_instances_;
+  std::vector<plansys2_msgs::msg::Action> processes_;
+  std::vector<plansys2_msgs::msg::Action> events_;
+  std::vector<std::string> happened_;
+  void groundHappenings();
+  std::function<double()> clock_ {[]() {return 0.0;}};
 
   std::shared_ptr<DomainExpert> domain_expert_;
 };

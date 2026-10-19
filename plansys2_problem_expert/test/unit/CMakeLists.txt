@@ -1,3 +1,12 @@
+# The bank, through the experts: what reaches the planner is what was loaded
+find_package(kairos REQUIRED)
+ament_add_gtest(bank_roundtrip_test bank_roundtrip_test.cpp TIMEOUT 120)
+target_link_libraries(bank_roundtrip_test
+  ${PROJECT_NAME}
+  ament_index_cpp::ament_index_cpp
+  kairos::kairos
+)
+
 ament_add_ros_isolated_gtest(utils_test utils_test.cpp TIMEOUT 60)
 target_link_libraries(utils_test
   ${PROJECT_NAME}
@@ -34,6 +43,24 @@ endforeach()
 
 ament_add_ros_isolated_gtest(effect_undo_test effect_undo_test.cpp TIMEOUT 60)
 target_link_libraries(effect_undo_test
+  ${PROJECT_NAME}
+  ament_index_cpp::ament_index_cpp
+)
+
+ament_add_gtest(derived_test derived_test.cpp TIMEOUT 60)
+target_link_libraries(derived_test ${PROJECT_NAME})
+
+ament_add_gtest(constraints_test constraints_test.cpp TIMEOUT 60)
+target_link_libraries(constraints_test ${PROJECT_NAME})
+
+ament_add_ros_isolated_gtest(object_fluents_test object_fluents_test.cpp TIMEOUT 60)
+target_link_libraries(object_fluents_test ${PROJECT_NAME})
+
+ament_add_ros_isolated_gtest(dynamics_test dynamics_test.cpp TIMEOUT 60)
+target_link_libraries(dynamics_test ${PROJECT_NAME})
+
+ament_add_ros_isolated_gtest(timed_facts_test timed_facts_test.cpp TIMEOUT 60)
+target_link_libraries(timed_facts_test
   ${PROJECT_NAME}
   ament_index_cpp::ament_index_cpp
 )

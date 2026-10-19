@@ -78,14 +78,13 @@ private:
   bool need_repaint_ {false};
   std::mutex mutex_;
 
-  // Types of the instances and values of the functions, asked out of the GUI thread
+  // Types of the instances, asked out of the GUI thread
   struct Details
   {
     std::mutex mutex;
     bool asking {false};
     bool ready {false};
     std::map<std::string, std::string> types;
-    std::map<std::string, double> values;
   };
   std::shared_ptr<Details> details_ {std::make_shared<Details>()};
   plansys2_msgs::msg::Knowledge::UniquePtr shown_msg_;

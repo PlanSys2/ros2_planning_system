@@ -17,6 +17,8 @@
 
 #include <cstdint>
 
+#include <string>
+
 #include "plansys2_msgs/msg/node.hpp"
 
 namespace plansys2
@@ -32,6 +34,8 @@ struct FactChange
   double value_before = 0.0;      ///< Functions: value before the effect
   double value_after = 0.0;       ///< Functions: value the effect left
   uint8_t modifier_type = 0;      ///< Functions: the modifier that changed it
+  std::string object_before;      ///< Object fluents: object before the effect (empty: none)
+  std::string object_after;       ///< Object fluents: object the effect left
 };
 
 }  // namespace plansys2

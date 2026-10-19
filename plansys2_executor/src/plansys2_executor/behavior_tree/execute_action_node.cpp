@@ -29,6 +29,7 @@ ExecuteAction::ExecuteAction(
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
     "action_map");
+  std::ignore = config().blackboard->get("trace", trace_);
   node_ = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 }
 
@@ -62,14 +63,26 @@ ExecuteAction::tick()
     (*action_map_)[action].action_executor = ActionExecutor::make_shared(action_expr, node_);
   }
 
-  auto retval = (*action_map_)[action].action_executor->tick(node_->now());
+  auto & executor = (*action_map_)[action].action_executor;
+  auto retval = executor->tick(node_->now());
 
+  if (trace_ && executor->get_internal_status() == ActionExecutor::RUNNING &&
+    !performing_reported_[action])
+  {
+    trace_->event(ExecutionTrace::Event::PERFORM, action, "by " + executor->get_performer());
+    performing_reported_[action] = true;
+  }
   if (retval == BT::NodeStatus::FAILURE) {
     (*action_map_)[action].execution_error_info = "Error executing the action";
 
     RCLCPP_ERROR_STREAM(
       node->get_logger(),
       "[" << action << "]" << (*action_map_)[action].execution_error_info);
+    if (trace_) {
+      trace_->event(
+        ExecutionTrace::Event::FAILURE, action,
+        "its performer " + executor->get_performer() + " says: " + executor->get_feedback());
+    }
   }
 
   return retval;

@@ -26,6 +26,7 @@
 #include "plansys2_problem_expert/Utils.hpp"
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
+#include "plansys2_executor/ExecutionTrace.hpp"
 
 namespace plansys2
 {
@@ -72,6 +73,7 @@ public:
 private:
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
+  std::shared_ptr<ExecutionTrace> trace_;  // Null outside an executor
 };
 
 }  // namespace plansys2

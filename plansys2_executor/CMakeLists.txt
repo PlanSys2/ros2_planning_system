@@ -33,6 +33,8 @@ find_package(std_srvs REQUIRED)
 
 set(EXECUTOR_SOURCES
   src/plansys2_executor/BTBuilder.cpp
+  src/plansys2_executor/ConstraintMonitor.cpp
+  src/plansys2_executor/ExecutionTrace.cpp
   src/plansys2_executor/ExecutorClient.cpp
   src/plansys2_executor/ActionExecutor.cpp
   src/plansys2_executor/ActionExecutorClient.cpp

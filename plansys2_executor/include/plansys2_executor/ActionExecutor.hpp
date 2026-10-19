@@ -30,6 +30,7 @@
 #include "plansys2_msgs/msg/param.hpp"
 #include "plansys2_msgs/msg/plan_item.hpp"
 #include "plansys2_core/Action.hpp"
+#include "plansys2_core/NodeNames.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
 #include "plansys2_problem_expert/FactChange.hpp"
 #include "behaviortree_cpp/behavior_tree.h"
@@ -247,11 +248,34 @@ public:
   std::string get_feedback() const {return feedback_;}
 
   /**
+   * @brief The performer that took the action, empty until one does.
+   */
+  std::string get_performer() const {return current_performer_id_;}
+
+  /**
    * @brief Get the completion percentage of the action.
    *
    * @return float Completion percentage (0.0 to 1.0).
    */
   float get_completion() const {return completion_;}
+
+  /**
+   * @brief The duration the plan gives the action, sent to its performer.
+   * @param[in] duration In seconds; 0 for a non-durative action.
+   */
+  void set_planned_duration(double duration) {planned_duration_ = duration;}
+
+  /**
+   * @brief Another duration for the running action, from its start: its performer is told.
+   * @param[in] duration In seconds.
+   */
+  void update_planned_duration(double duration);
+
+  /**
+   * @brief The duration the plan gives the action.
+   * @return In seconds.
+   */
+  double get_planned_duration() const {return planned_duration_;}
 
   /**
    * @brief Clean up resources used by the executor.
@@ -347,6 +371,7 @@ protected:
   int activation_failures_ {0};
   int performer_misses_ {0};
   rclcpp::TimerBase::SharedPtr performer_check_;
+  std::unique_ptr<NodeNames> node_names_;
   rclcpp::Time state_time_;
   rclcpp::Time start_execution_;
 
@@ -357,6 +382,7 @@ protected:
 
   std::string feedback_;
   float completion_;
+  double planned_duration_ {0.0};
 
   ActionHub::Ptr hub_;
 

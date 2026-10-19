@@ -32,7 +32,7 @@ void SequentialBTBuilder::initialize(
   const std::string & bt_action_1, const std::string & bt_action_2, int precision)
 {
   (void)bt_action_2;
-  (void)precision;
+  action_time_precision_ = precision;
   if (bt_action_1 != "") {
     bt_action_ = bt_action_1;
   } else {
@@ -60,13 +60,13 @@ std::string SequentialBTBuilder::add_action_to_bt(
   std::string ret;
   std::string ret_aux = bt_action_;
   // The same ids as the executor gives to its actions
-  const std::string action_id = BTBuilder::to_action_id(plan_item, 3);
+  const std::string action_id = to_action_id(plan_item, action_time_precision_);
 
   // The actions run one after the other: waiting for the previous one is enough
   std::string wait_actions;
   if (!previous_items.empty()) {
     wait_actions = add_tabs(1) + "<WaitAction action=\"" +
-      BTBuilder::to_action_id(previous_items.back(), 3) + "\"/>\n";
+      to_action_id(previous_items.back(), action_time_precision_) + "\"/>\n";
   }
 
   replace(ret_aux, "ACTION_ID", action_id);
@@ -114,7 +114,7 @@ std::string SequentialBTBuilder::get_dotgraph(
   std::stringstream ss;
   ss << "digraph plan {\n";
   for (size_t i = 0; i < plan_.items.size(); i++) {
-    const auto id = BTBuilder::to_action_id(plan_.items[i], 3);
+    const auto id = to_action_id(plan_.items[i], action_time_precision_);
     ss << i << " [label=\"" << plan_.items[i].action << "\",labeljust=c,style=filled";
     auto status = ActionExecutor::IDLE;
     if (action_map) {

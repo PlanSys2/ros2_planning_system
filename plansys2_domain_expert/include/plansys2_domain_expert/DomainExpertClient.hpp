@@ -147,6 +147,17 @@ public:
    *
    * @return std::vector<std::string> Vector containing the names of the actions.
    */
+  /// PDDL+: the processes of the domain
+  std::vector<std::string> getProcesses() override;
+  /// A process, as an action, with its parameters bound to params
+  plansys2_msgs::msg::Action::SharedPtr getProcess(
+    const std::string & process, const std::vector<std::string> & params = {}) override;
+  /// PDDL+: the events of the domain
+  std::vector<std::string> getEvents() override;
+  /// An event, as an action, with its parameters bound to params
+  plansys2_msgs::msg::Action::SharedPtr getEvent(
+    const std::string & event, const std::vector<std::string> & params = {}) override;
+
   std::vector<std::string> getActions();
 
   /**
@@ -230,6 +241,17 @@ private:
   rclcpp::Client<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>::SharedPtr
     get_derived_predicate_details_client_;
   rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_actions_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_processes_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr get_process_details_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_events_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr get_event_details_client_;
+
+  // The names, or one of them as an action, from these services
+  std::vector<std::string> get_names(
+    rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr client);
+  plansys2_msgs::msg::Action::SharedPtr get_details(
+    rclcpp::Client<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr client,
+    const std::string & name, const std::vector<std::string> & params);
   rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_durative_actions_client_;
   rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr get_predicate_details_client_;
   rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr get_function_details_client_;

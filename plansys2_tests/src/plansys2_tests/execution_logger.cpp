@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cmath>
 #include <algorithm>
 #include <utility>
 #include <vector>
@@ -169,7 +170,8 @@ ExecutionLogger::sorted(const std::list<std::string> & actions)
 std::string
 ExecutionLogger::id(const plansys2_msgs::msg::PlanItem & item)
 {
-  return item.action + ":" + std::to_string(static_cast<int>(item.time * 1000));
+  // Rounded, as the executor names its actions
+  return item.action + ":" + std::to_string(std::llround(item.time * 1000));
 }
 
 std::list<std::string>

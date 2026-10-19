@@ -110,6 +110,9 @@ public:
    */
   CallbackReturnT on_error(const rclcpp_lifecycle::State & state);
 
+  // Decimals of the times in the action ids, from action_time_precision
+  int action_time_precision();
+
 private:
   /**
    * @brief Service callback for computing a behavior tree.

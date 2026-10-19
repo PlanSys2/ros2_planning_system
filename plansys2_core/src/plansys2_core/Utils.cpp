@@ -14,6 +14,9 @@
 
 #include "plansys2_core/Utils.hpp"
 
+#include <unistd.h>
+
+#include <atomic>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -87,6 +90,12 @@ std::string remove_comments(const std::string & pddl)
     uncomment << pddl.substr(start_pos, end_pos - start_pos);
   }
   return std::string(uncomment.str());
+}
+
+std::string unique_node_name(const std::string & base)
+{
+  static std::atomic<uint64_t> count {0};
+  return base + "_" + std::to_string(::getpid()) + "_" + std::to_string(count++);
 }
 
 void drain_ros(std::chrono::milliseconds total)

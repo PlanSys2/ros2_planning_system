@@ -5,6 +5,8 @@ int16 REJECT=4
 int16 FEEDBACK=5
 int16 FINISH=6
 int16 CANCEL=7
+# The plan replaced while it runs gives the action another duration
+int16 UPDATE=8
 
 int16 type
 string node_id
@@ -18,3 +20,7 @@ string[] arguments
 bool success
 float32 completion
 string status
+
+# REQUEST and UPDATE: the duration the plan gives the action, in seconds, from its start (0 for
+# a non-durative one)
+float64 planned_duration

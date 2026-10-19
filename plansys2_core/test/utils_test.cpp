@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <unistd.h>
+
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -120,6 +122,16 @@ TEST(utils_test, tokenizer_tests)
     ret_7, std::vector<std::string>({"myplanner", "subcmd1", "subcmd2", "subcmd3", "subcmd4"}));
 }
 
+
+// Clients of the same kind in many processes, each with a name of its own
+TEST(utils_test, unique_node_names)
+{
+  const auto first = plansys2::unique_node_name("problem_expert_client");
+  const auto second = plansys2::unique_node_name("problem_expert_client");
+  EXPECT_NE(first, second);
+  EXPECT_EQ(first.rfind("problem_expert_client_" + std::to_string(::getpid()) + "_", 0), 0u);
+  EXPECT_TRUE(rclcpp::Node::make_shared(first));  // A valid node name
+}
 
 int main(int argc, char ** argv)
 {

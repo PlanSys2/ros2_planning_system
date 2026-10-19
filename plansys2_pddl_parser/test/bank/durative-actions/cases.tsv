@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:durative-actions	one robot carries a cup to the next room
+domain.pddl	p2.pddl	yes	:durative-actions	two robots deliver two items across four rooms, the third is already in place
+domain.pddl	p3.pddl	no	:durative-actions	the goal room has no incoming connection

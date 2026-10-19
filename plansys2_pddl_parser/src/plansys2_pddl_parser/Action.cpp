@@ -23,7 +23,7 @@ void Action::PDDLPrint(
 {
   (void)indent;
   (void)ts;
-  s << "( :action " << name << "\n";
+  s << "( :" << keyword << " " << name << "\n";
 
   s << "  :parameters ";
 

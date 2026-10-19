@@ -20,6 +20,7 @@
 #include <vector>
 #include <memory>
 
+#include "plansys2_core/Utils.hpp"
 #include "plansys2_core/ServiceCall.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
 
@@ -28,8 +29,10 @@ namespace plansys2
 
 ProblemExpertClient::ProblemExpertClient()
 {
-  node_ = rclcpp::Node::make_shared("problem_expert_client");
+  node_ = rclcpp::Node::make_shared(unique_node_name("problem_expert_client"));
 
+  set_continuous_effect_client_ = node_->create_client<plansys2_msgs::srv::SetContinuousEffect>(
+    "problem_expert/set_continuous_effect");
   add_problem_client_ = node_->create_client<plansys2_msgs::srv::AddProblem>(
     "problem_expert/add_problem");
   add_problem_goal_client_ = node_->create_client<plansys2_msgs::srv::AddProblemGoal>(
@@ -570,6 +573,18 @@ ProblemExpertClient::addProblem(const std::string & problem_str)
   request->problem = problem_str;
 
   return call_change<plansys2_msgs::srv::AddProblem>(add_problem_client_, request);
+}
+
+bool
+ProblemExpertClient::setContinuousEffect(
+  const std::string & id, const plansys2_msgs::msg::Tree & effects, bool active)
+{
+  auto request = std::make_shared<plansys2_msgs::srv::SetContinuousEffect::Request>();
+  request->id = id;
+  request->effects = effects;
+  request->active = active;
+  return call_change<plansys2_msgs::srv::SetContinuousEffect>(
+    set_continuous_effect_client_, request);
 }
 
 }  // namespace plansys2

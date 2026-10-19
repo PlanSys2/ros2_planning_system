@@ -42,8 +42,9 @@ public:
   /**
    * @brief Constructor for the PlannerClient.
    *
-   * Creates a ROS node and configures service clients to connect to
-   * the planner services. Also retrieves the plan_solver_timeout parameter.
+   * Creates a ROS node and configures service clients to connect to the planner services.
+   * It waits for a plan as long as the planner plans (its plan_solver_timeout) plus a margin;
+   * its own plan_solver_timeout parameter, if positive, sets that time instead.
    */
   PlannerClient();
 
@@ -78,8 +79,13 @@ private:
   rclcpp::Client<plansys2_msgs::srv::GetPlanArray>::SharedPtr
     get_plan_array_client_;
 
+  // How long to wait for the planner's answer: its plan_solver_timeout and a margin
+  std::chrono::nanoseconds answer_wait();
+
   rclcpp::Node::SharedPtr node_;
-  rclcpp::Duration solver_timeout_ = rclcpp::Duration(15, 0);
+  // The planner's parameters: its plan_solver_timeout is how long it plans
+  rclcpp::AsyncParametersClient::SharedPtr planner_parameters_;
+  double planner_timeout_ {15.0};  // The last one read
 };
 
 }  // namespace plansys2

@@ -22,6 +22,7 @@
 #include "plansys2_msgs/msg/action_execution.hpp"
 #include "plansys2_msgs/msg/action_performer_status.hpp"
 
+#include "plansys2_core/NodeNames.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 
@@ -106,6 +107,13 @@ protected:
    * @return Reference to the vector of arguments.
    */
   const std::vector<std::string> & get_arguments() const {return current_arguments_;}
+
+  /**
+   * @brief The duration the plan gives the current action, as the planner chose it.
+   *
+   * @return In seconds; 0 for a non-durative action.
+   */
+  double get_planned_duration() const {return current_planned_duration_;}  // Updated by a new plan
 
   /**
    * @brief Get the name of the action this executor manages.
@@ -195,6 +203,7 @@ protected:
   bool committed_;
 
   std::vector<std::string> current_arguments_;
+  double current_planned_duration_ {0.0};
   std::vector<std::string> specialized_arguments_;
 
   rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecution>::SharedPtr
@@ -223,6 +232,7 @@ private:
   // The request we execute: its feedback and finish carry it
   std::string current_request_id_;
   rclcpp::TimerBase::SharedPtr requester_check_;
+  std::unique_ptr<NodeNames> node_names_;
   int requester_misses_ {0};
 };
 

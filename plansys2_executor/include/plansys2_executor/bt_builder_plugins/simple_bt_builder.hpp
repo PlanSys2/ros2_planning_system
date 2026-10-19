@@ -72,7 +72,7 @@ struct ActionGraph
   static Ptr make_shared() {return std::make_shared<ActionGraph>();}
 
   std::list<ActionNode::Ptr> roots;
-  std::map<float, std::list<ActionNode::Ptr>> levels;
+  std::map<double, std::list<ActionNode::Ptr>> levels;
 
   // Arcs point both ways, so the nodes would keep each other alive (#430)
   ~ActionGraph()
@@ -225,6 +225,23 @@ protected:
     const ActionStamped & action,
     std::vector<plansys2::Predicate> & predicates,
     std::vector<plansys2::Function> & functions) const;
+
+  /**
+   * @brief The effects an action can give while it runs: at start for a durative action, all
+   * of them for a non-durative one.
+   *
+   * @param[in] action The action.
+   * @return Tree representing the effects.
+   */
+  static plansys2_msgs::msg::Tree running_effects(const ActionStamped & action);
+
+  /**
+   * @brief For each action of the plan, the condition of each of its conditional effects as it
+   * was when the plan applied it, or its negation: its outcome depends on them.
+   *
+   * @param[in] actions The actions of the plan.
+   */
+  void compute_when_requirements(const std::vector<plansys2::ActionStamped> & actions);
 
   /**
    * @brief Finds root actions that can be executed immediately.
@@ -459,6 +476,8 @@ protected:
 
 
   ActionGraph::Ptr graph_;
+  // By action id, from compute_when_requirements
+  std::map<std::string, std::vector<plansys2_msgs::msg::Tree>> when_requirements_;
   std::string bt_;
   std::string bt_action_;
 };

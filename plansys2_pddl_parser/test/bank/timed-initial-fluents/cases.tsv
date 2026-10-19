@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:durative-actions :numeric-fluents :timed-initial-fluents	the battery is charged at 1.5: the robot waits to move
+domain.pddl	p2.pddl	yes	:durative-actions :numeric-fluents :timed-initial-fluents	one robot moves at once, the other one when its battery is charged at 1
+domain.pddl	p3.pddl	no	:durative-actions :numeric-fluents :timed-initial-fluents	the battery is charged, but the lab is not connected

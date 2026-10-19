@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "plansys2_pddl_parser/Instance.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 namespace parser
 {
@@ -139,6 +140,12 @@ Expression * createExpression(Stringreader & f, TokenStruct<std::string> & ts, D
       f.next();
       f.assert_token(")");
       return new TotalTimeExpression();
+    } else if (s == "is-violated") {
+      f.next();
+      const auto name = f.getToken();
+      f.next();
+      f.assert_token(")");
+      return new ViolatedExpression(name);
     } else {
       // It is a function expression
       f.c -= s.size();
@@ -190,15 +197,14 @@ Expression * createExpression(Stringreader & f, TokenStruct<std::string> & ts, D
       return new ConstExpression(ct.first, ct.second);
     } else if (s == "#t") {
       // The time of continuous effects (PDDL 2.1) and processes (PDDL+)
-      std::ostringstream os;
-      os << "\"" << s << "\": continuous effects are not executed by PlanSys2 yet" << std::endl;
-      f.printLine();
-      std::cout << os.str();
-      throw std::runtime_error(os.str());
-      return nullptr;
+      return new TimeExpression();
     } else {
-      // It is expected to be a number, whatever the locale
+      // A number, whatever the locale, or an object of the problem, compared with an object
+      // fluent
       double d;
+      if (!parseNumber(s, d) && isValidName(s)) {
+        return new ObjectExpression(s);
+      }
       if (!parseNumber(s, d)) {
         std::ostringstream os;
         os << "Expected a number, found \"" << s << "\"" << std::endl;

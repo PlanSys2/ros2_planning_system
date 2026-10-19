@@ -62,6 +62,20 @@ class ActionExecutorClient(LifecycleNode):
         self.commitment_timeout = None
         # The request we execute: its feedback and finish carry it
         self.current_request_id = ''
+        # The duration the plan gives the action, from its start; a new plan may change it
+        self.current_planned_duration = 0.0
+
+    def get_planned_duration(self):
+        """
+        Return the duration the plan gives the action, from its start.
+
+        Returns
+        -------
+        float
+            In seconds; 0 for a non-durative action.
+
+        """
+        return self.current_planned_duration
 
     def release_commitment(self):
         """Stop waiting for a CONFIRM or REJECT."""
@@ -219,6 +233,7 @@ class ActionExecutorClient(LifecycleNode):
             request_match = msg.request_id == self.committed_request_id
             if state_inactive and self.commited and node_match and request_match:
                 self.current_arguments = msg.arguments
+                self.current_planned_duration = msg.planned_duration
                 self.current_request_id = msg.request_id
                 self.release_commitment()
                 self.trigger_activate()
@@ -233,6 +248,12 @@ class ActionExecutorClient(LifecycleNode):
             node_match = node_match and msg.request_id == self.current_request_id
             if state_active and node_match:
                 self.trigger_deactivate()
+        elif msg.type == ActionExecution.UPDATE:
+            curr_state = self._state_machine.current_state[0]
+            state_active = curr_state == State.PRIMARY_STATE_ACTIVE
+            node_match = msg.node_id == self.get_name()
+            if state_active and node_match and msg.request_id == self.current_request_id:
+                self.current_planned_duration = msg.planned_duration
         elif (msg.type in [ActionExecution.RESPONSE,
                            ActionExecution.FEEDBACK,
                            ActionExecution.FINISH]):

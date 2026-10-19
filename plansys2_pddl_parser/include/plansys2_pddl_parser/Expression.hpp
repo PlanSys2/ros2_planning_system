@@ -304,8 +304,46 @@ public:
   Condition * copy(Domain &) {return new ValueExpression(value);}
 };
 
+// #t, the time a continuous effect has acted: a PARAMETER node "#t", the step of its integration
+class TimeExpression : public Expression
+{
+public:
+  void PDDLPrint(
+    std::ostream & s, unsigned, const TokenStruct<std::string> &,
+    const Domain &) const override
+  {
+    s << "#t";
+  }
+
+  plansys2_msgs::msg::Node::SharedPtr getTree(
+    plansys2_msgs::msg::Tree & tree, const Domain &,
+    const std::vector<std::string> & = {}) const override
+  {
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::PARAMETER;
+    node->node_id = tree.nodes.size();
+    node->name = "#t";
+    plansys2_msgs::msg::Param node_param;
+    node_param.name = "#t";
+    node->parameters.push_back(node_param);
+    tree.nodes.push_back(*node);
+    return node;
+  }
+
+  std::string info() const {return "#t";}
+
+  double evaluate() {return -1;}
+
+  double evaluate(Instance &, const StringVec &) {return evaluate();}
+
+  IntSet params() {return IntSet();}
+
+  Condition * copy(Domain &) {return new TimeExpression();}
+};
+
 class DurationExpression : public Expression
 {
+public:
   void PDDLPrint(
     std::ostream & s, unsigned, const TokenStruct<std::string> &,
     const Domain &) const override
@@ -313,11 +351,20 @@ class DurationExpression : public Expression
     s << "?duration";
   }
 
+  // A parameter: the duration a plan gives the action, bound with bindDuration
   plansys2_msgs::msg::Node::SharedPtr getTree(
-    plansys2_msgs::msg::Tree &, const Domain &,
+    plansys2_msgs::msg::Tree & tree, const Domain &,
     const std::vector<std::string> & = {}) const override
   {
-    throw UnsupportedConstruct("DurationExpression");
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::PARAMETER;
+    node->node_id = tree.nodes.size();
+    node->name = "?duration";
+    plansys2_msgs::msg::Param node_param;
+    node_param.name = "?duration";
+    node->parameters.push_back(node_param);
+    tree.nodes.push_back(*node);
+    return node;
   }
 
   std::string info() const {return "?duration";}
@@ -363,6 +410,48 @@ public:
   IntSet params() {return IntSet();}
 
   Condition * copy(Domain &) {return new TotalTimeExpression();}
+};
+
+// PDDL3: (is-violated name), how many times the preference called so is violated
+class ViolatedExpression : public Expression
+{
+public:
+  std::string name;
+
+  explicit ViolatedExpression(const std::string & n)
+  : name(n) {}
+
+  void PDDLPrint(
+    std::ostream & s, unsigned, const TokenStruct<std::string> &,
+    const Domain &) const override
+  {
+    s << "( is-violated " << name << " )";
+  }
+
+  plansys2_msgs::msg::Node::SharedPtr getTree(
+    plansys2_msgs::msg::Tree & tree, const Domain &,
+    const std::vector<std::string> & = {}) const override
+  {
+    auto node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::FUNCTION;
+    node->node_id = tree.nodes.size();
+    node->name = "is-violated";
+    plansys2_msgs::msg::Param param;
+    param.name = name;
+    node->parameters.push_back(param);
+    tree.nodes.push_back(*node);
+    return node;
+  }
+
+  std::string info() const {return "is-violated " + name;}
+
+  double evaluate() {return -1;}
+
+  double evaluate(Instance &, const StringVec &) {return evaluate();}
+
+  IntSet params() {return IntSet();}
+
+  Condition * copy(Domain &) {return new ViolatedExpression(name);}
 };
 
 class ParamExpression : public Expression
@@ -449,6 +538,43 @@ public:
   IntSet params() {return IntSet();}
 
   Condition * copy(Domain &) {return new ConstExpression(constant, tid);}
+};
+
+// An object of the problem in an expression, as in (= (pos ?r) kitchen): a CONSTANT node
+class ObjectExpression : public Expression
+{
+public:
+  std::string object;
+  explicit ObjectExpression(const std::string & o)
+  : object(o) {}
+
+  std::string info() const {return object;}
+
+  void PDDLPrint(
+    std::ostream & s, unsigned, const TokenStruct<std::string> &, const Domain &) const override
+  {
+    s << object;
+  }
+
+  plansys2_msgs::msg::Node::SharedPtr getTree(
+    plansys2_msgs::msg::Tree & tree, const Domain &,
+    const std::vector<std::string> & = {}) const override
+  {
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::CONSTANT;
+    node->node_id = tree.nodes.size();
+    node->name = object;
+    tree.nodes.push_back(*node);
+    return node;
+  }
+
+  double evaluate() {return -1;}
+
+  double evaluate(Instance &, const StringVec &) {return evaluate();}
+
+  IntSet params() {return IntSet();}
+
+  Condition * copy(Domain &) {return new ObjectExpression(object);}
 };
 
 }  // namespace pddl

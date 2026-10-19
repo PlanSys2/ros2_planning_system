@@ -24,6 +24,7 @@
 #include "ament_index_cpp/get_package_share_path.hpp"
 #include "gtest/gtest.h"
 #include "plansys2_pddl_parser/Domain.hpp"
+#include "plansys2_pddl_parser/TemporalAction.hpp"
 #include "plansys2_pddl_parser/Instance.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
 
@@ -446,25 +447,74 @@ TEST(Grammar, functions_without_parameters_and_parentheses)
     "(:action fly :parameters (?p - plane) :effect (increase burn 1))")));
 }
 
-TEST(Grammar, continuous_effects_are_rejected_clearly)
+TEST(Grammar, continuous_effects_are_read)
 {
-  // Not executed yet (#202): the error says so, whatever form they take
+  // Without at start or at end, alone or with others: they act while the action runs
   for (const std::string effect : {
     "(decrease (battery ?r) (* #t 0.5))",
     "(and (at end (charged ?r)) (decrease (battery ?r) (* #t 0.5)))",
-    "(at end (decrease (battery ?r) (* #t 0.5)))"})
+    "(and (decrease (battery ?r) (* #t 0.5)) (increase (battery ?r) (* 2 #t)))"})
   {
-    try {
-      Domain domain(domainWith(":typing :fluents :durative-actions :continuous-effects", kTypes +
-        std::string(
-          "(:durative-action go :parameters (?r - robot) :duration (= ?duration 10)"
-          " :effect " + effect + ")")));
-      ADD_FAILURE() << "accepted: " << effect;
-    } catch (const std::runtime_error & e) {
-      EXPECT_NE(std::string(e.what()).find("continuous effects"), std::string::npos) <<
-        effect << ": " << e.what();
-    }
+    Domain domain(domainWith(":typing :fluents :durative-actions :continuous-effects", kTypes +
+      std::string(
+        "(:durative-action go :parameters (?r - robot) :duration (= ?duration 10)"
+        " :effect " + effect + ")")));
+    auto * go =
+      dynamic_cast<parser::pddl::TemporalAction *>(domain.actions[domain.actions.index("go")]);
+    ASSERT_NE(go, nullptr);
+    ASSERT_NE(go->eff_c, nullptr) << effect;
+    ASSERT_FALSE(go->eff_c->conds.empty()) << effect;
+    plansys2_msgs::msg::Tree tree;
+    go->eff_c->getTree(tree, domain);
+    EXPECT_NE(parser::pddl::toString(tree).find("(decrease (battery ?0) (* #t 0.500000))"),
+      std::string::npos)
+      << effect << ": " << parser::pddl::toString(tree);
   }
+
+  // #t at an instant is an error that says so
+  try {
+    Domain domain(domainWith(":typing :fluents :durative-actions :continuous-effects", kTypes +
+      std::string(
+        "(:durative-action go :parameters (?r - robot) :duration (= ?duration 10)"
+        " :effect (at end (decrease (battery ?r) (* #t 0.5))))")));
+    ADD_FAILURE() << "accepted #t at end";
+  } catch (const std::runtime_error & e) {
+    EXPECT_NE(std::string(e.what()).find("continuous effects go without"), std::string::npos)
+      << e.what();
+  }
+}
+
+TEST(Grammar, processes_and_events_are_read)
+{
+  Domain domain(domainWith(":typing :fluents :time",
+    std::string(
+      "(:types robot) (:predicates (heating ?r - robot)) (:functions (temperature ?r - robot))"
+      "(:process heat :parameters (?r - robot) :precondition (heating ?r)"
+      " :effect (increase (temperature ?r) (* #t 2)))"
+      "(:event overheat :parameters (?r - robot) :precondition (>= (temperature ?r) 30)"
+      " :effect (not (heating ?r)))")));
+  ASSERT_EQ(domain.processes.size(), 1u);
+  ASSERT_EQ(domain.events.size(), 1u);
+  EXPECT_EQ(domain.processes[0]->keyword, "process");
+  EXPECT_EQ(domain.events[0]->keyword, "event");
+
+  // Written and read back
+  std::ostringstream written;
+  written << domain;
+  EXPECT_NE(written.str().find("( :process heat"), std::string::npos) << written.str();
+  EXPECT_NE(written.str().find("( :event overheat"), std::string::npos) << written.str();
+  Domain again(written.str());
+  EXPECT_EQ(again.processes.size(), 1u);
+  EXPECT_EQ(again.events.size(), 1u);
+
+  // A name twice is an error
+  EXPECT_THROW(
+    Domain(domainWith(":typing :fluents :time",
+    std::string(
+      "(:types robot) (:predicates (heating ?r - robot))"
+      "(:event e :parameters (?r - robot) :precondition (heating ?r) :effect (not (heating ?r)))"
+      "(:event e :parameters (?r - robot) :precondition (heating ?r) :effect (not (heating ?r)))"
+    ))), std::runtime_error);
 }
 
 TEST(Grammar, actions_need_no_predicates)

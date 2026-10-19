@@ -28,6 +28,7 @@
 #include "plansys2_pddl_parser/Domain.hpp"
 #include "plansys2_pddl_parser/Instance.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 #include "plansys2_core/Types.hpp"
 
@@ -107,6 +108,13 @@ ProblemExpert::removeInstance(const plansys2::Instance & instance)
     clearMetric();
   }
 
+  // The constraints too: one less would allow what they forbid
+  if (!constraints_.nodes.empty() && !isValidConstraints(constraints_)) {
+    std::cerr << "Constraints removed: they refer to the removed instance " << instance.name <<
+      std::endl;
+    clearConstraints();
+  }
+
   return found;
 }
 
@@ -135,55 +143,25 @@ ProblemExpert::getInstance(const std::string & instance_name)
 std::vector<plansys2::Predicate>
 ProblemExpert::getPredicates()
 {
-  std::vector<plansys2::Predicate> ret = predicates_;
+  // With the derived predicates, to a fixpoint: they can read each other
+  return derive(derivedRules(), predicates_, functions_);
+}
 
-  auto derived_predicates = domain_expert_->getDerivedPredicates();
-  for (auto derived_name : derived_predicates) {
-    auto derived = domain_expert_->getDerivedPredicate(derived_name.predicate.name);
-    for (auto d : derived) {
-      std::vector<std::vector<std::string>> parameters_vector;
-      for (size_t i = 0; i < d.predicate.parameters.size(); i++) {
-        // Objects of the type, or of any of its subtypes
-        const auto & type = d.predicate.parameters[i].type;
-        const auto sub_types = domain_expert_->getSubTypes(type);
-        std::vector<std::string> p_vector;
-        for (const auto & instance : instances_) {
-          if (instance.type == type || type.empty() || type == "object" ||
-            std::find(sub_types.begin(), sub_types.end(), instance.type) != sub_types.end())
-          {
-            p_vector.push_back(instance.name);
-          }
-        }
-        parameters_vector.push_back(p_vector);
-      }
-      std::vector<std::vector<std::string>> possible_parameters_values;
-      std::vector<std::string> aux;
-      plansys2::cart_product(
-        possible_parameters_values, aux, parameters_vector.begin(), parameters_vector.end());
-
-      for (auto parameters_values : possible_parameters_values) {
-        std::map<std::string, std::string> replace;
-        for (size_t i = 0; i < d.predicate.parameters.size(); i++) {
-          replace["?" + std::to_string(i)] = parameters_values[i];
-        }
-        auto tree_replaced = plansys2::replace_children_param(
-          d.preconditions, d.preconditions.nodes[0].node_id, replace);
-        bool result = check(tree_replaced, predicates_, functions_);
-        if (result) {
-          plansys2::Predicate inferred_predicate;
-          inferred_predicate.node_type = plansys2_msgs::msg::Node::PREDICATE;
-          inferred_predicate.name = d.predicate.name;
-          for (size_t i = 0; i < d.predicate.parameters.size(); i++) {
-            plansys2_msgs::msg::Param param;
-            param.name = replace.at("?" + std::to_string(i));
-            inferred_predicate.parameters.push_back(param);
-          }
-          ret.push_back(inferred_predicate);
-        }
+std::vector<DerivedRule>
+ProblemExpert::derivedRules()
+{
+  std::vector<plansys2::Derived> derived;
+  std::set<std::string> names;
+  for (const auto & d : domain_expert_->getDerivedPredicates()) {
+    if (names.insert(d.predicate.name).second) {
+      for (const auto & rule : domain_expert_->getDerivedPredicate(d.predicate.name)) {
+        derived.push_back(rule);
       }
     }
   }
-  return ret;
+  return make_derived_rules(
+    derived, instances_,
+    [this](const std::string & type) {return domain_expert_->getSubTypes(type);});
 }
 
 bool
@@ -534,6 +512,29 @@ ProblemExpert::clearMetric()
   return true;
 }
 
+plansys2_msgs::msg::Tree
+ProblemExpert::getConstraints()
+{
+  return constraints_;
+}
+
+bool
+ProblemExpert::setConstraints(const plansys2_msgs::msg::Tree & constraints)
+{
+  if (!isValidConstraints(constraints)) {
+    return false;
+  }
+  constraints_ = withSubTypes(constraints);
+  return true;
+}
+
+bool
+ProblemExpert::clearConstraints()
+{
+  constraints_.nodes.clear();
+  return true;
+}
+
 bool
 ProblemExpert::clearKnowledge()
 {
@@ -542,8 +543,203 @@ ProblemExpert::clearKnowledge()
   functions_.clear();
   clearGoal();
   clearMetric();
+  clearConstraints();
+  timed_facts_.clear();
+  continuous_effects_.clear();
 
   return true;
+}
+
+bool
+ProblemExpert::addTimedFact(const plansys2_msgs::msg::Node & fact, double delay, bool negated)
+{
+  if (fact.node_type == plansys2_msgs::msg::Node::PREDICATE) {
+    if (!isValidPredicate(fact)) {
+      return false;
+    }
+  } else if (fact.node_type == plansys2_msgs::msg::Node::FUNCTION) {
+    if (negated || !isValidFunction(fact)) {
+      return false;
+    }
+  } else {
+    return false;
+  }
+  TimedFact timed{clock_() + std::max(0.0, delay), negated, fact};
+  // In time order; facts at the same time, as given
+  auto it = std::upper_bound(
+    timed_facts_.begin(), timed_facts_.end(), timed,
+    [](const TimedFact & a, const TimedFact & b) {return a.at < b.at;});
+  timed_facts_.insert(it, timed);
+  return true;
+}
+
+std::vector<ProblemExpert::TimedFact>
+ProblemExpert::getTimedFacts() const
+{
+  return timed_facts_;
+}
+
+bool
+ProblemExpert::setContinuousEffect(
+  const std::string & id, const plansys2_msgs::msg::Tree & effects, bool active)
+{
+  if (!active) {
+    continuous_effects_.erase(id);
+    return true;
+  }
+  std::string error;
+  if (!effects.nodes.empty() && !parser::pddl::validateTree(effects, error)) {
+    std::cerr << "Malformed continuous effects of " << id << ": " << error << std::endl;
+    return false;
+  }
+  continuous_effects_[id] = effects;
+  return true;
+}
+
+void
+ProblemExpert::groundHappenings()
+{
+  std::string signature;
+  for (const auto & instance : instances_) {
+    signature += instance.name + ":" + instance.type + " ";
+  }
+  if (signature == happenings_instances_ && !happenings_instances_.empty()) {
+    return;
+  }
+  happenings_instances_ = signature.empty() ? " " : signature;
+  processes_.clear();
+  events_.clear();
+
+  // Each process and event for every combination of objects of its parameters' types
+  auto ground = [this](
+    const std::vector<std::string> & names, bool processes,
+    std::vector<plansys2_msgs::msg::Action> & out) {
+      for (const auto & name : names) {
+        auto model = processes ? domain_expert_->getProcess(name) : domain_expert_->getEvent(name);
+        if (!model) {
+          continue;
+        }
+        std::vector<std::vector<std::string>> objects;
+        for (const auto & param : model->parameters) {
+          const auto subs = domain_expert_->getSubTypes(param.type);
+          std::vector<std::string> fit;
+          for (const auto & instance : instances_) {
+            if (instance.type == param.type || param.type == "object" ||
+              std::find(subs.begin(), subs.end(), instance.type) != subs.end())
+            {
+              fit.push_back(instance.name);
+            }
+          }
+          objects.push_back(fit);
+        }
+        std::vector<std::vector<std::string>> combinations;
+        std::vector<std::string> combination;
+        cart_product(combinations, combination, objects.begin(), objects.end());
+        for (const auto & values : combinations) {
+          auto grounded = processes ? domain_expert_->getProcess(name, values) :
+            domain_expert_->getEvent(name, values);
+          if (grounded) {
+            out.push_back(*grounded);
+          }
+        }
+      }
+    };
+  ground(domain_expert_->getProcesses(), true, processes_);
+  ground(domain_expert_->getEvents(), false, events_);
+}
+
+bool
+ProblemExpert::stepDynamics(double dt)
+{
+  groundHappenings();
+  bool changed = false;
+
+  // What acts for dt: the running actions, and the processes whose precondition holds
+  std::vector<plansys2_msgs::msg::Tree> acting;
+  for (const auto & [id, effects] : continuous_effects_) {
+    (void)id;
+    acting.push_back(effects);
+  }
+  for (const auto & process : processes_) {
+    if (check(process.preconditions, *this)) {
+      acting.push_back(process.effects);
+    }
+  }
+  if (dt > 0.0 && !acting.empty()) {
+    // Perception measures some: their values stay as it gave them
+    std::vector<plansys2::Function> measured;
+    for (const auto & function : functions_) {
+      if (measured_functions_.count(function.name)) {
+        measured.push_back(function);
+      }
+    }
+    for (auto effects : acting) {
+      parser::pddl::bindTime(effects, dt);
+      apply(effects, *this);
+    }
+    for (const auto & function : measured) {
+      updateFunction(function);
+    }
+    changed = true;
+  }
+
+  // Then the events whose precondition holds, each once a step, until none does
+  std::set<size_t> fired;
+  for (int round = 0; round < 10; round++) {
+    bool any = false;
+    for (size_t i = 0; i < events_.size(); i++) {
+      if (!fired.count(i) && check(events_[i].preconditions, *this)) {
+        apply(events_[i].effects, *this);
+        fired.insert(i);
+        any = true;
+        std::string event = "event (" + events_[i].name;
+        for (const auto & param : events_[i].parameters) {
+          event += " " + param.name;
+        }
+        happened_.push_back(event + ")");
+      }
+    }
+    if (!any) {
+      break;
+    }
+    changed = true;
+  }
+  return changed;
+}
+
+std::vector<std::string>
+ProblemExpert::takeHappened()
+{
+  auto ret = std::move(happened_);
+  happened_.clear();
+  return ret;
+}
+
+bool
+ProblemExpert::applyTimedFacts()
+{
+  const double now = clock_();
+  bool applied = false;
+  while (!timed_facts_.empty() && timed_facts_.front().at <= now) {
+    const auto timed = timed_facts_.front();
+    timed_facts_.erase(timed_facts_.begin());
+    happened_.push_back(
+      std::string("timed fact ") + (timed.negated ? "(not " : "") +
+      parser::pddl::toString(timed.fact) +
+      (timed.fact.node_type == plansys2_msgs::msg::Node::FUNCTION ?
+      " = " + std::to_string(timed.fact.value) : "") + (timed.negated ? ")" : ""));
+    if (timed.fact.node_type == plansys2_msgs::msg::Node::PREDICATE) {
+      if (timed.negated) {
+        removePredicate(timed.fact);
+      } else {
+        addPredicate(timed.fact);
+      }
+    } else if (!updateFunction(timed.fact)) {
+      addFunction(timed.fact);
+    }
+    applied = true;
+  }
+  return applied;
 }
 
 bool
@@ -589,14 +785,10 @@ ProblemExpert::existPredicate(const plansys2::Predicate & predicate)
     i++;
   }
 
-  if (!found) {
-    std::vector<std::string> parameters_names;
-    std::for_each(
-      predicate.parameters.begin(), predicate.parameters.end(),
-      [&](auto p) {parameters_names.push_back(p.name);});
-    auto derived_predicates = domain_expert_->getDerivedPredicate(predicate.name, parameters_names);
-    for (auto derived : derived_predicates) {
-      if (check(derived.preconditions, predicates_, functions_)) {
+  // A derived one, only if it is
+  if (!found && !domain_expert_->getDerivedPredicate(predicate.name).empty()) {
+    for (const auto & p : derive(derivedRules(), predicates_, functions_)) {
+      if (parser::pddl::checkNodeEquality(p, predicate)) {
         found = true;
         break;
       }
@@ -679,7 +871,33 @@ ProblemExpert::isValidFunction(const plansys2::Function & function)
 {
   const std::optional<plansys2::Function> & model_function =
     domain_expert_->getFunction(function.name);
-  return model_function && argumentsFit(function, model_function.value());
+  if (!model_function || !argumentsFit(function, model_function.value())) {
+    return false;
+  }
+  if (function.object.empty()) {
+    return true;
+  }
+  // An object fluent has an object of its type: an instance, or a constant of the domain
+  const auto & type = model_function->object;
+  if (type.empty()) {
+    return false;  // A number, not an object
+  }
+  const auto sub_types = domain_expert_->getSubTypes(type);
+  auto fits = [&](const std::string & t) {
+      return t == type || type == "object" ||
+             std::find(sub_types.begin(), sub_types.end(), t) != sub_types.end();
+    };
+  for (const auto & instance : instances_) {
+    if (instance.name == function.object) {
+      return fits(instance.type);
+    }
+  }
+  for (const auto & constant : domain_expert_->getConstants(type)) {
+    if (constant == function.object) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool
@@ -691,7 +909,78 @@ ProblemExpert::isValidGoal(const plansys2::Goal & goal)
     std::cerr << "Malformed goal: " << error << std::endl;
     return false;
   }
+  for (const auto & node : goal.nodes) {
+    if (node.node_type == plansys2_msgs::msg::Node::CONSTRAINT) {
+      std::cerr << "Invalid goal: (" << node.name << ") goes in the constraints" << std::endl;
+      return false;
+    }
+  }
   return checkPredicateTreeTypes(goal, domain_expert_);
+}
+
+bool
+ProblemExpert::isValidConstraints(const plansys2_msgs::msg::Tree & constraints)
+{
+  std::string error;
+  if (constraints.nodes.empty() || !parser::pddl::validateTree(constraints, error)) {
+    std::cerr << "Malformed constraints: " << error << std::endl;
+    return false;
+  }
+  // Modal constraints, in and, forall and preferences; their conditions inside, valid ones
+  std::vector<std::pair<uint32_t, bool>> pending = {{0, false}};
+  while (!pending.empty()) {
+    const auto [id, in_preference] = pending.back();
+    pending.pop_back();
+    const auto & node = constraints.nodes[id];
+    switch (node.node_type) {
+      case plansys2_msgs::msg::Node::AND:
+      case plansys2_msgs::msg::Node::FORALL:
+        for (auto child : node.children) {
+          pending.push_back({child, in_preference});
+        }
+        break;
+      case plansys2_msgs::msg::Node::PREFERENCE:
+        if (in_preference) {
+          std::cerr << "Invalid constraints: a preference in a preference" << std::endl;
+          return false;
+        }
+        pending.push_back({node.children[0], true});
+        break;
+      case plansys2_msgs::msg::Node::CONSTRAINT:
+        for (auto child : node.children) {
+          const auto & inner = constraints.nodes[child];
+          if (inner.node_type == plansys2_msgs::msg::Node::CONSTRAINT ||
+            inner.node_type == plansys2_msgs::msg::Node::PREFERENCE)
+          {
+            std::cerr << "Invalid constraints: (" << node.name << ") of a constraint" <<
+              std::endl;
+            return false;
+          }
+        }
+        break;
+      default:
+        std::cerr << "Invalid constraints: " << parser::pddl::toString(constraints, id) <<
+          " is no modal constraint" << std::endl;
+        return false;
+    }
+  }
+  return checkPredicateTreeTypes(constraints, domain_expert_);
+}
+
+std::set<std::string>
+ProblemExpert::getPreferenceNames()
+{
+  std::set<std::string> ret;
+  auto collect = [&ret](const plansys2_msgs::msg::Tree & tree) {
+      for (const auto & node : tree.nodes) {
+        if (node.node_type == plansys2_msgs::msg::Node::PREFERENCE && !node.name.empty()) {
+          ret.insert(node.name);
+        }
+      }
+    };
+  collect(goal_);
+  collect(constraints_);
+  return ret;
 }
 
 bool
@@ -727,6 +1016,17 @@ ProblemExpert::isValidMetric(const plansys2::Metric & metric)
         break;
       case plansys2_msgs::msg::Node::FUNCTION:
         if (node.name == "total-time" && node.parameters.empty()) {
+          break;
+        }
+        // PDDL3: how much a preference of the problem is violated
+        if (node.name == "is-violated") {
+          if (node.parameters.size() != 1 ||
+            !getPreferenceNames().count(node.parameters[0].name))
+          {
+            std::cerr << "Invalid metric: no preference " << parser::pddl::toString(node) <<
+              std::endl;
+            return false;
+          }
           break;
         }
         if (!isValidFunction(node)) {
@@ -800,9 +1100,12 @@ ProblemExpert::updateDomain(const std::string & domain)
     clearGoal();
   }
 
-  // The same for the metric
+  // The same for the metric and the constraints
   if (!metric_.tree.nodes.empty() && !isValidMetric(metric_)) {
     clearMetric();
+  }
+  if (!constraints_.nodes.empty() && !isValidConstraints(constraints_)) {
+    clearConstraints();
   }
 
   return true;
@@ -863,6 +1166,16 @@ ProblemExpert::checkPredicateTreeTypes(
           tree, domain_expert, tree.nodes[node_id].children[0], inner);
       }
 
+    // PDDL3: what is inside them is checked as any condition; a time is a number
+    case plansys2_msgs::msg::Node::PREFERENCE:
+    case plansys2_msgs::msg::Node::CONSTRAINT: {
+        bool ret = true;
+        for (auto & child_id : tree.nodes[node_id].children) {
+          ret = ret && checkPredicateTreeTypes(tree, domain_expert, child_id, bound);
+        }
+        return ret;
+      }
+
     case plansys2_msgs::msg::Node::IMPLY: {
         return checkPredicateTreeTypes(
           tree, domain_expert, tree.nodes[node_id].children[0], bound) &&
@@ -889,6 +1202,12 @@ ProblemExpert::checkPredicateTreeTypes(
       }
 
     case plansys2_msgs::msg::Node::NUMBER: {
+        return true;
+      }
+
+    // An object, compared with an object fluent or another object
+    case plansys2_msgs::msg::Node::CONSTANT:
+    case plansys2_msgs::msg::Node::PARAMETER: {
         return true;
       }
 
@@ -940,11 +1259,45 @@ ProblemExpert::getProblem()
       function.name.begin(), function.name.end(),
       function.name.begin(), ::tolower);
 
-    problem.addInit(function.name, function.value, v);
+    if (function.object.empty()) {
+      problem.addInit(function.name, function.value, v);
+    } else {
+      problem.addInitObject(function.name, function.object, v);
+    }
+  }
+
+  // What is still to come, from now
+  const double now = clock_();
+  for (const auto & timed : timed_facts_) {
+    if (timed.at <= now) {
+      continue;  // Applied at once
+    }
+    StringVec v;
+    for (const auto & param : timed.fact.parameters) {
+      v.push_back(param.name);
+    }
+    std::string name = timed.fact.name;
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+    parser::pddl::TypeGround * ground = nullptr;
+    if (timed.fact.node_type == plansys2_msgs::msg::Node::PREDICATE) {
+      ground = new parser::pddl::TypeGround(domain.preds.get(name));
+    } else {
+      ground = new parser::pddl::GroundFunc<double>(domain.funcs.get(name), timed.fact.value);
+    }
+    ground->insert(domain, v);
+    problem.addTimedInit(timed.at - now, timed.negated, ground);
   }
 
   const std::string gs = parser::pddl::toString(goal_);
   problem.addGoal(gs);
+
+  if (!constraints_.nodes.empty()) {
+    try {
+      problem.addConstraints(parser::pddl::toString(constraints_));
+    } catch (const std::exception & ex) {
+      std::cerr << "Constraints left out of the problem: " << ex.what() << std::endl;
+    }
+  }
 
   if (!metric_.tree.nodes.empty()) {
     const std::string optimization =
@@ -1012,6 +1365,8 @@ ProblemExpert::addProblem(const std::string & problem_str)
   auto prev_functions = functions_;
   auto prev_goal = goal_;
   auto prev_metric = metric_;
+  auto prev_constraints = constraints_;
+  auto prev_timed_facts = timed_facts_;
   try {
     for (unsigned i = 0; i < domain.types.size(); ++i) {
       if (domain.types[i]->constants.size() ) {
@@ -1064,12 +1419,34 @@ ProblemExpert::addProblem(const std::string & problem_str)
       }
     }
 
+    // Timed literals and fluents: from now
+    for (const auto & timed : problem.timedInit) {
+      plansys2_msgs::msg::Tree fact_tree;
+      auto fact = timed.fact->getTree(fact_tree, domain);
+      if (!addTimedFact(*fact, timed.time, timed.negated)) {
+        throw std::runtime_error(
+                "Wrong timed fact " + parser::pddl::toString(fact_tree, fact->node_id));
+      }
+    }
+
     // A problem without :goal is valid: the goal can be set later
     if (problem.goal) {
       plansys2_msgs::msg::Tree goal;
-      problem.goal->getTree(goal, domain);
+      // The objects by name: a function in the goal has them as indexes, (box_pos ?3)
+      const std::vector<std::string> objects = problem.ts.tokens;
+      problem.goal->getTree(goal, domain, objects);
       if (!setGoal(goal)) {
         throw std::runtime_error("Wrong goal " + parser::pddl::toString(goal));
+      }
+    }
+
+    // Without :constraints those set before are kept, as the goal; before the metric, that
+    // reads their preferences
+    if (problem.constraints) {
+      plansys2_msgs::msg::Tree constraints;
+      problem.constraints->getTree(constraints, domain, problem.ts.tokens);
+      if (!setConstraints(constraints)) {
+        throw std::runtime_error("Wrong constraints " + parser::pddl::toString(constraints));
       }
     }
 
@@ -1093,6 +1470,8 @@ ProblemExpert::addProblem(const std::string & problem_str)
     functions_ = prev_functions;
     goal_ = prev_goal;
     metric_ = prev_metric;
+    constraints_ = prev_constraints;
+    timed_facts_ = prev_timed_facts;
     return false;
   }
 

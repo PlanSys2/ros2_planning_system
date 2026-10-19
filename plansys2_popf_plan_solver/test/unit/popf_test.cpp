@@ -14,6 +14,8 @@
 
 #include <unistd.h>
 
+#include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <memory>
@@ -29,6 +31,9 @@
 #include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 #include "pluginlib/class_loader.hpp"
+#include "kairos/kairos.hpp"
+#include "plansys2_core/PddlRequirements.hpp"
+#include "plansys2_pddl_parser/PddlBank.hpp"
 #include "plansys2_core/PlanSolverBase.hpp"
 #include "plansys2_core/TestUtils.hpp"
 
@@ -447,7 +452,17 @@ TEST(popf_plan_solver, parse_plan_result_tolerates_unexpected_lines)
   ASSERT_EQ(plan->items[0].action, "(move leia kitchen bedroom)");
   ASSERT_FLOAT_EQ(plan->items[0].duration, 5.0);
   ASSERT_EQ(plan->items[1].action, "(approach leia bedroom jack)");
-  ASSERT_FLOAT_EQ(plan->items[1].time, 5.001f);
+  ASSERT_DOUBLE_EQ(plan->items[1].time, 5.001);
+
+  // A number out of range is a bad line, not an exception; long times keep their decimals
+  plan = parse(
+    ";;;; Solution Found\n"
+    "0.000: (move leia kitchen bedroom)  [1" + std::string(400, '0') + ".000]\n"
+    "172800.003: (approach leia bedroom jack)  [86400.001]\n");
+  ASSERT_TRUE(plan);
+  ASSERT_EQ(plan->items.size(), 1u);
+  ASSERT_DOUBLE_EQ(plan->items[0].time, 172800.003);
+  ASSERT_DOUBLE_EQ(plan->items[0].duration, 86400.001);
 
   // A solution with no actions is an empty plan, not a failure
   plan = parse(";;;; Solution Found\n; Time 0.00\n");
@@ -460,6 +475,136 @@ TEST(popf_plan_solver, parse_plan_result_tolerates_unexpected_lines)
   ASSERT_FALSE(planner->parse_plan_result((folder / "missing").string()));
 
   std::filesystem::remove_all(folder);
+}
+
+// What popf declares is what it plans with: the planner gives it only those tasks
+TEST(popf_plan_solver, supported_requirements_are_what_popf_plans_with)
+{
+  auto planner = make_solver("popf_requirements");
+  const auto supported = planner->supported_requirements();
+  EXPECT_TRUE(
+    plansys2::missing_requirements(
+      plansys2::pddl_requirements(
+        read_test_file("domain_simple.pddl"), read_test_file("problem_simple_1.pddl")),
+      supported).empty());
+
+  // Each one alone, in a task popf solves without it
+  const std::string domain =
+    "(define (domain d) (:requirements :strips :negative-preconditions :conditional-effects)"
+    " (:predicates (ready) (open) (lit))";
+  const std::string problem = "(define (problem p) (:domain d) (:init (ready)) (:goal (lit)))";
+  const std::vector<std::pair<std::string, std::string>> unsupported = {
+    {":negative-preconditions",
+      " (:action open-it :parameters () :precondition (not (open)) :effect (and (lit))))"},
+    {":conditional-effects",
+      " (:action light :parameters () :precondition (ready) :effect (when (ready) (lit))))"},
+    {":disjunctive-preconditions",
+      " (:action light :parameters () :precondition (or (ready) (open)) :effect (lit)))"},
+  };
+  for (const auto & [requirement, action] : unsupported) {
+    EXPECT_EQ(
+      plansys2::missing_requirements(
+        plansys2::pddl_requirements(domain + action, problem), supported),
+      std::vector<std::string>{requirement});
+    EXPECT_FALSE(planner->getPlan(domain + action, problem, "popf_requirements")) << requirement;
+  }
+  EXPECT_TRUE(
+    planner->getPlan(
+      domain + " (:action light :parameters () :precondition (ready) :effect (lit)))", problem,
+      "popf_requirements"));
+
+  // Its parser rejects :action-costs; the same costs with :fluents plan
+  const std::string costs =
+    " (:predicates (ready) (lit)) (:functions (total-cost))"
+    " (:action light :parameters () :precondition (ready)"
+    "  :effect (and (lit) (increase (total-cost) 1))))";
+  const std::string cost_problem =
+    "(define (problem p) (:domain d) (:init (ready) (= (total-cost) 0)) (:goal (lit))"
+    " (:metric minimize (total-cost)))";
+  const std::string with_costs = "(define (domain d) (:requirements :strips :action-costs)" + costs;
+  EXPECT_EQ(
+    plansys2::missing_requirements(
+      plansys2::pddl_requirements(with_costs, cost_problem), supported),
+    std::vector<std::string>{":action-costs"});
+  EXPECT_FALSE(planner->getPlan(with_costs, cost_problem, "popf_requirements"));
+  const std::string with_fluents = "(define (domain d) (:requirements :strips :fluents)" + costs;
+  EXPECT_TRUE(
+    plansys2::missing_requirements(
+      plansys2::pddl_requirements(with_fluents, cost_problem), supported).empty());
+  EXPECT_TRUE(planner->getPlan(with_fluents, cost_problem, "popf_requirements"));
+}
+
+// The plan message as Kairos reads it: temporal if the domain has durative actions
+kairos::Plan to_kairos(const plansys2_msgs::msg::Plan & msg, const std::string & domain)
+{
+  kairos::Plan plan;
+  plan.temporal = domain.find(":durative-action") != std::string::npos;
+  for (size_t i = 0; i < msg.items.size(); i++) {
+    std::istringstream words(msg.items[i].action.substr(1, msg.items[i].action.size() - 2));
+    kairos::PlanStep step;
+    words >> step.name;
+    for (std::string arg; words >> arg; ) {
+      step.args.push_back(arg);
+    }
+    step.time = plan.temporal ? msg.items[i].time : static_cast<double>(i);
+    step.duration = plan.temporal ? msg.items[i].duration : 0.0;
+    plan.steps.push_back(step);
+  }
+  return plan;
+}
+
+bool valid(const parser::pddl::BankCase & task, const plansys2_msgs::msg::Plan & plan)
+{
+  kairos::ValidateOptions options;
+  options.epsilon = 0.001;
+  return kairos::validate_plan(
+    task.domain, task.problem, to_kairos(plan, task.domain), options).valid();
+}
+
+// Every task of the bank: popf solves what it declares, and fails, at least once, on each
+// requirement it does not
+TEST(popf_plan_solver, the_bank)
+{
+  const auto cases = parser::pddl::read_pddl_bank(
+    ament_index_cpp::get_package_share_path("plansys2_pddl_parser") / "bank");
+  ASSERT_GE(cases.size(), 60u);
+  auto planner = make_solver("popf_bank");
+  const auto supported = planner->supported_requirements();
+
+  std::set<std::string> excluded, justified;
+  // popf aborts on preferences only when built with assertions (as in CI): not shown here
+  justified.insert(":preferences");
+  int solved = 0;
+  const auto all = std::chrono::steady_clock::now();
+  for (const auto & task : cases) {
+    SCOPED_TRACE(task.name);
+    const auto missing = plansys2::missing_requirements(task.uses, supported);
+    excluded.insert(missing.begin(), missing.end());
+    bool pending = false;  // A requirement still without a case where popf fails
+    for (const auto & requirement : missing) {
+      pending = pending || !justified.count(requirement);
+    }
+    if (!missing.empty() && !pending) {
+      continue;  // Enough: popf is not given these
+    }
+
+    const auto start = std::chrono::steady_clock::now();
+    const auto plan = planner->getPlan(task.domain, task.problem, "popf_bank", 3s);
+    const auto took = std::chrono::duration<double>(std::chrono::steady_clock::now() - start);
+    EXPECT_LT(took.count(), 3.5);
+    if (missing.empty()) {
+      ASSERT_EQ(plan.has_value(), task.solvable);
+      if (plan) {
+        EXPECT_TRUE(valid(task, *plan));
+        solved++;
+      }
+    } else if (task.solvable && !(plan && valid(task, *plan))) {
+      justified.insert(missing.begin(), missing.end());
+    }
+  }
+  EXPECT_EQ(justified, excluded);
+  EXPECT_GE(solved, 15);
+  EXPECT_LT(std::chrono::duration<double>(std::chrono::steady_clock::now() - all).count(), 40.0);
 }
 
 TEST(popf_plan_solver, unwritable_output_dir_fails_without_running_popf)

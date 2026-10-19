@@ -42,7 +42,13 @@ _MODIFIERS = {
 }
 _LOGIC = {
     'and': Node.AND, 'or': Node.OR, 'not': Node.NOT, 'exists': Node.EXISTS,
-    'forall': Node.FORALL, 'imply': Node.IMPLY,
+    'forall': Node.FORALL, 'imply': Node.IMPLY, 'when': Node.WHEN,
+}
+# PDDL3 modal constraints: how many times and conditions each one takes
+_CONSTRAINTS = {
+    'always': (0, 1), 'sometime': (0, 1), 'at-most-once': (0, 1), 'at end': (0, 1),
+    'within': (1, 1), 'hold-after': (1, 1), 'sometime-after': (0, 2),
+    'sometime-before': (0, 2), 'always-within': (1, 2), 'hold-during': (2, 1),
 }
 _COMPARISONS = (Node.COMP_GE, Node.COMP_GT, Node.COMP_LE, Node.COMP_LT, Node.COMP_EQ)
 
@@ -153,9 +159,13 @@ class Parser:
                 limits = (0, children)
             elif node.node_type == Node.EXISTS:
                 limits = (1, children)
-            elif node.node_type in (Node.NOT, Node.FORALL):
+            elif node.node_type in (Node.NOT, Node.FORALL, Node.PREFERENCE):
                 limits = (1, 1)
-            elif node.node_type in (Node.IMPLY, Node.EXPRESSION):
+            elif node.node_type == Node.CONSTRAINT:
+                if node.name not in _CONSTRAINTS:
+                    return False, f'node {node_id} is no constraint: {node.name}'
+                limits = (sum(_CONSTRAINTS[node.name]),) * 2
+            elif node.node_type in (Node.IMPLY, Node.WHEN, Node.EXPRESSION):
                 limits = (2, 2)
             elif node.node_type == Node.FUNCTION_MODIFIER:
                 # Trees built before (total-cost) was a child have only the value
@@ -305,7 +315,8 @@ class Parser:
             return default_node_type
         if expr[start] != '(':
             token = _token_at(expr, start)
-            if token.startswith('?'):
+            # A variable, and #t: the time a continuous effect has acted
+            if token.startswith('?') or token == '#t':
                 return Node.PARAMETER
             if Parser.parse_number(token) is not None:
                 return Node.NUMBER
@@ -315,6 +326,9 @@ class Parser:
             return default_node_type
         if head.startswith('?'):
             return Node.PARAMETER
+        modal = Parser.split_modal(expr)
+        if modal is not None:
+            return Node.PREFERENCE if modal[0] == 'preference' else Node.CONSTRAINT
         if head in _LOGIC:
             return _LOGIC[head]
         if head in _MODIFIERS:
@@ -322,6 +336,70 @@ class Parser:
         if head in _EXPRESSIONS:
             return Node.EXPRESSION
         return default_node_type
+
+    @staticmethod
+    def split_modal(expr: str) -> Optional[Tuple[str, List[str]]]:
+        """
+        Split a preference or a modal constraint into its operator and arguments.
+
+        Parameters
+        ----------
+        expr : str
+            The input string.
+
+        Returns
+        -------
+        Optional[Tuple[str, List[str]]]
+            The operator ('at end' in full) and its arguments; None for anything else, such
+            as a predicate called always.
+
+        """
+        head, _ = _head_token(expr)
+        if head not in ('preference', 'at') and head not in _CONSTRAINTS:
+            return None
+        rest = Parser.get_reduced_string(expr)
+        if len(rest) < 2 or rest[0] != '(' or rest[-1] != ')':
+            return None
+        rest = rest[1:-1]
+        rest = rest[rest.find(head) + len(head):]
+        args: List[str] = []
+        i = 0
+        while i < len(rest):
+            if rest[i] in _BLANKS:
+                i += 1
+            elif rest[i] == '(':
+                last = Parser.get_parenthesis(rest, i)
+                if last >= len(rest):
+                    return None  # Unbalanced
+                args.append(rest[i:last + 1])
+                i = last + 1
+            else:
+                token = _token_at(rest, i)
+                if not token:
+                    return None
+                args.append(token)
+                i += len(token)
+
+        def is_cond(arg: str) -> bool:
+            return arg.startswith('(')
+
+        if head == 'preference':
+            # (preference [name] C)
+            if (not args or len(args) > 2 or not is_cond(args[-1]) or
+                    (len(args) == 2 and is_cond(args[0]))):
+                return None
+            return head, args
+        if head == 'at':
+            if len(args) != 2 or args[0] != 'end' or not is_cond(args[1]):
+                return None
+            return 'at end', args[1:]
+        times, conds = _CONSTRAINTS[head]
+        if len(args) != times + conds:
+            return None
+        for index, arg in enumerate(args):
+            if (Parser.parse_number(arg) is None) if index < times else not is_cond(arg):
+                return None
+        return head, args
 
     @staticmethod
     def get_expr(expr: str) -> Tuple[int, int]:
@@ -546,33 +624,54 @@ class Parser:
         Parameters
         ----------
         function : str
-            '(f a b)', '(f a b) 1.5' or '(= (f a b) 1.5)'.
+            '(f a b)', '(f a b) 1.5' or '(= (f a b) 1.5)'; the value of an object fluent is an
+            object: '(= (pos r1) kitchen)'.
 
         Returns
         -------
         Node
-            Node message with FUNCTION type, its parameters and its value.
+            Node message with FUNCTION type, its parameters and its value or object.
 
         """
         node = Node()
         node.node_type = Node.FUNCTION
         node.value = 0.0
+        # The tokens, and whether each one is inside the parentheses of the function
         tokens = []
+        depth = 0
+        function_depth = -1
         pos = 0
         while pos < len(function):
-            if function[pos] in _BLANKS or function[pos] in '()':
+            char = function[pos]
+            if char == '(':
+                depth += 1
                 pos += 1
                 continue
-            tokens.append(_token_at(function, pos))
-            pos += len(tokens[-1])
-        i = 1 if tokens and tokens[0] == '=' else 0
-        if i < len(tokens):
-            node.name = tokens[i]
-            i += 1
-        for token in tokens[i:]:
+            if char == ')':
+                if depth == function_depth:
+                    function_depth = -2  # Closed: what follows is the value
+                depth -= 1
+                pos += 1
+                continue
+            if char in _BLANKS:
+                pos += 1
+                continue
+            token = _token_at(function, pos)
+            pos += len(token)
+            if token == '=' and not tokens:
+                continue
+            if function_depth == -1:
+                function_depth = depth  # The name opens the function
+            tokens.append((token, function_depth >= 0))
+        if tokens:
+            node.name = tokens[0][0]
+        for token, inside in tokens[1:]:
             value = Parser.parse_number(token)
             if value is not None:
                 node.value = value
+                break
+            if not inside:
+                node.object = token  # After the function: its object
                 break
             node.parameters.append(Parser.param_from_string(token))  # type: ignore[union-attr]
         return node
@@ -796,6 +895,25 @@ class Parser:
             node = Parser._new_node(tree, node_type, negate)
             Parser._add_children(tree, node, wexpr, negate)
             return node
+        if node_type == Node.WHEN:
+            # Never negated: a condition and an effect, each as written
+            node = Parser._new_node(tree, node_type, False)
+            Parser._add_children(tree, node, wexpr, False)
+            return node
+        if node_type in (Node.PREFERENCE, Node.CONSTRAINT):
+            # Its conditions as written; the times of a constraint are its first children
+            op, args = Parser.split_modal(wexpr)  # type: ignore[misc]
+            node = Parser._new_node(tree, node_type, negate)
+            if node_type == Node.PREFERENCE:
+                node.name = args[0] if len(args) == 2 else ''
+                args = args[-1:]
+            else:
+                node.name = op
+            for arg in args:
+                child = Parser._from_string_recursive(tree, arg, False, node_type)
+                if child is not None:
+                    node.children.append(child.node_id)
+            return node
         if node_type == Node.NOT:
             node = Parser._new_node(tree, node_type, negate)
             subexprs = Parser.get_sub_expr(wexpr)
@@ -928,6 +1046,9 @@ class Parser:
             Node.EXISTS: Parser._to_string_exists,
             Node.FORALL: Parser._to_string_forall,
             Node.IMPLY: Parser._to_string_imply,
+            Node.WHEN: Parser._to_string_when,
+            Node.PREFERENCE: Parser._to_string_preference,
+            Node.CONSTRAINT: Parser._to_string_constraint,
         }
         writer = writers.get(tree.nodes[node_id].node_type)  # type: ignore[index]
         return writer(tree, node_id, negate) if writer else ''
@@ -1310,6 +1431,88 @@ class Parser:
         return f'(not {result})' if negate else result
 
     @staticmethod
+    def _to_string_preference(tree: Tree, node_id: int, negate: bool) -> str:
+        """
+        Convert a preference to string: '(preference name condition)'.
+
+        Parameters
+        ----------
+        tree : Tree
+            The tree structure.
+        node_id : int
+            Node identifier.
+        negate : bool
+            Whether to negate it.
+
+        Returns
+        -------
+        str
+            String representation.
+
+        """
+        node = tree.nodes[node_id]  # type: ignore[index]
+        if len(node.children) != 1:
+            return ''
+        name = f'{node.name} ' if node.name else ''
+        ret = f'(preference {name}{Parser.tree_to_string(tree, node.children[0], False)})'
+        return f'(not {ret})' if negate else ret
+
+    @staticmethod
+    def _to_string_constraint(tree: Tree, node_id: int, negate: bool) -> str:
+        """
+        Convert a modal constraint to string: '(within 10 condition)'.
+
+        Parameters
+        ----------
+        tree : Tree
+            The tree structure.
+        node_id : int
+            Node identifier.
+        negate : bool
+            Whether to negate it.
+
+        Returns
+        -------
+        str
+            String representation.
+
+        """
+        node = tree.nodes[node_id]  # type: ignore[index]
+        args = ''.join(' ' + Parser.tree_to_string(tree, child, False) for child in node.children)
+        ret = f'({node.name}{args})'
+        return f'(not {ret})' if negate else ret
+
+    @staticmethod
+    def _to_string_when(tree: Tree, node_id: int, negate: bool) -> str:
+        """
+        Convert a conditional effect to string: '(when condition effect)'.
+
+        Parameters
+        ----------
+        tree : Tree
+            The tree structure.
+        node_id : int
+            Node identifier.
+        negate : bool
+            Not used: a conditional effect is never negated.
+
+        Returns
+        -------
+        str
+            String representation.
+
+        """
+        del negate
+        if node_id >= len(tree.nodes):
+            return ''
+        node = tree.nodes[node_id]  # type: ignore[index]
+        if len(node.children) != 2:
+            return ''
+        condition = Parser.tree_to_string(tree, node.children[0], False)
+        effect = Parser.tree_to_string(tree, node.children[1], False)
+        return f'(when {condition} {effect})'
+
+    @staticmethod
     def compare_str_case_insensitive(first: str, second: str) -> bool:
         """
         Compare two names ignoring the case, as PDDL does.
@@ -1478,7 +1681,8 @@ class Parser:
             0: 'UNKNOWN', 1: 'AND', 2: 'OR', 3: 'NOT', 4: 'ACTION',
             5: 'PREDICATE', 6: 'FUNCTION', 7: 'EXPRESSION',
             8: 'FUNCTION_MODIFIER', 9: 'NUMBER', 10: 'CONSTANT',
-            11: 'PARAMETER', 12: 'EXISTS', 27: 'FORALL', 28: 'IMPLY'
+            11: 'PARAMETER', 12: 'EXISTS', 27: 'FORALL', 28: 'IMPLY',
+            29: 'WHEN', 30: 'PREFERENCE', 31: 'CONSTRAINT'
         }
 
         # Expression type constants and names mapping

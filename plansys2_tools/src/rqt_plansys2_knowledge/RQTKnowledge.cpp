@@ -106,16 +106,11 @@ RQTKnowledge::ask_details()
   std::thread(
     [problem = problem_, details = details_]() {
       std::map<std::string, std::string> types;
-      std::map<std::string, double> values;
       for (const auto & instance : problem->getInstances()) {
         types[instance.name] = instance.type;
       }
-      for (const auto & function : problem->getFunctions()) {
-        values[parser::pddl::toString(function)] = function.value;
-      }
       std::lock_guard<std::mutex> lock(details->mutex);
       details->types = std::move(types);
-      details->values = std::move(values);
       details->asking = false;
       details->ready = true;
     }).detach();
@@ -132,7 +127,7 @@ RQTKnowledge::spin_loop()
   }
   lock.unlock();
 
-  // The names at once; the types and values when their answer comes
+  // The names at once; the types when their answer comes
   bool render_now = new_msg;
   {
     std::lock_guard<std::mutex> details_lock(details_->mutex);
@@ -155,11 +150,9 @@ void
 RQTKnowledge::render(const plansys2_msgs::msg::Knowledge & msg)
 {
   std::map<std::string, std::string> types;
-  std::map<std::string, double> values;
   {
     std::lock_guard<std::mutex> lock(details_->mutex);
     types = details_->types;
-    values = details_->values;
   }
 
   knowledge_tree_->clearAllItems();
@@ -193,10 +186,11 @@ RQTKnowledge::render(const plansys2_msgs::msg::Knowledge & msg)
   for (const std::string & function : msg.functions) {
     auto function_item = new QTreeWidgetItem();
     function_item->setText(0, QString("function"));
-    function_item->setText(1, QString(function.c_str()));
-    if (values.count(function)) {
-      function_item->setText(2, QString::number(values[function]));
-    }
+    // The message has its value: a number, or the object of an object fluent
+    const auto node = parser::pddl::fromStringFunction(function);
+    function_item->setText(1, QString::fromStdString(parser::pddl::toString(node)));
+    function_item->setText(
+      2, node.object.empty() ? QString::number(node.value) : QString::fromStdString(node.object));
     function_item->setBackground(0, Qt::blue);
     function_item->setBackground(1, Qt::blue);
     function_item->setBackground(2, Qt::blue);

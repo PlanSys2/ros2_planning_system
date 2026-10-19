@@ -450,6 +450,9 @@ Terminal::process_get_model_function(std::vector<std::string> & command, std::os
         os << "\t" << functions.value().parameters[i].type << " - " <<
           functions.value().parameters[i].name << std::endl;
       }
+      // An object fluent has objects of a type; the others, numbers
+      os << "Returns: " <<
+        (functions.value().object.empty() ? "number" : functions.value().object) << std::endl;
     } else {
       os << "Error when looking for params of " << command[0] << std::endl;
     }
@@ -480,6 +483,7 @@ Terminal::process_get_model_action(std::vector<std::string> & command, std::ostr
         os << "\t" << durative_action->parameters[i].name << " - " <<
           durative_action->parameters[i].type << std::endl;
       }
+      os << "Duration: " << parser::pddl::toString(durative_action->duration) << std::endl;
       os << "AtStart requirements: " <<
         parser::pddl::toString(durative_action->at_start_requirements) << std::endl;
       os << "OverAll requirements: " <<

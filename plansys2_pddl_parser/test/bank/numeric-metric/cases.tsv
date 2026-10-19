@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:numeric-fluents	take the lift and clean, minimizing energy-used
+domain.pddl	p2.pddl	yes	:numeric-fluents	clean two floors and return; ramps use less energy than the lift
+domain.pddl	p3.pddl	no	:numeric-fluents	the second floor has only a downward lift, so it cannot be reached

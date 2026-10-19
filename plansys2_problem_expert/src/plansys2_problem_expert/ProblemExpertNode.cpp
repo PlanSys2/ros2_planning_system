@@ -39,6 +39,8 @@ std::vector<std::string> tokenize(const std::string & string, const std::string 
   return tokens;
 }
 
+using namespace std::chrono_literals;  // NOLINT
+
 namespace plansys2
 {
 
@@ -47,6 +49,28 @@ ProblemExpertNode::ProblemExpertNode(const rclcpp::NodeOptions & options)
 {
   declare_parameter("model_file", "");
   declare_parameter("problem_file", "");
+  // PDDL+: the processes, events and continuous effects of running actions act on the problem,
+  // except on the functions perception measures
+  declare_parameter("simulate_dynamics", true);
+  declare_parameter("measured_functions", std::vector<std::string>{});
+
+  set_continuous_effect_service_ = create_service<plansys2_msgs::srv::SetContinuousEffect>(
+    "problem_expert/set_continuous_effect",
+    [this](
+      const std::shared_ptr<rmw_request_id_t>,
+      const std::shared_ptr<plansys2_msgs::srv::SetContinuousEffect::Request> request,
+      const std::shared_ptr<plansys2_msgs::srv::SetContinuousEffect::Response> response) {
+      if (problem_expert_ == nullptr) {
+        response->success = false;
+        response->error_info = "Requesting service in non-active state";
+        return;
+      }
+      response->success = problem_expert_->setContinuousEffect(
+        request->id, request->effects, request->active);
+      if (!response->success) {
+        response->error_info = "Continuous effects not valid";
+      }
+    });
 
   add_problem_service_ = create_service<plansys2_msgs::srv::AddProblem>(
     "problem_expert/add_problem",
@@ -284,8 +308,20 @@ ProblemExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   for (size_t i = 1; i < domains.size(); i++) {
     domain_expert->extendDomain(domains[i]);
   }
+  // A domain read in part would have no actions: as the domain expert, do not start
+  if (!domain_expert->getParseError().empty()) {
+    RCLCPP_ERROR(
+      get_logger(), "PlanSys2 cannot read this domain: %s", domain_expert->getParseError().c_str());
+    return CallbackReturnT::FAILURE;
+  }
 
   problem_expert_ = std::make_shared<ProblemExpert>(domain_expert);
+  // Timed literals and fluents come by the time of the node, simulated or not
+  problem_expert_->setClock([this]() {return now().seconds();});
+  {
+    const auto measured = get_parameter("measured_functions").as_string_array();
+    problem_expert_->setMeasuredFunctions(std::set<std::string>(measured.begin(), measured.end()));
+  }
 
   auto problem_file = get_parameter("problem_file").get_value<std::string>();
   if (!problem_file.empty()) {
@@ -324,6 +360,34 @@ ProblemExpertNode::on_activate(const rclcpp_lifecycle::State & state)
   update_pub_->on_activate();
   knowledge_pub_->on_activate();
   problem_pub_->on_activate();
+
+  // Timed facts are applied when their time comes, and the dynamics act, as any other change
+  last_step_ = now();
+  timed_facts_timer_ = create_wall_timer(
+    50ms, [this]() {
+      if (!problem_expert_) {
+        return;
+      }
+      const auto stamp = now();
+      const double dt = std::max(0.0, (stamp - last_step_).seconds());
+      last_step_ = stamp;
+      bool changed = problem_expert_->applyTimedFacts();
+      if (get_parameter("simulate_dynamics").as_bool()) {
+        changed = problem_expert_->stepDynamics(dt) || changed;
+      }
+      // What happens by itself, for who follows the execution
+      for (const auto & happened : problem_expert_->takeHappened()) {
+        RCLCPP_INFO(get_logger(), "[dynamics] %s", happened.c_str());
+      }
+      if (changed) {
+        update_pub_->publish(std_msgs::msg::Empty());
+        knowledge_pub_->publish(*get_knowledge_as_msg());
+        plansys2_msgs::msg::Problem problem_msg;
+        problem_msg.problem = problem_expert_->getProblem();
+        problem_msg.stamp = now();
+        problem_pub_->publish(problem_msg);
+      }
+    });
   RCLCPP_INFO(get_logger(), "[%s] Activated", get_name());
   return CallbackReturnT::SUCCESS;
 }
@@ -333,6 +397,7 @@ ProblemExpertNode::on_deactivate(const rclcpp_lifecycle::State & state)
 {
   (void)state;
   RCLCPP_INFO(get_logger(), "[%s] Deactivating...", get_name());
+  timed_facts_timer_.reset();
   update_pub_->on_deactivate();
   knowledge_pub_->on_deactivate();
   problem_pub_->on_deactivate();
@@ -1042,13 +1107,23 @@ ProblemExpertNode::get_knowledge_as_msg() const
     ret_msgs->predicates.push_back(parser::pddl::toString(predicate));
   }
 
+  // With its value, as in :init: a number, or the object of an object fluent
   for (const auto & function : problem_expert_->getFunctions()) {
-    ret_msgs->functions.push_back(parser::pddl::toString(function));
+    std::string value = function.object;
+    if (value.empty()) {
+      value = parser::pddl::numberToString(function.value);
+      if (value.find('.') != std::string::npos) {
+        value.erase(value.find_last_not_of('0') + 1);
+        if (value.back() == '.') {value.pop_back();}
+      }
+    }
+    ret_msgs->functions.push_back("(= " + parser::pddl::toString(function) + " " + value + ")");
   }
 
   auto goal = problem_expert_->getGoal();
   ret_msgs->goal = parser::pddl::toString(goal);
   ret_msgs->metric = parser::pddl::toString(problem_expert_->getMetric());
+  ret_msgs->constraints = parser::pddl::toString(problem_expert_->getConstraints());
 
   return ret_msgs;
 }

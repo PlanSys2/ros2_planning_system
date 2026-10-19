@@ -1560,6 +1560,205 @@ TEST(utils, evaluate_forall_client)
   plansys2::drain_ros(2s);
 }
 
+namespace
+{
+bool holds(const std::vector<plansys2::Predicate> & predicates, const std::string & p)
+{
+  auto pred = parser::pddl::fromStringPredicate(p);
+  return std::any_of(
+    predicates.begin(), predicates.end(),
+    [&pred](const auto & q) {return parser::pddl::checkNodeEquality(q, pred);});
+}
+
+std::vector<plansys2::Predicate> facts(const std::vector<std::string> & preds)
+{
+  std::vector<plansys2::Predicate> ret;
+  for (const auto & p : preds) {
+    ret.push_back(parser::pddl::fromStringPredicate(p));
+  }
+  return ret;
+}
+
+bool apply_text(
+  const std::string & effect, std::vector<plansys2::Predicate> & predicates,
+  std::vector<plansys2::Function> & functions)
+{
+  return plansys2::apply(parser::pddl::fromString(effect), predicates, functions);
+}
+}  // namespace
+
+TEST(utils, apply_when)
+{
+  std::vector<plansys2::Function> functions;
+
+  // The effect, only if the condition holds
+  auto predicates = facts({"(dirty kitchen)"});
+  ASSERT_TRUE(apply_text("(and (when (dirty kitchen) (clean kitchen)))", predicates, functions));
+  EXPECT_TRUE(holds(predicates, "(clean kitchen)"));
+  predicates = facts({});
+  ASSERT_TRUE(apply_text("(and (when (dirty kitchen) (clean kitchen)))", predicates, functions));
+  EXPECT_TRUE(predicates.empty());
+
+  // Negated conditions and effects, and several of them
+  predicates = facts({"(dirty kitchen)"});
+  ASSERT_TRUE(
+    apply_text(
+      "(and (when (dirty kitchen) (and (clean kitchen) (not (dirty kitchen))))"
+      " (when (not (dirty hall)) (clean hall)) (when (dirty hall) (lit hall)))",
+      predicates, functions));
+  EXPECT_TRUE(holds(predicates, "(clean kitchen)"));
+  EXPECT_FALSE(holds(predicates, "(dirty kitchen)"));
+  EXPECT_TRUE(holds(predicates, "(clean hall)"));
+  EXPECT_FALSE(holds(predicates, "(lit hall)"));
+
+  // As a condition it asks for nothing
+  predicates = facts({});
+  EXPECT_TRUE(
+    plansys2::check(parser::pddl::fromString("(when (dirty kitchen) (clean kitchen))"),
+    predicates, functions));
+}
+
+// All conditions are read before the action changes anything, as in PDDL
+TEST(utils, apply_when_reads_the_state_before)
+{
+  std::vector<plansys2::Function> functions;
+
+  // The first effect deletes what the second one reads, in either order
+  for (const auto & effect : {
+    "(and (when (a) (not (a))) (when (a) (b)))",
+    "(and (when (a) (b)) (when (a) (not (a))))",
+    "(and (not (a)) (when (a) (b)))"})
+  {
+    auto predicates = facts({"(a)"});
+    ASSERT_TRUE(apply_text(effect, predicates, functions)) << effect;
+    EXPECT_TRUE(holds(predicates, "(b)")) << effect;
+    EXPECT_FALSE(holds(predicates, "(a)")) << effect;
+  }
+
+  // An effect that makes a condition true does not trigger it
+  for (const auto & effect : {"(and (a) (when (a) (b)))", "(and (when (a) (b)) (a))"}) {
+    auto predicates = facts({});
+    ASSERT_TRUE(apply_text(effect, predicates, functions)) << effect;
+    EXPECT_TRUE(holds(predicates, "(a)")) << effect;
+    EXPECT_FALSE(holds(predicates, "(b)")) << effect;
+  }
+
+  // A condition that a delete makes true does not trigger either
+  auto predicates = facts({"(a)"});
+  ASSERT_TRUE(apply_text("(and (not (a)) (when (not (a)) (b)))", predicates, functions));
+  EXPECT_FALSE(holds(predicates, "(b)"));
+}
+
+TEST(utils, apply_when_numeric)
+{
+  auto battery = [](double value) {
+      auto f = parser::pddl::fromStringFunction("(= (battery r1) 0)");
+      f.value = value;
+      return std::vector<plansys2::Function>{f};
+    };
+  const std::string effect =
+    "(and (when (>= (battery r1) 10) (and (decrease (battery r1) 10) (moved r1))))";
+  std::vector<plansys2::Predicate> predicates;
+
+  auto functions = battery(15);
+  ASSERT_TRUE(apply_text(effect, predicates, functions));
+  EXPECT_DOUBLE_EQ(functions[0].value, 5);
+  EXPECT_TRUE(holds(predicates, "(moved r1)"));
+
+  // Its own change does not count: it is read once, before
+  predicates.clear();
+  functions = battery(5);
+  ASSERT_TRUE(apply_text(effect, predicates, functions));
+  EXPECT_DOUBLE_EQ(functions[0].value, 5);
+  EXPECT_TRUE(predicates.empty());
+
+  // Two that read the same value, one decrease each: both, from the value before
+  predicates.clear();
+  functions = battery(10);
+  ASSERT_TRUE(
+    apply_text(
+      "(and (when (>= (battery r1) 10) (decrease (battery r1) 4))"
+      " (when (>= (battery r1) 10) (decrease (battery r1) 3)))",
+      predicates, functions));
+  EXPECT_DOUBLE_EQ(functions[0].value, 3);
+}
+
+TEST(utils, apply_forall_when)
+{
+  // Each room, with its own condition
+  auto predicates = typed_state({"(at i1 z1)", "(hostile e1)", "(available i1)"});
+  std::vector<plansys2::Function> functions;
+  auto effect = typed_tree(
+    "(and (forall (?g - ground) (when (available ?g) (and (deployed ?g) (not (available ?g))))))");
+  ASSERT_TRUE(std::get<0>(plansys2::evaluate(effect, predicates, functions, true)));
+  EXPECT_TRUE(holds(predicates, "(deployed i1)"));
+  EXPECT_FALSE(holds(predicates, "(available i1)"));
+  EXPECT_FALSE(holds(predicates, "(deployed e1)"));
+  EXPECT_TRUE(holds(predicates, "(hostile e1)"));
+}
+
+// Through the problem expert: the changes are recorded, and undone exactly
+TEST(utils, apply_when_client_and_undo)
+{
+  {
+    rclcpp::NodeOptions problem_node_options;
+    problem_node_options.arguments(
+      {"--ros-args", "-r", "domain_expert/domain:=domain_expert/domain_apply_when_client"});
+    auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(problem_node_options);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    const std::string pkgpath =
+      ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+    problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_when.pddl"});
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+    rclcpp::executors::SingleThreadedExecutor exe;
+    exe.add_node(problem_node->get_node_base_interface());
+    plansys2::testing::ExecutorThread spinner(exe);
+
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r1", "robot")));
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
+    ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("hall", "room")));
+    ASSERT_TRUE(problem_client->addPredicate(parser::pddl::fromStringPredicate("(dirty kitchen)")));
+    ASSERT_TRUE(problem_client->addFunction(parser::pddl::fromStringFunction("(= (cleaned) 0)")));
+    ASSERT_TRUE(
+      problem_client->addFunction(parser::pddl::fromStringFunction("(= (battery r1) 10)")));
+
+    auto sweep = [](const std::string & room) {
+        return parser::pddl::fromString(
+          "(and (when (dirty " + room + ") (and (clean " + room + ") (not (dirty " + room +
+          ")) (increase (cleaned) 1))) (decrease (battery r1) 1))");
+      };
+    auto exists = [&](const std::string & p) {
+        return problem_client->existPredicate(parser::pddl::fromStringPredicate(p));
+      };
+    auto value = [&](const std::string & f) {return problem_client->getFunction(f)->value;};
+
+    std::vector<plansys2::FactChange> changes;
+    ASSERT_TRUE(plansys2::apply(sweep("kitchen"), problem_client, changes));
+    EXPECT_TRUE(exists("(clean kitchen)"));
+    EXPECT_FALSE(exists("(dirty kitchen)"));
+    EXPECT_DOUBLE_EQ(value("(cleaned)"), 1);
+    EXPECT_DOUBLE_EQ(value("(battery r1)"), 9);
+    EXPECT_EQ(changes.size(), 4u);
+
+    // The hall is not dirty: only the battery
+    std::vector<plansys2::FactChange> hall_changes;
+    ASSERT_TRUE(plansys2::apply(sweep("hall"), problem_client, hall_changes));
+    EXPECT_FALSE(exists("(clean hall)"));
+    EXPECT_DOUBLE_EQ(value("(cleaned)"), 1);
+    EXPECT_DOUBLE_EQ(value("(battery r1)"), 8);
+    EXPECT_EQ(hall_changes.size(), 1u);
+
+    ASSERT_TRUE(plansys2::undo(hall_changes, problem_client));
+    ASSERT_TRUE(plansys2::undo(changes, problem_client));
+    EXPECT_TRUE(exists("(dirty kitchen)"));
+    EXPECT_FALSE(exists("(clean kitchen)"));
+    EXPECT_DOUBLE_EQ(value("(cleaned)"), 0);
+    EXPECT_DOUBLE_EQ(value("(battery r1)"), 10);
+  }
+  plansys2::drain_ros(2s);
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

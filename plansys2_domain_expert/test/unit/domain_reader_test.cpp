@@ -25,6 +25,8 @@
 class DomainReaderTest : public plansys2::DomainReader
 {
 public:
+  using DomainReader::get_constraints;
+
   std::size_t get_end_block_test(const std::string & domain, std::size_t init_pos)
   {
     return get_end_block(domain, init_pos);
@@ -490,6 +492,23 @@ TEST(domain_reader, add_domain_with_derived)
   dr.add_domain(domain_str);
 
   ASSERT_EQ(dr.get_joint_domain_test(), domain_str_p);
+}
+
+// PDDL3: the condition of the (:constraints) of a domain, whole
+TEST(domain_reader, get_constraints)
+{
+  DomainReaderTest reader;
+  EXPECT_EQ(reader.get_constraints("(define (domain d) (:predicates (p)))"), "");
+  EXPECT_EQ(reader.get_constraints("(define (domain d) (:predicates (p)) (:constraints))"), "");
+  EXPECT_EQ(
+    reader.get_constraints("(define (domain d) (:predicates (p)) (:constraints (always (p))))"),
+    "(always (p))");
+  EXPECT_EQ(
+    reader.get_constraints(
+      "(define (domain d)\n(:constraints\n  (and (always (p))\n (within 5 (q)))\n)\n)"),
+    "(and (always (p))\n (within 5 (q)))");
+  // Unbalanced: none
+  EXPECT_EQ(reader.get_constraints("(define (domain d) (:constraints (always (p))"), "");
 }
 
 int main(int argc, char ** argv)

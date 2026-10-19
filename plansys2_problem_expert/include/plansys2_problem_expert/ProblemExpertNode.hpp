@@ -28,6 +28,7 @@
 #include "plansys2_msgs/srv/affect_node.hpp"
 #include "plansys2_msgs/srv/affect_param.hpp"
 #include "plansys2_msgs/srv/add_problem.hpp"
+#include "plansys2_msgs/srv/set_continuous_effect.hpp"
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
 #include "plansys2_msgs/srv/exist_node.hpp"
 #include "plansys2_msgs/srv/get_problem.hpp"
@@ -521,6 +522,11 @@ private:
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Empty>::SharedPtr update_pub_;
   rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::Knowledge>::SharedPtr knowledge_pub_;
   rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::Problem>::SharedPtr problem_pub_;
+  // Applies the timed facts and the dynamics while active
+  rclcpp::TimerBase::SharedPtr timed_facts_timer_;
+  rclcpp::Time last_step_;
+  rclcpp::Service<plansys2_msgs::srv::SetContinuousEffect>::SharedPtr
+    set_continuous_effect_service_;
 };
 
 }  // namespace plansys2

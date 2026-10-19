@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:derived-predicates :existential-preconditions	one navigate over a three-corridor chain derived as reachable
+domain.pddl	p2.pddl	yes	:derived-predicates :existential-preconditions	two robots open three doors to extend the recursive reachability
+domain.pddl	p3.pddl	no	:derived-predicates :existential-preconditions	the only door to the far side opens from the side the robot cannot reach

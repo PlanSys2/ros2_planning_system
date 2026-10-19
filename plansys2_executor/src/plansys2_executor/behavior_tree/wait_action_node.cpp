@@ -31,6 +31,7 @@ WaitAction::WaitAction(
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
     "action_map");
+  std::ignore = config().blackboard->get("trace", trace_);
   // Only the STN builder needs these: they may be missing
   std::ignore = config().blackboard->get("action_graph", action_graph_);
   std::ignore = config().blackboard->get("node", node_);
@@ -51,8 +52,16 @@ WaitAction::tick()
     auto now = node_ ? node_->now() : rclcpp::Clock(RCL_ROS_TIME).now();
     auto elapsed = seconds_since_parent(*action_map_, dependency.value(), now);
     if (!elapsed) {
+      if (trace_ && !waiting_reported_) {
+        trace_->event(
+          ExecutionTrace::Event::WAIT, dependency->child_id,
+          "its " + dependency->child_type + " waits for the " + dependency->parent_type + " of " +
+          dependency->parent_id);
+      }
+      waiting_reported_ = true;
       return BT::NodeStatus::RUNNING;
     }
+    waiting_reported_ = false;
     auto [lower, upper] = stn_bounds(action_graph_, dependency.value());
     constexpr double kTolerance = 1e-3;
     if (!relaxed_timing_ && elapsed.value() < lower - kTolerance) {

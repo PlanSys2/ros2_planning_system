@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:action-costs :numeric-fluents	pick, one costed move, drop
+domain.pddl	p2.pddl	yes	:action-costs :numeric-fluents	two packages; the cheap route through hall and lab beats the short one over the stairs
+domain.pddl	p3.pddl	no	:action-costs :numeric-fluents	office is not connected to anything

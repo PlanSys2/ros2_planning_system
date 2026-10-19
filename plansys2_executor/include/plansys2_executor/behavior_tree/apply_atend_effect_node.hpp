@@ -27,6 +27,7 @@
 #include "plansys2_problem_expert/Utils.hpp"
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
+#include "plansys2_executor/ExecutionTrace.hpp"
 
 namespace plansys2
 {
@@ -82,6 +83,8 @@ private:
   std::shared_ptr<BTBuilder> bt_builder_;
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
   bool relaxed_timing_ {true};
+  std::shared_ptr<ExecutionTrace> trace_;  // Null outside an executor
+  bool waiting_reported_ {false};  // Its wait, once
 };
 
 }  // namespace plansys2

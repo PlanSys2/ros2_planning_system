@@ -18,6 +18,8 @@
 #include <vector>
 #include <memory>
 
+#include "plansys2_core/ServiceCall.hpp"
+#include "plansys2_core/Utils.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 
@@ -31,7 +33,7 @@ using ExecutePlan = plansys2_msgs::action::ExecutePlan;
 
 ExecutorClient::ExecutorClient()
 {
-  node_ = rclcpp::Node::make_shared("executor_client");
+  node_ = rclcpp::Node::make_shared(unique_node_name("executor_client"));
 
   createActionClient();
 
@@ -40,6 +42,8 @@ ExecutorClient::ExecutorClient()
   get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("executor/get_plan");
   get_remaining_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>(
     "executor/get_remaining_plan");
+  get_replanning_problem_client_ = node_->create_client<plansys2_msgs::srv::GetProblem>(
+    "executor/get_replanning_problem");
 }
 
 ExecutorClient::ExecutorClient(const std::string & node_name)
@@ -53,6 +57,8 @@ ExecutorClient::ExecutorClient(const std::string & node_name)
   get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("executor/get_plan");
   get_remaining_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>(
     "executor/get_remaining_plan");
+  get_replanning_problem_client_ = node_->create_client<plansys2_msgs::srv::GetProblem>(
+    "executor/get_replanning_problem");
 }
 
 void
@@ -60,7 +66,7 @@ ExecutorClient::createActionClient()
 {
   action_client_ = rclcpp_action::create_client<ExecutePlan>(node_, "execute_plan");
 
-  if (!this->action_client_->wait_for_action_server(3s)) {
+  if (!wait_for_server([&]() {return action_client_->wait_for_action_server(3s);})) {
     RCLCPP_ERROR(node_->get_logger(), "Action server not available after waiting");
   }
 }
@@ -83,7 +89,9 @@ ExecutorClient::execute_and_check_plan()
 {
   rclcpp::executors::SingleThreadedExecutor exec;
   exec.add_node(node_->get_node_base_interface());
-  exec.spin_some();
+  // All that came: spin_some takes one message of the action client, and feedback queued
+  // between two calls would keep the result waiting behind it
+  exec.spin_all(std::chrono::milliseconds(100));
 
   if (!goal_result_available_) {
     // A gone executor never answers: do not wait for it forever (#446)
@@ -226,7 +234,7 @@ ExecutorClient::should_cancel_goal()
 
   rclcpp::executors::SingleThreadedExecutor exec;
   exec.add_node(node_->get_node_base_interface());
-  exec.spin_some();
+  exec.spin_all(std::chrono::milliseconds(100));  // The status may wait behind feedback
   auto status = goal_handler_->get_status();
 
   return status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
@@ -256,7 +264,7 @@ std::vector<plansys2_msgs::msg::Tree> ExecutorClient::getOrderedSubGoals()
 {
   std::vector<plansys2_msgs::msg::Tree> ret;
 
-  while (!get_ordered_sub_goals_client_->wait_for_service(std::chrono::seconds(5))) {
+  while (!wait_for_server(get_ordered_sub_goals_client_, std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return ret;
     }
@@ -292,7 +300,7 @@ std::vector<plansys2_msgs::msg::Tree> ExecutorClient::getOrderedSubGoals()
 
 std::optional<plansys2_msgs::msg::Plan> ExecutorClient::get_plan()
 {
-  while (!get_plan_client_->wait_for_service(std::chrono::seconds(5))) {
+  while (!wait_for_server(get_plan_client_, std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return {};
     }
@@ -325,9 +333,24 @@ std::optional<plansys2_msgs::msg::Plan> ExecutorClient::get_plan()
   }
 }
 
+std::optional<std::string> ExecutorClient::get_replanning_problem()
+{
+  auto response = call_service<plansys2_msgs::srv::GetProblem>(
+    node_, get_replanning_problem_client_,
+    std::make_shared<plansys2_msgs::srv::GetProblem::Request>(), std::chrono::seconds(5),
+    std::chrono::seconds(5));
+  if (!response || !response->success) {
+    if (response) {
+      RCLCPP_ERROR(node_->get_logger(), "get_replanning_problem: %s", response->error_info.c_str());
+    }
+    return {};
+  }
+  return response->problem;
+}
+
 std::optional<plansys2_msgs::msg::Plan> ExecutorClient::get_remaining_plan()
 {
-  while (!get_remaining_plan_client_->wait_for_service(std::chrono::seconds(5))) {
+  while (!wait_for_server(get_remaining_plan_client_, std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return {};
     }

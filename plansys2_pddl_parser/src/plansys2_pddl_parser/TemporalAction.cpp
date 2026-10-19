@@ -30,14 +30,10 @@ Expression * TemporalAction::parseDuration(
 
 namespace
 {
-// An effect of a durative action without at start or at end: a continuous one
-void rejectContinuousEffect(const std::string & token)
+// An effect of a durative action without at start or at end: a continuous one, with #t
+bool isContinuousEffect(const std::string & token)
 {
-  if (token == "increase" || token == "decrease") {
-    throw std::runtime_error(
-            "\"(" + token + " ...)\" without at start or at end: continuous effects are not "
-            "executed by PlanSys2 yet");
-  }
+  return token == "increase" || token == "decrease";
 }
 }  // namespace
 
@@ -121,6 +117,10 @@ void TemporalAction::PDDLPrint(
   s << "\t( and\n";
   printCondition(s, astruct, d, "at start", reinterpret_cast<And *>(eff));
   printCondition(s, astruct, d, "at end", eff_e);
+  for (unsigned i = 0; eff_c && i < eff_c->conds.size(); ++i) {
+    eff_c->conds[i]->PDDLPrint(s, 2, astruct, d);
+    s << "\n";
+  }
   s << "\t)\n";
 
   s << ")\n";
@@ -255,12 +255,19 @@ void TemporalAction::parse(Stringreader & f, TokenStruct<std::string> & ts, Doma
   if (f.getChar() != ')') {
     eff = new And;
     eff_e = new And;
+    eff_c = new And;
 
-    s = f.getToken();
-    if (s == "and") {
-      for (f.next(); f.getChar() != ')'; f.next()) {
-        f.assert_token("(");
-        s = f.getToken();
+    // One timed effect, its '(' read: at start, at end, or continuous
+    auto parseEffect = [&]() {
+        const auto position = f.c;
+        std::string s = f.getToken();
+        if (isContinuousEffect(s)) {
+          f.c = position;
+          std::unique_ptr<Condition> c(d.createCondition(f));
+          c->parse(f, astruct, d);
+          eff_c->conds.push_back(c.release());
+          return;
+        }
         f.next();
         std::string t = f.getToken();
 
@@ -269,29 +276,34 @@ void TemporalAction::parse(Stringreader & f, TokenStruct<std::string> & ts, Doma
         } else if (s == "at" && t == "end") {
           parseCondition(f, astruct, d, eff_e);
         } else {
-          rejectContinuousEffect(s);
           f.tokenExit(s + " " + t);
+        }
+
+        // #t is the time a continuous effect acts: an instant has none
+        std::ostringstream timed;
+        reinterpret_cast<And *>(s == "at" && t == "start" ? eff : eff_e)->conds.back()->PDDLPrint(
+          timed, 0, astruct, d);
+        if (timed.str().find("#t") != std::string::npos) {
+          throw std::runtime_error(
+                  "#t in an effect at " + t + " of " + name +
+                  ": continuous effects go without at start or at end");
         }
 
         f.next();
         f.assert_token(")");
+      };
+
+    const auto position = f.c;
+    s = f.getToken();
+    if (s == "and") {
+      for (f.next(); f.getChar() != ')'; f.next()) {
+        f.assert_token("(");
+        parseEffect();
       }
       ++f.c;
     } else {
-      f.next();
-      std::string t = f.getToken();
-
-      if (s == "at" && t == "start") {
-        parseCondition(f, astruct, d, reinterpret_cast<And *>(eff));
-      } else if (s == "at" && t == "end") {
-        parseCondition(f, astruct, d, eff_e);
-      } else {
-        rejectContinuousEffect(s);
-        f.tokenExit(s + " " + t);
-      }
-
-      f.next();
-      f.assert_token(")");
+      f.c = position;
+      parseEffect();
     }
   } else {
     ++f.c;

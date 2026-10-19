@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <iostream>
 #include <limits>
 #include <map>
 #include <optional>
@@ -50,6 +51,7 @@ public:
   virtual bool add(const plansys2_msgs::msg::Node & predicate) = 0;
   virtual bool remove(const plansys2_msgs::msg::Node & predicate) = 0;
   virtual bool update(const plansys2::Function & function) = 0;
+  virtual bool add_function(const plansys2::Function & function) = 0;
 };
 
 // The facts of a problem expert, through its services
@@ -90,6 +92,10 @@ public:
   bool update(const plansys2::Function & function) override
   {
     return client_->updateFunction(function);
+  }
+  bool add_function(const plansys2::Function & function) override
+  {
+    return client_->addFunction(function);
   }
 
 private:
@@ -132,6 +138,10 @@ public:
   bool update(const plansys2::Function & function) override
   {
     return expert_.updateFunction(function);
+  }
+  bool add_function(const plansys2::Function & function) override
+  {
+    return expert_.addFunction(function);
   }
 
 private:
@@ -198,6 +208,14 @@ bool forEachTuple(
 // written at the end. ALL applies each effect as it is found
 enum class ApplyPhase {ALL, NUMERIC, DELETES, ADDS};
 
+// An object fluent set by an effect, read in the NUMERIC phase and written at the end
+struct ObjectUpdate
+{
+  plansys2_msgs::msg::Node function;
+  std::string before;  // Empty if it had none
+  std::string object;
+};
+
 // A numeric effect, computed in the NUMERIC phase and written at the end
 struct NumericUpdate
 {
@@ -213,7 +231,52 @@ struct ApplyPlan
 {
   std::vector<NumericUpdate> numeric;
   std::vector<plansys2_msgs::msg::Node> adds;
+  std::vector<ObjectUpdate> objects;
+  // Conditional effects: whether each condition held before the action, by its text
+  std::map<std::string, bool> conditions;
 };
+
+// The object a node stands for: a constant, a bound parameter, or the object an object fluent
+// has (std::nullopt if none, or if it is a number)
+std::optional<std::string> object_of(
+  const plansys2_msgs::msg::Tree & tree, uint32_t node_id, FactSource * source,
+  const std::vector<plansys2::Function> & functions, bool use_state)
+{
+  const auto & node = tree.nodes[node_id];
+  if (node.node_type == plansys2_msgs::msg::Node::CONSTANT) {
+    return node.name;
+  }
+  if (node.node_type == plansys2_msgs::msg::Node::PARAMETER) {
+    if (!node.parameters.empty() && node.parameters[0].name.front() != '?') {
+      return node.parameters[0].name;
+    }
+    return {};
+  }
+  if (node.node_type != plansys2_msgs::msg::Node::FUNCTION) {
+    return {};
+  }
+  std::optional<plansys2_msgs::msg::Node> function;
+  if (use_state) {
+    auto it = std::find_if(
+      functions.begin(), functions.end(),
+      std::bind(&parser::pddl::checkNodeEquality, std::placeholders::_1, node, true));
+    if (it != functions.end()) {
+      function = *it;
+    }
+  } else if (source) {
+    function = source->function(parser::pddl::toString(tree, node_id));
+  }
+  if (!function || function->object.empty()) {
+    return {};
+  }
+  return function->object;
+}
+
+bool is_object_node(const plansys2_msgs::msg::Node & node)
+{
+  return node.node_type == plansys2_msgs::msg::Node::CONSTANT ||
+         node.node_type == plansys2_msgs::msg::Node::PARAMETER;
+}
 
 std::tuple<bool, bool, double> evaluate_node(
   const plansys2_msgs::msg::Tree & tree,
@@ -258,6 +321,35 @@ std::tuple<bool, bool, double> evaluate_node(
           tree, source, predicates, functions, apply, use_state,
           tree.nodes[node_id].children[0],
           !negate, changes, phase, plan);
+      }
+
+    case plansys2_msgs::msg::Node::WHEN: {
+        // As a condition it asks for nothing
+        if (!apply) {
+          return std::make_tuple(true, true, 0);
+        }
+        // Its condition is read before the action changes anything: in the first phase, kept
+        // for the others by its text, bound by any forall around
+        const auto condition_id = tree.nodes[node_id].children[0];
+        const auto key = std::to_string(node_id) + parser::pddl::toString(tree, condition_id);
+        bool holds;
+        if (plan && phase != ApplyPhase::NUMERIC && plan->conditions.count(key)) {
+          holds = plan->conditions.at(key);
+        } else {
+          holds = std::get<1>(
+            evaluate_node(
+              tree, source, predicates, functions, false, use_state, condition_id, false,
+              nullptr));
+          if (plan) {
+            plan->conditions[key] = holds;
+          }
+        }
+        if (!holds) {
+          return std::make_tuple(true, true, 0);
+        }
+        return evaluate_node(
+          tree, source, predicates, functions, true, use_state, tree.nodes[node_id].children[1],
+          negate, changes, phase, plan);
       }
 
     case plansys2_msgs::msg::Node::PREDICATE: {
@@ -374,6 +466,21 @@ std::tuple<bool, bool, double> evaluate_node(
       }
 
     case plansys2_msgs::msg::Node::EXPRESSION: {
+        // Objects: an object fluent, a constant or a parameter, compared by name. A fluent with
+        // no object yet is equal to none
+        if (tree.nodes[node_id].expression_type == plansys2_msgs::msg::Node::COMP_EQ) {
+          const auto first = tree.nodes[node_id].children[0];
+          const auto second = tree.nodes[node_id].children[1];
+          const auto first_object = object_of(tree, first, source, functions, use_state);
+          const auto second_object = object_of(tree, second, source, functions, use_state);
+          if (first_object || second_object || is_object_node(tree.nodes[first]) ||
+            is_object_node(tree.nodes[second]))
+          {
+            const bool equal = first_object && second_object && *first_object == *second_object;
+            return std::make_tuple(true, negate ^ equal, 0);
+          }
+        }
+
         // Numbers are not negated: only the comparison is
         std::tuple<bool, bool, double> left = evaluate_node(
           tree, source, predicates,
@@ -474,6 +581,28 @@ std::tuple<bool, bool, double> evaluate_node(
           // total-cost modifiers carry only the value: costs are not tracked here
           return std::make_tuple(true, true, 0);
         }
+
+        // An object fluent takes an object: read now, written at the end
+        const auto & assigned = tree.nodes[tree.nodes[node_id].children[1]];
+        if (tree.nodes[node_id].modifier_type == plansys2_msgs::msg::Node::ASSIGN &&
+          is_object_node(assigned))
+        {
+          const auto object = object_of(
+            tree, tree.nodes[node_id].children[1], source, functions, use_state);
+          if (!object) {
+            return std::make_tuple(false, false, 0);  // An unbound parameter
+          }
+          if (apply && phase == ApplyPhase::NUMERIC && plan) {
+            ObjectUpdate update;
+            update.function = tree.nodes[tree.nodes[node_id].children[0]];
+            update.before = object_of(
+              tree, tree.nodes[node_id].children[0], source, functions, use_state).value_or("");
+            update.object = *object;
+            plan->objects.push_back(update);
+          }
+          return std::make_tuple(true, true, 0);
+        }
+
         std::tuple<bool, bool, double> left = evaluate_node(
           tree, source, predicates,
           functions, apply, use_state, tree.nodes[node_id].children[0], false, changes, phase,
@@ -755,6 +884,10 @@ std::tuple<bool, bool, double> evaluate_node(
         return std::make_tuple(success, need_all, 0);
       }
 
+    // PDDL3: soft, it only counts for the plan; executing, it holds
+    case plansys2_msgs::msg::Node::PREFERENCE:
+      return std::make_tuple(true, true, 0);
+
     case plansys2_msgs::msg::Node::IMPLY: {
         // (imply a b) is (or (not a) b); under not, (and a (not b))
         std::tuple<bool, bool, double> left = evaluate_node(
@@ -812,7 +945,7 @@ std::tuple<bool, bool, double> apply_node(
     ApplyPhase::DELETES, &plan);
   auto added = evaluate_node(
     tree, source, predicates, functions, true, use_state, node_id, negate, changes,
-    ApplyPhase::ADDS);
+    ApplyPhase::ADDS, &plan);
   bool success = std::get<0>(deleted) && std::get<0>(added);
 
   // Each function once: its assign or scale (the last one), plus what increases and decreases add
@@ -873,6 +1006,36 @@ std::tuple<bool, bool, double> apply_node(
       changes->push_back(change);
     }
   }
+  // Object fluents, each with its object; one it did not have yet is added
+  for (const auto & update : plan.objects) {
+    plansys2::Function function;
+    function.node_type = plansys2_msgs::msg::Node::FUNCTION;
+    function.name = update.function.name;
+    function.parameters = update.function.parameters;
+    function.object = update.object;
+    if (use_state) {
+      auto it = std::find_if(
+        functions.begin(), functions.end(),
+        std::bind(&parser::pddl::checkNodeEquality, std::placeholders::_1, function, true));
+      if (it != functions.end()) {
+        it->object = update.object;
+      } else {
+        functions.push_back(function);
+      }
+      continue;
+    }
+    const bool updated = source->update(function) || source->add_function(function);
+    success = success && updated;
+    if (changes && updated && update.before != update.object) {
+      FactChange change;
+      change.fact = function;
+      change.object_before = update.before;
+      change.object_after = update.object;
+      change.modifier_type = plansys2_msgs::msg::Node::ASSIGN;
+      changes->push_back(change);
+    }
+  }
+
   // What an application always gave: the truth of what it applied, and for a modifier the
   // value it computed
   return std::make_tuple(success, std::get<1>(added), std::get<2>(computed));
@@ -1012,6 +1175,23 @@ bool check(
   return std::get<1>(ret);
 }
 
+bool apply(
+  const plansys2_msgs::msg::Tree & tree,
+  plansys2::ProblemExpert & expert,
+  uint32_t node_id)
+{
+  if (tree.nodes.empty()) {
+    return true;
+  }
+  if (!sound_tree(tree, node_id)) {
+    return false;
+  }
+  std::vector<plansys2::Predicate> predicates;
+  std::vector<plansys2::Function> functions;
+  ExpertSource source(expert);
+  return std::get<0>(apply_node(tree, &source, predicates, functions, false, node_id, nullptr));
+}
+
 bool undo(
   const std::vector<FactChange> & changes,
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client,
@@ -1041,6 +1221,24 @@ bool undo(
     auto current = problem_client->getFunction(expression);
     if (!current.has_value()) {
       success = false;
+      continue;
+    }
+
+    // An object fluent: back to its object, if nobody changed it since
+    if (!change.object_after.empty()) {
+      if (current->object != change.object_after) {
+        if (kept) {
+          kept->push_back(expression);
+        }
+        continue;
+      }
+      plansys2::Function function = change.fact;
+      if (change.object_before.empty()) {
+        success = problem_client->removeFunction(function) && success;
+      } else {
+        function.object = change.object_before;
+        success = problem_client->updateFunction(function) && success;
+      }
       continue;
     }
 
@@ -1163,6 +1361,435 @@ void cart_product(
     cart_product(rvvi, rvi, me + 1, end);
     rvi.pop_back();
   }
+}
+
+std::vector<DerivedRule> make_derived_rules(
+  const std::vector<plansys2::Derived> & derived,
+  const std::vector<plansys2::Instance> & instances,
+  const std::function<std::vector<std::string>(const std::string &)> & sub_types)
+{
+  std::vector<DerivedRule> rules;
+  for (const auto & d : derived) {
+    DerivedRule rule;
+    rule.derived = d;
+    for (const auto & param : d.predicate.parameters) {
+      // The subtypes the domain gives the parameter, or those asked for
+      auto subs = param.sub_types;
+      if (subs.empty() && sub_types) {
+        subs = sub_types(param.type);
+      }
+      std::vector<std::string> objects;
+      for (const auto & instance : instances) {
+        if (instance.type == param.type || param.type.empty() || param.type == "object" ||
+          std::find(subs.begin(), subs.end(), instance.type) != subs.end())
+        {
+          objects.push_back(instance.name);
+        }
+      }
+      rule.objects.push_back(objects);
+    }
+    rules.push_back(rule);
+  }
+  return rules;
+}
+
+namespace
+{
+// The predicates a tree reads, each with whether it reads it negated
+void read_predicates(
+  const plansys2_msgs::msg::Tree & tree, uint32_t id, bool negated,
+  std::vector<std::pair<std::string, bool>> & read)
+{
+  if (id >= tree.nodes.size()) {
+    return;
+  }
+  const auto & node = tree.nodes[id];
+  switch (node.node_type) {
+    case plansys2_msgs::msg::Node::PREDICATE:
+      read.emplace_back(node.name, negated);
+      break;
+    case plansys2_msgs::msg::Node::NOT:
+      for (auto child : node.children) {
+        read_predicates(tree, child, !negated, read);
+      }
+      break;
+    case plansys2_msgs::msg::Node::IMPLY:
+      // (imply a b) is (or (not a) b)
+      if (node.children.size() == 2) {
+        read_predicates(tree, node.children[0], !negated, read);
+        read_predicates(tree, node.children[1], negated, read);
+      }
+      break;
+    default:
+      for (auto child : node.children) {
+        read_predicates(tree, child, negated, read);
+      }
+      break;
+  }
+}
+
+std::string fact_key(const std::string & name, const std::vector<std::string> & args)
+{
+  std::string key = name;
+  for (const auto & arg : args) {
+    key += " " + arg;
+  }
+  return key;
+}
+
+// A literal of a rule body: a predicate, or an equality of two objects; arguments starting with
+// '?' are variables
+struct Literal
+{
+  std::string name;  // Empty for an equality
+  std::vector<std::string> args;
+  bool negated = false;
+};
+
+// The body as literals, if it is a conjunction of them (inside exists); false otherwise
+bool flatten(
+  const plansys2_msgs::msg::Tree & tree, uint32_t id, bool negated, std::vector<Literal> & out)
+{
+  if (id >= tree.nodes.size()) {
+    return false;
+  }
+  const auto & node = tree.nodes[id];
+  auto object = [](const plansys2_msgs::msg::Node & n) -> std::optional<std::string> {
+      if (n.node_type == plansys2_msgs::msg::Node::CONSTANT) {
+        return n.name;
+      }
+      if (n.node_type == plansys2_msgs::msg::Node::PARAMETER && !n.parameters.empty()) {
+        return n.parameters[0].name;
+      }
+      return {};
+    };
+  switch (node.node_type) {
+    case plansys2_msgs::msg::Node::AND:
+    case plansys2_msgs::msg::Node::EXISTS:
+      if (negated) {
+        return false;
+      }
+      for (auto child : node.children) {
+        if (!flatten(tree, child, false, out)) {
+          return false;
+        }
+      }
+      return true;
+    case plansys2_msgs::msg::Node::NOT:
+      return !negated && node.children.size() == 1 &&
+             flatten(tree, node.children[0], true, out);
+    case plansys2_msgs::msg::Node::PREDICATE: {
+        Literal literal;
+        literal.name = node.name;
+        literal.negated = negated;
+        for (const auto & param : node.parameters) {
+          literal.args.push_back(param.name);
+        }
+        out.push_back(literal);
+        return true;
+      }
+    case plansys2_msgs::msg::Node::EXPRESSION: {
+        if (node.expression_type != plansys2_msgs::msg::Node::COMP_EQ ||
+          node.children.size() != 2)
+        {
+          return false;
+        }
+        auto first = object(tree.nodes[node.children[0]]);
+        auto second = object(tree.nodes[node.children[1]]);
+        if (!first || !second) {
+          return false;
+        }
+        Literal literal;
+        literal.negated = negated;
+        literal.args = {*first, *second};
+        out.push_back(literal);
+        return true;
+      }
+    default:
+      return false;
+  }
+}
+
+// The facts so far, by predicate and by key
+struct FactIndex
+{
+  std::map<std::string, std::vector<std::vector<std::string>>> by_name;
+  std::set<std::string> keys;
+
+  bool add(const std::string & name, const std::vector<std::string> & args)
+  {
+    if (!keys.insert(fact_key(name, args)).second) {
+      return false;
+    }
+    by_name[name].push_back(args);
+    return true;
+  }
+};
+
+// What a rule of literals gives: its positive literals joined over the facts, then the negated
+// ones and the equalities checked
+void join(
+  const DerivedRule & rule, const std::vector<Literal> & literals, const FactIndex & facts,
+  std::vector<std::vector<std::string>> & heads)
+{
+  std::vector<const Literal *> positive, others;
+  for (const auto & literal : literals) {
+    (!literal.name.empty() && !literal.negated ? positive : others).push_back(&literal);
+  }
+  const size_t arity = rule.derived.predicate.parameters.size();
+  std::vector<std::set<std::string>> allowed(arity);
+  for (size_t i = 0; i < arity; i++) {
+    allowed[i] = std::set<std::string>(rule.objects[i].begin(), rule.objects[i].end());
+  }
+
+  std::map<std::string, std::string> binding;
+  auto value = [&binding](const std::string & arg) -> std::optional<std::string> {
+      if (arg.empty() || arg.front() != '?') {
+        return arg;
+      }
+      auto it = binding.find(arg);
+      if (it == binding.end()) {
+        return {};
+      }
+      return it->second;
+    };
+
+  // The head, once every variable it has is bound: the ones only in negations range over
+  // their objects
+  std::function<void(size_t)> finish = [&](size_t i) {
+      if (i == arity) {
+        for (const auto * literal : others) {
+          std::vector<std::string> args;
+          for (const auto & arg : literal->args) {
+            args.push_back(*value(arg));
+          }
+          const bool holds = literal->name.empty() ? args[0] == args[1] :
+            facts.keys.count(fact_key(literal->name, args)) > 0;
+          if (holds == literal->negated) {
+            return;
+          }
+        }
+        std::vector<std::string> head;
+        for (size_t k = 0; k < arity; k++) {
+          head.push_back(binding.at("?" + std::to_string(k)));
+        }
+        heads.push_back(head);
+        return;
+      }
+      const auto variable = "?" + std::to_string(i);
+      auto bound = binding.find(variable);
+      if (bound != binding.end()) {
+        if (allowed[i].count(bound->second)) {
+          finish(i + 1);
+        }
+        return;
+      }
+      for (const auto & object : rule.objects[i]) {
+        binding[variable] = object;
+        finish(i + 1);
+      }
+      binding.erase(variable);
+    };
+
+  std::function<void(size_t)> match = [&](size_t k) {
+      if (k == positive.size()) {
+        finish(0);
+        return;
+      }
+      const auto & literal = *positive[k];
+      auto candidates = facts.by_name.find(literal.name);
+      if (candidates == facts.by_name.end()) {
+        return;
+      }
+      for (const auto & args : candidates->second) {
+        if (args.size() != literal.args.size()) {
+          continue;
+        }
+        std::vector<std::string> bound_here;
+        bool fits = true;
+        for (size_t a = 0; a < args.size() && fits; a++) {
+          const auto & arg = literal.args[a];
+          auto current = value(arg);
+          if (current) {
+            fits = *current == args[a];
+          } else {
+            binding[arg] = args[a];
+            bound_here.push_back(arg);
+          }
+        }
+        if (fits) {
+          match(k + 1);
+        }
+        for (const auto & arg : bound_here) {
+          binding.erase(arg);
+        }
+      }
+    };
+  match(0);
+}
+
+// Whether a rule of literals can be joined: every variable not of the head in a positive literal
+bool joinable(const DerivedRule & rule, const std::vector<Literal> & literals)
+{
+  std::set<std::string> in_positive;
+  for (const auto & literal : literals) {
+    if (!literal.name.empty() && !literal.negated) {
+      in_positive.insert(literal.args.begin(), literal.args.end());
+    }
+  }
+  const size_t arity = rule.derived.predicate.parameters.size();
+  for (const auto & literal : literals) {
+    for (const auto & arg : literal.args) {
+      if (arg.empty() || arg.front() != '?' || in_positive.count(arg)) {
+        continue;
+      }
+      bool head = false;
+      for (size_t i = 0; i < arity && !head; i++) {
+        head = arg == "?" + std::to_string(i);
+      }
+      if (!head) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+}  // namespace
+
+std::vector<plansys2::Predicate> derive(
+  const std::vector<DerivedRule> & rules,
+  const std::vector<plansys2::Predicate> & predicates,
+  const std::vector<plansys2::Function> & functions)
+{
+  if (rules.empty()) {
+    return predicates;
+  }
+  std::set<std::string> names;
+  for (const auto & rule : rules) {
+    names.insert(rule.derived.predicate.name);
+  }
+
+  // Strata: a derived predicate after those it reads, and strictly after those it reads
+  // negated, which must be complete before (not q) means anything
+  std::map<std::string, size_t> stratum;
+  std::vector<std::vector<std::pair<std::string, bool>>> reads(rules.size());
+  for (size_t r = 0; r < rules.size(); r++) {
+    if (!rules[r].derived.preconditions.nodes.empty()) {
+      read_predicates(rules[r].derived.preconditions, 0, false, reads[r]);
+    }
+  }
+  bool stratified = true;
+  for (bool changed = true; changed && stratified; ) {
+    changed = false;
+    for (size_t r = 0; r < rules.size(); r++) {
+      const auto & head = rules[r].derived.predicate.name;
+      for (const auto & [name, negated] : reads[r]) {
+        if (!names.count(name)) {
+          continue;
+        }
+        const size_t needed = stratum[name] + (negated ? 1 : 0);
+        if (stratum[head] < needed) {
+          stratum[head] = needed;
+          changed = true;
+          // Deeper than there are predicates: a cycle through a negation
+          stratified = stratified && needed <= names.size();
+        }
+      }
+    }
+  }
+  if (!stratified) {
+    std::cerr << "derive: derived predicates negate each other in a cycle: "
+      "computed together" << std::endl;
+    stratum.clear();
+  }
+  std::map<size_t, std::vector<const DerivedRule *>> by_stratum;
+  for (const auto & rule : rules) {
+    by_stratum[stratum[rule.derived.predicate.name]].push_back(&rule);
+  }
+
+  // The facts, without what was derived before: it is computed again
+  std::vector<plansys2::Predicate> state;
+  FactIndex index;
+  for (const auto & predicate : predicates) {
+    if (!names.count(predicate.name)) {
+      state.push_back(predicate);
+      std::vector<std::string> args;
+      for (const auto & param : predicate.parameters) {
+        args.push_back(param.name);
+      }
+      index.add(predicate.name, args);
+    }
+  }
+  std::vector<plansys2::Function> values = functions;
+
+  auto add = [&](const DerivedRule & rule, const std::vector<std::string> & args) {
+      if (!index.add(rule.derived.predicate.name, args)) {
+        return false;
+      }
+      plansys2::Predicate inferred;
+      inferred.node_type = plansys2_msgs::msg::Node::PREDICATE;
+      inferred.name = rule.derived.predicate.name;
+      for (size_t i = 0; i < args.size(); i++) {
+        plansys2_msgs::msg::Param param;
+        param.name = args[i];
+        param.type = rule.derived.predicate.parameters[i].type;
+        inferred.parameters.push_back(param);
+      }
+      state.push_back(inferred);
+      return true;
+    };
+
+  // Rules of literals are joined over the facts; the rest, tried with every object
+  std::vector<std::optional<std::vector<Literal>>> bodies(rules.size());
+  for (size_t r = 0; r < rules.size(); r++) {
+    std::vector<Literal> literals;
+    if (!rules[r].derived.preconditions.nodes.empty() &&
+      flatten(rules[r].derived.preconditions, 0, false, literals) &&
+      joinable(rules[r], literals))
+    {
+      bodies[r] = literals;
+    }
+  }
+
+  // Each stratum, round after round, until nothing new
+  for (const auto & [level, level_rules] : by_stratum) {
+    (void)level;
+    for (bool changed = true; changed; ) {
+      changed = false;
+      for (const auto * rule : level_rules) {
+        if (rule->derived.preconditions.nodes.empty()) {
+          continue;
+        }
+        const auto & body = bodies[rule - rules.data()];
+        if (body) {
+          std::vector<std::vector<std::string>> heads;
+          join(*rule, *body, index, heads);
+          for (const auto & head : heads) {
+            changed = add(*rule, head) || changed;
+          }
+          continue;
+        }
+        std::vector<std::vector<std::string>> combinations;
+        std::vector<std::string> combination;
+        cart_product(combinations, combination, rule->objects.begin(), rule->objects.end());
+        for (const auto & values_of : combinations) {
+          if (index.keys.count(fact_key(rule->derived.predicate.name, values_of))) {
+            continue;
+          }
+          std::map<std::string, std::string> replace;
+          for (size_t i = 0; i < values_of.size(); i++) {
+            replace["?" + std::to_string(i)] = values_of[i];
+          }
+          auto tree = replace_children_param(
+            rule->derived.preconditions, rule->derived.preconditions.nodes[0].node_id, replace);
+          if (check(tree, state, values)) {
+            changed = add(*rule, values_of) || changed;
+          }
+        }
+      }
+    }
+  }
+  return state;
 }
 
 }  // namespace plansys2

@@ -15,19 +15,23 @@
 // Planner errors are reported instead of killing or misconfiguring the process (#434).
 // rclcpp is started with plan_solver_timeout:=2.0 for every node (see main).
 
+#include <atomic>
 #include <chrono>
 #include <cstdarg>
 #include <fstream>
 #include <memory>
 #include <mutex>
+#include <set>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ament_index_cpp/get_package_share_path.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
+#include "plansys2_core/PddlRequirements.hpp"
 #include "plansys2_core/PlanSolverBase.hpp"
 #include "plansys2_core/TestUtils.hpp"
 #include "plansys2_core/Utils.hpp"
@@ -72,6 +76,45 @@ public:
   {
     throw std::runtime_error("checker exploded");
   }
+};
+
+// Plans with what it says, counting its calls; its plan is one action, its name
+class DeclaringSolver : public plansys2::PlanSolverBase
+{
+public:
+  DeclaringSolver(std::string name, std::set<std::string> supported, bool finds = true)
+  : name_(std::move(name)), supported_(std::move(supported)), finds_(finds) {}
+
+  void configure(rclcpp_lifecycle::LifecycleNode::SharedPtr, const std::string &) override {}
+
+  std::optional<plansys2_msgs::msg::Plan> getPlan(
+    const std::string &, const std::string &, const std::string &,
+    const rclcpp::Duration) override
+  {
+    plans++;
+    if (!finds_) {
+      return {};
+    }
+    plansys2_msgs::msg::Plan plan;
+    plan.items.emplace_back().action = "(" + name_ + ")";
+    return plan;
+  }
+
+  bool isDomainValid(const std::string &, const std::string &) override
+  {
+    checks++;
+    return true;
+  }
+
+  std::set<std::string> supported_requirements() const override {return supported_;}
+
+  std::atomic<int> plans {0};
+  std::atomic<int> checks {0};
+
+private:
+  std::string name_;
+  std::set<std::string> supported_;
+  bool finds_;
 };
 
 class TestPlannerNode : public plansys2::PlannerNode
@@ -278,12 +321,17 @@ TEST_F(PlannerErrorsTest, error_info_tells_why_there_is_no_plan)
   auto response = get_plan("(define (domain broken", read_pddl("problem_simple_1.pddl"));
   ASSERT_TRUE(response);
   ASSERT_FALSE(response->success);
-  ASSERT_EQ(response->error_info.rfind("Invalid PDDL domain", 0), 0u) << response->error_info;
+  ASSERT_EQ(response->error_info.rfind("PlanSys2 cannot read the domain", 0), 0u)
+    << response->error_info;
+  // And what the solver said too
+  ASSERT_NE(response->error_info.find(". Plan not found: POPF found no plan"), std::string::npos)
+    << response->error_info;
 
   response = get_plan(domain, "(define (problem broken) (:domain simple) (:objects");
   ASSERT_TRUE(response);
   ASSERT_FALSE(response->success);
-  ASSERT_EQ(response->error_info.rfind("Invalid PDDL problem", 0), 0u) << response->error_info;
+  ASSERT_EQ(response->error_info.rfind("PlanSys2 cannot read the problem", 0), 0u)
+    << response->error_info;
 
   // Valid PDDL with no plan
   response = get_plan(domain, read_pddl("problem_simple_2.pddl"));
@@ -300,15 +348,116 @@ TEST_F(PlannerErrorsTest, error_info_tells_why_there_is_no_plan)
 // The client used to give up exactly when the planner, with the same timeout, answered
 TEST_F(PlannerErrorsTest, client_waits_for_the_planner_answer)
 {
-  start_planner();  // plan_solver_timeout 2.0, from the command line
+  // plan_solver_timeout 2.0, from the command line: for the planner and, set, for the client
+  start_planner();
   auto planner_client = std::make_shared<plansys2::PlannerClient>();
-  ASSERT_TRUE(logged("Planner CLient created with timeout 2"));
 
   auto plan = planner_client->getPlan(
     read_pddl("domain_simple.pddl"), read_pddl("problem_hard_unsolvable.pddl"));
   ASSERT_FALSE(plan);
   ASSERT_TRUE(logged("POPF timed out after 2"));
   ASSERT_FALSE(logged("service call timed out"));
+}
+
+// The planner gives a task only to the solvers that plan with what it uses
+TEST_F(PlannerErrorsTest, solvers_are_chosen_by_what_the_task_uses)
+{
+  start_planner();
+  planner_->remove_solver("POPF");
+  const std::set<std::string> basic = {":strips", ":typing", ":durative-actions"};
+  auto full = std::make_shared<DeclaringSolver>("full", plansys2::known_pddl_requirements());
+  auto limited = std::make_shared<DeclaringSolver>("limited", basic);
+  auto unknown = std::make_shared<DeclaringSolver>("unknown", std::set<std::string>{});
+  planner_->add_solver("FULL", full);
+  planner_->add_solver("LIMITED", limited);
+  planner_->add_solver("UNKNOWN", unknown);
+
+  const std::string plain =
+    "(define (domain d) (:requirements :adl)"
+    " (:predicates (p)) (:action a :parameters () :precondition (p) :effect (not (p))))";
+  const std::string with_when =
+    "(define (domain d) (:requirements :adl) (:predicates (p) (q))"
+    " (:action a :parameters () :precondition (p) :effect (when (q) (not (p)))))";
+  const std::string problem = "(define (problem p) (:domain d) (:init (p)) (:goal (not (p))))";
+
+  // The goal is negated: LIMITED does not plan with it, the others do; :adl alone is not use
+  auto array_request = std::make_shared<plansys2_msgs::srv::GetPlanArray::Request>();
+  array_request->domain = plain;
+  array_request->problem = "(define (problem p) (:domain d) (:init (p)) (:goal (and)))";
+  auto array = call<plansys2_msgs::srv::GetPlanArray>(get_plan_array_, array_request);
+  ASSERT_TRUE(array);
+  EXPECT_EQ(array->plan_array.plan_array.size(), 3u);
+  EXPECT_EQ(limited->plans, 1);
+
+  array_request->problem = problem;
+  array = call<plansys2_msgs::srv::GetPlanArray>(get_plan_array_, array_request);
+  ASSERT_TRUE(array);
+  EXPECT_EQ(array->plan_array.plan_array.size(), 2u);
+  EXPECT_EQ(limited->plans, 1);
+  EXPECT_EQ(full->plans, 2);
+  EXPECT_EQ(unknown->plans, 2);
+
+  // when: the same
+  auto response = get_plan(with_when, problem);
+  ASSERT_TRUE(response);
+  EXPECT_TRUE(response->success);
+  EXPECT_EQ(limited->plans, 1);
+  EXPECT_EQ(full->plans, 3);
+
+  // The domain check goes to one that plans with it
+  auto validate = std::make_shared<plansys2_msgs::srv::ValidateDomain::Request>();
+  validate->domain = with_when;
+  auto valid = call<plansys2_msgs::srv::ValidateDomain>(validate_, validate);
+  ASSERT_TRUE(valid);
+  EXPECT_TRUE(valid->success);
+  EXPECT_EQ(limited->checks, 0);
+  EXPECT_EQ(full->checks + unknown->checks, 1);
+}
+
+// With no solver for what the task uses, none is given it: they give wrong plans or crash
+TEST_F(PlannerErrorsTest, with_no_solver_for_the_task_none_tries_and_the_error_says_why)
+{
+  start_planner();
+  planner_->remove_solver("POPF");
+  auto first = std::make_shared<DeclaringSolver>("first", std::set<std::string>{":strips"});
+  auto second = std::make_shared<DeclaringSolver>(
+    "second", std::set<std::string>{":strips", ":time"});
+  planner_->add_solver("FIRST", first);
+  planner_->add_solver("SECOND", second);
+
+  const std::string domain =
+    "(define (domain d) (:requirements :strips :negative-preconditions)"
+    " (:predicates (p) (q)) (:derived (q) (not (p)))"
+    " (:action a :parameters () :precondition (not (p)) :effect (p)))";
+  const std::string problem = "(define (problem p) (:domain d) (:init) (:goal (p)))";
+  auto response = get_plan(domain, problem);
+  ASSERT_TRUE(response);
+  EXPECT_FALSE(response->success);
+  EXPECT_EQ(first->plans, 0);
+  EXPECT_EQ(second->plans, 0);
+  EXPECT_EQ(
+    response->error_info,
+    "No solver plans with what the task uses: FIRST does not plan with :derived-predicates "
+    ":negative-preconditions; SECOND does not plan with :derived-predicates "
+    ":negative-preconditions");
+
+  // Nor the domain check
+  auto validate = std::make_shared<plansys2_msgs::srv::ValidateDomain::Request>();
+  validate->domain = domain;
+  auto valid = call<plansys2_msgs::srv::ValidateDomain>(validate_, validate);
+  ASSERT_TRUE(valid);
+  EXPECT_FALSE(valid->success);
+  EXPECT_EQ(valid->error_info.rfind("No solver plans with what the task uses: FIRST", 0), 0u);
+  EXPECT_EQ(first->checks + second->checks, 0);
+
+  // Without anything special both plan
+  response = get_plan(
+    "(define (domain d) (:requirements :strips) (:predicates (p))"
+    " (:action a :parameters () :precondition (and (p)) :effect (p)))", problem);
+  ASSERT_TRUE(response);
+  EXPECT_TRUE(response->success);
+  EXPECT_EQ(first->plans, 1);
+  EXPECT_EQ(second->plans, 1);
 }
 
 int main(int argc, char ** argv)

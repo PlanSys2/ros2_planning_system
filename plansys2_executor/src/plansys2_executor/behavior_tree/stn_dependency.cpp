@@ -49,7 +49,7 @@ find_stn_node(const Graph::Ptr & graph, const std::string & action_id, const std
   auto it = std::find_if(
     graph->nodes.begin(), graph->nodes.end(),
     [&](const Node::Ptr & node) {
-      return BTBuilder::to_action_id(node->action, kStnActionIdPrecision) == action_id &&
+      return BTBuilder::to_action_id(node->action, graph->action_time_precision) == action_id &&
              BTBuilder::to_string(node->action.type) == type;
     });
   return it == graph->nodes.end() ? nullptr : *it;
@@ -125,7 +125,7 @@ update_stn_on_event(
   for (const auto & arc : child->input_arcs) {
     auto parent = std::get<0>(arc);
     auto parent_time = event_time(
-      action_map, BTBuilder::to_action_id(parent->action, kStnActionIdPrecision),
+      action_map, BTBuilder::to_action_id(parent->action, graph->action_time_precision),
       BTBuilder::to_string(parent->action.type));
     if (!parent_time) {
       input_arcs.insert(arc);  // Its parent has not happened: nothing to fix yet

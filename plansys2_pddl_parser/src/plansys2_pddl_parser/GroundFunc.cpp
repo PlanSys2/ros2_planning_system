@@ -37,7 +37,8 @@ void GroundFunc<int>::PDDLPrint(
   tabindent(s, indent);
   s << "( = ";
   TypeGround::PDDLPrint(s, 0, ts, d);
-  s << " " << d.types[(reinterpret_cast<Function *>(lifted))->returnType]->object(value) << " )";
+  const auto type = (reinterpret_cast<Function *>(lifted))->returnType;
+  s << " " << d.types[type]->object(value).first << " )";
 }
 
 template<>
@@ -53,8 +54,11 @@ template<>
 plansys2_msgs::msg::Node::SharedPtr GroundFunc<int>::getTree(
   plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace) const
 {
+  // An object fluent: the object, by name
   auto node = TypeGround::getTree(tree, d, replace);
-  node->value = value;
+  node->object =
+    d.types[(reinterpret_cast<const Function *>(lifted))->returnType]->object(value).first;
+  tree.nodes[node->node_id].object = node->object;
   return node;
 }
 

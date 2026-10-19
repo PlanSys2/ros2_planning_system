@@ -15,6 +15,8 @@
 #ifndef PLANSYS2_EXECUTOR__BTBUILDER_HPP_
 #define PLANSYS2_EXECUTOR__BTBUILDER_HPP_
 
+#include <cmath>
+#include <cstdint>
 #include <map>
 #include <set>
 #include <tuple>
@@ -34,6 +36,8 @@
 namespace plansys2
 {
 
+struct DerivedRule;  // plansys2_problem_expert/Utils.hpp
+
 class DomainExpertClient;
 class ProblemExpertClient;
 
@@ -51,7 +55,8 @@ enum struct ActionType
   START,
   OVERALL,
   END,
-  GOAL
+  GOAL,
+  TIMED  // A timed literal or fluent: only effects, at its time; the problem expert applies them
 };
 
 /**
@@ -62,9 +67,9 @@ enum struct ActionType
  */
 struct ActionStamped
 {
-  float time;
+  double time;
   std::string expression;
-  float duration;
+  double duration;
   ActionType type;
   ActionVariant action;
 
@@ -105,6 +110,8 @@ struct Graph
   static Ptr make_shared() {return std::make_shared<Graph>();}
 
   std::list<Node::Ptr> nodes;
+  // Decimals of the action ids of its nodes, those of the action map
+  int action_time_precision = 3;
 
   // Arcs point both ways, so the nodes would keep each other alive (#430)
   ~Graph()
@@ -222,10 +229,10 @@ public:
    * @param[in] power The power of 10 to multiply by (precision).
    * @return The time as an integer with the specified precision.
    */
-  static int to_int_time(float time, int power)
+  static int64_t to_int_time(double time, int power)
   {
-    float scale = pow(10.0, static_cast<float>(power));
-    return static_cast<int>(time * scale);
+    // Rounded: truncating made 4.9999 and 4.9990 the same time, and 5.0005 earlier than 5.0004
+    return std::llround(time * std::pow(10.0, power));
   }
 
   /**
@@ -249,6 +256,8 @@ public:
         return "END";
       case ActionType::GOAL:
         return "GOAL";
+      case ActionType::TIMED:
+        return "TIMED";
       default:
         return "UNKNOWN";
     }
@@ -279,6 +288,18 @@ public:
   }
 
   /**
+   * @brief The action of a plan item, from the domain, with ?duration bound to its duration.
+   *
+   * @param[in] domain_client Where the actions come from.
+   * @param[in] actions The non-durative actions of the domain.
+   * @param[in] item The plan item.
+   * @return The action; empty if the domain does not have it.
+   */
+  static plansys2::ActionVariant plan_item_action(
+    plansys2::DomainExpertClient & domain_client, const std::vector<std::string> & actions,
+    const plansys2_msgs::msg::PlanItem & item);
+
+  /**
    * @brief Set the state the plan starts from, instead of the current one.
    *
    * On a replan, the actions that go on started before the new plan: it starts from the state
@@ -290,7 +311,22 @@ public:
   void set_initial_state(
     std::vector<plansys2::Predicate> predicates, std::vector<plansys2::Function> functions);
 
+  /**
+   * @brief How long ago the problem of the plan was read: its timed facts, written from now,
+   *        are this much later in the time of the plan.
+   */
+  void set_time_offset(double seconds) {time_offset_ = seconds;}
+
+  /**
+   * @brief Decimals of the times in the action ids, as given to initialize.
+   * @return The decimals.
+   */
+  int get_action_time_precision() const {return action_time_precision_;}
+
 protected:
+  // Decimals of the action ids; the executor gives its action_time_precision to initialize
+  int action_time_precision_ = 3;
+
   // The clients set, or our own ones, created the first time they are needed
   std::shared_ptr<plansys2::DomainExpertClient> domain_client() const;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client() const;
@@ -299,13 +335,53 @@ protected:
   std::vector<plansys2::Predicate> initial_predicates() const;
   std::vector<plansys2::Function> initial_functions() const;
 
+  // Applies effects to a simulated state, whose derived predicates follow
+  void apply_effects(
+    const plansys2_msgs::msg::Tree & effects, std::vector<plansys2::Predicate> & predicates,
+    std::vector<plansys2::Function> & functions) const;
+  // Forgets the derived predicate rules, the timed facts and the dynamic facts: a new plan reads
+  // them again
+  void reset_derived_rules() const
+  {
+    derived_rules_.reset();
+    derived_names_.reset();
+    current_state_.reset();
+    timed_events_.reset();
+    dynamic_names_.reset();
+    dynamic_functions_.reset();
+  }
+
+  // PDDL+: whether conditions read a fact the dynamics change (processes, events, continuous
+  // effects). A discrete simulation of the plan cannot tell them: its tree waits for them
+  bool reads_dynamic(const plansys2_msgs::msg::Tree & conditions) const;
+
+  // The derived predicates of the domain, by name
+  const std::set<std::string> & derived_names() const;
+
+  // PDDL+: the conditions with the comparisons on what the dynamics change taken as held
+  plansys2_msgs::msg::Tree relax_dynamic(const plansys2_msgs::msg::Tree & conditions) const;
+
+  // The timed facts of the problem, as events of the plan at their time, with only effects
+  std::vector<ActionStamped> timed_events() const;
+
 private:
+  void collect_dynamic() const;
+  void load_derived() const;
+
   std::optional<std::pair<std::vector<plansys2::Predicate>, std::vector<plansys2::Function>>>
   initial_state_;
 
   // Mutable: creating them when first used does not change what the builder is
   mutable std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   mutable std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
+  mutable std::shared_ptr<const std::vector<plansys2::DerivedRule>> derived_rules_;
+  mutable std::optional<std::set<std::string>> derived_names_;
+  mutable std::optional<std::pair<std::vector<plansys2::Predicate>,
+    std::vector<plansys2::Function>>> current_state_;
+  mutable std::optional<std::vector<ActionStamped>> timed_events_;
+  double time_offset_ {0.0};
+  mutable std::optional<std::set<std::string>> dynamic_names_;
+  mutable std::optional<std::set<std::string>> dynamic_functions_;
 };
 
 }  // namespace plansys2

@@ -28,6 +28,7 @@
 
 #include "plansys2_msgs/msg/problem.hpp"
 #include "plansys2_msgs/srv/add_problem.hpp"
+#include "plansys2_msgs/srv/set_continuous_effect.hpp"
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
 #include "plansys2_msgs/srv/affect_node.hpp"
 #include "plansys2_msgs/srv/affect_param.hpp"
@@ -310,6 +311,18 @@ public:
   bool addProblem(const std::string & problem_str);
 
   /**
+   * @brief The continuous effects of a running action, integrated by the problem expert while
+   * active (PDDL 2.1).
+   *
+   * @param[in] id Who they are, the action.
+   * @param[in] effects (and (increase (f) (* #t rate))...), bound to its objects.
+   * @param[in] active false to stop them.
+   * @return true if the problem expert took them.
+   */
+  bool setContinuousEffect(
+    const std::string & id, const plansys2_msgs::msg::Tree & effects, bool active);
+
+  /**
    * @brief Get the timestamp of the last problem update.
    *
    * @return rclcpp::Time The timestamp when the problem was last updated.
@@ -332,6 +345,8 @@ private:
 
   rclcpp::Client<plansys2_msgs::srv::AddProblem>::SharedPtr
     add_problem_client_;
+  rclcpp::Client<plansys2_msgs::srv::SetContinuousEffect>::SharedPtr
+    set_continuous_effect_client_;
   rclcpp::Client<plansys2_msgs::srv::AddProblemGoal>::SharedPtr
     add_problem_goal_client_;
   rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr

@@ -31,6 +31,7 @@ ApplyAtStartEffect::ApplyAtStartEffect(
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
     "action_map");
+  std::ignore = config().blackboard->get("trace", trace_);
 
   problem_client_ =
     config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
@@ -58,12 +59,34 @@ ApplyAtStartEffect::tick()
         undo(info.at_start_changes, problem_client_);
         info.at_start_changes.clear();
         info.execution_error_info = "Error applying at start effects";
+        if (trace_) {
+          trace_->event(
+            ExecutionTrace::Event::FAILURE, action, "its at start effects cannot apply");
+        }
         return BT::NodeStatus::FAILURE;
       }
+    }
+    // Its continuous effects act from now on, integrated by the problem expert
+    const auto continuous = info.action_info.is_empty() ?
+      plansys2_msgs::msg::Tree() : info.action_info.get_continuous_effects();
+    if (!continuous.nodes.empty() &&
+      !problem_client_->setContinuousEffect(action, continuous, true))
+    {
+      undo(info.at_start_changes, problem_client_);
+      info.at_start_changes.clear();
+      info.execution_error_info = "Error starting its continuous effects";
+      if (trace_) {
+        trace_->event(
+          ExecutionTrace::Event::FAILURE, action, "its continuous effects cannot start");
+      }
+      return BT::NodeStatus::FAILURE;
     }
     info.at_start_effects_applied = true;
     auto now = node_ ? node_->now() : rclcpp::Clock(RCL_ROS_TIME).now();
     info.at_start_effects_applied_time = now;
+    if (trace_) {
+      trace_->event(ExecutionTrace::Event::START, action, "", info.plan_item.time);
+    }
 
     // STNBTBuilder: the network takes the actual time of this event
     if (!relaxed_timing_ && !update_stn_on_event(

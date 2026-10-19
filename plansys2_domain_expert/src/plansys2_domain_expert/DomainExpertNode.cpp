@@ -16,6 +16,7 @@
 #include <memory>
 #include <vector>
 
+#include "plansys2_core/ServiceCall.hpp"
 #include "kairos/kairos.hpp"
 #include "plansys2_core/Utils.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
@@ -55,6 +56,59 @@ DomainExpertNode::DomainExpertNode(const rclcpp::NodeOptions & options)
       &DomainExpertNode::get_domain_constants_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
+  // PDDL+: processes and events, served as actions are
+  using Names = plansys2_msgs::srv::GetDomainActions;
+  using Details = plansys2_msgs::srv::GetDomainActionDetails;
+  auto list = [this](bool processes) {
+      return [this, processes](
+        const std::shared_ptr<rmw_request_id_t>, const std::shared_ptr<Names::Request>,
+        const std::shared_ptr<Names::Response> response) {
+               if (domain_expert_ == nullptr) {
+                 response->success = false;
+                 response->error_info = "Requesting service in non-active state";
+                 return;
+               }
+               response->success = true;
+               response->actions = processes ? domain_expert_->getProcesses() :
+                 domain_expert_->getEvents();
+             };
+    };
+  auto details = [this](bool processes) {
+      return [this, processes](
+        const std::shared_ptr<rmw_request_id_t>, const std::shared_ptr<Details::Request> request,
+        const std::shared_ptr<Details::Response> response) {
+               if (domain_expert_ == nullptr) {
+                 response->success = false;
+                 response->error_info = "Requesting service in non-active state";
+                 return;
+               }
+               plansys2_msgs::msg::Action::SharedPtr found;
+               try {
+                 found = processes ?
+                   domain_expert_->getProcess(request->action, request->parameters) :
+                   domain_expert_->getEvent(request->action, request->parameters);
+               } catch (const std::exception & e) {
+                 response->success = false;
+                 response->error_info = e.what();
+                 return;
+               }
+               response->success = found != nullptr;
+               if (found) {
+                 response->action = *found;
+               } else {
+                 response->error_info = processes ? "Process not found" : "Event not found";
+               }
+             };
+    };
+  get_domain_processes_service_ =
+    create_service<Names>("domain_expert/get_domain_processes", list(true));
+  get_domain_process_details_service_ =
+    create_service<Details>("domain_expert/get_domain_process_details", details(true));
+  get_domain_events_service_ =
+    create_service<Names>("domain_expert/get_domain_events", list(false));
+  get_domain_event_details_service_ =
+    create_service<Details>("domain_expert/get_domain_event_details", details(false));
+
   get_domain_actions_service_ = create_service<plansys2_msgs::srv::GetDomainActions>(
     "domain_expert/get_domain_actions",
     std::bind(
@@ -150,7 +204,7 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   if (validate_using_planner_node) {
     validate_domain_client_ = create_client<plansys2_msgs::srv::ValidateDomain>(
       "planner/validate_domain", rclcpp::ServicesQoS(), validate_domain_callback_group_);
-    if (!validate_domain_client_->wait_for_service(std::chrono::seconds(5))) {
+    if (!wait_for_server(validate_domain_client_, std::chrono::seconds(5))) {
       RCLCPP_ERROR_STREAM(
         get_logger(),
         validate_domain_client_->get_service_name() << " not available: is the planner running?");
@@ -339,7 +393,16 @@ DomainExpertNode::get_domain_action_details_service_callback(
 
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto action = domain_expert_->getAction(request->action, request->parameters);
+    // A construct PlanSys2 cannot represent must not take the node down
+    plansys2_msgs::msg::Action::SharedPtr action;
+    try {
+      action = domain_expert_->getAction(request->action, request->parameters);
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(get_logger(), "%s", e.what());
+      response->success = false;
+      response->error_info = e.what();
+      return;
+    }
 
     if (action) {
       response->action = *action;
@@ -385,7 +448,16 @@ DomainExpertNode::get_domain_durative_action_details_service_callback(
 
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto action = domain_expert_->getDurativeAction(request->durative_action, request->parameters);
+    // A construct PlanSys2 cannot represent must not take the node down
+    plansys2_msgs::msg::DurativeAction::SharedPtr action;
+    try {
+      action = domain_expert_->getDurativeAction(request->durative_action, request->parameters);
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(get_logger(), "%s", e.what());
+      response->success = false;
+      response->error_info = e.what();
+      return;
+    }
 
     if (action) {
       response->durative_action = *action;
@@ -521,7 +593,16 @@ DomainExpertNode::get_domain_derived_predicate_details_service_callback(
 
     RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
   } else {
-    auto predicates = domain_expert_->getDerivedPredicate(request->predicate);
+    // A construct PlanSys2 cannot represent must not take the node down
+    std::vector<plansys2_msgs::msg::Derived> predicates;
+    try {
+      predicates = domain_expert_->getDerivedPredicate(request->predicate);
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(get_logger(), "%s", e.what());
+      response->success = false;
+      response->error_info = e.what();
+      return;
+    }
 
     if (predicates.size() > 0) {
       response->predicates = predicates;
@@ -565,6 +646,21 @@ DomainExpertNode::validateDomain(
   std::string & error)
 {
   auto candidate = std::make_shared<DomainExpert>(domain);
+
+  // The planner may take what PlanSys2 cannot keep or execute: the same check at startup as in
+  // a change, and at load rather than when a plan uses it
+  if (!candidate->getParseError().empty()) {
+    error = "PlanSys2 cannot read this domain: " + candidate->getParseError();
+    return false;
+  }
+  const auto unsupported = candidate->getUnsupported();
+  if (!unsupported.empty()) {
+    error = "PlanSys2 cannot execute this domain:";
+    for (const auto & line : unsupported) {
+      error += "\n  " + line;
+    }
+    return false;
+  }
 
   bool check_valid = true;
   if (validate_domain_client_) {
