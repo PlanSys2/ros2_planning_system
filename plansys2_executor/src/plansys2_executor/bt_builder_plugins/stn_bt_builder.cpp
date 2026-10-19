@@ -49,6 +49,66 @@ std::set<std::string> continuous_functions(const ActionStamped & action)
   return ret;
 }
 
+// The facts a tree reads or writes: grounded, "robot_at r1 hall"; by name, when some argument is
+// a variable; all, when it reads a derived predicate, which may read anything
+struct Facts
+{
+  std::set<std::string> grounded;
+  std::set<std::string> names;
+  bool all = false;
+};
+
+void collect_facts(
+  const plansys2_msgs::msg::Tree & tree, const std::set<std::string> & derived, Facts & facts)
+{
+  for (const auto & node : tree.nodes) {
+    if (node.node_type != plansys2_msgs::msg::Node::PREDICATE &&
+      node.node_type != plansys2_msgs::msg::Node::FUNCTION)
+    {
+      continue;
+    }
+    if (derived.count(node.name)) {
+      facts.all = true;
+      return;
+    }
+    bool variable = false;
+    std::string key = node.name;
+    for (const auto & param : node.parameters) {
+      variable = variable || param.name.empty() || param.name[0] == '?';
+      key += " " + param.name;
+    }
+    (variable ? facts.names : facts.grounded).insert(variable ? node.name : key);
+  }
+}
+
+// Whether what one writes is something the other reads or writes
+bool meet(const Facts & a, const Facts & b)
+{
+  if (a.all || b.all) {
+    return true;
+  }
+  auto name_of = [](const std::string & key) {return key.substr(0, key.find(' '));};
+  for (const auto & key : a.grounded) {
+    if (b.grounded.count(key) || b.names.count(name_of(key))) {
+      return true;
+    }
+  }
+  for (const auto & name : a.names) {
+    if (b.names.count(name)) {
+      return true;
+    }
+    for (const auto & key : b.grounded) {
+      if (name_of(key) == name) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// Happenings with more snaps than this are not searched in every order: 2^n subsets
+constexpr int kMaxSubsetSnaps = 6;
+
 // Snaps of the same plan item: a plan may have the same action several times
 bool same_item(const ActionStamped & a, const ActionStamped & b)
 {
@@ -808,6 +868,17 @@ STNBTBuilder::get_threat(
   auto E_a = get_threat_effects(action.second);
   const auto rates_a = continuous_functions(action.second);
 
+  // What each one reads and writes: those that share nothing cannot threaten each other
+  const auto & derived = derived_names();
+  auto facts = [&](const ActionStamped & snap) {
+      std::pair<Facts, Facts> ret;  // Read, written
+      collect_facts(get_conditions(snap), derived, ret.first);
+      collect_facts(get_effects(snap), derived, ret.first);  // The conditions of a when too
+      collect_facts(get_threat_effects(snap), derived, ret.second);
+      return ret;
+    };
+  const auto [reads_a, writes_a] = facts(action.second);
+
   while (t_2 >= 0) {
     H_it = get_previous(t_2, happenings);
     if (H_it == happenings.end()) {
@@ -848,6 +919,12 @@ STNBTBuilder::get_threat(
 
         // Two rates on the same function add up: they keep the order of the plan
         const auto rates_k = continuous_functions(iter->second);
+        if (rates_k.empty() || rates_a.empty()) {
+          const auto [reads_k, writes_k] = facts(iter->second);
+          if (!meet(writes_a, reads_k) && !meet(writes_a, writes_k) && !meet(writes_k, reads_a)) {
+            continue;
+          }
+        }
         if (std::any_of(
             rates_a.begin(), rates_a.end(), [&](const auto & f) {return rates_k.count(f) > 0;}))
         {
@@ -857,8 +934,14 @@ STNBTBuilder::get_threat(
 
         auto X_1_k = X_1;
         if (!can_apply(*iter, plan, t_2, X_1_k)) {
-          std::cerr << "get_threat: Suitable intermediate state not found. ";
-          std::cerr << "However, one should exist." << std::endl;
+          // PDDL+: what the dynamics give, an event or a process, comes later in the plan
+          if (!reads_dynamic(get_conditions(iter->second)) &&
+            (iter->second.type != ActionType::GOAL ||
+            !reads_dynamic(iter->second.action.get_at_start_requirements())))
+          {
+            std::cerr << "get_threat: Suitable intermediate state not found. ";
+            std::cerr << "However, one should exist." << std::endl;
+          }
           continue;
         }
 
@@ -923,7 +1006,24 @@ STNBTBuilder::can_apply(
     return true;
   }
 
+  // The snaps before it at its happening, in the order of the plan
+  auto range = plan.equal_range(time);
+  for (auto iter = range.first; iter != range.second; ++iter) {
+    if (iter->first == action.first && same_item(iter->second, action.second)) {
+      break;
+    }
+    apply_effects(get_effects(iter->second), state.predicates, state.functions);
+    if (check(R, state.predicates, state.functions)) {
+      return true;
+    }
+  }
+
+  // Others in any order: every subset, so only for a few at once
   int n = plan.count(time);
+  if (n > kMaxSubsetSnaps) {
+    state = X;
+    return false;
+  }
   auto it = plan.lower_bound(time);
   for (int m = 1; m <= n; ++m) {
     std::vector<bool> v(n);

@@ -19,6 +19,7 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -72,6 +73,37 @@ private:
   }
 
   int cycles_ {0};
+};
+
+// It lasts what the plan gives it, from its start
+class TimedMove : public plansys2::ActionExecutorClient
+{
+public:
+  explicit TimedMove(const std::string & name)
+  : ActionExecutorClient(name)
+  {
+    set_parameter({"action_name", "move"});
+    set_parameter({"rate", 20.0});
+  }
+
+  CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override
+  {
+    started_ = now();
+    return ActionExecutorClient::on_activate(state);
+  }
+
+  std::atomic<double> planned_duration {-1.0};
+
+private:
+  void do_work() override
+  {
+    planned_duration = get_planned_duration();
+    if ((now() - started_).seconds() >= get_planned_duration()) {
+      finish(true, 1.0, "done");
+    }
+  }
+
+  rclcpp::Time started_;
 };
 
 // A performer driven by hand: it answers requests after `response_delay` and does what the
@@ -366,6 +398,123 @@ TEST_F(ActionProtocolTest, the_performer_gets_the_planned_duration)
     }
   }
   EXPECT_GE(requests, 6);
+}
+
+// A plan replaced while it runs gives the running action another duration: its performer gets it
+TEST_F(ActionProtocolTest, the_performer_gets_a_new_planned_duration)
+{
+  auto timed = std::make_shared<TimedMove>("timed_move");
+  nodes_.push_back(timed);
+  exe_.add_node(timed->get_node_base_interface());
+  timed->trigger_transition(Transition::TRANSITION_CONFIGURE);
+  ASSERT_TRUE(hub_has(1));
+
+  auto executor = new_executor();
+  executor->set_planned_duration(30.0);
+  ASSERT_TRUE(
+    tick_until(
+      executor, [&]() {return timed->planned_duration == 30.0;}, 5s));
+  ASSERT_EQ(executor->get_internal_status(), Status::RUNNING);
+
+  // From 30 s to half a second: it ends soon
+  executor->update_planned_duration(0.5);
+  EXPECT_DOUBLE_EQ(executor->get_planned_duration(), 0.5);
+  ASSERT_TRUE(
+    tick_until(
+      executor, [&]() {return executor->get_internal_status() == Status::SUCCESS;}, 5s));
+  EXPECT_DOUBLE_EQ(timed->planned_duration, 0.5);
+
+  std::lock_guard<std::mutex> lock(messages_mutex_);
+  int updates = 0;
+  for (const auto & msg : messages_) {
+    if (msg.type == ActionExecution::UPDATE) {
+      EXPECT_EQ(msg.node_id, "timed_move");
+      EXPECT_DOUBLE_EQ(msg.planned_duration, 0.5);
+      updates++;
+    }
+  }
+  EXPECT_EQ(updates, 1);
+
+  // Not running: nothing to tell
+  auto idle = new_executor();
+  idle->update_planned_duration(2.0);
+  EXPECT_DOUBLE_EQ(idle->get_planned_duration(), 2.0);
+}
+
+// One performer for two actions: the second takes it as soon as the first is done, not at its
+// next request, a second later
+TEST_F(ActionProtocolTest, a_waiting_action_takes_the_performer_once_free)
+{
+  auto timed = std::make_shared<TimedMove>("timed_move");
+  nodes_.push_back(timed);
+  exe_.add_node(timed->get_node_base_interface());
+  timed->trigger_transition(Transition::TRANSITION_CONFIGURE);
+  ASSERT_TRUE(hub_has(1));
+
+  auto first = new_executor();
+  first->set_planned_duration(1.5);
+  ASSERT_TRUE(
+    tick_until(first, [&]() {return first->get_internal_status() == Status::RUNNING;}, 5s));
+  auto second = new_executor();
+  second->set_planned_duration(0.1);
+  second->tick(requester_->now());
+  ASSERT_EQ(second->get_internal_status(), Status::DEALING);
+
+  std::optional<std::chrono::steady_clock::time_point> first_done, second_running;
+  const auto deadline = std::chrono::steady_clock::now() + 10s;
+  while (std::chrono::steady_clock::now() < deadline && !second_running) {
+    first->tick(requester_->now());
+    second->tick(requester_->now());
+    if (!first_done && first->get_internal_status() == Status::SUCCESS) {
+      first_done = std::chrono::steady_clock::now();
+    }
+    if (first_done && second->get_internal_status() == Status::RUNNING) {
+      second_running = std::chrono::steady_clock::now();
+    }
+    std::this_thread::sleep_for(10ms);
+  }
+  ASSERT_TRUE(first_done && second_running);
+  EXPECT_LT(*second_running - *first_done, 500ms);
+}
+
+// Two actions asked at once, two performers: both answer the first, the rejected one takes the
+// second at once, not at the next retry
+TEST_F(ActionProtocolTest, actions_asked_at_once_run_in_parallel)
+{
+  for (int i = 1; i <= 2; i++) {
+    auto timed = std::make_shared<TimedMove>("timed_move_" + std::to_string(i));
+    nodes_.push_back(timed);
+    exe_.add_node(timed->get_node_base_interface());
+    timed->trigger_transition(Transition::TRANSITION_CONFIGURE);
+  }
+  ASSERT_TRUE(hub_has(2));
+
+  for (int round = 0; round < 3; round++) {
+    auto first = new_executor();
+    auto second = new_executor();
+    first->set_planned_duration(1.5);
+    second->set_planned_duration(1.5);
+
+    const auto start = std::chrono::steady_clock::now();
+    std::optional<std::chrono::steady_clock::time_point> both_running;
+    while (std::chrono::steady_clock::now() < start + 3s && !both_running) {
+      first->tick(requester_->now());
+      second->tick(requester_->now());
+      if (first->get_internal_status() == Status::RUNNING &&
+        second->get_internal_status() == Status::RUNNING)
+      {
+        both_running = std::chrono::steady_clock::now();
+      }
+      std::this_thread::sleep_for(10ms);
+    }
+    ASSERT_TRUE(both_running) << "round " << round;
+    EXPECT_LT(*both_running - start, 500ms) << "round " << round;
+
+    ASSERT_TRUE(
+      tick_until(first, [&]() {return first->get_internal_status() == Status::SUCCESS;}, 5s));
+    ASSERT_TRUE(
+      tick_until(second, [&]() {return second->get_internal_status() == Status::SUCCESS;}, 5s));
+  }
 }
 
 // PDDL is case insensitive: a performer of Move runs move (#256)

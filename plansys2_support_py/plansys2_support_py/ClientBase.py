@@ -14,6 +14,7 @@
 
 """Common base of the PlanSys2 Python clients."""
 
+import os
 import threading
 from typing import Any, Dict, Optional
 
@@ -33,6 +34,8 @@ class ClientBase(Node):
     namespace and the remappings apply.
     """
 
+    _count = 0
+
     def __init__(self, node_name: str, namespace: str = '') -> None:
         """
         Initialize the client.
@@ -46,8 +49,12 @@ class ClientBase(Node):
 
         """
         super().__init__(node_name=node_name, namespace=namespace)
+        # A name of its own: clients of the same name in other processes would not find the
+        # services they call for long
+        ClientBase._count += 1
         self._calls_node = rclpy.create_node(
-            f'_{node_name}', namespace=namespace, context=self.context)
+            f'_{node_name}_{os.getpid()}_{ClientBase._count}', namespace=namespace,
+            context=self.context)
         self._calls_executor = SingleThreadedExecutor(context=self.context)
         self._calls_lock = threading.Lock()
         self._service_clients: Dict[str, Client] = {}

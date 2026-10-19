@@ -396,8 +396,14 @@ TEST(planner_expert, generate_plans_stress)
 
     auto plan = planner_client->getPlan(
     domain_client->getDomain(), problem_client->getProblem());
+    ASSERT_TRUE(plan.has_value());
 
-    ASSERT_EQ(plan, plans.plan_array.front());
+    // The same plan; asked later, it counts from later
+    auto first = plans.plan_array.front();
+    EXPECT_GE(rclcpp::Time(plan->stamp).nanoseconds(), rclcpp::Time(first.stamp).nanoseconds());
+    EXPECT_GT(rclcpp::Time(first.stamp).nanoseconds(), 0);
+    first.stamp = plan->stamp;
+    ASSERT_EQ(plan.value(), first);
   }
   plansys2::drain_ros(200ms);
 }

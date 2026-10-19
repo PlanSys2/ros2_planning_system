@@ -38,27 +38,36 @@ call_service(
   std::chrono::nanoseconds service_timeout = std::chrono::seconds(5),
   std::chrono::nanoseconds response_timeout = std::chrono::seconds(1))
 {
-  if (!client->wait_for_service(service_timeout)) {
+  // rclcpp shutting down throws from the graph while we wait: no answer, not the end of the
+  // process
+  try {
+    if (!client->wait_for_service(service_timeout)) {
+      if (rclcpp::ok()) {
+        RCLCPP_ERROR_STREAM(
+          node->get_logger(), client->get_service_name() << ": service not available");
+      }
+      return nullptr;
+    }
+
+    auto future = client->async_send_request(request);
+    if (rclcpp::spin_until_future_complete(node, future, response_timeout) !=
+      rclcpp::FutureReturnCode::SUCCESS)
+    {
+      // Otherwise the late response would stay pending forever
+      client->remove_pending_request(future);
+      if (rclcpp::ok()) {
+        RCLCPP_ERROR_STREAM(node->get_logger(), client->get_service_name() << ": no response");
+      }
+      return nullptr;
+    }
+
+    return future.get();
+  } catch (const std::exception & e) {
     if (rclcpp::ok()) {
-      RCLCPP_ERROR_STREAM(
-        node->get_logger(), client->get_service_name() << ": service not available");
+      RCLCPP_ERROR_STREAM(node->get_logger(), client->get_service_name() << ": " << e.what());
     }
     return nullptr;
   }
-
-  auto future = client->async_send_request(request);
-  if (rclcpp::spin_until_future_complete(node, future, response_timeout) !=
-    rclcpp::FutureReturnCode::SUCCESS)
-  {
-    // Otherwise the late response would stay pending forever
-    client->remove_pending_request(future);
-    if (rclcpp::ok()) {
-      RCLCPP_ERROR_STREAM(node->get_logger(), client->get_service_name() << ": no response");
-    }
-    return nullptr;
-  }
-
-  return future.get();
 }
 
 }  // namespace plansys2

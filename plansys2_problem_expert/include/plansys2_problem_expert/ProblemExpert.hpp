@@ -329,6 +329,12 @@ public:
   bool stepDynamics(double dt);
 
   /**
+   * @brief What happened by itself since the last call: the events that fired and the timed
+   *        facts applied, as text, "event (float_switch cistern)".
+   */
+  std::vector<std::string> takeHappened();
+
+  /**
    * @brief Check if an instance with the given name exists.
    *
    * @param[in] name The name of the instance to check.
@@ -495,6 +501,7 @@ private:
   std::string happenings_instances_;
   std::vector<plansys2_msgs::msg::Action> processes_;
   std::vector<plansys2_msgs::msg::Action> events_;
+  std::vector<std::string> happened_;
   void groundHappenings();
   std::function<double()> clock_ {[]() {return 0.0;}};
 

@@ -22,6 +22,7 @@
 #include "plansys2_msgs/msg/action_execution.hpp"
 #include "plansys2_msgs/msg/action_performer_status.hpp"
 
+#include "plansys2_core/NodeNames.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 
@@ -112,7 +113,7 @@ protected:
    *
    * @return In seconds; 0 for a non-durative action.
    */
-  double get_planned_duration() const {return current_planned_duration_;}
+  double get_planned_duration() const {return current_planned_duration_;}  // Updated by a new plan
 
   /**
    * @brief Get the name of the action this executor manages.
@@ -231,6 +232,7 @@ private:
   // The request we execute: its feedback and finish carry it
   std::string current_request_id_;
   rclcpp::TimerBase::SharedPtr requester_check_;
+  std::unique_ptr<NodeNames> node_names_;
   int requester_misses_ {0};
 };
 

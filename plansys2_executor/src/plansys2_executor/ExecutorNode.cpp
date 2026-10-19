@@ -15,6 +15,7 @@
 #include <filesystem>
 
 #include <algorithm>
+#include <cstdio>
 #include <string>
 #include <memory>
 #include <iostream>
@@ -30,6 +31,8 @@
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
+#include "plansys2_problem_expert/ProblemExpert.hpp"
+#include "plansys2_domain_expert/DomainExpert.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
@@ -90,6 +93,8 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
   // PDDL+ plans: actions at their planned times (always if the domain has processes, events or
   // continuous effects), and how long the goal may take to hold once the plan has ended
   this->declare_parameter<bool>("timed_execution", false);
+  // Each event of the execution, and why, also in the log
+  this->declare_parameter<bool>("log_execution_trace", true);
   this->declare_parameter<double>("plan_end_goal_timeout", 5.0);
   this->declare_parameter("action_timeouts.actions", std::vector<std::string>{});
   // Declaring individual action parameters so they can be queried on the command line
@@ -133,6 +138,15 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
       &ExecutorNode::get_remaining_plan_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3));
+
+  get_replanning_problem_service_ = create_service<plansys2_msgs::srv::GetProblem>(
+    "executor/get_replanning_problem",
+    [this](
+      std::shared_ptr<rclcpp::Service<plansys2_msgs::srv::GetProblem>> service,
+      std::shared_ptr<rmw_request_id_t> header,
+      std::shared_ptr<plansys2_msgs::srv::GetProblem::Request>) {
+      get_replanning_problem_service_callback(service, header);
+    });
 }
 
 ExecutorNode::~ExecutorNode()
@@ -211,6 +225,11 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
     "executing_plan", rclcpp::QoS(100).transient_local());
   remaining_plan_pub_ = create_publisher<plansys2_msgs::msg::Plan>(
     "remaining_plan", rclcpp::QoS(100));
+  // A viewer that comes later still sees the last events
+  trace_pub_ = create_publisher<plansys2_msgs::msg::ExecutionEvent>(
+    "executor/execution_trace", rclcpp::QoS(1000).transient_local());
+  trace_ = std::make_shared<ExecutionTrace>(
+    non_owning_this(), trace_pub_, get_parameter("log_execution_trace").as_bool());
 
   domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
@@ -242,6 +261,7 @@ ExecutorNode::on_activate(const rclcpp_lifecycle::State & state)
   execution_info_pub_->on_activate();
   executing_plan_pub_->on_activate();
   remaining_plan_pub_->on_activate();
+  trace_pub_->on_activate();
   RCLCPP_INFO(get_logger(), "[%s] Activated", get_name());
 
   start_execution_thread();
@@ -258,6 +278,7 @@ ExecutorNode::on_deactivate(const rclcpp_lifecycle::State & state)
   dotgraph_pub_->on_deactivate();
   executing_plan_pub_->on_deactivate();
   remaining_plan_pub_->on_deactivate();
+  trace_pub_->on_deactivate();
   reset_groot_monitor();
   RCLCPP_INFO(get_logger(), "[%s] Deactivated", get_name());
 
@@ -489,6 +510,13 @@ ExecutorNode::get_tree_from_plan(
     bt_builder->initialize(action_bt_xml_, "", action_time_precision());
   }
 
+  // The timed facts of the problem now, in the time of the plan: it was read before
+  const auto now_time = now();
+  const rclcpp::Time plan_stamp(runtime_info.complete_plan.stamp, now_time.get_clock_type());
+  if (plan_stamp.nanoseconds() > 0 && plan_stamp <= now_time) {
+    bt_builder->set_time_offset((now_time - plan_stamp).seconds());
+  }
+
   auto bt_xml_tree = bt_builder->get_tree(runtime_info.complete_plan);
   if (bt_xml_tree.empty()) {
     if (report_errors) {
@@ -535,10 +563,33 @@ ExecutorNode::get_tree_from_plan(
   blackboard->set("problem_client", problem_client_);
   blackboard->set("bt_builder", bt_builder);
   blackboard->set("stn_relaxed_timing", this->get_parameter("stn_relaxed_timing").as_bool());
-  runtime_info.plan_start = now();
+  // Timed, the plan counts from when its problem was read: its timed facts and what changes by
+  // itself do; what was due before it starts runs at once
+  const auto execution_start = now();
+  runtime_info.plan_start = execution_start;
+  const rclcpp::Time stamp(runtime_info.complete_plan.stamp, execution_start.get_clock_type());
+  double read_before = 0.0;
+  if (is_timed(runtime_info) && stamp.nanoseconds() > 0 && stamp <= execution_start) {
+    runtime_info.plan_start = stamp;
+    read_before = (execution_start - stamp).seconds();
+  }
   runtime_info.tree_done = false;
   blackboard->set("plan_start", runtime_info.plan_start);
+  blackboard->set("execution_start", execution_start);
   blackboard->set("timed_execution", is_timed(runtime_info));
+  blackboard->set("trace", trace_);
+  trace_->set_plan_start(runtime_info.plan_start);
+  auto builder_name = get_parameter("bt_builder_plugin").as_string();
+  char read[64] = "";
+  if (read_before > 0.0) {
+    std::snprintf(read, sizeof(read), "its problem read %.3f s before, ", read_before);
+  }
+  trace_->event(
+    ExecutionTrace::Event::PLAN_START, "",
+    std::string(is_timed(runtime_info) ? "timed, each action at its time" :
+    "each action as soon as it can") + ", " + read +
+    std::to_string(runtime_info.complete_plan.items.size()) + " actions, " +
+    (builder_name.empty() ? std::string("STNBTBuilder") : builder_name));
   // Added blackboard keys for compatibility with other nodes
   blackboard->set("bt_loop_duration", std::chrono::milliseconds(200));
   blackboard->set("server_timeout", std::chrono::milliseconds(250));
@@ -594,12 +645,20 @@ ExecutorNode::stop_continuous_effects(PlanRuntineInfo & runtime_info)
     return;
   }
   for (const auto & [id, info] : *runtime_info.action_map) {
-    if (!info.action_info.is_empty() &&
-      !info.action_info.get_continuous_effects().nodes.empty() &&
-      info.at_start_effects_applied && !info.at_end_effects_applied)
-    {
-      problem_client_->setContinuousEffect(id, plansys2_msgs::msg::Tree(), false);
-    }
+    stop_continuous_effect(id, info);
+  }
+}
+
+void
+ExecutorNode::stop_continuous_effect(
+  const std::string & action_id,
+  const ActionExecutionInfo & info)
+{
+  if (!info.action_info.is_empty() &&
+    !info.action_info.get_continuous_effects().nodes.empty() &&
+    info.at_start_effects_applied && !info.at_end_effects_applied)
+  {
+    problem_client_->setContinuousEffect(action_id, plansys2_msgs::msg::Tree(), false);
   }
 }
 
@@ -618,16 +677,24 @@ ExecutorNode::start_constraints(PlanRuntineInfo & runtime_info)
   knowledge_changed_ = true;  // The state it starts from
 }
 
+double
+ExecutorNode::constraints_time(const PlanRuntineInfo & runtime_info)
+{
+  // From the start of the plan, shifted by the actions that started late
+  rclcpp::Time start = runtime_info.plan_start;
+  if (runtime_info.current_tree) {
+    std::ignore = runtime_info.current_tree->tree.rootBlackboard()->get("plan_start", start);
+  }
+  return (now() - start).seconds() + runtime_info.constraints_offset;
+}
+
 std::optional<std::string>
 ExecutorNode::check_constraints(BT::NodeStatus status)
 {
   if (!runtime_info_.constraints) {
     return {};
   }
-  // From the start of the plan, shifted by the actions that started late
-  rclcpp::Time start = runtime_info_.plan_start;
-  std::ignore = runtime_info_.current_tree->tree.rootBlackboard()->get("plan_start", start);
-  const double t = (now() - start).seconds();
+  const double t = constraints_time(runtime_info_);
 
   auto holds = [this](const plansys2_msgs::msg::Tree & condition) {
       return check_in_expert(condition, problem_client_);
@@ -742,6 +809,79 @@ std::string action_expression(const std::string & action_id)
 }
 }  // namespace
 
+void
+ExecutorNode::get_replanning_problem_service_callback(
+  std::shared_ptr<rclcpp::Service<plansys2_msgs::srv::GetProblem>> service,
+  std::shared_ptr<rmw_request_id_t> request_header)
+{
+  std::lock_guard<std::mutex> lock(replanning_mutex_);
+  replanning_requests_.push_back({service, request_header});
+}
+
+void
+ExecutorNode::make_replanning_problem()
+{
+  decltype(replanning_requests_) requests;
+  {
+    std::lock_guard<std::mutex> lock(replanning_mutex_);
+    requests.swap(replanning_requests_);
+  }
+  if (requests.empty()) {
+    return;
+  }
+  std::vector<FactChange> changes;
+  {
+    std::lock_guard<std::mutex> lock(snapshot_mutex_);
+    changes = running_changes_snapshot_;
+  }
+  plansys2_msgs::srv::GetProblem::Response response;
+  response.stamp = now();
+  try {
+    // The problem of now, as a problem expert of its own, before what the running actions began
+    auto domain = std::make_shared<plansys2::DomainExpert>(domain_client_->getDomain());
+    plansys2::ProblemExpert problem(domain);
+    if (!problem.addProblem(problem_client_->getProblem())) {
+      response.success = false;
+      response.error_info = "the problem of the problem expert cannot be read";
+    } else {
+      for (auto change = changes.rbegin(); change != changes.rend(); ++change) {
+        if (change->fact.node_type == plansys2_msgs::msg::Node::PREDICATE) {
+          plansys2::Predicate fact(change->fact);
+          fact.negate = false;
+          if (change->existed_before) {
+            problem.addPredicate(fact);
+          } else {
+            problem.removePredicate(fact);
+          }
+          continue;
+        }
+        auto function = problem.getFunction(parser::pddl::toString(change->fact));
+        if (!function) {
+          continue;
+        }
+        const bool relative = change->modifier_type == plansys2_msgs::msg::Node::INCREASE ||
+          change->modifier_type == plansys2_msgs::msg::Node::DECREASE;
+        if (!change->object_before.empty() || !change->object_after.empty()) {
+          function->object = change->object_before;
+        } else if (relative) {
+          function->value -= change->value_after - change->value_before;
+        } else if (std::fabs(function->value - change->value_after) < 1e-9) {
+          function->value = change->value_before;
+        }
+        problem.updateFunction(function.value());
+      }
+      response.problem = problem.getProblem();
+      response.success = true;
+    }
+  } catch (const std::exception & e) {
+    response.success = false;
+    response.error_info = e.what();
+  }
+  for (auto & [service, header] : requests) {
+    service->send_response(*header, response);
+  }
+}
+
 bool
 ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
 {
@@ -754,14 +894,24 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
   for (const auto & item : runtime_info.remaining_plan.items) {
     new_ids.insert(BTBuilder::to_action_id(item, action_time_precision()));
   }
+  std::string going_on, dropped;
   for (auto & [action_id, info] : *runtime_info.action_map) {
-    const bool goes_on = info.action_executor &&
-      info.action_executor->get_internal_status() == ActionExecutor::RUNNING &&
+    const bool running = info.action_executor &&
+      info.action_executor->get_internal_status() == ActionExecutor::RUNNING;
+    const bool goes_on = running &&
       new_ids.count(action_id.substr(0, action_id.find(':')) + ":0") > 0;
+    if (running) {
+      (goes_on ? going_on : dropped) += " " + action_id;
+    }
     if (!goes_on) {
+      stop_continuous_effect(action_id, info);
       restore_at_start_effects(action_id, info);
     }
   }
+  trace_->event(
+    ExecutionTrace::Event::REPLAN, "",
+    "going on:" + (going_on.empty() ? std::string(" none") : going_on) + "; dropped:" +
+    (dropped.empty() ? std::string(" none") : dropped));
 
   std::map<std::string, ActionExecutionInfo> previous_action_map = *runtime_info.action_map;
 
@@ -795,8 +945,19 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
   // Actions done in the previous plan that the new one, computed while they ran, still has
   std::vector<std::pair<std::string, ActionExecutionInfo>> done_again;
   bool plan_success = false;
+  // The same constraints go on over the same trajectory: with what they have seen, in its time
+  auto previous_constraints = runtime_info.constraints;
+  const double constraints_now = previous_constraints ? constraints_time(runtime_info) : 0.0;
   try {
     start_constraints(runtime_info);
+    if (previous_constraints && runtime_info.constraints &&
+      previous_constraints->describe() == runtime_info.constraints->describe())
+    {
+      runtime_info.constraints = previous_constraints;
+      runtime_info.constraints_offset = constraints_now;
+    } else {
+      runtime_info.constraints_offset = 0.0;
+    }
     create_plan_runtime_info(runtime_info);
     plan_success = get_tree_from_plan(runtime_info, initial_state, false);
     if (!plan_success) {
@@ -836,6 +997,17 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
 
     auto match_it = runtime_info.action_map->find(query_action_name);
     if (match_it != runtime_info.action_map->end()) {
+      // Its continuous effects act under its id in the new plan, for the time that plan gives it
+      const bool acting = !action_info.second.action_info.is_empty() &&
+        !action_info.second.action_info.get_continuous_effects().nodes.empty() &&
+        action_info.second.at_start_effects_applied && !action_info.second.at_end_effects_applied;
+      if (acting && action_info.first != match_it->first) {
+        problem_client_->setContinuousEffect(action_info.first, plansys2_msgs::msg::Tree(), false);
+        problem_client_->setContinuousEffect(
+          match_it->first, match_it->second.action_info.get_continuous_effects(), true);
+      }
+      const bool timed = is_timed(runtime_info);
+      const double new_duration = match_it->second.duration;
       match_it->second.action_executor = action_info.second.action_executor;
       match_it->second.at_start_effects_applied = action_info.second.at_start_effects_applied;
       match_it->second.at_end_effects_applied = action_info.second.at_end_effects_applied;
@@ -846,6 +1018,13 @@ ExecutorNode::replan_for_execution_impl(PlanRuntineInfo & runtime_info)
       match_it->second.duration = action_info.second.duration;
       match_it->second.duration_overrun_percentage =
         action_info.second.duration_overrun_percentage;
+      // Timed, it lasts what the new plan gives it from now: its performer is told
+      if (timed && action_info.second.at_start_effects_applied) {
+        const double total =
+          (now() - action_info.second.at_start_effects_applied_time).seconds() + new_duration;
+        match_it->second.duration = total;
+        match_it->second.action_executor->update_planned_duration(total);
+      }
     } else {
       action_info.second.action_executor->cancel();
       action_info.second.action_executor->clean_up();
@@ -1011,6 +1190,12 @@ ExecutorNode::get_feedback_info(
 
     info.start_stamp = action.second.action_executor->get_start_time();
     info.status_stamp = action.second.action_executor->get_status_time();
+    if (action.second.at_start_effects_applied) {
+      info.start_happening_stamp = action.second.at_start_effects_applied_time;
+    }
+    if (action.second.at_end_effects_applied) {
+      info.end_happening_stamp = action.second.at_end_effects_applied_time;
+    }
     info.action = action.second.action_executor->get_action_name();
 
     info.arguments = action.second.action_executor->get_action_params();
@@ -1216,11 +1401,18 @@ ExecutorNode::execution_cycle()
 void
 ExecutorNode::execution_step()
 {
+  make_replanning_problem();
+
   auto feedback = std::make_shared<ExecutePlan::Feedback>();
   auto result = std::make_shared<ExecutePlan::Result>();
 
   switch (executor_state_) {
     case STATE_IDLE:
+      {
+        // Nothing runs: nothing to take back for a replanning problem
+        std::lock_guard<std::mutex> lock(snapshot_mutex_);
+        running_changes_snapshot_.clear();
+      }
       if (auto goal = take_new_goal()) {
         // A domain change before this plan started does not affect it
         domain_changed_ = false;
@@ -1296,6 +1488,7 @@ ExecutorNode::execution_step()
           if (auto violated = check_constraints(status)) {
             RCLCPP_ERROR(
               get_logger(), "[%s] Constraint violated: %s", get_name(), violated->c_str());
+            trace_->event(ExecutionTrace::Event::VIOLATION, "", *violated);
             status = BT::NodeStatus::FAILURE;
           }
         }
@@ -1401,6 +1594,7 @@ ExecutorNode::execution_step()
       }
 
       current_goal_handle_->abort(result);
+      trace_->event(ExecutionTrace::Event::PLAN_END, "", "aborted");
       executor_state_ = STATE_IDLE;
       break;
     case STATE_CANCELLED:
@@ -1414,6 +1608,7 @@ ExecutorNode::execution_step()
       }
 
       current_goal_handle_->canceled(result);
+      trace_->event(ExecutionTrace::Event::PLAN_END, "", "cancelled");
       executor_state_ = STATE_IDLE;
       break;
     case STATE_FAILED:
@@ -1428,6 +1623,7 @@ ExecutorNode::execution_step()
 
       // A failed plan is not a succeeded goal (#436)
       current_goal_handle_->abort(result);
+      trace_->event(ExecutionTrace::Event::PLAN_END, "", "failed");
       executor_state_ = STATE_IDLE;
       break;
     case STATE_ERROR:
@@ -1441,6 +1637,7 @@ ExecutorNode::execution_step()
       }
 
       current_goal_handle_->abort(result);
+      trace_->event(ExecutionTrace::Event::PLAN_END, "", "error setting up the new plan");
       executor_state_ = STATE_IDLE;
       break;
     case STATE_SUCCEDED:
@@ -1449,6 +1646,7 @@ ExecutorNode::execution_step()
       result->action_execution_status = get_feedback_info(runtime_info_.action_map);
 
       current_goal_handle_->succeed(result);
+      trace_->event(ExecutionTrace::Event::PLAN_END, "", "succeeded");
       executor_state_ = STATE_IDLE;
       break;
   }
@@ -1461,6 +1659,17 @@ ExecutorNode::update_snapshot()
   complete_plan_snapshot_ = runtime_info_.complete_plan;
   remaining_plan_snapshot_ = runtime_info_.remaining_plan;
   ordered_sub_goals_snapshot_ = runtime_info_.ordered_sub_goals;
+  running_changes_snapshot_.clear();
+  if (runtime_info_.action_map) {
+    for (const auto & [id, info] : *runtime_info_.action_map) {
+      (void)id;
+      if (info.at_start_effects_applied && !info.at_end_effects_applied) {
+        running_changes_snapshot_.insert(
+          running_changes_snapshot_.end(), info.at_start_changes.begin(),
+          info.at_start_changes.end());
+      }
+    }
+  }
 }
 
 void

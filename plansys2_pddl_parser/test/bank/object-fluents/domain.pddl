@@ -1,5 +1,5 @@
 (define (domain object_positions)
-  (:requirements :strips :typing :object-fluents)
+  (:requirements :strips :typing :equality :object-fluents)
   (:types
     robot room box
   )

@@ -10,6 +10,9 @@ target_link_libraries(plan_solver_base_test ${PROJECT_NAME})
 ament_add_ros_isolated_gtest(test_utils_test test_utils_test.cpp TIMEOUT 60)
 target_link_libraries(test_utils_test ${PROJECT_NAME} ${std_msgs_TARGETS})
 
+ament_add_ros_isolated_gtest(node_names_test node_names_test.cpp TIMEOUT 60)
+target_link_libraries(node_names_test ${PROJECT_NAME})
+
 ament_add_gtest(pddl_requirements_test pddl_requirements_test.cpp)
 target_link_libraries(pddl_requirements_test ${PROJECT_NAME} ament_index_cpp::ament_index_cpp)
 

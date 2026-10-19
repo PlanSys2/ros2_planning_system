@@ -131,6 +131,7 @@ ActionExecutor::ActionExecutor(
 : node_(node), state_(IDLE), completion_(0.0)
 {
   hub_ = ActionHub::get(node_);
+  node_names_ = std::make_unique<NodeNames>(node_->get_node_base_interface());
 
   state_time_ = node_->now();
 
@@ -166,6 +167,17 @@ ActionExecutor::action_hub_callback(plansys2_msgs::msg::ActionExecution::SharedP
   std::lock_guard<std::mutex> lock(mutex_);
   last_msg_ = msg;
 
+  // A performer of our action is free now: ask again at once, not at the next retry. Rejected,
+  // it ignored our request while it waited for the answer to another one
+  const bool freed = msg->type == plansys2_msgs::msg::ActionExecution::FINISH ||
+    msg->type == plansys2_msgs::msg::ActionExecution::REJECT;
+  if (state_ == DEALING && freed && msg->request_id != request_id_ &&
+    parser::pddl::compare_str_case_insensitive(msg->action, action_name_))
+  {
+    request_for_performers();
+    return;
+  }
+
   // Only the messages of our own request: not those of another executor of the same action
   if (msg->request_id != request_id_ ||
     !parser::pddl::compare_str_case_insensitive(msg->action, action_name_) ||
@@ -179,6 +191,7 @@ ActionExecutor::action_hub_callback(plansys2_msgs::msg::ActionExecution::SharedP
     case plansys2_msgs::msg::ActionExecution::CONFIRM:
     case plansys2_msgs::msg::ActionExecution::REJECT:
     case plansys2_msgs::msg::ActionExecution::CANCEL:
+    case plansys2_msgs::msg::ActionExecution::UPDATE:
       // These cases have no meaning requester
       break;
     case plansys2_msgs::msg::ActionExecution::RESPONSE:
@@ -360,6 +373,24 @@ ActionExecutor::tick(const rclcpp::Time & now)
 }
 
 void
+ActionExecutor::update_planned_duration(double duration)
+{
+  std::lock_guard<std::mutex> lock(mutex_);
+  planned_duration_ = duration;
+  if (state_ != RUNNING) {
+    return;
+  }
+  plansys2_msgs::msg::ActionExecution msg;
+  msg.type = plansys2_msgs::msg::ActionExecution::UPDATE;
+  msg.node_id = current_performer_id_;
+  msg.request_id = request_id_;
+  msg.action = action_name_;
+  msg.arguments = action_params_;
+  msg.planned_duration = duration;
+  hub_->publish(msg);
+}
+
+void
 ActionExecutor::cancel()
 {
   std::lock_guard<std::mutex> lock(mutex_);
@@ -441,13 +472,12 @@ ActionExecutor::wait_timeout()
 void
 ActionExecutor::check_performer()
 {
-  std::vector<std::string> names;
-  try {
-    names = node_->get_node_names();
-  } catch (const std::exception &) {
-    // The context is gone once rclcpp shuts down: nothing to supervise
+  // Once rclcpp shuts down there is nothing to supervise
+  auto found = node_names_->get(*node_->get_node_graph_interface());
+  if (!found) {
     return;
   }
+  const auto & names = *found;
 
   std::lock_guard<std::mutex> lock(mutex_);
   if (state_ != RUNNING) {

@@ -44,6 +44,7 @@ ActionExecutorClient::ActionExecutorClient(const std::string & node_name)
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::NOT_READY;
   status_.status_stamp = now();
   status_.node_name = get_name();
+  node_names_ = std::make_unique<NodeNames>(get_node_base_interface());
 }
 
 ActionExecutorClient::ActionExecutorClient(
@@ -60,6 +61,7 @@ ActionExecutorClient::ActionExecutorClient(
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::NOT_READY;
   status_.status_stamp = now();
   status_.node_name = get_name();
+  node_names_ = std::make_unique<NodeNames>(get_node_base_interface());
 }
 
 CallbackReturnT
@@ -187,6 +189,14 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
         trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
       }
       break;
+    case plansys2_msgs::msg::ActionExecution::UPDATE:
+      // A new plan gives it another duration
+      if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE &&
+        msg->node_id == get_name() && msg->request_id == current_request_id_)
+      {
+        current_planned_duration_ = msg->planned_duration;
+      }
+      break;
     case plansys2_msgs::msg::ActionExecution::RESPONSE:
     case plansys2_msgs::msg::ActionExecution::FEEDBACK:
     case plansys2_msgs::msg::ActionExecution::FINISH:
@@ -220,16 +230,12 @@ ActionExecutorClient::check_requester()
 
   // Names are fully qualified: compare the last part. A few misses in a row, as
   // discovery may lag, before stopping
-  std::vector<std::string> names;
-  try {
-    names = get_node_names();
-  } catch (const std::exception & e) {
-    // The context is gone once rclcpp shuts down: nothing to supervise
-    if (rclcpp::ok()) {
-      RCLCPP_ERROR(get_logger(), "Failed to look for %s: %s", requester_.c_str(), e.what());
-    }
+  // Once rclcpp shuts down there is nothing to supervise
+  auto found = node_names_->get(*get_node_graph_interface());
+  if (!found) {
     return;
   }
+  const auto & names = *found;
   bool alive = false;
   for (const auto & name : names) {
     if (name.substr(name.find_last_of('/') + 1) == requester_) {
@@ -258,10 +264,11 @@ ActionExecutorClient::should_execute(
   }
 
   if (!specialized_arguments_.empty()) {
-    if (specialized_arguments_.size() != args.size()) {
+    // Fewer than its arguments is a prefix, as it is meant; more can never match
+    if (specialized_arguments_.size() > args.size()) {
       RCLCPP_WARN(
-        get_logger(), "current and specialized arguments length doesn't match %zu %zu",
-        args.size(), specialized_arguments_.size());
+        get_logger(), "%zu specialized arguments for an action of %zu: it never matches",
+        specialized_arguments_.size(), args.size());
     }
 
     for (size_t i = 0; i < specialized_arguments_.size() && i < args.size(); i++) {

@@ -25,7 +25,7 @@ from typing import Any, List, Optional
 from action_msgs.msg import GoalStatus
 from plansys2_msgs.action import ExecutePlan
 from plansys2_msgs.msg import ActionExecutionInfo, Plan, Tree
-from plansys2_msgs.srv import GetOrderedSubGoals, GetPlan
+from plansys2_msgs.srv import GetOrderedSubGoals, GetPlan, GetProblem
 from plansys2_support_py.ClientBase import ClientBase
 
 from rclpy.action import ActionClient
@@ -151,6 +151,27 @@ class ExecutorClient(ClientBase):
             error_msg = response.error_info if response else 'Service call failed'
             self.get_logger().error(f'Failed to retrieve remaining plan: {error_msg}')
             return None
+
+    def get_replanning_problem(self) -> Optional[str]:
+        """
+        Get the problem to plan again from while a plan runs.
+
+        It is the problem of now before the at start effects of the actions that run: a plan
+        made from it has them again, and those of the new plan that are running go on.
+
+        Returns
+        -------
+        Optional[str]
+            The problem, or None if the executor cannot give it.
+
+        """
+        response = self._create_and_call_service(
+            GetProblem, 'executor/get_replanning_problem', GetProblem.Request())
+        if response and response.success:
+            return response.problem
+        error_msg = response.error_info if response else 'Service call failed'
+        self.get_logger().error(f'Failed to retrieve the replanning problem: {error_msg}')
+        return None
 
     def print_executor_info(self) -> None:
         """

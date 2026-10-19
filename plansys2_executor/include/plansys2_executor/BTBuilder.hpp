@@ -312,6 +312,12 @@ public:
     std::vector<plansys2::Predicate> predicates, std::vector<plansys2::Function> functions);
 
   /**
+   * @brief How long ago the problem of the plan was read: its timed facts, written from now,
+   *        are this much later in the time of the plan.
+   */
+  void set_time_offset(double seconds) {time_offset_ = seconds;}
+
+  /**
    * @brief Decimals of the times in the action ids, as given to initialize.
    * @return The decimals.
    */
@@ -338,6 +344,8 @@ protected:
   void reset_derived_rules() const
   {
     derived_rules_.reset();
+    derived_names_.reset();
+    current_state_.reset();
     timed_events_.reset();
     dynamic_names_.reset();
     dynamic_functions_.reset();
@@ -347,6 +355,9 @@ protected:
   // effects). A discrete simulation of the plan cannot tell them: its tree waits for them
   bool reads_dynamic(const plansys2_msgs::msg::Tree & conditions) const;
 
+  // The derived predicates of the domain, by name
+  const std::set<std::string> & derived_names() const;
+
   // PDDL+: the conditions with the comparisons on what the dynamics change taken as held
   plansys2_msgs::msg::Tree relax_dynamic(const plansys2_msgs::msg::Tree & conditions) const;
 
@@ -355,6 +366,7 @@ protected:
 
 private:
   void collect_dynamic() const;
+  void load_derived() const;
 
   std::optional<std::pair<std::vector<plansys2::Predicate>, std::vector<plansys2::Function>>>
   initial_state_;
@@ -363,7 +375,11 @@ private:
   mutable std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   mutable std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   mutable std::shared_ptr<const std::vector<plansys2::DerivedRule>> derived_rules_;
+  mutable std::optional<std::set<std::string>> derived_names_;
+  mutable std::optional<std::pair<std::vector<plansys2::Predicate>,
+    std::vector<plansys2::Function>>> current_state_;
   mutable std::optional<std::vector<ActionStamped>> timed_events_;
+  double time_offset_ {0.0};
   mutable std::optional<std::set<std::string>> dynamic_names_;
   mutable std::optional<std::set<std::string>> dynamic_functions_;
 };

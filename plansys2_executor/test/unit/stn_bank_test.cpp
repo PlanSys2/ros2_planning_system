@@ -15,6 +15,7 @@
 // The orders the STN of a plan of the bank has to keep, whatever the performers take: the
 // executor runs actions as soon as their parents allow it
 
+#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -29,6 +30,7 @@
 #include "plansys2_core/TestUtils.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
+#include "plansys2_executor/bt_builder_plugins/simple_bt_builder.hpp"
 #include "plansys2_executor/bt_builder_plugins/stn_bt_builder.hpp"
 #include "plansys2_pddl_parser/PddlBank.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
@@ -367,6 +369,84 @@ TEST_F(STNBankTest, interfering_happenings_at_the_same_time_in_the_plan_order)
   EXPECT_TRUE(builder_->is_executable(make_plan(kWateringPlan)));
 }
 
+// A plan of many robots at once: 50 actions, with 40 snaps at one happening. Both builders make
+// its tree quickly, keeping the order of each robot
+TEST_F(STNBankTest, a_plan_of_many_robots_is_quick)
+{
+  constexpr int kRobots = 10;
+  std::string objects, init;
+  for (int i = 0; i < kRobots; i++) {
+    const auto n = std::to_string(i);
+    objects += " r" + n + " - robot hall" + n + " lab" + n + " - room";
+    init += " (robot_at r" + n + " hall" + n + ")";
+    for (int j = 0; j < 3; j++) {
+      objects += " l" + n + "_" + std::to_string(j) + " - lamp";
+      init += " (lamp_in l" + n + "_" + std::to_string(j) + " lab" + n + ")";
+    }
+  }
+  load_text(
+    "(define (domain lights) (:requirements :strips :typing :durative-actions"
+    " :derived-predicates :existential-preconditions :negative-preconditions)"
+    " (:types robot room lamp)"
+    " (:predicates (robot_at ?r - robot ?l - room) (lamp_in ?p - lamp ?l - room)"
+    "  (lit ?p - lamp) (bright ?l - room))"
+    " (:derived (bright ?l - room) (exists (?p - lamp) (and (lamp_in ?p ?l) (lit ?p))))"
+    " (:durative-action move :parameters (?r - robot ?a ?b - room) :duration (= ?duration 1)"
+    "  :condition (and (at start (robot_at ?r ?a)))"
+    "  :effect (and (at start (not (robot_at ?r ?a))) (at end (robot_at ?r ?b))))"
+    " (:action switch_on :parameters (?r - robot ?p - lamp ?l - room)"
+    "  :precondition (and (robot_at ?r ?l) (lamp_in ?p ?l) (not (lit ?p)))"
+    "  :effect (and (lit ?p))))",
+    "(define (problem p) (:domain lights) (:objects" + objects + ") (:init" + init + ")"
+    " (:goal (and)))");
+  std::vector<std::tuple<double, std::string, double>> items;
+  for (int i = 0; i < kRobots; i++) {
+    const auto n = std::to_string(i);
+    items.push_back({0.0, "(move r" + n + " hall" + n + " lab" + n + ")", 1.0});
+  }
+  for (int i = 0; i < kRobots; i++) {
+    const auto n = std::to_string(i);
+    for (int j = 0; j < 3; j++) {
+      items.push_back(
+        {1.0, "(switch_on r" + n + " l" + n + "_" + std::to_string(j) + " lab" + n + ")", 0.0});
+    }
+    items.push_back({1.0, "(move r" + n + " lab" + n + " hall" + n + ")", 1.0});
+  }
+  const auto plan = make_plan(items);
+
+  auto start = std::chrono::steady_clock::now();
+  EXPECT_TRUE(builder_->is_executable(plan));
+  auto graph = builder_->build_stn(plan);
+  EXPECT_FALSE(builder_->get_tree(plan).empty());
+  const double stn = std::chrono::duration<double>(std::chrono::steady_clock::now() -
+    start).count();
+  EXPECT_LT(stn, 3.0);
+
+  // Each robot: in the lab before its lamps, which are on before it leaves
+  for (int i = 0; i < kRobots; i++) {
+    const auto n = std::to_string(i);
+    for (int j = 0; j < 3; j++) {
+      const auto lamp = "(switch_on r" + n + " l" + n + "_" + std::to_string(j) + " lab" + n + ")";
+      EXPECT_TRUE(
+        after(
+          graph, {"(move r" + n + " hall" + n + " lab" + n + ")", 0.0, ActionType::END},
+          {lamp, 1.0, ActionType::START})) << lamp;
+      EXPECT_TRUE(
+        after(
+          graph, {lamp, 1.0, ActionType::END},
+          {"(move r" + n + " lab" + n + " hall" + n + ")", 1.0, ActionType::START})) << lamp;
+    }
+  }
+
+  plansys2::SimpleBTBuilder simple;
+  simple.initialize("", "", 3);
+  start = std::chrono::steady_clock::now();
+  EXPECT_FALSE(simple.get_tree(plan).empty());
+  const double simple_took =
+    std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+  EXPECT_LT(simple_took, 3.0);
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
@@ -374,4 +454,43 @@ int main(int argc, char ** argv)
   auto ret = RUN_ALL_TESTS();
   rclcpp::shutdown();
   return ret;
+}
+// Many snaps at one happening: each one applies after those before it in the plan, without
+// trying every subset of them (2^13 here)
+TEST_F(STNBankTest, many_actions_at_once_are_quick)
+{
+  load_text(
+    "(define (domain lights) (:requirements :strips :typing :durative-actions"
+    " :derived-predicates :existential-preconditions) (:types robot room lamp)"
+    " (:predicates (robot_at ?r - robot ?l - room) (lamp_in ?p - lamp ?l - room)"
+    "  (lit ?p - lamp) (bright ?l - room))"
+    " (:derived (bright ?l - room) (exists (?p - lamp) (and (lamp_in ?p ?l) (lit ?p))))"
+    " (:durative-action move :parameters (?r - robot ?a ?b - room) :duration (= ?duration 1)"
+    "  :condition (and (at start (robot_at ?r ?a)))"
+    "  :effect (and (at start (not (robot_at ?r ?a))) (at end (robot_at ?r ?b))))"
+    " (:action switch_on :parameters (?r - robot ?p - lamp ?l - room)"
+    "  :precondition (and (robot_at ?r ?l) (lamp_in ?p ?l) (not (lit ?p)))"
+    "  :effect (and (lit ?p))))",
+    "(define (problem p) (:domain lights) (:objects r1 - robot hall lab - room"
+    "  l1 l2 l3 l4 l5 l6 - lamp)"
+    " (:init (robot_at r1 hall) (lamp_in l1 lab) (lamp_in l2 lab) (lamp_in l3 lab)"
+    "  (lamp_in l4 lab) (lamp_in l5 lab) (lamp_in l6 lab))"
+    " (:goal (and (bright lab))))");
+  std::vector<std::tuple<double, std::string, double>> items = {{0.0, "(move r1 hall lab)", 1.0}};
+  for (int i = 1; i <= 6; i++) {
+    items.push_back({1.0, "(switch_on r1 l" + std::to_string(i) + " lab)", 0.0});
+  }
+  const auto start = std::chrono::steady_clock::now();
+  auto graph = builder_->build_stn(make_plan(items));
+  EXPECT_TRUE(builder_->is_executable(make_plan(items)));
+  const double took =
+    std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+  // Every subset of them took seconds
+  EXPECT_LT(took, 1.0);
+  for (int i = 1; i <= 6; i++) {
+    EXPECT_TRUE(
+      after(
+        graph, {"(move r1 hall lab)", 0.0, ActionType::END},
+        {"(switch_on r1 l" + std::to_string(i) + " lab)", 1.0, ActionType::START})) << i;
+  }
 }

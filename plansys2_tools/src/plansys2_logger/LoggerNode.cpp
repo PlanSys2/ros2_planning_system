@@ -226,6 +226,17 @@ LoggerNode::action_execution_callback(plansys2_msgs::msg::ActionExecution::Share
         RCLCPP_WARN_STREAM(get_logger(), output.str());
       }
       break;
+    case plansys2_msgs::msg::ActionExecution::UPDATE:
+      {
+        std::ostringstream output;
+        output << "[Action Hub] UPDATE action: [" << msg->action << "]";
+        for (const auto & arg : msg->arguments) {
+          output << " (" << arg << ")";
+        }
+        output << "] to " << msg->node_id << ", now for " << msg->planned_duration << " s";
+        RCLCPP_INFO_STREAM(get_logger(), output.str());
+      }
+      break;
   }
 }
 

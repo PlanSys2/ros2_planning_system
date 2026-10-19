@@ -407,6 +407,30 @@ class TestActionExecutorClient(unittest.TestCase):
             self.client.finish(True, 1.0, 'done')
             self.assertEqual(publish.call_args[0][0].request_id, 'req_7')
 
+    def test_planned_duration_from_confirm_and_update(self):
+        """The CONFIRM gives the duration; an UPDATE of its request changes it, of another not."""
+        self.configure()
+        with patch.object(self.client.action_hub_pub, 'publish'):
+            self.client.action_hub_callback(self.request('req_3'))
+            confirm = self.request('req_3')
+            confirm.type = ActionExecution.CONFIRM
+            confirm.node_id = self.client.get_name()
+            confirm.planned_duration = 30.0
+            self.client.action_hub_callback(confirm)
+        self.assertEqual(self.client.get_planned_duration(), 30.0)
+
+        update = self.request('req_2')
+        update.type = ActionExecution.UPDATE
+        update.node_id = self.client.get_name()
+        update.planned_duration = 1.5
+        self.client.action_hub_callback(update)
+        self.assertEqual(self.client.get_planned_duration(), 30.0)
+
+        update.request_id = 'req_3'
+        self.client.action_hub_callback(update)
+        self.assertEqual(self.client.get_planned_duration(), 1.5)
+        self.client.trigger_deactivate()
+
     def _configured(self, rate, overrides):
         client = ActionExecutorClient(
             'test_action_executor_params', rate,

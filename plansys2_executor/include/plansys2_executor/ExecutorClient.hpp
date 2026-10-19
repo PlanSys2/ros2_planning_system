@@ -25,6 +25,7 @@
 #include "plansys2_msgs/action/execute_plan.hpp"
 #include "plansys2_msgs/srv/get_ordered_sub_goals.hpp"
 #include "plansys2_msgs/srv/get_plan.hpp"
+#include "plansys2_msgs/srv/get_problem.hpp"
 #include "plansys2_msgs/msg/plan.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
 
@@ -112,6 +113,15 @@ public:
   std::optional<plansys2_msgs::msg::Plan> get_remaining_plan();
 
   /**
+   * @brief The problem to plan again from while a plan runs: the one of now, before the at start
+   *        effects of the actions that run. A plan made from it has them again: those of the new
+   *        plan that are running go on.
+   *
+   * @return The problem, empty if the executor cannot give it.
+   */
+  std::optional<std::string> get_replanning_problem();
+
+  /**
    * @brief Get the current feedback from plan execution.
    *
    * @return ExecutePlan::Feedback The current feedback message from the executor.
@@ -173,6 +183,7 @@ private:
     get_ordered_sub_goals_client_;
   rclcpp::Client<plansys2_msgs::srv::GetPlan>::SharedPtr get_plan_client_;
   rclcpp::Client<plansys2_msgs::srv::GetPlan>::SharedPtr get_remaining_plan_client_;
+  rclcpp::Client<plansys2_msgs::srv::GetProblem>::SharedPtr get_replanning_problem_client_;
 
   ExecutePlan::Feedback feedback_;
   rclcpp_action::ClientGoalHandle<ExecutePlan>::SharedPtr goal_handler_;

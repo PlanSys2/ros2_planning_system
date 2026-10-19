@@ -18,6 +18,7 @@
 #include <vector>
 #include <memory>
 
+#include "plansys2_core/Utils.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_msgs/msg/node.hpp"
 
@@ -26,7 +27,7 @@ namespace plansys2
 
 DomainExpertClient::DomainExpertClient()
 {
-  node_ = rclcpp::Node::make_shared("domain_expert_client");
+  node_ = rclcpp::Node::make_shared(unique_node_name("domain_expert_client"));
 
   get_domain_client_ = node_->create_client<plansys2_msgs::srv::GetDomain>(
     "domain_expert/get_domain");

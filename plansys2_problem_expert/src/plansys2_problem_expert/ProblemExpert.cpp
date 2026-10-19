@@ -692,6 +692,11 @@ ProblemExpert::stepDynamics(double dt)
         apply(events_[i].effects, *this);
         fired.insert(i);
         any = true;
+        std::string event = "event (" + events_[i].name;
+        for (const auto & param : events_[i].parameters) {
+          event += " " + param.name;
+        }
+        happened_.push_back(event + ")");
       }
     }
     if (!any) {
@@ -702,6 +707,14 @@ ProblemExpert::stepDynamics(double dt)
   return changed;
 }
 
+std::vector<std::string>
+ProblemExpert::takeHappened()
+{
+  auto ret = std::move(happened_);
+  happened_.clear();
+  return ret;
+}
+
 bool
 ProblemExpert::applyTimedFacts()
 {
@@ -710,6 +723,11 @@ ProblemExpert::applyTimedFacts()
   while (!timed_facts_.empty() && timed_facts_.front().at <= now) {
     const auto timed = timed_facts_.front();
     timed_facts_.erase(timed_facts_.begin());
+    happened_.push_back(
+      std::string("timed fact ") + (timed.negated ? "(not " : "") +
+      parser::pddl::toString(timed.fact) +
+      (timed.fact.node_type == plansys2_msgs::msg::Node::FUNCTION ?
+      " = " + std::to_string(timed.fact.value) : "") + (timed.negated ? ")" : ""));
     if (timed.fact.node_type == plansys2_msgs::msg::Node::PREDICATE) {
       if (timed.negated) {
         removePredicate(timed.fact);

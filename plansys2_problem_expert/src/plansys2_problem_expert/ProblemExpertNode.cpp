@@ -375,6 +375,10 @@ ProblemExpertNode::on_activate(const rclcpp_lifecycle::State & state)
       if (get_parameter("simulate_dynamics").as_bool()) {
         changed = problem_expert_->stepDynamics(dt) || changed;
       }
+      // What happens by itself, for who follows the execution
+      for (const auto & happened : problem_expert_->takeHappened()) {
+        RCLCPP_INFO(get_logger(), "[dynamics] %s", happened.c_str());
+      }
       if (changed) {
         update_pub_->publish(std_msgs::msg::Empty());
         knowledge_pub_->publish(*get_knowledge_as_msg());

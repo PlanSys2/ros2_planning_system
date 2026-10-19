@@ -20,6 +20,7 @@
 #include <vector>
 #include <memory>
 
+#include "plansys2_core/Utils.hpp"
 #include "plansys2_core/ServiceCall.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
 
@@ -28,7 +29,7 @@ namespace plansys2
 
 ProblemExpertClient::ProblemExpertClient()
 {
-  node_ = rclcpp::Node::make_shared("problem_expert_client");
+  node_ = rclcpp::Node::make_shared(unique_node_name("problem_expert_client"));
 
   set_continuous_effect_client_ = node_->create_client<plansys2_msgs::srv::SetContinuousEffect>(
     "problem_expert/set_continuous_effect");

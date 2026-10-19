@@ -36,6 +36,8 @@ def test_panels_are_drawn_on_refresh():
     """ROS messages only leave text; the panels are drawn by the timer, the last text once."""
     app = PlanSys2App.__new__(PlanSys2App)
     app._pending = {}
+    app._pending_events = []
+    app._plan_log = None
     app._pending_lock = threading.Lock()
     box = MagicMock()
     for i in range(100):

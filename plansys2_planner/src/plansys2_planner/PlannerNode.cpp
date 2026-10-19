@@ -216,6 +216,9 @@ plansys2_msgs::msg::PlanArray
 PlannerNode::solve(
   const std::string & domain, const std::string & problem, std::string & error_info)
 {
+  // The plans count from now: the problem was read for this call
+  const auto stamp = now();
+
   // Only the solvers that plan with what the task uses: the others give wrong plans or crash
   std::string unsupported;
   const auto chosen = choose_solvers(pddl_requirements(domain, problem), unsupported);
@@ -253,6 +256,7 @@ PlannerNode::solve(
       auto plan = future.get();
       if (plan.has_value()) {
         plans.plan_array.push_back(plan.value());
+        plans.plan_array.back().stamp = stamp;
       } else if (timed_out.count(id)) {
         reasons.push_back(
           id + " timed out after " + std::to_string(solver_timeout_.seconds()) + " s");

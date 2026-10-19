@@ -21,6 +21,8 @@
 #include <vector>
 #include <memory>
 
+#include "plansys2_core/Utils.hpp"
+
 namespace plansys2
 {
 
@@ -31,7 +33,7 @@ constexpr auto kAnswerMargin = std::chrono::seconds(5);
 
 PlannerClient::PlannerClient()
 {
-  node_ = rclcpp::Node::make_shared("planner_client");
+  node_ = rclcpp::Node::make_shared(unique_node_name("planner_client"));
 
   get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("planner/get_plan");
   get_plan_array_client_ = node_->create_client<plansys2_msgs::srv::GetPlanArray>(

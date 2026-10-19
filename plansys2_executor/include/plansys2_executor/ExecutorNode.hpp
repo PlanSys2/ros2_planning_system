@@ -34,6 +34,7 @@
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
 #include "plansys2_executor/ConstraintMonitor.hpp"
+#include "plansys2_executor/ExecutionTrace.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
@@ -45,6 +46,7 @@
 #include "plansys2_msgs/action/execute_plan.hpp"
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 #include "plansys2_msgs/srv/get_ordered_sub_goals.hpp"
+#include "plansys2_msgs/srv/get_problem.hpp"
 #include "plansys2_msgs/msg/knowledge.hpp"
 #include "plansys2_msgs/msg/plan.hpp"
 #include "std_msgs/msg/string.hpp"
@@ -92,6 +94,9 @@ struct PlanRuntineInfo
   bool tree_done = false;
   // PDDL3: the hard constraints of the domain and the problem, followed while it runs
   std::shared_ptr<ConstraintMonitor> constraints;
+  // When the plan started in the time of the constraints: a plan replaced while running goes on
+  // with the history and the times of the first one
+  double constraints_offset = 0.0;
 };
 
 /**
@@ -203,6 +208,12 @@ public:
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::GetPlan::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::GetPlan::Response> response);
+
+  // The problem to plan again from while a plan runs: before the at start effects of what runs.
+  // Answered later, by the execution thread
+  void get_replanning_problem_service_callback(
+    std::shared_ptr<rclcpp::Service<plansys2_msgs::srv::GetProblem>> service,
+    std::shared_ptr<rmw_request_id_t> request_header);
 
   /**
    * @brief Callback for domain_expert/domain. Cancels any plan currently
@@ -409,6 +420,10 @@ protected:
     execution_info_pub_;
   rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::Plan>::SharedPtr executing_plan_pub_;
   rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::Plan>::SharedPtr remaining_plan_pub_;
+  // What it does while a plan runs, and why
+  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ExecutionEvent>::SharedPtr
+    trace_pub_;
+  std::shared_ptr<ExecutionTrace> trace_;
 
   rclcpp_action::Server<ExecutePlan>::SharedPtr execute_plan_action_server_;
   rclcpp::Service<plansys2_msgs::srv::GetOrderedSubGoals>::SharedPtr
@@ -417,6 +432,13 @@ protected:
 
   rclcpp::Service<plansys2_msgs::srv::GetPlan>::SharedPtr get_plan_service_;
   rclcpp::Service<plansys2_msgs::srv::GetPlan>::SharedPtr get_remaining_plan_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetProblem>::SharedPtr get_replanning_problem_service_;
+  // Made by the execution thread, that calls the experts: a service callback that called them
+  // would wait for itself if they share its thread. The requests waiting for it
+  std::mutex replanning_mutex_;
+  std::vector<std::pair<std::shared_ptr<rclcpp::Service<plansys2_msgs::srv::GetProblem>>,
+    std::shared_ptr<rmw_request_id_t>>> replanning_requests_;
+  void make_replanning_problem();
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr domain_sub_;
   // Each change of the knowledge is a new state for the constraints
   rclcpp::Subscription<plansys2_msgs::msg::Knowledge>::SharedPtr knowledge_sub_;
@@ -442,6 +464,10 @@ protected:
   void start_constraints(PlanRuntineInfo & runtime_info);
   // Whether the constraints hold now: the reason if they do not
   std::optional<std::string> check_constraints(BT::NodeStatus status);
+  // The time of the constraints now
+  double constraints_time(const PlanRuntineInfo & runtime_info);
+  // The continuous effects of a running action stop acting
+  void stop_continuous_effect(const std::string & action_id, const ActionExecutionInfo & info);
   std::thread execution_thread_;
 
   std::list<std::shared_ptr<GoalHandleExecutePlan>> goal_handlers_;
@@ -470,6 +496,8 @@ protected:
   plansys2_msgs::msg::Plan complete_plan_snapshot_;
   plansys2_msgs::msg::Plan remaining_plan_snapshot_;
   std::vector<plansys2_msgs::msg::Tree> ordered_sub_goals_snapshot_;
+  // What the at start effects of the running actions changed
+  std::vector<FactChange> running_changes_snapshot_;
 
   void update_snapshot();
 

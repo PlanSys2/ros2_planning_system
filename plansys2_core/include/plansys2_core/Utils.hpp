@@ -59,6 +59,17 @@ std::string remove_comments(const std::string & pddl);
  */
 void drain_ros(std::chrono::milliseconds total = 200ms);
 
+/**
+ * @brief A node name that no other node has: the base, the process and a count.
+ *
+ * The clients of PlanSys2 are made in many processes, the PlanSys2 one among them: with the same
+ * name, their service clients may not find the services they call for long.
+ *
+ * @param[in] base "problem_expert_client".
+ * @return "problem_expert_client_4242_3".
+ */
+std::string unique_node_name(const std::string & base);
+
 }  // namespace plansys2
 
 #endif  // PLANSYS2_CORE__UTILS_HPP_

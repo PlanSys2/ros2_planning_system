@@ -1,5 +1,5 @@
 (define (domain costly_delivery)
-  (:requirements :strips :typing :action-costs)
+  (:requirements :strips :typing :numeric-fluents :action-costs)
   (:types
     robot room package
   )

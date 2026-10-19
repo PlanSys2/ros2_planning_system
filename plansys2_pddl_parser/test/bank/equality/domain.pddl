@@ -1,5 +1,5 @@
 (define (domain equality_handover)
-  (:requirements :strips :typing :equality)
+  (:requirements :strips :typing :equality :negative-preconditions)
   (:types
     robot room box - object
   )

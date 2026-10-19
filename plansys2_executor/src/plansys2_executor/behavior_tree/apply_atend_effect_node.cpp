@@ -32,6 +32,7 @@ ApplyAtEndEffect::ApplyAtEndEffect(
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
     "action_map");
+  std::ignore = config().blackboard->get("trace", trace_);
 
   problem_client_ =
     config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
@@ -61,6 +62,12 @@ ApplyAtEndEffect::tick()
     {
       auto now = node_ ? node_->now() : rclcpp::Clock(RCL_ROS_TIME).now();
       if ((now - info.at_start_effects_applied_time).seconds() + 1e-3 < info.duration) {
+        if (trace_ && !waiting_reported_) {
+          trace_->event(
+            ExecutionTrace::Event::WAIT, action,
+            "for its end, after its planned duration: " + std::to_string(info.duration) + " s");
+        }
+        waiting_reported_ = true;
         return BT::NodeStatus::RUNNING;
       }
     }
@@ -73,9 +80,17 @@ ApplyAtEndEffect::tick()
     }
     if (!apply(effect, problem_client_, 0)) {
       info.execution_error_info = "Error applying at end effects";
+      if (trace_) {
+        trace_->event(ExecutionTrace::Event::FAILURE, action, "its at end effects cannot apply");
+      }
       return BT::NodeStatus::FAILURE;
     }
     info.at_end_effects_applied = true;
+    waiting_reported_ = false;
+    if (trace_) {
+      trace_->event(
+        ExecutionTrace::Event::END, action, "", info.plan_item.time + info.plan_item.duration);
+    }
     info.at_start_changes.clear();
     auto now = node_ ? node_->now() : rclcpp::Clock(RCL_ROS_TIME).now();
     info.at_end_effects_applied_time = now;

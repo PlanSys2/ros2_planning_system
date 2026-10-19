@@ -32,6 +32,8 @@ def bare_app():
     app._box_know = MagicMock()
     app.node = MagicMock()
     app._pending = {}
+    app._pending_events = []
+    app._plan_log = None
     app._pending_lock = threading.Lock()
     return app
 
