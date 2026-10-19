@@ -151,7 +151,7 @@ struct Options
 
 // In the time of the test, ten times that of the wall: an action starts this late at most, and
 // lasts this much more than planned (the executor ticks at 50 Hz, the performers at 50 Hz);
-// twice that in a coverage build
+// twice that in a slow build (not optimized, or for coverage)
 constexpr double kTiming = PLANSYS2_TEST_SLOWDOWN > 1 ? 2.0 : 1.0;
 constexpr double kLate = 2.0 * kTiming;
 constexpr double kLonger = 1.5 * kTiming;

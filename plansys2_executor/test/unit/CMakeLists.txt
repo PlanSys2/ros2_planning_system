@@ -1,5 +1,6 @@
-# Built for coverage (CI), everything runs several times slower: timing tests allow for it
-if(CMAKE_CXX_FLAGS MATCHES "--coverage")
+# Not optimized (no build type, as in the CI of the PRs) or built for coverage (CI of rolling),
+# everything runs several times slower: timing tests allow for it
+if(CMAKE_CXX_FLAGS MATCHES "--coverage" OR NOT CMAKE_BUILD_TYPE MATCHES "Rel")
   set(PLANSYS2_TEST_SLOWDOWN 8)
 else()
   set(PLANSYS2_TEST_SLOWDOWN 1)
