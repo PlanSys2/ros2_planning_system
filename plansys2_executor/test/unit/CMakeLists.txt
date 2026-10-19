@@ -1,3 +1,10 @@
+# Built for coverage (CI), everything runs several times slower: timing tests allow for it
+if(CMAKE_CXX_FLAGS MATCHES "--coverage")
+  set(PLANSYS2_TEST_SLOWDOWN 8)
+else()
+  set(PLANSYS2_TEST_SLOWDOWN 1)
+endif()
+
 ament_add_ros_isolated_gtest(executor_test executor_test.cpp TIMEOUT 300)
 target_compile_definitions(executor_test
   PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
@@ -17,13 +24,15 @@ ament_add_gtest(constraint_monitor_test constraint_monitor_test.cpp TIMEOUT 60)
 target_link_libraries(constraint_monitor_test ${PROJECT_NAME})
 
 ament_add_ros_isolated_gtest(stn_bank_test stn_bank_test.cpp TIMEOUT 60)
-target_compile_definitions(stn_bank_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_compile_definitions(stn_bank_test PUBLIC
+  "PLUGINLIB__DISABLE_BOOST_FUNCTIONS" "PLANSYS2_TEST_SLOWDOWN=${PLANSYS2_TEST_SLOWDOWN}")
 target_link_libraries(stn_bank_test ${PROJECT_NAME} bt_builder_plugins)
 
 # The bank of plansys2_pddl_parser, planned by Kairos and executed to its goal
 # and again, with performers that take what the plan says, run at its times
 ament_add_gtest_executable(executor_bank_test executor_bank_test.cpp)
-target_compile_definitions(executor_bank_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_compile_definitions(executor_bank_test PUBLIC
+  "PLUGINLIB__DISABLE_BOOST_FUNCTIONS" "PLANSYS2_TEST_SLOWDOWN=${PLANSYS2_TEST_SLOWDOWN}")
 find_package(rosgraph_msgs REQUIRED)
 find_package(kairos REQUIRED)
 target_link_libraries(executor_bank_test ${PROJECT_NAME} ${rosgraph_msgs_TARGETS} kairos::kairos)

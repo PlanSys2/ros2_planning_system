@@ -150,9 +150,11 @@ struct Options
 };
 
 // In the time of the test, ten times that of the wall: an action starts this late at most, and
-// lasts this much more than planned (the executor ticks at 50 Hz, the performers at 50 Hz)
-constexpr double kLate = 2.0;
-constexpr double kLonger = 1.5;
+// lasts this much more than planned (the executor ticks at 50 Hz, the performers at 50 Hz);
+// twice that in a coverage build
+constexpr double kTiming = PLANSYS2_TEST_SLOWDOWN > 1 ? 2.0 : 1.0;
+constexpr double kLate = 2.0 * kTiming;
+constexpr double kLonger = 1.5 * kTiming;
 
 // Time ten times faster than the wall: what a plan lasts (PDDL+, timed literals) does not slow
 // the tests. Every node reads it with use_sim_time; each isolated test has its ROS domain

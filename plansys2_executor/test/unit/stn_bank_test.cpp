@@ -420,7 +420,7 @@ TEST_F(STNBankTest, a_plan_of_many_robots_is_quick)
   EXPECT_FALSE(builder_->get_tree(plan).empty());
   const double stn = std::chrono::duration<double>(std::chrono::steady_clock::now() -
     start).count();
-  EXPECT_LT(stn, 3.0);
+  EXPECT_LT(stn, 3.0 * PLANSYS2_TEST_SLOWDOWN);
 
   // Each robot: in the lab before its lamps, which are on before it leaves
   for (int i = 0; i < kRobots; i++) {
@@ -444,7 +444,7 @@ TEST_F(STNBankTest, a_plan_of_many_robots_is_quick)
   EXPECT_FALSE(simple.get_tree(plan).empty());
   const double simple_took =
     std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
-  EXPECT_LT(simple_took, 3.0);
+  EXPECT_LT(simple_took, 3.0 * PLANSYS2_TEST_SLOWDOWN);
 }
 
 int main(int argc, char ** argv)
