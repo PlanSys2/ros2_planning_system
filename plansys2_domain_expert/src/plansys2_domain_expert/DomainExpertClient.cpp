@@ -18,6 +18,7 @@
 #include <vector>
 #include <memory>
 
+#include "plansys2_core/ServiceCall.hpp"
 #include "plansys2_core/Utils.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_msgs/msg/node.hpp"
@@ -85,7 +86,7 @@ DomainExpertClient::getName()
 {
   std::string ret;
 
-  while (!get_name_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!wait_for_server(get_name_client_, std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return ret;
     }
@@ -117,7 +118,7 @@ DomainExpertClient::getTypes()
 {
   std::vector<std::string> ret;
 
-  while (!get_types_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!wait_for_server(get_types_client_, std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return ret;
     }
@@ -150,7 +151,7 @@ DomainExpertClient::getConstants(const std::string & type)
   (void)type;
   std::vector<std::string> ret;
 
-  while (!get_constants_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!wait_for_server(get_constants_client_, std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return ret;
     }
@@ -183,7 +184,7 @@ DomainExpertClient::getPredicates()
 {
   std::vector<plansys2::Predicate> ret;
 
-  while (!get_predicates_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!wait_for_server(get_predicates_client_, std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return ret;
     }
@@ -214,7 +215,7 @@ DomainExpertClient::getPredicates()
 std::optional<plansys2::Predicate>
 DomainExpertClient::getPredicate(const std::string & predicate)
 {
-  while (!get_predicate_details_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!wait_for_server(get_predicate_details_client_, std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return {};
     }
@@ -255,7 +256,7 @@ DomainExpertClient::getFunctions()
 {
   std::vector<plansys2::Function> ret;
 
-  while (!get_functions_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!wait_for_server(get_functions_client_, std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return ret;
     }
@@ -286,7 +287,7 @@ DomainExpertClient::getFunctions()
 std::optional<plansys2::Function>
 DomainExpertClient::getFunction(const std::string & function)
 {
-  while (!get_function_details_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!wait_for_server(get_function_details_client_, std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return {};
     }
@@ -327,7 +328,7 @@ DomainExpertClient::getDerivedPredicates()
 {
   std::vector<plansys2_msgs::msg::Derived> ret;
 
-  while (!get_derived_predicates_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!wait_for_server(get_derived_predicates_client_, std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return ret;
     }
@@ -355,7 +356,7 @@ DomainExpertClient::getDerivedResolutionGraph()
 {
   plansys2::DerivedResolutionGraph ret;
 
-  while (!get_derived_predicates_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!wait_for_server(get_derived_predicates_client_, std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return ret;
     }
@@ -383,7 +384,7 @@ DomainExpertClient::getDerivedPredicate(
   const std::string & predicate, const std::vector<std::string> & params)
 {
   (void)params;
-  while (!get_derived_predicate_details_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!wait_for_server(get_derived_predicate_details_client_, std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return {};
     }
@@ -423,7 +424,7 @@ std::vector<std::string>
 DomainExpertClient::get_names(
   rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr client)
 {
-  if (!client->wait_for_service(std::chrono::seconds(1))) {
+  if (!wait_for_server(client, std::chrono::seconds(1))) {
     return {};
   }
   auto request = std::make_shared<plansys2_msgs::srv::GetDomainActions::Request>();
@@ -441,7 +442,7 @@ DomainExpertClient::get_details(
   rclcpp::Client<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr client,
   const std::string & name, const std::vector<std::string> & params)
 {
-  if (!client->wait_for_service(std::chrono::seconds(1))) {
+  if (!wait_for_server(client, std::chrono::seconds(1))) {
     return {};
   }
   auto request = std::make_shared<plansys2_msgs::srv::GetDomainActionDetails::Request>();
@@ -489,7 +490,7 @@ DomainExpertClient::getActions()
 {
   std::vector<std::string> ret;
 
-  while (!get_actions_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!wait_for_server(get_actions_client_, std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return ret;
     }
@@ -523,7 +524,7 @@ DomainExpertClient::getAction(
   const std::string & action,
   const std::vector<std::string> & params)
 {
-  while (!get_action_details_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!wait_for_server(get_action_details_client_, std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return {};
     }
@@ -565,7 +566,7 @@ DomainExpertClient::getDurativeActions()
 {
   std::vector<std::string> ret;
 
-  while (!get_durative_actions_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!wait_for_server(get_durative_actions_client_, std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return ret;
     }
@@ -599,7 +600,7 @@ DomainExpertClient::getDurativeAction(
   const std::string & action,
   const std::vector<std::string> & params)
 {
-  while (!get_durative_action_details_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!wait_for_server(get_durative_action_details_client_, std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return nullptr;
     }
@@ -651,7 +652,7 @@ DomainExpertClient::getDomain()
 {
   std::string ret;
 
-  while (!get_domain_client_->wait_for_service(std::chrono::seconds(1))) {
+  while (!wait_for_server(get_domain_client_, std::chrono::seconds(1))) {
     if (!rclcpp::ok()) {
       return ret;
     }
@@ -681,7 +682,7 @@ DomainExpertClient::getDomain()
 bool
 DomainExpertClient::changeDomain(const std::string & domain)
 {
-  while (!change_domain_client_->wait_for_service(std::chrono::seconds(5))) {
+  while (!wait_for_server(change_domain_client_, std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return false;
     }

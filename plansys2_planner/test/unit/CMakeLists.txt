@@ -12,6 +12,9 @@ target_link_libraries(planner_node_errors_test
   ament_index_cpp::ament_index_cpp
 )
 target_compile_definitions(planner_node_errors_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+ament_add_ros_isolated_gtest(planner_client_test planner_client_test.cpp TIMEOUT 90)
+target_link_libraries(planner_client_test ${PROJECT_NAME} ${lifecycle_msgs_TARGETS})
+target_compile_definitions(planner_client_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 ament_add_ros_isolated_gtest(kairos_planner_node_test kairos_planner_node_test.cpp TIMEOUT 60)
 target_link_libraries(kairos_planner_node_test
   ${PROJECT_NAME}

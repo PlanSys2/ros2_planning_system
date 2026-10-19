@@ -16,6 +16,7 @@
 #include <memory>
 #include <vector>
 
+#include "plansys2_core/ServiceCall.hpp"
 #include "kairos/kairos.hpp"
 #include "plansys2_core/Utils.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
@@ -203,7 +204,7 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   if (validate_using_planner_node) {
     validate_domain_client_ = create_client<plansys2_msgs::srv::ValidateDomain>(
       "planner/validate_domain", rclcpp::ServicesQoS(), validate_domain_callback_group_);
-    if (!validate_domain_client_->wait_for_service(std::chrono::seconds(5))) {
+    if (!wait_for_server(validate_domain_client_, std::chrono::seconds(5))) {
       RCLCPP_ERROR_STREAM(
         get_logger(),
         validate_domain_client_->get_service_name() << " not available: is the planner running?");

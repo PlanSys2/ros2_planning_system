@@ -16,6 +16,7 @@
 #include <memory>
 #include <string>
 #include <map>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 
@@ -31,6 +32,20 @@
 
 namespace plansys2
 {
+
+namespace
+{
+// rclcpp shutting down during the wait throws: no server, not the end of the process
+template<typename ClientT>
+bool wait_for_server(const ClientT & client, std::chrono::seconds time_out)
+{
+  try {
+    return client->wait_for_service(time_out);
+  } catch (const std::runtime_error &) {
+    return false;
+  }
+}
+}  // namespace
 
 LifecycleServiceClient::LifecycleServiceClient(
   const std::string & node_name, const std::string & managed_node)
@@ -59,7 +74,7 @@ LifecycleServiceClient::get_state(std::chrono::seconds time_out)
     return lifecycle_msgs::msg::State::PRIMARY_STATE_UNKNOWN;
   }
   auto request = std::make_shared<lifecycle_msgs::srv::GetState::Request>();
-  if (!client_get_state_->wait_for_service(time_out)) {
+  if (!wait_for_server(client_get_state_, time_out)) {
     RCLCPP_ERROR(
       get_logger(),
       "Service %s is not available.",
@@ -101,7 +116,7 @@ LifecycleServiceClient::change_state(std::uint8_t transition, std::chrono::secon
     RCLCPP_ERROR(get_logger(), "init() was not called");
     return false;
   }
-  if (!client_change_state_->wait_for_service(time_out)) {
+  if (!wait_for_server(client_change_state_, time_out)) {
     RCLCPP_ERROR(
       get_logger(),
       "Service %s is not available.",

@@ -348,9 +348,9 @@ TEST_F(PlannerErrorsTest, error_info_tells_why_there_is_no_plan)
 // The client used to give up exactly when the planner, with the same timeout, answered
 TEST_F(PlannerErrorsTest, client_waits_for_the_planner_answer)
 {
-  start_planner();  // plan_solver_timeout 2.0, from the command line
+  // plan_solver_timeout 2.0, from the command line: for the planner and, set, for the client
+  start_planner();
   auto planner_client = std::make_shared<plansys2::PlannerClient>();
-  ASSERT_TRUE(logged("Planner CLient created with timeout 2"));
 
   auto plan = planner_client->getPlan(
     read_pddl("domain_simple.pddl"), read_pddl("problem_hard_unsolvable.pddl"));

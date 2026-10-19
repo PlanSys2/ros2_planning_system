@@ -21,6 +21,7 @@
 #include <vector>
 #include <memory>
 
+#include "plansys2_core/ServiceCall.hpp"
 #include "plansys2_core/Utils.hpp"
 
 namespace plansys2
@@ -38,17 +39,36 @@ PlannerClient::PlannerClient()
   get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("planner/get_plan");
   get_plan_array_client_ = node_->create_client<plansys2_msgs::srv::GetPlanArray>(
     "planner/get_plan_array");
-  // It was declared from an uninitialized double (#434)
-  double timeout = 15.0;
-  node_->declare_parameter("plan_solver_timeout", timeout);
-  node_->get_parameter("plan_solver_timeout", timeout);
+  // 0: as long as the planner plans, read from it at each request; its node name is unique, so
+  // a parameter file cannot set this one (#434: it was declared uninitialized)
+  node_->declare_parameter("plan_solver_timeout", 0.0);
+  planner_parameters_ = std::make_shared<rclcpp::AsyncParametersClient>(node_, "planner");
+}
+
+std::chrono::nanoseconds
+PlannerClient::answer_wait()
+{
+  double timeout = node_->get_parameter("plan_solver_timeout").as_double();
   if (timeout <= 0.0) {
-    timeout = 15.0;
+    if (wait_for_server(planner_parameters_, std::chrono::seconds(1))) {
+      auto future = planner_parameters_->get_parameters({"plan_solver_timeout"});
+      if (rclcpp::spin_until_future_complete(node_, future, std::chrono::seconds(1)) ==
+        rclcpp::FutureReturnCode::SUCCESS)
+      {
+        const auto parameters = future.get();
+        if (!parameters.empty() &&
+          parameters[0].get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE &&
+          parameters[0].as_double() > 0.0)
+        {
+          planner_timeout_ = parameters[0].as_double();
+        }
+      }
+    }
+    timeout = planner_timeout_;
   }
-  solver_timeout_ = rclcpp::Duration::from_seconds(timeout);
-  RCLCPP_INFO(
-    node_->get_logger(), "Planner CLient created with timeout %g",
-    solver_timeout_.seconds());
+  // The planner answers after its own timeout plus the time to stop its solvers (#434)
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(
+    std::chrono::duration<double>(timeout)) + kAnswerMargin;
 }
 
 std::optional<plansys2_msgs::msg::Plan>
@@ -57,7 +77,7 @@ PlannerClient::getPlan(
   const std::string & node_namespace)
 {
   (void)node_namespace;
-  while (!get_plan_client_->wait_for_service(std::chrono::seconds(30))) {
+  while (!wait_for_server(get_plan_client_, std::chrono::seconds(30))) {
     if (!rclcpp::ok()) {
       return {};
     }
@@ -66,8 +86,7 @@ PlannerClient::getPlan(
       get_plan_client_->get_service_name() <<
         " service  client: waiting for service to appear...");
   }
-  // The planner answers after its own timeout plus the time to stop its solvers (#434)
-  const auto wait = solver_timeout_.to_chrono<std::chrono::nanoseconds>() + kAnswerMargin;
+  const auto wait = answer_wait();
 
   auto request = std::make_shared<plansys2_msgs::srv::GetPlan::Request>();
   request->domain = domain;
@@ -105,7 +124,7 @@ PlannerClient::getPlanArray(
   const std::string & node_namespace)
 {
   (void)node_namespace;
-  while (!get_plan_array_client_->wait_for_service(std::chrono::seconds(30))) {
+  while (!wait_for_server(get_plan_array_client_, std::chrono::seconds(30))) {
     if (!rclcpp::ok()) {
       return plansys2_msgs::msg::PlanArray();
     }
@@ -114,8 +133,7 @@ PlannerClient::getPlanArray(
       get_plan_array_client_->get_service_name() <<
         " service  client: waiting for service to appear...");
   }
-  // The planner answers after its own timeout plus the time to stop its solvers (#434)
-  const auto wait = solver_timeout_.to_chrono<std::chrono::nanoseconds>() + kAnswerMargin;
+  const auto wait = answer_wait();
 
   auto request = std::make_shared<plansys2_msgs::srv::GetPlanArray::Request>();
   request->domain = domain;

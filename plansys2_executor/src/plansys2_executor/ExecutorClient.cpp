@@ -66,7 +66,7 @@ ExecutorClient::createActionClient()
 {
   action_client_ = rclcpp_action::create_client<ExecutePlan>(node_, "execute_plan");
 
-  if (!this->action_client_->wait_for_action_server(3s)) {
+  if (!wait_for_server([&]() {return action_client_->wait_for_action_server(3s);})) {
     RCLCPP_ERROR(node_->get_logger(), "Action server not available after waiting");
   }
 }
@@ -264,7 +264,7 @@ std::vector<plansys2_msgs::msg::Tree> ExecutorClient::getOrderedSubGoals()
 {
   std::vector<plansys2_msgs::msg::Tree> ret;
 
-  while (!get_ordered_sub_goals_client_->wait_for_service(std::chrono::seconds(5))) {
+  while (!wait_for_server(get_ordered_sub_goals_client_, std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return ret;
     }
@@ -300,7 +300,7 @@ std::vector<plansys2_msgs::msg::Tree> ExecutorClient::getOrderedSubGoals()
 
 std::optional<plansys2_msgs::msg::Plan> ExecutorClient::get_plan()
 {
-  while (!get_plan_client_->wait_for_service(std::chrono::seconds(5))) {
+  while (!wait_for_server(get_plan_client_, std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return {};
     }
@@ -350,7 +350,7 @@ std::optional<std::string> ExecutorClient::get_replanning_problem()
 
 std::optional<plansys2_msgs::msg::Plan> ExecutorClient::get_remaining_plan()
 {
-  while (!get_remaining_plan_client_->wait_for_service(std::chrono::seconds(5))) {
+  while (!wait_for_server(get_remaining_plan_client_, std::chrono::seconds(5))) {
     if (!rclcpp::ok()) {
       return {};
     }

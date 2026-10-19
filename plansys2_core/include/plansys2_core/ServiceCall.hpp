@@ -17,11 +17,39 @@
 
 #include <chrono>
 #include <memory>
+#include <stdexcept>
 
 #include "rclcpp/rclcpp.hpp"
 
 namespace plansys2
 {
+
+/**
+ * @brief Waits for the server of a client: wait is its wait_for_service or wait_for_action_server.
+ *
+ * rclcpp shutting down during the wait throws (NodeNotFoundError, GraphListenerShutdownError):
+ * that is no server, not the end of the process.
+ *
+ * @return Whether the server is there.
+ */
+template<typename WaitT>
+bool wait_for_server(WaitT && wait)
+{
+  try {
+    return wait();
+  } catch (const std::runtime_error &) {
+    return false;
+  }
+}
+
+/**
+ * @brief Waits for the server of a client with wait_for_service, as wait_for_server(wait).
+ */
+template<typename ClientT>
+bool wait_for_server(const std::shared_ptr<ClientT> & client, std::chrono::nanoseconds timeout)
+{
+  return wait_for_server([&]() {return client->wait_for_service(timeout);});
+}
 
 /**
  * @brief Call a service spinning node until the response arrives.
