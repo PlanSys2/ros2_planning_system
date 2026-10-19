@@ -1,3 +1,5 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$structplansys2_1_1FactChange.html" title="A change an applied effect made to one fact, to take it back later." alt="" coords="5,5,97,31"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,5,99,31"/>
+<area shape="rect" id="Node000001" href="$classROS2Environment.html" title=" " alt="" coords="147,5,275,31"/>
+<area shape="poly" id="edge89_Node000000_Node000001" title=" " alt="" coords="114,16,146,16,146,21,114,21"/>
 </map>

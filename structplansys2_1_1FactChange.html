@@ -104,15 +104,17 @@ Collaboration diagram for FactChange:</div>
 <div class="dyncontent">
 <div class="center"><img src="structplansys2_1_1FactChange__coll__graph.png" border="0" usemap="#aFactChange_coll__map" alt="Collaboration graph"/></div>
 <map name="aFactChange_coll__map" id="aFactChange_coll__map">
-<area shape="rect" title="A change an applied effect made to one fact, to take it back later." alt="" coords="118,109,209,135"/>
+<area shape="rect" title="A change an applied effect made to one fact, to take it back later." alt="" coords="176,109,268,135"/>
 <area shape="rect" title=" " alt="" coords="5,5,58,31"/>
-<area shape="poly" title=" " alt="" coords="44,44,55,65,71,83,93,98,118,108,116,113,91,102,67,87,51,68,39,46"/>
+<area shape="poly" title=" " alt="" coords="48,43,64,65,84,83,130,103,177,114,176,119,128,109,81,87,60,68,43,46"/>
 <area shape="rect" href="classbool.html" title=" " alt="" coords="82,5,128,31"/>
-<area shape="poly" title=" " alt="" coords="102,46,102,66,108,84,119,96,133,106,130,111,115,100,103,86,97,66,97,46"/>
+<area shape="poly" title=" " alt="" coords="112,45,119,65,132,83,153,98,177,109,175,113,150,103,128,87,115,68,107,47"/>
 <area shape="rect" title=" " alt="" coords="192,5,252,31"/>
-<area shape="poly" title=" " alt="" coords="215,47,195,86,177,110,173,107,191,84,210,44"/>
+<area shape="poly" title=" " alt="" coords="225,47,225,109,220,109,220,47"/>
 <area shape="rect" title=" " alt="" coords="297,5,358,31"/>
-<area shape="poly" title=" " alt="" coords="320,47,307,68,289,87,250,107,210,118,209,113,249,102,286,83,303,65,315,44"/>
+<area shape="poly" title=" " alt="" coords="323,47,314,68,300,87,282,101,263,111,260,106,279,96,296,83,309,65,318,45"/>
+<area shape="rect" title=" " alt="" coords="410,5,464,31"/>
+<area shape="poly" title=" " alt="" coords="431,47,420,68,402,87,379,98,345,107,269,118,268,113,343,101,377,93,399,83,415,65,426,44"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -127,6 +129,12 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a74f28698e404a06f9a055535f126ccec" id="r_a74f28698e404a06f9a055535f126ccec"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a74f28698e404a06f9a055535f126ccec">modifier_type</a> = 0</td></tr>
 <tr class="memdesc:a74f28698e404a06f9a055535f126ccec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions: the modifier that changed it.  <br /></td></tr>
 <tr class="separator:a74f28698e404a06f9a055535f126ccec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44a2bf32066b5f8f6c4a297710dc6728" id="r_a44a2bf32066b5f8f6c4a297710dc6728"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a44a2bf32066b5f8f6c4a297710dc6728">object_after</a></td></tr>
+<tr class="memdesc:a44a2bf32066b5f8f6c4a297710dc6728"><td class="mdescLeft">&#160;</td><td class="mdescRight">Object fluents: object the effect left.  <br /></td></tr>
+<tr class="separator:a44a2bf32066b5f8f6c4a297710dc6728"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af360948b2a52a1706814f7e339ad33ae" id="r_af360948b2a52a1706814f7e339ad33ae"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af360948b2a52a1706814f7e339ad33ae">object_before</a></td></tr>
+<tr class="memdesc:af360948b2a52a1706814f7e339ad33ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Object fluents: object before the effect (empty: none)  <br /></td></tr>
+<tr class="separator:af360948b2a52a1706814f7e339ad33ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a55a69d78a53f0ac0ef4207cd05ad7ab2" id="r_a55a69d78a53f0ac0ef4207cd05ad7ab2"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a55a69d78a53f0ac0ef4207cd05ad7ab2">value_after</a> = 0.0</td></tr>
 <tr class="memdesc:a55a69d78a53f0ac0ef4207cd05ad7ab2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions: value the effect left.  <br /></td></tr>
 <tr class="separator:a55a69d78a53f0ac0ef4207cd05ad7ab2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -182,6 +190,38 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Functions: the modifier that changed it. </p>
+
+</div>
+</div>
+<a id="a44a2bf32066b5f8f6c4a297710dc6728" name="a44a2bf32066b5f8f6c4a297710dc6728"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a44a2bf32066b5f8f6c4a297710dc6728">&#9670;&#160;</a></span>object_after</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string object_after</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Object fluents: object the effect left. </p>
+
+</div>
+</div>
+<a id="af360948b2a52a1706814f7e339ad33ae" name="af360948b2a52a1706814f7e339ad33ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af360948b2a52a1706814f7e339ad33ae">&#9670;&#160;</a></span>object_before</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string object_before</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Object fluents: object before the effect (empty: none) </p>
 
 </div>
 </div>

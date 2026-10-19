@@ -1,9 +1,11 @@
 <map id="DomainExpertClient" name="DomainExpertClient">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,169,140,195"/>
-<area shape="rect" id="Node000002" href="$classplansys2__support__py_1_1ClientBase_1_1ClientBase.html" title=" " alt="" coords="30,94,115,120"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="75,135,75,169,70,169,70,135"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="10,5,63,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="50,44,70,93,65,95,45,46"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="87,5,130,31"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="100,46,80,95,75,93,95,44"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="34,169,168,195"/>
+<area shape="rect" id="Node000002" href="$classplansys2__support__py_1_1ClientBase_1_1ClientBase.html" title=" " alt="" coords="59,94,143,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,135,104,169,98,169,98,135"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,5,58,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="53,42,93,92,89,95,49,45"/>
+<area shape="rect" id="Node000004" href="$classint.html" title=" " alt="" coords="82,5,120,31"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="104,47,104,94,98,94,98,47"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="153,5,195,31"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="164,46,147,72,121,95,117,91,143,68,160,43"/>
 </map>

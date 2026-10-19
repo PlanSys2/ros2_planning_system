@@ -163,6 +163,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af5d179c24cffff02309182bb332f9331" id="r_af5d179c24cffff02309182bb332f9331"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af5d179c24cffff02309182bb332f9331">getDurativeActions</a> ()</td></tr>
 <tr class="memdesc:af5d179c24cffff02309182bb332f9331"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the durative actions defined in the domain.  <br /></td></tr>
 <tr class="separator:af5d179c24cffff02309182bb332f9331"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9660d73f5216350101ca586516a20d4c" id="r_a9660d73f5216350101ca586516a20d4c"><td class="memItemLeft" align="right" valign="top">plansys2_msgs::msg::Action::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9660d73f5216350101ca586516a20d4c">getEvent</a> (const std::string &amp;event, const std::vector&lt; std::string &gt; &amp;params={}) override</td></tr>
+<tr class="memdesc:a9660d73f5216350101ca586516a20d4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">An event of the domain, with its parameters bound to params, as an action.  <br /></td></tr>
+<tr class="separator:a9660d73f5216350101ca586516a20d4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0f72b481447929041a98d62d1029311" id="r_ae0f72b481447929041a98d62d1029311"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae0f72b481447929041a98d62d1029311">getEvents</a> () override</td></tr>
+<tr class="memdesc:ae0f72b481447929041a98d62d1029311"><td class="mdescLeft">&#160;</td><td class="mdescRight">The events of the domain (PDDL+): they happen when their precondition holds.  <br /></td></tr>
+<tr class="separator:ae0f72b481447929041a98d62d1029311"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4805e8bc192ce3184d0b54fe97c30892" id="r_a4805e8bc192ce3184d0b54fe97c30892"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4805e8bc192ce3184d0b54fe97c30892">getFunction</a> (const std::string &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a179c04a7bc76bbe8ced8440a54c9f8e8">function</a>)</td></tr>
 <tr class="memdesc:a4805e8bc192ce3184d0b54fe97c30892"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the details of a function defined in the domain.  <br /></td></tr>
 <tr class="separator:a4805e8bc192ce3184d0b54fe97c30892"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -172,18 +178,30 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ac0fc966d4386ddb71d99361e3fccb311" id="r_ac0fc966d4386ddb71d99361e3fccb311"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac0fc966d4386ddb71d99361e3fccb311">getName</a> ()</td></tr>
 <tr class="memdesc:ac0fc966d4386ddb71d99361e3fccb311"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the name of the domain.  <br /></td></tr>
 <tr class="separator:ac0fc966d4386ddb71d99361e3fccb311"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21f78d101face663c0b00cc0709c01b0" id="r_a21f78d101face663c0b00cc0709c01b0"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a21f78d101face663c0b00cc0709c01b0">getParseError</a> () const</td></tr>
+<tr class="memdesc:a21f78d101face663c0b00cc0709c01b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Why the PlanSys2 parser could not read the domain.  <br /></td></tr>
+<tr class="separator:a21f78d101face663c0b00cc0709c01b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a13e6482d2f4703dd5860558a780cb3" id="r_a1a13e6482d2f4703dd5860558a780cb3"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1a13e6482d2f4703dd5860558a780cb3">getPredicate</a> (const std::string &amp;predicate)</td></tr>
 <tr class="memdesc:a1a13e6482d2f4703dd5860558a780cb3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the details of a predicate defined in the domain.  <br /></td></tr>
 <tr class="separator:a1a13e6482d2f4703dd5860558a780cb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1528e9280331760f2ebcb212e21b94ac" id="r_a1528e9280331760f2ebcb212e21b94ac"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1528e9280331760f2ebcb212e21b94ac">getPredicates</a> ()</td></tr>
 <tr class="memdesc:a1528e9280331760f2ebcb212e21b94ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the predicates defined in the domain.  <br /></td></tr>
 <tr class="separator:a1528e9280331760f2ebcb212e21b94ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad99e5994355b01d138bb437b54d8f4e1" id="r_ad99e5994355b01d138bb437b54d8f4e1"><td class="memItemLeft" align="right" valign="top">plansys2_msgs::msg::Action::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad99e5994355b01d138bb437b54d8f4e1">getProcess</a> (const std::string &amp;process, const std::vector&lt; std::string &gt; &amp;params={}) override</td></tr>
+<tr class="memdesc:ad99e5994355b01d138bb437b54d8f4e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">A process of the domain, with its parameters bound to params, as an action.  <br /></td></tr>
+<tr class="separator:ad99e5994355b01d138bb437b54d8f4e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a919fbca991d27a8615ef6c41296444ce" id="r_a919fbca991d27a8615ef6c41296444ce"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a919fbca991d27a8615ef6c41296444ce">getProcesses</a> () override</td></tr>
+<tr class="memdesc:a919fbca991d27a8615ef6c41296444ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the regular actions defined in the domain.  <br /></td></tr>
+<tr class="separator:a919fbca991d27a8615ef6c41296444ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6bdb21d8c3c9f7036c7bdc6c0f8e2fc6" id="r_a6bdb21d8c3c9f7036c7bdc6c0f8e2fc6"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6bdb21d8c3c9f7036c7bdc6c0f8e2fc6">getSubTypes</a> (const std::string &amp;type)</td></tr>
 <tr class="memdesc:a6bdb21d8c3c9f7036c7bdc6c0f8e2fc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get every type below a given type: its children, their children, and so on.  <br /></td></tr>
 <tr class="separator:a6bdb21d8c3c9f7036c7bdc6c0f8e2fc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada13d8932c5df931efa2bdaa0859fbab" id="r_ada13d8932c5df931efa2bdaa0859fbab"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ada13d8932c5df931efa2bdaa0859fbab">getTypes</a> ()</td></tr>
 <tr class="memdesc:ada13d8932c5df931efa2bdaa0859fbab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the types defined in the domain.  <br /></td></tr>
 <tr class="separator:ada13d8932c5df931efa2bdaa0859fbab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d0d33349a22f7cce37f86841fb2d4ad" id="r_a8d0d33349a22f7cce37f86841fb2d4ad"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8d0d33349a22f7cce37f86841fb2d4ad">getUnsupported</a> ()</td></tr>
+<tr class="memdesc:a8d0d33349a22f7cce37f86841fb2d4ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">The actions and derived predicates that PlanSys2 cannot represent.  <br /></td></tr>
+<tr class="separator:a8d0d33349a22f7cce37f86841fb2d4ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classplansys2_1_1DomainExpertInterface"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pub_methods_classplansys2_1_1DomainExpertInterface')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classplansys2_1_1DomainExpertInterface.html">DomainExpertInterface</a></td></tr>
 <tr class="memitem:aab7274f690390d0d508082bfaf02c46a inherit pub_methods_classplansys2_1_1DomainExpertInterface" id="r_aab7274f690390d0d508082bfaf02c46a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1DomainExpertInterface.html#aab7274f690390d0d508082bfaf02c46a">DomainExpertInterface</a> ()</td></tr>
 <tr class="memdesc:aab7274f690390d0d508082bfaf02c46a inherit pub_methods_classplansys2_1_1DomainExpertInterface"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <br /></td></tr>
@@ -644,6 +662,77 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a9660d73f5216350101ca586516a20d4c" name="a9660d73f5216350101ca586516a20d4c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9660d73f5216350101ca586516a20d4c">&#9670;&#160;</a></span>getEvent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">plansys2_msgs::msg::Action::SharedPtr getEvent </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>event</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; std::string &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>params</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>An event of the domain, with its parameters bound to params, as an action. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">event</td><td>Its name. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">params</td><td>Its parameters, if bound. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The event; nullptr if there is none. </dd></dl>
+
+<p>Implements <a class="el" href="classplansys2_1_1DomainExpertInterface.html#a65bd4cf7026f85259b7af75bc83f3e5d">DomainExpertInterface</a>.</p>
+
+</div>
+</div>
+<a id="ae0f72b481447929041a98d62d1029311" name="ae0f72b481447929041a98d62d1029311"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0f72b481447929041a98d62d1029311">&#9670;&#160;</a></span>getEvents()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::string &gt; getEvents </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The events of the domain (PDDL+): they happen when their precondition holds. </p>
+<dl class="section return"><dt>Returns</dt><dd>Their names. </dd></dl>
+
+<p>Implements <a class="el" href="classplansys2_1_1DomainExpertInterface.html#a70a41b9bd665d5f790cbcb44cef863b2">DomainExpertInterface</a>.</p>
+
+</div>
+</div>
 <a id="a4805e8bc192ce3184d0b54fe97c30892" name="a4805e8bc192ce3184d0b54fe97c30892"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4805e8bc192ce3184d0b54fe97c30892">&#9670;&#160;</a></span>getFunction()</h2>
 
@@ -740,6 +829,26 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a21f78d101face663c0b00cc0709c01b0" name="a21f78d101face663c0b00cc0709c01b0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a21f78d101face663c0b00cc0709c01b0">&#9670;&#160;</a></span>getParseError()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::string &amp; getParseError </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Why the PlanSys2 parser could not read the domain. </p>
+<dl class="section return"><dt>Returns</dt><dd>The error, or an empty string if it could. </dd></dl>
+
+</div>
+</div>
 <a id="a1a13e6482d2f4703dd5860558a780cb3" name="a1a13e6482d2f4703dd5860558a780cb3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1a13e6482d2f4703dd5860558a780cb3">&#9670;&#160;</a></span>getPredicate()</h2>
 
@@ -806,6 +915,77 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ad99e5994355b01d138bb437b54d8f4e1" name="ad99e5994355b01d138bb437b54d8f4e1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad99e5994355b01d138bb437b54d8f4e1">&#9670;&#160;</a></span>getProcess()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">plansys2_msgs::msg::Action::SharedPtr getProcess </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>process</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; std::string &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>params</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>A process of the domain, with its parameters bound to params, as an action. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">process</td><td>Its name. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">params</td><td>Its parameters, if bound. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The process, its effects continuous (#t); nullptr if there is none. </dd></dl>
+
+<p>Implements <a class="el" href="classplansys2_1_1DomainExpertInterface.html#ab97d180da35ed18c9da6d9a01d2a3118">DomainExpertInterface</a>.</p>
+
+</div>
+</div>
+<a id="a919fbca991d27a8615ef6c41296444ce" name="a919fbca991d27a8615ef6c41296444ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a919fbca991d27a8615ef6c41296444ce">&#9670;&#160;</a></span>getProcesses()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::string &gt; getProcesses </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the regular actions defined in the domain. </p>
+<dl class="section return"><dt>Returns</dt><dd>std::vector&lt;std::string&gt; Vector containing the names of the actions. </dd></dl>
+
+<p>Implements <a class="el" href="classplansys2_1_1DomainExpertInterface.html#a7173311fa19ddddb31ca009bc87accb8">DomainExpertInterface</a>.</p>
+
+</div>
+</div>
 <a id="a6bdb21d8c3c9f7036c7bdc6c0f8e2fc6" name="a6bdb21d8c3c9f7036c7bdc6c0f8e2fc6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6bdb21d8c3c9f7036c7bdc6c0f8e2fc6">&#9670;&#160;</a></span>getSubTypes()</h2>
 
@@ -859,6 +1039,26 @@ Public Member Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>std::vector&lt;std::string&gt; The names of the types defined in the domain. </dd></dl>
 
 <p>Implements <a class="el" href="classplansys2_1_1DomainExpertInterface.html#a947b32a0d0ed080ef44711f39fb1819f">DomainExpertInterface</a>.</p>
+
+</div>
+</div>
+<a id="a8d0d33349a22f7cce37f86841fb2d4ad" name="a8d0d33349a22f7cce37f86841fb2d4ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8d0d33349a22f7cce37f86841fb2d4ad">&#9670;&#160;</a></span>getUnsupported()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::string &gt; getUnsupported </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The actions and derived predicates that PlanSys2 cannot represent. </p>
+<dl class="section return"><dt>Returns</dt><dd>One line for each, saying which and why; empty if there are none. </dd></dl>
 
 </div>
 </div>

@@ -1,0 +1,9 @@
+<map id="ProblemExpert::TimedFact" name="ProblemExpert::TimedFact">
+<area shape="rect" id="Node000001" title="A fact that changes at a time: a timed initial literal, or fluent if it is a function." alt="" coords="24,94,198,120"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,65,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="58,41,103,92,99,95,54,45"/>
+<area shape="rect" id="Node000003" href="$classbool.html" title=" " alt="" coords="88,5,134,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="114,47,114,94,108,94,108,47"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="165,5,217,31"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="181,46,164,72,134,96,131,91,160,68,177,43"/>
+</map>

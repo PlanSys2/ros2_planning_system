@@ -1,9 +1,11 @@
 <map id="plansys2_core/include/plansys2_core/ServiceCall.hpp" name="plansys2_core/include/plansys2_core/ServiceCall.hpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="22,5,225,46"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="70,5,273,46"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,94,66,120"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,48,62,85,59,81,100,44"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="139,49,70,88,68,84,136,44"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="90,94,157,120"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="126,46,126,78,121,78,121,46"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="181,94,300,120"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="154,44,212,83,209,87,151,49"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="162,48,141,82,136,79,157,45"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="181,94,258,120"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="186,45,207,79,202,82,181,48"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="282,94,402,120"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="215,44,303,85,301,90,213,49"/>
 </map>

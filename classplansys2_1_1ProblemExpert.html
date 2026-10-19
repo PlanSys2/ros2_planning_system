@@ -89,6 +89,7 @@ $(function(){ initResizable(false); });
 <div id="doc-content">
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classplansys2_1_1ProblemExpert-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">ProblemExpert Class Reference</div></div>
@@ -120,6 +121,12 @@ Collaboration diagram for ProblemExpert:</div>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structplansys2_1_1ProblemExpert_1_1TimedFact.html">TimedFact</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A fact that changes at a time: a timed initial literal, or fluent if it is a function.  <a href="structplansys2_1_1ProblemExpert_1_1TimedFact.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a9222335047050a37d7ebb4b03e622cd0" id="r_a9222335047050a37d7ebb4b03e622cd0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9222335047050a37d7ebb4b03e622cd0">addFunction</a> (const <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a179c04a7bc76bbe8ced8440a54c9f8e8">function</a>)</td></tr>
@@ -134,6 +141,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a40846df3ba284c9282eaff8042d28571" id="r_a40846df3ba284c9282eaff8042d28571"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a40846df3ba284c9282eaff8042d28571">addProblem</a> (const std::string &amp;problem_str)</td></tr>
 <tr class="memdesc:a40846df3ba284c9282eaff8042d28571"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a complete PDDL problem from a string.  <br /></td></tr>
 <tr class="separator:a40846df3ba284c9282eaff8042d28571"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4674525e16e3f36042169e6029591f39" id="r_a4674525e16e3f36042169e6029591f39"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4674525e16e3f36042169e6029591f39">addTimedFact</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp;fact, double delay, <a class="el" href="classbool.html">bool</a> <a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#aaff9ddb64f4101c1e351eb97f8061c2f">negated</a>=false)</td></tr>
+<tr class="memdesc:a4674525e16e3f36042169e6029591f39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule a fact: a predicate that starts or stops holding, or a function value.  <br /></td></tr>
+<tr class="separator:a4674525e16e3f36042169e6029591f39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af855efdcc12a99e1b61f72d44dfb1936" id="r_af855efdcc12a99e1b61f72d44dfb1936"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af855efdcc12a99e1b61f72d44dfb1936">applyTimedFacts</a> ()</td></tr>
+<tr class="memdesc:af855efdcc12a99e1b61f72d44dfb1936"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the facts whose time has come.  <br /></td></tr>
+<tr class="separator:af855efdcc12a99e1b61f72d44dfb1936"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a072bdb887d0c6b28f7b9e8c62a07d811" id="r_a072bdb887d0c6b28f7b9e8c62a07d811"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a072bdb887d0c6b28f7b9e8c62a07d811">clearConstraints</a> ()</td></tr>
+<tr class="memdesc:a072bdb887d0c6b28f7b9e8c62a07d811"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove the constraints of the problem.  <br /></td></tr>
+<tr class="separator:a072bdb887d0c6b28f7b9e8c62a07d811"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2c7ccb2f4b360cf8e2058429a4985f2" id="r_ab2c7ccb2f4b360cf8e2058429a4985f2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab2c7ccb2f4b360cf8e2058429a4985f2">clearGoal</a> ()</td></tr>
 <tr class="memdesc:ab2c7ccb2f4b360cf8e2058429a4985f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear the current goal from the problem.  <br /></td></tr>
 <tr class="separator:ab2c7ccb2f4b360cf8e2058429a4985f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,12 +162,18 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7c260fc4ac9f777a7af6f94b9fa32858" id="r_a7c260fc4ac9f777a7af6f94b9fa32858"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7c260fc4ac9f777a7af6f94b9fa32858">existFunction</a> (const <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a179c04a7bc76bbe8ced8440a54c9f8e8">function</a>)</td></tr>
 <tr class="memdesc:a7c260fc4ac9f777a7af6f94b9fa32858"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a function exists in the problem.  <br /></td></tr>
 <tr class="separator:a7c260fc4ac9f777a7af6f94b9fa32858"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0a6f41ac8e1b74d8a0f50c0958b8ebd6" id="r_a0a6f41ac8e1b74d8a0f50c0958b8ebd6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0a6f41ac8e1b74d8a0f50c0958b8ebd6">existInstance</a> (const std::string &amp;name)</td></tr>
+<tr class="memitem:a0a6f41ac8e1b74d8a0f50c0958b8ebd6" id="r_a0a6f41ac8e1b74d8a0f50c0958b8ebd6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0a6f41ac8e1b74d8a0f50c0958b8ebd6">existInstance</a> (const std::string &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a>)</td></tr>
 <tr class="memdesc:a0a6f41ac8e1b74d8a0f50c0958b8ebd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if an instance with the given name exists.  <br /></td></tr>
 <tr class="separator:a0a6f41ac8e1b74d8a0f50c0958b8ebd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4626b96ae6158d4651c05598909b8ede" id="r_a4626b96ae6158d4651c05598909b8ede"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4626b96ae6158d4651c05598909b8ede">existPredicate</a> (const <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &amp;predicate)</td></tr>
 <tr class="memdesc:a4626b96ae6158d4651c05598909b8ede"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a predicate exists in the problem.  <br /></td></tr>
 <tr class="separator:a4626b96ae6158d4651c05598909b8ede"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38eb95eb475452de1b793acd59ea927b" id="r_a38eb95eb475452de1b793acd59ea927b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a38eb95eb475452de1b793acd59ea927b">getConstraints</a> ()</td></tr>
+<tr class="memdesc:a38eb95eb475452de1b793acd59ea927b"><td class="mdescLeft">&#160;</td><td class="mdescRight">PDDL3: the constraints the plan of the problem keeps, (always (safe))...  <br /></td></tr>
+<tr class="separator:a38eb95eb475452de1b793acd59ea927b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99ed8d0a2596b5e165c17839e6641f33" id="r_a99ed8d0a2596b5e165c17839e6641f33"><td class="memItemLeft" align="right" valign="top">std::map&lt; std::string, <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a99ed8d0a2596b5e165c17839e6641f33">getContinuousEffects</a> () const</td></tr>
+<tr class="memdesc:a99ed8d0a2596b5e165c17839e6641f33"><td class="mdescLeft">&#160;</td><td class="mdescRight">The continuous effects active now, by who they are.  <br /></td></tr>
+<tr class="separator:a99ed8d0a2596b5e165c17839e6641f33"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab7bb7d7c65a9479aaed0a5f2b79f9b73" id="r_ab7bb7d7c65a9479aaed0a5f2b79f9b73"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab7bb7d7c65a9479aaed0a5f2b79f9b73">getDomain</a> ()</td></tr>
 <tr class="memdesc:ab7bb7d7c65a9479aaed0a5f2b79f9b73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace the domain this problem is checked against, given as PDDL content.  <br /></td></tr>
 <tr class="separator:ab7bb7d7c65a9479aaed0a5f2b79f9b73"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -164,7 +186,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a54d53dd9a7c0ae701e0653b50a6920c7" id="r_a54d53dd9a7c0ae701e0653b50a6920c7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classplansys2_1_1Goal.html">plansys2::Goal</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a54d53dd9a7c0ae701e0653b50a6920c7">getGoal</a> ()</td></tr>
 <tr class="memdesc:a54d53dd9a7c0ae701e0653b50a6920c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current goal of the problem.  <br /></td></tr>
 <tr class="separator:a54d53dd9a7c0ae701e0653b50a6920c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8a0467ab59abd04eea556a7c30302025" id="r_a8a0467ab59abd04eea556a7c30302025"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="classplansys2_1_1Instance.html">plansys2::Instance</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8a0467ab59abd04eea556a7c30302025">getInstance</a> (const std::string &amp;name)</td></tr>
+<tr class="memitem:a8a0467ab59abd04eea556a7c30302025" id="r_a8a0467ab59abd04eea556a7c30302025"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="classplansys2_1_1Instance.html">plansys2::Instance</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8a0467ab59abd04eea556a7c30302025">getInstance</a> (const std::string &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a>)</td></tr>
 <tr class="memdesc:a8a0467ab59abd04eea556a7c30302025"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a specific instance by name.  <br /></td></tr>
 <tr class="separator:a8a0467ab59abd04eea556a7c30302025"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adfbc5177c7986c3f24fa35c381da9032" id="r_adfbc5177c7986c3f24fa35c381da9032"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classplansys2_1_1Instance.html">plansys2::Instance</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adfbc5177c7986c3f24fa35c381da9032">getInstances</a> ()</td></tr>
@@ -179,12 +201,21 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a1528e9280331760f2ebcb212e21b94ac" id="r_a1528e9280331760f2ebcb212e21b94ac"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1528e9280331760f2ebcb212e21b94ac">getPredicates</a> ()</td></tr>
 <tr class="memdesc:a1528e9280331760f2ebcb212e21b94ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get all predicates in the problem.  <br /></td></tr>
 <tr class="separator:a1528e9280331760f2ebcb212e21b94ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a145bbe53fe86159728245950fd0ae41a" id="r_a145bbe53fe86159728245950fd0ae41a"><td class="memItemLeft" align="right" valign="top">std::set&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a145bbe53fe86159728245950fd0ae41a">getPreferenceNames</a> ()</td></tr>
+<tr class="memdesc:a145bbe53fe86159728245950fd0ae41a"><td class="mdescLeft">&#160;</td><td class="mdescRight">The names of the preferences of the goal and the constraints: what a metric can read with (is-violated name).  <br /></td></tr>
+<tr class="separator:a145bbe53fe86159728245950fd0ae41a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae95943b2cd00935967d5d9c097f0404d" id="r_ae95943b2cd00935967d5d9c097f0404d"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae95943b2cd00935967d5d9c097f0404d">getProblem</a> ()</td></tr>
 <tr class="memdesc:ae95943b2cd00935967d5d9c097f0404d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the complete PDDL problem as a string.  <br /></td></tr>
 <tr class="separator:ae95943b2cd00935967d5d9c097f0404d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acef620598e697bbc4e86be0c5635aa0e" id="r_acef620598e697bbc4e86be0c5635aa0e"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structplansys2_1_1ProblemExpert_1_1TimedFact.html">TimedFact</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acef620598e697bbc4e86be0c5635aa0e">getTimedFacts</a> () const</td></tr>
+<tr class="memdesc:acef620598e697bbc4e86be0c5635aa0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The facts still to come, by time.  <br /></td></tr>
+<tr class="separator:acef620598e697bbc4e86be0c5635aa0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90d093a6843c0f71f2a5f95eb1949afd" id="r_a90d093a6843c0f71f2a5f95eb1949afd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a90d093a6843c0f71f2a5f95eb1949afd">isGoalSatisfied</a> (const <a class="el" href="classplansys2_1_1Goal.html">plansys2::Goal</a> &amp;goal)</td></tr>
 <tr class="memdesc:a90d093a6843c0f71f2a5f95eb1949afd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a goal is satisfied in the current state.  <br /></td></tr>
 <tr class="separator:a90d093a6843c0f71f2a5f95eb1949afd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac7a44bb9606b61f9d3e849b45eb5579f" id="r_ac7a44bb9606b61f9d3e849b45eb5579f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac7a44bb9606b61f9d3e849b45eb5579f">isValidConstraints</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;constraints)</td></tr>
+<tr class="memdesc:ac7a44bb9606b61f9d3e849b45eb5579f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if constraints are valid: modal constraints over valid conditions.  <br /></td></tr>
+<tr class="separator:ac7a44bb9606b61f9d3e849b45eb5579f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2e608ff730bbf8ff55a953724d4e7f60" id="r_a2e608ff730bbf8ff55a953724d4e7f60"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2e608ff730bbf8ff55a953724d4e7f60">isValidFunction</a> (const <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a179c04a7bc76bbe8ced8440a54c9f8e8">function</a>)</td></tr>
 <tr class="memdesc:a2e608ff730bbf8ff55a953724d4e7f60"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a function is valid according to the domain.  <br /></td></tr>
 <tr class="separator:a2e608ff730bbf8ff55a953724d4e7f60"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -212,12 +243,30 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7f3e3900f6b387bfe7ebcb4d33714b7d" id="r_a7f3e3900f6b387bfe7ebcb4d33714b7d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7f3e3900f6b387bfe7ebcb4d33714b7d">removePredicate</a> (const <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &amp;predicate)</td></tr>
 <tr class="memdesc:a7f3e3900f6b387bfe7ebcb4d33714b7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a predicate from the problem.  <br /></td></tr>
 <tr class="separator:a7f3e3900f6b387bfe7ebcb4d33714b7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60d5f1fb6ea3a2697fc7f2d09287cdae" id="r_a60d5f1fb6ea3a2697fc7f2d09287cdae"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a60d5f1fb6ea3a2697fc7f2d09287cdae">setClock</a> (std::function&lt; double()&gt; clock)</td></tr>
+<tr class="memdesc:a60d5f1fb6ea3a2697fc7f2d09287cdae"><td class="mdescLeft">&#160;</td><td class="mdescRight">The clock of the timed facts, in seconds; without one, always 0.  <br /></td></tr>
+<tr class="separator:a60d5f1fb6ea3a2697fc7f2d09287cdae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64058f15b61743f9fd21d6b450591bf1" id="r_a64058f15b61743f9fd21d6b450591bf1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a64058f15b61743f9fd21d6b450591bf1">setConstraints</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;constraints)</td></tr>
+<tr class="memdesc:a64058f15b61743f9fd21d6b450591bf1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the constraints of the problem: modal constraints, in and, forall and preferences, over the predicates and functions of the domain.  <br /></td></tr>
+<tr class="separator:a64058f15b61743f9fd21d6b450591bf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ace1ae3d4400aad129592c13f0427ee" id="r_a7ace1ae3d4400aad129592c13f0427ee"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7ace1ae3d4400aad129592c13f0427ee">setContinuousEffect</a> (const std::string &amp;id, const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;effects, <a class="el" href="classbool.html">bool</a> active)</td></tr>
+<tr class="memdesc:a7ace1ae3d4400aad129592c13f0427ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">The continuous effects of a running action, integrated while active.  <br /></td></tr>
+<tr class="separator:a7ace1ae3d4400aad129592c13f0427ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a998ac8e71bd42b5ad5a76f9046d6d690" id="r_a998ac8e71bd42b5ad5a76f9046d6d690"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a998ac8e71bd42b5ad5a76f9046d6d690">setGoal</a> (const <a class="el" href="classplansys2_1_1Goal.html">plansys2::Goal</a> &amp;goal)</td></tr>
 <tr class="memdesc:a998ac8e71bd42b5ad5a76f9046d6d690"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a new goal for the problem.  <br /></td></tr>
 <tr class="separator:a998ac8e71bd42b5ad5a76f9046d6d690"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8c1185f5dc67a042434cc8ad8f6a207" id="r_af8c1185f5dc67a042434cc8ad8f6a207"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af8c1185f5dc67a042434cc8ad8f6a207">setMeasuredFunctions</a> (const std::set&lt; std::string &gt; &amp;<a class="el" href="stn__bt__builder_8cpp.html#ad87cababbf2e57c1dc30e030e8d3b124">names</a>)</td></tr>
+<tr class="memdesc:af8c1185f5dc67a042434cc8ad8f6a207"><td class="mdescLeft">&#160;</td><td class="mdescRight">Functions perception measures: the dynamics never change them.  <br /></td></tr>
+<tr class="separator:af8c1185f5dc67a042434cc8ad8f6a207"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a23ad18c8dbb76bd9d76c0c443302c77e" id="r_a23ad18c8dbb76bd9d76c0c443302c77e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a23ad18c8dbb76bd9d76c0c443302c77e">setMetric</a> (const <a class="el" href="classplansys2_1_1Metric.html">plansys2::Metric</a> &amp;metric)</td></tr>
 <tr class="memdesc:a23ad18c8dbb76bd9d76c0c443302c77e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the metric of the problem.  <br /></td></tr>
 <tr class="separator:a23ad18c8dbb76bd9d76c0c443302c77e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c695f5bf765f235cd2a1d01f8285efa" id="r_a6c695f5bf765f235cd2a1d01f8285efa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6c695f5bf765f235cd2a1d01f8285efa">stepDynamics</a> (double dt)</td></tr>
+<tr class="memdesc:a6c695f5bf765f235cd2a1d01f8285efa"><td class="mdescLeft">&#160;</td><td class="mdescRight">One step of the dynamics (PDDL+): the continuous effects of the running actions and the processes whose precondition holds act for dt, and then the events whose precondition holds happen.  <br /></td></tr>
+<tr class="separator:a6c695f5bf765f235cd2a1d01f8285efa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af33652d8c8fe3f3b31a984067d03ae3f" id="r_af33652d8c8fe3f3b31a984067d03ae3f"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af33652d8c8fe3f3b31a984067d03ae3f">takeHappened</a> ()</td></tr>
+<tr class="memdesc:af33652d8c8fe3f3b31a984067d03ae3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">What happened by itself since the last call: the events that fired and the timed facts applied, as text, "event (float_switch cistern)".  <br /></td></tr>
+<tr class="separator:af33652d8c8fe3f3b31a984067d03ae3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad344c867275d07949fe94e5a56ea0d69" id="r_ad344c867275d07949fe94e5a56ea0d69"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad344c867275d07949fe94e5a56ea0d69">updateDomain</a> (const std::string &amp;domain)</td></tr>
 <tr class="separator:ad344c867275d07949fe94e5a56ea0d69"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a181092c0c7050aac6f456054f8aa82f7" id="r_a181092c0c7050aac6f456054f8aa82f7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a181092c0c7050aac6f456054f8aa82f7">updateFunction</a> (const <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a179c04a7bc76bbe8ced8440a54c9f8e8">function</a>)</td></tr>
@@ -410,6 +459,82 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a4674525e16e3f36042169e6029591f39" name="a4674525e16e3f36042169e6029591f39"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4674525e16e3f36042169e6029591f39">&#9670;&#160;</a></span>addTimedFact()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> addTimedFact </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>fact</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>delay</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classbool.html">bool</a></td>          <td class="paramname"><span class="paramname"><em>negated</em></span><span class="paramdefsep"> = </span><span class="paramdefval">false</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Schedule a fact: a predicate that starts or stops holding, or a function value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">fact</td><td>The predicate or the function, with its value. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">delay</td><td>Seconds from now. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">negated</td><td>For a predicate, whether it stops holding. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>false if the fact is not valid in the domain, or a function is negated. </dd></dl>
+
+</div>
+</div>
+<a id="af855efdcc12a99e1b61f72d44dfb1936" name="af855efdcc12a99e1b61f72d44dfb1936"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af855efdcc12a99e1b61f72d44dfb1936">&#9670;&#160;</a></span>applyTimedFacts()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> applyTimedFacts </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply the facts whose time has come. </p>
+<dl class="section return"><dt>Returns</dt><dd>true if any was applied. </dd></dl>
+
+</div>
+</div>
+<a id="a072bdb887d0c6b28f7b9e8c62a07d811" name="a072bdb887d0c6b28f7b9e8c62a07d811"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a072bdb887d0c6b28f7b9e8c62a07d811">&#9670;&#160;</a></span>clearConstraints()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> clearConstraints </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Remove the constraints of the problem. </p>
+
+</div>
+</div>
 <a id="ab2c7ccb2f4b360cf8e2058429a4985f2" name="ab2c7ccb2f4b360cf8e2058429a4985f2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab2c7ccb2f4b360cf8e2058429a4985f2">&#9670;&#160;</a></span>clearGoal()</h2>
 
@@ -595,6 +720,45 @@ Public Member Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>true if the predicate exists, false otherwise. </dd></dl>
 
 <p>Implements <a class="el" href="classplansys2_1_1ProblemExpertInterface.html#aa71e747f53c9b0566aeb8fce97fff67d">ProblemExpertInterface</a>.</p>
+
+</div>
+</div>
+<a id="a38eb95eb475452de1b793acd59ea927b" name="a38eb95eb475452de1b793acd59ea927b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a38eb95eb475452de1b793acd59ea927b">&#9670;&#160;</a></span>getConstraints()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> getConstraints </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>PDDL3: the constraints the plan of the problem keeps, (always (safe))... </p>
+<dl class="section return"><dt>Returns</dt><dd>The constraints, an empty tree if there are none. </dd></dl>
+
+</div>
+</div>
+<a id="a99ed8d0a2596b5e165c17839e6641f33" name="a99ed8d0a2596b5e165c17839e6641f33"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a99ed8d0a2596b5e165c17839e6641f33">&#9670;&#160;</a></span>getContinuousEffects()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::map&lt; std::string, <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &gt; getContinuousEffects </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The continuous effects active now, by who they are. </p>
 
 </div>
 </div>
@@ -885,6 +1049,25 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a145bbe53fe86159728245950fd0ae41a" name="a145bbe53fe86159728245950fd0ae41a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a145bbe53fe86159728245950fd0ae41a">&#9670;&#160;</a></span>getPreferenceNames()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::set&lt; std::string &gt; getPreferenceNames </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The names of the preferences of the goal and the constraints: what a metric can read with (is-violated name). </p>
+
+</div>
+</div>
 <a id="ae95943b2cd00935967d5d9c097f0404d" name="ae95943b2cd00935967d5d9c097f0404d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae95943b2cd00935967d5d9c097f0404d">&#9670;&#160;</a></span>getProblem()</h2>
 
@@ -912,6 +1095,26 @@ Public Member Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>std::string The complete PDDL problem string. </dd></dl>
 
 <p>Implements <a class="el" href="classplansys2_1_1ProblemExpertInterface.html#ab501e93214730fa2b8a69f0590752cf2">ProblemExpertInterface</a>.</p>
+
+</div>
+</div>
+<a id="acef620598e697bbc4e86be0c5635aa0e" name="acef620598e697bbc4e86be0c5635aa0e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acef620598e697bbc4e86be0c5635aa0e">&#9670;&#160;</a></span>getTimedFacts()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structplansys2_1_1ProblemExpert_1_1TimedFact.html">ProblemExpert::TimedFact</a> &gt; getTimedFacts </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The facts still to come, by time. </p>
+<dl class="section return"><dt>Returns</dt><dd>The facts, with the time each one comes by the clock. </dd></dl>
 
 </div>
 </div>
@@ -948,6 +1151,25 @@ Public Member Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>true if the goal is satisfied, false otherwise. </dd></dl>
 
 <p>Implements <a class="el" href="classplansys2_1_1ProblemExpertInterface.html#a29895a2328b2942dd1b9a4941f7f09b7">ProblemExpertInterface</a>.</p>
+
+</div>
+</div>
+<a id="ac7a44bb9606b61f9d3e849b45eb5579f" name="ac7a44bb9606b61f9d3e849b45eb5579f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac7a44bb9606b61f9d3e849b45eb5579f">&#9670;&#160;</a></span>isValidConstraints()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> isValidConstraints </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>constraints</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check if constraints are valid: modal constraints over valid conditions. </p>
 
 </div>
 </div>
@@ -1189,6 +1411,88 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a60d5f1fb6ea3a2697fc7f2d09287cdae" name="a60d5f1fb6ea3a2697fc7f2d09287cdae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a60d5f1fb6ea3a2697fc7f2d09287cdae">&#9670;&#160;</a></span>setClock()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void setClock </td>
+          <td>(</td>
+          <td class="paramtype">std::function&lt; double()&gt;</td>          <td class="paramname"><span class="paramname"><em>clock</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The clock of the timed facts, in seconds; without one, always 0. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">clock</td><td>Gives the time now. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a64058f15b61743f9fd21d6b450591bf1" name="a64058f15b61743f9fd21d6b450591bf1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a64058f15b61743f9fd21d6b450591bf1">&#9670;&#160;</a></span>setConstraints()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> setConstraints </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>constraints</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the constraints of the problem: modal constraints, in and, forall and preferences, over the predicates and functions of the domain. </p>
+<dl class="section return"><dt>Returns</dt><dd>true if they were valid and set. </dd></dl>
+
+</div>
+</div>
+<a id="a7ace1ae3d4400aad129592c13f0427ee" name="a7ace1ae3d4400aad129592c13f0427ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ace1ae3d4400aad129592c13f0427ee">&#9670;&#160;</a></span>setContinuousEffect()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> setContinuousEffect </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>effects</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classbool.html">bool</a></td>          <td class="paramname"><span class="paramname"><em>active</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The continuous effects of a running action, integrated while active. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>Who they are, the action. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">effects</td><td>(and (increase (f) (* #t rate))...), bound to its objects. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">active</td><td>false to stop them. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>false if they are not valid in the domain. </dd></dl>
+
+</div>
+</div>
 <a id="a998ac8e71bd42b5ad5a76f9046d6d690" name="a998ac8e71bd42b5ad5a76f9046d6d690"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a998ac8e71bd42b5ad5a76f9046d6d690">&#9670;&#160;</a></span>setGoal()</h2>
 
@@ -1225,6 +1529,31 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="af8c1185f5dc67a042434cc8ad8f6a207" name="af8c1185f5dc67a042434cc8ad8f6a207"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8c1185f5dc67a042434cc8ad8f6a207">&#9670;&#160;</a></span>setMeasuredFunctions()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void setMeasuredFunctions </td>
+          <td>(</td>
+          <td class="paramtype">const std::set&lt; std::string &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>names</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Functions perception measures: the dynamics never change them. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">names</td><td>Their names. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a23ad18c8dbb76bd9d76c0c443302c77e" name="a23ad18c8dbb76bd9d76c0c443302c77e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a23ad18c8dbb76bd9d76c0c443302c77e">&#9670;&#160;</a></span>setMetric()</h2>
 
@@ -1258,6 +1587,51 @@ Public Member Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>true if the metric was valid and set, false otherwise. </dd></dl>
 
 <p>Implements <a class="el" href="classplansys2_1_1ProblemExpertInterface.html#ac6204f913709c8dede6761252cac7cd0">ProblemExpertInterface</a>.</p>
+
+</div>
+</div>
+<a id="a6c695f5bf765f235cd2a1d01f8285efa" name="a6c695f5bf765f235cd2a1d01f8285efa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c695f5bf765f235cd2a1d01f8285efa">&#9670;&#160;</a></span>stepDynamics()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> stepDynamics </td>
+          <td>(</td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>dt</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>One step of the dynamics (PDDL+): the continuous effects of the running actions and the processes whose precondition holds act for dt, and then the events whose precondition holds happen. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">dt</td><td>Seconds since the last step. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if anything changed. </dd></dl>
+
+</div>
+</div>
+<a id="af33652d8c8fe3f3b31a984067d03ae3f" name="af33652d8c8fe3f3b31a984067d03ae3f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af33652d8c8fe3f3b31a984067d03ae3f">&#9670;&#160;</a></span>takeHappened()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::string &gt; takeHappened </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>What happened by itself since the last call: the events that fired and the timed facts applied, as text, "event (float_switch cistern)". </p>
 
 </div>
 </div>

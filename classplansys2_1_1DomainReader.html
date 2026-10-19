@@ -134,6 +134,9 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a1947724daba833eb2b393f550f326350" id="r_a1947724daba833eb2b393f550f326350"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1947724daba833eb2b393f550f326350">get_constants</a> (const std::string &amp;domain)</td></tr>
 <tr class="memdesc:a1947724daba833eb2b393f550f326350"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract the constants defined in the domain.  <br /></td></tr>
 <tr class="separator:a1947724daba833eb2b393f550f326350"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad35cd0f4287f01ab3e947ce69e8a0a2a" id="r_ad35cd0f4287f01ab3e947ce69e8a0a2a"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad35cd0f4287f01ab3e947ce69e8a0a2a">get_constraints</a> (const std::string &amp;domain)</td></tr>
+<tr class="memdesc:ad35cd0f4287f01ab3e947ce69e8a0a2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">The condition of the (:constraints) of a domain, empty if it has none.  <br /></td></tr>
+<tr class="separator:ad35cd0f4287f01ab3e947ce69e8a0a2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a584502b57cd9eba2cb3a9119672c35e4" id="r_a584502b57cd9eba2cb3a9119672c35e4"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a584502b57cd9eba2cb3a9119672c35e4">get_derived_predicates</a> (const std::string &amp;domain)</td></tr>
 <tr class="memdesc:a584502b57cd9eba2cb3a9119672c35e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract the derived predicates defined in the domain.  <br /></td></tr>
 <tr class="separator:a584502b57cd9eba2cb3a9119672c35e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -143,6 +146,9 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:ab20460d1b3d1dc515c2b428f587452a7" id="r_ab20460d1b3d1dc515c2b428f587452a7"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab20460d1b3d1dc515c2b428f587452a7">get_functions</a> (const std::string &amp;domain)</td></tr>
 <tr class="memdesc:ab20460d1b3d1dc515c2b428f587452a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract the functions defined in the domain.  <br /></td></tr>
 <tr class="separator:ab20460d1b3d1dc515c2b428f587452a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab437ed080e5d61bd4998b19a3326857d" id="r_ab437ed080e5d61bd4998b19a3326857d"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab437ed080e5d61bd4998b19a3326857d">get_happenings</a> (const std::string &amp;domain)</td></tr>
+<tr class="memdesc:ab437ed080e5d61bd4998b19a3326857d"><td class="mdescLeft">&#160;</td><td class="mdescRight">The processes and events (PDDL+) of a domain, as written.  <br /></td></tr>
+<tr class="separator:ab437ed080e5d61bd4998b19a3326857d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a73dd6c8adb53b3fb036fd1e1d9d843c1" id="r_a73dd6c8adb53b3fb036fd1e1d9d843c1"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a73dd6c8adb53b3fb036fd1e1d9d843c1">get_name</a> (std::string &amp;domain)</td></tr>
 <tr class="memdesc:a73dd6c8adb53b3fb036fd1e1d9d843c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract the name of the domain.  <br /></td></tr>
 <tr class="separator:a73dd6c8adb53b3fb036fd1e1d9d843c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -273,6 +279,33 @@ Protected Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ad35cd0f4287f01ab3e947ce69e8a0a2a" name="ad35cd0f4287f01ab3e947ce69e8a0a2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad35cd0f4287f01ab3e947ce69e8a0a2a">&#9670;&#160;</a></span>get_constraints()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string get_constraints </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>domain</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The condition of the (:constraints) of a domain, empty if it has none. </p>
+
+</div>
+</div>
 <a id="a584502b57cd9eba2cb3a9119672c35e4" name="a584502b57cd9eba2cb3a9119672c35e4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a584502b57cd9eba2cb3a9119672c35e4">&#9670;&#160;</a></span>get_derived_predicates()</h2>
 
@@ -397,6 +430,40 @@ Protected Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>std::string The functions section. </dd></dl>
+
+</div>
+</div>
+<a id="ab437ed080e5d61bd4998b19a3326857d" name="ab437ed080e5d61bd4998b19a3326857d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab437ed080e5d61bd4998b19a3326857d">&#9670;&#160;</a></span>get_happenings()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::string &gt; get_happenings </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>domain</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The processes and events (PDDL+) of a domain, as written. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">domain</td><td>The domain, lowercase and without comments. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Each block. </dd></dl>
 
 </div>
 </div>

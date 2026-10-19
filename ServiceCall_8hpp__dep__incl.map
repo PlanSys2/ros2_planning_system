@@ -1,5 +1,13 @@
 <map id="plansys2_core/include/plansys2_core/ServiceCall.hpp" name="plansys2_core/include/plansys2_core/ServiceCall.hpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="8,5,211,46"/>
-<area shape="rect" id="Node000002" href="$ProblemExpertClient_8cpp.html" title=" " alt="" coords="5,94,214,150"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="112,61,112,93,107,93,107,61"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="424,5,626,46"/>
+<area shape="rect" id="Node000002" href="$DomainExpertClient_8cpp.html" title=" " alt="" coords="5,94,195,150"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="413,52,207,97,196,99,195,94,206,91,412,47"/>
+<area shape="rect" id="Node000003" href="$DomainExpertNode_8cpp.html" title=" " alt="" coords="219,94,408,150"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="468,55,376,96,374,91,466,50"/>
+<area shape="rect" id="Node000004" href="$ExecutorClient_8cpp.html" title=" " alt="" coords="432,94,618,150"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="528,61,528,93,523,93,523,61"/>
+<area shape="rect" id="Node000005" href="$PlannerClient_8cpp.html" title=" " alt="" coords="642,102,872,142"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="589,50,710,98,708,103,587,55"/>
+<area shape="rect" id="Node000006" href="$ProblemExpertClient_8cpp.html" title=" " alt="" coords="897,94,1106,150"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="642,45,885,91,898,94,897,99,883,97,641,50"/>
 </map>

@@ -156,6 +156,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a787b4f8077d680d53405a15867ab2503" id="r_a787b4f8077d680d53405a15867ab2503"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a787b4f8077d680d53405a15867ab2503">PlanSolverBase</a> ()</td></tr>
 <tr class="memdesc:a787b4f8077d680d53405a15867ab2503"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <br /></td></tr>
 <tr class="separator:a787b4f8077d680d53405a15867ab2503"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fea8ee0a797b0c51e5dbf77e789cd06" id="r_a0fea8ee0a797b0c51e5dbf77e789cd06"><td class="memItemLeft" align="right" valign="top">virtual std::set&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0fea8ee0a797b0c51e5dbf77e789cd06">supported_requirements</a> () const</td></tr>
+<tr class="memdesc:a0fea8ee0a797b0c51e5dbf77e789cd06"><td class="mdescLeft">&#160;</td><td class="mdescRight">The PDDL requirements this solver plans with, as known_pddl_requirements names them.  <br /></td></tr>
+<tr class="separator:a0fea8ee0a797b0c51e5dbf77e789cd06"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add0faac665426f6b155750d49dcd6462" id="r_add0faac665426f6b155750d49dcd6462"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#add0faac665426f6b155750d49dcd6462">~PlanSolverBase</a> ()=default</td></tr>
 <tr class="memdesc:add0faac665426f6b155750d49dcd6462"><td class="mdescLeft">&#160;</td><td class="mdescRight">Virtual destructor, plugins are destroyed through this base class.  <br /></td></tr>
 <tr class="separator:add0faac665426f6b155750d49dcd6462"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -443,6 +446,37 @@ Protected Attributes</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>true if the domain is valid, false otherwise. </dd></dl>
 
 <p>Implemented in <a class="el" href="classPlannerTest.html#a73c6cdd18605ba692d6354ef85611a89">PlannerTest</a>, <a class="el" href="classplansys2_1_1POPFPlanSolver.html#ad07a0b686996339324eaecdc63be1cd4">POPFPlanSolver</a>, and <a class="el" href="classTestSolver.html#a5b5a700c35da62bce0f71ac31c2feda7">TestSolver</a>.</p>
+
+</div>
+</div>
+<a id="a0fea8ee0a797b0c51e5dbf77e789cd06" name="a0fea8ee0a797b0c51e5dbf77e789cd06"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0fea8ee0a797b0c51e5dbf77e789cd06">&#9670;&#160;</a></span>supported_requirements()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual std::set&lt; std::string &gt; supported_requirements </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The PDDL requirements this solver plans with, as known_pddl_requirements names them. </p>
+<p>The planner gives a task only to the solvers that support what it needs (pddl_requirements). Empty, the default: the solver does not say, and gets every task.</p>
+<dl class="section return"><dt>Returns</dt><dd>The requirements. </dd></dl>
+
+<p>Reimplemented in <a class="el" href="classplansys2_1_1POPFPlanSolver.html#a9cbf2025a798d4fa6bb71c763447fd0a">POPFPlanSolver</a>.</p>
 
 </div>
 </div>

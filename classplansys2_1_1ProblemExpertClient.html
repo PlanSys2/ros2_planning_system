@@ -163,7 +163,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a54d53dd9a7c0ae701e0653b50a6920c7" id="r_a54d53dd9a7c0ae701e0653b50a6920c7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classplansys2_1_1Goal.html">plansys2::Goal</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a54d53dd9a7c0ae701e0653b50a6920c7">getGoal</a> ()</td></tr>
 <tr class="memdesc:a54d53dd9a7c0ae701e0653b50a6920c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current goal of the problem.  <br /></td></tr>
 <tr class="separator:a54d53dd9a7c0ae701e0653b50a6920c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8a0467ab59abd04eea556a7c30302025" id="r_a8a0467ab59abd04eea556a7c30302025"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="classplansys2_1_1Instance.html">plansys2::Instance</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8a0467ab59abd04eea556a7c30302025">getInstance</a> (const std::string &amp;name)</td></tr>
+<tr class="memitem:a8a0467ab59abd04eea556a7c30302025" id="r_a8a0467ab59abd04eea556a7c30302025"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="classplansys2_1_1Instance.html">plansys2::Instance</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8a0467ab59abd04eea556a7c30302025">getInstance</a> (const std::string &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a>)</td></tr>
 <tr class="memdesc:a8a0467ab59abd04eea556a7c30302025"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a specific instance by name.  <br /></td></tr>
 <tr class="separator:a8a0467ab59abd04eea556a7c30302025"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adfbc5177c7986c3f24fa35c381da9032" id="r_adfbc5177c7986c3f24fa35c381da9032"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classplansys2_1_1Instance.html">plansys2::Instance</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adfbc5177c7986c3f24fa35c381da9032">getInstances</a> ()</td></tr>
@@ -205,6 +205,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7f3e3900f6b387bfe7ebcb4d33714b7d" id="r_a7f3e3900f6b387bfe7ebcb4d33714b7d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7f3e3900f6b387bfe7ebcb4d33714b7d">removePredicate</a> (const <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &amp;predicate)</td></tr>
 <tr class="memdesc:a7f3e3900f6b387bfe7ebcb4d33714b7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a predicate from the problem.  <br /></td></tr>
 <tr class="separator:a7f3e3900f6b387bfe7ebcb4d33714b7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ace1ae3d4400aad129592c13f0427ee" id="r_a7ace1ae3d4400aad129592c13f0427ee"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7ace1ae3d4400aad129592c13f0427ee">setContinuousEffect</a> (const std::string &amp;id, const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;effects, <a class="el" href="classbool.html">bool</a> active)</td></tr>
+<tr class="memdesc:a7ace1ae3d4400aad129592c13f0427ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">The continuous effects of a running action, integrated by the problem expert while active (PDDL 2.1).  <br /></td></tr>
+<tr class="separator:a7ace1ae3d4400aad129592c13f0427ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a998ac8e71bd42b5ad5a76f9046d6d690" id="r_a998ac8e71bd42b5ad5a76f9046d6d690"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a998ac8e71bd42b5ad5a76f9046d6d690">setGoal</a> (const <a class="el" href="classplansys2_1_1Goal.html">plansys2::Goal</a> &amp;goal)</td></tr>
 <tr class="memdesc:a998ac8e71bd42b5ad5a76f9046d6d690"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a new goal for the problem.  <br /></td></tr>
 <tr class="separator:a998ac8e71bd42b5ad5a76f9046d6d690"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1070,6 +1073,43 @@ Public Attributes</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>true if the predicate was successfully removed, false otherwise. </dd></dl>
 
 <p>Implements <a class="el" href="classplansys2_1_1ProblemExpertInterface.html#aaf1da791448cba48c8dda677953d01f8">ProblemExpertInterface</a>.</p>
+
+</div>
+</div>
+<a id="a7ace1ae3d4400aad129592c13f0427ee" name="a7ace1ae3d4400aad129592c13f0427ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ace1ae3d4400aad129592c13f0427ee">&#9670;&#160;</a></span>setContinuousEffect()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> setContinuousEffect </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>effects</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classbool.html">bool</a></td>          <td class="paramname"><span class="paramname"><em>active</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The continuous effects of a running action, integrated by the problem expert while active (PDDL 2.1). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>Who they are, the action. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">effects</td><td>(and (increase (f) (* #t rate))...), bound to its objects. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">active</td><td>false to stop them. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the problem expert took them. </dd></dl>
 
 </div>
 </div>

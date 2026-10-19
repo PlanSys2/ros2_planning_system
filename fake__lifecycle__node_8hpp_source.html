@@ -131,11 +131,11 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>{</div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">public</span>:</div>
 <div class="foldopen" id="foldopen00039" data-start="{" data-end="}">
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno"><a class="line" href="classFakeLifecycleNode.html#ad4def936d366d89447cfaae761330a62">   39</a></span>  <span class="keyword">explicit</span> <a class="code hl_function" href="classFakeLifecycleNode.html#ad4def936d366d89447cfaae761330a62">FakeLifecycleNode</a>(<span class="keyword">const</span> std::string &amp; name)</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  : <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Node.html">Node</a>(name + <span class="stringliteral">&quot;_fake&quot;</span>)</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno"><a class="line" href="classFakeLifecycleNode.html#ad4def936d366d89447cfaae761330a62">   39</a></span>  <span class="keyword">explicit</span> <a class="code hl_function" href="classFakeLifecycleNode.html#ad4def936d366d89447cfaae761330a62">FakeLifecycleNode</a>(<span class="keyword">const</span> std::string &amp; <a class="code hl_variable" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a>)</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  : <a class="code hl_class" href="classplansys2__msgs_1_1msg_1_1Node.html">Node</a>(<a class="code hl_variable" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a> + <span class="stringliteral">&quot;_fake&quot;</span>)</div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>  {</div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    get_state_ = create_service&lt;lifecycle_msgs::srv::GetState&gt;(</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>      name + <span class="stringliteral">&quot;/get_state&quot;</span>,</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>      <a class="code hl_variable" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a> + <span class="stringliteral">&quot;/get_state&quot;</span>,</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>      [<span class="keyword">this</span>](</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>        <span class="keyword">const</span> std::shared_ptr&lt;lifecycle_msgs::srv::GetState::Request&gt;,</div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>        std::shared_ptr&lt;lifecycle_msgs::srv::GetState::Response&gt; response) {</div>
@@ -144,7 +144,7 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>        response-&gt;current_state.id = <a class="code hl_variable" href="classFakeLifecycleNode.html#a669b8b8416abb151d4c0b424822538a0">state</a>;</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>      });</div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    change_state_ = create_service&lt;lifecycle_msgs::srv::ChangeState&gt;(</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>      name + <span class="stringliteral">&quot;/change_state&quot;</span>,</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>      <a class="code hl_variable" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a> + <span class="stringliteral">&quot;/change_state&quot;</span>,</div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>      [<span class="keyword">this</span>](</div>
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>        std::shared_ptr&lt;rclcpp::Service&lt;lifecycle_msgs::srv::ChangeState&gt;&gt; service,</div>
 <div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>        std::shared_ptr&lt;rmw_request_id_t&gt; header,</div>
@@ -186,8 +186,8 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l00088" name="l00088"></a><span class="lineno"><a class="line" href="classFailingLifecycleNode.html#aa016ff104ce1b9e5361e03e3dc22c0a0">   88</a></span>  <span class="keyword">using </span><a class="code hl_typedef" href="classFailingLifecycleNode.html#aa016ff104ce1b9e5361e03e3dc22c0a0">CallbackReturn</a> = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;</div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
 <div class="foldopen" id="foldopen00090" data-start="{" data-end="}">
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno"><a class="line" href="classFailingLifecycleNode.html#a439d056a4bb924cb8a467ee08579117c">   90</a></span>  <a class="code hl_function" href="classFailingLifecycleNode.html#a439d056a4bb924cb8a467ee08579117c">FailingLifecycleNode</a>(<span class="keyword">const</span> std::string &amp; name, <span class="keywordtype">bool</span> fail_configure, <span class="keywordtype">bool</span> fail_activate)</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>  : LifecycleNode(name), fail_configure_(fail_configure), fail_activate_(fail_activate) {}</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno"><a class="line" href="classFailingLifecycleNode.html#a439d056a4bb924cb8a467ee08579117c">   90</a></span>  <a class="code hl_function" href="classFailingLifecycleNode.html#a439d056a4bb924cb8a467ee08579117c">FailingLifecycleNode</a>(<span class="keyword">const</span> std::string &amp; <a class="code hl_variable" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a>, <span class="keywordtype">bool</span> fail_configure, <span class="keywordtype">bool</span> fail_activate)</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>  : LifecycleNode(<a class="code hl_variable" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a>), fail_configure_(fail_configure), fail_activate_(fail_activate) {}</div>
 </div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span> </div>
 <div class="foldopen" id="foldopen00093" data-start="{" data-end="}">
@@ -254,6 +254,7 @@ $(function(){ initResizable(false); });
 <div class="ttc" id="aclassSpinner_html_a60de64d75454385b23995437f1d72669"><div class="ttname"><a href="classSpinner.html#a60de64d75454385b23995437f1d72669">Spinner::start</a></div><div class="ttdeci">void start()</div><div class="ttdef"><b>Definition</b> fake_lifecycle_node.hpp:120</div></div>
 <div class="ttc" id="aclassSpinner_html_a7f9975e8ef6c56c5f080e0cc64cae612"><div class="ttname"><a href="classSpinner.html#a7f9975e8ef6c56c5f080e0cc64cae612">Spinner::add</a></div><div class="ttdeci">void add(std::shared_ptr&lt; NodeT &gt; node)</div><div class="ttdef"><b>Definition</b> fake_lifecycle_node.hpp:114</div></div>
 <div class="ttc" id="aclassplansys2__msgs_1_1msg_1_1Node_html"><div class="ttname"><a href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a></div></div>
+<div class="ttc" id="aplansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp_html_a9b45b3e13bd9167aab02e17e08916231"><div class="ttname"><a href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a></div><div class="ttdeci">std::string name</div><div class="ttdef"><b>Definition</b> Utils.cpp:1444</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

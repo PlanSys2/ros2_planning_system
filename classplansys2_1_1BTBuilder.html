@@ -93,6 +93,7 @@ $(function(){ initResizable(false); });
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classplansys2_1_1BTBuilder-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">BTBuilder Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div></div>
 </div><!--header-->
@@ -122,6 +123,16 @@ Inheritance diagram for BTBuilder:</div>
 <area shape="poly" title=" " alt="" coords="426,108,534,150,532,155,424,113"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
+<div class="dynheader">
+Collaboration diagram for BTBuilder:</div>
+<div class="dyncontent">
+<div class="center"><img src="classplansys2_1_1BTBuilder__coll__graph.png" border="0" usemap="#aBTBuilder_coll__map" alt="Collaboration graph"/></div>
+<map name="aBTBuilder_coll__map" id="aBTBuilder_coll__map">
+<area shape="rect" title="Interface for behavior tree builder implementations." alt="" coords="5,94,84,120"/>
+<area shape="rect" href="classint.html" title=" " alt="" coords="25,5,64,31"/>
+<area shape="poly" title=" " alt="" coords="47,47,47,94,42,94,42,47"/>
+</map>
+<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
@@ -130,6 +141,9 @@ Public Types</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a12c176294b5c26ca4a74c32ed180a068" id="r_a12c176294b5c26ca4a74c32ed180a068"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a12c176294b5c26ca4a74c32ed180a068">get_action_time_precision</a> () const</td></tr>
+<tr class="memdesc:a12c176294b5c26ca4a74c32ed180a068"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decimals of the times in the action ids, as given to initialize.  <br /></td></tr>
+<tr class="separator:a12c176294b5c26ca4a74c32ed180a068"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1561508c63200190f6f2b1427fdb7240" id="r_a1561508c63200190f6f2b1427fdb7240"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1561508c63200190f6f2b1427fdb7240">get_dotgraph</a> (std::shared_ptr&lt; std::map&lt; std::string, <a class="el" href="structplansys2_1_1ActionExecutionInfo.html">ActionExecutionInfo</a> &gt; &gt; action_map, <a class="el" href="classbool.html">bool</a> enable_legend=false, <a class="el" href="classbool.html">bool</a> enable_print_graph=false)=0</td></tr>
 <tr class="memdesc:a1561508c63200190f6f2b1427fdb7240"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a DOT graph representation for visualization.  <br /></td></tr>
 <tr class="separator:a1561508c63200190f6f2b1427fdb7240"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -151,26 +165,36 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a39c9d14b109758533b2614565f4a338b" id="r_a39c9d14b109758533b2614565f4a338b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a39c9d14b109758533b2614565f4a338b">set_initial_state</a> (std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt; predicates, std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt; functions)</td></tr>
 <tr class="memdesc:a39c9d14b109758533b2614565f4a338b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the state the plan starts from, instead of the current one.  <br /></td></tr>
 <tr class="separator:a39c9d14b109758533b2614565f4a338b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0976a6726435c6bbd7318bed8c476fb" id="r_ab0976a6726435c6bbd7318bed8c476fb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab0976a6726435c6bbd7318bed8c476fb">set_time_offset</a> (double seconds)</td></tr>
+<tr class="memdesc:ab0976a6726435c6bbd7318bed8c476fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">How long ago the problem of the plan was read: its timed facts, written from now, are this much later in the time of the plan.  <br /></td></tr>
+<tr class="separator:ab0976a6726435c6bbd7318bed8c476fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a796975e9d061360d50983d3154b225e0" id="r_a796975e9d061360d50983d3154b225e0"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a796975e9d061360d50983d3154b225e0">~BTBuilder</a> ()=default</td></tr>
 <tr class="separator:a796975e9d061360d50983d3154b225e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a320215550b0cd381f3b61bba11cc0343" id="r_a320215550b0cd381f3b61bba11cc0343"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classplansys2_1_1ActionVariant.html">plansys2::ActionVariant</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a320215550b0cd381f3b61bba11cc0343">plan_item_action</a> (<a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &amp;<a class="el" href="#ac112d607051000a90f75129505eb0177">domain_client</a>, const std::vector&lt; std::string &gt; &amp;actions, const plansys2_msgs::msg::PlanItem &amp;item)</td></tr>
+<tr class="memdesc:a320215550b0cd381f3b61bba11cc0343"><td class="mdescLeft">&#160;</td><td class="mdescRight">The action of a plan item, from the domain, with ?duration bound to its duration.  <br /></td></tr>
+<tr class="separator:a320215550b0cd381f3b61bba11cc0343"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf4d6255563bbd590a2458e8aab8ef4d" id="r_acf4d6255563bbd590a2458e8aab8ef4d"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acf4d6255563bbd590a2458e8aab8ef4d">to_action_id</a> (const <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &amp;action, <a class="el" href="classint.html">int</a> precision)</td></tr>
 <tr class="memdesc:acf4d6255563bbd590a2458e8aab8ef4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a unique action identifier from an <a class="el" href="structplansys2_1_1ActionStamped.html" title="Representation of an action with its temporal information.">ActionStamped</a>.  <br /></td></tr>
 <tr class="separator:acf4d6255563bbd590a2458e8aab8ef4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2fe3bab9056b7e2b92647f9c84918d9" id="r_ab2fe3bab9056b7e2b92647f9c84918d9"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab2fe3bab9056b7e2b92647f9c84918d9">to_action_id</a> (const plansys2_msgs::msg::PlanItem &amp;item, <a class="el" href="classint.html">int</a> precision)</td></tr>
 <tr class="memdesc:ab2fe3bab9056b7e2b92647f9c84918d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a unique action identifier from a plan item.  <br /></td></tr>
 <tr class="separator:ab2fe3bab9056b7e2b92647f9c84918d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06fe6872f390844927050053f3b9114c" id="r_a06fe6872f390844927050053f3b9114c"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a06fe6872f390844927050053f3b9114c">to_int_time</a> (float time, <a class="el" href="classint.html">int</a> power)</td></tr>
-<tr class="memdesc:a06fe6872f390844927050053f3b9114c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a floating point time to an integer with specified precision.  <br /></td></tr>
-<tr class="separator:a06fe6872f390844927050053f3b9114c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d3630c8b8c59781cdcca01ab4206b6b" id="r_a7d3630c8b8c59781cdcca01ab4206b6b"><td class="memItemLeft" align="right" valign="top">static int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7d3630c8b8c59781cdcca01ab4206b6b">to_int_time</a> (double time, <a class="el" href="classint.html">int</a> power)</td></tr>
+<tr class="memdesc:a7d3630c8b8c59781cdcca01ab4206b6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a floating point time to an integer with specified precision.  <br /></td></tr>
+<tr class="separator:a7d3630c8b8c59781cdcca01ab4206b6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ac872ad088e5683ba3394260b361945" id="r_a3ac872ad088e5683ba3394260b361945"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3ac872ad088e5683ba3394260b361945">to_string</a> (const <a class="el" href="namespaceplansys2.html#a21d5e8f8cdaa838586b31007df0a950b">ActionType</a> &amp;action_type)</td></tr>
 <tr class="memdesc:a3ac872ad088e5683ba3394260b361945"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert an action type to its string representation.  <br /></td></tr>
 <tr class="separator:a3ac872ad088e5683ba3394260b361945"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
+<tr class="memitem:af7ee19f5afd9dd3904338963942de0e5" id="r_af7ee19f5afd9dd3904338963942de0e5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af7ee19f5afd9dd3904338963942de0e5">apply_effects</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;effects, std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt; &amp;predicates, std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt; &amp;functions) const</td></tr>
+<tr class="separator:af7ee19f5afd9dd3904338963942de0e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a7955d755e1af6b2437b3e8ee457961" id="r_a0a7955d755e1af6b2437b3e8ee457961"><td class="memItemLeft" align="right" valign="top">const std::set&lt; std::string &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0a7955d755e1af6b2437b3e8ee457961">derived_names</a> () const</td></tr>
+<tr class="separator:a0a7955d755e1af6b2437b3e8ee457961"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac112d607051000a90f75129505eb0177" id="r_ac112d607051000a90f75129505eb0177"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac112d607051000a90f75129505eb0177">domain_client</a> () const</td></tr>
 <tr class="separator:ac112d607051000a90f75129505eb0177"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c302ce42511d3764a74c002304658dd" id="r_a7c302ce42511d3764a74c002304658dd"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7c302ce42511d3764a74c002304658dd">initial_functions</a> () const</td></tr>
@@ -179,6 +203,19 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:aae104da4196775d2e723b0032b0e3d23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a00cf7b0ed017e96e8a59a3f03a563965" id="r_a00cf7b0ed017e96e8a59a3f03a563965"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a00cf7b0ed017e96e8a59a3f03a563965">problem_client</a> () const</td></tr>
 <tr class="separator:a00cf7b0ed017e96e8a59a3f03a563965"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1873b482b80a9123bd9bf7ebee221d5" id="r_ac1873b482b80a9123bd9bf7ebee221d5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac1873b482b80a9123bd9bf7ebee221d5">reads_dynamic</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a6ae81e8b161969c08de554a8ca2673cf">conditions</a>) const</td></tr>
+<tr class="separator:ac1873b482b80a9123bd9bf7ebee221d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a474ed534be3163861e097ffc6a8110e7" id="r_a474ed534be3163861e097ffc6a8110e7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a474ed534be3163861e097ffc6a8110e7">relax_dynamic</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a6ae81e8b161969c08de554a8ca2673cf">conditions</a>) const</td></tr>
+<tr class="separator:a474ed534be3163861e097ffc6a8110e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adaa4f8752f39abbd155a426ab2b2cdf7" id="r_adaa4f8752f39abbd155a426ab2b2cdf7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adaa4f8752f39abbd155a426ab2b2cdf7">reset_derived_rules</a> () const</td></tr>
+<tr class="separator:adaa4f8752f39abbd155a426ab2b2cdf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1743b1e3799e066be9c755989788aa10" id="r_a1743b1e3799e066be9c755989788aa10"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1743b1e3799e066be9c755989788aa10">timed_events</a> () const</td></tr>
+<tr class="separator:a1743b1e3799e066be9c755989788aa10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:ab0243c71d78858105ef39bbb8666fbbc" id="r_ab0243c71d78858105ef39bbb8666fbbc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab0243c71d78858105ef39bbb8666fbbc">action_time_precision_</a> = 3</td></tr>
+<tr class="separator:ab0243c71d78858105ef39bbb8666fbbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Interface for behavior tree builder implementations. </p>
@@ -225,6 +262,65 @@ Protected Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="af7ee19f5afd9dd3904338963942de0e5" name="af7ee19f5afd9dd3904338963942de0e5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af7ee19f5afd9dd3904338963942de0e5">&#9670;&#160;</a></span>apply_effects()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void apply_effects </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>effects</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>predicates</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>functions</em></span>&#160;) const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0a7955d755e1af6b2437b3e8ee457961" name="a0a7955d755e1af6b2437b3e8ee457961"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0a7955d755e1af6b2437b3e8ee457961">&#9670;&#160;</a></span>derived_names()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::set&lt; std::string &gt; &amp; derived_names </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="ac112d607051000a90f75129505eb0177" name="ac112d607051000a90f75129505eb0177"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac112d607051000a90f75129505eb0177">&#9670;&#160;</a></span>domain_client()</h2>
 
@@ -247,6 +343,26 @@ Protected Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a12c176294b5c26ca4a74c32ed180a068" name="a12c176294b5c26ca4a74c32ed180a068"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a12c176294b5c26ca4a74c32ed180a068">&#9670;&#160;</a></span>get_action_time_precision()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classint.html">int</a> get_action_time_precision </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Decimals of the times in the action ids, as given to initialize. </p>
+<dl class="section return"><dt>Returns</dt><dd>The decimals. </dd></dl>
 
 </div>
 </div>
@@ -459,6 +575,51 @@ Protected Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a320215550b0cd381f3b61bba11cc0343" name="a320215550b0cd381f3b61bba11cc0343"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a320215550b0cd381f3b61bba11cc0343">&#9670;&#160;</a></span>plan_item_action()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classplansys2_1_1ActionVariant.html">plansys2::ActionVariant</a> plan_item_action </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>domain_client</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; std::string &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>actions</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const plansys2_msgs::msg::PlanItem &amp;</td>          <td class="paramname"><span class="paramname"><em>item</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The action of a plan item, from the domain, with ?duration bound to its duration. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">domain_client</td><td>Where the actions come from. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">actions</td><td>The non-durative actions of the domain. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">item</td><td>The plan item. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The action; empty if the domain does not have it. </dd></dl>
+
+</div>
+</div>
 <a id="a00cf7b0ed017e96e8a59a3f03a563965" name="a00cf7b0ed017e96e8a59a3f03a563965"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a00cf7b0ed017e96e8a59a3f03a563965">&#9670;&#160;</a></span>problem_client()</h2>
 
@@ -517,6 +678,81 @@ Protected Member Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>True if propagation was successful, false if inconsistencies were found. </dd></dl>
 
 <p>Implemented in <a class="el" href="classplansys2_1_1SequentialBTBuilder.html#a291d62802a5f41e77c1ff7a74ef01084">SequentialBTBuilder</a>, <a class="el" href="classplansys2_1_1SimpleBTBuilder.html#acce6983df946e736e0d75b469bdb53ea">SimpleBTBuilder</a>, and <a class="el" href="classplansys2_1_1STNBTBuilder.html#ac195b7590b813224911b7851a1f9813d">STNBTBuilder</a>.</p>
+
+</div>
+</div>
+<a id="ac1873b482b80a9123bd9bf7ebee221d5" name="ac1873b482b80a9123bd9bf7ebee221d5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac1873b482b80a9123bd9bf7ebee221d5">&#9670;&#160;</a></span>reads_dynamic()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> reads_dynamic </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>conditions</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a474ed534be3163861e097ffc6a8110e7" name="a474ed534be3163861e097ffc6a8110e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a474ed534be3163861e097ffc6a8110e7">&#9670;&#160;</a></span>relax_dynamic()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> relax_dynamic </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>conditions</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="adaa4f8752f39abbd155a426ab2b2cdf7" name="adaa4f8752f39abbd155a426ab2b2cdf7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adaa4f8752f39abbd155a426ab2b2cdf7">&#9670;&#160;</a></span>reset_derived_rules()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void reset_derived_rules </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -579,6 +815,50 @@ Protected Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="ab0976a6726435c6bbd7318bed8c476fb" name="ab0976a6726435c6bbd7318bed8c476fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab0976a6726435c6bbd7318bed8c476fb">&#9670;&#160;</a></span>set_time_offset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void set_time_offset </td>
+          <td>(</td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>seconds</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>How long ago the problem of the plan was read: its timed facts, written from now, are this much later in the time of the plan. </p>
+
+</div>
+</div>
+<a id="a1743b1e3799e066be9c755989788aa10" name="a1743b1e3799e066be9c755989788aa10"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1743b1e3799e066be9c755989788aa10">&#9670;&#160;</a></span>timed_events()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; timed_events </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -660,8 +940,8 @@ Protected Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a06fe6872f390844927050053f3b9114c" name="a06fe6872f390844927050053f3b9114c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a06fe6872f390844927050053f3b9114c">&#9670;&#160;</a></span>to_int_time()</h2>
+<a id="a7d3630c8b8c59781cdcca01ab4206b6b" name="a7d3630c8b8c59781cdcca01ab4206b6b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d3630c8b8c59781cdcca01ab4206b6b">&#9670;&#160;</a></span>to_int_time()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -670,9 +950,9 @@ Protected Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="classint.html">int</a> to_int_time </td>
+          <td class="memname">static int64_t to_int_time </td>
           <td>(</td>
-          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>time</em></span>, </td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>time</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -730,6 +1010,29 @@ Protected Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>std::string representation of the action type. </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="ab0243c71d78858105ef39bbb8666fbbc" name="ab0243c71d78858105ef39bbb8666fbbc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab0243c71d78858105ef39bbb8666fbbc">&#9670;&#160;</a></span>action_time_precision_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classint.html">int</a> action_time_precision_ = 3</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>

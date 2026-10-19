@@ -24,9 +24,10 @@ var searchData=
   ['pluginprovider_21',['PluginProvider',['../classplansys2__support__py_1_1core_1_1PluginProvider_1_1PluginProvider.html',1,'plansys2_support_py::core::PluginProvider']]],
   ['popfplansolver_22',['POPFPlanSolver',['../classplansys2_1_1POPFPlanSolver.html',1,'plansys2']]],
   ['predicate_23',['Predicate',['../classplansys2_1_1Predicate.html',1,'plansys2']]],
-  ['problemexpert_24',['ProblemExpert',['../classplansys2_1_1ProblemExpert.html',1,'plansys2']]],
-  ['problemexpertclient_25',['ProblemExpertClient',['../classplansys2_1_1ProblemExpertClient.html',1,'ProblemExpertClient'],['../classplansys2__support__py_1_1ProblemExpertClient_1_1ProblemExpertClient.html',1,'ProblemExpertClient']]],
-  ['problemexpertinterface_26',['ProblemExpertInterface',['../classplansys2_1_1ProblemExpertInterface.html',1,'plansys2']]],
-  ['problemexpertnode_27',['ProblemExpertNode',['../classplansys2_1_1ProblemExpertNode.html',1,'plansys2']]],
-  ['problemexpertnodemisc_28',['ProblemExpertNodeMisc',['../classProblemExpertNodeMisc.html',1,'']]]
+  ['preference_24',['Preference',['../classparser_1_1pddl_1_1Preference.html',1,'parser::pddl']]],
+  ['problemexpert_25',['ProblemExpert',['../classplansys2_1_1ProblemExpert.html',1,'plansys2']]],
+  ['problemexpertclient_26',['ProblemExpertClient',['../classplansys2_1_1ProblemExpertClient.html',1,'ProblemExpertClient'],['../classplansys2__support__py_1_1ProblemExpertClient_1_1ProblemExpertClient.html',1,'ProblemExpertClient']]],
+  ['problemexpertinterface_27',['ProblemExpertInterface',['../classplansys2_1_1ProblemExpertInterface.html',1,'plansys2']]],
+  ['problemexpertnode_28',['ProblemExpertNode',['../classplansys2_1_1ProblemExpertNode.html',1,'plansys2']]],
+  ['problemexpertnodemisc_29',['ProblemExpertNodeMisc',['../classProblemExpertNodeMisc.html',1,'']]]
 ];

@@ -122,6 +122,8 @@ Variables</h2></td></tr>
 <tr class="separator:aab583dfb0450ecf4b6f2d8ae049f0772"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa4ffec46161dd364343860e9c0c442ec" id="r_aa4ffec46161dd364343860e9c0c442ec"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa4ffec46161dd364343860e9c0c442ec">_COMPARISONS</a> = (Node.COMP_GE, Node.COMP_GT, Node.COMP_LE, Node.COMP_LT, Node.COMP_EQ)</td></tr>
 <tr class="separator:aa4ffec46161dd364343860e9c0c442ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ac8013e603a81e9df9e4b2e0495b738" id="r_a8ac8013e603a81e9df9e4b2e0495b738"><td class="memItemLeft" align="right" valign="top">dict&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8ac8013e603a81e9df9e4b2e0495b738">_CONSTRAINTS</a></td></tr>
+<tr class="separator:a8ac8013e603a81e9df9e4b2e0495b738"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a24255f1a08aea3b30282492f68857f01" id="r_a24255f1a08aea3b30282492f68857f01"><td class="memItemLeft" align="right" valign="top">dict&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a24255f1a08aea3b30282492f68857f01">_EXPRESSIONS</a></td></tr>
 <tr class="separator:a24255f1a08aea3b30282492f68857f01"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac2cc5d25b8bacf13d3ef67da170e7b51" id="r_ac2cc5d25b8bacf13d3ef67da170e7b51"><td class="memItemLeft" align="right" valign="top">dict&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac2cc5d25b8bacf13d3ef67da170e7b51">_LOGIC</a></td></tr>
@@ -334,6 +336,33 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="a8ac8013e603a81e9df9e4b2e0495b738" name="a8ac8013e603a81e9df9e4b2e0495b738"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ac8013e603a81e9df9e4b2e0495b738">&#9670;&#160;</a></span>_CONSTRAINTS</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">dict _CONSTRAINTS</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line"><span class="lineno">    1</span>=  {</div>
+<div class="line"><span class="lineno">    2</span>    <span class="stringliteral">&#39;always&#39;</span>: (0, 1), <span class="stringliteral">&#39;sometime&#39;</span>: (0, 1), <span class="stringliteral">&#39;at-most-once&#39;</span>: (0, 1), <span class="stringliteral">&#39;at end&#39;</span>: (0, 1),</div>
+<div class="line"><span class="lineno">    3</span>    <span class="stringliteral">&#39;within&#39;</span>: (1, 1), <span class="stringliteral">&#39;hold-after&#39;</span>: (1, 1), <span class="stringliteral">&#39;sometime-after&#39;</span>: (0, 2),</div>
+<div class="line"><span class="lineno">    4</span>    <span class="stringliteral">&#39;sometime-before&#39;</span>: (0, 2), <span class="stringliteral">&#39;always-within&#39;</span>: (1, 2), <span class="stringliteral">&#39;hold-during&#39;</span>: (2, 1),</div>
+<div class="line"><span class="lineno">    5</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
 <a id="a24255f1a08aea3b30282492f68857f01" name="a24255f1a08aea3b30282492f68857f01"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a24255f1a08aea3b30282492f68857f01">&#9670;&#160;</a></span>_EXPRESSIONS</h2>
 
@@ -382,7 +411,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line"><span class="lineno">    1</span>=  {</div>
 <div class="line"><span class="lineno">    2</span>    <span class="stringliteral">&#39;and&#39;</span>: Node.AND, <span class="stringliteral">&#39;or&#39;</span>: Node.OR, <span class="stringliteral">&#39;not&#39;</span>: Node.NOT, <span class="stringliteral">&#39;exists&#39;</span>: Node.EXISTS,</div>
-<div class="line"><span class="lineno">    3</span>    <span class="stringliteral">&#39;forall&#39;</span>: Node.FORALL, <span class="stringliteral">&#39;imply&#39;</span>: Node.IMPLY,</div>
+<div class="line"><span class="lineno">    3</span>    <span class="stringliteral">&#39;forall&#39;</span>: Node.FORALL, <span class="stringliteral">&#39;imply&#39;</span>: Node.IMPLY, <span class="stringliteral">&#39;when&#39;</span>: Node.WHEN,</div>
 <div class="line"><span class="lineno">    4</span>}</div>
 </div><!-- fragment -->
 </div>

@@ -1,0 +1,11 @@
+<map id="BankCase" name="BankCase">
+<area shape="rect" id="Node000001" title="A task of the PDDL test bank: one feature per directory, a few problems each." alt="" coords="138,154,219,180"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,59,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="31,46,33,89,39,110,51,128,69,143,91,154,138,163,137,168,90,159,66,148,47,132,34,112,28,90,26,47"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="106,5,152,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="126,47,123,87,126,109,133,129,143,141,156,151,153,156,139,145,129,131,121,110,118,87,121,46"/>
+<area shape="rect" id="Node000004" href="$classbool.html" title=" " alt="" coords="207,5,252,31"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="227,47,217,87,202,131,189,155,185,152,198,129,212,86,222,46"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="276,5,393,31"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="330,47,312,90,298,113,280,132,252,150,221,161,219,156,249,145,277,128,294,109,307,88,325,45"/>
+</map>

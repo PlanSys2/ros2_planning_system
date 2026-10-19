@@ -91,6 +91,7 @@ $(function(){ initResizable(false); });
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classplansys2_1_1STNBTBuilder-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">STNBTBuilder Class Reference</div></div>
@@ -116,17 +117,17 @@ Collaboration diagram for STNBTBuilder:</div>
 <div class="dyncontent">
 <div class="center"><img src="classplansys2_1_1STNBTBuilder__coll__graph.png" border="0" usemap="#aSTNBTBuilder_coll__map" alt="Collaboration graph"/></div>
 <map name="aSTNBTBuilder_coll__map" id="aSTNBTBuilder_coll__map">
-<area shape="rect" title="Behavior tree builder that uses Simple Temporal Networks (STN) to manage temporal constraints." alt="" coords="393,127,498,152"/>
-<area shape="rect" href="classplansys2_1_1BTBuilder.html" title="Interface for behavior tree builder implementations." alt="" coords="68,5,146,31"/>
-<area shape="poly" title=" " alt="" coords="162,18,261,32,317,46,370,68,408,96,436,125,432,128,405,100,367,72,315,51,260,37,161,23"/>
-<area shape="rect" title=" " alt="" coords="37,55,177,80"/>
-<area shape="poly" title=" " alt="" coords="192,80,369,117,396,123,394,129,368,122,191,85"/>
-<area shape="rect" title=" " alt="" coords="5,104,209,175"/>
-<area shape="poly" title=" " alt="" coords="224,137,392,137,392,142,224,142"/>
-<area shape="rect" title=" " alt="" coords="80,199,134,224"/>
-<area shape="poly" title=" " alt="" coords="149,207,250,197,309,187,368,172,419,150,421,155,370,177,310,192,250,202,149,212"/>
-<area shape="rect" href="classint.html" title=" " alt="" coords="88,248,126,274"/>
-<area shape="poly" title=" " alt="" coords="142,260,189,259,247,254,309,242,367,219,389,204,407,186,434,151,438,154,411,189,392,208,370,224,310,247,247,260,189,265,142,265"/>
+<area shape="rect" title="Behavior tree builder that uses Simple Temporal Networks (STN) to manage temporal constraints." alt="" coords="572,93,677,118"/>
+<area shape="rect" href="classplansys2_1_1BTBuilder.html" title="Interface for behavior tree builder implementations." alt="" coords="290,8,369,33"/>
+<area shape="poly" title=" " alt="" coords="384,25,463,39,549,63,604,90,601,95,547,68,462,44,383,30"/>
+<area shape="rect" href="classint.html" title=" " alt="" coords="5,8,44,33"/>
+<area shape="poly" title=" " alt="" coords="60,18,290,18,290,23,60,23"/>
+<area shape="rect" title=" " alt="" coords="260,57,399,82"/>
+<area shape="poly" title=" " alt="" coords="415,77,572,97,571,102,414,83"/>
+<area shape="rect" title=" " alt="" coords="228,106,431,177"/>
+<area shape="poly" title=" " alt="" coords="446,126,548,114,571,111,572,116,548,119,447,132"/>
+<area shape="rect" title=" " alt="" coords="303,201,356,226"/>
+<area shape="poly" title=" " alt="" coords="371,206,455,191,502,178,547,160,581,139,608,117,611,121,584,143,549,165,503,183,456,196,372,212"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -151,12 +152,18 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a369e8cafb1b00c79bea9edf3329e517b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for <a class="el" href="classplansys2_1_1STNBTBuilder.html" title="Behavior tree builder that uses Simple Temporal Networks (STN) to manage temporal constraints.">STNBTBuilder</a>.  <br /></td></tr>
 <tr class="separator:a369e8cafb1b00c79bea9edf3329e517b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classplansys2_1_1BTBuilder"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pub_methods_classplansys2_1_1BTBuilder')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classplansys2_1_1BTBuilder.html">BTBuilder</a></td></tr>
+<tr class="memitem:a12c176294b5c26ca4a74c32ed180a068 inherit pub_methods_classplansys2_1_1BTBuilder" id="r_a12c176294b5c26ca4a74c32ed180a068"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#a12c176294b5c26ca4a74c32ed180a068">get_action_time_precision</a> () const</td></tr>
+<tr class="memdesc:a12c176294b5c26ca4a74c32ed180a068 inherit pub_methods_classplansys2_1_1BTBuilder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decimals of the times in the action ids, as given to initialize.  <br /></td></tr>
+<tr class="separator:a12c176294b5c26ca4a74c32ed180a068 inherit pub_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed032a39047201205eae57040a67544a inherit pub_methods_classplansys2_1_1BTBuilder" id="r_aed032a39047201205eae57040a67544a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#aed032a39047201205eae57040a67544a">set_clients</a> (std::shared_ptr&lt; <a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &gt; <a class="el" href="classplansys2_1_1BTBuilder.html#ac112d607051000a90f75129505eb0177">domain_client</a>, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt; <a class="el" href="classplansys2_1_1BTBuilder.html#a00cf7b0ed017e96e8a59a3f03a563965">problem_client</a>)</td></tr>
 <tr class="memdesc:aed032a39047201205eae57040a67544a inherit pub_methods_classplansys2_1_1BTBuilder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the clients the builder uses, usually those of its executor.  <br /></td></tr>
 <tr class="separator:aed032a39047201205eae57040a67544a inherit pub_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a39c9d14b109758533b2614565f4a338b inherit pub_methods_classplansys2_1_1BTBuilder" id="r_a39c9d14b109758533b2614565f4a338b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#a39c9d14b109758533b2614565f4a338b">set_initial_state</a> (std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt; predicates, std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt; functions)</td></tr>
 <tr class="memdesc:a39c9d14b109758533b2614565f4a338b inherit pub_methods_classplansys2_1_1BTBuilder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the state the plan starts from, instead of the current one.  <br /></td></tr>
 <tr class="separator:a39c9d14b109758533b2614565f4a338b inherit pub_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0976a6726435c6bbd7318bed8c476fb inherit pub_methods_classplansys2_1_1BTBuilder" id="r_ab0976a6726435c6bbd7318bed8c476fb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#ab0976a6726435c6bbd7318bed8c476fb">set_time_offset</a> (double seconds)</td></tr>
+<tr class="memdesc:ab0976a6726435c6bbd7318bed8c476fb inherit pub_methods_classplansys2_1_1BTBuilder"><td class="mdescLeft">&#160;</td><td class="mdescRight">How long ago the problem of the plan was read: its timed facts, written from now, are this much later in the time of the plan.  <br /></td></tr>
+<tr class="separator:ab0976a6726435c6bbd7318bed8c476fb inherit pub_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a796975e9d061360d50983d3154b225e0 inherit pub_methods_classplansys2_1_1BTBuilder" id="r_a796975e9d061360d50983d3154b225e0"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#a796975e9d061360d50983d3154b225e0">~BTBuilder</a> ()=default</td></tr>
 <tr class="separator:a796975e9d061360d50983d3154b225e0 inherit pub_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -171,9 +178,9 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a0aeb16d21bca16e637ff6fd411dd0072" id="r_a0aeb16d21bca16e637ff6fd411dd0072"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0aeb16d21bca16e637ff6fd411dd0072">build_stn</a> (const plansys2_msgs::msg::Plan &amp;plan) const</td></tr>
 <tr class="memdesc:a0aeb16d21bca16e637ff6fd411dd0072"><td class="mdescLeft">&#160;</td><td class="mdescRight">Builds an STN from a plan.  <br /></td></tr>
 <tr class="separator:a0aeb16d21bca16e637ff6fd411dd0072"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1343c1be36e9a0077daec6dbf0d4ca3e" id="r_a1343c1be36e9a0077daec6dbf0d4ca3e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1343c1be36e9a0077daec6dbf0d4ca3e">can_apply</a> (const std::pair&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;action, const std::multimap&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;plan, const <a class="el" href="classint.html">int</a> &amp;time, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &amp;state) const</td></tr>
-<tr class="memdesc:a1343c1be36e9a0077daec6dbf0d4ca3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if an action can be applied in a given state.  <br /></td></tr>
-<tr class="separator:a1343c1be36e9a0077daec6dbf0d4ca3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a518419ddded68d3c888c98bbe1065517" id="r_a518419ddded68d3c888c98bbe1065517"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a518419ddded68d3c888c98bbe1065517">can_apply</a> (const std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;action, const std::multimap&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;plan, const int64_t &amp;time, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &amp;state) const</td></tr>
+<tr class="memdesc:a518419ddded68d3c888c98bbe1065517"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if an action can be applied in a given state.  <br /></td></tr>
+<tr class="separator:a518419ddded68d3c888c98bbe1065517"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a35582870a73c31ccb080fdede917e20b" id="r_a35582870a73c31ccb080fdede917e20b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a35582870a73c31ccb080fdede917e20b">check_paths</a> (Node::Ptr current, Node::Ptr previous) const</td></tr>
 <tr class="memdesc:a35582870a73c31ccb080fdede917e20b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if there's a path between two nodes.  <br /></td></tr>
 <tr class="separator:a35582870a73c31ccb080fdede917e20b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -211,11 +218,11 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a3d118e31b04a843bb6b83dd680a095f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6f6d0e0ee77080bacaebaecd74a6b83b" id="r_a6f6d0e0ee77080bacaebaecd74a6b83b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6f6d0e0ee77080bacaebaecd74a6b83b">get_flow_dotgraph</a> (Node::Ptr node, std::set&lt; std::string &gt; &amp;edges, std::set&lt; const <a class="el" href="structplansys2_1_1Node.html">Node</a> * &gt; &amp;visited)</td></tr>
 <tr class="separator:a6f6d0e0ee77080bacaebaecd74a6b83b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac38157d534f023147a5e68e661b109fa" id="r_ac38157d534f023147a5e68e661b109fa"><td class="memItemLeft" align="right" valign="top">std::set&lt; <a class="el" href="classint.html">int</a> &gt;::iterator&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac38157d534f023147a5e68e661b109fa">get_happening</a> (<a class="el" href="classint.html">int</a> time, const std::set&lt; <a class="el" href="classint.html">int</a> &gt; &amp;happenings) const</td></tr>
-<tr class="memdesc:ac38157d534f023147a5e68e661b109fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds the happening time for a given time point.  <br /></td></tr>
-<tr class="separator:ac38157d534f023147a5e68e661b109fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad05754a639d99465897137d5630aef88" id="r_ad05754a639d99465897137d5630aef88"><td class="memItemLeft" align="right" valign="top">std::set&lt; <a class="el" href="classint.html">int</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad05754a639d99465897137d5630aef88">get_happenings</a> (const plansys2_msgs::msg::Plan &amp;plan) const</td></tr>
-<tr class="separator:ad05754a639d99465897137d5630aef88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a873ed6ab439685e6afef61b6fc4ae6e1" id="r_a873ed6ab439685e6afef61b6fc4ae6e1"><td class="memItemLeft" align="right" valign="top">std::set&lt; int64_t &gt;::iterator&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a873ed6ab439685e6afef61b6fc4ae6e1">get_happening</a> (int64_t time, const std::set&lt; int64_t &gt; &amp;happenings) const</td></tr>
+<tr class="memdesc:a873ed6ab439685e6afef61b6fc4ae6e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds the happening time for a given time point.  <br /></td></tr>
+<tr class="separator:a873ed6ab439685e6afef61b6fc4ae6e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67118b20fd3af635d78c1d5968111443" id="r_a67118b20fd3af635d78c1d5968111443"><td class="memItemLeft" align="right" valign="top">std::set&lt; int64_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a67118b20fd3af635d78c1d5968111443">get_happenings</a> (const plansys2_msgs::msg::Plan &amp;plan) const</td></tr>
+<tr class="separator:a67118b20fd3af635d78c1d5968111443"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a20afd0a2bbc7c086cac28e26dd58ac16" id="r_a20afd0a2bbc7c086cac28e26dd58ac16"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structplansys2_1_1StateVec.html">StateVec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a20afd0a2bbc7c086cac28e26dd58ac16">get_intersection</a> (const <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &amp;X_1, const <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &amp;X_2) const</td></tr>
 <tr class="memdesc:a20afd0a2bbc7c086cac28e26dd58ac16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the intersection of two states.  <br /></td></tr>
 <tr class="separator:a20afd0a2bbc7c086cac28e26dd58ac16"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -225,27 +232,33 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:adbf55d515211aee17dc5e73029862a3a" id="r_adbf55d515211aee17dc5e73029862a3a"><td class="memItemLeft" align="right" valign="top">std::vector&lt; Node::Ptr &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adbf55d515211aee17dc5e73029862a3a">get_nodes</a> (const <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &amp;action, const <a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a> graph) const</td></tr>
 <tr class="memdesc:adbf55d515211aee17dc5e73029862a3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds the graph nodes corresponding to an action.  <br /></td></tr>
 <tr class="separator:adbf55d515211aee17dc5e73029862a3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af68eda102c790daf3f4ff3d5394ed63f" id="r_af68eda102c790daf3f4ff3d5394ed63f"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::pair&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af68eda102c790daf3f4ff3d5394ed63f">get_parents</a> (const std::pair&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;action, const std::multimap&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;plan, const std::set&lt; <a class="el" href="classint.html">int</a> &gt; &amp;happenings, const std::map&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; &amp;states) const</td></tr>
-<tr class="memdesc:af68eda102c790daf3f4ff3d5394ed63f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds the parent actions that an action depends on.  <br /></td></tr>
-<tr class="separator:af68eda102c790daf3f4ff3d5394ed63f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add4e69d7a2accfb6316e282c5cb245f8" id="r_add4e69d7a2accfb6316e282c5cb245f8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#add4e69d7a2accfb6316e282c5cb245f8">get_ordering_conditions</a> (const std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;action, const std::set&lt; int64_t &gt; &amp;happenings, const std::map&lt; int64_t, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; &amp;states) const</td></tr>
+<tr class="memdesc:add4e69d7a2accfb6316e282c5cb245f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">The conditions that order an event: what it requires, and the condition of each of its conditional effects as it was in the plan, or its negation if it was false.  <br /></td></tr>
+<tr class="separator:add4e69d7a2accfb6316e282c5cb245f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77519d9693831558b9a13bd2175c708e" id="r_a77519d9693831558b9a13bd2175c708e"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a77519d9693831558b9a13bd2175c708e">get_parents</a> (const std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;action, const std::multimap&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;plan, const std::set&lt; int64_t &gt; &amp;happenings, const std::map&lt; int64_t, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; &amp;states) const</td></tr>
+<tr class="memdesc:a77519d9693831558b9a13bd2175c708e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds the parent actions that an action depends on.  <br /></td></tr>
+<tr class="separator:a77519d9693831558b9a13bd2175c708e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c473f76bad2d6b36508ea248eb388da" id="r_a1c473f76bad2d6b36508ea248eb388da"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1c473f76bad2d6b36508ea248eb388da">get_plan_actions</a> (const plansys2_msgs::msg::Plan &amp;plan) const</td></tr>
 <tr class="memdesc:a1c473f76bad2d6b36508ea248eb388da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extracts action information from a plan.  <br /></td></tr>
 <tr class="separator:a1c473f76bad2d6b36508ea248eb388da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a325f76d1f40c568d23300297b9aada44" id="r_a325f76d1f40c568d23300297b9aada44"><td class="memItemLeft" align="right" valign="top">std::set&lt; <a class="el" href="classint.html">int</a> &gt;::iterator&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a325f76d1f40c568d23300297b9aada44">get_previous</a> (<a class="el" href="classint.html">int</a> time, const std::set&lt; <a class="el" href="classint.html">int</a> &gt; &amp;happenings) const</td></tr>
-<tr class="memdesc:a325f76d1f40c568d23300297b9aada44"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds the previous happening time before a given time point.  <br /></td></tr>
-<tr class="separator:a325f76d1f40c568d23300297b9aada44"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3b54c2e3f0d5674e4b0c0ea499b779d2" id="r_a3b54c2e3f0d5674e4b0c0ea499b779d2"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::pair&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3b54c2e3f0d5674e4b0c0ea499b779d2">get_satisfy</a> (const std::pair&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;action, const std::multimap&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;plan, const std::set&lt; <a class="el" href="classint.html">int</a> &gt; &amp;happenings, const std::map&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; &amp;states) const</td></tr>
-<tr class="memdesc:a3b54c2e3f0d5674e4b0c0ea499b779d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds actions that satisfy the requirements of an action.  <br /></td></tr>
-<tr class="separator:a3b54c2e3f0d5674e4b0c0ea499b779d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af6490771aa5c2c6efb6ddf4eacf8c88f" id="r_af6490771aa5c2c6efb6ddf4eacf8c88f"><td class="memItemLeft" align="right" valign="top">std::multimap&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af6490771aa5c2c6efb6ddf4eacf8c88f">get_simple_plan</a> (const plansys2_msgs::msg::Plan &amp;plan) const</td></tr>
-<tr class="memdesc:af6490771aa5c2c6efb6ddf4eacf8c88f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a simplified representation of the plan with snap actions.  <br /></td></tr>
-<tr class="separator:af6490771aa5c2c6efb6ddf4eacf8c88f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9cc4aebaf4f6d299350d4b6b710f10c1" id="r_a9cc4aebaf4f6d299350d4b6b710f10c1"><td class="memItemLeft" align="right" valign="top">std::map&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9cc4aebaf4f6d299350d4b6b710f10c1">get_states</a> (const std::set&lt; <a class="el" href="classint.html">int</a> &gt; &amp;happenings, const std::multimap&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;plan) const</td></tr>
-<tr class="memdesc:a9cc4aebaf4f6d299350d4b6b710f10c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the state at each happening time in the plan.  <br /></td></tr>
-<tr class="separator:a9cc4aebaf4f6d299350d4b6b710f10c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a48c65b7bda7d2a493ce53257e1befb51" id="r_a48c65b7bda7d2a493ce53257e1befb51"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::pair&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a48c65b7bda7d2a493ce53257e1befb51">get_threat</a> (const std::pair&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;action, const std::multimap&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;plan, const std::set&lt; <a class="el" href="classint.html">int</a> &gt; &amp;happenings, const std::map&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; &amp;states) const</td></tr>
-<tr class="memdesc:a48c65b7bda7d2a493ce53257e1befb51"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds actions that threaten the execution of an action.  <br /></td></tr>
-<tr class="separator:a48c65b7bda7d2a493ce53257e1befb51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c0d209237e640c4dc3a780ed038ba07" id="r_a8c0d209237e640c4dc3a780ed038ba07"><td class="memItemLeft" align="right" valign="top">std::set&lt; int64_t &gt;::iterator&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8c0d209237e640c4dc3a780ed038ba07">get_previous</a> (int64_t time, const std::set&lt; int64_t &gt; &amp;happenings) const</td></tr>
+<tr class="memdesc:a8c0d209237e640c4dc3a780ed038ba07"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds the previous happening time before a given time point.  <br /></td></tr>
+<tr class="separator:a8c0d209237e640c4dc3a780ed038ba07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6789afa5b6d77d5104f1cce2709176fb" id="r_a6789afa5b6d77d5104f1cce2709176fb"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6789afa5b6d77d5104f1cce2709176fb">get_satisfy</a> (const std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;action, const std::multimap&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;plan, const std::set&lt; int64_t &gt; &amp;happenings, const std::map&lt; int64_t, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; &amp;states) const</td></tr>
+<tr class="memdesc:a6789afa5b6d77d5104f1cce2709176fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds actions that satisfy the requirements of an action.  <br /></td></tr>
+<tr class="separator:a6789afa5b6d77d5104f1cce2709176fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad932fba53523f116a0330365875304a7" id="r_ad932fba53523f116a0330365875304a7"><td class="memItemLeft" align="right" valign="top">std::multimap&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad932fba53523f116a0330365875304a7">get_simple_plan</a> (const plansys2_msgs::msg::Plan &amp;plan) const</td></tr>
+<tr class="memdesc:ad932fba53523f116a0330365875304a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a simplified representation of the plan with snap actions.  <br /></td></tr>
+<tr class="separator:ad932fba53523f116a0330365875304a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52a93dc5426b72b874d2521e3799d394" id="r_a52a93dc5426b72b874d2521e3799d394"><td class="memItemLeft" align="right" valign="top">std::map&lt; int64_t, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a52a93dc5426b72b874d2521e3799d394">get_states</a> (const std::set&lt; int64_t &gt; &amp;happenings, const std::multimap&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;plan) const</td></tr>
+<tr class="memdesc:a52a93dc5426b72b874d2521e3799d394"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the state at each happening time in the plan.  <br /></td></tr>
+<tr class="separator:a52a93dc5426b72b874d2521e3799d394"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa62eecf7d155d27521cf27c7f7a7cb7d" id="r_aa62eecf7d155d27521cf27c7f7a7cb7d"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa62eecf7d155d27521cf27c7f7a7cb7d">get_threat</a> (const std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;action, const std::multimap&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;plan, const std::set&lt; int64_t &gt; &amp;happenings, const std::map&lt; int64_t, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; &amp;states) const</td></tr>
+<tr class="memdesc:aa62eecf7d155d27521cf27c7f7a7cb7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds actions that threaten the execution of an action.  <br /></td></tr>
+<tr class="separator:aa62eecf7d155d27521cf27c7f7a7cb7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af56bdbb7221ffa88247bd4791ccc0d05" id="r_af56bdbb7221ffa88247bd4791ccc0d05"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af56bdbb7221ffa88247bd4791ccc0d05">get_threat_effects</a> (const <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &amp;action) const</td></tr>
+<tr class="memdesc:af56bdbb7221ffa88247bd4791ccc0d05"><td class="mdescLeft">&#160;</td><td class="mdescRight">The effects an event can give while it runs, to find what it threatens: those of a non-durative action also at its start.  <br /></td></tr>
+<tr class="separator:af56bdbb7221ffa88247bd4791ccc0d05"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af06875c466bfa51a1562eda07e621aa8" id="r_af06875c466bfa51a1562eda07e621aa8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af06875c466bfa51a1562eda07e621aa8">init_graph</a> (const plansys2_msgs::msg::Plan &amp;plan) const</td></tr>
 <tr class="memdesc:af06875c466bfa51a1562eda07e621aa8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes an empty graph with nodes for the initial state, actions, and goal.  <br /></td></tr>
 <tr class="separator:af06875c466bfa51a1562eda07e621aa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -279,6 +292,10 @@ Protected Member Functions</h2></td></tr>
 <tr class="memdesc:a1572fb83ccc7cdb46a4285a08084fac6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper function to generate indentation.  <br /></td></tr>
 <tr class="separator:a1572fb83ccc7cdb46a4285a08084fac6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_classplansys2_1_1BTBuilder"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pro_methods_classplansys2_1_1BTBuilder')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classplansys2_1_1BTBuilder.html">BTBuilder</a></td></tr>
+<tr class="memitem:af7ee19f5afd9dd3904338963942de0e5 inherit pro_methods_classplansys2_1_1BTBuilder" id="r_af7ee19f5afd9dd3904338963942de0e5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#af7ee19f5afd9dd3904338963942de0e5">apply_effects</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;effects, std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt; &amp;predicates, std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt; &amp;functions) const</td></tr>
+<tr class="separator:af7ee19f5afd9dd3904338963942de0e5 inherit pro_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a7955d755e1af6b2437b3e8ee457961 inherit pro_methods_classplansys2_1_1BTBuilder" id="r_a0a7955d755e1af6b2437b3e8ee457961"><td class="memItemLeft" align="right" valign="top">const std::set&lt; std::string &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#a0a7955d755e1af6b2437b3e8ee457961">derived_names</a> () const</td></tr>
+<tr class="separator:a0a7955d755e1af6b2437b3e8ee457961 inherit pro_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac112d607051000a90f75129505eb0177 inherit pro_methods_classplansys2_1_1BTBuilder" id="r_ac112d607051000a90f75129505eb0177"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#ac112d607051000a90f75129505eb0177">domain_client</a> () const</td></tr>
 <tr class="separator:ac112d607051000a90f75129505eb0177 inherit pro_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c302ce42511d3764a74c002304658dd inherit pro_methods_classplansys2_1_1BTBuilder" id="r_a7c302ce42511d3764a74c002304658dd"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#a7c302ce42511d3764a74c002304658dd">initial_functions</a> () const</td></tr>
@@ -287,11 +304,23 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:aae104da4196775d2e723b0032b0e3d23 inherit pro_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a00cf7b0ed017e96e8a59a3f03a563965 inherit pro_methods_classplansys2_1_1BTBuilder" id="r_a00cf7b0ed017e96e8a59a3f03a563965"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#a00cf7b0ed017e96e8a59a3f03a563965">problem_client</a> () const</td></tr>
 <tr class="separator:a00cf7b0ed017e96e8a59a3f03a563965 inherit pro_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1873b482b80a9123bd9bf7ebee221d5 inherit pro_methods_classplansys2_1_1BTBuilder" id="r_ac1873b482b80a9123bd9bf7ebee221d5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#ac1873b482b80a9123bd9bf7ebee221d5">reads_dynamic</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a6ae81e8b161969c08de554a8ca2673cf">conditions</a>) const</td></tr>
+<tr class="separator:ac1873b482b80a9123bd9bf7ebee221d5 inherit pro_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a474ed534be3163861e097ffc6a8110e7 inherit pro_methods_classplansys2_1_1BTBuilder" id="r_a474ed534be3163861e097ffc6a8110e7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#a474ed534be3163861e097ffc6a8110e7">relax_dynamic</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a6ae81e8b161969c08de554a8ca2673cf">conditions</a>) const</td></tr>
+<tr class="separator:a474ed534be3163861e097ffc6a8110e7 inherit pro_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adaa4f8752f39abbd155a426ab2b2cdf7 inherit pro_methods_classplansys2_1_1BTBuilder" id="r_adaa4f8752f39abbd155a426ab2b2cdf7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#adaa4f8752f39abbd155a426ab2b2cdf7">reset_derived_rules</a> () const</td></tr>
+<tr class="separator:adaa4f8752f39abbd155a426ab2b2cdf7 inherit pro_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1743b1e3799e066be9c755989788aa10 inherit pro_methods_classplansys2_1_1BTBuilder" id="r_a1743b1e3799e066be9c755989788aa10"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#a1743b1e3799e066be9c755989788aa10">timed_events</a> () const</td></tr>
+<tr class="separator:a1743b1e3799e066be9c755989788aa10 inherit pro_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-methods" name="pro-static-methods"></a>
+Static Protected Member Functions</h2></td></tr>
+<tr class="memitem:ac7891be36ab52529b6b9a491bb2ec39b" id="r_ac7891be36ab52529b6b9a491bb2ec39b"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac7891be36ab52529b6b9a491bb2ec39b">interfere</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;first, const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;second)</td></tr>
+<tr class="memdesc:ac7891be36ab52529b6b9a491bb2ec39b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether two effects cannot happen in either order: one adds a fact the other deletes, or both change a function.  <br /></td></tr>
+<tr class="separator:ac7891be36ab52529b6b9a491bb2ec39b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:ab0243c71d78858105ef39bbb8666fbbc" id="r_ab0243c71d78858105ef39bbb8666fbbc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab0243c71d78858105ef39bbb8666fbbc">action_time_precision_</a></td></tr>
-<tr class="separator:ab0243c71d78858105ef39bbb8666fbbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a58accb569b63befd2f82edef65d899a4" id="r_a58accb569b63befd2f82edef65d899a4"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a58accb569b63befd2f82edef65d899a4">bt_end_action_</a></td></tr>
 <tr class="separator:a58accb569b63befd2f82edef65d899a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a41dc3ede305b1cd9ffb34ec423a6ad00" id="r_a41dc3ede305b1cd9ffb34ec423a6ad00"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a41dc3ede305b1cd9ffb34ec423a6ad00">bt_start_action_</a></td></tr>
@@ -300,6 +329,9 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:af2828ff995dc0d66c27dbf1d87e902cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f8a10382dd49f55c08acc25a62d28b6" id="r_a4f8a10382dd49f55c08acc25a62d28b6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structplansys2_1_1Graph.html#aab36d6f074aeaecee07215524fb99f17">Graph::Ptr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4f8a10382dd49f55c08acc25a62d28b6">stn_</a></td></tr>
 <tr class="separator:a4f8a10382dd49f55c08acc25a62d28b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_attribs_classplansys2_1_1BTBuilder"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pro_attribs_classplansys2_1_1BTBuilder')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classplansys2_1_1BTBuilder.html">BTBuilder</a></td></tr>
+<tr class="memitem:ab0243c71d78858105ef39bbb8666fbbc inherit pro_attribs_classplansys2_1_1BTBuilder" id="r_ab0243c71d78858105ef39bbb8666fbbc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#ab0243c71d78858105ef39bbb8666fbbc">action_time_precision_</a> = 3</td></tr>
+<tr class="separator:ab0243c71d78858105ef39bbb8666fbbc inherit pro_attribs_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="inherited" name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -307,15 +339,18 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memitem:a08a4be59b026dc1264dd8c20aed32190 inherit pub_types_classplansys2_1_1BTBuilder" id="r_a08a4be59b026dc1264dd8c20aed32190"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#a08a4be59b026dc1264dd8c20aed32190">Ptr</a> = std::shared_ptr&lt;<a class="el" href="classplansys2_1_1BTBuilder.html">plansys2::BTBuilder</a>&gt;</td></tr>
 <tr class="separator:a08a4be59b026dc1264dd8c20aed32190 inherit pub_types_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_static_methods_classplansys2_1_1BTBuilder"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pub_static_methods_classplansys2_1_1BTBuilder')"><img src="closed.png" alt="-"/>&#160;Static Public Member Functions inherited from <a class="el" href="classplansys2_1_1BTBuilder.html">BTBuilder</a></td></tr>
+<tr class="memitem:a320215550b0cd381f3b61bba11cc0343 inherit pub_static_methods_classplansys2_1_1BTBuilder" id="r_a320215550b0cd381f3b61bba11cc0343"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classplansys2_1_1ActionVariant.html">plansys2::ActionVariant</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#a320215550b0cd381f3b61bba11cc0343">plan_item_action</a> (<a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &amp;<a class="el" href="classplansys2_1_1BTBuilder.html#ac112d607051000a90f75129505eb0177">domain_client</a>, const std::vector&lt; std::string &gt; &amp;actions, const plansys2_msgs::msg::PlanItem &amp;item)</td></tr>
+<tr class="memdesc:a320215550b0cd381f3b61bba11cc0343 inherit pub_static_methods_classplansys2_1_1BTBuilder"><td class="mdescLeft">&#160;</td><td class="mdescRight">The action of a plan item, from the domain, with ?duration bound to its duration.  <br /></td></tr>
+<tr class="separator:a320215550b0cd381f3b61bba11cc0343 inherit pub_static_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf4d6255563bbd590a2458e8aab8ef4d inherit pub_static_methods_classplansys2_1_1BTBuilder" id="r_acf4d6255563bbd590a2458e8aab8ef4d"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#acf4d6255563bbd590a2458e8aab8ef4d">to_action_id</a> (const <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &amp;action, <a class="el" href="classint.html">int</a> precision)</td></tr>
 <tr class="memdesc:acf4d6255563bbd590a2458e8aab8ef4d inherit pub_static_methods_classplansys2_1_1BTBuilder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a unique action identifier from an <a class="el" href="structplansys2_1_1ActionStamped.html" title="Representation of an action with its temporal information.">ActionStamped</a>.  <br /></td></tr>
 <tr class="separator:acf4d6255563bbd590a2458e8aab8ef4d inherit pub_static_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2fe3bab9056b7e2b92647f9c84918d9 inherit pub_static_methods_classplansys2_1_1BTBuilder" id="r_ab2fe3bab9056b7e2b92647f9c84918d9"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#ab2fe3bab9056b7e2b92647f9c84918d9">to_action_id</a> (const plansys2_msgs::msg::PlanItem &amp;item, <a class="el" href="classint.html">int</a> precision)</td></tr>
 <tr class="memdesc:ab2fe3bab9056b7e2b92647f9c84918d9 inherit pub_static_methods_classplansys2_1_1BTBuilder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a unique action identifier from a plan item.  <br /></td></tr>
 <tr class="separator:ab2fe3bab9056b7e2b92647f9c84918d9 inherit pub_static_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06fe6872f390844927050053f3b9114c inherit pub_static_methods_classplansys2_1_1BTBuilder" id="r_a06fe6872f390844927050053f3b9114c"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#a06fe6872f390844927050053f3b9114c">to_int_time</a> (float time, <a class="el" href="classint.html">int</a> power)</td></tr>
-<tr class="memdesc:a06fe6872f390844927050053f3b9114c inherit pub_static_methods_classplansys2_1_1BTBuilder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a floating point time to an integer with specified precision.  <br /></td></tr>
-<tr class="separator:a06fe6872f390844927050053f3b9114c inherit pub_static_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d3630c8b8c59781cdcca01ab4206b6b inherit pub_static_methods_classplansys2_1_1BTBuilder" id="r_a7d3630c8b8c59781cdcca01ab4206b6b"><td class="memItemLeft" align="right" valign="top">static int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#a7d3630c8b8c59781cdcca01ab4206b6b">to_int_time</a> (double time, <a class="el" href="classint.html">int</a> power)</td></tr>
+<tr class="memdesc:a7d3630c8b8c59781cdcca01ab4206b6b inherit pub_static_methods_classplansys2_1_1BTBuilder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a floating point time to an integer with specified precision.  <br /></td></tr>
+<tr class="separator:a7d3630c8b8c59781cdcca01ab4206b6b inherit pub_static_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ac872ad088e5683ba3394260b361945 inherit pub_static_methods_classplansys2_1_1BTBuilder" id="r_a3ac872ad088e5683ba3394260b361945"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#a3ac872ad088e5683ba3394260b361945">to_string</a> (const <a class="el" href="namespaceplansys2.html#a21d5e8f8cdaa838586b31007df0a950b">ActionType</a> &amp;action_type)</td></tr>
 <tr class="memdesc:a3ac872ad088e5683ba3394260b361945 inherit pub_static_methods_classplansys2_1_1BTBuilder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert an action type to its string representation.  <br /></td></tr>
 <tr class="separator:a3ac872ad088e5683ba3394260b361945 inherit pub_static_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -453,8 +488,8 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="a1343c1be36e9a0077daec6dbf0d4ca3e" name="a1343c1be36e9a0077daec6dbf0d4ca3e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1343c1be36e9a0077daec6dbf0d4ca3e">&#9670;&#160;</a></span>can_apply()</h2>
+<a id="a518419ddded68d3c888c98bbe1065517" name="a518419ddded68d3c888c98bbe1065517"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a518419ddded68d3c888c98bbe1065517">&#9670;&#160;</a></span>can_apply()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -465,17 +500,17 @@ Additional Inherited Members</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="classbool.html">bool</a> can_apply </td>
           <td>(</td>
-          <td class="paramtype">const std::pair&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>action</em></span>, </td>
+          <td class="paramtype">const std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>action</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::multimap&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>, </td>
+          <td class="paramtype">const std::multimap&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classint.html">int</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>time</em></span>, </td>
+          <td class="paramtype">const int64_t &amp;</td>          <td class="paramname"><span class="paramname"><em>time</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1075,8 +1110,8 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="ac38157d534f023147a5e68e661b109fa" name="ac38157d534f023147a5e68e661b109fa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac38157d534f023147a5e68e661b109fa">&#9670;&#160;</a></span>get_happening()</h2>
+<a id="a873ed6ab439685e6afef61b6fc4ae6e1" name="a873ed6ab439685e6afef61b6fc4ae6e1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a873ed6ab439685e6afef61b6fc4ae6e1">&#9670;&#160;</a></span>get_happening()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1085,14 +1120,14 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::set&lt; <a class="el" href="classint.html">int</a> &gt;::iterator get_happening </td>
+          <td class="memname">std::set&lt; int64_t &gt;::iterator get_happening </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classint.html">int</a></td>          <td class="paramname"><span class="paramname"><em>time</em></span>, </td>
+          <td class="paramtype">int64_t</td>          <td class="paramname"><span class="paramname"><em>time</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::set&lt; <a class="el" href="classint.html">int</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>happenings</em></span>&#160;) const</td>
+          <td class="paramtype">const std::set&lt; int64_t &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>happenings</em></span>&#160;) const</td>
         </tr>
       </table>
   </td>
@@ -1114,8 +1149,8 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="ad05754a639d99465897137d5630aef88" name="ad05754a639d99465897137d5630aef88"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad05754a639d99465897137d5630aef88">&#9670;&#160;</a></span>get_happenings()</h2>
+<a id="a67118b20fd3af635d78c1d5968111443" name="a67118b20fd3af635d78c1d5968111443"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a67118b20fd3af635d78c1d5968111443">&#9670;&#160;</a></span>get_happenings()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1124,7 +1159,7 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::set&lt; <a class="el" href="classint.html">int</a> &gt; get_happenings </td>
+          <td class="memname">std::set&lt; int64_t &gt; get_happenings </td>
           <td>(</td>
           <td class="paramtype">const plansys2_msgs::msg::Plan &amp;</td>          <td class="paramname"><span class="paramname"><em>plan</em></span></td><td>)</td>
           <td> const</td>
@@ -1257,8 +1292,8 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="af68eda102c790daf3f4ff3d5394ed63f" name="af68eda102c790daf3f4ff3d5394ed63f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af68eda102c790daf3f4ff3d5394ed63f">&#9670;&#160;</a></span>get_parents()</h2>
+<a id="add4e69d7a2accfb6316e282c5cb245f8" name="add4e69d7a2accfb6316e282c5cb245f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add4e69d7a2accfb6316e282c5cb245f8">&#9670;&#160;</a></span>get_ordering_conditions()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1267,24 +1302,70 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt; std::pair&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &gt; get_parents </td>
+          <td class="memname"><a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> get_ordering_conditions </td>
           <td>(</td>
-          <td class="paramtype">const std::pair&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>action</em></span>, </td>
+          <td class="paramtype">const std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>action</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::multimap&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>, </td>
+          <td class="paramtype">const std::set&lt; int64_t &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>happenings</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::set&lt; <a class="el" href="classint.html">int</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>happenings</em></span>, </td>
+          <td class="paramtype">const std::map&lt; int64_t, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>states</em></span>&#160;) const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The conditions that order an event: what it requires, and the condition of each of its conditional effects as it was in the plan, or its negation if it was false. </p>
+<p>Executed in another order, a conditional effect would give another outcome.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">action</td><td>The event. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">happenings</td><td>The happenings of the plan. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">states</td><td>The state at each happening. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Tree representing the conditions. </dd></dl>
+
+</div>
+</div>
+<a id="a77519d9693831558b9a13bd2175c708e" name="a77519d9693831558b9a13bd2175c708e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77519d9693831558b9a13bd2175c708e">&#9670;&#160;</a></span>get_parents()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &gt; get_parents </td>
+          <td>(</td>
+          <td class="paramtype">const std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>action</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::map&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>states</em></span>&#160;) const</td>
+          <td class="paramtype">const std::multimap&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::set&lt; int64_t &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>happenings</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::map&lt; int64_t, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>states</em></span>&#160;) const</td>
         </tr>
       </table>
   </td>
@@ -1343,8 +1424,8 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="a325f76d1f40c568d23300297b9aada44" name="a325f76d1f40c568d23300297b9aada44"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a325f76d1f40c568d23300297b9aada44">&#9670;&#160;</a></span>get_previous()</h2>
+<a id="a8c0d209237e640c4dc3a780ed038ba07" name="a8c0d209237e640c4dc3a780ed038ba07"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c0d209237e640c4dc3a780ed038ba07">&#9670;&#160;</a></span>get_previous()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1353,14 +1434,14 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::set&lt; <a class="el" href="classint.html">int</a> &gt;::iterator get_previous </td>
+          <td class="memname">std::set&lt; int64_t &gt;::iterator get_previous </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classint.html">int</a></td>          <td class="paramname"><span class="paramname"><em>time</em></span>, </td>
+          <td class="paramtype">int64_t</td>          <td class="paramname"><span class="paramname"><em>time</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::set&lt; <a class="el" href="classint.html">int</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>happenings</em></span>&#160;) const</td>
+          <td class="paramtype">const std::set&lt; int64_t &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>happenings</em></span>&#160;) const</td>
         </tr>
       </table>
   </td>
@@ -1382,8 +1463,8 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="a3b54c2e3f0d5674e4b0c0ea499b779d2" name="a3b54c2e3f0d5674e4b0c0ea499b779d2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3b54c2e3f0d5674e4b0c0ea499b779d2">&#9670;&#160;</a></span>get_satisfy()</h2>
+<a id="a6789afa5b6d77d5104f1cce2709176fb" name="a6789afa5b6d77d5104f1cce2709176fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6789afa5b6d77d5104f1cce2709176fb">&#9670;&#160;</a></span>get_satisfy()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1392,24 +1473,24 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt; std::pair&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &gt; get_satisfy </td>
+          <td class="memname">std::vector&lt; std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &gt; get_satisfy </td>
           <td>(</td>
-          <td class="paramtype">const std::pair&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>action</em></span>, </td>
+          <td class="paramtype">const std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>action</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::multimap&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>, </td>
+          <td class="paramtype">const std::multimap&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::set&lt; <a class="el" href="classint.html">int</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>happenings</em></span>, </td>
+          <td class="paramtype">const std::set&lt; int64_t &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>happenings</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::map&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>states</em></span>&#160;) const</td>
+          <td class="paramtype">const std::map&lt; int64_t, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>states</em></span>&#160;) const</td>
         </tr>
       </table>
   </td>
@@ -1433,8 +1514,8 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="af6490771aa5c2c6efb6ddf4eacf8c88f" name="af6490771aa5c2c6efb6ddf4eacf8c88f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af6490771aa5c2c6efb6ddf4eacf8c88f">&#9670;&#160;</a></span>get_simple_plan()</h2>
+<a id="ad932fba53523f116a0330365875304a7" name="ad932fba53523f116a0330365875304a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad932fba53523f116a0330365875304a7">&#9670;&#160;</a></span>get_simple_plan()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1443,7 +1524,7 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::multimap&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; get_simple_plan </td>
+          <td class="memname">std::multimap&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; get_simple_plan </td>
           <td>(</td>
           <td class="paramtype">const plansys2_msgs::msg::Plan &amp;</td>          <td class="paramname"><span class="paramname"><em>plan</em></span></td><td>)</td>
           <td> const</td>
@@ -1468,8 +1549,8 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="a9cc4aebaf4f6d299350d4b6b710f10c1" name="a9cc4aebaf4f6d299350d4b6b710f10c1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9cc4aebaf4f6d299350d4b6b710f10c1">&#9670;&#160;</a></span>get_states()</h2>
+<a id="a52a93dc5426b72b874d2521e3799d394" name="a52a93dc5426b72b874d2521e3799d394"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a52a93dc5426b72b874d2521e3799d394">&#9670;&#160;</a></span>get_states()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1478,14 +1559,14 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::map&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; get_states </td>
+          <td class="memname">std::map&lt; int64_t, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; get_states </td>
           <td>(</td>
-          <td class="paramtype">const std::set&lt; <a class="el" href="classint.html">int</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>happenings</em></span>, </td>
+          <td class="paramtype">const std::set&lt; int64_t &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>happenings</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::multimap&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>&#160;) const</td>
+          <td class="paramtype">const std::multimap&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>&#160;) const</td>
         </tr>
       </table>
   </td>
@@ -1503,12 +1584,12 @@ Additional Inherited Members</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>std::map&lt;int, StateVec&gt; Map from happening times to state vectors. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>std::map&lt;int64_t, StateVec&gt; Map from happening times to state vectors. </dd></dl>
 
 </div>
 </div>
-<a id="a48c65b7bda7d2a493ce53257e1befb51" name="a48c65b7bda7d2a493ce53257e1befb51"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a48c65b7bda7d2a493ce53257e1befb51">&#9670;&#160;</a></span>get_threat()</h2>
+<a id="aa62eecf7d155d27521cf27c7f7a7cb7d" name="aa62eecf7d155d27521cf27c7f7a7cb7d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa62eecf7d155d27521cf27c7f7a7cb7d">&#9670;&#160;</a></span>get_threat()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1517,24 +1598,24 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt; std::pair&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &gt; get_threat </td>
+          <td class="memname">std::vector&lt; std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &gt; get_threat </td>
           <td>(</td>
-          <td class="paramtype">const std::pair&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>action</em></span>, </td>
+          <td class="paramtype">const std::pair&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>action</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::multimap&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>, </td>
+          <td class="paramtype">const std::multimap&lt; int64_t, <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>plan</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::set&lt; <a class="el" href="classint.html">int</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>happenings</em></span>, </td>
+          <td class="paramtype">const std::set&lt; int64_t &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>happenings</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::map&lt; <a class="el" href="classint.html">int</a>, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>states</em></span>&#160;) const</td>
+          <td class="paramtype">const std::map&lt; int64_t, <a class="el" href="structplansys2_1_1StateVec.html">StateVec</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>states</em></span>&#160;) const</td>
         </tr>
       </table>
   </td>
@@ -1555,7 +1636,41 @@ Additional Inherited Members</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>std::vector&lt;std::pair&lt;int, ActionStamped&gt;&gt; Vector of threatening actions. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>std::vector&lt;std::pair&lt;int64_t, ActionStamped&gt;&gt; Vector of threatening actions. </dd></dl>
+
+</div>
+</div>
+<a id="af56bdbb7221ffa88247bd4791ccc0d05" name="af56bdbb7221ffa88247bd4791ccc0d05"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af56bdbb7221ffa88247bd4791ccc0d05">&#9670;&#160;</a></span>get_threat_effects()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> get_threat_effects </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>action</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The effects an event can give while it runs, to find what it threatens: those of a non-durative action also at its start. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">action</td><td>The event. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Tree representing the effects. </dd></dl>
 
 </div>
 </div>
@@ -1673,6 +1788,46 @@ Additional Inherited Members</h2></td></tr>
 </dl>
 
 <p>Implements <a class="el" href="classplansys2_1_1BTBuilder.html#a9f6c858a9b6ef4e3d33175d2099bb59a">BTBuilder</a>.</p>
+
+</div>
+</div>
+<a id="ac7891be36ab52529b6b9a491bb2ec39b" name="ac7891be36ab52529b6b9a491bb2ec39b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac7891be36ab52529b6b9a491bb2ec39b">&#9670;&#160;</a></span>interfere()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> interfere </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>first</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>second</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Whether two effects cannot happen in either order: one adds a fact the other deletes, or both change a function. </p>
+<p>As written, whatever the state.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">first</td><td>The first effects. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">second</td><td>The second effects. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if their order changes the outcome. </dd></dl>
 
 </div>
 </div>
@@ -2078,28 +2233,6 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="ab0243c71d78858105ef39bbb8666fbbc" name="ab0243c71d78858105ef39bbb8666fbbc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab0243c71d78858105ef39bbb8666fbbc">&#9670;&#160;</a></span>action_time_precision_</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classint.html">int</a> action_time_precision_</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="a58accb569b63befd2f82edef65d899a4" name="a58accb569b63befd2f82edef65d899a4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a58accb569b63befd2f82edef65d899a4">&#9670;&#160;</a></span>bt_end_action_</h2>
 

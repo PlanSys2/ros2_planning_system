@@ -1,0 +1,9 @@
+<map id="DerivedRule" name="DerivedRule">
+<area shape="rect" id="Node000001" title="A derived predicate rule, with the objects each of its parameters ranges over." alt="" coords="52,184,144,210"/>
+<area shape="rect" id="Node000002" href="$classplansys2_1_1Derived.html" title="Represents a derived predicate (i.e., axiom) in the planning domain." alt="" coords="5,88,71,114"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="56,125,93,182,88,185,51,128"/>
+<area shape="rect" id="Node000003" href="$classplansys2__msgs_1_1msg_1_1Derived.html" title=" " alt="" coords="5,5,71,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="41,47,41,88,35,88,35,47"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="95,80,224,121"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="144,135,128,162,110,185,106,182,124,158,140,133"/>
+</map>

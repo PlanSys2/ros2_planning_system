@@ -1,11 +1,13 @@
 <map id="FactChange" name="FactChange">
-<area shape="rect" id="Node000001" title="A change an applied effect made to one fact, to take it back later." alt="" coords="118,109,209,135"/>
+<area shape="rect" id="Node000001" title="A change an applied effect made to one fact, to take it back later." alt="" coords="176,109,268,135"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,5,58,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="44,44,55,65,71,83,93,98,118,108,116,113,91,102,67,87,51,68,39,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="48,43,64,65,84,83,130,103,177,114,176,119,128,109,81,87,60,68,43,46"/>
 <area shape="rect" id="Node000003" href="$classbool.html" title=" " alt="" coords="82,5,128,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="102,46,102,66,108,84,119,96,133,106,130,111,115,100,103,86,97,66,97,46"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="112,45,119,65,132,83,153,98,177,109,175,113,150,103,128,87,115,68,107,47"/>
 <area shape="rect" id="Node000004" title=" " alt="" coords="192,5,252,31"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="215,47,195,86,177,110,173,107,191,84,210,44"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="225,47,225,109,220,109,220,47"/>
 <area shape="rect" id="Node000005" title=" " alt="" coords="297,5,358,31"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="320,47,307,68,289,87,250,107,210,118,209,113,249,102,286,83,303,65,315,44"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="323,47,314,68,300,87,282,101,263,111,260,106,279,96,296,83,309,65,318,45"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="410,5,464,31"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="431,47,420,68,402,87,379,98,345,107,269,118,268,113,343,101,377,93,399,83,415,65,426,44"/>
 </map>

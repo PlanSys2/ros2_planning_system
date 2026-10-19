@@ -1,5 +1,7 @@
 <map id="Graph" name="Graph">
-<area shape="rect" id="Node000001" title="Temporal planning graph representation." alt="" coords="34,94,91,120"/>
+<area shape="rect" id="Node000001" title="Temporal planning graph representation." alt="" coords="84,94,140,120"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,5,120,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="65,47,65,94,60,94,60,47"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="79,43,107,92,103,95,74,46"/>
+<area shape="rect" id="Node000003" href="$classint.html" title=" " alt="" coords="143,5,182,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="150,46,135,71,121,95,117,92,131,69,146,43"/>
 </map>

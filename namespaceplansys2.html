@@ -89,8 +89,7 @@ $(function(){ initResizable(false); });
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">plansys2 Namespace Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -160,11 +159,17 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1ComputeBT.html">ComputeBT</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1ConstraintMonitor.html">ConstraintMonitor</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Follows the hard PDDL3 constraints of a domain and its problem while a plan runs.  <a href="classplansys2_1_1ConstraintMonitor.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1Derived.html">Derived</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a derived predicate (i.e., axiom) in the planning domain.  <a href="classplansys2_1_1Derived.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1DerivedResolutionGraph.html">DerivedResolutionGraph</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a directed graph structure for managing derived predicates and their dependencies in a planning system.  <a href="classplansys2_1_1DerivedResolutionGraph.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structplansys2_1_1DerivedRule.html">DerivedRule</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A derived predicate rule, with the objects each of its parameters ranges over.  <a href="structplansys2_1_1DerivedRule.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structplansys2_1_1Domain.html">Domain</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure representing the main components of a PDDL domain.  <a href="structplansys2_1_1Domain.html#details">More...</a><br /></td></tr>
@@ -188,6 +193,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1ExecuteAction.html">ExecuteAction</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">BehaviorTree node that executes a given action.  <a href="classplansys2_1_1ExecuteAction.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1ExecutionTrace.html">ExecutionTrace</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">What the executor does while a plan runs, and why, in order.  <a href="classplansys2_1_1ExecutionTrace.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1ExecutorClient.html">ExecutorClient</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Client interface for the <a class="el" href="namespaceplansys2.html">plansys2</a> executor node.  <a href="classplansys2_1_1ExecutorClient.html#details">More...</a><br /></td></tr>
@@ -218,6 +226,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structplansys2_1_1Node.html">Node</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="structplansys2_1_1Node.html" title="Node in the temporal planning graph.">Node</a> in the temporal planning graph.  <a href="structplansys2_1_1Node.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1NodeNames.html">NodeNames</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Asks the graph for the node names without racing with rclcpp shutting down.  <a href="classplansys2_1_1NodeNames.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1NodeVariant.html">NodeVariant</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A wrapper class for representing different types of nodes in the planning system.  <a href="classplansys2_1_1NodeVariant.html#details">More...</a><br /></td></tr>
@@ -304,6 +315,7 @@ Enumerations</h2></td></tr>
 &#160;&#160;<a class="el" href="#a21d5e8f8cdaa838586b31007df0a950ba7905c9b3eda793da18fade6e791b2183">OVERALL</a>
 , <a class="el" href="#a21d5e8f8cdaa838586b31007df0a950bab1a326c06d88bf042f73d70f50197905">END</a>
 , <a class="el" href="#a21d5e8f8cdaa838586b31007df0a950ba007a3c4175ca4f86d9dc49e4f2e9cf8a">GOAL</a>
+, <a class="el" href="#a21d5e8f8cdaa838586b31007df0a950baefd62eaf8aeeb073a4eead8fd9478dfc">TIMED</a>
 <br />
  }</td></tr>
 <tr class="memdesc:a21d5e8f8cdaa838586b31007df0a950b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of action types in a plan.  <a href="#a21d5e8f8cdaa838586b31007df0a950b">More...</a><br /></td></tr>
@@ -313,6 +325,9 @@ Enumerations</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:ae0d408f5c696ebe7fffe4932fc042527" id="r_ae0d408f5c696ebe7fffe4932fc042527"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae0d408f5c696ebe7fffe4932fc042527">add_tabs</a> (<a class="el" href="classint.html">int</a> level)</td></tr>
 <tr class="separator:ae0d408f5c696ebe7fffe4932fc042527"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90584fb7b25100845ac48b6fd8837321" id="r_a90584fb7b25100845ac48b6fd8837321"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a90584fb7b25100845ac48b6fd8837321">apply</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, <a class="el" href="classplansys2_1_1ProblemExpert.html">plansys2::ProblemExpert</a> &amp;expert, uint32_t node_id=0)</td></tr>
+<tr class="memdesc:a90584fb7b25100845ac48b6fd8837321"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply effects to a problem expert itself, as its clients would.  <br /></td></tr>
+<tr class="separator:a90584fb7b25100845ac48b6fd8837321"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59e55f4d7905c9b54f226dac860368e8" id="r_a59e55f4d7905c9b54f226dac860368e8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a59e55f4d7905c9b54f226dac860368e8">apply</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;tree, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt; problem_client, std::vector&lt; <a class="el" href="structplansys2_1_1FactChange.html">FactChange</a> &gt; &amp;changes, uint32_t node_id=0)</td></tr>
 <tr class="memdesc:a59e55f4d7905c9b54f226dac860368e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a PDDL expression through the problem client, recording what it changes.  <br /></td></tr>
 <tr class="separator:a59e55f4d7905c9b54f226dac860368e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -355,6 +370,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a97f9f8df76f2e849d11c2f313dd7e7d3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a97f9f8df76f2e849d11c2f313dd7e7d3">declare_parameter_if_not_declared</a> (NodeT node, const std::string &amp;param_name, const rclcpp::ParameterValue &amp;default_value=rclcpp::ParameterValue(), const rcl_interfaces::msg::ParameterDescriptor &amp;parameter_descriptor=rcl_interfaces::msg::ParameterDescriptor())</td></tr>
 <tr class="memdesc:a97f9f8df76f2e849d11c2f313dd7e7d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Declare a parameter if it has not been declared yet.  <br /></td></tr>
 <tr class="separator:a97f9f8df76f2e849d11c2f313dd7e7d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3b954ac94104b43167da704da73ce96" id="r_ae3b954ac94104b43167da704da73ce96"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae3b954ac94104b43167da704da73ce96">derive</a> (const std::vector&lt; <a class="el" href="structplansys2_1_1DerivedRule.html">DerivedRule</a> &gt; &amp;rules, const std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt; &amp;predicates, const std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt; &amp;functions)</td></tr>
+<tr class="memdesc:ae3b954ac94104b43167da704da73ce96"><td class="mdescLeft">&#160;</td><td class="mdescRight">A state with its derived predicates, to a fixpoint: a rule can read other derived predicates, or its own (reachability).  <br /></td></tr>
+<tr class="separator:ae3b954ac94104b43167da704da73ce96"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28a96de02f88e847d111d59691b841e9" id="r_a28a96de02f88e847d111d59691b841e9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a28a96de02f88e847d111d59691b841e9">drain_ros</a> (std::chrono::milliseconds total=200ms)</td></tr>
 <tr class="memdesc:a28a96de02f88e847d111d59691b841e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait between tests for the middleware to forget the entities of the last one.  <br /></td></tr>
 <tr class="separator:a28a96de02f88e847d111d59691b841e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -396,6 +414,15 @@ Functions</h2></td></tr>
 <tr class="separator:ac37c9afa04d9dcc9e3f21f713f1a4e19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a13f7972e78dbccbe10067d718b8da027" id="r_a13f7972e78dbccbe10067d718b8da027"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a13f7972e78dbccbe10067d718b8da027">hash_node_variant</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp;node)</td></tr>
 <tr class="separator:a13f7972e78dbccbe10067d718b8da027"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2499776d9175ff85600062be518d87f5" id="r_a2499776d9175ff85600062be518d87f5"><td class="memItemLeft" align="right" valign="top">const std::set&lt; std::string &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2499776d9175ff85600062be518d87f5">known_pddl_requirements</a> ()</td></tr>
+<tr class="memdesc:a2499776d9175ff85600062be518d87f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Every PDDL requirement PlanSys2 knows, as written in PDDL (":conditional-effects"), and ":either-types" and ":timed-initial-fluents", which PDDL has no flag for.  <br /></td></tr>
+<tr class="separator:a2499776d9175ff85600062be518d87f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f694c1bb1b2f31090cc7f4037c1bd27" id="r_a3f694c1bb1b2f31090cc7f4037c1bd27"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structplansys2_1_1DerivedRule.html">DerivedRule</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3f694c1bb1b2f31090cc7f4037c1bd27">make_derived_rules</a> (const std::vector&lt; <a class="el" href="classplansys2_1_1Derived.html">plansys2::Derived</a> &gt; &amp;derived, const std::vector&lt; <a class="el" href="classplansys2_1_1Instance.html">plansys2::Instance</a> &gt; &amp;instances, const std::function&lt; std::vector&lt; std::string &gt;(const std::string &amp;)&gt; &amp;sub_types={})</td></tr>
+<tr class="memdesc:a3f694c1bb1b2f31090cc7f4037c1bd27"><td class="mdescLeft">&#160;</td><td class="mdescRight">The rules of some derived predicates over some objects.  <br /></td></tr>
+<tr class="separator:a3f694c1bb1b2f31090cc7f4037c1bd27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0e3b499f93f015087bf29ff3465dc31" id="r_ae0e3b499f93f015087bf29ff3465dc31"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae0e3b499f93f015087bf29ff3465dc31">missing_requirements</a> (const std::set&lt; std::string &gt; &amp;needed, const std::set&lt; std::string &gt; &amp;supported)</td></tr>
+<tr class="memdesc:ae0e3b499f93f015087bf29ff3465dc31"><td class="mdescLeft">&#160;</td><td class="mdescRight">The requirements in needed that supported lacks.  <br /></td></tr>
+<tr class="separator:ae0e3b499f93f015087bf29ff3465dc31"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9be7a44c06f7fbaaca0034565f40612f" id="r_a9be7a44c06f7fbaaca0034565f40612f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classplansys2_1_1NodeVariant.html">plansys2::NodeVariant</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9be7a44c06f7fbaaca0034565f40612f">nodeMsgToVariant</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp;node_msg)</td></tr>
 <tr class="separator:a9be7a44c06f7fbaaca0034565f40612f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a802bf86eb5981268d7cf80d034b4602c" id="r_a802bf86eb5981268d7cf80d034b4602c"><td class="memItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a802bf86eb5981268d7cf80d034b4602c">operator&lt;&lt;</a> (std::ostream &amp;os, const <a class="el" href="classplansys2_1_1NodeVariant.html">NodeVariant</a> &amp;node)</td></tr>
@@ -407,6 +434,9 @@ Functions</h2></td></tr>
 <tr class="separator:ae39d64692b209053c066ca40d35f98d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31d28eecabd8fb6fabfc6f2794926da2" id="r_a31d28eecabd8fb6fabfc6f2794926da2"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="structplansys2_1_1StnDependency.html">StnDependency</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a31d28eecabd8fb6fabfc6f2794926da2">parse_stn_dependency</a> (const std::string &amp;text)</td></tr>
 <tr class="separator:a31d28eecabd8fb6fabfc6f2794926da2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b1648a8d6508f934a64df6ff89d6658" id="r_a5b1648a8d6508f934a64df6ff89d6658"><td class="memItemLeft" align="right" valign="top">std::set&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5b1648a8d6508f934a64df6ff89d6658">pddl_requirements</a> (const std::string &amp;domain, const std::string &amp;problem=&quot;&quot;)</td></tr>
+<tr class="memdesc:a5b1648a8d6508f934a64df6ff89d6658"><td class="mdescLeft">&#160;</td><td class="mdescRight">The requirements a task uses, without parsing it.  <br /></td></tr>
+<tr class="separator:a5b1648a8d6508f934a64df6ff89d6658"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a891994cae8c4503e433efd09c3b5cf" id="r_a4a891994cae8c4503e433efd09c3b5cf"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4a891994cae8c4503e433efd09c3b5cf">remove_comments</a> (const std::string &amp;pddl)</td></tr>
 <tr class="memdesc:a4a891994cae8c4503e433efd09c3b5cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove the comments from a PDDL string.  <br /></td></tr>
 <tr class="separator:a4a891994cae8c4503e433efd09c3b5cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -432,6 +462,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a0a3c2a70b4a2bf7be631f51b8312d0c1" id="r_a0a3c2a70b4a2bf7be631f51b8312d0c1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0a3c2a70b4a2bf7be631f51b8312d0c1">undo</a> (const std::vector&lt; <a class="el" href="structplansys2_1_1FactChange.html">FactChange</a> &gt; &amp;changes, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt; problem_client, std::vector&lt; std::string &gt; *kept=nullptr)</td></tr>
 <tr class="memdesc:a0a3c2a70b4a2bf7be631f51b8312d0c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Take back the changes recorded by apply, in reverse order.  <br /></td></tr>
 <tr class="separator:a0a3c2a70b4a2bf7be631f51b8312d0c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8da0dfc84bdafbecbae67157177eb430" id="r_a8da0dfc84bdafbecbae67157177eb430"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8da0dfc84bdafbecbae67157177eb430">unique_node_name</a> (const std::string &amp;base)</td></tr>
+<tr class="memdesc:a8da0dfc84bdafbecbae67157177eb430"><td class="mdescLeft">&#160;</td><td class="mdescRight">A node name that no other node has: the base, the process and a count.  <br /></td></tr>
+<tr class="separator:a8da0dfc84bdafbecbae67157177eb430"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e2618160d1703cff92298d273e8f8d9" id="r_a3e2618160d1703cff92298d273e8f8d9"><td class="memTemplParams" colspan="2">template&lt;typename Key , typename T , typename Hash , typename KeyEqual , typename Alloc &gt; </td></tr>
 <tr class="memitem:a3e2618160d1703cff92298d273e8f8d9"><td class="memTemplItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a3e2618160d1703cff92298d273e8f8d9">unordered_container_hash</a> (const std::unordered_map&lt; Key, T, Hash, KeyEqual, Alloc &gt; &amp;map)</td></tr>
 <tr class="separator:a3e2618160d1703cff92298d273e8f8d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -447,11 +480,14 @@ Functions</h2></td></tr>
 <tr class="memitem:a8e07ddf5b5b0e71f767a82424f50286b"><td class="memTemplItemLeft" align="right" valign="top">std::future_status&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a8e07ddf5b5b0e71f767a82424f50286b">wait_for_result</a> (FutureT &amp;future, WaitTimeT time_to_wait)</td></tr>
 <tr class="memdesc:a8e07ddf5b5b0e71f767a82424f50286b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waits for a future to be ready or until a timeout occurs.  <br /></td></tr>
 <tr class="separator:a8e07ddf5b5b0e71f767a82424f50286b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:ab2b292b60274ec6942456abde226d08f" id="r_ab2b292b60274ec6942456abde226d08f"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab2b292b60274ec6942456abde226d08f">kStnActionIdPrecision</a> = 3</td></tr>
-<tr class="separator:ab2b292b60274ec6942456abde226d08f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ddd9578bd017c2295a8227664df276e" id="r_a6ddd9578bd017c2295a8227664df276e"><td class="memTemplParams" colspan="2">template&lt;typename ClientT &gt; </td></tr>
+<tr class="memitem:a6ddd9578bd017c2295a8227664df276e"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a6ddd9578bd017c2295a8227664df276e">wait_for_server</a> (const std::shared_ptr&lt; ClientT &gt; &amp;client, std::chrono::nanoseconds timeout)</td></tr>
+<tr class="memdesc:a6ddd9578bd017c2295a8227664df276e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waits for the server of a client with wait_for_service, as wait_for_server(wait).  <br /></td></tr>
+<tr class="separator:a6ddd9578bd017c2295a8227664df276e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc5accd46d42076f756e954b01f1a078" id="r_afc5accd46d42076f756e954b01f1a078"><td class="memTemplParams" colspan="2">template&lt;typename WaitT &gt; </td></tr>
+<tr class="memitem:afc5accd46d42076f756e954b01f1a078"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#afc5accd46d42076f756e954b01f1a078">wait_for_server</a> (WaitT &amp;&amp;wait)</td></tr>
+<tr class="memdesc:afc5accd46d42076f756e954b01f1a078"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waits for the server of a client: wait is its wait_for_service or wait_for_action_server.  <br /></td></tr>
+<tr class="separator:afc5accd46d42076f756e954b01f1a078"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a id="adc723289ab3ed347857fa1a5307734fc" name="adc723289ab3ed347857fa1a5307734fc"></a>
@@ -529,6 +565,7 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="a21d5e8f8cdaa838586b31007df0a950ba7905c9b3eda793da18fade6e791b2183" name="a21d5e8f8cdaa838586b31007df0a950ba7905c9b3eda793da18fade6e791b2183"></a>OVERALL&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a21d5e8f8cdaa838586b31007df0a950bab1a326c06d88bf042f73d70f50197905" name="a21d5e8f8cdaa838586b31007df0a950bab1a326c06d88bf042f73d70f50197905"></a>END&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a21d5e8f8cdaa838586b31007df0a950ba007a3c4175ca4f86d9dc49e4f2e9cf8a" name="a21d5e8f8cdaa838586b31007df0a950ba007a3c4175ca4f86d9dc49e4f2e9cf8a"></a>GOAL&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a21d5e8f8cdaa838586b31007df0a950baefd62eaf8aeeb073a4eead8fd9478dfc" name="a21d5e8f8cdaa838586b31007df0a950baefd62eaf8aeeb073a4eead8fd9478dfc"></a>TIMED&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -551,8 +588,45 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="a90584fb7b25100845ac48b6fd8837321" name="a90584fb7b25100845ac48b6fd8837321"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a90584fb7b25100845ac48b6fd8837321">&#9670;&#160;</a></span>apply() <span class="overload">[1/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> apply </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>tree</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classplansys2_1_1ProblemExpert.html">plansys2::ProblemExpert</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>expert</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>node_id</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply effects to a problem expert itself, as its clients would. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">tree</td><td>The effects. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">expert</td><td>The problem expert. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">node_id</td><td>The node to apply, the root by default. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if they were applied. </dd></dl>
+
+</div>
+</div>
 <a id="a59e55f4d7905c9b54f226dac860368e8" name="a59e55f4d7905c9b54f226dac860368e8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a59e55f4d7905c9b54f226dac860368e8">&#9670;&#160;</a></span>apply() <span class="overload">[1/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a59e55f4d7905c9b54f226dac860368e8">&#9670;&#160;</a></span>apply() <span class="overload">[2/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -595,7 +669,7 @@ Variables</h2></td></tr>
 </div>
 </div>
 <a id="a578d8b816105e47be824adaec61e64f9" name="a578d8b816105e47be824adaec61e64f9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a578d8b816105e47be824adaec61e64f9">&#9670;&#160;</a></span>apply() <span class="overload">[2/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a578d8b816105e47be824adaec61e64f9">&#9670;&#160;</a></span>apply() <span class="overload">[3/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -633,7 +707,7 @@ Variables</h2></td></tr>
 </div>
 </div>
 <a id="a653bfabbb8ee22e2ff5c25ebe6482ba2" name="a653bfabbb8ee22e2ff5c25ebe6482ba2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a653bfabbb8ee22e2ff5c25ebe6482ba2">&#9670;&#160;</a></span>apply() <span class="overload">[3/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a653bfabbb8ee22e2ff5c25ebe6482ba2">&#9670;&#160;</a></span>apply() <span class="overload">[4/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1031,6 +1105,43 @@ template&lt;typename NodeT &gt; </div>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="ae3b954ac94104b43167da704da73ce96" name="ae3b954ac94104b43167da704da73ce96"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3b954ac94104b43167da704da73ce96">&#9670;&#160;</a></span>derive()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt; derive </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="structplansys2_1_1DerivedRule.html">DerivedRule</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>rules</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>predicates</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>functions</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A state with its derived predicates, to a fixpoint: a rule can read other derived predicates, or its own (reachability). </p>
+<p><a class="el" href="classplansys2_1_1Derived.html" title="Represents a derived predicate (i.e., axiom) in the planning domain.">Derived</a> predicates already in the state are recomputed. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">rules</td><td>The rules, from make_derived_rules. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">predicates</td><td>The state. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">functions</td><td>The functions of the state. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The predicates of the state, the derived ones included. </dd></dl>
 
 </div>
 </div>
@@ -1484,6 +1595,94 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
+<a id="a2499776d9175ff85600062be518d87f5" name="a2499776d9175ff85600062be518d87f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2499776d9175ff85600062be518d87f5">&#9670;&#160;</a></span>known_pddl_requirements()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::set&lt; std::string &gt; &amp; known_pddl_requirements </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Every PDDL requirement PlanSys2 knows, as written in PDDL (":conditional-effects"), and ":either-types" and ":timed-initial-fluents", which PDDL has no flag for. </p>
+<dl class="section return"><dt>Returns</dt><dd>The requirements. </dd></dl>
+
+</div>
+</div>
+<a id="a3f694c1bb1b2f31090cc7f4037c1bd27" name="a3f694c1bb1b2f31090cc7f4037c1bd27"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f694c1bb1b2f31090cc7f4037c1bd27">&#9670;&#160;</a></span>make_derived_rules()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; <a class="el" href="structplansys2_1_1DerivedRule.html">DerivedRule</a> &gt; make_derived_rules </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classplansys2_1_1Derived.html">plansys2::Derived</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>derived</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="classplansys2_1_1Instance.html">plansys2::Instance</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>instances</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::function&lt; std::vector&lt; std::string &gt;(const std::string &amp;)&gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>sub_types</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The rules of some derived predicates over some objects. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">derived</td><td>The rules, with ?0, ?1... as parameters. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">instances</td><td>The objects. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sub_types</td><td>The subtypes of a type, if its parameter does not carry them: their objects fit the type too. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The rules. </dd></dl>
+
+</div>
+</div>
+<a id="ae0e3b499f93f015087bf29ff3465dc31" name="ae0e3b499f93f015087bf29ff3465dc31"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0e3b499f93f015087bf29ff3465dc31">&#9670;&#160;</a></span>missing_requirements()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::string &gt; missing_requirements </td>
+          <td>(</td>
+          <td class="paramtype">const std::set&lt; std::string &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>needed</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::set&lt; std::string &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>supported</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The requirements in needed that supported lacks. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">needed</td><td>What a task needs, from pddl_requirements. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">supported</td><td>What a solver plans with; empty if it does not say. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The missing requirements, none if supported is empty. </dd></dl>
+
+</div>
+</div>
 <a id="a9be7a44c06f7fbaaca0034565f40612f" name="a9be7a44c06f7fbaaca0034565f40612f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9be7a44c06f7fbaaca0034565f40612f">&#9670;&#160;</a></span>nodeMsgToVariant()</h2>
 
@@ -1583,6 +1782,38 @@ template&lt;typename T &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a5b1648a8d6508f934a64df6ff89d6658" name="a5b1648a8d6508f934a64df6ff89d6658"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5b1648a8d6508f934a64df6ff89d6658">&#9670;&#160;</a></span>pddl_requirements()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::set&lt; std::string &gt; pddl_requirements </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>domain</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>problem</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The requirements a task uses, without parsing it. </p>
+<p>Those its syntax shows: :derived, when, or, forall, exists, either, preference, :constraints, :process, :event, #t, ?duration inequalities, functions, negated conditions and timed initial literals. Domains declare more than they use (:adl), so a declared requirement counts only if the syntax cannot show it, as :action-costs.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">domain</td><td>The PDDL domain. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">problem</td><td>The PDDL problem, if any. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The requirements, as written in PDDL. </dd></dl>
 
 </div>
 </div>
@@ -1871,6 +2102,33 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
+<a id="a8da0dfc84bdafbecbae67157177eb430" name="a8da0dfc84bdafbecbae67157177eb430"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8da0dfc84bdafbecbae67157177eb430">&#9670;&#160;</a></span>unique_node_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string unique_node_name </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>base</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A node name that no other node has: the base, the process and a count. </p>
+<p>The clients of PlanSys2 are made in many processes, the PlanSys2 one among them: with the same name, their service clients may not find the services they call for long.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">base</td><td>"problem_expert_client". </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>"problem_expert_client_4242_3". </dd></dl>
+
+</div>
+</div>
 <a id="a3e2618160d1703cff92298d273e8f8d9" name="a3e2618160d1703cff92298d273e8f8d9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3e2618160d1703cff92298d273e8f8d9">&#9670;&#160;</a></span>unordered_container_hash() <span class="overload">[1/2]</span></h2>
 
@@ -2009,26 +2267,51 @@ template&lt;typename FutureT , typename WaitTimeT &gt; </div>
 
 </div>
 </div>
-<h2 class="groupheader">Variable Documentation</h2>
-<a id="ab2b292b60274ec6942456abde226d08f" name="ab2b292b60274ec6942456abde226d08f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab2b292b60274ec6942456abde226d08f">&#9670;&#160;</a></span>kStnActionIdPrecision</h2>
+<a id="a6ddd9578bd017c2295a8227664df276e" name="a6ddd9578bd017c2295a8227664df276e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6ddd9578bd017c2295a8227664df276e">&#9670;&#160;</a></span>wait_for_server() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
+<div class="memtemplate">
+template&lt;typename ClientT &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classint.html">int</a> kStnActionIdPrecision = 3</td>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> wait_for_server </td>
+          <td>(</td>
+          <td class="paramtype">const std::shared_ptr&lt; ClientT &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>client</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::chrono::nanoseconds</td>          <td class="paramname"><span class="paramname"><em>timeout</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Waits for the server of a client with wait_for_service, as wait_for_server(wait). </p>
+
+</div>
+</div>
+<a id="afc5accd46d42076f756e954b01f1a078" name="afc5accd46d42076f756e954b01f1a078"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc5accd46d42076f756e954b01f1a078">&#9670;&#160;</a></span>wait_for_server() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename WaitT &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> wait_for_server </td>
+          <td>(</td>
+          <td class="paramtype">WaitT &amp;&amp;</td>          <td class="paramname"><span class="paramname"><em>wait</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Waits for the server of a client: wait is its wait_for_service or wait_for_action_server. </p>
+<p>rclcpp shutting down during the wait throws (NodeNotFoundError, GraphListenerShutdownError): that is no server, not the end of the process.</p>
+<dl class="section return"><dt>Returns</dt><dd>Whether the server is there. </dd></dl>
 
 </div>
 </div>

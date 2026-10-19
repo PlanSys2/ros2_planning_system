@@ -128,6 +128,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a369c542856b9dad7110aab33d38435de" id="r_a369c542856b9dad7110aab33d38435de"><td class="memItemLeft" align="right" valign="top">std::optional&lt; plansys2_msgs::msg::Plan &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a369c542856b9dad7110aab33d38435de">get_remaining_plan</a> ()</td></tr>
 <tr class="memdesc:a369c542856b9dad7110aab33d38435de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the remaining portion of the plan to be executed.  <br /></td></tr>
 <tr class="separator:a369c542856b9dad7110aab33d38435de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48717707090c7dd3a46475c0dfd6f1ad" id="r_a48717707090c7dd3a46475c0dfd6f1ad"><td class="memItemLeft" align="right" valign="top">std::optional&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a48717707090c7dd3a46475c0dfd6f1ad">get_replanning_problem</a> ()</td></tr>
+<tr class="memdesc:a48717707090c7dd3a46475c0dfd6f1ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">The problem to plan again from while a plan runs: the one of now, before the at start effects of the actions that run.  <br /></td></tr>
+<tr class="separator:a48717707090c7dd3a46475c0dfd6f1ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0fadc16dcb17150c48bf3d59e5feb87d" id="r_a0fadc16dcb17150c48bf3d59e5feb87d"><td class="memItemLeft" align="right" valign="top">ExecutePlan::Feedback&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0fadc16dcb17150c48bf3d59e5feb87d">getFeedBack</a> ()</td></tr>
 <tr class="memdesc:a0fadc16dcb17150c48bf3d59e5feb87d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current feedback from plan execution.  <br /></td></tr>
 <tr class="separator:a0fadc16dcb17150c48bf3d59e5feb87d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -304,6 +307,27 @@ Public Member Functions</h2></td></tr>
 
 <p>Get the remaining portion of the plan to be executed. </p>
 <dl class="section return"><dt>Returns</dt><dd>std::optional&lt;plansys2_msgs::msg::Plan&gt; The remaining plan if available, empty if no remaining plan is available or if an error occurred. </dd></dl>
+
+</div>
+</div>
+<a id="a48717707090c7dd3a46475c0dfd6f1ad" name="a48717707090c7dd3a46475c0dfd6f1ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48717707090c7dd3a46475c0dfd6f1ad">&#9670;&#160;</a></span>get_replanning_problem()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; std::string &gt; get_replanning_problem </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The problem to plan again from while a plan runs: the one of now, before the at start effects of the actions that run. </p>
+<p>A plan made from it has them again: those of the new plan that are running go on.</p>
+<dl class="section return"><dt>Returns</dt><dd>The problem, empty if the executor cannot give it. </dd></dl>
 
 </div>
 </div>

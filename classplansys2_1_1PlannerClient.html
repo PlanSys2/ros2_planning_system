@@ -156,7 +156,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Constructor for the <a class="el" href="classplansys2_1_1PlannerClient.html" title="Client implementation of the PlannerInterface.">PlannerClient</a>. </p>
-<p>Creates a ROS node and configures service clients to connect to the planner services. Also retrieves the plan_solver_timeout parameter. </p>
+<p>Creates a ROS node and configures service clients to connect to the planner services. It waits for a plan as long as the planner plans (its plan_solver_timeout) plus a margin; its own plan_solver_timeout parameter, if positive, sets that time instead. </p>
 
 </div>
 </div>

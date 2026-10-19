@@ -96,19 +96,22 @@ $(function(){ initResizable(false); });
 <div class="contents">
 <div class="textblock"><code>#include &lt;chrono&gt;</code><br />
 <code>#include &lt;memory&gt;</code><br />
+<code>#include &lt;stdexcept&gt;</code><br />
 <code>#include &quot;rclcpp/rclcpp.hpp&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for ServiceCall.hpp:</div>
 <div class="dyncontent">
 <div class="center"><img src="ServiceCall_8hpp__incl.png" border="0" usemap="#aplansys2__core_2include_2plansys2__core_2ServiceCall_8hpp" alt=""/></div>
 <map name="aplansys2__core_2include_2plansys2__core_2ServiceCall_8hpp" id="aplansys2__core_2include_2plansys2__core_2ServiceCall_8hpp">
-<area shape="rect" title=" " alt="" coords="22,5,225,46"/>
+<area shape="rect" title=" " alt="" coords="70,5,273,46"/>
 <area shape="rect" title=" " alt="" coords="5,94,66,120"/>
-<area shape="poly" title=" " alt="" coords="104,48,62,85,59,81,100,44"/>
+<area shape="poly" title=" " alt="" coords="139,49,70,88,68,84,136,44"/>
 <area shape="rect" title=" " alt="" coords="90,94,157,120"/>
-<area shape="poly" title=" " alt="" coords="126,46,126,78,121,78,121,46"/>
-<area shape="rect" title=" " alt="" coords="181,94,300,120"/>
-<area shape="poly" title=" " alt="" coords="154,44,212,83,209,87,151,49"/>
+<area shape="poly" title=" " alt="" coords="162,48,141,82,136,79,157,45"/>
+<area shape="rect" title=" " alt="" coords="181,94,258,120"/>
+<area shape="poly" title=" " alt="" coords="186,45,207,79,202,82,181,48"/>
+<area shape="rect" title=" " alt="" coords="282,94,402,120"/>
+<area shape="poly" title=" " alt="" coords="215,44,303,85,301,90,213,49"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -116,9 +119,17 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="ServiceCall_8hpp__dep__incl.png" border="0" usemap="#aplansys2__core_2include_2plansys2__core_2ServiceCall_8hppdep" alt=""/></div>
 <map name="aplansys2__core_2include_2plansys2__core_2ServiceCall_8hppdep" id="aplansys2__core_2include_2plansys2__core_2ServiceCall_8hppdep">
-<area shape="rect" title=" " alt="" coords="8,5,211,46"/>
-<area shape="rect" href="ProblemExpertClient_8cpp.html" title=" " alt="" coords="5,94,214,150"/>
-<area shape="poly" title=" " alt="" coords="112,61,112,93,107,93,107,61"/>
+<area shape="rect" title=" " alt="" coords="424,5,626,46"/>
+<area shape="rect" href="DomainExpertClient_8cpp.html" title=" " alt="" coords="5,94,195,150"/>
+<area shape="poly" title=" " alt="" coords="413,52,207,97,196,99,195,94,206,91,412,47"/>
+<area shape="rect" href="DomainExpertNode_8cpp.html" title=" " alt="" coords="219,94,408,150"/>
+<area shape="poly" title=" " alt="" coords="468,55,376,96,374,91,466,50"/>
+<area shape="rect" href="ExecutorClient_8cpp.html" title=" " alt="" coords="432,94,618,150"/>
+<area shape="poly" title=" " alt="" coords="528,61,528,93,523,93,523,61"/>
+<area shape="rect" href="PlannerClient_8cpp.html" title=" " alt="" coords="642,102,872,142"/>
+<area shape="poly" title=" " alt="" coords="589,50,710,98,708,103,587,55"/>
+<area shape="rect" href="ProblemExpertClient_8cpp.html" title=" " alt="" coords="897,94,1106,150"/>
+<area shape="poly" title=" " alt="" coords="642,45,885,91,898,94,897,99,883,97,641,50"/>
 </map>
 </div>
 </div>
@@ -135,6 +146,14 @@ Functions</h2></td></tr>
 <tr class="memitem:aa56499be025cb779ecafe600974c3d57"><td class="memTemplItemLeft" align="right" valign="top">ServiceT::Response::SharedPtr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceplansys2.html#aa56499be025cb779ecafe600974c3d57">call_service</a> (rclcpp::Node::SharedPtr node, std::shared_ptr&lt; rclcpp::Client&lt; ServiceT &gt; &gt; client, typename ServiceT::Request::SharedPtr request, std::chrono::nanoseconds service_timeout=std::chrono::seconds(5), std::chrono::nanoseconds response_timeout=std::chrono::seconds(1))</td></tr>
 <tr class="memdesc:aa56499be025cb779ecafe600974c3d57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Call a service spinning node until the response arrives.  <br /></td></tr>
 <tr class="separator:aa56499be025cb779ecafe600974c3d57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ddd9578bd017c2295a8227664df276e" id="r_a6ddd9578bd017c2295a8227664df276e"><td class="memTemplParams" colspan="2">template&lt;typename ClientT &gt; </td></tr>
+<tr class="memitem:a6ddd9578bd017c2295a8227664df276e"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceplansys2.html#a6ddd9578bd017c2295a8227664df276e">wait_for_server</a> (const std::shared_ptr&lt; ClientT &gt; &amp;client, std::chrono::nanoseconds timeout)</td></tr>
+<tr class="memdesc:a6ddd9578bd017c2295a8227664df276e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waits for the server of a client with wait_for_service, as wait_for_server(wait).  <br /></td></tr>
+<tr class="separator:a6ddd9578bd017c2295a8227664df276e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc5accd46d42076f756e954b01f1a078" id="r_afc5accd46d42076f756e954b01f1a078"><td class="memTemplParams" colspan="2">template&lt;typename WaitT &gt; </td></tr>
+<tr class="memitem:afc5accd46d42076f756e954b01f1a078"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceplansys2.html#afc5accd46d42076f756e954b01f1a078">wait_for_server</a> (WaitT &amp;&amp;wait)</td></tr>
+<tr class="memdesc:afc5accd46d42076f756e954b01f1a078"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waits for the server of a client: wait is its wait_for_service or wait_for_action_server.  <br /></td></tr>
+<tr class="separator:afc5accd46d42076f756e954b01f1a078"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->

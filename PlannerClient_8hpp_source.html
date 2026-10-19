@@ -125,33 +125,38 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="keyword">class </span>PlannerClient : <span class="keyword">public</span> PlannerInterface</div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>{</div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  <a class="code hl_function" href="classplansys2_1_1PlannerClient.html#ada5b564277cfc7d48385ee9b54c490e3">PlannerClient</a>();</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  std::optional&lt;plansys2_msgs::msg::Plan&gt; <a class="code hl_function" href="classplansys2_1_1PlannerClient.html#a59ae4f9d96ae9f2a1941eb4b506574b7">getPlan</a>(</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keyword">const</span> std::string &amp; domain, <span class="keyword">const</span> std::string &amp; problem,</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    <span class="keyword">const</span> std::string &amp; node_namespace = <span class="stringliteral">&quot;&quot;</span>);</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  plansys2_msgs::msg::PlanArray <a class="code hl_function" href="classplansys2_1_1PlannerClient.html#a85b8157891a6634ed91beaa9991292ac">getPlanArray</a>(</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keyword">const</span> std::string &amp; domain, <span class="keyword">const</span> std::string &amp; problem,</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="keyword">const</span> std::string &amp; node_namespace = <span class="stringliteral">&quot;&quot;</span>);</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span> </div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  rclcpp::Client&lt;plansys2_msgs::srv::GetPlan&gt;::SharedPtr</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    get_plan_client_;</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  rclcpp::Client&lt;plansys2_msgs::srv::GetPlanArray&gt;::SharedPtr</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    get_plan_array_client_;</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>  rclcpp::Node::SharedPtr node_;</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>  rclcpp::Duration solver_timeout_ = rclcpp::Duration(15, 0);</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>};</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  <a class="code hl_function" href="classplansys2_1_1PlannerClient.html#ada5b564277cfc7d48385ee9b54c490e3">PlannerClient</a>();</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  std::optional&lt;plansys2_msgs::msg::Plan&gt; <a class="code hl_function" href="classplansys2_1_1PlannerClient.html#a59ae4f9d96ae9f2a1941eb4b506574b7">getPlan</a>(</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    <span class="keyword">const</span> std::string &amp; domain, <span class="keyword">const</span> std::string &amp; problem,</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    <span class="keyword">const</span> std::string &amp; node_namespace = <span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  plansys2_msgs::msg::PlanArray <a class="code hl_function" href="classplansys2_1_1PlannerClient.html#a85b8157891a6634ed91beaa9991292ac">getPlanArray</a>(</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="keyword">const</span> std::string &amp; domain, <span class="keyword">const</span> std::string &amp; problem,</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keyword">const</span> std::string &amp; node_namespace = <span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span> </div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  rclcpp::Client&lt;plansys2_msgs::srv::GetPlan&gt;::SharedPtr</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    get_plan_client_;</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  rclcpp::Client&lt;plansys2_msgs::srv::GetPlanArray&gt;::SharedPtr</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    get_plan_array_client_;</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>  <span class="comment">// How long to wait for the planner&#39;s answer: its plan_solver_timeout and a margin</span></div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>  std::chrono::nanoseconds answer_wait();</div>
 <div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>}  <span class="comment">// namespace plansys2</span></div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span> </div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_PLANNER__PLANNERCLIENT_HPP_</span></div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>  rclcpp::Node::SharedPtr node_;</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>  <span class="comment">// The planner&#39;s parameters: its plan_solver_timeout is how long it plans</span></div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>  rclcpp::AsyncParametersClient::SharedPtr planner_parameters_;</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>  <span class="keywordtype">double</span> planner_timeout_ {15.0};  <span class="comment">// The last one read</span></div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>};</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span> </div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>}  <span class="comment">// namespace plansys2</span></div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span> </div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_PLANNER__PLANNERCLIENT_HPP_</span></div>
 <div class="ttc" id="aPlannerInterface_8hpp_html"><div class="ttname"><a href="PlannerInterface_8hpp.html">PlannerInterface.hpp</a></div></div>
-<div class="ttc" id="aclassplansys2_1_1PlannerClient_html_a59ae4f9d96ae9f2a1941eb4b506574b7"><div class="ttname"><a href="classplansys2_1_1PlannerClient.html#a59ae4f9d96ae9f2a1941eb4b506574b7">plansys2::PlannerClient::getPlan</a></div><div class="ttdeci">std::optional&lt; plansys2_msgs::msg::Plan &gt; getPlan(const std::string &amp;domain, const std::string &amp;problem, const std::string &amp;node_namespace=&quot;&quot;)</div><div class="ttdoc">Generate a single plan for a PDDL planning problem.</div><div class="ttdef"><b>Definition</b> PlannerClient.cpp:53</div></div>
-<div class="ttc" id="aclassplansys2_1_1PlannerClient_html_a85b8157891a6634ed91beaa9991292ac"><div class="ttname"><a href="classplansys2_1_1PlannerClient.html#a85b8157891a6634ed91beaa9991292ac">plansys2::PlannerClient::getPlanArray</a></div><div class="ttdeci">plansys2_msgs::msg::PlanArray getPlanArray(const std::string &amp;domain, const std::string &amp;problem, const std::string &amp;node_namespace=&quot;&quot;)</div><div class="ttdoc">Generate multiple alternative plans for a PDDL planning problem.</div><div class="ttdef"><b>Definition</b> PlannerClient.cpp:101</div></div>
-<div class="ttc" id="aclassplansys2_1_1PlannerClient_html_ada5b564277cfc7d48385ee9b54c490e3"><div class="ttname"><a href="classplansys2_1_1PlannerClient.html#ada5b564277cfc7d48385ee9b54c490e3">plansys2::PlannerClient::PlannerClient</a></div><div class="ttdeci">PlannerClient()</div><div class="ttdoc">Constructor for the PlannerClient.</div><div class="ttdef"><b>Definition</b> PlannerClient.cpp:32</div></div>
+<div class="ttc" id="aclassplansys2_1_1PlannerClient_html_a59ae4f9d96ae9f2a1941eb4b506574b7"><div class="ttname"><a href="classplansys2_1_1PlannerClient.html#a59ae4f9d96ae9f2a1941eb4b506574b7">plansys2::PlannerClient::getPlan</a></div><div class="ttdeci">std::optional&lt; plansys2_msgs::msg::Plan &gt; getPlan(const std::string &amp;domain, const std::string &amp;problem, const std::string &amp;node_namespace=&quot;&quot;)</div><div class="ttdoc">Generate a single plan for a PDDL planning problem.</div><div class="ttdef"><b>Definition</b> PlannerClient.cpp:75</div></div>
+<div class="ttc" id="aclassplansys2_1_1PlannerClient_html_a85b8157891a6634ed91beaa9991292ac"><div class="ttname"><a href="classplansys2_1_1PlannerClient.html#a85b8157891a6634ed91beaa9991292ac">plansys2::PlannerClient::getPlanArray</a></div><div class="ttdeci">plansys2_msgs::msg::PlanArray getPlanArray(const std::string &amp;domain, const std::string &amp;problem, const std::string &amp;node_namespace=&quot;&quot;)</div><div class="ttdoc">Generate multiple alternative plans for a PDDL planning problem.</div><div class="ttdef"><b>Definition</b> PlannerClient.cpp:122</div></div>
+<div class="ttc" id="aclassplansys2_1_1PlannerClient_html_ada5b564277cfc7d48385ee9b54c490e3"><div class="ttname"><a href="classplansys2_1_1PlannerClient.html#ada5b564277cfc7d48385ee9b54c490e3">plansys2::PlannerClient::PlannerClient</a></div><div class="ttdeci">PlannerClient()</div><div class="ttdoc">Constructor for the PlannerClient.</div><div class="ttdef"><b>Definition</b> PlannerClient.cpp:35</div></div>
 <div class="ttc" id="anamespaceplansys2_html"><div class="ttname"><a href="namespaceplansys2.html">plansys2</a></div><div class="ttdef"><b>Definition</b> BTAction.hpp:33</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

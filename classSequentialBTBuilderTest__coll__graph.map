@@ -1,11 +1,13 @@
 <map id="SequentialBTBuilderTest" name="SequentialBTBuilderTest">
-<area shape="rect" id="Node000001" title=" " alt="" coords="51,169,216,195"/>
-<area shape="rect" id="Node000002" href="$classplansys2_1_1SequentialBTBuilder.html" title=" " alt="" coords="64,94,204,120"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,135,136,169,131,169,131,135"/>
-<area shape="rect" id="Node000003" href="$classplansys2_1_1BTBuilder.html" title="Interface for behavior tree builder implementations." alt="" coords="5,5,84,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="70,40,123,92,120,96,66,44"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="107,5,160,31"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="136,47,136,94,131,94,131,47"/>
-<area shape="rect" id="Node000005" title=" " alt="" coords="204,5,251,31"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="218,47,200,72,164,96,161,91,196,68,214,43"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="51,258,216,283"/>
+<area shape="rect" id="Node000002" href="$classplansys2_1_1SequentialBTBuilder.html" title=" " alt="" coords="64,183,204,208"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,224,136,257,131,257,131,224"/>
+<area shape="rect" id="Node000003" href="$classplansys2_1_1BTBuilder.html" title="Interface for behavior tree builder implementations." alt="" coords="5,94,84,120"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="70,129,123,180,120,184,66,132"/>
+<area shape="rect" id="Node000004" href="$classint.html" title=" " alt="" coords="25,5,64,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="47,47,47,94,42,94,42,47"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="107,94,160,120"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="136,135,136,182,131,182,131,135"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="204,94,251,120"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="218,135,200,161,164,184,161,180,196,157,214,132"/>
 </map>
