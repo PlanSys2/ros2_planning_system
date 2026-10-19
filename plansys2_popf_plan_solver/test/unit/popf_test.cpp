@@ -572,6 +572,8 @@ TEST(popf_plan_solver, the_bank)
   const auto supported = planner->supported_requirements();
 
   std::set<std::string> excluded, justified;
+  // popf aborts on preferences only when built with assertions (as in CI): not shown here
+  justified.insert(":preferences");
   int solved = 0;
   const auto all = std::chrono::steady_clock::now();
   for (const auto & task : cases) {

@@ -258,9 +258,10 @@ POPFPlanSolver::parse_plan_result(const std::string & plan_path)
 std::set<std::string>
 POPFPlanSolver::supported_requirements() const
 {
+  // Not :preferences: popf aborts on them when built with assertions (VAL RPGBuilder.cpp:157)
   return {
     ":strips", ":typing", ":equality", ":universal-preconditions", ":fluents",
-    ":numeric-fluents", ":durative-actions", ":timed-initial-literals", ":preferences"};
+    ":numeric-fluents", ":durative-actions", ":timed-initial-literals"};
 }
 
 bool
