@@ -269,6 +269,16 @@ public:
   }
 
   /**
+   * @brief Why the executor failed the action, when it was not its performer that said so
+   * (no performer took it, its performer is gone); empty otherwise.
+   */
+  std::string get_failure_reason() const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return failure_reason_;
+  }
+
+  /**
    * @brief Get the completion percentage of the action.
    *
    * @return float Completion percentage (0.0 to 1.0).
@@ -401,6 +411,7 @@ protected:
   std::vector<std::string> action_params_;
 
   std::string feedback_;
+  std::string failure_reason_;
   float completion_;
   double planned_duration_ {0.0};
 
