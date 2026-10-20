@@ -89,6 +89,12 @@ target_link_libraries(problem_expert_misc_test
   ament_index_cpp::ament_index_cpp
 )
 
+ament_add_ros_isolated_gtest(problem_expert_state_test problem_expert_state_test.cpp TIMEOUT 120)
+target_link_libraries(problem_expert_state_test
+  ${PROJECT_NAME}
+  ament_index_cpp::ament_index_cpp
+)
+
 ament_add_ros_isolated_gtest(malformed_pddl_test malformed_pddl_test.cpp TIMEOUT 60)
 target_link_libraries(malformed_pddl_test
   ${PROJECT_NAME}
