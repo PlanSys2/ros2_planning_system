@@ -14,7 +14,9 @@ planner:
     # TFD, if its plugin is installed (PlanSys2/plansys2_tfd_plan_solver, not in this repo)
     # TFD:
     #   plugin: "plansys2/TFDPlanSolver"
-executor:
-  ros__parameters:
-    bt_builder_plugin: "STNBTBuilder"
-    # bt_builder_plugin: "SimpleBTBuilder"
+# executor: the BT builder is the launch argument bt_builder_plugin (STNBTBuilder by default,
+# or SimpleBTBuilder). Set here, it would win over the argument
+#
+# executor:
+#   ros__parameters:
+#     bt_builder_plugin: "SimpleBTBuilder"

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The behavior tree templates given to the distributed bringup reach the executor."""
+"""The BT templates and the BT builder given to the distributed bringup reach the executor."""
 
 import os
 import time
@@ -40,11 +40,14 @@ PARAMETERS = {
     'start_action_bt_file': 'default_start_action_bt_xml_filename',
     'end_action_bt_file': 'default_end_action_bt_xml_filename',
 }
+# Not the default either: the default parameters file set it, and won over the argument
+BUILDER = 'SimpleBTBuilder'
 
 
 @pytest.mark.launch_test
 def generate_test_description():
-    arguments = {'model_file': os.path.join(PDDL_DIR, 'domain_simple.pddl'), **TEMPLATES}
+    arguments = {'model_file': os.path.join(PDDL_DIR, 'domain_simple.pddl'),
+                 'bt_builder_plugin': BUILDER, **TEMPLATES}
     plansys2 = launch.actions.IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
             get_package_share_directory('plansys2_bringup'), 'launch',
@@ -65,11 +68,11 @@ class TestDistributedBtFiles(unittest.TestCase):
         cls.node.destroy_node()
         rclpy.shutdown()
 
-    def test_the_executor_gets_the_templates(self):
+    def test_the_executor_gets_the_templates_and_the_builder(self):
         client = self.node.create_client(GetParameters, '/executor/get_parameters')
         self.assertTrue(client.wait_for_service(timeout_sec=60.0))
         request = GetParameters.Request()
-        request.names = [PARAMETERS[argument] for argument in TEMPLATES]
+        request.names = [PARAMETERS[argument] for argument in TEMPLATES] + ['bt_builder_plugin']
         deadline = time.monotonic() + 30.0
         values = None
         while values is None and time.monotonic() < deadline:
@@ -77,4 +80,4 @@ class TestDistributedBtFiles(unittest.TestCase):
             rclpy.spin_until_future_complete(self.node, future, timeout_sec=5.0)
             if future.done() and future.result() is not None:
                 values = [v.string_value for v in future.result().values]
-        self.assertEqual(values, list(TEMPLATES.values()))
+        self.assertEqual(values, list(TEMPLATES.values()) + [BUILDER])
