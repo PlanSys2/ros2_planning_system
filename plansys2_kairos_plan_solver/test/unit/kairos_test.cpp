@@ -637,6 +637,153 @@ TEST(kairos_plan_solver, replanning_is_fast)
   EXPECT_LT(seconds_since(start) / 20, 0.1);
 }
 
+namespace
+{
+
+// A kairos executable that misbehaves: a script with the given body, in a folder of its own
+std::string fake_kairos(const std::string & name, const std::string & body)
+{
+  const auto dir = std::filesystem::temp_directory_path() / ("plansys2_fake_kairos_" + name);
+  std::filesystem::create_directories(dir);
+  const auto path = dir / "kairos";
+  std::ofstream(path) << "#!/bin/sh\n" << body << "\n";
+  std::filesystem::permissions(path, std::filesystem::perms::owner_all);
+  return path.string();
+}
+
+Fixture make_isolated(const std::string & name)
+{
+  auto f = make_solver(name);
+  f.node->set_parameter(rclcpp::Parameter("KAIROS.isolated", true));
+  return f;
+}
+
+}  // namespace
+
+TEST(kairos_plan_solver, isolated_plans_as_in_process)
+{
+  auto f = make_isolated("isolated_plans");
+  const auto domain = read_pddl("domain_simple.pddl");
+  const auto problem = read_pddl("problem_simple_1.pddl");
+  auto plan = f.solver->getPlan(domain, problem);
+  ASSERT_TRUE(plan);
+  ASSERT_EQ(plan->items.size(), 3u);
+  EXPECT_EQ(plan->items[0].action, "(move leia kitchen bedroom)");
+  EXPECT_FLOAT_EQ(plan->items[0].duration, 5.0f);
+  expect_valid(domain, problem, *plan, true);
+
+  auto seq = f.solver->getPlan(kSeqDomain, kSeqProblem);
+  ASSERT_TRUE(seq);
+  EXPECT_EQ(seq->items.size(), 4u);
+  expect_valid(kSeqDomain, kSeqProblem, *seq, false);
+
+  const auto elevators = read_pddl("elevator_domain.pddl");
+  const auto elevators_problem = read_pddl("elevator_problem.pddl");
+  auto temporal = f.solver->getPlan(elevators, elevators_problem);
+  ASSERT_TRUE(temporal);
+  expect_valid(elevators, elevators_problem, *temporal, true);
+}
+
+TEST(kairos_plan_solver, isolated_without_plan)
+{
+  auto f = make_isolated("isolated_without_plan");
+  const auto start = std::chrono::steady_clock::now();
+  EXPECT_FALSE(f.solver->getPlan(
+    read_pddl("domain_simple.pddl"), read_pddl("problem_simple_2.pddl"), "", 10s));
+  EXPECT_LT(seconds_since(start), 2.0);  // Proved unsolvable, not timed out
+  EXPECT_FALSE(f.solver->getPlan(read_pddl("domain_simple.pddl"), "(define (problem"));
+  EXPECT_FALSE(f.solver->getPlan("(define (domain", read_pddl("problem_simple_1.pddl")));
+}
+
+TEST(kairos_plan_solver, isolated_respects_the_node_timeout)
+{
+  auto f = make_isolated("isolated_timeout");
+  const auto start = std::chrono::steady_clock::now();
+  EXPECT_FALSE(f.solver->getPlan(
+    read_pddl("puzzle_domain.pddl"), read_pddl("puzzle_unsolvable.pddl"), "", 1s));
+  EXPECT_LT(seconds_since(start), 1.5);
+}
+
+TEST(kairos_plan_solver, isolated_cancel)
+{
+  auto f = make_isolated("isolated_cancel");
+  const auto domain = read_pddl("puzzle_domain.pddl");
+  const auto hard = read_pddl("puzzle_unsolvable.pddl");
+  const auto start = std::chrono::steady_clock::now();
+  auto future = std::async(
+    std::launch::async, [&]() {return f.solver->getPlan(domain, hard, "", 30s);});
+  std::this_thread::sleep_for(300ms);
+  f.solver->cancel();
+  ASSERT_EQ(future.wait_for(3s), std::future_status::ready);
+  EXPECT_FALSE(future.get());
+  EXPECT_LT(seconds_since(start), 1.5);
+  ASSERT_TRUE(
+    f.solver->getPlan(read_pddl("domain_simple.pddl"), read_pddl("problem_simple_1.pddl")));
+}
+
+TEST(kairos_plan_solver, isolated_survives_a_crashing_kairos)
+{
+  // What isolated is for: a Kairos that crashes ends this plan, not the planner node
+  auto f = make_isolated("isolated_crash");
+  const auto domain = read_pddl("domain_simple.pddl");
+  const auto problem = read_pddl("problem_simple_1.pddl");
+  for (const auto & body : {std::string("kill -SEGV $$"), std::string("kill -ABRT $$"),
+      std::string("exit 3"), std::string("echo 'not a plan ((('")})
+  {
+    SCOPED_TRACE(body);
+    f.node->set_parameter(
+      rclcpp::Parameter("KAIROS.executable", fake_kairos("crash", body)));
+    EXPECT_FALSE(f.solver->getPlan(domain, problem));
+  }
+  // The real one, again
+  f.node->set_parameter(rclcpp::Parameter("KAIROS.executable", std::string("")));
+  auto plan = f.solver->getPlan(domain, problem);
+  ASSERT_TRUE(plan);
+  EXPECT_EQ(plan->items.size(), 3u);
+}
+
+TEST(kairos_plan_solver, isolated_survives_a_hanging_kairos)
+{
+  // A Kairos that ignores its own timeout is killed at the node timeout
+  auto f = make_isolated("isolated_hang");
+  f.node->set_parameter(
+    rclcpp::Parameter("KAIROS.executable", fake_kairos("hang", "exec sleep 60")));
+  const auto start = std::chrono::steady_clock::now();
+  EXPECT_FALSE(f.solver->getPlan(
+    read_pddl("domain_simple.pddl"), read_pddl("problem_simple_1.pddl"), "", 1s));
+  EXPECT_LT(seconds_since(start), 3.0);
+}
+
+TEST(kairos_plan_solver, isolated_without_executable)
+{
+  auto f = make_isolated("isolated_missing");
+  f.node->set_parameter(
+    rclcpp::Parameter("KAIROS.executable", std::string("/nonexistent/kairos")));
+  EXPECT_FALSE(f.solver->getPlan(
+    read_pddl("domain_simple.pddl"), read_pddl("problem_simple_1.pddl")));
+}
+
+TEST(kairos_plan_solver, isolated_parallel_calls)
+{
+  auto f = make_isolated("isolated_parallel");
+  const auto simple = read_pddl("domain_simple.pddl");
+  const auto problem = read_pddl("problem_simple_1.pddl");
+  std::vector<std::future<std::optional<plansys2_msgs::msg::Plan>>> futures;
+  for (int i = 0; i < 6; i++) {
+    futures.push_back(
+      std::async(
+        std::launch::async, [&, i]() {
+          return i % 2 ? f.solver->getPlan(simple, problem) :
+                 f.solver->getPlan(kSeqDomain, kSeqProblem);
+        }));
+  }
+  for (int i = 0; i < 6; i++) {
+    auto plan = futures[i].get();
+    ASSERT_TRUE(plan) << i;
+    EXPECT_EQ(plan->items.size(), i % 2 ? 3u : 4u);
+  }
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

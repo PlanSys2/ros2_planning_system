@@ -7,6 +7,8 @@ planner:
     plan_solver_plugins: ["KAIROS"]
     KAIROS:
       plugin: "plansys2/KairosPlanSolver"
+      # In a process of its own: a crash or a hang of Kairos does not take down PlanSys2
+      # isolated: true
     POPF:
       plugin: "plansys2/POPFPlanSolver"
     # TFD, if its plugin is installed (PlanSys2/plansys2_tfd_plan_solver, not in this repo)
