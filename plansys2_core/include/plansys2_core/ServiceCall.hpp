@@ -169,12 +169,37 @@ public:
     }
     // One thread asks; the others find it active when they get the lock
     std::lock_guard<std::mutex> lock(mutex_);
-    auto last_log = std::chrono::steady_clock::now();
+    const auto since = std::chrono::steady_clock::now();
+    auto last_log = since;
     while (!active_ && node_->running()) {
+      // Given up once: the calls after ask once, and do not wait again, until it is back
+      const auto limit = gave_up_ ? std::chrono::milliseconds(0) : max_wait_;
+      if (max_wait_.count() > 0 && std::chrono::steady_clock::now() - since >= limit) {
+        if (!gave_up_) {
+          RCLCPP_ERROR(
+            node_->get_logger(), "%s is not active after %.0f s: giving up", component_.c_str(),
+            std::chrono::duration<double>(max_wait_).count());
+        }
+        gave_up_ = true;
+        // Asked at most once a second meanwhile: each call fails at once
+        const auto now = std::chrono::steady_clock::now();
+        if (now - last_ask_ < std::chrono::seconds(1)) {
+          return false;
+        }
+        last_ask_ = now;
+        if (!ask()) {
+          return false;
+        }
+        active_ = true;
+        gave_up_ = false;
+        break;
+      }
       // At most one question every kPeriod, also when a wait ends at once (shutdown, no node)
       const auto next = std::chrono::steady_clock::now() + kPeriod;
+      last_ask_ = std::chrono::steady_clock::now();
       if (ask()) {
         active_ = true;
+        gave_up_ = false;
         break;
       }
       std::this_thread::sleep_until(next);
@@ -190,6 +215,11 @@ public:
    * @brief A service of the component went or stopped answering: wait for it again.
    */
   void lost() {active_ = false;}
+
+  /**
+   * @brief How long a wait goes on before it gives up: zero, the default, for ever.
+   */
+  void set_max_wait(std::chrono::milliseconds max_wait) {max_wait_ = max_wait;}
 
   const std::string & component() const {return component_;}
 
@@ -219,6 +249,9 @@ private:
   static constexpr std::chrono::seconds kLogPeriod {5};
   std::shared_ptr<ClientNode> node_;
   std::string component_;
+  std::chrono::milliseconds max_wait_ {0};
+  bool gave_up_ {false};
+  std::chrono::steady_clock::time_point last_ask_;
   std::atomic<bool> active_ {false};
   std::mutex mutex_;
   rclcpp::Client<lifecycle_msgs::srv::GetState>::SharedPtr client_;

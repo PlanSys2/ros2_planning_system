@@ -267,6 +267,40 @@ TEST(active_component, a_component_that_always_says_not_active_is_an_error)
 }
 
 // The last one: it shuts ROS down
+// With a max wait, a component that never gets active ends the wait: a plan does not wait for
+// ever for one that is gone
+TEST(active_component, a_max_wait_gives_up)
+{
+  Client client("never");
+  FakeComponent component("never", State::PRIMARY_STATE_INACTIVE);
+  client.active->set_max_wait(1500ms);
+  auto start = std::chrono::steady_clock::now();
+  EXPECT_FALSE(client.call());
+  EXPECT_GT(seconds_since(start), 1.4);
+  EXPECT_LT(seconds_since(start), 4.0);
+  // Nor is there any component at all
+  Client nobody("nobody");
+  nobody.active->set_max_wait(1s);
+  start = std::chrono::steady_clock::now();
+  EXPECT_FALSE(nobody.call());
+  EXPECT_LT(seconds_since(start), 4.0);
+}
+
+// The max wait is for each wait: one that gets active in time goes on
+TEST(active_component, a_max_wait_lets_in_time_ones_go_on)
+{
+  Client client("in_time");
+  client.active->set_max_wait(5s);
+  std::unique_ptr<FakeComponent> component;
+  std::thread starter([&component]() {
+      std::this_thread::sleep_for(1500ms);
+      component = std::make_unique<FakeComponent>("in_time", State::PRIMARY_STATE_ACTIVE);
+    });
+  EXPECT_TRUE(client.call());
+  starter.join();
+  EXPECT_TRUE(client.call());
+}
+
 TEST(active_component, a_shutdown_ends_the_wait)
 {
   Client client("never");

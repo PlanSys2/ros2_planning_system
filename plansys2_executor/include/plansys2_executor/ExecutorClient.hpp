@@ -75,6 +75,12 @@ public:
   void interrupt(bool interrupted) {node_->interrupt(interrupted);}
 
   /**
+   * @brief How long a call waits for its component to be active before it gives up (zero, the
+   * default: as long as it takes).
+   */
+  void set_max_wait(std::chrono::milliseconds max_wait) {active_->set_max_wait(max_wait);}
+
+  /**
    * @brief Start the execution of a plan.
    *
    * @param[in] plan The plan to be executed.

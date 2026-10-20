@@ -118,7 +118,7 @@ class ExecutorLifecycleTest : public ::testing::Test
 {
 protected:
   // Experts and performer are always active; the executor is left configured or active
-  void start(int performer_ticks, bool activate_executor = true)
+  void start(int performer_ticks, bool activate_executor = true, double component_timeout = 30.0)
   {
     std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
     domain_node_ = std::make_shared<plansys2::DomainExpertNode>();
@@ -128,6 +128,7 @@ protected:
     if (const char * builder = std::getenv("PLANSYS2_TEST_BT_BUILDER")) {
       executor_node_->set_parameter({"bt_builder_plugin", std::string(builder)});
     }
+    executor_node_->set_parameter({"component_timeout", component_timeout});
     move_node_ = std::make_shared<CountingAction>("move_performer", performer_ticks);
     move_node_->set_parameter({"action_name", "move"});
     move_node_->set_parameter({"rate", 20.0});
@@ -334,6 +335,25 @@ TEST_F(ExecutorLifecycleTest, stops_while_waiting_for_a_gone_problem_expert)
     EXPECT_LT(std::chrono::steady_clock::now() - begin, 8s);
     stop();
   }
+}
+
+// The problem expert goes in mid-plan, and nobody brings it back: the plan fails once
+// component_timeout passes, instead of waiting for it for ever
+TEST_F(ExecutorLifecycleTest, a_plan_fails_when_a_component_does_not_come_back)
+{
+  start(30, true, 2.0);  // 1.5 s per action
+  ASSERT_TRUE(executor_client_->start_plan_execution(move_plan("wheels_zone", "assembly_zone")));
+  std::this_thread::sleep_for(500ms);
+  exe_->remove_node(problem_node_->get_node_base_interface());
+  problem_node_.reset();
+  const auto begin = std::chrono::steady_clock::now();
+  auto result = wait_result(30s);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ(result->result, ExecutePlan::Result::FAILURE);
+  // The action (1 s more), and the timeout of each call that waits for it
+  EXPECT_LT(std::chrono::steady_clock::now() - begin, 15s);
+  // And the executor goes on: it takes a plan again once there is a problem expert
+  EXPECT_EQ(executor_node_->get_current_state().id(), State::PRIMARY_STATE_ACTIVE);
 }
 
 TEST_F(ExecutorLifecycleTest, reactivations_run_a_single_execution_thread)

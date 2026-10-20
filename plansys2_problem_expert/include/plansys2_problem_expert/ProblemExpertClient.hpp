@@ -86,6 +86,12 @@ public:
   void interrupt(bool interrupted) {node_->interrupt(interrupted);}
 
   /**
+   * @brief How long a call waits for its component to be active before it gives up (zero, the
+   * default: as long as it takes).
+   */
+  void set_max_wait(std::chrono::milliseconds max_wait) {active_->set_max_wait(max_wait);}
+
+  /**
    * @brief Get all instances in the problem.
    *
    * @return std::vector<plansys2::Instance> Vector containing all instances in the problem,

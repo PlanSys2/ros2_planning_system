@@ -78,6 +78,8 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
   this->declare_parameter<std::string>("default_end_action_bt_xml_filename", "");
   this->declare_parameter<std::string>("bt_builder_plugin", "");
   this->declare_parameter<int>("action_time_precision", 3);
+  // Seconds a plan waits for a component that is not active before it fails (0: for ever)
+  this->declare_parameter<double>("component_timeout", 30.0);
   // STNBTBuilder: true starts each action as soon as its dependencies happened, as durations
   // are uncertain in robotics; false keeps the planned times as minimums
   this->declare_parameter<bool>("stn_relaxed_timing", true);
@@ -244,6 +246,12 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   domain_client_ = std::make_shared<plansys2::DomainExpertClient>(*this);
   problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(*this);
   planner_client_ = std::make_shared<plansys2::PlannerClient>(*this);
+  // A plan does not wait for ever for a component that is gone: it fails after this
+  const auto max_wait = std::chrono::milliseconds(
+    static_cast<int64_t>(1000.0 * get_parameter("component_timeout").as_double()));
+  domain_client_->set_max_wait(max_wait);
+  problem_client_->set_max_wait(max_wait);
+  planner_client_->set_max_wait(max_wait);
 
   // One actions_hub publisher and subscription for all the actions, kept between plans
   action_hub_ = ActionHub::get(non_owning_this());
@@ -404,7 +412,8 @@ ExecutorNode::get_plan_service_callback(
   if (starting_goal_) {
     response->success = true;
     response->plan = starting_plan_;
-  } else if (executor_state_ == STATE_EXECUTING) {
+  } else if (executor_state_ != STATE_IDLE) {
+    // Running, or ending (failed, cancelled...): the plan is the one of the goal until it ends
     response->success = true;
     response->plan = complete_plan_snapshot_;
   } else {
