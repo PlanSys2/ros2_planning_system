@@ -224,7 +224,11 @@ public:
    *
    * @return rclcpp::Time The start time of the execution.
    */
-  rclcpp::Time get_start_time() const {return start_execution_;}
+  rclcpp::Time get_start_time() const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return start_execution_;
+  }
 
   /**
    * @brief Get the current ROS time from the node.
@@ -238,26 +242,42 @@ public:
    *
    * @return ROS time of the last state change.
    */
-  rclcpp::Time get_status_time() const {return state_time_;}
+  rclcpp::Time get_status_time() const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return state_time_;
+  }
 
   /**
    * @brief Get the current feedback from the action performer.
    *
    * @return std::string containing the feedback message.
    */
-  std::string get_feedback() const {return feedback_;}
+  std::string get_feedback() const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return feedback_;
+  }
 
   /**
    * @brief The performer that took the action, empty until one does.
    */
-  std::string get_performer() const {return current_performer_id_;}
+  std::string get_performer() const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return current_performer_id_;
+  }
 
   /**
    * @brief Get the completion percentage of the action.
    *
    * @return float Completion percentage (0.0 to 1.0).
    */
-  float get_completion() const {return completion_;}
+  float get_completion() const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return completion_;
+  }
 
   /**
    * @brief The duration the plan gives the action, sent to its performer.
@@ -365,8 +385,8 @@ protected:
   rclcpp::TimerBase::SharedPtr create_timer(void (ActionExecutor::* callback)());
 
   std::atomic<Status> state_;
-  // Hub messages, BT ticks and cancel come from different threads
-  std::mutex mutex_;
+  // Hub messages, BT ticks, cancel and the getters come from different threads
+  mutable std::mutex mutex_;
   std::string request_id_;
   int activation_failures_ {0};
   int performer_misses_ {0};

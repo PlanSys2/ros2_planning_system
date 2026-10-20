@@ -269,11 +269,16 @@ ExecutorClient::should_cancel_goal()
     return false;
   }
 
-  std::lock_guard<std::mutex> lock(mutex_);
-  if (!goal_handler_) {
+  GoalHandleExecutePlan::SharedPtr goal_handle;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    goal_handle = goal_handler_;
+  }
+  if (!goal_handle) {
     return false;
   }
-  auto status = goal_handler_->get_status();
+  // Without our lock: the goal handle takes its own, and calls our callbacks holding it
+  auto status = goal_handle->get_status();
 
   return status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED ||
          status == action_msgs::msg::GoalStatus::STATUS_EXECUTING;
