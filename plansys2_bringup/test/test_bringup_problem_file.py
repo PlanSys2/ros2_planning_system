@@ -106,8 +106,8 @@ class TestBringupProblemFile(unittest.TestCase):
         return names
 
     def test_one_node_per_component(self, bringup, with_problem):
-        # The lifecycle_manager of the distributed one exits once the four are active
-        expected = set(NODES)
+        # The distributed one has its lifecycle_manager too: it watches the four once active
+        expected = set(NODES) | ({'lifecycle_manager'} if bringup == 'distributed' else set())
         deadline = time.monotonic() + 60.0
         while time.monotonic() < deadline and self.node_names() != expected:
             time.sleep(0.2)

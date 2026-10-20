@@ -86,6 +86,51 @@ startup_function(
   const std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes,
   std::chrono::seconds timeout);
 
+/**
+ * @brief Watches the components once they are up, and acts when one needs it.
+ *
+ * Each step asks the state of each component. One that comes back unconfigured (its process
+ * started again) is configured and activated. One that does not answer for lost_after is lost;
+ * lost for longer than grace, the executor is deactivated, and the plans in course fail with
+ * a clear result instead of waiting for it. When every component is active again, so is the
+ * executor. A component deactivated by someone else is left as it is.
+ */
+class Supervisor
+{
+public:
+  struct Options
+  {
+    std::chrono::milliseconds lost_after {3000};
+    std::chrono::milliseconds grace {10000};
+    std::chrono::seconds transition_timeout {5};
+  };
+
+  Supervisor(
+    const std::map<std::string, std::shared_ptr<LifecycleServiceClient>> & manager_nodes,
+    const Options & options);
+
+  // One look at every component, and what it needs
+  void step();
+
+  // Whether the executor is deactivated because a component is gone
+  bool degraded() const {return degraded_;}
+
+private:
+  struct Watch
+  {
+    std::chrono::steady_clock::time_point last_seen;
+    bool lost {false};
+    unsigned int state {lifecycle_msgs::msg::State::PRIMARY_STATE_UNKNOWN};
+  };
+
+  void bring_up(const std::string & name);
+
+  std::map<std::string, std::shared_ptr<LifecycleServiceClient>> nodes_;
+  Options options_;
+  std::map<std::string, Watch> watch_;
+  bool degraded_ {false};
+};
+
 }  // namespace plansys2
 
 #endif  // PLANSYS2_LIFECYCLE_MANAGER__LIFECYCLE_MANAGER_HPP_
