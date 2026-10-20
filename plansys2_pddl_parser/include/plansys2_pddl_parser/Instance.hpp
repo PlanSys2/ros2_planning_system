@@ -287,7 +287,8 @@ public:
     // further calls to the parser, that there are the objects of the
     // given type.
     ts.insert(name);
-    ts.types.insert(ts.types.end(), ts.size(), type);
+    // The type of the new name only: ts.size() of them made k objects take k^2 / 2 strings
+    ts.types.resize(ts.size(), type);
     d.getType(type)->objects.insert(name);
   }
 

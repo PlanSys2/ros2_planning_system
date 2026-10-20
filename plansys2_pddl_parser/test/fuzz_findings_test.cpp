@@ -167,3 +167,21 @@ TEST(FuzzFindings, declarations_without_name_and_empty_expressions)
     EXPECT_THROW(parser::pddl::Domain(domain_with(blocks)), std::runtime_error);
   }
 }
+
+// Found measuring big problems: each object added took as many copies of its type as there
+// were objects (k objects, k^2 / 2 strings), and an object got the type of another
+TEST(ScaleFindings, objects_added_keep_one_type_each)
+{
+  parser::pddl::Domain domain(kDomain);
+  parser::pddl::Instance problem(domain);
+  const auto before = problem.ts.size();
+  for (int i = 0; i < 2000; i++) {
+    problem.addObject("o" + std::to_string(i), i % 2 ? "robot" : "room");
+  }
+  ASSERT_EQ(problem.ts.size(), before + 2000u);
+  ASSERT_EQ(problem.ts.types.size(), problem.ts.size());
+  for (int i = 0; i < 2000; i++) {
+    EXPECT_EQ(problem.ts.types[problem.ts.index("o" + std::to_string(i))],
+      i % 2 ? "robot" : "room");
+  }
+}
