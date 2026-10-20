@@ -201,7 +201,7 @@ Expression * createExpression(Stringreader & f, TokenStruct<std::string> & ts, D
     } else {
       // A number, whatever the locale, or an object of the problem, compared with an object
       // fluent
-      double d;
+      double d = 0.0;
       if (!parseNumber(s, d) && isValidName(s)) {
         return new ObjectExpression(s);
       }

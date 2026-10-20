@@ -198,7 +198,7 @@ protected:
   void finish(bool success, float completion, const std::string & status = "");
 
   // Period for the timer to call do_work
-  std::chrono::nanoseconds period_;
+  std::chrono::nanoseconds period_ {0};
   std::string action_managed_;
   bool committed_;
 

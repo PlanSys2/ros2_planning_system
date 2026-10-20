@@ -256,6 +256,10 @@ ComputeBT::computeBTCallback(
   auto domain = domain_client_->getDomain();
   auto problem = problem_client_->getProblem();
   auto plan = planner_client_->getPlan(domain, problem);
+  if (!plan.has_value()) {
+    RCLCPP_ERROR(get_logger(), "No plan for %s", problem_filename.c_str());
+    return;
+  }
 
   savePlan(plan.value(), problem_path.stem().string());
 

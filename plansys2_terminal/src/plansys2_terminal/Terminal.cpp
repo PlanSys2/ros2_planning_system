@@ -381,7 +381,7 @@ Terminal::clean_command(std::string & command)
     command.begin(), command.end(), [](char c) {return c == '\t' || c == '\r';}, ' ');
 
   // remove continuous spaces
-  size_t pos;
+  size_t pos = 0;
   while ((pos = command.find("  ")) != command.npos) {
     command.erase(pos, 1);
   }

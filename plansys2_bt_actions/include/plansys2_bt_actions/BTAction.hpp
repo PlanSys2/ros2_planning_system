@@ -161,18 +161,18 @@ private:
   std::string action_;
   std::string bt_xml_file_;
   std::vector<std::string> plugin_list_;
-  bool finished_;
-  int total_action_nodes_;
+  bool finished_ {false};
+  int total_action_nodes_ {0};
   std::unique_ptr<BT::FileLogger2> bt_file_logger_;
   std::unique_ptr<BT::MinitraceLogger> bt_minitrace_logger_;
   // Groot2 monitor
   std::unique_ptr<BT::Groot2Publisher> groot_monitor_;
 
   // Default timeout value while waiting for response from a server
-  std::chrono::milliseconds default_server_timeout_;
+  std::chrono::milliseconds default_server_timeout_ {0};
 
   // The timeout value for waiting for a service to response
-  std::chrono::milliseconds wait_for_service_timeout_;
+  std::chrono::milliseconds wait_for_service_timeout_ {0};
 
   // Duration for each iteration of BT execution
   std::chrono::milliseconds bt_loop_duration_;

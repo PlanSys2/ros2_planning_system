@@ -37,7 +37,7 @@ inline std::chrono::milliseconds convertFromString<std::chrono::milliseconds>(co
     return convertFromJSON<std::chrono::milliseconds>(new_key);
   }
 
-  return std::chrono::milliseconds(std::stoul(key.data()));
+  return std::chrono::milliseconds(std::stoul(std::string(key)));
 }
 
 /**

@@ -450,8 +450,8 @@ protected:
   std::optional<plansys2_msgs::msg::Plan> last_executing_plan_;
   std::chrono::steady_clock::time_point next_feedback_time_;
 
-  bool cancel_plan_requested_;
-  bool replan_requested_;
+  bool cancel_plan_requested_ {false};
+  bool replan_requested_ {false};
   // Flags shared between execution_cycle's thread and the ROS callbacks (#435)
   std::atomic<bool> new_plan_received_ {false};
   bool domain_baseline_seen_ {false};

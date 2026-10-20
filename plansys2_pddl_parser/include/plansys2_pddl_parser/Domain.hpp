@@ -671,7 +671,7 @@ public:
 
   IntPair constantTypeIdConstId(const std::string & name)
   {
-    int t, c;
+    int t = 0, c = 0;
     bool found = false;
     for (t = 0; t < static_cast<int>(types.size()) && !found; t++) {
       for (c = 0; c < static_cast<int>(types[t]->constants.size()) && !found; c++) {

@@ -71,10 +71,10 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
     return ret;
   }
 
-  int default_server_timeout;
+  int default_server_timeout = 0;
   get_parameter("server_timeout", default_server_timeout);
   default_server_timeout_ = std::chrono::milliseconds(default_server_timeout);
-  int wait_for_service_timeout;
+  int wait_for_service_timeout = 0;
   get_parameter("wait_for_service_timeout", wait_for_service_timeout);
   wait_for_service_timeout_ = std::chrono::milliseconds(wait_for_service_timeout);
   bt_loop_duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(period_);
@@ -154,9 +154,11 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
     auto now_time_t = std::chrono::system_clock::to_time_t(now);
     const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(
       now.time_since_epoch()).count() % 1000;
+    std::tm local_time {};
+    localtime_r(&now_time_t, &local_time);  // localtime is not thread safe
     std::stringstream filename;
     filename << (dir / "bt_trace_").string();
-    filename << std::put_time(std::localtime(&now_time_t), "%Y_%m_%d__%H_%M_%S") << "_" <<
+    filename << std::put_time(&local_time, "%Y_%m_%d__%H_%M_%S") << "_" <<
       std::setw(3) << std::setfill('0') << millis;
 
     if (get_parameter("bt_file_logging").as_bool()) {
@@ -220,7 +222,7 @@ BTAction::on_deactivate(const rclcpp_lifecycle::State & previous_state)
 void BTAction::do_work()
 {
   if (!finished_) {
-    BT::NodeStatus result;
+    BT::NodeStatus result = BT::NodeStatus::FAILURE;
     // An exception ends the action once: there is no result to look at
     try {
       result = tree_.rootNode()->executeTick();

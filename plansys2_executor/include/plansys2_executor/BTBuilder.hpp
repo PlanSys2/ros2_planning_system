@@ -70,7 +70,7 @@ struct ActionStamped
   double time;
   std::string expression;
   double duration;
-  ActionType type;
+  ActionType type {};
   ActionVariant action;
 
   ActionStamped()

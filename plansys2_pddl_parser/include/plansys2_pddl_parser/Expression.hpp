@@ -188,7 +188,7 @@ private:
     node->node_id = tree.nodes.size();
     tree.nodes.push_back(*node);
 
-    uint32_t left_id;
+    uint32_t left_id = 0;
     if (n == 1) {
       plansys2_msgs::msg::Node zero;
       zero.node_type = plansys2_msgs::msg::Node::NUMBER;

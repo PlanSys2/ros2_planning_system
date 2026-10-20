@@ -44,6 +44,11 @@ public:
   DomainExpertInterface() {}
 
   /**
+   * @brief Virtual destructor, as it is used through pointers to it.
+   */
+  virtual ~DomainExpertInterface() = default;
+
+  /**
    * @brief Get the domain name.
    *
    * @return std::string The name of the domain.

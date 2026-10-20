@@ -407,7 +407,7 @@ struct ActionExecutionInfo
   std::vector<plansys2::FactChange> at_start_changes;
   ActionVariant action_info;
   std::string execution_error_info;
-  double duration;
+  double duration = 0.0;
   double duration_overrun_percentage = -1.0;
 };
 

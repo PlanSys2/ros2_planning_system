@@ -106,7 +106,7 @@ int main(int argc, char ** argv)
 
   if (options.real_time) {
     // Before any thread starts: they all inherit the policy
-    sched_param sch;
+    sched_param sch {};
     sch.sched_priority = 80;
     if (sched_setscheduler(0, SCHED_FIFO, &sch) == -1) {
       RCLCPP_ERROR(

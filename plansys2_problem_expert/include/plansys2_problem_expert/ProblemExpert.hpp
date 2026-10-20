@@ -265,8 +265,8 @@ public:
   /// A fact that changes at a time: a timed initial literal, or fluent if it is a function
   struct TimedFact
   {
-    double at;  // When, by the clock
-    bool negated;  // A predicate that stops holding
+    double at = 0.0;  // When, by the clock
+    bool negated = false;  // A predicate that stops holding
     plansys2_msgs::msg::Node fact;  // A predicate, or a function with its value
   };
 

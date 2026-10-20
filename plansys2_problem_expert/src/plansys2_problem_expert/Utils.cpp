@@ -220,10 +220,10 @@ struct ObjectUpdate
 struct NumericUpdate
 {
   plansys2_msgs::msg::Node function;
-  uint8_t modifier_type;
-  double before;  // The value before the action
-  double value;   // assign and scale: the new value
-  double delta;   // increase and decrease: what is added
+  uint8_t modifier_type = 0;
+  double before = 0.0;  // The value before the action
+  double value = 0.0;  // assign and scale: the new value
+  double delta = 0.0;  // increase and decrease: what is added
 };
 
 // What the NUMERIC phase finds: the numeric effects, and the facts added (not deleted then)
@@ -332,7 +332,7 @@ std::tuple<bool, bool, double> evaluate_node(
         // for the others by its text, bound by any forall around
         const auto condition_id = tree.nodes[node_id].children[0];
         const auto key = std::to_string(node_id) + parser::pddl::toString(tree, condition_id);
-        bool holds;
+        bool holds = false;
         if (plan && phase != ApplyPhase::NUMERIC && plan->conditions.count(key)) {
           holds = plan->conditions.at(key);
         } else {

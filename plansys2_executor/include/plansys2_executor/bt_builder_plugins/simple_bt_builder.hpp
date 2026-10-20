@@ -50,8 +50,8 @@ struct ActionNode
   static Ptr make_shared() {return std::make_shared<ActionNode>();}
 
   ActionStamped action;
-  int node_num;
-  int level_num;
+  int node_num = 0;
+  int level_num = 0;
 
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
