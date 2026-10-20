@@ -14,6 +14,7 @@
 #pragma once
 
 #include <algorithm>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -65,6 +66,24 @@ public:
       typesNames.push_back(subtype->name);
       subtype->getSubTypesNames(typesNames);
     }
+  }
+
+  // Whether t is this type or one of its descendants, whatever the shape of the graph
+  bool reaches(const Type * t) const
+  {
+    std::vector<const Type *> pending {this};
+    std::set<const Type *> seen;
+    while (!pending.empty()) {
+      const Type * type = pending.back();
+      pending.pop_back();
+      if (type == t) {
+        return true;
+      }
+      if (seen.insert(type).second) {
+        pending.insert(pending.end(), type->subtypes.begin(), type->subtypes.end());
+      }
+    }
+    return false;
   }
 
   void insertSubtype(Type * t)

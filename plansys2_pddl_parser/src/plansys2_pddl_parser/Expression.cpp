@@ -187,6 +187,11 @@ Expression * createExpression(Stringreader & f, TokenStruct<std::string> & ts, D
     }
   } else {
     std::string s = f.getToken();
+    if (s.empty()) {
+      // Nothing that is an expression (e.g. a ','): it would be read again, forever
+      f.printLine();
+      throw UnknownToken(std::string(1, f.getChar()));
+    }
 
     if (d.funcs.index(s) >= 0 && d.funcs.get(s)->params.empty()) {
       // PDDL 2.1: a function without parameters may be written without parentheses

@@ -45,3 +45,6 @@ if(_tests)
   set_tests_properties(${_tests}
     PROPERTIES ENVIRONMENT "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST")
 endif()
+
+ament_add_gtest(fuzz_findings_test fuzz_findings_test.cpp TIMEOUT 60)
+target_link_libraries(fuzz_findings_test ${PROJECT_NAME})

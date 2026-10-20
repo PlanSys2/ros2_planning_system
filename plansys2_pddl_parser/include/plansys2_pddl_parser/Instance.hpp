@@ -23,6 +23,7 @@
 
 #include "plansys2_pddl_parser/Domain.hpp"
 #include "plansys2_pddl_parser/Expression.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 // #undef DOMAIN_DEBUG
 // #define DOMAIN_DEBUG true
 namespace parser
@@ -69,6 +70,11 @@ public:
 
   void parse(const std::string & s)
   {
+    // Deeper text would overflow the stack of the recursive parsers
+    if (getMaxNesting(s) > kMaxNestingDepth) {
+      throw std::runtime_error(
+              "PDDL nested deeper than " + std::to_string(kMaxNestingDepth) + " levels");
+    }
     Stringreader f(s);
     name = f.parseName("problem");
 
