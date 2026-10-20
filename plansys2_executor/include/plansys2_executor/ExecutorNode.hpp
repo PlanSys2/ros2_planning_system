@@ -493,6 +493,11 @@ protected:
   // monolithic bringup also serves the requests execution_cycle makes while ticking,
   // so they must never wait for the execution thread: this lock is only held briefly
   std::mutex snapshot_mutex_;
+  // The last goal accepted, until it runs or ends: get_plan answers it while a long plan is
+  // set up, or a client would take it as lost
+  std::shared_ptr<GoalHandleExecutePlan> starting_goal_;
+  plansys2_msgs::msg::Plan starting_plan_;
+  void starting_done(const std::shared_ptr<GoalHandleExecutePlan> & goal);
   plansys2_msgs::msg::Plan complete_plan_snapshot_;
   plansys2_msgs::msg::Plan remaining_plan_snapshot_;
   std::vector<plansys2_msgs::msg::Tree> ordered_sub_goals_snapshot_;

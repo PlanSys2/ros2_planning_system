@@ -400,8 +400,11 @@ ExecutorNode::get_plan_service_callback(
 {
   (void)request_header;
   (void)request;
-  if (executor_state_ == STATE_EXECUTING) {
-    std::lock_guard<std::mutex> lock(snapshot_mutex_);
+  std::lock_guard<std::mutex> lock(snapshot_mutex_);
+  if (starting_goal_) {
+    response->success = true;
+    response->plan = starting_plan_;
+  } else if (executor_state_ == STATE_EXECUTING) {
     response->success = true;
     response->plan = complete_plan_snapshot_;
   } else {
@@ -478,7 +481,7 @@ ExecutorNode::create_plan_runtime_info(PlanRuntineInfo & runtime_info)
       (*runtime_info.action_map)[index].duration_overrun_percentage = this->get_parameter(
         "action_timeouts." + action_name + ".duration_overrun_percentage").as_double();
     }
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
       get_logger(), "Action %s timeout percentage %f", action_name.c_str(),
       (*runtime_info.action_map)[index].duration_overrun_percentage);
   }
@@ -1349,7 +1352,32 @@ ExecutorNode::handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_
   }
   new_goal_handle_ = goal_handle;
   new_plan_received_ = true;
+  std::lock_guard<std::mutex> snapshot_lock(snapshot_mutex_);
+  starting_goal_ = goal_handle;
+  starting_plan_ = goal_handle->get_goal()->plan;
 }
+
+void
+ExecutorNode::starting_done(const std::shared_ptr<GoalHandleExecutePlan> & goal)
+{
+  std::lock_guard<std::mutex> lock(snapshot_mutex_);
+  if (starting_goal_ == goal) {
+    starting_goal_.reset();
+  }
+}
+
+namespace
+{
+// When it goes out of scope, however the start of a goal ended
+template<typename F>
+struct AtExit
+{
+  F f;
+  ~AtExit() {f();}
+};
+template<typename F>
+AtExit<F> at_exit(F f) {return AtExit<F>{f};}
+}  // namespace
 
 std::shared_ptr<ExecutorNode::GoalHandleExecutePlan>
 ExecutorNode::take_new_goal()
@@ -1424,6 +1452,7 @@ ExecutorNode::execution_step()
         running_changes_snapshot_.clear();
       }
       if (auto goal = take_new_goal()) {
+        auto started = at_exit([this, goal]() {starting_done(goal);});
         // A domain change before this plan started does not affect it
         domain_changed_ = false;
 
@@ -1564,6 +1593,7 @@ ExecutorNode::execution_step()
           executor_state_ = STATE_EXECUTING;
           break;
         }
+        auto started = at_exit([this, goal]() {starting_done(goal);});
 
         // The running goal is replaced by the new one
         result->result = plansys2_msgs::action::ExecutePlan::Result::PREEMPT;
@@ -1754,6 +1784,8 @@ ExecutorNode::fail_current_goals()
     }
   }
   new_plan_received_ = false;
+  std::lock_guard<std::mutex> snapshot_lock(snapshot_mutex_);
+  starting_goal_.reset();
 }
 
 void ExecutorNode::add_groot_monitoring(BT::Tree * tree, uint16_t server_port)
