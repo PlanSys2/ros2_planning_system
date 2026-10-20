@@ -24,6 +24,8 @@ def generate_launch_description():
     problem_file = LaunchConfiguration('problem_file')
     namespace = LaunchConfiguration('namespace')
     params_file = LaunchConfiguration('params_file')
+    respawn = LaunchConfiguration('respawn')
+    state_file = LaunchConfiguration('state_file')
 
     declare_model_file_cmd = DeclareLaunchArgument(
         'model_file',
@@ -42,13 +44,27 @@ def generate_launch_description():
         description='Namespace')
 
     # Specify the actions
+    # Started again, 1 s later, if its process ends (not when the launch is stopped)
+    declare_respawn_cmd = DeclareLaunchArgument(
+        'respawn', default_value='false',
+        description='Start the node again if its process ends')
+
+    # Where it keeps its problem, to come back with it if it is started again ('' to not keep it)
+    declare_state_file_cmd = DeclareLaunchArgument(
+        'state_file', default_value='',
+        description='File where the problem expert keeps its problem')
+
     problem_expert_cmd = Node(
+        respawn=respawn,
+        respawn_delay=1.0,
         package='plansys2_problem_expert',
         executable='problem_expert_node',
         name='problem_expert',
         namespace=namespace,
         output='screen',
-        parameters=[{'model_file': model_file}, {'problem_file': problem_file}, params_file])
+        parameters=[
+            {'model_file': model_file}, {'problem_file': problem_file},
+            {'state_file': state_file}, params_file])
 
     # Create the launch description and populate
     ld = LaunchDescription()
@@ -59,6 +75,8 @@ def generate_launch_description():
     ld.add_action(declare_namespace_cmd)
 
     # Declare the launch options
+    ld.add_action(declare_respawn_cmd)
+    ld.add_action(declare_state_file_cmd)
     ld.add_action(problem_expert_cmd)
 
     return ld

@@ -260,6 +260,22 @@ TEST_F(SupervisorTest, a_component_that_cannot_be_configured)
   EXPECT_TRUE(becomes("domain_expert", State::PRIMARY_STATE_ACTIVE));
 }
 
+// All of PlanSys2 started again at once (or a startup that failed): each one is brought up,
+// the executor last
+TEST_F(SupervisorTest, everything_started_again_is_brought_up)
+{
+  for (const auto & name : kNames) {
+    kill(name);
+  }
+  for (const auto & name : kNames) {
+    add(name);
+  }
+  for (const auto & name : kNames) {
+    EXPECT_TRUE(becomes(name, State::PRIMARY_STATE_ACTIVE, 10s)) << name;
+  }
+  EXPECT_FALSE(supervisor_->degraded());
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

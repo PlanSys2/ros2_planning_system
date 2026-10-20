@@ -23,6 +23,7 @@ def generate_launch_description():
     model_file = LaunchConfiguration('model_file')
     namespace = LaunchConfiguration('namespace')
     params_file = LaunchConfiguration('params_file')
+    respawn = LaunchConfiguration('respawn')
 
     declare_model_file_cmd = DeclareLaunchArgument(
         'model_file',
@@ -36,7 +37,14 @@ def generate_launch_description():
         description='Namespace')
 
     # Specify the actions
+    # Started again, 1 s later, if its process ends (not when the launch is stopped)
+    declare_respawn_cmd = DeclareLaunchArgument(
+        'respawn', default_value='false',
+        description='Start the node again if its process ends')
+
     domain_expert_cmd = Node(
+        respawn=respawn,
+        respawn_delay=1.0,
         package='plansys2_domain_expert',
         executable='domain_expert_node',
         name='domain_expert',
@@ -52,6 +60,7 @@ def generate_launch_description():
     ld.add_action(declare_namespace_cmd)
 
     # Declare the launch options
+    ld.add_action(declare_respawn_cmd)
     ld.add_action(domain_expert_cmd)
 
     return ld
