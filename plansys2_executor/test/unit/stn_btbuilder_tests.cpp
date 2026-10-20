@@ -15,6 +15,7 @@
 // STNBTBuilder on hand-written plans of the stn_test domain
 
 #include <atomic>
+#include <algorithm>
 #include <chrono>
 #include <limits>
 #include <map>
@@ -791,6 +792,55 @@ TEST_F(STNNodesTest, an_inconsistent_network_keeps_the_order)
   EXPECT_TRUE((*action_map_)[kLight].at_end_effects_applied);
   EXPECT_FALSE(problem_->existPredicate(plansys2::Predicate("(light m1)")));
   EXPECT_FALSE(builder_->propagate(builder_->get_graph()));
+}
+
+// Found measuring long plans: each action of a sequence nested the next one, and past some
+// hundreds of actions the tree was deeper than BT.CPP reads (XML_ELEMENT_DEPTH_EXCEEDED). The
+// tree of a long sequence is now flat
+TEST_F(STNBTBuilderTest, a_long_sequence_gives_a_flat_tree)
+{
+  constexpr int kMoves = 150;  // Nested, their tree had about 300 levels
+  for (int i = 0; i <= kMoves; i++) {
+    ASSERT_TRUE(problem_->addInstance(plansys2::Instance("z" + std::to_string(i), "room")));
+  }
+  ASSERT_TRUE(problem_->addPredicate(plansys2::Predicate("(robot_at r1 z0)")));
+  ASSERT_TRUE(problem_->removePredicate(plansys2::Predicate("(robot_at r1 kitchen)")));
+  // Each move takes 10 of battery
+  ASSERT_TRUE(problem_->updateFunction(plansys2::Function("(= (battery r1) 100000)")));
+  std::vector<std::tuple<double, std::string, double>> items;
+  for (int i = 0; i < kMoves; i++) {
+    const auto from = "z" + std::to_string(i);
+    const auto to = "z" + std::to_string(i + 1);
+    ASSERT_TRUE(problem_->addPredicate(plansys2::Predicate("(connected " + from + " " + to + ")")));
+    items.emplace_back(5.001 * i, "(move r1 " + from + " " + to + ")", 5.0);
+  }
+
+  const auto start = std::chrono::steady_clock::now();
+  const auto tree = builder_->get_tree(make_plan(items));
+  const double took = std::chrono::duration<double>(std::chrono::steady_clock::now() -
+    start).count();
+  ASSERT_FALSE(tree.empty());
+  EXPECT_LT(took, 60.0);
+
+  // How deep the XML is: it does not grow with the plan
+  int depth = 0;
+  int deepest = 0;
+  for (size_t i = 0; i + 1 < tree.size(); i++) {
+    if (tree[i] == '<' && tree[i + 1] == '/') {
+      depth--;
+    } else if (tree[i] == '<') {
+      const auto close = tree.find('>', i);
+      if (close != std::string::npos && tree[close - 1] != '/') {
+        deepest = std::max(deepest, ++depth);
+      }
+    }
+  }
+  EXPECT_LT(deepest, 50) << "XML depth";
+  // Every move is there
+  for (int i = 0; i < kMoves; i++) {
+    const auto move = "(move r1 z" + std::to_string(i) + " z" + std::to_string(i + 1) + ")";
+    EXPECT_NE(tree.find(move), std::string::npos) << move;
+  }
 }
 
 int main(int argc, char ** argv)
