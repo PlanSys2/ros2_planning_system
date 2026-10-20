@@ -33,110 +33,42 @@
 namespace plansys2
 {
 
-namespace
-{
-// rclcpp shutting down during the wait throws: no server, not the end of the process
-template<typename ClientT>
-bool wait_for_server(const ClientT & client, std::chrono::seconds time_out)
-{
-  try {
-    return client->wait_for_service(time_out);
-  } catch (const std::runtime_error &) {
-    return false;
-  }
-}
-}  // namespace
-
 LifecycleServiceClient::LifecycleServiceClient(
-  const std::string & node_name, const std::string & managed_node)
-: Node(node_name), managed_node_(managed_node)
-{}
-
-void
-LifecycleServiceClient::init()
+  std::shared_ptr<ClientNode> node, const std::string & managed_node)
+: node_(node), managed_node_(managed_node)
 {
-  std::string get_state_service_name = managed_node_ + "/get_state";
-  std::string change_state_service_name = managed_node_ + "/change_state";
-  RCLCPP_INFO(get_logger(), "Creating client for service [%s]", get_state_service_name.c_str());
-  RCLCPP_INFO(
-    get_logger(), "Creating client for service [%s]",
-    change_state_service_name.c_str());
-  client_get_state_ = this->create_client<lifecycle_msgs::srv::GetState>(get_state_service_name);
-  client_change_state_ = this->create_client<lifecycle_msgs::srv::ChangeState>(
-    change_state_service_name);
+  client_get_state_ = std::make_shared<ServiceClient<lifecycle_msgs::srv::GetState>>(
+    node_, managed_node_ + "/get_state");
+  client_change_state_ = std::make_shared<ServiceClient<lifecycle_msgs::srv::ChangeState>>(
+    node_, managed_node_ + "/change_state");
 }
 
 unsigned int
 LifecycleServiceClient::get_state(std::chrono::seconds time_out)
 {
-  if (!client_get_state_) {
-    RCLCPP_ERROR(get_logger(), "init() was not called");
+  // One attempt: the startup asks again, and a call without answer leaves a new client
+  auto state = client_get_state_->call(
+    std::make_shared<lifecycle_msgs::srv::GetState::Request>(), time_out, 1, time_out);
+  if (!state) {
     return lifecycle_msgs::msg::State::PRIMARY_STATE_UNKNOWN;
   }
-  auto request = std::make_shared<lifecycle_msgs::srv::GetState::Request>();
-  if (!wait_for_server(client_get_state_, time_out)) {
-    RCLCPP_ERROR(
-      get_logger(),
-      "Service %s is not available.",
-      client_get_state_->get_service_name());
-    return lifecycle_msgs::msg::State::PRIMARY_STATE_UNKNOWN;
-  }
-  // We send the service request for asking the current
-  // state of the lc_talker node.
-  auto future_result = client_get_state_->async_send_request(request);
-  // Never get() before it is ready: it would block forever if the node does not answer
-  auto future_status = wait_for_result(future_result, time_out);
-  if (future_status != std::future_status::ready) {
-    client_get_state_->remove_pending_request(future_result);
-    RCLCPP_ERROR(
-      get_logger(), "Server time out while getting current state for node %s",
-      managed_node_.c_str());
-    return lifecycle_msgs::msg::State::PRIMARY_STATE_UNKNOWN;
-  }
-  auto state = future_result.get();
-  // We have an successful answer. So let's print the current state.
-  if (state != nullptr) {
-    RCLCPP_INFO(
-      get_logger(), "Node %s has current state %s.",
-      get_name(), state->current_state.label.c_str());
-    return state->current_state.id;
-  } else {
-    RCLCPP_ERROR(
-      get_logger(), "Failed to get current state for node %s", managed_node_.c_str());
-    return lifecycle_msgs::msg::State::PRIMARY_STATE_UNKNOWN;
-  }
+  RCLCPP_INFO(
+    get_logger(), "Node %s has current state %s.",
+    managed_node_.c_str(), state->current_state.label.c_str());
+  return state->current_state.id;
 }
 
 bool
 LifecycleServiceClient::change_state(std::uint8_t transition, std::chrono::seconds time_out)
 {
+  // One attempt: a transition is not repeated (the startup checks the state it reached)
   auto request = std::make_shared<lifecycle_msgs::srv::ChangeState::Request>();
   request->transition.id = transition;
-  if (!client_change_state_) {
-    RCLCPP_ERROR(get_logger(), "init() was not called");
+  auto result = client_change_state_->call(request, time_out, 1, time_out);
+  if (!result) {
     return false;
   }
-  if (!wait_for_server(client_change_state_, time_out)) {
-    RCLCPP_ERROR(
-      get_logger(),
-      "Service %s is not available.",
-      client_change_state_->get_service_name());
-    return false;
-  }
-  // We send the request with the transition we want to invoke.
-  auto future_result = client_change_state_->async_send_request(request);
-  // Let's wait until we have the answer from the node.
-  // If the request times out, we return an unknown state.
-  auto future_status = wait_for_result(future_result, time_out);
-  if (future_status != std::future_status::ready) {
-    client_change_state_->remove_pending_request(future_result);
-    RCLCPP_ERROR(
-      get_logger(), "Server time out while changing the state of node %s",
-      managed_node_.c_str());
-    return false;
-  }
-  // We have an answer, let's print our success.
-  if (future_result.get()->success) {
+  if (result->success) {
     RCLCPP_INFO(
       get_logger(), "Transition %d successfully triggered.", static_cast<int>(transition));
     return true;

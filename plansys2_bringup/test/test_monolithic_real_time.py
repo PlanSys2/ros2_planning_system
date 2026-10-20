@@ -37,11 +37,11 @@ def generate_test_description():
         # No permission for real time priorities, whatever the user's limits
         prefix='prlimit --rtprio=0:0 --',
         output='screen',
+        arguments=['--use-real-time', 'true'],
         parameters=[{
             'model_file': os.path.join(
                 get_package_share_directory('plansys2_popf_plan_solver'),
                 'pddl', 'domain_simple.pddl'),
-            'use_real_time': True,
         }])
 
     # Keeps the launch alive until the tests run, as the node exits at once

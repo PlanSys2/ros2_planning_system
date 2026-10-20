@@ -82,11 +82,26 @@ def generate_launch_description():
         description='Behavior tree builder plugin.',
     )
 
+    declare_use_real_time_cmd = DeclareLaunchArgument(
+        'use_real_time',
+        default_value='false',
+        description='Real time priority for the executor (it needs the permissions)',
+    )
+
+    declare_startup_timeout_cmd = DeclareLaunchArgument(
+        'startup_timeout',
+        default_value='5',
+        description='Seconds for each lifecycle transition at startup',
+    )
+
     plansys2_node_cmd = Node(
         package='plansys2_bringup',
         executable='plansys2_node',
         output='screen',
         namespace=namespace,
+        arguments=[
+          '--use-real-time', LaunchConfiguration('use_real_time'),
+          '--startup-timeout', LaunchConfiguration('startup_timeout')],
         parameters=[
           {
             'model_file': model_file,
@@ -110,6 +125,8 @@ def generate_launch_description():
     ld.add_action(declare_bt_builder_plugin_cmd)
     ld.add_action(declare_namespace_cmd)
     ld.add_action(declare_params_file_cmd)
+    ld.add_action(declare_use_real_time_cmd)
+    ld.add_action(declare_startup_timeout_cmd)
 
     # Declare the launch options
     ld.add_action(plansys2_node_cmd)

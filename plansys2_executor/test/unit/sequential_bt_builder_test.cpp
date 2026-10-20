@@ -84,12 +84,13 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
 {
   {
     auto test_node = rclcpp::Node::make_shared("test_plan_1");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
     auto planner_node = std::make_shared<TestPlannerNode>();
 
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
 
     auto btbuilder = std::make_shared<SequentialBTBuilderTest>();
 

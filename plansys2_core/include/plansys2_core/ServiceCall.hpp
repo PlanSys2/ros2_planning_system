@@ -15,10 +15,19 @@
 #ifndef PLANSYS2_CORE__SERVICECALL_HPP_
 #define PLANSYS2_CORE__SERVICECALL_HPP_
 
+#include <atomic>
 #include <chrono>
 #include <memory>
+#include <mutex>
 #include <stdexcept>
+#include <string>
+#include <thread>
+#include <type_traits>
+#include <utility>
 
+#include "lifecycle_msgs/msg/state.hpp"
+#include "lifecycle_msgs/srv/get_state.hpp"
+#include "plansys2_core/ClientNode.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace plansys2
@@ -51,52 +60,257 @@ bool wait_for_server(const std::shared_ptr<ClientT> & client, std::chrono::nanos
   return wait_for_server([&]() {return client->wait_for_service(timeout);});
 }
 
+// What a component answers (error_info) to a request it does not take because it is not active
+constexpr char kNotActive[] = "Requesting service in non-active state";
+
+// Whether a response says that its component is not active (responses without error_info never)
+template<typename ResponseT, typename = void>
+struct HasErrorInfo : std::false_type {};
+template<typename ResponseT>
+struct HasErrorInfo<ResponseT, std::void_t<decltype(std::declval<ResponseT>().error_info)>>
+  : std::true_type {};
+
+template<typename ResponseT>
+bool says_not_active(const ResponseT & response)
+{
+  if constexpr (HasErrorInfo<ResponseT>::value) {
+    return response.error_info == kNotActive;
+  } else {
+    return false;
+  }
+}
+
 /**
- * @brief Call a service spinning node until the response arrives.
+ * @brief Whether a component of PlanSys2 is active, as its clients wait for it.
  *
- * @return The response, or nullptr if the service is not available within service_timeout or
- *         does not answer within response_timeout.
+ * A call of a PlanSys2 client waits until its component is active, however long it takes while
+ * ROS runs, and goes on as soon as it is: an application may start before PlanSys2. Once seen
+ * active it is not asked again, until one of its services goes or stops answering.
+ */
+class ActiveComponent
+{
+public:
+  ActiveComponent(std::shared_ptr<ClientNode> node, const std::string & component)
+  : node_(node), component_(component),
+    client_(node->create_client<lifecycle_msgs::srv::GetState>(component + "/get_state"))
+  {
+  }
+
+  /**
+   * @brief Waits until the component is active: false only if ROS shuts down first.
+   */
+  bool wait()
+  {
+    if (active_) {
+      return true;
+    }
+    // One thread asks; the others find it active when they get the lock
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto last_log = std::chrono::steady_clock::now();
+    while (!active_ && rclcpp::ok()) {
+      // At most one question every kPeriod, also when a wait ends at once (shutdown, no node)
+      const auto next = std::chrono::steady_clock::now() + kPeriod;
+      if (ask()) {
+        active_ = true;
+        break;
+      }
+      std::this_thread::sleep_until(next);
+      if (std::chrono::steady_clock::now() - last_log > kLogPeriod) {
+        RCLCPP_INFO(node_->get_logger(), "Waiting for %s to be active...", component_.c_str());
+        last_log = std::chrono::steady_clock::now();
+      }
+    }
+    return active_;
+  }
+
+  /**
+   * @brief A service of the component went or stopped answering: wait for it again.
+   */
+  void lost() {active_ = false;}
+
+  const std::string & component() const {return component_;}
+
+private:
+  // Whether it answers that it is active
+  bool ask()
+  {
+    if (!wait_for_server(client_, std::chrono::seconds(1))) {
+      return false;
+    }
+    try {
+      auto future = client_->async_send_request(
+        std::make_shared<lifecycle_msgs::srv::GetState::Request>());
+      if (node_->wait(future, std::chrono::seconds(1)) == rclcpp::FutureReturnCode::SUCCESS) {
+        return future.get()->current_state.id == lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE;
+      }
+      // A lost answer: a new client, discovered again (see ServiceClient)
+      client_->remove_pending_request(future);
+      client_ = node_->create_client<lifecycle_msgs::srv::GetState>(component_ + "/get_state");
+    } catch (const std::runtime_error &) {
+      // ROS shutting down, or the node gone
+    }
+    return false;
+  }
+
+  static constexpr std::chrono::milliseconds kPeriod {500};
+  static constexpr std::chrono::seconds kLogPeriod {5};
+  std::shared_ptr<ClientNode> node_;
+  std::string component_;
+  std::atomic<bool> active_ {false};
+  std::mutex mutex_;
+  rclcpp::Client<lifecycle_msgs::srv::GetState>::SharedPtr client_;
+};
+
+/**
+ * @brief A service client of a PlanSys2 client, which makes itself anew when an answer is lost.
+ *
+ * A request that gets no answer in time is sent again with a new rclcpp client: new endpoints,
+ * discovered again. Some middlewares lose every answer to a client whose endpoints were matched
+ * badly while many processes started at once (Fast DDS, 2026-10-19), and waiting longer on the
+ * same client does not help. With more than one attempt, only for services whose requests may be
+ * repeated: queries, and changes that leave the same state when repeated. A call that ends
+ * without answer leaves a new client for the next one, whatever its attempts.
+ *
+ * With an ActiveComponent, a call first waits until the component is active, and its server
+ * gone or a call without answer make the next one wait for it again. An answer saying that the
+ * component is not active (kNotActive) makes the call wait for it and send the request again.
  */
 template<typename ServiceT>
-typename ServiceT::Response::SharedPtr
-call_service(
-  rclcpp::Node::SharedPtr node,
-  std::shared_ptr<rclcpp::Client<ServiceT>> client,
-  typename ServiceT::Request::SharedPtr request,
-  std::chrono::nanoseconds service_timeout = std::chrono::seconds(5),
-  std::chrono::nanoseconds response_timeout = std::chrono::seconds(1))
+class ServiceClient
 {
-  // rclcpp shutting down throws from the graph while we wait: no answer, not the end of the
-  // process
-  try {
-    if (!client->wait_for_service(service_timeout)) {
-      if (rclcpp::ok()) {
-        RCLCPP_ERROR_STREAM(
-          node->get_logger(), client->get_service_name() << ": service not available");
-      }
-      return nullptr;
-    }
+public:
+  using SharedPtr = std::shared_ptr<ServiceClient<ServiceT>>;
+  using Response = typename ServiceT::Response::SharedPtr;
+  using Request = typename ServiceT::Request::SharedPtr;
 
-    auto future = client->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(node, future, response_timeout) !=
-      rclcpp::FutureReturnCode::SUCCESS)
-    {
-      // Otherwise the late response would stay pending forever
-      client->remove_pending_request(future);
-      if (rclcpp::ok()) {
-        RCLCPP_ERROR_STREAM(node->get_logger(), client->get_service_name() << ": no response");
-      }
-      return nullptr;
-    }
+  ServiceClient(
+    std::shared_ptr<ClientNode> node, const std::string & name,
+    std::shared_ptr<ActiveComponent> active = nullptr)
+  : node_(node), name_(name), active_(active), client_(node->create_client<ServiceT>(name))
+  {
+  }
 
-    return future.get();
-  } catch (const std::exception & e) {
+  /**
+   * @brief Calls the service.
+   *
+   * @param[in] request The request.
+   * @param[in] response_timeout How long each attempt waits for the answer.
+   * @param[in] attempts How many times the request is sent, each with a new client but the first.
+   * @param[in] service_timeout How long to wait for the server (with an ActiveComponent, once it
+   *            is active; without it, the server is waited for again).
+   * @return The response, or nullptr without server or without answer (or if ROS shuts down).
+   */
+  Response call(
+    const Request & request,
+    std::chrono::nanoseconds response_timeout = std::chrono::seconds(1),
+    int attempts = 3,
+    std::chrono::nanoseconds service_timeout = std::chrono::seconds(5))
+  {
+    bool waited_again = false;
+    int not_active_waits = 0;
+    for (int attempt = 1; attempt <= attempts && rclcpp::ok(); attempt++) {
+      if (active_ && !active_->wait()) {
+        return nullptr;
+      }
+      auto client = current();
+      if (!wait_for_server(client, service_timeout)) {
+        if (active_ && !waited_again && rclcpp::ok()) {
+          // Gone (PlanSys2 stopped or restarted): back to waiting for it, once; active and still
+          // without this service, it is an error
+          active_->lost();
+          waited_again = true;
+          attempt--;
+          continue;
+        }
+        if (rclcpp::ok()) {
+          RCLCPP_ERROR_STREAM(node_->get_logger(), name() << ": service not available");
+        }
+        return nullptr;
+      }
+      try {
+        auto future = client->async_send_request(request);
+        if (node_->wait(future, response_timeout) == rclcpp::FutureReturnCode::SUCCESS) {
+          auto response = future.get();
+          if (active_ && says_not_active(*response) && not_active_waits++ < kNotActiveWaits) {
+            // Deactivated since it was seen active: wait for it again, and ask again
+            active_->lost();
+            attempt--;
+            continue;
+          }
+          return response;
+        }
+        // Otherwise the late answer would stay pending forever
+        client->remove_pending_request(future);
+      } catch (const std::exception & e) {
+        // rclcpp shutting down throws from the graph: no answer, not the end of the process
+        if (rclcpp::ok()) {
+          RCLCPP_ERROR_STREAM(node_->get_logger(), name() << ": " << e.what());
+        }
+        return nullptr;
+      }
+      if (!rclcpp::ok()) {
+        return nullptr;
+      }
+      if (!renew(client)) {
+        return nullptr;
+      }
+      if (attempt < attempts) {
+        RCLCPP_WARN_STREAM(
+          node_->get_logger(), name() << ": no response, sending it again with a new client (" <<
+            attempt + 1 << "/" << attempts << ")");
+      }
+    }
+    if (active_) {
+      active_->lost();  // The next call checks that it is still active
+    }
     if (rclcpp::ok()) {
-      RCLCPP_ERROR_STREAM(node->get_logger(), client->get_service_name() << ": " << e.what());
+      RCLCPP_ERROR_STREAM(node_->get_logger(), name() << ": no response");
     }
     return nullptr;
   }
-}
+
+  /**
+   * @brief Whether the server is there, waiting up to timeout for it.
+   */
+  bool wait_for_service(std::chrono::nanoseconds timeout)
+  {
+    return wait_for_server(current(), timeout);
+  }
+
+  bool service_is_ready() const {return current()->service_is_ready();}
+
+  std::string name() const {return current()->get_service_name();}
+
+private:
+  typename rclcpp::Client<ServiceT>::SharedPtr current() const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return client_;
+  }
+
+  // A new client, unless another call already made one after this one failed
+  bool renew(const typename rclcpp::Client<ServiceT>::SharedPtr & failed)
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (client_ != failed) {
+      return true;
+    }
+    try {
+      client_ = node_->create_client<ServiceT>(name_);
+    } catch (const std::runtime_error &) {
+      return false;  // The node is gone
+    }
+    return true;
+  }
+
+  // A component that says it is active and answers that it is not, so many times: an error
+  static constexpr int kNotActiveWaits = 3;
+  std::shared_ptr<ClientNode> node_;
+  std::string name_;
+  std::shared_ptr<ActiveComponent> active_;
+  mutable std::mutex mutex_;
+  typename rclcpp::Client<ServiceT>::SharedPtr client_;
+};
 
 }  // namespace plansys2
 

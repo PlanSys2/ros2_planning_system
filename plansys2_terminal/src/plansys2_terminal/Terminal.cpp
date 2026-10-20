@@ -25,6 +25,7 @@
 #include <sstream>
 #include <fstream>
 #include <map>
+#include <mutex>
 #include <utility>
 #include <algorithm>
 #include <atomic>
@@ -284,10 +285,10 @@ Terminal::Terminal(const rclcpp::NodeOptions & options)
 void
 Terminal::init()
 {
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
-  planner_client_ = std::make_shared<plansys2::PlannerClient>();
-  executor_client_ = std::make_shared<plansys2::ExecutorClient>();
+  domain_client_ = std::make_shared<plansys2::DomainExpertClient>(*this);
+  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(*this);
+  planner_client_ = std::make_shared<plansys2::PlannerClient>(*this);
+  executor_client_ = std::make_shared<plansys2::ExecutorClient>(*this);
 
   add_problem();
 }
@@ -889,8 +890,6 @@ Terminal::execute_plan(const plansys2_msgs::msg::Plan & plan)
 {
   rclcpp::Rate loop_rate(5);
 
-  rclcpp::executors::SingleThreadedExecutor exec;
-  exec.add_node(this->get_node_base_interface());
 
   interrupted = false;
   if (!executor_client_->start_plan_execution(plan)) {
@@ -940,7 +939,6 @@ Terminal::execute_plan(const plansys2_msgs::msg::Plan & plan)
 
     std::cout << std::flush;
 
-    exec.spin_some();
     loop_rate.sleep();
   }
 
@@ -1028,25 +1026,30 @@ void
 Terminal::process_check_actors(std::vector<std::string> & command, std::ostringstream & os)
 {
   (void)command;
-  std::map<std::string, plansys2_msgs::msg::ActionPerformerStatus> actors;
+  // Filled in the thread that spins the terminal
+  auto actors_mutex = std::make_shared<std::mutex>();
+  auto heard = std::make_shared<std::map<std::string, plansys2_msgs::msg::ActionPerformerStatus>>();
 
   auto status_callback =
-    [this, &actors](const plansys2_msgs::msg::ActionPerformerStatus::SharedPtr msg) {
-      actors[msg->node_name] = *msg;
+    [actors_mutex, heard](const plansys2_msgs::msg::ActionPerformerStatus::SharedPtr msg) {
+      std::lock_guard<std::mutex> lock(*actors_mutex);
+      (*heard)[msg->node_name] = *msg;
     };
 
   // Relative, as the performers publish it: namespaces and remappings apply
   auto status_sub = create_subscription<plansys2_msgs::msg::ActionPerformerStatus>(
     "performers_status", rclcpp::QoS(100).reliable(), status_callback);
 
-  rclcpp::executors::SingleThreadedExecutor exec;
-  exec.add_node(this->get_node_base_interface());
-
   // Performers publish their status every second: two seconds see them all
   const auto end = std::chrono::steady_clock::now() + std::chrono::seconds(2);
   while (rclcpp::ok() && std::chrono::steady_clock::now() < end) {
-    exec.spin_some();
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  }
+  status_sub.reset();
+  std::map<std::string, plansys2_msgs::msg::ActionPerformerStatus> actors;
+  {
+    std::lock_guard<std::mutex> lock(*actors_mutex);
+    actors = *heard;
   }
 
   std::list<std::string> keys;

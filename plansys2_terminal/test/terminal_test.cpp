@@ -307,14 +307,16 @@ TEST_F(TerminalTestCase, load_default_plugin)
     auto planner_node = std::make_shared<plansys2::PlannerNode>(options);
     auto executor_node = std::make_shared<plansys2::ExecutorNode>(options);
 
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto client_node = rclcpp::Node::make_shared("client_node");
+    plansys2::testing::NodeSpinner client_node_spinner(client_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
     std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_terminal").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -338,6 +340,7 @@ TEST_F(TerminalTestCase, load_default_plugin)
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
     auto terminal_node = std::make_shared<TerminalTest>(options);
+    plansys2::testing::NodeSpinner terminal_node_spinner(terminal_node);
     terminal_node->init();
 
     std::string command_1("    hey how        do   you    test  ");
@@ -661,14 +664,16 @@ TEST_F(TerminalTestCase, add_problem)
     auto planner_node = std::make_shared<plansys2::PlannerNode>(options);
     auto executor_node = std::make_shared<plansys2::ExecutorNode>(options);
 
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto client_node = rclcpp::Node::make_shared("client_node");
+    plansys2::testing::NodeSpinner client_node_spinner(client_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
     std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_terminal").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -691,6 +696,7 @@ TEST_F(TerminalTestCase, add_problem)
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
     auto terminal_node = std::make_shared<TerminalTest>(options);
+    plansys2::testing::NodeSpinner terminal_node_spinner(terminal_node);
     terminal_node->set_parameter({"problem_file", pkgpath + "/pddl/problem_charging.pddl"});
     terminal_node->init();
 
@@ -744,14 +750,16 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
     auto planner_node = std::make_shared<plansys2::PlannerNode>(options);
     auto executor_node = std::make_shared<plansys2::ExecutorNode>(options);
 
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto client_node = rclcpp::Node::make_shared("client_node");
+    plansys2::testing::NodeSpinner client_node_spinner(client_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
     std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_terminal").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -774,6 +782,7 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
     executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
     auto terminal_node = std::make_shared<TerminalTest>(options);
+    plansys2::testing::NodeSpinner terminal_node_spinner(terminal_node);
     terminal_node->set_parameter({"problem_file", pkgpath + "/pddl/problem_empty_domain.pddl"});
     terminal_node->init();
 
@@ -807,7 +816,9 @@ TEST_F(TerminalTestCase, check_actors)
     auto planner_node = std::make_shared<plansys2::PlannerNode>(options);
     auto executor_node = std::make_shared<plansys2::ExecutorNode>(options);
 
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto client_node = rclcpp::Node::make_shared("client_node");
+    plansys2::testing::NodeSpinner client_node_spinner(client_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
     using namespace std::chrono_literals;
 
@@ -830,7 +841,7 @@ TEST_F(TerminalTestCase, check_actors)
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -913,6 +924,7 @@ TEST_F(TerminalTestCase, check_actors)
 
 
     auto terminal_node = std::make_shared<TerminalTest>(options);
+    plansys2::testing::NodeSpinner terminal_node_spinner(terminal_node);
     terminal_node->init();
 
     std::ostringstream os;
@@ -942,7 +954,9 @@ TEST_F(TerminalTestCase, source_run_plan)
     auto planner_node = std::make_shared<plansys2::PlannerNode>(options);
     auto executor_node = std::make_shared<plansys2::ExecutorNode>(options);
 
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto client_node = rclcpp::Node::make_shared("client_node");
+    plansys2::testing::NodeSpinner client_node_spinner(client_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
     using namespace std::chrono_literals;
 
@@ -965,7 +979,7 @@ TEST_F(TerminalTestCase, source_run_plan)
     std::string cmd_file = pkgpath + "/pddl/commands";
     std::string plan_file = pkgpath + "/pddl/plan";
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -1041,6 +1055,7 @@ TEST_F(TerminalTestCase, source_run_plan)
     lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
 
     auto terminal_node = std::make_shared<TerminalTest>(options);
+    plansys2::testing::NodeSpinner terminal_node_spinner(terminal_node);
     terminal_node->init();
 
     {

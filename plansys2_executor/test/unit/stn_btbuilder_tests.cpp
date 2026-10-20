@@ -112,7 +112,9 @@ protected:
       node->trigger_transition(Transition::TRANSITION_ACTIVATE);
     }
 
-    problem_ = std::make_shared<plansys2::ProblemExpertClient>();
+    client_node_ = rclcpp::Node::make_shared("client_node");
+    client_node_spinner_ = std::make_unique<plansys2::testing::NodeSpinner>(client_node_);
+    problem_ = std::make_shared<plansys2::ProblemExpertClient>(client_node_);
     for (auto [name, type] : std::vector<std::pair<std::string, std::string>>{
       {"r1", "robot"}, {"kitchen", "room"}, {"bedroom", "room"},
       {"m1", "match"}, {"m2", "match"}, {"f1", "fuse"}, {"f2", "fuse"}})
@@ -127,6 +129,7 @@ protected:
     ASSERT_TRUE(problem_->addFunction(plansys2::Function("(= (battery r1) 100)")));
 
     builder_ = std::make_shared<TestableSTN>();
+    builder_->set_clients(std::make_shared<plansys2::DomainExpertClient>(client_node_), problem_);
     builder_->initialize("", "", 3);
   }
 
@@ -160,8 +163,10 @@ protected:
 
   std::shared_ptr<plansys2::DomainExpertNode> domain_node_;
   std::shared_ptr<plansys2::ProblemExpertNode> problem_node_;
-  rclcpp::executors::SingleThreadedExecutor exe_;
+  rclcpp::executors::MultiThreadedExecutor exe_;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
+  rclcpp::Node::SharedPtr client_node_;  // The clients do not own it
+  std::unique_ptr<plansys2::testing::NodeSpinner> client_node_spinner_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_;
   std::shared_ptr<TestableSTN> builder_;
 };
@@ -509,7 +514,8 @@ protected:
   {
     STNBTBuilderTest::SetUp();
     node_ = rclcpp_lifecycle::LifecycleNode::make_shared("stn_nodes_test");
-    domain_ = std::make_shared<plansys2::DomainExpertClient>();
+    node_spinner_ = std::make_unique<plansys2::testing::NodeSpinner>(node_);
+    domain_ = std::make_shared<plansys2::DomainExpertClient>(node_);
     factory_.registerNodeType<plansys2::WaitAction>("WaitAction");
     factory_.registerNodeType<plansys2::CheckAction>("CheckAction");
     factory_.registerNodeType<plansys2::ApplyAtStartEffect>("ApplyAtStartEffect");
@@ -611,6 +617,7 @@ protected:
   static constexpr const char * kLightAfterMend = "(light_match m1):0 END (mend_fuse f1 m1):1 END";
 
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  std::unique_ptr<plansys2::testing::NodeSpinner> node_spinner_;
   std::shared_ptr<plansys2::DomainExpertClient> domain_;
   std::shared_ptr<plansys2::ActionMap> action_map_;
   BT::BehaviorTreeFactory factory_;

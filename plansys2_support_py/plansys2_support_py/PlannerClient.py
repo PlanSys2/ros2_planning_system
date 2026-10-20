@@ -24,6 +24,7 @@ from typing import Optional
 from plansys2_msgs.msg import Plan, PlanArray
 from plansys2_msgs.srv import GetPlan, GetPlanArray, ValidateDomain
 from plansys2_support_py.ClientBase import ClientBase
+from rclpy.node import Node
 
 
 class PlannerClient(ClientBase):
@@ -34,27 +35,26 @@ class PlannerClient(ClientBase):
     in PlanSys2, wrapping the ROS2 service calls with proper error handling.
     """
 
-    def __init__(self, node_name: str = 'planner_client', namespace: str = '') -> None:
+    def __init__(self, node: Node) -> None:
         """
         Initialize the Planner client.
 
         Parameters
         ----------
-        node_name : str, optional
-            Name of the ROS2 node.
-        namespace : str, optional
-            Namespace prefix for services.
+        node : Node
+            The node of the application the client works on: it creates none.
 
         """
-        super().__init__(node_name, namespace)
+        super().__init__(node, 'planner')
 
         # As the C++ client: the planner may take its solver timeout, and some margin to answer
-        timeout = self.declare_parameter('plan_solver_timeout', 15.0).value
+        # On the node of the application, unless it has it already
+        if not node.has_parameter('plan_solver_timeout'):
+            node.declare_parameter('plan_solver_timeout', 15.0)
+        timeout = node.get_parameter('plan_solver_timeout').value
         if not isinstance(timeout, (int, float)) or timeout <= 0.0:
             timeout = 15.0
         self._answer_timeout = float(timeout) + 5.0
-
-        self.get_logger().debug(f'Planner Client "{node_name}" initialized')
 
     def get_plan(self, domain: str, problem: str) -> Optional[Plan]:
         """
@@ -79,7 +79,7 @@ class PlannerClient(ClientBase):
         request.problem = problem
 
         response = self._create_and_call_service(
-            GetPlan, service_name, request, timeout_sec=self._answer_timeout)
+            GetPlan, service_name, request, timeout_sec=self._answer_timeout, attempts=2)
         if response and response.success:
             self.get_logger().debug('Successfully generated plan')
             return response.plan
@@ -111,7 +111,7 @@ class PlannerClient(ClientBase):
         request.problem = problem
 
         response = self._create_and_call_service(
-            GetPlanArray, service_name, request, timeout_sec=self._answer_timeout)
+            GetPlanArray, service_name, request, timeout_sec=self._answer_timeout, attempts=2)
         if response and response.success:
             self.get_logger().debug('Successfully retrieved plan array')
             return response.plan_array

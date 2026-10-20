@@ -165,8 +165,10 @@ protected:
     for (auto & performer : performers_) {
       performer->trigger_transition(Transition::TRANSITION_CONFIGURE);
     }
-    problem_ = std::make_shared<plansys2::ProblemExpertClient>();
-    executor_ = std::make_shared<plansys2::ExecutorClient>();
+    client_node_ = rclcpp::Node::make_shared("client_node");
+    client_node_spinner_ = std::make_unique<plansys2::testing::NodeSpinner>(client_node_);
+    problem_ = std::make_shared<plansys2::ProblemExpertClient>(client_node_);
+    executor_ = std::make_shared<plansys2::ExecutorClient>(client_node_);
     ASSERT_TRUE(problem_->addProblem(kProblem));
   }
 
@@ -193,8 +195,10 @@ protected:
   std::shared_ptr<plansys2::ExecutorNode> executor_node_;
   std::shared_ptr<plansys2::PlannerNode> planner_node_;
   std::vector<std::shared_ptr<TimedPerformer>> performers_;
-  rclcpp::executors::SingleThreadedExecutor exe_;
+  rclcpp::executors::MultiThreadedExecutor exe_;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
+  rclcpp::Node::SharedPtr client_node_;  // The clients do not own it
+  std::unique_ptr<plansys2::testing::NodeSpinner> client_node_spinner_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_;
   std::shared_ptr<plansys2::ExecutorClient> executor_;
 
@@ -313,8 +317,8 @@ TEST_F(ExecutorReplanTest, replaced_the_constraints_keep_their_history)
 TEST_F(ExecutorReplanTest, kairos_replans_while_it_runs)
 {
   problem("(ready r1) (= (battery r1) 0)", "(>= (battery r1) 10)");
-  plansys2::PlannerClient planner;
-  plansys2::DomainExpertClient domain;
+  plansys2::PlannerClient planner(client_node_);
+  plansys2::DomainExpertClient domain(client_node_);
   auto first = planner.getPlan(domain.getDomain(), problem_->getProblem());
   ASSERT_TRUE(first.has_value());
   ASSERT_TRUE(executor_->start_plan_execution(first.value()));

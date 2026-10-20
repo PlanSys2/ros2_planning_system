@@ -13,6 +13,20 @@ target_link_libraries(test_utils_test ${PROJECT_NAME} ${std_msgs_TARGETS})
 ament_add_ros_isolated_gtest(node_names_test node_names_test.cpp TIMEOUT 60)
 target_link_libraries(node_names_test ${PROJECT_NAME})
 
+ament_add_ros_isolated_gtest(active_component_test active_component_test.cpp TIMEOUT 120)
+target_link_libraries(active_component_test ${PROJECT_NAME} ${lifecycle_msgs_TARGETS})
+
+ament_add_ros_isolated_gtest(service_client_test service_client_test.cpp TIMEOUT 120)
+target_link_libraries(service_client_test ${PROJECT_NAME} ${lifecycle_msgs_TARGETS})
+
+ament_add_ros_isolated_gtest(client_node_test client_node_test.cpp TIMEOUT 120)
+target_link_libraries(client_node_test
+  ${PROJECT_NAME}
+  rclcpp_lifecycle::rclcpp_lifecycle
+  ${lifecycle_msgs_TARGETS}
+  ${std_msgs_TARGETS}
+)
+
 ament_add_gtest(pddl_requirements_test pddl_requirements_test.cpp)
 target_link_libraries(pddl_requirements_test ${PROJECT_NAME} ament_index_cpp::ament_index_cpp)
 

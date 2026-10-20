@@ -52,8 +52,10 @@ protected:
     exe_.add_node(problem_node_->get_node_base_interface());
     spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
 
-    domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
-    problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
+    client_node_ = rclcpp::Node::make_shared("client_node");
+    client_node_spinner_ = std::make_unique<plansys2::testing::NodeSpinner>(client_node_);
+    domain_client_ = std::make_shared<plansys2::DomainExpertClient>(client_node_);
+    problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(client_node_);
   }
 
   void TearDown() override
@@ -99,9 +101,11 @@ protected:
   std::string kitchen_;
   std::shared_ptr<plansys2::DomainExpertNode> domain_node_;
   std::shared_ptr<plansys2::ProblemExpertNode> problem_node_;
+  rclcpp::Node::SharedPtr client_node_;  // The clients do not own it
+  std::unique_ptr<plansys2::testing::NodeSpinner> client_node_spinner_;
   std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
-  rclcpp::executors::SingleThreadedExecutor exe_;
+  rclcpp::executors::MultiThreadedExecutor exe_;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 
@@ -174,14 +178,14 @@ TEST(DomainChangeRejectedTest, domain_stays_if_the_problem_expert_rejects_it)
       response->error_info = "rejected";
     });
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(fake_problem_expert);
   plansys2::testing::ExecutorThread spinner(exe);
 
   domain_node->trigger_transition(Transition::TRANSITION_CONFIGURE);
   domain_node->trigger_transition(Transition::TRANSITION_ACTIVATE);
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(fake_problem_expert);
   ASSERT_EQ(domain_client->getName(), "simple");
 
   std::ifstream ifs(pkgpath + "/pddl/domain_totally_different.pddl");

@@ -19,6 +19,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <memory>
+#include <future>
 #include <string>
 #include <thread>
 #include <vector>
@@ -35,7 +36,9 @@
 #include "plansys2_msgs/srv/get_plan.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
 
 using namespace std::chrono_literals;  // NOLINT
 using ExecutePlan = plansys2_msgs::action::ExecutePlan;
@@ -131,7 +134,7 @@ protected:
     domain_node_->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
     problem_node_->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
 
-    exe_ = std::make_unique<rclcpp::executors::SingleThreadedExecutor>();
+    exe_ = std::make_unique<rclcpp::executors::MultiThreadedExecutor>();
     for (auto node : nodes()) {
       exe_->add_node(node->get_node_base_interface());
     }
@@ -146,8 +149,10 @@ protected:
       executor_node_->trigger_transition(Transition::TRANSITION_ACTIVATE);
     }
 
-    problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
-    executor_client_ = std::make_shared<plansys2::ExecutorClient>();
+    client_node_ = rclcpp::Node::make_shared("client_node");
+    client_node_spinner_ = std::make_unique<plansys2::testing::NodeSpinner>(client_node_);
+    problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(client_node_);
+    executor_client_ = std::make_shared<plansys2::ExecutorClient>(client_node_);
     ASSERT_TRUE(problem_client_->addInstance(plansys2::Instance("r2d2", "robot")));
     for (auto zone : {"wheels_zone", "steering_wheels_zone", "assembly_zone"}) {
       ASSERT_TRUE(problem_client_->addInstance(plansys2::Instance(zone, "zone")));
@@ -191,6 +196,23 @@ protected:
     return executor_client_->getResult();
   }
 
+  // What the action server answers in any state, to a plain action client (PlanSys2's waits)
+  bool server_accepts(const plansys2_msgs::msg::Plan & plan)
+  {
+    auto client = rclcpp_action::create_client<ExecutePlan>(client_node_, "execute_plan");
+    if (!client->wait_for_action_server(5s)) {
+      return false;
+    }
+    ExecutePlan::Goal goal;
+    goal.plan = plan;
+    auto future = client->async_send_goal(goal);
+    if (future.wait_for(5s) != std::future_status::ready || !future.get()) {
+      return false;
+    }
+    client->async_cancel_all_goals();
+    return true;
+  }
+
   bool robot_at(const std::string & zone)
   {
     return problem_client_->existPredicate(plansys2::Predicate("(robot_at r2d2 " + zone + ")"));
@@ -209,8 +231,10 @@ protected:
   std::shared_ptr<plansys2::ProblemExpertNode> problem_node_;
   std::shared_ptr<plansys2::ExecutorNode> executor_node_;
   std::shared_ptr<CountingAction> move_node_;
-  std::unique_ptr<rclcpp::executors::SingleThreadedExecutor> exe_;
+  std::unique_ptr<rclcpp::executors::MultiThreadedExecutor> exe_;
   std::unique_ptr<ScopedSpinner> spinner_;
+  rclcpp::Node::SharedPtr client_node_;  // The clients do not own it
+  std::unique_ptr<plansys2::testing::NodeSpinner> client_node_spinner_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   std::shared_ptr<plansys2::ExecutorClient> executor_client_;
 };
@@ -241,13 +265,25 @@ TEST_F(ExecutorLifecycleTest, goals_rejected_unless_active)
 {
   start(3, false);
   ASSERT_EQ(executor_node_->get_current_state().id(), State::PRIMARY_STATE_INACTIVE);
-  ASSERT_FALSE(executor_client_->start_plan_execution(move_plan("wheels_zone", "assembly_zone")));
+  ASSERT_FALSE(server_accepts(move_plan("wheels_zone", "assembly_zone")));
 
+  // The ExecutorClient waits until the executor is active, and then starts the plan
+  std::atomic<bool> started {false};
+  std::thread caller([&]() {
+      started = executor_client_->start_plan_execution(move_plan("wheels_zone", "assembly_zone"));
+    });
+  std::this_thread::sleep_for(2s);
+  EXPECT_FALSE(started.load());
   executor_node_->trigger_transition(Transition::TRANSITION_ACTIVATE);
-  expect_plan_succeeds("wheels_zone", "assembly_zone");
+  caller.join();
+  ASSERT_TRUE(started.load());
+  auto result = wait_result();
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result->result, ExecutePlan::Result::SUCCESS);
+  ASSERT_TRUE(robot_at("assembly_zone"));
 
   executor_node_->trigger_transition(Transition::TRANSITION_DEACTIVATE);
-  ASSERT_FALSE(executor_client_->start_plan_execution(move_plan("assembly_zone", "wheels_zone")));
+  ASSERT_FALSE(server_accepts(move_plan("assembly_zone", "wheels_zone")));
   ASSERT_TRUE(robot_at("assembly_zone"));
 }
 

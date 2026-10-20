@@ -176,10 +176,16 @@ public:
       });
   }
 
-  ~FastClock()
+  ~FastClock() {stop();}
+
+  // Before the nodes go: with Zenoh, a subscription destroyed while the process publishes on its
+  // topic may deadlock in rmw_zenoh
+  void stop()
   {
     running_ = false;
-    thread_.join();
+    if (thread_.joinable()) {
+      thread_.join();
+    }
   }
 
   double seconds() const {return seconds_;}
@@ -202,13 +208,15 @@ private:
 // The nodes of PlanSys2 for one task, with a performer per action
 struct Run
 {
+  ~Run() {clock.stop();}
+
   FastClock clock;
   std::shared_ptr<plansys2::DomainExpertNode> domain_node;
   std::shared_ptr<plansys2::ProblemExpertNode> problem_node;
   std::shared_ptr<plansys2::PlannerNode> planner_node;
   std::shared_ptr<plansys2::ExecutorNode> executor_node;
   std::vector<std::shared_ptr<plansys2::ActionExecutorClient>> performers;
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner;
   // What the executor says it does
   rclcpp::Node::SharedPtr listener;
@@ -451,10 +459,12 @@ void execute(const parser::pddl::BankCase & task, const Options & options = {})
     run.planner_node->set_parameter({"KAIROS.anytime", false});  // The first plan is enough
   }
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-  auto planner_client = std::make_shared<plansys2::PlannerClient>();
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
+  auto planner_client = std::make_shared<plansys2::PlannerClient>(client_node);
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>(client_node);
 
   auto actions = domain_client->getActions();
   for (const auto & action : domain_client->getDurativeActions()) {

@@ -346,8 +346,6 @@ private:
   rclcpp::Client<plansys2_msgs::srv::ValidateDomain>::SharedPtr
     validate_domain_client_;
   rclcpp::CallbackGroup::SharedPtr validate_domain_callback_group_;
-  // Takes the planner's answers, so validation never depends on the node's executor threads
-  rclcpp::executors::SingleThreadedExecutor validate_domain_executor_;
   // The problem expert takes a new domain before this node answers that it changed
   rclcpp::Client<plansys2_msgs::srv::ChangeDomain>::SharedPtr problem_update_domain_client_;
   // One change at a time: another one waits for the problem expert

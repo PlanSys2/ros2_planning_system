@@ -120,8 +120,13 @@ protected:
       node->trigger_transition(Transition::TRANSITION_CONFIGURE);
       node->trigger_transition(Transition::TRANSITION_ACTIVATE);
     }
-    ASSERT_TRUE(std::make_shared<plansys2::ProblemExpertClient>()->addProblem(problem));
+    client_node_ = rclcpp::Node::make_shared("client_node");
+    client_node_spinner_ = std::make_unique<plansys2::testing::NodeSpinner>(client_node_);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node_);
+    ASSERT_TRUE(problem_client->addProblem(problem));
     builder_ = std::make_shared<TestableSTN>();
+    builder_->set_clients(
+      std::make_shared<plansys2::DomainExpertClient>(client_node_), problem_client);
     builder_->initialize("", "", 3);
   }
 
@@ -144,8 +149,10 @@ protected:
 
   std::shared_ptr<plansys2::DomainExpertNode> domain_node_;
   std::shared_ptr<plansys2::ProblemExpertNode> problem_node_;
-  rclcpp::executors::SingleThreadedExecutor exe_;
+  rclcpp::executors::MultiThreadedExecutor exe_;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
+  rclcpp::Node::SharedPtr client_node_;  // The clients of the builder do not own it
+  std::unique_ptr<plansys2::testing::NodeSpinner> client_node_spinner_;
   std::shared_ptr<TestableSTN> builder_;
 };
 
@@ -257,7 +264,9 @@ TEST_F(STNBankTest, each_action_runs_once_in_its_tree)
 TEST_F(STNBankTest, plan_items_bind_their_duration)
 {
   load("duration-inequalities/p1");
-  plansys2::DomainExpertClient domain_client;
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  plansys2::DomainExpertClient domain_client(client_node);
   const auto actions = domain_client.getActions();
   plansys2_msgs::msg::PlanItem item;
   item.action = "(charge r1 c1 dock)";
@@ -439,6 +448,9 @@ TEST_F(STNBankTest, a_plan_of_many_robots_is_quick)
   }
 
   plansys2::SimpleBTBuilder simple;
+  simple.set_clients(
+    std::make_shared<plansys2::DomainExpertClient>(client_node_),
+    std::make_shared<plansys2::ProblemExpertClient>(client_node_));
   simple.initialize("", "", 3);
   start = std::chrono::steady_clock::now();
   EXPECT_FALSE(simple.get_tree(plan).empty());

@@ -18,6 +18,7 @@
 #include <memory>
 #include <vector>
 
+#include "plansys2_core/ServiceCall.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
 
 std::vector<std::string> tokenize(const std::string & string, const std::string & delim)
@@ -62,7 +63,7 @@ ProblemExpertNode::ProblemExpertNode(const rclcpp::NodeOptions & options)
       const std::shared_ptr<plansys2_msgs::srv::SetContinuousEffect::Response> response) {
       if (problem_expert_ == nullptr) {
         response->success = false;
-        response->error_info = "Requesting service in non-active state";
+        response->error_info = plansys2::kNotActive;
         return;
       }
       response->success = problem_expert_->setContinuousEffect(
@@ -446,8 +447,8 @@ ProblemExpertNode::add_problem_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     RCLCPP_INFO(get_logger(), "Adding problem:\n%s", request->problem.c_str());
     response->success = problem_expert_->addProblem(request->problem);
@@ -475,8 +476,8 @@ ProblemExpertNode::add_problem_goal_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     if (!parser::pddl::empty(request->tree)) {
       response->success = problem_expert_->setGoal(request->tree);
@@ -507,8 +508,8 @@ ProblemExpertNode::add_problem_instance_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = problem_expert_->addInstance(request->param);
     if (response->success) {
@@ -534,8 +535,8 @@ ProblemExpertNode::add_problem_predicate_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = problem_expert_->addPredicate(request->node);
     if (response->success) {
@@ -562,8 +563,8 @@ ProblemExpertNode::add_problem_function_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = problem_expert_->addFunction(request->node);
     if (response->success) {
@@ -591,8 +592,8 @@ ProblemExpertNode::get_problem_goal_service_callback(
   (void)request;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = true;
     response->tree = problem_expert_->getGoal();
@@ -608,8 +609,8 @@ ProblemExpertNode::get_problem_instance_details_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     auto instance = problem_expert_->getInstance(request->instance);
     if (instance) {
@@ -632,8 +633,8 @@ ProblemExpertNode::get_problem_instances_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = true;
     response->instances = plansys2::convertVector<plansys2_msgs::msg::Param, plansys2::Instance>(
@@ -650,8 +651,8 @@ ProblemExpertNode::get_problem_predicate_details_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     auto predicate = problem_expert_->getPredicate(request->expression);
     if (predicate) {
@@ -674,8 +675,8 @@ ProblemExpertNode::get_problem_predicates_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = true;
     response->states = plansys2::convertVector<plansys2_msgs::msg::Node, plansys2::Predicate>(
@@ -692,8 +693,8 @@ ProblemExpertNode::get_problem_function_details_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     auto function = problem_expert_->getFunction(request->expression);
     if (function) {
@@ -716,8 +717,8 @@ ProblemExpertNode::get_problem_functions_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = true;
     response->states = plansys2::convertVector<plansys2_msgs::msg::Node, plansys2::Function>(
@@ -735,8 +736,8 @@ ProblemExpertNode::get_problem_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = true;
     response->stamp = now();
@@ -753,8 +754,8 @@ ProblemExpertNode::is_problem_goal_satisfied_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = true;
     response->satisfied = problem_expert_->isGoalSatisfied(request->tree);
@@ -771,8 +772,8 @@ ProblemExpertNode::remove_problem_goal_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = problem_expert_->clearGoal();
 
@@ -799,8 +800,8 @@ ProblemExpertNode::set_problem_metric_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = problem_expert_->setMetric(request->metric);
     if (response->success) {
@@ -827,8 +828,8 @@ ProblemExpertNode::get_problem_metric_service_callback(
   (void)request;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = true;
     response->metric = problem_expert_->getMetric();
@@ -845,8 +846,8 @@ ProblemExpertNode::remove_problem_metric_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = problem_expert_->clearMetric();
 
@@ -874,8 +875,8 @@ ProblemExpertNode::clear_problem_knowledge_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = problem_expert_->clearKnowledge();
 
@@ -964,8 +965,8 @@ ProblemExpertNode::remove_problem_instance_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = problem_expert_->removeInstance(request->param);
     if (response->success) {
@@ -992,8 +993,8 @@ ProblemExpertNode::remove_problem_predicate_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = problem_expert_->removePredicate(request->node);
     if (response->success) {
@@ -1019,8 +1020,8 @@ ProblemExpertNode::remove_problem_function_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = problem_expert_->removeFunction(request->node);
     if (response->success) {
@@ -1046,7 +1047,8 @@ ProblemExpertNode::exist_problem_predicate_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->exist = false;
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->exist = problem_expert_->existPredicate(request->node);
   }
@@ -1061,7 +1063,8 @@ ProblemExpertNode::exist_problem_function_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->exist = false;
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->exist = problem_expert_->existFunction(request->node);
   }
@@ -1076,8 +1079,8 @@ ProblemExpertNode::update_problem_function_service_callback(
   (void)request_header;
   if (problem_expert_ == nullptr) {
     response->success = false;
-    response->error_info = "Requesting service in non-active state";
-    RCLCPP_WARN(get_logger(), "Requesting service in non-active state");
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
   } else {
     response->success = problem_expert_->updateFunction(request->node);
     if (response->success) {

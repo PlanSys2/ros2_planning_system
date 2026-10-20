@@ -124,9 +124,10 @@ def generate_launch_description():
         launch_arguments={
             'namespace': namespace,
             'params_file': params_file,
-            'default_action_bt_xml_filename': action_bt_file,
-            'default_start_action_bt_xml_filename': start_action_bt_file,
-            'default_end_action_bt_xml_filename': end_action_bt_file,
+            # The arguments of executor_launch.py, which sets the executor's parameters with them
+            'action_bt_file': action_bt_file,
+            'start_action_bt_file': start_action_bt_file,
+            'end_action_bt_file': end_action_bt_file,
             'bt_builder_plugin': bt_builder_plugin,
         }.items())
 

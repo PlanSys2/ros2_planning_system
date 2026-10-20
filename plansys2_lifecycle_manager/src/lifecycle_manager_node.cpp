@@ -14,6 +14,7 @@
 
 #include <chrono>
 #include <memory>
+#include <thread>
 #include <string>
 #include <map>
 
@@ -30,28 +31,25 @@ int main(int argc, char ** argv)
   auto main_node = rclcpp::Node::make_shared("lifecycle_manager");
   const auto startup_timeout = main_node->declare_parameter("startup_timeout", 5);
 
+  // One node, the manager's: the four clients work on it
+  auto client_node = std::make_shared<plansys2::ClientNode>(*main_node);
   std::map<std::string, std::shared_ptr<plansys2::LifecycleServiceClient>> manager_nodes;
-  manager_nodes["domain_expert"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "domain_expert_lc_mngr", "domain_expert");
-  manager_nodes["problem_expert"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "problem_expert_lc_mngr", "problem_expert");
-  manager_nodes["planner"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "planner_lc_mngr", "planner");
-  manager_nodes["executor"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "executor_lc_mngr", "executor");
-
-  // EventsExecutor is deprecated; EventsCBGExecutor delays bursts of actions_hub messages (#449)
-  rclcpp::executors::SingleThreadedExecutor exe;
-  for (auto & manager_node : manager_nodes) {
-    manager_node.second->init();
-    exe.add_node(manager_node.second);
+  for (const auto & name : {"domain_expert", "problem_expert", "planner", "executor"}) {
+    manager_nodes[name] = std::make_shared<plansys2::LifecycleServiceClient>(client_node, name);
   }
+
+  // Its node brings the answers while the startup waits for them
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(main_node);
+  std::thread spinner([&executor]() {executor.spin();});
 
   std::shared_future<bool> startup_future = std::async(
     std::launch::async,
     std::bind(
       plansys2::startup_function, manager_nodes, std::chrono::seconds(startup_timeout)));
-  exe.spin_until_future_complete(startup_future);
+  startup_future.wait();
+  executor.cancel();
+  spinner.join();
 
   if (!startup_future.get()) {
     RCLCPP_ERROR(

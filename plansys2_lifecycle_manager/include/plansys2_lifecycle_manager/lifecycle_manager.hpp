@@ -25,6 +25,8 @@
 #include "lifecycle_msgs/srv/change_state.hpp"
 #include "lifecycle_msgs/srv/get_state.hpp"
 
+#include "plansys2_core/ClientNode.hpp"
+#include "plansys2_core/ServiceCall.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 #include "rcutils/logging_macros.h"
@@ -33,75 +35,39 @@ namespace plansys2
 {
 
 /**
- * @brief Waits for a future to be ready or until a timeout occurs.
- *
- * @tparam FutureT Type of the future.
- * @tparam WaitTimeT Type of the wait duration.
- * @param[in,out] future The future to wait for.
- * @param[in] time_to_wait Maximum time to wait for the result.
- * @return std::future_status Status of the future after waiting.
- */
-template<typename FutureT, typename WaitTimeT>
-std::future_status wait_for_result(FutureT & future, WaitTimeT time_to_wait)
-{
-  auto end = std::chrono::steady_clock::now() + time_to_wait;
-  std::chrono::milliseconds wait_period(100);
-  std::future_status status = std::future_status::timeout;
-  do {
-    auto now = std::chrono::steady_clock::now();
-    auto time_left = end - now;
-    if (time_left <= std::chrono::seconds(0)) {break;}
-    status = future.wait_for((time_left < wait_period) ? time_left : wait_period);
-  } while (rclcpp::ok() && status != std::future_status::ready);
-  return status;
-}
-
-/**
  * @class plansys2::LifecycleServiceClient
- * @brief Client node to manage the lifecycle of another ROS2 node.
+ * @brief Asks a managed node for its lifecycle state and transitions.
  *
- * Provides methods to query and change the state of a managed node
- * using the lifecycle management services.
+ * It works on the node of the manager, which it does not own: it creates no node. Its calls wait
+ * for their answers serving only its own callbacks (plansys2::ClientNode).
  */
-class LifecycleServiceClient : public rclcpp::Node
+class LifecycleServiceClient
 {
 public:
   /**
-   * @brief Construct a new LifecycleServiceClient object.
-   *
-   * @param[in] node_name Name for this client node.
-   * @param[in] managed_node Name of the node to be managed.
+   * @param[in] node The node of the manager.
+   * @param[in] managed_node The node whose lifecycle it manages.
    */
-  explicit LifecycleServiceClient(const std::string & node_name, const std::string & managed_node);
+  LifecycleServiceClient(std::shared_ptr<ClientNode> node, const std::string & managed_node);
 
   /**
-   * @brief Initializes the service clients for lifecycle management.
-   */
-  void init();
-
-  /**
-   * @brief Gets the current state of the managed node.
-   *
-   * @param[in] time_out Timeout for the service call (default: 3 seconds).
-   * @return unsigned int The current state as defined in lifecycle_msgs::msg::State.
+   * @brief The current state of the managed node, or PRIMARY_STATE_UNKNOWN without answer.
    */
   unsigned int get_state(std::chrono::seconds time_out = std::chrono::seconds(3));
 
   /**
-   * @brief Changes the state of the managed node.
-   *
-   * @param[in] transition The transition ID to trigger.
-   * @param[in] time_out Timeout for the service call (default: 3 seconds).
-   * @return true if the transition was successful, false otherwise.
+   * @brief Triggers a transition of the managed node: whether it succeeded.
    */
   bool change_state(
     std::uint8_t transition, std::chrono::seconds time_out = std::chrono::seconds(3));
 
-private:
-  std::shared_ptr<rclcpp::Client<lifecycle_msgs::srv::GetState>> client_get_state_;
-  std::shared_ptr<rclcpp::Client<lifecycle_msgs::srv::ChangeState>> client_change_state_;
+  rclcpp::Logger get_logger() const {return node_->get_logger();}
 
+private:
+  std::shared_ptr<ClientNode> node_;
   std::string managed_node_;
+  ServiceClient<lifecycle_msgs::srv::GetState>::SharedPtr client_get_state_;
+  ServiceClient<lifecycle_msgs::srv::ChangeState>::SharedPtr client_change_state_;
 };
 
 /**

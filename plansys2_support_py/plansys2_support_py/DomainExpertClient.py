@@ -31,6 +31,7 @@ from plansys2_msgs.srv import (ChangeDomain, GetDomain, GetDomainActionDetails,
                                GetDomainDurativeActionDetails, GetDomainName,
                                GetDomainTypes, GetNodeDetails, GetStates)
 from plansys2_support_py.ClientBase import ClientBase
+from rclpy.node import Node
 
 
 class DomainExpertClient(ClientBase):
@@ -42,22 +43,17 @@ class DomainExpertClient(ClientBase):
     proper error handling.
     """
 
-    def __init__(self, node_name: str = 'domain_expert_client', namespace: str = '') -> None:
+    def __init__(self, node: Node) -> None:
         """
         Initialize the Domain Expert client.
 
         Parameters
         ----------
-        node_name : str, optional
-            Name of the ROS2 node.
-        namespace : str, optional
-            Namespace prefix for services.
+        node : Node
+            The node of the application the client works on: it creates none.
 
         """
-        super().__init__(node_name, namespace)
-
-        log_msg = f'Domain Expert Client "{node_name}" initialized'
-        self.get_logger().debug(log_msg)
+        super().__init__(node, 'domain_expert')
 
     def get_domain(self) -> Optional[str]:
         """
@@ -238,25 +234,27 @@ class DomainExpertClient(ClientBase):
             self.get_logger().error(f'Failed to get domain functions: {error_msg}')
             return None
 
-    def get_domain_derived_predicates(self) -> Optional[List[PlanSys2Node]]:
+    def get_domain_derived_predicates(self) -> Optional[List[Derived]]:
         """
-        Get the derived predicates in the domain.
+        Get the derived predicates in the domain, with their rules.
 
         Returns
         -------
-        Optional[List[PlanSys2Node]]
-            List of derived predicate nodes or None if failed.
+        Optional[List[Derived]]
+            List of derived predicates or None if failed.
 
         """
         service_name = 'domain_expert/get_domain_derived_predicates'
-        request = GetStates.Request()
+        # The type of the service: the whole list when no predicate is named
+        request = GetDomainDerivedPredicateDetails.Request()
 
-        response = self._create_and_call_service(GetStates, service_name, request)
+        response = self._create_and_call_service(
+            GetDomainDerivedPredicateDetails, service_name, request)
         if response and response.success:
             self.get_logger().debug(
-                f'Successfully retrieved {len(response.states)} derived predicates'
+                f'Successfully retrieved {len(response.predicates)} derived predicates'
             )
-            return response.states
+            return response.predicates
         else:
             error_msg = response.error_info if response else 'Service call failed'
             self.get_logger().error(f'Failed to get derived predicates: {error_msg}')

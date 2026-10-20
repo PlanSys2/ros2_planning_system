@@ -17,6 +17,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <thread>
 #include <string>
 #include <vector>
 
@@ -44,6 +45,7 @@ public:
   PartialProblemExpert()
   : rclcpp::Node("problem_expert")
   {
+    state_ = plansys2::testing::active_state(*this, "problem_expert");
     exist_predicate_ = create_service<ExistNode>(
       "problem_expert/exist_problem_predicate",
       [this](std::shared_ptr<rclcpp::Service<ExistNode>> service,
@@ -90,6 +92,7 @@ public:
   std::atomic<int> requests_ {0};
 
 private:
+  rclcpp::Service<lifecycle_msgs::srv::GetState>::SharedPtr state_;
   rclcpp::Service<ExistNode>::SharedPtr exist_predicate_;
   rclcpp::Service<ExistNode>::SharedPtr exist_function_;
   rclcpp::Service<GetProblemInstances>::SharedPtr get_instances_;
@@ -104,19 +107,28 @@ plansys2_msgs::msg::Tree tree_of(const std::string & expression)
 }
 
 // First, so that no problem expert has ever been seen in the process
-TEST(ClientNoServerTest, calls_without_server_end)
+TEST(ClientNoServerTest, calls_without_server_wait_for_it)
 {
-  // No problem expert at all: every call gives up after waiting 5 s for the service
-  auto client = std::make_shared<plansys2::ProblemExpertClient>();
+  // No problem expert yet: the call waits for it, and goes on as soon as it is active
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
-  auto start = std::chrono::steady_clock::now();
-  EXPECT_EQ(client->tryExistPredicate(plansys2::Predicate("(robot_at r1 wp1)")), std::nullopt);
-  EXPECT_FALSE(client->addInstance(plansys2::Instance("r1", "robot")));
-  auto elapsed = std::chrono::steady_clock::now() - start;
-  EXPECT_GE(elapsed, 9s);
-  EXPECT_LT(elapsed, 14s);
+  std::atomic<bool> done {false};
+  std::optional<bool> answer;
+  std::thread caller([&]() {
+      answer = client->tryExistPredicate(plansys2::Predicate("(robot_at r1 wp1)"));
+      done = true;
+    });
+  std::this_thread::sleep_for(3s);
+  EXPECT_FALSE(done.load());
 
-  EXPECT_FALSE(plansys2::check(tree_of("(not (robot_at r1 wp1))"), client));
+  auto server = std::make_shared<PartialProblemExpert>();
+  server->predicates["robot_at r1 wp1"] = true;
+  plansys2::testing::NodeSpinner server_spinner(server);
+  EXPECT_TRUE(plansys2::testing::wait_for([&]() {return done.load();}, 10s));
+  caller.join();
+  EXPECT_EQ(answer, std::optional<bool>(true));
 }
 
 class ClientNoAnswerTest : public ::testing::Test
@@ -125,7 +137,9 @@ protected:
   void SetUp() override
   {
     server_ = std::make_shared<PartialProblemExpert>();
-    client_ = std::make_shared<plansys2::ProblemExpertClient>();
+    client_node_ = rclcpp::Node::make_shared("client_node");
+    client_node_spinner_ = std::make_unique<plansys2::testing::NodeSpinner>(client_node_);
+    client_ = std::make_shared<plansys2::ProblemExpertClient>(client_node_);
     exe_.add_node(server_);
     spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
   }
@@ -135,13 +149,16 @@ protected:
     spinner_.reset();
     exe_.remove_node(server_);
     client_.reset();
+    client_node_.reset();
     server_.reset();
     plansys2::drain_ros(500ms);
   }
 
   std::shared_ptr<PartialProblemExpert> server_;
+  rclcpp::Node::SharedPtr client_node_;
+  std::unique_ptr<plansys2::testing::NodeSpinner> client_node_spinner_;
   std::shared_ptr<plansys2::ProblemExpertClient> client_;
-  rclcpp::executors::SingleThreadedExecutor exe_;
+  rclcpp::executors::MultiThreadedExecutor exe_;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 
@@ -243,13 +260,14 @@ TEST_F(ClientNoAnswerTest, quantifier_without_instances_is_never_true)
     plansys2::check(tree_of("(not (exists (?r - robot) (robot_at ?r wp1)))"), client_));
 }
 
-TEST_F(ClientNoAnswerTest, a_request_without_answer_takes_one_second)
+TEST_F(ClientNoAnswerTest, a_request_without_answer_is_sent_three_times)
 {
+  // One second each, with a new client for the second and the third (a lost answer)
   auto start = std::chrono::steady_clock::now();
   EXPECT_EQ(client_->tryExistPredicate(plansys2::Predicate("(robot_at r1 wp3)")), std::nullopt);
   auto elapsed = std::chrono::steady_clock::now() - start;
-  EXPECT_GE(elapsed, 900ms);
-  EXPECT_LT(elapsed, 3s);
+  EXPECT_GE(elapsed, 2900ms);
+  EXPECT_LT(elapsed, 6s);
 }
 
 int main(int argc, char ** argv)
@@ -257,5 +275,8 @@ int main(int argc, char ** argv)
   testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);
 
-  return RUN_ALL_TESTS();
+  // Before the process exits: Zenoh aborts if ROS is shut down by atexit
+  auto result = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return result;
 }

@@ -216,13 +216,15 @@ TEST(timed_facts, the_node_applies_them_on_time)
   {
     auto node = std::make_shared<plansys2::ProblemExpertNode>();
     node->set_parameter({"model_file", domain_file()});
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
     exe.add_node(node->get_node_base_interface());
     plansys2::testing::ExecutorThread spinner(exe);
     node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    auto client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto client_node = rclcpp::Node::make_shared("client_node");
+    plansys2::testing::NodeSpinner client_node_spinner(client_node);
+    auto client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
     const auto start = std::chrono::steady_clock::now();
     ASSERT_TRUE(
       client->addProblem(

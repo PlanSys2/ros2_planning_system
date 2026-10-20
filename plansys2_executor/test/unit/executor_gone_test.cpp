@@ -31,6 +31,7 @@
 #include "plansys2_executor/ActionExecutorClient.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
 #include "plansys2_msgs/action/execute_plan.hpp"
+#include "plansys2_msgs/srv/get_plan.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -126,7 +127,7 @@ protected:
   std::shared_ptr<MoveAction> performer_;
   rclcpp_lifecycle::LifecycleNode::SharedPtr executor_node_;
   plansys2::ActionExecutor::Ptr action_;
-  rclcpp::executors::SingleThreadedExecutor exe_;
+  rclcpp::executors::MultiThreadedExecutor exe_;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 
@@ -167,9 +168,22 @@ TEST_F(PerformerSupervisionTest, performer_keeps_running_while_its_executor_live
 class SilentExecutor
 {
 public:
-  SilentExecutor()
+  // With get_plan, it says whether it runs the plan of its last goal (runs)
+  explicit SilentExecutor(bool with_get_plan = false)
   {
     node = rclcpp::Node::make_shared("silent_executor");
+    state = plansys2::testing::active_state(*node, "executor");
+    if (with_get_plan) {
+      get_plan = node->create_service<plansys2_msgs::srv::GetPlan>(
+        "executor/get_plan",
+        [this](const plansys2_msgs::srv::GetPlan::Request::SharedPtr,
+        plansys2_msgs::srv::GetPlan::Response::SharedPtr response) {
+          response->success = runs && !goals.empty();
+          if (response->success) {
+            response->plan = goals.back()->get_goal()->plan;
+          }
+        });
+    }
     server = rclcpp_action::create_server<ExecutePlan>(
       node, "execute_plan",
       [](const rclcpp_action::GoalUUID &, std::shared_ptr<const ExecutePlan::Goal>) {
@@ -184,8 +198,11 @@ public:
   }
 
   rclcpp::Node::SharedPtr node;
+  rclcpp::Service<lifecycle_msgs::srv::GetState>::SharedPtr state;
+  rclcpp::Service<plansys2_msgs::srv::GetPlan>::SharedPtr get_plan;
   rclcpp_action::Server<ExecutePlan>::SharedPtr server;
   std::vector<std::shared_ptr<rclcpp_action::ServerGoalHandle<ExecutePlan>>> goals;
+  std::atomic<bool> runs {true};
 };
 
 plansys2_msgs::msg::Plan one_move()
@@ -201,11 +218,13 @@ plansys2_msgs::msg::Plan one_move()
 TEST(ExecutorClientSupervision, client_stops_waiting_when_the_executor_is_gone)
 {
   auto silent = std::make_unique<SilentExecutor>();
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(silent->node);
   auto spinner = std::make_unique<plansys2::testing::ExecutorThread>(exe);
 
-  auto client = std::make_shared<plansys2::ExecutorClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto client = std::make_shared<plansys2::ExecutorClient>(client_node);
   ASSERT_TRUE(client->start_plan_execution(one_move()));
 
   // While the executor lives, the plan is still running
@@ -231,6 +250,39 @@ TEST(ExecutorClientSupervision, client_stops_waiting_when_the_executor_is_gone)
   ASSERT_TRUE(client->start_plan_execution(one_move()));
   ASSERT_TRUE(client->execute_and_check_plan());
   spinner.reset();
+}
+
+// A restarted executor has an action server, but not our goal: no result would ever come
+TEST(ExecutorClientSupervision, client_stops_waiting_when_the_executor_forgets_the_plan)
+{
+  SilentExecutor silent(true);
+  rclcpp::executors::MultiThreadedExecutor exe;
+  exe.add_node(silent.node);
+  plansys2::testing::ExecutorThread spinner(exe);
+
+  auto client_node = rclcpp::Node::make_shared("forget_client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto client = std::make_shared<plansys2::ExecutorClient>(client_node);
+  ASSERT_TRUE(client->start_plan_execution(one_move()));
+
+  // While it runs our plan, the plan goes on
+  auto running_until = std::chrono::steady_clock::now() + 5s;
+  while (std::chrono::steady_clock::now() < running_until) {
+    ASSERT_TRUE(client->execute_and_check_plan());
+    std::this_thread::sleep_for(100ms);
+  }
+
+  // It forgets it (as a restarted one): the client stops waiting, with no result
+  silent.runs = false;
+  auto start = std::chrono::steady_clock::now();
+  ASSERT_TRUE(wait_until([&]() {return !client->execute_and_check_plan();}, 10s));
+  EXPECT_GE(std::chrono::steady_clock::now() - start, 2s);
+  ASSERT_FALSE(client->getResult().has_value());
+
+  // A new plan from the same client runs
+  silent.runs = true;
+  ASSERT_TRUE(client->start_plan_execution(one_move()));
+  ASSERT_TRUE(client->execute_and_check_plan());
 }
 
 int main(int argc, char ** argv)

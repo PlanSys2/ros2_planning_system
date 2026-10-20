@@ -16,6 +16,7 @@
 #define PLANSYS2_PLANNER__PLANNERCLIENT_HPP_
 
 #include <optional>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -24,6 +25,8 @@
 #include "plansys2_msgs/srv/get_plan.hpp"
 #include "plansys2_msgs/srv/get_plan_array.hpp"
 
+#include "plansys2_core/ClientNode.hpp"
+#include "plansys2_core/ServiceCall.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace plansys2
@@ -40,13 +43,19 @@ class PlannerClient : public PlannerInterface
 {
 public:
   /**
-   * @brief Constructor for the PlannerClient.
-   *
-   * Creates a ROS node and configures service clients to connect to the planner services.
-   * It waits for a plan as long as the planner plans (its plan_solver_timeout) plus a margin;
-   * its own plan_solver_timeout parameter, if positive, sets that time instead.
+   * @brief Creates the client on a node it does not own: the node of a PlanSys2 component or of
+   * an application. It creates no node of its own.
    */
-  PlannerClient();
+  explicit PlannerClient(ClientNode::Interfaces node);
+
+  template<typename NodeT>
+  explicit PlannerClient(const std::shared_ptr<NodeT> & node)
+  : PlannerClient(ClientNode::Interfaces(*node)) {}
+
+  /**
+   * @brief Waits until its component is active, as every call does: false if ROS shuts down.
+   */
+  bool wait_active() {return active_->wait();}
 
   /**
    * @brief Generate a single plan for a PDDL planning problem.
@@ -74,15 +83,17 @@ public:
     const std::string & node_namespace = "");
 
 private:
-  rclcpp::Client<plansys2_msgs::srv::GetPlan>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::GetPlan>::SharedPtr
     get_plan_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetPlanArray>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::GetPlanArray>::SharedPtr
     get_plan_array_client_;
 
   // How long to wait for the planner's answer: its plan_solver_timeout and a margin
   std::chrono::nanoseconds answer_wait();
 
-  rclcpp::Node::SharedPtr node_;
+  std::shared_ptr<ClientNode> node_;
+  // Its component: every call waits until it is active
+  std::shared_ptr<ActiveComponent> active_;
   // The planner's parameters: its plan_solver_timeout is how long it plans
   rclcpp::AsyncParametersClient::SharedPtr planner_parameters_;
   double planner_timeout_ {15.0};  // The last one read

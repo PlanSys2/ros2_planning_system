@@ -79,18 +79,19 @@ TEST(problem_expert, wait_atstart_req_test)
   {
     auto test_node = rclcpp::Node::make_shared("test_node");
     auto test_lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_lc_node");
+    plansys2::testing::NodeSpinner test_lc_node_spinner(test_lc_node);
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
 
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_lc_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_lc_node);
 
     std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -182,18 +183,19 @@ TEST(problem_expert, apply_atstart_effect_test)
   {
     auto test_node = rclcpp::Node::make_shared("test_node");
     auto test_lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_lc_node");
+    plansys2::testing::NodeSpinner test_lc_node_spinner(test_lc_node);
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
 
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_lc_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_lc_node);
 
     std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -286,18 +288,19 @@ TEST(problem_expert, restore_atstart_effect_test)
   {
     auto test_node = rclcpp::Node::make_shared("test_node");
     auto test_lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_lc_node");
+    plansys2::testing::NodeSpinner test_lc_node_spinner(test_lc_node);
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
 
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_lc_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_lc_node);
 
     std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -391,18 +394,19 @@ TEST(problem_expert, apply_atend_effect_test)
   {
     auto test_node = rclcpp::Node::make_shared("test_node");
     auto test_lc_node = rclcpp_lifecycle::LifecycleNode::make_shared("test_lc_node");
+    plansys2::testing::NodeSpinner test_lc_node_spinner(test_lc_node);
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
 
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_lc_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_lc_node);
 
     std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());

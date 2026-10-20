@@ -40,15 +40,15 @@ namespace
 
 const std::vector<std::string> kNodes = {"planner", "domain_expert", "problem_expert", "executor"};
 
-// Clients for the four PlanSys2 keys, managing the nodes prefix + key
+// Clients for the four PlanSys2 keys, managing the nodes prefix + key, on one manager node
 ClientMap make_clients(const std::string & prefix, Spinner & spinner)
 {
+  auto manager = rclcpp::Node::make_shared(prefix + "lifecycle_manager");
+  spinner.add(manager);  // Keeps it alive: the clients do not own it
+  auto client_node = std::make_shared<plansys2::ClientNode>(*manager);
   ClientMap clients;
   for (const auto & key : kNodes) {
-    clients[key] = std::make_shared<plansys2::LifecycleServiceClient>(
-      prefix + key + "_lc_mngr", prefix + key);
-    clients[key]->init();
-    spinner.add(clients[key]);
+    clients[key] = std::make_shared<plansys2::LifecycleServiceClient>(client_node, prefix + key);
   }
   return clients;
 }
@@ -63,22 +63,23 @@ double seconds_since(std::chrono::steady_clock::time_point start)
 TEST(lifecycle_manager, lf_client)
 {
   auto test_node = rclcpp_lifecycle::LifecycleNode::make_shared("test");
-  auto client_node = std::make_shared<plansys2::LifecycleServiceClient>("mng_client", "test");
+  auto manager = rclcpp::Node::make_shared("mng_client");
+  plansys2::testing::NodeSpinner manager_spinner(manager);
+  auto client_node = std::make_shared<plansys2::LifecycleServiceClient>(
+    std::make_shared<plansys2::ClientNode>(*manager), "test");
 
-  auto exe = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+  // Only the managed node is spun: the client serves its answers while it waits
+  auto exe = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
   exe->add_node(test_node->get_node_base_interface());
-  exe->add_node(client_node->get_node_base_interface());
 
   plansys2::testing::ExecutorThread spinner(*exe);
-
-  client_node->init();
 
   // The client must see both lifecycle services of the node
   ASSERT_TRUE(
     plansys2::testing::wait_for(
       [&]() {
-        return client_node->count_services("test/get_state") > 0 &&
-               client_node->count_services("test/change_state") > 0;
+        return manager->count_services("test/get_state") > 0 &&
+               manager->count_services("test/change_state") > 0;
       }));
 
   ASSERT_EQ(
@@ -118,21 +119,15 @@ TEST(lifecycle_manager, lf_startup)
     ex_node->get_current_state().id(),
     lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
 
+  auto manager = rclcpp::Node::make_shared("lifecycle_manager");
+  plansys2::testing::NodeSpinner manager_spinner(manager);
+  auto client_node = std::make_shared<plansys2::ClientNode>(*manager);
   std::map<std::string, std::shared_ptr<plansys2::LifecycleServiceClient>> manager_nodes;
-  manager_nodes["domain_expert"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "domain_expert_lc_mngr", "domain_expert");
-  manager_nodes["problem_expert"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "domain_expert_lc_mngr", "problem_expert");
-  manager_nodes["planner"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "domain_expert_lc_mngr", "planner");
-  manager_nodes["executor"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "domain_expert_lc_mngr", "executor");
-
-  rclcpp::executors::SingleThreadedExecutor exe;
-  for (auto & manager_node : manager_nodes) {
-    manager_node.second->init();
-    exe.add_node(manager_node.second);
+  for (const auto & key : kNodes) {
+    manager_nodes[key] = std::make_shared<plansys2::LifecycleServiceClient>(client_node, key);
   }
+
+  rclcpp::executors::MultiThreadedExecutor exe;
 
   exe.add_node(de_node->get_node_base_interface());
   exe.add_node(pe_node->get_node_base_interface());
@@ -142,12 +137,12 @@ TEST(lifecycle_manager, lf_startup)
   plansys2::testing::ExecutorThread spinner(exe);
 
   // Each manager must see the lifecycle services of its node
-  for (const auto & [name, manager_node] : manager_nodes) {
+  for (const auto & name : kNodes) {
     ASSERT_TRUE(
       plansys2::testing::wait_for(
         [&]() {
-          return manager_node->count_services(name + "/get_state") > 0 &&
-                 manager_node->count_services(name + "/change_state") > 0;
+          return manager->count_services(name + "/get_state") > 0 &&
+                 manager->count_services(name + "/change_state") > 0;
         })) << name;
   }
 
@@ -176,11 +171,10 @@ TEST(lifecycle_manager, lf_startup)
 
 TEST(lifecycle_manager, client_without_node)
 {
-  Spinner spinner;
-  auto client = std::make_shared<plansys2::LifecycleServiceClient>("nobody_client", "nobody");
-  client->init();
-  spinner.add(client);
-  spinner.start();
+  auto manager = rclcpp::Node::make_shared("nobody_client");
+  plansys2::testing::NodeSpinner manager_spinner(manager);
+  auto client = std::make_shared<plansys2::LifecycleServiceClient>(
+    std::make_shared<plansys2::ClientNode>(*manager), "nobody");
 
   auto start = std::chrono::steady_clock::now();
   ASSERT_EQ(client->get_state(1s), State::PRIMARY_STATE_UNKNOWN);
@@ -188,11 +182,18 @@ TEST(lifecycle_manager, client_without_node)
   ASSERT_LT(seconds_since(start), 4.0);
 }
 
-TEST(lifecycle_manager, client_without_init)
+TEST(lifecycle_manager, client_after_its_node_is_gone)
 {
-  auto client = std::make_shared<plansys2::LifecycleServiceClient>("noinit_client", "noinit");
+  // The client does not own the node: once it is gone, the calls fail fast, without throwing
+  auto manager = rclcpp::Node::make_shared("gone_client");
+  auto client = std::make_shared<plansys2::LifecycleServiceClient>(
+    std::make_shared<plansys2::ClientNode>(*manager), "gone");
+  manager.reset();
+
+  auto start = std::chrono::steady_clock::now();
   ASSERT_EQ(client->get_state(1s), State::PRIMARY_STATE_UNKNOWN);
   ASSERT_FALSE(client->change_state(Transition::TRANSITION_CONFIGURE, 1s));
+  ASSERT_LT(seconds_since(start), 2.5);
 }
 
 TEST(lifecycle_manager, client_with_slow_node)
@@ -206,11 +207,10 @@ TEST(lifecycle_manager, client_with_slow_node)
   fake_spinner.add(fake);
   fake_spinner.start();
 
-  Spinner spinner;
-  auto client = std::make_shared<plansys2::LifecycleServiceClient>("slow_client", "slow");
-  client->init();
-  spinner.add(client);
-  spinner.start();
+  auto manager = rclcpp::Node::make_shared("slow_client");
+  plansys2::testing::NodeSpinner manager_spinner(manager);
+  auto client = std::make_shared<plansys2::LifecycleServiceClient>(
+    std::make_shared<plansys2::ClientNode>(*manager), "slow");
 
   auto start = std::chrono::steady_clock::now();
   ASSERT_EQ(client->get_state(1s), State::PRIMARY_STATE_UNKNOWN);
@@ -416,5 +416,8 @@ int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);
-  return RUN_ALL_TESTS();
+  // Before the process exits: Zenoh aborts if ROS is shut down by atexit
+  auto result = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return result;
 }

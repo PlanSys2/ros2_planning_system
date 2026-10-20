@@ -301,7 +301,7 @@ protected:
   std::vector<ActionExecution> messages_;
   std::vector<plansys2::ActionExecutor::Ptr> executors_;
   std::vector<std::shared_ptr<void>> nodes_;
-  rclcpp::executors::SingleThreadedExecutor exe_;
+  rclcpp::executors::MultiThreadedExecutor exe_;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 

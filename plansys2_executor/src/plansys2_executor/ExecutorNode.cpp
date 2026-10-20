@@ -231,9 +231,10 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   trace_ = std::make_shared<ExecutionTrace>(
     non_owning_this(), trace_pub_, get_parameter("log_execution_trace").as_bool());
 
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
-  planner_client_ = std::make_shared<plansys2::PlannerClient>();
+  // On this node: the executor is one node, whatever it uses inside
+  domain_client_ = std::make_shared<plansys2::DomainExpertClient>(*this);
+  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(*this);
+  planner_client_ = std::make_shared<plansys2::PlannerClient>(*this);
 
   // One actions_hub publisher and subscription for all the actions, kept between plans
   action_hub_ = ActionHub::get(non_owning_this());

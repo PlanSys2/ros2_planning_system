@@ -242,12 +242,14 @@ TEST(quantifiers, exists_through_the_client)
     domain_node->trigger_transition(transition);
     problem_node->trigger_transition(transition);
   }
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   plansys2::testing::ExecutorThread spinner(exe);
 
-  auto client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
   for (const auto & robot : {"rob0", "rob1", "rob2"}) {
     ASSERT_TRUE(client->addInstance(plansys2::Instance(robot, "robot")));
   }

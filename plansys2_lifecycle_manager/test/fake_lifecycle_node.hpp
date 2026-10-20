@@ -121,7 +121,7 @@ public:
 
 private:
   std::vector<std::shared_ptr<void>> keep_alive_;
-  rclcpp::executors::SingleThreadedExecutor exe_;
+  rclcpp::executors::MultiThreadedExecutor exe_;
   std::unique_ptr<plansys2::testing::ExecutorThread> thread_;
 };
 

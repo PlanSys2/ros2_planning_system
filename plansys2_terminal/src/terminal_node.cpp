@@ -15,6 +15,7 @@
 
 #include <csignal>
 #include <memory>
+#include <thread>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -28,7 +29,15 @@ int main(int argc, char ** argv)
   std::signal(SIGINT, [](int) {plansys2_terminal::interrupt();});
   auto terminal_node = std::make_shared<plansys2_terminal::Terminal>();
 
+  // The console calls the clients; this thread brings their answers
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(terminal_node);
+  std::thread spinner([&executor]() {executor.spin();});
+
   terminal_node->run_console();
+
+  executor.cancel();
+  spinner.join();
 
   rclcpp::shutdown();
   return 0;

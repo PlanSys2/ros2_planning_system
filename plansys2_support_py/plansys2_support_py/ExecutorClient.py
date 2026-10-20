@@ -30,6 +30,7 @@ from plansys2_support_py.ClientBase import ClientBase
 
 from rclpy.action import ActionClient
 from rclpy.action.client import ClientGoalHandle
+from rclpy.node import Node
 from rclpy.task import Future
 from rclpy.type_support import GetResultServiceResponse
 
@@ -42,26 +43,25 @@ class ExecutorClient(ClientBase):
     in PlanSys2, wrapping the ROS2 service calls with proper error handling.
     """
 
-    def __init__(self, node_name: str = 'executor_client', namespace: str = '') -> None:
+    _GOAL_ATTEMPTS = 3
+    # Not running the plan sent for this long: the executor lost it (restarted)
+    _NOT_RUNNING_TOLERANCE = 3.0
+
+    def __init__(self, node: Node) -> None:
         """
         Initialize the Executor client.
 
         Parameters
         ----------
-        node_name : str, optional
-            Name of the ROS2 node.
-        namespace : str, optional
-            Namespace prefix for services.
+        node : Node
+            The node of the application the client works on: it creates none.
 
         """
-        super().__init__(node_name, namespace)
+        super().__init__(node, 'executor')
 
         # Action client for plan execution
         self._execute_plan_action_client: ActionClient = ActionClient(
-            self._calls_node,
-            ExecutePlan,
-            'execute_plan'
-        )
+            self._node, ExecutePlan, 'execute_plan', callback_group=self._group)
 
         # State variables for plan execution
         self._executing_plan = False
@@ -71,8 +71,16 @@ class ExecutorClient(ClientBase):
             Optional[Future[GetResultServiceResponse[Any]]] = None
         # Since when the executor's action server has been missing, while executing (#446)
         self._server_lost_since: Optional[float] = None
+        # The plan sent, and whether the executor still runs it (a restarted one would not)
+        self._sent_plan: Optional[Plan] = None
+        self._not_running_since: Optional[float] = None
+        self._plan_check: Optional[Any] = None
+        self._last_plan_check = 0.0
 
-        self.get_logger().debug(f'Executor Client "{node_name}" initialized')
+    def destroy(self) -> None:
+        """Destroy the action and service clients on the node; the node is left as it was."""
+        self._execute_plan_action_client.destroy()
+        super().destroy()
 
     def get_ordered_sub_goals(self) -> Optional[List[Tree]]:
         """
@@ -259,30 +267,46 @@ class ExecutorClient(ClientBase):
             self.get_logger().warning('Plan is empty, nothing to execute')
             return False
 
-        # Wait for the action server
-        if not self._execute_plan_action_client.wait_for_server(timeout_sec=5.0):
-            self.get_logger().error('Execute plan action server not available')
-            return False
-
-        # Create the goal
         goal_msg = ExecutePlan.Goal()
         goal_msg.plan = plan
-
-        # Send the goal
         self.get_logger().info(f'Starting plan execution with {len(plan.items)} actions')
-        send_goal_future = self._execute_plan_action_client.send_goal_async(
-            goal_msg,
-            feedback_callback=self._feedback_callback if verbose else None
-        )
-
-        # Wait for goal acceptance
-        if not self._wait_for(send_goal_future, 3.0):
-            self.get_logger().error('Plan execution goal got no answer')
-            return False
-        goal_handle = send_goal_future.result()
-
-        if goal_handle is None or not goal_handle.accepted:
-            self.get_logger().error('Plan execution goal was rejected')
+        goal_handle = None
+        for attempt in range(1, self._GOAL_ATTEMPTS + 1):
+            # As every call: until the executor is active, and once again if its server goes
+            if not self.wait_active():
+                return False
+            if not self._execute_plan_action_client.wait_for_server(timeout_sec=3.0):
+                self._lost()
+                if not self.wait_active() or \
+                        not self._execute_plan_action_client.wait_for_server(timeout_sec=3.0):
+                    self.get_logger().error('Execute plan action server not available')
+                    return False
+            send_goal_future = self._execute_plan_action_client.send_goal_async(
+                goal_msg,
+                feedback_callback=self._feedback_callback if verbose else None
+            )
+            if not self._wait_for(send_goal_future, 3.0):
+                # The answer lost (the executor may run the plan already): again with a new
+                # client; a new goal replaces the running one, which goes on keeping what runs
+                self.get_logger().warning(
+                    'execute_plan: no answer to the goal, sending it again '
+                    f'({attempt + 1}/{self._GOAL_ATTEMPTS})')
+                self._execute_plan_action_client.destroy()
+                self._execute_plan_action_client = ActionClient(
+                    self._node, ExecutePlan, 'execute_plan', callback_group=self._group)
+                continue
+            goal_handle = send_goal_future.result()
+            if goal_handle is None or not goal_handle.accepted:
+                # The executor rejects goals only while it is not active: wait for it, again
+                self.get_logger().warning(
+                    'execute_plan: goal rejected, the executor is not active')
+                goal_handle = None
+                self._lost()
+                continue
+            break
+        if goal_handle is None:
+            self.get_logger().error('Plan execution could not start')
+            self._lost()
             return False
 
         self._goal_handle = goal_handle  # type: ignore[assignment]
@@ -290,6 +314,9 @@ class ExecutorClient(ClientBase):
         self._result_future = goal_handle.get_result_async()
         self._server_lost_since = None
         self._executing_plan = True
+        self._sent_plan = plan
+        self._not_running_since = None
+        self._plan_check = None
         return True
 
     def execute_and_check_plan(self, verbose: bool = True) -> bool:
@@ -345,8 +372,48 @@ class ExecutorClient(ClientBase):
                     return False
             else:
                 self._server_lost_since = None
+                # A restarted executor has a server, but not our goal: its result never comes
+                if self._executing_plan and self._plan_not_running():
+                    self.get_logger().error(
+                        'execute_and_check_plan: the executor does not run the plan '
+                        '(restarted?), it is lost')
+                    self._executing_plan = False
+                    self._result_future = None
+                    return False
             # Timed out, still processing, not complete yet
             return True
+
+    def _plan_not_running(self) -> bool:
+        """Whether the executor has not run the plan sent for a while; asked without waiting."""
+        now = time.monotonic()
+        if self._plan_check is not None and self._plan_check[0].done():
+            response = self._plan_check[0].result()
+            self._plan_check = None
+            running = response is not None and response.success and \
+                self._same_plan(response.plan, self._sent_plan)
+            if running:
+                self._not_running_since = None
+            elif self._not_running_since is None:
+                self._not_running_since = now
+            elif now - self._not_running_since > self._NOT_RUNNING_TOLERANCE:
+                self._not_running_since = None
+                return True
+        elif self._plan_check is not None and now - self._plan_check[1] > 2.0:
+            self._plan_check = None  # Without answer: asked again
+        if self._plan_check is None and now - self._last_plan_check > 1.0:
+            client = self._service_client(GetPlan, 'executor/get_plan')
+            if client.service_is_ready():
+                self._plan_check = (client.call_async(GetPlan.Request()), now)
+                self._last_plan_check = now
+        return False
+
+    @staticmethod
+    def _same_plan(a: Plan, b: Optional[Plan]) -> bool:
+        """Whether two plans have the same actions at the same times."""
+        if b is None or len(a.items) != len(b.items):
+            return False
+        return all(x.action == y.action and abs(x.time - y.time) < 1e-6
+                   for x, y in zip(a.items, b.items))
 
     def _feedback_callback(self, feedback_msg) -> None:
         """

@@ -74,7 +74,7 @@ void RQTKnowledge::initPlugin(qt_gui_cpp::PluginContext & context)
     "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
     std::bind(&RQTKnowledge::knowledge_callback, this, _1));
 
-  problem_ = std::make_shared<plansys2::ProblemExpertClient>();
+  problem_ = std::make_shared<plansys2::ProblemExpertClient>(node_);
 }
 
 void RQTKnowledge::shutdownPlugin()

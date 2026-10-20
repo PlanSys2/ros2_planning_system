@@ -100,7 +100,7 @@ Counts run_plan(double feedback_rate, bool listen_to_dotgraph)
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
   executor_node->set_parameter({"feedback_rate", feedback_rate});
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   for (auto node : {domain_node->get_node_base_interface(), problem_node->get_node_base_interface(),
       planner_node->get_node_base_interface(), executor_node->get_node_base_interface(),
       move->get_node_base_interface(), listener->get_node_base_interface()})
@@ -117,10 +117,10 @@ Counts run_plan(double feedback_rate, bool listen_to_dotgraph)
   }
   move->trigger_transition(Transition::TRANSITION_CONFIGURE);
 
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-  auto planner_client = std::make_shared<plansys2::PlannerClient>();
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(listener);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(listener);
+  auto planner_client = std::make_shared<plansys2::PlannerClient>(listener);
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>(listener);
 
   EXPECT_TRUE(problem_client->addInstance(plansys2::Instance{"r2d2", "robot"}));
   for (const auto & wp : {"wp1", "wp2", "wp3"}) {

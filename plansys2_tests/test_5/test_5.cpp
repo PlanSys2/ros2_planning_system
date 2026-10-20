@@ -63,14 +63,16 @@ TEST(test_5, requirement_only_change_preserves_problem)
 {
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
   std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_tests").string();
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   plansys2::testing::ExecutorThread spinner(exe);
@@ -102,14 +104,16 @@ TEST(test_5, removed_predicate_pruned)
 {
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
   std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_tests").string();
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   plansys2::testing::ExecutorThread spinner(exe);
@@ -133,14 +137,16 @@ TEST(test_5, invalid_domain_rejected)
 {
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
   std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_tests").string();
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   plansys2::testing::ExecutorThread spinner(exe);
@@ -175,15 +181,16 @@ TEST(test_5, invalid_domain_rejected)
 TEST(test_5, normal_startup_does_not_disturb_executor_or_problem)
 {
   auto test_node = rclcpp::Node::make_shared("test_5_test_node");
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-  auto planner_client = std::make_shared<plansys2::PlannerClient>();
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>(test_node);
 
   auto open_door_action_node = plansys2_tests::TestAction::make_shared("open_door");
   auto close_door_action_node = plansys2_tests::TestAction::make_shared("close_door");
@@ -192,7 +199,7 @@ TEST(test_5, normal_startup_does_not_disturb_executor_or_problem)
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(planner_node->get_node_base_interface());
@@ -246,15 +253,16 @@ TEST(test_5, normal_startup_does_not_disturb_executor_or_problem)
 TEST(test_5, change_domain_cancels_active_execution)
 {
   auto test_node = rclcpp::Node::make_shared("test_5_test_node");
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-  auto planner_client = std::make_shared<plansys2::PlannerClient>();
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>(test_node);
 
   // Slow action (0.1/tick at 1 Hz => ~10 s to complete): gives us a wide window to
   // call changeDomain() while it is still mid-execution.
@@ -265,7 +273,7 @@ TEST(test_5, change_domain_cancels_active_execution)
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(planner_node->get_node_base_interface());
@@ -346,15 +354,16 @@ TEST(test_5, change_domain_cancels_active_execution)
 TEST(test_5, plan_executes_successfully_after_domain_change)
 {
   auto test_node = rclcpp::Node::make_shared("test_5_test_node");
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-  auto planner_client = std::make_shared<plansys2::PlannerClient>();
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>(test_node);
 
   auto open_door_action_node = plansys2_tests::TestAction::make_shared("open_door");
   auto close_door_action_node = plansys2_tests::TestAction::make_shared("close_door");
@@ -363,7 +372,7 @@ TEST(test_5, plan_executes_successfully_after_domain_change)
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(planner_node->get_node_base_interface());
@@ -416,5 +425,8 @@ int main(int argc, char ** argv)
   testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);
 
-  return RUN_ALL_TESTS();
+  // Before the process exits: Zenoh aborts if ROS is shut down by atexit
+  auto result = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return result;
 }

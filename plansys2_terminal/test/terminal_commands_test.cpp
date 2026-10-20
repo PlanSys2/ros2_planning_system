@@ -148,6 +148,7 @@ TEST(terminal_commands, plan_files)
 TEST(terminal_commands, malformed_commands)
 {
   auto terminal = std::make_shared<TestTerminal>();
+  plansys2::testing::NodeSpinner terminal_spinner(terminal);
   terminal->init();
 
   auto usage = [&](const std::string & command, const std::string & expected) {
@@ -198,6 +199,7 @@ TEST(terminal_commands, malformed_commands)
 TEST(terminal_commands, errors_do_not_end_the_terminal)
 {
   auto terminal = std::make_shared<TestTerminal>();
+  plansys2::testing::NodeSpinner terminal_spinner(terminal);
   terminal->init();
   terminal->throw_in_check = true;
   EXPECT_EQ(terminal->run("check actors"), "Error: boom\n");
@@ -208,6 +210,7 @@ TEST(terminal_commands, errors_do_not_end_the_terminal)
 TEST(terminal_commands, clean_command)
 {
   auto terminal = std::make_shared<TestTerminal>();
+  plansys2::testing::NodeSpinner terminal_spinner(terminal);
   std::string command = "\tset\tinstance   r1 robot \r";
   terminal->clean_command(command);
   EXPECT_EQ(command, "set instance r1 robot");
@@ -231,7 +234,7 @@ TEST(terminal_commands, interrupt_cancels_the_plan)
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
     exe.add_node(planner_node->get_node_base_interface());
@@ -248,6 +251,7 @@ TEST(terminal_commands, interrupt_cancels_the_plan)
     mover->trigger_transition(Transition::TRANSITION_CONFIGURE);
 
     auto terminal = std::make_shared<TestTerminal>();
+    plansys2::testing::NodeSpinner terminal_spinner(terminal);
     terminal->init();
     for (const auto & command : {
       "set instance leia robot", "set instance entrance room", "set instance kitchen room",

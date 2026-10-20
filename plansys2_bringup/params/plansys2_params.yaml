@@ -1,14 +1,6 @@
-plansys2:
-  ros__parameters:
-    use_real_time: false
-    startup_timeout: 5  # seconds for each lifecycle transition at startup
 lifecycle_manager:
   ros__parameters:
     startup_timeout: 5  # seconds for each lifecycle transition at startup
-# The Python PlannerClient (the C++ one waits as long as the planner plans)
-planner_client:
-  ros__parameters:
-    plan_solver_timeout: 15.0
 planner:
   ros__parameters:
     plan_solver_timeout: 15.0
@@ -17,8 +9,9 @@ planner:
       plugin: "plansys2/KairosPlanSolver"
     POPF:
       plugin: "plansys2/POPFPlanSolver"
-    TFD:
-      plugin: "plansys2/TFDPlanSolver"
+    # TFD, if its plugin is installed (PlanSys2/plansys2_tfd_plan_solver, not in this repo)
+    # TFD:
+    #   plugin: "plansys2/TFDPlanSolver"
 executor:
   ros__parameters:
     bt_builder_plugin: "STNBTBuilder"

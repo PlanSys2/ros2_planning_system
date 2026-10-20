@@ -97,7 +97,7 @@ TEST(action_hub, every_action_gets_the_messages)
   auto answers = performer->create_publisher<plansys2_msgs::msg::ActionExecution>(
     "actions_hub", rclcpp::QoS(100).reliable());
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(node->get_node_base_interface());
   exe.add_node(performer);
 

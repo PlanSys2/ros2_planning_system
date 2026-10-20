@@ -15,6 +15,7 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
   src/plansys2_core/Action.cpp
@@ -34,6 +35,7 @@ target_link_libraries(${PROJECT_NAME}
   rclcpp_lifecycle::rclcpp_lifecycle
   plansys2_pddl_parser::plansys2_pddl_parser
   ${plansys2_msgs_TARGETS}
+  ${lifecycle_msgs_TARGETS}
 )
 
 install(DIRECTORY include/
@@ -65,6 +67,7 @@ ament_export_dependencies(
   rclcpp_lifecycle
   plansys2_pddl_parser
   plansys2_msgs
+  lifecycle_msgs
 )
 
 ament_package()
