@@ -97,7 +97,8 @@ public:
   }
 
   /**
-   * @brief Waits until the component is active: false only if ROS shuts down first.
+   * @brief Waits until the component is active: false only if ROS shuts down, or the client is
+   * interrupted, first.
    */
   bool wait()
   {
@@ -107,7 +108,7 @@ public:
     // One thread asks; the others find it active when they get the lock
     std::lock_guard<std::mutex> lock(mutex_);
     auto last_log = std::chrono::steady_clock::now();
-    while (!active_ && rclcpp::ok()) {
+    while (!active_ && node_->running()) {
       // At most one question every kPeriod, also when a wait ends at once (shutdown, no node)
       const auto next = std::chrono::steady_clock::now() + kPeriod;
       if (ask()) {
@@ -208,13 +209,13 @@ public:
   {
     bool waited_again = false;
     int not_active_waits = 0;
-    for (int attempt = 1; attempt <= attempts && rclcpp::ok(); attempt++) {
+    for (int attempt = 1; attempt <= attempts && node_->running(); attempt++) {
       if (active_ && !active_->wait()) {
         return nullptr;
       }
       auto client = current();
       if (!wait_for_server(client, service_timeout)) {
-        if (active_ && !waited_again && rclcpp::ok()) {
+        if (active_ && !waited_again && node_->running()) {
           // Gone (PlanSys2 stopped or restarted): back to waiting for it, once; active and still
           // without this service, it is an error
           active_->lost();
@@ -222,7 +223,7 @@ public:
           attempt--;
           continue;
         }
-        if (rclcpp::ok()) {
+        if (node_->running()) {
           RCLCPP_ERROR_STREAM(node_->get_logger(), name() << ": service not available");
         }
         return nullptr;
@@ -243,12 +244,12 @@ public:
         client->remove_pending_request(future);
       } catch (const std::exception & e) {
         // rclcpp shutting down throws from the graph: no answer, not the end of the process
-        if (rclcpp::ok()) {
+        if (node_->running()) {
           RCLCPP_ERROR_STREAM(node_->get_logger(), name() << ": " << e.what());
         }
         return nullptr;
       }
-      if (!rclcpp::ok()) {
+      if (!node_->running()) {
         return nullptr;
       }
       if (!renew(client)) {
@@ -263,7 +264,7 @@ public:
     if (active_) {
       active_->lost();  // The next call checks that it is still active
     }
-    if (rclcpp::ok()) {
+    if (node_->running()) {
       RCLCPP_ERROR_STREAM(node_->get_logger(), name() << ": no response");
     }
     return nullptr;

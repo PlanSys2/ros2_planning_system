@@ -305,6 +305,37 @@ TEST_F(ExecutorLifecycleTest, deactivate_during_a_plan_fails_it)
   ASSERT_EQ(move_node_->finished, 0);
 }
 
+// The problem expert goes in mid-plan: the execution thread waits for it, and stopping the
+// executor (deactivated or destroyed) must not wait for it too
+TEST_F(ExecutorLifecycleTest, stops_while_waiting_for_a_gone_problem_expert)
+{
+  for (bool destroy : {false, true}) {
+    SCOPED_TRACE(destroy ? "destroyed" : "deactivated");
+    start(30);  // 1.5 s per action
+    ASSERT_TRUE(
+      executor_client_->start_plan_execution(move_plan("wheels_zone", "assembly_zone")));
+    std::this_thread::sleep_for(500ms);
+    // Gone: nobody answers its services any more
+    exe_->remove_node(problem_node_->get_node_base_interface());
+    problem_node_.reset();
+    // The action ends, and the executor waits for the problem expert to apply its effects
+    ASSERT_TRUE(plansys2::testing::wait_for([&]() {return move_node_->finished > 0;}, 5s));
+    std::this_thread::sleep_for(2s);
+
+    const auto begin = std::chrono::steady_clock::now();
+    if (destroy) {
+      std::weak_ptr<plansys2::ExecutorNode> weak = executor_node_;
+      stop();
+      EXPECT_TRUE(weak.expired());
+    } else {
+      executor_node_->trigger_transition(Transition::TRANSITION_DEACTIVATE);
+      EXPECT_EQ(executor_node_->get_current_state().id(), State::PRIMARY_STATE_INACTIVE);
+    }
+    EXPECT_LT(std::chrono::steady_clock::now() - begin, 8s);
+    stop();
+  }
+}
+
 TEST_F(ExecutorLifecycleTest, reactivations_run_a_single_execution_thread)
 {
   start(3);

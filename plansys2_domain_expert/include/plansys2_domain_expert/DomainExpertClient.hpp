@@ -76,6 +76,12 @@ public:
   bool wait_active() {return active_->wait();}
 
   /**
+   * @brief While interrupted, its calls give up at once instead of waiting: for the owner that
+   * stops a thread which may be in a call.
+   */
+  void interrupt(bool interrupted) {node_->interrupt(interrupted);}
+
+  /**
    * @brief Get the name of the domain.
    *
    * @return std::string The name of the domain.

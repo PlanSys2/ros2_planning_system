@@ -1688,11 +1688,28 @@ ExecutorNode::stop_execution_thread()
 {
   node_running_ = false;
   if (execution_thread_.joinable()) {
+    // Its calls must not wait for a component that may be gone (or stopping too)
+    set_clients_interrupted(true);
     execution_thread_.join();
+    set_clients_interrupted(false);
   }
 
   // Nothing executes plans from now on: fail the goals in progress or waiting
   fail_current_goals();
+}
+
+void
+ExecutorNode::set_clients_interrupted(bool interrupted)
+{
+  if (domain_client_) {
+    domain_client_->interrupt(interrupted);
+  }
+  if (problem_client_) {
+    problem_client_->interrupt(interrupted);
+  }
+  if (planner_client_) {
+    planner_client_->interrupt(interrupted);
+  }
 }
 
 void

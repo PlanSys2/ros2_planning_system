@@ -16,6 +16,7 @@
 #define PLANSYS2_CORE__CLIENTNODE_HPP_
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <future>
 #include <memory>
@@ -140,7 +141,7 @@ public:
   rclcpp::FutureReturnCode wait(FutureT & future, std::chrono::nanoseconds timeout)
   {
     const auto end = std::chrono::steady_clock::now() + timeout;
-    while (rclcpp::ok()) {
+    while (running()) {
       const auto left = end - std::chrono::steady_clock::now();
       if (left <= std::chrono::nanoseconds::zero()) {
         return future.wait_for(std::chrono::seconds(0)) == std::future_status::ready ?
@@ -162,6 +163,17 @@ public:
     }
     return rclcpp::FutureReturnCode::INTERRUPTED;
   }
+
+  /**
+   * @brief While interrupted, the waits of the client end at once, as with a shutdown: for the
+   * owner that stops a thread which may be in a call.
+   */
+  void interrupt(bool interrupted) {interrupted_ = interrupted;}
+
+  /**
+   * @brief Whether a wait may go on: ROS runs and the client is not interrupted.
+   */
+  bool running() const {return rclcpp::ok() && !interrupted_;}
 
   /**
    * @brief Brings what came for the group without waiting: messages, feedback and results.
@@ -208,6 +220,7 @@ private:
   // Serves only the group, and only while the client waits; after the group, gone before it
   std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> executor_;
   mutable std::mutex serve_mutex_;
+  std::atomic<bool> interrupted_ {false};
   static constexpr std::chrono::milliseconds kSlice {50};
 };
 

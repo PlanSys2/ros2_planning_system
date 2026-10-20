@@ -517,6 +517,8 @@ protected:
   void start_execution_thread();
   // Stops execution_cycle and fails the goals it was handling
   void stop_execution_thread();
+  // The waits of the clients of the node end at once while interrupted
+  void set_clients_interrupted(bool interrupted);
   // Aborts the running and the waiting goal, if any, and returns to idle
   void fail_current_goals();
 
