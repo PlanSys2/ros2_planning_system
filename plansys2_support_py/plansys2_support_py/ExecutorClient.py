@@ -54,7 +54,7 @@ class ExecutorClient(ClientBase):
         Parameters
         ----------
         node : Node
-            The node of the application the client works on: it creates none.
+            The node of the application the client works for.
 
         """
         super().__init__(node, 'executor')
@@ -78,7 +78,7 @@ class ExecutorClient(ClientBase):
         self._last_plan_check = 0.0
 
     def destroy(self) -> None:
-        """Destroy the action and service clients on the node; the node is left as it was."""
+        """Destroy the client and its node; the node of the application is left as it was."""
         self._execute_plan_action_client.destroy()
         super().destroy()
 
@@ -554,6 +554,7 @@ class ExecutorClient(ClientBase):
             The last feedback message or None if no feedback available.
 
         """
+        self._serve()
         return self._feedback
 
     def get_result(self) -> Optional[ExecutePlan.Result]:
@@ -569,6 +570,7 @@ class ExecutorClient(ClientBase):
         if self._result_future is None:
             return None
 
+        self._serve()
         result_response = self._result_future.result()
         if result_response is not None and result_response.result is not None:
             return result_response.result

@@ -52,7 +52,7 @@ class ProblemExpertClient(ClientBase):
         Parameters
         ----------
         node : Node
-            The node of the application the client works on: it creates none.
+            The node of the application the client works for.
 
         """
         super().__init__(node, 'problem_expert')

@@ -132,6 +132,7 @@ public:
    */
   ExecutePlan::Feedback getFeedBack()
   {
+    node_->serve();
     std::lock_guard<std::mutex> lock(mutex_);
     return feedback_;
   }
@@ -205,7 +206,7 @@ private:
   ServiceClient<plansys2_msgs::srv::GetPlan>::SharedPtr get_remaining_plan_client_;
   ServiceClient<plansys2_msgs::srv::GetProblem>::SharedPtr get_replanning_problem_client_;
 
-  // Feedback, result and goal come in the executor of the node, the calls in the application
+  // Feedback, result and goal come while the client serves its group, maybe in another thread
   std::mutex mutex_;
   ExecutePlan::Feedback feedback_;
   rclcpp_action::ClientGoalHandle<ExecutePlan>::SharedPtr goal_handler_;

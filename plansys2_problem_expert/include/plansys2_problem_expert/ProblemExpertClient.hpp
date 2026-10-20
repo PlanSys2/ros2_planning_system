@@ -336,7 +336,11 @@ public:
    *
    * @return rclcpp::Time The timestamp when the problem was last updated.
    */
-  rclcpp::Time getUpdateTime() const {return update_time_;}
+  rclcpp::Time getUpdateTime() const
+  {
+    node_->serve();  // The notifications that came meanwhile
+    return update_time_;
+  }
 
   std::string cached_problem_;
   rclcpp::Time problem_ts_;

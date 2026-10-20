@@ -454,6 +454,7 @@ DomainExpertClient::getDurativeAction(
 std::string
 DomainExpertClient::getDomain(bool use_cache)
 {
+  node_->serve();  // The domain published meanwhile
   if (use_cache && cached_domain_ != "") {
     return cached_domain_;
   } else {

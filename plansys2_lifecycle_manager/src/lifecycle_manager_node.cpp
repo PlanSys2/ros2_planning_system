@@ -14,7 +14,6 @@
 
 #include <chrono>
 #include <memory>
-#include <thread>
 #include <string>
 #include <map>
 
@@ -38,20 +37,8 @@ int main(int argc, char ** argv)
     manager_nodes[name] = std::make_shared<plansys2::LifecycleServiceClient>(client_node, name);
   }
 
-  // Its node brings the answers while the startup waits for them
-  rclcpp::executors::SingleThreadedExecutor executor;
-  executor.add_node(main_node);
-  std::thread spinner([&executor]() {executor.spin();});
-
-  std::shared_future<bool> startup_future = std::async(
-    std::launch::async,
-    std::bind(
-      plansys2::startup_function, manager_nodes, std::chrono::seconds(startup_timeout)));
-  startup_future.wait();
-  executor.cancel();
-  spinner.join();
-
-  if (!startup_future.get()) {
+  // The clients bring their answers while they wait: nothing to spin
+  if (!plansys2::startup_function(manager_nodes, std::chrono::seconds(startup_timeout))) {
     RCLCPP_ERROR(
       rclcpp::get_logger("plansys2_lifecycle_manager"),
       "Failed to start plansys2!");

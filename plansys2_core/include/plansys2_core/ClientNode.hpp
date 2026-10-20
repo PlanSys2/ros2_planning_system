@@ -19,6 +19,7 @@
 #include <chrono>
 #include <future>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -38,9 +39,9 @@ constexpr size_t kComponentThreads = 4;
  * an application.
  *
  * The clients and subscriptions of the client go in a callback group of their own, which the
- * executor of the node serves: the client spins nothing. A call waits for its answer while that
- * executor brings it, so the node must be spun while it calls: from another thread, or by a
- * MultiThreadedExecutor if the call comes from a callback of the node.
+ * executor of the node does not take: the client serves it, and only it, while it waits for an
+ * answer (serve() brings what came meanwhile). So it calls from anywhere: before the node is
+ * spun, or from a callback of any executor, single threaded too.
  *
  * It keeps the node only through weak pointers: the node, or the component that has it, may
  * keep the client without a cycle; once the node is gone, calls get no answer.
@@ -72,8 +73,11 @@ public:
     name_(node.get_node_base_interface()->get_name()),
     namespace_(node.get_node_base_interface()->get_namespace()),
     group_(node.get_node_base_interface()->create_callback_group(
-        rclcpp::CallbackGroupType::MutuallyExclusive, true))
+        rclcpp::CallbackGroupType::MutuallyExclusive, false)),
+    executor_(std::make_shared<rclcpp::executors::SingleThreadedExecutor>(
+        executor_options(node)))
   {
+    executor_->add_callback_group(group_, node.get_node_base_interface());
   }
 
   ClientNode(const ClientNode &) = delete;
@@ -129,17 +133,12 @@ public:
   }
 
   /**
-   * @brief Waits until the future is ready, the timeout passes or ROS shuts down.
+   * @brief Waits until the future is ready, the timeout passes or ROS shuts down, serving the
+   * group of the client meanwhile.
    */
   template<typename FutureT>
   rclcpp::FutureReturnCode wait(FutureT & future, std::chrono::nanoseconds timeout)
   {
-    if (!served()) {
-      RCLCPP_ERROR_THROTTLE(
-        logger_, *clock_, 5000,
-        "Node %s is not spun: a PlanSys2 client gets its answers from the executor of its node",
-        name_.c_str());
-    }
     const auto end = std::chrono::steady_clock::now() + timeout;
     while (rclcpp::ok()) {
       const auto left = end - std::chrono::steady_clock::now();
@@ -148,9 +147,16 @@ public:
                rclcpp::FutureReturnCode::SUCCESS : rclcpp::FutureReturnCode::TIMEOUT;
       }
       // In slices, to see a shutdown
-      if (future.wait_for(std::min<std::chrono::nanoseconds>(left, kSlice)) ==
-        std::future_status::ready)
-      {
+      const auto slice = std::min<std::chrono::nanoseconds>(left, kSlice);
+      std::unique_lock<std::mutex> lock(serve_mutex_, std::try_to_lock);
+      if (lock.owns_lock()) {
+        if (executor_->spin_until_future_complete(future, slice) ==
+          rclcpp::FutureReturnCode::SUCCESS)
+        {
+          return rclcpp::FutureReturnCode::SUCCESS;
+        }
+      } else if (future.wait_for(slice) == std::future_status::ready) {
+        // Another thread of the client serves the group, and brought it
         return rclcpp::FutureReturnCode::SUCCESS;
       }
     }
@@ -158,11 +164,25 @@ public:
   }
 
   /**
-   * @brief Whether an executor serves the group of the client.
+   * @brief Brings what came for the group without waiting: messages, feedback and results.
    */
-  bool served() const {return group_->get_associated_with_executor_atomic().load();}
+  void serve() const
+  {
+    std::unique_lock<std::mutex> lock(serve_mutex_, std::try_to_lock);
+    if (lock.owns_lock() && rclcpp::ok()) {
+      // All that is queued: spin_some takes one message of each subscription
+      executor_->spin_all(kSlice);
+    }
+  }
 
 private:
+  static rclcpp::ExecutorOptions executor_options(Interfaces node)
+  {
+    rclcpp::ExecutorOptions options;
+    options.context = node.get_node_base_interface()->get_context();  // The one of the node
+    return options;
+  }
+
   Interfaces lock_or_throw() const
   {
     auto node = lock();
@@ -185,6 +205,9 @@ private:
   std::string name_;
   std::string namespace_;
   rclcpp::CallbackGroup::SharedPtr group_;
+  // Serves only the group, and only while the client waits; after the group, gone before it
+  std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> executor_;
+  mutable std::mutex serve_mutex_;
   static constexpr std::chrono::milliseconds kSlice {50};
 };
 

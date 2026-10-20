@@ -67,8 +67,9 @@ ExecutorClient::start_plan_execution(const plansys2_msgs::msg::Plan & plan)
 bool
 ExecutorClient::execute_and_check_plan()
 {
-  // The executor of the node brings feedback and result: a copy of what came so far
-  bool available;
+  // Feedback and result come while the client serves its group: a copy of what came so far
+  node_->serve();
+  bool available = false;
   rclcpp_action::ClientGoalHandle<ExecutePlan>::WrappedResult result;
   {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -210,7 +211,7 @@ ExecutorClient::on_new_goal_received(const plansys2_msgs::msg::Plan & plan)
   send_goal_options.result_callback =
     std::bind(&ExecutorClient::result_callback, this, _1);
 
-  // Set by the executor of the node before any result of the goal can come
+  // Set while the client serves its group, before any result of the goal can come
   send_goal_options.goal_response_callback =
     [this](const GoalHandleExecutePlan::SharedPtr & goal_handle) {
       std::lock_guard<std::mutex> lock(mutex_);
@@ -410,6 +411,7 @@ ExecutorClient::result_callback(const GoalHandleExecutePlan::WrappedResult & res
 std::optional<ExecutePlan::Result>
 ExecutorClient::getResult()
 {
+  node_->serve();
   std::lock_guard<std::mutex> lock(mutex_);
   if (result_.result != nullptr) {
     return *result_.result;

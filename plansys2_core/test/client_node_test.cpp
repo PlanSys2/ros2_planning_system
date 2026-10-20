@@ -64,7 +64,7 @@ private:
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 
-// A node spun in a thread of its own, as an application spins the node of its clients
+// A node spun in a thread of its own, as an application may spin the node of its clients
 template<typename ExecutorT = rclcpp::executors::SingleThreadedExecutor>
 class Spun
 {
@@ -167,46 +167,24 @@ TEST(client_node, names_follow_the_namespace_of_the_node)
   EXPECT_STREQ(client->get_service_name(), "/robot1/domain_expert/get_state");
 }
 
-TEST(client_node, served_only_while_an_executor_has_the_node)
+TEST(client_node, a_node_nobody_spins_gets_its_answer)
 {
-  auto node = rclcpp::Node::make_shared("served_host");
-  plansys2::ClientNode client_node(*node);
-  EXPECT_FALSE(client_node.served());
-  {
-    rclcpp::executors::SingleThreadedExecutor exe;
-    exe.add_node(node);
-    // Its group joins the executor of the node, also when created before it was added
-    exe.spin_some(100ms);
-    EXPECT_TRUE(client_node.served());
-    plansys2::ClientNode later(*node);
-    exe.spin_some(100ms);
-    EXPECT_TRUE(later.served());
-  }
-  EXPECT_FALSE(client_node.served());
-}
-
-TEST(client_node, a_node_nobody_spins_gets_no_answer)
-{
-  // The client spins nothing: the answer comes, but nobody takes it
+  // The client serves its group while it waits: the application need not spin its node
   Server server("unspun_server");
   auto node = rclcpp::Node::make_shared("unspun_host");
   plansys2::ClientNode client_node(*node);
   auto client = client_node.create_client<GetState>("unspun_server/get_state");
-  ASSERT_TRUE(client->wait_for_service(5s));
+  EXPECT_TRUE(call(client_node, client));
+  EXPECT_TRUE(call(client_node, client));
+  EXPECT_EQ(server.calls.load(), 2);
 
-  auto start = std::chrono::steady_clock::now();
-  EXPECT_FALSE(call(client_node, client, 1s));
-  EXPECT_LT(std::chrono::steady_clock::now() - start, 2500ms);
-  EXPECT_EQ(server.calls.load(), 1);
-
-  // Once spun, it answers
+  // Nor does it change once the node is spun
   Spun<> spun(node);
   EXPECT_TRUE(call(client_node, client));
 }
 
 TEST(client_node, calls_from_a_callback_with_a_multithreaded_executor)
 {
-  // Another thread of the executor of the node takes the answer while the timer waits
   Server server("callback_server");
   auto node = rclcpp::Node::make_shared("callback_host");
   plansys2::ClientNode client_node(*node);
@@ -227,33 +205,35 @@ TEST(client_node, calls_from_a_callback_with_a_multithreaded_executor)
   EXPECT_TRUE(result.get());
 }
 
-TEST(client_node, calls_from_a_callback_with_a_single_threaded_executor_time_out)
+TEST(client_node, calls_from_a_callback_with_a_single_threaded_executor)
 {
-  // The only thread is in the callback: nobody takes the answer, the call ends at its timeout
+  // The only thread of the executor is in the callback: the client brings its answer itself
   Server server("single_server");
   auto node = rclcpp::Node::make_shared("single_host");
   plansys2::ClientNode client_node(*node);
   auto client = client_node.create_client<GetState>("single_server/get_state");
-  ASSERT_TRUE(client->wait_for_service(5s));
 
   std::promise<bool> answered;
-  std::atomic<bool> fired {false};
+  std::atomic<int> fired {0};
   auto timer = node->create_wall_timer(
     50ms, [&]() {
-      if (!fired.exchange(true)) {
-        answered.set_value(call(client_node, client, 1s));
+      // Several calls in a row from the same callback
+      if (fired++ == 0) {
+        answered.set_value(call(client_node, client) && call(client_node, client));
       }
     });
   Spun<> spun(node);
 
   auto result = answered.get_future();
   ASSERT_EQ(result.wait_for(10s), std::future_status::ready);
-  EXPECT_FALSE(result.get());
+  EXPECT_TRUE(result.get());
+  // The timer goes on: the executor of the node was not blocked for long
+  EXPECT_TRUE(plansys2::testing::wait_for([&]() {return fired.load() > 3;}, 5s));
 }
 
-TEST(client_node, the_executor_of_the_node_serves_its_group)
+TEST(client_node, the_executor_of_the_node_does_not_take_its_group)
 {
-  // A callback of the client runs with nobody waiting: the executor of the node takes it
+  // A callback of the client runs only while the client serves its group
   Server server("group_server");
   auto node = rclcpp::Node::make_shared("group_host");
   plansys2::ClientNode client_node(*node);
@@ -265,10 +245,17 @@ TEST(client_node, the_executor_of_the_node_serves_its_group)
   auto future = client->async_send_request(
     std::make_shared<GetState::Request>(),
     [&](rclcpp::Client<GetState>::SharedFuture) {responses++;});
-  EXPECT_TRUE(plansys2::testing::wait_for([&]() {return responses.load() == 1;}, 5s));
+  std::this_thread::sleep_for(500ms);
+  EXPECT_EQ(responses.load(), 0);
+  EXPECT_TRUE(
+    plansys2::testing::wait_for(
+      [&]() {
+        client_node.serve();
+        return responses.load() == 1;
+      }, 5s));
 }
 
-TEST(client_node, subscriptions_are_served_by_the_executor_of_the_node)
+TEST(client_node, subscriptions_come_when_the_client_serves)
 {
   auto node = rclcpp::Node::make_shared("sub_host");
   plansys2::ClientNode client_node(*node);
@@ -282,9 +269,90 @@ TEST(client_node, subscriptions_are_served_by_the_executor_of_the_node)
   ASSERT_TRUE(
     plansys2::testing::wait_for([&]() {return publisher->get_subscription_count() > 0;}, 5s));
 
+  // Spun or not, the node does not take them: serve() brings all that came
   Spun<> spun(node);
-  publisher->publish(std_msgs::msg::String());
-  EXPECT_TRUE(plansys2::testing::wait_for([&]() {return received.load() == 1;}, 5s));
+  for (int i = 0; i < 3; i++) {
+    publisher->publish(std_msgs::msg::String());
+  }
+  std::this_thread::sleep_for(500ms);
+  EXPECT_EQ(received.load(), 0);
+  EXPECT_TRUE(
+    plansys2::testing::wait_for(
+      [&]() {
+        client_node.serve();
+        return received.load() == 3;
+      }, 5s));
+  client_node.serve();
+  EXPECT_EQ(received.load(), 3);
+}
+
+TEST(client_node, a_controller_with_its_own_subscription_spun_by_one_thread)
+{
+  // As a controller: its subscription for the executor of the node, a timer that calls
+  Server server("controller_server");
+  auto node = rclcpp::Node::make_shared("controller_host");
+  plansys2::ClientNode client_node(*node);
+  auto client = client_node.create_client<GetState>("controller_server/get_state");
+
+  std::atomic<int> received {0};
+  auto sub = node->create_subscription<std_msgs::msg::String>(
+    "controller_topic", rclcpp::QoS(10).reliable(),
+    [&](std_msgs::msg::String::SharedPtr) {received++;});
+  std::atomic<int> answered {0};
+  std::atomic<int> failed {0};
+  auto timer = node->create_wall_timer(
+    50ms, [&]() {
+      if (call(client_node, client)) {
+        answered++;
+      } else {
+        failed++;
+      }
+    });
+
+  auto publisher_node = rclcpp::Node::make_shared("controller_publisher");
+  auto publisher = publisher_node->create_publisher<std_msgs::msg::String>(
+    "controller_topic", rclcpp::QoS(10).reliable());
+  ASSERT_TRUE(
+    plansys2::testing::wait_for([&]() {return publisher->get_subscription_count() > 0;}, 5s));
+
+  Spun<> spun(node);
+  for (int i = 0; i < 5; i++) {
+    publisher->publish(std_msgs::msg::String());
+    std::this_thread::sleep_for(50ms);
+  }
+  // Both go on: the messages of the controller and the answers of its calls
+  EXPECT_TRUE(plansys2::testing::wait_for([&]() {return received.load() == 5;}, 5s));
+  EXPECT_TRUE(plansys2::testing::wait_for([&]() {return answered.load() >= 5;}, 5s));
+  EXPECT_EQ(failed.load(), 0);
+}
+
+TEST(client_node, concurrent_calls_on_a_node_nobody_spins)
+{
+  // One thread serves the group, the others see their answers come
+  Server server("unspun_concurrent_server", 20ms);
+  auto node = rclcpp::Node::make_shared("unspun_concurrent_host");
+  plansys2::ClientNode client_node(*node);
+  auto client = client_node.create_client<GetState>("unspun_concurrent_server/get_state");
+  ASSERT_TRUE(client->wait_for_service(5s));
+
+  constexpr int kThreads = 4;
+  constexpr int kCalls = 10;
+  std::atomic<int> answered {0};
+  std::vector<std::thread> threads;
+  for (int t = 0; t < kThreads; t++) {
+    threads.emplace_back(
+      [&]() {
+        for (int i = 0; i < kCalls; i++) {
+          if (call(client_node, client)) {
+            answered++;
+          }
+        }
+      });
+  }
+  for (auto & thread : threads) {
+    thread.join();
+  }
+  EXPECT_EQ(answered.load(), kThreads * kCalls);
 }
 
 TEST(client_node, concurrent_calls_from_several_threads)
@@ -367,7 +435,9 @@ TEST(client_node, after_the_node_is_gone)
   // What it kept still answers without the node
   EXPECT_EQ(client_node->get_name(), "gone_host");
   EXPECT_NO_THROW(client_node->now());
-  EXPECT_FALSE(client_node->served());
+  EXPECT_NO_THROW(client_node->serve());
+  auto future = client->async_send_request(std::make_shared<GetState::Request>());
+  EXPECT_EQ(client_node->wait(future, 200ms), rclcpp::FutureReturnCode::TIMEOUT);
   client_node.reset();
 }
 

@@ -515,6 +515,7 @@ ProblemExpertClient::getProblemWithTimestamp(bool use_cache)
 std::string
 ProblemExpertClient::getProblem(bool use_cache)
 {
+  node_->serve();  // The problem published meanwhile
   if (use_cache && cached_problem_ != "") {
     return cached_problem_;
   } else {

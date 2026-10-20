@@ -23,7 +23,9 @@ from lifecycle_msgs.srv import GetState
 import rclpy
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.client import Client
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 
 
 # What a component answers (error_info) to a request it does not take because it is not active
@@ -34,12 +36,11 @@ class ClientBase:
     """
     Calls PlanSys2 services on the node of the application, as the C++ clients do.
 
-    It creates no node and spins nothing: its service and action clients go in a callback group
-    of their own on the node it is given, and a call waits for the executor of that node to
-    bring the answer. So the node must be spun while it calls: in another thread, or by a
-    MultiThreadedExecutor if the call comes from a callback of the node (a
-    SingleThreadedExecutor is busy with the callback and the call gets no answer in time).
-    Names are relative, so the namespace of the node and the remappings apply.
+    rclpy executors take whole nodes, not callback groups: its service and action clients go in
+    a node of its own, in the namespace of the node of the application, which the client serves
+    while it waits for an answer. So it calls from anywhere: before the node of the application
+    is spun, or from a callback of any executor, single threaded too. Names are relative, so the
+    namespace applies.
 
     As the C++ clients: every call waits until its component is active, however long it takes
     while ROS runs (seen active, it is not asked again until a service of it goes or stops
@@ -52,6 +53,8 @@ class ClientBase:
     _NOT_ACTIVE_WAITS = 3
     _PERIOD = 0.5
     _LOG_PERIOD = 5.0
+    _SLICE = 0.05
+    _SERVED_AT_ONCE = 20
 
     def __init__(self, node: Node, component: str) -> None:
         """
@@ -60,12 +63,21 @@ class ClientBase:
         Parameters
         ----------
         node : Node
-            The node of the application the client works on.
+            The node of the application the client works for.
         component : str
             The PlanSys2 component it calls (domain_expert, problem_expert, planner, executor).
 
         """
-        self._node = node
+        self._application_node = node
+        # Its own node, without the arguments of the process: a remapped name would repeat
+        self._node = rclpy.create_node(
+            f'{node.get_name()}_{component}_client', namespace=node.get_namespace(),
+            context=node.context, use_global_arguments=False,
+            parameter_overrides=[
+                Parameter('use_sim_time', value=node.get_parameter('use_sim_time').value)])
+        self._executor = SingleThreadedExecutor(context=node.context)
+        self._executor.add_node(self._node)
+        self._serve_lock = threading.Lock()
         self._component = component
         self._active = False
         self._active_lock = threading.Lock()
@@ -74,18 +86,21 @@ class ClientBase:
 
     @property
     def node(self) -> Node:
-        """Return the node the client works on."""
-        return self._node
+        """Return the node of the application the client works for."""
+        return self._application_node
 
     def get_logger(self):
-        """Return the logger of the node."""
-        return self._node.get_logger()
+        """Return the logger of the node of the application."""
+        return self._application_node.get_logger()
 
     def destroy(self) -> None:
-        """Destroy the service clients on the node; the node is left as it was."""
+        """Destroy the client and its node; the node of the application is left as it was."""
         for client in self._service_clients.values():
             self._node.destroy_client(client)
         self._service_clients.clear()
+        self._executor.remove_node(self._node)
+        self._executor.shutdown()
+        self._node.destroy_node()
 
     def wait_active(self) -> bool:
         """
@@ -178,23 +193,31 @@ class ClientBase:
             Whether the future is done.
 
         """
-        if not self._spun():
-            self.get_logger().error(
-                f'Node {self._node.get_name()} is not spun: a PlanSys2 client gets its answers '
-                'from the executor of its node', throttle_duration_sec=5.0)
-        done = threading.Event()
-        future.add_done_callback(lambda _: done.set())
-        done.wait(timeout_sec)
+        end = None if timeout_sec is None else time.monotonic() + timeout_sec
+        while not future.done() and rclpy.ok(context=self._node.context):
+            left = self._SLICE if end is None else min(self._SLICE, end - time.monotonic())
+            if left <= 0.0:
+                break
+            # One thread serves the node of the client; the others see their answers come
+            if self._serve_lock.acquire(blocking=False):
+                try:
+                    self._executor.spin_until_future_complete(future, timeout_sec=left)
+                finally:
+                    self._serve_lock.release()
+            else:
+                done = threading.Event()
+                future.add_done_callback(lambda _: done.set())
+                done.wait(left)
         return future.done()
 
-    def _spun(self) -> bool:
-        """Return whether an executor spins the node now."""
-        executor = self._node.executor
-        if executor is None:
-            return False
-        # A property in newer rclpy; without it, an executor is taken as spinning
-        spinning = getattr(executor, 'is_spinning', True)
-        return spinning() if callable(spinning) else bool(spinning)
+    def _serve(self) -> None:
+        """Bring what came for the client without waiting: feedback and results."""
+        if self._serve_lock.acquire(blocking=False):
+            try:
+                for _ in range(self._SERVED_AT_ONCE):
+                    self._executor.spin_once(timeout_sec=0.0)
+            finally:
+                self._serve_lock.release()
 
     def _create_and_call_service(
             self, service_type, service_name: str, request,
