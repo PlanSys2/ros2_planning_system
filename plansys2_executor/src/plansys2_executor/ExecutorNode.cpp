@@ -28,6 +28,7 @@
 #include <cmath>
 
 #include "plansys2_executor/ExecutorNode.hpp"
+#include "plansys2_core/ServiceCall.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
@@ -120,33 +121,41 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
 
   get_ordered_sub_goals_service_ = create_service<plansys2_msgs::srv::GetOrderedSubGoals>(
     "executor/get_ordered_sub_goals",
-    std::bind(
-      &ExecutorNode::get_ordered_sub_goals_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetOrderedSubGoals>(
+      get_logger(),
+      std::bind(
+        &ExecutorNode::get_ordered_sub_goals_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   get_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
     "executor/get_plan",
-    std::bind(
-      &ExecutorNode::get_plan_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetPlan>(
+      get_logger(),
+      std::bind(
+        &ExecutorNode::get_plan_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   get_remaining_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
     "executor/get_remaining_plan",
-    std::bind(
-      &ExecutorNode::get_remaining_plan_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetPlan>(
+      get_logger(),
+      std::bind(
+        &ExecutorNode::get_remaining_plan_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   get_replanning_problem_service_ = create_service<plansys2_msgs::srv::GetProblem>(
     "executor/get_replanning_problem",
-    [this](
-      std::shared_ptr<rclcpp::Service<plansys2_msgs::srv::GetProblem>> service,
-      std::shared_ptr<rmw_request_id_t> header,
-      std::shared_ptr<plansys2_msgs::srv::GetProblem::Request>) {
-      get_replanning_problem_service_callback(service, header);
-    });
+    guarded_deferred<plansys2_msgs::srv::GetProblem>(
+      get_logger(),
+      [this](
+        std::shared_ptr<rclcpp::Service<plansys2_msgs::srv::GetProblem>> service,
+        std::shared_ptr<rmw_request_id_t> header,
+        std::shared_ptr<plansys2_msgs::srv::GetProblem::Request>) {
+        get_replanning_problem_service_callback(service, header);
+    }));
 }
 
 ExecutorNode::~ExecutorNode()

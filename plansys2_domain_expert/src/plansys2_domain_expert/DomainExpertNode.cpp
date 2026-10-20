@@ -40,22 +40,28 @@ DomainExpertNode::DomainExpertNode(const rclcpp::NodeOptions & options)
 
   get_name_service_ = create_service<plansys2_msgs::srv::GetDomainName>(
     "domain_expert/get_domain_name",
-    std::bind(
-      &DomainExpertNode::get_domain_name_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetDomainName>(
+      get_logger(),
+      std::bind(
+        &DomainExpertNode::get_domain_name_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
   get_types_service_ = create_service<plansys2_msgs::srv::GetDomainTypes>(
     "domain_expert/get_domain_types",
-    std::bind(
-      &DomainExpertNode::get_domain_types_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetDomainTypes>(
+      get_logger(),
+      std::bind(
+        &DomainExpertNode::get_domain_types_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
   get_constants_service_ = create_service<plansys2_msgs::srv::GetDomainConstants>(
     "domain_expert/get_domain_constants",
-    std::bind(
-      &DomainExpertNode::get_domain_constants_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetDomainConstants>(
+      get_logger(),
+      std::bind(
+        &DomainExpertNode::get_domain_constants_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
   // PDDL+: processes and events, served as actions are
   using Names = plansys2_msgs::srv::GetDomainActions;
   using Details = plansys2_msgs::srv::GetDomainActionDetails;
@@ -101,85 +107,104 @@ DomainExpertNode::DomainExpertNode(const rclcpp::NodeOptions & options)
              };
     };
   get_domain_processes_service_ =
-    create_service<Names>("domain_expert/get_domain_processes", list(true));
+    create_service<Names>("domain_expert/get_domain_processes",
+    guarded<Names>(get_logger(), list(true)));
   get_domain_process_details_service_ =
-    create_service<Details>("domain_expert/get_domain_process_details", details(true));
+    create_service<Details>("domain_expert/get_domain_process_details",
+    guarded<Details>(get_logger(), details(true)));
   get_domain_events_service_ =
-    create_service<Names>("domain_expert/get_domain_events", list(false));
+    create_service<Names>("domain_expert/get_domain_events",
+    guarded<Names>(get_logger(), list(false)));
   get_domain_event_details_service_ =
-    create_service<Details>("domain_expert/get_domain_event_details", details(false));
+    create_service<Details>("domain_expert/get_domain_event_details",
+    guarded<Details>(get_logger(), details(false)));
 
   get_domain_actions_service_ = create_service<plansys2_msgs::srv::GetDomainActions>(
     "domain_expert/get_domain_actions",
-    std::bind(
-      &DomainExpertNode::get_domain_actions_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetDomainActions>(
+      get_logger(),
+      std::bind(
+        &DomainExpertNode::get_domain_actions_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
   get_domain_action_details_service_ =
     create_service<plansys2_msgs::srv::GetDomainActionDetails>(
-    "domain_expert/get_domain_action_details", std::bind(
+    "domain_expert/get_domain_action_details",
+    guarded<plansys2_msgs::srv::GetDomainActionDetails>(get_logger(), std::bind(
       &DomainExpertNode::get_domain_action_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      std::placeholders::_3)));
   get_domain_durative_actions_service_ = create_service<plansys2_msgs::srv::GetDomainActions>(
     "domain_expert/get_domain_durative_actions",
-    std::bind(
-      &DomainExpertNode::get_domain_durative_actions_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetDomainActions>(
+      get_logger(),
+      std::bind(
+        &DomainExpertNode::get_domain_durative_actions_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
   get_domain_durative_action_details_service_ =
     create_service<plansys2_msgs::srv::GetDomainDurativeActionDetails>(
-    "domain_expert/get_domain_durative_action_details", std::bind(
+    "domain_expert/get_domain_durative_action_details",
+    guarded<plansys2_msgs::srv::GetDomainDurativeActionDetails>(get_logger(), std::bind(
       &DomainExpertNode::get_domain_durative_action_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      std::placeholders::_3)));
   get_domain_predicates_service_ = create_service<plansys2_msgs::srv::GetStates>(
-    "domain_expert/get_domain_predicates", std::bind(
+    "domain_expert/get_domain_predicates",
+    guarded<plansys2_msgs::srv::GetStates>(get_logger(), std::bind(
       &DomainExpertNode::get_domain_predicates_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      std::placeholders::_3)));
   get_domain_predicate_details_service_ =
     create_service<plansys2_msgs::srv::GetNodeDetails>(
-    "domain_expert/get_domain_predicate_details", std::bind(
+    "domain_expert/get_domain_predicate_details",
+    guarded<plansys2_msgs::srv::GetNodeDetails>(get_logger(), std::bind(
       &DomainExpertNode::get_domain_predicate_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      std::placeholders::_3)));
   get_domain_functions_service_ = create_service<plansys2_msgs::srv::GetStates>(
-    "domain_expert/get_domain_functions", std::bind(
+    "domain_expert/get_domain_functions",
+    guarded<plansys2_msgs::srv::GetStates>(get_logger(), std::bind(
       &DomainExpertNode::get_domain_functions_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      std::placeholders::_3)));
   get_domain_function_details_service_ =
     create_service<plansys2_msgs::srv::GetNodeDetails>(
-    "domain_expert/get_domain_function_details", std::bind(
+    "domain_expert/get_domain_function_details",
+    guarded<plansys2_msgs::srv::GetNodeDetails>(get_logger(), std::bind(
       &DomainExpertNode::get_domain_function_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      std::placeholders::_3)));
   get_domain_derived_predicates_service_ =
     create_service<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>(
-    "domain_expert/get_domain_derived_predicates", std::bind(
+    "domain_expert/get_domain_derived_predicates",
+    guarded<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>(get_logger(), std::bind(
       &DomainExpertNode::get_domain_derived_predicates_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      std::placeholders::_3)));
   get_domain_derived_predicate_details_service_ =
     create_service<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>(
-    "domain_expert/get_domain_derived_predicate_details", std::bind(
+    "domain_expert/get_domain_derived_predicate_details",
+    guarded<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>(get_logger(), std::bind(
       &DomainExpertNode::get_domain_derived_predicate_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      std::placeholders::_3)));
   get_domain_service_ = create_service<plansys2_msgs::srv::GetDomain>(
-    "domain_expert/get_domain", std::bind(
+    "domain_expert/get_domain",
+    guarded<plansys2_msgs::srv::GetDomain>(get_logger(), std::bind(
       &DomainExpertNode::get_domain_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      std::placeholders::_3)));
   change_domain_service_ = create_service<plansys2_msgs::srv::ChangeDomain>(
     "domain_expert/change_domain",
-    [this](
-      std::shared_ptr<rclcpp::Service<plansys2_msgs::srv::ChangeDomain>> service,
-      std::shared_ptr<rmw_request_id_t> header,
-      std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Request> request) {
-      change_domain_service_callback(service, header, request);
-    });
+    guarded_deferred<plansys2_msgs::srv::ChangeDomain>(
+      get_logger(),
+      [this](
+        std::shared_ptr<rclcpp::Service<plansys2_msgs::srv::ChangeDomain>> service,
+        std::shared_ptr<rmw_request_id_t> header,
+        std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Request> request) {
+        change_domain_service_callback(service, header, request);
+    }));
   domain_pub_ = create_publisher<std_msgs::msg::String>(
     "domain_expert/domain",
     rclcpp::QoS(100).transient_local());

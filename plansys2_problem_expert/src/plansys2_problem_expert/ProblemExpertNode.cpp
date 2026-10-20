@@ -57,195 +57,243 @@ ProblemExpertNode::ProblemExpertNode(const rclcpp::NodeOptions & options)
 
   set_continuous_effect_service_ = create_service<plansys2_msgs::srv::SetContinuousEffect>(
     "problem_expert/set_continuous_effect",
-    [this](
-      const std::shared_ptr<rmw_request_id_t>,
-      const std::shared_ptr<plansys2_msgs::srv::SetContinuousEffect::Request> request,
-      const std::shared_ptr<plansys2_msgs::srv::SetContinuousEffect::Response> response) {
-      if (problem_expert_ == nullptr) {
-        response->success = false;
-        response->error_info = plansys2::kNotActive;
-        return;
-      }
-      response->success = problem_expert_->setContinuousEffect(
+    guarded<plansys2_msgs::srv::SetContinuousEffect>(
+      get_logger(),
+      [this](
+        const std::shared_ptr<rmw_request_id_t>,
+        const std::shared_ptr<plansys2_msgs::srv::SetContinuousEffect::Request> request,
+        const std::shared_ptr<plansys2_msgs::srv::SetContinuousEffect::Response> response) {
+        if (problem_expert_ == nullptr) {
+          response->success = false;
+          response->error_info = plansys2::kNotActive;
+          return;
+        }
+        response->success = problem_expert_->setContinuousEffect(
         request->id, request->effects, request->active);
-      if (!response->success) {
-        response->error_info = "Continuous effects not valid";
-      }
-    });
+        if (!response->success) {
+          response->error_info = "Continuous effects not valid";
+        }
+    }));
 
   add_problem_service_ = create_service<plansys2_msgs::srv::AddProblem>(
     "problem_expert/add_problem",
-    std::bind(
-      &ProblemExpertNode::add_problem_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::AddProblem>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::add_problem_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   add_problem_goal_service_ = create_service<plansys2_msgs::srv::AddProblemGoal>(
     "problem_expert/add_problem_goal",
-    std::bind(
-      &ProblemExpertNode::add_problem_goal_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::AddProblemGoal>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::add_problem_goal_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   add_problem_instance_service_ = create_service<plansys2_msgs::srv::AffectParam>(
     "problem_expert/add_problem_instance",
-    std::bind(
-      &ProblemExpertNode::add_problem_instance_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::AffectParam>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::add_problem_instance_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   add_problem_predicate_service_ = create_service<plansys2_msgs::srv::AffectNode>(
     "problem_expert/add_problem_predicate",
-    std::bind(
-      &ProblemExpertNode::add_problem_predicate_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::AffectNode>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::add_problem_predicate_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   add_problem_function_service_ = create_service<plansys2_msgs::srv::AffectNode>(
     "problem_expert/add_problem_function",
-    std::bind(
-      &ProblemExpertNode::add_problem_function_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::AffectNode>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::add_problem_function_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   get_problem_goal_service_ = create_service<plansys2_msgs::srv::GetProblemGoal>(
     "problem_expert/get_problem_goal",
-    std::bind(
-      &ProblemExpertNode::get_problem_goal_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetProblemGoal>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::get_problem_goal_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   get_problem_instance_details_service_ =
     create_service<plansys2_msgs::srv::GetProblemInstanceDetails>(
     "problem_expert/get_problem_instance",
-    std::bind(
-      &ProblemExpertNode::get_problem_instance_details_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetProblemInstanceDetails>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::get_problem_instance_details_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   get_problem_instances_service_ = create_service<plansys2_msgs::srv::GetProblemInstances>(
     "problem_expert/get_problem_instances",
-    std::bind(
-      &ProblemExpertNode::get_problem_instances_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetProblemInstances>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::get_problem_instances_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   get_problem_predicate_details_service_ =
     create_service<plansys2_msgs::srv::GetNodeDetails>(
-    "problem_expert/get_problem_predicate", std::bind(
+    "problem_expert/get_problem_predicate",
+    guarded<plansys2_msgs::srv::GetNodeDetails>(get_logger(), std::bind(
       &ProblemExpertNode::get_problem_predicate_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      std::placeholders::_3)));
 
   get_problem_predicates_service_ = create_service<plansys2_msgs::srv::GetStates>(
     "problem_expert/get_problem_predicates",
-    std::bind(
-      &ProblemExpertNode::get_problem_predicates_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetStates>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::get_problem_predicates_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   get_problem_function_details_service_ =
     create_service<plansys2_msgs::srv::GetNodeDetails>(
-    "problem_expert/get_problem_function", std::bind(
+    "problem_expert/get_problem_function",
+    guarded<plansys2_msgs::srv::GetNodeDetails>(get_logger(), std::bind(
       &ProblemExpertNode::get_problem_function_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      std::placeholders::_3)));
 
   get_problem_functions_service_ = create_service<plansys2_msgs::srv::GetStates>(
     "problem_expert/get_problem_functions",
-    std::bind(
-      &ProblemExpertNode::get_problem_functions_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetStates>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::get_problem_functions_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   get_problem_service_ = create_service<plansys2_msgs::srv::GetProblem>(
-    "problem_expert/get_problem", std::bind(
+    "problem_expert/get_problem",
+    guarded<plansys2_msgs::srv::GetProblem>(get_logger(), std::bind(
       &ProblemExpertNode::get_problem_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      std::placeholders::_3)));
 
   is_problem_goal_satisfied_service_ = create_service<plansys2_msgs::srv::IsProblemGoalSatisfied>(
-    "problem_expert/is_problem_goal_satisfied", std::bind(
+    "problem_expert/is_problem_goal_satisfied",
+    guarded<plansys2_msgs::srv::IsProblemGoalSatisfied>(get_logger(), std::bind(
       &ProblemExpertNode::is_problem_goal_satisfied_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+      std::placeholders::_3)));
 
   remove_problem_goal_service_ = create_service<plansys2_msgs::srv::RemoveProblemGoal>(
     "problem_expert/remove_problem_goal",
-    std::bind(
-      &ProblemExpertNode::remove_problem_goal_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::RemoveProblemGoal>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::remove_problem_goal_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   set_problem_metric_service_ = create_service<plansys2_msgs::srv::SetProblemMetric>(
     "problem_expert/set_problem_metric",
-    std::bind(
-      &ProblemExpertNode::set_problem_metric_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::SetProblemMetric>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::set_problem_metric_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   get_problem_metric_service_ = create_service<plansys2_msgs::srv::GetProblemMetric>(
     "problem_expert/get_problem_metric",
-    std::bind(
-      &ProblemExpertNode::get_problem_metric_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetProblemMetric>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::get_problem_metric_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   remove_problem_metric_service_ = create_service<plansys2_msgs::srv::RemoveProblemMetric>(
     "problem_expert/remove_problem_metric",
-    std::bind(
-      &ProblemExpertNode::remove_problem_metric_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::RemoveProblemMetric>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::remove_problem_metric_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   clear_problem_knowledge_service_ = create_service<plansys2_msgs::srv::ClearProblemKnowledge>(
     "problem_expert/clear_problem_knowledge",
-    std::bind(
-      &ProblemExpertNode::clear_problem_knowledge_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::ClearProblemKnowledge>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::clear_problem_knowledge_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   remove_problem_instance_service_ = create_service<plansys2_msgs::srv::AffectParam>(
     "problem_expert/remove_problem_instance",
-    std::bind(
-      &ProblemExpertNode::remove_problem_instance_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::AffectParam>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::remove_problem_instance_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   remove_problem_predicate_service_ = create_service<plansys2_msgs::srv::AffectNode>(
     "problem_expert/remove_problem_predicate",
-    std::bind(
-      &ProblemExpertNode::remove_problem_predicate_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::AffectNode>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::remove_problem_predicate_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   remove_problem_function_service_ = create_service<plansys2_msgs::srv::AffectNode>(
     "problem_expert/remove_problem_function",
-    std::bind(
-      &ProblemExpertNode::remove_problem_function_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::AffectNode>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::remove_problem_function_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   exist_problem_predicate_service_ = create_service<plansys2_msgs::srv::ExistNode>(
     "problem_expert/exist_problem_predicate",
-    std::bind(
-      &ProblemExpertNode::exist_problem_predicate_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::ExistNode>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::exist_problem_predicate_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   exist_problem_function_service_ = create_service<plansys2_msgs::srv::ExistNode>(
     "problem_expert/exist_problem_function",
-    std::bind(
-      &ProblemExpertNode::exist_problem_function_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::ExistNode>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::exist_problem_function_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   update_problem_function_service_ = create_service<plansys2_msgs::srv::AffectNode>(
     "problem_expert/update_problem_function",
-    std::bind(
-      &ProblemExpertNode::update_problem_function_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::AffectNode>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::update_problem_function_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   problem_pub_ = create_publisher<plansys2_msgs::msg::Problem>(
     "problem_expert/problem",
@@ -267,9 +315,11 @@ ProblemExpertNode::ProblemExpertNode(const rclcpp::NodeOptions & options)
   // The domain expert asks here before it takes a new domain: it answers once this one did
   update_domain_service_ = create_service<plansys2_msgs::srv::ChangeDomain>(
     "problem_expert/update_domain",
+    guarded<plansys2_msgs::srv::ChangeDomain>(
+      get_logger(),
     std::bind(
       &ProblemExpertNode::update_domain_service_callback, this, std::placeholders::_1,
-      std::placeholders::_2, std::placeholders::_3));
+      std::placeholders::_2, std::placeholders::_3)));
 }
 
 

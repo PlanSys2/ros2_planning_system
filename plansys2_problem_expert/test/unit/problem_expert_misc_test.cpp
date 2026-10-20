@@ -32,6 +32,7 @@
 #include "plansys2_domain_expert/DomainExpert.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_msgs/msg/knowledge.hpp"
+#include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_problem_expert/ProblemExpert.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
@@ -319,4 +320,43 @@ TEST_F(ProblemExpertNodeMisc, cleanup_and_function_topics)
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   EXPECT_FALSE(client->getInstance("kitchen").has_value());
   EXPECT_TRUE(client->addInstance(plansys2::Instance("hall", "room")));
+}
+
+// Requests from hostile input (found fuzzing the services): the parser throws, and the
+// exception took down the process; now each is a failed answer and the node goes on
+TEST_F(ProblemExpertNodeMisc, hostile_requests_are_failed_answers)
+{
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto test_node = rclcpp::Node::make_shared("problem_expert_hostile_test");
+  auto client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  domain_node->set_parameter({"model_file", pddl("domain_simple.pddl")});
+  problem_node->set_parameter({"model_file", pddl("domain_simple.pddl")});
+  for (auto node : std::vector<rclcpp_lifecycle::LifecycleNode::SharedPtr>{
+    domain_node, problem_node})
+  {
+    node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  }
+  rclcpp::executors::MultiThreadedExecutor exe;
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(test_node);
+  plansys2::testing::ExecutorThread spinner(exe);
+
+  for (const char * expression : {"", "   ", "()", "(", ")", "(())", ","}) {
+    SCOPED_TRACE(std::string("[") + expression + "]");
+    for (const char * service : {
+      "problem_expert/get_problem_predicate", "problem_expert/get_problem_function"})
+    {
+      auto request = std::make_shared<plansys2_msgs::srv::GetNodeDetails::Request>();
+      request->expression = expression;
+      auto response = plansys2::testing::call<plansys2_msgs::srv::GetNodeDetails>(
+        test_node, service, request);
+      ASSERT_NE(response, nullptr) << service;
+      EXPECT_FALSE(response->success) << service;
+    }
+  }
+  // Still serving
+  EXPECT_TRUE(client->addInstance(plansys2::Instance("kitchen", "room")));
 }

@@ -80,6 +80,68 @@ bool says_not_active(const ResponseT & response)
   }
 }
 
+// Whether a response has a success field
+template<typename ResponseT, typename = void>
+struct HasSuccess : std::false_type {};
+template<typename ResponseT>
+struct HasSuccess<ResponseT, std::void_t<decltype(std::declval<ResponseT>().success)>>
+  : std::true_type {};
+
+// A response that says the request failed, and why when it has error_info
+template<typename ResponseT>
+ResponseT failed_response(const std::string & error)
+{
+  ResponseT response;
+  if constexpr (HasSuccess<ResponseT>::value) {
+    response.success = false;
+  }
+  if constexpr (HasErrorInfo<ResponseT>::value) {
+    response.error_info = error;
+  }
+  return response;
+}
+
+/**
+ * @brief A service callback that answers instead of letting an exception out: one from
+ * hostile input (the PDDL parser throws) would end the whole process, and in the monolithic
+ * bringup the four components.
+ */
+template<typename ServiceT, typename CallbackT>
+auto guarded(const rclcpp::Logger & logger, CallbackT callback)
+{
+  return [logger, callback = std::move(callback)](
+    const std::shared_ptr<rmw_request_id_t> header,
+    const std::shared_ptr<typename ServiceT::Request> request,
+    std::shared_ptr<typename ServiceT::Response> response) {
+           try {
+             callback(header, request, response);
+           } catch (const std::exception & e) {
+             RCLCPP_ERROR(logger, "Request rejected: %s", e.what());
+             *response = failed_response<typename ServiceT::Response>(e.what());
+           }
+         };
+}
+
+/**
+ * @brief As guarded(), for a callback that answers later with send_response.
+ */
+template<typename ServiceT, typename CallbackT>
+auto guarded_deferred(const rclcpp::Logger & logger, CallbackT callback)
+{
+  return [logger, callback = std::move(callback)](
+    const std::shared_ptr<rclcpp::Service<ServiceT>> service,
+    const std::shared_ptr<rmw_request_id_t> header,
+    const std::shared_ptr<typename ServiceT::Request> request) {
+           try {
+             callback(service, header, request);
+           } catch (const std::exception & e) {
+             RCLCPP_ERROR(logger, "Request rejected: %s", e.what());
+             auto response = failed_response<typename ServiceT::Response>(e.what());
+             service->send_response(*header, response);
+           }
+         };
+}
+
 /**
  * @brief Whether a component of PlanSys2 is active, as its clients wait for it.
  *
