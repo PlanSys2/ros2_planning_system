@@ -281,7 +281,7 @@ TEST(graph_test, depth_first_traverse)
 
   all_nodes.clear();
   graph2.depthFirstTraverseFromNodes(func_all, true, {nodeA, nodeF, nodeK});
-  ASSERT_EQ(all_nodes.size(), 10);  //  Nodes K and L should not be all_nodes
+  ASSERT_EQ(all_nodes.size(), 12);  // The cycle K-L too: its nodes do not wait for each other
   ASSERT_TRUE(std::find(all_nodes.begin(), all_nodes.end(), "A") != all_nodes.end());
   ASSERT_TRUE(std::find(all_nodes.begin(), all_nodes.end(), "B") != all_nodes.end());
   ASSERT_TRUE(std::find(all_nodes.begin(), all_nodes.end(), "C") != all_nodes.end());
@@ -292,8 +292,8 @@ TEST(graph_test, depth_first_traverse)
   ASSERT_TRUE(std::find(all_nodes.begin(), all_nodes.end(), "H") != all_nodes.end());
   ASSERT_TRUE(std::find(all_nodes.begin(), all_nodes.end(), "I") != all_nodes.end());
   ASSERT_TRUE(std::find(all_nodes.begin(), all_nodes.end(), "J") != all_nodes.end());
-  ASSERT_TRUE(std::find(all_nodes.begin(), all_nodes.end(), "K") == all_nodes.end());
-  ASSERT_TRUE(std::find(all_nodes.begin(), all_nodes.end(), "L") == all_nodes.end());
+  ASSERT_TRUE(std::find(all_nodes.begin(), all_nodes.end(), "K") != all_nodes.end());
+  ASSERT_TRUE(std::find(all_nodes.begin(), all_nodes.end(), "L") != all_nodes.end());
 
   all_nodes.clear();
   graph2.depthFirstTraverseFromNodes(func_all, true, {nodeA});
@@ -319,10 +319,11 @@ TEST(graph_test, single_node)
   ASSERT_EQ(visited.size(), 1);
   ASSERT_EQ(visited[0], "A");
 
+  // Its only parent is itself: it does not wait for it
   visited.clear();
   graph.depthFirstTraverse(
     nodeA, [&](const plansys2::NodeVariant & n) {visited.push_back(n.getNodeName());}, true);
-  ASSERT_EQ(visited.size(), 0);
+  ASSERT_EQ(visited.size(), 1);
 }
 
 TEST(graph_test, dfs_handles_cycle)
@@ -1562,8 +1563,6 @@ TEST(graph_test, graph_derived_action_suave)
   int total_size = 0;
   for (const auto & scc : sccs) {
     total_size += scc.size();
-    for (const auto & node : scc) {
-    }
   }
   ASSERT_EQ(total_size, 54);
 

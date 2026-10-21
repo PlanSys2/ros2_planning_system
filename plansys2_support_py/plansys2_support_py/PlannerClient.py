@@ -21,15 +21,13 @@ This module provides specific classes for interacting with PlanSys2 services.
 
 from typing import Optional
 
-from plansys2_msgs.msg import Plan
+from plansys2_msgs.msg import Plan, PlanArray
 from plansys2_msgs.srv import GetPlan, GetPlanArray, ValidateDomain
-
-import rclpy
-from rclpy.client import Client
+from plansys2_support_py.ClientBase import ClientBase
 from rclpy.node import Node
 
 
-class PlannerClient(Node):
+class PlannerClient(ClientBase):
     """
     Planner client for PlanSys2.
 
@@ -37,63 +35,26 @@ class PlannerClient(Node):
     in PlanSys2, wrapping the ROS2 service calls with proper error handling.
     """
 
-    def __init__(self, node_name: str = 'planner_client', namespace: str = '') -> None:
+    def __init__(self, node: Node) -> None:
         """
         Initialize the Planner client.
 
         Parameters
         ----------
-        node_name : str, optional
-            Name of the ROS2 node.
-        namespace : str, optional
-            Namespace prefix for services.
+        node : Node
+            The node of the application the client works for.
 
         """
-        super().__init__(node_name=node_name, namespace=namespace)
+        super().__init__(node, 'planner')
 
-        # Setup namespace prefix
-        self._namespace_prefix = f'/{namespace}' if namespace else ''
-
-        self.get_logger().debug(f'Domain Expert Client "{node_name}" initialized')
-
-    def _create_and_call_service(self, service_type, service_name: str, request):
-        """
-        Create a service client for the given service, call it and return the response.
-
-        Parameters
-        ----------
-        service_type : Type
-            The ROS2 service type class.
-        service_name : str
-            The name/topic of the service.
-        request : Any
-            The service request object.
-
-        Returns
-        -------
-        Any
-            The service response or None if failed.
-
-        """
-        try:
-            client: Client = self.create_client(service_type, service_name)
-
-            if not client.wait_for_service(timeout_sec=5.0):
-                self.get_logger().error(f'Service {service_name} not available')
-                return None
-
-            future = client.call_async(request)
-            rclpy.spin_until_future_complete(self, future, timeout_sec=10.0)
-
-            if future.done():
-                return future.result()
-            else:
-                self.get_logger().error(f'Service call to {service_name} timed out')
-                return None
-
-        except Exception as e:
-            self.get_logger().error(f'Error calling service {service_name}: {str(e)}')
-            return None
+        # As the C++ client: the planner may take its solver timeout, and some margin to answer
+        # On the node of the application, unless it has it already
+        if not node.has_parameter('plan_solver_timeout'):
+            node.declare_parameter('plan_solver_timeout', 15.0)
+        timeout = node.get_parameter('plan_solver_timeout').value
+        if not isinstance(timeout, (int, float)) or timeout <= 0.0:
+            timeout = 15.0
+        self._answer_timeout = float(timeout) + 5.0
 
     def get_plan(self, domain: str, problem: str) -> Optional[Plan]:
         """
@@ -112,12 +73,13 @@ class PlannerClient(Node):
             The plan response or None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/planner/get_plan'
+        service_name = 'planner/get_plan'
         request = GetPlan.Request()
         request.domain = domain
         request.problem = problem
 
-        response = self._create_and_call_service(GetPlan, service_name, request)
+        response = self._create_and_call_service(
+            GetPlan, service_name, request, timeout_sec=self._answer_timeout, attempts=2)
         if response and response.success:
             self.get_logger().debug('Successfully generated plan')
             return response.plan
@@ -126,7 +88,7 @@ class PlannerClient(Node):
             self.get_logger().error(f'Failed to generate plan: {error_msg}')
         return None
 
-    def get_plan_array(self, domain: str, problem: str) -> Optional[GetPlanArray]:
+    def get_plan_array(self, domain: str, problem: str) -> Optional[PlanArray]:
         """
         Get a plan array that will satisfy the provided domain and problem.
 
@@ -139,16 +101,17 @@ class PlannerClient(Node):
 
         Returns
         -------
-        Optional[GetPlanArray]
-            The plan array response or None if failed.
+        Optional[PlanArray]
+            The plan array or None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/planner/get_plan_array'
+        service_name = 'planner/get_plan_array'
         request = GetPlanArray.Request()
         request.domain = domain
         request.problem = problem
 
-        response = self._create_and_call_service(GetPlanArray, service_name, request)
+        response = self._create_and_call_service(
+            GetPlanArray, service_name, request, timeout_sec=self._answer_timeout, attempts=2)
         if response and response.success:
             self.get_logger().debug('Successfully retrieved plan array')
             return response.plan_array
@@ -172,11 +135,12 @@ class PlannerClient(Node):
             True if the domain is valid, False otherwise.
 
         """
-        service_name = f'{self._namespace_prefix}/planner/validate_domain'
+        service_name = 'planner/validate_domain'
         request = ValidateDomain.Request()
         request.domain = domain
 
-        response = self._create_and_call_service(ValidateDomain, service_name, request)
+        response = self._create_and_call_service(
+            ValidateDomain, service_name, request, timeout_sec=self._answer_timeout)
         if response and response.success:
             self.get_logger().debug('Successfully validated domain')
             return True

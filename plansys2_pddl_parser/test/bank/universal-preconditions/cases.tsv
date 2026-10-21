@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:universal-preconditions	one room already inspected, inspect the other and report
+domain.pddl	p2.pddl	yes	:universal-preconditions	visit and inspect five rooms before the forall report
+domain.pddl	p3.pddl	no	:universal-preconditions	storage room is unreachable so the forall never holds

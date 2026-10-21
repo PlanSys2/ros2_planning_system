@@ -1,0 +1,27 @@
+# Checks for real bugs, not style: run with run-clang-tidy -p build/<package>
+# -extra-arg=--gcc-install-dir=<the GCC whose libstdc++ is installed>, or the headers are not found
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-narrowing-conversions,
+  -bugprone-implicit-widening-of-multiplication-result,
+  -bugprone-reserved-identifier,
+  -bugprone-branch-clone,
+  -bugprone-switch-missing-default-case,
+  concurrency-*,
+  performance-*,
+  -performance-avoid-endl,
+  -performance-enum-size,
+  cppcoreguidelines-init-variables,
+  cppcoreguidelines-pro-type-member-init,
+  cppcoreguidelines-slicing,
+  cppcoreguidelines-virtual-class-destructor,
+  misc-unused-using-decls,
+  misc-redundant-expression,
+  clang-analyzer-*
+HeaderFilterRegex: '.*/plansys2_[a-z_]+/(include|src)/.*'
+WarningsAsErrors: ''
+CheckOptions:
+  # ROS callbacks take their shared pointers by value
+  performance-unnecessary-value-param.AllowedTypes: 'shared_ptr;SharedPtr'

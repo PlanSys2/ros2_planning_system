@@ -45,6 +45,12 @@ BTAction::BTAction(const std::string & action)
   declare_parameter<int>("wait_for_service_timeout", 1000);
 }
 
+BTAction::BTAction(const std::string & action, BT::Blackboard::Ptr parent)
+: BTAction(action)
+{
+  parent_blackboard_ = parent;
+}
+
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
 {
@@ -59,10 +65,16 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
     RCLCPP_INFO_STREAM(get_logger(), "plugin: [" << plugin << "]");
   }
 
-  int default_server_timeout;
+  // First, as it reads rate: bt_loop_duration_ comes from it
+  auto ret = ActionExecutorClient::on_configure(previous_state);
+  if (ret != rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS) {
+    return ret;
+  }
+
+  int default_server_timeout = 0;
   get_parameter("server_timeout", default_server_timeout);
   default_server_timeout_ = std::chrono::milliseconds(default_server_timeout);
-  int wait_for_service_timeout;
+  int wait_for_service_timeout = 0;
   get_parameter("wait_for_service_timeout", wait_for_service_timeout);
   wait_for_service_timeout_ = std::chrono::milliseconds(wait_for_service_timeout);
   bt_loop_duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(period_);
@@ -73,8 +85,10 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
     factory_.registerFromPlugin(loader.getOSName(plugin));
   }
 
-  // Create the blackboard that will be shared by all of the nodes in the tree
-  blackboard_ = BT::Blackboard::create();
+  // Create the blackboard that will be shared by all of the nodes in the tree, and with other
+  // BTActions through the parent, if given
+  blackboard_ = parent_blackboard_ ? BT::Blackboard::create(parent_blackboard_) :
+    BT::Blackboard::create();
 
   // Put items in the blackboard
   // The blackboard (and the BT nodes that copy this pointer) are owned by this node,
@@ -88,7 +102,7 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
     "wait_for_service_timeout", wait_for_service_timeout_);
   blackboard_->set<std::chrono::milliseconds>("bt_loop_duration", bt_loop_duration_);
 
-  return ActionExecutorClient::on_configure(previous_state);
+  return ret;
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
@@ -104,6 +118,10 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
 {
   // If a new tree is created, than the Groot2 Publisher must be destroyed
   reset_groot_monitor();
+
+  // Nothing of the previous activation: its message, its progress
+  blackboard_->set<std::string>("out_msg", "");
+  blackboard_->set<float>("completion", 0.0f);
 
   try {
     tree_ = factory_.createTreeFromFile(bt_xml_file_, blackboard_);
@@ -127,15 +145,21 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
   if (get_parameter("bt_file_logging").as_bool() ||
     get_parameter("bt_minitrace_logging").as_bool())
   {
-    auto temp_path = std::filesystem::temp_directory_path();
-    std::filesystem::path node_name_path = get_name();
-    std::filesystem::create_directories(temp_path / node_name_path);
+    // In the temporary directory, one file per execution: two in the same second do not mix
+    const auto dir = std::filesystem::temp_directory_path() / "plansys2" /
+      std::filesystem::path(get_node_base_interface()->get_fully_qualified_name()).relative_path();
+    std::filesystem::create_directories(dir);
 
-    auto now_time_t =
-      std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    const auto now = std::chrono::system_clock::now();
+    auto now_time_t = std::chrono::system_clock::to_time_t(now);
+    const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(
+      now.time_since_epoch()).count() % 1000;
+    std::tm local_time {};
+    localtime_r(&now_time_t, &local_time);  // localtime is not thread safe
     std::stringstream filename;
-    filename << "/tmp/" << get_name() << "/bt_trace_";
-    filename << std::put_time(std::localtime(&now_time_t), "%Y_%m_%d__%H_%M_%S");
+    filename << (dir / "bt_trace_").string();
+    filename << std::put_time(&local_time, "%Y_%m_%d__%H_%M_%S") << "_" <<
+      std::setw(3) << std::setfill('0') << millis;
 
     if (get_parameter("bt_file_logging").as_bool()) {
       std::string filename_extension = filename.str() + ".btlog";
@@ -198,17 +222,25 @@ BTAction::on_deactivate(const rclcpp_lifecycle::State & previous_state)
 void BTAction::do_work()
 {
   if (!finished_) {
-    BT::NodeStatus result;
+    BT::NodeStatus result = BT::NodeStatus::FAILURE;
+    // An exception ends the action once: there is no result to look at
     try {
       result = tree_.rootNode()->executeTick();
     } catch (const BT::LogicError & e) {
       RCLCPP_ERROR_STREAM(get_logger(), e.what());
+      finished_ = true;
       finish(false, 0.0, "BTAction behavior tree threw a BT::LogicError");
+      return;
     } catch (const BT::RuntimeError & e) {
       RCLCPP_ERROR_STREAM(get_logger(), e.what());
+      finished_ = true;
       finish(false, 0.0, "BTAction behavior tree threw a BT::RuntimeError");
+      return;
     } catch (const std::exception & e) {
-      finish(false, 0.0, "BTAction behavior tree threw an unknown exception");
+      RCLCPP_ERROR_STREAM(get_logger(), e.what());
+      finished_ = true;
+      finish(false, 0.0, "BTAction behavior tree threw an exception");
+      return;
     }
 
     std::string out_msg;

@@ -88,6 +88,24 @@ public:
     return ret;
   }
 
+  // A position to come back to: reading on may cross lines, so the column alone is not enough
+  struct Mark
+  {
+    int current_line;
+    std::string s;
+    unsigned r, c;
+    bool eof;
+  };
+  Mark mark() const {return {current_line, s, r, c, eof};}
+  void reset(const Mark & m)
+  {
+    current_line = m.current_line;
+    s = m.s;
+    r = m.r;
+    c = m.c;
+    eof = m.eof;
+  }
+
   // characters to be ignored
   bool ignore(char c) {return c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\f';}
 
@@ -144,6 +162,17 @@ public:
     }
 
     return os.str();
+  }
+
+  // a name of a list: one that is not there (e.g. a ',' or a '{') would be read forever
+  std::string getName()
+  {
+    std::string t = getToken();
+    if (t.empty()) {
+      printLine();
+      throw UnknownToken(c < s.size() ? std::string(1, s[c]) : std::string());
+    }
+    return t;
   }
 
   // get token converted to lowercase
@@ -209,7 +238,7 @@ public:
             if (check) {
               t += " " + getToken(ts);
             } else {
-              t += " " + getToken();
+              t += " " + getName();
             }
           }
           t += " )";
@@ -217,7 +246,7 @@ public:
         } else if (check) {
           t = getToken(ts);
         } else {
-          t = getToken();
+          t = getName();
         }
 
         out.types.insert(out.types.end(), out.size() - k, t);
@@ -228,7 +257,7 @@ public:
         getToken();
         out.append(parseTypedList(check, ts));
       } else {
-        out.insert(getToken());
+        out.insert(getName());
       }
     }
     if (k < out.size()) {out.types.insert(out.types.end(), out.size() - k, check ? "object" : "");}

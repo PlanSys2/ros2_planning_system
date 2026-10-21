@@ -18,6 +18,7 @@
 #include <atomic>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
 
 #include "plansys2_msgs/msg/plan.hpp"
@@ -79,6 +80,16 @@ public:
    */
   virtual bool isDomainValid(
     const std::string & domain, const std::string & node_namespace = "") = 0;
+
+  /**
+   * @brief The PDDL requirements this solver plans with, as known_pddl_requirements names them.
+   *
+   * The planner gives a task only to the solvers that support what it needs (pddl_requirements).
+   * Empty, the default: the solver does not say, and gets every task.
+   *
+   * @return The requirements.
+   */
+  virtual std::set<std::string> supported_requirements() const {return {};}
 
   /**
    * @brief Request cancellation of the current planning process.

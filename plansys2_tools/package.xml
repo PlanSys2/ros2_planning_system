@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>plansys2_tools</name>
-  <version>3.1.0</version>
+  <version>4.0.0</version>
 
   <description>A set of tools for monitoring ROS2 Planning System</description>
 
@@ -12,17 +12,19 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>qtbase5-dev</build_depend>
-
   <depend>rclcpp</depend>
+  <depend>pluginlib</depend>
+  <depend>plansys2_pddl_parser</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>plansys2_msgs</depend>
   <depend>rqt_gui</depend>
   <depend>rqt_gui_cpp</depend>
+  <!-- Brings its Qt: 5 up to Kilted, 6 from Lyrical; CMakeLists.txt follows it -->
   <depend>qt_gui_cpp</depend>
+  <!-- qt_gui_cpp uses Qt5 up to Kilted, and does not export its development files -->
+  <build_depend condition="$ROS_DISTRO == humble or $ROS_DISTRO == jazzy or $ROS_DISTRO == kilted">qtbase5-dev</build_depend>
   <depend>plansys2_problem_expert</depend>
 
-  <exec_depend>libqt5-widgets</exec_depend>
 
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>

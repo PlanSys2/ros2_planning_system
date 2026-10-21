@@ -32,7 +32,18 @@ foreach(bt_plugin ${plugin_libs})
   target_compile_definitions(${bt_plugin} PRIVATE BT_PLUGIN_EXPORT)
 endforeach()
 
-ament_add_gtest(bt_action_test bt_action_test.cpp)
+ament_add_ros_isolated_gtest(bt_action_node_test bt_action_node_test.cpp TIMEOUT 60)
+target_link_libraries(bt_action_node_test
+  ${PROJECT_NAME}
+  ${test_msgs_TARGETS}
+  rclcpp_action::rclcpp_action
+  rclcpp_lifecycle::rclcpp_lifecycle
+  behaviortree_cpp::behaviortree_cpp
+)
+
+# The test plugins are found in this directory: they are not installed
+ament_add_ros_isolated_gtest(bt_action_test bt_action_test.cpp TIMEOUT 60
+  APPEND_LIBRARY_DIRS ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(bt_action_test
   ${PROJECT_NAME}
   ${geometry_msgs_TARGETS}
@@ -44,8 +55,9 @@ install(DIRECTORY ../behavior_tree
   DESTINATION share/${PROJECT_NAME}/test
 )
 
-install(TARGETS ${plugin_libs}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
+# Tests discover only nodes on this host: parallel jobs do not mix
+get_property(_tests DIRECTORY PROPERTY TESTS)
+if(_tests)
+  set_tests_properties(${_tests}
+    PROPERTIES ENVIRONMENT "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST")
+endif()

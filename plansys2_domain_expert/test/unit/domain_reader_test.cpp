@@ -16,7 +16,7 @@
 #include <fstream>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 
 #include "gtest/gtest.h"
 
@@ -25,6 +25,8 @@
 class DomainReaderTest : public plansys2::DomainReader
 {
 public:
+  using DomainReader::get_constraints;
+
   std::size_t get_end_block_test(const std::string & domain, std::size_t init_pos)
   {
     return get_end_block(domain, init_pos);
@@ -409,7 +411,7 @@ TEST(domain_reader, add_domain)
 {
   DomainReaderTest dr;
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+  std::string pkgpath = plansys2::share_path("plansys2_domain_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -429,7 +431,7 @@ TEST(domain_reader, add_2_domain)
 {
   DomainReaderTest dr;
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+  std::string pkgpath = plansys2::share_path("plansys2_domain_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -456,7 +458,7 @@ TEST(domain_reader, add_domain_with_constants)
 {
   DomainReaderTest dr;
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+  std::string pkgpath = plansys2::share_path("plansys2_domain_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_constants.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -476,7 +478,7 @@ TEST(domain_reader, add_domain_with_derived)
 {
   DomainReaderTest dr;
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+  std::string pkgpath = plansys2::share_path("plansys2_domain_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_derived.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -490,6 +492,23 @@ TEST(domain_reader, add_domain_with_derived)
   dr.add_domain(domain_str);
 
   ASSERT_EQ(dr.get_joint_domain_test(), domain_str_p);
+}
+
+// PDDL3: the condition of the (:constraints) of a domain, whole
+TEST(domain_reader, get_constraints)
+{
+  DomainReaderTest reader;
+  EXPECT_EQ(reader.get_constraints("(define (domain d) (:predicates (p)))"), "");
+  EXPECT_EQ(reader.get_constraints("(define (domain d) (:predicates (p)) (:constraints))"), "");
+  EXPECT_EQ(
+    reader.get_constraints("(define (domain d) (:predicates (p)) (:constraints (always (p))))"),
+    "(always (p))");
+  EXPECT_EQ(
+    reader.get_constraints(
+      "(define (domain d)\n(:constraints\n  (and (always (p))\n (within 5 (q)))\n)\n)"),
+    "(and (always (p))\n (within 5 (q)))");
+  // Unbalanced: none
+  EXPECT_EQ(reader.get_constraints("(define (domain d) (:constraints (always (p))"), "");
 }
 
 int main(int argc, char ** argv)

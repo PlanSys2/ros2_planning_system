@@ -105,12 +105,11 @@ TEST(types_test, derived_predicates_get_normalized)
   inferredA.preconditions = parser::pddl::fromString("(and (predicateA ?a))");
   auto norm_inferredA = inferredA.getNormalizedDerived();
 
-  //  std::cerr << "Normalized inferredA predicate: "
-  //            << norm_inferredA.toNormalizedString() << std::endl;
-  //  std::cerr << "Original inferredA predicate: "
-  //            << inferredA.toNormalizedString() << std::endl;
-
-  // ASSERT_NE(inferredA, norm_inferredA);  // ToDo: Fix this test @Rezenders
+  // Equal up to the names of the variables, as derived predicates are compared (#391)
+  ASSERT_TRUE(inferredA == norm_inferredA);
+  ASSERT_EQ(std::hash<plansys2::Derived>{}(inferredA),
+    std::hash<plansys2::Derived>{}(norm_inferredA));
+  ASSERT_NE(inferredA.predicate.parameters[0].name, norm_inferredA.predicate.parameters[0].name);
 
   plansys2::Derived inferredAconstant;
   inferredAconstant.predicate = parser::pddl::fromStringPredicate("(inferredA ?a)");
@@ -120,7 +119,9 @@ TEST(types_test, derived_predicates_get_normalized)
   ASSERT_EQ(norm_inferredA.predicate.parameters[0].name, "?0");
   ASSERT_EQ(norm_inferredA.preconditions.nodes[1].parameters[0].name, "?0");
 
-  // ASSERT_NE(inferredAconstant, norm_inferredAconstant);  // ToDo: Fix this test @Rezenders
+  ASSERT_TRUE(inferredAconstant == norm_inferredAconstant);
+  // A constant is not a variable: not the same derived predicate
+  ASSERT_FALSE(inferredA == inferredAconstant);
 
   ASSERT_EQ(norm_inferredAconstant.predicate.parameters[0].name, "?0");
   ASSERT_EQ(norm_inferredAconstant.preconditions.nodes[1].parameters[0].name, "a");

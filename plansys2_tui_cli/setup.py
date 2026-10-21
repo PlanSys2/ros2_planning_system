@@ -4,7 +4,7 @@ package_name = 'plansys2_tui_cli'
 
 setup(
     name=package_name,
-    version='3.1.0',
+    version='4.0.0',
     packages=find_packages(
         include=[package_name, package_name + '.*'], exclude=['test']
     ),
@@ -22,7 +22,7 @@ setup(
     maintainer='Francisco Martín Rico',
     maintainer_email='fmrico@gmail.com',
     description='PlanSys2 TUI (Textual) and ros2cli tools.',
-    license='Apache-2.0',
+    license='Apache-2.0 AND MIT',  # MIT: the Textual in vendor/
     extras_require={
         'test': [
             'pytest',

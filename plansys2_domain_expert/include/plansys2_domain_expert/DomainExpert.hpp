@@ -74,6 +74,14 @@ public:
   std::vector<std::string> getTypes();
 
   /**
+   * @brief Get every type below a given type: its children, their children, and so on.
+   *
+   * @param[in] type The name of the type.
+   * @return std::vector<std::string> The names of its descendants; empty for an unknown type.
+   */
+  std::vector<std::string> getSubTypes(const std::string & type);
+
+  /**
    * @brief Get the constants defined for a given type.
    *
    * @param[in] type The name of the type.
@@ -155,6 +163,13 @@ public:
    *
    * @return std::vector<std::string> Vector containing the names of the actions.
    */
+  std::vector<std::string> getProcesses() override;
+  plansys2_msgs::msg::Action::SharedPtr getProcess(
+    const std::string & process, const std::vector<std::string> & params = {}) override;
+  std::vector<std::string> getEvents() override;
+  plansys2_msgs::msg::Action::SharedPtr getEvent(
+    const std::string & event, const std::vector<std::string> & params = {}) override;
+
   std::vector<std::string> getActions();
 
   /**
@@ -191,6 +206,20 @@ public:
     const std::vector<std::string> & params = {});
 
   /**
+   * @brief Why the PlanSys2 parser could not read the domain.
+   *
+   * @return The error, or an empty string if it could.
+   */
+  const std::string & getParseError() const {return parse_error_;}
+
+  /**
+   * @brief The actions and derived predicates that PlanSys2 cannot represent.
+   *
+   * @return One line for each, saying which and why; empty if there are none.
+   */
+  std::vector<std::string> getUnsupported();
+
+  /**
    * @brief Get the current domain definition as a string,
    *
    *        which can be used to save to a file or initialize another domain.
@@ -220,6 +249,7 @@ public:
 private:
   std::shared_ptr<parser::pddl::Domain> domain_;
   DomainReader domains_;
+  std::string parse_error_;
 };
 
 }  // namespace plansys2

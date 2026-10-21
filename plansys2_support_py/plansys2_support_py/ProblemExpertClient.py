@@ -19,8 +19,9 @@ PlanSys2 Problem Expert Client.
 This module provides specific classes for interacting with PlanSys2 Problem Expert services.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
+from plansys2_msgs.msg import Metric
 from plansys2_msgs.msg import Node as PlanSys2Node  # Avoid name conflict
 from plansys2_msgs.msg import Param, Tree
 # Problem Expert services
@@ -28,15 +29,15 @@ from plansys2_msgs.srv import (AddProblem, AddProblemGoal, AffectNode,
                                AffectParam, ClearProblemKnowledge, ExistNode,
                                GetNodeDetails, GetProblem, GetProblemGoal,
                                GetProblemInstanceDetails, GetProblemInstances,
-                               GetStates, IsProblemGoalSatisfied,
-                               RemoveProblemGoal)
-
-import rclpy
-from rclpy.client import Client
+                               GetProblemMetric, GetStates,
+                               IsProblemGoalSatisfied, RemoveProblemGoal,
+                               RemoveProblemMetric, SetProblemMetric)
+from plansys2_support_py.ClientBase import ClientBase
+from plansys2_support_py.Parser import Parser
 from rclpy.node import Node
 
 
-class ProblemExpertClient(Node):
+class ProblemExpertClient(ClientBase):
     """
     Problem Expert client for PlanSys2.
 
@@ -44,62 +45,17 @@ class ProblemExpertClient(Node):
     in PlanSys2, wrapping the ROS2 service calls with proper error handling.
     """
 
-    def __init__(self, node_name: str = 'problem_expert_client', namespace: str = '') -> None:
+    def __init__(self, node: Node) -> None:
         """
         Initialize the Problem Expert client.
 
         Parameters
         ----------
-        node_name : str, optional
-            Name of the ROS2 node.
-        namespace : str, optional
-            Namespace prefix for services.
+        node : Node
+            The node of the application the client works for.
 
         """
-        super().__init__(node_name=node_name, namespace=namespace)
-
-        # Setup namespace prefix
-        self._namespace_prefix = f'/{namespace}' if namespace else ''
-
-        self.get_logger().debug(f'Problem Expert Client "{node_name}" initialized')
-
-    def _create_and_call_service(
-            self, service_type, service_name: str, request, timeout_sec: float = 10.0):
-        """
-        Create a service client for the given service, call it and return the response.
-
-        Parameters
-        ----------
-        service_type : Type
-            The ROS2 service type class.
-        service_name : str
-            The name/topic of the service.
-        request : Any
-            The service request object.
-        timeout_sec : float, optional
-            How long to wait for the response before giving up.
-
-        Returns
-        -------
-        Any
-            The service response or None if failed.
-
-        """
-        try:
-            client: Client = self.create_client(service_type, service_name)
-            if not client.wait_for_service(timeout_sec=5.0):
-                self.get_logger().error(f'Service {service_name} not available')
-                return None
-            future = client.call_async(request)
-            rclpy.spin_until_future_complete(self, future, timeout_sec=timeout_sec)
-            if future.done():
-                return future.result()
-            else:
-                self.get_logger().error(f'Service call to {service_name} timed out')
-                return None
-        except Exception as e:
-            self.get_logger().error(f'Error calling service {service_name}: {str(e)}')
-            return None
+        super().__init__(node, 'problem_expert')
 
     def add_problem(self, problem: str) -> bool:
         """
@@ -115,7 +71,7 @@ class ProblemExpertClient(Node):
         bool: True if successful, False otherwise.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/add_problem'
+        service_name = 'problem_expert/add_problem'
         request = AddProblem.Request()
         request.problem = problem
 
@@ -142,7 +98,7 @@ class ProblemExpertClient(Node):
         bool: True if successful, False otherwise.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/add_problem_goal'
+        service_name = 'problem_expert/add_problem_goal'
         request = AddProblemGoal.Request()
         request.tree = goal
 
@@ -169,7 +125,7 @@ class ProblemExpertClient(Node):
         bool: True if successful, False otherwise.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/add_problem_instance'
+        service_name = 'problem_expert/add_problem_instance'
         request = AffectParam.Request()
         request.param = instance
 
@@ -196,7 +152,7 @@ class ProblemExpertClient(Node):
         bool: True if successful, False otherwise.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/add_problem_predicate'
+        service_name = 'problem_expert/add_problem_predicate'
         request = AffectNode.Request()
         request.node = predicate
 
@@ -223,7 +179,7 @@ class ProblemExpertClient(Node):
         bool: True if successful, False otherwise.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/add_problem_function'
+        service_name = 'problem_expert/add_problem_function'
         request = AffectNode.Request()
         request.node = function
 
@@ -245,7 +201,7 @@ class ProblemExpertClient(Node):
         Optional[str]: The goals string or None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/get_problem_goal'
+        service_name = 'problem_expert/get_problem_goal'
         request = GetProblemGoal.Request()
 
         response = self._create_and_call_service(GetProblemGoal, service_name, request)
@@ -271,7 +227,7 @@ class ProblemExpertClient(Node):
         Optional[Param]: Details of the instance or None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/get_problem_instance'
+        service_name = 'problem_expert/get_problem_instance'
         request = GetProblemInstanceDetails.Request()
         request.instance = instance
 
@@ -294,7 +250,7 @@ class ProblemExpertClient(Node):
         Optional[List[Param]]: List of instance or None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/get_problem_instances'
+        service_name = 'problem_expert/get_problem_instances'
         request = GetProblemInstances.Request()
 
         response = self._create_and_call_service(GetProblemInstances, service_name, request)
@@ -321,7 +277,7 @@ class ProblemExpertClient(Node):
         Optional[PlanSys2Node]: List of predicate names or None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/get_problem_predicate'
+        service_name = 'problem_expert/get_problem_predicate'
         request = GetNodeDetails.Request()
         request.expression = predicate
 
@@ -344,7 +300,7 @@ class ProblemExpertClient(Node):
         Optional[List[PlanSys2Node]]: List of predicate names or None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/get_problem_predicates'
+        service_name = 'problem_expert/get_problem_predicates'
         request = GetStates.Request()
 
         response = self._create_and_call_service(GetStates, service_name, request)
@@ -371,7 +327,7 @@ class ProblemExpertClient(Node):
         Optional[PlanSys2Node]: List of function names or None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/get_problem_function'
+        service_name = 'problem_expert/get_problem_function'
         request = GetNodeDetails.Request()
         request.expression = function
 
@@ -394,7 +350,7 @@ class ProblemExpertClient(Node):
         Optional[List[PlanSys2Node]]: List of function names or None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/get_problem_functions'
+        service_name = 'problem_expert/get_problem_functions'
         request = GetStates.Request()
 
         response = self._create_and_call_service(GetStates, service_name, request)
@@ -416,7 +372,7 @@ class ProblemExpertClient(Node):
         Optional[str]: The PDDL problem string or None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/get_problem'
+        service_name = 'problem_expert/get_problem'
         request = GetProblem.Request()
 
         response = self._create_and_call_service(GetProblem, service_name, request)
@@ -437,7 +393,7 @@ class ProblemExpertClient(Node):
         bool: True if successful, False otherwise.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/remove_problem_goal'
+        service_name = 'problem_expert/remove_problem_goal'
         request = RemoveProblemGoal.Request()
 
         response = self._create_and_call_service(RemoveProblemGoal, service_name, request)
@@ -449,6 +405,82 @@ class ProblemExpertClient(Node):
             self.get_logger().error(f'Failed to remove the current problem goal: {error_msg}')
             return False
 
+    def set_problem_metric(self, metric: Union[Metric, str]) -> bool:
+        """
+        Set the metric of the problem: what the planner optimizes.
+
+        Parameters
+        ----------
+        metric : Union[Metric, str]
+            The metric, or a string such as 'minimize (+ (fuel-used) (total-time))'.
+
+        Returns
+        -------
+        bool: True if the metric was valid and set, False otherwise.
+
+        """
+        if isinstance(metric, str):
+            text = metric
+            metric = Parser.metric_from_string(metric)
+            if not metric.tree.nodes:
+                self.get_logger().error(f'Not a valid metric: {text}')
+                return False
+
+        service_name = 'problem_expert/set_problem_metric'
+        request = SetProblemMetric.Request()
+        request.metric = metric
+
+        response = self._create_and_call_service(SetProblemMetric, service_name, request)
+        if response and response.success:
+            self.get_logger().debug(
+                f'Successfully set the problem metric: {Parser.metric_to_string(metric)}')
+            return True
+        else:
+            error_msg = response.error_info if response else 'Service call failed'
+            self.get_logger().error(f'Failed to set the problem metric: {error_msg}')
+            return False
+
+    def get_problem_metric(self) -> Optional[Metric]:
+        """
+        Get the metric of the problem.
+
+        Returns
+        -------
+        Optional[Metric]: The metric, with an empty tree if there is none; None if failed.
+
+        """
+        service_name = 'problem_expert/get_problem_metric'
+        request = GetProblemMetric.Request()
+
+        response = self._create_and_call_service(GetProblemMetric, service_name, request)
+        if response and response.success:
+            return response.metric
+        else:
+            error_msg = response.error_info if response else 'Service call failed'
+            self.get_logger().error(f'Failed to get the problem metric: {error_msg}')
+            return None
+
+    def remove_problem_metric(self) -> bool:
+        """
+        Remove the metric of the problem.
+
+        Returns
+        -------
+        bool: True if successful, False otherwise.
+
+        """
+        service_name = 'problem_expert/remove_problem_metric'
+        request = RemoveProblemMetric.Request()
+
+        response = self._create_and_call_service(RemoveProblemMetric, service_name, request)
+        if response and response.success:
+            self.get_logger().debug('Successfully removed the problem metric')
+            return True
+        else:
+            error_msg = response.error_info if response else 'Service call failed'
+            self.get_logger().error(f'Failed to remove the problem metric: {error_msg}')
+            return False
+
     def clear_problem_knowledge(self) -> bool:
         """
         Clear the instances, predicates, and functions.
@@ -458,7 +490,7 @@ class ProblemExpertClient(Node):
         bool: True if successful, False otherwise.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/clear_problem_knowledge'
+        service_name = 'problem_expert/clear_problem_knowledge'
         request = ClearProblemKnowledge.Request()
 
         response = self._create_and_call_service(ClearProblemKnowledge, service_name, request)
@@ -485,7 +517,7 @@ class ProblemExpertClient(Node):
         bool: True if successful, False otherwise.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/remove_problem_instance'
+        service_name = 'problem_expert/remove_problem_instance'
         request = AffectParam.Request()
         request.param = instance
 
@@ -512,7 +544,7 @@ class ProblemExpertClient(Node):
         bool: True if successful, False otherwise.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/remove_problem_predicate'
+        service_name = 'problem_expert/remove_problem_predicate'
         request = AffectNode.Request()
         request.node = predicate
 
@@ -539,7 +571,7 @@ class ProblemExpertClient(Node):
         bool: True if successful, False otherwise.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/remove_problem_function'
+        service_name = 'problem_expert/remove_problem_function'
         request = AffectNode.Request()
         request.node = function
 
@@ -566,7 +598,7 @@ class ProblemExpertClient(Node):
         Optional[bool]: True if satisfied, False if not, None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/exist_problem_predicate'
+        service_name = 'problem_expert/exist_problem_predicate'
         request = ExistNode.Request()
         request.node = predicate
 
@@ -592,7 +624,7 @@ class ProblemExpertClient(Node):
         Optional[bool]: True if satisfied, False if not, None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/exist_problem_function'
+        service_name = 'problem_expert/exist_problem_function'
         request = ExistNode.Request()
         request.node = function
 
@@ -618,7 +650,7 @@ class ProblemExpertClient(Node):
         Optional[bool]: True if satisfied, False if not, None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/update_problem_function'
+        service_name = 'problem_expert/update_problem_function'
         request = AffectNode.Request()
         request.node = function
 
@@ -639,7 +671,7 @@ class ProblemExpertClient(Node):
         Optional[bool]: True if satisfied, False if not, None if failed.
 
         """
-        service_name = f'{self._namespace_prefix}/problem_expert/is_problem_goal_satisfied'
+        service_name = 'problem_expert/is_problem_goal_satisfied'
         request = IsProblemGoalSatisfied.Request()
         request.tree = goal
 
@@ -669,6 +701,11 @@ class ProblemExpertClient(Node):
         # Get problem goal
         goal = self.get_problem_goal()
         print(f'Problem Goal: {goal}')
+
+        # Get problem metric
+        metric = self.get_problem_metric()
+        if metric is not None:
+            print(f'Problem Metric: {Parser.metric_to_string(metric) or "none"}')
 
         # Get instances
         instances = self.get_problem_instances()

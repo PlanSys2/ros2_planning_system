@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Generate Doxygen for PlanSys2
-        uses: mattnotmitt/doxygen-action@edge
+        uses: mattnotmitt/doxygen-action@v1.12
         with:
           doxyfile-path: ".github/Doxyfile"
 

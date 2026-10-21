@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>plansys2_terminal</name>
-  <version>3.1.0</version>
+  <version>4.0.0</version>
 
   <description>A terminal tool for monitor and manage the ROS2 Planning System</description>
 
@@ -21,9 +21,12 @@
   <depend>plansys2_pddl_parser</depend>
   <depend>libreadline</depend>
 
+  <test_depend>plansys2_kairos_plan_solver</test_depend>
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>plansys2_core</test_depend>
   <test_depend>ament_index_cpp</test_depend>
 
   <export>

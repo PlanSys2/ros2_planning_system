@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
@@ -28,21 +30,23 @@
 #include "plansys2_executor/ExecutorClient.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_tests/test_action_node.hpp"
 #include "plansys2_tests/execution_logger.hpp"
 
 TEST(test_3, test_3)
 {
-  auto test_node = rclcpp::Node::make_shared("test_node");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-  auto planner_client = std::make_shared<plansys2::PlannerClient>();
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
+  auto planner_client = std::make_shared<plansys2::PlannerClient>(client_node);
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>(client_node);
 
   auto move_1 = plansys2_tests::TestAction::make_shared("move");
   auto move_2 = plansys2_tests::TestAction::make_shared("move");
@@ -56,12 +60,12 @@ TEST(test_3, test_3)
 
   auto execution_logger = plansys2_tests::ExecutionLogger::make_shared();
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_tests").string();
+  std::string pkgpath = plansys2::share_path("plansys2_tests").string();
 
   domain_node->set_parameter({"model_file", pkgpath + "/test_3/pddl/test_3.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_3/pddl/test_3.pddl"});
 
-  rclcpp::experimental::executors::EventsExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
 
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
@@ -79,36 +83,17 @@ TEST(test_3, test_3)
   exe.add_node(assemble_2->get_node_base_interface());
   exe.add_node(assemble_3->get_node_base_interface());
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+  plansys2::testing::ExecutorThread spinner(exe);
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
-
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
 
   problem_client->addInstance(plansys2::Instance("robot1", "robot"));
   problem_client->addInstance(plansys2::Instance("robot2", "robot"));
@@ -177,6 +162,8 @@ TEST(test_3, test_3)
   ASSERT_FALSE(problem.empty());
   ASSERT_TRUE(plan.has_value());
 
+  // The logger must hear every action from its start
+  ASSERT_TRUE(plansys2::testing::wait_for([&]() {return execution_logger->connected();}));
   ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
 
   rclcpp::Rate rate(5);
@@ -188,97 +175,42 @@ TEST(test_3, test_3)
 
   ASSERT_EQ(result.value().result, plansys2_msgs::action::ExecutePlan::Result::SUCCESS);
 
-  ASSERT_TRUE(
-    execution_logger->sorted(
-  {
-    "(move robot1 assembly_zone body_car_zone):0",
-    "(transport robot1 body_car_1 body_car_zone assembly_zone):2000",
-    "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 car1):5002",
-    "(move robot1 assembly_zone wheels_zone):10003",
-    "(transport robot1 wheel_2 wheels_zone assembly_zone):12004",
-    "(move robot1 assembly_zone sterwheel_zone):15005",
-    "(transport robot1 sterwheel_3 sterwheel_zone assembly_zone):17006",
-    "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 car3):20008"
-  }));
+  // Each robot runs its actions in the order of the plan, whichever planner made it
+  for (const std::string robot : {"robot1", "robot2", "robot3"}) {
+    auto order = plansys2_tests::ExecutionLogger::plan_order(plan.value(), " " + robot + " ");
+    if (order.size() > 1) {
+      ASSERT_TRUE(execution_logger->sorted(order)) << robot;
+    }
+  }
 
-  ASSERT_TRUE(
-    execution_logger->sorted(
-  {
-    "(move robot2 assembly_zone sterwheel_zone):0",
-    "(transport robot2 sterwheel_1 sterwheel_zone assembly_zone):2000",
-    "(move robot2 assembly_zone body_car_zone):5002",
-    "(transport robot2 body_car_2 body_car_zone assembly_zone):7003",
-    "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 car2):15005"
-  }));
-
-  ASSERT_TRUE(
-    execution_logger->sorted(
-  {
-    "(move robot3 assembly_zone wheels_zone):0",
-    "(transport robot3 wheel_1 wheels_zone assembly_zone):2000",
-    "(move robot3 assembly_zone sterwheel_zone):5002",
-    "(transport robot3 sterwheel_2 sterwheel_zone assembly_zone):7003",
-    "(move robot3 assembly_zone body_car_zone):10004",
-    "(transport robot3 body_car_3 body_car_zone assembly_zone):12005",
-    "(move robot3 assembly_zone wheels_zone):15006",
-    "(transport robot3 wheel_3 wheels_zone assembly_zone):17007"
-  }));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot1 body_car_1 body_car_zone assembly_zone):2000",
-      "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 car1):5002"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot2 sterwheel_1 sterwheel_zone assembly_zone):2000",
-      "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 car1):5002"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot3 wheel_1 wheels_zone assembly_zone):2000",
-      "(assemble robot1 assembly_zone wheel_1 body_car_1 sterwheel_1 car1):5002"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot1 wheel_2 wheels_zone assembly_zone):12004",
-      "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 car2):15005"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot2 body_car_2 body_car_zone assembly_zone):7003",
-      "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 car2):15005"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot3 sterwheel_2 sterwheel_zone assembly_zone):7003",
-      "(assemble robot2 assembly_zone wheel_2 body_car_2 sterwheel_2 car2):15005"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot1 sterwheel_3 sterwheel_zone assembly_zone):17006",
-      "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 car3):20008"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot3 body_car_3 body_car_zone assembly_zone):12005",
-      "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 car3):20008"
-  ));
-
-  ASSERT_TRUE(
-    execution_logger->before(
-      "(transport robot3 wheel_3 wheels_zone assembly_zone):17007",
-      "(assemble robot1 assembly_zone wheel_3 body_car_3 sterwheel_3 car3):20008"
-  ));
-  finish = true;
-  t.join();
+  // Every piece is transported before the assembly that uses it, by whichever robot
+  auto tokens = [](const std::string & action) {
+      std::vector<std::string> ret;
+      std::string clean = action.substr(1, action.size() - 2);
+      for (size_t start = 0, end; start < clean.size(); start = end + 1) {
+        end = clean.find(' ', start);
+        if (end == std::string::npos) {end = clean.size();}
+        ret.push_back(clean.substr(start, end - start));
+      }
+      return ret;
+    };
+  int checked = 0;
+  for (const auto & assemble : plan.value().items) {
+    auto args = tokens(assemble.action);
+    if (args[0] != "assemble") {continue;}
+    for (const auto & transport : plan.value().items) {
+      auto targs = tokens(transport.action);
+      if (targs[0] == "transport" && std::find(args.begin(), args.end(), targs[2]) != args.end()) {
+        ASSERT_TRUE(
+          execution_logger->before(
+            plansys2_tests::ExecutionLogger::id(transport),
+            plansys2_tests::ExecutionLogger::id(assemble))) << transport.action << " / " <<
+          assemble.action;
+        checked++;
+      }
+    }
+  }
+  ASSERT_GT(checked, 0);
 }
 
 int main(int argc, char ** argv)
@@ -286,5 +218,8 @@ int main(int argc, char ** argv)
   testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);
 
-  return RUN_ALL_TESTS();
+  // Before the process exits: Zenoh aborts if ROS is shut down by atexit
+  auto result = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return result;
 }

@@ -25,6 +25,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
     namespace = LaunchConfiguration('namespace')
     params_file = LaunchConfiguration('params_file')
+    respawn = LaunchConfiguration('respawn')
     action_bt_file = LaunchConfiguration('action_bt_file')
     start_action_bt_file = LaunchConfiguration('start_action_bt_file')
     end_action_bt_file = LaunchConfiguration('end_action_bt_file')
@@ -58,15 +59,22 @@ def generate_launch_description():
 
     declare_bt_builder_plugin_cmd = DeclareLaunchArgument(
         'bt_builder_plugin',
-        default_value='SimpleBTBuilder',
+        default_value='STNBTBuilder',
         description='Behavior tree builder plugin.',
     )
 
     # Specify the actions
+    # Started again, 1 s later, if its process ends (not when the launch is stopped)
+    declare_respawn_cmd = DeclareLaunchArgument(
+        'respawn', default_value='false',
+        description='Start the node again if its process ends')
+
     executor_cmd = Node(
+        respawn=respawn,
+        respawn_delay=1.0,
         package='plansys2_executor',
         executable='executor_node',
-        name='executor',
+        # No name=: it renames every node of the process, the clients too (four /executor)
         namespace=namespace,
         output='screen',
         parameters=[
@@ -87,6 +95,7 @@ def generate_launch_description():
     ld.add_action(declare_bt_builder_plugin_cmd)
 
     # Declare the launch options
+    ld.add_action(declare_respawn_cmd)
     ld.add_action(executor_cmd)
 
     return ld

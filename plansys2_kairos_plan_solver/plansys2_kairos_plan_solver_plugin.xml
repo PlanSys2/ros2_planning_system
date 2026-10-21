@@ -1,0 +1,7 @@
+<class_libraries>
+  <library path="plansys2_kairos_plan_solver">
+    <class name="plansys2/KairosPlanSolver" type="plansys2::KairosPlanSolver" base_class_type="plansys2::PlanSolverBase">
+      <description>Kairos temporal and numeric PDDL planner, run in-process</description>
+    </class>
+  </library>
+</class_libraries>

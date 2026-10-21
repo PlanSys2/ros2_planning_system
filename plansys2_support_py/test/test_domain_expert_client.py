@@ -18,6 +18,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
+from client_mocks import always_active, no_wait
 from plansys2_msgs.msg import Action as PlanSys2Action
 from plansys2_msgs.msg import Derived
 from plansys2_msgs.msg import DurativeAction as PlanSys2DurativeAction
@@ -50,23 +51,33 @@ class TestDomainExpertClient(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures before each test."""
-        self.client = DomainExpertClient('test_domain_expert_client')
+        always_active(self)
+        self.node = rclpy.create_node('test_domain_expert_client')
+        self.client = DomainExpertClient(self.node)
 
     def tearDown(self):
         """Clean up after each test."""
-        self.client.destroy_node()
+        self.client.destroy()
+        self.node.destroy_node()
 
     def test_initialization(self):
         """Test that the client initializes correctly."""
         self.assertIsNotNone(self.client)
-        self.assertEqual(self.client.get_name(), 'test_domain_expert_client')
-        self.assertEqual(self.client._namespace_prefix, '')
+        self.assertEqual(self.client.node.get_name(), 'test_domain_expert_client')
+        # Relative names: the namespace and the remappings apply
+        self.assertEqual(
+            self.client.node.resolve_service_name('domain_expert/get_domain'),
+            '/domain_expert/get_domain')
 
     def test_initialization_with_namespace(self):
         """Test that the client initializes correctly with namespace."""
-        client = DomainExpertClient('test_client', namespace='test_namespace')
-        self.assertEqual(client._namespace_prefix, '/test_namespace')
-        client.destroy_node()
+        node = rclpy.create_node('test_client', namespace='test_namespace')
+        client = DomainExpertClient(node)
+        self.assertEqual(
+            client.node.resolve_service_name('domain_expert/get_domain'),
+            '/test_namespace/domain_expert/get_domain')
+        client.destroy()
+        node.destroy_node()
 
     @patch.object(Client, 'wait_for_service')
     @patch.object(Client, 'call_async')
@@ -85,7 +96,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain()
 
         self.assertIsNotNone(result)
@@ -106,7 +117,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain()
 
         self.assertIsNone(result)
@@ -134,7 +145,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.change_domain('(define (domain new_domain) ...)')
 
         self.assertTrue(result)
@@ -154,7 +165,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.change_domain('(define (domain broken')
 
         self.assertFalse(result)
@@ -183,7 +194,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_name()
 
         self.assertEqual(result, 'test_domain')
@@ -203,7 +214,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_types()
 
         self.assertEqual(len(result), 3)
@@ -225,7 +236,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_constants('robot')
 
         self.assertEqual(len(result), 2)
@@ -248,7 +259,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_predicates()
 
         self.assertIsNotNone(result)
@@ -271,7 +282,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_functions()
 
         self.assertIsNotNone(result)
@@ -292,7 +303,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_actions()
 
         self.assertEqual(len(result), 3)
@@ -313,7 +324,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_durative_actions()
 
         self.assertEqual(len(result), 1)
@@ -335,7 +346,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_predicate_details('robot_at')
 
         self.assertIsNotNone(result)
@@ -356,7 +367,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_action_details('move', ['robot1', 'wp1', 'wp2'])
 
         self.assertIsNotNone(result)
@@ -379,7 +390,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_durative_action_details('move_durative')
 
         self.assertIsNotNone(result)
@@ -391,21 +402,23 @@ class TestDomainExpertClient(unittest.TestCase):
         """Test successful domain derived predicates retrieval."""
         mock_wait_for_service.return_value = True
 
-        mock_response = GetStates.Response()
+        mock_response = GetDomainDerivedPredicateDetails.Response()
         mock_response.success = True
-        mock_node = PlanSys2Node()
-        mock_response.states = [mock_node]
+        mock_response.predicates = [Derived()]
 
         mock_future = MagicMock()
         mock_future.done.return_value = True
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_derived_predicates()
 
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
+        # The request of the type the domain expert serves (it was GetStates: never answered)
+        self.assertIsInstance(
+            mock_call_async.call_args[0][0], GetDomainDerivedPredicateDetails.Request)
 
     @patch.object(Client, 'wait_for_service')
     @patch.object(Client, 'call_async')
@@ -425,7 +438,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_derived_predicate_details('derived_pred')
 
         self.assertIsNotNone(result)
@@ -441,7 +454,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.done.return_value = False
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain()
 
         self.assertIsNone(result)
@@ -475,8 +488,8 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_pred_node = PlanSys2Node()
         mock_pred_node.name = 'robot_at'
 
-        mock_action_node = PlanSys2Node()
-        mock_action_node.name = 'move'
+        mock_action = PlanSys2Action()
+        mock_action.name = 'move'
 
         # Setup different responses for different calls
         responses = [
@@ -488,10 +501,10 @@ class TestDomainExpertClient(unittest.TestCase):
             create_mock_response(GetStates, states=[mock_pred_node]),  # predicates
             create_mock_response(GetNodeDetails, node=mock_pred_node),  # pred details
             create_mock_response(GetStates, states=[]),  # functions
-            create_mock_response(GetStates, states=[]),  # derived predicates
+            create_mock_response(GetDomainDerivedPredicateDetails, predicates=[]),  # derived
             create_mock_response(GetDomainActions, actions=['move']),  # actions
             # action details
-            create_mock_response(GetDomainActionDetails, action=mock_action_node),
+            create_mock_response(GetDomainActionDetails, action=mock_action),
             create_mock_response(GetDomainActions, actions=[]),  # durative actions
         ]
 
@@ -507,7 +520,7 @@ class TestDomainExpertClient(unittest.TestCase):
 
         mock_future.result.side_effect = get_next_response
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             with patch('builtins.print') as mock_print:
                 self.client.print_domain_info()
 
@@ -529,7 +542,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_name()
 
         self.assertIsNone(result)
@@ -549,7 +562,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_types()
 
         self.assertIsNone(result)
@@ -569,7 +582,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_constants('robot')
 
         self.assertIsNone(result)
@@ -589,7 +602,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_predicates()
 
         self.assertIsNone(result)
@@ -609,7 +622,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_functions()
 
         self.assertIsNone(result)
@@ -620,7 +633,7 @@ class TestDomainExpertClient(unittest.TestCase):
         """Test failed domain derived predicates retrieval."""
         mock_wait_for_service.return_value = True
 
-        mock_response = GetStates.Response()
+        mock_response = GetDomainDerivedPredicateDetails.Response()
         mock_response.success = False
         mock_response.error_info = 'Derived predicates not available'
 
@@ -629,7 +642,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_derived_predicates()
 
         self.assertIsNone(result)
@@ -649,7 +662,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_actions()
 
         self.assertIsNone(result)
@@ -669,7 +682,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_durative_actions()
 
         self.assertIsNone(result)
@@ -689,7 +702,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_predicate_details('test_predicate')
 
         self.assertIsNone(result)
@@ -709,7 +722,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_function_details('test_function')
 
         self.assertIsNotNone(result)
@@ -729,7 +742,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_function_details('test_function')
 
         self.assertIsNone(result)
@@ -749,7 +762,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_action_details('test_action')
 
         self.assertIsNone(result)
@@ -771,7 +784,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_durative_action_details('test_action')
 
         self.assertIsNone(result)
@@ -793,7 +806,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_derived_predicate_details('test_predicate')
 
         self.assertIsNone(result)
@@ -816,7 +829,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_call_async.return_value = mock_future
 
         parameters = ['?param1', '?param2']
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_domain_durative_action_details('test_action', parameters)
 
         self.assertIsNotNone(result)
@@ -838,7 +851,7 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response_fail
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             with patch('builtins.print') as mock_print:
                 self.client.print_domain_info()
 

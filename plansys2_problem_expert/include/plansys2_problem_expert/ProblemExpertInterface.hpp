@@ -40,6 +40,11 @@ public:
   ProblemExpertInterface() {}
 
   /**
+   * @brief Virtual destructor, as it is used through pointers to it.
+   */
+  virtual ~ProblemExpertInterface() = default;
+
+  /**
    * @brief Get all instances in the problem.
    *
    * @return std::vector<plansys2::Instance> Vector containing all instances in the problem.
@@ -187,7 +192,30 @@ public:
   virtual bool clearGoal() = 0;
 
   /**
-   * @brief Clear all knowledge (instances, predicates, functions, and goal) from the problem.
+   * @brief Get the metric of the problem: what the planner optimizes.
+   *
+   * @return plansys2::Metric The metric, with an empty tree if there is none.
+   */
+  virtual plansys2::Metric getMetric() = 0;
+
+  /**
+   * @brief Set the metric of the problem.
+   *
+   * @param[in] metric The metric: minimize or maximize a numeric expression over the
+   *            functions of the domain and (total-time).
+   * @return true if the metric was valid and set, false otherwise.
+   */
+  virtual bool setMetric(const plansys2::Metric & metric) = 0;
+
+  /**
+   * @brief Remove the metric of the problem.
+   *
+   * @return true if the metric was cleared.
+   */
+  virtual bool clearMetric() = 0;
+
+  /**
+   * @brief Clear all knowledge (instances, predicates, functions, goal, metric) of the problem.
    *
    * @return true if the knowledge was successfully cleared, false otherwise.
    */

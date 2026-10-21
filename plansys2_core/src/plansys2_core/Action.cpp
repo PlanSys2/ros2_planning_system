@@ -90,6 +90,15 @@ plansys2_msgs::msg::Tree ActionVariant::get_at_start_effects() const
   return effects;
 }
 
+plansys2_msgs::msg::Tree ActionVariant::get_continuous_effects() const
+{
+  plansys2_msgs::msg::Tree effects;
+  if (std::holds_alternative<plansys2::DurativeAction>(*action_)) {
+    effects = std::get<plansys2::DurativeAction>(*action_).continuous_effects;
+  }
+  return effects;
+}
+
 plansys2_msgs::msg::Tree ActionVariant::get_at_end_effects() const
 {
   plansys2_msgs::msg::Tree effects;

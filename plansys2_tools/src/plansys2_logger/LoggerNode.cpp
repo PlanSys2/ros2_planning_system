@@ -117,7 +117,7 @@ LoggerNode::action_execution_info_callback(plansys2_msgs::msg::ActionExecutionIn
   output << "Start time: " << rclcpp::Time(msg->start_stamp).seconds() <<
     " -- Status time: " << rclcpp::Time(msg->status_stamp).seconds() << std::endl;
   output << "Completion: " << msg->completion <<
-    " -- Status message: " << msg->status << std::endl;
+    " -- Status message: " << static_cast<int>(msg->status) << std::endl;
 
   switch (msg->status) {
     case plansys2_msgs::msg::ActionExecutionInfo::NOT_EXECUTED:
@@ -141,7 +141,6 @@ LoggerNode::action_execution_callback(plansys2_msgs::msg::ActionExecution::Share
 {
   std::ostringstream output;
 
-  std::string status = "UNKNOWN";
   switch (msg->type) {
     case plansys2_msgs::msg::ActionExecution::REQUEST:
       {
@@ -224,6 +223,17 @@ LoggerNode::action_execution_callback(plansys2_msgs::msg::ActionExecution::Share
         }
         output << "] to " << msg->node_id;
         RCLCPP_WARN_STREAM(get_logger(), output.str());
+      }
+      break;
+    case plansys2_msgs::msg::ActionExecution::UPDATE:
+      {
+        std::ostringstream output;
+        output << "[Action Hub] UPDATE action: [" << msg->action << "]";
+        for (const auto & arg : msg->arguments) {
+          output << " (" << arg << ")";
+        }
+        output << "] to " << msg->node_id << ", now for " << msg->planned_duration << " s";
+        RCLCPP_INFO_STREAM(get_logger(), output.str());
       }
       break;
   }

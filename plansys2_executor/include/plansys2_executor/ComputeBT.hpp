@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "behaviortree_cpp/loggers/groot2_publisher.h"
 
@@ -71,6 +72,12 @@ public:
   CallbackReturnT on_configure(const rclcpp_lifecycle::State & state);
 
   /**
+   * @brief Its own domain expert, problem expert and planner, once configured: whoever spins it
+   * spins them too (it spins nothing itself).
+   */
+  std::vector<rclcpp_lifecycle::LifecycleNode::SharedPtr> get_embedded_nodes() const;
+
+  /**
    * @brief Activates the node.
    *
    * @param[in] state The current lifecycle state.
@@ -109,6 +116,9 @@ public:
    * @return SUCCESS if error handling is successful, FAILURE otherwise.
    */
   CallbackReturnT on_error(const rclcpp_lifecycle::State & state);
+
+  // Decimals of the times in the action ids, from action_time_precision
+  int action_time_precision();
 
 private:
   /**

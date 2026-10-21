@@ -2,6 +2,18 @@
 Changelog for package plansys2_lifecycle_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Lifecycle manager: a lost change_state response does not abort the startup (`#490 <https://github.com/PlanSys2/ros2_planning_system/pull/490>`_)
+* Lifecycle manager: bounded waits and checked states at startup (`#471 <https://github.com/PlanSys2/ros2_planning_system/pull/471>`_)
+* Tests discover only nodes on this host (`#455 <https://github.com/PlanSys2/ros2_planning_system/pull/455>`_)
+* Replace the deprecated EventsExecutor with SingleThreadedExecutor (`#452 <https://github.com/PlanSys2/ros2_planning_system/pull/452>`_)
+* Contributors: Francisco Martín Rico
+
 3.1.0 (2026-07-28)
 ------------------
 * Set C++23 as default

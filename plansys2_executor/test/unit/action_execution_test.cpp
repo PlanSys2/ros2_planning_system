@@ -17,10 +17,11 @@
 #include <regex>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <fstream>
 #include <map>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
@@ -49,6 +50,7 @@
 #include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_core/Utils.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
@@ -144,24 +146,29 @@ TEST(action_execution, protocol_basic)
     move_action_node->set_parameter({"action_name", "move"});
     move_action_node->set_parameter({"rate", 1.0});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(test_node);
     exe.add_node(test_lf_node->get_node_base_interface());
     exe.add_node(move_action_node->get_node_base_interface());
 
+    // Written by the spinning thread: the test reads copies taken with the lock
+    std::mutex received_mutex;
+    std::vector<plansys2_msgs::msg::ActionExecution> received;
     std::vector<plansys2_msgs::msg::ActionExecution> action_execution_msgs;
+    auto snapshot = [&]() {
+        std::lock_guard<std::mutex> lock(received_mutex);
+        action_execution_msgs = received;
+      };
 
     auto action_hub_sub = test_node->create_subscription<plansys2_msgs::msg::ActionExecution>(
     "/actions_hub", rclcpp::QoS(100).reliable(),
-      [&action_execution_msgs](const plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
-        action_execution_msgs.push_back(*msg);
+      [&](const plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
+        std::lock_guard<std::mutex> lock(received_mutex);
+        received.push_back(*msg);
     });
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
+    plansys2::testing::ExecutorThread spinner(exe);
 
     ASSERT_EQ(move_action_executor->get_internal_status(), plansys2::ActionExecutor::Status::IDLE);
     ASSERT_EQ(
@@ -171,13 +178,13 @@ TEST(action_execution, protocol_basic)
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     move_action_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
+    // Executor and performer publish and listen on the actions hub, and so does this test
+    ASSERT_TRUE(
+      plansys2::testing::wait_for(
+        [&]() {
+          return test_node->count_publishers("/actions_hub") >= 2u &&
+                 test_node->count_subscribers("/actions_hub") >= 3u;
+        }));
 
     ASSERT_EQ(
     move_action_node->get_current_state().id(),
@@ -186,6 +193,7 @@ TEST(action_execution, protocol_basic)
     ASSERT_EQ(
     move_action_node->get_internal_status().state,
     plansys2_msgs::msg::ActionPerformerStatus::READY);
+    snapshot();
     ASSERT_TRUE(action_execution_msgs.empty());
 
     {
@@ -208,6 +216,7 @@ TEST(action_execution, protocol_basic)
     move_action_node->get_internal_status().state,
     plansys2_msgs::msg::ActionPerformerStatus::RUNNING);
 
+    snapshot();
     ASSERT_EQ(action_execution_msgs.size(), 3u);
     ASSERT_EQ(action_execution_msgs[0].type, plansys2_msgs::msg::ActionExecution::REQUEST);
     ASSERT_EQ(action_execution_msgs[1].type, plansys2_msgs::msg::ActionExecution::RESPONSE);
@@ -229,6 +238,7 @@ TEST(action_execution, protocol_basic)
     plansys2_msgs::msg::ActionPerformerStatus::READY);
 
 
+    snapshot();
     ASSERT_EQ(action_execution_msgs.size(), 8u);
     ASSERT_EQ(action_execution_msgs[3].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
     ASSERT_EQ(action_execution_msgs[4].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
@@ -242,9 +252,6 @@ TEST(action_execution, protocol_basic)
     ASSERT_EQ(
     move_action_node->get_internal_status().state,
     plansys2_msgs::msg::ActionPerformerStatus::READY);
-
-    finish = true;
-    t.join();
   }
   plansys2::drain_ros(200ms);
 }
@@ -266,24 +273,29 @@ TEST(action_execution, protocol_cancelation)
     move_action_node->set_parameter({"action_name", "move"});
     move_action_node->set_parameter({"rate", 1.0});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(test_node);
     exe.add_node(test_lf_node->get_node_base_interface());
     exe.add_node(move_action_node->get_node_base_interface());
 
+    // Written by the spinning thread: the test reads copies taken with the lock
+    std::mutex received_mutex;
+    std::vector<plansys2_msgs::msg::ActionExecution> received;
     std::vector<plansys2_msgs::msg::ActionExecution> action_execution_msgs;
+    auto snapshot = [&]() {
+        std::lock_guard<std::mutex> lock(received_mutex);
+        action_execution_msgs = received;
+      };
 
     auto action_hub_sub = test_node->create_subscription<plansys2_msgs::msg::ActionExecution>(
     "/actions_hub", rclcpp::QoS(100).reliable(),
-      [&action_execution_msgs](const plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
-        action_execution_msgs.push_back(*msg);
+      [&](const plansys2_msgs::msg::ActionExecution::SharedPtr msg) {
+        std::lock_guard<std::mutex> lock(received_mutex);
+        received.push_back(*msg);
     });
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
+    plansys2::testing::ExecutorThread spinner(exe);
 
     ASSERT_EQ(move_action_executor->get_internal_status(), plansys2::ActionExecutor::Status::IDLE);
     ASSERT_EQ(
@@ -293,13 +305,13 @@ TEST(action_execution, protocol_cancelation)
     test_lf_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     move_action_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
+    // Executor and performer publish and listen on the actions hub, and so does this test
+    ASSERT_TRUE(
+      plansys2::testing::wait_for(
+        [&]() {
+          return test_node->count_publishers("/actions_hub") >= 2u &&
+                 test_node->count_subscribers("/actions_hub") >= 3u;
+        }));
 
     ASSERT_EQ(
     move_action_node->get_current_state().id(),
@@ -308,6 +320,7 @@ TEST(action_execution, protocol_cancelation)
     ASSERT_EQ(
     move_action_node->get_internal_status().state,
     plansys2_msgs::msg::ActionPerformerStatus::READY);
+    snapshot();
     ASSERT_TRUE(action_execution_msgs.empty());
 
     {
@@ -330,6 +343,7 @@ TEST(action_execution, protocol_cancelation)
     move_action_node->get_internal_status().state,
     plansys2_msgs::msg::ActionPerformerStatus::RUNNING);
 
+    snapshot();
     ASSERT_EQ(action_execution_msgs.size(), 3u);
     ASSERT_EQ(action_execution_msgs[0].type, plansys2_msgs::msg::ActionExecution::REQUEST);
     ASSERT_EQ(action_execution_msgs[1].type, plansys2_msgs::msg::ActionExecution::RESPONSE);
@@ -363,13 +377,11 @@ TEST(action_execution, protocol_cancelation)
     plansys2_msgs::msg::ActionPerformerStatus::READY);
 
 
+    snapshot();
     ASSERT_EQ(action_execution_msgs.size(), 6u);
     ASSERT_EQ(action_execution_msgs[3].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
     ASSERT_EQ(action_execution_msgs[4].type, plansys2_msgs::msg::ActionExecution::FEEDBACK);
     ASSERT_EQ(action_execution_msgs[5].type, plansys2_msgs::msg::ActionExecution::CANCEL);
-
-    finish = true;
-    t.join();
   }
 
   plansys2::drain_ros(200ms);

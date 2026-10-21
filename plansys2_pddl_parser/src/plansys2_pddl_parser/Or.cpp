@@ -11,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <memory>
+
 #include "plansys2_pddl_parser/Domain.hpp"
 
 namespace parser
@@ -23,20 +25,10 @@ void Or::PDDLPrint(
 {
   tabindent(s, indent);
   s << "( or\n";
-  if (first) {
-    first->PDDLPrint(s, indent + 1, ts, d);
-  } else {
-    tabindent(s, indent + 1);
-    s << "()";
+  for (auto cond : conds) {
+    cond->PDDLPrint(s, indent + 1, ts, d);
+    s << "\n";
   }
-  s << "\n";
-  if (second) {
-    second->PDDLPrint(s, indent + 1, ts, d);
-  } else {
-    tabindent(s, indent + 1);
-    s << "()";
-  }
-  s << "\n";
   tabindent(s, indent);
   s << ")";
 }
@@ -49,36 +41,29 @@ plansys2_msgs::msg::Node::SharedPtr Or::getTree(
   node->node_id = tree.nodes.size();
   tree.nodes.push_back(*node);
 
-  plansys2_msgs::msg::Node::SharedPtr child_f = first->getTree(tree, d, replace);
-  tree.nodes[node->node_id].children.push_back(child_f->node_id);
-  plansys2_msgs::msg::Node::SharedPtr child_s = second->getTree(tree, d, replace);
-  tree.nodes[node->node_id].children.push_back(child_s->node_id);
+  for (auto cond : conds) {
+    plansys2_msgs::msg::Node::SharedPtr child = cond->getTree(tree, d, replace);
+    tree.nodes[node->node_id].children.push_back(child->node_id);
+  }
 
   return node;
 }
 
 void Or::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
 {
-  f.next();
-  f.assert_token("(");
-  if (f.getChar() != ')') {
-    first = d.createCondition(f);
-    first->parse(f, ts, d);
-  } else {
-    ++f.c;
+  for (f.next(); f.getChar() != ')'; f.next()) {
+    f.assert_token("(");
+    if (f.getChar() == ')') {
+      throw std::runtime_error("Empty condition in or");
+    }
+    std::unique_ptr<Condition> condition(d.createCondition(f));
+    condition->parse(f, ts, d);
+    conds.push_back(condition.release());
   }
-
-  f.next();
-  f.assert_token("(");
-  if (f.getChar() != ')') {
-    second = d.createCondition(f);
-    second->parse(f, ts, d);
-  } else {
-    ++f.c;
+  ++f.c;
+  if (conds.empty()) {
+    throw std::runtime_error("An or needs at least one condition");
   }
-
-  f.next();
-  f.assert_token(")");
 }
 
 }  // namespace pddl

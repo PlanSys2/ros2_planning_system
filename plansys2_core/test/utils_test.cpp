@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <unistd.h>
+
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -19,7 +21,7 @@
 
 #include "gtest/gtest.h"
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "plansys2_core/PlanSolverBase.hpp"
 #include "plansys2_core/Utils.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -54,7 +56,7 @@ class PlannerTest : public plansys2::PlanSolverBase
 {
 public:
   void configure(
-    rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node, const std::string & plugin_name)
+    rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node, const std::string &)
   {
     lc_node_ = lc_node;
   }
@@ -72,13 +74,13 @@ public:
   }
 
   std::optional<plansys2_msgs::msg::Plan> getPlan(
-    const std::string & domain, const std::string & problem,
-    const std::string & node_namespace = "", const rclcpp::Duration solver_timeoutt = 15s)
+    const std::string &, const std::string &,
+    const std::string & = "", const rclcpp::Duration = 15s)
   {
     return {};
   }
 
-  bool isDomainValid(const std::string & domain, const std::string & node_namespace)
+  bool isDomainValid(const std::string &, const std::string &)
   {
     return true;
   }
@@ -121,10 +123,23 @@ TEST(utils_test, tokenizer_tests)
 }
 
 
+// Clients of the same kind in many processes, each with a name of its own
+TEST(utils_test, unique_node_names)
+{
+  const auto first = plansys2::unique_node_name("problem_expert_client");
+  const auto second = plansys2::unique_node_name("problem_expert_client");
+  EXPECT_NE(first, second);
+  EXPECT_EQ(first.rfind("problem_expert_client_" + std::to_string(::getpid()) + "_", 0), 0u);
+  EXPECT_TRUE(rclcpp::Node::make_shared(first));  // A valid node name
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);
 
-  return RUN_ALL_TESTS();
+  // Before the process exits: Zenoh aborts if ROS is shut down by atexit
+  auto result = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return result;
 }

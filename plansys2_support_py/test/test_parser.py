@@ -17,7 +17,7 @@
 
 import unittest
 
-from plansys2_msgs.msg import Node, Param, Tree
+from plansys2_msgs.msg import Metric, Node, Param, Tree
 from plansys2_support_py.Parser import Parser
 
 
@@ -29,8 +29,9 @@ class TestParser(unittest.TestCase):
         expr = '(and\n(robot_at r1 wp1)\n(robot_at r2 wp2))'
         result = Parser.get_reduced_string(expr)
         self.assertNotIn('\n', result)
-        # get_reduced_string only replaces newlines with space, doesn't add space after operators
-        self.assertEqual(result, '(and(robot_at r1 wp1)(robot_at r2 wp2))')
+        # A newline separates tokens, as a space
+        self.assertEqual(result, '(and (robot_at r1 wp1) (robot_at r2 wp2))')
+        self.assertEqual(Parser.get_reduced_string('(robot_at r1\nwp1)'), '(robot_at r1 wp1)')
 
     def test_get_reduced_string_removes_tabs(self):
         """Test that tabs are removed."""
@@ -119,14 +120,18 @@ class TestParser(unittest.TestCase):
     def test_get_node_type_predicate(self):
         """Test detection of PREDICATE node type."""
         expr = '(robot_at r1 wp1)'
-        result = Parser.get_node_type(expr)
+        result = Parser.get_node_type(expr, Node.PREDICATE)
         self.assertEqual(result, Node.PREDICATE)
+        # Without a default, as in C++
+        self.assertEqual(Parser.get_node_type(expr), Node.UNKNOWN)
+        self.assertEqual(Parser.tree_from_string(expr).nodes[0].node_type, Node.PREDICATE)
 
     def test_get_node_type_function_in_expression(self):
-        """Test detection of FUNCTION in expression context."""
+        """A name in parentheses has the default type: fromString passes FUNCTION."""
         expr = '(battery_level r1)'
-        result = Parser.get_node_type(expr, default_node_type=Node.EXPRESSION)
+        result = Parser.get_node_type(expr, default_node_type=Node.FUNCTION)
         self.assertEqual(result, Node.FUNCTION)
+        self.assertEqual(Parser.get_node_type(expr, Node.EXPRESSION), Node.EXPRESSION)
 
     def test_get_node_type_with_default(self):
         """Test that default node type is returned for unknown."""
@@ -915,10 +920,19 @@ class TestParser(unittest.TestCase):
         node.node_type = Node.FUNCTION_MODIFIER
         node.modifier_type = Node.ASSIGN
         node.node_id = 0
-        node.children = [1]  # Only one child, needs at least 2
+        node.children = [1, 2, 3]  # One or two children
         tree.nodes.append(node)
-        result = Parser.tree_to_string(tree)
-        self.assertEqual(result, '')
+        self.assertEqual(Parser.tree_to_string(tree), '')
+        node.children = []
+        self.assertEqual(Parser.tree_to_string(tree), '')
+        # Only the value, as in trees built before (total-cost) was a child
+        number = Node()
+        number.node_type = Node.NUMBER
+        number.node_id = 1
+        number.value = 5.0
+        tree.nodes.append(number)
+        node.children = [1]
+        self.assertEqual(Parser.tree_to_string(tree), '(assign (total-cost) 5.000000)')
 
     def test_tree_to_string_and_empty_children(self):
         """Test AND node with empty children list."""
@@ -929,7 +943,7 @@ class TestParser(unittest.TestCase):
         node.children = []
         tree.nodes.append(node)
         result = Parser.tree_to_string(tree)
-        self.assertEqual(result, '(and)')
+        self.assertEqual(result, '')
 
     def test_tree_to_string_or_empty_children(self):
         """Test OR node with empty children list."""
@@ -940,7 +954,7 @@ class TestParser(unittest.TestCase):
         node.children = []
         tree.nodes.append(node)
         result = Parser.tree_to_string(tree)
-        self.assertEqual(result, '(or)')
+        self.assertEqual(result, '')
 
     def test_tree_to_string_not_empty_children(self):
         """Test NOT node with empty children list."""
@@ -951,7 +965,7 @@ class TestParser(unittest.TestCase):
         node.children = []
         tree.nodes.append(node)
         result = Parser.tree_to_string(tree)
-        self.assertEqual(result, '(not)')
+        self.assertEqual(result, '')
 
     def test_tree_to_string_exists_empty_children(self):
         """Test EXISTS node with empty children list."""
@@ -965,7 +979,7 @@ class TestParser(unittest.TestCase):
         node.parameters = [param]
         tree.nodes.append(node)
         result = Parser.tree_to_string(tree)
-        self.assertEqual(result, '(exists ())')
+        self.assertEqual(result, '')
 
     def test_tree_to_string_parameter_no_parameters(self):
         """Test parameter node with no parameters."""
@@ -991,31 +1005,37 @@ class TestParser(unittest.TestCase):
         self.assertEqual(result, Node.NUMBER)
 
     def test_get_node_type_function_with_function_modifier_default(self):
-        """Test function detection with FUNCTION_MODIFIER default."""
+        """The type comes from the operator, not from the default."""
         expr = '(battery_level r1)'
         result = Parser.get_node_type(expr, default_node_type=Node.FUNCTION_MODIFIER)
-        self.assertEqual(result, Node.FUNCTION)
+        self.assertEqual(result, Node.FUNCTION_MODIFIER)
+        tree = Parser.tree_from_string('(increase (battery_level r1) 1)')
+        self.assertEqual(tree.nodes[1].node_type, Node.FUNCTION)
 
     def test_node_from_string_function_no_value(self):
         """Test creating function node without numeric value."""
         function = '(battery_level robot1)'
         result = Parser.node_from_string_function(function)
-        # 'robot1' contains '1' which matches the number pattern
-        self.assertEqual(result.value, 1.0)
+        # 'robot1' is a parameter, not the value 1
+        self.assertEqual(result.value, 0.0)
+        self.assertEqual([p.name for p in result.parameters], ['robot1'])
 
     def test_node_from_string_function_no_name_match(self):
         """Test creating function node with no name match."""
         function = '(123 invalid)'
         result = Parser.node_from_string_function(function)
-        # 'invalid' is a valid name starting with a letter
+        # The first token is the name, as in C++
         self.assertEqual(result.value, 0.0)
-        self.assertEqual(result.name, 'invalid')
+        self.assertEqual(result.name, '123')
+        self.assertEqual([p.name for p in result.parameters], ['invalid'])
 
     def test_get_sub_expr_with_tokens_only(self):
         """Test extracting sub-expressions with only token elements."""
         expr = '(exists ?x - robot (at ?x))'
         result = Parser.get_sub_expr(expr)
-        self.assertGreater(len(result), 0)
+        # Without a variable list, the first list is taken as it: nothing is left
+        self.assertEqual(result, [])
+        self.assertEqual(Parser.get_sub_expr('(+ 1 ?x)'), ['1', '?x'])
 
     def test_tree_from_string_unknown_node_type(self):
         """Test tree_from_string returns None for unknown types."""
@@ -1049,8 +1069,10 @@ class TestParser(unittest.TestCase):
         """Test _remove_operator_before_parenthesis with exists."""
         expr = 'exists (?x) (at ?x)'
         result = Parser._remove_operator_before_parenthesis(expr)
-        # 'exists' should be removed
-        self.assertNotIn('exists', result) or self.assertIn('(?x)', result)
+        # 'exists' goes with its variable list
+        self.assertEqual(result, '(at ?x)')
+        with self.assertRaises(ValueError):
+            Parser._remove_operator_before_parenthesis('exists ?x')
 
     def test_get_sub_expr_with_trailing_spaces(self):
         """Test extracting sub-expressions with trailing spaces."""
@@ -1133,15 +1155,16 @@ class TestParser(unittest.TestCase):
         """Test creating function node with only numbers (no name)."""
         function = '(123 456)'
         result = Parser.node_from_string_function(function)
-        # No valid name found, should return empty name and value 0.0
-        self.assertEqual(result.name, '')
-        self.assertEqual(result.value, 0.0)
+        # The first token is the name and the first number after it the value
+        self.assertEqual(result.name, '123')
+        self.assertEqual(result.value, 456.0)
+        self.assertEqual(len(result.parameters), 0)
 
     def test_tree_to_string_unknown_node_type(self):
         """Test tree_to_string with unknown node type returns empty string."""
         tree = Tree()
         node = Node()
-        node.node_type = 999  # Unknown type
+        node.node_type = 200  # Unknown type
         node.node_id = 0
         tree.nodes.append(node)
         result = Parser.tree_to_string(tree)
@@ -1311,6 +1334,100 @@ class TestParser(unittest.TestCase):
         result = Parser.get_sub_expr(expr)
         # Should return empty list or minimal results
         self.assertIsInstance(result, list)
+
+    def test_get_node_type_forall_imply(self):
+        """Test node types of forall and imply, and predicates named like them."""
+        self.assertEqual(Parser.get_node_type('(forall (?x - t) (p ?x))'), Node.FORALL)
+        self.assertEqual(Parser.get_node_type('(imply (a) (b))'), Node.IMPLY)
+        self.assertEqual(Parser.get_node_type('(and (forall (?x) (p ?x)))'), Node.AND)
+        self.assertEqual(
+            Parser.get_node_type('(forall_done x)', Node.PREDICATE), Node.PREDICATE)
+        self.assertEqual(Parser.get_node_type('(implying x)', Node.PREDICATE), Node.PREDICATE)
+
+    def test_node_from_string_forall_typed_list(self):
+        """Test that '- type' applies to the variables before it."""
+        node = Parser.node_from_string_forall('(forall (?a ?b - robot ?z - zone ?o) (at ?a ?z))')
+        self.assertEqual(node.node_type, Node.FORALL)
+        self.assertEqual(
+            [(p.name, p.type) for p in node.parameters],
+            [('?a', 'robot'), ('?b', 'robot'), ('?z', 'zone'), ('?o', '')])
+
+    def test_tree_from_string_forall(self):
+        """Test that the variable list of a forall is not a child."""
+        tree = Parser.tree_from_string('(forall (?r - robot) (at ?r wp1))')
+        self.assertEqual(len(tree.nodes), 2)
+        self.assertEqual(tree.nodes[0].node_type, Node.FORALL)
+        self.assertEqual(list(tree.nodes[0].children), [1])
+        self.assertEqual(tree.nodes[1].node_type, Node.PREDICATE)
+        self.assertEqual(tree.nodes[1].name, 'at')
+
+    def test_tree_from_string_imply(self):
+        """Test that imply has its two conditions as children."""
+        tree = Parser.tree_from_string('(imply (a x) (b y))')
+        self.assertEqual(tree.nodes[0].node_type, Node.IMPLY)
+        self.assertEqual(len(tree.nodes[0].children), 2)
+        self.assertEqual(tree.nodes[1].name, 'a')
+        self.assertEqual(tree.nodes[2].name, 'b')
+
+    def test_forall_imply_round_trip(self):
+        """Test that forall and imply print as they are read, as in C++."""
+        for expr in [
+            '(forall (?r - robot ?z - zone) (at ?r ?z))',
+            '(imply (a x) (b y))',
+            '(not (imply (a x) (b y)))',
+            '(not (forall (?e - robot) (imply (hostile ?e) (not (at ?e z)))))',
+            '(forall (?o) (p ?o))',
+        ]:
+            with self.subTest(expr=expr):
+                self.assertEqual(Parser.tree_to_string(Parser.tree_from_string(expr)), expr)
+
+    def test_tree_to_string_forall_object_type(self):
+        """Test that the type object, of untyped variables, is not printed."""
+        tree = Parser.tree_from_string('(forall (?o - object) (p ?o))')
+        self.assertEqual(Parser.tree_to_string(tree), '(forall (?o) (p ?o))')
+
+    def test_node_to_dict_forall_imply(self):
+        """Test the names of the new node types."""
+        tree = Parser.tree_from_string('(imply (a x) (forall (?o) (p ?o)))')
+        types = [Parser.node_to_dict(n)['node_type_name'] for n in tree.nodes]
+        self.assertIn('IMPLY', types)
+        self.assertIn('FORALL', types)
+
+    def test_metric_from_string(self):
+        """Test metrics as the C++ metricFromString reads them."""
+        metric = Parser.metric_from_string('minimize (total-time)')
+        self.assertEqual(metric.optimization, Metric.MINIMIZE)
+        self.assertEqual(len(metric.tree.nodes), 1)
+        self.assertEqual(metric.tree.nodes[0].node_type, Node.FUNCTION)
+        self.assertEqual(metric.tree.nodes[0].name, 'total-time')
+
+        metric = Parser.metric_from_string('  (:metric maximize (+ (spent) (* 100 (total-time))))')
+        self.assertEqual(metric.optimization, Metric.MAXIMIZE)
+        self.assertEqual(metric.tree.nodes[0].node_type, Node.EXPRESSION)
+        self.assertEqual(metric.tree.nodes[0].expression_type, Node.ARITH_ADD)
+
+        self.assertEqual(len(Parser.metric_from_string('minimize 3').tree.nodes), 1)
+
+    def test_metric_from_string_invalid(self):
+        """Test strings that are not metrics: empty tree, nothing to print."""
+        for text in ['', '   ', 'minimize', '(total-time)', 'optimize (total-time)',
+                     'Minimize (total-time)', 'minimize (> (cost) 3)', 'minimize (and (cost))',
+                     'minimize (not (cost))', 'minimize (+ (cost) (total-time)',
+                     'minimize (+ (cost) (total-time)))', '(:metric)']:
+            with self.subTest(text=text):
+                metric = Parser.metric_from_string(text)
+                self.assertEqual(len(metric.tree.nodes), 0)
+                self.assertEqual(Parser.metric_to_string(metric), '')
+
+    def test_metric_round_trip(self):
+        """Test that a printed metric reads back the same."""
+        for text in ['minimize (total-time)', 'maximize (- (score) (* 2 (total-time)))']:
+            with self.subTest(text=text):
+                metric = Parser.metric_from_string(text)
+                again = Parser.metric_from_string(Parser.metric_to_string(metric))
+                self.assertEqual(again.optimization, metric.optimization)
+                self.assertEqual(
+                    Parser.metric_to_string(again), Parser.metric_to_string(metric))
 
 
 if __name__ == '__main__':

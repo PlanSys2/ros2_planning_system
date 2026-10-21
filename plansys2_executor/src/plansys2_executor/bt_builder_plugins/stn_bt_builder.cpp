@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <algorithm>
+#include <cctype>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -22,6 +23,7 @@
 #include <sstream>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -31,10 +33,101 @@
 namespace plansys2
 {
 
+namespace
+{
+// The functions the continuous effects of an action change, grounded
+std::set<std::string> continuous_functions(const ActionStamped & action)
+{
+  std::set<std::string> ret;
+  if (action.type != ActionType::START && action.type != ActionType::END) {
+    return ret;
+  }
+  const auto effects = action.action.get_continuous_effects();
+  for (const auto & node : effects.nodes) {
+    if (node.node_type == plansys2_msgs::msg::Node::FUNCTION_MODIFIER && !node.children.empty()) {
+      ret.insert(parser::pddl::toString(effects, node.children[0]));
+    }
+  }
+  return ret;
+}
+
+// The facts a tree reads or writes: grounded, "robot_at r1 hall"; by name, when some argument is
+// a variable; all, when it reads a derived predicate, which may read anything
+struct Facts
+{
+  std::set<std::string> grounded;
+  std::set<std::string> names;
+  bool all = false;
+};
+
+void collect_facts(
+  const plansys2_msgs::msg::Tree & tree, const std::set<std::string> & derived, Facts & facts)
+{
+  for (const auto & node : tree.nodes) {
+    if (node.node_type != plansys2_msgs::msg::Node::PREDICATE &&
+      node.node_type != plansys2_msgs::msg::Node::FUNCTION)
+    {
+      continue;
+    }
+    if (derived.count(node.name)) {
+      facts.all = true;
+      return;
+    }
+    // PDDL is case insensitive: a condition and an effect may not write a name the same way
+    auto lower = [](std::string text) {
+        for (auto & c : text) {
+          c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        }
+        return text;
+      };
+    bool variable = false;
+    const std::string name = lower(node.name);
+    std::string key = name;
+    for (const auto & param : node.parameters) {
+      variable = variable || param.name.empty() || param.name[0] == '?';
+      key += " " + lower(param.name);
+    }
+    (variable ? facts.names : facts.grounded).insert(variable ? name : key);
+  }
+}
+
+// Whether what one writes is something the other reads or writes
+bool meet(const Facts & a, const Facts & b)
+{
+  if (a.all || b.all) {
+    return true;
+  }
+  auto name_of = [](const std::string & key) {return key.substr(0, key.find(' '));};
+  for (const auto & key : a.grounded) {
+    if (b.grounded.count(key) || b.names.count(name_of(key))) {
+      return true;
+    }
+  }
+  for (const auto & name : a.names) {
+    if (b.names.count(name)) {
+      return true;
+    }
+    for (const auto & key : b.grounded) {
+      if (name_of(key) == name) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// Happenings with more snaps than this are not searched in every order: 2^n subsets
+constexpr int kMaxSubsetSnaps = 6;
+
+// Snaps of the same plan item: a plan may have the same action several times
+bool same_item(const ActionStamped & a, const ActionStamped & b)
+{
+  return a.expression == b.expression && a.time == b.time;
+}
+}  // namespace
+
 STNBTBuilder::STNBTBuilder()
 {
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
 }
 
 void
@@ -77,6 +170,11 @@ CHECK_PREV_ACTIONS
 std::string
 STNBTBuilder::get_tree(const plansys2_msgs::msg::Plan & plan)
 {
+  // A tree for a plan that cannot run from the current state would wait forever
+  if (!is_executable(plan)) {
+    return {};
+  }
+
   stn_ = build_stn(plan);
 
   if (!propagate(stn_)) {
@@ -93,6 +191,9 @@ STNBTBuilder::get_dotgraph(
   bool enable_legend,
   bool enable_print_graph)
 {
+  if (!stn_) {
+    return "";  // No plan yet
+  }
   if (enable_print_graph) {
     print_graph(stn_);
   }
@@ -128,8 +229,9 @@ STNBTBuilder::get_dotgraph(
 
   // define the edges
   std::set<std::string> edges;
+  std::set<const Node *> visited;
   for (const auto & graph_root : stn_->nodes) {
-    get_flow_dotgraph(graph_root, edges);
+    get_flow_dotgraph(graph_root, edges, visited);
   }
 
   for (const auto & edge : edges) {
@@ -143,6 +245,40 @@ STNBTBuilder::get_dotgraph(
   ss << "}";
 
   return ss.str();
+}
+
+bool
+STNBTBuilder::is_executable(const plansys2_msgs::msg::Plan & plan) const
+{
+  reset_derived_rules();  // The instances of now
+  auto happenings = get_happenings(plan);
+  auto simple_plan = get_simple_plan(plan);
+  auto states = get_states(happenings, simple_plan);
+
+  // Every snap action must be applicable at its happening, as get_threat assumes
+  for (const auto & item : simple_plan) {
+    if (item.first < 0) {
+      continue;  // The initial state
+    }
+    auto happening = get_happening(item.first, happenings);
+    auto previous = happening == happenings.end() ?
+      happenings.end() : get_previous(*happening, happenings);
+    if (previous == happenings.end() || states.find(*previous) == states.end()) {
+      return false;
+    }
+    auto state = states.at(*previous);
+    if (!can_apply(item, simple_plan, *happening, state)) {
+      // PDDL+: the dynamics give it while the plan runs; its tree waits for it
+      if (reads_dynamic(get_conditions(item.second))) {
+        continue;
+      }
+      std::cerr << "STNBTBuilder: " << item.second.expression << " (" <<
+        to_string(item.second.type) << ") cannot be applied: the plan cannot be executed" <<
+        std::endl;
+      return false;
+    }
+  }
+  return true;
 }
 
 Graph::Ptr
@@ -166,7 +302,12 @@ STNBTBuilder::build_stn(const plansys2_msgs::msg::Plan & plan) const
     auto parents = get_parents(item, simple_plan, happenings, states);
 
     for (const auto & parent : parents) {
-      auto previous = get_nodes(parent.second, stn);
+      // A non-durative action runs whole in its performer: what follows waits for its end
+      auto after = parent.second;
+      if (after.type == ActionType::START && after.action.is_action()) {
+        after.type = ActionType::END;
+      }
+      auto previous = get_nodes(after, stn);
       for (auto & n : current) {
         for (auto & h : previous) {
           if (h->action.time == n->action.time) {
@@ -227,7 +368,9 @@ STNBTBuilder::propagate(const Graph::Ptr stn)
           return std::get<0>(arc_in) == node;
         });
 
-      child->input_arcs.erase(*it);
+      if (it != child->input_arcs.end()) {
+        child->input_arcs.erase(it);
+      }
       child->input_arcs.insert(std::make_tuple(node, lower, upper));
     }
 
@@ -247,7 +390,7 @@ STNBTBuilder::build_bt(const Graph::Ptr stn) const
 
   auto bt = std::string("<root BTCPP_format=\"4\" main_tree_to_execute=\"MainTree\">\n") + t(1) +
     "<BehaviorTree ID=\"MainTree\">\n";
-  bt = bt + get_flow(root, nullptr, used, 1);
+  get_flow(root, nullptr, used, 1, true, bt);
   bt = bt + t(1) + "</BehaviorTree>\n</root>\n";
 
   return bt;
@@ -257,11 +400,12 @@ Graph::Ptr
 STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
 {
   auto graph = Graph::make_shared();
+  graph->action_time_precision = action_time_precision_;
   auto action_sequence = get_plan_actions(plan);
 
   // Add a node to represent the initial state
-  auto predicates = problem_client_->getPredicates();
-  auto functions = problem_client_->getFunctions();
+  auto predicates = initial_predicates();
+  auto functions = initial_functions();
 
   auto init_action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
   init_action->at_end_effects = from_state(predicates, functions);
@@ -290,7 +434,7 @@ STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
   }
 
   // Add a node to represent the goal
-  auto goal = problem_client_->getGoal();
+  auto goal = problem_client()->getGoal();
   plansys2_msgs::msg::Tree * goal_tree = &goal;
 
   auto goal_action = std::make_shared<plansys2_msgs::msg::DurativeAction>();
@@ -306,35 +450,32 @@ STNBTBuilder::init_graph(const plansys2_msgs::msg::Plan & plan) const
 std::vector<ActionStamped>
 STNBTBuilder::get_plan_actions(const plansys2_msgs::msg::Plan & plan) const
 {
+  if (plan_actions_ && plan_actions_->first == plan) {
+    return plan_actions_->second;
+  }
   std::vector<ActionStamped> ret;
 
+  // Once for the whole plan: it was asked for every action
+  const auto actions = domain_client()->getActions();
   for (auto & item : plan.items) {
     ActionStamped action_stamped;
     action_stamped.time = item.time;
     action_stamped.expression = item.action;
     action_stamped.duration = item.duration;
     action_stamped.type = ActionType::DURATIVE;
-    auto actions = domain_client_->getActions();
-    if (std::find(actions.begin(), actions.end(), get_action_name(item.action)) != actions.end()) {
-      action_stamped.action =
-        domain_client_->getAction(
-        get_action_name(item.action), get_action_params(item.action));
-    } else {
-      action_stamped.action =
-        domain_client_->getDurativeAction(
-        get_action_name(item.action), get_action_params(item.action));
-    }
+    action_stamped.action = plan_item_action(*domain_client(), actions, item);
 
     ret.push_back(action_stamped);
   }
 
+  plan_actions_.emplace(plan, ret);
   return ret;
 }
 
-std::set<int>
+std::set<int64_t>
 STNBTBuilder::get_happenings(const plansys2_msgs::msg::Plan & plan) const
 {
-  std::set<int> happenings;
+  std::set<int64_t> happenings;
   happenings.insert(-1);
   auto action_sequence = get_plan_actions(plan);
   for (const auto & action : action_sequence) {
@@ -343,11 +484,15 @@ STNBTBuilder::get_happenings(const plansys2_msgs::msg::Plan & plan) const
     happenings.insert(time);
     happenings.insert(time + duration);
   }
+  // The timed facts happen too
+  for (const auto & event : timed_events()) {
+    happenings.insert(to_int_time(event.time, action_time_precision_ + 1));
+  }
   return happenings;
 }
 
-std::set<int>::iterator
-STNBTBuilder::get_happening(int time, const std::set<int> & happenings) const
+std::set<int64_t>::iterator
+STNBTBuilder::get_happening(int64_t time, const std::set<int64_t> & happenings) const
 {
   // This function returns an iterator pointing to either
   //   1. the first element that is equal to the key or
@@ -370,8 +515,8 @@ STNBTBuilder::get_happening(int time, const std::set<int> & happenings) const
   return it;
 }
 
-std::set<int>::iterator
-STNBTBuilder::get_previous(int time, const std::set<int> & happenings) const
+std::set<int64_t>::iterator
+STNBTBuilder::get_previous(int64_t time, const std::set<int64_t> & happenings) const
 {
   auto it = get_happening(time, happenings);
 
@@ -384,15 +529,15 @@ STNBTBuilder::get_previous(int time, const std::set<int> & happenings) const
   return happenings.end();
 }
 
-std::multimap<int, ActionStamped>
+std::multimap<int64_t, ActionStamped>
 STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
 {
-  std::multimap<int, ActionStamped> simple_plan;
+  std::multimap<int64_t, ActionStamped> simple_plan;
   auto action_sequence = get_plan_actions(plan);
 
   // Add an action to represent the initial state
-  auto predicates = problem_client_->getPredicates();
-  auto functions = problem_client_->getFunctions();
+  auto predicates = initial_predicates();
+  auto functions = initial_functions();
 
   auto init_action_ = std::make_shared<plansys2_msgs::msg::DurativeAction>();
   init_action_->at_end_effects = from_state(predicates, functions);
@@ -402,7 +547,7 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
   simple_plan.insert(std::make_pair(-1, init_action));
 
   // Add the snap actions
-  int max_time = -1;
+  int64_t max_time = -1;
   for (auto action : action_sequence) {
     auto time = to_int_time(action.time, action_time_precision_ + 1);
     auto duration = to_int_time(action.duration, action_time_precision_ + 1);
@@ -414,7 +559,7 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
   }
 
   // Add an action to represent the goal
-  auto goal = problem_client_->getGoal();
+  auto goal = problem_client()->getGoal();
   plansys2_msgs::msg::Tree * goal_tree = &goal;
 
   auto goal_action_ = std::make_shared<plansys2_msgs::msg::DurativeAction>();
@@ -425,8 +570,14 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
   goal_action.type = ActionType::GOAL;
   simple_plan.insert(std::make_pair(max_time, goal_action));
 
+  // The timed facts, at their time: only effects, which the problem expert applies
+  for (const auto & event : timed_events()) {
+    simple_plan.insert(
+      std::make_pair(to_int_time(event.time, action_time_precision_ + 1), event));
+  }
+
   // Create the overall actions
-  std::vector<std::pair<int, ActionStamped>> overall_actions;
+  std::vector<std::pair<int64_t, ActionStamped>> overall_actions;
   for (const auto & action : action_sequence) {
     auto time = to_int_time(action.time, action_time_precision_ + 1);
     auto duration = to_int_time(action.duration, action_time_precision_ + 1);
@@ -435,23 +586,32 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
     auto it = simple_plan.equal_range(time);
     auto start_action = std::find_if(
       it.first, it.second,
-      [&](std::pair<int, ActionStamped> a) {
-        return (a.second.expression == action.expression) && (a.second.type == ActionType::START);
+      [&](std::pair<int64_t, ActionStamped> a) {
+        return same_item(a.second, action) && (a.second.type == ActionType::START);
       });
 
     // Find the end action
     it = simple_plan.equal_range(time + duration);
     auto end_action = std::find_if(
       it.first, it.second,
-      [&](std::pair<int, ActionStamped> a) {
-        return (a.second.expression == action.expression) && (a.second.type == ActionType::END);
+      [&](std::pair<int64_t, ActionStamped> a) {
+        return same_item(a.second, action) && (a.second.type == ActionType::END);
       });
 
+    // An action with no duration (a non-durative one, as some planners give it) has no
+    // interval: its overall conditions hold at its only happening
+    if (duration == 0) {
+      auto overall_action = std::make_pair(time, start_action->second);
+      overall_action.second.type = ActionType::OVERALL;
+      overall_actions.push_back(overall_action);
+      continue;
+    }
+
     // Compute the overall actions
-    int prev = time;
+    int64_t prev = time;
     for (auto iter = start_action; iter != simple_plan.end(); ++iter) {
       if (iter->first != prev) {
-        int time = prev + (iter->first - prev) / 2;
+        int64_t time = prev + (iter->first - prev) / 2;
         auto overall_action = std::make_pair(time, start_action->second);
         overall_action.second.type = ActionType::OVERALL;
         overall_actions.push_back(overall_action);
@@ -471,26 +631,26 @@ STNBTBuilder::get_simple_plan(const plansys2_msgs::msg::Plan & plan) const
   return simple_plan;
 }
 
-std::map<int, StateVec>
+std::map<int64_t, StateVec>
 STNBTBuilder::get_states(
-  const std::set<int> & happenings,
-  const std::multimap<int, ActionStamped> & plan) const
+  const std::set<int64_t> & happenings,
+  const std::multimap<int64_t, ActionStamped> & plan) const
 {
-  std::map<int, StateVec> states;
+  std::map<int64_t, StateVec> states;
 
   StateVec state_vec;
-  state_vec.predicates = problem_client_->getPredicates();
-  state_vec.functions = problem_client_->getFunctions();
+  state_vec.predicates = initial_predicates();
+  state_vec.functions = initial_functions();
   states.insert(std::make_pair(-1, state_vec));
 
   for (const auto & time : happenings) {
     auto it = plan.equal_range(time);
     for (auto iter = it.first; iter != it.second; ++iter) {
       if (iter->second.type == ActionType::START) {
-        apply(
+        apply_effects(
           iter->second.action.get_at_start_effects(), state_vec.predicates, state_vec.functions);
-      } else if (iter->second.type == ActionType::END) {
-        apply(
+      } else if (iter->second.type == ActionType::END || iter->second.type == ActionType::TIMED) {
+        apply_effects(
           iter->second.action.get_at_end_effects(), state_vec.predicates, state_vec.functions);
       }
     }
@@ -535,6 +695,11 @@ STNBTBuilder::get_nodes(
   const Graph::Ptr graph) const
 {
   std::vector<Node::Ptr> ret;
+
+  // A timed fact has no node: what needs it waits in its tree until the problem expert has it
+  if (action.type == ActionType::TIMED) {
+    return ret;
+  }
 
   if (action.type == ActionType::INIT) {
     auto it = std::find_if(
@@ -608,12 +773,12 @@ STNBTBuilder::is_match(
   return (t_1 == t_2) && (node->action.expression == action.expression);
 }
 
-std::vector<std::pair<int, ActionStamped>>
+std::vector<std::pair<int64_t, ActionStamped>>
 STNBTBuilder::get_parents(
-  const std::pair<int, ActionStamped> & action,
-  const std::multimap<int, ActionStamped> & plan,
-  const std::set<int> & happenings,
-  const std::map<int, StateVec> & states) const
+  const std::pair<int64_t, ActionStamped> & action,
+  const std::multimap<int64_t, ActionStamped> & plan,
+  const std::set<int64_t> & happenings,
+  const std::map<int64_t, StateVec> & states) const
 {
   auto parents = get_satisfy(action, plan, happenings, states);
   auto threats = get_threat(action, plan, happenings, states);
@@ -622,14 +787,14 @@ STNBTBuilder::get_parents(
   return parents;
 }
 
-std::vector<std::pair<int, ActionStamped>>
+std::vector<std::pair<int64_t, ActionStamped>>
 STNBTBuilder::get_satisfy(
-  const std::pair<int, ActionStamped> & action,
-  const std::multimap<int, ActionStamped> & plan,
-  const std::set<int> & happenings,
-  const std::map<int, StateVec> & states) const
+  const std::pair<int64_t, ActionStamped> & action,
+  const std::multimap<int64_t, ActionStamped> & plan,
+  const std::set<int64_t> & happenings,
+  const std::map<int64_t, StateVec> & states) const
 {
-  std::vector<std::pair<int, ActionStamped>> ret;
+  std::vector<std::pair<int64_t, ActionStamped>> ret;
 
   auto H_it = get_happening(action.first, happenings);
   if (H_it == happenings.end()) {
@@ -638,7 +803,14 @@ STNBTBuilder::get_satisfy(
   }
   auto t_2 = *H_it;
 
-  auto R_a = parser::pddl::getSubtrees(get_conditions(action.second));
+  auto R_a = parser::pddl::getSubtrees(get_ordering_conditions(action, happenings, states));
+
+  // What each condition reads: an action that writes none of it cannot make it true
+  const auto & derived = derived_names();
+  std::vector<Facts> reads_r(R_a.size());
+  for (size_t i = 0; i < R_a.size(); i++) {
+    collect_facts(R_a[i], derived, reads_r[i]);
+  }
 
   while (t_2 >= 0) {
     H_it = get_previous(t_2, happenings);
@@ -653,22 +825,30 @@ STNBTBuilder::get_satisfy(
       std::cerr << "get_satisfy: Previous state not found" << std::endl;
       break;
     }
-    auto X_1 = X_it->second;
+    // Not copied: a long plan has many states, and big. check() only reads it (it evaluates
+    // without applying), though it takes it as non-const
+    auto & X_1 = const_cast<StateVec &>(X_it->second);
 
-    for (const auto & r : R_a) {
+    for (size_t i = 0; i < R_a.size(); i++) {
+      const auto & r = R_a[i];
       if (!check(r, X_1.predicates, X_1.functions)) {
         auto it = plan.equal_range(t_2);
         for (auto iter = it.first; iter != it.second; ++iter) {
           if (iter->first == action.first) {
-            if (iter->second.expression == action.second.expression) {
+            if (same_item(iter->second, action.second)) {
               continue;
             }
           }
 
           auto E_k = get_effects(iter->second);
+          Facts writes_k;
+          collect_facts(E_k, derived, writes_k);
+          if (!meet(writes_k, reads_r[i])) {
+            continue;
+          }
 
           auto X_hat = X_1;
-          apply(E_k, X_hat.predicates, X_hat.functions);
+          apply_effects(E_k, X_hat.predicates, X_hat.functions);
 
           // Check if action k satisfies action i
           if (check(r, X_hat.predicates, X_hat.functions)) {
@@ -680,8 +860,8 @@ STNBTBuilder::get_satisfy(
     t_2 = t_1;
   }
 
-  auto predicates = problem_client_->getPredicates();
-  auto functions = problem_client_->getFunctions();
+  auto predicates = initial_predicates();
+  auto functions = initial_functions();
 
   for (const auto & r : R_a) {
     if (check(r, predicates, functions)) {
@@ -692,14 +872,14 @@ STNBTBuilder::get_satisfy(
   return ret;
 }
 
-std::vector<std::pair<int, ActionStamped>>
+std::vector<std::pair<int64_t, ActionStamped>>
 STNBTBuilder::get_threat(
-  const std::pair<int, ActionStamped> & action,
-  const std::multimap<int, ActionStamped> & plan,
-  const std::set<int> & happenings,
-  const std::map<int, StateVec> & states) const
+  const std::pair<int64_t, ActionStamped> & action,
+  const std::multimap<int64_t, ActionStamped> & plan,
+  const std::set<int64_t> & happenings,
+  const std::map<int64_t, StateVec> & states) const
 {
-  std::vector<std::pair<int, ActionStamped>> ret;
+  std::vector<std::pair<int64_t, ActionStamped>> ret;
 
   auto H_it = get_happening(action.first, happenings);
   if (H_it == happenings.end()) {
@@ -709,8 +889,20 @@ STNBTBuilder::get_threat(
   auto t_in = *H_it;
   auto t_2 = *H_it;
 
-  auto R_a = get_conditions(action.second);
-  auto E_a = get_effects(action.second);
+  auto R_a = get_ordering_conditions(action, happenings, states);
+  auto E_a = get_threat_effects(action.second);
+  const auto rates_a = continuous_functions(action.second);
+
+  // What each one reads and writes: those that share nothing cannot threaten each other
+  const auto & derived = derived_names();
+  auto facts = [&](const ActionStamped & snap) {
+      std::pair<Facts, Facts> ret;  // Read, written
+      collect_facts(get_conditions(snap), derived, ret.first);
+      collect_facts(get_effects(snap), derived, ret.first);  // The conditions of a when too
+      collect_facts(get_threat_effects(snap), derived, ret.second);
+      return ret;
+    };
+  const auto [reads_a, writes_a] = facts(action.second);
 
   while (t_2 >= 0) {
     H_it = get_previous(t_2, happenings);
@@ -725,82 +917,114 @@ STNBTBuilder::get_threat(
       std::cerr << "get_threat: Previous state not found" << std::endl;
       break;
     }
-    auto X_1 = X_it->second;
 
+    auto it = plan.end();
+    if (auto next_happening = std::next(happenings.find(t_2)); next_happening != happenings.end()) {
+      it = plan.lower_bound(*next_happening);
+    }
+
+    // Nothing at this happening shares a fact with the action: no state to look at. Most of
+    // them in a long plan, which made each action copy every state before it
+    bool related = false;
+    for (auto iter = plan.lower_bound(t_2); iter != it && !related; ++iter) {
+      if (iter->first == action.first && same_item(iter->second, action.second)) {
+        continue;
+      }
+      if (!continuous_functions(iter->second).empty() && !rates_a.empty()) {
+        related = true;
+        continue;
+      }
+      const auto [reads_k, writes_k] = facts(iter->second);
+      related = meet(writes_a, reads_k) || meet(writes_a, writes_k) || meet(writes_k, reads_a);
+    }
+    if (!related) {
+      t_2 = t_1;
+      continue;
+    }
+
+    const auto & X_1 = X_it->second;
     auto X_1_a = X_1;
     if (can_apply(action, plan, t_2, X_1_a)) {
-      auto it = plan.end();
-      H_it = happenings.find(t_2);
-      if (std::next(H_it) != happenings.end()) {
-        it = plan.lower_bound(*std::next(H_it));
-      }
-
+      // At its own happening, the plan order of the snap actions orders them
+      bool after_self = false;
+      auto order = [&](const std::pair<int64_t, ActionStamped> & other) {
+          if (t_2 != t_in || !after_self) {
+            ret.push_back(other);
+          }
+        };
       for (auto iter = plan.lower_bound(t_2); iter != it; ++iter) {
         if (iter->first == action.first) {
-          if (iter->second.expression == action.second.expression) {
+          if (same_item(iter->second, action.second)) {
+            after_self = after_self || t_2 == t_in;
             continue;
           }
         }
 
-        auto X_1_k = X_1;
-        if (!can_apply(*iter, plan, t_2, X_1_k)) {
-          std::cerr << "get_threat: Suitable intermediate state not found. ";
-          std::cerr << "However, one should exist." << std::endl;
+        // Two rates on the same function add up: they keep the order of the plan
+        const auto rates_k = continuous_functions(iter->second);
+        if (rates_k.empty() || rates_a.empty()) {
+          const auto [reads_k, writes_k] = facts(iter->second);
+          if (!meet(writes_a, reads_k) && !meet(writes_a, writes_k) && !meet(writes_k, reads_a)) {
+            continue;
+          }
+        }
+        if (std::any_of(
+            rates_a.begin(), rates_a.end(), [&](const auto & f) {return rates_k.count(f) > 0;}))
+        {
+          order(*iter);
           continue;
         }
 
-        auto R_k = get_conditions(iter->second);
-        auto E_k = get_effects(iter->second);
+        auto X_1_k = X_1;
+        if (!can_apply(*iter, plan, t_2, X_1_k)) {
+          // PDDL+: what the dynamics give, an event or a process, comes later in the plan
+          if (!reads_dynamic(get_conditions(iter->second)) &&
+            (iter->second.type != ActionType::GOAL ||
+            !reads_dynamic(iter->second.action.get_at_start_requirements())))
+          {
+            std::cerr << "get_threat: Suitable intermediate state not found. ";
+            std::cerr << "However, one should exist." << std::endl;
+          }
+          continue;
+        }
+
+        auto R_k = get_ordering_conditions(*iter, happenings, states);
+        auto E_k = get_threat_effects(iter->second);
 
         auto X_hat = X_1_k;
-        apply(E_a, X_hat.predicates, X_hat.functions);
+        apply_effects(E_a, X_hat.predicates, X_hat.functions);
 
         // Check if the input action threatens action k
         if (action.second.type != ActionType::OVERALL &&
           !check(R_k, X_hat.predicates, X_hat.functions))
         {
-          if (t_2 != t_in) {
-            ret.push_back(*iter);
-          } else {
-            std::cerr << "get_threat: An action should not be threatened ";
-            std::cerr << "by another action at the same happening time. ";
-            std::cerr << "Check the plan validity." << std::endl;
-          }
+          order(*iter);
           continue;
         }
 
         auto X_bar = X_1_a;
-        apply(E_k, X_bar.predicates, X_bar.functions);
+        apply_effects(E_k, X_bar.predicates, X_bar.functions);
 
         // Check if action k threatens the input action
         if (iter->second.type != ActionType::OVERALL &&
           !check(R_a, X_bar.predicates, X_bar.functions))
         {
-          if (t_2 != t_in) {
-            ret.push_back(*iter);
-          } else {
-            std::cerr << "get_threat: An action should not be threatened ";
-            std::cerr << "by another action at the same happening time. ";
-            std::cerr << "Check the plan validity." << std::endl;
-          }
+          order(*iter);
           continue;
         }
 
-        // Check if the input action and action k modify the same effect
+        // Check if the input action and action k modify the same effect: one adds what the other
+        // deletes, even if it already held, or both change it
         if (action.second.type != ActionType::OVERALL &&
           iter->second.type != ActionType::OVERALL)
         {
           auto DX_hat = get_diff(X_1_k, X_hat);
           auto DX_bar = get_diff(X_1_a, X_bar);
           auto intersection = get_intersection(DX_hat, DX_bar);
-          if (intersection.predicates.size() > 0 || intersection.functions.size() > 0) {
-            if (t_2 != t_in) {
-              ret.push_back(*iter);
-            } else {
-              std::cerr << "get_threat: An action should not be threatened ";
-              std::cerr << "by another action at the same happening time. ";
-              std::cerr << "Check the plan validity." << std::endl;
-            }
+          if (intersection.predicates.size() > 0 || intersection.functions.size() > 0 ||
+            interfere(E_a, E_k))
+          {
+            order(*iter);
           }
         }
       }
@@ -813,9 +1037,9 @@ STNBTBuilder::get_threat(
 
 bool
 STNBTBuilder::can_apply(
-  const std::pair<int, ActionStamped> & action,
-  const std::multimap<int, ActionStamped> & plan,
-  const int & time,
+  const std::pair<int64_t, ActionStamped> & action,
+  const std::multimap<int64_t, ActionStamped> & plan,
+  const int64_t & time,
   StateVec & state) const
 {
   auto X = state;
@@ -825,7 +1049,24 @@ STNBTBuilder::can_apply(
     return true;
   }
 
+  // The snaps before it at its happening, in the order of the plan
+  auto range = plan.equal_range(time);
+  for (auto iter = range.first; iter != range.second; ++iter) {
+    if (iter->first == action.first && same_item(iter->second, action.second)) {
+      break;
+    }
+    apply_effects(get_effects(iter->second), state.predicates, state.functions);
+    if (check(R, state.predicates, state.functions)) {
+      return true;
+    }
+  }
+
+  // Others in any order: every subset, so only for a few at once
   int n = plan.count(time);
+  if (n > kMaxSubsetSnaps) {
+    state = X;
+    return false;
+  }
   auto it = plan.lower_bound(time);
   for (int m = 1; m <= n; ++m) {
     std::vector<bool> v(n);
@@ -837,12 +1078,12 @@ STNBTBuilder::can_apply(
         if (v[i]) {
           auto iter = std::next(it, i);
           if (iter->first == action.first) {
-            if (iter->second.expression == action.second.expression) {
+            if (same_item(iter->second, action.second)) {
               continue;
             }
           }
           auto E = get_effects(iter->second);
-          apply(E, state.predicates, state.functions);
+          apply_effects(E, state.predicates, state.functions);
           if (check(R, state.predicates, state.functions)) {
             return true;
           }
@@ -854,47 +1095,108 @@ STNBTBuilder::can_apply(
   return false;
 }
 
+namespace
+{
+
+// What makes two facts the same for checkNodeEquality: the name and arguments, whatever the case
+std::string fact_key(const plansys2_msgs::msg::Node & node)
+{
+  std::string key = std::to_string(node.node_type) + ' ';
+  auto add = [&key](const std::string & text) {
+      for (char c : text) {
+        key += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+      }
+    };
+  add(node.name);
+  for (const auto & param : node.parameters) {
+    key += ' ';
+    add(param.name);
+  }
+  return key;
+}
+
+bool has_variables(const plansys2_msgs::msg::Node & node)
+{
+  return std::any_of(
+    node.parameters.begin(), node.parameters.end(),
+    [](const plansys2_msgs::msg::Param & p) {return !p.name.empty() && p.name.front() == '?';});
+}
+
+// The facts of a state, found by key instead of one by one: a state of a long plan has many, and
+// it is compared with many others. A fact with variables, which matches any argument there, is
+// still compared one by one
+template<typename NodeT>
+class FactIndex
+{
+public:
+  explicit FactIndex(const std::vector<NodeT> & facts)
+  : facts_(facts)
+  {
+    for (const auto & fact : facts) {
+      if (has_variables(fact)) {
+        with_variables_.push_back(&fact);
+      } else {
+        by_key_.emplace(fact_key(fact), &fact);
+      }
+    }
+  }
+
+  const NodeT * find(const NodeT & fact) const
+  {
+    if (has_variables(fact)) {
+      for (const auto & other : facts_) {
+        if (parser::pddl::checkNodeEquality(fact, other)) {
+          return &other;
+        }
+      }
+      return nullptr;
+    }
+    if (auto it = by_key_.find(fact_key(fact)); it != by_key_.end()) {
+      return it->second;
+    }
+    for (const auto * other : with_variables_) {
+      if (parser::pddl::checkNodeEquality(fact, *other)) {
+        return other;
+      }
+    }
+    return nullptr;
+  }
+
+private:
+  const std::vector<NodeT> & facts_;
+  std::unordered_map<std::string, const NodeT *> by_key_;
+  std::vector<const NodeT *> with_variables_;
+};
+
+}  // namespace
+
 StateVec
 STNBTBuilder::get_diff(
   const StateVec & X_1,
   const StateVec & X_2) const
 {
   StateVec ret;
+  const FactIndex<plansys2::Predicate> predicates_1(X_1.predicates);
+  const FactIndex<plansys2::Predicate> predicates_2(X_2.predicates);
 
-  // Look for predicates in X_1 that are not in X_2
+  // Predicates in X_1 that are not in X_2, and in X_2 that are not in X_1
   for (const auto & p_1 : X_1.predicates) {
-    auto it = std::find_if(
-      X_2.predicates.begin(), X_2.predicates.end(),
-      [&](plansys2::Predicate p_2) {
-        return parser::pddl::checkNodeEquality(p_1, p_2);
-      });
-    if (it == X_2.predicates.end()) {
+    if (!predicates_2.find(p_1)) {
       ret.predicates.push_back(p_1);
     }
   }
-
-  // Look for predicates in X_2 that are not in X_1
   for (const auto & p_2 : X_2.predicates) {
-    auto it = std::find_if(
-      X_1.predicates.begin(), X_1.predicates.end(),
-      [&](plansys2::Predicate p_1) {
-        return parser::pddl::checkNodeEquality(p_1, p_2);
-      });
-    if (it == X_1.predicates.end()) {
+    if (!predicates_1.find(p_2)) {
       ret.predicates.push_back(p_2);
     }
   }
 
-  // Look for function changes
+  // Function changes
+  const FactIndex<plansys2::Function> functions_2(X_2.functions);
   for (const auto & f_1 : X_1.functions) {
-    auto it = std::find_if(
-      X_2.functions.begin(), X_2.functions.end(),
-      [&](plansys2::Function f_2) {
-        return parser::pddl::checkNodeEquality(f_1, f_2);
-      });
-    if (it != X_2.functions.end()) {
-      if (std::abs(f_1.value - it->value) >
-        1e-5 * std::max(std::abs(f_1.value), std::abs(it->value)))
+    if (const auto * f_2 = functions_2.find(f_1)) {
+      if (std::abs(f_1.value - f_2->value) >
+        1e-5 * std::max(std::abs(f_1.value), std::abs(f_2->value)))
       {
         ret.functions.push_back(f_1);
       }
@@ -911,26 +1213,16 @@ STNBTBuilder::get_intersection(
 {
   StateVec ret;
 
-  // Look for predicates in X_1 that are also in X_2
+  // Predicates and functions in X_1 that are also in X_2
+  const FactIndex<plansys2::Predicate> predicates_2(X_2.predicates);
   for (const auto & p_1 : X_1.predicates) {
-    auto it = std::find_if(
-      X_2.predicates.begin(), X_2.predicates.end(),
-      [&](plansys2::Predicate p_2) {
-        return parser::pddl::checkNodeEquality(p_1, p_2);
-      });
-    if (it != X_2.predicates.end()) {
+    if (predicates_2.find(p_1)) {
       ret.predicates.push_back(p_1);
     }
   }
-
-  // Look for functions in X_1 that are also in X_2
+  const FactIndex<plansys2::Function> functions_2(X_2.functions);
   for (const auto & f_1 : X_1.functions) {
-    auto it = std::find_if(
-      X_2.functions.begin(), X_2.functions.end(),
-      [&](plansys2::Function f_2) {
-        return parser::pddl::checkNodeEquality(f_1, f_2);
-      });
-    if (it != X_2.functions.end()) {
+    if (functions_2.find(f_1)) {
       ret.functions.push_back(f_1);
     }
   }
@@ -941,15 +1233,151 @@ STNBTBuilder::get_intersection(
 plansys2_msgs::msg::Tree
 STNBTBuilder::get_conditions(const ActionStamped & action) const
 {
+  // PDDL+: a discrete simulation cannot tell what the dynamics change; the tree waits for it
+  // A non-durative action requires its precondition when it starts: otherwise nothing orders it
+  // after what makes it true, and it starts too early
+  if (action.type == ActionType::START && action.action.is_action()) {
+    return relax_dynamic(action.action.get_overall_requirements());
+  }
   if (action.type == ActionType::START || action.type == ActionType::GOAL) {
-    return action.action.get_at_start_requirements();
+    return relax_dynamic(action.action.get_at_start_requirements());
   } else if (action.type == ActionType::OVERALL) {
-    return action.action.get_overall_requirements();
+    return relax_dynamic(action.action.get_overall_requirements());
   } else if (action.type == ActionType::END) {
-    return action.action.get_at_end_requirements();
+    return relax_dynamic(action.action.get_at_end_requirements());
   }
 
   return plansys2_msgs::msg::Tree();
+}
+
+plansys2_msgs::msg::Tree
+STNBTBuilder::get_ordering_conditions(
+  const std::pair<int64_t, ActionStamped> & action, const std::set<int64_t> & happenings,
+  const std::map<int64_t, StateVec> & states) const
+{
+  const auto conditions = get_conditions(action.second);
+  const auto effects = get_effects(action.second);
+
+  // The conditional effects, outside quantifiers
+  std::vector<uint32_t> whens;
+  std::vector<uint32_t> pending;
+  if (!effects.nodes.empty()) {
+    pending.push_back(0);
+  }
+  while (!pending.empty()) {
+    const auto id = pending.back();
+    pending.pop_back();
+    const auto & node = effects.nodes[id];
+    if (node.node_type == plansys2_msgs::msg::Node::AND) {
+      pending.insert(pending.end(), node.children.begin(), node.children.end());
+    } else if (node.node_type == plansys2_msgs::msg::Node::WHEN) {
+      whens.push_back(id);
+    }
+  }
+  if (whens.empty()) {
+    return conditions;
+  }
+
+  // The state before its happening, as the plan has it
+  StateVec state{initial_predicates(), initial_functions()};
+  auto happening = get_happening(action.first, happenings);
+  if (happening != happenings.end()) {
+    auto previous = get_previous(*happening, happenings);
+    if (previous != happenings.end() && states.count(*previous)) {
+      state = states.at(*previous);
+    }
+  }
+
+  std::string text = "(and";
+  if (!conditions.nodes.empty()) {
+    if (conditions.nodes[0].node_type == plansys2_msgs::msg::Node::AND) {
+      for (auto child : conditions.nodes[0].children) {
+        text += " " + parser::pddl::toString(conditions, child);
+      }
+    } else {
+      text += " " + parser::pddl::toString(conditions);
+    }
+  }
+  for (auto id : whens) {
+    const auto condition = parser::pddl::toString(effects, effects.nodes[id].children[0]);
+    const bool held = check(parser::pddl::fromString(condition), state.predicates, state.functions);
+    text += held ? " " + condition : " (not " + condition + ")";
+  }
+  return parser::pddl::fromString(text + ")");
+}
+
+namespace
+{
+// The facts an effect adds and deletes, and the functions it changes, as written: conditional
+// effects as if they happened
+void written_effects(
+  const plansys2_msgs::msg::Tree & tree, uint32_t id, bool negate,
+  std::vector<plansys2_msgs::msg::Node> & adds, std::vector<plansys2_msgs::msg::Node> & deletes,
+  std::vector<plansys2_msgs::msg::Node> & functions)
+{
+  if (id >= tree.nodes.size()) {
+    return;
+  }
+  const auto & node = tree.nodes[id];
+  switch (node.node_type) {
+    case plansys2_msgs::msg::Node::AND:
+      for (auto child : node.children) {
+        written_effects(tree, child, negate, adds, deletes, functions);
+      }
+      break;
+    case plansys2_msgs::msg::Node::NOT:
+      written_effects(tree, node.children[0], !negate, adds, deletes, functions);
+      break;
+    case plansys2_msgs::msg::Node::WHEN:
+      written_effects(tree, node.children[1], negate, adds, deletes, functions);
+      break;
+    case plansys2_msgs::msg::Node::PREDICATE:
+      (negate ? deletes : adds).push_back(node);
+      break;
+    case plansys2_msgs::msg::Node::FUNCTION_MODIFIER:
+      if (!node.children.empty()) {
+        functions.push_back(tree.nodes[node.children[0]]);
+      }
+      break;
+    default:
+      break;
+  }
+}
+
+bool any_equal(
+  const std::vector<plansys2_msgs::msg::Node> & a, const std::vector<plansys2_msgs::msg::Node> & b)
+{
+  for (const auto & x : a) {
+    for (const auto & y : b) {
+      if (parser::pddl::checkNodeEquality(x, y)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+}  // namespace
+
+bool
+STNBTBuilder::interfere(
+  const plansys2_msgs::msg::Tree & first, const plansys2_msgs::msg::Tree & second)
+{
+  std::vector<plansys2_msgs::msg::Node> adds_1, deletes_1, functions_1;
+  std::vector<plansys2_msgs::msg::Node> adds_2, deletes_2, functions_2;
+  written_effects(first, 0, false, adds_1, deletes_1, functions_1);
+  written_effects(second, 0, false, adds_2, deletes_2, functions_2);
+  return any_equal(adds_1, deletes_2) || any_equal(deletes_1, adds_2) ||
+         any_equal(functions_1, functions_2);
+}
+
+plansys2_msgs::msg::Tree
+STNBTBuilder::get_threat_effects(const ActionStamped & action) const
+{
+  // A non-durative action runs for a while too, and its effects can come at any moment of it
+  if (action.type == ActionType::START && action.action.is_action()) {
+    return action.action.get_at_end_effects();
+  }
+  return get_effects(action);
 }
 
 plansys2_msgs::msg::Tree
@@ -957,7 +1385,10 @@ STNBTBuilder::get_effects(const ActionStamped & action) const
 {
   if (action.type == ActionType::START) {
     return action.action.get_at_start_effects();
-  } else if (action.type == ActionType::END || action.type == ActionType::INIT) {
+  }
+  const bool at_end = action.type == ActionType::END || action.type == ActionType::INIT ||
+    action.type == ActionType::TIMED;
+  if (at_end) {
     return action.action.get_at_end_effects();
   }
 
@@ -967,9 +1398,21 @@ STNBTBuilder::get_effects(const ActionStamped & action) const
 void
 STNBTBuilder::prune_paths(Node::Ptr current, Node::Ptr previous) const
 {
+  std::set<const Node *> visited;
+  prune_paths(current, previous, visited);
+}
+
+void
+STNBTBuilder::prune_paths(
+  Node::Ptr current, Node::Ptr previous, std::set<const Node *> & visited) const
+{
+  // Once per node: removing the arcs to current is done the first time
+  if (!visited.insert(previous.get()).second) {
+    return;
+  }
   // Traverse the graph from the previous node to the root
   for (auto & in : previous->input_arcs) {
-    prune_paths(current, std::get<0>(in));
+    prune_paths(current, std::get<0>(in), visited);
   }
 
   // Don't remove the link between the start and end node
@@ -1017,9 +1460,21 @@ STNBTBuilder::prune_paths(Node::Ptr current, Node::Ptr previous) const
 bool
 STNBTBuilder::check_paths(Node::Ptr current, Node::Ptr previous) const
 {
+  std::set<const Node *> visited;
+  return check_paths(current, previous, visited);
+}
+
+bool
+STNBTBuilder::check_paths(
+  Node::Ptr current, Node::Ptr previous, std::set<const Node *> & visited) const
+{
+  // A node already seen did not reach previous
+  if (!visited.insert(current.get()).second) {
+    return false;
+  }
   // Traverse the graph from the current node to the root
   for (auto & in : current->input_arcs) {
-    if (check_paths(std::get<0>(in), previous)) {
+    if (check_paths(std::get<0>(in), previous, visited)) {
       return true;
     }
   }
@@ -1078,27 +1533,34 @@ STNBTBuilder::floyd_warshall(Eigen::MatrixXd & dist) const
   }
 }
 
-std::string
+void
 STNBTBuilder::get_flow(
   const Node::Ptr node,
   const Node::Ptr prev_node,
   std::set<Node::Ptr> & used,
-  const int & level) const
+  const int & level,
+  bool wrap,
+  std::string & out) const
 {
   int l = level;
   const auto action_id = to_action_id(node->action, action_time_precision_);
 
-  if (used.find(node) != used.end()) {
-    std::string parent_id;
-    std::string parent_type;
-    if (prev_node) {
-      parent_id = to_action_id(prev_node->action, action_time_precision_);
-      parent_type = to_string(prev_node->action.type);
-    }
+  // Waits for its parent: the node runs where it was used, or from its own start
+  auto wait_for_parent = [&]() {
+      std::string parent_id;
+      std::string parent_type;
+      if (prev_node) {
+        parent_id = to_action_id(prev_node->action, action_time_precision_);
+        parent_type = to_string(prev_node->action.type);
+      }
+      return t(l) + "<WaitAction action=\"" +
+             action_id + " " + to_string(node->action.type) + " " +
+             parent_id + " " + parent_type + "\"/>\n";
+    };
 
-    return t(l) + "<WaitAction action=\"" +
-           action_id + " " + to_string(node->action.type) + " " +
-           parent_id + " " + parent_type + "\"/>\n";
+  if (used.find(node) != used.end()) {
+    out += wait_for_parent();
+    return;
   }
 
   bool is_special = false;
@@ -1116,38 +1578,51 @@ STNBTBuilder::get_flow(
     used.insert(node);
   }
 
+  // An end reached from another parent than its start runs from its start: executed here too,
+  // its action would run, and check its requirements, before it starts
+  const bool leaf = node->output_arcs.empty() ||
+    (node->output_arcs.size() == 1 &&
+    std::get<0>(*node->output_arcs.begin())->action.type == ActionType::GOAL);
+  if (is_special && leaf) {
+    out += wait_for_parent();
+    return;
+  }
+
   if (node->output_arcs.size() == 0) {
     if (node->action.type == ActionType::END) {
-      return end_execution_block(node, l);
-    }
-    if (node->action.type != ActionType::GOAL) {
+      out += end_execution_block(node, l);
+    } else if (node->action.type != ActionType::GOAL) {
       std::cerr << "get_flow: Unexpected action type" << std::endl;
     }
-    return {};
+    return;
   } else if (node->output_arcs.size() == 1) {
     const auto child = std::get<0>(*node->output_arcs.begin());
     if (node->action.type == ActionType::END &&
       child->action.type == ActionType::GOAL)
     {
-      return end_execution_block(node, l);
+      out += end_execution_block(node, l);
+      return;
     }
   }
 
-  std::string flow;
-
-  if (node->action.type != ActionType::INIT) {
-    flow = flow + t(l) + "<Sequence name=\"" + action_id + "\">\n";
+  // Inside the Sequence of its parent when it is the only way on: Sequence(x, Sequence(y, z))
+  // is Sequence(x, y, z), and the tree does not get one level deeper with each action
+  const bool sequence = wrap && node->action.type != ActionType::INIT;
+  if (sequence) {
+    out += t(l) + "<Sequence name=\"" + action_id + "\">\n";
+  } else {
+    l = l - 1;  // Its content goes where its Sequence would be
   }
 
   if (node->action.type == ActionType::START) {
-    flow = flow + start_execution_block(node, l + 1);
+    out += start_execution_block(node, l + 1);
   } else if (node->action.type == ActionType::END) {
     auto t_1 = to_int_time(node->action.time, action_time_precision_ + 1);
     auto t_2 = to_int_time(prev_node->action.time, action_time_precision_ + 1);
     if (prev_node->action.type == ActionType::START && (t_1 == t_2) &&
       (node->action.expression == prev_node->action.expression))
     {
-      flow = flow + end_execution_block(node, l + 1);
+      out += end_execution_block(node, l + 1);
     } else {
       std::string parent_id;
       std::string parent_type;
@@ -1156,7 +1631,7 @@ STNBTBuilder::get_flow(
         parent_type = to_string(prev_node->action.type);
       }
 
-      flow = flow + t(l + 1) + "<WaitAction action=\"" +
+      out += t(l + 1) + "<WaitAction action=\"" +
         action_id + " " + to_string(node->action.type) + " " +
         parent_id + " " + parent_type + "\"/>\n";
     }
@@ -1175,11 +1650,13 @@ STNBTBuilder::get_flow(
 
   int n = 0;
   if (num_output_arcs > 1) {
-    flow = flow + t(l + 1) +
+    out += t(l + 1) +
       "<Parallel success_count=\"" + std::to_string(num_output_arcs) +
       "\" failure_count=\"1\">\n";
     n = 1;
   }
+  // Each branch of a Parallel, and the only child of the root, is a node of its own
+  const bool wrap_children = num_output_arcs > 1 || node->action.type == ActionType::INIT;
 
   // Visit the end action first
   auto end_action_arc = node->output_arcs.end();
@@ -1189,7 +1666,7 @@ STNBTBuilder::get_flow(
       std::bind(&STNBTBuilder::is_end, this, std::placeholders::_1, node->action));
     if (end_action_arc != node->output_arcs.end()) {
       const auto & next = std::get<0>(*end_action_arc);
-      flow = flow + get_flow(next, node, used, l + n + 1);
+      get_flow(next, node, used, l + n + 1, wrap_children, out);
     }
   }
 
@@ -1203,19 +1680,17 @@ STNBTBuilder::get_flow(
     }
     if (child_node->action.type != ActionType::GOAL) {
       const auto & next = std::get<0>(child);
-      flow = flow + get_flow(next, node, used, l + n + 1);
+      get_flow(next, node, used, l + n + 1, wrap_children, out);
     }
   }
 
   if (num_output_arcs > 1) {
-    flow = flow + t(l + 1) + "</Parallel>\n";
+    out += t(l + 1) + "</Parallel>\n";
   }
 
-  if (node->action.type != ActionType::INIT) {
-    flow = flow + t(l) + "</Sequence>\n";
+  if (sequence) {
+    out += t(l) + "</Sequence>\n";
   }
-
-  return flow;
 }
 
 std::string
@@ -1295,12 +1770,24 @@ STNBTBuilder::get_flow_dotgraph(
   Node::Ptr node,
   std::set<std::string> & edges)
 {
+  std::set<const Node *> visited;
+  get_flow_dotgraph(node, edges, visited);
+}
+
+void
+STNBTBuilder::get_flow_dotgraph(
+  Node::Ptr node, std::set<std::string> & edges, std::set<const Node *> & visited)
+{
+  // Once per node: it runs on every feedback, from every node
+  if (!visited.insert(node.get()).second) {
+    return;
+  }
   for (const auto & arc : node->output_arcs) {
     auto child = std::get<0>(arc);
     std::string edge = std::to_string(node->node_num) + "->" + std::to_string(child->node_num) +
       ";\n";
     edges.insert(edge);
-    get_flow_dotgraph(child, edges);
+    get_flow_dotgraph(child, edges, visited);
   }
 }
 
@@ -1344,8 +1831,11 @@ STNBTBuilder::get_action_status(
   ActionStamped action_stamped,
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map)
 {
+  if (!action_map) {
+    return ActionExecutor::IDLE;  // Nothing is executing yet
+  }
   auto index = "(" + action_stamped.action.get_action_string() + "):" +
-    std::to_string(static_cast<int>(action_stamped.time * 1000));
+    std::to_string(to_int_time(action_stamped.time, action_time_precision_));
   if (action_map->find(index) != action_map->end()) {
     if ((*action_map)[index].action_executor) {
       return (*action_map)[index].action_executor->get_internal_status();

@@ -2,6 +2,17 @@
 Changelog for package plansys2_popf_plan_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Tests discover only nodes on this host (`#455 <https://github.com/PlanSys2/ros2_planning_system/pull/455>`_)
+* POPF plugin: per-run folders, arguments passed to popf, robust plan parsing (`#442 <https://github.com/PlanSys2/ros2_planning_system/pull/442>`_)
+* Enforce plan solver timeouts and kill the whole planner process group (`#421 <https://github.com/PlanSys2/ros2_planning_system/pull/421>`_)
+* Contributors: Francisco Martín Rico
+
 3.1.0 (2026-07-28)
 ------------------
 * Fix deprecated get_share_directory

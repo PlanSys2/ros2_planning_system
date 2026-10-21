@@ -15,10 +15,7 @@
 
 """Main planner node that loads and uses plan solver plugins."""
 
-from concurrent.futures import Future, ThreadPoolExecutor
-
-import time
-
+from concurrent.futures import Future, ThreadPoolExecutor, wait
 from typing import Dict, List, Optional
 
 from plansys2_msgs.msg import Plan, PlanArray
@@ -28,7 +25,9 @@ from plansys2_support_py.core.PluginProvider import PluginProvider
 
 import rclpy
 from rclpy.duration import Duration
+from rclpy.exceptions import ParameterUninitializedException
 from rclpy.lifecycle import LifecycleNode, LifecycleState, TransitionCallbackReturn
+from rclpy.parameter import Parameter
 
 
 class PlannerNode(LifecycleNode):
@@ -40,19 +39,25 @@ class PlannerNode(LifecycleNode):
     PDDL domains and problems, and validates domains.
     """
 
-    def __init__(self):
-        """Initialize the PlannerNode."""
-        super().__init__('planner')
+    def __init__(self, **kwargs):
+        """
+        Initialize the PlannerNode.
+
+        Parameters
+        ----------
+        **kwargs
+            Passed to the node, such as namespace or parameter_overrides.
+
+        """
+        super().__init__('planner', **kwargs)
 
         self.solvers_: Dict[str, PlanSolverBase] = {}
         self.solver_ids_: List[str] = []
         self.solver_types_: List[str] = []
-        self.default_ids_: List[str] = ['']
-        self.default_types_: List[str] = ['plansys2_popf_plan_solver/popf']
         self.solver_timeout_: Duration = Duration(seconds=15)
 
         # Declare parameters
-        self.declare_parameter('plan_solver_plugins', self.default_ids_)
+        self.declare_parameter('plan_solver_plugins', Parameter.Type.STRING_ARRAY)
         self.declare_parameter(
             'plan_solver_timeout', self.solver_timeout_.nanoseconds / 1e9
         )
@@ -139,80 +144,52 @@ class PlannerNode(LifecycleNode):
             self.get_logger().warning(f'[{self.get_name()}] No plugins found!')
 
         # Get parameters
-        self.solver_ids_ = self.get_parameter('plan_solver_plugins').value
+        try:
+            self.solver_ids_ = list(self.get_parameter('plan_solver_plugins').value or [])
+        except ParameterUninitializedException:
+            self.solver_ids_ = []
         timeout = self.get_parameter('plan_solver_timeout').value
+        if not isinstance(timeout, (int, float)) or timeout <= 0.0:
+            self.get_logger().error(
+                f'[{self.get_name()}] plan_solver_timeout must be positive ({timeout}), '
+                'using 15 seconds')
+            timeout = 15.0
         self.solver_timeout_ = Duration(seconds=timeout)
 
-        if self.solver_ids_:
-            # Configure solver parameters if using defaults
-            if self.solver_ids_ == self.default_ids_:
-                for i in range(len(self.default_ids_)):
-                    self._declare_parameter_if_not_declared(
-                        f'{self.default_ids_[i]}.plugin',
-                        self.default_types_[i]
-                    )
+        if not self.solver_ids_:
+            # The C++ solvers, such as POPF or Kairos, are for the C++ planner
+            self.get_logger().fatal(
+                f'[{self.get_name()}] No plan solvers: set plan_solver_plugins, and '
+                '<id>.plugin to a Python solver (derived from '
+                'plansys2_support_py.core.PlanSolverBase and exported in a plugin.xml)')
+            return TransitionCallbackReturn.FAILURE
 
-            # Load all configured solvers
-            self.solver_types_ = [''] * len(self.solver_ids_)
-
-            for i in range(len(self.solver_ids_)):
-                try:
-                    solver_id = self.solver_ids_[i]
-                    plugin_type = self._get_plugin_type_param(solver_id)
-                    self.solver_types_[i] = plugin_type
-
-                    # Load plugin
-                    solver = self.plugin_provider_.load(self.solver_types_[i], self)
-
-                    if solver is None:
-                        self.get_logger().fatal(
-                            f'[{self.get_name()}] Failed to create '
-                            f'solver: {solver_id} of type '
-                            f'{self.solver_types_[i]}'
-                        )
-                        return TransitionCallbackReturn.FAILURE
-
-                    # Configure the solver
-                    solver.configure(self, solver_id)
-
-                    self.get_logger().info(
-                        f'[{self.get_name()}] Created solver: '
-                        f'{solver_id} of type {self.solver_types_[i]}'
-                    )
-
-                    self.solvers_[solver_id] = solver
-
-                except RuntimeError as ex:
-                    self.get_logger().fatal(
-                        f'[{self.get_name()}] Failed to create solver. '
-                        f'Exception: {ex}'
-                    )
-                    return TransitionCallbackReturn.FAILURE
-        else:
-            # Load default POPF planner
-            self.get_logger().info(
-                f'[{self.get_name()}] No plan_solver_plugins '
-                f'specified, loading default POPF solver'
-            )
+        # Load all configured solvers
+        self.solver_types_ = [''] * len(self.solver_ids_)
+        for i, solver_id in enumerate(self.solver_ids_):
             try:
-                default_solver = self.plugin_provider_.load('plansys2::POPFPlanSolver', self)
-                if default_solver is None:
+                plugin_type = self._get_plugin_type_param(solver_id)
+                self.solver_types_[i] = plugin_type
+                solver = self.plugin_provider_.load(plugin_type, self)
+                if solver is None:
                     self.get_logger().fatal(
-                        'Failed to load default POPF solver'
+                        f'[{self.get_name()}] Failed to create '
+                        f'solver: {solver_id} of type {plugin_type}'
                     )
+                    self.solvers_.clear()
                     return TransitionCallbackReturn.FAILURE
-
-                default_solver.configure(self, 'POPF')
-                self.solvers_['POPF'] = default_solver
+                solver.configure(self, solver_id)
                 self.get_logger().info(
-                    f'[{self.get_name()}] Created default solver: '
-                    'POPF of type plansys2::POPFPlanSolver'
+                    f'[{self.get_name()}] Created solver: '
+                    f'{solver_id} of type {plugin_type}'
                 )
-            except RuntimeError as ex:
+                self.solvers_[solver_id] = solver
+            except Exception as ex:
                 self.get_logger().fatal(
-                    f'[{self.get_name()}] Failed to create default '
-                    f'solver. Exception: {ex}'
+                    f'[{self.get_name()}] Failed to create solver {solver_id}. '
+                    f'Exception: {ex}'
                 )
+                self.solvers_.clear()
                 return TransitionCallbackReturn.FAILURE
 
         timeout_seconds = self.solver_timeout_.nanoseconds / 1e9
@@ -364,63 +341,35 @@ class PlannerNode(LifecycleNode):
         PlanArray: An array of plans found by the planners.
 
         """
-        futures: Dict[str, Future] = {}
         results: Dict[str, Optional[Plan]] = {}
+        if not self.solvers_:
+            self.get_logger().error(f'[{self.get_name()}] No solvers to plan with')
+            return PlanArray()
 
-        start_time = self.get_clock().now()
+        # All solvers in parallel, up to the timeout in wall time, as the C++ planner
+        timeout = self.solver_timeout_.nanoseconds / 1e9
+        executor = ThreadPoolExecutor(max_workers=len(self.solvers_))
+        futures: Dict[Future, str] = {}
+        for solver_id, solver in self.solvers_.items():
+            future = executor.submit(
+                solver.get_plan, domain, problem, self.get_namespace(), self.solver_timeout_)
+            futures[future] = solver_id
+        done, pending = wait(futures, timeout=timeout)
 
-        # Launch all solvers in parallel using ThreadPoolExecutor
-        with ThreadPoolExecutor(max_workers=len(self.solvers_)) as executor:
-            for solver_id, solver in self.solvers_.items():
-                future = executor.submit(
-                    solver.get_plan,
-                    domain,
-                    problem,
-                    self.get_namespace(),
-                    self.solver_timeout_
-                )
-                futures[solver_id] = future
-
-            # Wait for results with timeout
-            pending_count = len(futures)
-            elapsed = self.get_clock().now() - start_time
-            while pending_count > 0 and elapsed < self.solver_timeout_:
-                for solver_id, future in futures.items():
-                    if solver_id not in results:
-                        if future.done():
-                            try:
-                                result = future.result(timeout=0.001)
-                                results[solver_id] = result
-                                pending_count -= 1
-                            except RuntimeError as e:
-                                self.get_logger().warning(
-                                    f'[{self.get_name()}] Solver '
-                                    f'{solver_id} raised exception: {e}'
-                                )
-                                results[solver_id] = None
-                                pending_count -= 1
-
-                time.sleep(0.001)  # Small sleep to avoid busy waiting
-                elapsed = self.get_clock().now() - start_time
-
-            # Cancel remaining solvers
-            for solver_id, solver in self.solvers_.items():
-                if solver_id not in results:
-                    solver.cancel()
-
-            # Give cancelled solvers time to terminate
-            time.sleep(0.1)
-
-            # Collect remaining results
-            for solver_id, future in futures.items():
-                if solver_id not in results:
-                    try:
-                        future.result(timeout=0.1)
-                    except RuntimeError as e:
-                        self.get_logger().warning(
-                            f'[{self.get_name()}] Exception while '
-                            f'destroying future for {solver_id}: {e}'
-                        )
+        for future in pending:
+            self.get_logger().warning(
+                f'[{self.get_name()}] Solver {futures[future]} did not finish in {timeout}s')
+            self.solvers_[futures[future]].cancel()
+        # Cancelled solvers get some time to stop; one that does not is left behind
+        if pending:
+            done |= wait(pending, timeout=0.2).done
+        for future in [f for f in futures if f in done]:  # In the order of the solvers
+            try:
+                results[futures[future]] = future.result()
+            except Exception as e:
+                self.get_logger().warning(
+                    f'[{self.get_name()}] Solver {futures[future]} raised exception: {e}')
+        executor.shutdown(wait=False, cancel_futures=True)
 
         # Build plan array from results
         plan_array = PlanArray()

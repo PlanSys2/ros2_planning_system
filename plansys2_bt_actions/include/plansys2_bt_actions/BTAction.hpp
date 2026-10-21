@@ -50,6 +50,18 @@ public:
   explicit BTAction(const std::string & action);
 
   /**
+   * @brief Constructor for a BTAction that shares a blackboard with others (#315).
+   *
+   * The blackboard of its tree is a child of parent: as in BehaviorTree.CPP, keys starting
+   * with '@' (e.g. "@battery") are those of parent, so they are shared by all the BTActions
+   * created with it in the same process.
+   *
+   * @param[in] action Name of the action this executor handles.
+   * @param[in] parent The blackboard to share.
+   */
+  BTAction(const std::string & action, BT::Blackboard::Ptr parent);
+
+  /**
    * @brief Get the name of the action.
    *
    * @return std::string The action name.
@@ -62,6 +74,13 @@ public:
    * @return std::string The path to the BT XML file.
    */
   const std::string & getBTFile() const {return bt_xml_file_;}
+
+  /**
+   * @brief Get the blackboard of the tree, once configured.
+   *
+   * @return BT::Blackboard::Ptr The blackboard, or nullptr before configure.
+   */
+  BT::Blackboard::Ptr getBlackboard() const {return blackboard_;}
 
 protected:
   using CallbackReturnT =
@@ -137,21 +156,23 @@ protected:
 private:
   BT::Tree tree_;
   BT::Blackboard::Ptr blackboard_;
+  // Shared with other BTActions, if given
+  BT::Blackboard::Ptr parent_blackboard_;
   std::string action_;
   std::string bt_xml_file_;
   std::vector<std::string> plugin_list_;
-  bool finished_;
-  int total_action_nodes_;
+  bool finished_ {false};
+  int total_action_nodes_ {0};
   std::unique_ptr<BT::FileLogger2> bt_file_logger_;
   std::unique_ptr<BT::MinitraceLogger> bt_minitrace_logger_;
   // Groot2 monitor
   std::unique_ptr<BT::Groot2Publisher> groot_monitor_;
 
   // Default timeout value while waiting for response from a server
-  std::chrono::milliseconds default_server_timeout_;
+  std::chrono::milliseconds default_server_timeout_ {0};
 
   // The timeout value for waiting for a service to response
-  std::chrono::milliseconds wait_for_service_timeout_;
+  std::chrono::milliseconds wait_for_service_timeout_ {0};
 
   // Duration for each iteration of BT execution
   std::chrono::milliseconds bt_loop_duration_;

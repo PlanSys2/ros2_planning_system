@@ -14,7 +14,7 @@
 
 #include "plansys2_executor/bt_builder_plugins/sequential_bt_builder.hpp"
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
@@ -22,9 +22,12 @@
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_core/Utils.hpp"
 
 #include "rclcpp/rclcpp.hpp"
+
+using namespace std::chrono_literals;  // NOLINT
 
 
 class ROS2Environment : public ::testing::Environment
@@ -69,8 +72,8 @@ public:
   : Node("test_planner_node") {}
 
   void validate_domain_service_callback(
-    const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Request> request,
+    const std::shared_ptr<rmw_request_id_t>,
+    const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Request>,
     const std::shared_ptr<plansys2_msgs::srv::ValidateDomain::Response> response)
   {
     response->success = true;
@@ -81,16 +84,17 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
 {
   {
     auto test_node = rclcpp::Node::make_shared("test_plan_1");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
     auto planner_node = std::make_shared<TestPlannerNode>();
 
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
 
     auto btbuilder = std::make_shared<SequentialBTBuilderTest>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
+    std::string pkgpath = plansys2::share_path("plansys2_executor").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/suave_domain.pddl"});
     domain_node->set_parameter({"validate_using_planner_node", true});
@@ -103,34 +107,13 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
     exe.add_node(problem_node->get_node_base_interface());
     exe.add_node(planner_node->get_node_base_interface());
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {
-          exe.spin_some();
-        }
-      });
+    plansys2::testing::ExecutorThread spinner(exe);
 
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     plansys2_msgs::msg::Plan plan;
 
@@ -164,6 +147,7 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
   <BehaviorTree ID="MainTree">
     <Sequence name="MainSequence">
       <Sequence name="(start_robot bluerov):0">
+        <WaitAtStartReq action="(start_robot bluerov):0"/>
         <ApplyAtStartEffect action="(start_robot bluerov):0"/>
         <ReactiveSequence name="(start_robot bluerov):0">
             <CheckOverAllReq action="(start_robot bluerov):0"/>
@@ -174,6 +158,7 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
       </Sequence>
       <Sequence name="(reconfigure1 f_maintain_motion fd_all_thrusters):0">
         <WaitAction action="(start_robot bluerov):0"/>
+        <WaitAtStartReq action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
         <ApplyAtStartEffect action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
         <ReactiveSequence name="(reconfigure1 f_maintain_motion fd_all_thrusters):0">
             <CheckOverAllReq action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
@@ -183,8 +168,8 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
         <ApplyAtEndEffect action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
       </Sequence>
       <Sequence name="(reconfigure1 f_generate_search_path fd_spiral_high):0">
-        <WaitAction action="(start_robot bluerov):0"/>
         <WaitAction action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
+        <WaitAtStartReq action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
         <ApplyAtStartEffect action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
         <ReactiveSequence name="(reconfigure1 f_generate_search_path fd_spiral_high):0">
             <CheckOverAllReq action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
@@ -194,9 +179,8 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
         <ApplyAtEndEffect action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
       </Sequence>
       <Sequence name="(search_pipeline pipeline bluerov):0">
-        <WaitAction action="(start_robot bluerov):0"/>
-        <WaitAction action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
         <WaitAction action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
+        <WaitAtStartReq action="(search_pipeline pipeline bluerov):0"/>
         <ApplyAtStartEffect action="(search_pipeline pipeline bluerov):0"/>
         <ReactiveSequence name="(search_pipeline pipeline bluerov):0">
             <CheckOverAllReq action="(search_pipeline pipeline bluerov):0"/>
@@ -206,10 +190,8 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
         <ApplyAtEndEffect action="(search_pipeline pipeline bluerov):0"/>
       </Sequence>
       <Sequence name="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0">
-        <WaitAction action="(start_robot bluerov):0"/>
-        <WaitAction action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
-        <WaitAction action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
         <WaitAction action="(search_pipeline pipeline bluerov):0"/>
+        <WaitAtStartReq action="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"/>
         <ApplyAtStartEffect action="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"/>
         <ReactiveSequence name="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0">
             <CheckOverAllReq action="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"/>
@@ -219,11 +201,8 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
         <ApplyAtEndEffect action="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"/>
       </Sequence>
       <Sequence name="(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0">
-        <WaitAction action="(start_robot bluerov):0"/>
-        <WaitAction action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
-        <WaitAction action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
-        <WaitAction action="(search_pipeline pipeline bluerov):0"/>
         <WaitAction action="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"/>
+        <WaitAtStartReq action="(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"/>
         <ApplyAtStartEffect action="(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"/>
         <ReactiveSequence name="(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0">
             <CheckOverAllReq action="(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"/>
@@ -233,12 +212,8 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
         <ApplyAtEndEffect action="(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"/>
       </Sequence>
       <Sequence name="(inspect_pipeline pipeline bluerov):0">
-        <WaitAction action="(start_robot bluerov):0"/>
-        <WaitAction action="(reconfigure1 f_maintain_motion fd_all_thrusters):0"/>
-        <WaitAction action="(reconfigure1 f_generate_search_path fd_spiral_high):0"/>
-        <WaitAction action="(search_pipeline pipeline bluerov):0"/>
-        <WaitAction action="(reconfigure1 f_follow_pipeline fd_follow_pipeline):0"/>
         <WaitAction action="(reconfigure2 f_generate_search_path fd_spiral_high fd_unground):0"/>
+        <WaitAtStartReq action="(inspect_pipeline pipeline bluerov):0"/>
         <ApplyAtStartEffect action="(inspect_pipeline pipeline bluerov):0"/>
         <ReactiveSequence name="(inspect_pipeline pipeline bluerov):0">
             <CheckOverAllReq action="(inspect_pipeline pipeline bluerov):0"/>
@@ -253,11 +228,45 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
 )";
 
     EXPECT_EQ(bt_string, expected_bt_string);
-
-    finish = true;
-    t.join();
 }
   plansys2::drain_ros(200ms);
+}
+
+TEST(sequential_btbuilder_tests, dotgraph_is_the_plan_in_order)
+{
+  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("sequential_dotgraph");
+  auto btbuilder = std::make_shared<SequentialBTBuilderTest>();
+
+  plansys2_msgs::msg::Plan plan;
+  for (const auto & action : {"(move r a b)", "(move r b c)", "(move r c d)"}) {
+    plansys2_msgs::msg::PlanItem item;
+    item.action = action;
+    item.time = plan.items.size() * 5.0;
+    plan.items.push_back(item);
+  }
+  btbuilder->get_tree(plan);
+
+  // The first one ended, the second one runs, the third one waits
+  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
+  (*action_map)["(move r a b):0"].action_executor =
+    plansys2::ActionExecutor::make_shared("(move r a b)", node);
+  (*action_map)["(move r a b):0"].action_executor->set_internal_status(
+    plansys2::ActionExecutor::SUCCESS);
+  (*action_map)["(move r b c):5000"].action_executor =
+    plansys2::ActionExecutor::make_shared("(move r b c)", node);
+  (*action_map)["(move r b c):5000"].action_executor->set_internal_status(
+    plansys2::ActionExecutor::RUNNING);
+
+  auto dot = btbuilder->get_dotgraph(action_map);
+  EXPECT_NE(dot.find("0 [label=\"(move r a b)\",labeljust=c,style=filled,color=green4"),
+    std::string::npos) << dot;
+  EXPECT_NE(dot.find("1 [label=\"(move r b c)\",labeljust=c,style=filled,color=blue"),
+    std::string::npos) << dot;
+  EXPECT_NE(dot.find("2 [label=\"(move r c d)\",labeljust=c,style=filled,color=yellow3"),
+    std::string::npos) << dot;
+  EXPECT_NE(dot.find("0->1;"), std::string::npos) << dot;
+  EXPECT_NE(dot.find("1->2;"), std::string::npos) << dot;
+  EXPECT_EQ(dot.find("0->2;"), std::string::npos) << dot;
 }
 
 int main(int argc, char ** argv)

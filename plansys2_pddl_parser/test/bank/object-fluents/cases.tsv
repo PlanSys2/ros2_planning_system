@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:object-fluents	push the crate one room by assigning both object fluents
+domain.pddl	p2.pddl	yes	:object-fluents	push two boxes to their rooms and end in the hall
+domain.pddl	p3.pddl	no	:object-fluents	office is only connected outwards, so box_pos can never become office

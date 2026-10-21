@@ -13,10 +13,13 @@
 // limitations under the License.
 #pragma once
 
+#include <memory>
+#include <set>
 #include <stdexcept>
 #include <string>
 
 #include "plansys2_pddl_parser/And.hpp"
+#include "plansys2_pddl_parser/Constraint.hpp"
 #include "plansys2_pddl_parser/Derived.hpp"
 #include "plansys2_pddl_parser/EitherType.hpp"
 #include "plansys2_pddl_parser/Exists.hpp"
@@ -28,8 +31,10 @@
 #include "plansys2_pddl_parser/Not.hpp"
 #include "plansys2_pddl_parser/Oneof.hpp"
 #include "plansys2_pddl_parser/Or.hpp"
+#include "plansys2_pddl_parser/Preference.hpp"
 #include "plansys2_pddl_parser/Task.hpp"
 #include "plansys2_pddl_parser/TemporalAction.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 #include "plansys2_pddl_parser/When.hpp"
 
 #define DOMAIN_DEBUG false
@@ -55,13 +60,17 @@ public:
   bool fluents;          // whether domains contains fluents
   bool derivedpred;      // whether domain contains derived predicates
   bool existentialcond;  // whether domain contains existential predicates
+  StringVec requirements;  // as written, to print them back
 
   TokenStruct<Type *> types;       // types
   TokenStruct<Lifted *> preds;     // predicates
   TokenStruct<Function *> funcs;   // functions
   TokenStruct<Action *> actions;   // actions
   TokenStruct<Derived *> derived;  // derived predicates
+  TokenStruct<Action *> processes;  // PDDL+: what acts while its precondition holds
+  TokenStruct<Action *> events;     // PDDL+: what happens when its precondition becomes true
   TokenStruct<Task *> tasks;       // tasks
+  Condition * constraints = nullptr;  // PDDL3: what every plan of every problem keeps
 
   Domain()
   : equality(false),
@@ -94,11 +103,19 @@ public:
     for (unsigned i = 0; i < funcs.size(); ++i) {delete funcs[i];}
     for (unsigned i = 0; i < actions.size(); ++i) {delete actions[i];}
     for (unsigned i = 0; i < derived.size(); ++i) {delete derived[i];}
+    for (unsigned i = 0; i < processes.size(); ++i) {delete processes[i];}
+    for (unsigned i = 0; i < events.size(); ++i) {delete events[i];}
     for (unsigned i = 0; i < tasks.size(); ++i) {delete tasks[i];}
+    if (constraints) {delete constraints;}
   }
 
   virtual void parse(const std::string & s)
   {
+    // Deeper text would overflow the stack of the recursive parsers
+    if (getMaxNesting(s) > kMaxNestingDepth) {
+      throw std::runtime_error(
+              "PDDL nested deeper than " + std::to_string(kMaxNestingDepth) + " levels");
+    }
     Stringreader f(s);
     name = f.parseName("domain");
 
@@ -134,13 +151,39 @@ public:
       parseAction(f);
     } else if (t == "durative-action") {
       parseDurativeAction(f);
+    } else if (t == "process" || t == "event") {
+      parseHappening(f, t);
     } else if (t == "derived") {
       parseDerived(f);
+    } else if (t == "constraints") {
+      parseConstraints(f, constraints);
     } else {
       return false;  // Unknown block type
     }
     // else if ( t == "axiom" ) parseAxiom( f );
     return true;
+  }
+
+  // (:constraints C), its "(:constraints" read; an empty one, (:constraints), is none. The
+  // names of a problem go in ts, as in its goal
+  void parseConstraints(Stringreader & f, Condition *& into)
+  {
+    TokenStruct<std::string> ts;
+    parseConstraints(f, into, ts);
+  }
+
+  void parseConstraints(Stringreader & f, Condition *& into, TokenStruct<std::string> & ts)
+  {
+    f.next();
+    if (f.getChar() != ')') {
+      f.assert_token("(");
+      std::unique_ptr<Condition> cond(createCondition(f));
+      cond->parse(f, ts, *this);
+      if (into) {delete into;}
+      into = cond.release();
+    }
+    f.next();
+    f.assert_token(")");
   }
 
   void parseRequirements(Stringreader & f)
@@ -159,6 +202,14 @@ public:
     ++f.c;
   }
 
+  // Standard requirements without a flag: what they need is checked where it is used
+  static bool isStandardRequirement(const std::string & s)
+  {
+    return s == "duration-inequalities" || s == "continuous-effects" ||
+           s == "timed-initial-literals" || s == "preferences" || s == "constraints" ||
+           s == "time";
+  }
+
   //! Returns a boolean indicating whether the requirement was correctly parsed
   virtual bool parseRequirement(const std::string & s)
   {
@@ -172,7 +223,7 @@ public:
       condeffects = true;
     } else if (s == "typing") {
       typed = true;
-    } else if (s == "action-cost") {
+    } else if (s == "action-costs" || s == "action-cost") {
       costs = true;
     } else if (s == "equality") {
       equality = true;
@@ -182,7 +233,7 @@ public:
       nondet = true;
     } else if (s == "universal-preconditions") {
       universal = true;
-    } else if (s == "fluents") {
+    } else if (s == "fluents" || s == "numeric-fluents" || s == "object-fluents") {
       fluents = true;
     } else if (s == "disjunctive-preconditions") {
       disj = true;
@@ -190,9 +241,12 @@ public:
       derivedpred = true;
     } else if (s == "existential-preconditions") {
       existentialcond = true;
-    } else {
+    } else if (s == "quantified-preconditions") {
+      existentialcond = universal = true;
+    } else if (!isStandardRequirement(s)) {
       return false;  // Unknown requirement
     }
+    requirements.push_back(s);
     return true;
   }
 
@@ -225,14 +279,14 @@ public:
 
   void parseTypes(Stringreader & f)
   {
-    if (!typed) {
-      throw std::runtime_error("Requirement :typing needed to define types");
-    }
+    // Many domains declare types without :typing: the types say it
+    typed = true;
 
     // if this makes it in, probably need to define new subclass of Type
     // if ( costs ) insert( new Type( "NUMBER" ), tmap, types );
 
     // Parse the typed list
+    // A type may be listed more than once (IPC storage does); a cycle is an error below
     TokenStruct<std::string> ts = f.parseTypedList(false);
 
     // bit of a hack to avoid object being the supertype
@@ -246,16 +300,36 @@ public:
     for (unsigned i = 0; i < ts.size(); ++i) {
       if (std::find(types.types.begin(), types.types.end(), ts.types[i]) == types.types.end()) {
         if (ts.types[i].size()) {
-          getType(ts.types[i])->insertSubtype(getType(ts[i]));
+          Type * supertype = getType(ts.types[i]);
+          Type * subtype = getType(ts[i]);
+          // A cycle in the subtypes is not always one of supertypes, as these are replaced
+          if (subtype->reaches(supertype)) {
+            throw std::runtime_error("Cycle of types with \"" + subtype->name + "\"");
+          }
+          supertype->insertSubtype(subtype);
         } else {
           getType(ts[i]);
         }
       }
     }
 
-    // By default, the supertype of a type is "object"
+    // A type can not be its own supertype, directly or not
     for (unsigned i = 1; i < types.size(); ++i) {
-      if (types[i]->supertype == 0) {types[0]->insertSubtype(types[i]);}}
+      std::set<const Type *> chain;
+      for (const Type * t = types[i]; t != 0; t = t->supertype) {
+        if (!chain.insert(t).second) {
+          throw std::runtime_error("Cycle of types with \"" + types[i]->name + "\"");
+        }
+      }
+    }
+
+    // By default, the supertype of a type is "object"; not of one that already reaches it, as
+    // (either object) does through its alternatives: that would be a cycle
+    for (unsigned i = 1; i < types.size(); ++i) {
+      if (types[i]->supertype == 0 && !types[i]->reaches(types[0])) {
+        types[0]->insertSubtype(types[i]);
+      }
+    }
 
     for (unsigned i = 0; DOMAIN_DEBUG && i < types.size(); ++i) {std::cout << "  " << types[i];}
   }
@@ -269,8 +343,12 @@ public:
     cons = true;
 
     TokenStruct<std::string> ts = f.parseTypedList(true, types);
+    assertUnique(ts, "constant");
 
     for (unsigned i = 0; i < ts.size(); ++i) {
+      if (isConstant(ts[i])) {
+        throw std::runtime_error("Duplicate constant \"" + ts[i] + "\"");
+      }
       Type * t = getType(ts.types[i]);
       t->constants.insert(ts[i]);
     }
@@ -301,11 +379,14 @@ public:
         --f.c;
         parsePredicates(f);
       } else {
-        Lifted * c = new Lifted(f.getToken());
+        std::unique_ptr<Lifted> c(new Lifted(f.getName()));
+        if (preds.index(c->name) >= 0) {
+          throw std::runtime_error("Duplicate predicate \"" + c->name + "\"");
+        }
         c->parse(f, types[0]->constants, *this);
 
-        if (DOMAIN_DEBUG) {std::cout << "  " << c;}
-        preds.insert(c);
+        if (DOMAIN_DEBUG) {std::cout << "  " << c.get();}
+        preds.insert(c.release());
       }
     }
     ++f.c;
@@ -319,27 +400,43 @@ public:
 
     for (f.next(); f.getChar() != ')'; f.next()) {
       f.assert_token("(");
-      Function * c = new Function(f.getToken());
+      std::unique_ptr<Function> c(new Function(f.getName()));
+      if (funcs.index(c->name) >= 0) {
+        throw std::runtime_error("Duplicate function \"" + c->name + "\"");
+      }
       c->parse(f, types[0]->constants, *this);
 
-      if (DOMAIN_DEBUG) {std::cout << "  " << c;}
-      funcs.insert(c);
+      if (DOMAIN_DEBUG) {std::cout << "  " << c.get();}
+      funcs.insert(c.release());
     }
     ++f.c;
   }
 
   virtual void parseAction(Stringreader & f)
   {
-    if (!preds.size()) {
-      throw std::runtime_error("Predicates needed before defining actions");
-    }
-
     f.next();
-    Action * a = new Action(f.getToken());
+    std::unique_ptr<Action> a(new Action(f.getName()));
+    if (actions.index(a->name) >= 0) {
+      throw std::runtime_error("Duplicate action \"" + a->name + "\"");
+    }
     a->parse(f, types[0]->constants, *this);
 
-    if (DOMAIN_DEBUG) {std::cout << a << "\n";}
-    actions.insert(a);
+    if (DOMAIN_DEBUG) {std::cout << a.get() << "\n";}
+    actions.insert(a.release());
+  }
+
+  // A process or an event: parameters, precondition and effect, as an action
+  void parseHappening(Stringreader & f, const std::string & keyword)
+  {
+    f.next();
+    std::unique_ptr<Action> a(new Action(f.getName()));
+    a->keyword = keyword;
+    auto & list = keyword == "process" ? processes : events;
+    if (list.index(a->name) >= 0) {
+      throw std::runtime_error("Duplicate " + keyword + " \"" + a->name + "\"");
+    }
+    a->parse(f, types[0]->constants, *this);
+    list.insert(a.release());
   }
 
   void parseDerived(Stringreader & f)
@@ -349,25 +446,24 @@ public:
     }
 
     f.next();
-    Derived * d = new Derived;
+    std::unique_ptr<Derived> d(new Derived);
     d->parse(f, types[0]->constants, *this);
 
-    if (DOMAIN_DEBUG) {std::cout << d << "\n";}
-    derived.insert(d);
+    if (DOMAIN_DEBUG) {std::cout << d.get() << "\n";}
+    derived.insert(d.release());
   }
 
   void parseDurativeAction(Stringreader & f)
   {
-    if (!preds.size()) {
-      throw std::runtime_error("Predicates needed before defining actions");
-    }
-
     f.next();
-    Action * a = new TemporalAction(f.getToken());
+    std::unique_ptr<Action> a(new TemporalAction(f.getName()));
+    if (actions.index(a->name) >= 0) {
+      throw std::runtime_error("Duplicate action \"" + a->name + "\"");
+    }
     a->parse(f, types[0]->constants, *this);
 
-    if (DOMAIN_DEBUG) {std::cout << a << "\n";}
-    actions.insert(a);
+    if (DOMAIN_DEBUG) {std::cout << a.get() << "\n";}
+    actions.insert(a.release());
   }
 
   // Return a copy of the type structure, with newly allocated types
@@ -473,8 +569,8 @@ public:
     const IntVec & params1 = IntVec(), const IntVec & params2 = IntVec())
   {
     Or * o = new Or;
-    o->first = ground(pred1, params1);
-    o->second = ground(pred2, params2);
+    o->add(ground(pred1, params1));
+    o->add(ground(pred2, params2));
     Action * action = actions.get(act);
     And * a = dynamic_cast<And *>(action->pre);
     a->add(o);
@@ -591,7 +687,7 @@ public:
 
   IntPair constantTypeIdConstId(const std::string & name)
   {
-    int t, c;
+    int t = 0, c = 0;
     bool found = false;
     for (t = 0; t < static_cast<int>(types.size()) && !found; t++) {
       for (c = 0; c < static_cast<int>(types[t]->constants.size()) && !found; c++) {
@@ -659,6 +755,19 @@ public:
       derived[i]->PDDLPrint(os, 0, TokenStruct<std::string>(), *this);
     }
 
+    for (unsigned i = 0; i < processes.size(); ++i) {
+      processes[i]->PDDLPrint(os, 0, TokenStruct<std::string>(), *this);
+    }
+    for (unsigned i = 0; i < events.size(); ++i) {
+      events[i]->PDDLPrint(os, 0, TokenStruct<std::string>(), *this);
+    }
+
+    if (constraints) {
+      os << "( :constraints\n";
+      constraints->PDDLPrint(os, 1, TokenStruct<std::string>(), *this);
+      os << "\n)\n";
+    }
+
     print_addtional_blocks(os);
 
     os << ")\n";
@@ -668,9 +777,14 @@ public:
   virtual std::ostream & print_requirements(std::ostream & os) const
   {
     os << "( :requirements";
+    if (!requirements.empty()) {  // As they were read
+      for (const auto & requirement : requirements) {os << " :" << requirement;}
+      os << " )\n";
+      return os;
+    }
     if (equality) {os << " :equality";}
     if (strips) {os << " :strips";}
-    if (costs) {os << " :action-cost";}
+    if (costs) {os << " :action-costs";}
     if (adl) {os << " :adl";}
     if (neg) {os << " :negative-preconditions";}
     if (condeffects) {os << " :conditional-effects";}
@@ -699,10 +813,34 @@ public:
     if (s == "assign") {return new Assign;}
     if (s == "increase") {return new Increase;}
     if (s == "decrease") {return new Decrease;}
+    if (s == "scale-up") {return new ScaleUp;}
+    if (s == "scale-down") {return new ScaleDown;}
     if (s == "not") {return new Not;}
     if (s == "oneof") {return new Oneof;}
     if (s == "or") {return new Or;}
     if (s == "when") {return new When;}
+    // A modal operator takes conditions or times, never names: a predicate may be called so
+    const auto mark = f.mark();
+    f.next();
+    if (s == "preference") {
+      if (f.getChar() != '(') {
+        f.getToken();
+        f.next();
+      }
+      const bool cond = f.getChar() == '(';
+      f.reset(mark);
+      if (cond) {return new Preference;}
+    } else if (s == "at" && f.getToken() == "end") {
+      f.next();
+      if (f.getChar() == '(') {return new Constraint("at end");}
+    } else if (Constraint::isOperator(s)) {
+      const char next = f.getChar();
+      f.reset(mark);
+      if (next == '(' || std::isdigit(static_cast<unsigned char>(next))) {
+        return new Constraint(s);
+      }
+    }
+    f.reset(mark);
     if (s == "=" || s == ">=" || s == ">" || s == "<=" || s == "<") {
       return new CompositeExpression(s);
     }

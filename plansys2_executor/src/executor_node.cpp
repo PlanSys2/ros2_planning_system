@@ -15,6 +15,7 @@
 #include <memory>
 
 #include "plansys2_executor/ExecutorNode.hpp"
+#include "plansys2_core/ClientNode.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char ** argv)
@@ -22,7 +23,19 @@ int main(int argc, char ** argv)
   rclcpp::init(argc, argv);
   auto node = std::make_shared<plansys2::ExecutorNode>();
 
-  rclcpp::spin(node->get_node_base_interface());
+  try {
+    // Multi-threaded, as in plansys2_node: a callback may wait for a client of the node.
+    rclcpp::executors::MultiThreadedExecutor executor(
+      rclcpp::ExecutorOptions(), plansys2::kComponentThreads);
+    executor.add_node(node->get_node_base_interface());
+    executor.spin();
+    executor.remove_node(node->get_node_base_interface());
+  } catch (const std::exception & e) {
+    // The action server may throw while rclcpp shuts down (Ctrl-C): only then it is fine
+    if (rclcpp::ok()) {
+      throw;
+    }
+  }
 
   rclcpp::shutdown();
 

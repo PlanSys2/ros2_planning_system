@@ -30,12 +30,14 @@ class Forall : public ParamCond
 {
 public:
   Condition * cond;
+  unsigned base = 0;  // index of the first variable in the scope of the body
+  StringVec names;  // the variables as written
 
   Forall()
   : cond(0) {}
 
   Forall(const Forall * f, Domain & d)
-  : ParamCond(f), cond(0)
+  : ParamCond(f), cond(0), base(f->base), names(f->names)
   {
     if (f->cond) {cond = f->cond->copy(d);}
   }
@@ -61,7 +63,10 @@ public:
 
   void parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d);
 
-  void addParams(int m, unsigned n) {cond->addParams(m, n);}
+  void addParams(int m, unsigned n)
+  {
+    if (cond) {cond->addParams(m, n);}
+  }
 
   Condition * copy(Domain & d) {return new Forall(this, d);}
 };

@@ -17,6 +17,7 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <cctype>
 #include <set>
 
 #include "plansys2_core/Utils.hpp"
@@ -25,6 +26,66 @@
 
 namespace plansys2
 {
+
+namespace
+{
+
+// The top level expressions of a block, line by line as written. One that takes several
+// lines is joined into one, so a predicate written over several lines is still one (#286)
+std::vector<std::string> split_expressions(const std::string & block)
+{
+  std::vector<std::string> ret;
+  std::string current;
+  int depth = 0;
+  for (const auto & line : tokenize(block, "\n")) {
+    if (depth == 0) {
+      current = line;
+    } else {
+      auto start = line.find_first_not_of(" \t\r");
+      if (start != std::string::npos) {
+        current += " " + line.substr(start);
+      }
+    }
+    for (char c : line) {
+      depth += (c == '(') - (c == ')');
+    }
+    if (depth <= 0) {
+      depth = 0;
+      if (current.find_first_not_of(" \t\r") != std::string::npos) {
+        ret.push_back(current);
+      }
+    }
+  }
+  return ret;
+}
+
+// The same expression whatever its blanks
+std::string expression_key(const std::string & expression)
+{
+  std::string collapsed;
+  for (char c : expression) {
+    if (std::isspace(static_cast<unsigned char>(c))) {
+      if (!collapsed.empty() && collapsed.back() != ' ') {
+        collapsed += ' ';
+      }
+    } else {
+      collapsed += c;
+    }
+  }
+  std::string ret;
+  for (size_t i = 0; i < collapsed.size(); i++) {
+    const char c = collapsed[i];
+    const bool after_open = !ret.empty() && ret.back() == '(';
+    const bool before_close = i + 1 < collapsed.size() && collapsed[i + 1] == ')';
+    if (c == ' ' && (ret.empty() || after_open || before_close)) {
+      continue;
+    }
+    ret += c;
+  }
+  return ret;
+}
+
+}  // namespace
 
 DomainReader::DomainReader()
 {
@@ -55,6 +116,8 @@ DomainReader::add_domain(const std::string & domain)
   new_domain.functions = get_functions(lc_domain);
   new_domain.derived_predicates = get_derived_predicates(lc_domain);
   new_domain.actions = get_actions(lc_domain);
+  new_domain.happenings = get_happenings(lc_domain);
+  new_domain.constraints = get_constraints(lc_domain);
 
   domains_.push_back(new_domain);
 }
@@ -121,10 +184,15 @@ DomainReader::get_joint_domain() const
   }
 
   ret += "(:predicates\n";
+  // Each predicate once, a whole expression even if it was written over several lines
   std::set<std::string> preds_set;
+  std::set<std::string> preds_seen;
   for (auto & domain : domains_) {
-    std::vector<std::string> preds = tokenize(domain.predicates, "\n");
-    preds_set.insert(preds.begin(), preds.end());
+    for (const auto & pred : split_expressions(domain.predicates)) {
+      if (preds_seen.insert(expression_key(pred)).second) {
+        preds_set.insert(pred);
+      }
+    }
   }
   for (auto & pred : preds_set) {
     ret += pred + "\n";
@@ -157,9 +225,52 @@ DomainReader::get_joint_domain() const
     }
   }
 
+  for (auto & domain : domains_) {
+    for (auto & happening : domain.happenings) {
+      ret += happening + "\n";
+    }
+  }
+
+  // Those of every domain hold
+  std::vector<std::string> constraints;
+  for (auto & domain : domains_) {
+    if (!domain.constraints.empty()) {
+      constraints.push_back(domain.constraints);
+    }
+  }
+  if (constraints.size() == 1) {
+    ret += "(:constraints " + constraints[0] + ")\n";
+  } else if (constraints.size() > 1) {
+    ret += "(:constraints (and";
+    for (const auto & c : constraints) {
+      ret += " " + c;
+    }
+    ret += "))\n";
+  }
+
   ret += ")\n";
 
   return ret;
+}
+
+std::string
+DomainReader::get_constraints(const std::string & domain)
+{
+  const std::string head = "(:constraints";
+  const auto pos = domain.find(head);
+  if (pos == std::string::npos) {
+    return {};
+  }
+  const auto end_pos = get_end_block(domain, pos + 2);
+  if (end_pos == -1) {
+    return {};
+  }
+  auto ret = domain.substr(pos + head.size(), end_pos - pos - head.size());
+  const auto first = ret.find_first_not_of(" \t\r\n");
+  if (first == std::string::npos) {
+    return {};
+  }
+  return ret.substr(first, ret.find_last_not_of(" \t\r\n") - first + 1);
 }
 
 int
@@ -385,5 +496,25 @@ DomainReader::get_actions(const std::string & domain)
   return ret;
 }
 
+
+std::vector<std::string>
+DomainReader::get_happenings(const std::string & domain)
+{
+  std::vector<std::string> ret;
+  auto ldomain = domain;
+  while (true) {
+    const auto pos = std::min(ldomain.find("(:process"), ldomain.find("(:event"));
+    if (pos == std::string::npos) {
+      break;
+    }
+    auto end_pos = get_end_block(ldomain, pos + 2);
+    if (end_pos == -1) {
+      break;
+    }
+    ret.push_back(substr_without_empty_lines(ldomain, pos, end_pos + 1));
+    ldomain = ldomain.substr(end_pos + 1);
+  }
+  return ret;
+}
 
 }  // namespace plansys2

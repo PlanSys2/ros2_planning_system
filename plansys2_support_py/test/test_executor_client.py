@@ -15,9 +15,13 @@
 
 """Unit tests for ExecutorClient."""
 
+import time
 import unittest
 from unittest.mock import MagicMock, patch
 
+from action_msgs.msg import GoalStatus
+from client_mocks import always_active, no_wait
+from plansys2_msgs.action import ExecutePlan
 from plansys2_msgs.msg import Plan, PlanItem, Tree
 from plansys2_msgs.srv import GetOrderedSubGoals, GetPlan
 from plansys2_support_py.ExecutorClient import ExecutorClient
@@ -43,23 +47,33 @@ class TestExecutorClient(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures before each test."""
-        self.client = ExecutorClient('test_executor_client')
+        always_active(self)
+        self.node = rclpy.create_node('test_executor_client')
+        self.client = ExecutorClient(self.node)
 
     def tearDown(self):
         """Clean up after each test."""
-        self.client.destroy_node()
+        self.client.destroy()
+        self.node.destroy_node()
 
     def test_initialization(self):
         """Test that the client initializes correctly."""
         self.assertIsNotNone(self.client)
-        self.assertEqual(self.client.get_name(), 'test_executor_client')
-        self.assertEqual(self.client._namespace_prefix, '')
+        self.assertEqual(self.client.node.get_name(), 'test_executor_client')
+        # Relative names: the namespace and the remappings apply
+        self.assertEqual(
+            self.client.node.resolve_service_name('executor/get_plan'),
+            '/executor/get_plan')
 
     def test_initialization_with_namespace(self):
         """Test that the client initializes correctly with namespace."""
-        client = ExecutorClient('test_client', namespace='test_namespace')
-        self.assertEqual(client._namespace_prefix, '/test_namespace')
-        client.destroy_node()
+        node = rclpy.create_node('test_client', namespace='test_namespace')
+        client = ExecutorClient(node)
+        self.assertEqual(
+            client.node.resolve_service_name('executor/get_plan'),
+            '/test_namespace/executor/get_plan')
+        client.destroy()
+        node.destroy_node()
 
     @patch.object(Client, 'wait_for_service')
     @patch.object(Client, 'call_async')
@@ -80,7 +94,7 @@ class TestExecutorClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_ordered_sub_goals()
 
         self.assertIsNotNone(result)
@@ -101,7 +115,7 @@ class TestExecutorClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_ordered_sub_goals()
 
         self.assertIsNone(result)
@@ -121,7 +135,7 @@ class TestExecutorClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_ordered_sub_goals()
 
         self.assertIsNotNone(result)
@@ -152,7 +166,7 @@ class TestExecutorClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_plan()
 
         self.assertIsNotNone(result)
@@ -175,7 +189,7 @@ class TestExecutorClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_plan()
 
         self.assertIsNone(result)
@@ -198,7 +212,7 @@ class TestExecutorClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_plan()
 
         self.assertIsNotNone(result)
@@ -226,7 +240,7 @@ class TestExecutorClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_remaining_plan()
 
         self.assertIsNotNone(result)
@@ -249,7 +263,7 @@ class TestExecutorClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_remaining_plan()
 
         self.assertIsNone(result)
@@ -272,7 +286,7 @@ class TestExecutorClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_remaining_plan()
 
         self.assertIsNotNone(result)
@@ -297,7 +311,7 @@ class TestExecutorClient(unittest.TestCase):
         mock_future.done.return_value = False
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_plan()
 
         self.assertIsNone(result)
@@ -342,7 +356,7 @@ class TestExecutorClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_plan()
 
         self.assertIsNotNone(result)
@@ -385,12 +399,12 @@ class TestExecutorClient(unittest.TestCase):
 
         # First call
         mock_future.result.return_value = mock_response_full
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result_full = self.client.get_plan()
 
         # Second call
         mock_future.result.return_value = mock_response_remaining
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result_remaining = self.client.get_remaining_plan()
 
         self.assertEqual(len(result_full.items), 3)
@@ -442,7 +456,7 @@ class TestExecutorClient(unittest.TestCase):
 
         mock_future.result.side_effect = get_next_response
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             with patch('builtins.print') as mock_print:
                 self.client.print_executor_info()
 
@@ -494,7 +508,7 @@ class TestExecutorClient(unittest.TestCase):
         mock_future.result.side_effect = get_next_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             with patch('builtins.print') as mock_print:
                 self.client.print_executor_info()
                 self.assertTrue(mock_print.called)
@@ -538,7 +552,7 @@ class TestExecutorClient(unittest.TestCase):
         mock_future.result.side_effect = get_next_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             with patch('builtins.print') as mock_print:
                 self.client.print_executor_info()
                 self.assertTrue(mock_print.called)
@@ -577,7 +591,7 @@ class TestExecutorClient(unittest.TestCase):
         # Replace the action client
         self.client._execute_plan_action_client = mock_client
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.start_plan_execution(plan, verbose=False)
 
         self.assertTrue(result)
@@ -625,7 +639,7 @@ class TestExecutorClient(unittest.TestCase):
 
         self.client._execute_plan_action_client = mock_client
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.start_plan_execution(plan)
 
         self.assertFalse(result)
@@ -660,7 +674,7 @@ class TestExecutorClient(unittest.TestCase):
         # Patch the action client at instance level
         self.client._execute_plan_action_client = mock_action_client
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.start_plan_execution(plan, verbose=False)
 
         self.assertTrue(result)
@@ -685,6 +699,175 @@ class TestExecutorClient(unittest.TestCase):
         plan = None
         result = self.client.start_plan_execution(plan) if plan else False
         self.assertFalse(result)
+
+    def _running_plan(self):
+        """Pretend a plan is executing (#446: a gone executor never answers)."""
+        self.client._executing_plan = True
+        self.client._result_future = MagicMock()
+        self.client._result_future.result.return_value = None
+        # The executor runs it (its own test below)
+        self.client._plan_not_running = lambda: False
+
+    def test_no_plan_has_no_result(self):
+        """Before any plan there is no result, and nothing is executing."""
+        self.assertIsNone(self.client.get_result())
+        self.assertFalse(self.client.execute_and_check_plan(verbose=False))
+
+    @no_wait()
+    def test_executor_gone_ends_the_plan(self):
+        """A missing executor for over 2 s ends the plan without result."""
+        self._running_plan()
+        server = self.client._execute_plan_action_client
+        with patch.object(server, 'server_is_ready', return_value=False), \
+                patch('time.monotonic', side_effect=[0.0, 1.0, 3.0]):
+            self.assertTrue(self.client.execute_and_check_plan(verbose=False))
+            self.assertTrue(self.client.execute_and_check_plan(verbose=False))
+            self.assertFalse(self.client.execute_and_check_plan(verbose=False))
+        self.assertFalse(self.client.is_executing_plan())
+        self.assertIsNone(self.client.get_result())
+
+    @no_wait()
+    def test_live_executor_keeps_the_plan(self):
+        """While the executor is there, the plan is still executing."""
+        self._running_plan()
+        server = self.client._execute_plan_action_client
+        with patch.object(server, 'server_is_ready', return_value=True):
+            for _ in range(5):
+                self.assertTrue(self.client.execute_and_check_plan(verbose=False))
+        self.assertTrue(self.client.is_executing_plan())
+
+    @no_wait()
+    def test_short_executor_absence_is_tolerated(self):
+        """A brief absence (discovery) does not end the plan."""
+        self._running_plan()
+        server = self.client._execute_plan_action_client
+        with patch.object(server, 'server_is_ready', side_effect=[False, True, False, False]), \
+                patch('time.monotonic', side_effect=[0.0, 10.0, 11.0]):
+            for _ in range(4):
+                self.assertTrue(self.client.execute_and_check_plan(verbose=False))
+        self.assertTrue(self.client.is_executing_plan())
+
+    @no_wait()
+    def test_a_plan_the_executor_does_not_run_is_lost(self):
+        """A restarted executor has a server but not our goal: the plan ends without result."""
+        self._running_plan()
+        del self.client._plan_not_running  # The real one
+        self.client._sent_plan = Plan()
+        self.client._sent_plan.items.append(PlanItem(action='(move r2d2 a b)', time=0.0))
+        self.client._NOT_RUNNING_TOLERANCE = 0.0
+        not_running = GetPlan.Response()
+        not_running.success = False
+        answer = MagicMock()
+        answer.done.return_value = True
+        answer.result.return_value = not_running
+        checker = MagicMock()
+        checker.service_is_ready.return_value = True
+        checker.call_async.return_value = answer
+        server = self.client._execute_plan_action_client
+        with patch.object(server, 'server_is_ready', return_value=True), \
+                patch.object(self.client, '_service_client', return_value=checker):
+            end = time.monotonic() + 10.0
+            while self.client.execute_and_check_plan(verbose=False) and time.monotonic() < end:
+                time.sleep(0.1)
+        self.assertFalse(self.client.is_executing_plan())
+        self.assertIsNone(self.client.get_result())
+
+    @no_wait()
+    def test_the_plan_the_executor_runs_goes_on(self):
+        """While the executor answers that it runs our plan, the plan goes on."""
+        self._running_plan()
+        del self.client._plan_not_running
+        self.client._sent_plan = Plan()
+        self.client._sent_plan.items.append(PlanItem(action='(move r2d2 a b)', time=0.0))
+        self.client._NOT_RUNNING_TOLERANCE = 0.0
+        running = GetPlan.Response()
+        running.success = True
+        running.plan = self.client._sent_plan
+        answer = MagicMock()
+        answer.done.return_value = True
+        answer.result.return_value = running
+        checker = MagicMock()
+        checker.service_is_ready.return_value = True
+        checker.call_async.return_value = answer
+        server = self.client._execute_plan_action_client
+        with patch.object(server, 'server_is_ready', return_value=True), \
+                patch.object(self.client, '_service_client', return_value=checker):
+            end = time.monotonic() + 3.0
+            while time.monotonic() < end:
+                self.assertTrue(self.client.execute_and_check_plan(verbose=False))
+                time.sleep(0.1)
+        self.assertGreaterEqual(checker.call_async.call_count, 2)
+
+    def _ended_plan(self, answer):
+        """Pretend a plan the executor does not run any more, whose result asked gives answer."""
+        self._running_plan()
+        del self.client._plan_not_running
+        self.client._sent_plan = Plan()
+        self.client._sent_plan.items.append(PlanItem(action='(move r2d2 a b)', time=0.0))
+        self.client._NOT_RUNNING_TOLERANCE = 0.0
+        not_running = GetPlan.Response()
+        not_running.success = False
+        plan_answer = MagicMock()
+        plan_answer.done.return_value = True
+        plan_answer.result.return_value = not_running
+        checker = MagicMock()
+        checker.service_is_ready.return_value = True
+        checker.call_async.return_value = plan_answer
+        self.client._goal_handle = MagicMock()
+        self.client._goal_handle.get_result_async.return_value = answer
+        return checker
+
+    def _run_until_end(self, checker, timeout):
+        server = self.client._execute_plan_action_client
+        with patch.object(server, 'server_is_ready', return_value=True), \
+                patch.object(self.client, '_service_client', return_value=checker):
+            start = time.monotonic()
+            while self.client.execute_and_check_plan(verbose=False):
+                self.assertLess(time.monotonic() - start, timeout)
+                time.sleep(0.1)
+            return time.monotonic() - start
+
+    @staticmethod
+    def _result_answer(status):
+        response = ExecutePlan.Impl.GetResultService.Response()
+        response.status = status
+        response.result.result = ExecutePlan.Result.SUCCESS
+        answer = MagicMock()
+        answer.done.return_value = True
+        answer.result.return_value = response
+        return answer
+
+    @no_wait()
+    def test_a_lost_result_is_asked_for_again(self):
+        """The plan ended, but its result was lost on the way: asked for again, it comes."""
+        for status in (GoalStatus.STATUS_SUCCEEDED, GoalStatus.STATUS_ABORTED):
+            with self.subTest(status=status):
+                checker = self._ended_plan(self._result_answer(status))
+                self._run_until_end(checker, 10.0)
+                self.assertFalse(self.client.is_executing_plan())
+                self.assertEqual(self.client.get_result().result, ExecutePlan.Result.SUCCESS)
+                self.client._goal_handle.get_result_async.assert_called_once()
+
+    @no_wait()
+    def test_a_goal_unknown_to_the_executor_is_lost(self):
+        """A restarted executor does not know our goal: lost at once, without result."""
+        checker = self._ended_plan(self._result_answer(GoalStatus.STATUS_UNKNOWN))
+        self.assertLess(self._run_until_end(checker, 10.0), 3.0)
+        self.assertFalse(self.client.is_executing_plan())
+        self.assertIsNone(self.client.get_result())
+
+    @no_wait()
+    def test_a_result_never_answered_is_lost(self):
+        """Our goal still runs there (a plan not ours any more): lost after a few tries."""
+        silent = MagicMock()
+        silent.done.return_value = False
+        checker = self._ended_plan(silent)
+        seconds = self._run_until_end(checker, 15.0)
+        self.assertGreaterEqual(seconds, 4.0)
+        self.assertFalse(self.client.is_executing_plan())
+        self.assertIsNone(self.client.get_result())
+        self.assertEqual(self.client._goal_handle.get_result_async.call_count,
+                         ExecutorClient._RESULT_ATTEMPTS)
 
 
 if __name__ == '__main__':

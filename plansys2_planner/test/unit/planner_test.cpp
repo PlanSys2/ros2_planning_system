@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <chrono>
 #include <string>
 #include <vector>
 #include <memory>
 #include <iostream>
 #include <fstream>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
@@ -30,11 +31,14 @@
 #include "plansys2_planner/PlannerNode.hpp"
 #include "plansys2_planner/PlannerClient.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_core/Utils.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "rclcpp/rclcpp.hpp"
+
+using namespace std::chrono_literals;  // NOLINT
 
 
 class ROS2Environment : public ::testing::Environment
@@ -54,55 +58,35 @@ public:
 TEST(planner_expert, generate_plan_good)
 {
   {
-    auto test_node = rclcpp::Node::make_shared("test_node");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
     auto planner_node = std::make_shared<plansys2::PlannerNode>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto planner_client = std::make_shared<plansys2::PlannerClient>();
+    auto client_node = rclcpp::Node::make_shared("client_node");
+    plansys2::testing::NodeSpinner client_node_spinner(client_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
+    auto planner_client = std::make_shared<plansys2::PlannerClient>(client_node);
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_planner").string();
+    std::string pkgpath = plansys2::share_path("plansys2_planner").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
     exe.add_node(planner_node->get_node_base_interface());
-
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("leia", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("francisco", "person")));
@@ -125,9 +109,6 @@ TEST(planner_expert, generate_plan_good)
 
     auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
     ASSERT_TRUE(plan);
-
-    finish = true;
-    t.join();
   }
   plansys2::drain_ros(200ms);
 }
@@ -136,15 +117,16 @@ TEST(planner_expert, generate_plan_good)
 TEST(planner_expert, generate_plan_with_args)
 {
   {
-    auto test_node = rclcpp::Node::make_shared("test_node");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
     auto planner_node = std::make_shared<plansys2::PlannerNode>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto planner_client = std::make_shared<plansys2::PlannerClient>();
+    auto client_node = rclcpp::Node::make_shared("client_node");
+    plansys2::testing::NodeSpinner client_node_spinner(client_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
+    auto planner_client = std::make_shared<plansys2::PlannerClient>(client_node);
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_planner").string();
+    std::string pkgpath = plansys2::share_path("plansys2_planner").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
@@ -166,42 +148,21 @@ TEST(planner_expert, generate_plan_with_args)
     planner_node->set_parameter({"POPF1.arguments", "-h -E -A"});
     planner_node->set_parameter({"POPF1.output_dir", "/tmp/POPF1"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
     exe.add_node(planner_node->get_node_base_interface());
-
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("leia", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("francisco", "person")));
@@ -224,9 +185,6 @@ TEST(planner_expert, generate_plan_with_args)
 
     auto plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
     ASSERT_TRUE(plan);
-
-    finish = true;
-    t.join();
   }
   plansys2::drain_ros(200ms);
 }
@@ -235,15 +193,16 @@ TEST(planner_expert, generate_plan_with_args)
 TEST(planner_expert, generate_plans)
 {
   {
-    auto test_node = rclcpp::Node::make_shared("test_node");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
     auto planner_node = std::make_shared<plansys2::PlannerNode>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto planner_client = std::make_shared<plansys2::PlannerClient>();
+    auto client_node = rclcpp::Node::make_shared("client_node");
+    plansys2::testing::NodeSpinner client_node_spinner(client_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
+    auto planner_client = std::make_shared<plansys2::PlannerClient>(client_node);
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_planner").string();
+    std::string pkgpath = plansys2::share_path("plansys2_planner").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
@@ -288,42 +247,21 @@ TEST(planner_expert, generate_plans)
     planner_node->set_parameter({"POPF3.output_dir", "/tmp/POPF3"});
 
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
     exe.add_node(planner_node->get_node_base_interface());
-
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("leia", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("francisco", "person")));
@@ -350,9 +288,6 @@ TEST(planner_expert, generate_plans)
     auto plans_good = planner_client->getPlanArray(
     domain_client->getDomain(), problem_client->getProblem());
     ASSERT_EQ(3u, plans_good.plan_array.size());
-
-    finish = true;
-    t.join();
   }
   plansys2::drain_ros(200ms);
 }
@@ -360,15 +295,16 @@ TEST(planner_expert, generate_plans)
 TEST(planner_expert, generate_plans_stress)
 {
   {
-    auto test_node = rclcpp::Node::make_shared("test_node");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
     auto planner_node = std::make_shared<plansys2::PlannerNode>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto planner_client = std::make_shared<plansys2::PlannerClient>();
+    auto client_node = rclcpp::Node::make_shared("client_node");
+    plansys2::testing::NodeSpinner client_node_spinner(client_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
+    auto planner_client = std::make_shared<plansys2::PlannerClient>(client_node);
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_planner").string();
+    std::string pkgpath = plansys2::share_path("plansys2_planner").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
@@ -413,42 +349,21 @@ TEST(planner_expert, generate_plans_stress)
     planner_node->set_parameter({"POPF3.output_dir", "/tmp/POPF3"});
 
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
     exe.add_node(planner_node->get_node_base_interface());
-
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("leia", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("francisco", "person")));
@@ -489,11 +404,14 @@ TEST(planner_expert, generate_plans_stress)
 
     auto plan = planner_client->getPlan(
     domain_client->getDomain(), problem_client->getProblem());
+    ASSERT_TRUE(plan.has_value());
 
-    ASSERT_EQ(plan, plans.plan_array.front());
-
-    finish = true;
-    t.join();
+    // The same plan; asked later, it counts from later
+    auto first = plans.plan_array.front();
+    EXPECT_GE(rclcpp::Time(plan->stamp).nanoseconds(), rclcpp::Time(first.stamp).nanoseconds());
+    EXPECT_GT(rclcpp::Time(first.stamp).nanoseconds(), 0);
+    first.stamp = plan->stamp;
+    ASSERT_EQ(plan.value(), first);
   }
   plansys2::drain_ros(200ms);
 }
@@ -502,55 +420,35 @@ TEST(planner_expert, generate_plans_stress)
 TEST(planner_expert, generate_plan_with_domain_constants)
 {
   {
-    auto test_node = rclcpp::Node::make_shared("test_node");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
     auto planner_node = std::make_shared<plansys2::PlannerNode>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto planner_client = std::make_shared<plansys2::PlannerClient>();
+    auto client_node = rclcpp::Node::make_shared("client_node");
+    plansys2::testing::NodeSpinner client_node_spinner(client_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
+    auto planner_client = std::make_shared<plansys2::PlannerClient>(client_node);
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_planner").string();
+    std::string pkgpath = plansys2::share_path("plansys2_planner").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_constants.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_constants.pddl"});
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
     exe.add_node(planner_node->get_node_base_interface());
-
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
-
+    plansys2::testing::ExecutorThread spinner(exe);
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     std::ifstream problem_1_ifs(pkgpath + "/pddl/problem_simple_constants_1.pddl");
     std::string problem_1_str((
@@ -577,10 +475,6 @@ TEST(planner_expert, generate_plan_with_domain_constants)
 
     plan = planner_client->getPlan(domain_client->getDomain(), problem_client->getProblem());
     ASSERT_TRUE(plan);
-
-
-    finish = true;
-    t.join();
   }
   plansys2::drain_ros(200ms);
 }
@@ -635,7 +529,7 @@ TEST(planner_expert, planner_node_is_destroyed)
     auto planner_node = std::make_shared<plansys2::PlannerNode>();
     std::weak_ptr<plansys2::PlannerNode> weak = planner_node;
     {
-      rclcpp::executors::SingleThreadedExecutor exe;
+      rclcpp::executors::MultiThreadedExecutor exe;
       exe.add_node(planner_node->get_node_base_interface());
       planner_node->trigger_transition(Transition::TRANSITION_CONFIGURE);
       planner_node->trigger_transition(Transition::TRANSITION_ACTIVATE);

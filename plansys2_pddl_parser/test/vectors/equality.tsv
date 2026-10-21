@@ -1,0 +1,12 @@
+# first	second	equal trees
+(> (f) 0.5)	(> (f) 0.9)	false
+(> (f) 0.5)	(> (f) 0.50)	true
+(notFilling R2D2)	(notfilling r2d2)	true
+(> (Battery R1) 2)	(> (battery r1) 2)	true
+(notFilling r2d2)	(notfilling r2d3)	false
+(and (p a)(q b))	(and (p a)(q b))	true
+(and (p a)(q b))	(and (q b)(p a))	false
+(= ?x 5)	(= ?x 5)	true
+(= ?x 5)	(= ?x 6)	false
+(= ?x 5)	(= ?y 5)	false
+(= 4 5)	(= 4 5)	true

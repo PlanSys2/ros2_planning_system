@@ -30,6 +30,9 @@ class Ground : public ParamCond
 {
 public:
   Lifted * lifted;
+  // Whether each parameter is a variable (an index of the names in scope) rather than an
+  // object or a constant; empty when built without parsing
+  std::vector<bool> variables;
 
   Ground()
   : ParamCond(), lifted(0) {}

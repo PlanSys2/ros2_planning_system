@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:disjunctive-preconditions	pass an open door listed in the reverse direction
+domain.pddl	p2.pddl	yes	:disjunctive-preconditions	fetch a badge two rooms away to cross a closed door to the vault
+domain.pddl	p3.pddl	no	:disjunctive-preconditions	door is closed and there is no badge so neither disjunct holds

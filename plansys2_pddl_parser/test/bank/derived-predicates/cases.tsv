@@ -1,0 +1,5 @@
+domain.pddl	p1.pddl	yes	:derived-predicates	calibrate so the derived ready holds, then pick
+domain.pddl	p2.pddl	yes	:derived-predicates	charge and calibrate to derive ready, then deliver two packages
+domain.pddl	p3.pddl	no	:derived-predicates	no calibration target, so ready is never derived and nothing can be picked
+domain2.pddl	p4.pddl	yes	:derived-predicates	free negates blocked, written first: the robot clears two rooms before it moves
+domain2.pddl	p5.pddl	no	:derived-predicates	the lab is not connected: clearing it is impossible

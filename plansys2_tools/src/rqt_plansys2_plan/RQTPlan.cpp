@@ -23,6 +23,7 @@
 #include <QPainter>
 #include <QCheckBox>
 #include <algorithm>
+#include <cmath>
 #include <memory>
 #include <utility>
 #include <string>
@@ -66,6 +67,10 @@ void RQTPlan::initPlugin(qt_gui_cpp::PluginContext & context)
   connect(controller_spin_timer_, SIGNAL(timeout()), this, SLOT(spin_loop()));
   controller_spin_timer_->start(100);
 
+  // Before the subscriptions: the latched plan may come at once
+  need_update_plan_ = false;
+  need_update_info_ = false;
+
   action_execution_info_ = node_->create_subscription<plansys2_msgs::msg::ActionExecutionInfo>(
     "action_execution_info", 100,
     std::bind(&RQTPlan::execution_info_callback, this, _1));
@@ -73,9 +78,6 @@ void RQTPlan::initPlugin(qt_gui_cpp::PluginContext & context)
   executing_plan_ = node_->create_subscription<plansys2_msgs::msg::Plan>(
     "executing_plan", rclcpp::QoS(100).transient_local(),
     std::bind(&RQTPlan::plan_callback, this, _1));
-
-  need_update_plan_ = false;
-  need_update_info_ = false;
 }
 
 void RQTPlan::shutdownPlugin()
@@ -200,7 +202,7 @@ RQTPlan::spin_loop()
     plan_info_.clear();
     for (const auto & item : plan_->items) {
       std::string full_name = item.action + ":" +
-        std::to_string(static_cast<int>(item.time * 1000));
+        std::to_string(std::llround(item.time * 1000));
       plan_info_[full_name] = nullptr;
     }
 
@@ -219,7 +221,7 @@ RQTPlan::spin_loop()
     for (const auto & item : plan_->items) {
       auto plan_item = new QTreeWidgetItem();
       std::string full_name = item.action + ":" +
-        std::to_string(static_cast<int>(item.time * 1000));
+        std::to_string(std::llround(item.time * 1000));
       plan_item->setText(0, QString(full_name.c_str()));
       plan_tree_->addTopLevelItem(plan_item);
     }
@@ -228,7 +230,7 @@ RQTPlan::spin_loop()
   if (do_update_info && plan_) {
     for (const auto & item : plan_->items) {
       std::string full_name = item.action + ":" +
-        std::to_string(static_cast<int>(item.time * 1000));
+        std::to_string(std::llround(item.time * 1000));
 
       auto item_row = get_plan_item_row(full_name);
       if (item_row.has_value()) {

@@ -56,7 +56,7 @@ class PlanMonitorVerb(VerbExtension):
     def main(self, *, args):
         with NodeStrategy(args) as node:
             try:
-                _sub = PlanMonitorProcessor(node, self._callback)
+                self._sub = PlanMonitorProcessor(node, self._callback)
 
                 t_end = time.time() + args.duration
                 while time.time() < t_end:

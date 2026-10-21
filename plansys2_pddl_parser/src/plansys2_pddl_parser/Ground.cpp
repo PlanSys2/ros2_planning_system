@@ -21,7 +21,7 @@ namespace pddl
 {
 
 Ground::Ground(const Ground * g, Domain & d)
-: ParamCond(g), lifted(d.preds.get(g->name)) {}
+: ParamCond(g), lifted(d.preds.get(g->name)), variables(g->variables) {}
 
 void Ground::PDDLPrint(
   std::ostream & s, unsigned indent, const TokenStruct<std::string> & ts, const Domain & d) const
@@ -29,8 +29,13 @@ void Ground::PDDLPrint(
   tabindent(s, indent);
   s << "( " << name;
   for (unsigned i = 0; i < params.size(); ++i) {
-    if (false && ts.size() && params[i] >= 0 && (unsigned)params[i] < ts.size()) {
-      s << " " << ts[params[i]];
+    if (i < variables.size() && variables[i]) {
+      // A variable: its name in scope
+      if (params[i] >= 0 && static_cast<unsigned>(params[i]) < ts.size()) {
+        s << " " << ts[params[i]];
+      } else {
+        s << " ?" << params[i];
+      }
     } else if (  // NOLINT
       params[i] >= 0 && d.types[lifted->params[i]]->object(params[i]).first != std::string(""))
     {
@@ -58,19 +63,24 @@ plansys2_msgs::msg::Node::SharedPtr Ground::getTree(
   for (unsigned i = 0; i < params.size(); ++i) {
     plansys2_msgs::msg::Param param;
     int param_index = params[i];
-    bool is_variable = (param_index >= 0);
+    const bool known = i < variables.size();
+    bool is_variable = known ? variables[i] : param_index >= 0;
 
     if (is_variable) {
-      if (i < replace.size() && static_cast<size_t>(param_index) < replace.size()) {
+      // The index of the variable, not its position, says whether it is an action argument:
+      // (at ?g ?z) in (secure ?z) has ?z second
+      if (param_index >= 0 && static_cast<size_t>(param_index) < replace.size()) {
         // param has a variable value; replace by action-args
         param.name = replace[params[i]];
+      } else if (known) {
+        param.name = "?" + std::to_string(params[i]);
       } else if (!d.types[lifted->params[i]]->object(params[i]).first.empty()) {
         param.name = d.types[lifted->params[i]]->object(params[i]).first;
       } else {
         param.name = "?" + std::to_string(params[i]);
       }
     } else {
-      // param has a constant value; retrive from domain::type[t_i]::constants[c_i]
+      // An object or a constant: its name
       param.name = d.types[lifted->params[i]]->object(params[i]).first;
     }
 
@@ -86,8 +96,19 @@ void Ground::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
 {
   f.next();
   params.resize(lifted->params.size());
+  variables.assign(lifted->params.size(), false);
   for (unsigned i = 0; i < lifted->params.size(); ++i, f.next()) {
     std::string s = f.getToken();
+    if (!s.empty() && s[0] == '?') {
+      // A variable, also if an object had the same index
+      int k = ts.index(s);
+      if (k < 0) {
+        f.tokenExit(s);
+      }
+      params[i] = k;
+      variables[i] = true;
+      continue;
+    }
     std::pair<bool, int> p = d.types[lifted->params[i]]->parseConstant(s);
     if (p.first) {
       params[i] = p.second;
@@ -99,6 +120,7 @@ void Ground::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
         int k = ts.index(s);
         if (k >= 0) {
           params[i] = k;
+          variables[i] = true;  // A name in scope, printed as it is
         } else {
           f.tokenExit(s);
         }

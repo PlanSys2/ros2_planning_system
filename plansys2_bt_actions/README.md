@@ -13,7 +13,7 @@ These parameters are
 6. `bt_file_logging`: a boolean which [enables logging of BT state changes in `.btlog` files](https://www.behaviortree.dev/docs/tutorial-basics/tutorial_11_groot2), useful for playing back behavior tree execution using `Groot2` (default is `false`)
 7. `bt_minitrace_logging`: a boolean which enables logging of `.json` files for recording the execution time of each node (default is `false`)
 
-Files created by the `.btlog` and minitrace loggers are stored in `/tmp/<node_name>/`, with names containing a timestamp.
+Files created by the `.btlog` and minitrace loggers are stored in `<temp dir>/plansys2/<namespace>/<node_name>/` (usually `/tmp/plansys2/...`), with names containing a timestamp.
 
 ### BT node for calling ROS2 action servers
 The `BtActionNode` template class provides a convenient means of calling ROS2 action servers from within a BT.  It takes care of the details of setting up and handling a ROS action client, reducing code duplication and providing a simple API.

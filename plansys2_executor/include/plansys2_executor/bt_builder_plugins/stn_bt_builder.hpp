@@ -22,6 +22,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <optional>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -163,7 +164,10 @@ protected:
    * @param[in] plan The plan to analyze.
    * @return Set of integer timepoints representing happenings.
    */
-  std::set<int> get_happenings(const plansys2_msgs::msg::Plan & plan) const;
+  // Whether every snap action of the plan applies at its happening from the current state
+  bool is_executable(const plansys2_msgs::msg::Plan & plan) const;
+
+  std::set<int64_t> get_happenings(const plansys2_msgs::msg::Plan & plan) const;
 
   /**
    * @brief Finds the happening time for a given time point.
@@ -172,7 +176,8 @@ protected:
    * @param[in] happenings The set of all happening times.
    * @return Iterator to the happening time, or happenings.end() if not found.
    */
-  std::set<int>::iterator get_happening(int time, const std::set<int> & happenings) const;
+  std::set<int64_t>::iterator get_happening(
+    int64_t time, const std::set<int64_t> & happenings) const;
 
   /**
    * @brief Finds the previous happening time before a given time point.
@@ -181,7 +186,8 @@ protected:
    * @param[in] happenings The set of all happening times.
    * @return Iterator to the previous happening time, or happenings.end() if not found.
    */
-  std::set<int>::iterator get_previous(int time, const std::set<int> & happenings) const;
+  std::set<int64_t>::iterator get_previous(
+    int64_t time, const std::set<int64_t> & happenings) const;
 
   /**
    * @brief Creates a simplified representation of the plan with snap actions.
@@ -192,18 +198,19 @@ protected:
    * @param[in] plan The plan to transform.
    * @return Multimap from time points to action snapshots.
    */
-  std::multimap<int, ActionStamped> get_simple_plan(const plansys2_msgs::msg::Plan & plan) const;
+  std::multimap<int64_t, ActionStamped> get_simple_plan(
+    const plansys2_msgs::msg::Plan & plan) const;
 
   /**
    * @brief Computes the state at each happening time in the plan.
    *
    * @param[in] happenings The set of happening times.
    * @param[in] plan The simplified plan representation.
-   * @return std::map<int, StateVec> Map from happening times to state vectors.
+   * @return std::map<int64_t, StateVec> Map from happening times to state vectors.
    */
-  std::map<int, StateVec> get_states(
-    const std::set<int> & happenings,
-    const std::multimap<int, ActionStamped> & plan) const;
+  std::map<int64_t, StateVec> get_states(
+    const std::set<int64_t> & happenings,
+    const std::multimap<int64_t, ActionStamped> & plan) const;
 
   /**
    * @brief Creates a tree representation from a state.
@@ -248,11 +255,11 @@ protected:
    * @param[in] states The states at each happening time.
    * @return Vector of parent actions.
    */
-  std::vector<std::pair<int, ActionStamped>> get_parents(
-    const std::pair<int, ActionStamped> & action,
-    const std::multimap<int, ActionStamped> & plan,
-    const std::set<int> & happenings,
-    const std::map<int, StateVec> & states) const;
+  std::vector<std::pair<int64_t, ActionStamped>> get_parents(
+    const std::pair<int64_t, ActionStamped> & action,
+    const std::multimap<int64_t, ActionStamped> & plan,
+    const std::set<int64_t> & happenings,
+    const std::map<int64_t, StateVec> & states) const;
 
   /**
    * @brief Finds actions that satisfy the requirements of an action.
@@ -263,11 +270,11 @@ protected:
    * @param[in] states The states at each happening time.
    * @return Vector of actions that satisfy requirements.
    */
-  std::vector<std::pair<int, ActionStamped>> get_satisfy(
-    const std::pair<int, ActionStamped> & action,
-    const std::multimap<int, ActionStamped> & plan,
-    const std::set<int> & happenings,
-    const std::map<int, StateVec> & states) const;
+  std::vector<std::pair<int64_t, ActionStamped>> get_satisfy(
+    const std::pair<int64_t, ActionStamped> & action,
+    const std::multimap<int64_t, ActionStamped> & plan,
+    const std::set<int64_t> & happenings,
+    const std::map<int64_t, StateVec> & states) const;
 
   /**
    * @brief Finds actions that threaten the execution of an action.
@@ -279,13 +286,13 @@ protected:
    * @param[in] plan The simplified plan representation.
    * @param[in] happenings The set of happening times.
    * @param[in] states The states at each happening time.
-   * @return std::vector<std::pair<int, ActionStamped>> Vector of threatening actions.
+   * @return std::vector<std::pair<int64_t, ActionStamped>> Vector of threatening actions.
    */
-  std::vector<std::pair<int, ActionStamped>> get_threat(
-    const std::pair<int, ActionStamped> & action,
-    const std::multimap<int, ActionStamped> & plan,
-    const std::set<int> & happenings,
-    const std::map<int, StateVec> & states) const;
+  std::vector<std::pair<int64_t, ActionStamped>> get_threat(
+    const std::pair<int64_t, ActionStamped> & action,
+    const std::multimap<int64_t, ActionStamped> & plan,
+    const std::set<int64_t> & happenings,
+    const std::map<int64_t, StateVec> & states) const;
 
   /**
    * @brief Checks if an action can be applied in a given state.
@@ -300,9 +307,9 @@ protected:
    * @return True if the action can be applied, false otherwise.
    */
   bool can_apply(
-    const std::pair<int, ActionStamped> & action,
-    const std::multimap<int, ActionStamped> & plan,
-    const int & time,
+    const std::pair<int64_t, ActionStamped> & action,
+    const std::multimap<int64_t, ActionStamped> & plan,
+    const int64_t & time,
     StateVec & state) const;
 
   /**
@@ -338,6 +345,21 @@ protected:
   plansys2_msgs::msg::Tree get_conditions(const ActionStamped & action) const;
 
   /**
+   * @brief The conditions that order an event: what it requires, and the condition of each of
+   * its conditional effects as it was in the plan, or its negation if it was false.
+   *
+   * Executed in another order, a conditional effect would give another outcome.
+   *
+   * @param[in] action The event.
+   * @param[in] happenings The happenings of the plan.
+   * @param[in] states The state at each happening.
+   * @return Tree representing the conditions.
+   */
+  plansys2_msgs::msg::Tree get_ordering_conditions(
+    const std::pair<int64_t, ActionStamped> & action, const std::set<int64_t> & happenings,
+    const std::map<int64_t, StateVec> & states) const;
+
+  /**
    * @brief Gets the effects produced by an action.
    *
    * Returns different effects based on the action type (start, end).
@@ -348,6 +370,26 @@ protected:
   plansys2_msgs::msg::Tree get_effects(const ActionStamped & action) const;
 
   /**
+   * @brief The effects an event can give while it runs, to find what it threatens: those of a
+   * non-durative action also at its start.
+   *
+   * @param[in] action The event.
+   * @return Tree representing the effects.
+   */
+  plansys2_msgs::msg::Tree get_threat_effects(const ActionStamped & action) const;
+
+  /**
+   * @brief Whether two effects cannot happen in either order: one adds a fact the other deletes,
+   * or both change a function. As written, whatever the state.
+   *
+   * @param[in] first The first effects.
+   * @param[in] second The second effects.
+   * @return True if their order changes the outcome.
+   */
+  static bool interfere(
+    const plansys2_msgs::msg::Tree & first, const plansys2_msgs::msg::Tree & second);
+
+  /**
    * @brief Prunes redundant paths in the graph.
    *
    * Removes unnecessary edges that are implied by other paths.
@@ -356,6 +398,7 @@ protected:
    * @param[in] previous The node to prune paths from.
    */
   void prune_paths(Node::Ptr current, Node::Ptr previous) const;
+  void prune_paths(Node::Ptr current, Node::Ptr previous, std::set<const Node *> & visited) const;
 
   /**
    * @brief Checks if there's a path between two nodes.
@@ -365,6 +408,7 @@ protected:
    * @return True if a path exists, false otherwise.
    */
   bool check_paths(Node::Ptr current, Node::Ptr previous) const;
+  bool check_paths(Node::Ptr current, Node::Ptr previous, std::set<const Node *> & visited) const;
 
   /**
    * @brief Computes the distance matrix for an STN.
@@ -395,13 +439,17 @@ protected:
    * @param[in] prev_node The previous node in the traversal.
    * @param[in,out] used Set of nodes already processed.
    * @param[in] level Indentation level.
-   * @return String containing the behavior tree XML.
+   * @param[in] wrap Whether the node gets a Sequence of its own; without it, its content goes in
+   *            the Sequence of its parent, as when it is the only way on.
+   * @param[out] out Where the behavior tree XML is appended.
    */
-  std::string get_flow(
+  void get_flow(
     const Node::Ptr node,
     const Node::Ptr prev_node,
     std::set<Node::Ptr> & used,
-    const int & level) const;
+    const int & level,
+    bool wrap,
+    std::string & out) const;
 
   /**
    * @brief Generates the BT XML for the start execution block of an action.
@@ -428,6 +476,8 @@ protected:
    * @param[in,out] edges Set to collect edge definitions.
    */
   void get_flow_dotgraph(Node::Ptr node, std::set<std::string> & edges);
+  void get_flow_dotgraph(
+    Node::Ptr node, std::set<std::string> & edges, std::set<const Node *> & visited);
 
   /**
    * @brief Generates DOT graph node definition for a single action node.
@@ -501,13 +551,13 @@ protected:
    */
   std::string t(const int & level) const;
 
-  std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 
   Graph::Ptr stn_;
+  // get_plan_actions of the last plan: building a tree asked for it, and the domain, five times
+  mutable std::optional<std::pair<plansys2_msgs::msg::Plan, std::vector<ActionStamped>>>
+  plan_actions_;
   std::string bt_start_action_;
   std::string bt_end_action_;
-  int action_time_precision_;
 };
 
 }  // namespace plansys2

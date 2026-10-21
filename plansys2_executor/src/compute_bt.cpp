@@ -14,6 +14,7 @@
 
 #include <memory>
 
+#include "plansys2_core/ClientNode.hpp"
 #include "plansys2_executor/ComputeBT.hpp"
 #include "rclcpp/rclcpp.hpp"
 
@@ -27,7 +28,14 @@ int main(int argc, char ** argv)
   node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-  rclcpp::spin(node->get_node_base_interface());
+  // Multi-threaded: its service callback waits for its clients
+  rclcpp::executors::MultiThreadedExecutor executor(
+    rclcpp::ExecutorOptions(), plansys2::kComponentThreads);
+  executor.add_node(node->get_node_base_interface());
+  for (const auto & embedded : node->get_embedded_nodes()) {
+    executor.add_node(embedded->get_node_base_interface());
+  }
+  executor.spin();
 
   rclcpp::shutdown();
 

@@ -1,8 +1,12 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 
 project(plansys2_popf_plan_solver)
 
-set(CMAKE_CXX_STANDARD 23)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
+
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -10,6 +14,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(plansys2_core REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
   src/plansys2_popf_plan_solver/popf_plan_solver.cpp
@@ -22,6 +27,7 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC
   plansys2_core::plansys2_core
   PRIVATE
+  ament_index_cpp::ament_index_cpp
   pluginlib::pluginlib
   rclcpp::rclcpp
 )
@@ -47,10 +53,14 @@ install(TARGETS ${PROJECT_NAME}
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+  # Humble's uncrustify (0.72) formats otherwise than the newer one this code follows
+  if("$ENV{ROS_DISTRO}" STREQUAL "humble")
+    set(ament_cmake_uncrustify_FOUND TRUE)
+  endif()
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
-  find_package(ament_index_cpp REQUIRED)
+  find_package(ament_cmake_ros REQUIRED)
   add_subdirectory(test)
 endif()
 

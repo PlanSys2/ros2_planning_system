@@ -201,6 +201,19 @@ TEST(validate_tree, unreachable_nodes_are_ignored)
   ASSERT_TRUE(valid(tree));
 }
 
+TEST(is_valid_name, pddl_names)
+{
+  for (const std::string name : {"r", "r2d2", "Paco", "room_1", "room-1", "R1", "a-b_c-9"}) {
+    ASSERT_TRUE(parser::pddl::isValidName(name)) << name;
+  }
+  for (const std::string name : {
+    "", " ", "a b", "a)", "(a", "?x", "-a", "_a", "1room", "a;b", "a\tb", "a\nb", "a.b",
+    "a,b", "a:b", "caf\xc3\xa9", " a", "a "})
+  {
+    ASSERT_FALSE(parser::pddl::isValidName(name)) << "[" << name << "]";
+  }
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

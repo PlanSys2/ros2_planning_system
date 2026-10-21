@@ -2,26 +2,31 @@
 Changelog for package plansys2_tui_cli
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Fixes in the Python support, the terminal, and the rqt and TUI tools (`#500 <https://github.com/PlanSys2/ros2_planning_system/pull/500>`_)
+* Problem metric from Python, the terminal and the TUI (`#463 <https://github.com/PlanSys2/ros2_planning_system/pull/463>`_)
+* Performers, executor clients and the TUI notice when PlanSys2 goes down (`#448 <https://github.com/PlanSys2/ros2_planning_system/pull/448>`_)
+* Contributors: Francisco Martín Rico
+
 3.1.0 (2026-07-28)
 ------------------
-* Fix missing module in plansys2_tui dependencies
-* Fix test import
-* Fix publish execution Info. TUI and CLI
-* Contributors: Francisco Martín Rico, SamueleSandrini
-
-* Fix CI
-* Fix CI
 * Merge pull request `#404 <https://github.com/PlanSys2/ros2_planning_system/issues/404>`_ from JRL-CARI-CNR-UNIBS/rolling-pr-tui
   Fix missing module in plansys2_tui dependencies
 * Fix missing module in plansys2_tui dependencies
 * Merge pull request `#401 <https://github.com/PlanSys2/ros2_planning_system/issues/401>`_ from PlanSys2/tui_and_cli
   Fix publish execution Info. TUI and CLI
+* Fix publish execution Info. TUI and CLI
 * Fix test import
 * Potential fix for pull request finding
   Co-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>
 * Potential fix for pull request finding
   Co-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>
-* Fix publish execution Info. TUI and CLI
+* Fix CI
+* Fix CI
 * Contributors: Francisco Martín Rico, SamueleSandrini
 
 3.0.0 (2025-06-06)

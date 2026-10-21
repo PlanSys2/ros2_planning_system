@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>plansys2</name>
-  <version>3.1.0</version>
+  <version>4.0.0</version>
 
   <description>ROS2 Planning System</description>
 
@@ -21,11 +21,13 @@
   <exec_depend>plansys2_msgs</exec_depend>
   <exec_depend>plansys2_pddl_parser</exec_depend>
   <exec_depend>plansys2_planner</exec_depend>
+  <exec_depend>plansys2_kairos_plan_solver</exec_depend>
   <exec_depend>plansys2_popf_plan_solver</exec_depend>
   <exec_depend>plansys2_problem_expert</exec_depend>
   <exec_depend>plansys2_support_py</exec_depend>
   <exec_depend>plansys2_terminal</exec_depend>
   <exec_depend>plansys2_tools</exec_depend>
+  <exec_depend>plansys2_tui_cli</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

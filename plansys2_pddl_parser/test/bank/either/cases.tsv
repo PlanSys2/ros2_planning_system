@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:either-types	robot inspects the corridor next to its room
+domain.pddl	p2.pddl	yes	:either-types	robot and drone inspect three rooms and two corridors
+domain.pddl	p3.pddl	no	:either-types	vault room is not linked to any room or corridor

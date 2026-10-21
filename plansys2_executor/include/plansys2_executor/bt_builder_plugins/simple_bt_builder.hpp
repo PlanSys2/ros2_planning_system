@@ -50,8 +50,8 @@ struct ActionNode
   static Ptr make_shared() {return std::make_shared<ActionNode>();}
 
   ActionStamped action;
-  int node_num;
-  int level_num;
+  int node_num = 0;
+  int level_num = 0;
 
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
@@ -72,7 +72,22 @@ struct ActionGraph
   static Ptr make_shared() {return std::make_shared<ActionGraph>();}
 
   std::list<ActionNode::Ptr> roots;
-  std::map<float, std::list<ActionNode::Ptr>> levels;
+  std::map<double, std::list<ActionNode::Ptr>> levels;
+
+  // Arcs point both ways, so the nodes would keep each other alive (#430)
+  ~ActionGraph()
+  {
+    auto unlink = [](const std::list<ActionNode::Ptr> & nodes) {
+        for (const auto & node : nodes) {
+          node->in_arcs.clear();
+          node->out_arcs.clear();
+        }
+      };
+    unlink(roots);
+    for (const auto & level : levels) {
+      unlink(level.second);
+    }
+  }
 };
 
 /**
@@ -212,6 +227,23 @@ protected:
     std::vector<plansys2::Function> & functions) const;
 
   /**
+   * @brief The effects an action can give while it runs: at start for a durative action, all
+   * of them for a non-durative one.
+   *
+   * @param[in] action The action.
+   * @return Tree representing the effects.
+   */
+  static plansys2_msgs::msg::Tree running_effects(const ActionStamped & action);
+
+  /**
+   * @brief For each action of the plan, the condition of each of its conditional effects as it
+   * was when the plan applied it, or its negation: its outcome depends on them.
+   *
+   * @param[in] actions The actions of the plan.
+   */
+  void compute_when_requirements(const std::vector<plansys2::ActionStamped> & actions);
+
+  /**
    * @brief Finds root actions that can be executed immediately.
    *
    * @param[in,out] action_sequence Actions to check, executable ones will be removed.
@@ -303,17 +335,21 @@ protected:
     const std::list<ActionNode::Ptr> & ret) const;
 
   /**
-   * @brief Generates the behavior tree XML for a node and its descendants.
+   * @brief Appends the behavior tree XML of a node and what follows it.
    *
-   * @param[in] node The node to process.
-   * @param[in,out] used_nodes List of nodes already processed.
+   * @param[in] node The node.
+   * @param[in,out] used_nodes The action ids already in the tree.
    * @param[in] level Indentation level.
-   * @return std::string containing the behavior tree XML.
+   * @param[in] wrap Whether the node gets a Sequence of its own; without it, its content goes in
+   *            the Sequence of its parent, as when it is the only way on.
+   * @param[out] out Where the XML is appended.
    */
-  std::string get_flow_tree(
+  void get_flow_tree(
     ActionNode::Ptr node,
-    std::list<std::string> & used_nodes,
-    int level = 0);
+    std::set<std::string> & used_nodes,
+    int level,
+    bool wrap,
+    std::string & out);
 
   /**
    * @brief Collects edges for DOT graph visualization.
@@ -323,6 +359,18 @@ protected:
    */
   void get_flow_dotgraph(ActionNode::Ptr node, std::set<std::string> & edges);
 
+private:
+  // The traversals above, once per node: the graph is a DAG that many paths cross
+  ActionNode::Ptr get_node_satisfy(
+    const plansys2_msgs::msg::Tree & requirement, const ActionNode::Ptr & node,
+    const ActionNode::Ptr & current, std::map<const ActionNode *, ActionNode::Ptr> & memo);
+  void get_node_contradict(
+    const ActionNode::Ptr & node, const ActionNode::Ptr & current,
+    std::list<ActionNode::Ptr> & parents, std::set<const ActionNode *> & visited);
+  void get_flow_dotgraph(
+    ActionNode::Ptr node, std::set<std::string> & edges, std::set<const ActionNode *> & visited);
+
+protected:
   /**
    * @brief Generates DOT graph node definition for a single action node.
    *
@@ -430,10 +478,10 @@ protected:
   std::vector<std::tuple<uint32_t, uint32_t, uint32_t, std::string>> get_graph_tabular(
     const plansys2::ActionGraph::Ptr & graph) const;
 
-  std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
 
   ActionGraph::Ptr graph_;
+  // By action id, from compute_when_requirements
+  std::map<std::string, std::vector<plansys2_msgs::msg::Tree>> when_requirements_;
   std::string bt_;
   std::string bt_action_;
 };

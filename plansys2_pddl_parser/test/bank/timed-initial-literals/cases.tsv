@@ -1,0 +1,4 @@
+domain.pddl	p1.pddl	yes	:durative-actions :timed-initial-literals	the robot passes before the door closes at 10
+domain.pddl	p2.pddl	yes	:durative-actions :timed-initial-literals	the robot crosses two doors in a row, each before its own closing time (7 and 12)
+domain.pddl	p3.pddl	no	:durative-actions :timed-initial-literals	a timed literal opens only the lab door, the office door never opens
+domain.pddl	p4.pddl	yes	:durative-actions :timed-initial-literals	the office door opens at 1.5: the robot waits for it

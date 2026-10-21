@@ -20,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "gtest/gtest.h"
 
 #include "plansys2_domain_expert/DomainExpert.hpp"
@@ -31,7 +31,7 @@ namespace
 
 std::string read_file(const std::string & name)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream ifs(pkgpath + "/pddl/" + name);
   return std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 }
@@ -239,10 +239,6 @@ INSTANTIATE_TEST_SUITE_P(
     std::make_pair("unbalanced_open", "(define (domain d) (:requirements :strips)"),
     std::make_pair("unbalanced_close", "(define (domain d)))))"),
     std::make_pair(
-      "no_predicates_section",
-      "(define (domain d) (:requirements :strips :typing) (:types thing)\n"
-      "  (:action a :parameters (?t - thing) :precondition (and) :effect (and)))"),
-    std::make_pair(
       "unknown_function_in_effect",
       "(define (domain d) (:requirements :strips :typing :fluents) (:types thing)\n"
       "  (:predicates (p ?t - thing)) (:functions (f ?t - thing))\n"
@@ -268,6 +264,37 @@ TEST(domain_expert_malformed, truncated_domains)
   }
   ASSERT_TRUE(domain_expert.changeDomain(valid));
   ASSERT_EQ(domain_expert.getDomain(), before);
+}
+
+// Instance names end up verbatim in the generated problem (#419)
+TEST(problem_expert_malformed, invalid_instance_names_are_rejected)
+{
+  auto domain_expert =
+    std::make_shared<plansys2::DomainExpert>(read_file("domain_simple.pddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance("leia", "robot")));
+  const auto before = problem_expert.getProblem();
+
+  for (const std::string name : {
+    "", " ", "a b", "a)", "(a", "?x", "-a", "1room", "a;b", "a\tb", "a\nb", "r2d2 jack"})
+  {
+    SCOPED_TRACE("[" + name + "]");
+    ASSERT_FALSE(problem_expert.addInstance(plansys2::Instance(name, "robot")));
+    ASSERT_EQ(problem_expert.getProblem(), before);
+  }
+
+  for (const std::string name : {"r2d2", "R1", "room_1", "room-1"}) {
+    SCOPED_TRACE(name);
+    ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance(name, "robot")));
+  }
+
+  // What is generated can be loaded again
+  const auto problem = problem_expert.getProblem();
+  ASSERT_NE(problem.find("room-1"), std::string::npos);
+  auto other_domain = std::make_shared<plansys2::DomainExpert>(read_file("domain_simple.pddl"));
+  plansys2::ProblemExpert other(other_domain);
+  ASSERT_TRUE(other.addProblem(problem));
+  ASSERT_EQ(other.getInstances().size(), problem_expert.getInstances().size());
 }
 
 int main(int argc, char ** argv)

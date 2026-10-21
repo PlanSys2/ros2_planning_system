@@ -1,3 +1,4 @@
-float32 time
+# Times in seconds: float32 loses the decimals that long or tight plans need
+float64 time
 string action
-float32 duration
+float64 duration

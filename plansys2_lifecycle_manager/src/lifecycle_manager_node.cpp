@@ -15,6 +15,7 @@
 #include <chrono>
 #include <memory>
 #include <string>
+#include <thread>
 #include <map>
 
 #include "rclcpp/rclcpp.hpp"
@@ -27,33 +28,50 @@ int main(int argc, char ** argv)
 
   rclcpp::init(argc, argv);
 
-  std::map<std::string, std::shared_ptr<plansys2::LifecycleServiceClient>> manager_nodes;
-  manager_nodes["domain_expert"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "domain_expert_lc_mngr", "domain_expert");
-  manager_nodes["problem_expert"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "problem_expert_lc_mngr", "problem_expert");
-  manager_nodes["planner"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "planner_lc_mngr", "planner");
-  manager_nodes["executor"] = std::make_shared<plansys2::LifecycleServiceClient>(
-    "executor_lc_mngr", "executor");
+  auto main_node = rclcpp::Node::make_shared("lifecycle_manager");
+  const auto startup_timeout = main_node->declare_parameter("startup_timeout", 5);
+  // Once up, it watches the components: false to exit after the startup, as before 4.0.0
+  const auto supervise = main_node->declare_parameter("supervise", true);
+  const auto period = main_node->declare_parameter("supervise_period", 0.5);
+  plansys2::Supervisor::Options options;
+  options.lost_after = std::chrono::milliseconds(
+    static_cast<int64_t>(1000.0 * main_node->declare_parameter("lost_after", 3.0)));
+  options.grace = std::chrono::milliseconds(
+    static_cast<int64_t>(1000.0 * main_node->declare_parameter("grace", 10.0)));
+  options.transition_timeout = std::chrono::seconds(startup_timeout);
 
-  rclcpp::experimental::executors::EventsExecutor exe;
-  for (auto & manager_node : manager_nodes) {
-    manager_node.second->init();
-    exe.add_node(manager_node.second);
+  // One node, the manager's: the four clients work on it
+  auto client_node = std::make_shared<plansys2::ClientNode>(*main_node);
+  std::map<std::string, std::shared_ptr<plansys2::LifecycleServiceClient>> manager_nodes;
+  for (const auto & name : {"domain_expert", "problem_expert", "planner", "executor"}) {
+    manager_nodes[name] = std::make_shared<plansys2::LifecycleServiceClient>(client_node, name);
   }
 
-  std::shared_future<bool> startup_future = std::async(
-    std::launch::async,
-    std::bind(plansys2::startup_function, manager_nodes, std::chrono::seconds(5)));
-  exe.spin_until_future_complete(startup_future);
-
-  if (!startup_future.get()) {
+  // The clients bring their answers while they wait: nothing to spin
+  if (!plansys2::startup_function(manager_nodes, std::chrono::seconds(startup_timeout))) {
     RCLCPP_ERROR(
       rclcpp::get_logger("plansys2_lifecycle_manager"),
       "Failed to start plansys2!");
-    rclcpp::shutdown();
-    return -1;
+    // Watching, it brings up each component when it is there (a process that died while it
+    // started comes back unconfigured)
+    if (!supervise) {
+      rclcpp::shutdown();
+      return -1;
+    }
+  }
+
+  if (supervise) {
+    plansys2::Supervisor supervisor(manager_nodes, options);
+    const auto step = std::chrono::milliseconds(static_cast<int64_t>(1000.0 * period));
+    auto next = std::chrono::steady_clock::now();
+    while (rclcpp::ok()) {
+      supervisor.step();
+      next += step;
+      std::this_thread::sleep_until(next);
+      if (std::chrono::steady_clock::now() > next + step) {
+        next = std::chrono::steady_clock::now();  // A slow step: no burst to catch up
+      }
+    }
   }
 
   rclcpp::shutdown();

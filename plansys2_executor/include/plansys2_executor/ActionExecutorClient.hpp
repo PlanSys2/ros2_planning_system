@@ -22,6 +22,7 @@
 #include "plansys2_msgs/msg/action_execution.hpp"
 #include "plansys2_msgs/msg/action_performer_status.hpp"
 
+#include "plansys2_core/NodeNames.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 
@@ -108,6 +109,13 @@ protected:
   const std::vector<std::string> & get_arguments() const {return current_arguments_;}
 
   /**
+   * @brief The duration the plan gives the current action, as the planner chose it.
+   *
+   * @return In seconds; 0 for a non-durative action.
+   */
+  double get_planned_duration() const {return current_planned_duration_;}  // Updated by a new plan
+
+  /**
    * @brief Get the name of the action this executor manages.
    *
    * @return std::stringThe action name.
@@ -190,11 +198,12 @@ protected:
   void finish(bool success, float completion, const std::string & status = "");
 
   // Period for the timer to call do_work
-  std::chrono::nanoseconds period_;
+  std::chrono::nanoseconds period_ {0};
   std::string action_managed_;
   bool committed_;
 
   std::vector<std::string> current_arguments_;
+  double current_planned_duration_ {0.0};
   std::vector<std::string> specialized_arguments_;
 
   rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecution>::SharedPtr
@@ -207,6 +216,24 @@ protected:
   rclcpp::TimerBase::SharedPtr hearbeat_pub_;
   plansys2_msgs::msg::ActionPerformerStatus status_;
   rclcpp::Time start_time_;
+
+private:
+  // While running, the node that asked for the action must stay alive (#446)
+  void check_requester();
+
+  // Not waiting any more for a CONFIRM or REJECT
+  void release_commitment();
+
+  std::string requester_;
+  // The request we answered and wait to be confirmed or rejected for
+  std::string committed_request_id_;
+  // A lost CONFIRM or REJECT does not keep us committed for ever
+  rclcpp::TimerBase::SharedPtr commitment_timeout_;
+  // The request we execute: its feedback and finish carry it
+  std::string current_request_id_;
+  rclcpp::TimerBase::SharedPtr requester_check_;
+  std::unique_ptr<NodeNames> node_names_;
+  int requester_misses_ {0};
 };
 
 }  // namespace plansys2

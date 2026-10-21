@@ -21,6 +21,7 @@ import shlex
 import signal
 import subprocess
 import threading
+import time
 
 from typing import Optional
 
@@ -157,7 +158,8 @@ class PlanSolverBase(ABC):
 
         self._cancel_requested = False
         child_finish = False
-        start_time = self._lc_node.get_clock().now()
+        # Wall time: a planner takes the same with simulated time
+        start_time = time.monotonic()
 
         try:
             # Open output file for writing planner results
@@ -170,15 +172,24 @@ class PlanSolverBase(ABC):
                     text=True
                 )
 
+                # Read stderr while it runs: a full pipe would block the planner
+                stderr_tail = []
+
+                def drain():
+                    for line in process.stderr:
+                        stderr_tail.append(line)
+                        del stderr_tail[:-20]
+
+                drain_thread = threading.Thread(target=drain, daemon=True)
+                drain_thread.start()
+
                 # Monitor thread to handle timeout and cancellation
                 def monitor():
                     timeout_sec = solver_timeout.nanoseconds / 1e9
                     poll_interval = 0.1  # 100ms
 
                     while not self._cancel_requested and not child_finish:
-                        elapsed = (
-                            self._lc_node.get_clock().now() - start_time
-                        ).nanoseconds / 1e9
+                        elapsed = time.monotonic() - start_time
 
                         if elapsed >= timeout_sec:
                             self._lc_node.get_logger().debug(
@@ -208,6 +219,7 @@ class PlanSolverBase(ABC):
                 return_code = process.wait()
                 child_finish = True
                 monitor_thread.join()
+                drain_thread.join(timeout=1.0)
 
                 # Check if process was cancelled or timed out
                 if self._cancel_requested:
@@ -225,7 +237,8 @@ class PlanSolverBase(ABC):
                 # Check exit status
                 if return_code != 0:
                     self._lc_node.get_logger().debug(
-                        f'Child process exited with status: {return_code}'
+                        f'Child process exited with status: {return_code}: '
+                        f'{"".join(stderr_tail)}'
                     )
                     return False
 

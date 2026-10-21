@@ -15,12 +15,13 @@
 #include <atomic>
 #include <chrono>
 #include <fstream>
-#include <thread>
 #include <string>
 #include <vector>
 #include <memory>
+#include <utility>
+#include <functional>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 
 #include "gtest/gtest.h"
 
@@ -35,11 +36,14 @@
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_core/Utils.hpp"
 
 #include "plansys2_msgs/msg/knowledge.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
+
+using namespace std::chrono_literals;  // NOLINT
 
 namespace
 {
@@ -78,18 +82,18 @@ TEST(problem_expert_node, addget_instances)
 {
   {
     auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto test_node_2 = rclcpp::Node::make_shared("test_problem_expert_node_2");
     auto remap = domain_topic_remap("addget_instances");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_2);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+      plansys2::share_path("plansys2_problem_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
-
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -97,14 +101,14 @@ TEST(problem_expert_node, addget_instances)
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
     exe.add_node(test_node_2->get_node_base_interface());
 
     plansys2_msgs::msg::Knowledge last_knowledge_msg;
-    int knowledge_msg_counter = 0;
+    std::atomic<int> knowledge_msg_counter = 0;
     auto knowledge_sub = test_node_2->create_subscription<plansys2_msgs::msg::Knowledge>(
     "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
       [&last_knowledge_msg, &knowledge_msg_counter]
@@ -113,10 +117,7 @@ TEST(problem_expert_node, addget_instances)
         knowledge_msg_counter++;
     });
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
+    plansys2::testing::ExecutorThread spinner(exe);
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("Paco", "person")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("Paco", "person")));
@@ -124,15 +125,9 @@ TEST(problem_expert_node, addget_instances)
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
+    ASSERT_TRUE(plansys2::testing::wait_for([&]() {return knowledge_msg_counter >= 4;}));
 
-    ASSERT_EQ(knowledge_msg_counter, 4u);
+    ASSERT_EQ(knowledge_msg_counter.load(), 4u);
     ASSERT_EQ(last_knowledge_msg.instances.size(), 3u);
     ASSERT_EQ(last_knowledge_msg.instances[0], "Paco");
     ASSERT_EQ(last_knowledge_msg.instances[1], "bedroom");
@@ -142,15 +137,9 @@ TEST(problem_expert_node, addget_instances)
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
+    ASSERT_TRUE(plansys2::testing::wait_for([&]() {return knowledge_msg_counter >= 5;}));
 
-    ASSERT_EQ(knowledge_msg_counter, 5u);
+    ASSERT_EQ(knowledge_msg_counter.load(), 5u);
     ASSERT_EQ(last_knowledge_msg.instances.size(), 4u);
     ASSERT_EQ(last_knowledge_msg.instances[0], "Paco");
     ASSERT_EQ(last_knowledge_msg.instances[1], "bedroom");
@@ -178,15 +167,9 @@ TEST(problem_expert_node, addget_instances)
     ASSERT_EQ(problem_client->getInstances()[2].name, "r2d2");
     ASSERT_EQ(problem_client->getInstances()[2].type, "robot");
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
+    ASSERT_TRUE(plansys2::testing::wait_for([&]() {return knowledge_msg_counter >= 6;}));
 
-    ASSERT_EQ(knowledge_msg_counter, 6u);
+    ASSERT_EQ(knowledge_msg_counter.load(), 6u);
     ASSERT_EQ(last_knowledge_msg.instances.size(), 3u);
     ASSERT_EQ(last_knowledge_msg.instances[0], "bedroom");
     ASSERT_EQ(last_knowledge_msg.instances[1], "kitchen");
@@ -210,15 +193,9 @@ TEST(problem_expert_node, addget_instances)
 
     ASSERT_TRUE(problem_client->addPredicate(predicate_2));
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
+    ASSERT_TRUE(plansys2::testing::wait_for([&]() {return knowledge_msg_counter >= 8;}));
 
-    ASSERT_EQ(knowledge_msg_counter, 8u);
+    ASSERT_EQ(knowledge_msg_counter.load(), 8u);
     ASSERT_EQ(last_knowledge_msg.instances.size(), 3u);
     ASSERT_EQ(last_knowledge_msg.instances[0], "bedroom");
     ASSERT_EQ(last_knowledge_msg.instances[1], "kitchen");
@@ -230,15 +207,9 @@ TEST(problem_expert_node, addget_instances)
 
     ASSERT_TRUE(problem_client->setGoal(plansys2::Goal("(and (robot_at r2d2 kitchen))")));
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
+    ASSERT_TRUE(plansys2::testing::wait_for([&]() {return knowledge_msg_counter >= 9;}));
 
-    ASSERT_EQ(knowledge_msg_counter, 9u);
+    ASSERT_EQ(knowledge_msg_counter.load(), 9u);
     ASSERT_EQ(last_knowledge_msg.instances[0], "bedroom");
     ASSERT_EQ(last_knowledge_msg.instances[1], "kitchen");
     ASSERT_EQ(last_knowledge_msg.instances[2], "r2d2");
@@ -251,20 +222,9 @@ TEST(problem_expert_node, addget_instances)
 
     ASSERT_TRUE(problem_client->clearKnowledge());
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     ASSERT_TRUE(problem_client->getInstances().empty());
     ASSERT_TRUE(problem_client->getFunctions().empty());
     ASSERT_TRUE(problem_client->getPredicates().empty());
-
-    finish = true;
-    t.join();
 }
   plansys2::drain_ros(200ms);
 }
@@ -272,7 +232,7 @@ TEST(problem_expert_node, addget_instances)
 /*
 TEST(problem_expert, add_assignments)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -387,13 +347,12 @@ TEST(problem_expert, add_assignments)
 
   ASSERT_FALSE(problem_client->removeFunction(function_3));
 
-
   ASSERT_TRUE(problem_client->removeInstance("kitchen"));
 }
 
 TEST(problem_expert, addget_predicates)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -439,7 +398,6 @@ TEST(problem_expert, addget_predicates)
   ASSERT_EQ(predicate_4.parameters[0].type, "person");
   ASSERT_EQ(predicate_4.parameters[1].name, "kitchen");
   ASSERT_EQ(predicate_4.parameters[1].type, "room");
-
 
   plansys2_msgs::msg::Node predicate_5;
   predicate_5.node_type = plansys2_msgs::msg::Node::PREDICATE;
@@ -514,7 +472,7 @@ TEST(problem_expert, addget_predicates)
 
 TEST(problem_expert, addget_goals)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -556,7 +514,7 @@ TEST(problem_expert, addget_goals)
 
 TEST(problem_expert, get_probem)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -610,7 +568,6 @@ TEST(problem_expert, get_probem)
     std::string("and\n\t\t( robot_at r2d2 bedroom )\n\t\t( person_at paco kitchen )\n\t)\n)\n)\n"));
 }
 
-
 TEST(problem_expert, set_goal)
 {
   std::string expresion = std::string("(and (patrolled ro1) (patrolled ro2) (patrolled ro3))");
@@ -625,18 +582,18 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
 {
   {
     auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto test_node_2 = rclcpp::Node::make_shared("test_problem_expert_node_2");
     auto remap = domain_topic_remap("addget_goal_is_satisfied");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_2);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+      plansys2::share_path("plansys2_problem_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
-
 
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -644,14 +601,14 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
     exe.add_node(test_node_2->get_node_base_interface());
 
     plansys2_msgs::msg::Knowledge last_knowledge_msg;
-    int knowledge_msg_counter = 0;
+    std::atomic<int> knowledge_msg_counter = 0;
     auto knowledge_sub = test_node_2->create_subscription<plansys2_msgs::msg::Knowledge>(
     "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
       [&last_knowledge_msg, &knowledge_msg_counter]
@@ -660,10 +617,7 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
         knowledge_msg_counter++;
     });
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
+    plansys2::testing::ExecutorThread spinner(exe);
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("leia", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("jack", "person")));
@@ -671,15 +625,9 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("kitchen", "room")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("m1", "message")));
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
+    ASSERT_TRUE(plansys2::testing::wait_for([&]() {return knowledge_msg_counter >= 5;}));
 
-    ASSERT_EQ(knowledge_msg_counter, 5u);
+    ASSERT_EQ(knowledge_msg_counter.load(), 5u);
     ASSERT_EQ(last_knowledge_msg.instances.size(), 5u);
     ASSERT_EQ(last_knowledge_msg.instances[0], "leia");
     ASSERT_EQ(last_knowledge_msg.instances[1], "jack");
@@ -700,15 +648,9 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
     ASSERT_TRUE(problem_client->setGoal(goal));
     ASSERT_FALSE(problem_client->isGoalSatisfied(goal));
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
+    ASSERT_TRUE(plansys2::testing::wait_for([&]() {return knowledge_msg_counter >= 8;}));
 
-    ASSERT_EQ(knowledge_msg_counter, 8u);
+    ASSERT_EQ(knowledge_msg_counter.load(), 8u);
     ASSERT_EQ(last_knowledge_msg.instances.size(), 5u);
     ASSERT_EQ(last_knowledge_msg.instances[0], "leia");
     ASSERT_EQ(last_knowledge_msg.instances[1], "jack");
@@ -725,7 +667,8 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
 
     ASSERT_TRUE(problem_client->isGoalSatisfied(goal));
 
-    ASSERT_EQ(knowledge_msg_counter, 9u);
+    ASSERT_TRUE(plansys2::testing::wait_for([&]() {return knowledge_msg_counter >= 9;}));
+    ASSERT_EQ(knowledge_msg_counter.load(), 9u);
     ASSERT_EQ(last_knowledge_msg.instances.size(), 5u);
     ASSERT_EQ(last_knowledge_msg.instances[0], "leia");
     ASSERT_EQ(last_knowledge_msg.instances[1], "jack");
@@ -737,31 +680,27 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
     ASSERT_EQ(last_knowledge_msg.predicates[1], "(person_at jack bedroom)");
     ASSERT_EQ(last_knowledge_msg.predicates[2], "(robot_talk leia m1 jack)");
     ASSERT_EQ(last_knowledge_msg.goal, "(and (robot_talk leia m1 jack))");
-
-    finish = true;
-    t.join();
   }
   plansys2::drain_ros(200ms);
 }
 
-// Hot domain swap: DomainExpertClient::changeDomain() is the only entry point. It
-// republishes the new domain on domain_expert/domain (transient_local); ProblemExpertNode
-// watches that topic (ProblemExpertNode::domain_topic_callback()) and reconciles its
-// own knowledge in place, asynchronously, with no RPC between the two nodes. See
-// refactor_dynamic_domain.md for the design.
+// Hot domain swap: DomainExpertClient::changeDomain() is the only entry point. The domain
+// expert asks ProblemExpertNode (problem_expert/update_domain) to reconcile its knowledge
+// before it answers, and then republishes the new domain on domain_expert/domain.
 TEST(problem_expert_node, reconcile_with_domain_preserves_and_prunes)
 {
   {
     auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto test_node_2 = rclcpp::Node::make_shared("test_problem_expert_node_2");
     auto remap = domain_topic_remap("reconcile_with_domain_preserves_and_prunes");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node_2);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_2);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+      plansys2::share_path("plansys2_problem_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
@@ -772,14 +711,14 @@ TEST(problem_expert_node, reconcile_with_domain_preserves_and_prunes)
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
     exe.add_node(test_node_2->get_node_base_interface());
 
     plansys2_msgs::msg::Knowledge last_knowledge_msg;
-    int knowledge_msg_counter = 0;
+    std::atomic<int> knowledge_msg_counter = 0;
     auto knowledge_sub = test_node_2->create_subscription<plansys2_msgs::msg::Knowledge>(
       "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
       [&last_knowledge_msg, &knowledge_msg_counter]
@@ -788,10 +727,7 @@ TEST(problem_expert_node, reconcile_with_domain_preserves_and_prunes)
         knowledge_msg_counter++;
       });
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
+    plansys2::testing::ExecutorThread spinner(exe);
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
@@ -807,13 +743,13 @@ TEST(problem_expert_node, reconcile_with_domain_preserves_and_prunes)
     parser::pddl::fromString(goal, "(and (robot_at r2d2 kitchen))");
     ASSERT_TRUE(problem_client->setGoal(goal));
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
+    ASSERT_TRUE(plansys2::testing::wait_for([&]() {return knowledge_msg_counter >= 8;}));
+    // The domain expert only asks the problem expert once it sees its service
+    ASSERT_TRUE(
+      plansys2::testing::wait_for(
+        [&]() {
+          return plansys2::testing::has_service(*domain_node, "problem_expert/update_domain");
+      }));
 
     int knowledge_msg_counter_before_reconcile = knowledge_msg_counter;
 
@@ -826,14 +762,6 @@ TEST(problem_expert_node, reconcile_with_domain_preserves_and_prunes)
       std::istreambuf_iterator<char>());
 
     ASSERT_TRUE(domain_client->changeDomain(new_domain));
-
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
 
     ASSERT_EQ(
       problem_node->get_current_state().id(),
@@ -849,18 +777,11 @@ TEST(problem_expert_node, reconcile_with_domain_preserves_and_prunes)
     ASSERT_EQ(parser::pddl::toString(problem_client->getGoal()), "(and (robot_at r2d2 kitchen))");
 
     // The knowledge topic reflects the reconciled (pruned) state too.
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-    ASSERT_GT(knowledge_msg_counter, knowledge_msg_counter_before_reconcile);
+    ASSERT_TRUE(
+      plansys2::testing::wait_for(
+        [&]() {return knowledge_msg_counter > knowledge_msg_counter_before_reconcile;}));
+    ASSERT_GT(knowledge_msg_counter.load(), knowledge_msg_counter_before_reconcile);
     ASSERT_EQ(last_knowledge_msg.predicates.size(), 2u);
-
-    finish = true;
-    t.join();
   }
   plansys2::drain_ros(200ms);
 }
@@ -869,14 +790,15 @@ TEST(problem_expert_node, reconcile_with_domain_full_replacement_prunes_everythi
 {
   {
     auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto remap = domain_topic_remap("reconcile_with_domain_full_replacement_prunes_everything");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+      plansys2::share_path("plansys2_problem_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
@@ -887,26 +809,22 @@ TEST(problem_expert_node, reconcile_with_domain_full_replacement_prunes_everythi
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::experimental::executors::EventsExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
 
-    bool finish = false;
-    std::thread t([&]() {
-        while (!finish) {exe.spin_some();}
-      });
+    plansys2::testing::ExecutorThread spinner(exe);
 
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
     ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("bedroom", "room")));
     ASSERT_TRUE(problem_client->addPredicate(plansys2::Predicate("(robot_at r2d2 bedroom)")));
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
+    // The domain expert only asks the problem expert once it sees its service
+    ASSERT_TRUE(
+      plansys2::testing::wait_for(
+        [&]() {
+          return plansys2::testing::has_service(*domain_node, "problem_expert/update_domain");
+      }));
 
     std::ifstream new_domain_ifs(pkgpath + "/pddl/domain_totally_different.pddl");
     std::string new_domain((
@@ -915,43 +833,14 @@ TEST(problem_expert_node, reconcile_with_domain_full_replacement_prunes_everythi
 
     ASSERT_TRUE(domain_client->changeDomain(new_domain));
 
-    {
-      rclcpp::Rate rate(10);
-      auto start = test_node->now();
-      while ((test_node->now() - start).seconds() < 0.5) {
-        rate.sleep();
-      }
-    }
-
     ASSERT_EQ(
       problem_node->get_current_state().id(),
       lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);
     ASSERT_TRUE(problem_client->getInstances().empty());
     ASSERT_TRUE(problem_client->getPredicates().empty());
-
-    finish = true;
-    t.join();
   }
   plansys2::drain_ros(200ms);
 }
-
-// Joins the spinning thread on scope exit, so a failed ASSERT does not terminate
-class ScopedSpinner
-{
-public:
-  explicit ScopedSpinner(rclcpp::Executor & exe)
-  : thread_([this, &exe]() {while (!finish_) {exe.spin_once(std::chrono::milliseconds(10));}})
-  {}
-  ~ScopedSpinner()
-  {
-    finish_ = true;
-    thread_.join();
-  }
-
-private:
-  std::atomic<bool> finish_{false};
-  std::thread thread_;
-};
 
 // A malformed problem sent to add_problem used to kill the whole process (#416)
 TEST(problem_expert_node, add_problem_malformed_keeps_node_alive)
@@ -959,9 +848,11 @@ TEST(problem_expert_node, add_problem_malformed_keeps_node_alive)
   auto remap = domain_topic_remap("add_problem_malformed_keeps_node_alive");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
 
@@ -970,10 +861,10 @@ TEST(problem_expert_node, add_problem_malformed_keeps_node_alive)
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
-  ScopedSpinner spinner(exe);
+  plansys2::testing::ExecutorThread spinner(exe);
 
   std::ifstream valid_ifs(pkgpath + "/pddl/problem_simple_1.pddl");
   const std::string valid((std::istreambuf_iterator<char>(valid_ifs)),
@@ -1019,9 +910,9 @@ TEST(problem_expert_node, add_problem_malformed_keeps_node_alive)
 // A problem_file that cannot be loaded makes configure fail instead of being ignored
 TEST(problem_expert_node, problem_file_that_cannot_be_loaded_fails_configure)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
 
-  for (const std::string file :
+  for (const std::string & file :
     {pkgpath + "/pddl/problem_malformed_truncated.pddl", pkgpath + "/pddl/does_not_exist.pddl"})
   {
     SCOPED_TRACE(file);
@@ -1050,9 +941,11 @@ TEST(problem_expert_node, big_and_malformed_goals_keep_node_alive)
   auto remap = domain_topic_remap("big_and_malformed_goals_keep_node_alive");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
 
@@ -1061,10 +954,10 @@ TEST(problem_expert_node, big_and_malformed_goals_keep_node_alive)
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
-  ScopedSpinner spinner(exe);
+  plansys2::testing::ExecutorThread spinner(exe);
 
   // 300 predicates in the goal, through add_problem
   std::string problem = "(define (problem p) (:domain simple) (:objects";
@@ -1107,6 +1000,303 @@ TEST(problem_expert_node, big_and_malformed_goals_keep_node_alive)
     // The node still answers and keeps its goal
     ASSERT_EQ(parser::pddl::toString(problem_client->getGoal()), goal_before);
   }
+}
+
+// add_problem_instance rejects names that would break the generated problem (#419)
+TEST(problem_expert_node, add_problem_instance_rejects_invalid_names)
+{
+  auto remap = domain_topic_remap("add_problem_instance_rejects_invalid_names");
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
+
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
+  domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+  problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+  domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+  rclcpp::executors::MultiThreadedExecutor exe;
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  plansys2::testing::ExecutorThread spinner(exe);
+
+  for (const std::string name : {"", "a b", "a)", "?x"}) {
+    ASSERT_FALSE(problem_client->addInstance(plansys2::Instance(name, "robot"))) << name;
+  }
+  ASSERT_TRUE(problem_client->getInstances().empty());
+  ASSERT_TRUE(problem_client->addInstance(plansys2::Instance("r2d2", "robot")));
+
+  // The generated problem stays valid PDDL
+  const auto problem = problem_client->getProblem();
+  ASSERT_TRUE(problem_client->addProblem(problem));
+  ASSERT_EQ(problem_client->getInstances().size(), 1u);
+}
+
+namespace
+{
+
+struct NodesWithClient
+{
+  explicit NodesWithClient(const std::string & name)
+  {
+    auto remap = domain_topic_remap(name);
+    domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
+    problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
+    client_node = rclcpp::Node::make_shared("client_node");
+    client_node_spinner = std::make_unique<plansys2::testing::NodeSpinner>(client_node);
+    problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
+
+    std::string pkgpath =
+      plansys2::share_path("plansys2_problem_expert").string();
+    domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+    problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+
+    exe.add_node(domain_node->get_node_base_interface());
+    exe.add_node(problem_node->get_node_base_interface());
+    spinner = std::make_unique<plansys2::testing::ExecutorThread>(exe);
+  }
+
+  std::shared_ptr<plansys2::DomainExpertNode> domain_node;
+  std::shared_ptr<plansys2::ProblemExpertNode> problem_node;
+  rclcpp::Node::SharedPtr client_node;
+  std::unique_ptr<plansys2::testing::NodeSpinner> client_node_spinner;
+  std::shared_ptr<plansys2::ProblemExpertClient> problem_client;
+  rclcpp::executors::MultiThreadedExecutor exe;
+  std::unique_ptr<plansys2::testing::ExecutorThread> spinner;
+};
+
+}  // namespace
+
+// #438: getProblem(true) right after a change used to return the problem from before it
+TEST(problem_expert_node, cached_problem_follows_the_client_changes)
+{
+  NodesWithClient nodes("cached_problem_follows_the_client_changes");
+  auto & client = nodes.problem_client;
+
+  std::string saved_problem;
+  std::vector<std::pair<std::string, std::function<bool()>>> changes = {
+    {"addInstance", [&]() {
+        return client->addInstance(plansys2::Instance("r2d2", "robot")) &&
+               client->addInstance(plansys2::Instance("kitchen", "room")) &&
+               client->addInstance(plansys2::Instance("bedroom", "room"));
+      }},
+    {"addPredicate", [&]() {
+        return client->addPredicate(plansys2::Predicate("(robot_at r2d2 kitchen)"));
+      }},
+    {"addFunction", [&]() {
+        return client->addFunction(plansys2::Function("(= (room_distance kitchen bedroom) 5)"));
+      }},
+    {"updateFunction", [&]() {
+        return client->updateFunction(plansys2::Function("(= (room_distance kitchen bedroom) 7)"));
+      }},
+    {"setGoal", [&]() {
+        saved_problem = client->getProblem();
+        return client->setGoal(plansys2::Goal("(and (robot_at r2d2 bedroom))"));
+      }},
+    {"setGoal again", [&]() {
+        return client->setGoal(plansys2::Goal("(and (robot_at r2d2 kitchen))"));
+      }},
+    {"clearGoal", [&]() {return client->clearGoal();}},
+    {"setMetric", [&]() {
+        return client->setMetric(plansys2::Metric("minimize (room_distance kitchen bedroom)"));
+      }},
+    {"setMetric again", [&]() {
+        return client->setMetric(plansys2::Metric("maximize (total-time)"));
+      }},
+    {"clearMetric", [&]() {return client->clearMetric();}},
+    {"setMetric before the instances go", [&]() {
+        return client->setMetric(plansys2::Metric("minimize (total-time)"));
+      }},
+    {"removePredicate", [&]() {
+        return client->removePredicate(plansys2::Predicate("(robot_at r2d2 kitchen)"));
+      }},
+    {"removeFunction", [&]() {
+        return client->removeFunction(plansys2::Function("(= (room_distance kitchen bedroom) 7)"));
+      }},
+    {"removeInstance", [&]() {
+        return client->removeInstance(plansys2::Instance("r2d2", "robot"));
+      }},
+    {"addProblem", [&]() {return client->addProblem(saved_problem);}},
+    {"clearKnowledge", [&]() {return client->clearKnowledge();}},
+  };
+
+  // Several rounds, so a late problem message has chances to show up
+  for (int round = 0; round < 5; round++) {
+    for (const auto & [name, change] : changes) {
+      client->getProblem();  // the cache holds the problem before the change
+      ASSERT_TRUE(change()) << name;
+      const auto cached = client->getProblem(true);
+      ASSERT_EQ(cached, client->getProblem()) << name << " in round " << round;
+    }
+  }
+}
+
+TEST(problem_expert_node, metric_services)
+{
+  NodesWithClient nodes("metric_services");
+  auto & client = nodes.problem_client;
+
+  auto listener = rclcpp::Node::make_shared("metric_services_listener");
+  plansys2_msgs::msg::Knowledge last_knowledge;
+  auto knowledge_sub = listener->create_subscription<plansys2_msgs::msg::Knowledge>(
+    "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
+    [&last_knowledge](const plansys2_msgs::msg::Knowledge::SharedPtr msg) {
+      last_knowledge = *msg;
+    });
+  rclcpp::executors::MultiThreadedExecutor listener_exe;
+  listener_exe.add_node(listener);
+  // Metric of the last knowledge message, once it is the expected one or after a timeout
+  auto knowledge_metric = [&](const std::string & expected) {
+      plansys2::testing::wait_for(
+        [&]() {
+          listener_exe.spin_some();
+          return last_knowledge.metric == expected;
+        });
+      return last_knowledge.metric;
+    };
+
+  ASSERT_TRUE(client->addInstance(plansys2::Instance("r2d2", "robot")));
+  ASSERT_TRUE(client->addInstance(plansys2::Instance("kitchen", "room")));
+  ASSERT_TRUE(client->addInstance(plansys2::Instance("bedroom", "room")));
+
+  ASSERT_TRUE(client->getMetric().tree.nodes.empty());
+  ASSERT_EQ(knowledge_metric(""), "");
+
+  // Invalid metrics do not reach the problem
+  ASSERT_FALSE(client->setMetric(plansys2::Metric("minimize (room_distance kitchen hall)")));
+  ASSERT_FALSE(client->setMetric(plansys2::Metric("minimize (robot_at r2d2 kitchen)")));
+  ASSERT_FALSE(client->setMetric(plansys2::Metric()));
+  ASSERT_TRUE(client->getMetric().tree.nodes.empty());
+
+  ASSERT_TRUE(
+    client->setMetric(
+      plansys2::Metric("minimize (+ (room_distance kitchen bedroom) (* 10 (total-time)))")));
+  auto metric = client->getMetric();
+  ASSERT_EQ(metric.optimization, plansys2_msgs::msg::Metric::MINIMIZE);
+  ASSERT_EQ(
+    parser::pddl::toString(metric),
+    "minimize (+ (room_distance kitchen bedroom) (* 10.000000 (total-time)))");
+  ASSERT_EQ(
+    knowledge_metric(parser::pddl::toString(metric)), parser::pddl::toString(metric));
+  ASSERT_NE(
+    client->getProblem().find(
+      "( :metric minimize ( + ( room_distance kitchen bedroom ) "
+      "( * 10 ( total-time ) ) ) )"),
+    std::string::npos);
+
+  ASSERT_TRUE(client->clearMetric());
+  ASSERT_TRUE(client->getMetric().tree.nodes.empty());
+  ASSERT_EQ(knowledge_metric(""), "");
+  ASSERT_EQ(client->getProblem().find(":metric"), std::string::npos);
+
+  // From a whole problem
+  ASSERT_TRUE(
+    client->addProblem(
+      "(define (problem p) (:domain simple) (:objects r2d2 - robot kitchen bedroom - room)"
+      "(:init (robot_at r2d2 kitchen)) (:goal (and (robot_at r2d2 bedroom)))"
+      "(:metric maximize (total-time)))"));
+  ASSERT_EQ(parser::pddl::toString(client->getMetric()), "maximize (total-time)");
+
+  ASSERT_TRUE(client->clearKnowledge());
+  ASSERT_TRUE(client->getMetric().tree.nodes.empty());
+}
+
+// The knowledge shows the functions with their values, as in :init, and follows them
+TEST(problem_expert_node, knowledge_has_the_function_values)
+{
+  NodesWithClient nodes("knowledge_function_values");
+  auto & client = nodes.problem_client;
+
+  auto listener = rclcpp::Node::make_shared("knowledge_function_values_listener");
+  plansys2_msgs::msg::Knowledge last_knowledge;
+  auto knowledge_sub = listener->create_subscription<plansys2_msgs::msg::Knowledge>(
+    "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
+    [&last_knowledge](const plansys2_msgs::msg::Knowledge::SharedPtr msg) {
+      last_knowledge = *msg;
+    });
+  rclcpp::executors::MultiThreadedExecutor listener_exe;
+  listener_exe.add_node(listener);
+  auto shown = [&](const std::vector<std::string> & expected) {
+      plansys2::testing::wait_for(
+        [&]() {
+          listener_exe.spin_some();
+          return last_knowledge.functions == expected;
+        });
+      return last_knowledge.functions;
+    };
+
+  ASSERT_TRUE(client->addInstance(plansys2::Instance("kitchen", "room")));
+  ASSERT_TRUE(client->addInstance(plansys2::Instance("bedroom", "room")));
+  ASSERT_TRUE(shown({}).empty());
+  ASSERT_TRUE(
+    client->addFunction(
+      parser::pddl::fromStringFunction("(= (room_distance kitchen bedroom) 3)")));
+
+  // No trailing zeros, the decimals it has, and integers as such
+  for (const auto & [text, value] : std::vector<std::pair<std::string, std::string>>{
+    {"1.5", "1.5"}, {"10", "10"}, {"0.125", "0.125"}, {"-2.25", "-2.25"}, {"0", "0"}})
+  {
+    ASSERT_TRUE(
+      client->updateFunction(
+        parser::pddl::fromStringFunction("(= (room_distance kitchen bedroom) " + text + ")")));
+    const std::vector<std::string> expected = {
+      "(= (room_distance kitchen bedroom) " + value + ")"};
+    EXPECT_EQ(shown(expected), expected) << text;
+  }
+
+  // What it shows reads back as the same function
+  const auto node = parser::pddl::fromStringFunction(last_knowledge.functions.at(0));
+  EXPECT_EQ(parser::pddl::toString(node), "(room_distance kitchen bedroom)");
+  EXPECT_DOUBLE_EQ(node.value, 0.0);
+}
+
+TEST(problem_expert_node, problem_messages_older_than_a_change_are_ignored)
+{
+  NodesWithClient nodes("problem_messages_older_than_a_change_are_ignored");
+  auto & client = nodes.problem_client;
+
+  auto test_node = rclcpp::Node::make_shared("stale_problem_publisher");
+  auto pub = test_node->create_publisher<plansys2_msgs::msg::Problem>(
+    "problem_expert/problem", rclcpp::QoS(100));
+  auto publish = [&](const std::string & content, const rclcpp::Time & stamp) {
+      plansys2_msgs::msg::Problem msg;
+      msg.problem = content;
+      msg.stamp = stamp;
+      pub->publish(msg);
+    };
+
+  // Volatile topic: the client must hear the messages
+  ASSERT_TRUE(plansys2::testing::wait_for([&]() {return pub->get_subscription_count() > 0;}));
+
+  auto before_change = test_node->now();
+  ASSERT_TRUE(client->addInstance(plansys2::Instance("r2d2", "robot")));
+
+  // A message from before the change never gets into the cache; reads spin the client
+  publish("stale problem", before_change);
+  auto until = std::chrono::steady_clock::now() + std::chrono::seconds(1);
+  while (std::chrono::steady_clock::now() < until) {
+    client->existPredicate(plansys2::Predicate("(robot_at r2d2 kitchen)"));
+    ASSERT_NE(client->getProblem(true), "stale problem");
+  }
+
+  // A newer one does
+  publish("newer problem", test_node->now() + rclcpp::Duration(std::chrono::seconds(1)));
+  auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+  std::string cached;
+  while (cached != "newer problem" && std::chrono::steady_clock::now() < deadline) {
+    client->existPredicate(plansys2::Predicate("(robot_at r2d2 kitchen)"));
+    cached = client->getProblem(true);
+  }
+  ASSERT_EQ(cached, "newer problem");
 }
 
 int main(int argc, char ** argv)

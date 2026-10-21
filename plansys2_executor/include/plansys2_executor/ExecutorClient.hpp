@@ -15,18 +15,25 @@
 #ifndef PLANSYS2_EXECUTOR__EXECUTORCLIENT_HPP_
 #define PLANSYS2_EXECUTOR__EXECUTORCLIENT_HPP_
 
+#include <chrono>
+#include <future>
 #include <optional>
 #include <string>
 #include <memory>
+#include <mutex>
 #include <list>
 #include <vector>
 
+#include "action_msgs/msg/goal_status.hpp"
 #include "plansys2_msgs/action/execute_plan.hpp"
 #include "plansys2_msgs/srv/get_ordered_sub_goals.hpp"
 #include "plansys2_msgs/srv/get_plan.hpp"
+#include "plansys2_msgs/srv/get_problem.hpp"
 #include "plansys2_msgs/msg/plan.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
 
+#include "plansys2_core/ClientNode.hpp"
+#include "plansys2_core/ServiceCall.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 
@@ -48,19 +55,31 @@ public:
   using GoalHandleExecutePlan = rclcpp_action::ClientGoalHandle<ExecutePlan>;
 
   /**
-   * @brief Default constructor.
+   * @brief Creates the client on a node it does not own: the node of a PlanSys2 component or of
+   * an application. It creates no node of its own, and does not wait for the executor here.
    */
-  ExecutorClient();
+  explicit ExecutorClient(ClientNode::Interfaces node);
+
+  template<typename NodeT>
+  explicit ExecutorClient(const std::shared_ptr<NodeT> & node)
+  : ExecutorClient(ClientNode::Interfaces(*node)) {}
 
   /**
-   * @brief Constructor with custom node name.
-   *
-   * Creates a ROS node with the specified name and initializes service clients
-   * and action clients to communicate with the executor node.
-   *
-   * @param[in] node_name Name for the ROS node.
+   * @brief Waits until its component is active, as every call does: false if ROS shuts down.
    */
-  explicit ExecutorClient(const std::string & node_name);
+  bool wait_active() {return active_->wait();}
+
+  /**
+   * @brief While interrupted, its calls give up at once instead of waiting: for the owner that
+   * stops a thread which may be in a call.
+   */
+  void interrupt(bool interrupted) {node_->interrupt(interrupted);}
+
+  /**
+   * @brief How long a call waits for its component to be active before it gives up (zero, the
+   * default: as long as it takes).
+   */
+  void set_max_wait(std::chrono::milliseconds max_wait) {active_->set_max_wait(max_wait);}
 
   /**
    * @brief Start the execution of a plan.
@@ -111,11 +130,25 @@ public:
   std::optional<plansys2_msgs::msg::Plan> get_remaining_plan();
 
   /**
+   * @brief The problem to plan again from while a plan runs: the one of now, before the at start
+   *        effects of the actions that run. A plan made from it has them again: those of the new
+   *        plan that are running go on.
+   *
+   * @return The problem, empty if the executor cannot give it.
+   */
+  std::optional<std::string> get_replanning_problem();
+
+  /**
    * @brief Get the current feedback from plan execution.
    *
    * @return ExecutePlan::Feedback The current feedback message from the executor.
    */
-  ExecutePlan::Feedback getFeedBack() {return feedback_;}
+  ExecutePlan::Feedback getFeedBack()
+  {
+    node_->serve();
+    std::lock_guard<std::mutex> lock(mutex_);
+    return feedback_;
+  }
 
   /**
    * @brief Get the final result of plan execution.
@@ -150,6 +183,39 @@ private:
    * @return true if the goal was successfully sent and accepted, false otherwise.
    */
   bool on_new_goal_received(const plansys2_msgs::msg::Plan & plan);
+  rclcpp_action::Client<ExecutePlan>::SharedPtr make_action_client(ClientNode::Interfaces node);
+  // Sent this many times at most: an answer lost, or rejected while the executor is not active
+  static constexpr int kGoalAttempts = 3;
+  // Whether the executor has not run the plan sent for kNotRunningTolerance (restarted, lost)
+  bool plan_not_running();
+  static bool same_plan(const plansys2_msgs::msg::Plan & a, const plansys2_msgs::msg::Plan & b);
+  static constexpr std::chrono::seconds kNotRunningTolerance {3};
+  struct PlanCheck
+  {
+    rclcpp::Client<plansys2_msgs::srv::GetPlan>::FutureAndRequestId future;
+    std::chrono::steady_clock::time_point sent;
+  };
+  rclcpp::Client<plansys2_msgs::srv::GetPlan>::SharedPtr plan_check_client_;
+  std::optional<PlanCheck> plan_check_;
+  std::chrono::steady_clock::time_point last_plan_check_;
+  std::optional<std::chrono::steady_clock::time_point> not_running_since_;
+  plansys2_msgs::msg::Plan sent_plan_;
+
+  // Not running: its result is asked for again (an answer lost on the way), before taking the
+  // plan as lost. The executor keeps the result of an ended goal for a while
+  enum class Recovery {Pending, Recovered, Lost};
+  Recovery recover_result(GoalHandleExecutePlan::WrappedResult & result);
+  static constexpr int kResultAttempts = 2;
+  using GetResult = ExecutePlan::Impl::GetResultService;
+  struct ResultCheck
+  {
+    rclcpp::Client<GetResult>::FutureAndRequestId future;
+    std::chrono::steady_clock::time_point sent;
+  };
+  rclcpp::Client<GetResult>::SharedPtr result_check_client_;
+  std::optional<ResultCheck> result_check_;
+  int result_attempts_ {0};
+  bool recovering_ {false};
 
   /**
    * @brief Check if the current goal should be cancelled.
@@ -158,21 +224,19 @@ private:
    */
   bool should_cancel_goal();
 
-  /**
-   * @brief Create the action client for plan execution.
-   *
-   * Initializes the action client and waits for the action server to be available.
-   */
-  void createActionClient();
-
-  rclcpp::Node::SharedPtr node_;
+  std::shared_ptr<ClientNode> node_;
+  // Its component: every call waits until it is active
+  std::shared_ptr<ActiveComponent> active_;
 
   rclcpp_action::Client<ExecutePlan>::SharedPtr action_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetOrderedSubGoals>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::GetOrderedSubGoals>::SharedPtr
     get_ordered_sub_goals_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetPlan>::SharedPtr get_plan_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetPlan>::SharedPtr get_remaining_plan_client_;
+  ServiceClient<plansys2_msgs::srv::GetPlan>::SharedPtr get_plan_client_;
+  ServiceClient<plansys2_msgs::srv::GetPlan>::SharedPtr get_remaining_plan_client_;
+  ServiceClient<plansys2_msgs::srv::GetProblem>::SharedPtr get_replanning_problem_client_;
 
+  // Feedback, result and goal come while the client serves its group, maybe in another thread
+  std::mutex mutex_;
   ExecutePlan::Feedback feedback_;
   rclcpp_action::ClientGoalHandle<ExecutePlan>::SharedPtr goal_handler_;
   rclcpp_action::ClientGoalHandle<ExecutePlan>::WrappedResult result_;
@@ -180,6 +244,8 @@ private:
   bool goal_result_available_{false};
 
   bool executing_plan_{false};
+  // Since when the executor's action server has been missing, while executing (#446)
+  std::optional<std::chrono::steady_clock::time_point> server_lost_since_;
 };
 
 }  // namespace plansys2

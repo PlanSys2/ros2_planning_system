@@ -2,6 +2,31 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Fixes in the PDDL parser and the problem expert (`#498 <https://github.com/PlanSys2/ros2_planning_system/pull/498>`_)
+* Executor robustness: Ctrl-C, BT nodes, one-call checks, replanning (`#492 <https://github.com/PlanSys2/ros2_planning_system/pull/492>`_)
+* Take back the at start effects of actions that do not end (`#486 <https://github.com/PlanSys2/ros2_planning_system/pull/486>`_)
+* ActionExecutor and performers: one request, its own messages (`#488 <https://github.com/PlanSys2/ros2_planning_system/pull/488>`_)
+* Shutdown test: one process per moment of the execution cycle (`#482 <https://github.com/PlanSys2/ros2_planning_system/pull/482>`_)
+* Clean Ctrl-C with a plan in execution (`#475 <https://github.com/PlanSys2/ros2_planning_system/pull/475>`_)
+* Kairos plan solver, and Kairos as the default planner (`#465 <https://github.com/PlanSys2/ros2_planning_system/pull/465>`_)
+* STNBTBuilder runs actions with no duration (`#467 <https://github.com/PlanSys2/ros2_planning_system/pull/467>`_)
+* Make STNBTBuilder work again (`#453 <https://github.com/PlanSys2/ros2_planning_system/pull/453>`_)
+* Tests discover only nodes on this host (`#455 <https://github.com/PlanSys2/ros2_planning_system/pull/455>`_)
+* Replace the deprecated EventsExecutor with SingleThreadedExecutor (`#452 <https://github.com/PlanSys2/ros2_planning_system/pull/452>`_)
+* Performers, executor clients and the TUI notice when PlanSys2 goes down (`#448 <https://github.com/PlanSys2/ros2_planning_system/pull/448>`_)
+* ProblemExpertClient: getProblem(true) no longer returns the problem from before the client's own changes (`#440 <https://github.com/PlanSys2/ros2_planning_system/pull/440>`_)
+* Consistent executor goal handling: cancels, replaced goals and result codes (`#439 <https://github.com/PlanSys2/ros2_planning_system/pull/439>`_)
+* Tie the executor thread to the lifecycle and synchronize it (`#437 <https://github.com/PlanSys2/ros2_planning_system/pull/437>`_)
+* Fail the goal instead of crashing when a plan cannot be set up (`#433 <https://github.com/PlanSys2/ros2_planning_system/pull/433>`_)
+* Update domain during execution (`#414 <https://github.com/PlanSys2/ros2_planning_system/pull/414>`_)
+* Contributors: Francisco Martín Rico
+
 3.1.0 (2026-07-28)
 ------------------
 * Fix deprecated get_share_directory

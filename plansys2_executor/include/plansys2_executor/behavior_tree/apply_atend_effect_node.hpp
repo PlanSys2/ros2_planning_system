@@ -23,9 +23,11 @@
 
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/BTBuilder.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
+#include "plansys2_executor/ExecutionTrace.hpp"
 
 namespace plansys2
 {
@@ -77,6 +79,12 @@ public:
 private:
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
+  Graph::Ptr action_graph_;
+  std::shared_ptr<BTBuilder> bt_builder_;
+  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  bool relaxed_timing_ {true};
+  std::shared_ptr<ExecutionTrace> trace_;  // Null outside an executor
+  bool waiting_reported_ {false};  // Its wait, once
 };
 
 }  // namespace plansys2
