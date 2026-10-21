@@ -575,6 +575,9 @@ TEST(popf_plan_solver, the_bank)
   std::set<std::string> excluded, justified;
   // popf aborts on preferences only when built with assertions (as in CI): not shown here
   justified.insert(":preferences");
+  // On duration inequalities popf reads past the end of a vector: with assertions it aborts,
+  // without them (the released package) it may still give a valid plan
+  justified.insert(":duration-inequalities");
   int solved = 0;
   const auto all = std::chrono::steady_clock::now();
   for (const auto & task : cases) {
