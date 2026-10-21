@@ -747,7 +747,9 @@ TEST(problem_expert_node, reconcile_with_domain_preserves_and_prunes)
     // The domain expert only asks the problem expert once it sees its service
     ASSERT_TRUE(
       plansys2::testing::wait_for(
-        [&]() {return domain_node->count_services("problem_expert/update_domain") > 0;}));
+        [&]() {
+          return plansys2::testing::has_service(*domain_node, "problem_expert/update_domain");
+      }));
 
     int knowledge_msg_counter_before_reconcile = knowledge_msg_counter;
 
@@ -820,7 +822,9 @@ TEST(problem_expert_node, reconcile_with_domain_full_replacement_prunes_everythi
     // The domain expert only asks the problem expert once it sees its service
     ASSERT_TRUE(
       plansys2::testing::wait_for(
-        [&]() {return domain_node->count_services("problem_expert/update_domain") > 0;}));
+        [&]() {
+          return plansys2::testing::has_service(*domain_node, "problem_expert/update_domain");
+      }));
 
     std::ifstream new_domain_ifs(pkgpath + "/pddl/domain_totally_different.pddl");
     std::string new_domain((

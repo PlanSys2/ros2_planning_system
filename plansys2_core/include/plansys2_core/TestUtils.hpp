@@ -25,6 +25,7 @@
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/srv/get_state.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp/version.h"
 
 namespace plansys2
 {
@@ -160,6 +161,17 @@ bool wait_for(
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
   return true;
+}
+
+// Whether a server of the service is known: Humble's nodes have no count_services
+template<typename NodeT>
+bool has_service(NodeT & node, const std::string & name)
+{
+#if RCLCPP_VERSION_MAJOR >= 21
+  return node.count_services(name) > 0;
+#else
+  return node.get_service_names_and_types().count("/" + name) > 0;
+#endif
 }
 
 }  // namespace testing
