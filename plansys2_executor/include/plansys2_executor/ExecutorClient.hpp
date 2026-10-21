@@ -24,6 +24,7 @@
 #include <list>
 #include <vector>
 
+#include "action_msgs/msg/goal_status.hpp"
 #include "plansys2_msgs/action/execute_plan.hpp"
 #include "plansys2_msgs/srv/get_ordered_sub_goals.hpp"
 #include "plansys2_msgs/srv/get_plan.hpp"
@@ -199,6 +200,22 @@ private:
   std::chrono::steady_clock::time_point last_plan_check_;
   std::optional<std::chrono::steady_clock::time_point> not_running_since_;
   plansys2_msgs::msg::Plan sent_plan_;
+
+  // Not running: its result is asked for again (an answer lost on the way), before taking the
+  // plan as lost. The executor keeps the result of an ended goal for a while
+  enum class Recovery {Pending, Recovered, Lost};
+  Recovery recover_result(GoalHandleExecutePlan::WrappedResult & result);
+  static constexpr int kResultAttempts = 2;
+  using GetResult = ExecutePlan::Impl::GetResultService;
+  struct ResultCheck
+  {
+    rclcpp::Client<GetResult>::FutureAndRequestId future;
+    std::chrono::steady_clock::time_point sent;
+  };
+  rclcpp::Client<GetResult>::SharedPtr result_check_client_;
+  std::optional<ResultCheck> result_check_;
+  int result_attempts_ {0};
+  bool recovering_ {false};
 
   /**
    * @brief Check if the current goal should be cancelled.

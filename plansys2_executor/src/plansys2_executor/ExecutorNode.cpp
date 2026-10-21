@@ -111,6 +111,9 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
   this->declare_parameter<bool>("enable_groot_monitoring", false);
   this->declare_parameter<int>("server_port", 1800);
 
+  // An ended goal keeps its result a minute: a client whose result was lost asks for it again
+  auto server_options = rcl_action_server_get_default_options();
+  server_options.result_timeout.nanoseconds = RCL_S_TO_NS(60);
   execute_plan_action_server_ = rclcpp_action::create_server<ExecutePlan>(
     this->get_node_base_interface(),
     this->get_node_clock_interface(),
@@ -119,7 +122,8 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
     "execute_plan",
     std::bind(&ExecutorNode::handle_goal, this, _1, _2),
     std::bind(&ExecutorNode::handle_cancel, this, _1),
-    std::bind(&ExecutorNode::handle_accepted, this, _1));
+    std::bind(&ExecutorNode::handle_accepted, this, _1),
+    server_options);
 
   get_ordered_sub_goals_service_ = create_service<plansys2_msgs::srv::GetOrderedSubGoals>(
     "executor/get_ordered_sub_goals",

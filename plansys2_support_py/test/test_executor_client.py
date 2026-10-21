@@ -19,7 +19,9 @@ import time
 import unittest
 from unittest.mock import MagicMock, patch
 
+from action_msgs.msg import GoalStatus
 from client_mocks import always_active, no_wait
+from plansys2_msgs.action import ExecutePlan
 from plansys2_msgs.msg import Plan, PlanItem, Tree
 from plansys2_msgs.srv import GetOrderedSubGoals, GetPlan
 from plansys2_support_py.ExecutorClient import ExecutorClient
@@ -795,6 +797,77 @@ class TestExecutorClient(unittest.TestCase):
                 self.assertTrue(self.client.execute_and_check_plan(verbose=False))
                 time.sleep(0.1)
         self.assertGreaterEqual(checker.call_async.call_count, 2)
+
+    def _ended_plan(self, answer):
+        """Pretend a plan the executor does not run any more, whose result asked gives answer."""
+        self._running_plan()
+        del self.client._plan_not_running
+        self.client._sent_plan = Plan()
+        self.client._sent_plan.items.append(PlanItem(action='(move r2d2 a b)', time=0.0))
+        self.client._NOT_RUNNING_TOLERANCE = 0.0
+        not_running = GetPlan.Response()
+        not_running.success = False
+        plan_answer = MagicMock()
+        plan_answer.done.return_value = True
+        plan_answer.result.return_value = not_running
+        checker = MagicMock()
+        checker.service_is_ready.return_value = True
+        checker.call_async.return_value = plan_answer
+        self.client._goal_handle = MagicMock()
+        self.client._goal_handle.get_result_async.return_value = answer
+        return checker
+
+    def _run_until_end(self, checker, timeout):
+        server = self.client._execute_plan_action_client
+        with patch.object(server, 'server_is_ready', return_value=True), \
+                patch.object(self.client, '_service_client', return_value=checker):
+            start = time.monotonic()
+            while self.client.execute_and_check_plan(verbose=False):
+                self.assertLess(time.monotonic() - start, timeout)
+                time.sleep(0.1)
+            return time.monotonic() - start
+
+    @staticmethod
+    def _result_answer(status):
+        response = ExecutePlan.Impl.GetResultService.Response()
+        response.status = status
+        response.result.result = ExecutePlan.Result.SUCCESS
+        answer = MagicMock()
+        answer.done.return_value = True
+        answer.result.return_value = response
+        return answer
+
+    @no_wait()
+    def test_a_lost_result_is_asked_for_again(self):
+        """The plan ended, but its result was lost on the way: asked for again, it comes."""
+        for status in (GoalStatus.STATUS_SUCCEEDED, GoalStatus.STATUS_ABORTED):
+            with self.subTest(status=status):
+                checker = self._ended_plan(self._result_answer(status))
+                self._run_until_end(checker, 10.0)
+                self.assertFalse(self.client.is_executing_plan())
+                self.assertEqual(self.client.get_result().result, ExecutePlan.Result.SUCCESS)
+                self.client._goal_handle.get_result_async.assert_called_once()
+
+    @no_wait()
+    def test_a_goal_unknown_to_the_executor_is_lost(self):
+        """A restarted executor does not know our goal: lost at once, without result."""
+        checker = self._ended_plan(self._result_answer(GoalStatus.STATUS_UNKNOWN))
+        self.assertLess(self._run_until_end(checker, 10.0), 3.0)
+        self.assertFalse(self.client.is_executing_plan())
+        self.assertIsNone(self.client.get_result())
+
+    @no_wait()
+    def test_a_result_never_answered_is_lost(self):
+        """Our goal still runs there (a plan not ours any more): lost after a few tries."""
+        silent = MagicMock()
+        silent.done.return_value = False
+        checker = self._ended_plan(silent)
+        seconds = self._run_until_end(checker, 15.0)
+        self.assertGreaterEqual(seconds, 4.0)
+        self.assertFalse(self.client.is_executing_plan())
+        self.assertIsNone(self.client.get_result())
+        self.assertEqual(self.client._goal_handle.get_result_async.call_count,
+                         ExecutorClient._RESULT_ATTEMPTS)
 
 
 if __name__ == '__main__':

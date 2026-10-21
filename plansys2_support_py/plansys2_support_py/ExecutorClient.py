@@ -46,6 +46,8 @@ class ExecutorClient(ClientBase):
     _GOAL_ATTEMPTS = 3
     # Not running the plan sent for this long: the executor lost it (restarted)
     _NOT_RUNNING_TOLERANCE = 3.0
+    # Then its result is asked for this many times (an answer lost) before the plan is lost
+    _RESULT_ATTEMPTS = 2
 
     def __init__(self, node: Node) -> None:
         """
@@ -76,6 +78,9 @@ class ExecutorClient(ClientBase):
         self._not_running_since: Optional[float] = None
         self._plan_check: Optional[Any] = None
         self._last_plan_check = 0.0
+        self._result_check: Optional[Any] = None
+        self._result_attempts = 0
+        self._recovering = False
 
     def destroy(self) -> None:
         """Destroy the client and its node; the node of the application is left as it was."""
@@ -317,6 +322,9 @@ class ExecutorClient(ClientBase):
         self._sent_plan = plan
         self._not_running_since = None
         self._plan_check = None
+        self._result_check = None
+        self._result_attempts = 0
+        self._recovering = False
         return True
 
     def execute_and_check_plan(self, verbose: bool = True) -> bool:
@@ -347,6 +355,8 @@ class ExecutorClient(ClientBase):
         result_response = self._result_future.result()
 
         if result_response:
+            self._recovering = False
+            self._result_check = None
             if verbose:
                 # Print execution results
                 self._print_execution_result(result_response)
@@ -372,14 +382,24 @@ class ExecutorClient(ClientBase):
                     return False
             else:
                 self._server_lost_since = None
-                # A restarted executor has a server, but not our goal: its result never comes
-                if self._executing_plan and self._plan_not_running():
-                    self.get_logger().error(
-                        'execute_and_check_plan: the executor does not run the plan '
-                        '(restarted?), it is lost')
-                    self._executing_plan = False
-                    self._result_future = None
-                    return False
+                # Not running our plan: ended with its result lost on the way, or a restarted
+                # executor that has a server, but not our goal, whose result never comes
+                if self._executing_plan and (self._recovering or self._plan_not_running()):
+                    self._recovering = True
+                    recovered = self._recover_result()
+                    if recovered is None:
+                        return True
+                    self._recovering = False
+                    if not recovered:
+                        self.get_logger().error(
+                            'execute_and_check_plan: the executor does not run the plan '
+                            '(restarted?), it is lost')
+                        self._executing_plan = False
+                        self._result_future = None
+                        return False
+                    self.get_logger().warning(
+                        'execute_and_check_plan: the result was lost, asked for again')
+                    return self.execute_and_check_plan(verbose)
             # Timed out, still processing, not complete yet
             return True
 
@@ -406,6 +426,33 @@ class ExecutorClient(ClientBase):
                 self._plan_check = (client.call_async(GetPlan.Request()), now)
                 self._last_plan_check = now
         return False
+
+    def _recover_result(self) -> Optional[bool]:
+        """Ask for the result of our goal again, without waiting: None while pending."""
+        now = time.monotonic()
+        if self._result_check is not None and self._result_check[0].done():
+            future = self._result_check[0]
+            self._result_check = None
+            self._result_attempts = 0
+            response = future.result()
+            if response is None or response.status not in (
+                    GoalStatus.STATUS_SUCCEEDED, GoalStatus.STATUS_ABORTED,
+                    GoalStatus.STATUS_CANCELED):
+                return False  # Unknown to it: a restarted executor
+            self._result_future = future
+            return True
+        if self._result_check is not None and now - self._result_check[1] > 2.0:
+            # A goal that still runs answers only when it ends: not the plan sent any more
+            self._result_check = None
+            self._result_attempts += 1
+            if self._result_attempts >= self._RESULT_ATTEMPTS:
+                self._result_attempts = 0
+                return False
+        if self._result_check is None:
+            if self._goal_handle is None:
+                return False
+            self._result_check = (self._goal_handle.get_result_async(), now)
+        return None
 
     @staticmethod
     def _same_plan(a: Plan, b: Optional[Plan]) -> bool:

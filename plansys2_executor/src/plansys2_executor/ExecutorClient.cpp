@@ -58,6 +58,9 @@ ExecutorClient::start_plan_execution(const plansys2_msgs::msg::Plan & plan)
     sent_plan_ = plan;
     not_running_since_.reset();
     plan_check_.reset();
+    result_check_.reset();
+    result_attempts_ = 0;
+    recovering_ = false;
     return true;
   }
 
@@ -95,18 +98,35 @@ ExecutorClient::execute_and_check_plan()
       }
     } else {
       server_lost_since_.reset();
-      // A restarted executor has a server, but not our goal: its result would never come
-      if (executing_plan_ && plan_not_running()) {
-        RCLCPP_ERROR(
-          node_->get_logger(),
-          "execute_and_check_plan: the executor does not run the plan (restarted?), it is lost");
-        executing_plan_ = false;
-        std::lock_guard<std::mutex> lock(mutex_);
-        result_ = rclcpp_action::ClientGoalHandle<ExecutePlan>::WrappedResult();
-        return false;
+      // Not running our plan: ended with its result lost on the way, or a restarted executor
+      // that has a server, but not our goal, whose result would never come
+      if (executing_plan_ && (recovering_ || plan_not_running())) {
+        recovering_ = true;
+        const auto recovery = recover_result(result);
+        if (recovery == Recovery::Pending) {
+          return true;
+        }
+        recovering_ = false;
+        if (recovery == Recovery::Lost) {
+          RCLCPP_ERROR(
+            node_->get_logger(),
+            "execute_and_check_plan: the executor does not run the plan (restarted?), it is lost");
+          executing_plan_ = false;
+          std::lock_guard<std::mutex> lock(mutex_);
+          result_ = rclcpp_action::ClientGoalHandle<ExecutePlan>::WrappedResult();
+          return false;
+        }
+        RCLCPP_WARN(
+          node_->get_logger(), "execute_and_check_plan: the result was lost, asked for again");
+        available = true;
       }
     }
-    return true;  // Plan not finished
+    if (!available) {
+      return true;  // Plan not finished
+    }
+  } else {
+    recovering_ = false;
+    result_check_.reset();
   }
 
   switch (result.code) {
@@ -465,6 +485,63 @@ ExecutorClient::plan_not_running()
     last_plan_check_ = now;
   }
   return false;
+}
+
+ExecutorClient::Recovery
+ExecutorClient::recover_result(GoalHandleExecutePlan::WrappedResult & result)
+{
+  // Asked without waiting, as plan_not_running: the answer is read in a later call
+  GoalHandleExecutePlan::SharedPtr goal;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    goal = goal_handler_;
+  }
+  if (!goal) {
+    return Recovery::Lost;
+  }
+  if (!result_check_client_) {
+    result_check_client_ = node_->create_client<GetResult>("execute_plan/_action/get_result");
+  }
+  const auto now = std::chrono::steady_clock::now();
+  if (result_check_ && result_check_->future.wait_for(0s) == std::future_status::ready) {
+    auto response = result_check_->future.get();
+    result_check_.reset();
+    result_attempts_ = 0;
+    switch (response->status) {
+      case action_msgs::msg::GoalStatus::STATUS_SUCCEEDED:
+        result.code = rclcpp_action::ResultCode::SUCCEEDED;
+        break;
+      case action_msgs::msg::GoalStatus::STATUS_ABORTED:
+        result.code = rclcpp_action::ResultCode::ABORTED;
+        break;
+      case action_msgs::msg::GoalStatus::STATUS_CANCELED:
+        result.code = rclcpp_action::ResultCode::CANCELED;
+        break;
+      default:
+        return Recovery::Lost;  // Unknown to it: a restarted executor
+    }
+    result.goal_id = goal->get_goal_id();
+    result.result = std::make_shared<ExecutePlan::Result>(response->result);
+    std::lock_guard<std::mutex> lock(mutex_);
+    result_ = result;
+    feedback_ = ExecutePlan::Feedback();
+    return Recovery::Recovered;
+  }
+  if (result_check_ && now - result_check_->sent > 2s) {
+    // A goal that still runs answers only when it ends: not the plan sent any more
+    result_check_client_->remove_pending_request(result_check_->future);
+    result_check_.reset();
+    if (++result_attempts_ >= kResultAttempts) {
+      result_attempts_ = 0;
+      return Recovery::Lost;
+    }
+  }
+  if (!result_check_) {
+    auto request = std::make_shared<GetResult::Request>();
+    request->goal_id.uuid = goal->get_goal_id();
+    result_check_ = ResultCheck{result_check_client_->async_send_request(request), now};
+  }
+  return Recovery::Pending;
 }
 
 bool
