@@ -34,10 +34,14 @@ from ..controller.ros_controllers import (
     PerformersProcessor,
     PlanMonitorProcessor,
 )
-from ..vendor import use_system_textual
+from ..vendor import missing_requirements, use_system_textual
 
 # The system Textual if it is as recent as the one shipped here (MIT, see vendor/), else ours
 if not use_system_textual():
+    _missing = missing_requirements()
+    if _missing:
+        sys.exit('The PlanSys2 TUI is not supported on this system (as on ROS 2 Humble, Ubuntu '
+                 '22.04): its Textual needs ' + ', '.join(_missing))
     _vendor_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), '..', 'vendor'))
     if _vendor_dir not in sys.path:
         sys.path.insert(0, _vendor_dir)

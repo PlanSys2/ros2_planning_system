@@ -41,3 +41,29 @@ def use_system_textual(system_version=None):
         except PackageNotFoundError:
             return False
     return _numbers(system_version) >= _numbers(VENDORED_TEXTUAL_VERSION)
+
+
+def _padded(text, other):
+    # The numbers of text, with zeros to as many as other has: 3.6 is 3.6.0
+    numbers = _numbers(text)
+    return numbers + (0,) * (len(_numbers(other)) - len(numbers))
+
+
+# What the shipped Textual needs to be imported; Ubuntu 22.04 (Humble) has older ones
+TEXTUAL_REQUIREMENTS = {'rich': '13.3.3', 'typing_extensions': '4.4.0', 'platformdirs': '3.6.0'}
+
+
+def missing_requirements(installed=None):
+    """Return the requirements of the shipped Textual this system does not meet."""
+    missing = []
+    for package, minimum in TEXTUAL_REQUIREMENTS.items():
+        if installed is not None:
+            found = installed.get(package)
+        else:
+            try:
+                found = version(package)
+            except PackageNotFoundError:
+                found = None
+        if found is None or _padded(found, minimum) < _padded(minimum, found):
+            missing.append(f'{package} >= {minimum} (found {found or "none"})')
+    return missing
