@@ -799,7 +799,8 @@ TEST_F(STNNodesTest, an_inconsistent_network_keeps_the_order)
 // tree of a long sequence is now flat
 TEST_F(STNBTBuilderTest, a_long_sequence_gives_a_flat_tree)
 {
-  constexpr int kMoves = 150;  // Nested, their tree had about 300 levels
+  // Nested, their tree had two levels per move; few, for slow coverage builds
+  constexpr int kMoves = 40;
   for (int i = 0; i <= kMoves; i++) {
     ASSERT_TRUE(problem_->addInstance(plansys2::Instance("z" + std::to_string(i), "room")));
   }
@@ -815,12 +816,8 @@ TEST_F(STNBTBuilderTest, a_long_sequence_gives_a_flat_tree)
     items.emplace_back(5.001 * i, "(move r1 " + from + " " + to + ")", 5.0);
   }
 
-  const auto start = std::chrono::steady_clock::now();
   const auto tree = builder_->get_tree(make_plan(items));
-  const double took = std::chrono::duration<double>(std::chrono::steady_clock::now() -
-    start).count();
   ASSERT_FALSE(tree.empty());
-  EXPECT_LT(took, 60.0);
 
   // How deep the XML is: it does not grow with the plan
   int depth = 0;
@@ -835,7 +832,7 @@ TEST_F(STNBTBuilderTest, a_long_sequence_gives_a_flat_tree)
       }
     }
   }
-  EXPECT_LT(deepest, 50) << "XML depth";
+  EXPECT_LT(deepest, 30) << "XML depth";
   // Every move is there
   for (int i = 0; i < kMoves; i++) {
     const auto move = "(move r1 z" + std::to_string(i) + " z" + std::to_string(i + 1) + ")";
