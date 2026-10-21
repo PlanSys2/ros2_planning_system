@@ -44,6 +44,11 @@ public:
   DomainExpertInterface() {}
 
   /**
+   * @brief Virtual destructor, as it is used through pointers to it.
+   */
+  virtual ~DomainExpertInterface() = default;
+
+  /**
    * @brief Get the domain name.
    *
    * @return std::string The name of the domain.
@@ -140,6 +145,36 @@ public:
     const std::string & action, const std::vector<std::string> & params) = 0;
 
   /**
+   * @brief The processes of the domain (PDDL+): they act while their precondition holds.
+   * @return Their names.
+   */
+  virtual std::vector<std::string> getProcesses() = 0;
+
+  /**
+   * @brief A process of the domain, with its parameters bound to params, as an action.
+   * @param[in] process Its name.
+   * @param[in] params Its parameters, if bound.
+   * @return The process, its effects continuous (#t); nullptr if there is none.
+   */
+  virtual plansys2_msgs::msg::Action::SharedPtr getProcess(
+    const std::string & process, const std::vector<std::string> & params) = 0;
+
+  /**
+   * @brief The events of the domain (PDDL+): they happen when their precondition holds.
+   * @return Their names.
+   */
+  virtual std::vector<std::string> getEvents() = 0;
+
+  /**
+   * @brief An event of the domain, with its parameters bound to params, as an action.
+   * @param[in] event Its name.
+   * @param[in] params Its parameters, if bound.
+   * @return The event; nullptr if there is none.
+   */
+  virtual plansys2_msgs::msg::Action::SharedPtr getEvent(
+    const std::string & event, const std::vector<std::string> & params) = 0;
+
+  /**
    * @brief Get the durative actions defined in the domain.
    *
    * @return std::vector<std::string> Vector containing the names of the durative actions.
@@ -165,6 +200,16 @@ public:
    * @return std::string The current domain definition in PDDL format.
    */
   virtual std::string getDomain() = 0;
+
+  /**
+   * @brief Replace the current domain with a new one, given as PDDL content.
+   *
+   * If the new domain is invalid, the current domain is left untouched.
+   *
+   * @param[in] domain The new domain, in PDDL.
+   * @return true if the domain was successfully replaced, false otherwise.
+   */
+  virtual bool changeDomain(const std::string & domain) = 0;
 };
 
 }  // namespace plansys2

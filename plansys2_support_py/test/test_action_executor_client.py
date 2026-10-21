@@ -23,6 +23,7 @@ from plansys2_support_py.ActionExecutorClient import ActionExecutorClient
 
 import rclpy
 from rclpy.lifecycle import TransitionCallbackReturn
+from rclpy.parameter import Parameter
 
 
 class TestActionExecutorClient(unittest.TestCase):
@@ -320,17 +321,183 @@ class TestActionExecutorClient(unittest.TestCase):
     def test_action_hub_callback_reject(self):
         """Test action hub callback with REJECT message."""
         self.client.commited = True
+        self.client.committed_request_id = 'req'
 
         # Create REJECT message
         msg = ActionExecution()
         msg.type = ActionExecution.REJECT
         msg.node_id = 'test_action_executor'
+        msg.request_id = 'req'
 
         # Call callback
         self.client.action_hub_callback(msg)
 
         # Verify commited flag is reset
         self.assertFalse(self.client.commited)
+
+    def configure(self):
+        """Configure the client for 'move', leaving it inactive."""
+        self.client.set_parameters([
+            rclpy.parameter.Parameter('action_name', rclpy.Parameter.Type.STRING, 'move'),
+            rclpy.parameter.Parameter('rate', rclpy.Parameter.Type.DOUBLE, 1.0),
+            rclpy.parameter.Parameter('specialized_arguments',
+                                      rclpy.Parameter.Type.STRING_ARRAY, [])
+        ])
+        self.client.trigger_configure()
+
+    def request(self, request_id):
+        """Build a REQUEST for move."""
+        msg = ActionExecution()
+        msg.type = ActionExecution.REQUEST
+        msg.node_id = 'executor'
+        msg.request_id = request_id
+        msg.action = 'move'
+        msg.arguments = ['robot1', 'wp1', 'wp2']
+        return msg
+
+    def test_response_carries_the_request_id(self):
+        """The response belongs to the request it answers."""
+        self.configure()
+        with patch.object(self.client.action_hub_pub, 'publish') as publish:
+            self.client.action_hub_callback(self.request('req_1'))
+        self.assertTrue(self.client.commited)
+        self.assertEqual(publish.call_args[0][0].type, ActionExecution.RESPONSE)
+        self.assertEqual(publish.call_args[0][0].request_id, 'req_1')
+
+    def test_answers_of_another_request_are_ignored(self):
+        """Only the CONFIRM or REJECT of our request counts."""
+        self.configure()
+        with patch.object(self.client.action_hub_pub, 'publish'):
+            self.client.action_hub_callback(self.request('req_1'))
+
+        reject = ActionExecution()
+        reject.type = ActionExecution.REJECT
+        reject.node_id = 'test_action_executor'
+        reject.request_id = 'req_0'
+        self.client.action_hub_callback(reject)
+        self.assertTrue(self.client.commited)
+
+        reject.request_id = 'req_1'
+        self.client.action_hub_callback(reject)
+        self.assertFalse(self.client.commited)
+
+    def test_commitment_expires(self):
+        """Without CONFIRM or REJECT the client takes requests again."""
+        self.configure()
+        with patch.object(self.client.action_hub_pub, 'publish') as publish:
+            self.client.action_hub_callback(self.request('lost'))
+            self.assertIsNotNone(self.client.commitment_timeout)
+            self.client.action_hub_callback(self.request('next'))
+            self.assertEqual(publish.call_count, 1)
+
+            self.client.commitment_expired()
+            self.assertFalse(self.client.commited)
+            self.assertIsNone(self.client.commitment_timeout)
+            self.client.action_hub_callback(self.request('next'))
+            self.assertEqual(publish.call_count, 2)
+
+    def test_feedback_and_finish_carry_the_request_id(self):
+        """What the client sends while executing belongs to the confirmed request."""
+        self.configure()
+        self.client.current_request_id = 'req_7'
+        self.client.current_arguments = ['robot1', 'wp1', 'wp2']
+        with patch.object(self.client.action_hub_pub, 'publish') as publish:
+            self.client.send_feedback(0.5, 'moving')
+            self.assertEqual(publish.call_args[0][0].request_id, 'req_7')
+            self.client.finish(True, 1.0, 'done')
+            self.assertEqual(publish.call_args[0][0].request_id, 'req_7')
+
+    def test_planned_duration_from_confirm_and_update(self):
+        """The CONFIRM gives the duration; an UPDATE of its request changes it, of another not."""
+        self.configure()
+        with patch.object(self.client.action_hub_pub, 'publish'):
+            self.client.action_hub_callback(self.request('req_3'))
+            confirm = self.request('req_3')
+            confirm.type = ActionExecution.CONFIRM
+            confirm.node_id = self.client.get_name()
+            confirm.planned_duration = 30.0
+            self.client.action_hub_callback(confirm)
+        self.assertEqual(self.client.get_planned_duration(), 30.0)
+
+        update = self.request('req_2')
+        update.type = ActionExecution.UPDATE
+        update.node_id = self.client.get_name()
+        update.planned_duration = 1.5
+        self.client.action_hub_callback(update)
+        self.assertEqual(self.client.get_planned_duration(), 30.0)
+
+        update.request_id = 'req_3'
+        self.client.action_hub_callback(update)
+        self.assertEqual(self.client.get_planned_duration(), 1.5)
+        self.client.trigger_deactivate()
+
+    def _configured(self, rate, overrides):
+        client = ActionExecutorClient(
+            'test_action_executor_params', rate,
+            parameter_overrides=[Parameter('action_name', value='move')] + overrides)
+        self.assertEqual(client.on_configure(None), TransitionCallbackReturn.SUCCESS)
+        return client
+
+    def test_rate_is_in_hz(self):
+        """The rate parameter is in Hz, as in C++; the constructor takes the period."""
+        client = self._configured(0.5, [])
+        try:
+            self.assertEqual(client.get_parameter('rate').value, 2.0)
+            client.on_activate(None)
+            self.assertEqual(client.timer.timer_period_ns, 500_000_000)
+        finally:
+            client.destroy_node()
+        client = self._configured(0.5, [Parameter('rate', value=10.0)])
+        try:
+            client.on_activate(None)
+            self.assertEqual(client.timer.timer_period_ns, 100_000_000)
+        finally:
+            client.destroy_node()
+
+    def test_rate_must_be_positive(self):
+        """A rate that is not positive takes the one of the constructor."""
+        client = self._configured(0.25, [Parameter('rate', value=0.0)])
+        try:
+            client.on_activate(None)
+            self.assertEqual(client.timer.timer_period_ns, 250_000_000)
+        finally:
+            client.destroy_node()
+
+    def test_specialized_arguments_from_parameters(self):
+        """specialized_arguments is a list of strings, as set from a launch file."""
+        client = self._configured(
+            1.0, [Parameter('specialized_arguments', value=['r1', ''])])
+        try:
+            self.assertEqual(client.specialized_arguments, ['r1', ''])
+            self.assertEqual(list(client.status.specialized_arguments), ['r1', ''])
+            self.assertTrue(client.should_execute('move', ['r1', 'kitchen']))
+            self.assertFalse(client.should_execute('move', ['r2', 'kitchen']))
+        finally:
+            client.destroy_node()
+        client = self._configured(1.0, [])
+        try:
+            self.assertEqual(client.specialized_arguments, [])
+            self.assertTrue(client.should_execute('move', ['r2', 'kitchen']))
+        finally:
+            client.destroy_node()
+
+    def test_should_execute_with_other_number_of_arguments(self):
+        """More or fewer arguments than the specialized ones do not raise."""
+        self.client.action_managed = 'move'
+        self.client.specialized_arguments = ['r1', 'a', 'b']
+        self.assertTrue(self.client.should_execute('move', ['r1']))
+        self.assertFalse(self.client.should_execute('move', ['r2']))
+        self.client.specialized_arguments = ['r1']
+        self.assertTrue(self.client.should_execute('move', ['r1', 'a', 'b']))
+        self.assertTrue(self.client.should_execute('move', []))
+
+    def test_should_execute_is_case_insensitive(self):
+        """PDDL names are case insensitive: Move with R1 is move with r1."""
+        self.client.action_managed = 'move'
+        self.client.specialized_arguments = ['r1']
+        self.assertTrue(self.client.should_execute('Move', ['R1']))
+        self.assertFalse(self.client.should_execute('Move', ['R2']))
+        self.assertFalse(self.client.should_execute('moves', ['r1']))
 
 
 if __name__ == '__main__':

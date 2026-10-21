@@ -1,8 +1,12 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 
 project(plansys2_planner)
 
-set(CMAKE_CXX_STANDARD 23)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
+
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -10,10 +14,10 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(plansys2_core REQUIRED)
+find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_domain_expert REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
-find_package(plansys2_popf_plan_solver REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
 
@@ -31,6 +35,7 @@ target_link_libraries(${PROJECT_NAME}
   PUBLIC
   ${lifecycle_msgs_TARGETS}
   plansys2_core::plansys2_core
+  plansys2_pddl_parser::plansys2_pddl_parser
   plansys2_domain_expert::plansys2_domain_expert
   plansys2_problem_expert::plansys2_problem_expert
   ${plansys2_msgs_TARGETS}
@@ -38,7 +43,6 @@ target_link_libraries(${PROJECT_NAME}
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
   PRIVATE
-  plansys2_popf_plan_solver::plansys2_popf_plan_solver
 )
 target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 
@@ -77,9 +81,14 @@ install(TARGETS planner_node
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+  # Humble's uncrustify (0.72) formats otherwise than the newer one this code follows
+  if("$ENV{ROS_DISTRO}" STREQUAL "humble")
+    set(ament_cmake_uncrustify_FOUND TRUE)
+  endif()
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_ros REQUIRED)
   find_package(ament_index_cpp REQUIRED)
   find_package(plansys2_pddl_parser REQUIRED)
   add_subdirectory(test)
@@ -97,7 +106,6 @@ ament_export_dependencies(
   plansys2_msgs
   plansys2_domain_expert
   plansys2_problem_expert
-  plansys2_popf_plan_solver
   pluginlib
   lifecycle_msgs
 )

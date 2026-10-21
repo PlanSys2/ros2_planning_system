@@ -69,20 +69,20 @@ struct hash<plansys2::Action>
   std::size_t operator()(const plansys2::Action & action) const noexcept
   {
     std::size_t seed = 0;
-    hash_combine(seed, action.name);
-    hash_combine(seed, action.parameters.size());
-    hash_combine(seed, action.preconditions.nodes.size());
-    hash_combine(seed, action.effects.nodes.size());
+    plansys2::hash_combine(seed, action.name);
+    plansys2::hash_combine(seed, action.parameters.size());
+    plansys2::hash_combine(seed, action.preconditions.nodes.size());
+    plansys2::hash_combine(seed, action.effects.nodes.size());
 
     for (const auto & param : action.parameters) {
-      hash_combine(seed, param.name);
+      plansys2::hash_combine(seed, param.name);
     }
 
     for (auto node : action.preconditions.nodes) {
-      hash_combine(seed, node);
+      plansys2::hash_combine(seed, node);
     }
     for (auto node : action.effects.nodes) {
-      hash_combine(seed, node);
+      plansys2::hash_combine(seed, node);
     }
 
     return seed;
@@ -95,32 +95,32 @@ struct hash<plansys2::DurativeAction>
   std::size_t operator()(const plansys2::DurativeAction & action) const noexcept
   {
     std::size_t seed = 0;
-    hash_combine(seed, action.name);
-    hash_combine(seed, action.parameters.size());
-    hash_combine(seed, action.at_start_requirements.nodes.size());
-    hash_combine(seed, action.over_all_requirements.nodes.size());
-    hash_combine(seed, action.at_end_requirements.nodes.size());
-    hash_combine(seed, action.at_start_effects.nodes.size());
-    hash_combine(seed, action.at_end_effects.nodes.size());
+    plansys2::hash_combine(seed, action.name);
+    plansys2::hash_combine(seed, action.parameters.size());
+    plansys2::hash_combine(seed, action.at_start_requirements.nodes.size());
+    plansys2::hash_combine(seed, action.over_all_requirements.nodes.size());
+    plansys2::hash_combine(seed, action.at_end_requirements.nodes.size());
+    plansys2::hash_combine(seed, action.at_start_effects.nodes.size());
+    plansys2::hash_combine(seed, action.at_end_effects.nodes.size());
 
     for (const auto & param : action.parameters) {
-      hash_combine(seed, param.name);
+      plansys2::hash_combine(seed, param.name);
     }
 
     for (auto node : action.at_start_requirements.nodes) {
-      hash_combine(seed, node);
+      plansys2::hash_combine(seed, node);
     }
     for (auto node : action.over_all_requirements.nodes) {
-      hash_combine(seed, node);
+      plansys2::hash_combine(seed, node);
     }
     for (auto node : action.at_end_requirements.nodes) {
-      hash_combine(seed, node);
+      plansys2::hash_combine(seed, node);
     }
     for (auto node : action.at_start_effects.nodes) {
-      hash_combine(seed, node);
+      plansys2::hash_combine(seed, node);
     }
     for (auto node : action.at_end_effects.nodes) {
-      hash_combine(seed, node);
+      plansys2::hash_combine(seed, node);
     }
 
     return seed;
@@ -163,6 +163,11 @@ public:
   template<typename ActionT>
   ActionVariant & operator=(std::shared_ptr<ActionT> ptr)
   {
+    // A null action (e.g. one not found in the domain) leaves the variant empty
+    if (!ptr) {
+      action_.reset();
+      return *this;
+    }
     action_ = std::make_shared<ActionVariantType>(*ptr);
     return *this;
   }
@@ -186,15 +191,17 @@ public:
   plansys2_msgs::msg::Tree get_at_end_requirements() const;
   plansys2_msgs::msg::Tree get_at_start_effects() const;
   plansys2_msgs::msg::Tree get_at_end_effects() const;
+  // While it runs (PDDL 2.1), with #t: only durative actions have them
+  plansys2_msgs::msg::Tree get_continuous_effects() const;
 
-  bool is_action() const {return std::holds_alternative<plansys2::Action>(*action_);}
+  bool is_action() const {return action_ && std::holds_alternative<plansys2::Action>(*action_);}
 
   bool is_durative_action() const
   {
-    return std::holds_alternative<plansys2::DurativeAction>(*action_);
+    return action_ && std::holds_alternative<plansys2::DurativeAction>(*action_);
   }
 
-  bool is_empty() const {return action_->index() == std::variant_npos;}
+  bool is_empty() const {return !action_ || action_->valueless_by_exception();}
 
 private:
   std::shared_ptr<ActionVariantType> action_;

@@ -2,14 +2,35 @@
 Changelog for package plansys2_pddl_parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-3.0.2 (2025-12-16)
+4.0.0 (2026-10-21)
 ------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Fixes in the Python support, the terminal, and the rqt and TUI tools (`#500 <https://github.com/PlanSys2/ros2_planning_system/pull/500>`_)
+* Fixes in the PDDL parser and the problem expert (`#498 <https://github.com/PlanSys2/ros2_planning_system/pull/498>`_)
+* Numbers keep their precision in numeric effects and in the PDDL text (`#478 <https://github.com/PlanSys2/ros2_planning_system/pull/478>`_)
+* forall and imply in conditions, goals and effects (`#462 <https://github.com/PlanSys2/ros2_planning_system/pull/462>`_)
+* Accept objects of any descendant type, not only of direct subtypes (`#461 <https://github.com/PlanSys2/ros2_planning_system/pull/461>`_)
+* Problem metric: minimize or maximize any numeric expression (`#457 <https://github.com/PlanSys2/ros2_planning_system/pull/457>`_)
+* Tests discover only nodes on this host (`#455 <https://github.com/PlanSys2/ros2_planning_system/pull/455>`_)
+* Reject instance names that are not PDDL names (`#429 <https://github.com/PlanSys2/ros2_planning_system/pull/429>`_)
+* Use 32-bit node ids and validate trees before walking them (`#425 <https://github.com/PlanSys2/ros2_planning_system/pull/425>`_)
+* Reject malformed PDDL instead of crashing (`#424 <https://github.com/PlanSys2/ros2_planning_system/pull/424>`_)
+* Update domain during execution (`#414 <https://github.com/PlanSys2/ros2_planning_system/pull/414>`_)
+* Contributors: Francisco Martín Rico
+
+3.1.0 (2026-07-28)
+------------------
+* Fix deprecated get_share_directory
+* Deprecate BTAction with rate. Fix all warnings
 * Set C++23 as default
-* Improvements to parser
 * add more tests to parser
 * fix Ground PDDLPrint for constant
 * fix node name parsing in Expression.hpp
-* Improvements to pddl parser utils
+* fix code style
+* Merge branch 'rolling' into getExpr
 * add new helper functions
 * add check_var_params to checkParamEquality
 * small improvements to getPredicates and getFunctions
@@ -20,6 +41,7 @@ Changelog for package plansys2_pddl_parser
 * Fix string predicate parsing to handle cases with no parameters
 * more fixes
 * added test case for no arg predicates
+* fix code style
 * fromString works for Parameter
 * getNodeType works with parameters
 * fix bug in getSubExpr
@@ -27,10 +49,7 @@ Changelog for package plansys2_pddl_parser
 * getExpr fix parsing for words with hyphen
 * Fix string predicate parsing to handle cases with no parameters
 * Fixing bug `#329 <https://github.com/PlanSys2/ros2_planning_system/issues/329>`_
-* Contributors: Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende, eshan-savla
-
-3.0.1 (2025-06-22)
-------------------
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende, eshan-savla
 
 3.0.0 (2025-06-06)
 ------------------

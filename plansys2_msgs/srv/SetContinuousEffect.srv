@@ -1,0 +1,8 @@
+# The continuous effects of a running action (PDDL 2.1), integrated by the problem expert while
+# active: (and (increase (f) (* #t rate))...), bound to the action's objects
+string id
+plansys2_msgs/Tree effects
+bool active
+---
+bool success
+string error_info

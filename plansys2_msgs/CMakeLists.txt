@@ -1,8 +1,12 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 
 project(plansys2_msgs)
 
-set(CMAKE_CXX_STANDARD 23)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
+
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -19,7 +23,9 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ActionPerformerStatus.msg"
   "msg/Derived.msg"
   "msg/DurativeAction.msg"
+  "msg/ExecutionEvent.msg"
   "msg/Knowledge.msg"
+  "msg/Metric.msg"
   "msg/Node.msg"
   "msg/Param.msg"
   "msg/Plan.msg"
@@ -29,6 +35,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/State.msg"
   "msg/Tree.msg"
   "srv/AddProblem.srv"
+  "srv/SetContinuousEffect.srv"
   "srv/AddProblemGoal.srv"
   "srv/AffectNode.srv"
   "srv/AffectParam.srv"
@@ -49,11 +56,15 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetProblemGoal.srv"
   "srv/GetProblemInstances.srv"
   "srv/GetProblemInstanceDetails.srv"
+  "srv/GetProblemMetric.srv"
   "srv/GetStates.srv"
   "srv/IsProblemGoalSatisfied.srv"
   "srv/RemoveProblemGoal.srv"
+  "srv/RemoveProblemMetric.srv"
+  "srv/SetProblemMetric.srv"
   "srv/ClearProblemKnowledge.srv"
   "srv/ValidateDomain.srv"
+  "srv/ChangeDomain.srv"
   "action/ExecutePlan.action"
   DEPENDENCIES builtin_interfaces std_msgs action_msgs
 )

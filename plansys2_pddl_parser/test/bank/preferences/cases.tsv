@@ -1,0 +1,4 @@
+domain.pddl	p1.pddl	yes	:preferences	the robot must reach the hall and should bring the cup along
+domain.pddl	p2.pddl	yes	:preferences	one hard delivery plus two weighted soft deliveries
+domain.pddl	p3.pddl	no	:preferences	the hard goal room is unreachable, the satisfiable preference does not help
+domain.pddl	p4.pddl	yes	:preferences :constraints	preferences on the goal and on a constraint, weighted in the metric, with a hard constraint too

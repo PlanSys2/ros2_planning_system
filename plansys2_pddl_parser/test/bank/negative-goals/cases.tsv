@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:negative-preconditions	clean a room and leave it (two negative goals)
+domain.pddl	p2.pddl	yes	:negative-preconditions	clean three rooms and return to the hall
+domain.pddl	p3.pddl	no	:negative-preconditions	negative goal on a dirty room the robot can never reach

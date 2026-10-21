@@ -59,6 +59,7 @@ public:
   int current_line;  // current line of file
   std::string s;
   unsigned r, c;  // current row and column of file
+  bool eof = false;  // all the text has been consumed
 
   explicit Stringreader(const std::string & domain)
   : current_line(0), r(1), c(0)
@@ -87,14 +88,36 @@ public:
     return ret;
   }
 
+  // A position to come back to: reading on may cross lines, so the column alone is not enough
+  struct Mark
+  {
+    int current_line;
+    std::string s;
+    unsigned r, c;
+    bool eof;
+  };
+  Mark mark() const {return {current_line, s, r, c, eof};}
+  void reset(const Mark & m)
+  {
+    current_line = m.current_line;
+    s = m.s;
+    r = m.r;
+    c = m.c;
+    eof = m.eof;
+  }
+
   // characters to be ignored
   bool ignore(char c) {return c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\f';}
 
   // parenthesis
   bool paren(char c) {return c == '(' || c == ')' || c == '{' || c == '}';}
 
-  // current character
-  char getChar() {return s[c];}
+  // current character; asking for one past the end of the text means it is truncated
+  char getChar()
+  {
+    if (eof) {throw UnexpectedEOF();}
+    return s[c];
+  }
 
   // print line and column
   void printLine() {std::cout << "Line " << r << ", column " << c + 1 << ": ";}
@@ -111,7 +134,14 @@ public:
   {
     for (; c < s.size() && ignore(s[c]); ++c) {
     }
-    while (c == s.size() || s[c] == ';') {
+    while (c >= s.size() || s[c] == ';') {
+      if (current_line >= static_cast<int>(lines.size())) {
+        // Nothing left: the next getChar() reports it
+        eof = true;
+        s.clear();
+        c = 0;
+        return;
+      }
       ++r;
       c = 0;
 
@@ -132,6 +162,17 @@ public:
     }
 
     return os.str();
+  }
+
+  // a name of a list: one that is not there (e.g. a ',' or a '{') would be read forever
+  std::string getName()
+  {
+    std::string t = getToken();
+    if (t.empty()) {
+      printLine();
+      throw UnknownToken(c < s.size() ? std::string(1, s[c]) : std::string());
+    }
+    return t;
   }
 
   // get token converted to lowercase
@@ -197,7 +238,7 @@ public:
             if (check) {
               t += " " + getToken(ts);
             } else {
-              t += " " + getToken();
+              t += " " + getName();
             }
           }
           t += " )";
@@ -205,7 +246,7 @@ public:
         } else if (check) {
           t = getToken(ts);
         } else {
-          t = getToken();
+          t = getName();
         }
 
         out.types.insert(out.types.end(), out.size() - k, t);
@@ -216,7 +257,7 @@ public:
         getToken();
         out.append(parseTypedList(check, ts));
       } else {
-        out.insert(getToken());
+        out.insert(getName());
       }
     }
     if (k < out.size()) {out.types.insert(out.types.end(), out.size() - k, check ? "object" : "");}

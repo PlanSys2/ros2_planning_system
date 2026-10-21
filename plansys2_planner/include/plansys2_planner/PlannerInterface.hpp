@@ -40,6 +40,11 @@ public:
   PlannerInterface() {}
 
   /**
+   * @brief Virtual destructor, as it is used through pointers to it.
+   */
+  virtual ~PlannerInterface() = default;
+
+  /**
    * @brief Generate a single plan for a PDDL planning problem.
    *
    * @param[in] domain PDDL domain definition as a string.

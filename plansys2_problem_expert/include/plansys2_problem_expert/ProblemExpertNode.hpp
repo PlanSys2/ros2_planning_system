@@ -15,26 +15,34 @@
 #ifndef PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTNODE_HPP_
 #define PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTNODE_HPP_
 
+#include <atomic>
 #include <memory>
+#include <string>
 
 #include "plansys2_problem_expert/ProblemExpert.hpp"
 
 #include "std_msgs/msg/empty.hpp"
+#include "plansys2_msgs/srv/change_domain.hpp"
+#include "std_msgs/msg/string.hpp"
 #include "plansys2_msgs/msg/knowledge.hpp"
 #include "plansys2_msgs/msg/problem.hpp"
 #include "plansys2_msgs/srv/affect_node.hpp"
 #include "plansys2_msgs/srv/affect_param.hpp"
 #include "plansys2_msgs/srv/add_problem.hpp"
+#include "plansys2_msgs/srv/set_continuous_effect.hpp"
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
 #include "plansys2_msgs/srv/exist_node.hpp"
 #include "plansys2_msgs/srv/get_problem.hpp"
 #include "plansys2_msgs/srv/get_problem_goal.hpp"
 #include "plansys2_msgs/srv/get_problem_instance_details.hpp"
 #include "plansys2_msgs/srv/get_problem_instances.hpp"
+#include "plansys2_msgs/srv/get_problem_metric.hpp"
 #include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_msgs/srv/get_states.hpp"
 #include "plansys2_msgs/srv/is_problem_goal_satisfied.hpp"
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
+#include "plansys2_msgs/srv/remove_problem_metric.hpp"
+#include "plansys2_msgs/srv/set_problem_metric.hpp"
 #include "plansys2_msgs/srv/clear_problem_knowledge.hpp"
 
 #include "rclcpp/rclcpp.hpp"
@@ -301,6 +309,42 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::RemoveProblemGoal::Response> response);
 
   /**
+   * @brief Service callback to set the problem metric.
+   *
+   * @param[in] request_header ROS service request header.
+   * @param[in] request Service request containing the metric.
+   * @param[out] response Service response with success status and error information.
+   */
+  void set_problem_metric_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::SetProblemMetric::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::SetProblemMetric::Response> response);
+
+  /**
+   * @brief Service callback to get the problem metric.
+   *
+   * @param[in] request_header ROS service request header.
+   * @param[in] request Empty service request.
+   * @param[out] response Service response containing the metric and success status.
+   */
+  void get_problem_metric_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::GetProblemMetric::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::GetProblemMetric::Response> response);
+
+  /**
+   * @brief Service callback to remove the problem metric.
+   *
+   * @param[in] request_header ROS service request header.
+   * @param[in] request Empty service request.
+   * @param[out] response Service response with success status and error information.
+   */
+  void remove_problem_metric_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::RemoveProblemMetric::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::RemoveProblemMetric::Response> response);
+
+  /**
    * @brief Service callback to clear all problem knowledge.
    *
    * @param[in] request_header ROS service request header.
@@ -311,6 +355,17 @@ public:
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::ClearProblemKnowledge::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::ClearProblemKnowledge::Response> response);
+
+  /**
+   * @brief Callback for domain_expert/domain: the domain the domain expert has.
+   *
+   * A domain change reaches this node first through problem_expert/update_domain, before
+   * the domain expert answers it. The topic is for the domain changed while this node was
+   * not there, or not configured: it is taken if it is not the one this node has.
+   *
+   * @param[in] msg The current domain, in PDDL.
+   */
+  void domain_topic_callback(const std_msgs::msg::String::SharedPtr msg);
 
   /**
    * @brief Service callback to remove a problem instance.
@@ -385,7 +440,33 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::AffectNode::Response> response);
 
 private:
+  /**
+   * @brief Adopt a new domain: swaps it into problem_expert_ in place
+   *        (ProblemExpert::updateDomain(), which prunes knowledge no longer
+   *        consistent with it and leaves the rest untouched) and publishes the
+   *        resulting knowledge/problem so subscribers see the update — the same
+   *        thing every other mutating callback in this node already does, no
+   *        lifecycle transitions involved.
+   *
+   * @param[in] domain The new domain, in PDDL.
+   */
+  bool applyNewDomain(const std::string & domain);
+
+  void update_domain_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Response> response);
+
   std::shared_ptr<ProblemExpert> problem_expert_;
+
+  // domain_topic_callback(): true once the first (transient_local replay / baseline)
+  // domain message has been seen, so every later message is known to be a genuine
+  // runtime change. Never reset — set once, for the lifetime of this node.
+  // The last domain received from the domain expert, also before being configured
+  std::string last_domain_;
+  rclcpp::Service<plansys2_msgs::srv::ChangeDomain>::SharedPtr update_domain_service_;
+
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr domain_sub_;
 
   // Service servers
   rclcpp::Service<plansys2_msgs::srv::AddProblem>::SharedPtr
@@ -418,6 +499,12 @@ private:
     is_problem_goal_satisfied_service_;
   rclcpp::Service<plansys2_msgs::srv::RemoveProblemGoal>::SharedPtr
     remove_problem_goal_service_;
+  rclcpp::Service<plansys2_msgs::srv::SetProblemMetric>::SharedPtr
+    set_problem_metric_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetProblemMetric>::SharedPtr
+    get_problem_metric_service_;
+  rclcpp::Service<plansys2_msgs::srv::RemoveProblemMetric>::SharedPtr
+    remove_problem_metric_service_;
   rclcpp::Service<plansys2_msgs::srv::ClearProblemKnowledge>::SharedPtr
     clear_problem_knowledge_service_;
   rclcpp::Service<plansys2_msgs::srv::AffectParam>::SharedPtr
@@ -436,6 +523,21 @@ private:
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Empty>::SharedPtr update_pub_;
   rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::Knowledge>::SharedPtr knowledge_pub_;
   rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::Problem>::SharedPtr problem_pub_;
+  // Applies the timed facts and the dynamics while active
+  rclcpp::TimerBase::SharedPtr timed_facts_timer_;
+
+  // A change of the knowledge: told to who follows it, and saved to state_file
+  void notify_change();
+  // The state of the problem kept in state_file, if set: a restarted node comes back with it
+  void save_state();
+  bool load_state();
+  void remove_state();
+  std::string state_file_;
+  std::atomic<bool> state_dirty_ {false};
+  rclcpp::TimerBase::SharedPtr state_timer_;
+  rclcpp::Time last_step_;
+  rclcpp::Service<plansys2_msgs::srv::SetContinuousEffect>::SharedPtr
+    set_continuous_effect_service_;
 };
 
 }  // namespace plansys2

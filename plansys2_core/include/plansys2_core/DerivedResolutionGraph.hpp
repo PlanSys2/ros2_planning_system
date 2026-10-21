@@ -248,13 +248,16 @@ public:
     std::unordered_map<Derived, int> & lowlink, std::unordered_set<Derived> & on_stack,
     std::stack<Derived> & stack, std::vector<std::vector<Derived>> & sccs) const;
 
-  const std::unordered_set<NodeVariant> & getNodeOutEdges(const NodeVariant & node)
+  // Empty for a node without edges: looking it up adds nothing to the graph
+  const std::unordered_set<NodeVariant> & getNodeOutEdges(const NodeVariant & node) const
   {
-    return adj_list_[node];
+    auto it = adj_list_.find(node);
+    return it == adj_list_.end() ? noEdges() : it->second;
   }
-  const std::unordered_set<NodeVariant> & getNodeInEdges(const NodeVariant & node)
+  const std::unordered_set<NodeVariant> & getNodeInEdges(const NodeVariant & node) const
   {
-    return parent_nodes_[node];
+    auto it = parent_nodes_.find(node);
+    return it == parent_nodes_.end() ? noEdges() : it->second;
   }
   const std::unordered_set<NodeVariant> & getRoots() const {return roots_;}
   const std::unordered_set<NodeVariant> & getNodes() const {return nodes_;}
@@ -287,6 +290,10 @@ public:
     parent_nodes_.clear();
     nodes_.clear();
     roots_.clear();
+    node_ids_.clear();
+    next_id_ = 0;
+    derived_predicates_.clear();
+    actions_.clear();
     edge_count_ = 0;
   }
 
@@ -318,19 +325,32 @@ private:
     const NodeVariant & node, const std::function<void(const NodeVariant &)> & func,
     std::unordered_set<NodeVariant> & visited) const;
 
+  // The strongly connected component of each node: a cycle, or the node alone
+  std::unordered_map<NodeVariant, size_t> computeComponents() const;
+
   void dfsHelper(
     const NodeVariant & node, const std::function<void(const NodeVariant &)> & func,
-    std::unordered_set<NodeVariant> & visited, bool check_dependencies = false) const;
+    std::unordered_set<NodeVariant> & visited, bool check_dependencies,
+    const std::unordered_map<NodeVariant, size_t> * components = nullptr) const;
 
+  // Whether the parents of the node out of its component are visited: the nodes of a cycle
+  // (recursive derived predicates) do not wait for each other
   bool parentsVisited(
-    const NodeVariant & node, const std::unordered_set<NodeVariant> & visited) const;
+    const NodeVariant & node, const std::unordered_set<NodeVariant> & visited,
+    const std::unordered_map<NodeVariant, size_t> * components = nullptr) const;
+
+  static const std::unordered_set<NodeVariant> & noEdges()
+  {
+    static const std::unordered_set<NodeVariant> empty;
+    return empty;
+  }
 
   friend struct std::hash<DerivedResolutionGraph>;
 };
 
 }  // namespace plansys2
 
-namespace std
+namespace plansys2
 {
 template<typename NodeEdgesMap>
 std::size_t unordered_nodeedgesmap_hash(const NodeEdgesMap & map)
@@ -340,7 +360,7 @@ std::size_t unordered_nodeedgesmap_hash(const NodeEdgesMap & map)
     // Hash the key
     std::size_t entry_hash = std::hash<std::decay_t<decltype(key)>>{}(key);
     // Hash the neighbor set (order-independent)
-    entry_hash ^= unordered_container_hash(neighbors);
+    entry_hash ^= plansys2::unordered_container_hash(neighbors);
     // XOR with seed (order-independent for map)
     seed ^= entry_hash;
   }
@@ -348,21 +368,24 @@ std::size_t unordered_nodeedgesmap_hash(const NodeEdgesMap & map)
   seed ^= map.size();
   return seed;
 }
+}  // namespace plansys2
 
+namespace std
+{
 template<>
 struct hash<plansys2::DerivedResolutionGraph>
 {
   std::size_t operator()(const plansys2::DerivedResolutionGraph & graph) const noexcept
   {
     std::size_t seed = 0;
-    hash_combine(seed, graph.edge_count_);
-    seed ^= unordered_container_hash(graph.nodes_);
-    seed ^= unordered_container_hash(graph.roots_);
-    seed ^= unordered_container_hash(graph.derived_predicates_);
-    seed ^= unordered_container_hash(graph.actions_);
-    seed ^= unordered_container_hash(graph.node_ids_);
-    seed ^= unordered_nodeedgesmap_hash(graph.adj_list_);
-    seed ^= unordered_nodeedgesmap_hash(graph.parent_nodes_);
+    plansys2::hash_combine(seed, graph.edge_count_);
+    seed ^= plansys2::unordered_container_hash(graph.nodes_);
+    seed ^= plansys2::unordered_container_hash(graph.roots_);
+    seed ^= plansys2::unordered_container_hash(graph.derived_predicates_);
+    seed ^= plansys2::unordered_container_hash(graph.actions_);
+    seed ^= plansys2::unordered_container_hash(graph.node_ids_);
+    seed ^= plansys2::unordered_nodeedgesmap_hash(graph.adj_list_);
+    seed ^= plansys2::unordered_nodeedgesmap_hash(graph.parent_nodes_);
     return seed;
   }
 };

@@ -13,6 +13,8 @@
 // limitations under the License.
 #pragma once
 #include <map>
+#include <set>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -59,6 +61,16 @@ public:
   {
   }
 
+  TokenStruct & operator=(const TokenStruct & ts)
+  {
+    if (this != &ts) {
+      tokens = ts.tokens;
+      tokenMap = ts.tokenMap;
+      types = ts.types;
+    }
+    return *this;
+  }
+
   void append(const TokenStruct & ts)
   {
     for (unsigned i = 0; i < ts.size(); ++i) {insert(ts[i]);}
@@ -92,8 +104,60 @@ public:
     return i == tokenMap.end() ? -1 : i->second;
   }
 
-  T get(const std::string & s) const {return tokens[index(s)];}
+  T get(const std::string & s) const
+  {
+    int i = index(s);
+    if (i < 0) {
+      throw std::runtime_error(s + " does not name a known token");
+    }
+    return tokens[i];
+  }
 };
+
+// Throws if a name appears twice in a list read from PDDL
+inline void assertUnique(const TokenStruct<std::string> & ts, const std::string & what)
+{
+  if (ts.tokenMap.size() == ts.size()) {
+    return;
+  }
+  std::set<std::string> seen;
+  for (unsigned i = 0; i < ts.size(); ++i) {
+    if (!seen.insert(ts[i]).second) {
+      throw std::runtime_error("Duplicate " + what + " \"" + ts[i] + "\"");
+    }
+  }
+}
+
+// The names in the scope of a quantifier body: those outside, then its variables, which
+// hide outer ones with the same name
+inline TokenStruct<std::string> quantifierScope(
+  const TokenStruct<std::string> & outer, const TokenStruct<std::string> & vars)
+{
+  TokenStruct<std::string> scope(outer);
+  for (unsigned i = 0; i < vars.size(); ++i) {
+    scope.tokenMap[vars[i]] = scope.size();
+    scope.tokens.push_back(vars[i]);
+  }
+  scope.types.insert(scope.types.end(), vars.types.begin(), vars.types.end());
+  return scope;
+}
+
+// The same scope when printing: base names from outside, then the variables
+inline TokenStruct<std::string> printScope(
+  const TokenStruct<std::string> & outer, unsigned base, const std::vector<std::string> & names)
+{
+  TokenStruct<std::string> scope;
+  for (unsigned i = 0; i < base; ++i) {
+    scope.tokens.push_back(i < outer.size() ? outer[i] : "?" + std::to_string(i));
+  }
+  for (const auto & name : names) {
+    scope.tokens.push_back(name);
+  }
+  for (unsigned i = 0; i < scope.size(); ++i) {
+    scope.tokenMap[scope.tokens[i]] = i;
+  }
+  return scope;
+}
 
 }  // namespace pddl
 }  // namespace parser

@@ -15,7 +15,11 @@
 #ifndef PLANSYS2_EXECUTOR__ACTIONEXECUTOR_HPP_
 #define PLANSYS2_EXECUTOR__ACTIONEXECUTOR_HPP_
 
+#include <atomic>
+#include <map>
+#include <mutex>
 #include <string>
+#include <utility>
 #include <memory>
 #include <vector>
 
@@ -26,7 +30,9 @@
 #include "plansys2_msgs/msg/param.hpp"
 #include "plansys2_msgs/msg/plan_item.hpp"
 #include "plansys2_core/Action.hpp"
+#include "plansys2_core/NodeNames.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
+#include "plansys2_problem_expert/FactChange.hpp"
 #include "behaviortree_cpp/behavior_tree.h"
 
 #include "rclcpp/rclcpp.hpp"
@@ -34,6 +40,60 @@
 
 namespace plansys2
 {
+
+class ActionExecutor;
+
+/**
+ * @class plansys2::ActionHub
+ * @brief The actions_hub publisher and subscription of a node, shared by its action executors.
+ *
+ * Each executor had its own: a plan of N actions made N publishers and N subscriptions, and
+ * every message was delivered N times. The hub delivers each one to the executors alive, which
+ * keep only those of their request.
+ */
+class ActionHub : public std::enable_shared_from_this<ActionHub>
+{
+public:
+  using Ptr = std::shared_ptr<ActionHub>;
+
+  /**
+   * @brief The hub of a node, created the first time and kept while someone holds it.
+   *
+   * @param[in] node The lifecycle node.
+   * @return The hub.
+   */
+  static Ptr get(rclcpp_lifecycle::LifecycleNode::SharedPtr node);
+
+  explicit ActionHub(rclcpp_lifecycle::LifecycleNode::SharedPtr node);
+
+  /**
+   * @brief Publish a message on actions_hub.
+   * @param[in] msg The message.
+   */
+  void publish(const plansys2_msgs::msg::ActionExecution & msg);
+
+  /**
+   * @brief Deliver the messages of actions_hub to an executor, until it is removed or destroyed.
+   * @param[in] executor The executor.
+   */
+  void add(const std::weak_ptr<ActionExecutor> & executor);
+
+  /**
+   * @brief Stop delivering messages to an executor.
+   * @param[in] executor The executor.
+   */
+  void remove(const ActionExecutor * executor);
+
+private:
+  // The subscription holds the hub weakly: it may run while the hub is destroyed
+  void subscribe(rclcpp_lifecycle::LifecycleNode::SharedPtr node);
+  void dispatch(plansys2_msgs::msg::ActionExecution::SharedPtr msg);
+
+  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecution>::SharedPtr pub_;
+  rclcpp::Subscription<plansys2_msgs::msg::ActionExecution>::SharedPtr sub_;
+  std::mutex mutex_;
+  std::vector<std::pair<const ActionExecutor *, std::weak_ptr<ActionExecutor>>> executors_;
+};
 
 /**
  * @class plansys2::ActionExecutor
@@ -45,6 +105,9 @@ namespace plansys2
  */
 class ActionExecutor
 {
+  // It delivers the messages of actions_hub to action_hub_callback
+  friend class ActionHub;
+
 public:
   /**
    * @brief Status enumeration representing the action execution state.
@@ -72,7 +135,10 @@ public:
     const std::string & action,
     rclcpp_lifecycle::LifecycleNode::SharedPtr node)
   {
-    return std::make_shared<ActionExecutor>(action, node);
+    auto ret = std::make_shared<ActionExecutor>(action, node);
+    *ret->self_ = ret;
+    ret->hub_->add(ret);
+    return ret;
   }
 
   /**
@@ -130,7 +196,7 @@ public:
    *
    * @return Status The current status enum value.
    */
-  Status get_internal_status() const {return state_;}
+  Status get_internal_status() const {return state_.load();}
 
   /**
    * @brief Set the internal execution status.
@@ -158,7 +224,11 @@ public:
    *
    * @return rclcpp::Time The start time of the execution.
    */
-  rclcpp::Time get_start_time() const {return start_execution_;}
+  rclcpp::Time get_start_time() const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return start_execution_;
+  }
 
   /**
    * @brief Get the current ROS time from the node.
@@ -172,21 +242,70 @@ public:
    *
    * @return ROS time of the last state change.
    */
-  rclcpp::Time get_status_time() const {return state_time_;}
+  rclcpp::Time get_status_time() const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return state_time_;
+  }
 
   /**
    * @brief Get the current feedback from the action performer.
    *
    * @return std::string containing the feedback message.
    */
-  std::string get_feedback() const {return feedback_;}
+  std::string get_feedback() const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return feedback_;
+  }
+
+  /**
+   * @brief The performer that took the action, empty until one does.
+   */
+  std::string get_performer() const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return current_performer_id_;
+  }
+
+  /**
+   * @brief Why the executor failed the action, when it was not its performer that said so
+   * (no performer took it, its performer is gone); empty otherwise.
+   */
+  std::string get_failure_reason() const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return failure_reason_;
+  }
 
   /**
    * @brief Get the completion percentage of the action.
    *
    * @return float Completion percentage (0.0 to 1.0).
    */
-  float get_completion() const {return completion_;}
+  float get_completion() const
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return completion_;
+  }
+
+  /**
+   * @brief The duration the plan gives the action, sent to its performer.
+   * @param[in] duration In seconds; 0 for a non-durative action.
+   */
+  void set_planned_duration(double duration) {planned_duration_ = duration;}
+
+  /**
+   * @brief Another duration for the running action, from its start: its performer is told.
+   * @param[in] duration In seconds.
+   */
+  void update_planned_duration(double duration);
+
+  /**
+   * @brief The duration the plan gives the action.
+   * @return In seconds.
+   */
+  double get_planned_duration() const {return planned_duration_;}
 
   /**
    * @brief Clean up resources used by the executor.
@@ -260,9 +379,29 @@ protected:
    */
   void wait_timeout();
 
+  // The confirmed performer is still there; it fails the action if it is gone
+  void check_performer();
+
+  // Starts asking for performers, with a new request id
+  void start_dealing();
+
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
 
-  Status state_;
+  // Callbacks reach the executor through this, outliving it: one running while the
+  // executor is destroyed finds it gone instead of using freed memory
+  std::shared_ptr<std::weak_ptr<ActionExecutor>> self_ =
+    std::make_shared<std::weak_ptr<ActionExecutor>>();
+  // A timer whose callback runs on this executor, only while it exists
+  rclcpp::TimerBase::SharedPtr create_timer(void (ActionExecutor::* callback)());
+
+  std::atomic<Status> state_;
+  // Hub messages, BT ticks, cancel and the getters come from different threads
+  mutable std::mutex mutex_;
+  std::string request_id_;
+  int activation_failures_ {0};
+  int performer_misses_ {0};
+  rclcpp::TimerBase::SharedPtr performer_check_;
+  std::unique_ptr<NodeNames> node_names_;
   rclcpp::Time state_time_;
   rclcpp::Time start_execution_;
 
@@ -272,11 +411,11 @@ protected:
   std::vector<std::string> action_params_;
 
   std::string feedback_;
+  std::string failure_reason_;
   float completion_;
+  double planned_duration_ {0.0};
 
-  rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::ActionExecution>::SharedPtr
-    action_hub_pub_;
-  rclcpp::Subscription<plansys2_msgs::msg::ActionExecution>::SharedPtr action_hub_sub_;
+  ActionHub::Ptr hub_;
 
   rclcpp::TimerBase::SharedPtr waiting_timer_;
 };
@@ -295,9 +434,11 @@ struct ActionExecutionInfo
   bool at_end_effects_applied = {false};
   rclcpp::Time at_start_effects_applied_time;
   rclcpp::Time at_end_effects_applied_time;
+  // What the at start effects changed, to take it back if the action does not end
+  std::vector<plansys2::FactChange> at_start_changes;
   ActionVariant action_info;
   std::string execution_error_info;
-  double duration;
+  double duration = 0.0;
   double duration_overrun_percentage = -1.0;
 };
 

@@ -2,14 +2,31 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-3.0.2 (2025-12-16)
+4.0.0 (2026-10-21)
 ------------------
-* Set C++23 as default
-* add State.msg
-* Contributors: Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* ActionExecutor and performers: one request, its own messages (`#488 <https://github.com/PlanSys2/ros2_planning_system/pull/488>`_)
+* forall and imply in conditions, goals and effects (`#462 <https://github.com/PlanSys2/ros2_planning_system/pull/462>`_)
+* Problem metric: minimize or maximize any numeric expression (`#457 <https://github.com/PlanSys2/ros2_planning_system/pull/457>`_)
+* Update domain during execution (`#414 <https://github.com/PlanSys2/ros2_planning_system/pull/414>`_)
+* Contributors: Francisco Martín Rico
 
-3.0.1 (2025-06-22)
+3.1.0 (2026-07-28)
 ------------------
+* msgs: deal with CMake CMP0094
+  Bump CMake minimum version to 3.15, as that's where CMP0094 was
+  introduced.
+  CMake versions lower than 3.15 have trouble locating Python in
+  environments where a Python installed in a non-default location should
+  be used (such as Conda, Pixi, etc).
+* Set C++23 as default
+* Merge pull request `#372 <https://github.com/PlanSys2/ros2_planning_system/issues/372>`_ from Rezenders/plansys2_core
+  Plansys2 core
+* add State.msg
+* Contributors: Eshan Savla, Francisco Martín Rico, G.A. vd. Hoorn, Gustavo, Gustavo Rezende
 
 3.0.0 (2025-06-06)
 ------------------

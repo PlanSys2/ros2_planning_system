@@ -18,10 +18,12 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "plansys2_msgs/msg/action.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
+#include "plansys2_msgs/msg/metric.hpp"
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/param.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
@@ -31,16 +33,57 @@ namespace parser
 namespace pddl
 {
 
-/// Removes newlines, duplicated spaces, tabs and spaces from parenthesis
+/// Deepest parenthesis nesting accepted in PDDL text: deeper input is rejected
+/// instead of risking a stack overflow in the recursive parsers
+constexpr int kMaxNestingDepth = 256;
+
 /**
+ * \brief Returns the deepest parenthesis nesting in a PDDL text, ignoring comments.
+ * \param[in] expr The PDDL text
+ * \return The nesting depth, or -1 if the parentheses are not balanced
+ */
+int getMaxNesting(const std::string & expr);
+
+/**
+ * \brief Checks that a tree can be walked safely: child ids in range, every node
+ *        reached once from the root (no cycles or shared nodes), the number of
+ *        children each node type needs, and no deeper than kMaxNestingDepth.
+ * \param[in] tree The tree to check; an empty tree is valid
+ * \param[out] error Why the tree is not valid
+ * \return true if the tree is valid
+ */
+bool validateTree(const plansys2_msgs::msg::Tree & tree, std::string & error);
+
+/**
+ * \brief Checks that a string is a PDDL name: a letter followed by letters, digits,
+ *        '-' or '_'.
+ * \param[in] name The candidate name
+ * \return true if it can be used as a PDDL name
+ */
+bool isValidName(const std::string & name);
+
+/**
+ * \brief Reads a whole text as a PDDL number, whatever the locale: an optional sign,
+ *        digits with an optional point, and an optional exponent ("1e-7").
+ * \param[in] text The text; blanks around it are ignored
+ * \param[out] value The number, only set when the text is one
+ * \return true if the text is a finite number
+ */
+bool parseNumber(const std::string & text, double & value);
+
+/**
+ * \brief Leaves one space between tokens, none after '(' or before ')' and none at the
+ *        ends; tabs and newlines count as spaces.
  * \param[in] expr The expression to be reduced
  * \return The reduced expression
  */
 std::string getReducedString(const std::string & expr);
 
-/// Returns node type corresponding to the string input
+/// Returns the node type of an expression, given by its operator (the first token
+/// after its '('), never by a name that contains one
 /**
- * \param[in] input The input string
+ * \param[in] expr The expression
+ * \param[in] def The type when there is no operator, e.g. PREDICATE or FUNCTION
  * \return The node type
  */
 uint8_t getNodeType(const std::string & expr, uint8_t def = plansys2_msgs::msg::Node::UNKNOWN);
@@ -50,7 +93,7 @@ uint8_t getNodeType(const std::string & expr, uint8_t def = plansys2_msgs::msg::
  * \param[in] input The input string
  * \return result <- tuple(uint8_t, int)
  *         result(0) The expression type
- *         result(1) The start position of the first occurrence
+ *         result(1) The position of the operator, INT_MAX if there is none
  */
 std::tuple<uint8_t, int> getExpr(const std::string & input);
 
@@ -66,7 +109,7 @@ uint8_t getExprType(const std::string & input);
  * \param[in] input The input string
  * \return result <- tuple(uint8_t, int)
  *         result(0) The function modifier type
- *         result(1) The start position of the first occurrence
+ *         result(1) The position of the modifier, INT_MAX if there is none
  */
 std::tuple<uint8_t, int> getFunMod(const std::string & input);
 
@@ -98,6 +141,13 @@ std::string toStringFunction(const plansys2_msgs::msg::Tree & tree, uint32_t nod
 
 std::string toStringNumber(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
 
+/// @brief Writes a number for PDDL, in fixed notation and whatever the locale.
+/// @param[in] value The number.
+/// @param[in] decimals Decimals written when they are enough to read back the same value;
+///   otherwise, as many digits as needed are written. Negative: always the shortest form.
+/// @return The number as text, e.g. "200.000000" or "0.0000001" ("200" if shortest).
+std::string numberToString(double value, int decimals = 6);
+
 std::string toStringAnd(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
 
 std::string toStringOr(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
@@ -115,6 +165,32 @@ std::string toStringConstant(const plansys2_msgs::msg::Tree & tree, uint32_t nod
 std::string toStringParameter(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
 
 std::string toStringExists(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+
+std::string toStringForall(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+
+std::string toStringImply(const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+
+// "(when condition effect)"
+std::string toStringWhen(const plansys2_msgs::msg::Tree & tree, uint32_t node_id);
+
+/// PDDL3 modal constraint: how many times and conditions it takes; {0, 0} if it is not one
+std::pair<unsigned, unsigned> constraintArity(const std::string & op);
+
+/// A preference or a modal constraint, its operator ("at end" in full) and its arguments;
+/// false for anything else, such as a predicate called always
+bool splitModal(const std::string & expr, std::string & op, std::vector<std::string> & args);
+
+std::string toStringPreference(
+  const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+
+std::string toStringConstraint(
+  const plansys2_msgs::msg::Tree & tree, uint32_t node_id, bool negate);
+
+/// ?duration as a number: the duration a plan gives the action
+void bindDuration(plansys2_msgs::msg::Tree & tree, double duration);
+
+/// #t as a number: the time a continuous effect acts in one step of its integration
+void bindTime(plansys2_msgs::msg::Tree & tree, double time);
 
 /// This function creates a complete tree.
 /**
@@ -195,6 +271,16 @@ bool checkParamTypeEquivalence(
   const plansys2_msgs::msg::Param & first, const plansys2_msgs::msg::Param & second);
 
 bool compare_str_case_insensitive(const std::string & a, const std::string & b);
+
+/// Parses a metric: "minimize <expr>" or "maximize <expr>", optionally as "(:metric ...)".
+/**
+ * \param[in] metric The metric as a string, e.g. "minimize (+ (cost) (* 10 (total-time)))"
+ * \return The metric, with an empty tree if the string is not a valid metric
+*/
+plansys2_msgs::msg::Metric metricFromString(const std::string & metric);
+
+/// The metric as "minimize <expr>" or "maximize <expr>"; empty if there is no metric.
+std::string toString(const plansys2_msgs::msg::Metric & metric);
 
 
 }  // namespace pddl

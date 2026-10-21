@@ -28,6 +28,7 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include "rclcpp/version.h"
@@ -80,8 +81,9 @@ private:
 
   rclcpp::Subscription<plansys2_msgs::msg::ActionExecutionInfo>::SharedPtr action_execution_info_;
   rclcpp::Subscription<plansys2_msgs::msg::Plan>::SharedPtr executing_plan_;
-  bool need_update_plan_;
-  bool need_update_info_;
+  bool need_update_plan_ {false};
+  bool need_update_info_ {false};
+  std::mutex mutex_;
 
   void execution_info_callback(plansys2_msgs::msg::ActionExecutionInfo::UniquePtr msg);
   void plan_callback(plansys2_msgs::msg::Plan::UniquePtr msg);

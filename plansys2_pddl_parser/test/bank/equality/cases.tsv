@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	-	handover between two distinct robots and dock at home (= and not =)
+domain.pddl	p2.pddl	yes	-	relay a box through three robots and dock two of them
+domain.pddl	p3.pddl	no	-	single robot cannot hand a box to itself because giver and taker must differ

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <unistd.h>
+
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -19,7 +21,7 @@
 
 #include "gtest/gtest.h"
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "plansys2_core/PlanSolverBase.hpp"
 #include "plansys2_core/Utils.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -54,7 +56,7 @@ class PlannerTest : public plansys2::PlanSolverBase
 {
 public:
   void configure(
-    rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node, const std::string & plugin_name)
+    rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node, const std::string &)
   {
     lc_node_ = lc_node;
   }
@@ -72,13 +74,13 @@ public:
   }
 
   std::optional<plansys2_msgs::msg::Plan> getPlan(
-    const std::string & domain, const std::string & problem,
-    const std::string & node_namespace = "", const rclcpp::Duration solver_timeoutt = 15s)
+    const std::string &, const std::string &,
+    const std::string & = "", const rclcpp::Duration = 15s)
   {
     return {};
   }
 
-  bool isDomainValid(const std::string & domain, const std::string & node_namespace)
+  bool isDomainValid(const std::string &, const std::string &)
   {
     return true;
   }
@@ -120,135 +122,24 @@ TEST(utils_test, tokenizer_tests)
     ret_7, std::vector<std::string>({"myplanner", "subcmd1", "subcmd2", "subcmd3", "subcmd4"}));
 }
 
-/*
-TEST(utils_test, run_planner_ok)
+
+// Clients of the same kind in many processes, each with a name of its own
+TEST(utils_test, unique_node_names)
 {
-  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
-  PlannerTest planner;
-  planner.configure(node, "test_node");
-
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_core");
-  std::string domain_path(pkgpath + "/pddl/domain_1_ok.pddl");
-  std::string problem_path(pkgpath + "/pddl/problem_simple_1.pddl");
-  std::string plan_path = std::filesystem::temp_directory_path() / std::filesystem::path("plan");
-
-  ASSERT_TRUE(
-    planner.execute_planner(
-      "source install/setup.bash && ros2 run popf popf " + domain_path + " " + problem_path, 5s,
-    plan_path));
-
-  std::string line;
-  std::ifstream plan_file(plan_path);
-  bool solution = false;
-
-  plansys2_msgs::msg::Plan plan;
-
-  if (plan_file.is_open()) {
-    while (getline(plan_file, line)) {
-      if (!solution) {
-        if (line.find("Solution Found") != std::string::npos) {
-          solution = true;
-        }
-      } else if (line.front() != ';') {
-        plansys2_msgs::msg::PlanItem item;
-        size_t colon_pos = line.find(":");
-        size_t colon_par = line.find(")");
-        size_t colon_bra = line.find("[");
-
-        std::string time = line.substr(0, colon_pos);
-        std::string action = line.substr(colon_pos + 2, colon_par - colon_pos - 1);
-        std::string duration = line.substr(colon_bra + 1);
-        duration.pop_back();
-
-        item.time = std::stof(time);
-        item.action = action;
-        item.duration = std::stof(duration);
-
-        plan.items.push_back(item);
-      }
-    }
-    plan_file.close();
-  }
-
-  ASSERT_FALSE(plan.items.empty());
-  ASSERT_EQ(plan.items.size(), 1);
-  ASSERT_EQ(plan.items[0].action, "(move leia kitchen bedroom)");
+  const auto first = plansys2::unique_node_name("problem_expert_client");
+  const auto second = plansys2::unique_node_name("problem_expert_client");
+  EXPECT_NE(first, second);
+  EXPECT_EQ(first.rfind("problem_expert_client_" + std::to_string(::getpid()) + "_", 0), 0u);
+  EXPECT_TRUE(rclcpp::Node::make_shared(first));  // A valid node name
 }
-
-TEST(utils_test, run_planner_error)
-{
-  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
-  PlannerTest planner;
-  planner.configure(node, "test_node");
-
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_core");
-  std::string domain_path(pkgpath + "/pddl/domain_2_error.pddl");
-  std::string problem_path(pkgpath + "/pddl/problem_simple_1.pddl");
-  std::string plan_path = std::filesystem::temp_directory_path() / std::filesystem::path("plan");
-
-  ASSERT_TRUE(
-    planner.execute_planner(
-      "source install/setup.bash && ros2 run popf popf " + domain_path + " " + problem_path, 5s,
-    plan_path));
-
-  std::string line;
-  std::ifstream plan_file(plan_path);
-  bool solution = false;
-
-  plansys2_msgs::msg::Plan plan;
-
-  if (plan_file.is_open()) {
-    while (getline(plan_file, line)) {
-      if (!solution) {
-        if (line.find("Solution Found") != std::string::npos) {
-          solution = true;
-        }
-      } else if (line.front() != ';') {
-        plansys2_msgs::msg::PlanItem item;
-        size_t colon_pos = line.find(":");
-        size_t colon_par = line.find(")");
-        size_t colon_bra = line.find("[");
-
-        std::string time = line.substr(0, colon_pos);
-        std::string action = line.substr(colon_pos + 2, colon_par - colon_pos - 1);
-        std::string duration = line.substr(colon_bra + 1);
-        duration.pop_back();
-
-        item.time = std::stof(time);
-        item.action = action;
-        item.duration = std::stof(duration);
-
-        plan.items.push_back(item);
-      }
-    }
-    plan_file.close();
-  }
-
-  ASSERT_TRUE(plan.items.empty());
-}
-
-TEST(utils_test, run_planner_timeout)
-{
-  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("test_node");
-  PlannerTest planner;
-  planner.configure(node, "test_node");
-
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_core");
-  std::string domain_path(pkgpath + "/pddl/domain_1_ok.pddl");
-  std::string problem_path(pkgpath + "/pddl/problem_simple_1.pddl");
-  std::string plan_path = std::filesystem::temp_directory_path() / std::filesystem::path("plan");
-
-  ASSERT_FALSE(
-    planner.execute_planner(
-      "source install/setup.bash && ros2 run popf popf " + domain_path + " " + problem_path, 0ms,
-    plan_path));
-}
-*/
 
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);
 
-  return RUN_ALL_TESTS();
+  // Before the process exits: Zenoh aborts if ROS is shut down by atexit
+  auto result = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return result;
 }

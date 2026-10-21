@@ -29,8 +29,6 @@ PerformersTree::PerformersTree()
 void
 PerformersTree::clearAllItems()
 {
-  int rows = topLevelItemCount();
-
   while (topLevelItemCount() > 0) {
     rowsAboutToBeRemoved(rootIndex(), 0, 0);
     delete takeTopLevelItem(0);

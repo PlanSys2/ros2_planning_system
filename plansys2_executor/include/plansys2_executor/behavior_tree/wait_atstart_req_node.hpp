@@ -26,6 +26,7 @@
 #include "plansys2_problem_expert/Utils.hpp"
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
+#include "plansys2_executor/ExecutionTrace.hpp"
 
 namespace plansys2
 {
@@ -70,8 +71,16 @@ public:
   }
 
 private:
+  // Whether the over all requirements hold in the state after the at start effects
+  bool holds_after_start(
+    const ActionExecutionInfo & info, const plansys2_msgs::msg::Tree & reqs_oa);
+
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
+  rclcpp::Time waiting_since_;
+  rclcpp::Time last_log_;
+  std::shared_ptr<ExecutionTrace> trace_;  // Null outside an executor
+  std::string waiting_for_;  // What its wait was told to be for: each new one, once
 };
 
 }  // namespace plansys2

@@ -16,6 +16,7 @@
 #define PLANSYS2_BT_ACTIONS__BTACTIONNODE_HPP_
 
 #include <memory>
+#include <stdexcept>
 #include <string>
 
 #include "behaviortree_cpp/action_node.h"
@@ -53,8 +54,9 @@ public:
     const BT::NodeConfig & conf)
   : BT::ActionNodeBase(xml_tag_name, conf), action_name_(action_name)
   {
-    if (!config().blackboard->get("node", node_)) {
-      RCLCPP_ERROR(node_->get_logger(), "Failed to get 'node' from the blackboard");
+    if (!config().blackboard->get("node", node_) || !node_) {
+      // There is no node to log with
+      throw BT::RuntimeError(xml_tag_name + ": no 'node' in the blackboard");
     }
     callback_group_ = node_->create_callback_group(
       rclcpp::CallbackGroupType::MutuallyExclusive, false);
@@ -99,15 +101,31 @@ public:
     action_client_ = rclcpp_action::create_client<ActionT>(node_, action_name, callback_group_);
 
     // Make sure the server is actually there before continuing
+    return wait_for_action_server(action_name);
+  }
+
+  // The client is created once; the server is waited for only if it is not there
+  bool wait_for_action_server(const std::string & action_name)
+  {
+    if (action_client_->action_server_is_ready()) {
+      return true;
+    }
+
     RCLCPP_INFO(node_->get_logger(), "Waiting for \"%s\" action server", action_name.c_str());
 
-    bool success_waiting = action_client_->wait_for_action_server(wait_for_service_timeout_);
+    // rclcpp shutting down during the wait throws: no server, not the end of the process
+    bool success_waiting = false;
+    try {
+      success_waiting = action_client_->wait_for_action_server(wait_for_service_timeout_);
+    } catch (const std::runtime_error &) {
+      return false;
+    }
 
     if (!success_waiting) {
       RCLCPP_ERROR(
         node_->get_logger(),
-        "Timeout (%ld secs) waiting for \"%s\" action server",
-        wait_for_service_timeout_.count() * 1000,
+        "Timeout (%ld ms) waiting for \"%s\" action server",
+        static_cast<long>(wait_for_service_timeout_.count()),  // NOLINT
         action_name.c_str());
     }
 
@@ -124,9 +142,9 @@ public:
   {
     BT::PortsList basic = {
       BT::InputPort<std::string>("server_name", "Action server name"),
+      // No default: without it in the XML, the server_timeout of the blackboard is used
       BT::InputPort<std::chrono::milliseconds>(
         "server_timeout",
-        5000,
         "The amount of time to wait for a response from the action server, in milliseconds")
     };
     // The user defined ports are added to the basic ports
@@ -207,7 +225,9 @@ public:
           RCLCPP_DEBUG(node_->get_logger(), "%s IDLE", node_->get_name());
           assert((status() == BT::NodeStatus::IDLE));
 
-          if (!createActionClient(action_name_)) {
+          const bool ready = action_client_ ? wait_for_action_server(action_name_) :
+            createActionClient(action_name_);
+          if (!ready) {
             RCLCPP_ERROR(node_->get_logger(), "Failed to create action client");
             return BT::NodeStatus::FAILURE;
           }
@@ -232,24 +252,35 @@ public:
           if (future_goal_handle_) {
             auto elapsed =
               (node_->now() - goal_sent_ts_).template to_chrono<std::chrono::milliseconds>();
-            if (!is_future_goal_handle_complete(elapsed)) {
+            bool accepted = false;
+            try {
+              accepted = is_future_goal_handle_complete(elapsed);
+            } catch (const std::runtime_error & e) {
               RCLCPP_ERROR(
-                node_->get_logger(),
-                "Goal was rejected by action server %s", action_name_.c_str());
-              state_ = GOAL_FAILURE;
-              future_goal_handle_.reset();
+                node_->get_logger(), "Goal was rejected by action server %s: %s",
+                action_name_.c_str(), e.what());
+              reset_action();
               return BT::NodeStatus::FAILURE;
-            } else {
+            }
+            if (accepted) {
               state_ = GOAL_EXECUTING;
               return BT::NodeStatus::RUNNING;
             }
+            // Not answered yet: the server has until server_timeout to accept the goal
+            if (future_goal_handle_) {
+              return BT::NodeStatus::RUNNING;
+            }
+            RCLCPP_ERROR(
+              node_->get_logger(), "No answer from action server %s to the goal in %ld ms",
+              action_name_.c_str(), static_cast<long>(server_timeout_.count()));  // NOLINT
+            reset_action();
+            return BT::NodeStatus::FAILURE;
           } else {
             if ((node_->now() - goal_sent_ts_) > server_timeout_) {
               RCLCPP_ERROR(
                 node_->get_logger(),
                 "Failed to send goal to action server %s", action_name_.c_str());
-              state_ = GOAL_FAILURE;
-              future_goal_handle_.reset();
+              reset_action();
               return BT::NodeStatus::FAILURE;
             } else {
               return BT::NodeStatus::RUNNING;
@@ -266,13 +297,16 @@ public:
 
           if (user_status != BT::NodeStatus::RUNNING) {
             cancel_goal();
-            state_ = GOAL_CANCELLING;
+            // Ready for the next tick, e.g. from a Repeat or a Retry
+            reset_action();
             return user_status;
           }
 
           if (goal_updated_ && (goal_status == action_msgs::msg::GoalStatus::STATUS_EXECUTING ||
             goal_status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED))
           {
+            // Sent once for each update
+            goal_updated_ = false;
             on_new_goal_received();
             state_ = GOAL_SENT;
           }
@@ -290,21 +324,24 @@ public:
       case GOAL_FINISHING:
         {
           RCLCPP_DEBUG(node_->get_logger(), "%s GOAL_FINISHING", node_->get_name());
-          switch (result_.code) {
+          // Back to IDLE now: the next tick, e.g. from a Repeat, sends a new goal
+          const auto code = result_.code;
+          reset_action();
+          switch (code) {
             case rclcpp_action::ResultCode::SUCCEEDED:
-              state_ = GOAL_FINISHED;
               return on_success();
 
             case rclcpp_action::ResultCode::ABORTED:
-              state_ = GOAL_FINISHED;
               return on_aborted();
 
             case rclcpp_action::ResultCode::CANCELED:
-              state_ = GOAL_FINISHED;
               return on_cancelled();
 
             default:
-              throw std::logic_error("BtActionNode::Tick: invalid status value");
+              RCLCPP_ERROR(
+                node_->get_logger(), "Unknown result code from action server %s",
+                action_name_.c_str());
+              return BT::NodeStatus::FAILURE;
           }
         }
         break;
@@ -360,31 +397,48 @@ public:
       cancel_goal();
     }
 
+    reset_action();
     resetStatus();
   }
 
 protected:
+  // Ready to send a new goal on the next tick
+  void reset_action()
+  {
+    state_ = IDLE;
+    goal_handle_.reset();
+    future_goal_handle_.reset();
+    goal_result_available_ = false;
+  }
+
   /**
    * @brief Function to cancel the current goal.
    */
   void cancel_goal()
   {
     if (goal_handle_) {
-      future_cancel_handle_ = action_client_->async_cancel_goal(goal_handle_);
-      if (callback_group_executor_.spin_until_future_complete(future_cancel_handle_,
-          server_timeout_) != rclcpp::FutureReturnCode::SUCCESS)
-      {
-        RCLCPP_ERROR(
-          node_->get_logger(), "Failed to cancel action server for %s", action_name_.c_str());
-      }
+      // The goal may have finished meanwhile: rclcpp_action then forgets it and throws
+      try {
+        future_cancel_handle_ = action_client_->async_cancel_goal(goal_handle_);
+        if (callback_group_executor_.spin_until_future_complete(future_cancel_handle_,
+            server_timeout_) != rclcpp::FutureReturnCode::SUCCESS)
+        {
+          RCLCPP_ERROR(
+            node_->get_logger(), "Failed to cancel action server for %s", action_name_.c_str());
+        }
 
-      auto future_result = action_client_->async_get_result(goal_handle_);
-      if (callback_group_executor_.spin_until_future_complete(future_result, server_timeout_) !=
-        rclcpp::FutureReturnCode::SUCCESS)
-      {
-        RCLCPP_ERROR(
-        node_->get_logger(),
-        "Failed to get result for %s in node halt!", action_name_.c_str());
+        auto future_result = action_client_->async_get_result(goal_handle_);
+        if (callback_group_executor_.spin_until_future_complete(future_result, server_timeout_) !=
+          rclcpp::FutureReturnCode::SUCCESS)
+        {
+          RCLCPP_ERROR(
+            node_->get_logger(),
+            "Failed to get result for %s in node halt!", action_name_.c_str());
+        }
+      } catch (const rclcpp_action::exceptions::UnknownGoalHandleError &) {
+        RCLCPP_DEBUG(
+          node_->get_logger(), "Goal for %s already finished: nothing to cancel",
+          action_name_.c_str());
       }
 
       on_cancelled();

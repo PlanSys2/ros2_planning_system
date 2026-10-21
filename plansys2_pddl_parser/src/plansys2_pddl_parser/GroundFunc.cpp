@@ -11,9 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include <iomanip>
 
 #include "plansys2_pddl_parser/Domain.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 namespace parser
 {
@@ -27,7 +27,7 @@ void GroundFunc<double>::PDDLPrint(
   tabindent(s, indent);
   s << "( = ";
   TypeGround::PDDLPrint(s, 0, ts, d);
-  s << " " << std::fixed << std::setprecision(10) << static_cast<double>(value) << " )";
+  s << " " << numberToString(static_cast<double>(value), 10) << " )";
 }
 
 template<>
@@ -37,7 +37,8 @@ void GroundFunc<int>::PDDLPrint(
   tabindent(s, indent);
   s << "( = ";
   TypeGround::PDDLPrint(s, 0, ts, d);
-  s << " " << d.types[(reinterpret_cast<Function *>(lifted))->returnType]->object(value) << " )";
+  const auto type = (reinterpret_cast<Function *>(lifted))->returnType;
+  s << " " << d.types[type]->object(value).first << " )";
 }
 
 template<>
@@ -53,8 +54,11 @@ template<>
 plansys2_msgs::msg::Node::SharedPtr GroundFunc<int>::getTree(
   plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace) const
 {
+  // An object fluent: the object, by name
   auto node = TypeGround::getTree(tree, d, replace);
-  node->value = value;
+  node->object =
+    d.types[(reinterpret_cast<const Function *>(lifted))->returnType]->object(value).first;
+  tree.nodes[node->node_id].object = node->object;
   return node;
 }
 

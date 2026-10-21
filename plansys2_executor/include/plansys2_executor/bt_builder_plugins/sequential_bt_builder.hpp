@@ -47,8 +47,8 @@ public:
 
 protected:
   std::string bt_action_;
-  std::shared_ptr<plansys2::DomainExpertClient> domain_client_;
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
+  // The last plan built, for the dotgraph
+  plansys2_msgs::msg::Plan plan_;
 };
 
 }  // namespace plansys2

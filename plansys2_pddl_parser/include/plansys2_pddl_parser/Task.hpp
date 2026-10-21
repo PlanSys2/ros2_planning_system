@@ -38,23 +38,23 @@ public:
   : ParamCond(c) {}
 
   void PDDLPrint(
-    std::ostream & s, unsigned indent, const TokenStruct<std::string> & ts,
-    const Domain & d) const override
+    std::ostream &, unsigned, const TokenStruct<std::string> &,
+    const Domain &) const override
   {
   }
 
   plansys2_msgs::msg::Node::SharedPtr getTree(
-    plansys2_msgs::msg::Tree & tree, const Domain & d,
-    const std::vector<std::string> & replace = {}) const override
+    plansys2_msgs::msg::Tree &, const Domain &,
+    const std::vector<std::string> & = {}) const override
   {
     throw UnsupportedConstruct("Task");
   }
 
-  void parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d) {}
+  void parse(Stringreader &, TokenStruct<std::string> &, Domain &) {}
 
-  void addParams(int m, unsigned n) {}
+  void addParams(int, unsigned) {}
 
-  Condition * copy(Domain & d) {return new Task(this);}
+  Condition * copy(Domain &) {return new Task(this);}
 };
 
 typedef std::vector<Task *> TaskVec;

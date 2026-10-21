@@ -26,6 +26,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "plansys2_executor/ExecutionTrace.hpp"
 
 namespace plansys2
 {
@@ -72,6 +73,8 @@ public:
 private:
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  std::shared_ptr<ExecutionTrace> trace_;  // Null outside an executor
+  std::map<std::string, bool> performing_reported_;
 };
 
 }  // namespace plansys2

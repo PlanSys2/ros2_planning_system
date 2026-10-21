@@ -1,0 +1,113 @@
+# parent	text	written back (empty: no tree)	node types
+AND	(robot_at r1 wp1)	(robot_at r1 wp1)	PREDICATE
+UNKNOWN	(robot_at r1 wp1)	(robot_at r1 wp1)	PREDICATE
+UNKNOWN	(and (robot_at r1 wp1)(robot_at r2 wp2))	(and (robot_at r1 wp1)(robot_at r2 wp2))	AND PREDICATE PREDICATE
+UNKNOWN	(and (robot_at r1 wp1) (robot_at r2 wp2))	(and (robot_at r1 wp1)(robot_at r2 wp2))	AND PREDICATE PREDICATE
+UNKNOWN	(or (robot_at r1 wp1)(not (robot_at r1 wp2)))	(or (robot_at r1 wp1)(not (robot_at r1 wp2)))	OR PREDICATE NOT PREDICATE
+UNKNOWN	(not (robot_at r1 wp1))	(not (robot_at r1 wp1))	NOT PREDICATE
+UNKNOWN	(not (not (robot_at r1 wp1)))	(robot_at r1 wp1)	NOT NOT PREDICATE
+UNKNOWN	(not (and (p)(q)))	(or (not (p))(not (q)))	NOT AND PREDICATE PREDICATE
+UNKNOWN	(not (or (p)(q)))	(and (not (p))(not (q)))	NOT OR PREDICATE PREDICATE
+UNKNOWN	(task_assigned r1)	(task_assigned r1)	PREDICATE
+UNKNOWN	(and (task_assigned r1)(not (robot_assigned r2 t1)))	(and (task_assigned r1)(not (robot_assigned r2 t1)))	AND PREDICATE NOT PREDICATE
+UNKNOWN	(or (android r1)(order_ready r1))	(or (android r1)(order_ready r1))	OR PREDICATE PREDICATE
+UNKNOWN	(and (notified r1)(not (knot r2)))	(and (notified r1)(not (knot r2)))	AND PREDICATE NOT PREDICATE
+UNKNOWN	(exists_path a b)	(exists_path a b)	PREDICATE
+UNKNOWN	(forall_done)	(forall_done)	PREDICATE
+UNKNOWN	(implying a)	(implying a)	PREDICATE
+UNKNOWN	(can-scale-up r1)	(can-scale-up r1)	PREDICATE
+UNKNOWN	(is-free r1)	(is-free r1)	PREDICATE
+UNKNOWN	(robot_at\tr1\twp1)	(robot_at r1 wp1)	PREDICATE
+UNKNOWN	(robot_at r1\nwp1)	(robot_at r1 wp1)	PREDICATE
+UNKNOWN	(robot_at r1\r\nwp1)	(robot_at r1 wp1)	PREDICATE
+UNKNOWN	(and\n\t(robot_at r1 wp1)\n\t(not (robot_at r2\twp1))\n)	(and (robot_at r1 wp1)(not (robot_at r2 wp1)))	AND PREDICATE NOT PREDICATE
+UNKNOWN	  (robot_at   r1  wp1 )  	(robot_at r1 wp1)	PREDICATE
+UNKNOWN	(> (battery r1) 10)	(> (battery r1) 10.000000)	EXPRESSION FUNCTION NUMBER
+UNKNOWN	(>\t(battery\nr1)\t10)	(> (battery r1) 10.000000)	EXPRESSION FUNCTION NUMBER
+UNKNOWN	(> (battery ?r) 10)	(> (battery ?r) 10.000000)	EXPRESSION FUNCTION NUMBER
+UNKNOWN	(>= (battery r1) 0.5)	(>= (battery r1) 0.500000)	EXPRESSION FUNCTION NUMBER
+UNKNOWN	(< (f) 1e-7)	(< (f) 0.0000001)	EXPRESSION FUNCTION NUMBER
+UNKNOWN	(< (f) 2.5E+3)	(< (f) 2500.000000)	EXPRESSION FUNCTION NUMBER
+UNKNOWN	(> (f) 1e12)	(> (f) 1000000000000.000000)	EXPRESSION FUNCTION NUMBER
+UNKNOWN	(= (f) -1)	(= (f) -1.000000)	EXPRESSION FUNCTION NUMBER
+UNKNOWN	(> (f) +5)	(> (f) 5.000000)	EXPRESSION FUNCTION NUMBER
+UNKNOWN	(> (f) -3)	(> (f) -3.000000)	EXPRESSION FUNCTION NUMBER
+UNKNOWN	(= ?a ?b)	(= ?a ?b)	EXPRESSION PARAMETER PARAMETER
+UNKNOWN	(=?a ?b)	(= ?a ?b)	EXPRESSION PARAMETER PARAMETER
+UNKNOWN	(<=(f) 2)	(<= (f) 2.000000)	EXPRESSION FUNCTION NUMBER
+UNKNOWN	(= ?r r2d2)	(= ?r r2d2)	EXPRESSION PARAMETER CONSTANT
+UNKNOWN	(not (= kitchen ?a))	(not (= kitchen ?a))	NOT EXPRESSION CONSTANT PARAMETER
+UNKNOWN	(and (robot_at ?r ?a)(not (= ?a hall)))	(and (robot_at ?r ?a)(not (= ?a hall)))	AND PREDICATE NOT EXPRESSION PARAMETER CONSTANT
+UNKNOWN	(not (> (+ (f) 1) 2))	(not (> (+ (f) 1.000000) 2.000000))	NOT EXPRESSION EXPRESSION FUNCTION NUMBER NUMBER
+UNKNOWN	(not (= (* (f) 2) (- (g) 1)))	(not (= (* (f) 2.000000) (- (g) 1.000000)))	NOT EXPRESSION EXPRESSION FUNCTION NUMBER EXPRESSION FUNCTION NUMBER
+UNKNOWN	(not (and (p) (> (+ (f) 1) 2)))	(or (not (p))(not (> (+ (f) 1.000000) 2.000000)))	NOT AND PREDICATE EXPRESSION EXPRESSION FUNCTION NUMBER NUMBER
+UNKNOWN	(> (+ (f) (* 2 (g))) (/ (h) 3))	(> (+ (f) (* 2.000000 (g))) (/ (h) 3.000000))	EXPRESSION EXPRESSION FUNCTION EXPRESSION NUMBER FUNCTION EXPRESSION FUNCTION NUMBER
+UNKNOWN	(> (- (f) (g)) 0)	(> (- (f) (g)) 0.000000)	EXPRESSION EXPRESSION FUNCTION FUNCTION NUMBER
+UNKNOWN	(< (- (f r1) (- (g r1) 1)) -2.5)	(< (- (f r1) (- (g r1) 1.000000)) -2.500000)	EXPRESSION EXPRESSION FUNCTION EXPRESSION FUNCTION NUMBER NUMBER
+UNKNOWN	(> (counter_increased r1) 1)	(> (counter_increased r1) 1.000000)	EXPRESSION FUNCTION NUMBER
+UNKNOWN	(< (decreased_speed r1) (assigned_load r1))	(< (decreased_speed r1) (assigned_load r1))	EXPRESSION FUNCTION FUNCTION
+EXPRESSION	(- (f) 1)	(- (f) 1.000000)	EXPRESSION FUNCTION NUMBER
+EXPRESSION	(-(f) 1)	(- (f) 1.000000)	EXPRESSION FUNCTION NUMBER
+EXPRESSION	(+ ?a b)	(+ ?a b)	EXPRESSION PARAMETER CONSTANT
+EXPRESSION	(* 2 (f))	(* 2.000000 (f))	EXPRESSION NUMBER FUNCTION
+AND	(increase (f r1) 1)	(increase (f r1) 1.000000)	FUNCTION_MODIFIER FUNCTION NUMBER
+AND	(decrease (f r1) (g r1))	(decrease (f r1) (g r1))	FUNCTION_MODIFIER FUNCTION FUNCTION
+AND	(assign (f) (+ (g) 2))	(assign (f) (+ (g) 2.000000))	FUNCTION_MODIFIER FUNCTION EXPRESSION FUNCTION NUMBER
+AND	(scale-up (f) 2)	(scale-up (f) 2.000000)	FUNCTION_MODIFIER FUNCTION NUMBER
+AND	(scale-down (f) 0.5)	(scale-down (f) 0.500000)	FUNCTION_MODIFIER FUNCTION NUMBER
+AND	(increase (total-cost) 5)	(increase (total-cost) 5.000000)	FUNCTION_MODIFIER FUNCTION NUMBER
+AND	(increase (counter_increased r1) 1)	(increase (counter_increased r1) 1.000000)	FUNCTION_MODIFIER FUNCTION NUMBER
+AND	(assign (reassign_count r1) (decreased_speed r1))	(assign (reassign_count r1) (decreased_speed r1))	FUNCTION_MODIFIER FUNCTION FUNCTION
+UNKNOWN	(and (increase (f) 1)(not (p)))	(and (increase (f) 1.000000)(not (p)))	AND FUNCTION_MODIFIER FUNCTION NUMBER NOT PREDICATE
+UNKNOWN	(exists (?wp - waypoint) (robot_at r1 ?wp))	(exists (?wp - waypoint) (robot_at r1 ?wp))	EXISTS PREDICATE
+UNKNOWN	(exists (?a ?b - room ?r) (p ?a ?b ?r))	(exists (?a - room ?b - room ?r) (p ?a ?b ?r))	EXISTS PREDICATE
+UNKNOWN	(exists (?x) (p ?x))	(exists (?x) (p ?x))	EXISTS PREDICATE
+UNKNOWN	(forall (?r - robot) (charged ?r))	(forall (?r - robot) (charged ?r))	FORALL PREDICATE
+UNKNOWN	(not (exists (?x - room) (p ?x)))	(not (exists (?x - room) (p ?x)))	NOT EXISTS PREDICATE
+UNKNOWN	(not (forall (?x - room) (p ?x)))	(not (forall (?x - room) (p ?x)))	NOT FORALL PREDICATE
+UNKNOWN	(imply (robot_at r1 wp1) (charged r1))	(imply (robot_at r1 wp1) (charged r1))	IMPLY PREDICATE PREDICATE
+UNKNOWN	(not (imply (p) (q)))	(not (imply (p) (q)))	NOT IMPLY PREDICATE PREDICATE
+UNKNOWN	(and (exists (?a - room ?b - room) (and (connected ?a ?b)(not (= ?a ?b))))(free hall))	(and (exists (?a - room ?b - room) (and (connected ?a ?b)(not (= ?a ?b))))(free hall))	AND EXISTS AND PREDICATE NOT EXPRESSION PARAMETER PARAMETER PREDICATE
+UNKNOWN	(and)		
+UNKNOWN	(and )		
+UNKNOWN	()		
+UNKNOWN	( )		
+UNKNOWN	(and (p) ())		
+UNKNOWN	(> (f) 1.5.2)		
+UNKNOWN	(p))		
+UNKNOWN	((		
+UNKNOWN	)		
+UNKNOWN	(not)		
+UNKNOWN	(?x)	?x	PARAMETER
+UNKNOWN	(when (door_open d1) (robot_at r1 office))	(when (door_open d1) (robot_at r1 office))	WHEN PREDICATE PREDICATE
+UNKNOWN	(and (lit) (when (and (on ?l) (not (broken ?l))) (and (bright ?r) (not (dark ?r)))))	(and (lit)(when (and (on ?l)(not (broken ?l))) (and (bright ?r)(not (dark ?r)))))	AND PREDICATE WHEN AND PREDICATE NOT PREDICATE AND PREDICATE NOT PREDICATE
+UNKNOWN	(forall (?r - room) (when (dirty ?r) (not (dirty ?r))))	(forall (?r - room) (when (dirty ?r) (not (dirty ?r))))	FORALL WHEN PREDICATE NOT PREDICATE
+UNKNOWN	(when (>= (battery r1) 10) (increase (charged_count) 1))	(when (>= (battery r1) 10.000000) (increase (charged_count) 1.000000))	WHEN EXPRESSION FUNCTION NUMBER FUNCTION_MODIFIER FUNCTION NUMBER
+UNKNOWN	(when_done)	(when_done)	PREDICATE
+UNKNOWN	(increase (level t1) (* #t 2))	(increase (level t1) (* #t 2.000000))	FUNCTION_MODIFIER FUNCTION EXPRESSION PARAMETER NUMBER
+UNKNOWN	(and (increase (level) (* #t (flow))) (decrease (flow) (* 0.5 #t)))	(and (increase (level) (* #t (flow)))(decrease (flow) (* 0.500000 #t)))	AND FUNCTION_MODIFIER FUNCTION EXPRESSION PARAMETER FUNCTION FUNCTION_MODIFIER FUNCTION EXPRESSION NUMBER PARAMETER
+UNKNOWN	(preference p1 (robot_at r1 hall))	(preference p1 (robot_at r1 hall))	PREFERENCE PREDICATE
+UNKNOWN	(preference (robot_at r1 hall))	(preference (robot_at r1 hall))	PREFERENCE PREDICATE
+UNKNOWN	(and (robot_at r1 hall) (preference g (item_at cup hall)))	(and (robot_at r1 hall)(preference g (item_at cup hall)))	AND PREDICATE PREFERENCE PREDICATE
+UNKNOWN	(preference p1 (and (p) (not (q))))	(preference p1 (and (p)(not (q))))	PREFERENCE AND PREDICATE NOT PREDICATE
+UNKNOWN	(always (robot_at r1 hall))	(always (robot_at r1 hall))	CONSTRAINT PREDICATE
+UNKNOWN	(sometime (carrying r1 cup))	(sometime (carrying r1 cup))	CONSTRAINT PREDICATE
+UNKNOWN	(at-most-once (robot_at r1 hall))	(at-most-once (robot_at r1 hall))	CONSTRAINT PREDICATE
+UNKNOWN	(at end (robot_at r1 dock))	(at end (robot_at r1 dock))	CONSTRAINT PREDICATE
+UNKNOWN	(at   end\t(robot_at r1 dock))	(at end (robot_at r1 dock))	CONSTRAINT PREDICATE
+UNKNOWN	(within 10 (robot_at r1 hall))	(within 10.000000 (robot_at r1 hall))	CONSTRAINT NUMBER PREDICATE
+UNKNOWN	(hold-after 4.5 (door_open d1))	(hold-after 4.500000 (door_open d1))	CONSTRAINT NUMBER PREDICATE
+UNKNOWN	(hold-during 2 5.5 (door_open d1))	(hold-during 2.000000 5.500000 (door_open d1))	CONSTRAINT NUMBER NUMBER PREDICATE
+UNKNOWN	(sometime-before (item_at tool kitchen) (item_at cup office))	(sometime-before (item_at tool kitchen) (item_at cup office))	CONSTRAINT PREDICATE PREDICATE
+UNKNOWN	(sometime-after (alarm) (alarm_off))	(sometime-after (alarm) (alarm_off))	CONSTRAINT PREDICATE PREDICATE
+UNKNOWN	(always-within 3 (alarm) (alarm_off))	(always-within 3.000000 (alarm) (alarm_off))	CONSTRAINT NUMBER PREDICATE PREDICATE
+UNKNOWN	(always (>= (battery r1) 5))	(always (>= (battery r1) 5.000000))	CONSTRAINT EXPRESSION FUNCTION NUMBER
+UNKNOWN	(and (always (not (alarm))) (preference safe (sometime (robot_at r1 lab))))	(and (always (not (alarm)))(preference safe (sometime (robot_at r1 lab))))	AND CONSTRAINT NOT PREDICATE PREFERENCE CONSTRAINT PREDICATE
+UNKNOWN	(forall (?r - room) (sometime (visited ?r)))	(forall (?r - room) (sometime (visited ?r)))	FORALL CONSTRAINT PREDICATE
+UNKNOWN	(always a b)	(always a b)	PREDICATE
+UNKNOWN	(at r1 kitchen)	(at r1 kitchen)	PREDICATE
+UNKNOWN	(at end kitchen)	(at end kitchen)	PREDICATE
+UNKNOWN	(within a b)	(within a b)	PREDICATE
+UNKNOWN	(preference a)	(preference a)	PREDICATE
+UNKNOWN	(sometime)	(sometime)	PREDICATE
+EXPRESSION	(+ (is-violated a) (* 2 (is-violated b)))	(+ (is-violated a) (* 2.000000 (is-violated b)))	EXPRESSION FUNCTION EXPRESSION NUMBER FUNCTION

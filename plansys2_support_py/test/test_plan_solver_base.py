@@ -17,7 +17,9 @@
 
 import os
 import tempfile
+import time
 import unittest
+import unittest.mock
 
 from plansys2_support_py.core.PlanSolverBase import PlanSolverBase
 
@@ -191,6 +193,36 @@ class TestPlanSolverBase(unittest.TestCase):
             )
 
             self.assertFalse(result)
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+
+    def test_execute_planner_with_a_lot_of_stderr(self):
+        """A planner that writes much to stderr is not blocked on a full pipe."""
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp:
+            tmp_path = tmp.name
+        try:
+            command = (
+                'python3 -c "import sys; sys.stderr.write(\'x\' * 1000000); print(\'plan\')"')
+            result = self.solver.execute_planner(command, Duration(seconds=10), tmp_path)
+            self.assertTrue(result)
+            with open(tmp_path) as plan:
+                self.assertEqual(plan.read(), 'plan\n')
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+
+    def test_execute_planner_timeout_in_wall_time(self):
+        """The timeout does not use the node clock, which may be simulated and stopped."""
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmp:
+            tmp_path = tmp.name
+        try:
+            with unittest.mock.patch.object(self.node, 'get_clock') as clock:
+                clock.side_effect = AssertionError('node clock used')
+                start = time.monotonic()
+                self.assertFalse(
+                    self.solver.execute_planner('sleep 10', Duration(seconds=0.5), tmp_path))
+                self.assertLess(time.monotonic() - start, 3.0)
         finally:
             if os.path.exists(tmp_path):
                 os.remove(tmp_path)

@@ -1,8 +1,12 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 
 project(plansys2_tools)
 
-set(CMAKE_CXX_STANDARD 23)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
+
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -13,8 +17,18 @@ find_package(plansys2_msgs REQUIRED)
 find_package(qt_gui_cpp REQUIRED)
 find_package(rqt_gui_cpp REQUIRED)
 find_package(plansys2_problem_expert REQUIRED)
+find_package(plansys2_pddl_parser REQUIRED)
 
-find_package(Qt5 REQUIRED COMPONENTS Widgets)
+# Newer qt_gui_cpp is Qt6-only and no longer sets this variable, but it does
+# find Qt6 for us: follow whatever Qt it brought in
+if(NOT DEFINED qt_gui_cpp_USE_QT_MAJOR_VERSION)
+  if(TARGET Qt6::Widgets)
+    set(qt_gui_cpp_USE_QT_MAJOR_VERSION 6)
+  else()
+    set(qt_gui_cpp_USE_QT_MAJOR_VERSION 5)
+  endif()
+endif()
+find_package(Qt${qt_gui_cpp_USE_QT_MAJOR_VERSION} REQUIRED COMPONENTS Widgets)
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -56,8 +70,8 @@ set(rqt_plansys2_knowledge_UIS
   src/rqt_plansys2_knowledge/rqt_plansys2_knowledge.ui
 )
 
-qt5_wrap_cpp(rqt_plansys2_knowledge_MOCS ${rqt_plansys2_knowledge_HDRS})
-qt5_wrap_ui(rqt_plansys2_knowledge_UIS_H ${rqt_plansys2_knowledge_UIS})
+cmake_language(CALL "qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}_wrap_cpp" rqt_plansys2_knowledge_MOCS ${rqt_plansys2_knowledge_HDRS})
+cmake_language(CALL "qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}_wrap_ui" rqt_plansys2_knowledge_UIS_H ${rqt_plansys2_knowledge_UIS})
 
 add_library(rqt_plansys2_knowledge SHARED
   ${rqt_plansys2_knowledge_SRCS}
@@ -65,17 +79,18 @@ add_library(rqt_plansys2_knowledge SHARED
   ${rqt_plansys2_knowledge_UIS_H}
 )
 target_include_directories(rqt_plansys2_knowledge PUBLIC
-  ${Qt5Widgets_INCLUDE_DIRS}
+  ${Qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}Widgets_INCLUDE_DIRS}
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(rqt_plansys2_knowledge
   PUBLIC
   plansys2_problem_expert::plansys2_problem_expert
+  plansys2_pddl_parser::plansys2_pddl_parser
   ${plansys2_msgs_TARGETS}
   rqt_gui_cpp::rqt_gui_cpp
   rclcpp::rclcpp
-  Qt5::Widgets
+  Qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}::Widgets
   PRIVATE
   pluginlib::pluginlib
 )
@@ -95,8 +110,8 @@ set(rqt_plansys2_performers_UIS
   src/rqt_plansys2_performers/rqt_plansys2_performers.ui
 )
 
-qt5_wrap_cpp(rqt_plansys2_performers_MOCS ${rqt_plansys2_performers_HDRS})
-qt5_wrap_ui(rqt_plansys2_performers_UIS_H ${rqt_plansys2_performers_UIS})
+cmake_language(CALL "qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}_wrap_cpp" rqt_plansys2_performers_MOCS ${rqt_plansys2_performers_HDRS})
+cmake_language(CALL "qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}_wrap_ui" rqt_plansys2_performers_UIS_H ${rqt_plansys2_performers_UIS})
 
 add_library(rqt_plansys2_performers SHARED
   ${rqt_plansys2_performers_SRCS}
@@ -104,7 +119,7 @@ add_library(rqt_plansys2_performers SHARED
   ${rqt_plansys2_performers_UIS_H}
 )
 target_include_directories(rqt_plansys2_performers PUBLIC
-  ${Qt5Widgets_INCLUDE_DIRS}
+  ${Qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}Widgets_INCLUDE_DIRS}
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
@@ -114,7 +129,7 @@ target_link_libraries(rqt_plansys2_performers
   ${plansys2_msgs_TARGETS}
   rqt_gui_cpp::rqt_gui_cpp
   rclcpp::rclcpp
-  Qt5::Widgets
+  Qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}::Widgets
   PRIVATE
   pluginlib::pluginlib
 )
@@ -134,8 +149,8 @@ set(rqt_plansys2_plan_UIS
   src/rqt_plansys2_plan/rqt_plansys2_plan.ui
 )
 
-qt5_wrap_cpp(rqt_plansys2_plan_MOCS ${rqt_plansys2_plan_HDRS})
-qt5_wrap_ui(rqt_plansys2_plan_UIS_H ${rqt_plansys2_plan_UIS})
+cmake_language(CALL "qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}_wrap_cpp" rqt_plansys2_plan_MOCS ${rqt_plansys2_plan_HDRS})
+cmake_language(CALL "qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}_wrap_ui" rqt_plansys2_plan_UIS_H ${rqt_plansys2_plan_UIS})
 
 add_library(rqt_plansys2_plan SHARED
   ${rqt_plansys2_plan_SRCS}
@@ -143,7 +158,7 @@ add_library(rqt_plansys2_plan SHARED
   ${rqt_plansys2_plan_UIS_H}
 )
 target_include_directories(rqt_plansys2_plan PUBLIC
-  ${Qt5Widgets_INCLUDE_DIRS}
+  ${Qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}Widgets_INCLUDE_DIRS}
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
@@ -152,7 +167,7 @@ target_link_libraries(rqt_plansys2_plan
   ${plansys2_msgs_TARGETS}
   rqt_gui_cpp::rqt_gui_cpp
   rclcpp::rclcpp
-  Qt5::Widgets
+  Qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}::Widgets
   PRIVATE
   pluginlib::pluginlib
 )
@@ -165,14 +180,15 @@ install(TARGETS
   EXPORT rqt_plansys2
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
+# Where ros2 run looks for them
 install(PROGRAMS
   scripts/rqt_plansys2_knowledge
   scripts/rqt_plansys2_performers
   scripts/rqt_plansys2_plan
-  DESTINATION bin
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 install(FILES plugin_knowledge.xml plugin_performers.xml plugin_plan.xml
@@ -181,6 +197,10 @@ install(FILES plugin_knowledge.xml plugin_performers.xml plugin_plan.xml
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+  # Humble's uncrustify (0.72) formats otherwise than the newer one this code follows
+  if("$ENV{ROS_DISTRO}" STREQUAL "humble")
+    set(ament_cmake_uncrustify_FOUND TRUE)
+  endif()
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
@@ -189,15 +209,15 @@ endif()
 pluginlib_export_plugin_description_file(rqt_gui "plugin_knowledge.xml")
 pluginlib_export_plugin_description_file(rqt_gui "plugin_performers.xml")
 pluginlib_export_plugin_description_file(rqt_gui "plugin_plan.xml")
-ament_export_libraries(rqt_plansys2)
 ament_export_targets(rqt_plansys2)
 ament_export_dependencies(
-  Qt5
+  Qt${qt_gui_cpp_USE_QT_MAJOR_VERSION}
   rclcpp
   plansys2_msgs
   qt_gui_cpp
   rqt_gui_cpp
   plansys2_problem_expert
+  plansys2_pddl_parser
 )
 
 ament_package()

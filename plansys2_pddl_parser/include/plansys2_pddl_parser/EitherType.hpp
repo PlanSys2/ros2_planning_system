@@ -38,7 +38,7 @@ public:
     return out;
   }
 
-  void PDDLPrint(std::ostream & s) const override {}
+  void PDDLPrint(std::ostream &) const override {}
 
   Type * copy() {return new EitherType(this);}
 };

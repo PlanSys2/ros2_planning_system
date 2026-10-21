@@ -38,6 +38,8 @@ struct Domain
   std::string functions;
   std::vector<std::string> derived_predicates;
   std::vector<std::string> actions;
+  std::vector<std::string> happenings;  // PDDL+: processes and events
+  std::string constraints;  // PDDL3: the condition of its (:constraints), empty if none
 };
 
 /**
@@ -149,6 +151,18 @@ protected:
    * @return std::vector<std::string> Vector containing actions.
    */
   std::vector<std::string> get_actions(const std::string & domain);
+
+  /**
+   * @brief The processes and events (PDDL+) of a domain, as written.
+   * @param[in] domain The domain, lowercase and without comments.
+   * @return Each block.
+   */
+  std::vector<std::string> get_happenings(const std::string & domain);
+
+  /**
+   * @brief The condition of the (:constraints) of a domain, empty if it has none.
+   */
+  std::string get_constraints(const std::string & domain);
 
 private:
   // List of parsed domains

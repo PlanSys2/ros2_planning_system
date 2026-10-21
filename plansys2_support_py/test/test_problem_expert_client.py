@@ -18,14 +18,18 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
+from client_mocks import always_active, no_wait
+from plansys2_msgs.msg import Metric
 from plansys2_msgs.msg import Node as PlanSys2Node
 from plansys2_msgs.msg import Param, Tree
 from plansys2_msgs.srv import (AddProblem, AddProblemGoal, AffectNode,
                                AffectParam, ClearProblemKnowledge, ExistNode,
                                GetNodeDetails, GetProblem, GetProblemGoal,
                                GetProblemInstanceDetails, GetProblemInstances,
-                               GetStates, IsProblemGoalSatisfied,
-                               RemoveProblemGoal)
+                               GetProblemMetric, GetStates,
+                               IsProblemGoalSatisfied, RemoveProblemGoal,
+                               RemoveProblemMetric, SetProblemMetric)
+from plansys2_support_py.Parser import Parser
 from plansys2_support_py.ProblemExpertClient import ProblemExpertClient
 
 import rclpy
@@ -49,23 +53,33 @@ class TestProblemExpertClient(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures before each test."""
-        self.client = ProblemExpertClient('test_problem_expert_client')
+        always_active(self)
+        self.node = rclpy.create_node('test_problem_expert_client')
+        self.client = ProblemExpertClient(self.node)
 
     def tearDown(self):
         """Clean up after each test."""
-        self.client.destroy_node()
+        self.client.destroy()
+        self.node.destroy_node()
 
     def test_initialization(self):
         """Test that the client initializes correctly."""
         self.assertIsNotNone(self.client)
-        self.assertEqual(self.client.get_name(), 'test_problem_expert_client')
-        self.assertEqual(self.client._namespace_prefix, '')
+        self.assertEqual(self.client.node.get_name(), 'test_problem_expert_client')
+        # Relative names: the namespace and the remappings apply
+        self.assertEqual(
+            self.client.node.resolve_service_name('problem_expert/get_problem'),
+            '/problem_expert/get_problem')
 
     def test_initialization_with_namespace(self):
         """Test that the client initializes correctly with namespace."""
-        client = ProblemExpertClient('test_client', namespace='test_namespace')
-        self.assertEqual(client._namespace_prefix, '/test_namespace')
-        client.destroy_node()
+        node = rclpy.create_node('test_client', namespace='test_namespace')
+        client = ProblemExpertClient(node)
+        self.assertEqual(
+            client.node.resolve_service_name('problem_expert/get_problem'),
+            '/test_namespace/problem_expert/get_problem')
+        client.destroy()
+        node.destroy_node()
 
     @patch.object(Client, 'wait_for_service')
     @patch.object(Client, 'call_async')
@@ -86,7 +100,7 @@ class TestProblemExpertClient(unittest.TestCase):
         instance.name = 'robot1'
         instance.type = 'robot'
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.add_problem_instance(instance)
 
         self.assertTrue(result)
@@ -116,13 +130,13 @@ class TestProblemExpertClient(unittest.TestCase):
 
         # First check - exists
         mock_future.result.return_value = mock_response_true
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.exist_problem_predicate(predicate1)
         self.assertTrue(result)
 
         # Second check - doesn't exist
         mock_future.result.return_value = mock_response_false
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.exist_problem_predicate(predicate2)
         self.assertFalse(result)
 
@@ -147,10 +161,15 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_goal_response.success = True
         mock_goal_response.tree = mock_tree
 
+        # Mock metric response
+        mock_metric_response = GetProblemMetric.Response()
+        mock_metric_response.success = True
+        mock_metric_response.metric = Parser.metric_from_string('minimize (total-time)')
+
         # Mock instances response
-        mock_node1 = PlanSys2Node()
+        mock_node1 = Param()
         mock_node1.name = 'robot1'
-        mock_node1.node_type = 'robot'
+        mock_node1.type = 'robot'
 
         mock_instances_response = GetProblemInstances.Response()
         mock_instances_response.success = True
@@ -195,6 +214,7 @@ class TestProblemExpertClient(unittest.TestCase):
         responses = [
             mock_problem_response,
             mock_goal_response,
+            mock_metric_response,
             mock_instances_response,
             mock_instance_details_response,
             mock_predicates_response,
@@ -214,12 +234,14 @@ class TestProblemExpertClient(unittest.TestCase):
 
         mock_future.result.side_effect = get_next_response
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             with patch('builtins.print') as mock_print:
                 self.client.print_problem_info()
 
                 # Verify print was called (information was printed)
                 self.assertTrue(mock_print.called)
+                printed = ' '.join(str(c.args[0]) for c in mock_print.call_args_list)
+                self.assertIn('Problem Metric: minimize (total-time)', printed)
 
     @patch.object(Client, 'wait_for_service')
     @patch.object(Client, 'call_async')
@@ -236,7 +258,7 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.add_problem('invalid problem')
 
         self.assertFalse(result)
@@ -256,7 +278,7 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_call_async.return_value = mock_future
 
         goal = Tree()
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.add_problem_goal(goal)
 
         self.assertTrue(result)
@@ -279,7 +301,7 @@ class TestProblemExpertClient(unittest.TestCase):
         instance.name = 'robot1'
         instance.type = 'robot'
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.add_problem_instance(instance)
 
         self.assertTrue(result)
@@ -301,7 +323,7 @@ class TestProblemExpertClient(unittest.TestCase):
         predicate = PlanSys2Node()
         predicate.node_type = 1
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.add_problem_predicate(predicate)
 
         self.assertTrue(result)
@@ -323,7 +345,7 @@ class TestProblemExpertClient(unittest.TestCase):
         function = PlanSys2Node()
         function.node_type = 2
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.add_problem_function(function)
 
         self.assertTrue(result)
@@ -343,7 +365,7 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_problem_goal()
 
         self.assertIsNotNone(result)
@@ -365,7 +387,7 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_problem_instance('robot1')
 
         self.assertIsNotNone(result)
@@ -390,7 +412,7 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_problem_instances()
 
         self.assertEqual(len(result), 2)
@@ -412,7 +434,7 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_problem_predicate('robot_at')
 
         self.assertIsNotNone(result)
@@ -434,7 +456,7 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_problem_predicates()
 
         self.assertEqual(len(result), 1)
@@ -455,7 +477,7 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_problem_functions()
 
         self.assertEqual(len(result), 1)
@@ -475,7 +497,7 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_problem()
 
         self.assertEqual(result, '(define (problem test) ...)')
@@ -494,7 +516,7 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.remove_problem_goal()
 
         self.assertTrue(result)
@@ -513,7 +535,7 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.clear_problem_knowledge()
 
         self.assertTrue(result)
@@ -535,7 +557,7 @@ class TestProblemExpertClient(unittest.TestCase):
         instance = Param()
         instance.name = 'robot1'
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.remove_problem_instance(instance)
 
         self.assertTrue(result)
@@ -556,7 +578,7 @@ class TestProblemExpertClient(unittest.TestCase):
 
         predicate = PlanSys2Node()
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.remove_problem_predicate(predicate)
 
         self.assertTrue(result)
@@ -577,7 +599,7 @@ class TestProblemExpertClient(unittest.TestCase):
 
         function = PlanSys2Node()
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.remove_problem_function(function)
 
         self.assertTrue(result)
@@ -598,7 +620,7 @@ class TestProblemExpertClient(unittest.TestCase):
 
         predicate = PlanSys2Node()
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.exist_problem_predicate(predicate)
 
         self.assertTrue(result)
@@ -619,7 +641,7 @@ class TestProblemExpertClient(unittest.TestCase):
 
         predicate = PlanSys2Node()
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.exist_problem_predicate(predicate)
 
         self.assertFalse(result)
@@ -640,7 +662,7 @@ class TestProblemExpertClient(unittest.TestCase):
 
         function = PlanSys2Node()
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.exist_problem_function(function)
 
         self.assertTrue(result)
@@ -661,7 +683,7 @@ class TestProblemExpertClient(unittest.TestCase):
 
         function = PlanSys2Node()
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.update_problem_function(function)
 
         self.assertTrue(result)
@@ -682,7 +704,7 @@ class TestProblemExpertClient(unittest.TestCase):
 
         goal = Tree()
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.is_problem_goal_satisfied(goal)
 
         self.assertTrue(result)
@@ -703,7 +725,7 @@ class TestProblemExpertClient(unittest.TestCase):
 
         goal = Tree()
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.is_problem_goal_satisfied(goal)
 
         self.assertFalse(result)
@@ -727,7 +749,7 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_future.done.return_value = False
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_problem()
 
         self.assertIsNone(result)
@@ -757,7 +779,7 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.add_problem('(robot1 - robot)')
 
         self.assertTrue(result)
@@ -778,7 +800,7 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_problem_instance('robot1')
 
         self.assertIsNotNone(result)
@@ -800,10 +822,116 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_call_async.return_value = mock_future
         goal = Tree()
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.is_problem_goal_satisfied(goal)
 
         self.assertTrue(result)
+
+    def _respond(self, mock_call_async, mock_wait_for_service, response):
+        """Make the next service call answer with response."""
+        mock_wait_for_service.return_value = True
+        mock_future = MagicMock()
+        mock_future.done.return_value = True
+        mock_future.result.return_value = response
+        mock_call_async.return_value = mock_future
+
+    @patch.object(Client, 'wait_for_service')
+    @patch.object(Client, 'call_async')
+    def test_set_problem_metric_from_string(self, mock_call_async, mock_wait_for_service):
+        """Test that a string metric is parsed and sent."""
+        response = SetProblemMetric.Response()
+        response.success = True
+        self._respond(mock_call_async, mock_wait_for_service, response)
+
+        with no_wait():
+            result = self.client.set_problem_metric('maximize (+ (fuel r1) (total-time))')
+
+        self.assertTrue(result)
+        request = mock_call_async.call_args.args[0]
+        self.assertIsInstance(request, SetProblemMetric.Request)
+        self.assertEqual(request.metric.optimization, Metric.MAXIMIZE)
+        self.assertEqual(request.metric.tree.nodes[0].node_type, PlanSys2Node.EXPRESSION)
+
+    @patch.object(Client, 'wait_for_service')
+    @patch.object(Client, 'call_async')
+    def test_set_problem_metric_from_message(self, mock_call_async, mock_wait_for_service):
+        """Test that a Metric message is sent as it is."""
+        response = SetProblemMetric.Response()
+        response.success = True
+        self._respond(mock_call_async, mock_wait_for_service, response)
+
+        metric = Parser.metric_from_string('minimize (total-time)')
+        with no_wait():
+            self.assertTrue(self.client.set_problem_metric(metric))
+        self.assertEqual(mock_call_async.call_args.args[0].metric, metric)
+
+    @patch.object(Client, 'wait_for_service')
+    @patch.object(Client, 'call_async')
+    def test_set_problem_metric_invalid_string(self, mock_call_async, mock_wait_for_service):
+        """Test that an invalid metric string never reaches the service."""
+        for metric in ['', 'optimize (total-time)', 'minimize (> (a) 1)', 'minimize (+ (a)']:
+            with self.subTest(metric=metric):
+                self.assertFalse(self.client.set_problem_metric(metric))
+        mock_call_async.assert_not_called()
+
+    @patch.object(Client, 'wait_for_service')
+    @patch.object(Client, 'call_async')
+    def test_set_problem_metric_rejected(self, mock_call_async, mock_wait_for_service):
+        """Test a metric the problem expert rejects."""
+        response = SetProblemMetric.Response()
+        response.success = False
+        response.error_info = 'Metric not valid'
+        self._respond(mock_call_async, mock_wait_for_service, response)
+
+        with no_wait():
+            self.assertFalse(self.client.set_problem_metric('minimize (battery r9)'))
+
+    @patch.object(Client, 'wait_for_service')
+    @patch.object(Client, 'call_async')
+    def test_get_problem_metric(self, mock_call_async, mock_wait_for_service):
+        """Test getting the metric, set or not."""
+        response = GetProblemMetric.Response()
+        response.success = True
+        response.metric = Parser.metric_from_string('minimize (total-time)')
+        self._respond(mock_call_async, mock_wait_for_service, response)
+
+        with no_wait():
+            metric = self.client.get_problem_metric()
+        self.assertEqual(Parser.metric_to_string(metric), 'minimize (total-time)')
+
+        response.metric = Metric()
+        with no_wait():
+            metric = self.client.get_problem_metric()
+        self.assertIsNotNone(metric)
+        self.assertEqual(Parser.metric_to_string(metric), '')
+
+        response.success = False
+        with no_wait():
+            self.assertIsNone(self.client.get_problem_metric())
+
+    @patch.object(Client, 'wait_for_service')
+    @patch.object(Client, 'call_async')
+    def test_remove_problem_metric(self, mock_call_async, mock_wait_for_service):
+        """Test removing the metric."""
+        response = RemoveProblemMetric.Response()
+        response.success = True
+        self._respond(mock_call_async, mock_wait_for_service, response)
+
+        with no_wait():
+            self.assertTrue(self.client.remove_problem_metric())
+        self.assertIsInstance(mock_call_async.call_args.args[0], RemoveProblemMetric.Request)
+
+        response.success = False
+        with no_wait():
+            self.assertFalse(self.client.remove_problem_metric())
+
+    @patch.object(Client, 'wait_for_service')
+    def test_metric_service_not_available(self, mock_wait_for_service):
+        """Test the metric methods when the problem expert is not there."""
+        mock_wait_for_service.return_value = False
+        self.assertFalse(self.client.set_problem_metric('minimize (total-time)'))
+        self.assertIsNone(self.client.get_problem_metric())
+        self.assertFalse(self.client.remove_problem_metric())
 
 
 if __name__ == '__main__':

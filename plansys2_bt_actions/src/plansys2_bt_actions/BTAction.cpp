@@ -45,17 +45,10 @@ BTAction::BTAction(const std::string & action)
   declare_parameter<int>("wait_for_service_timeout", 1000);
 }
 
-BTAction::BTAction(const std::string & action, const std::chrono::nanoseconds & rate)
-: ActionExecutorClient(action, rate)
+BTAction::BTAction(const std::string & action, BT::Blackboard::Ptr parent)
+: BTAction(action)
 {
-  declare_parameter<std::string>("bt_xml_file", "");
-  declare_parameter<std::vector<std::string>>("plugins", std::vector<std::string>({}));
-  declare_parameter<bool>("bt_file_logging", false);
-  declare_parameter<bool>("bt_minitrace_logging", false);
-  declare_parameter<bool>("enable_groot_monitoring", false);
-  declare_parameter<int>("server_port", -1);
-  declare_parameter<int>("server_timeout", 5000);
-  declare_parameter<int>("wait_for_service_timeout", 1000);
+  parent_blackboard_ = parent;
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
@@ -72,10 +65,16 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
     RCLCPP_INFO_STREAM(get_logger(), "plugin: [" << plugin << "]");
   }
 
-  int default_server_timeout;
+  // First, as it reads rate: bt_loop_duration_ comes from it
+  auto ret = ActionExecutorClient::on_configure(previous_state);
+  if (ret != rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS) {
+    return ret;
+  }
+
+  int default_server_timeout = 0;
   get_parameter("server_timeout", default_server_timeout);
   default_server_timeout_ = std::chrono::milliseconds(default_server_timeout);
-  int wait_for_service_timeout;
+  int wait_for_service_timeout = 0;
   get_parameter("wait_for_service_timeout", wait_for_service_timeout);
   wait_for_service_timeout_ = std::chrono::milliseconds(wait_for_service_timeout);
   bt_loop_duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(period_);
@@ -86,17 +85,24 @@ BTAction::on_configure(const rclcpp_lifecycle::State & previous_state)
     factory_.registerFromPlugin(loader.getOSName(plugin));
   }
 
-  // Create the blackboard that will be shared by all of the nodes in the tree
-  blackboard_ = BT::Blackboard::create();
+  // Create the blackboard that will be shared by all of the nodes in the tree, and with other
+  // BTActions through the parent, if given
+  blackboard_ = parent_blackboard_ ? BT::Blackboard::create(parent_blackboard_) :
+    BT::Blackboard::create();
 
   // Put items in the blackboard
-  blackboard_->set<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node", shared_from_this());
+  // The blackboard (and the BT nodes that copy this pointer) are owned by this node,
+  // so they get a non-owning pointer to it: an owning one would keep the node alive
+  // forever (#427)
+  auto node = rclcpp_lifecycle::LifecycleNode::SharedPtr(
+    rclcpp_lifecycle::LifecycleNode::SharedPtr(), this);
+  blackboard_->set<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node", node);
   blackboard_->set<std::chrono::milliseconds>("server_timeout", default_server_timeout_);
   blackboard_->set<std::chrono::milliseconds>(
     "wait_for_service_timeout", wait_for_service_timeout_);
   blackboard_->set<std::chrono::milliseconds>("bt_loop_duration", bt_loop_duration_);
 
-  return ActionExecutorClient::on_configure(previous_state);
+  return ret;
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
@@ -113,6 +119,10 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
   // If a new tree is created, than the Groot2 Publisher must be destroyed
   reset_groot_monitor();
 
+  // Nothing of the previous activation: its message, its progress
+  blackboard_->set<std::string>("out_msg", "");
+  blackboard_->set<float>("completion", 0.0f);
+
   try {
     tree_ = factory_.createTreeFromFile(bt_xml_file_, blackboard_);
   } catch (const std::exception & ex) {
@@ -123,7 +133,7 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
   }
 
-  for (int i = 0; i < get_arguments().size(); i++) {
+  for (size_t i = 0; i < get_arguments().size(); i++) {
     auto arg = get_arguments()[i];
     RCLCPP_DEBUG_STREAM(
       get_logger(),
@@ -135,15 +145,21 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
   if (get_parameter("bt_file_logging").as_bool() ||
     get_parameter("bt_minitrace_logging").as_bool())
   {
-    auto temp_path = std::filesystem::temp_directory_path();
-    std::filesystem::path node_name_path = get_name();
-    std::filesystem::create_directories(temp_path / node_name_path);
+    // In the temporary directory, one file per execution: two in the same second do not mix
+    const auto dir = std::filesystem::temp_directory_path() / "plansys2" /
+      std::filesystem::path(get_node_base_interface()->get_fully_qualified_name()).relative_path();
+    std::filesystem::create_directories(dir);
 
-    auto now_time_t =
-      std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    const auto now = std::chrono::system_clock::now();
+    auto now_time_t = std::chrono::system_clock::to_time_t(now);
+    const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(
+      now.time_since_epoch()).count() % 1000;
+    std::tm local_time {};
+    localtime_r(&now_time_t, &local_time);  // localtime is not thread safe
     std::stringstream filename;
-    filename << "/tmp/" << get_name() << "/bt_trace_";
-    filename << std::put_time(std::localtime(&now_time_t), "%Y_%m_%d__%H_%M_%S");
+    filename << (dir / "bt_trace_").string();
+    filename << std::put_time(&local_time, "%Y_%m_%d__%H_%M_%S") << "_" <<
+      std::setw(3) << std::setfill('0') << millis;
 
     if (get_parameter("bt_file_logging").as_bool()) {
       std::string filename_extension = filename.str() + ".btlog";
@@ -175,7 +191,20 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
     }
   }
 
+  // Count leaf action nodes so we can track tree-level completion
+  total_action_nodes_ = 0;
+  tree_.applyVisitor(
+    [this](BT::TreeNode * node) {
+      if (node->type() == BT::NodeType::ACTION) {
+        total_action_nodes_++;
+      }
+    });
+  if (total_action_nodes_ == 0) {
+    total_action_nodes_ = 1;  // avoid division by zero for trivial trees
+  }
+
   finished_ = false;
+  blackboard_->set<float>("completion", 0.0f);  // current node writes its local progress here
   return ActionExecutorClient::on_activate(previous_state);
 }
 
@@ -193,30 +222,69 @@ BTAction::on_deactivate(const rclcpp_lifecycle::State & previous_state)
 void BTAction::do_work()
 {
   if (!finished_) {
-    BT::NodeStatus result;
+    BT::NodeStatus result = BT::NodeStatus::FAILURE;
+    // An exception ends the action once: there is no result to look at
     try {
       result = tree_.rootNode()->executeTick();
-    } catch (BT::LogicError e) {
+    } catch (const BT::LogicError & e) {
       RCLCPP_ERROR_STREAM(get_logger(), e.what());
+      finished_ = true;
       finish(false, 0.0, "BTAction behavior tree threw a BT::LogicError");
-    } catch (BT::RuntimeError e) {
+      return;
+    } catch (const BT::RuntimeError & e) {
       RCLCPP_ERROR_STREAM(get_logger(), e.what());
+      finished_ = true;
       finish(false, 0.0, "BTAction behavior tree threw a BT::RuntimeError");
-    } catch (std::exception e) {
-      finish(false, 0.0, "BTAction behavior tree threw an unknown exception");
+      return;
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR_STREAM(get_logger(), e.what());
+      finished_ = true;
+      finish(false, 0.0, "BTAction behavior tree threw an exception");
+      return;
+    }
+
+    std::string out_msg;
+    if (!blackboard_->get("out_msg", out_msg)) {
+      out_msg = "";
     }
 
     switch (result) {
       case BT::NodeStatus::SUCCESS:
-        finish(true, 1.0, "BTAction behavior tree returned SUCCESS");
+        finish(true, 1.0,
+          out_msg.empty() ? "BTAction behavior tree returned SUCCESS" : out_msg);
         finished_ = true;
         break;
       case BT::NodeStatus::RUNNING:
-        send_feedback(0.0, "BTAction behavior tree returned RUNNING");
-        break;
+        {
+        // Count how many action nodes have already completed
+          int completed_nodes = 0;
+          tree_.applyVisitor(
+            [&completed_nodes](BT::TreeNode * node) {
+              if (node->type() == BT::NodeType::ACTION &&
+              node->status() == BT::NodeStatus::SUCCESS)
+              {
+                completed_nodes++;
+              }
+          });
+
+        // Read the currently-running node's local progress (0→1), written by each BT node
+          float node_completion = 0.0f;
+          (void)blackboard_->get<float>("completion", node_completion);
+
+        // Overall: (fully-done nodes + fraction of current node) / total nodes
+          float overall = (static_cast<float>(completed_nodes) + node_completion) /
+            static_cast<float>(total_action_nodes_);
+          send_feedback(overall,
+            out_msg.empty() ? "BTAction behavior tree returned RUNNING" : out_msg);
+          break;
+        }
       case BT::NodeStatus::FAILURE:
-        finish(false, 1.0, "BTAction behavior tree returned FAILURE");
+        finish(false, 1.0,
+          out_msg.empty() ? "BTAction behavior tree returned FAILURE" : out_msg);
         finished_ = true;
+        break;
+      case BT::NodeStatus::IDLE:
+      case BT::NodeStatus::SKIPPED:
         break;
     }
   }

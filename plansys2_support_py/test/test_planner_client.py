@@ -18,6 +18,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
+from client_mocks import always_active, no_wait
 from plansys2_msgs.msg import Plan, PlanItem
 from plansys2_msgs.srv import GetPlan, GetPlanArray, ValidateDomain
 from plansys2_support_py.PlannerClient import PlannerClient
@@ -43,25 +44,35 @@ class TestPlannerClient(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures before each test."""
-        self.client = PlannerClient('test_planner_client')
+        always_active(self)
+        self.node = rclpy.create_node('test_planner_client')
+        self.client = PlannerClient(self.node)
         self.test_domain = '(define (domain test_domain) ...)'
         self.test_problem = '(define (problem test_problem) ...)'
 
     def tearDown(self):
         """Clean up after each test."""
-        self.client.destroy_node()
+        self.client.destroy()
+        self.node.destroy_node()
 
     def test_initialization(self):
         """Test that the client initializes correctly."""
         self.assertIsNotNone(self.client)
-        self.assertEqual(self.client.get_name(), 'test_planner_client')
-        self.assertEqual(self.client._namespace_prefix, '')
+        self.assertEqual(self.client.node.get_name(), 'test_planner_client')
+        # Relative names: the namespace and the remappings apply
+        self.assertEqual(
+            self.client.node.resolve_service_name('planner/get_plan'),
+            '/planner/get_plan')
 
     def test_initialization_with_namespace(self):
         """Test that the client initializes correctly with namespace."""
-        client = PlannerClient('test_client', namespace='test_namespace')
-        self.assertEqual(client._namespace_prefix, '/test_namespace')
-        client.destroy_node()
+        node = rclpy.create_node('test_client', namespace='test_namespace')
+        client = PlannerClient(node)
+        self.assertEqual(
+            client.node.resolve_service_name('planner/get_plan'),
+            '/test_namespace/planner/get_plan')
+        client.destroy()
+        node.destroy_node()
 
     @patch.object(Client, 'wait_for_service')
     @patch.object(Client, 'call_async')
@@ -85,7 +96,7 @@ class TestPlannerClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_plan(self.test_domain, self.test_problem)
 
         self.assertIsNotNone(result)
@@ -108,7 +119,7 @@ class TestPlannerClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_plan(self.test_domain, self.test_problem)
 
         self.assertIsNone(result)
@@ -131,7 +142,7 @@ class TestPlannerClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_plan(self.test_domain, self.test_problem)
 
         self.assertIsNotNone(result)
@@ -156,18 +167,18 @@ class TestPlannerClient(unittest.TestCase):
 
         mock_response = GetPlanArray.Response()
         mock_response.success = True
-        mock_response.plan_array = [mock_plan1, mock_plan2]
+        mock_response.plan_array.plan_array = [mock_plan1, mock_plan2]
 
         mock_future = MagicMock()
         mock_future.done.return_value = True
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_plan_array(self.test_domain, self.test_problem)
 
         self.assertIsNotNone(result)
-        self.assertEqual(len(result), 2)
+        self.assertEqual(len(result.plan_array), 2)
 
     @patch.object(Client, 'wait_for_service')
     @patch.object(Client, 'call_async')
@@ -184,7 +195,7 @@ class TestPlannerClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_plan_array(self.test_domain, self.test_problem)
 
         self.assertIsNone(result)
@@ -203,7 +214,7 @@ class TestPlannerClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.validate_domain(self.test_domain)
 
         self.assertTrue(result)
@@ -223,7 +234,7 @@ class TestPlannerClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.validate_domain(self.test_domain)
 
         self.assertFalse(result)
@@ -247,7 +258,7 @@ class TestPlannerClient(unittest.TestCase):
         mock_future.done.return_value = False
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_plan(self.test_domain, self.test_problem)
 
         self.assertIsNone(result)
@@ -278,7 +289,7 @@ class TestPlannerClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.validate_domain('')
 
         self.assertFalse(result)
@@ -306,7 +317,7 @@ class TestPlannerClient(unittest.TestCase):
         mock_future.result.return_value = mock_response
         mock_call_async.return_value = mock_future
 
-        with patch('rclpy.spin_until_future_complete'):
+        with no_wait():
             result = self.client.get_plan(self.test_domain, self.test_problem)
 
         self.assertIsNotNone(result)

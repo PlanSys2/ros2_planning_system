@@ -2,41 +2,60 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-3.0.2 (2025-12-16)
+4.0.0 (2026-10-21)
 ------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* plansys2_bt_actions: BT action nodes ready again after each goal, and a shared blackboard (`#496 <https://github.com/PlanSys2/ros2_planning_system/pull/496>`_)
+* BtActionNode: no exception when cancelling a goal that has just finished (`#480 <https://github.com/PlanSys2/ros2_planning_system/pull/480>`_)
+* Tests discover only nodes on this host (`#455 <https://github.com/PlanSys2/ros2_planning_system/pull/455>`_)
+* Replace the deprecated EventsExecutor with SingleThreadedExecutor (`#452 <https://github.com/PlanSys2/ros2_planning_system/pull/452>`_)
+* Do not let the BT blackboard keep the bt_action_node alive (`#428 <https://github.com/PlanSys2/ros2_planning_system/pull/428>`_)
+* Contributors: Francisco Martín Rico
+
+3.1.0 (2026-07-28)
+------------------
+* Fix deprecated get_share_directory
+* Support custom messages in BTAction via out_msg blackboard
+  Read out_msg from the BT blackboard and use it as the status string
+  in send_feedback() and finish() calls. Falls back to the default
+  generic messages when out_msg is empty. This allows BT action nodes
+  to forward custom context (e.g. perception events) through the
+  action hub.
+* Fix publish execution Info. TUI and CLI
+* Deprecate BTAction with rate. Fix all warnings
+* Fix test
 * Set C++23 as default
-* Fix cancel handle
-* Add tf2_geometry_msgs to plansys2_bt_actions package.xml
-* More improvments in BTActionNode
+* fix: target cancel handle
+  More improvments in BTActionNode
 * Fix default  server_timeout
 * Fix Groot2 monitor format
 * Fix tests
 * Added callback group executor
 * Return to IDLE when finished
-* Add tf2_geometry_msgs to plansys2_bt_actions package.xml.
+* Add tf2_geometry_msgs to plansys2_bt_actions package.xml
+  Add tf2_geometry_msgs to plansys2_bt_actions package.xml.
   tf2_geometry_msgs is required to build plansys2_bt_actions
 * Use geometry_msgs::msg::Pose as Pose2D is now in vision_msgs
-* Improvements on BTAction
 * Fix BTService and BT-JSON
 * Update BTServiceNode.hpp
 * Added a BT for services
 * Added JSON utils
 * Revert lifecycle
 * Added deprecated constructor
-* Merge branch 'PlanSys2:rolling' into fix_predicate_parsing
+* Remove nolint
 * Added spin to test
+* Fix some bt _action tests
 * Added bt_loop_duration to the blackboard
 * Remove rate of ActionExecutorClient constructor and set as default parameter
 * Added wait_for_service_timeout param and blackboard
 * Added server_timeout as parameter and blackboard
 * Doc for bt actions
-* Added Groot2 monitor
-* Minor fix
 * Update Readme
-* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
-
-3.0.1 (2025-06-22)
-------------------
+* Added Groot2 monitor
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende, avalen2022
 
 3.0.0 (2025-06-06)
 ------------------

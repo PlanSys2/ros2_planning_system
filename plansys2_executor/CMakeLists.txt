@@ -1,7 +1,11 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 project(plansys2_executor)
 
-set(CMAKE_CXX_STANDARD 23)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
+
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -12,6 +16,7 @@ find_package(Eigen3 REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
+find_package(action_msgs REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
 find_package(rclcpp_cascade_lifecycle REQUIRED)
@@ -28,6 +33,9 @@ find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 
 set(EXECUTOR_SOURCES
+  src/plansys2_executor/BTBuilder.cpp
+  src/plansys2_executor/ConstraintMonitor.cpp
+  src/plansys2_executor/ExecutionTrace.cpp
   src/plansys2_executor/ExecutorClient.cpp
   src/plansys2_executor/ActionExecutor.cpp
   src/plansys2_executor/ActionExecutorClient.cpp
@@ -43,6 +51,7 @@ set(EXECUTOR_SOURCES
   src/plansys2_executor/behavior_tree/apply_atstart_effect_node.cpp
   src/plansys2_executor/behavior_tree/restore_atstart_effect_node.cpp
   src/plansys2_executor/behavior_tree/apply_atend_effect_node.cpp
+  src/plansys2_executor/behavior_tree/stn_dependency.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${EXECUTOR_SOURCES})
@@ -53,6 +62,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
   behaviortree_cpp::behaviortree_cpp
+  ${action_msgs_TARGETS}
   ${lifecycle_msgs_TARGETS}
   ${plansys2_msgs_TARGETS}
   plansys2_core::plansys2_core
@@ -103,6 +113,7 @@ target_include_directories(bt_builder_plugins PUBLIC
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
 target_link_libraries(bt_builder_plugins
   PUBLIC
+  ${PROJECT_NAME}
   Eigen3::Eigen
   ${plansys2_msgs_TARGETS}
   plansys2_core::plansys2_core
@@ -116,6 +127,8 @@ target_link_libraries(bt_builder_plugins
   plansys2_pddl_parser::plansys2_pddl_parser
   pluginlib::pluginlib
 )
+# libplansys2_bt_builder_plugins.so, not a generic name in lib/
+set_target_properties(bt_builder_plugins PROPERTIES OUTPUT_NAME plansys2_bt_builder_plugins)
 
 pluginlib_export_plugin_description_file(plansys2_executor plugins.xml)
 
@@ -143,15 +156,20 @@ install(TARGETS bt_builder_plugins
   RUNTIME DESTINATION bin
 )
 
-install(TARGETS bt_builder_plugins executor_node compute_bt
+install(TARGETS executor_node compute_bt
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+  # Humble's uncrustify (0.72) formats otherwise than the newer one this code follows
+  if("$ENV{ROS_DISTRO}" STREQUAL "humble")
+    set(ament_cmake_uncrustify_FOUND TRUE)
+  endif()
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_ros REQUIRED)
 
   add_subdirectory(test)
 endif()
@@ -160,11 +178,14 @@ ament_export_include_directories("include/${PROJECT_NAME}")
 ament_export_libraries(${PROJECT_NAME} bt_builder_plugins)
 ament_export_targets(export_${PROJECT_NAME} bt_builder_plugins)
 ament_export_dependencies(
+  eigen3_cmake_module
+  Eigen3
   rclcpp
   rclcpp_lifecycle
   lifecycle_msgs
   rclcpp_cascade_lifecycle
   rclcpp_action
+  action_msgs
   plansys2_pddl_parser
   ament_index_cpp
   plansys2_core

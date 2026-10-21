@@ -15,14 +15,15 @@
 #ifndef PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTNODE_HPP_
 #define PLANSYS2_DOMAIN_EXPERT__DOMAINEXPERTNODE_HPP_
 
-#include <optional>
 #include <memory>
+#include <string>
 
 #include "plansys2_domain_expert/DomainExpert.hpp"
-#include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 
 #include "std_msgs/msg/string.hpp"
+#include "plansys2_msgs/srv/change_domain.hpp"
 #include "plansys2_msgs/srv/get_domain_name.hpp"
+#include "plansys2_msgs/srv/get_domain_constants.hpp"
 #include "plansys2_msgs/srv/get_domain_types.hpp"
 #include "plansys2_msgs/srv/get_domain_actions.hpp"
 #include "plansys2_msgs/srv/get_domain_action_details.hpp"
@@ -129,6 +130,18 @@ public:
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::GetDomainTypes::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::GetDomainTypes::Response> response);
+
+  /**
+   * @brief Service callback to retrieve the constants of a type.
+   *
+   * @param[in] request_header ROS service request header.
+   * @param[in] request Service request with the type.
+   * @param[out] response Service response containing its constants and success status.
+   */
+  void get_domain_constants_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::GetDomainConstants::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::GetDomainConstants::Response> response);
 
   /**
    * @brief Service callback to retrieve all non-durative actions in the domain.
@@ -262,12 +275,53 @@ public:
     const std::shared_ptr<plansys2_msgs::srv::GetDomain::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::GetDomain::Response> response);
 
+  /**
+   * @brief Service callback to replace the domain at runtime.
+   *
+   * Fails without touching anything if the node is not active, the domain is empty
+   * or it does not validate. If valid, domain_expert_ is replaced by the instance
+   * validateDomain() built and the new domain is republished on domain_pub_.
+   *
+   * @param[in] request_header ROS service request header.
+   * @param[in] request Service request containing the new domain, in PDDL.
+   * @param[out] response Service response with success status and error information.
+   */
+  // Answered once the problem expert took the new domain, without blocking the node meanwhile
+  void change_domain_service_callback(
+    std::shared_ptr<rclcpp::Service<plansys2_msgs::srv::ChangeDomain>> service,
+    std::shared_ptr<rmw_request_id_t> request_header,
+    std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Request> request);
+
 private:
+  /**
+   * @brief Build a DomainExpert from a PDDL string and validate it the same way
+   *        on_configure() validates model_file: via the planner's validate_domain
+   *        service, or locally with Kairos, depending on how this node was
+   *        configured.
+   *
+   * @param[in] domain The candidate domain, in PDDL.
+   * @param[out] out_domain_expert The resulting DomainExpert, only set on success.
+   * @param[out] error Human-readable error, only set on failure.
+   * @return true if the domain is valid.
+   */
+  bool validateDomain(
+    const std::string & domain,
+    std::shared_ptr<DomainExpert> & out_domain_expert,
+    std::string & error);
+
   std::shared_ptr<DomainExpert> domain_expert_;
 
   rclcpp::Service<plansys2_msgs::srv::GetDomainName>::SharedPtr get_name_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainTypes>::SharedPtr get_types_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetDomainConstants>::SharedPtr get_constants_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_domain_actions_service_;
+  // PDDL+: processes and events, as actions
+  rclcpp::Service<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_domain_processes_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr
+    get_domain_process_details_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_domain_events_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr
+    get_domain_event_details_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr
     get_domain_action_details_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainActions>::SharedPtr
@@ -287,14 +341,24 @@ private:
   rclcpp::Service<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>::SharedPtr
     get_domain_derived_predicate_details_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_service_;
+  rclcpp::Service<plansys2_msgs::srv::ChangeDomain>::SharedPtr change_domain_service_;
 
   rclcpp::Client<plansys2_msgs::srv::ValidateDomain>::SharedPtr
     validate_domain_client_;
   rclcpp::CallbackGroup::SharedPtr validate_domain_callback_group_;
+  // The problem expert takes a new domain before this node answers that it changed
+  rclcpp::Client<plansys2_msgs::srv::ChangeDomain>::SharedPtr problem_update_domain_client_;
+  // One change at a time: another one waits for the problem expert
+  bool change_in_progress_ {false};
+  rclcpp::TimerBase::SharedPtr change_timeout_;
+
+  // Takes the domain already validated and tells the others
+  void take_domain(std::shared_ptr<DomainExpert> domain_expert);
 
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::String>::SharedPtr domain_pub_;
 
-  std::unique_ptr<plansys2::POPFPlanSolver> popf_plan_solver_;
+  // Validate domains here, with Kairos, instead of asking the planner node
+  bool validate_locally_ = false;
 };
 
 }  // namespace plansys2
