@@ -21,7 +21,7 @@
   <depend>action_msgs</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>lifecycle_msgs</depend>
-  <depend>rclcpp_cascade_lifecycle</depend>
+  <depend version_gte="2.0.7">rclcpp_cascade_lifecycle</depend>
   <depend>ament_index_cpp</depend>
   <depend>plansys2_core</depend>
   <depend>plansys2_pddl_parser</depend>

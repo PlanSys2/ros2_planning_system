@@ -154,8 +154,7 @@ void POPFPlanSolver::configure(
 
   // Run popf directly: `ros2 run` added the CLI start-up to every plan (#441)
   try {
-    std::filesystem::path prefix;
-    ament_index_cpp::get_package_prefix("popf", prefix);
+    const std::filesystem::path prefix = ament_index_cpp::get_package_prefix("popf");
     popf_path_ = (prefix / "lib" / "popf" / "popf").string();
   } catch (const std::exception & e) {
     RCLCPP_WARN(

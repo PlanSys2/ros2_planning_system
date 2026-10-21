@@ -23,6 +23,7 @@
 #include "lifecycle_msgs/msg/transition.hpp"
 
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp/version.h"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 #include "plansys2_core/TestUtils.hpp"
@@ -37,6 +38,16 @@ using ClientMap = std::map<std::string, std::shared_ptr<plansys2::LifecycleServi
 
 namespace
 {
+
+// Whether a server of the service is known: Humble's Node has no count_services
+bool has_service(rclcpp::Node & node, const std::string & name)
+{
+#if RCLCPP_VERSION_MAJOR >= 21
+  return node.count_services(name) > 0;
+#else
+  return node.get_service_names_and_types().count("/" + name) > 0;
+#endif
+}
 
 const std::vector<std::string> kNodes = {"planner", "domain_expert", "problem_expert", "executor"};
 
@@ -78,8 +89,8 @@ TEST(lifecycle_manager, lf_client)
   ASSERT_TRUE(
     plansys2::testing::wait_for(
       [&]() {
-        return manager->count_services("test/get_state") > 0 &&
-               manager->count_services("test/change_state") > 0;
+        return has_service(*manager, "test/get_state") &&
+               has_service(*manager, "test/change_state");
       }));
 
   ASSERT_EQ(
@@ -141,8 +152,8 @@ TEST(lifecycle_manager, lf_startup)
     ASSERT_TRUE(
       plansys2::testing::wait_for(
         [&]() {
-          return manager->count_services(name + "/get_state") > 0 &&
-                 manager->count_services(name + "/change_state") > 0;
+          return has_service(*manager, name + "/get_state") &&
+                 has_service(*manager, name + "/change_state");
         })) << name;
   }
 

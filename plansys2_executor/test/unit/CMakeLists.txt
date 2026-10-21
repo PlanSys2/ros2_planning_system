@@ -1,8 +1,20 @@
 # ament_add_ros_isolated_gtest_test came with Kilted: before it, the same test, not isolated
 if(NOT COMMAND ament_add_ros_isolated_gtest_test)
-  macro(ament_add_ros_isolated_gtest_test target)
-    ament_add_gtest_test(${target} ${ARGN})
-  endmacro()
+  function(ament_add_ros_isolated_gtest_test target)
+    cmake_parse_arguments(ARG "" "TEST_NAME;TIMEOUT" "ENV" ${ARGN})
+    if(NOT ARG_TEST_NAME)
+      set(ARG_TEST_NAME ${target})
+    endif()
+    if(NOT ARG_TIMEOUT)
+      set(ARG_TIMEOUT 60)
+    endif()
+    set(result "${AMENT_TEST_RESULTS_DIR}/${PROJECT_NAME}/${ARG_TEST_NAME}.gtest.xml")
+    ament_add_test(${ARG_TEST_NAME}
+      COMMAND $<TARGET_FILE:${target}> --gtest_output=xml:${result}
+      RESULT_FILE ${result}
+      ENV ${ARG_ENV}
+      TIMEOUT ${ARG_TIMEOUT})
+  endfunction()
 endif()
 
 # Not optimized (no build type, as in the CI of the PRs) or built for coverage (CI of rolling),
