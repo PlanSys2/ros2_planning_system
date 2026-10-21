@@ -167,7 +167,7 @@ class TestPlannerClient(unittest.TestCase):
 
         mock_response = GetPlanArray.Response()
         mock_response.success = True
-        mock_response.plan_array = [mock_plan1, mock_plan2]
+        mock_response.plan_array.plan_array = [mock_plan1, mock_plan2]
 
         mock_future = MagicMock()
         mock_future.done.return_value = True
@@ -178,7 +178,7 @@ class TestPlannerClient(unittest.TestCase):
             result = self.client.get_plan_array(self.test_domain, self.test_problem)
 
         self.assertIsNotNone(result)
-        self.assertEqual(len(result), 2)
+        self.assertEqual(len(result.plan_array), 2)
 
     @patch.object(Client, 'wait_for_service')
     @patch.object(Client, 'call_async')

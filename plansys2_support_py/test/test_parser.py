@@ -1164,7 +1164,7 @@ class TestParser(unittest.TestCase):
         """Test tree_to_string with unknown node type returns empty string."""
         tree = Tree()
         node = Node()
-        node.node_type = 999  # Unknown type
+        node.node_type = 200  # Unknown type
         node.node_id = 0
         tree.nodes.append(node)
         result = Parser.tree_to_string(tree)

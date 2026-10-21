@@ -488,8 +488,8 @@ class TestDomainExpertClient(unittest.TestCase):
         mock_pred_node = PlanSys2Node()
         mock_pred_node.name = 'robot_at'
 
-        mock_action_node = PlanSys2Node()
-        mock_action_node.name = 'move'
+        mock_action = PlanSys2Action()
+        mock_action.name = 'move'
 
         # Setup different responses for different calls
         responses = [
@@ -504,7 +504,7 @@ class TestDomainExpertClient(unittest.TestCase):
             create_mock_response(GetDomainDerivedPredicateDetails, predicates=[]),  # derived
             create_mock_response(GetDomainActions, actions=['move']),  # actions
             # action details
-            create_mock_response(GetDomainActionDetails, action=mock_action_node),
+            create_mock_response(GetDomainActionDetails, action=mock_action),
             create_mock_response(GetDomainActions, actions=[]),  # durative actions
         ]
 
