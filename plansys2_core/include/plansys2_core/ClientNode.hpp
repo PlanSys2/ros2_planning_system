@@ -36,11 +36,14 @@ namespace plansys2
 // Threads of the executor of each component: callbacks that wait for clients, and their answers
 constexpr size_t kComponentThreads = 4;
 
-// The QoS of services and clients: rclcpp takes rclcpp::QoS from Iron on, an rmw profile before
+// The QoS of services and parameter clients: rclcpp takes rclcpp::QoS from Iron on, an rmw
+// profile before
 #if RCLCPP_VERSION_MAJOR >= 21
 inline rclcpp::QoS services_qos() {return rclcpp::ServicesQoS();}
+inline rclcpp::QoS parameters_qos() {return rclcpp::ParametersQoS();}
 #else
 inline const rmw_qos_profile_t & services_qos() {return rmw_qos_profile_services_default;}
+inline const rmw_qos_profile_t & parameters_qos() {return rmw_qos_profile_parameters;}
 #endif
 
 /**
