@@ -234,7 +234,7 @@ BTBuilder::apply_effects(
   const plansys2_msgs::msg::Tree & effects, std::vector<plansys2::Predicate> & predicates,
   std::vector<plansys2::Function> & functions) const
 {
-  apply(effects, predicates, functions);
+  plansys2::apply(effects, predicates, functions);
   load_derived();
   if (!derived_rules_->empty()) {
     predicates = derive(*derived_rules_, predicates, functions);

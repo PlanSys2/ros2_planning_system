@@ -675,7 +675,7 @@ ProblemExpert::stepDynamics(double dt)
     }
     for (auto effects : acting) {
       parser::pddl::bindTime(effects, dt);
-      apply(effects, *this);
+      plansys2::apply(effects, *this);
     }
     for (const auto & function : measured) {
       updateFunction(function);
@@ -689,7 +689,7 @@ ProblemExpert::stepDynamics(double dt)
     bool any = false;
     for (size_t i = 0; i < events_.size(); i++) {
       if (!fired.count(i) && check(events_[i].preconditions, *this)) {
-        apply(events_[i].effects, *this);
+        plansys2::apply(events_[i].effects, *this);
         fired.insert(i);
         any = true;
         std::string event = "event (" + events_[i].name;

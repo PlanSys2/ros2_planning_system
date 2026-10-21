@@ -387,8 +387,8 @@ ExecutorNode::get_ordered_subgoals(PlanRuntineInfo & runtime_info)
     if (action.is_empty()) {
       continue;
     }
-    apply(action.get_at_start_effects(), local_predicates, local_functions);
-    apply(action.get_at_end_effects(), local_predicates, local_functions);
+    plansys2::apply(action.get_at_start_effects(), local_predicates, local_functions);
+    plansys2::apply(action.get_at_end_effects(), local_predicates, local_functions);
 
 
     for (auto it = unordered_subgoals.begin(); it != unordered_subgoals.end(); ) {

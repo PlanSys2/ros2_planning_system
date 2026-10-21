@@ -228,7 +228,7 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
 
   if (validate_using_planner_node) {
     validate_domain_client_ = create_client<plansys2_msgs::srv::ValidateDomain>(
-      "planner/validate_domain", rclcpp::ServicesQoS(), validate_domain_callback_group_);
+      "planner/validate_domain", plansys2::services_qos(), validate_domain_callback_group_);
     if (!wait_for_server(validate_domain_client_, std::chrono::seconds(5))) {
       RCLCPP_ERROR_STREAM(
         get_logger(),
