@@ -12,9 +12,6 @@ pickable_object
 room
 )
 
-(:constants
-)
-
 (:predicates
 (object_at_robot ?o - pickable_object ?r - robot)
 (object_at_room ?o - pickable_object ?ro - room)

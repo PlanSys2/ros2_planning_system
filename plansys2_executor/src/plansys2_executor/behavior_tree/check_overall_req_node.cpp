@@ -18,18 +18,20 @@
 #include <tuple>
 
 #include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
+#include "plansys2_msgs/msg/action.hpp"
 
 namespace plansys2
 {
 
 CheckOverAllReq::CheckOverAllReq(
   const std::string & xml_tag_name,
-  const BT::NodeConfiguration & conf)
+  const BT::NodeConfig & conf)
 : ActionNodeBase(xml_tag_name, conf)
 {
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
     "action_map");
+  std::ignore = config().blackboard->get("trace", trace_);
 
   problem_client_ =
     config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
@@ -42,18 +44,33 @@ CheckOverAllReq::tick()
   std::string action;
   getInput("action", action);
 
+  if (status() != BT::NodeStatus::IDLE &&
+    last_check_problem_ts_ > problem_client_->getUpdateTime())
+  {
+    return BT::NodeStatus::SUCCESS;
+  }
+
   auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 
-  auto reqs = (*action_map_)[action].durative_action_info->over_all_requirements;
+  auto reqs = (*action_map_)[action].action_info.get_overall_requirements();
+  last_check_problem_ts_ = node->now();
 
-  if (!check(reqs, problem_client_)) {
+  if (!check_in_expert(reqs, problem_client_)) {
     (*action_map_)[action].execution_error_info = "Error checking over all requirements";
 
     RCLCPP_ERROR_STREAM(
       node->get_logger(),
       "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-        parser::pddl::toString((*action_map_)[action].durative_action_info->over_all_requirements));
+        parser::pddl::toString(reqs));
 
+    if (trace_) {
+      trace_->event(
+        ExecutionTrace::Event::FAILURE, action,
+        "its over all requirements do not hold: " + ExecutionTrace::unmet(
+          reqs, [this](const plansys2_msgs::msg::Tree & part) {
+            return check_in_expert(part, problem_client_);
+          }));
+    }
     return BT::NodeStatus::FAILURE;
   } else {
     return BT::NodeStatus::SUCCESS;

@@ -1,0 +1,10 @@
+(define (domain heating)
+(:requirements :strips :typing :constraints)
+(:types room)
+(:predicates (heating ?r - room) (safe))
+(:action switch_on
+  :parameters (?r - room)
+  :precondition (and (safe))
+  :effect (and (heating ?r)))
+(:constraints (always (safe)))
+)

@@ -1,0 +1,4 @@
+plansys2_msgs/Metric metric
+---
+bool success
+string error_info

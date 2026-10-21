@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	-	go to the constant charging station and charge
+domain.pddl	p2.pddl	yes	-	clean two rooms recharging at the constant station between them
+domain.pddl	p3.pddl	no	-	charging station constant is unreachable so the robot never charges

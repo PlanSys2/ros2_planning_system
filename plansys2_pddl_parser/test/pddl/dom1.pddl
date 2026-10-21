@@ -1,5 +1,5 @@
 (define (domain simple)
-(:requirements :strips :typing :adl :fluents :durative-actions)
+(:requirements :strips :typing :adl :fluents :durative-actions :existential-preconditions)
 (:types
     robot
     room
@@ -56,6 +56,105 @@
          (at end (increase (battery_level ?r) (* ?duration 5.0)))
          (at end(battery_full ?r))
     )
+)
+
+(:durative-action action_test3
+    :parameters (?r - robot)
+    :duration ( = ?duration 20)
+    :condition (and
+        (at start
+            (forall
+                (?ro - room)
+                (imply
+                    (robot_at ?r ?ro)
+                    (charging_point_at ?ro)
+                )
+            )
+        )
+        (over all (and (> (battery_level ?r) 1) (< (battery_level ?r) 200)) )
+    )
+    :effect (and
+         (at end (increase (battery_level ?r) (* ?duration 5.0)))
+         (at end (battery_full ?r))
+    )
+)
+
+(:action action_test4
+    :parameters (?r - robot)
+    :precondition (and
+      (exists (?ro)
+        (and
+          (robot_at ?r ?ro)
+          (charging_point_at ?ro)
+        )
+      )
+      (and (> (battery_level ?r) 1) (< (battery_level ?r) 200))
+    )
+    :effect (and
+      (battery_full ?r)
+    )
+)
+
+(:action action_test5
+    :parameters (?r - robot)
+    :precondition
+      (exists (?ro1 ?ro2)
+        (and
+          (robot_at ?r ?ro1)
+          (connected ?ro1 ?ro2)
+        )
+      )
+    :effect (and )
+)
+
+(:action action_test6
+    :parameters (?r - robot)
+    :precondition
+      (and
+        (exists (?ro1 ?ro2)
+          (and
+            (robot_at ?r ?ro1)
+            (connected ?ro1 ?ro2)
+          )
+        )
+        (exists (?ro1)
+          (and
+            (battery_full ?ro1)
+          )
+        )
+        (exists (?ro2)
+          (and
+            (battery_full ?ro2)
+          )
+        )
+        (exists (?ro1 ?ro2)
+          (and
+            (connected ?ro1 ?ro2)
+          )
+        )
+        (exists (?ro3)
+          (and
+            (battery_full ?ro3)
+          )
+        )
+      )
+    :effect (and )
+)
+
+(:action action_test7
+    :parameters (?r - robot ?ro - room)
+    :precondition
+      (or
+        (= ?r rob1)
+        (not
+          (exists (?ro1)
+            (and
+              (not (battery_full ?ro1))
+            )
+          )
+        )
+      )
+    :effect (and )
 )
 
 )

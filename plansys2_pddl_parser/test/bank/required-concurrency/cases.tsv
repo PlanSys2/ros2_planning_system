@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:durative-actions	one robot holds the door open while the other passes
+domain.pddl	p2.pddl	yes	:durative-actions	three robots hold two doors for each other to cross in both directions
+domain.pddl	p3.pddl	no	:durative-actions	a lone robot cannot hold the door and pass it at the same time

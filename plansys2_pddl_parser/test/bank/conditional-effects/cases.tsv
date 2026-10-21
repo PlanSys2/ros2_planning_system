@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:conditional-effects	powered button opens the door through its conditional effect, then move
+domain.pddl	p2.pddl	yes	:conditional-effects	restore power at two panels and press three buttons to cross three doors
+domain.pddl	p3.pddl	no	:conditional-effects	the only panel is behind the door, so pressing the button never fires its effect

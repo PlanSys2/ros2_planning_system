@@ -24,12 +24,13 @@ namespace plansys2
 
 CheckAtEndReq::CheckAtEndReq(
   const std::string & xml_tag_name,
-  const BT::NodeConfiguration & conf)
+  const BT::NodeConfig & conf)
 : ActionNodeBase(xml_tag_name, conf)
 {
   action_map_ =
     config().blackboard->get<std::shared_ptr<std::map<std::string, ActionExecutionInfo>>>(
     "action_map");
+  std::ignore = config().blackboard->get("trace", trace_);
 
   problem_client_ =
     config().blackboard->get<std::shared_ptr<plansys2::ProblemExpertClient>>(
@@ -44,16 +45,28 @@ CheckAtEndReq::tick()
 
   auto node = config().blackboard->get<rclcpp_lifecycle::LifecycleNode::SharedPtr>("node");
 
-  auto reqs = (*action_map_)[action].durative_action_info->at_end_requirements;
+  if ((*action_map_)[action].action_info.is_action()) {
+    return BT::NodeStatus::SUCCESS;
+  }
 
-  if (!check(reqs, problem_client_)) {
+  auto reqs = (*action_map_)[action].action_info.get_at_end_requirements();
+
+  if (!check_in_expert(reqs, problem_client_)) {
     (*action_map_)[action].execution_error_info = "Error checking at end requirements";
 
     RCLCPP_ERROR_STREAM(
       node->get_logger(),
       "[" << action << "]" << (*action_map_)[action].execution_error_info << ": " <<
-        parser::pddl::toString((*action_map_)[action].durative_action_info->at_end_requirements));
+        parser::pddl::toString(reqs));
 
+    if (trace_) {
+      trace_->event(
+        ExecutionTrace::Event::FAILURE, action,
+        "its at end requirements do not hold: " + ExecutionTrace::unmet(
+          reqs, [this](const plansys2_msgs::msg::Tree & part) {
+            return check_in_expert(part, problem_client_);
+          }));
+    }
     return BT::NodeStatus::FAILURE;
   } else {
     return BT::NodeStatus::SUCCESS;

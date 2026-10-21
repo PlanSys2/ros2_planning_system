@@ -15,13 +15,21 @@
 #include <memory>
 
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
+#include "plansys2_core/ClientNode.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<plansys2::DomainExpertNode>();
-  rclcpp::spin(node->get_node_base_interface());
+
+  // Multi-threaded, as in plansys2_node: a callback may wait for a client of the node.
+  // EventsExecutor is deprecated; EventsCBGExecutor delays bursts of actions_hub messages (#449)
+  rclcpp::executors::MultiThreadedExecutor executor(
+    rclcpp::ExecutorOptions(), plansys2::kComponentThreads);
+  executor.add_node(node->get_node_base_interface());
+  executor.spin();
+  executor.remove_node(node->get_node_base_interface());
   rclcpp::shutdown();
 
   return 0;

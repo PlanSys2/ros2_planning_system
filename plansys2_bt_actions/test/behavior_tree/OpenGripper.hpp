@@ -17,8 +17,8 @@
 
 #include <string>
 
-#include "behaviortree_cpp_v3/behavior_tree.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 namespace plansys2_bt_tests
 {
@@ -28,7 +28,7 @@ class OpenGripper : public BT::ActionNodeBase
 public:
   explicit OpenGripper(
     const std::string & xml_tag_name,
-    const BT::NodeConfiguration & conf);
+    const BT::NodeConfig & conf);
 
   void halt();
   BT::NodeStatus tick();

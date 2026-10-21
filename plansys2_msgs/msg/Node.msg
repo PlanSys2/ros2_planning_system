@@ -11,24 +11,37 @@ uint8 FUNCTION = 6
 uint8 EXPRESSION = 7
 uint8 FUNCTION_MODIFIER = 8
 uint8 NUMBER = 9
+uint8 CONSTANT = 10
+uint8 PARAMETER = 11
+uint8 EXISTS = 12
+# Values are unique across node, expression and modifier types
+uint8 FORALL = 27
+uint8 IMPLY = 28
+# Conditional effect: its children are the condition and the effect
+uint8 WHEN = 29
+# PDDL3 soft condition: its name is the preference, its child the condition
+uint8 PREFERENCE = 30
+# PDDL3 modal constraint: its name is the operator (always, within, at end...); its children are
+# the times, as numbers, and then the conditions
+uint8 CONSTRAINT = 31
 
 # Expression types
-uint8 COMP_EQ = 10
-uint8 COMP_GE = 11
-uint8 COMP_GT = 12
-uint8 COMP_LE = 13
-uint8 COMP_LT = 14
-uint8 ARITH_MULT = 15
-uint8 ARITH_DIV = 16
-uint8 ARITH_ADD = 17
-uint8 ARITH_SUB = 18
+uint8 COMP_EQ = 13
+uint8 COMP_GE = 14
+uint8 COMP_GT = 15
+uint8 COMP_LE = 16
+uint8 COMP_LT = 17
+uint8 ARITH_MULT = 18
+uint8 ARITH_DIV = 19
+uint8 ARITH_ADD = 20
+uint8 ARITH_SUB = 21
 
 # Function modifier types
-uint8 ASSIGN = 19
-uint8 INCREASE = 20
-uint8 DECREASE = 21
-uint8 SCALE_UP = 22
-uint8 SCALE_DOWN = 23
+uint8 ASSIGN = 22
+uint8 INCREASE = 23
+uint8 DECREASE = 24
+uint8 SCALE_UP = 25
+uint8 SCALE_DOWN = 26
 
 uint8 node_type
 uint8 expression_type
@@ -40,4 +53,6 @@ uint32[] children
 string name
 plansys2_msgs/Param[] parameters
 float64 value
+# An object fluent (a FUNCTION of an object type): the object it has; value is then unused
+string object
 bool negate

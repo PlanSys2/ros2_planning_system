@@ -2,6 +2,41 @@
 Changelog for package plansys2_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Fixes in the Python support, the terminal, and the rqt and TUI tools (`#500 <https://github.com/PlanSys2/ros2_planning_system/pull/500>`_)
+* Build plansys2_tools against Qt6 when qt_gui_cpp uses it (`#420 <https://github.com/PlanSys2/ros2_planning_system/pull/420>`_)
+* Contributors: Francisco Martín Rico
+
+3.1.0 (2026-07-28)
+------------------
+* Adaptation to the new Qt version
+* Deprecate BTAction with rate. Fix all warnings
+* Fix RQT plugins
+* Set C++23 as default
+* tools: conditionally include .hpp (vs .h)
+  Headers have been renamed in Rolling & Kilted.
+* Contributors: Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende, gavanderhoorn
+
+3.0.0 (2025-06-06)
+------------------
+* Revamp CMake and clean unused headers
+* Move pluginlib
+* Update CMakeLists to manage dependencies more efficiently in various packages.
+* Update CI adding BT.CPP as source dependecy
+* Fix deprecation of ament_target_dependencies
+* Multiple plans and replanning stability
+* Linting and fixing tests
+* Add stability to RQT Plan plugin
+* Remve specification for C++17
+* Fix CI after BT-CPP v4
+* Contributors: Alberto Tudela, Francisco Martín Rico, Josh Zapf, Marco Roveri, Splinter1984
+
+
 2.0.9 (2022-07-10)
 ------------------
 * Humble Upgrade

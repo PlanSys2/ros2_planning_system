@@ -2,7 +2,7 @@
   (:domain simple)
   (:objects
     leia - robot
-    Jack - person
+    Jack Alice - person
     kitchen bedroom - room
     m1 - message
   )
@@ -16,7 +16,7 @@
 
   ;; The goal is to have both packages delivered to their destinations:
   (:goal (and
-    (robot_talk leia m1 Jack) 
+    (robot_talk leia m1 Jack)
     )
   )
   )

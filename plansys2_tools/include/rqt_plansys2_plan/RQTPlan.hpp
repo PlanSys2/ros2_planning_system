@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 #ifndef RQT_PLANSYS2_PLAN__RQTPLAN_HPP_
 #define RQT_PLANSYS2_PLAN__RQTPLAN_HPP_
 
 #include <ui_rqt_plansys2_plan.h>
-#include <rqt_gui_cpp/plugin.h>
-
 
 #include <QAction>
 #include <QImage>
@@ -29,7 +28,15 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
+
+#include "rclcpp/version.h"
+#if RCLCPP_VERSION_GTE(29, 0, 0)
+#include "rqt_gui_cpp/plugin.hpp"
+#else
+#include "rqt_gui_cpp/plugin.h"
+#endif
 
 #include "rqt_plansys2_plan/PlanTree.hpp"
 
@@ -70,11 +77,13 @@ private:
 
   std::map<std::string, plansys2_msgs::msg::ActionExecutionInfo::UniquePtr> plan_info_;
   plansys2_msgs::msg::Plan::UniquePtr plan_;
+  plansys2_msgs::msg::Plan::UniquePtr new_plan_;
 
   rclcpp::Subscription<plansys2_msgs::msg::ActionExecutionInfo>::SharedPtr action_execution_info_;
   rclcpp::Subscription<plansys2_msgs::msg::Plan>::SharedPtr executing_plan_;
-  bool need_update_plan_;
-  bool need_update_info_;
+  bool need_update_plan_ {false};
+  bool need_update_info_ {false};
+  std::mutex mutex_;
 
   void execution_info_callback(plansys2_msgs::msg::ActionExecutionInfo::UniquePtr msg);
   void plan_callback(plansys2_msgs::msg::Plan::UniquePtr msg);

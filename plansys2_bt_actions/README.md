@@ -8,19 +8,17 @@ These parameters are
 1. `action_name`: The name of the `plansys2` action to implement. Note that this name must match what is in your pddl domain file.
 2. `bt_xml_file`: An absolute path to the BT `.xml` file to execute.
 3. `plugins`: a list of BehaviorTree.CPP shared libraries to load. Any BT node which is in the `.xml` but is not provided by the BehaviorTree.CPP library itself must be in one of the libraries specified
-4. `enable_groot_monitoring`: a boolean which specifies if ZMQ publisher should be created, for use with [Groot](https://github.com/BehaviorTree/Groot) (default is `false`)
-5. `publisher_port`: the ZMQ publisher port to use (if `enable_groot_monitoring` is enabled)
-6. `server_port`: the ZMQ server port to use (if `enable_groot_monitoring` is enabled)
-7. `max_msgs_per_second`: max ZMQ messages per second (if `enable_groot_monitoring` is enabled)
-8. `bt_file_logging`: a boolean which [enables logging of BT state changes in `.fbl` files](https://www.behaviortree.dev/tutorial_05_subtrees/), useful for playing back behavior tree execution using `Groot` (default is `false`)
-9. `bt_minitrace_logging`: a boolean which enables logging of `.json` files for recording the execution time of each node (default is `false`)
+4. `enable_groot_monitoring`: a boolean which specifies if a Groot2 publisher should be created, for use with [Groot](https://www.behaviortree.dev/groot/) (default is `false`)
+5. `server_port`: the Groot2 server port to use (if `enable_groot_monitoring` is enabled)
+6. `bt_file_logging`: a boolean which [enables logging of BT state changes in `.btlog` files](https://www.behaviortree.dev/docs/tutorial-basics/tutorial_11_groot2), useful for playing back behavior tree execution using `Groot2` (default is `false`)
+7. `bt_minitrace_logging`: a boolean which enables logging of `.json` files for recording the execution time of each node (default is `false`)
 
-Files created by the `.fbl` and minitrace loggers are stored in `/tmp/<node_name>/`, with names containing a timestamp.
+Files created by the `.btlog` and minitrace loggers are stored in `<temp dir>/plansys2/<namespace>/<node_name>/` (usually `/tmp/plansys2/...`), with names containing a timestamp.
 
 ### BT node for calling ROS2 action servers
 The `BtActionNode` template class provides a convenient means of calling ROS2 action servers from within a BT.  It takes care of the details of setting up and handling a ROS action client, reducing code duplication and providing a simple API.
 
-The template parameter for the class is the type of ROS action (e.g. `action_tutorials_interfaces::action::Fibonacci`) to be used. The node's constructor takes in three arguments: the XML tag name, the ROS topic for the action server (e.g. `/namepace/server_name`), and a `BT::NodeConfiguration`.  Note that the XML name and `NodeConfiguration` are the same as any other BT.CPP node.
+The template parameter for the class is the type of ROS action (e.g. `action_tutorials_interfaces::action::Fibonacci`) to be used. The node's constructor takes in three arguments: the XML tag name, the ROS topic for the action server (e.g. `/namepace/server_name`), and a `BT::NodeConfig`.  Note that the XML name and `NodeConfig` are the same as any other BT.CPP node.
 
 There are several functions which are provided for the end user to use/implement (some of which are optional).
 1. `static BT::PortsList providedPorts()`: every BT node which uses ports must define this member function.  A default implementation is provided, but you are free to override it if additional ports are desired.  By default, the function returns two input ports: `server_name` (string) and `server_timeout` (double).  These ports can be preserved when overriding using `providedBasicPorts`

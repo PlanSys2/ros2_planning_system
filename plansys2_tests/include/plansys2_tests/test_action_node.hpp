@@ -33,19 +33,16 @@ class TestAction : public plansys2::ActionExecutorClient
 public:
   using Ptr = std::shared_ptr<TestAction>;
   static Ptr make_shared(
-    const std::string & action,
-    const std::chrono::seconds & rate = 1s, float increment = 0.4)
+    const std::string & action, float increment = 0.4)
   {
-    auto ret = std::make_shared<TestAction>(action, rate, increment);
+    auto ret = std::make_shared<TestAction>(action, increment);
     ret->set_parameter(rclcpp::Parameter("action_name", action));
+    ret->set_parameter(rclcpp::Parameter("rate", 1.0));
     ret->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     return ret;
   }
 
-  TestAction(
-    const std::string & action_name,
-    const std::chrono::seconds & rate = 1s,
-    float increment = 0.4);
+  explicit TestAction(const std::string & action_name, float increment = 0.4);
 
 private:
   void do_work();

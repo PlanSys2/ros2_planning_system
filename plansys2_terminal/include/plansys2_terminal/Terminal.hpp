@@ -39,10 +39,13 @@ char ** completer(const char * text, int start, int end);
 std::optional<plansys2_msgs::msg::Plan>
 parse_plan(const std::string planfile);
 
+// Ctrl-C: cancels the plan in execution; safe to call from a signal handler
+void interrupt();
+
 class Terminal : public rclcpp::Node
 {
 public:
-  Terminal();
+  explicit Terminal(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   virtual void run_console();
 
@@ -54,6 +57,9 @@ protected:
   virtual void clean_command(std::string & command);
 
   virtual void process_get_model_predicate(
+    std::vector<std::string> & command,
+    std::ostringstream & os);
+  virtual void process_get_model_derived_predicate(
     std::vector<std::string> & command,
     std::ostringstream & os);
   virtual void process_get_model_function(
@@ -70,6 +76,7 @@ protected:
   virtual void process_set_predicate(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_set_function(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_set_goal(std::vector<std::string> & command, std::ostringstream & os);
+  virtual void process_set_metric(std::vector<std::string> & command, std::ostringstream & os);
   virtual void process_set(std::vector<std::string> & command, std::ostringstream & os);
 
   virtual void process_remove_instance(std::vector<std::string> & command, std::ostringstream & os);
@@ -95,6 +102,9 @@ protected:
     bool inside_source = false);
 
   virtual void process_source(std::vector<std::string> & command, std::ostringstream & os);
+
+  virtual bool dispatch_command(
+    std::vector<std::string> & tokens, std::ostringstream & os, bool inside_source);
 
   virtual void process_help(std::vector<std::string> & command, std::ostringstream & os);
 

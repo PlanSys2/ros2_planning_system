@@ -9,9 +9,6 @@ room    - object
 teleporter_room - room
 )
 
-(:constants
-)
-
 (:predicates
 (person_at ?p - person ?ro - room)
 (robot_at ?r - robot ?ro - room)
