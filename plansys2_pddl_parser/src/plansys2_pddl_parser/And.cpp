@@ -11,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <memory>
+
 #include "plansys2_pddl_parser/Domain.hpp"
 
 namespace parser
@@ -51,9 +53,9 @@ void And::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
 {
   for (f.next(); f.getChar() != ')'; f.next()) {
     f.assert_token("(");
-    Condition * condition = d.createCondition(f);
+    std::unique_ptr<Condition> condition(d.createCondition(f));
     condition->parse(f, ts, d);
-    conds.push_back(condition);
+    conds.push_back(condition.release());
   }
   ++f.c;
 }

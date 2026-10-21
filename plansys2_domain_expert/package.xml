@@ -2,30 +2,31 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>plansys2_domain_expert</name>
-  <version>2.0.18</version>
-  
+  <version>4.0.0</version>
+
   <description>This package contains the Domain Expert module for the ROS2 Planning System</description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
- 
+
   <license>Apache License, Version 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-  <depend>rclcpp_action</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>ament_index_cpp</depend>
   <depend>plansys2_pddl_parser</depend>
   <depend>plansys2_msgs</depend>
   <depend>plansys2_core</depend>
-  <depend>plansys2_popf_plan_solver</depend>
+  <depend>kairos</depend>
   <depend>std_msgs</depend>
-  <depend>lifecycle_msgs</depend>
- 
+
+
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>lifecycle_msgs</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

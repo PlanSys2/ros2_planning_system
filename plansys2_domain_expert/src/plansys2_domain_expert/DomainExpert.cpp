@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "plansys2_domain_expert/DomainExpert.hpp"
 
 #include <optional>
 #include <algorithm>
@@ -20,9 +19,57 @@
 #include <vector>
 #include <memory>
 
+#include "plansys2_domain_expert/DomainExpert.hpp"
+#include "plansys2_msgs/msg/node.hpp"
+#include "plansys2_pddl_parser/Domain.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 namespace plansys2
 {
+
+namespace
+{
+
+// The blocks of a domain that PlanSys2 does not read, "(:process heat)": the reader drops them
+std::vector<std::string> unread_blocks(const std::string & domain)
+{
+  static const std::vector<std::string> read = {
+    "domain", ":requirements", ":types", ":constants", ":predicates", ":functions", ":action",
+    ":durative-action", ":derived", ":process", ":event", ":constraints"};
+  std::vector<std::string> ret;
+  int depth = 0;
+  for (size_t i = 0; i < domain.size(); i++) {
+    if (domain[i] == ';') {
+      i = domain.find('\n', i);
+      if (i == std::string::npos) {
+        break;
+      }
+    } else if (domain[i] == ')') {
+      depth--;
+    } else if (domain[i] == '(' && ++depth == 2) {
+      // Its head, and the name after it
+      std::vector<std::string> words;
+      size_t j = i + 1;
+      while (words.size() < 2 && j < domain.size() && domain[j] != '(' && domain[j] != ')') {
+        const auto start = domain.find_first_not_of(" \t\r\n", j);
+        if (start == std::string::npos || domain[start] == '(' || domain[start] == ')') {
+          break;
+        }
+        j = domain.find_first_of(" \t\r\n()", start);
+        auto word = domain.substr(start, j - start);
+        std::transform(word.begin(), word.end(), word.begin(), ::tolower);
+        words.push_back(word);
+      }
+      if (!words.empty() && std::find(read.begin(), read.end(), words[0]) == read.end()) {
+        ret.push_back(
+          "(" + words[0] + (words.size() > 1 ? " " + words[1] : "") + ")");
+      }
+    }
+  }
+  return ret;
+}
+
+}  // namespace
 
 DomainExpert::DomainExpert(const std::string & domain)
 {
@@ -36,12 +83,111 @@ DomainExpert::extendDomain(const std::string & domain)
 
   domain_ = std::make_shared<parser::pddl::Domain>();
 
+  // Kept to be told: a domain read in part has no actions, and plans fail much later
+  parse_error_.clear();
   try {
     domain_->parse(domains_.get_joint_domain());
   } catch (const std::exception & e) {
-    std::cerr << "\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nError parsing PDDL: " << e.what() << std::endl;
+    parse_error_ = e.what();
     std::cerr << "Error parsing PDDL: " << e.what() << std::endl;
   }
+
+  // Dropped, they would be lost: what is in them would just not happen
+  const auto unread = unread_blocks(domain);
+  if (parse_error_.empty() && !unread.empty()) {
+    parse_error_ = "PlanSys2 does not handle";
+    for (const auto & block : unread) {
+      parse_error_ += " " + block;
+    }
+  }
+}
+
+std::vector<std::string>
+DomainExpert::getUnsupported()
+{
+  // Building the trees of each action is what throws for a construct with no tree
+  std::vector<std::string> ret;
+  for (const auto & action : getActions()) {
+    try {
+      getAction(action);
+    } catch (const std::exception & e) {
+      ret.push_back("action " + action + ": " + e.what());
+    }
+  }
+  for (const auto & action : getDurativeActions()) {
+    try {
+      getDurativeAction(action);
+    } catch (const std::exception & e) {
+      ret.push_back("durative action " + action + ": " + e.what());
+    }
+  }
+  for (const auto & process : getProcesses()) {
+    try {
+      getProcess(process);
+    } catch (const std::exception & e) {
+      ret.push_back("process " + process + ": " + e.what());
+    }
+  }
+  for (const auto & event : getEvents()) {
+    try {
+      getEvent(event);
+    } catch (const std::exception & e) {
+      ret.push_back("event " + event + ": " + e.what());
+    }
+  }
+  for (const auto & derived : getDerivedPredicates()) {
+    try {
+      getDerivedPredicate(derived.predicate.name);
+    } catch (const std::exception & e) {
+      ret.push_back("derived predicate " + derived.predicate.name + ": " + e.what());
+    }
+  }
+  return ret;
+}
+
+bool
+DomainExpert::changeDomain(const std::string & domain)
+{
+  if (domain.find_first_not_of(" \t\r\n") == std::string::npos) {
+    std::cerr << "Empty domain" << std::endl;
+    return false;
+  }
+
+  const int nesting = parser::pddl::getMaxNesting(domain);
+  if (nesting < 0 || nesting > parser::pddl::kMaxNestingDepth) {
+    std::cerr << "Domain has " <<
+      (nesting < 0 ? "unbalanced parentheses" : "too deep nesting") << std::endl;
+    return false;
+  }
+
+  // DomainReader picks the domain apart by text search and tolerates garbage, so
+  // the text as given must parse on its own first
+  try {
+    parser::pddl::Domain check;
+    check.parse(domain);
+    if (check.name.empty()) {
+      std::cerr << "Domain has no name" << std::endl;
+      return false;
+    }
+  } catch (const std::exception & e) {
+    std::cerr << "Error parsing PDDL: " << e.what() << std::endl;
+    return false;
+  }
+
+  DomainReader new_domains;
+  new_domains.add_domain(domain);
+
+  auto new_domain = std::make_shared<parser::pddl::Domain>();
+  try {
+    new_domain->parse(new_domains.get_joint_domain());
+  } catch (const std::exception & e) {
+    std::cerr << "Error parsing PDDL: " << e.what() << std::endl;
+    return false;
+  }
+
+  domain_ = new_domain;
+  domains_ = new_domains;
+  return true;
 }
 
 std::string
@@ -63,11 +209,25 @@ DomainExpert::getTypes()
 }
 
 std::vector<std::string>
+DomainExpert::getSubTypes(const std::string & type)
+{
+  std::vector<std::string> ret;
+  int index = domain_->types.index(type);  // getType() would add an unknown type
+  if (index >= 0) {
+    domain_->types[index]->getSubTypesNames(ret);
+  }
+  return ret;
+}
+
+std::vector<std::string>
 DomainExpert::getConstants(const std::string & type)
 {
   if (!domain_->typed) {return std::vector<std::string>();}
 
-  return domain_->getType(type)->constants.tokens;
+  // types.index, not getType: asking for a type must not add it to the domain
+  const int i = domain_->types.index(type);
+  if (i < 0) {return std::vector<std::string>();}
+  return domain_->types[i]->constants.tokens;
 }
 
 std::vector<plansys2::Predicate>
@@ -155,6 +315,10 @@ DomainExpert::getFunction(const std::string & function)
         domain_->types[domain_->funcs[i]->params[j]]->getSubTypesNames(param.sub_types);
         ret.parameters.push_back(param);
       }
+      // An object fluent: the type of the objects it has
+      if (domain_->funcs[i]->returnType >= 0) {
+        ret.object = domain_->types[domain_->funcs[i]->returnType]->name;
+      }
     }
     i++;
   }
@@ -166,17 +330,45 @@ DomainExpert::getFunction(const std::string & function)
   }
 }
 
-std::vector<plansys2::Predicate>
+plansys2_msgs::msg::Derived DomainExpert::getDerivedFromDomain(
+  const unsigned int & derived_index, const std::vector<std::string> & params)
+{
+  plansys2_msgs::msg::Derived derived;
+  derived.predicate.name = domain_->derived[derived_index]->name;
+  derived.predicate.node_type = plansys2_msgs::msg::Node::PREDICATE;
+
+  // Parameters
+  for (unsigned j = 0; j < domain_->derived[derived_index]->params.size(); j++) {
+    plansys2_msgs::msg::Param param;
+    param.name = "?" + domain_->types[domain_->derived[derived_index]->params[j]]->getName() +
+      std::to_string(j);
+    param.type = domain_->types[domain_->derived[derived_index]->params[j]]->name;
+    domain_->types[domain_->derived[derived_index]->params[j]]->getSubTypesNames(param.sub_types);
+    derived.predicate.parameters.push_back(param);
+  }
+
+  // Preconditions
+  if (domain_->derived[derived_index]->cond) {
+    domain_->derived[derived_index]->cond->getTree(derived.preconditions, *domain_, params);
+  }
+
+  return derived;
+}
+
+std::vector<plansys2_msgs::msg::Derived>
 DomainExpert::getDerivedPredicates()
 {
-  std::vector<plansys2::Predicate> ret;
+  std::vector<plansys2_msgs::msg::Derived> ret;
   for (unsigned i = 0; i < domain_->derived.size(); i++) {
-    plansys2_msgs::msg::Node pred;
-    pred.node_type = plansys2_msgs::msg::Node::PREDICATE;
-    pred.name = domain_->derived[i]->name;
-    ret.push_back(pred);
+    ret.push_back(getDerivedFromDomain(i));
   }
   return ret;
+}
+
+plansys2::DerivedResolutionGraph
+DomainExpert::getDerivedResolutionGraph()
+{
+  return plansys2::DerivedResolutionGraph(getDerivedPredicates());
 }
 
 std::vector<plansys2_msgs::msg::Derived>
@@ -194,30 +386,78 @@ DomainExpert::getDerivedPredicate(
 
   while (i < domain_->derived.size()) {
     if (domain_->derived[i]->name == predicate_search) {
-      plansys2_msgs::msg::Derived derived;
-      derived.predicate.name = predicate_search;
-
-      // Parameters
-      for (unsigned j = 0; j < domain_->derived[i]->params.size(); j++) {
-        plansys2_msgs::msg::Param param;
-        param.name = "?" + domain_->types[domain_->derived[i]->params[j]]->getName() +
-          std::to_string(j);
-        param.type = domain_->types[domain_->derived[i]->params[j]]->name;
-        domain_->types[domain_->derived[i]->params[j]]->getSubTypesNames(param.sub_types);
-        derived.predicate.parameters.push_back(param);
-      }
-
-      // Preconditions
-      if (domain_->derived[i]->cond) {
-        domain_->derived[i]->cond->getTree(derived.preconditions, *domain_, params);
-      }
-
-      ret.push_back(derived);
+      ret.push_back(getDerivedFromDomain(i, params));
     }
     i++;
   }
 
   return ret;
+}
+
+namespace
+{
+// A process or an event as an action: parameters, precondition and effect
+plansys2_msgs::msg::Action::SharedPtr happening(
+  parser::pddl::Domain & domain, parser::pddl::TokenStruct<parser::pddl::Action *> & list,
+  const std::string & name, const std::vector<std::string> & params)
+{
+  std::string search = name;
+  std::transform(search.begin(), search.end(), search.begin(), ::tolower);
+  const int index = list.index(search);
+  if (index < 0) {
+    return {};
+  }
+  auto * found = list[index];
+  auto ret = std::make_shared<plansys2_msgs::msg::Action>();
+  ret->name = name;
+  for (unsigned j = 0; j < found->params.size(); j++) {
+    plansys2_msgs::msg::Param param;
+    param.name = j < params.size() ? params[j] : "?" + std::to_string(j);
+    param.type = domain.types[found->params[j]]->name;
+    domain.types[found->params[j]]->getSubTypesNames(param.sub_types);
+    ret->parameters.push_back(param);
+  }
+  if (found->pre) {
+    found->pre->getTree(ret->preconditions, domain, params);
+  }
+  if (found->eff) {
+    found->eff->getTree(ret->effects, domain, params);
+  }
+  return ret;
+}
+
+std::vector<std::string> names(const parser::pddl::TokenStruct<parser::pddl::Action *> & list)
+{
+  std::vector<std::string> ret;
+  for (unsigned i = 0; i < list.size(); i++) {
+    ret.push_back(list[i]->name);
+  }
+  return ret;
+}
+}  // namespace
+
+std::vector<std::string>
+DomainExpert::getProcesses()
+{
+  return names(domain_->processes);
+}
+
+plansys2_msgs::msg::Action::SharedPtr
+DomainExpert::getProcess(const std::string & process, const std::vector<std::string> & params)
+{
+  return happening(*domain_, domain_->processes, process, params);
+}
+
+std::vector<std::string>
+DomainExpert::getEvents()
+{
+  return names(domain_->events);
+}
+
+plansys2_msgs::msg::Action::SharedPtr
+DomainExpert::getEvent(const std::string & event, const std::vector<std::string> & params)
+{
+  return happening(*domain_, domain_->events, event, params);
 }
 
 std::vector<std::string>
@@ -226,7 +466,6 @@ DomainExpert::getActions()
   std::vector<std::string> ret;
   for (unsigned i = 0; i < domain_->actions.size(); i++) {
     bool is_action = dynamic_cast<parser::pddl::TemporalAction *>(domain_->actions[i]) == nullptr;
-    parser::pddl::Action * action_obj = dynamic_cast<parser::pddl::Action *>(domain_->actions[i]);
     if (is_action) {
       ret.push_back(domain_->actions[i]->name);
     }
@@ -294,8 +533,6 @@ DomainExpert::getDurativeActions()
   for (unsigned i = 0; i < domain_->actions.size(); i++) {
     bool is_durative_action =
       dynamic_cast<parser::pddl::TemporalAction *>(domain_->actions[i]) != nullptr;
-    parser::pddl::TemporalAction * action_obj =
-      dynamic_cast<parser::pddl::TemporalAction *>(domain_->actions[i]);
     if (is_durative_action) {
       ret.push_back(domain_->actions[i]->name);
     }
@@ -360,6 +597,35 @@ DomainExpert::getDurativeAction(const std::string & action, const std::vector<st
       // Effects AtEnd
       if (action_obj->eff_e) {
         action_obj->eff_e->getTree(ret->at_end_effects, *domain_, params);
+      }
+
+      // Continuous effects, while it runs
+      if (action_obj->eff_c && !action_obj->eff_c->conds.empty()) {
+        action_obj->eff_c->getTree(ret->continuous_effects, *domain_, params);
+      }
+
+      // Duration: (and (<op> ?duration <expression>)...)
+      if (!action_obj->durationConstraints.empty()) {
+        plansys2_msgs::msg::Node conjunction;
+        conjunction.node_type = plansys2_msgs::msg::Node::AND;
+        conjunction.node_id = 0;
+        ret->duration.nodes.push_back(conjunction);
+        for (const auto & [op, expression] : action_obj->durationConstraints) {
+          plansys2_msgs::msg::Node comparison;
+          comparison.node_type = plansys2_msgs::msg::Node::EXPRESSION;
+          comparison.expression_type = op == ">=" ? plansys2_msgs::msg::Node::COMP_GE :
+            op == ">" ? plansys2_msgs::msg::Node::COMP_GT :
+            op == "<=" ? plansys2_msgs::msg::Node::COMP_LE :
+            op == "<" ? plansys2_msgs::msg::Node::COMP_LT : plansys2_msgs::msg::Node::COMP_EQ;
+          comparison.node_id = ret->duration.nodes.size();
+          ret->duration.nodes[0].children.push_back(comparison.node_id);
+          ret->duration.nodes.push_back(comparison);
+          parser::pddl::DurationExpression duration_variable;
+          auto left = duration_variable.getTree(ret->duration, *domain_, params);
+          ret->duration.nodes[comparison.node_id].children.push_back(left->node_id);
+          auto right = expression->getTree(ret->duration, *domain_, params);
+          ret->duration.nodes[comparison.node_id].children.push_back(right->node_id);
+        }
       }
     }
     i++;

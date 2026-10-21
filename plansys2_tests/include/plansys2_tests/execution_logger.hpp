@@ -17,10 +17,12 @@
 
 #include <list>
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 #include "plansys2_msgs/msg/action_execution.hpp"
+#include "plansys2_msgs/msg/plan.hpp"
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -39,14 +41,23 @@ public:
 
   ExecutionLogger();
 
-  const std::list<plansys2_msgs::msg::ActionExecution> & get_action_execution_log()
+  // Copies: the subscriptions fill the logs from the thread that spins this node
+  std::list<plansys2_msgs::msg::ActionExecution> get_action_execution_log() const
   {
+    std::lock_guard<std::mutex> lock(mutex_);
     return action_execution_log_;
   }
 
-  const std::list<plansys2_msgs::msg::ActionExecutionInfo> & get_action_execution_info_log()
+  std::list<plansys2_msgs::msg::ActionExecutionInfo> get_action_execution_info_log() const
   {
+    std::lock_guard<std::mutex> lock(mutex_);
     return action_execution_info_log_;
+  }
+
+  // Whether it hears the executor: before that, its messages are lost
+  bool connected() const
+  {
+    return action_execution_info_sub_->get_publisher_count() > 0;
   }
 
   bool finished_before(const std::string & op1, const std::string & op2);
@@ -55,11 +66,18 @@ public:
   bool sorted(const std::list<std::string> & actions);
   bool is_executed(const std::string & action_full_name);
 
+  // The id the executor gives a plan item: "<action>:<start in ms>"
+  static std::string id(const plansys2_msgs::msg::PlanItem & item);
+  // The ids of the plan, in start order; with filter, only the actions that contain it
+  static std::list<std::string> plan_order(
+    const plansys2_msgs::msg::Plan & plan, const std::string & filter = "");
+
 private:
   rclcpp::Subscription<plansys2_msgs::msg::ActionExecution>::SharedPtr action_execution_sub_;
   rclcpp::Subscription<plansys2_msgs::msg::ActionExecutionInfo>::SharedPtr
     action_execution_info_sub_;
 
+  mutable std::mutex mutex_;
   std::list<plansys2_msgs::msg::ActionExecution> action_execution_log_;
   std::list<plansys2_msgs::msg::ActionExecutionInfo> action_execution_info_log_;
 };

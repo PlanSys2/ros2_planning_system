@@ -2,55 +2,124 @@
 Changelog for package plansys2_executor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.18 (2024-12-30)
--------------------
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Fixes in the PDDL parser and the problem expert (`#498 <https://github.com/PlanSys2/ros2_planning_system/pull/498>`_)
+* Executor robustness: Ctrl-C, BT nodes, one-call checks, replanning (`#492 <https://github.com/PlanSys2/ros2_planning_system/pull/492>`_)
+* Take back the at start effects of actions that do not end (`#486 <https://github.com/PlanSys2/ros2_planning_system/pull/486>`_)
+* ActionExecutor and performers: one request, its own messages (`#488 <https://github.com/PlanSys2/ros2_planning_system/pull/488>`_)
+* Shutdown test: one process per moment of the execution cycle (`#482 <https://github.com/PlanSys2/ros2_planning_system/pull/482>`_)
+* Clean Ctrl-C with a plan in execution (`#475 <https://github.com/PlanSys2/ros2_planning_system/pull/475>`_)
+* Kairos plan solver, and Kairos as the default planner (`#465 <https://github.com/PlanSys2/ros2_planning_system/pull/465>`_)
+* STNBTBuilder runs actions with no duration (`#467 <https://github.com/PlanSys2/ros2_planning_system/pull/467>`_)
+* Make STNBTBuilder work again (`#453 <https://github.com/PlanSys2/ros2_planning_system/pull/453>`_)
+* Tests discover only nodes on this host (`#455 <https://github.com/PlanSys2/ros2_planning_system/pull/455>`_)
+* Replace the deprecated EventsExecutor with SingleThreadedExecutor (`#452 <https://github.com/PlanSys2/ros2_planning_system/pull/452>`_)
+* Performers, executor clients and the TUI notice when PlanSys2 goes down (`#448 <https://github.com/PlanSys2/ros2_planning_system/pull/448>`_)
+* ProblemExpertClient: getProblem(true) no longer returns the problem from before the client's own changes (`#440 <https://github.com/PlanSys2/ros2_planning_system/pull/440>`_)
+* Consistent executor goal handling: cancels, replaced goals and result codes (`#439 <https://github.com/PlanSys2/ros2_planning_system/pull/439>`_)
+* Tie the executor thread to the lifecycle and synchronize it (`#437 <https://github.com/PlanSys2/ros2_planning_system/pull/437>`_)
+* Fail the goal instead of crashing when a plan cannot be set up (`#433 <https://github.com/PlanSys2/ros2_planning_system/pull/433>`_)
+* Update domain during execution (`#414 <https://github.com/PlanSys2/ros2_planning_system/pull/414>`_)
+* Contributors: Francisco Martín Rico
+
+3.1.0 (2026-07-28)
+------------------
+* Fix deprecated get_share_directory
+* Fix publish execution Info. TUI and CLI
+* Deprecate BTAction with rate. Fix all warnings
+* Fix  performer hang
+* Fix orphan thread bug in ExecutorNode
+* Fix test
+* Add default
+* Set C++23 as default
+* Use std::string for BT API
+* Remove Eigen dependency export
+* adjust simple_btbuilder_tests.cpp
+* include Action.hpp in BTBuilder.hpp
+* Fix Groot2 monitor format
+* Added BTUtils and JSONUtils to ComputeBT and ExecutorNode
+* Added blackboard keys for compatibility with other nodes
+* Fix formats
+* rm old ActionVariant from ActionExecutor and adjust code
+* add plansys2::SequentialBTBuilder plugin
+* Fix print
+* fix code style
+* Merge branch 'rolling' into getExpr
+* Merge branch 'rolling' into getExpr
+* Added deprecated constructor
+* Merge branch 'PlanSys2:rolling' into fix_predicate_parsing
+* Minor fixes
+* Added explicit to constructor
+* Remove rate of ActionExecutorClient constructor and set as default parameter
+* Minor fix
+* Doc for executor
+* Added Groot2 monitor
+* Merge branch 'rolling' into getExpr
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+
+3.0.0 (2025-06-06)
+------------------
+* Modify export target. Rename metapackage
+* Revamp CMake and clean unused headers
+* Update install
+* Move pluginlib
+* Remove unused dependencies
+* Update CMakeLists to manage dependencies more efficiently in various packages.
+* Update CI adding BT.CPP as source dependecy
+* Fix deprecation of ament_target_dependencies
+* Multiple plans and replanning stability
+* Deactivate suborderred goals test
+* Linting and fixing tests
+* Lint and example for restore at start effect
+* Add getProblemWithTimestamp to Problem Expert
+* Improve stability in Executor
+* Fix goal_handle bug
+* Add flexibility for replan tests
 * Fix get plan services
-* Contributors: Francisco Martín Rico
-
-2.0.17 (2024-12-30)
--------------------
-* Fixing Eigen deps
-* Contributors: Francisco Martín Rico
-
-2.0.16 (2024-12-30)
--------------------
-* Fixing Eigen deps
-* Contributors: Francisco Martín Rico
-
-2.0.15 (2024-12-03)
--------------------
-* Fixing Eigen dep
-* Contributors: Francisco Martín Rico
-
-2.0.14 (2024-11-14)
--------------------
-* Add Eigen depends in package.xml
-* Contributors: Francisco Martín Rico
-
-2.0.13 (2024-11-06)
--------------------
+* Publish current plan
+* Replanning
+* Keep running actions in new plan
+* Multi robot replan test added
+* Fix concurrency bug with publish info
+* Executor basic replanning done
+* Executor refactor
+* Publisher and Service to know the remaining plan during execution
 * Change to EventsExecutor
-* Contributors: Francisco Martín Rico
-
-2.0.12 (2024-10-16)
--------------------
+* Check if action_map\_ is null or don't exists
+* Change to EventsExecutor
+* 🎨 linter for plansys2_pddl_parser
+* execute regular actions
+* fix code style
 * add ActionVariant
 * execute regular actions
-* Remove cmake warning
-* Fix ccplinti and uncrustify
-* fail execute_plan action if initial conditions changed
+* Fix CI after BT-CPP v4
+* Merge branch 'rolling' into add_parameter_for_timeout_of_plan_solver
+* [executor] fail execute_plan action if initial conditions changed
+* [executor] Send Cancelation response to ActionClient
+* [executor] ExecutorNode, remove unused ros node
+* Removed some small references still related to the old version of BehaviorTree.CPP 3.8
+* [executor] Fix ccplinti and uncrustify
+* [executor] fail execute_plan action if initial conditions changed
   We terminate the program is many senarios instead of just returning an
   explict value. We used to terminate if the initial conditions changed
   before the plan is started. Now just send a result that the action
   server failed to execute the plan
-* Send Cancelation response to ActionClient
-* ExecutorNode, remove unused ros node
+* [executor] Send Cancelation response to ActionClient
+* [executor] ExecutorNode, remove unused ros node
 * Removed some small references still related to the old version of BehaviorTree
+* Upgrade to Behaviortree.CPP v4
 * Bump Behaviortree.CPP v3 to v4 - fix executor test
 * Fix Timeout BT Node
+* Bump Behaviortree.CPP v3 to v4
 * Adding imports to stn builder
 * Fixing line-length
 * Adding duration to dotgraphs.
+* Lintering and fix after stn bugs
 * Restore tests and enable warnings
 * Revert STN changes in Executor BT
 * Removing unused or commented out code.
@@ -67,33 +136,44 @@ Changelog for package plansys2_executor
 * Adding action graph to blackboard.
 * Moving STNBTBuilder node and graph structures to parent class.
 * Ensure that every start node has direct link to end node in BT.
+* Check at end reqs in bt builder
+* Fix bt node
 * Change MultiThreaded for SingleThreaded in CI failing tests
 * Change double quotes for simple ones (linter)
 * Insert in blackboard the action ROS 2 Node
 * Adding Eigen3 dependency to plansys2_executor.
 * Removing redundant get_current_time function.
 * Fixing RCLCPP_ERROR message bug.
-* Fixing colcon build warning.
-* Fixing colcon build warnings.
 * Cleaning up code for merge request.
 * Cleaning up changes.
-* Match example is now working!
 * Modified BT by hand to get plan to succeed.
-* BT not finishing.
 * Fixing bug with updating STN time bounds.
 * Adding time propagation step.
 * Don't check time limits on start-end connections.
 * Supporting time-triggered execution.
+* Standalone BT Builder Service
 * Checking for self-referencing edges in STNBTBuilder. Adding standalone compute_bt service.
+* New BT Builder and Plugin Interface
 * bt-builder-plugins: Setting default BT builder plugin to SimpleBTBuilder.
 * bt-builder-plugins: Creating BT builder plugin interface. Moving current BT builder to plugin named SimpleBTBuilder. Adding new and improved STN-based BT builder plugin named STNBTBuilder.
-* Check at end reqs in bt builder
-* Change MultiThreaded for SingleThreaded in CI failing tests
-* Insert in blackboard the action ROS 2 Node
-* Checking for self-referencing edges in STNBTBuilder. Adding standalone compute_bt service.
-* bt-builder-plugins: Setting default BT builder plugin to SimpleBTBuilder.
-* bt-builder-plugins: Creating BT builder plugin interface. Moving current BT builder to plugin named SimpleBTBuilder. Adding new and improved STN-based BT builder plugin named STNBTBuilder.
-* Contributors: Alexander Xydes, Andrianov Roman, Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Mostafa Gomaa, Samuele Sandrini, Splinter1984, robodrome
+* add ActionVariant
+* Remove cmake warning
+* fail execute_plan action if initial conditions changed
+  We terminate the program is many senarios instead of just returning an
+  explict value. We used to terminate if the initial conditions changed
+  before the plan is started. Now just send a result that the action
+  server failed to execute the plan
+* Send Cancelation response to ActionClient
+* ExecutorNode, remove unused ros node
+* Removed some small references still related to the old version of BehaviorTree
+* Bump Behaviortree.CPP v3 to v4 - fix executor test
+* Fix Timeout BT Node
+* Adding imports to stn builder
+* Adding duration to dotgraphs.
+* Removing unused or commented out code.
+* Updating ComputeBT.cpp.
+* Contributors: Alexander Xydes, Alberto Tudela, Alexander Xydes, Andrianov Roman, Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Mostafa Gomaa, Samuele Sandrini, Splinter1984, robodrome
+
 
 2.0.9 (2022-07-10)
 ------------------

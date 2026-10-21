@@ -27,6 +27,7 @@ Derived::Derived(const Derived * z, Domain & d)
 void Derived::PDDLPrint(
   std::ostream & s, unsigned indent, const TokenStruct<std::string> & ts, const Domain & d) const
 {
+  (void)indent;
   s << "( :derived ( " << name;
 
   TokenStruct<std::string> dstruct(ts);
@@ -48,15 +49,20 @@ void Derived::PDDLPrint(
 plansys2_msgs::msg::Node::SharedPtr Derived::getTree(
   plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace) const
 {
+  (void)tree;
+  (void)d;
+  (void)replace;
   throw UnsupportedConstruct("Derived");
 }
 
 void Derived::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
 {
+  (void)ts;
   f.next();
   f.assert_token("(");
   name = f.getToken(d.preds);
   TokenStruct<std::string> dstruct = f.parseTypedList(true, d.types);
+  assertUnique(dstruct, "parameter of " + name);
   params = d.convertTypes(dstruct.types);
 
   f.next();

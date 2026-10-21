@@ -2,50 +2,74 @@
 Changelog for package plansys2_domain_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.18 (2024-12-30)
--------------------
-
-2.0.17 (2024-12-30)
--------------------
-
-2.0.16 (2024-12-30)
--------------------
-
-2.0.15 (2024-12-03)
--------------------
-
-2.0.14 (2024-11-14)
--------------------
-
-2.0.13 (2024-11-06)
--------------------
-* Change to EventsExecutor
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Fixes in the Python support, the terminal, and the rqt and TUI tools (`#500 <https://github.com/PlanSys2/ros2_planning_system/pull/500>`_)
+* Fixes in the PDDL parser and the problem expert (`#498 <https://github.com/PlanSys2/ros2_planning_system/pull/498>`_)
+* Domain change: done once the problem expert has the new domain (`#494 <https://github.com/PlanSys2/ros2_planning_system/pull/494>`_)
+* Domain validation independent of the executor, and one executor per node in the monolithic bringup (`#473 <https://github.com/PlanSys2/ros2_planning_system/pull/473>`_)
+* Kairos plan solver, and Kairos as the default planner (`#465 <https://github.com/PlanSys2/ros2_planning_system/pull/465>`_)
+* forall and imply in conditions, goals and effects (`#462 <https://github.com/PlanSys2/ros2_planning_system/pull/462>`_)
+* Accept objects of any descendant type, not only of direct subtypes (`#461 <https://github.com/PlanSys2/ros2_planning_system/pull/461>`_)
+* Tests discover only nodes on this host (`#455 <https://github.com/PlanSys2/ros2_planning_system/pull/455>`_)
+* Replace the deprecated EventsExecutor with SingleThreadedExecutor (`#452 <https://github.com/PlanSys2/ros2_planning_system/pull/452>`_)
+* Reject malformed PDDL instead of crashing (`#424 <https://github.com/PlanSys2/ros2_planning_system/pull/424>`_)
+* Do not let solvers keep the planner and domain expert nodes alive (`#423 <https://github.com/PlanSys2/ros2_planning_system/pull/423>`_)
+* Update domain during execution (`#414 <https://github.com/PlanSys2/ros2_planning_system/pull/414>`_)
 * Contributors: Francisco Martín Rico
 
-2.0.12 (2024-10-16)
--------------------
+3.1.0 (2026-07-28)
+------------------
+* Fix deprecated get_share_directory
+* Deprecate BTAction with rate. Fix all warnings
+* Set C++23 as default
+* change variable name in getDerivedFromDomain
+* include DerivedResolutionGraph.hpp in DomainExpert.hpp
+* Improve doc for domain and problem
+* Improve doc for Domain
+* Doc for domain expert
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+
+3.0.0 (2025-06-06)
+------------------
+* Modify export target. Rename metapackage
+* Revamp CMake and clean unused headers
+* Update install
+* Remove unused dependencies
+* Update CMakeLists to manage dependencies more efficiently in various packages.
+* Update CI adding BT.CPP as source dependecy
+* Multiple plans and replanning stability
+* Add getProblemWithTimestamp to Problem Expert
+* Replanning
+* Add chached getDomain()
+* Change to EventsExecutor
+* 🎨 linter for plansys2_pddl_parser
 * include "object" in getType
-* fix code style
+* Add support for derived predicates
+* include "object" in getType
 * add params to getDerivedPredicate
 * add tests for getDerivedPredicate(s)
 * add getDerivedPredicate
 * add getDerivedPredicates
 * add DomainReader::get_derived_predicates
-* Small optimization
 * Fixed expected output
-* Remove cmake warning
+* Fix CI after BT-CPP v4
 * Fixed dump of functions/constants/types to handle the case where no funcions/constants/types declared to avoid printing the entry, thus generating a valid PDDL file
-* Remove commented-out line in domain expert node
-* Switch to MultiThreadedExecutor
+* Add option to use planner node to validate domain in domain expert
 * Spin up temporary node for domain validation
 * Add option to use planner node to validate domain in domain expert
-* Reduce copypasta in domain expert
+* Add ability to specify output folder in POPF planner
 * Configure POPF solver in domain expert
-* Merge remote-tracking branch 'upstream/master' into return-stn
-* Merge remote-tracking branch 'origin/humble-devel'
 * Reverting changes to checking for valid domain.
+* Fix deprecation of ament_target_dependencies
+* Add option to use planner node to validate domain in domain expert
 * Supporting time-triggered execution.
-* Contributors: Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Robodrome, Sebastian Castro, Splinter1984
+* Contributors: Alberto Tudela, Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Robodrome, Sebastian Castro, Splinter1984
+
 
 2.0.9 (2022-07-10)
 ------------------

@@ -2,40 +2,53 @@
 Changelog for package plansys2_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.18 (2024-12-30)
--------------------
-
-2.0.17 (2024-12-30)
--------------------
-
-2.0.16 (2024-12-30)
--------------------
-
-2.0.15 (2024-12-03)
--------------------
-
-2.0.14 (2024-11-14)
--------------------
-
-2.0.13 (2024-11-06)
--------------------
-* Change to EventsExecutor
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Clean Ctrl-C with a plan in execution (`#475 <https://github.com/PlanSys2/ros2_planning_system/pull/475>`_)
+* Optional problem_file in both bringups (`#476 <https://github.com/PlanSys2/ros2_planning_system/pull/476>`_)
+* Domain validation independent of the executor, and one executor per node in the monolithic bringup (`#473 <https://github.com/PlanSys2/ros2_planning_system/pull/473>`_)
+* Lifecycle manager: bounded waits and checked states at startup (`#471 <https://github.com/PlanSys2/ros2_planning_system/pull/471>`_)
+* Monolithic bringup: a multi-threaded executor, so the planner does not block the rest (`#469 <https://github.com/PlanSys2/ros2_planning_system/pull/469>`_)
+* Kairos plan solver, and Kairos as the default planner (`#465 <https://github.com/PlanSys2/ros2_planning_system/pull/465>`_)
+* Make STNBTBuilder work again (`#453 <https://github.com/PlanSys2/ros2_planning_system/pull/453>`_)
+* Replace the deprecated EventsExecutor with SingleThreadedExecutor (`#452 <https://github.com/PlanSys2/ros2_planning_system/pull/452>`_)
 * Contributors: Francisco Martín Rico
 
-2.0.12 (2024-10-16)
--------------------
+3.1.0 (2026-07-28)
+------------------
+* Set C++23 as default
+* Fix formats
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+
+3.0.0 (2025-06-06)
+------------------
+* Revamp CMake and clean unused headers
+* Update CMakeLists to manage dependencies more efficiently in various packages.
+* Update CI adding BT.CPP as source dependency
+* Fix deprecation of ament_target_dependencies
+* Multiple plans and replanning stability
+* Option to execute in Real Time
+* Remove unnecessary specification for C++17
+* Change to EventsExecutor
 * Add parameter for timeout of plan solver
+* Integrated feedback, and fixes to have tests to pass
 * Added support for configuring the planner timeout
-* Remove cmake warning
-* Restore tests and enable warnings
+* Use separate problem pddl for problem expert.
 * Use separate problem pddl for problem expert.
 * Simplifying bound checkin logic.
-* Change double quotes for simple ones (linter)
+* Fix bt node
 * Make explicit which BTCreator is being used
+* New BT Builder and Plugin Interface
 * bt-builder-plugins: Setting default BT builder plugin to SimpleBTBuilder.
 * bt-builder-plugins: Creating BT builder plugin interface. Moving current BT builder to plugin named SimpleBTBuilder. Adding new and improved STN-based BT builder plugin named STNBTBuilder.
+* add system status check
 * revert if statement
-* Contributors: Francisco Martín Rico, Josh Zapf, Marco Roveri, Splinter1984
+* Merge remote-tracking branch 'upstream/master'
+* Contributors: Alberto Tudela, Francisco Martín Rico, Josh Zapf, Marco Roveri, Splinter1984, adfea625
 
 2.0.9 (2022-07-10)
 ------------------

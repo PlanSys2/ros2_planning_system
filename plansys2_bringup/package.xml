@@ -2,12 +2,12 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>plansys2_bringup</name>
-  <version>2.0.18</version>
-  
+  <version>4.0.0</version>
+
   <description>Bringup scripts and configurations for the ROS2 Planning System</description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
- 
+
   <license>Apache License, Version 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -17,14 +17,23 @@
   <depend>plansys2_problem_expert</depend>
   <depend>plansys2_planner</depend>
   <depend>plansys2_executor</depend>
-  <depend>plansys2_lifecycle_manager</depend>
+  <depend>rclcpp_lifecycle</depend>
+  <depend>lifecycle_msgs</depend>
 
   <exec_depend>launch_ros</exec_depend>
+  <!-- The distributed bringup starts its lifecycle_manager -->
+  <exec_depend>plansys2_lifecycle_manager</exec_depend>
 
-  <test_depend>ament_lint_common</test_depend>
+  <test_depend>ament_index_python</test_depend>
   <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
   <test_depend>launch</test_depend>
   <test_depend>launch_testing</test_depend>
+  <test_depend>launch_testing_ament_cmake</test_depend>
+  <test_depend>plansys2_msgs</test_depend>
+  <test_depend>plansys2_popf_plan_solver</test_depend>
+  <test_depend>rcl_interfaces</test_depend>
+  <test_depend>rclpy</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

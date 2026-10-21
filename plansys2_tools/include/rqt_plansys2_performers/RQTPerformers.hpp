@@ -28,12 +28,17 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 
+#include "rclcpp/version.h"
+#if RCLCPP_VERSION_GTE(29, 0, 0)
+#include "rqt_gui_cpp/plugin.hpp"
+#else
 #include "rqt_gui_cpp/plugin.h"
+#endif
 
 #include "rqt_plansys2_performers/PerformersTree.hpp"
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
 
 #include "plansys2_msgs/msg/action_performer_status.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -70,9 +75,8 @@ private:
 
   std::map<std::string, plansys2_msgs::msg::ActionPerformerStatus::UniquePtr> performers_info_;
   rclcpp::Subscription<plansys2_msgs::msg::ActionPerformerStatus>::SharedPtr performers_sub_;
-  bool need_update_;
-
-  std::shared_ptr<plansys2::ProblemExpertClient> problem_;
+  bool need_update_ {false};
+  std::mutex mutex_;
 
   void performers_callback(plansys2_msgs::msg::ActionPerformerStatus::UniquePtr msg);
   std::optional<QTreeWidgetItem *> get_performer_line(const std::string & performer_name);

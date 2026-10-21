@@ -11,6 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <stdexcept>
+#include <string>
+
 #include "plansys2_pddl_parser/Domain.hpp"
 
 namespace parser
@@ -21,6 +24,7 @@ namespace pddl
 void TypeGround::PDDLPrint(
   std::ostream & s, unsigned indent, const TokenStruct<std::string> & ts, const Domain & d) const
 {
+  (void)ts;
   tabindent(s, indent);
   s << "( " << name;
   for (unsigned i = 0; i < params.size(); ++i) {
@@ -47,8 +51,7 @@ void TypeGround::insert(Domain & d, const StringVec & v)
       if (q.first) {
         params[i] = q.second;
       } else {
-        std::cerr << "Unknown object " << v[i] << "\n";
-        std::exit(1);
+        throw std::runtime_error("Unknown object " + v[i]);
       }
     }
   }
@@ -56,6 +59,7 @@ void TypeGround::insert(Domain & d, const StringVec & v)
 
 void TypeGround::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
 {
+  (void)ts;
   f.next();
   params.resize(lifted->params.size());
   for (unsigned i = 0; i < lifted->params.size(); ++i, f.next()) {

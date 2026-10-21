@@ -1,3 +1,4 @@
 plansys2_msgs/Node node
 ---
 bool exist
+string error_info  # plansys2::kNotActive when its component cannot answer

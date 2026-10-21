@@ -23,19 +23,9 @@ void Imply::PDDLPrint(
 {
   tabindent(s, indent);
   s << "( imply\n";
-
-  TokenStruct<std::string> fstruct(ts);
-
-  tabindent(s, indent + 1);
-  printParams(0, s, fstruct, d);
-
-  if (cond) {
-    cond->PDDLPrint(s, indent + 1, fstruct, d);
-  } else {
-    tabindent(s, indent + 1);
-    s << "()";
-  }
-
+  if (left) {left->PDDLPrint(s, indent + 1, ts, d);}
+  s << "\n";
+  if (right) {right->PDDLPrint(s, indent + 1, ts, d);}
   s << "\n";
   tabindent(s, indent);
   s << ")";
@@ -44,28 +34,30 @@ void Imply::PDDLPrint(
 plansys2_msgs::msg::Node::SharedPtr Imply::getTree(
   plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace) const
 {
-  throw UnsupportedConstruct("Imply");
+  plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+  node->node_type = plansys2_msgs::msg::Node::IMPLY;
+  node->node_id = tree.nodes.size();
+  tree.nodes.push_back(*node);
+
+  plansys2_msgs::msg::Node::SharedPtr l = left->getTree(tree, d, replace);
+  tree.nodes[node->node_id].children.push_back(l->node_id);
+  plansys2_msgs::msg::Node::SharedPtr r = right->getTree(tree, d, replace);
+  tree.nodes[node->node_id].children.push_back(r->node_id);
+
+  return node;
 }
 
 void Imply::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
 {
   f.next();
   f.assert_token("(");
-
-  TokenStruct<std::string> fs = f.parseTypedList(true, d.types);
-  params = d.convertTypes(fs.types);
-
-  TokenStruct<std::string> fstruct(ts);
-  fstruct.append(fs);
+  left = d.createCondition(f);
+  left->parse(f, ts, d);
 
   f.next();
   f.assert_token("(");
-  if (f.getChar() != ')') {
-    cond = d.createCondition(f);
-    cond->parse(f, fstruct, d);
-  } else {
-    ++f.c;
-  }
+  right = d.createCondition(f);
+  right->parse(f, ts, d);
 
   f.next();
   f.assert_token(")");

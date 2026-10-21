@@ -23,22 +23,45 @@
 #include "behaviortree_cpp/action_node.h"
 
 #include "plansys2_executor/ActionExecutor.hpp"
+#include "plansys2_executor/BTBuilder.hpp"
 
 #include "plansys2_executor/behavior_tree/execute_action_node.hpp"
+#include "plansys2_executor/ExecutionTrace.hpp"
 
 namespace plansys2
 {
 
+/**
+ * @class plansys2::WaitAction
+ * @brief BehaviorTree node that waits for a specified action to complete.
+ */
 class WaitAction : public BT::ActionNodeBase
 {
 public:
-  WaitAction(
-    const std::string & xml_tag_name,
-    const BT::NodeConfig & conf);
+  /**
+   * @brief Constructor for the WaitAction node.
+   *
+   * @param[in] xml_tag_name Name of the XML tag for this node in the BT definition.
+   * @param[in] conf Node configuration including the blackboard.
+   */
+  WaitAction(const std::string & xml_tag_name, const BT::NodeConfig & conf);
 
+  /**
+   * @brief Halt method (required by the BT framework).
+   */
   void halt() {}
+
+  /**
+   * @brief Main execution method for the BT node.
+   *
+   * @return BT::NodeStatus Status of tick execution
+   */
   BT::NodeStatus tick() override;
 
+  /**
+   * @brief Creates list of BT ports
+   * @return BT::PortsList Containing basic ports along with node-specific ports
+   */
   static BT::PortsList providedPorts()
   {
     return BT::PortsList(
@@ -49,6 +72,11 @@ public:
 
 private:
   std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map_;
+  Graph::Ptr action_graph_;
+  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  bool relaxed_timing_ {true};
+  std::shared_ptr<ExecutionTrace> trace_;  // Null outside an executor
+  bool waiting_reported_ {false};  // Its wait, once
 };
 
 }  // namespace plansys2

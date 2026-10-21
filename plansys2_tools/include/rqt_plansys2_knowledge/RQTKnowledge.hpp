@@ -28,8 +28,15 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
+#include <string>
 
+#include "rclcpp/version.h"
+#if RCLCPP_VERSION_GTE(29, 0, 0)
+#include "rqt_gui_cpp/plugin.hpp"
+#else
 #include "rqt_gui_cpp/plugin.h"
+#endif
 
 #include "rqt_plansys2_knowledge/KnowledgeTree.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
@@ -68,7 +75,23 @@ private:
   KnowledgeTree * knowledge_tree_;
 
   plansys2_msgs::msg::Knowledge::UniquePtr last_msg_;
-  bool need_repaint_;
+  bool need_repaint_ {false};
+  std::mutex mutex_;
+
+  // Types of the instances, asked out of the GUI thread
+  struct Details
+  {
+    std::mutex mutex;
+    bool asking {false};
+    bool ready {false};
+    std::map<std::string, std::string> types;
+  };
+  std::shared_ptr<Details> details_ {std::make_shared<Details>()};
+  plansys2_msgs::msg::Knowledge::UniquePtr shown_msg_;
+  bool pending_ask_ {false};
+
+  void ask_details();
+  void render(const plansys2_msgs::msg::Knowledge & msg);
 
   void knowledge_callback(plansys2_msgs::msg::Knowledge::UniquePtr msg);
   rclcpp::Subscription<plansys2_msgs::msg::Knowledge>::SharedPtr knowledge_sub_;

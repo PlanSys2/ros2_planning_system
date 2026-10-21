@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>plansys2_support_py</name>
-  <version>2.0.18</version>
+  <version>4.0.0</version>
 
   <description>This package contains modules for developing PlanSys components in Python</description>
 
@@ -10,19 +10,21 @@
 
   <license>Apache License, Version 2.0</license>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>python_cmake_module</buildtool_depend>
-
   <depend>rclpy</depend>
   <depend>lifecycle_msgs</depend>
   <depend>plansys2_msgs</depend>
 
   <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_index_python</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
+  <test_depend>plansys2_bringup</test_depend>
+  <test_depend>plansys2_pddl_parser</test_depend>
   <test_depend>python3-pytest</test_depend>
+  <test_depend>ros2launch</test_depend>
+  <test_depend>std_msgs</test_depend>
 
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type>ament_python</build_type>
   </export>
 </package>

@@ -21,7 +21,9 @@ namespace pddl
 void Action::PDDLPrint(
   std::ostream & s, unsigned indent, const TokenStruct<std::string> & ts, const Domain & d) const
 {
-  s << "( :action " << name << "\n";
+  (void)indent;
+  (void)ts;
+  s << "( :" << keyword << " " << name << "\n";
 
   s << "  :parameters ";
 
@@ -71,7 +73,12 @@ plansys2_msgs::msg::Node::SharedPtr Action::getTree(
 
 void Action::parseConditions(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
 {
+  // :precondition and :effect are both optional
   f.next();
+  if (f.getChar() == ')') {
+    ++f.c;
+    return;
+  }
   f.assert_token(":");
   std::string s = f.getToken();
   if (s == "precondition") {
@@ -85,6 +92,10 @@ void Action::parseConditions(Stringreader & f, TokenStruct<std::string> & ts, Do
     }
 
     f.next();
+    if (f.getChar() == ')') {
+      ++f.c;
+      return;
+    }
     f.assert_token(":");
     s = f.getToken();
   }
@@ -104,11 +115,13 @@ void Action::parseConditions(Stringreader & f, TokenStruct<std::string> & ts, Do
 
 void Action::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
 {
+  (void)ts;
   f.next();
   f.assert_token(":parameters");
   f.assert_token("(");
 
   TokenStruct<std::string> astruct = f.parseTypedList(true, d.types);
+  assertUnique(astruct, "parameter of " + name);
   params = d.convertTypes(astruct.types);
 
   parseConditions(f, astruct, d);
@@ -139,8 +152,8 @@ GroundVec Action::getGroundsFromCondition(Condition * c, bool neg)
   for (unsigned i = 0; a && i < a->conds.size(); ++i) {
     if (neg) {
       Not * n = dynamic_cast<Not *>(a->conds[i]);
-      Ground * g = dynamic_cast<Ground *>(n->cond);
-      if (n && g) {grounds.push_back(g);}
+      Ground * g = n ? dynamic_cast<Ground *>(n->cond) : nullptr;
+      if (g) {grounds.push_back(g);}
     } else {
       Ground * g = dynamic_cast<Ground *>(a->conds[i]);
       if (g) {grounds.push_back(g);}
@@ -149,8 +162,8 @@ GroundVec Action::getGroundsFromCondition(Condition * c, bool neg)
 
   if (neg) {
     Not * n = dynamic_cast<Not *>(c);
-    Ground * g = dynamic_cast<Ground *>(n->cond);
-    if (n && g) {grounds.push_back(g);}
+    Ground * g = n ? dynamic_cast<Ground *>(n->cond) : nullptr;
+    if (g) {grounds.push_back(g);}
   } else {
     Ground * g = dynamic_cast<Ground *>(c);
     if (g) {grounds.push_back(g);}

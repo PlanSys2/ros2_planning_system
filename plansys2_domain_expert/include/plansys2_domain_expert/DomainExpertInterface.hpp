@@ -22,124 +22,194 @@
 #include "plansys2_msgs/msg/action.hpp"
 #include "plansys2_msgs/msg/derived.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
-#include "plansys2_msgs/msg/node.hpp"
 
 #include "plansys2_core/Types.hpp"
 
 namespace plansys2
 {
 
-/// DomainExpertInterface is the interface for both DomainExpert and DomainExpertClient
+/**
+ * @class plansys2::DomainExpertInterface
+ * @brief Interface for both DomainExpert and DomainExpertClient classes.
+ *
+ * This interface defines the methods for querying and manipulating a PDDL domain,
+ * including types, constants, predicates, functions, actions, and durative actions.
+ */
 class DomainExpertInterface
 {
 public:
-  /// Void constructor
   /**
+   * @brief Default constructor.
    */
   DomainExpertInterface() {}
 
-  /// Get the domain name.
   /**
-   * \return A string containing the domain name.
+   * @brief Virtual destructor, as it is used through pointers to it.
+   */
+  virtual ~DomainExpertInterface() = default;
+
+  /**
+   * @brief Get the domain name.
+   *
+   * @return std::string The name of the domain.
    */
   virtual std::string getName() = 0;
 
-  /// Get the types existing in the domain.
   /**
-   * \return The vector containing the names of the types.
+   * @brief Get the types defined in the domain.
+   *
+   * @return std::vector<std::string> The names of the types defined in the domain.
    */
   virtual std::vector<std::string> getTypes() = 0;
 
-  /// Get the details of a constants existing for a type.
   /**
-   * \param[in] predicate The name of the type.
-   * \return A list of constants names for the passed type
+   * @brief Get the constants defined for a given type.
+   *
+   * @param[in] type The name of the type.
+   * @return std::vector<std::string> List of constant names for the specified type.
    */
   virtual std::vector<std::string> getConstants(const std::string & type) = 0;
 
-  /// Get the predicates existing in the domain.
   /**
-   * \return The vector containing the name of the predicates.
+   * @brief Get the predicates defined in the domain.
+   *
+   * @return std::vector<plansys2::Predicate> Vector containing the predicates.
    */
   virtual std::vector<plansys2::Predicate> getPredicates() = 0;
 
-  /// Get the details of a predicate existing in the domain.
   /**
-   * \param[in] predicate The name of the predicate.
-   * \return A Predicate object containing the predicate name and its parameters (name and type).
-   *    If the predicate does not exist, the value returned has not value.
+   * @brief Get the details of a predicate defined in the domain.
+   *
+   * @param[in] predicate The name of the predicate.
+   * @return std::optional<plansys2::Predicate> Predicate object containing the predicate name
+   *         and its parameters (name and type).
+   *         If the predicate does not exist, the returned value is empty.
    */
-  virtual std::optional<plansys2::Predicate> getPredicate(const std::string & predicate)
-  = 0;
+  virtual std::optional<plansys2::Predicate> getPredicate(const std::string & predicate) = 0;
 
-  /// Get the functions existing in the domain.
   /**
-   * \return The vector containing the name of the functions.
+   * @brief Get the functions defined in the domain.
+   *
+   * @return std::vector<plansys2::Function> Vector containing the functions.
    */
   virtual std::vector<plansys2::Function> getFunctions() = 0;
 
-  /// Get the details of a function existing in the domain.
   /**
-   * \param[in] function The name of the function.
-   * \return A Function object containing the function name and its parameters (name and type).
-   *    If the function does not exist, the value returned has not value.
+   * @brief Get the details of a function defined in the domain.
+   *
+   * @param[in] function The name of the function.
+   * @return std::optional<plansys2::Function> The function name and its parameters (name and type).
+   *         If the function does not exist, the returned value is empty.
    */
-  virtual std::optional<plansys2::Function> getFunction(const std::string & function) =
-  0;
+  virtual std::optional<plansys2::Function> getFunction(const std::string & function) = 0;
 
-  /// Get the derived predicates existing in the domain.
   /**
-   * \return The vector containing the derived predicates.
+   * @brief Get the derived predicates defined in the domain.
+   *
+   * @return std::vector<plansys2::Predicate> Vector containing the derived predicates
+   *         defined in the domain.
    */
-  virtual std::vector<plansys2::Predicate> getDerivedPredicates() = 0;
+  virtual std::vector<plansys2_msgs::msg::Derived> getDerivedPredicates() = 0;
 
-  /// Get the details of a derived predicate existing in the domain.
   /**
-   * \param[in] predicate The name of the predicate.
-   * \return A Derived object containing the predicate name, its parameters (name and type), and preconditions.
-   *    If the predicate does not exist, the value returned has not value.
+   * @brief Get the details of a derived predicate defined in the domain.
+   *
+   * @param[in] predicate The name of the derived predicate.
+   * @param[in] params Optional parameters for the predicate.
+   * @return std::vector<plansys2_msgs::msg::Derived> Vector containing the details
+   *         of the derived predicate, including its name, parameters (name and type)
+   *         and preconditions.
+   *         If the derived predicate does not exist, the returned value is empty.
    */
   virtual std::vector<plansys2_msgs::msg::Derived> getDerivedPredicate(
     const std::string & predicate,
     const std::vector<std::string> & params = {}) = 0;
 
-  /// Get the regular actions existing in the domain.
   /**
-   * \return The vector containing the names of the actions.
+   * @brief Get the regular actions defined in the domain.
+   *
+   * @return std::vector<std::string> Vector containing the names of the actions.
    */
   virtual std::vector<std::string> getActions() = 0;
 
-  /// Get the details of an regular action existing in the domain.
   /**
-   * \param[in] action The name of the action.
-   * \return An Action object containing the action name, parameters, requirements and effects.
-   *    If the action does not exist, the value returned has not value.
+   * @brief Get the details of a regular action defined in the domain.
+   *
+   * @param[in] action The name of the action.
+   * @param[in] params Optional parameters for the action.
+   * @return plansys2_msgs::msg::Action object containing the action name, parameters,
+   *         requirements, and effects.
+   *         If the action does not exist, the returned value is nullptr.
    */
   virtual plansys2_msgs::msg::Action::SharedPtr getAction(
-    const std::string & action, const std::vector<std::string> & params) =
-  0;
+    const std::string & action, const std::vector<std::string> & params) = 0;
 
-  /// Get the temporal actions existing in the domain.
   /**
-   * \return The vector containing the names of the actions.
+   * @brief The processes of the domain (PDDL+): they act while their precondition holds.
+   * @return Their names.
+   */
+  virtual std::vector<std::string> getProcesses() = 0;
+
+  /**
+   * @brief A process of the domain, with its parameters bound to params, as an action.
+   * @param[in] process Its name.
+   * @param[in] params Its parameters, if bound.
+   * @return The process, its effects continuous (#t); nullptr if there is none.
+   */
+  virtual plansys2_msgs::msg::Action::SharedPtr getProcess(
+    const std::string & process, const std::vector<std::string> & params) = 0;
+
+  /**
+   * @brief The events of the domain (PDDL+): they happen when their precondition holds.
+   * @return Their names.
+   */
+  virtual std::vector<std::string> getEvents() = 0;
+
+  /**
+   * @brief An event of the domain, with its parameters bound to params, as an action.
+   * @param[in] event Its name.
+   * @param[in] params Its parameters, if bound.
+   * @return The event; nullptr if there is none.
+   */
+  virtual plansys2_msgs::msg::Action::SharedPtr getEvent(
+    const std::string & event, const std::vector<std::string> & params) = 0;
+
+  /**
+   * @brief Get the durative actions defined in the domain.
+   *
+   * @return std::vector<std::string> Vector containing the names of the durative actions.
    */
   virtual std::vector<std::string> getDurativeActions() = 0;
 
-  /// Get the details of an durative action existing in the domain.
   /**
-   * \param[in] action The name of the action.
-   * \return A Durative Action object containing the action name, parameters, requirements and
-   *    effects. If the action does not exist, the value returned has not value.
+   * @brief Get the details of a durative action defined in the domain.
+   *
+   * @param[in] action The name of the durative action.
+   * @param[in] params Optional parameters for the action.
+   * @return plansys2_msgs::msg::DurativeAction object containing the action name, parameters,
+   *         requirements, and effects.
+   *         If the action does not exist, the returned value is nullptr.
    */
   virtual plansys2_msgs::msg::DurativeAction::SharedPtr getDurativeAction(
-    const std::string & durative_action, const std::vector<std::string> & params) =
-  0;
+    const std::string & durative_action, const std::vector<std::string> & params) = 0;
 
-  /// Get the current domain, ready to be saved to file, or to initialize another domain.
   /**
-   * \return A string containing the domain.
+   * @brief Get the current domain definition as a string,
+   *        which can be used to save to a file or initialize another domain.
+   *
+   * @return std::string The current domain definition in PDDL format.
    */
   virtual std::string getDomain() = 0;
+
+  /**
+   * @brief Replace the current domain with a new one, given as PDDL content.
+   *
+   * If the new domain is invalid, the current domain is left untouched.
+   *
+   * @param[in] domain The new domain, in PDDL.
+   * @return true if the domain was successfully replaced, false otherwise.
+   */
+  virtual bool changeDomain(const std::string & domain) = 0;
 };
 
 }  // namespace plansys2

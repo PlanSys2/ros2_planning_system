@@ -30,12 +30,15 @@ class Exists : public ParamCond
 {
 public:
   Condition * cond;
+  IntVec types;  // type of each variable in params
+  StringVec names;  // the variables as written
+  unsigned base = 0;  // index of the first variable in the scope of the body
 
   Exists()
   : cond(0) {}
 
   Exists(const Exists * e, Domain & d)
-  : ParamCond(e), cond(0)
+  : ParamCond(e), cond(0), types(e->types), names(e->names), base(e->base)
   {
     if (e->cond) {cond = e->cond->copy(d);}
   }
@@ -48,7 +51,7 @@ public:
   void print(std::ostream & s) const
   {
     s << "Exists" << params << ":\n";
-    cond->print(s);
+    if (cond) {cond->print(s);}
   }
 
   void PDDLPrint(
@@ -61,7 +64,10 @@ public:
 
   void parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d);
 
-  void addParams(int m, unsigned n) {cond->addParams(m, n);}
+  void addParams(int m, unsigned n)
+  {
+    if (cond) {cond->addParams(m, n);}
+  }
 
   Condition * copy(Domain & d) {return new Exists(this, d);}
 };

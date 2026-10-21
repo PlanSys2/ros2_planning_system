@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:duration-inequalities :durative-actions :numeric-fluents	one charge of at least 5 time units gives the battery for two moves
+domain.pddl	p2.pddl	yes	:duration-inequalities :durative-actions :numeric-fluents	two robots each pick a charge duration that covers their route
+domain.pddl	p3.pddl	no	:duration-inequalities :durative-actions :numeric-fluents	the robot can charge but no corridor leads into the office

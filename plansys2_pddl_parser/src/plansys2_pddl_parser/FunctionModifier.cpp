@@ -75,7 +75,13 @@ plansys2_msgs::msg::Node::SharedPtr FunctionModifier::getTree(
     plansys2_msgs::msg::Node::SharedPtr child = modifiedGround->getTree(tree, d, replace);
     tree.nodes[node->node_id].children.push_back(child->node_id);
   } else {
-    std::cerr << "function modifier for total-cost not supported" << std::endl;
+    // (total-cost), the function of :action-costs
+    plansys2_msgs::msg::Node total_cost;
+    total_cost.node_type = plansys2_msgs::msg::Node::FUNCTION;
+    total_cost.name = "total-cost";
+    total_cost.node_id = tree.nodes.size();
+    tree.nodes.push_back(total_cost);
+    tree.nodes[node->node_id].children.push_back(total_cost.node_id);
   }
 
   plansys2_msgs::msg::Node::SharedPtr child = modifierExpr->getTree(tree, d, replace);
@@ -88,20 +94,41 @@ void FunctionModifier::parse(Stringreader & f, TokenStruct<std::string> & ts, Do
 {
   f.next();
 
-  f.assert_token("(");
+  // The default value of the constructor is replaced by the one read
+  delete modifiedGround;
+  modifiedGround = 0;
+  delete modifierExpr;
+  modifierExpr = 0;
 
-  std::string increasedFunction = f.getToken();
-  if (increasedFunction == "total-cost") {
-    f.next();
-    f.assert_token(")");
+  if (f.getChar() != '(') {
+    // PDDL 2.1: a function without parameters may be written without parentheses
+    std::string increasedFunction = f.getToken();
+    if (increasedFunction != "total-cost") {
+      Function * function = d.funcs.get(increasedFunction);
+      if (!function->params.empty()) {
+        f.tokenExit(increasedFunction);
+      }
+      modifiedGround = new Ground(function);
+      modifiedGround->variables.clear();
+    }
   } else {
-    modifiedGround = new Ground(d.funcs.get(increasedFunction));
-    modifiedGround->parse(f, ts, d);
+    f.assert_token("(");
+    std::string increasedFunction = f.getToken();
+    if (increasedFunction == "total-cost") {
+      f.next();
+      f.assert_token(")");
+    } else {
+      modifiedGround = new Ground(d.funcs.get(increasedFunction));
+      modifiedGround->parse(f, ts, d);
+    }
   }
 
   f.next();
 
   modifierExpr = createExpression(f, ts, d);
+  if (!modifierExpr) {
+    throw std::runtime_error("Missing value of " + name);
+  }
 
   f.next();
   f.assert_token(")");

@@ -15,7 +15,7 @@
 #include <memory>
 #include <string>
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
@@ -27,21 +27,23 @@
 #include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
 #include "plansys2_tests/test_action_node.hpp"
 #include "plansys2_tests/execution_logger.hpp"
 
 TEST(test_2, test_2)
 {
-  auto test_node = rclcpp::Node::make_shared("test_node");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-  auto planner_client = std::make_shared<plansys2::PlannerClient>();
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
+  auto planner_client = std::make_shared<plansys2::PlannerClient>(client_node);
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>(client_node);
 
   auto move_action_node = plansys2_tests::TestAction::make_shared("move");
   auto ask_charge_node = plansys2_tests::TestAction::make_shared("askcharge");
@@ -49,12 +51,12 @@ TEST(test_2, test_2)
 
   auto execution_logger = plansys2_tests::ExecutionLogger::make_shared();
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_tests");
+  std::string pkgpath = plansys2::share_path("plansys2_tests").string();
 
   domain_node->set_parameter({"model_file", pkgpath + "/test_2/pddl/test_2.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_2/pddl/test_2.pddl"});
 
-  rclcpp::experimental::executors::EventsExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
 
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
@@ -65,36 +67,17 @@ TEST(test_2, test_2)
   exe.add_node(charge_node->get_node_base_interface());
   exe.add_node(execution_logger->get_node_base_interface());
 
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
+  plansys2::testing::ExecutorThread spinner(exe);
 
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
 
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
-
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   planner_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   executor_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-
-  {
-    rclcpp::Rate rate(10);
-    auto start = test_node->now();
-    while ((test_node->now() - start).seconds() < 0.5) {
-      rate.sleep();
-    }
-  }
 
   problem_client->addInstance(plansys2::Instance("leia", "robot"));
   problem_client->addInstance(plansys2::Instance("room_1", "room"));
@@ -127,6 +110,8 @@ TEST(test_2, test_2)
   ASSERT_FALSE(problem.empty());
   ASSERT_TRUE(plan.has_value());
 
+  // The logger must hear every action from its start
+  ASSERT_TRUE(plansys2::testing::wait_for([&]() {return execution_logger->connected();}));
   ASSERT_TRUE(executor_client->start_plan_execution(plan.value()));
 
   rclcpp::Rate rate(5);
@@ -136,21 +121,12 @@ TEST(test_2, test_2)
 
   auto result = executor_client->getResult();
 
-  ASSERT_TRUE(result.value().success);
+  ASSERT_EQ(result.value().result, plansys2_msgs::action::ExecutePlan::Result::SUCCESS);
 
+  // The actions run in the order of the plan, whichever planner made it
+  ASSERT_GE(plan.value().items.size(), 2u);
   ASSERT_TRUE(
-    execution_logger->sorted(
-  {
-    "(askcharge leia zone_1_1 zone_recharge):0",
-    "(charge leia zone_recharge):1",
-    "(move leia zone_recharge room_2):5002",
-    "(move leia room_2 corridor_1):10003",
-    "(move leia corridor_1 room_1):15004",
-    "(move leia room_1 zone_1_2):20005"
-  }));
-
-  finish = true;
-  t.join();
+    execution_logger->sorted(plansys2_tests::ExecutionLogger::plan_order(plan.value())));
 }
 
 int main(int argc, char ** argv)
@@ -158,5 +134,8 @@ int main(int argc, char ** argv)
   testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);
 
-  return RUN_ALL_TESTS();
+  // Before the process exits: Zenoh aborts if ROS is shut down by atexit
+  auto result = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return result;
 }

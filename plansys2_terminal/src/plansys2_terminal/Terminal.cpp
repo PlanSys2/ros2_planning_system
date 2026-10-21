@@ -25,7 +25,13 @@
 #include <sstream>
 #include <fstream>
 #include <map>
+#include <mutex>
 #include <utility>
+#include <algorithm>
+#include <atomic>
+#include <charconv>
+#include <optional>
+#include <thread>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -47,27 +53,59 @@ namespace plansys2_terminal
 
 std::vector<std::string> tokenize(const std::string & text)
 {
-  if (text.empty()) {
-    return {};
-  }
-
-  std::string text_wo_nlines = text;
-  size_t start = 0, end = 0;
-  while (end != std::string::npos) {
-    end = text_wo_nlines.find("\n", start);
-    text_wo_nlines =
-      text_wo_nlines.substr(0, (end == std::string::npos) ? std::string::npos : end);
-  }
-
+  // The first line, split on blanks: tabs and '\r' separate as spaces do
   std::vector<std::string> ret;
-  start = 0, end = 0;
-  while (end != std::string::npos) {
-    end = text_wo_nlines.find(" ", start);
-    ret.push_back(
-      text_wo_nlines.substr(start, (end == std::string::npos) ? std::string::npos : end - start));
-    start = ((end > (std::string::npos - 1)) ? std::string::npos : end + 1);
+  std::string token;
+  for (char c : text.substr(0, text.find('\n'))) {
+    if (c == ' ' || c == '\t' || c == '\r') {
+      if (!token.empty()) {
+        ret.push_back(token);
+        token.clear();
+      }
+    } else {
+      token += c;
+    }
+  }
+  if (!token.empty()) {
+    ret.push_back(token);
   }
   return ret;
+}
+
+namespace
+{
+std::atomic<bool> interrupted{false};
+
+std::string join(const std::vector<std::string> & tokens)
+{
+  std::string ret;
+  for (const auto & token : tokens) {
+    ret += (ret.empty() ? "" : " ") + token;
+  }
+  return ret;
+}
+
+// "(name arg1 ... argN)": one predicate, nothing before or after it
+std::optional<plansys2::Predicate> parse_predicate(const std::vector<std::string> & tokens)
+{
+  const std::string text = join(tokens);
+  if (text.size() < 3 || text.front() != '(' || text.back() != ')' ||
+    std::count(text.begin(), text.end(), '(') != 1 ||
+    std::count(text.begin(), text.end(), ')') != 1)
+  {
+    return {};
+  }
+  auto predicate = parser::pddl::fromStringPredicate(text);
+  if (!parser::pddl::isValidName(predicate.name)) {
+    return {};
+  }
+  return predicate;
+}
+}  // namespace
+
+void interrupt()
+{
+  interrupted = true;
 }
 
 void pop_front(std::vector<std::string> & tokens)
@@ -89,11 +127,14 @@ char * completion_generator(const char * text, int state)
   std::vector<std::string> vocabulary{"get", "set", "remove", "run",
     "check", "source", "help", "?", "quit"};
   std::vector<std::string> vocabulary_check{"actors"};
-  std::vector<std::string> vocabulary_set{"instance", "predicate", "function", "goal"};
+  std::vector<std::string> vocabulary_set{
+    "instance", "predicate", "function", "goal", "metric"};
   std::vector<std::string> vocabulary_get{"model", "problem", "domain", "plan"};
-  std::vector<std::string> vocabulary_remove{"instance", "predicate", "function", "goal"};
+  std::vector<std::string> vocabulary_remove{
+    "instance", "predicate", "function", "goal", "metric"};
   std::vector<std::string> vocabulary_run{"action", "num_actions", "plan-file"};
-  std::vector<std::string> vocabulary_get_problem{"instances", "predicates", "functions", "goal"};
+  std::vector<std::string> vocabulary_get_problem{
+    "instances", "predicates", "functions", "goal", "metric"};
   std::vector<std::string> vocabulary_get_model{"types", "predicates", "functions", "actions",
     "predicate", "function", "action", "derived", "deriveds"};
   // The help is initialized with all possible commands in the vocabulary
@@ -161,6 +202,8 @@ char * completion_generator(const char * text, int state)
 
 char ** completer(const char * text, int start, int end)
 {
+  (void)start;
+  (void)end;
   // Don't do filename completion even if our generator finds no matches.
   rl_attempted_completion_over = 1;
 
@@ -181,45 +224,60 @@ parse_plan(const std::string planfile)
     return {};
   }
 
+  // "time: (action args) [duration]", as the planners write them; empty lines and
+  // comments (";") are skipped, and the duration is optional
   plansys2_msgs::msg::Plan ret;
-  if (plan_file.is_open()) {
-    std::string line;
-    while (getline(plan_file, line)) {
-      plansys2_msgs::msg::PlanItem item;
-      size_t colon_pos = line.find(":");
-      size_t colon_opar = line.find("(");
-      size_t colon_cpar = line.find(")");
-      size_t colon_bra = line.find("[");
-
-      std::string time = line.substr(0, colon_pos);
-      std::string action = line.substr(colon_opar, colon_cpar - colon_opar + 1);
-      std::string duration = line.substr(colon_bra + 1);
-      duration.pop_back();
-
-      item.time = std::stof(time);
-      item.action = action;
-      item.duration = std::stof(duration);
-
-      ret.items.push_back(item);
+  std::string line;
+  for (int number = 1; getline(plan_file, line); number++) {
+    const auto first = line.find_first_not_of(" \t\r");
+    if (first == std::string::npos || line[first] == ';') {
+      continue;
     }
-    plan_file.close();
-    std::cout << "The plan read from \"" << planfile << "\" is " << std::endl;
-    for (const auto & plan_item : ret.items) {
-      std::cout << plan_item.time << ":\t" << plan_item.action <<
-        "\t[" << plan_item.duration << "]" << std::endl;
+    const size_t colon = line.find(':');
+    const size_t open = line.find('(');
+    const size_t close = line.find(')', open == std::string::npos ? 0 : open);
+    double time = 0.0;
+    double duration = 0.0;
+    bool valid = colon != std::string::npos && open != std::string::npos &&
+      close != std::string::npos && colon < open &&
+      parser::pddl::parseNumber(line.substr(0, colon), time);
+    if (valid) {
+      const std::string rest = line.substr(close + 1);
+      const auto rest_first = rest.find_first_not_of(" \t\r");
+      if (rest_first != std::string::npos) {
+        const size_t bra = rest.find('[');
+        const size_t ket = rest.find(']');
+        valid = rest_first == bra && ket != std::string::npos && bra < ket &&
+          rest.find_first_not_of(" \t\r", ket + 1) == std::string::npos &&
+          parser::pddl::parseNumber(rest.substr(bra + 1, ket - bra - 1), duration);
+      }
     }
+    if (!valid) {
+      std::cerr << "Wrong line " << number << " in plan file \"" << planfile << "\": " <<
+        line << std::endl;
+      return {};
+    }
+    plansys2_msgs::msg::PlanItem item;
+    item.time = time;
+    item.action = parser::pddl::getReducedString(line.substr(open, close - open + 1));
+    item.duration = duration;
+    ret.items.push_back(item);
+  }
+
+  std::cout << "The plan read from \"" << planfile << "\" is " << std::endl;
+  for (const auto & plan_item : ret.items) {
+    std::cout << plan_item.time << ":\t" << plan_item.action <<
+      "\t[" << plan_item.duration << "]" << std::endl;
   }
 
   if (ret.items.empty()) {
     return {};
-  } else {
-    return ret;
   }
+  return ret;
 }
 
-
-Terminal::Terminal()
-: rclcpp::Node("terminal")
+Terminal::Terminal(const rclcpp::NodeOptions & options)
+: rclcpp::Node("terminal", options)
 {
   this->declare_parameter<std::string>("problem_file", "");
 }
@@ -227,10 +285,10 @@ Terminal::Terminal()
 void
 Terminal::init()
 {
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
-  planner_client_ = std::make_shared<plansys2::PlannerClient>();
-  executor_client_ = std::make_shared<plansys2::ExecutorClient>();
+  domain_client_ = std::make_shared<plansys2::DomainExpertClient>(*this);
+  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(*this);
+  planner_client_ = std::make_shared<plansys2::PlannerClient>(*this);
+  executor_client_ = std::make_shared<plansys2::ExecutorClient>(*this);
 
   add_problem();
 }
@@ -256,44 +314,57 @@ void Terminal::add_problem()
 
 
 // LCOV_EXCL_START
+namespace
+{
+// Ctrl-C at the prompt discards the line, as in a shell
+int new_line_on_interrupt()
+{
+  if (interrupted.exchange(false)) {
+    rl_replace_line("", 0);
+    rl_crlf();
+    rl_on_new_line();
+    rl_redisplay();
+  }
+  return 0;
+}
+}  // namespace
+
 void
 Terminal::run_console()
 {
   init();
 
-  std::string line;
-  bool success = true;
-
-  std::cout << "ROS2 Planning System console. Type \"quit\" to finish" << std::endl;
+  std::cout << "ROS2 Planning System console. Type \"quit\" or Ctrl-D to finish" << std::endl;
 
   rl_attempted_completion_function = completer;
+  rl_signal_event_hook = new_line_on_interrupt;
 
   bool finish = false;
   while (!finish) {
+    interrupted = false;
     char * input_line = readline("> ");
 
-    if (input_line == NULL || (strcmp(input_line, "quit") == 0)) {
+    if (input_line == NULL) {
       finish = true;
-    } else {
-      std::istringstream iss({std::string(input_line)});
-      std::string line;
+      continue;
+    }
 
-      free(input_line);
+    std::istringstream iss({std::string(input_line)});
+    free(input_line);
 
-      while (std::getline(iss, line)) {
-        if (!line.empty()) {
-          add_history(line.c_str());
-
-          std::string line_str(line);
-
-          if (!finish) {
-            clean_command(line_str);
-
-            std::ostringstream os;
-            process_command(line_str, os, false);
-            std::cout << os.str();
-          }
-        }
+    std::string line;
+    while (!finish && std::getline(iss, line)) {
+      clean_command(line);
+      if (line.empty()) {
+        continue;
+      }
+      add_history(line.c_str());
+      if (line == "quit") {
+        finish = true;
+      } else {
+        std::ostringstream os;
+        process_command(line, os, false);
+        std::cout << os.str();
       }
     }
   }
@@ -305,19 +376,23 @@ Terminal::run_console()
 void
 Terminal::clean_command(std::string & command)
 {
+  // Tabs and '\r' (files written on Windows) are spaces
+  std::replace_if(
+    command.begin(), command.end(), [](char c) {return c == '\t' || c == '\r';}, ' ');
+
   // remove continuous spaces
-  size_t pos;
+  size_t pos = 0;
   while ((pos = command.find("  ")) != command.npos) {
     command.erase(pos, 1);
   }
 
   // remove from spaces
-  while (*command.begin() == ' ') {
+  while (!command.empty() && *command.begin() == ' ') {
     command.erase(0, 1);
   }
 
   // remove trailing spaces
-  while (command[command.size() - 1] == ' ') {
+  while (!command.empty() && command[command.size() - 1] == ' ') {
     command.pop_back();
   }
 }
@@ -361,7 +436,7 @@ Terminal::process_get_model_derived_predicate(
       os << "Error when looking for params of " << command[0] << std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\tget model predicate [predicate_name]" << std::endl;
+    os << "\tUsage: \n\t\tget model derived [predicate_name]" << std::endl;
   }
 }
 
@@ -376,6 +451,9 @@ Terminal::process_get_model_function(std::vector<std::string> & command, std::os
         os << "\t" << functions.value().parameters[i].type << " - " <<
           functions.value().parameters[i].name << std::endl;
       }
+      // An object fluent has objects of a type; the others, numbers
+      os << "Returns: " <<
+        (functions.value().object.empty() ? "number" : functions.value().object) << std::endl;
     } else {
       os << "Error when looking for params of " << command[0] << std::endl;
     }
@@ -406,6 +484,7 @@ Terminal::process_get_model_action(std::vector<std::string> & command, std::ostr
         os << "\t" << durative_action->parameters[i].name << " - " <<
           durative_action->parameters[i].type << std::endl;
       }
+      os << "Duration: " << parser::pddl::toString(durative_action->duration) << std::endl;
       os << "AtStart requirements: " <<
         parser::pddl::toString(durative_action->at_start_requirements) << std::endl;
       os << "OverAll requirements: " <<
@@ -447,7 +526,7 @@ Terminal::process_get_model(std::vector<std::string> & command, std::ostringstre
 
       os << "Derived predicates: " << predicates.size() << std::endl;
       for (const auto & predicate : predicates) {
-        os << "\t" << predicate.name << std::endl;
+        os << "\t" << predicate.predicate.name << std::endl;
       }
     } else if (command[0] == "functions") {
       auto functions = domain_client_->getFunctions();
@@ -523,9 +602,15 @@ Terminal::process_get_problem(std::vector<std::string> & command, std::ostringst
     } else if (command[0] == "goal") {
       auto goal = problem_client_->getGoal();
       os << "Goal: " << parser::pddl::toString(goal) << std::endl;
+    } else if (command[0] == "metric") {
+      auto metric = parser::pddl::toString(problem_client_->getMetric());
+      os << "Metric: " << (metric.empty() ? "none" : metric) << std::endl;
+    } else {
+      os << "\tUsage: \n\t\tget problem [instances|predicates|functions|goal|metric]..." <<
+        std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\tget problem [instances|predicates|functions|goal]..." <<
+    os << "\tUsage: \n\t\tget problem [instances|predicates|functions|goal|metric]..." <<
       std::endl;
   }
 }
@@ -583,44 +668,13 @@ Terminal::process_set_instance(std::vector<std::string> & command, std::ostrings
 void
 Terminal::process_set_predicate(std::vector<std::string> & command, std::ostringstream & os)
 {
-  if (command.size() > 0) {
-    plansys2::Predicate predicate;
-    predicate.node_type = plansys2_msgs::msg::Node::PREDICATE;
-    predicate.name = command[0];
-
-    if (predicate.name.front() != '(') {
-      os << "\tUsage: \n\t\tset predicate (predicate)" <<
-        std::endl;
-      return;
-    }
-
-    predicate.name.erase(0, 1);  // Remove first (
-
-    pop_front(command);
-    while (!command.empty()) {
-      predicate.parameters.push_back(parser::pddl::fromStringParam(command[0]));
-      pop_front(command);
-    }
-
-    if (predicate.parameters.size() != 0 &&
-      predicate.parameters.back().name.back() != ')')
-    {
-      os << "\tUsage: \n\t\tset predicate (predicate)" << std::endl;
-      return;
-    }
-
-    if (predicate.parameters.size() != 0) {
-      predicate.parameters.back().name.pop_back();  // Remove last )
-    } else {
-      predicate.name.pop_back();  // Remove last )
-    }
-
-    if (!problem_client_->addPredicate(predicate)) {
-      os << "Could not add the predicate [" << parser::pddl::toString(predicate) << "]" <<
-        std::endl;
-    }
-  } else {
-    os << "\tUsage: \n\t\tset predicate [predicate]" <<
+  auto predicate = parse_predicate(command);
+  if (!predicate) {
+    os << "\tUsage: \n\t\tset predicate (predicate)" << std::endl;
+    return;
+  }
+  if (!problem_client_->addPredicate(predicate.value())) {
+    os << "Could not add the predicate [" << parser::pddl::toString(predicate.value()) << "]" <<
       std::endl;
   }
 }
@@ -674,6 +728,22 @@ Terminal::process_set_goal(std::vector<std::string> & command, std::ostringstrea
 }
 
 void
+Terminal::process_set_metric(std::vector<std::string> & command, std::ostringstream & os)
+{
+  std::string total_expr;
+  for (const auto & token : command) {
+    total_expr += " " + token;
+  }
+
+  plansys2::Metric metric(total_expr);
+  if (metric.tree.nodes.empty()) {
+    os << "\tUsage: \n\t\tset metric minimize|maximize <expression>" << std::endl;
+  } else if (!problem_client_->setMetric(metric)) {
+    os << "Could not set the metric [" << parser::pddl::toString(metric) << "]" << std::endl;
+  }
+}
+
+void
 Terminal::process_set(std::vector<std::string> & command, std::ostringstream & os)
 {
   if (command.size() > 0) {
@@ -689,12 +759,15 @@ Terminal::process_set(std::vector<std::string> & command, std::ostringstream & o
     } else if (command[0] == "goal") {
       pop_front(command);
       process_set_goal(command, os);
+    } else if (command[0] == "metric") {
+      pop_front(command);
+      process_set_metric(command, os);
     } else {
-      os << "\tUsage: \n\t\tset [instance|predicate|function|goal]..." <<
+      os << "\tUsage: \n\t\tset [instance|predicate|function|goal|metric]..." <<
         std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\tset [instance|predicate|function|goal]..." <<
+    os << "\tUsage: \n\t\tset [instance|predicate|function|goal|metric]..." <<
       std::endl;
   }
 }
@@ -715,37 +788,14 @@ Terminal::process_remove_instance(std::vector<std::string> & command, std::ostri
 void
 Terminal::process_remove_predicate(std::vector<std::string> & command, std::ostringstream & os)
 {
-  const std::string rem_pred_cmd = "\tUsage: \n\t\tremove predicate (predicate)";
-  if (command.size() > 0) {
-    plansys2::Predicate predicate;
-    predicate.node_type = plansys2_msgs::msg::Node::PREDICATE;
-    predicate.name = command[0];
-
-    if (predicate.name.front() != '(') {
-      os << rem_pred_cmd << std::endl;
-    }
-
-    predicate.name.erase(0, 1);  // Remove first )
-
-    pop_front(command);
-    while (!command.empty()) {
-      predicate.parameters.push_back(parser::pddl::fromStringParam(command[0]));
-      pop_front(command);
-    }
-
-    if (predicate.parameters.back().name.back() != ')') {
-      os << rem_pred_cmd << std::endl;
-      return;
-    }
-
-    predicate.parameters.back().name.pop_back();  // Remove last (
-
-    if (!problem_client_->removePredicate(predicate)) {
-      os << "Could not remove the predicate [" << parser::pddl::toString(predicate) <<
-        "]" << std::endl;
-    }
-  } else {
-    os << rem_pred_cmd << std::endl;
+  auto predicate = parse_predicate(command);
+  if (!predicate) {
+    os << "\tUsage: \n\t\tremove predicate (predicate)" << std::endl;
+    return;
+  }
+  if (!problem_client_->removePredicate(predicate.value())) {
+    os << "Could not remove the predicate [" << parser::pddl::toString(predicate.value()) <<
+      "]" << std::endl;
   }
 }
 
@@ -780,7 +830,7 @@ Terminal::process_remove_function(std::vector<std::string> & command, std::ostri
         std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\remove function [name] [instance1] [instance2] ...[instaceN]" <<
+    os << "\tUsage: \n\t\tremove function [name] [instance1] [instance2] ...[instanceN]" <<
       std::endl;
   }
 }
@@ -800,12 +850,14 @@ Terminal::process_remove(std::vector<std::string> & command, std::ostringstream 
       process_remove_function(command, os);
     } else if (command[0] == "goal") {
       problem_client_->clearGoal();
+    } else if (command[0] == "metric") {
+      problem_client_->clearMetric();
     } else {
-      os << "\tUsage: \n\t\tremove [instance|predicate|function|goal]..." <<
+      os << "\tUsage: \n\t\tremove [instance|predicate|function|goal|metric]..." <<
         std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\tremove [instance|predicate|function|goal]..." <<
+    os << "\tUsage: \n\t\tremove [instance|predicate|function|goal|metric]..." <<
       std::endl;
   }
 }
@@ -818,9 +870,12 @@ Terminal::execute_plan(int items)
   if (!plan.has_value()) {
     std::cout << "Plan could not be computed " << std::endl;
     return;
+  } else if (plan.value().items.size() == 0) {
+    std::cout << "Planning succeeded, but there are no actions to execute " << std::endl;
+    return;
   }
 
-  if (items > 0 && items <= plan.value().items.size()) {
+  if (items > 0 && items <= static_cast<int>(plan.value().items.size())) {
     plan.value().items.erase(plan.value().items.begin() + items, plan.value().items.end());
   } else if (items != -1) {
     std::cout << "Can't execute " << items << " actions" << std::endl;
@@ -835,12 +890,21 @@ Terminal::execute_plan(const plansys2_msgs::msg::Plan & plan)
 {
   rclcpp::Rate loop_rate(5);
 
+
+  interrupted = false;
   if (!executor_client_->start_plan_execution(plan)) {
     std::cout << "Execution could not start " << std::endl;
     return;
   }
 
   while (rclcpp::ok() && executor_client_->execute_and_check_plan()) {
+    if (interrupted.exchange(false)) {
+      // Ctrl-C: the plan stops, not only the terminal (it kept running in the executor)
+      executor_client_->cancel_plan_execution();
+      std::cout << std::endl << "Plan cancelled" << std::endl;
+      return;
+    }
+
     auto feedback = executor_client_->getFeedBack();
 
     std::cout << "\r\e[K" << std::flush;
@@ -875,30 +939,34 @@ Terminal::execute_plan(const plansys2_msgs::msg::Plan & plan)
 
     std::cout << std::flush;
 
-    rclcpp::spin_some(this->get_node_base_interface());
     loop_rate.sleep();
   }
 
   std::cout << std::endl;
 
-  if (executor_client_->getResult().value().success) {
-    std::cout << "Successful finished " << std::endl;
+  auto plan_result = executor_client_->getResult();
+  if (!plan_result.has_value()) {
+    std::cout << "Plan execution ended without result." << std::endl;
   } else {
-    std::cout << "Finished with error(s) " << std::endl;
+    switch (plan_result.value().result) {
+      case plansys2_msgs::action::ExecutePlan::Result::SUCCESS:
+        std::cout << "Successfully finished" << std::endl;
+        break;
+      case plansys2_msgs::action::ExecutePlan::Result::PREEMPT:
+        std::cout << "Preempted " << std::endl;
+        break;
+      case plansys2_msgs::action::ExecutePlan::Result::FAILURE:
+        std::cout << "Finished with error(s)" << std::endl;
+        break;
+    }
   }
 }
 
 void
 Terminal::execute_action(std::vector<std::string> & command)
 {
-  std::string complete_action;
-  for (const auto & token : command) {
-    complete_action = complete_action + token + " ";
-  }
+  const std::string complete_action = join(command);
 
-  complete_action.pop_back();
-
-  std::cerr << "<[" << complete_action << "]" << std::endl;
   plansys2_msgs::msg::PlanItem action;
   action.time = 0.0;
   action.action = complete_action;
@@ -913,66 +981,75 @@ Terminal::execute_action(std::vector<std::string> & command)
 void
 Terminal::process_run(std::vector<std::string> & command, std::ostringstream & os)
 {
-  if (command.size() == 0) {
-    execute_plan();
-  } else {
-    if (command[0] == "action") {
-      pop_front(command);
-      if (!command.empty()) {
-        execute_action(command);
-      }
-    } else if (command[0] == "num_actions") {
-      pop_front(command);
+  const std::string usage =
+    "\tUsage: \n\t\trun\n"
+    "\tUsage: \n\t\trun num_actions [number of actions to execute from plan]\n"
+    "\tUsage: \n\t\trun action [action to execute]\n"
+    "\tUsage: \n\t\trun plan-file [planfile]";
 
-      try {
-        int items = std::stoi(command[0]);
-        execute_plan(items);
-      } catch (std::invalid_argument e) {
-        os << e.what() << " with arg: [" << command[0] << "]" << std::endl;
-      }
-    } else if (command[0] == "plan-file") {
-      if (command.size() == 2) {
-        std::optional<plansys2_msgs::msg::Plan> plan = parse_plan(command[1]);
-        if (!plan.has_value()) {
-          os << "Plan could not be loaded " << std::endl;
-          return;
-        }
-        try {
-          execute_plan(plan.value());
-        } catch (std::invalid_argument e) {
-          os << e.what() << " with arg: [" << command[0] <<
-            command[1] << "]" << std::endl;
-          return;
-        }
-      } else {
-        os << "\tUsage: \n\t\trun plan-file [planfile]" << std::endl;
-      }
-    } else {
-      os << "\tUsage: \n\t\trun" << std::endl;
+  if (command.empty()) {
+    execute_plan();
+  } else if (command[0] == "action") {
+    pop_front(command);
+    if (command.empty()) {
+      os << "\tUsage: \n\t\trun action [action to execute]" << std::endl;
+      return;
+    }
+    execute_action(command);
+  } else if (command[0] == "num_actions") {
+    int items = 0;
+    const std::string arg = command.size() == 2 ? command[1] : "";
+    auto [ptr, ec] = std::from_chars(arg.data(), arg.data() + arg.size(), items);
+    if (arg.empty() || ec != std::errc() || ptr != arg.data() + arg.size() || items <= 0) {
       os << "\tUsage: \n\t\trun num_actions [number of actions to execute from plan]" <<
         std::endl;
-      os << "\tUsage: \n\t\trun action [action to execute]" << std::endl;
-      os << "\tUsage: \n\t\trun plan-file [planfile]" << std::endl;
+      return;
     }
+    execute_plan(items);
+  } else if (command[0] == "plan-file") {
+    if (command.size() != 2) {
+      os << "\tUsage: \n\t\trun plan-file [planfile]" << std::endl;
+      return;
+    }
+    std::optional<plansys2_msgs::msg::Plan> plan = parse_plan(command[1]);
+    if (!plan.has_value()) {
+      os << "Plan could not be loaded " << std::endl;
+      return;
+    }
+    execute_plan(plan.value());
+  } else {
+    os << usage << std::endl;
   }
 }
 
 void
 Terminal::process_check_actors(std::vector<std::string> & command, std::ostringstream & os)
 {
-  std::map<std::string, plansys2_msgs::msg::ActionPerformerStatus> actors;
+  (void)command;
+  // Filled in the thread that spins the terminal
+  auto actors_mutex = std::make_shared<std::mutex>();
+  auto heard = std::make_shared<std::map<std::string, plansys2_msgs::msg::ActionPerformerStatus>>();
 
   auto status_callback =
-    [this, &actors](const plansys2_msgs::msg::ActionPerformerStatus::SharedPtr msg) {
-      actors[msg->node_name] = *msg;
+    [actors_mutex, heard](const plansys2_msgs::msg::ActionPerformerStatus::SharedPtr msg) {
+      std::lock_guard<std::mutex> lock(*actors_mutex);
+      (*heard)[msg->node_name] = *msg;
     };
 
+  // Relative, as the performers publish it: namespaces and remappings apply
   auto status_sub = create_subscription<plansys2_msgs::msg::ActionPerformerStatus>(
-    "/performers_status", rclcpp::QoS(100).reliable(), status_callback);
+    "performers_status", rclcpp::QoS(100).reliable(), status_callback);
 
-  auto start = now();
-  while (rclcpp::ok() && (now() - start).seconds() < 2.0) {
-    rclcpp::spin_some(shared_from_this());
+  // Performers publish their status every second: two seconds see them all
+  const auto end = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+  while (rclcpp::ok() && std::chrono::steady_clock::now() < end) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  }
+  status_sub.reset();
+  std::map<std::string, plansys2_msgs::msg::ActionPerformerStatus> actors;
+  {
+    std::lock_guard<std::mutex> lock(*actors_mutex);
+    actors = *heard;
   }
 
   std::list<std::string> keys;
@@ -1004,12 +1081,10 @@ Terminal::process_check_actors(std::vector<std::string> & command, std::ostrings
 void
 Terminal::process_check(std::vector<std::string> & command, std::ostringstream & os)
 {
-  if (command.empty()) {
-    return;
-  }
-
-  if (command[0] == "actors") {
+  if (command.size() == 1 && command[0] == "actors") {
     process_check_actors(command, os);
+  } else {
+    os << "\tUsage: \n\t\tcheck actors" << std::endl;
   }
 
   // ToDo(fmrico): We should be able to run directly an action, for example:
@@ -1023,19 +1098,21 @@ Terminal::process_help(std::vector<std::string> & command, std::ostringstream & 
   cmd_set << "\t set instance <object> <type>" << std::endl <<
     "\t set predicate <predicate>" << std::endl <<
     "\t set function (= <function> <value>)" << std::endl <<
-    "\t set goal <goal_formula>" << std::endl;
+    "\t set goal <goal_formula>" << std::endl <<
+    "\t set metric minimize|maximize <expression>" << std::endl;
   std::ostringstream cmd_get;
   cmd_get << "\t get model   types | predicates | functions | actions |" << std::endl <<
     "\t             predicate <predicate_name> | function <function_name> |" << std::endl <<
-    "\t             action <action_name> " << std::endl <<
-    "\t get problem  instances | predicates | functions | goal " << std::endl <<
+    "\t             action <action_name> | derived <predicate_name> | deriveds" << std::endl <<
+    "\t get problem  instances | predicates | functions | goal | metric" << std::endl <<
     "\t get domain" << std::endl <<
     "\t get plan" << std::endl;
   std::ostringstream cmd_rem;
   cmd_rem << "\t remove instance <object>" << std::endl <<
     "\t remove predicate <predicate>" << std::endl <<
     "\t remove function <function>" << std::endl <<
-    "\t remove goal" << std::endl;
+    "\t remove goal" << std::endl <<
+    "\t remove metric" << std::endl;
 
   std::ostringstream cmd_run;
   cmd_run << "\t run action <action>" << std::endl <<
@@ -1057,7 +1134,7 @@ Terminal::process_help(std::vector<std::string> & command, std::ostringstream & 
   cmds.insert(std::pair<std::string, std::string>("get", cmd_get.str()));
   cmds.insert(std::pair<std::string, std::string>("remove", cmd_rem.str()));
   cmds.insert(std::pair<std::string, std::string>("run", cmd_run.str()));
-  cmds.insert(std::pair<std::string, std::string>("check", cmd_run.str()));
+  cmds.insert(std::pair<std::string, std::string>("check", cmd_check.str()));
   cmds.insert(std::pair<std::string, std::string>("source", cmd_source.str()));
   cmds.insert(std::pair<std::string, std::string>("quit", std::string("")));
   cmds.insert(std::pair<std::string, std::string>("help", cmd_help.str()));
@@ -1133,6 +1210,20 @@ Terminal::process_command(std::string & command, std::ostringstream & os, bool i
     return finish_parsing;
   }
 
+  // An error in a command is reported, and the terminal goes on
+  try {
+    finish_parsing = dispatch_command(tokens, os, inside_source);
+  } catch (const std::exception & e) {
+    os << "Error: " << e.what() << std::endl;
+  }
+  return finish_parsing;
+}
+
+bool
+Terminal::dispatch_command(
+  std::vector<std::string> & tokens, std::ostringstream & os, bool inside_source)
+{
+  bool finish_parsing = false;
   if (tokens[0] == "get") {
     pop_front(tokens);
     process_get(tokens, os);

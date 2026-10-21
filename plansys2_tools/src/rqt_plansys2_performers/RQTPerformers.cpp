@@ -14,6 +14,7 @@
 
 #include <unistd.h>
 
+#include <QBrush>
 #include <QDebug>
 #include <QTime>
 #include <QTimer>
@@ -27,12 +28,8 @@
 #include <utility>
 #include <string>
 
-#include <pluginlib/class_list_macros.hpp>
 #include "rqt_plansys2_performers/RQTPerformers.hpp"
 #include "rqt_plansys2_performers/PerformersTree.hpp"
-
-
-#include "plansys2_problem_expert/ProblemExpertClient.hpp"
 
 namespace rqt_plansys2_performers
 {
@@ -74,8 +71,6 @@ void RQTPerformers::initPlugin(qt_gui_cpp::PluginContext & context)
   performers_sub_ = node_->create_subscription<plansys2_msgs::msg::ActionPerformerStatus>(
     "performers_status", rclcpp::QoS(100).reliable(),
     std::bind(&RQTPerformers::performers_callback, this, _1));
-
-  problem_ = std::make_shared<plansys2::ProblemExpertClient>();
 }
 
 void RQTPerformers::shutdownPlugin()
@@ -85,6 +80,7 @@ void RQTPerformers::shutdownPlugin()
 void
 RQTPerformers::performers_callback(plansys2_msgs::msg::ActionPerformerStatus::UniquePtr msg)
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   performers_info_[msg->node_name] = std::move(msg);
   need_update_ = true;
 }
@@ -133,12 +129,23 @@ RQTPerformers::update_performer_row(
       break;
   }
 
+  row->setText(1, QString(performer.action.c_str()));
+
+  std::string join_args;
+  for (const auto & arg : performer.specialized_arguments) {
+    join_args += (join_args.empty() ? "" : " : ") + arg;
+  }
+  row->setText(4, QString(join_args.c_str()));
+
+  // A performer that stops publishing gets older: the age is updated on every tick
   auto elapsed = (node_->now() - performer.status_stamp).seconds();
-  row->setText(3, QString::number(elapsed));
+  row->setText(3, QString::number(elapsed, 'f', 1));
   if (elapsed > 5.0) {
     row->setBackground(3, Qt::red);
   } else if (elapsed > 2.0) {
     row->setBackground(3, Qt::yellow);
+  } else {
+    row->setBackground(3, QBrush());
   }
 }
 
@@ -147,26 +154,14 @@ RQTPerformers::add_new_row(const plansys2_msgs::msg::ActionPerformerStatus & per
 {
   auto instance_item = new QTreeWidgetItem();
   instance_item->setText(0, QString(performer.node_name.c_str()));
-  instance_item->setText(1, QString(performer.action.c_str()));
   update_performer_row(instance_item, performer);
-
-  std::string join_args;
-  for (const auto & arg : performer.specialized_arguments) {
-    join_args = join_args + " : " + arg;
-  }
-  join_args.erase(0, 1);  // remove first ":"
-
-  instance_item->setText(4, QString(join_args.c_str()));
-
   performers_tree_->addTopLevelItem(instance_item);
 }
 
 void
 RQTPerformers::spin_loop()
 {
-  if (!need_update_) {
-    return;
-  }
+  std::lock_guard<std::mutex> lock(mutex_);
   need_update_ = false;
 
   for (const auto & performer : performers_info_) {
@@ -185,11 +180,12 @@ void
 RQTPerformers::restoreSettings(
   const qt_gui_cpp::Settings & plugin_settings, const qt_gui_cpp::Settings & instance_settings)
 {
-  (void)plugin_settings;
   (void)instance_settings;
+  (void)plugin_settings;
 }
 
 
 }  // namespace rqt_plansys2_performers
 
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(rqt_plansys2_performers::RQTPerformers, rqt_gui_cpp::Plugin)

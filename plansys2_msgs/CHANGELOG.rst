@@ -2,31 +2,51 @@
 Changelog for package plansys2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.18 (2024-12-30)
--------------------
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* ActionExecutor and performers: one request, its own messages (`#488 <https://github.com/PlanSys2/ros2_planning_system/pull/488>`_)
+* forall and imply in conditions, goals and effects (`#462 <https://github.com/PlanSys2/ros2_planning_system/pull/462>`_)
+* Problem metric: minimize or maximize any numeric expression (`#457 <https://github.com/PlanSys2/ros2_planning_system/pull/457>`_)
+* Update domain during execution (`#414 <https://github.com/PlanSys2/ros2_planning_system/pull/414>`_)
+* Contributors: Francisco Martín Rico
 
-2.0.17 (2024-12-30)
--------------------
+3.1.0 (2026-07-28)
+------------------
+* msgs: deal with CMake CMP0094
+  Bump CMake minimum version to 3.15, as that's where CMP0094 was
+  introduced.
+  CMake versions lower than 3.15 have trouble locating Python in
+  environments where a Python installed in a non-default location should
+  be used (such as Conda, Pixi, etc).
+* Set C++23 as default
+* Merge pull request `#372 <https://github.com/PlanSys2/ros2_planning_system/issues/372>`_ from Rezenders/plansys2_core
+  Plansys2 core
+* add State.msg
+* Contributors: Eshan Savla, Francisco Martín Rico, G.A. vd. Hoorn, Gustavo, Gustavo Rezende
 
-2.0.16 (2024-12-30)
--------------------
-
-2.0.15 (2024-12-03)
--------------------
-
-2.0.14 (2024-11-14)
--------------------
-
-2.0.13 (2024-11-06)
--------------------
-
-2.0.12 (2024-10-16)
--------------------
+3.0.0 (2025-06-06)
+------------------
+* Multiple plans and replanning stability
+* Add getProblemWithTimestamp to Problem Expert
+* Service and logic for get multiple plans
+* Replanning
+* Executor basic replanning done
+* Add support for ParamExpression and ConstExpression
+* Support for existential preconditions
 * add uint8 EXISTS = 10 to Node.msg
+* Add support for derived predicates
 * support for ParamExpression and ConstExpression
 * add Derived.msg and GetDomainDerivedPredicateDetails.srv
+* Fix CI after BT-CPP v4
+* Remove cmake warning
 * Add option to use planner node to validate domain in domain expert
+* add Derived.msg and GetDomainDerivedPredicateDetails.srv
 * Contributors: Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Robodrome, Sebastian Castro
+
 
 2.0.9 (2022-07-10)
 ------------------

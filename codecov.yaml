@@ -2,5 +2,7 @@ fixes:
   - "ros_ws/src/*/ros2_planning_system/::"
 ignore:
   - "ros_ws/build"
-  - "ros_ws/*/**/test/*"
-  - "ros_ws/*/**/**/test/*"
+  - "**/build/**"
+  - "**/plansys2_tests/**"
+  # Paths are already fixed to the repository's: tests are not what is measured
+  - "**/test/**"

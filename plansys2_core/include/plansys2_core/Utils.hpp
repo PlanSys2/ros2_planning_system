@@ -17,32 +17,58 @@
 
 #include <string>
 #include <vector>
+#include <chrono>
 
 namespace plansys2
 {
 
+using namespace std::chrono_literals;  // NOLINT
+
+/**
+ * @brief Splits a string into tokens based on a delimiter.
+ * @param[in] string The original string to tokenize.
+ * @param[in] delim The delimiter used to split the string.
+ * @return std::vector<std::string> Vector containing the resulting tokens.
+ */
 std::vector<std::string> tokenize(const std::string & string, const std::string & delim);
 
 /**
- * @brief get a substring without empty lines
- *
- * @param string original string
- * @param init_pos first character in the original string
- * @param end_pos last character in the original string
- * @return a substring without empty lines
+ * @brief Get a substring without empty lines.
+ * @param[in] string The original string.
+ * @param[in] init_pos The first character in the original string.
+ * @param[in] end_pos The last character in the original string.
+ * @return std::string A substring without empty lines.
  */
 std::string substr_without_empty_lines(
-  std::string string,
-  std::size_t init_pos,
-  std::size_t end_pos);
+  std::string string, std::size_t init_pos, std::size_t end_pos);
 
 /**
- * @brief remove the comments on a pddl string
- *
- * @param pddl a pddl string
- * @return a pddl string without comments
+ * @brief Remove the comments from a PDDL string.
+ * @param[in] pddl A PDDL string.
+ * @return std::string The PDDL string without comments.
  */
 std::string remove_comments(const std::string & pddl);
+
+/**
+ * @brief Wait between tests for the middleware to forget the entities of the last one.
+ *
+ * It only waits: the nodes destroyed by a test take a while to disappear from discovery, and
+ * the next test could see them.
+ *
+ * @param[in] total How long to wait.
+ */
+void drain_ros(std::chrono::milliseconds total = 200ms);
+
+/**
+ * @brief A node name that no other node has: the base, the process and a count.
+ *
+ * The clients of PlanSys2 are made in many processes, the PlanSys2 one among them: with the same
+ * name, their service clients may not find the services they call for long.
+ *
+ * @param[in] base "problem_expert_client".
+ * @return "problem_expert_client_4242_3".
+ */
+std::string unique_node_name(const std::string & base);
 
 }  // namespace plansys2
 

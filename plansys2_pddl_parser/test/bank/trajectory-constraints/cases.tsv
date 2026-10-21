@@ -1,0 +1,6 @@
+domain.pddl	p1.pddl	yes	:constraints	the robot must carry the cup at some point and visit the hall at most once
+domain.pddl	p2.pddl	yes	:constraints	always, sometime-before, at-most-once and sometime over a two-item delivery
+domain.pddl	p3.pddl	no	:constraints	fetching the cup needs two separate visits to the hall, at-most-once forbids it
+domain2.pddl	p4.pddl	yes	:constraints :durative-actions	within, always-within and at end over a patrol that takes time
+domain2.pddl	p5.pddl	yes	:constraints :durative-actions	hold-during, hold-after and sometime-after: the hall visited in a window, the lights on after it
+domain2.pddl	p6.pddl	no	:constraints :durative-actions	going to the lab and back to the dock crosses the hall twice, at-most-once forbids it

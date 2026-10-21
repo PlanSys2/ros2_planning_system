@@ -19,36 +19,41 @@
 
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
-#include "plansys2_pddl_parser/ParamCond.hpp"
+#include "plansys2_pddl_parser/Condition.hpp"
 
 namespace parser
 {
 namespace pddl
 {
 
-class Imply : public ParamCond
+// (imply A B): true when A is false or B is true
+class Imply : public Condition
 {
 public:
-  Condition * cond;
+  Condition * left;
+  Condition * right;
 
   Imply()
-  : cond(0) {}
+  : left(0), right(0) {}
 
   Imply(const Imply * f, Domain & d)
-  : ParamCond(f), cond(0)
+  : left(0), right(0)
   {
-    if (f->cond) {cond = f->cond->copy(d);}
+    if (f->left) {left = f->left->copy(d);}
+    if (f->right) {right = f->right->copy(d);}
   }
 
   ~Imply()
   {
-    if (cond) {delete cond;}
+    if (left) {delete left;}
+    if (right) {delete right;}
   }
 
   void print(std::ostream & s) const
   {
-    s << "Imply" << params << ":\n";
-    if (cond) {cond->print(s);}
+    s << "Imply:\n";
+    if (left) {left->print(s);}
+    if (right) {right->print(s);}
   }
 
   void PDDLPrint(
@@ -61,7 +66,11 @@ public:
 
   void parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d);
 
-  void addParams(int m, unsigned n) {cond->addParams(m, n);}
+  void addParams(int m, unsigned n)
+  {
+    if (left) {left->addParams(m, n);}
+    if (right) {right->addParams(m, n);}
+  }
 
   Condition * copy(Domain & d) {return new Imply(this, d);}
 };

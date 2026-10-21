@@ -107,4 +107,54 @@
     :effect (and )
 )
 
+(:action action_test6
+    :parameters (?r - robot)
+    :precondition
+      (and
+        (exists (?ro1 ?ro2)
+          (and
+            (robot_at ?r ?ro1)
+            (connected ?ro1 ?ro2)
+          )
+        )
+        (exists (?ro1)
+          (and
+            (battery_full ?ro1)
+          )
+        )
+        (exists (?ro2)
+          (and
+            (battery_full ?ro2)
+          )
+        )
+        (exists (?ro1 ?ro2)
+          (and
+            (connected ?ro1 ?ro2)
+          )
+        )
+        (exists (?ro3)
+          (and
+            (battery_full ?ro3)
+          )
+        )
+      )
+    :effect (and )
+)
+
+(:action action_test7
+    :parameters (?r - robot ?ro - room)
+    :precondition
+      (or
+        (= ?r rob1)
+        (not
+          (exists (?ro1)
+            (and
+              (not (battery_full ?ro1))
+            )
+          )
+        )
+      )
+    :effect (and )
+)
+
 )

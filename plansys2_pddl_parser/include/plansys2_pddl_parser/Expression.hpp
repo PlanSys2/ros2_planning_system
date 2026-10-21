@@ -15,12 +15,16 @@
 
 #include <algorithm>
 #include <memory>
+#include <sstream>
+#include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
 #include "plansys2_pddl_parser/Condition.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 namespace parser
 {
@@ -41,46 +45,63 @@ public:
   // inherit
   virtual void print(std::ostream & stream) const {stream << info();}
 
-  virtual void parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d) {}
-  virtual void addParams(int m, unsigned n) {}
+  virtual void parse(Stringreader &, TokenStruct<std::string> &, Domain &) {}
+  virtual void addParams(int, unsigned) {}
 };
 
 Expression * createExpression(Stringreader & f, TokenStruct<std::string> & ts, Domain & d);
 
+// (op a b ...): comparisons, - and / take two operands, + and * two or more, and - also one
 class CompositeExpression : public Expression
 {
 public:
   std::string op;
-  Expression * left;
-  Expression * right;
+  std::vector<Expression *> args;
 
   explicit CompositeExpression(const std::string & c)
   : op(c) {}
 
   CompositeExpression(const std::string & c, Expression * l, Expression * r)
-  : op(c), left(l), right(r)
+  : op(c), args({l, r})
+  {
+  }
+
+  CompositeExpression(const std::string & c, std::vector<Expression *> a)
+  : op(c), args(std::move(a))
   {
   }
 
   ~CompositeExpression()
   {
-    delete left;
-    delete right;
+    for (auto arg : args) {delete arg;}
   }
 
   void parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
   {
-    f.next();
-    left = createExpression(f, ts, d);
-    right = createExpression(f, ts, d);
-    f.next();
-    f.assert_token(")");
+    for (f.next(); f.getChar() != ')'; f.next()) {
+      std::unique_ptr<Expression> arg(createExpression(f, ts, d));
+      if (!arg) {
+        throw std::runtime_error("Missing operand of " + op);
+      }
+      args.push_back(arg.release());
+    }
+    ++f.c;
+
+    const bool multi = op == "+" || op == "*";
+    const bool fits = multi ? args.size() >= 2 :
+      (op == "-" ? args.size() == 1 || args.size() == 2 : args.size() == 2);
+    if (!fits) {
+      throw std::runtime_error(
+              "Wrong number of operands (" + std::to_string(args.size()) + ") for " + op);
+    }
   }
 
   std::string info() const
   {
     std::ostringstream os;
-    os << "(" << op << " " << left->info() << " " << right->info() << ")";
+    os << "(" << op;
+    for (auto arg : args) {os << " " << arg->info();}
+    os << ")";
     return os.str();
   }
 
@@ -89,30 +110,20 @@ public:
     const Domain & d) const override
   {
     tabindent(s, indent);
-    s << "( " << op << " ";
-    left->PDDLPrint(s, indent, ts, d);
-    s << " ";
-    right->PDDLPrint(s, indent, ts, d);
+    s << "( " << op;
+    for (auto arg : args) {
+      s << " ";
+      arg->PDDLPrint(s, 0, ts, d);
+    }
     s << " )";
   }
 
+  // In the tree every operation is binary: (+ a b c) is (+ (+ a b) c) and (- a) is (- 0 a)
   plansys2_msgs::msg::Node::SharedPtr getTree(
     plansys2_msgs::msg::Tree & tree, const Domain & d,
     const std::vector<std::string> & replace = {}) const override
   {
-    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
-    node->node_type = plansys2_msgs::msg::Node::EXPRESSION;
-    node->expression_type = getExprType(op);
-    node->node_id = tree.nodes.size();
-    tree.nodes.push_back(*node);
-
-    plansys2_msgs::msg::Node::SharedPtr left_child = left->getTree(tree, d, replace);
-    tree.nodes[node->node_id].children.push_back(left_child->node_id);
-
-    plansys2_msgs::msg::Node::SharedPtr right_child = right->getTree(tree, d, replace);
-    tree.nodes[node->node_id].children.push_back(right_child->node_id);
-
-    return node;
+    return binaryTree(tree, d, replace, args.size());
   }
 
   double compute(double x, double y)
@@ -132,26 +143,70 @@ public:
     return res;
   }
 
-  double evaluate() {return compute(left->evaluate(), right->evaluate());}
+  double evaluate()
+  {
+    if (args.size() == 1) {return compute(0, args[0]->evaluate());}
+    double res = args[0]->evaluate();
+    for (size_t i = 1; i < args.size(); ++i) {res = compute(res, args[i]->evaluate());}
+    return res;
+  }
 
   double evaluate(Instance & ins, const StringVec & par)
   {
-    return compute(left->evaluate(ins, par), right->evaluate(ins, par));
+    if (args.size() == 1) {return compute(0, args[0]->evaluate(ins, par));}
+    double res = args[0]->evaluate(ins, par);
+    for (size_t i = 1; i < args.size(); ++i) {res = compute(res, args[i]->evaluate(ins, par));}
+    return res;
   }
 
   IntSet params()
   {
-    IntSet lpars = left->params();
-    IntSet rpars = right->params();
-    lpars.insert(rpars.begin(), rpars.end());
-    return lpars;
+    IntSet pars;
+    for (auto arg : args) {
+      IntSet arg_pars = arg->params();
+      pars.insert(arg_pars.begin(), arg_pars.end());
+    }
+    return pars;
   }
 
   Condition * copy(Domain & d)
   {
-    Expression * cleft = dynamic_cast<Expression *>(left->copy(d));
-    Expression * cright = dynamic_cast<Expression *>(right->copy(d));
-    return new CompositeExpression(op, cleft, cright);
+    std::vector<Expression *> copies;
+    for (auto arg : args) {copies.push_back(dynamic_cast<Expression *>(arg->copy(d)));}
+    return new CompositeExpression(op, copies);
+  }
+
+private:
+  // The operation on the first n operands
+  plansys2_msgs::msg::Node::SharedPtr binaryTree(
+    plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace,
+    size_t n) const
+  {
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::EXPRESSION;
+    node->expression_type = getExprType(op);
+    node->node_id = tree.nodes.size();
+    tree.nodes.push_back(*node);
+
+    uint32_t left_id = 0;
+    if (n == 1) {
+      plansys2_msgs::msg::Node zero;
+      zero.node_type = plansys2_msgs::msg::Node::NUMBER;
+      zero.node_id = tree.nodes.size();
+      zero.value = 0.0;
+      tree.nodes.push_back(zero);
+      left_id = zero.node_id;
+    } else if (n == 2) {
+      left_id = args[0]->getTree(tree, d, replace)->node_id;
+    } else {
+      left_id = binaryTree(tree, d, replace, n - 1)->node_id;
+    }
+    tree.nodes[node->node_id].children.push_back(left_id);
+
+    auto right_child = args[n - 1]->getTree(tree, d, replace);
+    tree.nodes[node->node_id].children.push_back(right_child->node_id);
+
+    return node;
   }
 };
 
@@ -171,7 +226,11 @@ public:
   FunctionExpression(ParamCond * c, std::vector<Expression *> e)
   : fun(c), constants(e) {}
 
-  ~FunctionExpression() {delete fun;}
+  ~FunctionExpression()
+  {
+    delete fun;
+    for (auto constant : constants) {delete constant;}
+  }
 
   std::string info() const
   {
@@ -196,7 +255,11 @@ public:
 
   Condition * copy(Domain & d)
   {
-    return new FunctionExpression(dynamic_cast<ParamCond *>(fun->copy(d)));
+    std::vector<Expression *> copies;
+    for (auto constant : constants) {
+      copies.push_back(constant ? dynamic_cast<Expression *>(constant->copy(d)) : nullptr);
+    }
+    return new FunctionExpression(dynamic_cast<ParamCond *>(fun->copy(d)), copies);
   }
 };
 
@@ -210,21 +273,19 @@ public:
 
   std::string info() const
   {
-    std::ostringstream os;
-    os << value;
-    return os.str();
+    return numberToString(value, -1);
   }
 
   void PDDLPrint(
-    std::ostream & s, unsigned indent, const TokenStruct<std::string> & ts,
-    const Domain & d) const override
+    std::ostream & s, unsigned, const TokenStruct<std::string> &,
+    const Domain &) const override
   {
-    s << value;
+    s << numberToString(value, -1);
   }
 
   plansys2_msgs::msg::Node::SharedPtr getTree(
-    plansys2_msgs::msg::Tree & tree, const Domain & d,
-    const std::vector<std::string> & replace = {}) const override
+    plansys2_msgs::msg::Tree & tree, const Domain &,
+    const std::vector<std::string> & = {}) const override
   {
     plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
     node->node_type = plansys2_msgs::msg::Node::NUMBER;
@@ -236,38 +297,161 @@ public:
 
   double evaluate() {return value;}
 
-  double evaluate(Instance & ins, const StringVec & par) {return value;}
+  double evaluate(Instance &, const StringVec &) {return value;}
 
   IntSet params() {return IntSet();}
 
-  Condition * copy(Domain & d) {return new ValueExpression(value);}
+  Condition * copy(Domain &) {return new ValueExpression(value);}
+};
+
+// #t, the time a continuous effect has acted: a PARAMETER node "#t", the step of its integration
+class TimeExpression : public Expression
+{
+public:
+  void PDDLPrint(
+    std::ostream & s, unsigned, const TokenStruct<std::string> &,
+    const Domain &) const override
+  {
+    s << "#t";
+  }
+
+  plansys2_msgs::msg::Node::SharedPtr getTree(
+    plansys2_msgs::msg::Tree & tree, const Domain &,
+    const std::vector<std::string> & = {}) const override
+  {
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::PARAMETER;
+    node->node_id = tree.nodes.size();
+    node->name = "#t";
+    plansys2_msgs::msg::Param node_param;
+    node_param.name = "#t";
+    node->parameters.push_back(node_param);
+    tree.nodes.push_back(*node);
+    return node;
+  }
+
+  std::string info() const {return "#t";}
+
+  double evaluate() {return -1;}
+
+  double evaluate(Instance &, const StringVec &) {return evaluate();}
+
+  IntSet params() {return IntSet();}
+
+  Condition * copy(Domain &) {return new TimeExpression();}
 };
 
 class DurationExpression : public Expression
 {
+public:
   void PDDLPrint(
-    std::ostream & s, unsigned indent, const TokenStruct<std::string> & ts,
-    const Domain & d) const override
+    std::ostream & s, unsigned, const TokenStruct<std::string> &,
+    const Domain &) const override
   {
     s << "?duration";
   }
 
+  // A parameter: the duration a plan gives the action, bound with bindDuration
   plansys2_msgs::msg::Node::SharedPtr getTree(
-    plansys2_msgs::msg::Tree & tree, const Domain & d,
-    const std::vector<std::string> & replace = {}) const override
+    plansys2_msgs::msg::Tree & tree, const Domain &,
+    const std::vector<std::string> & = {}) const override
   {
-    throw UnsupportedConstruct("DurationExpression");
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::PARAMETER;
+    node->node_id = tree.nodes.size();
+    node->name = "?duration";
+    plansys2_msgs::msg::Param node_param;
+    node_param.name = "?duration";
+    node->parameters.push_back(node_param);
+    tree.nodes.push_back(*node);
+    return node;
   }
 
   std::string info() const {return "?duration";}
 
   double evaluate() {return -1;}
 
-  double evaluate(Instance & ins, const StringVec & par) {return evaluate();}
+  double evaluate(Instance &, const StringVec &) {return evaluate();}
 
   IntSet params() {return IntSet();}
 
-  Condition * copy(Domain & d) {return new DurationExpression();}
+  Condition * copy(Domain &) {return new DurationExpression();}
+};
+
+// (total-time): the makespan of the plan, only meaningful in a :metric
+class TotalTimeExpression : public Expression
+{
+public:
+  void PDDLPrint(
+    std::ostream & s, unsigned, const TokenStruct<std::string> &,
+    const Domain &) const override
+  {
+    s << "( total-time )";
+  }
+
+  plansys2_msgs::msg::Node::SharedPtr getTree(
+    plansys2_msgs::msg::Tree & tree, const Domain &,
+    const std::vector<std::string> & = {}) const override
+  {
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::FUNCTION;
+    node->node_id = tree.nodes.size();
+    node->name = "total-time";
+    tree.nodes.push_back(*node);
+    return node;
+  }
+
+  std::string info() const {return "total-time";}
+
+  double evaluate() {return -1;}
+
+  double evaluate(Instance &, const StringVec &) {return evaluate();}
+
+  IntSet params() {return IntSet();}
+
+  Condition * copy(Domain &) {return new TotalTimeExpression();}
+};
+
+// PDDL3: (is-violated name), how many times the preference called so is violated
+class ViolatedExpression : public Expression
+{
+public:
+  std::string name;
+
+  explicit ViolatedExpression(const std::string & n)
+  : name(n) {}
+
+  void PDDLPrint(
+    std::ostream & s, unsigned, const TokenStruct<std::string> &,
+    const Domain &) const override
+  {
+    s << "( is-violated " << name << " )";
+  }
+
+  plansys2_msgs::msg::Node::SharedPtr getTree(
+    plansys2_msgs::msg::Tree & tree, const Domain &,
+    const std::vector<std::string> & = {}) const override
+  {
+    auto node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::FUNCTION;
+    node->node_id = tree.nodes.size();
+    node->name = "is-violated";
+    plansys2_msgs::msg::Param param;
+    param.name = name;
+    node->parameters.push_back(param);
+    tree.nodes.push_back(*node);
+    return node;
+  }
+
+  std::string info() const {return "is-violated " + name;}
+
+  double evaluate() {return -1;}
+
+  double evaluate(Instance &, const StringVec &) {return evaluate();}
+
+  IntSet params() {return IntSet();}
+
+  Condition * copy(Domain &) {return new ViolatedExpression(name);}
 };
 
 class ParamExpression : public Expression
@@ -286,26 +470,30 @@ public:
   }
 
   void PDDLPrint(
-    std::ostream & s, unsigned indent, const TokenStruct<std::string> & ts,
-    const Domain & d) const override
+    std::ostream & s, unsigned, const TokenStruct<std::string> & ts,
+    const Domain &) const override
   {
-    s << "?" << param;
+    if (param >= 0 && static_cast<unsigned>(param) < ts.size()) {
+      s << ts[param];
+    } else {
+      s << "?" << param;
+    }
   }
 
   plansys2_msgs::msg::Node::SharedPtr getTree(
-    plansys2_msgs::msg::Tree & tree, const Domain & d,
+    plansys2_msgs::msg::Tree & tree, const Domain &,
     const std::vector<std::string> & replace = {}) const override
   {
     plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
     node->node_type = plansys2_msgs::msg::Node::PARAMETER;
     node->node_id = tree.nodes.size();
+    node->name = "?" + std::to_string(param);
     plansys2_msgs::msg::Param node_param;
-    if (replace.size() > param) {
-      node->name = replace[param];
+    if (static_cast<size_t>(replace.size()) > static_cast<size_t>(param)) {
+      node_param.name = replace[param];
     } else {
-      node->name = "?" + std::to_string(param);
+      node_param.name = "?" + std::to_string(param);
     }
-    node_param.name = node->name;
     node->parameters.push_back(node_param);
     tree.nodes.push_back(*node);
     return node;
@@ -313,11 +501,11 @@ public:
 
   double evaluate() {return -1;}
 
-  double evaluate(Instance & ins, const StringVec & par) {return evaluate();}
+  double evaluate(Instance &, const StringVec &) {return evaluate();}
 
   IntSet params() {return IntSet();}
 
-  Condition * copy(Domain & d) {return new ParamExpression(param);}
+  Condition * copy(Domain &) {return new ParamExpression(param);}
 };
 
 class ConstExpression : public Expression
@@ -345,11 +533,48 @@ public:
 
   double evaluate() {return -1;}
 
-  double evaluate(Instance & ins, const StringVec & par) {return evaluate();}
+  double evaluate(Instance &, const StringVec &) {return evaluate();}
 
   IntSet params() {return IntSet();}
 
-  Condition * copy(Domain & d) {return new ConstExpression(constant, tid);}
+  Condition * copy(Domain &) {return new ConstExpression(constant, tid);}
+};
+
+// An object of the problem in an expression, as in (= (pos ?r) kitchen): a CONSTANT node
+class ObjectExpression : public Expression
+{
+public:
+  std::string object;
+  explicit ObjectExpression(const std::string & o)
+  : object(o) {}
+
+  std::string info() const {return object;}
+
+  void PDDLPrint(
+    std::ostream & s, unsigned, const TokenStruct<std::string> &, const Domain &) const override
+  {
+    s << object;
+  }
+
+  plansys2_msgs::msg::Node::SharedPtr getTree(
+    plansys2_msgs::msg::Tree & tree, const Domain &,
+    const std::vector<std::string> & = {}) const override
+  {
+    plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+    node->node_type = plansys2_msgs::msg::Node::CONSTANT;
+    node->node_id = tree.nodes.size();
+    node->name = object;
+    tree.nodes.push_back(*node);
+    return node;
+  }
+
+  double evaluate() {return -1;}
+
+  double evaluate(Instance &, const StringVec &) {return evaluate();}
+
+  IntSet params() {return IntSet();}
+
+  Condition * copy(Domain &) {return new ObjectExpression(object);}
 };
 
 }  // namespace pddl

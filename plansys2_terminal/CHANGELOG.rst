@@ -2,48 +2,68 @@
 Changelog for package plansys2_terminal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.18 (2024-12-30)
--------------------
-
-2.0.17 (2024-12-30)
--------------------
-
-2.0.16 (2024-12-30)
--------------------
-
-2.0.15 (2024-12-03)
--------------------
-
-2.0.14 (2024-11-14)
--------------------
-
-2.0.13 (2024-11-06)
--------------------
-* Change to EventsExecutor
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Fixes in the Python support, the terminal, and the rqt and TUI tools (`#500 <https://github.com/PlanSys2/ros2_planning_system/pull/500>`_)
+* Fixes in the PDDL parser and the problem expert (`#498 <https://github.com/PlanSys2/ros2_planning_system/pull/498>`_)
+* Kairos plan solver, and Kairos as the default planner (`#465 <https://github.com/PlanSys2/ros2_planning_system/pull/465>`_)
+* Problem metric from Python, the terminal and the TUI (`#463 <https://github.com/PlanSys2/ros2_planning_system/pull/463>`_)
+* Tests discover only nodes on this host (`#455 <https://github.com/PlanSys2/ros2_planning_system/pull/455>`_)
+* Replace the deprecated EventsExecutor with SingleThreadedExecutor (`#452 <https://github.com/PlanSys2/ros2_planning_system/pull/452>`_)
 * Contributors: Francisco Martín Rico
 
-2.0.12 (2024-10-16)
--------------------
-* add get model derived predicates to terminal
-* Added some information in the README to allow for using a configuration file to change the planner timeout
-* Read multiple lines in terminal input
-* Fix Terminal and executor bugs
-* Change MultiThreaded for SingleThreaded in CI failing tests
-* Fix terminal tests
-* Contributors: Andrianov Roman, Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Splinter1984
+3.1.0 (2026-07-28)
+------------------
+* Deprecate BTAction with rate. Fix all warnings
+* Potential fix for pull request finding
+  Co-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>
+* Fix data races, optional access crash, and execvp UB in plansys2_core / plansys2_terminal
+* Fix orphan thread bug in ExecutorNode
+* Add default
+* Set C++23 as default
+* Fix context in plansys2_terminal tests
+* derived_name.name -> derived_name.predicate.name
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
 
-* Merge remote-tracking branch 'origin/humble-devel'
-* Merge pull request `#251 <https://github.com/PlanSys2/ros2_planning_system/issues/251>`_ from PlanSys2/fix_bt_node
-  Fix bt node
-* Change MultiThreaded for SingleThreaded in CI failing tests
-* Merge pull request `#238 <https://github.com/PlanSys2/ros2_planning_system/issues/238>`_ from roveri-marco/fix_goal_structure_issue_205
-  Fix goal structure issue 205
+3.0.0 (2025-06-06)
+------------------
+* Revamp CMake and clean unused headers
+* Update install
+* Update CMakeLists to manage dependencies more efficiently in various packages.
+* Update CI adding BT.CPP as source dependecy
+* Fix deprecation of ament_target_dependencies
+* Closes `#352 <https://github.com/PlanSys2/ros2_planning_system/issues/352>`_
+* Fix POPF plugin issue when retrieving a successful plan (`#352 <https://github.com/PlanSys2/ros2_planning_system/issues/352>`_) and add a message in the terminal for plans with no actions (but not empty).
+* Multiple plans and replanning stability
+* Linting and fixing tests
+* Remove unnecessary specification for C++17
+* Lintering
+* Merge pull request `#338 <https://github.com/PlanSys2/ros2_planning_system/issues/338>`_ from fmrico/replanning
+  [WIP] Replanning
+* Adaptation of the rest of the packages
+* Change to EventsExecutor
+* 🎨 linter for plansys2_pddl_parser
+* Add support for derived predicates
+* add get model derived predicates to terminal
+* Add parameter for timeout of plan solver
+* Fix CI after BT-CPP v4
+* Added some information in the README to allow for using a configuration file to change the planner timeout
+* Remove cmake warning
+* Restore tests and enable warnings
+* Read multiple lines in terminal input
+* Read multiple lines in terminal input
+* Update Changelog
+* Fix Terminal and executor bugs
+* Fix bt node
+* Fix goal structure issue 205
 * Fix terminal tests
 * Minor fix
-* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
-* Merge remote-tracking branch 'upstream/master'
-* Merge branch 'IntelligentRoboticsLabs:master' into master
-* Contributors: Andrianov Roman, Francisco Martín Rico, Marco Roveri, Splinter1984
+* Contributors: Alberto Tudela, Andrianov Roman, Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Splinter1984, aquintan4
+
 
 2.0.9 (2022-07-10)
 ------------------

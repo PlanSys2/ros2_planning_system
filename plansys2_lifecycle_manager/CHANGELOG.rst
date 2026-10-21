@@ -2,31 +2,38 @@
 Changelog for package plansys2_lifecycle_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.18 (2024-12-30)
--------------------
-
-2.0.17 (2024-12-30)
--------------------
-
-2.0.16 (2024-12-30)
--------------------
-
-2.0.15 (2024-12-03)
--------------------
-
-2.0.14 (2024-11-14)
--------------------
-
-2.0.13 (2024-11-06)
--------------------
-* Change to EventsExecutor
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Lifecycle manager: a lost change_state response does not abort the startup (`#490 <https://github.com/PlanSys2/ros2_planning_system/pull/490>`_)
+* Lifecycle manager: bounded waits and checked states at startup (`#471 <https://github.com/PlanSys2/ros2_planning_system/pull/471>`_)
+* Tests discover only nodes on this host (`#455 <https://github.com/PlanSys2/ros2_planning_system/pull/455>`_)
+* Replace the deprecated EventsExecutor with SingleThreadedExecutor (`#452 <https://github.com/PlanSys2/ros2_planning_system/pull/452>`_)
 * Contributors: Francisco Martín Rico
 
-2.0.12 (2024-10-16)
--------------------
+3.1.0 (2026-07-28)
+------------------
+* Set C++23 as default
+* Doc for lifecycle
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+
+3.0.0 (2025-06-06)
+------------------
+* Modify export target. Rename metapackage
+* Revamp CMake and clean unused headers
+* Update install
+* Update CI adding BT.CPP as source dependecy
+* Fix deprecation of ament_target_dependencies
+* Change to EventsExecutor
+* [lifecycle_manager] Activate planner first
 * lifecycle_manager: activate planner first
-* Remove cmake warning
-* Contributors: Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Splinter1984
+* Fix CI after BT-CPP v4
+* lifecycle_manager: activate planner first
+* Contributors: Alberto Tudela, Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Splinter1984
+
 
 2.0.9 (2022-07-10)
 ------------------

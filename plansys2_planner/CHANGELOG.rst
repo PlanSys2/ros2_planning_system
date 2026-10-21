@@ -2,34 +2,59 @@
 Changelog for package plansys2_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.18 (2024-12-30)
--------------------
-
-2.0.17 (2024-12-30)
--------------------
-
-2.0.16 (2024-12-30)
--------------------
-
-2.0.15 (2024-12-03)
--------------------
-
-2.0.14 (2024-11-14)
--------------------
-
-2.0.13 (2024-11-06)
--------------------
-* Change to EventsExecutor
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Kairos plan solver, and Kairos as the default planner (`#465 <https://github.com/PlanSys2/ros2_planning_system/pull/465>`_)
+* Tests discover only nodes on this host (`#455 <https://github.com/PlanSys2/ros2_planning_system/pull/455>`_)
+* Replace the deprecated EventsExecutor with SingleThreadedExecutor (`#452 <https://github.com/PlanSys2/ros2_planning_system/pull/452>`_)
+* Planner node: solver errors reported, no exit on a bad plugin, real timeouts, meaningful error_info (`#443 <https://github.com/PlanSys2/ros2_planning_system/pull/443>`_)
+* Do not let solvers keep the planner and domain expert nodes alive (`#423 <https://github.com/PlanSys2/ros2_planning_system/pull/423>`_)
 * Contributors: Francisco Martín Rico
 
-2.0.12 (2024-10-16)
--------------------
+3.1.0 (2026-07-28)
+------------------
+* Fix deprecated get_share_directory
+* Deprecate BTAction with rate. Fix all warnings
+* Fix test
+* Add default
+* Set C++23 as default
+* Doc for planner
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+
+3.0.0 (2025-06-06)
+------------------
+* Modify export target. Rename metapackage
+* Revamp CMake and clean unused headers
+* Update install
+* Move pluginlib
+* Remove unused dependencies
+* Update CMakeLists to manage dependencies more efficiently in various packages.
+* Update CI adding BT.CPP as source dependecy
+* Fix deprecation of ament_target_dependencies
+* Multiple plans and replanning stability
+* Remove OPTIC from tests
+* Linting and fixing tests
+* Planner Plugins can be cancelled. Plan timeout effective.
+* Improve stability in Executor
+* Service and logic for get multiple plans
+* Change to EventsExecutor
+* 🎨 linter for plansys2_pddl_parser
+* Add parameter for timeout of plan solver
 * Integrated feedback, and fixes to have tests to pass
+* Fix CI after BT-CPP v4
 * Added support for configuring the planner timeout
+* Remove cmake warning
+* Add option to use planner node to validate domain in domain expert
 * Spin up temporary node for domain validation
 * Add option to use planner node to validate domain in domain expert
+* Fix goal structure issue 205
 * Minor changes to the tests to comply with some change in the generated output
-* Contributors: Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Robodrome, Sebastian Castro, Splinter1984
+* Contributors: Alberto Tudela, Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Robodrome, Sebastian Castro, Splinter1984
+
 
 2.0.9 (2022-07-10)
 ------------------

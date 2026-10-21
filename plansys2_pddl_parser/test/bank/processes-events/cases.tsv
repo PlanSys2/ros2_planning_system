@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:continuous-effects :numeric-fluents :time	a charging process fills the battery, the battery_full event ends the charge
+domain.pddl	p2.pddl	yes	:continuous-effects :numeric-fluents :time	two robots charge at one dock, each charge only ends when the event fires at 100
+domain.pddl	p3.pddl	no	:continuous-effects :numeric-fluents :time	the robot can charge but no corridor leads into the office

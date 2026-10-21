@@ -18,7 +18,7 @@
 #include <string>
 #include <map>
 
-#include "geometry_msgs/msg/pose2_d.hpp"
+#include "geometry_msgs/msg/pose.hpp"
 #include "test_msgs/action/fibonacci.hpp"
 
 #include "plansys2_bt_actions/BTActionNode.hpp"
@@ -49,7 +49,7 @@ public:
 
 private:
   int goal_reached_;
-  std::map<std::string, geometry_msgs::msg::Pose2D> waypoints_;
+  std::map<std::string, geometry_msgs::msg::Pose> waypoints_;
 };
 
 }  // namespace plansys2_bt_tests

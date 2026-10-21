@@ -22,37 +22,52 @@
 #include "plansys2_msgs/msg/action_execution_info.hpp"
 
 #include "plansys2_executor/ActionExecutorClient.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 
 namespace plansys2
 {
 
 using namespace std::chrono_literals;
+using std::placeholders::_1;
 
-ActionExecutorClient::ActionExecutorClient(
-  const std::string & node_name,
-  const std::chrono::nanoseconds & rate)
+ActionExecutorClient::ActionExecutorClient(const std::string & node_name)
 : CascadeLifecycleNode(node_name),
-  rate_(rate),
-  commited_(false)
+  committed_(false)
 {
   declare_parameter<std::string>("action_name", "");
   declare_parameter<std::vector<std::string>>(
     "specialized_arguments", std::vector<std::string>({}));
 
-  double default_rate = 1.0 / std::chrono::duration<double>(rate_).count();
+  period_ = std::chrono::milliseconds(200);
+  double default_rate = 1.0 / std::chrono::duration<double>(period_).count();
   declare_parameter<double>("rate", default_rate);
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::NOT_READY;
   status_.status_stamp = now();
   status_.node_name = get_name();
+  node_names_ = std::make_unique<NodeNames>(get_node_base_interface());
 }
 
-using CallbackReturnT =
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
-using std::placeholders::_1;
+ActionExecutorClient::ActionExecutorClient(
+  const std::string & node_name, const std::chrono::nanoseconds & rate)
+: CascadeLifecycleNode(node_name),
+  period_(rate), committed_(false)
+{
+  declare_parameter<std::string>("action_name", "");
+  declare_parameter<std::vector<std::string>>(
+    "specialized_arguments", std::vector<std::string>({}));
+
+  double default_rate = 1.0 / std::chrono::duration<double>(period_).count();
+  declare_parameter<double>("rate", default_rate);
+  status_.state = plansys2_msgs::msg::ActionPerformerStatus::NOT_READY;
+  status_.status_stamp = now();
+  status_.node_name = get_name();
+  node_names_ = std::make_unique<NodeNames>(get_node_base_interface());
+}
 
 CallbackReturnT
 ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
 {
+  (void)state;
   status_pub_ = create_publisher<plansys2_msgs::msg::ActionPerformerStatus>(
     "performers_status", rclcpp::QoS(100).reliable());
   status_pub_->on_activate();
@@ -74,10 +89,10 @@ ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
   get_parameter_or<std::vector<std::string>>(
     "specialized_arguments", specialized_arguments_, std::vector<std::string>({}));
 
-  double rate;
+  double rate = 1.0;  // If the parameter cannot be read
   get_parameter("rate", rate);
 
-  rate_ = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+  period_ = std::chrono::duration_cast<std::chrono::steady_clock::duration>(
     std::chrono::duration<double>(1.0 / rate));
 
   action_hub_pub_ = create_publisher<plansys2_msgs::msg::ActionExecution>(
@@ -99,13 +114,11 @@ ActionExecutorClient::on_configure(const rclcpp_lifecycle::State & state)
 CallbackReturnT
 ActionExecutorClient::on_activate(const rclcpp_lifecycle::State & state)
 {
+  (void)state;
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::RUNNING;
   status_.status_stamp = now();
   start_time_ = now();
-  timer_ = create_wall_timer(
-    rate_, std::bind(&ActionExecutorClient::do_work, this));
-
-//  do_work();
+  timer_ = create_wall_timer(period_, std::bind(&ActionExecutorClient::do_work, this));
 
   return CallbackReturnT::SUCCESS;
 }
@@ -113,6 +126,7 @@ ActionExecutorClient::on_activate(const rclcpp_lifecycle::State & state)
 CallbackReturnT
 ActionExecutorClient::on_deactivate(const rclcpp_lifecycle::State & state)
 {
+  (void)state;
   status_.state = plansys2_msgs::msg::ActionPerformerStatus::READY;
   status_.status_stamp = now();
   timer_ = nullptr;
@@ -126,31 +140,61 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
   switch (msg->type) {
     case plansys2_msgs::msg::ActionExecution::REQUEST:
       if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE &&
-        !commited_ && should_execute(msg->action, msg->arguments))
+        !committed_ && should_execute(msg->action, msg->arguments))
       {
-        commited_ = true;
+        committed_ = true;
+        committed_request_id_ = msg->request_id;
+        requester_ = msg->node_id;
+        commitment_timeout_ = create_wall_timer(
+          5s, [this]() {
+            RCLCPP_WARN(
+              get_logger(), "No answer from %s to our response: available again",
+              requester_.c_str());
+            release_commitment();
+          });
         send_response(msg);
       }
       break;
     case plansys2_msgs::msg::ActionExecution::CONFIRM:
       if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE &&
-        commited_ && msg->node_id == get_name())
+        committed_ && msg->node_id == get_name() && msg->request_id == committed_request_id_)
       {
         current_arguments_ = msg->arguments;
+        current_planned_duration_ = msg->planned_duration;
+        current_request_id_ = msg->request_id;
+        release_commitment();
         trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-        commited_ = false;
+        // If activation failed, notify the executor so it can retry with another performer
+        if (get_current_state().id() != lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE) {
+          RCLCPP_ERROR(
+            get_logger(),
+            "Performer [%s] failed to activate for action [%s]. Notifying executor.",
+            get_name(), action_managed_.c_str());
+          finish(false, 0.0, "Activation failed for performer " + std::string(get_name()));
+        } else {
+          requester_misses_ = 0;
+          requester_check_ = create_wall_timer(1s, [this]() {check_requester();});
+        }
       }
       break;
     case plansys2_msgs::msg::ActionExecution::REJECT:
-      if (msg->node_id == get_name()) {
-        commited_ = false;
+      if (committed_ && msg->node_id == get_name() && msg->request_id == committed_request_id_) {
+        release_commitment();
       }
       break;
     case plansys2_msgs::msg::ActionExecution::CANCEL:
       if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE &&
-        msg->node_id == get_name())
+        msg->node_id == get_name() && msg->request_id == current_request_id_)
       {
         trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+      }
+      break;
+    case plansys2_msgs::msg::ActionExecution::UPDATE:
+      // A new plan gives it another duration
+      if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE &&
+        msg->node_id == get_name() && msg->request_id == current_request_id_)
+      {
+        current_planned_duration_ = msg->planned_duration;
       }
       break;
     case plansys2_msgs::msg::ActionExecution::RESPONSE:
@@ -165,24 +209,71 @@ ActionExecutorClient::action_hub_callback(const plansys2_msgs::msg::ActionExecut
   }
 }
 
+void
+ActionExecutorClient::release_commitment()
+{
+  committed_ = false;
+  committed_request_id_.clear();
+  if (commitment_timeout_) {
+    commitment_timeout_->cancel();
+    commitment_timeout_ = nullptr;
+  }
+}
+
+void
+ActionExecutorClient::check_requester()
+{
+  if (get_current_state().id() != lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE) {
+    requester_check_->cancel();
+    return;
+  }
+
+  // Names are fully qualified: compare the last part. A few misses in a row, as
+  // discovery may lag, before stopping
+  // Once rclcpp shuts down there is nothing to supervise
+  auto found = node_names_->get(*get_node_graph_interface());
+  if (!found) {
+    return;
+  }
+  const auto & names = *found;
+  bool alive = false;
+  for (const auto & name : names) {
+    if (name.substr(name.find_last_of('/') + 1) == requester_) {
+      alive = true;
+      break;
+    }
+  }
+  requester_misses_ = alive ? 0 : requester_misses_ + 1;
+
+  if (requester_misses_ >= 3) {
+    RCLCPP_ERROR(
+      get_logger(), "%s, which asked for %s, is gone: stopping the action",
+      requester_.c_str(), action_managed_.c_str());
+    requester_check_->cancel();
+    trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
+  }
+}
+
 bool
 ActionExecutorClient::should_execute(
   const std::string & action, const std::vector<std::string> & args)
 {
-  if (action != action_managed_) {
+  // PDDL is case insensitive: Move performs move (#256)
+  if (!parser::pddl::compare_str_case_insensitive(action, action_managed_)) {
     return false;
   }
 
   if (!specialized_arguments_.empty()) {
-    if (specialized_arguments_.size() != args.size()) {
+    // Fewer than its arguments is a prefix, as it is meant; more can never match
+    if (specialized_arguments_.size() > args.size()) {
       RCLCPP_WARN(
-        get_logger(), "current and specialized arguments length doesn't match %zu %zu",
-        args.size(), specialized_arguments_.size());
+        get_logger(), "%zu specialized arguments for an action of %zu: it never matches",
+        specialized_arguments_.size(), args.size());
     }
 
     for (size_t i = 0; i < specialized_arguments_.size() && i < args.size(); i++) {
       if (specialized_arguments_[i] != "" && args[i] != "" &&
-        specialized_arguments_[i] != args[i])
+        !parser::pddl::compare_str_case_insensitive(specialized_arguments_[i], args[i]))
       {
         return false;
       }
@@ -209,6 +300,7 @@ ActionExecutorClient::send_feedback(float completion, const std::string & status
   plansys2_msgs::msg::ActionExecution msg_resp;
   msg_resp.type = plansys2_msgs::msg::ActionExecution::FEEDBACK;
   msg_resp.node_id = get_name();
+  msg_resp.request_id = current_request_id_;
   msg_resp.action = action_managed_;
   msg_resp.arguments = current_arguments_;
   msg_resp.completion = completion;
@@ -227,6 +319,7 @@ ActionExecutorClient::finish(bool success, float completion, const std::string &
   plansys2_msgs::msg::ActionExecution msg_resp;
   msg_resp.type = plansys2_msgs::msg::ActionExecution::FINISH;
   msg_resp.node_id = get_name();
+  msg_resp.request_id = current_request_id_;
   msg_resp.action = action_managed_;
   msg_resp.arguments = current_arguments_;
   msg_resp.completion = completion;

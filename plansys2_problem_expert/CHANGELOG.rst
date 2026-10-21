@@ -2,31 +2,72 @@
 Changelog for package plansys2_problem_expert
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.18 (2024-12-30)
--------------------
-
-2.0.17 (2024-12-30)
--------------------
-
-2.0.16 (2024-12-30)
--------------------
-
-2.0.15 (2024-12-03)
--------------------
-
-2.0.14 (2024-11-14)
--------------------
-
-2.0.13 (2024-11-06)
--------------------
-* Change to EventsExecutor
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Fixes in the PDDL parser and the problem expert (`#498 <https://github.com/PlanSys2/ros2_planning_system/pull/498>`_)
+* Domain change: done once the problem expert has the new domain (`#494 <https://github.com/PlanSys2/ros2_planning_system/pull/494>`_)
+* Executor robustness: Ctrl-C, BT nodes, one-call checks, replanning (`#492 <https://github.com/PlanSys2/ros2_planning_system/pull/492>`_)
+* Take back the at start effects of actions that do not end (`#486 <https://github.com/PlanSys2/ros2_planning_system/pull/486>`_)
+* Problem expert client: tell a missing answer apart from "no" (`#484 <https://github.com/PlanSys2/ros2_planning_system/pull/484>`_)
+* Numbers keep their precision in numeric effects and in the PDDL text (`#478 <https://github.com/PlanSys2/ros2_planning_system/pull/478>`_)
+* Kairos plan solver, and Kairos as the default planner (`#465 <https://github.com/PlanSys2/ros2_planning_system/pull/465>`_)
+* forall and imply in conditions, goals and effects (`#462 <https://github.com/PlanSys2/ros2_planning_system/pull/462>`_)
+* Accept objects of any descendant type, not only of direct subtypes (`#461 <https://github.com/PlanSys2/ros2_planning_system/pull/461>`_)
+* Negation and numeric equality in evaluate() (`#459 <https://github.com/PlanSys2/ros2_planning_system/pull/459>`_)
+* Problem metric: minimize or maximize any numeric expression (`#457 <https://github.com/PlanSys2/ros2_planning_system/pull/457>`_)
+* Tests discover only nodes on this host (`#455 <https://github.com/PlanSys2/ros2_planning_system/pull/455>`_)
+* Replace the deprecated EventsExecutor with SingleThreadedExecutor (`#452 <https://github.com/PlanSys2/ros2_planning_system/pull/452>`_)
+* ProblemExpertClient: getProblem(true) no longer returns the problem from before the client's own changes (`#440 <https://github.com/PlanSys2/ros2_planning_system/pull/440>`_)
+* Reject instance names that are not PDDL names (`#429 <https://github.com/PlanSys2/ros2_planning_system/pull/429>`_)
+* Use 32-bit node ids and validate trees before walking them (`#425 <https://github.com/PlanSys2/ros2_planning_system/pull/425>`_)
+* Reject malformed PDDL instead of crashing (`#424 <https://github.com/PlanSys2/ros2_planning_system/pull/424>`_)
+* Update domain during execution (`#414 <https://github.com/PlanSys2/ros2_planning_system/pull/414>`_)
 * Contributors: Francisco Martín Rico
 
-2.0.12 (2024-10-16)
--------------------
+3.1.0 (2026-07-28)
+------------------
+* Deprecate BTAction with rate. Fix all warnings
+* Merge pull request `#392 <https://github.com/PlanSys2/ros2_planning_system/issues/392>`_ from fmrico/fix_ci_2
+  Fix ci 2
+* Set C++23 as default
+* derived_name.name -> derived_name.predicate.name
+* fix evaluate_not test
+* Added optional dependency
+* Improve doc for domain and problem
+* Doc for problem expert
+* Merge branch 'rolling' into getExpr
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
+
+3.0.0 (2025-06-06)
+------------------
+* Remove unnecessary depends
+* Revamp CMake and clean unused headers
+* Update install
+* Remove unused dependencies
+* Update CMakeLists to manage dependencies more efficiently in various packages.
+* Update CI adding BT.CPP as source dependecy
+* Fix deprecation of ament_target_dependencies
+* Multiple plans and replanning stability
+* Linting and fixing tests
+* Add getProblemWithTimestamp to Problem Expert
+* Replanning
+* Adaptation of the rest of the packages
+* Add chached getDomain() and getProblem()
+* Add chached getDomain()
+* Change to EventsExecutor
+* 🎨 linter for plansys2_pddl_parser
+* Add support for ParamExpression and ConstExpression
+* Support for existential preconditions
 * evaluate exists use_state==false
+* fix code style
 * evaluate exsits w/ problem_client
 * add replace_children_param
+* Support negation of CompositeExpression
+* Add support for derived predicates
 * return derived predicates in getPredicates
 * add cart_produdct and replace_children_param
 * fix bug in ParamExpression getTree
@@ -35,16 +76,24 @@ Changelog for package plansys2_problem_expert
 * negate evaluation of comp expression
 * add test problem_expert.exist_precidate
 * in existPredicate check if derived predicate is satisfied
+* Fix to have constants and numeric fluents in the goal
+* Fix CI after BT-CPP v4
+* Remove cmake warning
+* Fixed support for constants in predicates/functions/goals more fixes
 * Fixed support for constants in predicates/functions/goals
+* Use separate problem pddl for problem expert.
 * Make problemExpert case-insensitive to Instance types
 * Use separate problem pddl for problem expert.
+* Fix goal structure issue 205
 * Minor changes to the tests to comply with some change in the generated output
 * Fixed some errors and some tests to comply with the revised output
-* Fixed support for the complex goal parsing both from the terminal and from file
-* Minor changes to the tests to comply with some change in the generated output
+* Duplicate instances
 * Check instance types and associated tests
+* [problem_expert] AddInstance successeeds if instance already exists
 * Fixed support for the complex goal parsing both from the terminal and from file
-* Contributors: Ashton Larkin, Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Mostafa Gomaa, Splinter1984, adfea625
+* [problem_expert] AddInstance successeeds if instance already exists
+* Contributors: Alberto Tudela, Ashton Larkin, Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Mostafa Gomaa, Splinter1984, adfea625
+
 
 2.0.9 (2022-07-10)
 ------------------

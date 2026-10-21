@@ -2,42 +2,69 @@
 Changelog for package plansys2_popf_plan_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.18 (2024-12-30)
--------------------
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Tests discover only nodes on this host (`#455 <https://github.com/PlanSys2/ros2_planning_system/pull/455>`_)
+* POPF plugin: per-run folders, arguments passed to popf, robust plan parsing (`#442 <https://github.com/PlanSys2/ros2_planning_system/pull/442>`_)
+* Enforce plan solver timeouts and kill the whole planner process group (`#421 <https://github.com/PlanSys2/ros2_planning_system/pull/421>`_)
+* Contributors: Francisco Martín Rico
 
-2.0.17 (2024-12-30)
--------------------
+3.1.0 (2026-07-28)
+------------------
+* Fix deprecated get_share_directory
+* Set C++23 as default
+* Doc for popf plan solver
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende
 
-2.0.16 (2024-12-30)
--------------------
-
-2.0.15 (2024-12-03)
--------------------
-
-2.0.14 (2024-11-14)
--------------------
-
-2.0.13 (2024-11-06)
--------------------
-
-2.0.12 (2024-10-16)
--------------------
+3.0.0 (2025-06-06)
+------------------
+* Modify export target. Rename metapackage
+* Revamp CMake and clean unused headers
+* Update install
+* Move pluginlib
+* Update CMakeLists to manage dependencies more efficiently in various packages.
+* Update CI adding BT.CPP as source dependecy
+* Fix deprecation of ament_target_dependencies
+* Closes `#352 <https://github.com/PlanSys2/ros2_planning_system/issues/352>`_
+* Fix POPF plugin issue when retrieving a successful plan (`#352 <https://github.com/PlanSys2/ros2_planning_system/issues/352>`_) and add a message in the terminal for plans with no actions (but not empty).
+* Multiple plans and replanning stability
+* Planner Plugins can be cancelled. Plan timeout effective.
+* Improve stability in Executor
+* Support for existential preconditions
 * adjust prints and utils
+* Add parameter for timeout of plan solver
 * Integrated feedback, and fixes to have tests to pass
+* Fix CI after BT-CPP v4
 * Added support for configuring the planner timeout
+* Remove cmake warning
+* Do not segfault with filesystem errors in POPF, and allow ~ for home directory
 * Add unit tests
+* Lint
 * Do not segfault with filesystem errors in POPF, and allow ~ for home directory
 * Add option to use planner node to validate domain in domain expert
+* Add option to use planner node to validate domain in domain expert
+* Add ability to specify output folder in POPF planner
+* Reduce copypasta in domain expert
+* Linting fixes
 * Configure POPF solver in domain expert
 * Add ability to specify output folder in POPF planner
+* Merge remote-tracking branch 'upstream/master' into return-stn
+* Update Changelog
 * Remove reference to SharedPtr
 * Fix is_valid_domain by parsing out file
 * bt-builder-plugins: Creating BT builder plugin interface. Moving current BT builder to plugin named SimpleBTBuilder. Adding new and improved STN-based BT builder plugin named STNBTBuilder.
 * Fix problem in is_valid_domain function
-* add status check into popf_plan_solver
 * add system status check
-* Remove reference to SharedPtr
-* Contributors: Andrianov Roman, Francisco Martín Rico, Gustavo, Jake Keller, Josh Zapf, Marco Roveri, Robodrome, Sebastian Castro, Splinter1984
+* add status check into popf_plan_solver
+* Merge remote-tracking branch 'upstream/master'
+* add semicolom
+* add system status check
+* Contributors: Alberto Tudela, Andrianov Roman, Francisco Martín Rico, Gustavo, Jake Keller, Josh Zapf, Marco Roveri, Robodrome, Sebastian Castro, Splinter1984, aquintan4
+
 
 2.0.9 (2022-07-10)
 ------------------

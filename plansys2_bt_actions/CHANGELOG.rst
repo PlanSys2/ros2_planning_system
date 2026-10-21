@@ -2,44 +2,87 @@
 Changelog for package plansys2_bt_actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.18 (2024-12-30)
--------------------
-
-2.0.17 (2024-12-30)
--------------------
-
-2.0.16 (2024-12-30)
--------------------
-
-2.0.15 (2024-12-03)
--------------------
-
-2.0.14 (2024-11-14)
--------------------
-
-2.0.13 (2024-11-06)
--------------------
-* Change to EventsExecutor
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* plansys2_bt_actions: BT action nodes ready again after each goal, and a shared blackboard (`#496 <https://github.com/PlanSys2/ros2_planning_system/pull/496>`_)
+* BtActionNode: no exception when cancelling a goal that has just finished (`#480 <https://github.com/PlanSys2/ros2_planning_system/pull/480>`_)
+* Tests discover only nodes on this host (`#455 <https://github.com/PlanSys2/ros2_planning_system/pull/455>`_)
+* Replace the deprecated EventsExecutor with SingleThreadedExecutor (`#452 <https://github.com/PlanSys2/ros2_planning_system/pull/452>`_)
+* Do not let the BT blackboard keep the bt_action_node alive (`#428 <https://github.com/PlanSys2/ros2_planning_system/pull/428>`_)
 * Contributors: Francisco Martín Rico
 
-2.0.12 (2024-10-16)
--------------------
-* Remove cmake warning
+3.1.0 (2026-07-28)
+------------------
+* Fix deprecated get_share_directory
+* Support custom messages in BTAction via out_msg blackboard
+  Read out_msg from the BT blackboard and use it as the status string
+  in send_feedback() and finish() calls. Falls back to the default
+  generic messages when out_msg is empty. This allows BT action nodes
+  to forward custom context (e.g. perception events) through the
+  action hub.
+* Fix publish execution Info. TUI and CLI
+* Deprecate BTAction with rate. Fix all warnings
+* Fix test
+* Set C++23 as default
+* fix: target cancel handle
+  More improvments in BTActionNode
+* Fix default  server_timeout
+* Fix Groot2 monitor format
+* Fix tests
+* Added callback group executor
+* Return to IDLE when finished
+* Add tf2_geometry_msgs to plansys2_bt_actions package.xml
+  Add tf2_geometry_msgs to plansys2_bt_actions package.xml.
+  tf2_geometry_msgs is required to build plansys2_bt_actions
+* Use geometry_msgs::msg::Pose as Pose2D is now in vision_msgs
+* Fix BTService and BT-JSON
+* Update BTServiceNode.hpp
+* Added a BT for services
+* Added JSON utils
+* Revert lifecycle
+* Added deprecated constructor
+* Remove nolint
+* Added spin to test
+* Fix some bt _action tests
+* Added bt_loop_duration to the blackboard
+* Remove rate of ActionExecutorClient constructor and set as default parameter
+* Added wait_for_service_timeout param and blackboard
+* Added server_timeout as parameter and blackboard
+* Doc for bt actions
+* Update Readme
+* Added Groot2 monitor
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende, avalen2022
+
+3.0.0 (2025-06-06)
+------------------
+* Modify export target. Rename metapackage
+* Revamp CMake and clean unused headers
+* Multiple plans and replanning stability
+* Remove specification for C++17
+* Fix goal_handle bug
+* Fix bug in xml tree
+* Fix CI after BT-CPP v4
 * Removed some small references still related to the old version of BehaviorTree
+* Upgrade to Behaviortree.CPP v4
 * Bump Behaviortree.CPP v3 to v4
-* fix code style issues with uncrustify
+* bt_action_node: fix groot enabling
 * Update BTAction.cpp
 * fix groot enabling
-* Linting
 * Fix logger destruction at BTActions
-* Update Changelog
+* Fix bt node
 * Insert in blackboard the action ROS 2 Node
-* Insert in blackboard the action ROS 2 Node
+* Fixes for bt_actions and popf_plan_sover
 * Correct tick function call in bt_actions test
 * Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
-* Explicitly ignore feedback in default on_feedback
 * Add try/catch to bt creation, reset loggers
-* Contributors: Andrianov Roman, Francisco Martín Rico, Jake Keller, Marco Roveri, Splinter1984
+* Insert in blackboard the action ROS 2 Node
+* Explicitly ignore feedback in default on_feedback
+* Contributors: Andrianov Roman, Alberto Tudela, Andrianov Roman, Francisco Martín Rico, Jake Keller, Josh Zapf, Marco Roveri, Robodrome, Samuele Sandrini, Splinter1984, david, robodrome
+
 
 2.0.9 (2022-07-10)
 ------------------

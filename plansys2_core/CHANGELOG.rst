@@ -2,32 +2,63 @@
 Changelog for package plansys2_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.18 (2024-12-30)
--------------------
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Fixes in the PDDL parser and the problem expert (`#498 <https://github.com/PlanSys2/ros2_planning_system/pull/498>`_)
+* Problem expert client: tell a missing answer apart from "no" (`#484 <https://github.com/PlanSys2/ros2_planning_system/pull/484>`_)
+* Problem metric: minimize or maximize any numeric expression (`#457 <https://github.com/PlanSys2/ros2_planning_system/pull/457>`_)
+* Tests discover only nodes on this host (`#455 <https://github.com/PlanSys2/ros2_planning_system/pull/455>`_)
+* Fail the goal instead of crashing when a plan cannot be set up (`#433 <https://github.com/PlanSys2/ros2_planning_system/pull/433>`_)
+* Enforce plan solver timeouts and kill the whole planner process group (`#421 <https://github.com/PlanSys2/ros2_planning_system/pull/421>`_)
+* Contributors: Francisco Martín Rico
 
-2.0.17 (2024-12-30)
--------------------
+3.1.0 (2026-07-28)
+------------------
+* Fix deprecated get_share_directory
+* Potential fix for pull request finding
+  Co-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>
+* Fix data races, optional access crash, and execvp UB in plansys2_core / plansys2_terminal
+* Set C++23 as default
+* Temporal deactivation of problematic tests
+* Add function to print predicates for debugging
+* core: tests use std::fs, so include it
+* improve documentation State and DerivedResolutionGraph
+* rm old ActionVariant from ActionExecutor and adjust code
+* 🎨 fix code style
+* add State class
+* add DerivedResolutionGraph
+* add NodeVariant class
+* add Action class
+* add Derived class and hashes
+* add == operator to Instance and Predicate
+* Improve doc for core
+* Doc for core
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende, gavanderhoorn
 
-2.0.16 (2024-12-30)
--------------------
-
-2.0.15 (2024-12-03)
--------------------
-
-2.0.14 (2024-11-14)
--------------------
-
-2.0.13 (2024-11-06)
--------------------
-
-2.0.12 (2024-10-16)
--------------------
+3.0.0 (2025-06-06)
+------------------
+* Modify export target. Rename metapackage
+* Revamp CMake and clean unused headers
+* Remove unused dependencies
+* Fix deprecation of ament_target_dependencies
+* Multiple plans and replanning stability
+* Add getProblemWithTimestamp to Problem Expert
+* Planner Plugins can be cancelled. Plan timeout effective.
+* 🎨 linter for plansys2_pddl_parser
+* Add parameter for timeout of plan solver
 * Integrated feedback, and fixes to have tests to pass
+* Fix CI after BT-CPP v4
 * Added support for configuring the planner timeout
-* Remove cmake warning
 * Add option to use planner node to validate domain in domain expert
 * Remove reference to SharedPtr
-* Contributors: Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Robodrome, Sebastian Castro, Splinter1984
+* Integrated feedback, and fixes to have tests to pass
+* Added support for configuring the planner timeout
+* Contributors: Alberto Tudela, Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Robodrome, Sebastian Castro, Splinter1984
+
 
 2.0.9 (2022-07-10)
 ------------------

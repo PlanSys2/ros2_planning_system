@@ -1,0 +1,3 @@
+domain.pddl	p1.pddl	yes	:existential-preconditions	some robot in the room switches the light and a camera robot takes a photo
+domain.pddl	p2.pddl	yes	:existential-preconditions	two robots, only one with camera, photograph two rooms
+domain.pddl	p3.pddl	no	:existential-preconditions	no robot has a camera so the existential precondition of photograph never holds

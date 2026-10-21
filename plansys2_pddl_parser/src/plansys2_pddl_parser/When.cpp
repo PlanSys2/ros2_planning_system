@@ -44,7 +44,20 @@ void When::PDDLPrint(
 plansys2_msgs::msg::Node::SharedPtr When::getTree(
   plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace) const
 {
-  throw UnsupportedConstruct("When");
+  if (!pars || !cond) {
+    throw UnsupportedConstruct("When without a condition or an effect");
+  }
+  plansys2_msgs::msg::Node::SharedPtr node = std::make_shared<plansys2_msgs::msg::Node>();
+  node->node_type = plansys2_msgs::msg::Node::WHEN;
+  node->node_id = tree.nodes.size();
+  tree.nodes.push_back(*node);
+
+  plansys2_msgs::msg::Node::SharedPtr condition = pars->getTree(tree, d, replace);
+  tree.nodes[node->node_id].children.push_back(condition->node_id);
+  plansys2_msgs::msg::Node::SharedPtr effect = cond->getTree(tree, d, replace);
+  tree.nodes[node->node_id].children.push_back(effect->node_id);
+
+  return node;
 }
 
 void When::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)

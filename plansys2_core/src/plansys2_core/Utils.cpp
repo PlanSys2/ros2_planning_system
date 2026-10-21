@@ -12,11 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
+#include "plansys2_core/Utils.hpp"
+
+#include <unistd.h>
+
+#include <atomic>
 #include <sstream>
+#include <string>
+#include <thread>
 #include <vector>
 
-#include "plansys2_core/Utils.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace plansys2
 {
@@ -41,9 +47,7 @@ std::vector<std::string> tokenize(const std::string & string, const std::string 
 }
 
 std::string substr_without_empty_lines(
-  std::string string,
-  std::size_t init_pos,
-  std::size_t end_pos)
+  std::string string, std::size_t init_pos, std::size_t end_pos)
 {
   std::stringstream stream_in(string.substr(init_pos, end_pos - init_pos));
   std::stringstream stream_out;
@@ -87,4 +91,18 @@ std::string remove_comments(const std::string & pddl)
   }
   return std::string(uncomment.str());
 }
+
+std::string unique_node_name(const std::string & base)
+{
+  static std::atomic<uint64_t> count {0};
+  return base + "_" + std::to_string(::getpid()) + "_" + std::to_string(count++);
+}
+
+void drain_ros(std::chrono::milliseconds total)
+{
+  // Spinning a node of its own drained nothing: it is a wait, and says so
+  std::this_thread::sleep_for(total);
+}
+
+
 }  // namespace plansys2

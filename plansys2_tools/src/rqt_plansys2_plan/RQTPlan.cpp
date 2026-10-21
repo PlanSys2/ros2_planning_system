@@ -23,12 +23,10 @@
 #include <QPainter>
 #include <QCheckBox>
 #include <algorithm>
+#include <cmath>
 #include <memory>
 #include <utility>
 #include <string>
-
-#include <pluginlib/class_list_macros.hpp>
-
 
 #include "rqt_plansys2_plan/RQTPlan.hpp"
 #include "rqt_plansys2_plan/PlanTree.hpp"
@@ -69,6 +67,10 @@ void RQTPlan::initPlugin(qt_gui_cpp::PluginContext & context)
   connect(controller_spin_timer_, SIGNAL(timeout()), this, SLOT(spin_loop()));
   controller_spin_timer_->start(100);
 
+  // Before the subscriptions: the latched plan may come at once
+  need_update_plan_ = false;
+  need_update_info_ = false;
+
   action_execution_info_ = node_->create_subscription<plansys2_msgs::msg::ActionExecutionInfo>(
     "action_execution_info", 100,
     std::bind(&RQTPlan::execution_info_callback, this, _1));
@@ -76,9 +78,6 @@ void RQTPlan::initPlugin(qt_gui_cpp::PluginContext & context)
   executing_plan_ = node_->create_subscription<plansys2_msgs::msg::Plan>(
     "executing_plan", rclcpp::QoS(100).transient_local(),
     std::bind(&RQTPlan::plan_callback, this, _1));
-
-  need_update_plan_ = false;
-  need_update_info_ = false;
 }
 
 void RQTPlan::shutdownPlugin()
@@ -88,22 +87,21 @@ void RQTPlan::shutdownPlugin()
 void
 RQTPlan::execution_info_callback(plansys2_msgs::msg::ActionExecutionInfo::UniquePtr msg)
 {
-  plan_info_[msg->action_full_name] = std::move(msg);
-  need_update_info_ = true;
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (!need_update_plan_) {
+    plan_info_[msg->action_full_name] = std::move(msg);
+    need_update_info_ = true;
+  }
 }
 
 void
 RQTPlan::plan_callback(plansys2_msgs::msg::Plan::UniquePtr msg)
 {
-  plan_ = std::move(msg);
-
-  plan_info_.clear();
-  for (const auto & item : plan_->items) {
-    std::string full_name = item.action + ":" + std::to_string(static_cast<int>(item.time * 1000));
-    plan_info_[full_name] = nullptr;
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (plan_ == nullptr || *plan_ != *msg) {
+    new_plan_ = std::move(msg);
+    need_update_plan_ = true;
   }
-
-  need_update_plan_ = true;
 }
 
 void
@@ -192,35 +190,53 @@ RQTPlan::fill_row_info(
 void
 RQTPlan::spin_loop()
 {
+  std::lock_guard<std::mutex> lock(mutex_);
   if (!need_update_info_ && !need_update_plan_) {
     return;
   }
 
+  bool was_plan_updated = false;
   if (need_update_plan_) {
+    plan_ = std::move(new_plan_);
+
+    plan_info_.clear();
+    for (const auto & item : plan_->items) {
+      std::string full_name = item.action + ":" +
+        std::to_string(std::llround(item.time * 1000));
+      plan_info_[full_name] = nullptr;
+    }
+
     need_update_info_ = true;
     need_update_plan_ = false;
-    plan_tree_->clearAllItems();
+    was_plan_updated = true;
+  }
 
+  bool do_update_info = need_update_info_;
+  if (do_update_info) {
+    need_update_info_ = false;
+  }
+
+  if (was_plan_updated && plan_) {
+    plan_tree_->clearAllItems();
     for (const auto & item : plan_->items) {
       auto plan_item = new QTreeWidgetItem();
       std::string full_name = item.action + ":" +
-        std::to_string(static_cast<int>(item.time * 1000));
+        std::to_string(std::llround(item.time * 1000));
       plan_item->setText(0, QString(full_name.c_str()));
       plan_tree_->addTopLevelItem(plan_item);
     }
   }
 
-  if (need_update_info_) {
-    need_update_info_ = false;
-
+  if (do_update_info && plan_) {
     for (const auto & item : plan_->items) {
       std::string full_name = item.action + ":" +
-        std::to_string(static_cast<int>(item.time * 1000));
-      auto item_row = get_plan_item_row(full_name);
+        std::to_string(std::llround(item.time * 1000));
 
+      auto item_row = get_plan_item_row(full_name);
       if (item_row.has_value()) {
-        if (plan_info_[full_name] != nullptr) {
-          fill_row_info(item_row.value(), *(plan_info_[full_name]));
+        auto it = plan_info_.find(full_name);
+        if (it != plan_info_.end() && it->second != nullptr) {
+          fill_row_info(item_row.value(), *(it->second));
         }
       }
     }
@@ -232,11 +248,12 @@ void
 RQTPlan::restoreSettings(
   const qt_gui_cpp::Settings & plugin_settings, const qt_gui_cpp::Settings & instance_settings)
 {
-  (void)plugin_settings;
   (void)instance_settings;
+  (void)plugin_settings;
 }
 
 
 }  // namespace rqt_plansys2_plan
 
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(rqt_plansys2_plan::RQTPlan, rqt_gui_cpp::Plugin)

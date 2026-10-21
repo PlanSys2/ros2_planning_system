@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>plansys2_tui_cli</name>
+  <version>4.0.0</version>
+  <description>PlanSys2 TUI (Textual) and ros2cli tools.</description>
+
+  <maintainer email="fmrico@gmail.com">Francisco Martín Rico</maintainer>
+
+  <license>Apache-2.0</license>
+  <!-- Textual, shipped in plansys2_tui_cli/vendor -->
+  <license file="plansys2_tui_cli/vendor/textual/LICENSE">MIT</license>
+
+  <author>Francisco Martín Rico</author>
+
+  <depend>rclpy</depend>
+  <depend>plansys2_msgs</depend>
+
+  <exec_depend>ros2cli</exec_depend>
+  <exec_depend>python3-rich</exec_depend>
+  <exec_depend>python3-platformdirs</exec_depend>
+  <!-- Needed by Textual -->
+  <exec_depend>python3-pygments</exec_depend>
+  <exec_depend>python3-typing-extensions</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

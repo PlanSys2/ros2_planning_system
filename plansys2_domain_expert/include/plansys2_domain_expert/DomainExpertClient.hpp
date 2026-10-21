@@ -21,13 +21,16 @@
 #include <memory>
 
 #include "plansys2_core/Types.hpp"
+#include "plansys2_core/DerivedResolutionGraph.hpp"
 #include "plansys2_domain_expert/DomainExpertInterface.hpp"
+
+#include "std_msgs/msg/string.hpp"
 
 #include "plansys2_msgs/msg/action.hpp"
 #include "plansys2_msgs/msg/derived.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
-#include "plansys2_msgs/msg/node.hpp"
 
+#include "plansys2_msgs/srv/change_domain.hpp"
 #include "plansys2_msgs/srv/get_domain.hpp"
 #include "plansys2_msgs/srv/get_domain_name.hpp"
 #include "plansys2_msgs/srv/get_domain_types.hpp"
@@ -39,143 +42,249 @@
 #include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_msgs/srv/get_states.hpp"
 
+#include "plansys2_core/ClientNode.hpp"
+#include "plansys2_core/ServiceCall.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace plansys2
 {
 
-/// DomainExpertClient requests changes or gets information to/from the DomainExpertNode
 /**
- * Any node can create a DomainExpertClient object to requests changes to the
- * DomainExpertNode, or to get information from it. It presents the same interface
- * of the DomainExpert, and hides the complexity of using services.
+ * @class plansys2::DomainExpertClient
+ * @brief Client for requesting information or sending changes from/to the DomainExpertNode.
+ *
+ * Any node can create a DomainExpertClient object to request changes to the DomainExpertNode,
+ * or to get information from it. It presents the same interface as DomainExpert and hides
+ * the complexity of using ROS2 services.
  */
 class DomainExpertClient : public DomainExpertInterface
 {
 public:
-  /// Create a new DomainExpertClient.
-  DomainExpertClient();
-
-  /// Get the domain name.
   /**
-   * \return A string containing the domain name.
+   * @brief Creates the client on a node it does not own: the node of a PlanSys2 component or of
+   * an application. It creates no node of its own.
+   */
+  explicit DomainExpertClient(ClientNode::Interfaces node);
+
+  template<typename NodeT>
+  explicit DomainExpertClient(const std::shared_ptr<NodeT> & node)
+  : DomainExpertClient(ClientNode::Interfaces(*node)) {}
+
+  /**
+   * @brief Waits until its component is active, as every call does: false if ROS shuts down.
+   */
+  bool wait_active() {return active_->wait();}
+
+  /**
+   * @brief While interrupted, its calls give up at once instead of waiting: for the owner that
+   * stops a thread which may be in a call.
+   */
+  void interrupt(bool interrupted) {node_->interrupt(interrupted);}
+
+  /**
+   * @brief How long a call waits for its component to be active before it gives up (zero, the
+   * default: as long as it takes).
+   */
+  void set_max_wait(std::chrono::milliseconds max_wait) {active_->set_max_wait(max_wait);}
+
+  /**
+   * @brief Get the name of the domain.
+   *
+   * @return std::string The name of the domain.
    */
   std::string getName();
 
-  /// Get the predicates existing in the domain.
   /**
-   * \return The vector containing the name of the predicates.
+   * @brief Get the types defined in the domain.
+   *
+   * @return std::vector<std::string> The names of the types defined in the domain.
    */
   std::vector<std::string> getTypes();
 
-  /// Get the details of a constants existing for a type.
   /**
-   * \param[in] predicate The name of the type.
-   * \return A list of constants names for the passed type
+   * @brief Get the constants defined for a given type.
+   *
+   * @param[in] type The name of the type.
+   * @return std::vector<std::string> List of constant names for the specified type.
    */
   std::vector<std::string> getConstants(const std::string & type);
 
-  /// Get the predicates existing in the domain.
   /**
-   * \return The vector containing the name of the predicates.
+   * @brief Get the predicates defined in the domain.
+   *
+   * @return std::vector<plansys2::Predicate> Vector containing the predicates.
    */
   std::vector<plansys2::Predicate> getPredicates();
 
-  /// Get the details of a predicate existing in the domain.
   /**
-   * \param[in] predicate The name of the predicate.
-   * \return A Predicate object containing the predicate name and its parameters (name and type).
-   *    If the predicate does not exist, the value returned has not value.
+   * @brief Get the details of a predicate defined in the domain.
+   *
+   * @param[in] predicate The name of the predicate.
+   * @return std::optional<plansys2::Predicate> Predicate object containing the predicate name
+   *         and its parameters (name and type).
+   *         If the predicate does not exist, the returned value is empty.
    */
   std::optional<plansys2::Predicate> getPredicate(const std::string & predicate);
 
-  /// Get the functions existing in the domain.
   /**
-   * \return The vector containing the name of the functions.
+   * @brief Get the functions defined in the domain.
+   *
+   * @return std::vector<plansys2::Function> Vector containing the functions.
    */
   std::vector<plansys2::Function> getFunctions();
 
-  /// Get the details of a function existing in the domain.
   /**
-   * \param[in] function The name of the function.
-   * \return A Function object containing the function name and its parameters (name and type).
-   *    If the function does not exist, the value returned has not value.
+   * @brief Get the details of a function defined in the domain.
+   *
+   * @param[in] function The name of the function.
+   * @return std::optional<plansys2::Function> Function object with parameters (name and type).
+   *         If the function does not exist, the returned value is empty.
    */
   std::optional<plansys2::Function> getFunction(const std::string & function);
 
-  /// Get the derived predicates existing in the domain.
   /**
-   * \return The vector containing the derived predicates.
+   * @brief Get the derived predicates defined in the domain.
+   *
+   * @return std::vector<plansys2::Predicate> Vector containing the derived predicates
+   *         defined in the domain.
    */
-  std::vector<plansys2::Predicate> getDerivedPredicates();
+  std::vector<plansys2_msgs::msg::Derived> getDerivedPredicates();
 
-  /// Get the details of a derived predicate existing in the domain.
+  plansys2::DerivedResolutionGraph getDerivedResolutionGraph();
+
   /**
-   * \param[in] predicate The name of the predicate.
-   * \return A Derived object containing the predicate name, its parameters (name and type), and preconditions.
-   *    If the predicate does not exist, the value returned has not value.
+   * @brief Get the details of a derived predicate defined in the domain.
+   *
+   * @param[in] predicate The name of the derived predicate.
+   * @param[in] params Optional parameters for the predicate.
+   * @return std::vector<plansys2_msgs::msg::Derived> Vector containing the details
+   *         of the derived predicate, including its name, parameters (name and type)
+   *         and preconditions.
+   *         If the derived predicate does not exist, the returned value is empty.
    */
   std::vector<plansys2_msgs::msg::Derived> getDerivedPredicate(
     const std::string & predicate,
     const std::vector<std::string> & params = {});
 
-  /// Get the regular actions existing in the domain.
   /**
-   * \return The vector containing the names of the actions.
+   * @brief Get the regular actions defined in the domain.
+   *
+   * @return std::vector<std::string> Vector containing the names of the actions.
    */
+  /// PDDL+: the processes of the domain
+  std::vector<std::string> getProcesses() override;
+  /// A process, as an action, with its parameters bound to params
+  plansys2_msgs::msg::Action::SharedPtr getProcess(
+    const std::string & process, const std::vector<std::string> & params = {}) override;
+  /// PDDL+: the events of the domain
+  std::vector<std::string> getEvents() override;
+  /// An event, as an action, with its parameters bound to params
+  plansys2_msgs::msg::Action::SharedPtr getEvent(
+    const std::string & event, const std::vector<std::string> & params = {}) override;
+
   std::vector<std::string> getActions();
 
-  /// Get the details of a regular action existing in the domain.
   /**
-   * \param[in] action The name of the action.
-   * \return An Action object containing the action name, parameters, requirements and effects.
-   *    If the action does not exist, the value returned has not value.
+   * @brief Get the details of a regular action defined in the domain.
+   *
+   * @param[in] action The name of the action.
+   * @param[in] params Optional parameters for the action.
+   * @return plansys2_msgs::msg::Action object containing the action name, parameters,
+   *         requirements, and effects.
+   *         If the action does not exist, the returned value is nullptr.
    */
   plansys2_msgs::msg::Action::SharedPtr getAction(
     const std::string & action,
     const std::vector<std::string> & params = {});
 
-  /// Get the temporal actions existing in the domain.
   /**
-   * \return The vector containing the names of the actions.
+   * @brief Get the durative actions defined in the domain.
+   *
+   * @return std::vector<std::string> Vector containing the names of the durative actions.
    */
   std::vector<std::string> getDurativeActions();
 
-  /// Get the details of a durative action existing in the domain.
   /**
-   * \param[in] action The name of the action.
-   * \return A Durative Action object containing the action name, parameters, requirements and
-   *    effects. If the action does not exist, the value returned has not value.
+   * @brief Get the details of a durative action defined in the domain.
+   *
+   * @param[in] action The name of the durative action.
+   * @param[in] params Optional parameters for the action.
+   * @return plansys2_msgs::msg::DurativeAction object containing the action name, parameters,
+   *         requirements, and effects.
+   *         If the action does not exist, the returned value is nullptr.
    */
   plansys2_msgs::msg::DurativeAction::SharedPtr getDurativeAction(
     const std::string & action,
     const std::vector<std::string> & params = {});
 
-  /// Get the current domain, ready to be saved to file, or to initialize another domain.
   /**
-   * \return A string containing the domain.
+   * @brief Get the current domain definition as a string,
+   *        which can be used to save to a file or initialize another domain.
+   *
+   * @return std::string The current domain definition in PDDL format.
    */
   std::string getDomain();
 
-private:
-  rclcpp::Node::SharedPtr node_;
+  /**
+   * @brief Get the current domain definition as a string,
+   *        which can be used to save to a file or initialize another domain.
+   *
+   * @param[in] use_cache If true, use the cached domain if available.
+   * @return std::string The current domain definition in PDDL format.
+   */
+  std::string getDomain(bool use_cache);
 
-  rclcpp::Client<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainName>::SharedPtr get_name_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainTypes>::SharedPtr get_types_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainConstants>::SharedPtr get_constants_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_predicates_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_functions_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_derived_predicates_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>::SharedPtr
+  /**
+   * @brief Replace the current domain with a new one, given as PDDL content.
+   *
+   * If the new domain is invalid, the call fails and nothing else is touched. If it
+   * is valid, domain_expert swaps it in and republishes it on domain_expert/domain.
+   * The rest of the system reacts asynchronously to that topic, after this call
+   * returns: the executor cancels any in-progress plan and the problem expert
+   * reconciles its knowledge (what no longer fits the new domain is pruned).
+   *
+   * @param[in] domain The new domain, in PDDL.
+   * @return true if the domain was successfully changed, false otherwise.
+   */
+  bool changeDomain(const std::string & domain);
+
+  std::string cached_domain_;
+
+private:
+  std::shared_ptr<ClientNode> node_;
+  // Its component: every call waits until it is active
+  std::shared_ptr<ActiveComponent> active_;
+
+  ServiceClient<plansys2_msgs::srv::ChangeDomain>::SharedPtr change_domain_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainName>::SharedPtr get_name_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainTypes>::SharedPtr get_types_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainConstants>::SharedPtr get_constants_client_;
+  ServiceClient<plansys2_msgs::srv::GetStates>::SharedPtr get_predicates_client_;
+  ServiceClient<plansys2_msgs::srv::GetStates>::SharedPtr get_functions_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>::SharedPtr
+    get_derived_predicates_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>::SharedPtr
     get_derived_predicate_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_actions_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_durative_actions_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr get_predicate_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr get_function_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr get_action_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainDurativeActionDetails>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_actions_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_processes_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr get_process_details_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_events_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr get_event_details_client_;
+
+  // The names, or one of them as an action, from these services
+  std::vector<std::string> get_names(
+    ServiceClient<plansys2_msgs::srv::GetDomainActions>::SharedPtr client);
+  plansys2_msgs::msg::Action::SharedPtr get_details(
+    ServiceClient<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr client,
+    const std::string & name, const std::vector<std::string> & params);
+  ServiceClient<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_durative_actions_client_;
+  ServiceClient<plansys2_msgs::srv::GetNodeDetails>::SharedPtr get_predicate_details_client_;
+  ServiceClient<plansys2_msgs::srv::GetNodeDetails>::SharedPtr get_function_details_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr get_action_details_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainDurativeActionDetails>::SharedPtr
     get_durative_action_details_client_;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr domain_sub_;
 };
 
 }  // namespace plansys2

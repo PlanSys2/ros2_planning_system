@@ -24,8 +24,8 @@ void Lifted::PDDLPrint(
   tabindent(s, indent);
   s << "( " << name;
   for (unsigned i = 0; i < params.size(); ++i) {
-    if (ts.size()) {
-      s << ts[i];
+    if (i < ts.size()) {
+      s << " " << ts[i];
     } else {
       s << " ?" << d.types[params[i]]->getName() << i;
     }
@@ -37,11 +37,15 @@ void Lifted::PDDLPrint(
 plansys2_msgs::msg::Node::SharedPtr Lifted::getTree(
   plansys2_msgs::msg::Tree & tree, const Domain & d, const std::vector<std::string> & replace) const
 {
+  (void)tree;
+  (void)d;
+  (void)replace;
   throw UnsupportedConstruct("Lifted");
 }
 
 void Lifted::parse(Stringreader & f, TokenStruct<std::string> & ts, Domain & d)
 {
+  (void)ts;
   TokenStruct<std::string> lstruct = f.parseTypedList(true, d.types);
   params = d.convertTypes(lstruct.types);
 }

@@ -2,30 +2,31 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>plansys2_popf_plan_solver</name>
-  <version>2.0.18</version>
-  
-  <description>This package contains the PDDL-based Planner module for the ROS2 Planning System</description>
+  <version>4.0.0</version>
+
+  <description>PlanSys2 plan solver plugin that runs the POPF temporal planner</description>
 
   <maintainer email="fmrico@gmail.com">Francisco Martin Rico</maintainer>
- 
+
   <license>Apache License, Version 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-  <depend>ament_index_cpp</depend>
+
   <depend>plansys2_core</depend>
   <depend>pluginlib</depend>
-  
+  <depend>ament_index_cpp</depend>
+
   <exec_depend>popf</exec_depend>
 
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>
-  <test_depend>ros2run</test_depend>
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>kairos</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
-    <plansys2_core plugin="${prefix}/plansys2_popf_plan_solver_plugin.xml" />
   </export>
 </package>

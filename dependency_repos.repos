@@ -2,8 +2,17 @@ repositories:
   cascade_lifecycle:
     type: git
     url: https://github.com/fmrico/cascade_lifecycle.git
-    version: jazzy-devel
+    version: rolling-devel
+  kairos:
+    type: git
+    url: https://github.com/PlanSys2/kairos.git
+    version: main
   popf:
     type: git
     url: https://github.com/fmrico/popf.git
-    version: ros2
+    version: rolling-devel
+#   behavior_tree_cpp:
+#     type: git
+#     url: https://github.com/BehaviorTree/BehaviorTree.CPP.git
+#     version: 4.7.0
+

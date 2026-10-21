@@ -21,6 +21,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
     namespace = LaunchConfiguration('namespace')
     params_file = LaunchConfiguration('params_file')
+    respawn = LaunchConfiguration('respawn')
 
     declare_namespace_cmd = DeclareLaunchArgument(
         'namespace',
@@ -28,7 +29,14 @@ def generate_launch_description():
         description='Namespace')
 
     # Specify the actions
+    # Started again, 1 s later, if its process ends (not when the launch is stopped)
+    declare_respawn_cmd = DeclareLaunchArgument(
+        'respawn', default_value='false',
+        description='Start the node again if its process ends')
+
     planner_cmd = Node(
+        respawn=respawn,
+        respawn_delay=1.0,
         package='plansys2_planner',
         executable='planner_node',
         name='planner',
@@ -42,6 +50,7 @@ def generate_launch_description():
     ld.add_action(declare_namespace_cmd)
 
     # Declare the launch options
+    ld.add_action(declare_respawn_cmd)
     ld.add_action(planner_cmd)
 
     return ld

@@ -13,10 +13,11 @@
 // limitations under the License.
 
 #include <string>
+#include <utility>
 #include <vector>
 #include <memory>
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 
 #include "gtest/gtest.h"
 
@@ -29,7 +30,7 @@
 
 TEST(problem_expert, addget_instances)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -78,7 +79,7 @@ TEST(problem_expert, addget_instances)
 
 TEST(problem_expert, add_functions)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -176,7 +177,7 @@ TEST(problem_expert, add_functions)
 
 TEST(problem_expert, addget_predicates)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -320,7 +321,7 @@ TEST(problem_expert, addget_predicates)
 
 TEST(problem_expert, addget_functions)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_charging.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -405,7 +406,7 @@ TEST(problem_expert, addget_functions)
 
 TEST(problem_expert, addget_goals)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -455,7 +456,7 @@ TEST(problem_expert, addget_goals)
 
 TEST(problem_expert, empty_goals)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -470,7 +471,7 @@ TEST(problem_expert, empty_goals)
 
 TEST(problem_expert, get_problem)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -537,7 +538,7 @@ TEST(problem_expert, get_problem)
 
 TEST(problem_expert, add_problem)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -633,7 +634,7 @@ TEST(problem_expert, add_problem)
 
 TEST(problem_expert, add_problem_with_constants)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_constants.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -712,7 +713,7 @@ TEST(problem_expert, add_problem_with_constants)
 
 TEST(problem_expert, is_goal_satisfied)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -749,7 +750,7 @@ TEST(problem_expert, is_goal_satisfied)
 
 TEST(problem_expert, exist_predicate)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_derived.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -814,7 +815,7 @@ TEST(problem_expert, exist_predicate)
 
 TEST(problem_expert, get_predicate_with_derived)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple_derived.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -877,6 +878,633 @@ TEST(problem_expert, get_predicate_with_derived)
     std::find(
       predicate_names2.begin(), predicate_names2.end(), "(inferred-robot_at leia kitchen)") !=
     predicate_names2.end());
+}
+
+namespace
+{
+std::string read_test_pddl(const std::string & filename)
+{
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
+  std::ifstream ifs(pkgpath + "/pddl/" + filename);
+  return std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+}
+}  // namespace
+
+// update_domain: hot domain swap. See refactor_dynamic_domain.md for the design.
+// These tests use domain_simple.pddl as the starting domain, plus purpose-built
+// variants under test/pddl/ that each change exactly one thing, to check that
+// knowledge unaffected by that change survives untouched.
+
+TEST(problem_expert, update_domain_add_requirement_preserves_everything)
+{
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(
+    read_test_pddl("domain_simple.pddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("kitchen", "room")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("paco", "person")));
+
+  ASSERT_TRUE(
+    problem_expert.addPredicate(parser::pddl::fromStringPredicate("(robot_at r2d2 bedroom)")));
+  ASSERT_TRUE(
+    problem_expert.addPredicate(parser::pddl::fromStringPredicate("(person_at paco kitchen)")));
+
+  plansys2_msgs::msg::Node function_1;
+  function_1.node_type = plansys2_msgs::msg::Node::FUNCTION;
+  function_1.name = "room_distance";
+  function_1.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
+  function_1.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
+  function_1.value = 5;
+  ASSERT_TRUE(problem_expert.addFunction(function_1));
+
+  plansys2_msgs::msg::Tree goal;
+  parser::pddl::fromString(goal, "(and (robot_at r2d2 kitchen))");
+  ASSERT_TRUE(problem_expert.setGoal(goal));
+
+  bool result = problem_expert.updateDomain(
+    read_test_pddl("domain_simple_v2_extra_requirement.pddl"));
+
+  ASSERT_TRUE(result);
+
+  ASSERT_EQ(problem_expert.getInstances().size(), 4u);
+  ASSERT_EQ(problem_expert.getPredicates().size(), 2u);
+  ASSERT_EQ(problem_expert.getFunctions().size(), 1u);
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getGoal()), "(and (robot_at r2d2 kitchen))");
+}
+
+TEST(problem_expert, update_domain_removes_only_affected_predicate)
+{
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(
+    read_test_pddl("domain_simple.pddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("paco", "person")));
+
+  ASSERT_TRUE(
+    problem_expert.addPredicate(parser::pddl::fromStringPredicate("(robot_at r2d2 bedroom)")));
+  ASSERT_TRUE(
+    problem_expert.addPredicate(parser::pddl::fromStringPredicate("(person_at paco bedroom)")));
+  ASSERT_TRUE(
+    problem_expert.addPredicate(
+      parser::pddl::fromStringPredicate("(is_teleporter_destination bedroom)")));
+
+  bool result = problem_expert.updateDomain(
+    read_test_pddl("domain_simple_v3_removed_predicate.pddl"));
+
+  ASSERT_TRUE(result);
+
+  auto predicates = problem_expert.getPredicates();
+  ASSERT_EQ(predicates.size(), 2u);
+  ASSERT_TRUE(
+    problem_expert.existPredicate(parser::pddl::fromStringPredicate("(robot_at r2d2 bedroom)")));
+  ASSERT_TRUE(
+    problem_expert.existPredicate(
+      parser::pddl::fromStringPredicate("(person_at paco bedroom)")));
+  ASSERT_FALSE(
+    problem_expert.existPredicate(
+      parser::pddl::fromStringPredicate("(is_teleporter_destination bedroom)")));
+  // Instances are untouched by a predicate-only domain change.
+  ASSERT_EQ(problem_expert.getInstances().size(), 3u);
+}
+
+TEST(problem_expert, update_domain_clears_goal_that_uses_removed_predicate)
+{
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(
+    read_test_pddl("domain_simple.pddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room")));
+
+  plansys2_msgs::msg::Tree goal;
+  parser::pddl::fromString(goal, "(and (is_teleporter_destination bedroom))");
+  ASSERT_TRUE(problem_expert.setGoal(goal));
+
+  bool result = problem_expert.updateDomain(
+    read_test_pddl("domain_simple_v3_removed_predicate.pddl"));
+
+  ASSERT_TRUE(result);
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getGoal()), "");
+}
+
+TEST(problem_expert, update_domain_removes_only_affected_function)
+{
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(
+    read_test_pddl("domain_simple.pddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("kitchen", "room")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+
+  ASSERT_TRUE(
+    problem_expert.addPredicate(parser::pddl::fromStringPredicate("(robot_at r2d2 bedroom)")));
+
+  plansys2_msgs::msg::Node room_distance;
+  room_distance.node_type = plansys2_msgs::msg::Node::FUNCTION;
+  room_distance.name = "room_distance";
+  room_distance.parameters.push_back(parser::pddl::fromStringParam("bedroom", "room"));
+  room_distance.parameters.push_back(parser::pddl::fromStringParam("kitchen", "room"));
+  room_distance.value = 5;
+  ASSERT_TRUE(problem_expert.addFunction(room_distance));
+
+  bool result = problem_expert.updateDomain(
+    read_test_pddl("domain_simple_v4_removed_function.pddl"));
+
+  ASSERT_TRUE(result);
+  ASSERT_TRUE(problem_expert.getFunctions().empty());
+  // Predicates/instances are untouched by a function-only domain change.
+  ASSERT_EQ(problem_expert.getPredicates().size(), 1u);
+  ASSERT_EQ(problem_expert.getInstances().size(), 3u);
+}
+
+TEST(problem_expert, update_domain_removed_type_cascades_to_instances_and_predicates)
+{
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(
+    read_test_pddl("domain_simple.pddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("paco", "person")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("hello", "message")));
+
+  ASSERT_TRUE(
+    problem_expert.addPredicate(parser::pddl::fromStringPredicate("(robot_at r2d2 bedroom)")));
+  ASSERT_TRUE(
+    problem_expert.addPredicate(
+      parser::pddl::fromStringPredicate("(robot_talk r2d2 hello paco)")));
+
+  bool result = problem_expert.updateDomain(
+    read_test_pddl("domain_simple_v5_removed_type.pddl"));
+
+  ASSERT_TRUE(result);
+  // robot_talk is gone too, cascaded from removing the "hello" (message) instance,
+  // even though it's not directly a signature mismatch against the new domain.
+  ASSERT_FALSE(
+    problem_expert.existPredicate(
+      parser::pddl::fromStringPredicate("(robot_talk r2d2 hello paco)")));
+
+  ASSERT_EQ(problem_expert.getInstances().size(), 3u);
+  ASSERT_TRUE(
+    problem_expert.existPredicate(parser::pddl::fromStringPredicate("(robot_at r2d2 bedroom)")));
+  ASSERT_FALSE(problem_expert.existInstance("hello"));
+}
+
+TEST(problem_expert, update_domain_full_replacement_prunes_everything)
+{
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(
+    read_test_pddl("domain_simple.pddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room")));
+  ASSERT_TRUE(
+    problem_expert.addPredicate(parser::pddl::fromStringPredicate("(robot_at r2d2 bedroom)")));
+
+  plansys2_msgs::msg::Tree goal;
+  parser::pddl::fromString(goal, "(and (robot_at r2d2 bedroom))");
+  ASSERT_TRUE(problem_expert.setGoal(goal));
+
+  bool result = problem_expert.updateDomain(read_test_pddl("domain_totally_different.pddl"));
+
+  ASSERT_TRUE(result);
+
+  ASSERT_TRUE(problem_expert.getInstances().empty());
+  ASSERT_TRUE(problem_expert.getPredicates().empty());
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getGoal()), "");
+}
+
+TEST(problem_expert, update_domain_rejects_invalid_pddl_and_keeps_everything)
+{
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(
+    read_test_pddl("domain_simple.pddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room")));
+  ASSERT_TRUE(
+    problem_expert.addPredicate(parser::pddl::fromStringPredicate("(robot_at r2d2 bedroom)")));
+
+  bool result = problem_expert.updateDomain(
+    "(define (domain broken) (:predicates (foo ?a - undeclared_type)))");
+
+  ASSERT_FALSE(result);
+
+  ASSERT_EQ(problem_expert.getInstances().size(), 2u);
+  ASSERT_EQ(problem_expert.getPredicates().size(), 1u);
+}
+
+// Metric: what the planner optimizes. domain_simple has (room_distance ?r1 ?r2 - room)
+namespace
+{
+plansys2::ProblemExpert make_metric_problem(std::shared_ptr<plansys2::DomainExpert> & domain)
+{
+  domain = std::make_shared<plansys2::DomainExpert>(read_test_pddl("domain_simple.pddl"));
+  plansys2::ProblemExpert problem_expert(domain);
+  problem_expert.addInstance(parser::pddl::fromStringParam("r2d2", "robot"));
+  problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room"));
+  problem_expert.addInstance(parser::pddl::fromStringParam("kitchen", "room"));
+  return problem_expert;
+}
+}  // namespace
+
+TEST(problem_expert, metric_set_get_clear)
+{
+  std::shared_ptr<plansys2::DomainExpert> domain;
+  auto problem_expert = make_metric_problem(domain);
+
+  // No metric at the start
+  ASSERT_TRUE(problem_expert.getMetric().tree.nodes.empty());
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getMetric()), "");
+
+  ASSERT_TRUE(problem_expert.setMetric(plansys2::Metric("minimize (total-time)")));
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getMetric()), "minimize (total-time)");
+
+  ASSERT_TRUE(
+    problem_expert.setMetric(plansys2::Metric("minimize (room_distance bedroom kitchen)")));
+  ASSERT_EQ(
+    parser::pddl::toString(problem_expert.getMetric()),
+    "minimize (room_distance bedroom kitchen)");
+
+  // A new metric replaces the old one
+  ASSERT_TRUE(
+    problem_expert.setMetric(
+      plansys2::Metric("maximize (+ (room_distance bedroom kitchen) (* 2 (total-time)))")));
+  auto metric = problem_expert.getMetric();
+  ASSERT_EQ(metric.optimization, plansys2_msgs::msg::Metric::MAXIMIZE);
+  ASSERT_EQ(
+    parser::pddl::toString(metric),
+    "maximize (+ (room_distance bedroom kitchen) (* 2.000000 (total-time)))");
+
+  // A plain number is a valid, if useless, metric
+  ASSERT_TRUE(problem_expert.setMetric(plansys2::Metric("minimize 0")));
+
+  ASSERT_TRUE(problem_expert.clearMetric());
+  ASSERT_TRUE(problem_expert.getMetric().tree.nodes.empty());
+  // Clearing twice is fine
+  ASSERT_TRUE(problem_expert.clearMetric());
+}
+
+TEST(problem_expert, metric_invalid_is_rejected_and_keeps_the_previous)
+{
+  std::shared_ptr<plansys2::DomainExpert> domain;
+  auto problem_expert = make_metric_problem(domain);
+
+  const std::string valid = "minimize (room_distance bedroom kitchen)";
+  ASSERT_TRUE(problem_expert.setMetric(plansys2::Metric(valid)));
+
+  const std::vector<std::string> invalid = {
+    "",                                                // nothing
+    "minimize",                                        // no expression
+    "optimize (total-time)",                           // unknown optimization
+    "minimize (battery r2d2)",                         // function not in the domain
+    "minimize (room_distance r2d2 kitchen)",           // argument of the wrong type
+    "minimize (room_distance bedroom hall)",           // unknown instance
+    "minimize (room_distance bedroom)",                // wrong arity
+    "minimize (> (room_distance bedroom kitchen) 3)",  // a comparison, not a number
+    "minimize (robot_at r2d2 bedroom)",                // a predicate has no value
+    "minimize (and (total-time))",                     // logic is not arithmetic
+    "minimize (+ (total-time) (total-time)",           // unbalanced
+  };
+  for (const auto & m : invalid) {
+    EXPECT_FALSE(problem_expert.setMetric(plansys2::Metric(m))) << m;
+    EXPECT_EQ(parser::pddl::toString(problem_expert.getMetric()), valid) << m;
+  }
+
+  // Built by hand: an optimization that does not exist, and a broken tree
+  plansys2::Metric bad_optimization("minimize (total-time)");
+  bad_optimization.optimization = 7;
+  ASSERT_FALSE(problem_expert.setMetric(bad_optimization));
+
+  plansys2::Metric broken_tree("minimize (+ (total-time) 1)");
+  broken_tree.tree.nodes[0].children.push_back(42);
+  ASSERT_FALSE(problem_expert.setMetric(broken_tree));
+
+  ASSERT_FALSE(problem_expert.isValidMetric(plansys2::Metric()));
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getMetric()), valid);
+}
+
+TEST(problem_expert, metric_in_get_problem)
+{
+  std::shared_ptr<plansys2::DomainExpert> domain;
+  auto problem_expert = make_metric_problem(domain);
+  ASSERT_TRUE(
+    problem_expert.setGoal(plansys2::Goal("(and (robot_at r2d2 kitchen))")));
+
+  // Without a metric the problem has no :metric section
+  ASSERT_EQ(problem_expert.getProblem().find(":metric"), std::string::npos);
+
+  ASSERT_TRUE(
+    problem_expert.setMetric(
+      plansys2::Metric("maximize (- (room_distance bedroom kitchen) (* 2 (total-time)))")));
+  const std::string problem = problem_expert.getProblem();
+  const std::string expected =
+    "( :metric maximize ( - ( room_distance bedroom kitchen ) "
+    "( * 2 ( total-time ) ) ) )\n)\n";
+  ASSERT_GE(problem.size(), expected.size());
+  ASSERT_EQ(problem.substr(problem.size() - expected.size()), expected);
+
+  // The problem PlanSys2 builds can be read back, metric included
+  auto domain2 = std::make_shared<plansys2::DomainExpert>(read_test_pddl("domain_simple.pddl"));
+  plansys2::ProblemExpert problem_expert2(domain2);
+  ASSERT_TRUE(problem_expert2.addProblem(problem));
+  ASSERT_EQ(
+    parser::pddl::toString(problem_expert2.getMetric()),
+    parser::pddl::toString(problem_expert.getMetric()));
+
+  ASSERT_TRUE(problem_expert.clearMetric());
+  ASSERT_EQ(problem_expert.getProblem().find(":metric"), std::string::npos);
+}
+
+TEST(problem_expert, metric_cleared_with_the_knowledge)
+{
+  std::shared_ptr<plansys2::DomainExpert> domain;
+  auto problem_expert = make_metric_problem(domain);
+  ASSERT_TRUE(problem_expert.setMetric(plansys2::Metric("minimize (total-time)")));
+
+  ASSERT_TRUE(problem_expert.clearKnowledge());
+  ASSERT_TRUE(problem_expert.getMetric().tree.nodes.empty());
+}
+
+TEST(problem_expert, metric_dropped_only_when_an_instance_it_uses_is_removed)
+{
+  std::shared_ptr<plansys2::DomainExpert> domain;
+  auto problem_expert = make_metric_problem(domain);
+
+  ASSERT_TRUE(
+    problem_expert.setMetric(
+      plansys2::Metric("minimize (+ (room_distance bedroom kitchen) (total-time))")));
+
+  // r2d2 is not in the metric: it stays
+  ASSERT_TRUE(problem_expert.removeInstance(parser::pddl::fromStringParam("r2d2", "robot")));
+  ASSERT_FALSE(problem_expert.getMetric().tree.nodes.empty());
+
+  // kitchen is: the whole metric goes, not just its term
+  ASSERT_TRUE(problem_expert.removeInstance(parser::pddl::fromStringParam("kitchen", "room")));
+  ASSERT_TRUE(problem_expert.getMetric().tree.nodes.empty());
+
+  // A metric on total-time uses no instance
+  ASSERT_TRUE(problem_expert.setMetric(plansys2::Metric("minimize (total-time)")));
+  ASSERT_TRUE(problem_expert.removeInstance(parser::pddl::fromStringParam("bedroom", "room")));
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getMetric()), "minimize (total-time)");
+}
+
+TEST(problem_expert, metric_from_add_problem)
+{
+  auto domain = std::make_shared<plansys2::DomainExpert>(read_test_pddl("domain_simple.pddl"));
+  plansys2::ProblemExpert problem_expert(domain);
+
+  const std::string head =
+    "(define (problem p) (:domain simple)"
+    "(:objects r2d2 - robot bedroom kitchen - room)"
+    "(:init (robot_at r2d2 bedroom) (= (room_distance bedroom kitchen) 10))"
+    "(:goal (and (robot_at r2d2 kitchen)))";
+
+  // Old style: only total-time
+  ASSERT_TRUE(problem_expert.addProblem(head + "(:metric minimize (total-time)))"));
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getMetric()), "minimize (total-time)");
+
+  // Any numeric expression, with objects, upper case and maximize
+  ASSERT_TRUE(
+    problem_expert.addProblem(
+      head + "(:metric MAXIMIZE (* (room_distance Bedroom kitchen) (total-time))))"));
+  auto metric = problem_expert.getMetric();
+  ASSERT_EQ(metric.optimization, plansys2_msgs::msg::Metric::MAXIMIZE);
+  ASSERT_EQ(
+    parser::pddl::toString(metric), "maximize (* (room_distance bedroom kitchen) (total-time))");
+
+  // Without :metric the previous metric is kept, as the goal
+  ASSERT_TRUE(problem_expert.addProblem(head + ")"));
+  ASSERT_EQ(
+    parser::pddl::toString(problem_expert.getMetric()),
+    "maximize (* (room_distance bedroom kitchen) (total-time))");
+
+  // Malformed metrics reject the whole problem and change nothing
+  const auto instances = problem_expert.getInstances().size();
+  const std::vector<std::string> bad = {
+    "(:metric optimize (total-time)))",
+    "(:metric minimize (room_distance bedroom hall)))",
+    "(:metric minimize (battery r2d2)))",
+    "(:metric minimize))",
+    "(:metric minimize (total-time) 3))",
+  };
+  const std::string head_new_object =
+    "(define (problem p) (:domain simple)"
+    "(:objects r2d2 - robot bedroom kitchen hall2 - room)"
+    "(:init (robot_at r2d2 bedroom))"
+    "(:goal (and (robot_at r2d2 kitchen)))";
+  for (const auto & m : bad) {
+    EXPECT_FALSE(problem_expert.addProblem(head_new_object + m)) << m;
+    EXPECT_FALSE(problem_expert.existInstance("hall2")) << m;
+    EXPECT_EQ(problem_expert.getInstances().size(), instances) << m;
+    EXPECT_EQ(
+      parser::pddl::toString(problem_expert.getMetric()),
+      "maximize (* (room_distance bedroom kitchen) (total-time))") << m;
+  }
+
+  // A metric that parses but has the wrong types rejects the whole problem: nothing of it
+  // is kept, and the previous metric stays
+  ASSERT_FALSE(
+    problem_expert.addProblem(
+      head_new_object + "(:metric minimize (room_distance r2d2 kitchen)))"));
+  ASSERT_FALSE(problem_expert.existInstance("hall2"));
+  ASSERT_EQ(problem_expert.getInstances().size(), instances);
+  ASSERT_EQ(
+    parser::pddl::toString(problem_expert.getMetric()),
+    "maximize (* (room_distance bedroom kitchen) (total-time))");
+}
+
+TEST(problem_expert, metric_follows_domain_updates)
+{
+  std::shared_ptr<plansys2::DomainExpert> domain;
+  auto problem_expert = make_metric_problem(domain);
+
+  // A change that does not touch the metric keeps it
+  ASSERT_TRUE(
+    problem_expert.setMetric(plansys2::Metric("minimize (room_distance bedroom kitchen)")));
+  ASSERT_TRUE(
+    problem_expert.updateDomain(read_test_pddl("domain_simple_v2_extra_requirement.pddl")));
+  ASSERT_FALSE(problem_expert.getMetric().tree.nodes.empty());
+
+  // A domain without room_distance cannot keep it
+  ASSERT_TRUE(
+    problem_expert.updateDomain(read_test_pddl("domain_simple_v4_removed_function.pddl")));
+  ASSERT_TRUE(problem_expert.getMetric().tree.nodes.empty());
+
+  // total-time is in every domain
+  ASSERT_TRUE(problem_expert.setMetric(plansys2::Metric("minimize (total-time)")));
+  ASSERT_TRUE(problem_expert.updateDomain(read_test_pddl("domain_simple.pddl")));
+  ASSERT_EQ(parser::pddl::toString(problem_expert.getMetric()), "minimize (total-time)");
+}
+
+// Objects of a subtype of a subtype fit where the ancestor is expected
+TEST(problem_expert, nested_sub_types)
+{
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(
+    read_test_pddl("domain_deep_types.pddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  for (const auto & [name, type] : std::vector<std::pair<std::string, std::string>>{
+    {"d1", "drone"}, {"t1", "tank"}, {"i1", "infantry"}, {"a1", "artillery"}, {"z", "zone"}})
+  {
+    ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam(name, type))) << name;
+  }
+
+  const std::vector<std::pair<std::string, bool>> predicates = {
+    {"(at d1 z)", true},       // child of robot
+    {"(at t1 z)", true},       // grandchild
+    {"(at i1 z)", true},       // great-grandchild
+    {"(at a1 z)", true},
+    {"(armored t1)", true},
+    {"(armored i1)", true},
+    {"(armored d1)", false},   // a drone is not ground
+    {"(light i1)", true},
+    {"(light t1)", false},     // a tank is not soft
+    {"(at z z)", false},       // a zone is not a robot
+    {"(captured i1)", false},  // nor a zone
+  };
+  for (const auto & [predicate, valid] : predicates) {
+    EXPECT_EQ(
+      problem_expert.addPredicate(parser::pddl::fromStringPredicate(predicate)), valid) <<
+      predicate;
+  }
+
+  EXPECT_TRUE(problem_expert.addFunction(plansys2::Function("(= (ammo i1) 5)")));
+  EXPECT_TRUE(problem_expert.addFunction(plansys2::Function("(= (ammo t1) 4)")));
+  EXPECT_FALSE(problem_expert.addFunction(plansys2::Function("(= (ammo d1) 1)")));
+
+  EXPECT_TRUE(problem_expert.setGoal(plansys2::Goal("(and (at i1 z) (armored a1))")));
+  EXPECT_FALSE(problem_expert.setGoal(plansys2::Goal("(and (armored d1))")));
+
+  // The same from a whole problem
+  plansys2::ProblemExpert problem_expert2(domain_expert);
+  ASSERT_TRUE(
+    problem_expert2.addProblem(
+      "(define (problem p) (:domain deep_types)"
+      "(:objects d1 - drone t1 - tank i1 - infantry z - zone)"
+      "(:init (at d1 z) (at t1 z) (at i1 z) (armored i1) (light i1) (= (ammo t1) 4))"
+      "(:goal (and (captured z))))"));
+  ASSERT_EQ(problem_expert2.getPredicates().size(), 5u);
+  ASSERT_EQ(problem_expert2.getFunctions().size(), 1u);
+}
+
+// Goals with forall, exists and imply over typed variables (#314)
+TEST(problem_expert, quantified_goals)
+{
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(
+    read_test_pddl("domain_quantifiers.pddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+  ASSERT_TRUE(problem_expert.addProblem(read_test_pddl("problem_quantifiers.pddl")));
+
+  // The goal of the problem: every zone with a hostile robot is owned
+  auto goal = problem_expert.getGoal();
+  ASSERT_FALSE(goal.nodes.empty());
+  ASSERT_FALSE(problem_expert.isGoalSatisfied(goal));  // z2 has e1 and is not owned
+
+  const std::vector<std::pair<std::string, bool>> valid = {
+    {"(and (forall (?r - robot) (available ?r)))", true},
+    {"(and (exists (?g - ground) (at ?g z1)))", true},
+    {"(and (imply (hostile e1) (owned z2)))", true},
+    {"(and (forall (?z - zone) (exists (?i - infantry) (at ?i ?z))))", true},
+    {"(and (not (exists (?e - robot) (and (hostile ?e) (at ?e z1)))))", true},
+    // a variable of a subtype where the ancestor is expected
+    {"(and (forall (?t - tank) (at ?t z1)))", true},
+    // wrong: unknown predicate, wrong arity, a zone where a robot goes, unknown object
+    {"(and (forall (?r - robot) (flying ?r)))", false},
+    {"(and (forall (?r - robot) (at ?r)))", false},
+    {"(and (forall (?z - zone) (available ?z)))", false},
+    {"(and (exists (?r - robot) (at ?r z9)))", false},
+    {"(and (imply (hostile e1) (owned e1)))", false},
+  };
+  for (const auto & [expression, expected] : valid) {
+    EXPECT_EQ(problem_expert.isValidGoal(plansys2::Goal(expression)), expected) << expression;
+  }
+
+  // Satisfaction against the state
+  const std::vector<std::pair<std::string, bool>> satisfied = {
+    {"(and (exists (?g - ground) (at ?g z1)))", true},
+    {"(and (forall (?r - robot) (available ?r)))", false},  // t1 and e1 are not
+    {"(and (forall (?i - infantry) (available ?i)))", true},
+    {"(and (not (exists (?e - robot) (and (hostile ?e) (at ?e z1)))))", true},
+    {"(and (not (exists (?e - robot) (and (hostile ?e) (at ?e z2)))))", false},
+    {"(and (imply (hostile e1) (owned z2)))", false},
+  };
+  for (const auto & [expression, expected] : satisfied) {
+    EXPECT_EQ(problem_expert.isGoalSatisfied(plansys2::Goal(expression)), expected) <<
+      expression;
+  }
+
+  ASSERT_TRUE(problem_expert.addPredicate(parser::pddl::fromStringPredicate("(owned z2)")));
+  ASSERT_TRUE(problem_expert.isGoalSatisfied(goal));
+
+  // The goal goes into the problem for the planner, and back
+  plansys2::ProblemExpert problem_expert2(domain_expert);
+  ASSERT_TRUE(problem_expert2.addProblem(problem_expert.getProblem()));
+  ASSERT_EQ(
+    parser::pddl::toString(problem_expert2.getGoal()), parser::pddl::toString(goal));
+}
+
+// The state keeps the type of each object, so a state alone says what forall ranges over
+TEST(problem_expert, predicates_keep_instance_types)
+{
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(
+    read_test_pddl("domain_quantifiers.pddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance("t1", "tank")));
+  ASSERT_TRUE(problem_expert.addInstance(plansys2::Instance("z1", "zone")));
+
+  ASSERT_TRUE(problem_expert.addPredicate(parser::pddl::fromStringPredicate("(at t1 z1)")));
+  auto predicates = problem_expert.getPredicates();
+  ASSERT_EQ(predicates.size(), 1u);
+  ASSERT_EQ(predicates[0].parameters[0].type, "tank");
+  ASSERT_EQ(predicates[0].parameters[1].type, "zone");
+
+  // Also when the predicate comes with the type it declares, as from a problem
+  auto declared = parser::pddl::fromStringPredicate("(hostile t1)");
+  declared.parameters[0].type = "robot";
+  ASSERT_TRUE(problem_expert.addPredicate(declared));
+  ASSERT_EQ(problem_expert.getPredicate("(hostile t1)")->parameters[0].type, "tank");
+
+  // Equality is by name: the predicate is found and removed without types
+  ASSERT_TRUE(problem_expert.existPredicate(parser::pddl::fromStringPredicate("(at t1 z1)")));
+  ASSERT_TRUE(problem_expert.removePredicate(parser::pddl::fromStringPredicate("(at t1 z1)")));
+  ASSERT_EQ(problem_expert.getPredicates().size(), 1u);
+}
+
+// The problem keeps the functions' precision: ten decimals, or more digits when needed
+TEST(problem_expert, functions_keep_precision)
+{
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
+  std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
+  std::string domain_str((
+      std::istreambuf_iterator<char>(domain_ifs)),
+    std::istreambuf_iterator<char>());
+
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(domain_str);
+  plansys2::ProblemExpert problem_expert(domain_expert);
+
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("bedroom", "room")));
+  ASSERT_TRUE(problem_expert.addInstance(parser::pddl::fromStringParam("kitchen", "room")));
+
+  for (double value : {1234567.891, 1e-12, -0.5}) {
+    auto function = parser::pddl::fromStringFunction("(room_distance bedroom kitchen)");
+    function.value = value;
+    ASSERT_TRUE(problem_expert.updateFunction(function) || problem_expert.addFunction(function));
+    const auto problem = problem_expert.getProblem();
+    const auto expected = parser::pddl::numberToString(value, 10);
+    ASSERT_NE(problem.find("( room_distance bedroom kitchen ) " + expected + " )"),
+      std::string::npos) << problem;
+    // Read back through the parser, the same value
+    plansys2::ProblemExpert reread(domain_expert);
+    ASSERT_TRUE(reread.addProblem(problem));
+    auto function_read = reread.getFunction("(room_distance bedroom kitchen)");
+    ASSERT_TRUE(function_read.has_value());
+    ASSERT_EQ(function_read->value, value);
+  }
 }
 
 int main(int argc, char ** argv)

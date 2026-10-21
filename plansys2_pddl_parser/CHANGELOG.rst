@@ -2,26 +2,67 @@
 Changelog for package plansys2_pddl_parser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.18 (2024-12-30)
--------------------
+4.0.0 (2026-10-21)
+------------------
+* One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
+* Robust PlanSys2: one node per component, clients that wait, retry and see a lost plan (`#507 <https://github.com/PlanSys2/ros2_planning_system/pull/507>`_)
+* Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
+* Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
+* Fixes in the Python support, the terminal, and the rqt and TUI tools (`#500 <https://github.com/PlanSys2/ros2_planning_system/pull/500>`_)
+* Fixes in the PDDL parser and the problem expert (`#498 <https://github.com/PlanSys2/ros2_planning_system/pull/498>`_)
+* Numbers keep their precision in numeric effects and in the PDDL text (`#478 <https://github.com/PlanSys2/ros2_planning_system/pull/478>`_)
+* forall and imply in conditions, goals and effects (`#462 <https://github.com/PlanSys2/ros2_planning_system/pull/462>`_)
+* Accept objects of any descendant type, not only of direct subtypes (`#461 <https://github.com/PlanSys2/ros2_planning_system/pull/461>`_)
+* Problem metric: minimize or maximize any numeric expression (`#457 <https://github.com/PlanSys2/ros2_planning_system/pull/457>`_)
+* Tests discover only nodes on this host (`#455 <https://github.com/PlanSys2/ros2_planning_system/pull/455>`_)
+* Reject instance names that are not PDDL names (`#429 <https://github.com/PlanSys2/ros2_planning_system/pull/429>`_)
+* Use 32-bit node ids and validate trees before walking them (`#425 <https://github.com/PlanSys2/ros2_planning_system/pull/425>`_)
+* Reject malformed PDDL instead of crashing (`#424 <https://github.com/PlanSys2/ros2_planning_system/pull/424>`_)
+* Update domain during execution (`#414 <https://github.com/PlanSys2/ros2_planning_system/pull/414>`_)
+* Contributors: Francisco Martín Rico
 
-2.0.17 (2024-12-30)
--------------------
+3.1.0 (2026-07-28)
+------------------
+* Fix deprecated get_share_directory
+* Deprecate BTAction with rate. Fix all warnings
+* Set C++23 as default
+* add more tests to parser
+* fix Ground PDDLPrint for constant
+* fix node name parsing in Expression.hpp
+* fix code style
+* Merge branch 'rolling' into getExpr
+* add new helper functions
+* add check_var_params to checkParamEquality
+* small improvements to getPredicates and getFunctions
+* improvments to fromStringPredicate
+* fix toString exists when negated
+* fix toString when node_type is Parameter
+* fix Exists parse
+* Fix string predicate parsing to handle cases with no parameters
+* more fixes
+* added test case for no arg predicates
+* fix code style
+* fromString works for Parameter
+* getNodeType works with parameters
+* fix bug in getSubExpr
+* add parser::pddl::removeOperatorBeforeParenthesis
+* getExpr fix parsing for words with hyphen
+* Fix string predicate parsing to handle cases with no parameters
+* Fixing bug `#329 <https://github.com/PlanSys2/ros2_planning_system/issues/329>`_
+* Contributors: Alberto Tudela, Eshan Savla, Francisco Martín Rico, Gustavo, Gustavo Rezende, eshan-savla
 
-2.0.16 (2024-12-30)
--------------------
-
-2.0.15 (2024-12-03)
--------------------
-
-2.0.14 (2024-11-14)
--------------------
-
-2.0.13 (2024-11-06)
--------------------
-
-2.0.12 (2024-10-16)
--------------------
+3.0.0 (2025-06-06)
+------------------
+* Modify export target. Rename metapackage
+* Revamp CMake and clean unused headers
+* Remove unused dependencies
+* Fix deprecation of ament_target_dependencies
+* Multiple plans and replanning stability
+* Remove specification for C++17
+* Fix version for releasing
+* 🎨 linter for plansys2_pddl_parser
+* Add support for ParamExpression and ConstExpression
+* Support for existential preconditions
 * fix Exists print
 * add fromStringExists
 * adjust toStringExists
@@ -32,29 +73,38 @@ Changelog for package plansys2_pddl_parser
 * add exists getTree
 * fix exists parse
 * add :existential-preconditions requirement
+* Support negation of CompositeExpression
+* include "object" in getType
 * fix bug in ParamExpression getTree
 * fix ParamExpression PDDLPrint
 * support for ParamExpression and ConstExpression
 * adjust toString for negated comp expression
 * support negation of CompositeExpression
 * include "object" in getType
+* [pddl_parser] Fix support for disjunctive-preconditions
+* Fix to have constants and numeric fluents in the goal
 * Fixed errors that prevented all the tests to pass
+* Fix CI after BT-CPP v4
+* Merge branch 'rolling' into add_parameter_for_timeout_of_plan_solver
 * Remove cmake warning
 * Fixed the regexps in getNodeType function
 * Added proper support for constants in the goal
 * Slightly changed order of printing
-* pddl_parser. Fix support for disjunctive-preconditions
+* [pddl_parser] Fix support for disjunctive-preconditions
+* Add Imply to PDDL domain parsing
 * Add forall and imply to PDDL parsing test
 * Remove commented out debug stuff
 * Add Imply to PDDL domain parsing
+* Fix goal structure issue 205
+* Fix regex for 'not', 'and', 'or' in parser utils
 * fix regex for 'and' and 'or'
 * fix regex for NOT
 * Removed debug code
 * Fixed support for complex goals and other changes
 * Fixed some errors and some tests to comply with the revised output
-* Merge remote-tracking branch 'origin/master' into fix_goal_structure_issue_205
 * Fixed support for the complex goal parsing both from the terminal and from file
-* Contributors: Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Mostafa Gomaa, Paul Gesel, Sebastian Castro, Splinter1984
+* Contributors: Alberto Tudela, Francisco Martín Rico, Gustavo, Josh Zapf, Marco Roveri, Mostafa Gomaa, Paul Gesel, Sebastian Castro, Splinter1984
+
 
 2.0.9 (2022-07-10)
 ------------------
