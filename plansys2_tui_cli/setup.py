@@ -4,7 +4,7 @@ package_name = 'plansys2_tui_cli'
 
 setup(
     name=package_name,
-    version='3.1.0',
+    version='4.0.0',
     packages=find_packages(
         include=[package_name, package_name + '.*'], exclude=['test']
     ),

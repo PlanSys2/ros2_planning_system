@@ -2,8 +2,8 @@
 Changelog for package plansys2_tui_cli
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+4.0.0 (2026-10-21)
+------------------
 * One version for Humble, Jazzy, Kilted and Lyrical (`#509 <https://github.com/PlanSys2/ros2_planning_system/pull/509>`_)
 * Execute everything Kairos plans: conditional effects, durations, timed literals, object fluents, recursive derived predicates, PDDL+ and constraints (`#504 <https://github.com/PlanSys2/ros2_planning_system/pull/504>`_)
 * Fixes in the executor, the build, the tests and the CI (`#502 <https://github.com/PlanSys2/ros2_planning_system/pull/502>`_)
