@@ -36,7 +36,7 @@
 #include "plansys2_core/Utils.hpp"
 
 #include "test_msgs/action/fibonacci.hpp"
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "ament_index_cpp/get_package_share_directory.hpp"
 
 #include "lifecycle_msgs/msg/state.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -196,7 +196,7 @@ TEST_F(BTActionsTestCase, load_plugins)
     factory.registerFromPlugin(loader.getOSName("plansys2_open_gripper_bt_node"));
     factory.registerFromPlugin(loader.getOSName("plansys2_move_bt_test_node"));
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_bt_actions").string();
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
     std::string xml_file = pkgpath + "/test/behavior_tree/transport.xml";
 
     auto blackboard = BT::Blackboard::create();
@@ -343,7 +343,7 @@ TEST_F(BTActionsTestCase, fail_after_the_goal_finished)
 TEST_F(BTActionsTestCase, bt_action)
 {
   {
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_bt_actions").string();
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
     std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
 
     std::vector<std::string> plugins = {
@@ -391,7 +391,7 @@ TEST_F(BTActionsTestCase, bt_action)
 TEST_F(BTActionsTestCase, bt_action_old_constructor)
 {
   {
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_bt_actions").string();
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
     std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
 
     std::vector<std::string> plugins = {
@@ -438,7 +438,7 @@ TEST_F(BTActionsTestCase, bt_action_old_constructor)
 TEST_F(BTActionsTestCase, cancel_bt_action)
 {
   {
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_bt_actions").string();
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
     std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
 
     std::vector<std::string> plugins = {
@@ -543,7 +543,7 @@ TEST_F(BTActionsTestCase, cancel_bt_action)
 // The blackboard keeps a pointer to the node: it must not keep the node alive (#427)
 TEST_F(BTActionsTestCase, bt_action_node_is_destroyed)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_bt_actions").string();
+  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_bt_actions");
   std::string xml_file = pkgpath + "/test/behavior_tree/assemble.xml";
   std::vector<std::string> plugins = {
     "plansys2_close_gripper_bt_node", "plansys2_open_gripper_bt_node"};

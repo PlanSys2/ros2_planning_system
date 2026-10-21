@@ -27,7 +27,7 @@
 #include <utility>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
@@ -54,7 +54,7 @@ std::string read_pddl(const std::string & name)
 {
   // The POPF plugin's test files, with a problem POPF cannot finish quickly
   std::string path =
-    ament_index_cpp::get_package_share_path("plansys2_popf_plan_solver").string() +
+    ament_index_cpp::get_package_share_directory("plansys2_popf_plan_solver") +
     "/pddl/" + name;
   std::ifstream ifs(path);
   return std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());

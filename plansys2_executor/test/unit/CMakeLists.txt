@@ -1,3 +1,10 @@
+# ament_add_ros_isolated_gtest_test came with Kilted: before it, the same test, not isolated
+if(NOT COMMAND ament_add_ros_isolated_gtest_test)
+  macro(ament_add_ros_isolated_gtest_test target)
+    ament_add_gtest_test(${target} ${ARGN})
+  endmacro()
+endif()
+
 # Not optimized (no build type, as in the CI of the PRs) or built for coverage (CI of rolling),
 # everything runs several times slower: timing tests allow for it
 if(CMAKE_CXX_FLAGS MATCHES "--coverage" OR NOT CMAKE_BUILD_TYPE MATCHES "Rel")

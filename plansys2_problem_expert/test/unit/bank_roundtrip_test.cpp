@@ -15,13 +15,14 @@
 // What the planner gets is what was loaded: every task of the bank, through the domain and
 // problem experts, is the same task for Kairos (features, plans and metric)
 
+#include <filesystem>
 #include <chrono>
 #include <memory>
 #include <optional>
 #include <set>
 #include <string>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 #include "kairos/kairos.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
@@ -38,7 +39,8 @@ const std::set<std::string> kNotLoaded = {};
 std::vector<parser::pddl::BankCase> bank()
 {
   return parser::pddl::read_pddl_bank(
-    ament_index_cpp::get_package_share_path("plansys2_pddl_parser") / "bank");
+    std::filesystem::path(ament_index_cpp::get_package_share_directory("plansys2_pddl_parser")) /
+      "bank");
 }
 
 std::optional<kairos::Plan> solve(const std::string & domain, const std::string & problem)

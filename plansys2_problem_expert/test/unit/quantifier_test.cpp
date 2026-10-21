@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_core/TestUtils.hpp"
@@ -153,7 +153,7 @@ TEST(quantifiers, exists_matches_brute_force)
 TEST(quantifiers, exists_in_the_problem_expert_matches_brute_force)
 {
   const auto path =
-    ament_index_cpp::get_package_share_path("plansys2_problem_expert").string() +
+    ament_index_cpp::get_package_share_directory("plansys2_problem_expert") +
     "/pddl/domain_simple.pddl";
   std::ifstream ifs(path);
   std::string domain((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
@@ -232,7 +232,7 @@ TEST(quantifiers, many_objects_are_fast)
 TEST(quantifiers, exists_through_the_client)
 {
   const auto path =
-    ament_index_cpp::get_package_share_path("plansys2_problem_expert").string() +
+    ament_index_cpp::get_package_share_directory("plansys2_problem_expert") +
     "/pddl/domain_simple.pddl";
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();

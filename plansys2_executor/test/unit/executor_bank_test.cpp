@@ -15,6 +15,7 @@
 // Every solvable task of the bank that PlanSys2 loads is planned and executed to the end, and
 // its goal holds in the problem expert afterwards
 
+#include <filesystem>
 #include <algorithm>
 #include <atomic>
 #include <chrono>
@@ -31,7 +32,7 @@
 #include <thread>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 #include "kairos/plan.hpp"
 #include "kairos/validate.hpp"
@@ -571,7 +572,8 @@ class ExecutorBankAsap : public ::testing::TestWithParam<std::string>
 TEST_P(ExecutorBankTest, every_loaded_task_runs_to_its_goal)
 {
   const auto cases = parser::pddl::read_pddl_bank(
-    ament_index_cpp::get_package_share_path("plansys2_pddl_parser") / "bank");
+    std::filesystem::path(ament_index_cpp::get_package_share_directory("plansys2_pddl_parser")) /
+    "bank");
   ASSERT_GE(cases.size(), 60u);
   const auto & bt_builder = GetParam();
 
@@ -607,7 +609,8 @@ TEST_P(ExecutorBankTest, every_loaded_task_runs_to_its_goal)
 TEST_P(ExecutorBankTest, a_violated_constraint_fails_the_plan)
 {
   const auto cases = parser::pddl::read_pddl_bank(
-    ament_index_cpp::get_package_share_path("plansys2_pddl_parser") / "bank");
+    std::filesystem::path(ament_index_cpp::get_package_share_directory("plansys2_pddl_parser")) /
+    "bank");
   const auto task = std::find_if(
     cases.begin(), cases.end(), [](const auto & c) {return c.name == "trajectory-constraints/p2";});
   ASSERT_NE(task, cases.end());
@@ -626,7 +629,8 @@ TEST_P(ExecutorBankTest, a_violated_constraint_fails_the_plan)
 TEST(ExecutorBankTimed, temporal_tasks_run_at_their_times)
 {
   const auto cases = parser::pddl::read_pddl_bank(
-    ament_index_cpp::get_package_share_path("plansys2_pddl_parser") / "bank");
+    std::filesystem::path(ament_index_cpp::get_package_share_directory("plansys2_pddl_parser")) /
+    "bank");
   const std::set<std::string> temporal = {
     "durative-actions", "duration-inequalities", "required-concurrency", "continuous-effects",
     "processes-events", "timed-initial-literals", "timed-initial-fluents",
@@ -663,7 +667,8 @@ TEST(ExecutorBankTimed, temporal_tasks_run_at_their_times)
 TEST_P(ExecutorBankAsap, classical_tasks_run_in_a_valid_order)
 {
   const auto cases = parser::pddl::read_pddl_bank(
-    ament_index_cpp::get_package_share_path("plansys2_pddl_parser") / "bank");
+    std::filesystem::path(ament_index_cpp::get_package_share_directory("plansys2_pddl_parser")) /
+    "bank");
   int executed = 0;
   for (const auto & task : cases) {
     // Durative actions have times: the timed pass is for them
@@ -699,7 +704,8 @@ INSTANTIATE_TEST_SUITE_P(
 TEST(ExecutorBankPopf, popf_plans_run_to_their_goal)
 {
   const auto cases = parser::pddl::read_pddl_bank(
-    ament_index_cpp::get_package_share_path("plansys2_pddl_parser") / "bank");
+    std::filesystem::path(ament_index_cpp::get_package_share_directory("plansys2_pddl_parser")) /
+    "bank");
   // As POPF says it supports them
   const std::set<std::string> supported = {
     "strips-typing", "equality", "universal-preconditions", "numeric-fluents",

@@ -26,7 +26,7 @@
 #include <tuple>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "behaviortree_cpp/bt_factory.h"
 #include "Eigen/Dense"
 #include "gtest/gtest.h"
@@ -97,7 +97,7 @@ class STNBTBuilderTest : public ::testing::Test
 protected:
   void SetUp() override
   {
-    auto pddl = ament_index_cpp::get_package_share_path("plansys2_executor").string() +
+    auto pddl = ament_index_cpp::get_package_share_directory("plansys2_executor") +
       "/pddl/stn_test.pddl";
     domain_node_ = std::make_shared<plansys2::DomainExpertNode>();
     problem_node_ = std::make_shared<plansys2::ProblemExpertNode>();

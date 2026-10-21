@@ -21,7 +21,7 @@
 #include <utility>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 #include "plansys2_pddl_parser/Domain.hpp"
 #include "plansys2_pddl_parser/TemporalAction.hpp"
@@ -72,7 +72,7 @@ std::string print(const Domain & domain)
 std::string readFile(const std::string & name)
 {
   const auto path =
-    ament_index_cpp::get_package_share_path("plansys2_pddl_parser").string() + "/pddl/" + name;
+    ament_index_cpp::get_package_share_directory("plansys2_pddl_parser") + "/pddl/" + name;
   std::ifstream ifs(path);
   return std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
 }

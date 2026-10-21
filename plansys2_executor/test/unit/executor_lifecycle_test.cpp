@@ -24,7 +24,7 @@
 #include <thread>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
@@ -120,7 +120,7 @@ protected:
   // Experts and performer are always active; the executor is left configured or active
   void start(int performer_ticks, bool activate_executor = true, double component_timeout = 30.0)
   {
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
     domain_node_ = std::make_shared<plansys2::DomainExpertNode>();
     problem_node_ = std::make_shared<plansys2::ProblemExpertNode>();
     executor_node_ = std::make_shared<plansys2::ExecutorNode>();

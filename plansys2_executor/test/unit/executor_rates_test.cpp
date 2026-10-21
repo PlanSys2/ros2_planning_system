@@ -19,7 +19,7 @@
 #include <memory>
 #include <string>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_core/TestUtils.hpp"
@@ -95,7 +95,7 @@ Counts run_plan(double feedback_rate, bool listen_to_dotgraph)
       "dot_graph", 100, [&](std_msgs::msg::String::SharedPtr) {dotgraphs++;});
   }
 
-  const auto pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
+  const auto pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_move_example.pddl"});
   executor_node->set_parameter({"feedback_rate", feedback_rate});

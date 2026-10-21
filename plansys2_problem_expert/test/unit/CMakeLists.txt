@@ -1,3 +1,10 @@
+# ament_add_ros_isolated_gtest_test came with Kilted: before it, the same test, not isolated
+if(NOT COMMAND ament_add_ros_isolated_gtest_test)
+  macro(ament_add_ros_isolated_gtest_test target)
+    ament_add_gtest_test(${target} ${ARGN})
+  endmacro()
+endif()
+
 # The bank, through the experts: what reaches the planner is what was loaded
 find_package(kairos REQUIRED)
 ament_add_gtest(bank_roundtrip_test bank_roundtrip_test.cpp TIMEOUT 120)

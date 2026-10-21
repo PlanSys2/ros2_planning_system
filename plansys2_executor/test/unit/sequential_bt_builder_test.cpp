@@ -14,7 +14,7 @@
 
 #include "plansys2_executor/bt_builder_plugins/sequential_bt_builder.hpp"
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
@@ -94,7 +94,7 @@ TEST(sequential_btbuilder_tests, test_plan_with_derived_existential)
 
     auto btbuilder = std::make_shared<SequentialBTBuilderTest>();
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
+    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/suave_domain.pddl"});
     domain_node->set_parameter({"validate_using_planner_node", true});

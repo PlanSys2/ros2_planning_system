@@ -24,7 +24,7 @@
 #include <utility>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_core/TestUtils.hpp"
@@ -88,7 +88,8 @@ protected:
   void load(const std::string & name)
   {
     const auto cases = parser::pddl::read_pddl_bank(
-      ament_index_cpp::get_package_share_path("plansys2_pddl_parser") / "bank");
+      std::filesystem::path(ament_index_cpp::get_package_share_directory("plansys2_pddl_parser")) /
+        "bank");
     const auto it = std::find_if(
       cases.begin(), cases.end(), [&](const auto & c) {return c.name == name;});
     ASSERT_NE(it, cases.end()) << name;

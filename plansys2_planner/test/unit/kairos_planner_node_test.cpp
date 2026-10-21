@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <filesystem>
 #include <chrono>
 #include <fstream>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
@@ -39,7 +40,8 @@ namespace
 std::string read_pddl(const std::string & name)
 {
   const auto path =
-    ament_index_cpp::get_package_share_path("plansys2_kairos_plan_solver") / "pddl" / name;
+    std::filesystem::path(ament_index_cpp::get_package_share_directory(
+      "plansys2_kairos_plan_solver")) / "pddl" / name;
   std::ifstream in(path);
   return std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
 }
