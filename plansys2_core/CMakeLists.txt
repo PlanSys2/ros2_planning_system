@@ -6,7 +6,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   add_compile_options(-Wall -Wextra)
 endif()
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -16,6 +16,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
   src/plansys2_core/Action.cpp
@@ -36,6 +37,7 @@ target_link_libraries(${PROJECT_NAME}
   plansys2_pddl_parser::plansys2_pddl_parser
   ${plansys2_msgs_TARGETS}
   ${lifecycle_msgs_TARGETS}
+  ament_index_cpp::ament_index_cpp
 )
 
 install(DIRECTORY include/
@@ -51,9 +53,12 @@ install(TARGETS ${PROJECT_NAME}
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+  # Humble's uncrustify (0.72) formats otherwise than the newer one this code follows
+  if("$ENV{ROS_DISTRO}" STREQUAL "humble")
+    set(ament_cmake_uncrustify_FOUND TRUE)
+  endif()
   ament_lint_auto_find_test_dependencies()
   find_package(ament_cmake_gtest REQUIRED)
-  find_package(ament_index_cpp REQUIRED)
   find_package(ament_cmake_ros REQUIRED)
   find_package(std_msgs REQUIRED)
   add_subdirectory(test)
@@ -68,6 +73,7 @@ ament_export_dependencies(
   plansys2_pddl_parser
   plansys2_msgs
   lifecycle_msgs
+  ament_index_cpp
 )
 
 ament_package()

@@ -301,7 +301,7 @@ ActionExecutor::start_dealing()
 {
   static std::atomic<uint64_t> requests {0};
   // Unique also against requests of a previous run of the executor
-  request_id_ = std::string(node_->get_fully_qualified_name()) + ":" +
+  request_id_ = std::string(node_->get_node_base_interface()->get_fully_qualified_name()) + ":" +
     std::to_string(node_->now().nanoseconds()) + ":" + std::to_string(requests++);
 
   current_performer_id_ = "";

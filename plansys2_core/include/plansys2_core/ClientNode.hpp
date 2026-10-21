@@ -28,12 +28,23 @@
 
 #include "rclcpp/node_interfaces/node_interfaces.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp/version.h"
 
 namespace plansys2
 {
 
 // Threads of the executor of each component: callbacks that wait for clients, and their answers
 constexpr size_t kComponentThreads = 4;
+
+// The QoS of services and parameter clients: rclcpp takes rclcpp::QoS from Iron on, an rmw
+// profile before
+#if RCLCPP_VERSION_MAJOR >= 21
+inline rclcpp::QoS services_qos() {return rclcpp::ServicesQoS();}
+inline rclcpp::QoS parameters_qos() {return rclcpp::ParametersQoS();}
+#else
+inline const rmw_qos_profile_t & services_qos() {return rmw_qos_profile_services_default;}
+inline const rmw_qos_profile_t & parameters_qos() {return rmw_qos_profile_parameters;}
+#endif
 
 /**
  * @brief The node a PlanSys2 client works on, which it does not own: one of a component or of
@@ -117,7 +128,7 @@ public:
     auto node = lock_or_throw();
     return rclcpp::create_client<ServiceT>(
       node.get_node_base_interface(), node.get_node_graph_interface(),
-      node.get_node_services_interface(), name, rclcpp::ServicesQoS(), group_);
+      node.get_node_services_interface(), name, services_qos(), group_);
   }
 
   template<typename MessageT, typename CallbackT>

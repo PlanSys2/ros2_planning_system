@@ -21,7 +21,7 @@
 #include <cstdlib>
 
 #include "rclcpp/rclcpp.hpp"
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
@@ -311,7 +311,7 @@ TEST_F(TerminalTestCase, load_default_plugin)
     plansys2::testing::NodeSpinner client_node_spinner(client_node);
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_terminal").string();
+    std::string pkgpath = plansys2::share_path("plansys2_terminal").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
@@ -668,7 +668,7 @@ TEST_F(TerminalTestCase, add_problem)
     plansys2::testing::NodeSpinner client_node_spinner(client_node);
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_terminal").string();
+    std::string pkgpath = plansys2::share_path("plansys2_terminal").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
@@ -754,7 +754,7 @@ TEST_F(TerminalTestCase, add_problem_empty_domain)
     plansys2::testing::NodeSpinner client_node_spinner(client_node);
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_terminal").string();
+    std::string pkgpath = plansys2::share_path("plansys2_terminal").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
@@ -836,7 +836,7 @@ TEST_F(TerminalTestCase, check_actors)
     charge_actor_1_node->set_parameter({"action_name", "charge"});
     charge_actor_1_node->set_parameter({"rate", 10.0});
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_terminal").string();
+    std::string pkgpath = plansys2::share_path("plansys2_terminal").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
@@ -971,7 +971,7 @@ TEST_F(TerminalTestCase, source_run_plan)
     charge_actor_1_node->set_parameter({"action_name", "charge"});
     charge_actor_1_node->set_parameter({"rate", 1.0});
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_terminal").string();
+    std::string pkgpath = plansys2::share_path("plansys2_terminal").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});

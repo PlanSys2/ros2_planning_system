@@ -1,3 +1,24 @@
+# ament_add_ros_isolated_gtest_test came with Kilted: before it, an ament test isolated as
+# ament_add_ros_isolated_gtest does
+if(NOT COMMAND ament_add_ros_isolated_gtest_test)
+  function(ament_add_ros_isolated_gtest_test target)
+    cmake_parse_arguments(ARG "" "TEST_NAME;TIMEOUT" "ENV" ${ARGN})
+    if(NOT ARG_TEST_NAME)
+      set(ARG_TEST_NAME ${target})
+    endif()
+    if(NOT ARG_TIMEOUT)
+      set(ARG_TIMEOUT 60)
+    endif()
+    set(result "${AMENT_TEST_RESULTS_DIR}/${PROJECT_NAME}/${ARG_TEST_NAME}.gtest.xml")
+    ament_add_test(${ARG_TEST_NAME}
+      COMMAND $<TARGET_FILE:${target}> --gtest_output=xml:${result}
+      RUNNER "${ament_cmake_ros_DIR}/run_test_isolated.py"
+      RESULT_FILE ${result}
+      ENV ${ARG_ENV}
+      TIMEOUT ${ARG_TIMEOUT})
+  endfunction()
+endif()
+
 # Not optimized (no build type, as in the CI of the PRs) or built for coverage (CI of rolling),
 # everything runs several times slower: timing tests allow for it
 if(CMAKE_CXX_FLAGS MATCHES "--coverage" OR NOT CMAKE_BUILD_TYPE MATCHES "Rel")

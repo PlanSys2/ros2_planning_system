@@ -20,7 +20,7 @@
 #include <memory>
 #include <map>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
@@ -67,7 +67,7 @@ TEST(executiotest_noden_tree, bt_builder_factory)
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
     auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
+    std::string pkgpath = plansys2::share_path("plansys2_executor").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
@@ -192,7 +192,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
     auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
+    std::string pkgpath = plansys2::share_path("plansys2_executor").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
@@ -315,7 +315,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
     auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
 
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
+    std::string pkgpath = plansys2::share_path("plansys2_executor").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});

@@ -147,7 +147,7 @@ BTAction::on_activate(const rclcpp_lifecycle::State & previous_state)
   {
     // In the temporary directory, one file per execution: two in the same second do not mix
     const auto dir = std::filesystem::temp_directory_path() / "plansys2" /
-      std::filesystem::path(get_fully_qualified_name()).relative_path();
+      std::filesystem::path(get_node_base_interface()->get_fully_qualified_name()).relative_path();
     std::filesystem::create_directories(dir);
 
     const auto now = std::chrono::system_clock::now();

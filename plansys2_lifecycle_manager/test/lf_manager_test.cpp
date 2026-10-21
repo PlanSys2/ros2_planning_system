@@ -78,8 +78,8 @@ TEST(lifecycle_manager, lf_client)
   ASSERT_TRUE(
     plansys2::testing::wait_for(
       [&]() {
-        return manager->count_services("test/get_state") > 0 &&
-               manager->count_services("test/change_state") > 0;
+        return plansys2::testing::has_service(*manager, "test/get_state") &&
+               plansys2::testing::has_service(*manager, "test/change_state");
       }));
 
   ASSERT_EQ(
@@ -141,8 +141,8 @@ TEST(lifecycle_manager, lf_startup)
     ASSERT_TRUE(
       plansys2::testing::wait_for(
         [&]() {
-          return manager->count_services(name + "/get_state") > 0 &&
-                 manager->count_services(name + "/change_state") > 0;
+          return plansys2::testing::has_service(*manager, name + "/get_state") &&
+                 plansys2::testing::has_service(*manager, name + "/change_state");
         })) << name;
   }
 

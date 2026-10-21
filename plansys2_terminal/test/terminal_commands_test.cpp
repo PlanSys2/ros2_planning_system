@@ -25,7 +25,7 @@
 #include <thread>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
@@ -230,7 +230,7 @@ TEST(terminal_commands, interrupt_cancels_the_plan)
     auto mover = std::make_shared<EndlessMove>();
 
     const std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_terminal").string();
+      plansys2::share_path("plansys2_terminal").string();
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/simple_example.pddl"});
 

@@ -27,7 +27,7 @@
 #include <thread>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_core/TestUtils.hpp"
@@ -102,7 +102,7 @@ class ExecutorStnTest : public ::testing::Test
 protected:
   void start(const std::string & bt_builder)
   {
-    std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
+    std::string pkgpath = plansys2::share_path("plansys2_executor").string();
     domain_node_ = std::make_shared<plansys2::DomainExpertNode>();
     problem_node_ = std::make_shared<plansys2::ProblemExpertNode>();
     executor_node_ = std::make_shared<plansys2::ExecutorNode>();

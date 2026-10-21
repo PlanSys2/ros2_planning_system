@@ -14,11 +14,12 @@
 
 // What a task uses, seen from its syntax, so the planner gives it to solvers that plan with it
 
+#include <filesystem>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "gtest/gtest.h"
 #include "plansys2_core/PddlRequirements.hpp"
 #include "plansys2_pddl_parser/PddlBank.hpp"
@@ -219,7 +220,8 @@ TEST(pddl_requirements, missing)
 TEST(pddl_requirements, the_bank)
 {
   const auto cases = parser::pddl::read_pddl_bank(
-    ament_index_cpp::get_package_share_path("plansys2_pddl_parser") / "bank");
+    plansys2::share_path("plansys2_pddl_parser") /
+    "bank");
   ASSERT_GE(cases.size(), 60u);
   for (const auto & task : cases) {
     EXPECT_EQ(plansys2::pddl_requirements(task.domain, task.problem), task.uses) << task.name;

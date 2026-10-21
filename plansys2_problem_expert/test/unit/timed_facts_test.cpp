@@ -20,7 +20,7 @@
 #include <memory>
 #include <string>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_core/TestUtils.hpp"
@@ -40,7 +40,7 @@ namespace
 {
 std::string domain_file()
 {
-  return ament_index_cpp::get_package_share_path("plansys2_problem_expert").string() +
+  return plansys2::share_path("plansys2_problem_expert").string() +
          "/pddl/domain_when.pddl";
 }
 

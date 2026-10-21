@@ -167,9 +167,9 @@ class TestProblemExpertClient(unittest.TestCase):
         mock_metric_response.metric = Parser.metric_from_string('minimize (total-time)')
 
         # Mock instances response
-        mock_node1 = PlanSys2Node()
+        mock_node1 = Param()
         mock_node1.name = 'robot1'
-        mock_node1.node_type = 'robot'
+        mock_node1.type = 'robot'
 
         mock_instances_response = GetProblemInstances.Response()
         mock_instances_response.success = True

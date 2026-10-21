@@ -17,6 +17,8 @@
 from importlib.metadata import entry_points
 import unittest
 
+from plansys2_tui_cli.vendor import missing_requirements, use_system_textual
+
 
 class TestConsoleEntryPoints(unittest.TestCase):
 
@@ -33,6 +35,13 @@ class TestConsoleEntryPoints(unittest.TestCase):
             'plansys2_tui_cli.tui.app:run_app',
             'The "plansys2_tui" entry point points to an unexpected target.',
         )
+
+        # Where its Textual cannot run (Humble), loading it says so and ends
+        if not use_system_textual() and missing_requirements():
+            with self.assertRaises(SystemExit) as ended:
+                ep.load()
+            self.assertIn('not supported on this system', str(ended.exception.code))
+            return
 
         try:
             loaded = ep.load()

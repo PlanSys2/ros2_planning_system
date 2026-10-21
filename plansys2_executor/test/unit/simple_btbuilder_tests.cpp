@@ -24,7 +24,7 @@
 #include <tuple>
 #include <type_traits>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_domain_expert/DomainExpertClient.hpp"
@@ -179,7 +179,7 @@ TEST(simple_btbuilder_tests, test_plan_1)
   auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
   btbuilder->set_clients(domain_client, problem_client);
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
+  std::string pkgpath = plansys2::share_path("plansys2_executor").string();
 
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_2.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_2.pddl"});
@@ -403,7 +403,7 @@ TEST(simple_btbuilder_tests, test_plan_2)
   auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
   btbuilder->set_clients(domain_client, problem_client);
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
+  std::string pkgpath = plansys2::share_path("plansys2_executor").string();
 
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
@@ -593,7 +593,7 @@ TEST(simple_btbuilder_tests, test_plan_3)
   auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
   btbuilder->set_clients(domain_client, problem_client);
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
+  std::string pkgpath = plansys2::share_path("plansys2_executor").string();
 
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_2.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_2.pddl"});
@@ -665,7 +665,7 @@ TEST(simple_btbuilder_tests, test_plan_4)
   auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
   btbuilder->set_clients(domain_client, problem_client);
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
+  std::string pkgpath = plansys2::share_path("plansys2_executor").string();
 
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/cooking_domain.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/cooking_domain.pddl"});
@@ -764,7 +764,7 @@ TEST(simple_btbuilder_tests, test_plan_5)
   auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
   btbuilder->set_clients(domain_client, problem_client);
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
+  std::string pkgpath = plansys2::share_path("plansys2_executor").string();
 
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/road_trip_domain.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/road_trip_domain.pddl"});
@@ -859,7 +859,7 @@ TEST(simple_btbuilder_tests, test_plan_6)
   auto btbuilder = std::make_shared<SimpleBTBuilderTest>();
   btbuilder->set_clients(domain_client, problem_client);
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
+  std::string pkgpath = plansys2::share_path("plansys2_executor").string();
 
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/elevator_domain.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/elevator_domain.pddl"});

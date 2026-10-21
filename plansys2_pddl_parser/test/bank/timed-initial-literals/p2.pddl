@@ -11,8 +11,8 @@
     (door_open lab_door)
     (door_between office_door corridor office)
     (door_between lab_door office lab)
-    (at 5 (not (door_open office_door)))
-    (at 9 (not (door_open lab_door)))
+    (at 7 (not (door_open office_door)))
+    (at 12 (not (door_open lab_door)))
   )
   (:goal (and
     (robot_at r1 lab)

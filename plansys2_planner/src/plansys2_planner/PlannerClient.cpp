@@ -49,7 +49,7 @@ PlannerClient::PlannerClient(ClientNode::Interfaces node)
   planner_parameters_ = std::make_shared<rclcpp::AsyncParametersClient>(
     node.get_node_base_interface(), node.get_node_topics_interface(),
     node.get_node_graph_interface(), node.get_node_services_interface(), "planner",
-    rclcpp::ParametersQoS(), node_->group());
+    plansys2::parameters_qos(), node_->group());
 }
 
 std::chrono::nanoseconds

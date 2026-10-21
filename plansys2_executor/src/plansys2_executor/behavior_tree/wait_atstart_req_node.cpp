@@ -163,7 +163,7 @@ WaitAtStartReq::holds_after_start(
   }
   auto predicates = problem_client_->getPredicates();
   auto functions = problem_client_->getFunctions();
-  apply(info.action_info.get_at_start_effects(), predicates, functions);
+  plansys2::apply(info.action_info.get_at_start_effects(), predicates, functions);
   return check(reqs_oa, predicates, functions);
 }
 

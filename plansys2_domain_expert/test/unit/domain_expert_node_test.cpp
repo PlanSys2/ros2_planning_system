@@ -26,7 +26,7 @@
 #include <atomic>
 #include <thread>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
@@ -71,7 +71,7 @@ TEST(domain_expert, lifecycle)
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+      plansys2::share_path("plansys2_domain_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     rclcpp::executors::MultiThreadedExecutor exe;
@@ -113,7 +113,7 @@ TEST(domain_expert, lifecycle_error)
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+      plansys2::share_path("plansys2_domain_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_2_error.pddl"});
     rclcpp::executors::MultiThreadedExecutor exe;
@@ -134,7 +134,7 @@ TEST(domain_expert, lifecycle_error)
 TEST(domain_expert, a_domain_plansys2_cannot_represent_fails_at_startup)
 {
   const std::string pkgpath =
-    ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+    plansys2::share_path("plansys2_domain_expert").string();
   {
     const auto file = (std::filesystem::temp_directory_path() / "domain_unknown_block.pddl");
     {
@@ -177,7 +177,7 @@ TEST(domain_expert, change_domain_valid)
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+      plansys2::share_path("plansys2_domain_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     rclcpp::executors::MultiThreadedExecutor exe;
@@ -221,7 +221,7 @@ TEST(domain_expert, get_constants_through_the_client)
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+      plansys2::share_path("plansys2_domain_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple_constants.pddl"});
     rclcpp::executors::MultiThreadedExecutor exe;
@@ -252,7 +252,7 @@ TEST(domain_expert, processes_and_events_through_the_client)
     plansys2::testing::NodeSpinner client_node_spinner(client_node);
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+      plansys2::share_path("plansys2_domain_expert").string();
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_process.pddl"});
     rclcpp::executors::MultiThreadedExecutor exe;
     exe.add_node(domain_node->get_node_base_interface());
@@ -283,7 +283,7 @@ TEST(domain_expert, change_domain_invalid_rejected)
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+      plansys2::share_path("plansys2_domain_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     rclcpp::executors::MultiThreadedExecutor exe;
@@ -346,7 +346,7 @@ TEST(domain_expert, change_domain_rejected_when_unconfigured)
     std::this_thread::sleep_for(2s);
     EXPECT_FALSE(done.load());
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+      plansys2::share_path("plansys2_domain_expert").string();
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
@@ -373,7 +373,7 @@ TEST(domain_expert, change_domain_rejected_when_inactive)
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+      plansys2::share_path("plansys2_domain_expert").string();
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
 
     rclcpp::executors::MultiThreadedExecutor exe;
@@ -422,7 +422,7 @@ TEST(domain_expert, change_domain_empty_rejected)
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+      plansys2::share_path("plansys2_domain_expert").string();
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
 
     rclcpp::executors::MultiThreadedExecutor exe;
@@ -453,7 +453,7 @@ TEST(domain_expert, change_domain_sequence_publishes_each_accepted_domain)
     auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+      plansys2::share_path("plansys2_domain_expert").string();
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
 
     std::mutex mutex;
@@ -525,7 +525,7 @@ TEST(domain_expert, change_domain_sequence_publishes_each_accepted_domain)
 // Nothing used for validation may keep the node alive (#422, when it was a POPF solver)
 TEST(domain_expert, domain_expert_node_is_destroyed)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+  std::string pkgpath = plansys2::share_path("plansys2_domain_expert").string();
 
   {
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
@@ -560,7 +560,7 @@ TEST(domain_expert, domain_expert_node_is_destroyed)
 // Malformed domains used to call exit() inside the parser, killing the process (#416)
 TEST(domain_expert, malformed_domains_do_not_kill_the_node)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+  std::string pkgpath = plansys2::share_path("plansys2_domain_expert").string();
 
   // As model_file: configure fails, the process lives on
   {
@@ -638,7 +638,7 @@ TEST(domain_expert, validate_with_planner_from_a_callback)
   plansys2::drain_ros(300ms);
   {
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+      plansys2::share_path("plansys2_domain_expert").string();
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto validator = std::make_shared<FakeValidator>();
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
@@ -699,7 +699,7 @@ TEST(domain_expert, validate_with_planner_absent)
   plansys2::drain_ros(300ms);
   {
     std::string pkgpath =
-      ament_index_cpp::get_package_share_path("plansys2_domain_expert").string();
+      plansys2::share_path("plansys2_domain_expert").string();
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     domain_node->set_parameter({"validate_using_planner_node", true});

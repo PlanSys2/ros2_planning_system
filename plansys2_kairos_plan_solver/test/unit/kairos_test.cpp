@@ -23,7 +23,7 @@
 #include <thread>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "gtest/gtest.h"
 #include "kairos/kairos.hpp"
 #include "plansys2_core/PddlRequirements.hpp"
@@ -40,7 +40,7 @@ namespace
 std::string read_pddl(const std::string & name)
 {
   const auto path =
-    ament_index_cpp::get_package_share_path("plansys2_kairos_plan_solver") / "pddl" / name;
+    plansys2::share_path("plansys2_kairos_plan_solver") / "pddl" / name;
   std::ifstream in(path);
   return std::string(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
 }
@@ -308,7 +308,8 @@ kairos::Plan to_kairos(const plansys2_msgs::msg::Plan & msg, const std::string &
 TEST(kairos_plan_solver, the_bank)
 {
   const auto cases = parser::pddl::read_pddl_bank(
-    ament_index_cpp::get_package_share_path("plansys2_pddl_parser") / "bank");
+    plansys2::share_path("plansys2_pddl_parser") /
+    "bank");
   ASSERT_GE(cases.size(), 60u);
   auto f = make_solver("kairos_bank");
   f.node->set_parameter(rclcpp::Parameter("KAIROS.anytime", false));  // The first plan is enough

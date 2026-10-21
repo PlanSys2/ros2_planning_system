@@ -54,7 +54,9 @@ ApplyAtStartEffect::tick()
     // A non-durative action has no start effects, but its start still happens
     if (!info.action_info.is_action()) {
       info.at_start_changes.clear();
-      if (!apply(info.action_info.get_at_start_effects(), problem_client_, info.at_start_changes)) {
+      if (!plansys2::apply(
+          info.action_info.get_at_start_effects(), problem_client_, info.at_start_changes))
+      {
         // Half applied effects are taken back: the action does not start
         undo(info.at_start_changes, problem_client_);
         info.at_start_changes.clear();

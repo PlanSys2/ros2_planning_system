@@ -23,7 +23,7 @@
 #include <utility>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
@@ -45,7 +45,7 @@ namespace
 std::string readFile(const std::string & name)
 {
   const auto path =
-    ament_index_cpp::get_package_share_path("plansys2_problem_expert").string() + "/pddl/" + name;
+    plansys2::share_path("plansys2_problem_expert").string() + "/pddl/" + name;
   std::ifstream ifs(path);
   return std::string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
 }
@@ -224,7 +224,7 @@ protected:
 
   static std::string pddl(const std::string & name)
   {
-    return ament_index_cpp::get_package_share_path("plansys2_problem_expert").string() +
+    return plansys2::share_path("plansys2_problem_expert").string() +
            "/pddl/" + name;
   }
 };

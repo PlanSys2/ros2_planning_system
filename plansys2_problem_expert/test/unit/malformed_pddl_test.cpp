@@ -20,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "gtest/gtest.h"
 
 #include "plansys2_domain_expert/DomainExpert.hpp"
@@ -31,7 +31,7 @@ namespace
 
 std::string read_file(const std::string & name)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream ifs(pkgpath + "/pddl/" + name);
   return std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 }

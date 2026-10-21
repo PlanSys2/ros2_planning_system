@@ -26,7 +26,7 @@
   <test_depend>ament_cmake_ros</test_depend>
   <test_depend>ament_index_cpp</test_depend>
   <test_depend>plansys2_core</test_depend>
-  <test_depend>rclcpp_cascade_lifecycle</test_depend>
+  <test_depend version_gte="2.0.7">rclcpp_cascade_lifecycle</test_depend>
   <test_depend>plansys2_msgs</test_depend>
   <test_depend>test_msgs</test_depend>
   <test_depend>geometry_msgs</test_depend>

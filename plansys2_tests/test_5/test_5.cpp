@@ -24,7 +24,7 @@
 #include <string>
 #include <thread>
 
-#include "ament_index_cpp/get_package_share_path.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
@@ -68,7 +68,7 @@ TEST(test_5, requirement_only_change_preserves_problem)
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_tests").string();
+  std::string pkgpath = plansys2::share_path("plansys2_tests").string();
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
@@ -109,7 +109,7 @@ TEST(test_5, removed_predicate_pruned)
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_tests").string();
+  std::string pkgpath = plansys2::share_path("plansys2_tests").string();
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
@@ -142,7 +142,7 @@ TEST(test_5, invalid_domain_rejected)
   auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_tests").string();
+  std::string pkgpath = plansys2::share_path("plansys2_tests").string();
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
@@ -195,7 +195,7 @@ TEST(test_5, normal_startup_does_not_disturb_executor_or_problem)
   auto open_door_action_node = plansys2_tests::TestAction::make_shared("open_door");
   auto close_door_action_node = plansys2_tests::TestAction::make_shared("close_door");
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_tests").string();
+  std::string pkgpath = plansys2::share_path("plansys2_tests").string();
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
@@ -269,7 +269,7 @@ TEST(test_5, change_domain_cancels_active_execution)
   auto open_door_action_node = plansys2_tests::TestAction::make_shared("open_door", 0.1f);
   auto close_door_action_node = plansys2_tests::TestAction::make_shared("close_door", 0.4f);
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_tests").string();
+  std::string pkgpath = plansys2::share_path("plansys2_tests").string();
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 
@@ -368,7 +368,7 @@ TEST(test_5, plan_executes_successfully_after_domain_change)
   auto open_door_action_node = plansys2_tests::TestAction::make_shared("open_door");
   auto close_door_action_node = plansys2_tests::TestAction::make_shared("close_door");
 
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_tests").string();
+  std::string pkgpath = plansys2::share_path("plansys2_tests").string();
   domain_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_5/pddl/test_5.pddl"});
 

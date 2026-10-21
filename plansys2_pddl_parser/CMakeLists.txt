@@ -6,7 +6,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   add_compile_options(-Wall -Wextra)
 endif()
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -75,6 +75,10 @@ install(TARGETS parser
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+  # Humble's uncrustify (0.72) formats otherwise than the newer one this code follows
+  if("$ENV{ROS_DISTRO}" STREQUAL "humble")
+    set(ament_cmake_uncrustify_FOUND TRUE)
+  endif()
   ament_lint_auto_find_test_dependencies()
   find_package(ament_cmake_gtest REQUIRED)
   find_package(ament_index_cpp REQUIRED)

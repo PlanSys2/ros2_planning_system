@@ -20,7 +20,20 @@
 #include <string>
 #include <vector>
 
+// Humble has only the string form, which newer distros deprecate
+#if __has_include("ament_index_cpp/get_package_share_path.hpp")
 #include "ament_index_cpp/get_package_share_path.hpp"
+static std::string share_dir(const std::string & package)
+{
+  return ament_index_cpp::get_package_share_path(package).string();
+}
+#else
+#include "ament_index_cpp/get_package_share_directory.hpp"
+static std::string share_dir(const std::string & package)
+{
+  return ament_index_cpp::get_package_share_directory(package);
+}
+#endif
 #include "gtest/gtest.h"
 #include "plansys2_pddl_parser/Instance.hpp"
 #include "plansys2_pddl_parser/TemporalAction.hpp"
@@ -37,7 +50,7 @@ protected:
 
 TEST(PDDLParserTestCase, pddl_parser)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_pddl_parser").string();
+  std::string pkgpath = share_dir("plansys2_pddl_parser");
   std::string domain_file = pkgpath + "/pddl/dom1.pddl";
   std::string instance_file = pkgpath + "/pddl/prob1.pddl";
 
@@ -75,7 +88,7 @@ TEST(PDDLParserTestCase, pddl_parser)
 
 TEST(PDDLParserTestCase, pddl_parser_suave)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_pddl_parser").string();
+  std::string pkgpath = share_dir("plansys2_pddl_parser");
   std::string domain_file = pkgpath + "/pddl/suave_domain.pddl";
   std::string instance_file = pkgpath + "/pddl/suave_problem.pddl";
 
@@ -122,7 +135,7 @@ TEST(PDDLParserTestCase, pddl_parser_suave)
 
 TEST(PDDLParserTestCase, pddl_parser_suave_extended_created)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_pddl_parser").string();
+  std::string pkgpath = share_dir("plansys2_pddl_parser");
   std::string domain_file = pkgpath + "/pddl/suave_domain_extended_created.pddl";
   std::string instance_file = pkgpath + "/pddl/suave_problem_extended_created.pddl";
 
@@ -170,7 +183,7 @@ TEST(PDDLParserTestCase, pddl_parser_suave_extended_created)
 
 TEST(PDDLParserTestCase, exists_get_tree)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_pddl_parser").string();
+  std::string pkgpath = share_dir("plansys2_pddl_parser");
   std::string domain_file = pkgpath + "/pddl/dom1.pddl";
 
   std::ifstream domain_ifs(domain_file);
@@ -410,7 +423,7 @@ TEST(PDDLParserTestCase, from_string_exists)
 
 TEST(PDDLParserTestCase, open_door_test)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_pddl_parser").string();
+  std::string pkgpath = share_dir("plansys2_pddl_parser");
   std::string domain_file = pkgpath + "/pddl/dom2.pddl";
 
   std::ifstream domain_ifs(domain_file);
@@ -976,7 +989,7 @@ namespace
 {
 std::string read_parser_pddl(const std::string & name)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_pddl_parser").string();
+  std::string pkgpath = share_dir("plansys2_pddl_parser");
   std::ifstream ifs(pkgpath + "/pddl/" + name);
   return std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
 }
