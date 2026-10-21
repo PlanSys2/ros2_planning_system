@@ -641,8 +641,11 @@ TEST_F(ActionProtocolTest, gone_performer_fails_the_action)
   fake->send(ActionExecution::FEEDBACK, false, 0.5f);
   std::this_thread::sleep_for(500ms);
 
+  // Not destroyed while the executor may be serving it
+  spinner_.reset();
   exe_.remove_node(fake);
   fake.reset();
+  spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
   ASSERT_TRUE(
     tick_until(executor, [&]() {return executor->get_internal_status() == Status::FAILURE;}, 8s));
   // The reason the controller is told: not its last feedback, but that it is gone

@@ -234,6 +234,16 @@ protected:
   std::shared_ptr<CountingAction> move_node_;
   std::unique_ptr<rclcpp::executors::MultiThreadedExecutor> exe_;
   std::unique_ptr<ScopedSpinner> spinner_;
+
+  // A node that is gone. With the executor stopped, as it may be serving the node right now
+  template<typename NodeT>
+  void gone(std::shared_ptr<NodeT> & node)
+  {
+    spinner_.reset();
+    exe_->remove_node(node->get_node_base_interface());
+    node.reset();
+    spinner_ = std::make_unique<ScopedSpinner>(*exe_);
+  }
   rclcpp::Node::SharedPtr client_node_;  // The clients do not own it
   std::unique_ptr<plansys2::testing::NodeSpinner> client_node_spinner_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
@@ -317,8 +327,7 @@ TEST_F(ExecutorLifecycleTest, stops_while_waiting_for_a_gone_problem_expert)
       executor_client_->start_plan_execution(move_plan("wheels_zone", "assembly_zone")));
     std::this_thread::sleep_for(500ms);
     // Gone: nobody answers its services any more
-    exe_->remove_node(problem_node_->get_node_base_interface());
-    problem_node_.reset();
+    gone(problem_node_);
     // The action ends, and the executor waits for the problem expert to apply its effects
     ASSERT_TRUE(plansys2::testing::wait_for([&]() {return move_node_->finished > 0;}, 5s));
     std::this_thread::sleep_for(2s);
@@ -344,8 +353,7 @@ TEST_F(ExecutorLifecycleTest, a_plan_fails_when_a_component_does_not_come_back)
   start(30, true, 2.0);  // 1.5 s per action
   ASSERT_TRUE(executor_client_->start_plan_execution(move_plan("wheels_zone", "assembly_zone")));
   std::this_thread::sleep_for(500ms);
-  exe_->remove_node(problem_node_->get_node_base_interface());
-  problem_node_.reset();
+  gone(problem_node_);
   const auto begin = std::chrono::steady_clock::now();
   auto result = wait_result(30s);
   ASSERT_TRUE(result.has_value());

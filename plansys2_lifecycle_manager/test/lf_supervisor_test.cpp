@@ -114,11 +114,17 @@ protected:
     exe_->add_node(nodes_[name]->get_node_base_interface());
   }
 
-  // Its process dies: nobody answers for it
+  // Its process dies: nobody answers for it. With the executor stopped, as it may be serving
+  // the node right now
   void kill(const std::string & name)
   {
+    const bool spinning = spinner_ != nullptr;
+    spinner_.reset();
     exe_->remove_node(nodes_[name]->get_node_base_interface());
     nodes_.erase(name);
+    if (spinning) {
+      spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(*exe_);
+    }
   }
 
   uint8_t state(const std::string & name)
