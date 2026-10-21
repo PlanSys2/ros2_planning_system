@@ -20,7 +20,7 @@ This module provides specific classes for interacting with PlanSys2 Executor ser
 """
 
 import time
-from typing import Any, List, Optional
+from typing import Any, List, Optional, TYPE_CHECKING
 
 from action_msgs.msg import GoalStatus
 from plansys2_msgs.action import ExecutePlan
@@ -32,7 +32,9 @@ from rclpy.action import ActionClient
 from rclpy.action.client import ClientGoalHandle
 from rclpy.node import Node
 from rclpy.task import Future
-from rclpy.type_support import GetResultServiceResponse
+
+if TYPE_CHECKING:  # Only in annotations: Humble and Jazzy do not have it
+    from rclpy.type_support import GetResultServiceResponse
 
 
 class ExecutorClient(ClientBase):

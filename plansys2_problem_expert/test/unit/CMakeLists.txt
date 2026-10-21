@@ -1,4 +1,5 @@
-# ament_add_ros_isolated_gtest_test came with Kilted: before it, the same test, not isolated
+# ament_add_ros_isolated_gtest_test came with Kilted: before it, an ament test isolated as
+# ament_add_ros_isolated_gtest does
 if(NOT COMMAND ament_add_ros_isolated_gtest_test)
   function(ament_add_ros_isolated_gtest_test target)
     cmake_parse_arguments(ARG "" "TEST_NAME;TIMEOUT" "ENV" ${ARGN})
@@ -11,6 +12,7 @@ if(NOT COMMAND ament_add_ros_isolated_gtest_test)
     set(result "${AMENT_TEST_RESULTS_DIR}/${PROJECT_NAME}/${ARG_TEST_NAME}.gtest.xml")
     ament_add_test(${ARG_TEST_NAME}
       COMMAND $<TARGET_FILE:${target}> --gtest_output=xml:${result}
+      RUNNER "${ament_cmake_ros_DIR}/run_test_isolated.py"
       RESULT_FILE ${result}
       ENV ${ARG_ENV}
       TIMEOUT ${ARG_TIMEOUT})
