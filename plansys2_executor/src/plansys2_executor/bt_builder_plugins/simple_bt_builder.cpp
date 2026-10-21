@@ -644,7 +644,7 @@ SimpleBTBuilder::get_tree(const plansys2_msgs::msg::Plan & current_plan)
     prune_forward(root, used_actions);
   }
 
-  std::list<std::string> used_nodes;
+  std::set<std::string> used_nodes;
 
   if (graph_->roots.size() > 1) {
     bt_ = std::string("<root BTCPP_format=\"4\" main_tree_to_execute=\"MainTree\">\n") +
@@ -653,7 +653,7 @@ SimpleBTBuilder::get_tree(const plansys2_msgs::msg::Plan & current_plan)
       "\" failure_count=\"1\">\n";
 
     for (const auto & node : graph_->roots) {
-      bt_ = bt_ + get_flow_tree(node, used_nodes, 3);
+      get_flow_tree(node, used_nodes, 3, true, bt_);
     }
 
     bt_ = bt_ + t(2) + "</Parallel>\n" +
@@ -662,7 +662,7 @@ SimpleBTBuilder::get_tree(const plansys2_msgs::msg::Plan & current_plan)
     bt_ = std::string("<root BTCPP_format=\"4\" main_tree_to_execute=\"MainTree\">\n") +
       t(1) + "<BehaviorTree ID=\"MainTree\">\n";
 
-    bt_ = bt_ + get_flow_tree(*graph_->roots.begin(), used_nodes, 2);
+    get_flow_tree(*graph_->roots.begin(), used_nodes, 2, true, bt_);
 
     bt_ = bt_ + t(1) + "</BehaviorTree>\n</root>\n";
   }
@@ -779,52 +779,50 @@ SimpleBTBuilder::get_dotgraph(
   return ss.str();
 }
 
-std::string
+void
 SimpleBTBuilder::get_flow_tree(
   ActionNode::Ptr node,
-  std::list<std::string> & used_nodes,
-  int level)
+  std::set<std::string> & used_nodes,
+  int level,
+  bool wrap,
+  std::string & out)
 {
-  std::string ret;
-  int l = level;
-
   const std::string action_id = "(" + node->action.action.get_action_string() + "):" +
     std::to_string(to_int_time(node->action.time, action_time_precision_));
 
-  if (std::find(used_nodes.begin(), used_nodes.end(), action_id) != used_nodes.end()) {
-    return t(l) + "<WaitAction action=\"" + action_id + "\"/>\n";
+  if (!used_nodes.insert(action_id).second) {
+    out += t(level) + "<WaitAction action=\"" + action_id + "\"/>\n";
+    return;
   }
-
-  used_nodes.push_back(action_id);
 
   if (node->out_arcs.size() == 0) {
-    ret = ret + execution_block(node, l);
-  } else if (node->out_arcs.size() == 1) {
-    ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
-    ret = ret + execution_block(node, l + 1);
-
-    for (const auto & child_node : node->out_arcs) {
-      ret = ret + get_flow_tree(child_node, used_nodes, l + 1);
-    }
-
-    ret = ret + t(l) + "</Sequence>\n";
-  } else {
-    ret = ret + t(l) + "<Sequence name=\"" + action_id + "\">\n";
-    ret = ret + execution_block(node, l + 1);
-
-    ret = ret + t(l + 1) +
-      "<Parallel success_count=\"" + std::to_string(node->out_arcs.size()) +
-      "\" failure_count=\"1\">\n";
-
-    for (const auto & child_node : node->out_arcs) {
-      ret = ret + get_flow_tree(child_node, used_nodes, l + 2);
-    }
-
-    ret = ret + t(l + 1) + "</Parallel>\n";
-    ret = ret + t(l) + "</Sequence>\n";
+    out += execution_block(node, level);
+    return;
   }
 
-  return ret;
+  // Inside the Sequence of its parent when it is the only way on: Sequence(x, Sequence(y, z))
+  // is Sequence(x, y, z), and the tree does not get one level deeper with each action
+  const int l = wrap ? level + 1 : level;
+  if (wrap) {
+    out += t(level) + "<Sequence name=\"" + action_id + "\">\n";
+  }
+  out += execution_block(node, l);
+
+  if (node->out_arcs.size() == 1) {
+    get_flow_tree(*node->out_arcs.begin(), used_nodes, l, false, out);
+  } else {
+    out += t(l) +
+      "<Parallel success_count=\"" + std::to_string(node->out_arcs.size()) +
+      "\" failure_count=\"1\">\n";
+    for (const auto & child_node : node->out_arcs) {
+      get_flow_tree(child_node, used_nodes, l + 1, true, out);
+    }
+    out += t(l) + "</Parallel>\n";
+  }
+
+  if (wrap) {
+    out += t(level) + "</Sequence>\n";
+  }
 }
 
 void

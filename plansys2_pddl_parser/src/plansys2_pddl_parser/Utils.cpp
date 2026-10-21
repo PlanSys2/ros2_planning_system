@@ -401,7 +401,7 @@ uint8_t getNodeType(const std::string & expr, uint8_t default_node_type)
 
   if (expr[start] != '(') {
     const auto token = tokenAt(expr, start);
-    double value;
+    double value = 0.0;
     // A variable, and #t: the time a continuous effect has acted
     if (!token.empty() && (token[0] == '?' || token == "#t")) {
       return plansys2_msgs::msg::Node::PARAMETER;
@@ -736,7 +736,7 @@ std::string numberToString(double value, int decimals)
   }
 
   // Fixed notation needs up to ~310 digits before and ~330 after the point
-  std::array<char, 1024> buffer;
+  std::array<char, 1024> buffer {};
   char * const first = buffer.data();
   char * const last = first + buffer.size();
   if (decimals >= 0) {
@@ -1091,7 +1091,7 @@ bool splitModal(const std::string & expr, std::string & op, std::vector<std::str
     }
   }
   auto is_cond = [](const std::string & a) {return !a.empty() && a.front() == '(';};
-  double value;
+  double value = 0.0;
   if (head == "preference") {
     // (preference [name] C)
     if (args.empty() || args.size() > 2 || !is_cond(args.back()) ||
@@ -1558,7 +1558,7 @@ plansys2_msgs::msg::Node fromStringFunction(const std::string & function)
     ret.name = tokens[i++].first;
   }
   for (; i < tokens.size(); i++) {
-    double value;
+    double value = 0.0;
     if (parseNumber(tokens[i].first, value)) {
       ret.value = value;
       break;

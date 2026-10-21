@@ -24,6 +24,7 @@
 
 #include "lifecycle_msgs/msg/state.hpp"
 
+#include "plansys2_core/TestUtils.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 #include "plansys2_lifecycle_manager/lifecycle_manager.hpp"
@@ -36,12 +37,12 @@ TEST(lifecycle_manager, shutdown_during_startup)
 {
   // Ctrl-C right after the planner accepts its configuration, while startup waits for it
   Spinner spinner;
+  auto manager = rclcpp::Node::make_shared("sd_lifecycle_manager");
+  plansys2::testing::NodeSpinner manager_spinner(manager);
+  auto client_node = std::make_shared<plansys2::ClientNode>(*manager);
   std::map<std::string, std::shared_ptr<plansys2::LifecycleServiceClient>> clients;
   for (const std::string key : {"planner", "domain_expert", "problem_expert", "executor"}) {
-    clients[key] = std::make_shared<plansys2::LifecycleServiceClient>(
-      "sd_" + key + "_lc_mngr", "sd_" + key);
-    clients[key]->init();
-    spinner.add(clients[key]);
+    clients[key] = std::make_shared<plansys2::LifecycleServiceClient>(client_node, "sd_" + key);
   }
   auto fake_planner = std::make_shared<FakeLifecycleNode>("sd_planner");
   fake_planner->on_change_state = []() {
@@ -64,5 +65,8 @@ int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);
-  return RUN_ALL_TESTS();
+  // Before the process exits: Zenoh aborts if ROS is shut down by atexit
+  auto result = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return result;
 }

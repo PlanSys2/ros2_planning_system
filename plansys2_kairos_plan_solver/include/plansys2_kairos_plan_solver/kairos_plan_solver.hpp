@@ -36,7 +36,8 @@ namespace plansys2
 
 /**
  * @class plansys2::KairosPlanSolver
- * @brief Plan solver that runs the Kairos planner in-process: no files and no child process.
+ * @brief Plan solver that runs the Kairos planner in-process (no files and no child process), or
+ * isolated in a process of its own.
  *
  * The last parsed domains are kept between calls, found by a hash of their text: PlanSys2
  * usually sends the same domain, but it may change it at runtime.
@@ -50,7 +51,11 @@ namespace plansys2
  * - memory_limit_mb: 0 for half of the available memory;
  * - threads: phases of the search at once (1: one after another, reproducible);
  * - log_level: Kairos messages forwarded to the ROS logger ("debug", "info", "warn", "error");
- * - dump_dir: when not empty, Kairos writes its intermediate structures there.
+ * - dump_dir: when not empty, Kairos writes its intermediate structures there;
+ * - isolated: run the kairos executable in a process of its own, as popf: a crash or a hang of
+ *   Kairos does not take down the planner node, at the cost of a few ms per plan (process
+ *   start, files, no domain cache); log_level and dump_dir do not apply;
+ * - executable: the kairos executable for isolated (empty: the one installed with Kairos).
  */
 class KairosPlanSolver : public PlanSolverBase
 {
@@ -76,6 +81,11 @@ public:
 
 private:
   std::string param(const std::string & name) const {return plugin_name_ + "." + name;}
+
+  // Planning in a process of its own: the kairos executable, as popf
+  std::optional<plansys2_msgs::msg::Plan> plan_isolated(
+    const std::string & domain, const std::string & problem,
+    const rclcpp::Duration & solver_timeout, std::chrono::milliseconds timeout);
 
   // The parsed domain, from the cache if possible, or nullptr (logs the errors)
   std::shared_ptr<const kairos::Domain> parse_domain(const std::string & domain);

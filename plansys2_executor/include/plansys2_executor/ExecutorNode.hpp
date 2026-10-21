@@ -450,8 +450,8 @@ protected:
   std::optional<plansys2_msgs::msg::Plan> last_executing_plan_;
   std::chrono::steady_clock::time_point next_feedback_time_;
 
-  bool cancel_plan_requested_;
-  bool replan_requested_;
+  bool cancel_plan_requested_ {false};
+  bool replan_requested_ {false};
   // Flags shared between execution_cycle's thread and the ROS callbacks (#435)
   std::atomic<bool> new_plan_received_ {false};
   bool domain_baseline_seen_ {false};
@@ -493,6 +493,11 @@ protected:
   // monolithic bringup also serves the requests execution_cycle makes while ticking,
   // so they must never wait for the execution thread: this lock is only held briefly
   std::mutex snapshot_mutex_;
+  // The last goal accepted, until it runs or ends: get_plan answers it while a long plan is
+  // set up, or a client would take it as lost
+  std::shared_ptr<GoalHandleExecutePlan> starting_goal_;
+  plansys2_msgs::msg::Plan starting_plan_;
+  void starting_done(const std::shared_ptr<GoalHandleExecutePlan> & goal);
   plansys2_msgs::msg::Plan complete_plan_snapshot_;
   plansys2_msgs::msg::Plan remaining_plan_snapshot_;
   std::vector<plansys2_msgs::msg::Tree> ordered_sub_goals_snapshot_;
@@ -517,6 +522,8 @@ protected:
   void start_execution_thread();
   // Stops execution_cycle and fails the goals it was handling
   void stop_execution_thread();
+  // The waits of the clients of the node end at once while interrupted
+  void set_clients_interrupted(bool interrupted);
   // Aborts the running and the waiting goal, if any, and returns to idle
   void fail_current_goals();
 

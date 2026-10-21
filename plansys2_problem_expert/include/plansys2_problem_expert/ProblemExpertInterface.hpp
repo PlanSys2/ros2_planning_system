@@ -40,6 +40,11 @@ public:
   ProblemExpertInterface() {}
 
   /**
+   * @brief Virtual destructor, as it is used through pointers to it.
+   */
+  virtual ~ProblemExpertInterface() = default;
+
+  /**
    * @brief Get all instances in the problem.
    *
    * @return std::vector<plansys2::Instance> Vector containing all instances in the problem.

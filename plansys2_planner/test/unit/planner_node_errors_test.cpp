@@ -221,7 +221,7 @@ protected:
   rclcpp::Client<plansys2_msgs::srv::GetPlan>::SharedPtr get_plan_;
   rclcpp::Client<plansys2_msgs::srv::GetPlanArray>::SharedPtr get_plan_array_;
   rclcpp::Client<plansys2_msgs::srv::ValidateDomain>::SharedPtr validate_;
-  rclcpp::executors::SingleThreadedExecutor exe_;
+  rclcpp::executors::MultiThreadedExecutor exe_;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 
@@ -350,7 +350,9 @@ TEST_F(PlannerErrorsTest, client_waits_for_the_planner_answer)
 {
   // plan_solver_timeout 2.0, from the command line: for the planner and, set, for the client
   start_planner();
-  auto planner_client = std::make_shared<plansys2::PlannerClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto planner_client = std::make_shared<plansys2::PlannerClient>(client_node);
 
   auto plan = planner_client->getPlan(
     read_pddl("domain_simple.pddl"), read_pddl("problem_hard_unsolvable.pddl"));

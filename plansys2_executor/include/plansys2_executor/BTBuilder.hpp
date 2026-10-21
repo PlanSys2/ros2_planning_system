@@ -70,7 +70,7 @@ struct ActionStamped
   double time;
   std::string expression;
   double duration;
-  ActionType type;
+  ActionType type {};
   ActionVariant action;
 
   ActionStamped()
@@ -161,11 +161,9 @@ public:
   virtual ~BTBuilder() = default;
 
   /**
-   * @brief Set the clients the builder uses, usually those of its executor.
+   * @brief Set the clients the builder uses: those of its executor, on the executor's node.
    *
-   * Without them the builder creates its own clients, two more nodes for each plan: built
-   * and destroyed in the execution thread, they could abort the process when that happens
-   * during a shutdown.
+   * Required before building a tree: a builder makes no node of its own.
    *
    * @param[in] domain_client The domain expert client.
    * @param[in] problem_client The problem expert client.

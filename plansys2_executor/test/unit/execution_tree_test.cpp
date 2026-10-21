@@ -59,19 +59,20 @@ TEST(executiotest_noden_tree, bt_builder_factory)
 {
   {
     auto test_node = rclcpp::Node::make_shared("get_action_from_string");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
     auto planner_node = std::make_shared<plansys2::PlannerNode>();
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-    auto planner_client = std::make_shared<plansys2::PlannerClient>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+    auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
 
     std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -169,6 +170,7 @@ TEST(executiotest_noden_tree, bt_builder_factory)
       std::cerr << "pluginlib error: " << std::string(ex.what()) << std::endl;
     }
 
+    bt_builder->set_clients(domain_client, problem_client);
     bt_builder->initialize();
     auto tree_str = bt_builder->get_tree(plan.value());
 
@@ -182,19 +184,20 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
 {
   {
     auto test_node = rclcpp::Node::make_shared("get_action_from_string");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
     auto planner_node = std::make_shared<plansys2::PlannerNode>();
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-    auto planner_client = std::make_shared<plansys2::PlannerClient>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+    auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
 
     std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/factory.pddl"});
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -293,6 +296,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_2)
       std::cerr << "pluginlib error: " << std::string(ex.what()) << std::endl;
     }
 
+    bt_builder->set_clients(domain_client, problem_client);
     bt_builder->initialize();
     auto tree_str = bt_builder->get_tree(plan.value());
 }
@@ -303,19 +307,20 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
 {
   {
     auto test_node = rclcpp::Node::make_shared("get_action_from_string");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
     auto planner_node = std::make_shared<plansys2::PlannerNode>();
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-    auto planner_client = std::make_shared<plansys2::PlannerClient>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+    auto planner_client = std::make_shared<plansys2::PlannerClient>(test_node);
 
     std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_charging.pddl"});
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -405,6 +410,7 @@ TEST(executiotest_noden_tree, bt_builder_factory_3)
       std::cerr << "pluginlib error: " << std::string(ex.what()) << std::endl;
     }
 
+    bt_builder->set_clients(domain_client, problem_client);
     bt_builder->initialize();
     auto tree_str = bt_builder->get_tree(plan.value());
 }

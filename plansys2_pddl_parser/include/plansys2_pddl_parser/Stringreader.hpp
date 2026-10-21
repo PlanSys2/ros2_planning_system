@@ -164,6 +164,17 @@ public:
     return os.str();
   }
 
+  // a name of a list: one that is not there (e.g. a ',' or a '{') would be read forever
+  std::string getName()
+  {
+    std::string t = getToken();
+    if (t.empty()) {
+      printLine();
+      throw UnknownToken(c < s.size() ? std::string(1, s[c]) : std::string());
+    }
+    return t;
+  }
+
   // get token converted to lowercase
   // check that the token exists
   template<typename T>
@@ -227,7 +238,7 @@ public:
             if (check) {
               t += " " + getToken(ts);
             } else {
-              t += " " + getToken();
+              t += " " + getName();
             }
           }
           t += " )";
@@ -235,7 +246,7 @@ public:
         } else if (check) {
           t = getToken(ts);
         } else {
-          t = getToken();
+          t = getName();
         }
 
         out.types.insert(out.types.end(), out.size() - k, t);
@@ -246,7 +257,7 @@ public:
         getToken();
         out.append(parseTypedList(check, ts));
       } else {
-        out.insert(getToken());
+        out.insert(getName());
       }
     }
     if (k < out.size()) {out.types.insert(out.types.end(), out.size() - k, check ? "object" : "");}

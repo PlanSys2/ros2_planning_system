@@ -69,9 +69,12 @@ TEST(ActionExecutorChurn, create_and_destroy_while_spinning)
   auto node = rclcpp_lifecycle::LifecycleNode::make_shared("executor");
   node->trigger_transition(Transition::TRANSITION_CONFIGURE);
   node->trigger_transition(Transition::TRANSITION_ACTIVATE);
+  // Kept, as ExecutorNode keeps it: the executors come and go, not the hub (with Zenoh, a
+  // subscription destroyed while the process publishes may deadlock in rmw_zenoh)
+  auto hub = plansys2::ActionHub::get(node);
   auto performer = std::make_shared<QuickMove>("move_performer");
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(node->get_node_base_interface());
   exe.add_node(performer->get_node_base_interface());
   plansys2::testing::ExecutorThread spinner(exe);

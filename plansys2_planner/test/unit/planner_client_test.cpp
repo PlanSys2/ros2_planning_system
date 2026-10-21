@@ -79,7 +79,7 @@ TEST(PlannerClient, waits_as_long_as_the_planner_plans)
 {
   auto planner = std::make_shared<TestPlannerNode>();
   planner->set_parameter({"plan_solver_timeout", 17.0});
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(planner->get_node_base_interface());
   plansys2::testing::ExecutorThread spinner(exe);
 
@@ -89,7 +89,9 @@ TEST(PlannerClient, waits_as_long_as_the_planner_plans)
   // After the client's old wait (15 + 5 s), before the new one (17 + 5 s)
   planner->set_only_solver(std::make_shared<SlowSolver>(21s));
 
-  auto client = std::make_shared<plansys2::PlannerClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto client = std::make_shared<plansys2::PlannerClient>(client_node);
   const auto start = std::chrono::steady_clock::now();
   auto plan = client->getPlan(
     "(define (domain d) (:requirements :strips) (:predicates (p)))",

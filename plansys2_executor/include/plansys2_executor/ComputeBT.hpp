@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "behaviortree_cpp/loggers/groot2_publisher.h"
 
@@ -69,6 +70,12 @@ public:
    * @return SUCCESS if configuration is successful, FAILURE otherwise.
    */
   CallbackReturnT on_configure(const rclcpp_lifecycle::State & state);
+
+  /**
+   * @brief Its own domain expert, problem expert and planner, once configured: whoever spins it
+   * spins them too (it spins nothing itself).
+   */
+  std::vector<rclcpp_lifecycle::LifecycleNode::SharedPtr> get_embedded_nodes() const;
 
   /**
    * @brief Activates the node.

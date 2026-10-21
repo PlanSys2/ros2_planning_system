@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Both bringups start with model_file only (#396), and load problem_file when given."""
+"""
+Both bringups start with model_file only (#396), and load problem_file when given.
+
+And with one node per component, once started.
+"""
 
 import os
 import time
@@ -95,3 +99,19 @@ class TestBringupProblemFile(unittest.TestCase):
             self.assertIn('leia', names)
         else:
             self.assertEqual(names, set())
+
+    def node_names(self):
+        names = {name for name, _ in self.node.get_node_names_and_namespaces()}
+        names.discard(self.node.get_name())
+        return names
+
+    def test_one_node_per_component(self, bringup, with_problem):
+        # The distributed one has its lifecycle_manager too: it watches the four once active
+        expected = set(NODES) | ({'lifecycle_manager'} if bringup == 'distributed' else set())
+        deadline = time.monotonic() + 60.0
+        while time.monotonic() < deadline and self.node_names() != expected:
+            time.sleep(0.2)
+        self.assertEqual(self.node_names(), expected, bringup)
+        # And no other appears later
+        time.sleep(2.0)
+        self.assertEqual(self.node_names(), expected, bringup)

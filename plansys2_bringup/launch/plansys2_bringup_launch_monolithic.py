@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import os
+import tempfile
+import time
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -35,6 +37,8 @@ def generate_launch_description():
     start_action_bt_file = LaunchConfiguration('start_action_bt_file')
     end_action_bt_file = LaunchConfiguration('end_action_bt_file')
     bt_builder_plugin = LaunchConfiguration('bt_builder_plugin')
+    respawn = LaunchConfiguration('respawn')
+    state_file = LaunchConfiguration('state_file')
 
     declare_model_file_cmd = DeclareLaunchArgument(
         'model_file',
@@ -82,11 +86,26 @@ def generate_launch_description():
         description='Behavior tree builder plugin.',
     )
 
+    declare_use_real_time_cmd = DeclareLaunchArgument(
+        'use_real_time',
+        default_value='false',
+        description='Real time priority for the executor (it needs the permissions)',
+    )
+
+    declare_startup_timeout_cmd = DeclareLaunchArgument(
+        'startup_timeout',
+        default_value='5',
+        description='Seconds for each lifecycle transition at startup',
+    )
+
     plansys2_node_cmd = Node(
         package='plansys2_bringup',
         executable='plansys2_node',
         output='screen',
         namespace=namespace,
+        arguments=[
+          '--use-real-time', LaunchConfiguration('use_real_time'),
+          '--startup-timeout', LaunchConfiguration('startup_timeout')],
         parameters=[
           {
             'model_file': model_file,
@@ -95,12 +114,30 @@ def generate_launch_description():
             'default_start_action_bt_xml_filename': start_action_bt_file,
             'default_end_action_bt_xml_filename': end_action_bt_file,
             'bt_builder_plugin': bt_builder_plugin,
+            'state_file': state_file,
           },
           params_file
-        ])
+        ],
+        respawn=respawn,
+        respawn_delay=1.0)
+
+    # Started again, 1 s later, if a process ends; with state_file the problem expert comes back
+    # with its problem. A file of each launch: a new launch does not take the one of another
+    declare_respawn_cmd = DeclareLaunchArgument(
+        'respawn', default_value='true',
+        description='Start a PlanSys2 process again if it ends')
+    declare_state_file_cmd = DeclareLaunchArgument(
+        'state_file',
+        default_value=os.path.join(
+            tempfile.gettempdir(), 'plansys2',
+            f'{time.strftime("%Y%m%d_%H%M%S")}_{os.getpid()}', 'problem.pddl'),
+        description='File where the problem expert keeps its problem (empty: not kept)')
 
     # Create the launch description and populate
     ld = LaunchDescription()
+
+    ld.add_action(declare_respawn_cmd)
+    ld.add_action(declare_state_file_cmd)
 
     ld.add_action(declare_model_file_cmd)
     ld.add_action(declare_problem_file_cmd)
@@ -110,6 +147,8 @@ def generate_launch_description():
     ld.add_action(declare_bt_builder_plugin_cmd)
     ld.add_action(declare_namespace_cmd)
     ld.add_action(declare_params_file_cmd)
+    ld.add_action(declare_use_real_time_cmd)
+    ld.add_action(declare_startup_timeout_cmd)
 
     # Declare the launch options
     ld.add_action(plansys2_node_cmd)

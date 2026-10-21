@@ -82,11 +82,12 @@ TEST(problem_expert_node, addget_instances)
 {
   {
     auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto test_node_2 = rclcpp::Node::make_shared("test_problem_expert_node_2");
     auto remap = domain_topic_remap("addget_instances");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_2);
 
     std::string pkgpath =
       ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
@@ -100,7 +101,7 @@ TEST(problem_expert_node, addget_instances)
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -581,11 +582,12 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
 {
   {
     auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto test_node_2 = rclcpp::Node::make_shared("test_problem_expert_node_2");
     auto remap = domain_topic_remap("addget_goal_is_satisfied");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_2);
 
     std::string pkgpath =
       ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
@@ -599,7 +601,7 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -689,12 +691,13 @@ TEST(problem_expert_node, reconcile_with_domain_preserves_and_prunes)
 {
   {
     auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto test_node_2 = rclcpp::Node::make_shared("test_problem_expert_node_2");
     auto remap = domain_topic_remap("reconcile_with_domain_preserves_and_prunes");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node_2);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_2);
 
     std::string pkgpath =
       ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
@@ -708,7 +711,7 @@ TEST(problem_expert_node, reconcile_with_domain_preserves_and_prunes)
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -785,11 +788,12 @@ TEST(problem_expert_node, reconcile_with_domain_full_replacement_prunes_everythi
 {
   {
     auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto remap = domain_topic_remap("reconcile_with_domain_full_replacement_prunes_everything");
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
-    auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
     std::string pkgpath =
       ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
@@ -803,7 +807,7 @@ TEST(problem_expert_node, reconcile_with_domain_full_replacement_prunes_everythi
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
 
@@ -840,7 +844,9 @@ TEST(problem_expert_node, add_problem_malformed_keeps_node_alive)
   auto remap = domain_topic_remap("add_problem_malformed_keeps_node_alive");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
   std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
@@ -851,7 +857,7 @@ TEST(problem_expert_node, add_problem_malformed_keeps_node_alive)
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   plansys2::testing::ExecutorThread spinner(exe);
@@ -931,7 +937,9 @@ TEST(problem_expert_node, big_and_malformed_goals_keep_node_alive)
   auto remap = domain_topic_remap("big_and_malformed_goals_keep_node_alive");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
   std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
@@ -942,7 +950,7 @@ TEST(problem_expert_node, big_and_malformed_goals_keep_node_alive)
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   plansys2::testing::ExecutorThread spinner(exe);
@@ -996,7 +1004,9 @@ TEST(problem_expert_node, add_problem_instance_rejects_invalid_names)
   auto remap = domain_topic_remap("add_problem_instance_rejects_invalid_names");
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
   std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
@@ -1006,7 +1016,7 @@ TEST(problem_expert_node, add_problem_instance_rejects_invalid_names)
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   plansys2::testing::ExecutorThread spinner(exe);
@@ -1033,7 +1043,9 @@ struct NodesWithClient
     auto remap = domain_topic_remap(name);
     domain_node = std::make_shared<plansys2::DomainExpertNode>(remap);
     problem_node = std::make_shared<plansys2::ProblemExpertNode>(remap);
-    problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    client_node = rclcpp::Node::make_shared("client_node");
+    client_node_spinner = std::make_unique<plansys2::testing::NodeSpinner>(client_node);
+    problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
     std::string pkgpath =
       ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
@@ -1051,8 +1063,10 @@ struct NodesWithClient
 
   std::shared_ptr<plansys2::DomainExpertNode> domain_node;
   std::shared_ptr<plansys2::ProblemExpertNode> problem_node;
+  rclcpp::Node::SharedPtr client_node;
+  std::unique_ptr<plansys2::testing::NodeSpinner> client_node_spinner;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client;
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner;
 };
 
@@ -1134,7 +1148,7 @@ TEST(problem_expert_node, metric_services)
     [&last_knowledge](const plansys2_msgs::msg::Knowledge::SharedPtr msg) {
       last_knowledge = *msg;
     });
-  rclcpp::executors::SingleThreadedExecutor listener_exe;
+  rclcpp::executors::MultiThreadedExecutor listener_exe;
   listener_exe.add_node(listener);
   // Metric of the last knowledge message, once it is the expected one or after a timeout
   auto knowledge_metric = [&](const std::string & expected) {
@@ -1205,7 +1219,7 @@ TEST(problem_expert_node, knowledge_has_the_function_values)
     [&last_knowledge](const plansys2_msgs::msg::Knowledge::SharedPtr msg) {
       last_knowledge = *msg;
     });
-  rclcpp::executors::SingleThreadedExecutor listener_exe;
+  rclcpp::executors::MultiThreadedExecutor listener_exe;
   listener_exe.add_node(listener);
   auto shown = [&](const std::vector<std::string> & expected) {
       plansys2::testing::wait_for(

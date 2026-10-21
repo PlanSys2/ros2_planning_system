@@ -111,7 +111,7 @@ protected:
   rclcpp::Client<plansys2_msgs::srv::GetPlan>::SharedPtr get_plan_;
   rclcpp::Client<plansys2_msgs::srv::GetPlanArray>::SharedPtr get_plan_array_;
   rclcpp::Client<plansys2_msgs::srv::ValidateDomain>::SharedPtr validate_;
-  rclcpp::executors::SingleThreadedExecutor exe_;
+  rclcpp::executors::MultiThreadedExecutor exe_;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 

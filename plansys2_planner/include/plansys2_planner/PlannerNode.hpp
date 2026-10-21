@@ -166,7 +166,7 @@ public:
    *
    * @param[in] solver_timeout The new timeout duration.
    */
-  void set_timeout(rclcpp::Duration solver_timeout) {solver_timeout_ = solver_timeout;}
+  void set_timeout(const rclcpp::Duration & solver_timeout) {solver_timeout_ = solver_timeout;}
 
 protected:
   // Destroyed before lp_loader_, which unloads their libraries

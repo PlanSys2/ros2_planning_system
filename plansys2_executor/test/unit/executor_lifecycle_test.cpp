@@ -19,6 +19,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <memory>
+#include <future>
 #include <string>
 #include <thread>
 #include <vector>
@@ -35,7 +36,9 @@
 #include "plansys2_msgs/srv/get_plan.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
+#include "plansys2_core/TestUtils.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
 
 using namespace std::chrono_literals;  // NOLINT
 using ExecutePlan = plansys2_msgs::action::ExecutePlan;
@@ -115,7 +118,7 @@ class ExecutorLifecycleTest : public ::testing::Test
 {
 protected:
   // Experts and performer are always active; the executor is left configured or active
-  void start(int performer_ticks, bool activate_executor = true)
+  void start(int performer_ticks, bool activate_executor = true, double component_timeout = 30.0)
   {
     std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_executor").string();
     domain_node_ = std::make_shared<plansys2::DomainExpertNode>();
@@ -125,13 +128,14 @@ protected:
     if (const char * builder = std::getenv("PLANSYS2_TEST_BT_BUILDER")) {
       executor_node_->set_parameter({"bt_builder_plugin", std::string(builder)});
     }
+    executor_node_->set_parameter({"component_timeout", component_timeout});
     move_node_ = std::make_shared<CountingAction>("move_performer", performer_ticks);
     move_node_->set_parameter({"action_name", "move"});
     move_node_->set_parameter({"rate", 20.0});
     domain_node_->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
     problem_node_->set_parameter({"model_file", pkgpath + "/pddl/factory3.pddl"});
 
-    exe_ = std::make_unique<rclcpp::executors::SingleThreadedExecutor>();
+    exe_ = std::make_unique<rclcpp::executors::MultiThreadedExecutor>();
     for (auto node : nodes()) {
       exe_->add_node(node->get_node_base_interface());
     }
@@ -146,8 +150,10 @@ protected:
       executor_node_->trigger_transition(Transition::TRANSITION_ACTIVATE);
     }
 
-    problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
-    executor_client_ = std::make_shared<plansys2::ExecutorClient>();
+    client_node_ = rclcpp::Node::make_shared("client_node");
+    client_node_spinner_ = std::make_unique<plansys2::testing::NodeSpinner>(client_node_);
+    problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(client_node_);
+    executor_client_ = std::make_shared<plansys2::ExecutorClient>(client_node_);
     ASSERT_TRUE(problem_client_->addInstance(plansys2::Instance("r2d2", "robot")));
     for (auto zone : {"wheels_zone", "steering_wheels_zone", "assembly_zone"}) {
       ASSERT_TRUE(problem_client_->addInstance(plansys2::Instance(zone, "zone")));
@@ -191,6 +197,23 @@ protected:
     return executor_client_->getResult();
   }
 
+  // What the action server answers in any state, to a plain action client (PlanSys2's waits)
+  bool server_accepts(const plansys2_msgs::msg::Plan & plan)
+  {
+    auto client = rclcpp_action::create_client<ExecutePlan>(client_node_, "execute_plan");
+    if (!client->wait_for_action_server(5s)) {
+      return false;
+    }
+    ExecutePlan::Goal goal;
+    goal.plan = plan;
+    auto future = client->async_send_goal(goal);
+    if (future.wait_for(5s) != std::future_status::ready || !future.get()) {
+      return false;
+    }
+    client->async_cancel_all_goals();
+    return true;
+  }
+
   bool robot_at(const std::string & zone)
   {
     return problem_client_->existPredicate(plansys2::Predicate("(robot_at r2d2 " + zone + ")"));
@@ -209,8 +232,20 @@ protected:
   std::shared_ptr<plansys2::ProblemExpertNode> problem_node_;
   std::shared_ptr<plansys2::ExecutorNode> executor_node_;
   std::shared_ptr<CountingAction> move_node_;
-  std::unique_ptr<rclcpp::executors::SingleThreadedExecutor> exe_;
+  std::unique_ptr<rclcpp::executors::MultiThreadedExecutor> exe_;
   std::unique_ptr<ScopedSpinner> spinner_;
+
+  // A node that is gone. With the executor stopped, as it may be serving the node right now
+  template<typename NodeT>
+  void gone(std::shared_ptr<NodeT> & node)
+  {
+    spinner_.reset();
+    exe_->remove_node(node->get_node_base_interface());
+    node.reset();
+    spinner_ = std::make_unique<ScopedSpinner>(*exe_);
+  }
+  rclcpp::Node::SharedPtr client_node_;  // The clients do not own it
+  std::unique_ptr<plansys2::testing::NodeSpinner> client_node_spinner_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   std::shared_ptr<plansys2::ExecutorClient> executor_client_;
 };
@@ -241,13 +276,25 @@ TEST_F(ExecutorLifecycleTest, goals_rejected_unless_active)
 {
   start(3, false);
   ASSERT_EQ(executor_node_->get_current_state().id(), State::PRIMARY_STATE_INACTIVE);
-  ASSERT_FALSE(executor_client_->start_plan_execution(move_plan("wheels_zone", "assembly_zone")));
+  ASSERT_FALSE(server_accepts(move_plan("wheels_zone", "assembly_zone")));
 
+  // The ExecutorClient waits until the executor is active, and then starts the plan
+  std::atomic<bool> started {false};
+  std::thread caller([&]() {
+      started = executor_client_->start_plan_execution(move_plan("wheels_zone", "assembly_zone"));
+    });
+  std::this_thread::sleep_for(2s);
+  EXPECT_FALSE(started.load());
   executor_node_->trigger_transition(Transition::TRANSITION_ACTIVATE);
-  expect_plan_succeeds("wheels_zone", "assembly_zone");
+  caller.join();
+  ASSERT_TRUE(started.load());
+  auto result = wait_result();
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result->result, ExecutePlan::Result::SUCCESS);
+  ASSERT_TRUE(robot_at("assembly_zone"));
 
   executor_node_->trigger_transition(Transition::TRANSITION_DEACTIVATE);
-  ASSERT_FALSE(executor_client_->start_plan_execution(move_plan("assembly_zone", "wheels_zone")));
+  ASSERT_FALSE(server_accepts(move_plan("assembly_zone", "wheels_zone")));
   ASSERT_TRUE(robot_at("assembly_zone"));
 }
 
@@ -267,6 +314,54 @@ TEST_F(ExecutorLifecycleTest, deactivate_during_a_plan_fails_it)
   // The action never completed, even after its 3 s
   std::this_thread::sleep_for(3s);
   ASSERT_EQ(move_node_->finished, 0);
+}
+
+// The problem expert goes in mid-plan: the execution thread waits for it, and stopping the
+// executor (deactivated or destroyed) must not wait for it too
+TEST_F(ExecutorLifecycleTest, stops_while_waiting_for_a_gone_problem_expert)
+{
+  for (bool destroy : {false, true}) {
+    SCOPED_TRACE(destroy ? "destroyed" : "deactivated");
+    start(30);  // 1.5 s per action
+    ASSERT_TRUE(
+      executor_client_->start_plan_execution(move_plan("wheels_zone", "assembly_zone")));
+    std::this_thread::sleep_for(500ms);
+    // Gone: nobody answers its services any more
+    gone(problem_node_);
+    // The action ends, and the executor waits for the problem expert to apply its effects
+    ASSERT_TRUE(plansys2::testing::wait_for([&]() {return move_node_->finished > 0;}, 5s));
+    std::this_thread::sleep_for(2s);
+
+    const auto begin = std::chrono::steady_clock::now();
+    if (destroy) {
+      std::weak_ptr<plansys2::ExecutorNode> weak = executor_node_;
+      stop();
+      EXPECT_TRUE(weak.expired());
+    } else {
+      executor_node_->trigger_transition(Transition::TRANSITION_DEACTIVATE);
+      EXPECT_EQ(executor_node_->get_current_state().id(), State::PRIMARY_STATE_INACTIVE);
+    }
+    EXPECT_LT(std::chrono::steady_clock::now() - begin, 8s);
+    stop();
+  }
+}
+
+// The problem expert goes in mid-plan, and nobody brings it back: the plan fails once
+// component_timeout passes, instead of waiting for it for ever
+TEST_F(ExecutorLifecycleTest, a_plan_fails_when_a_component_does_not_come_back)
+{
+  start(30, true, 2.0);  // 1.5 s per action
+  ASSERT_TRUE(executor_client_->start_plan_execution(move_plan("wheels_zone", "assembly_zone")));
+  std::this_thread::sleep_for(500ms);
+  gone(problem_node_);
+  const auto begin = std::chrono::steady_clock::now();
+  auto result = wait_result(30s);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ(result->result, ExecutePlan::Result::FAILURE);
+  // The action (1 s more), and the timeout of each call that waits for it
+  EXPECT_LT(std::chrono::steady_clock::now() - begin, 15s);
+  // And the executor goes on: it takes a plan again once there is a problem expert
+  EXPECT_EQ(executor_node_->get_current_state().id(), State::PRIMARY_STATE_ACTIVE);
 }
 
 TEST_F(ExecutorLifecycleTest, reactivations_run_a_single_execution_thread)

@@ -79,8 +79,10 @@ ExecuteAction::tick()
       node->get_logger(),
       "[" << action << "]" << (*action_map_)[action].execution_error_info);
     if (trace_) {
+      const auto reason = executor->get_failure_reason();
       trace_->event(
         ExecutionTrace::Event::FAILURE, action,
+        !reason.empty() ? reason :
         "its performer " + executor->get_performer() + " says: " + executor->get_feedback());
     }
   }

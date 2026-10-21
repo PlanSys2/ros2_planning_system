@@ -34,6 +34,7 @@
 #include "plansys2_pddl_parser/Preference.hpp"
 #include "plansys2_pddl_parser/Task.hpp"
 #include "plansys2_pddl_parser/TemporalAction.hpp"
+#include "plansys2_pddl_parser/Utils.hpp"
 #include "plansys2_pddl_parser/When.hpp"
 
 #define DOMAIN_DEBUG false
@@ -110,6 +111,11 @@ public:
 
   virtual void parse(const std::string & s)
   {
+    // Deeper text would overflow the stack of the recursive parsers
+    if (getMaxNesting(s) > kMaxNestingDepth) {
+      throw std::runtime_error(
+              "PDDL nested deeper than " + std::to_string(kMaxNestingDepth) + " levels");
+    }
     Stringreader f(s);
     name = f.parseName("domain");
 
@@ -294,7 +300,13 @@ public:
     for (unsigned i = 0; i < ts.size(); ++i) {
       if (std::find(types.types.begin(), types.types.end(), ts.types[i]) == types.types.end()) {
         if (ts.types[i].size()) {
-          getType(ts.types[i])->insertSubtype(getType(ts[i]));
+          Type * supertype = getType(ts.types[i]);
+          Type * subtype = getType(ts[i]);
+          // A cycle in the subtypes is not always one of supertypes, as these are replaced
+          if (subtype->reaches(supertype)) {
+            throw std::runtime_error("Cycle of types with \"" + subtype->name + "\"");
+          }
+          supertype->insertSubtype(subtype);
         } else {
           getType(ts[i]);
         }
@@ -311,9 +323,13 @@ public:
       }
     }
 
-    // By default, the supertype of a type is "object"
+    // By default, the supertype of a type is "object"; not of one that already reaches it, as
+    // (either object) does through its alternatives: that would be a cycle
     for (unsigned i = 1; i < types.size(); ++i) {
-      if (types[i]->supertype == 0) {types[0]->insertSubtype(types[i]);}}
+      if (types[i]->supertype == 0 && !types[i]->reaches(types[0])) {
+        types[0]->insertSubtype(types[i]);
+      }
+    }
 
     for (unsigned i = 0; DOMAIN_DEBUG && i < types.size(); ++i) {std::cout << "  " << types[i];}
   }
@@ -363,7 +379,7 @@ public:
         --f.c;
         parsePredicates(f);
       } else {
-        std::unique_ptr<Lifted> c(new Lifted(f.getToken()));
+        std::unique_ptr<Lifted> c(new Lifted(f.getName()));
         if (preds.index(c->name) >= 0) {
           throw std::runtime_error("Duplicate predicate \"" + c->name + "\"");
         }
@@ -384,7 +400,7 @@ public:
 
     for (f.next(); f.getChar() != ')'; f.next()) {
       f.assert_token("(");
-      std::unique_ptr<Function> c(new Function(f.getToken()));
+      std::unique_ptr<Function> c(new Function(f.getName()));
       if (funcs.index(c->name) >= 0) {
         throw std::runtime_error("Duplicate function \"" + c->name + "\"");
       }
@@ -399,7 +415,7 @@ public:
   virtual void parseAction(Stringreader & f)
   {
     f.next();
-    std::unique_ptr<Action> a(new Action(f.getToken()));
+    std::unique_ptr<Action> a(new Action(f.getName()));
     if (actions.index(a->name) >= 0) {
       throw std::runtime_error("Duplicate action \"" + a->name + "\"");
     }
@@ -413,7 +429,7 @@ public:
   void parseHappening(Stringreader & f, const std::string & keyword)
   {
     f.next();
-    std::unique_ptr<Action> a(new Action(f.getToken()));
+    std::unique_ptr<Action> a(new Action(f.getName()));
     a->keyword = keyword;
     auto & list = keyword == "process" ? processes : events;
     if (list.index(a->name) >= 0) {
@@ -440,7 +456,7 @@ public:
   void parseDurativeAction(Stringreader & f)
   {
     f.next();
-    std::unique_ptr<Action> a(new TemporalAction(f.getToken()));
+    std::unique_ptr<Action> a(new TemporalAction(f.getName()));
     if (actions.index(a->name) >= 0) {
       throw std::runtime_error("Duplicate action \"" + a->name + "\"");
     }
@@ -671,7 +687,7 @@ public:
 
   IntPair constantTypeIdConstId(const std::string & name)
   {
-    int t, c;
+    int t = 0, c = 0;
     bool found = false;
     for (t = 0; t < static_cast<int>(types.size()) && !found; t++) {
       for (c = 0; c < static_cast<int>(types[t]->constants.size()) && !found; c++) {

@@ -154,9 +154,9 @@ ComputeBT::on_configure(const rclcpp_lifecycle::State & state)
   planner_node_ = std::make_shared<plansys2::PlannerNode>();
   problem_node_ = std::make_shared<plansys2::ProblemExpertNode>();
 
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
-  planner_client_ = std::make_shared<plansys2::PlannerClient>();
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
+  domain_client_ = std::make_shared<plansys2::DomainExpertClient>(*this);
+  planner_client_ = std::make_shared<plansys2::PlannerClient>(*this);
+  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(*this);
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
@@ -238,19 +238,7 @@ ComputeBT::computeBTCallback(
   domain_node_->set_parameter({"model_file", domain_filename});
   problem_node_->set_parameter({"model_file", domain_filename});
 
-  // EventsExecutor is deprecated; EventsCBGExecutor delays bursts of actions_hub messages (#449)
-  rclcpp::executors::SingleThreadedExecutor exe;
-
-  exe.add_node(domain_node_->get_node_base_interface());
-  exe.add_node(problem_node_->get_node_base_interface());
-  exe.add_node(planner_node_->get_node_base_interface());
-
-  bool finish = false;
-  std::thread t([&]() {
-      while (!finish) {exe.spin_some();}
-    });
-
-
+  // Its own experts and planner are spun by the executor of compute_bt (get_embedded_nodes)
   domain_node_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   planner_node_->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -268,6 +256,10 @@ ComputeBT::computeBTCallback(
   auto domain = domain_client_->getDomain();
   auto problem = problem_client_->getProblem();
   auto plan = planner_client_->getPlan(domain, problem);
+  if (!plan.has_value()) {
+    RCLCPP_ERROR(get_logger(), "No plan for %s", problem_filename.c_str());
+    return;
+  }
 
   savePlan(plan.value(), problem_path.stem().string());
 
@@ -329,9 +321,6 @@ ComputeBT::computeBTCallback(
   auto bt_xml_tree = bt_builder->get_tree(plan.value());
   if (bt_xml_tree.empty()) {
     RCLCPP_ERROR(get_logger(), "Error computing behavior tree!");
-
-    finish = true;
-    t.join();
     response->success = false;
     return;
   }
@@ -380,9 +369,6 @@ ComputeBT::computeBTCallback(
     RCLCPP_INFO(get_logger(), "Enabling Groot2 monitoring on port: %i", server_port);
     add_groot_monitoring(&tree, server_port);
   }
-
-  finish = true;
-  t.join();
 
   response->success = true;
 }
@@ -467,6 +453,20 @@ ComputeBT::action_time_precision()
     return 3;
   }
   return static_cast<int>(precision);
+}
+
+std::vector<rclcpp_lifecycle::LifecycleNode::SharedPtr>
+ComputeBT::get_embedded_nodes() const
+{
+  std::vector<rclcpp_lifecycle::LifecycleNode::SharedPtr> nodes;
+  for (const auto & node : std::vector<rclcpp_lifecycle::LifecycleNode::SharedPtr>{
+      domain_node_, problem_node_, planner_node_})
+  {
+    if (node) {
+      nodes.push_back(node);
+    }
+  }
+  return nodes;
 }
 
 }  // namespace plansys2

@@ -50,8 +50,8 @@ struct ActionNode
   static Ptr make_shared() {return std::make_shared<ActionNode>();}
 
   ActionStamped action;
-  int node_num;
-  int level_num;
+  int node_num = 0;
+  int level_num = 0;
 
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
@@ -335,17 +335,21 @@ protected:
     const std::list<ActionNode::Ptr> & ret) const;
 
   /**
-   * @brief Generates the behavior tree XML for a node and its descendants.
+   * @brief Appends the behavior tree XML of a node and what follows it.
    *
-   * @param[in] node The node to process.
-   * @param[in,out] used_nodes List of nodes already processed.
+   * @param[in] node The node.
+   * @param[in,out] used_nodes The action ids already in the tree.
    * @param[in] level Indentation level.
-   * @return std::string containing the behavior tree XML.
+   * @param[in] wrap Whether the node gets a Sequence of its own; without it, its content goes in
+   *            the Sequence of its parent, as when it is the only way on.
+   * @param[out] out Where the XML is appended.
    */
-  std::string get_flow_tree(
+  void get_flow_tree(
     ActionNode::Ptr node,
-    std::list<std::string> & used_nodes,
-    int level = 0);
+    std::set<std::string> & used_nodes,
+    int level,
+    bool wrap,
+    std::string & out);
 
   /**
    * @brief Collects edges for DOT graph visualization.

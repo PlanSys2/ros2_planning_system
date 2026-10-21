@@ -15,6 +15,7 @@
 // STNBTBuilder on hand-written plans of the stn_test domain
 
 #include <atomic>
+#include <algorithm>
 #include <chrono>
 #include <limits>
 #include <map>
@@ -112,7 +113,9 @@ protected:
       node->trigger_transition(Transition::TRANSITION_ACTIVATE);
     }
 
-    problem_ = std::make_shared<plansys2::ProblemExpertClient>();
+    client_node_ = rclcpp::Node::make_shared("client_node");
+    client_node_spinner_ = std::make_unique<plansys2::testing::NodeSpinner>(client_node_);
+    problem_ = std::make_shared<plansys2::ProblemExpertClient>(client_node_);
     for (auto [name, type] : std::vector<std::pair<std::string, std::string>>{
       {"r1", "robot"}, {"kitchen", "room"}, {"bedroom", "room"},
       {"m1", "match"}, {"m2", "match"}, {"f1", "fuse"}, {"f2", "fuse"}})
@@ -127,6 +130,7 @@ protected:
     ASSERT_TRUE(problem_->addFunction(plansys2::Function("(= (battery r1) 100)")));
 
     builder_ = std::make_shared<TestableSTN>();
+    builder_->set_clients(std::make_shared<plansys2::DomainExpertClient>(client_node_), problem_);
     builder_->initialize("", "", 3);
   }
 
@@ -160,8 +164,10 @@ protected:
 
   std::shared_ptr<plansys2::DomainExpertNode> domain_node_;
   std::shared_ptr<plansys2::ProblemExpertNode> problem_node_;
-  rclcpp::executors::SingleThreadedExecutor exe_;
+  rclcpp::executors::MultiThreadedExecutor exe_;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
+  rclcpp::Node::SharedPtr client_node_;  // The clients do not own it
+  std::unique_ptr<plansys2::testing::NodeSpinner> client_node_spinner_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_;
   std::shared_ptr<TestableSTN> builder_;
 };
@@ -509,7 +515,8 @@ protected:
   {
     STNBTBuilderTest::SetUp();
     node_ = rclcpp_lifecycle::LifecycleNode::make_shared("stn_nodes_test");
-    domain_ = std::make_shared<plansys2::DomainExpertClient>();
+    node_spinner_ = std::make_unique<plansys2::testing::NodeSpinner>(node_);
+    domain_ = std::make_shared<plansys2::DomainExpertClient>(node_);
     factory_.registerNodeType<plansys2::WaitAction>("WaitAction");
     factory_.registerNodeType<plansys2::CheckAction>("CheckAction");
     factory_.registerNodeType<plansys2::ApplyAtStartEffect>("ApplyAtStartEffect");
@@ -611,6 +618,7 @@ protected:
   static constexpr const char * kLightAfterMend = "(light_match m1):0 END (mend_fuse f1 m1):1 END";
 
   rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  std::unique_ptr<plansys2::testing::NodeSpinner> node_spinner_;
   std::shared_ptr<plansys2::DomainExpertClient> domain_;
   std::shared_ptr<plansys2::ActionMap> action_map_;
   BT::BehaviorTreeFactory factory_;
@@ -784,6 +792,52 @@ TEST_F(STNNodesTest, an_inconsistent_network_keeps_the_order)
   EXPECT_TRUE((*action_map_)[kLight].at_end_effects_applied);
   EXPECT_FALSE(problem_->existPredicate(plansys2::Predicate("(light m1)")));
   EXPECT_FALSE(builder_->propagate(builder_->get_graph()));
+}
+
+// Found measuring long plans: each action of a sequence nested the next one, and past some
+// hundreds of actions the tree was deeper than BT.CPP reads (XML_ELEMENT_DEPTH_EXCEEDED). The
+// tree of a long sequence is now flat
+TEST_F(STNBTBuilderTest, a_long_sequence_gives_a_flat_tree)
+{
+  // Nested, their tree had two levels per move; few, for slow coverage builds
+  constexpr int kMoves = 40;
+  for (int i = 0; i <= kMoves; i++) {
+    ASSERT_TRUE(problem_->addInstance(plansys2::Instance("z" + std::to_string(i), "room")));
+  }
+  ASSERT_TRUE(problem_->addPredicate(plansys2::Predicate("(robot_at r1 z0)")));
+  ASSERT_TRUE(problem_->removePredicate(plansys2::Predicate("(robot_at r1 kitchen)")));
+  // Each move takes 10 of battery
+  ASSERT_TRUE(problem_->updateFunction(plansys2::Function("(= (battery r1) 100000)")));
+  std::vector<std::tuple<double, std::string, double>> items;
+  for (int i = 0; i < kMoves; i++) {
+    const auto from = "z" + std::to_string(i);
+    const auto to = "z" + std::to_string(i + 1);
+    ASSERT_TRUE(problem_->addPredicate(plansys2::Predicate("(connected " + from + " " + to + ")")));
+    items.emplace_back(5.001 * i, "(move r1 " + from + " " + to + ")", 5.0);
+  }
+
+  const auto tree = builder_->get_tree(make_plan(items));
+  ASSERT_FALSE(tree.empty());
+
+  // How deep the XML is: it does not grow with the plan
+  int depth = 0;
+  int deepest = 0;
+  for (size_t i = 0; i + 1 < tree.size(); i++) {
+    if (tree[i] == '<' && tree[i + 1] == '/') {
+      depth--;
+    } else if (tree[i] == '<') {
+      const auto close = tree.find('>', i);
+      if (close != std::string::npos && tree[close - 1] != '/') {
+        deepest = std::max(deepest, ++depth);
+      }
+    }
+  }
+  EXPECT_LT(deepest, 30) << "XML depth";
+  // Every move is there
+  for (int i = 0; i < kMoves; i++) {
+    const auto move = "(move r1 z" + std::to_string(i) + " z" + std::to_string(i + 1) + ")";
+    EXPECT_NE(tree.find(move), std::string::npos) << move;
+  }
 }
 
 int main(int argc, char ** argv)

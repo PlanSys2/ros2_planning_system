@@ -33,8 +33,9 @@ from plansys2_support_py.ProblemExpertClient import ProblemExpertClient
 import pytest
 import python_solvers
 import rclpy
-from rclpy.executors import SingleThreadedExecutor
+from rclpy.executors import MultiThreadedExecutor, SingleThreadedExecutor
 from rclpy.parameter import Parameter
+from std_msgs.msg import String
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 DOMAIN = os.path.join(TEST_DIR, 'pddl', 'move.pddl')
@@ -69,8 +70,8 @@ class MovePerformer(ActionExecutorClient):
 class Spinner:
     """Spins some nodes in a thread of their own."""
 
-    def __init__(self, *nodes):
-        self.executor = SingleThreadedExecutor()
+    def __init__(self, *nodes, executor=None):
+        self.executor = executor or SingleThreadedExecutor()
         for node in nodes:
             self.executor.add_node(node)
         self.thread = threading.Thread(target=self.executor.spin, daemon=True)
@@ -99,19 +100,23 @@ def plansys2():
         ['ros2', 'launch', 'plansys2_bringup', 'plansys2_bringup_launch_monolithic.py',
          f'model_file:={DOMAIN}', f'namespace:={NAMESPACE}'],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    # One node for all the clients, which nobody spins: they serve their own nodes
+    node = rclpy.create_node('pytest_client', namespace=NAMESPACE)
     clients = {
-        'domain': DomainExpertClient('pytest_domain_client', namespace=NAMESPACE),
-        'problem': ProblemExpertClient('pytest_problem_client', namespace=NAMESPACE),
-        'planner': PlannerClient('pytest_planner_client', namespace=NAMESPACE),
-        'executor': ExecutorClient('pytest_executor_client', namespace=NAMESPACE),
+        'node': node,
+        'domain': DomainExpertClient(node),
+        'problem': ProblemExpertClient(node),
+        'planner': PlannerClient(node),
+        'executor': ExecutorClient(node),
     }
     try:
         assert wait_until(lambda: clients['domain'].get_domain_name() == 'move', 60.0)
         assert wait_until(lambda: clients['problem'].get_problem() is not None, 30.0)
         yield clients
     finally:
-        for client in clients.values():
-            client.destroy_node()
+        for name in ['domain', 'problem', 'planner', 'executor']:
+            clients[name].destroy()
+        node.destroy_node()
         os.killpg(launch.pid, signal.SIGINT)
         try:
             launch.wait(timeout=15.0)
@@ -147,13 +152,21 @@ def test_get_domain_constants(plansys2):
     assert plansys2['domain'].get_domain_types() == ['object', 'robot', 'room']
 
 
+def test_get_domain_derived_predicates(plansys2):
+    """The derived predicates come with their rules, as from the C++ client."""
+    derived = plansys2['domain'].get_domain_derived_predicates()
+    assert derived is not None
+    assert [d.predicate.name for d in derived] == ['at_base']
+    details = plansys2['domain'].get_domain_derived_predicate_details('at_base')
+    assert details is not None and len(details) == 1
+
+
 def test_clients_are_kept(plansys2):
     """A call reuses the client of its service instead of creating one each time."""
     problem = plansys2['problem']
     for _ in range(20):
         assert problem.get_problem_instances() is not None
-    names = [c.srv_name for c in problem._calls_node.clients] + \
-        [c.srv_name for c in problem.clients]
+    names = [c.srv_name for c in problem._node.clients]  # In the node of the client
     assert len([n for n in names if n.endswith('problem_expert/get_problem_instances')]) == 1
 
 
@@ -211,28 +224,116 @@ def test_cancel_plan_execution(plansys2):
         performer.destroy_node()
 
 
-def test_calls_from_a_callback(plansys2):
-    """A call from a callback of the client's own executor answers, without nested spins."""
+def test_each_client_has_a_node_of_its_own(plansys2):
+    """Each client has one node, named after the node of the application, and no hidden one."""
+    node = plansys2['node']
+    expected = {'pytest_client'} | {
+        f'pytest_client_{component}_client'
+        for component in ['domain_expert', 'problem_expert', 'planner', 'executor']}
+
+    def names():
+        return {n for n, ns in node.get_node_names_and_namespaces() if ns == f'/{NAMESPACE}'}
+
+    assert wait_until(lambda: expected <= names(), 10.0)
+    assert not [n for n in names() if n.startswith('_')]
+    assert {'domain_expert', 'problem_expert', 'planner', 'executor'} <= names()
+
+
+def test_a_node_nobody_spins_gets_its_answers(plansys2):
+    """The application need not spin its node: the client serves its own."""
+    node = rclpy.create_node('pytest_unspun_client', namespace=NAMESPACE)
+    domain = DomainExpertClient(node)
+    try:
+        assert domain.get_domain_name() == 'move'
+        assert domain.get_domain_name() == 'move'
+        # Nor does it change once the node is spun
+        spinner = Spinner(node)
+        try:
+            assert domain.get_domain_name() == 'move'
+        finally:
+            spinner.stop()
+    finally:
+        domain.destroy()
+        node.destroy_node()
+
+
+@pytest.mark.parametrize('executor', [SingleThreadedExecutor, MultiThreadedExecutor])
+def test_calls_from_a_callback(plansys2, executor):
+    """A call from a callback of the node answers, also with the only thread of the executor."""
     problem = plansys2['problem']
     set_problem(problem)
     answers = []
     done = threading.Event()
+    ticks = []
 
     def ask():
+        ticks.append(1)
         if not done.is_set():
             answers.append(problem.get_problem_instances())
+            answers.append(problem.get_problem_goal())
             done.set()
 
-    timer = problem.create_timer(0.05, ask)
-    spinner = Spinner(problem)
+    node = plansys2['node']
+    timer = node.create_timer(0.05, ask)
+    spinner = Spinner(node, executor=executor())
     try:
         assert done.wait(15.0)
         assert sorted(i.name for i in answers[0]) == ['a', 'b', 'r1']
+        assert answers[1] is not None
+        # The executor goes on with the timer
+        assert wait_until(lambda: len(ticks) > 3, 5.0)
         # And from another thread while the node is spun
         assert problem.get_problem_goal() is not None
     finally:
         spinner.stop()
-        problem.destroy_timer(timer)
+        node.destroy_timer(timer)
+
+
+def test_a_controller_with_its_own_subscription(plansys2):
+    """Its subscription and the calls from its timer go on, with the only thread of rclpy.spin."""
+    node = rclpy.create_node('pytest_controller', namespace=NAMESPACE)
+    problem = ProblemExpertClient(node)
+    publisher_node = rclpy.create_node('pytest_controller_publisher', namespace=NAMESPACE)
+    publisher = publisher_node.create_publisher(String, 'controller_topic', 10)
+    received = []
+    answers = []
+    node.create_subscription(String, 'controller_topic', received.append, 10)
+    node.create_timer(0.05, lambda: answers.append(problem.get_problem_instances() is not None))
+    spinner = Spinner(node)
+    try:
+        assert wait_until(lambda: publisher.get_subscription_count() > 0, 5.0)
+        for _ in range(5):
+            publisher.publish(String())
+            time.sleep(0.05)
+        assert wait_until(lambda: len(received) == 5, 5.0)
+        assert wait_until(lambda: len(answers) >= 5, 10.0)
+        assert all(answers)
+    finally:
+        spinner.stop()
+        problem.destroy()
+        publisher_node.destroy_node()
+        node.destroy_node()
+
+
+def test_concurrent_calls_on_a_client(plansys2):
+    """Several threads call the same client: one serves its node, all get their answers."""
+    problem = plansys2['problem']
+    set_problem(problem)
+    answers = []
+    lock = threading.Lock()
+
+    def caller():
+        for _ in range(5):
+            instances = problem.get_problem_instances()
+            with lock:
+                answers.append(instances is not None and len(instances) == 3)
+
+    threads = [threading.Thread(target=caller) for _ in range(4)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=60.0)
+    assert answers == [True] * 20
 
 
 def python_planner(solvers, timeout):
@@ -250,7 +351,7 @@ def python_planner(solvers, timeout):
                          'class_from_class_type': 'FixedSolver'})
     planner.trigger_configure()
     planner.trigger_activate()
-    client = PlannerClient('pytest_py_planner_client', namespace=namespace)
+    client = PlannerClient(rclpy.create_node('pytest_py_planner_client', namespace=namespace))
     return planner, client
 
 
@@ -259,7 +360,7 @@ def test_python_planner_with_a_plugin(plansys2, ignore_cancel):
     """The Python planner plans with a Python plugin, and a slow one does not hold it."""
     planner, client = python_planner(
         {'quick': (0.0, False), 'slow': (30.0, ignore_cancel)}, 1.0)
-    spinner = Spinner(planner)
+    spinner = Spinner(planner, client.node)
     try:
         assert set(planner.solvers_) == {'quick', 'slow'}
         start = time.monotonic()
@@ -276,7 +377,8 @@ def test_python_planner_with_a_plugin(plansys2, ignore_cancel):
         python_solvers.STARTED.clear()
         python_solvers.RELEASE.clear()
         spinner.stop()
-        client.destroy_node()
+        client.destroy()
+        client.node.destroy_node()
         planner.destroy_node()
 
 

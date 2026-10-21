@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <algorithm>
+#include <cctype>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -22,6 +23,7 @@
 #include <sstream>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -71,13 +73,21 @@ void collect_facts(
       facts.all = true;
       return;
     }
+    // PDDL is case insensitive: a condition and an effect may not write a name the same way
+    auto lower = [](std::string text) {
+        for (auto & c : text) {
+          c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        }
+        return text;
+      };
     bool variable = false;
-    std::string key = node.name;
+    const std::string name = lower(node.name);
+    std::string key = name;
     for (const auto & param : node.parameters) {
       variable = variable || param.name.empty() || param.name[0] == '?';
-      key += " " + param.name;
+      key += " " + lower(param.name);
     }
-    (variable ? facts.names : facts.grounded).insert(variable ? node.name : key);
+    (variable ? facts.names : facts.grounded).insert(variable ? name : key);
   }
 }
 
@@ -380,7 +390,7 @@ STNBTBuilder::build_bt(const Graph::Ptr stn) const
 
   auto bt = std::string("<root BTCPP_format=\"4\" main_tree_to_execute=\"MainTree\">\n") + t(1) +
     "<BehaviorTree ID=\"MainTree\">\n";
-  bt = bt + get_flow(root, nullptr, used, 1);
+  get_flow(root, nullptr, used, 1, true, bt);
   bt = bt + t(1) + "</BehaviorTree>\n</root>\n";
 
   return bt;
@@ -795,6 +805,13 @@ STNBTBuilder::get_satisfy(
 
   auto R_a = parser::pddl::getSubtrees(get_ordering_conditions(action, happenings, states));
 
+  // What each condition reads: an action that writes none of it cannot make it true
+  const auto & derived = derived_names();
+  std::vector<Facts> reads_r(R_a.size());
+  for (size_t i = 0; i < R_a.size(); i++) {
+    collect_facts(R_a[i], derived, reads_r[i]);
+  }
+
   while (t_2 >= 0) {
     H_it = get_previous(t_2, happenings);
     if (H_it == happenings.end()) {
@@ -808,9 +825,12 @@ STNBTBuilder::get_satisfy(
       std::cerr << "get_satisfy: Previous state not found" << std::endl;
       break;
     }
-    auto X_1 = X_it->second;
+    // Not copied: a long plan has many states, and big. check() only reads it (it evaluates
+    // without applying), though it takes it as non-const
+    auto & X_1 = const_cast<StateVec &>(X_it->second);
 
-    for (const auto & r : R_a) {
+    for (size_t i = 0; i < R_a.size(); i++) {
+      const auto & r = R_a[i];
       if (!check(r, X_1.predicates, X_1.functions)) {
         auto it = plan.equal_range(t_2);
         for (auto iter = it.first; iter != it.second; ++iter) {
@@ -821,6 +841,11 @@ STNBTBuilder::get_satisfy(
           }
 
           auto E_k = get_effects(iter->second);
+          Facts writes_k;
+          collect_facts(E_k, derived, writes_k);
+          if (!meet(writes_k, reads_r[i])) {
+            continue;
+          }
 
           auto X_hat = X_1;
           apply_effects(E_k, X_hat.predicates, X_hat.functions);
@@ -892,16 +917,34 @@ STNBTBuilder::get_threat(
       std::cerr << "get_threat: Previous state not found" << std::endl;
       break;
     }
-    auto X_1 = X_it->second;
 
+    auto it = plan.end();
+    if (auto next_happening = std::next(happenings.find(t_2)); next_happening != happenings.end()) {
+      it = plan.lower_bound(*next_happening);
+    }
+
+    // Nothing at this happening shares a fact with the action: no state to look at. Most of
+    // them in a long plan, which made each action copy every state before it
+    bool related = false;
+    for (auto iter = plan.lower_bound(t_2); iter != it && !related; ++iter) {
+      if (iter->first == action.first && same_item(iter->second, action.second)) {
+        continue;
+      }
+      if (!continuous_functions(iter->second).empty() && !rates_a.empty()) {
+        related = true;
+        continue;
+      }
+      const auto [reads_k, writes_k] = facts(iter->second);
+      related = meet(writes_a, reads_k) || meet(writes_a, writes_k) || meet(writes_k, reads_a);
+    }
+    if (!related) {
+      t_2 = t_1;
+      continue;
+    }
+
+    const auto & X_1 = X_it->second;
     auto X_1_a = X_1;
     if (can_apply(action, plan, t_2, X_1_a)) {
-      auto it = plan.end();
-      H_it = happenings.find(t_2);
-      if (std::next(H_it) != happenings.end()) {
-        it = plan.lower_bound(*std::next(H_it));
-      }
-
       // At its own happening, the plan order of the snap actions orders them
       bool after_self = false;
       auto order = [&](const std::pair<int64_t, ActionStamped> & other) {
@@ -1052,47 +1095,108 @@ STNBTBuilder::can_apply(
   return false;
 }
 
+namespace
+{
+
+// What makes two facts the same for checkNodeEquality: the name and arguments, whatever the case
+std::string fact_key(const plansys2_msgs::msg::Node & node)
+{
+  std::string key = std::to_string(node.node_type) + ' ';
+  auto add = [&key](const std::string & text) {
+      for (char c : text) {
+        key += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+      }
+    };
+  add(node.name);
+  for (const auto & param : node.parameters) {
+    key += ' ';
+    add(param.name);
+  }
+  return key;
+}
+
+bool has_variables(const plansys2_msgs::msg::Node & node)
+{
+  return std::any_of(
+    node.parameters.begin(), node.parameters.end(),
+    [](const plansys2_msgs::msg::Param & p) {return !p.name.empty() && p.name.front() == '?';});
+}
+
+// The facts of a state, found by key instead of one by one: a state of a long plan has many, and
+// it is compared with many others. A fact with variables, which matches any argument there, is
+// still compared one by one
+template<typename NodeT>
+class FactIndex
+{
+public:
+  explicit FactIndex(const std::vector<NodeT> & facts)
+  : facts_(facts)
+  {
+    for (const auto & fact : facts) {
+      if (has_variables(fact)) {
+        with_variables_.push_back(&fact);
+      } else {
+        by_key_.emplace(fact_key(fact), &fact);
+      }
+    }
+  }
+
+  const NodeT * find(const NodeT & fact) const
+  {
+    if (has_variables(fact)) {
+      for (const auto & other : facts_) {
+        if (parser::pddl::checkNodeEquality(fact, other)) {
+          return &other;
+        }
+      }
+      return nullptr;
+    }
+    if (auto it = by_key_.find(fact_key(fact)); it != by_key_.end()) {
+      return it->second;
+    }
+    for (const auto * other : with_variables_) {
+      if (parser::pddl::checkNodeEquality(fact, *other)) {
+        return other;
+      }
+    }
+    return nullptr;
+  }
+
+private:
+  const std::vector<NodeT> & facts_;
+  std::unordered_map<std::string, const NodeT *> by_key_;
+  std::vector<const NodeT *> with_variables_;
+};
+
+}  // namespace
+
 StateVec
 STNBTBuilder::get_diff(
   const StateVec & X_1,
   const StateVec & X_2) const
 {
   StateVec ret;
+  const FactIndex<plansys2::Predicate> predicates_1(X_1.predicates);
+  const FactIndex<plansys2::Predicate> predicates_2(X_2.predicates);
 
-  // Look for predicates in X_1 that are not in X_2
+  // Predicates in X_1 that are not in X_2, and in X_2 that are not in X_1
   for (const auto & p_1 : X_1.predicates) {
-    auto it = std::find_if(
-      X_2.predicates.begin(), X_2.predicates.end(),
-      [&](plansys2::Predicate p_2) {
-        return parser::pddl::checkNodeEquality(p_1, p_2);
-      });
-    if (it == X_2.predicates.end()) {
+    if (!predicates_2.find(p_1)) {
       ret.predicates.push_back(p_1);
     }
   }
-
-  // Look for predicates in X_2 that are not in X_1
   for (const auto & p_2 : X_2.predicates) {
-    auto it = std::find_if(
-      X_1.predicates.begin(), X_1.predicates.end(),
-      [&](plansys2::Predicate p_1) {
-        return parser::pddl::checkNodeEquality(p_1, p_2);
-      });
-    if (it == X_1.predicates.end()) {
+    if (!predicates_1.find(p_2)) {
       ret.predicates.push_back(p_2);
     }
   }
 
-  // Look for function changes
+  // Function changes
+  const FactIndex<plansys2::Function> functions_2(X_2.functions);
   for (const auto & f_1 : X_1.functions) {
-    auto it = std::find_if(
-      X_2.functions.begin(), X_2.functions.end(),
-      [&](plansys2::Function f_2) {
-        return parser::pddl::checkNodeEquality(f_1, f_2);
-      });
-    if (it != X_2.functions.end()) {
-      if (std::abs(f_1.value - it->value) >
-        1e-5 * std::max(std::abs(f_1.value), std::abs(it->value)))
+    if (const auto * f_2 = functions_2.find(f_1)) {
+      if (std::abs(f_1.value - f_2->value) >
+        1e-5 * std::max(std::abs(f_1.value), std::abs(f_2->value)))
       {
         ret.functions.push_back(f_1);
       }
@@ -1109,26 +1213,16 @@ STNBTBuilder::get_intersection(
 {
   StateVec ret;
 
-  // Look for predicates in X_1 that are also in X_2
+  // Predicates and functions in X_1 that are also in X_2
+  const FactIndex<plansys2::Predicate> predicates_2(X_2.predicates);
   for (const auto & p_1 : X_1.predicates) {
-    auto it = std::find_if(
-      X_2.predicates.begin(), X_2.predicates.end(),
-      [&](plansys2::Predicate p_2) {
-        return parser::pddl::checkNodeEquality(p_1, p_2);
-      });
-    if (it != X_2.predicates.end()) {
+    if (predicates_2.find(p_1)) {
       ret.predicates.push_back(p_1);
     }
   }
-
-  // Look for functions in X_1 that are also in X_2
+  const FactIndex<plansys2::Function> functions_2(X_2.functions);
   for (const auto & f_1 : X_1.functions) {
-    auto it = std::find_if(
-      X_2.functions.begin(), X_2.functions.end(),
-      [&](plansys2::Function f_2) {
-        return parser::pddl::checkNodeEquality(f_1, f_2);
-      });
-    if (it != X_2.functions.end()) {
+    if (functions_2.find(f_1)) {
       ret.functions.push_back(f_1);
     }
   }
@@ -1439,12 +1533,14 @@ STNBTBuilder::floyd_warshall(Eigen::MatrixXd & dist) const
   }
 }
 
-std::string
+void
 STNBTBuilder::get_flow(
   const Node::Ptr node,
   const Node::Ptr prev_node,
   std::set<Node::Ptr> & used,
-  const int & level) const
+  const int & level,
+  bool wrap,
+  std::string & out) const
 {
   int l = level;
   const auto action_id = to_action_id(node->action, action_time_precision_);
@@ -1463,7 +1559,8 @@ STNBTBuilder::get_flow(
     };
 
   if (used.find(node) != used.end()) {
-    return wait_for_parent();
+    out += wait_for_parent();
+    return;
   }
 
   bool is_special = false;
@@ -1487,41 +1584,45 @@ STNBTBuilder::get_flow(
     (node->output_arcs.size() == 1 &&
     std::get<0>(*node->output_arcs.begin())->action.type == ActionType::GOAL);
   if (is_special && leaf) {
-    return wait_for_parent();
+    out += wait_for_parent();
+    return;
   }
 
   if (node->output_arcs.size() == 0) {
     if (node->action.type == ActionType::END) {
-      return end_execution_block(node, l);
-    }
-    if (node->action.type != ActionType::GOAL) {
+      out += end_execution_block(node, l);
+    } else if (node->action.type != ActionType::GOAL) {
       std::cerr << "get_flow: Unexpected action type" << std::endl;
     }
-    return {};
+    return;
   } else if (node->output_arcs.size() == 1) {
     const auto child = std::get<0>(*node->output_arcs.begin());
     if (node->action.type == ActionType::END &&
       child->action.type == ActionType::GOAL)
     {
-      return end_execution_block(node, l);
+      out += end_execution_block(node, l);
+      return;
     }
   }
 
-  std::string flow;
-
-  if (node->action.type != ActionType::INIT) {
-    flow = flow + t(l) + "<Sequence name=\"" + action_id + "\">\n";
+  // Inside the Sequence of its parent when it is the only way on: Sequence(x, Sequence(y, z))
+  // is Sequence(x, y, z), and the tree does not get one level deeper with each action
+  const bool sequence = wrap && node->action.type != ActionType::INIT;
+  if (sequence) {
+    out += t(l) + "<Sequence name=\"" + action_id + "\">\n";
+  } else {
+    l = l - 1;  // Its content goes where its Sequence would be
   }
 
   if (node->action.type == ActionType::START) {
-    flow = flow + start_execution_block(node, l + 1);
+    out += start_execution_block(node, l + 1);
   } else if (node->action.type == ActionType::END) {
     auto t_1 = to_int_time(node->action.time, action_time_precision_ + 1);
     auto t_2 = to_int_time(prev_node->action.time, action_time_precision_ + 1);
     if (prev_node->action.type == ActionType::START && (t_1 == t_2) &&
       (node->action.expression == prev_node->action.expression))
     {
-      flow = flow + end_execution_block(node, l + 1);
+      out += end_execution_block(node, l + 1);
     } else {
       std::string parent_id;
       std::string parent_type;
@@ -1530,7 +1631,7 @@ STNBTBuilder::get_flow(
         parent_type = to_string(prev_node->action.type);
       }
 
-      flow = flow + t(l + 1) + "<WaitAction action=\"" +
+      out += t(l + 1) + "<WaitAction action=\"" +
         action_id + " " + to_string(node->action.type) + " " +
         parent_id + " " + parent_type + "\"/>\n";
     }
@@ -1549,11 +1650,13 @@ STNBTBuilder::get_flow(
 
   int n = 0;
   if (num_output_arcs > 1) {
-    flow = flow + t(l + 1) +
+    out += t(l + 1) +
       "<Parallel success_count=\"" + std::to_string(num_output_arcs) +
       "\" failure_count=\"1\">\n";
     n = 1;
   }
+  // Each branch of a Parallel, and the only child of the root, is a node of its own
+  const bool wrap_children = num_output_arcs > 1 || node->action.type == ActionType::INIT;
 
   // Visit the end action first
   auto end_action_arc = node->output_arcs.end();
@@ -1563,7 +1666,7 @@ STNBTBuilder::get_flow(
       std::bind(&STNBTBuilder::is_end, this, std::placeholders::_1, node->action));
     if (end_action_arc != node->output_arcs.end()) {
       const auto & next = std::get<0>(*end_action_arc);
-      flow = flow + get_flow(next, node, used, l + n + 1);
+      get_flow(next, node, used, l + n + 1, wrap_children, out);
     }
   }
 
@@ -1577,19 +1680,17 @@ STNBTBuilder::get_flow(
     }
     if (child_node->action.type != ActionType::GOAL) {
       const auto & next = std::get<0>(child);
-      flow = flow + get_flow(next, node, used, l + n + 1);
+      get_flow(next, node, used, l + n + 1, wrap_children, out);
     }
   }
 
   if (num_output_arcs > 1) {
-    flow = flow + t(l + 1) + "</Parallel>\n";
+    out += t(l + 1) + "</Parallel>\n";
   }
 
-  if (node->action.type != ActionType::INIT) {
-    flow = flow + t(l) + "</Sequence>\n";
+  if (sequence) {
+    out += t(l) + "</Sequence>\n";
   }
-
-  return flow;
 }
 
 std::string

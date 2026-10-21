@@ -34,6 +34,7 @@ from plansys2_msgs.srv import (AddProblem, AddProblemGoal, AffectNode,
                                RemoveProblemMetric, SetProblemMetric)
 from plansys2_support_py.ClientBase import ClientBase
 from plansys2_support_py.Parser import Parser
+from rclpy.node import Node
 
 
 class ProblemExpertClient(ClientBase):
@@ -44,21 +45,17 @@ class ProblemExpertClient(ClientBase):
     in PlanSys2, wrapping the ROS2 service calls with proper error handling.
     """
 
-    def __init__(self, node_name: str = 'problem_expert_client', namespace: str = '') -> None:
+    def __init__(self, node: Node) -> None:
         """
         Initialize the Problem Expert client.
 
         Parameters
         ----------
-        node_name : str, optional
-            Name of the ROS2 node.
-        namespace : str, optional
-            Namespace prefix for services.
+        node : Node
+            The node of the application the client works for.
 
         """
-        super().__init__(node_name, namespace)
-
-        self.get_logger().debug(f'Problem Expert Client "{node_name}" initialized')
+        super().__init__(node, 'problem_expert')
 
     def add_problem(self, problem: str) -> bool:
         """

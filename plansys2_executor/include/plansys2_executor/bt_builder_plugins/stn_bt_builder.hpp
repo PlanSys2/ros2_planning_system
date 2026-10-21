@@ -439,13 +439,17 @@ protected:
    * @param[in] prev_node The previous node in the traversal.
    * @param[in,out] used Set of nodes already processed.
    * @param[in] level Indentation level.
-   * @return String containing the behavior tree XML.
+   * @param[in] wrap Whether the node gets a Sequence of its own; without it, its content goes in
+   *            the Sequence of its parent, as when it is the only way on.
+   * @param[out] out Where the behavior tree XML is appended.
    */
-  std::string get_flow(
+  void get_flow(
     const Node::Ptr node,
     const Node::Ptr prev_node,
     std::set<Node::Ptr> & used,
-    const int & level) const;
+    const int & level,
+    bool wrap,
+    std::string & out) const;
 
   /**
    * @brief Generates the BT XML for the start execution block of an action.

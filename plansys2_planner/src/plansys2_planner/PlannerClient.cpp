@@ -32,27 +32,39 @@ namespace
 constexpr auto kAnswerMargin = std::chrono::seconds(5);
 }  // namespace
 
-PlannerClient::PlannerClient()
+PlannerClient::PlannerClient(ClientNode::Interfaces node)
+: node_(std::make_shared<ClientNode>(node)),
+  active_(std::make_shared<ActiveComponent>(node_, "planner"))
 {
-  node_ = rclcpp::Node::make_shared(unique_node_name("planner_client"));
-
-  get_plan_client_ = node_->create_client<plansys2_msgs::srv::GetPlan>("planner/get_plan");
-  get_plan_array_client_ = node_->create_client<plansys2_msgs::srv::GetPlanArray>(
-    "planner/get_plan_array");
-  // 0: as long as the planner plans, read from it at each request; its node name is unique, so
-  // a parameter file cannot set this one (#434: it was declared uninitialized)
-  node_->declare_parameter("plan_solver_timeout", 0.0);
-  planner_parameters_ = std::make_shared<rclcpp::AsyncParametersClient>(node_, "planner");
+  get_plan_client_ = std::make_shared<ServiceClient<plansys2_msgs::srv::GetPlan>>(
+    node_, "planner/get_plan", active_);
+  get_plan_array_client_ = std::make_shared<ServiceClient<plansys2_msgs::srv::GetPlanArray>>(
+    node_, "planner/get_plan_array", active_);
+  // A parameter of the node that has the client; 0: as long as the planner plans, read from it
+  // at each request (#434: it was declared uninitialized)
+  auto parameters = node.get_node_parameters_interface();
+  if (!parameters->has_parameter("plan_solver_timeout")) {
+    parameters->declare_parameter("plan_solver_timeout", rclcpp::ParameterValue(0.0));
+  }
+  planner_parameters_ = std::make_shared<rclcpp::AsyncParametersClient>(
+    node.get_node_base_interface(), node.get_node_topics_interface(),
+    node.get_node_graph_interface(), node.get_node_services_interface(), "planner",
+    rclcpp::ParametersQoS(), node_->group());
 }
 
 std::chrono::nanoseconds
 PlannerClient::answer_wait()
 {
-  double timeout = node_->get_parameter("plan_solver_timeout").as_double();
+  // The node gone, no own timeout: as long as the planner planned last time
+  double timeout = 0.0;
+  if (auto node = node_->lock()) {
+    timeout = node->get_node_parameters_interface()->get_parameter(
+      "plan_solver_timeout").as_double();
+  }
   if (timeout <= 0.0) {
     if (wait_for_server(planner_parameters_, std::chrono::seconds(1))) {
       auto future = planner_parameters_->get_parameters({"plan_solver_timeout"});
-      if (rclcpp::spin_until_future_complete(node_, future, std::chrono::seconds(1)) ==
+      if (node_->wait(future, std::chrono::seconds(1)) ==
         rclcpp::FutureReturnCode::SUCCESS)
       {
         const auto parameters = future.get();
@@ -77,42 +89,29 @@ PlannerClient::getPlan(
   const std::string & node_namespace)
 {
   (void)node_namespace;
-  while (!wait_for_server(get_plan_client_, std::chrono::seconds(30))) {
-    if (!rclcpp::ok()) {
-      return {};
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_plan_client_->get_service_name() <<
-        " service  client: waiting for service to appear...");
-  }
-  const auto wait = answer_wait();
-
   auto request = std::make_shared<plansys2_msgs::srv::GetPlan::Request>();
   request->domain = domain;
   request->problem = problem;
 
-  auto future_result = get_plan_client_->async_send_request(request);
-
-  auto outresult = rclcpp::spin_until_future_complete(
-    node_, future_result, wait);
-  if (outresult != rclcpp::FutureReturnCode::SUCCESS) {
-    if (outresult == rclcpp::FutureReturnCode::TIMEOUT) {
-      RCLCPP_ERROR(node_->get_logger(), "Get Plan service call timed out");
-    } else {
-      RCLCPP_ERROR(node_->get_logger(), "Get Plan service call failed");
-    }
+  // Active first: answer_wait() asks the planner its timeout
+  if (!active_->wait()) {
+    return {};
+  }
+  // The planner answers within answer_wait(): without an answer by then it was lost, and it is
+  // asked once more (planning again costs as much as the first time)
+  auto response = get_plan_client_->call(request, answer_wait(), 2);
+  if (!response) {
     return {};
   }
 
-  auto result = *future_result.get();
+  auto result = *response;
 
   if (result.success) {
     return result.plan;
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      get_plan_client_->get_service_name() << ": " <<
+      get_plan_client_->name() << ": " <<
         result.error_info);
     return {};
   }
@@ -124,42 +123,29 @@ PlannerClient::getPlanArray(
   const std::string & node_namespace)
 {
   (void)node_namespace;
-  while (!wait_for_server(get_plan_array_client_, std::chrono::seconds(30))) {
-    if (!rclcpp::ok()) {
-      return plansys2_msgs::msg::PlanArray();
-    }
-    RCLCPP_ERROR_STREAM(
-      node_->get_logger(),
-      get_plan_array_client_->get_service_name() <<
-        " service  client: waiting for service to appear...");
-  }
-  const auto wait = answer_wait();
-
   auto request = std::make_shared<plansys2_msgs::srv::GetPlanArray::Request>();
   request->domain = domain;
   request->problem = problem;
 
-  auto future_result = get_plan_array_client_->async_send_request(request);
-
-  auto outresult = rclcpp::spin_until_future_complete(
-    node_, future_result, wait);
-  if (outresult != rclcpp::FutureReturnCode::SUCCESS) {
-    if (outresult == rclcpp::FutureReturnCode::TIMEOUT) {
-      RCLCPP_ERROR(node_->get_logger(), "Get Plan service call timed out");
-    } else {
-      RCLCPP_ERROR(node_->get_logger(), "Get Plan service call failed");
-    }
+  // Active first: answer_wait() asks the planner its timeout
+  if (!active_->wait()) {
+    return plansys2_msgs::msg::PlanArray();
+  }
+  // The planner answers within answer_wait(): without an answer by then it was lost, and it is
+  // asked once more (planning again costs as much as the first time)
+  auto response = get_plan_array_client_->call(request, answer_wait(), 2);
+  if (!response) {
     return plansys2_msgs::msg::PlanArray();
   }
 
-  auto result = *future_result.get();
+  auto result = *response;
 
   if (result.success) {
     return result.plan_array;
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      get_plan_array_client_->get_service_name() << ": " <<
+      get_plan_array_client_->name() << ": " <<
         result.error_info);
     return plansys2_msgs::msg::PlanArray();
   }

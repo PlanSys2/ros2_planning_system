@@ -301,7 +301,7 @@ protected:
   std::vector<ActionExecution> messages_;
   std::vector<plansys2::ActionExecutor::Ptr> executors_;
   std::vector<std::shared_ptr<void>> nodes_;
-  rclcpp::executors::SingleThreadedExecutor exe_;
+  rclcpp::executors::MultiThreadedExecutor exe_;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 
@@ -641,10 +641,16 @@ TEST_F(ActionProtocolTest, gone_performer_fails_the_action)
   fake->send(ActionExecution::FEEDBACK, false, 0.5f);
   std::this_thread::sleep_for(500ms);
 
+  // Not destroyed while the executor may be serving it
+  spinner_.reset();
   exe_.remove_node(fake);
   fake.reset();
+  spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
   ASSERT_TRUE(
     tick_until(executor, [&]() {return executor->get_internal_status() == Status::FAILURE;}, 8s));
+  // The reason the controller is told: not its last feedback, but that it is gone
+  EXPECT_EQ(executor->get_failure_reason(), "its performer doomed_move is gone");
+  EXPECT_EQ(executor->get_feedback(), executor->get_failure_reason());
 }
 
 // Without performers, the action fails after 30 s even if the BT no longer ticks it, and it
@@ -657,6 +663,7 @@ TEST_F(ActionProtocolTest, no_performer_times_out_without_ticks)
 
   ASSERT_TRUE(
     wait_until([&]() {return executor->get_internal_status() == Status::FAILURE;}, 33s));
+  EXPECT_NE(executor->get_failure_reason().find("no performer took it"), std::string::npos);
   int requests = count(ActionExecution::REQUEST);
   std::this_thread::sleep_for(2500ms);
   ASSERT_EQ(count(ActionExecution::REQUEST), requests);

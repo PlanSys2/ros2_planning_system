@@ -16,6 +16,7 @@ find_package(Eigen3 REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
+find_package(action_msgs REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
 find_package(rclcpp_cascade_lifecycle REQUIRED)
@@ -61,6 +62,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME}
   PUBLIC
   behaviortree_cpp::behaviortree_cpp
+  ${action_msgs_TARGETS}
   ${lifecycle_msgs_TARGETS}
   ${plansys2_msgs_TARGETS}
   plansys2_core::plansys2_core
@@ -179,6 +181,7 @@ ament_export_dependencies(
   lifecycle_msgs
   rclcpp_cascade_lifecycle
   rclcpp_action
+  action_msgs
   plansys2_pddl_parser
   ament_index_cpp
   plansys2_core

@@ -13,10 +13,17 @@
 // limitations under the License.
 
 #include <algorithm>
+#include <cerrno>
 #include <chrono>
+#include <cstdlib>
+#include <cstring>
 #include <filesystem>
+#include <fstream>
 #include <functional>
+#include <iomanip>
+#include <locale>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -92,6 +99,31 @@ void log_diagnostics(
   }
 }
 
+// Writes content to path, reporting whether it all got to disk
+bool write_file(const std::filesystem::path & path, const std::string & content)
+{
+  std::ofstream out(path);
+  out << content;
+  out.close();
+  return !out.fail();
+}
+
+std::string shell_quoted(const std::string & text)
+{
+  std::ostringstream os;
+  os << std::quoted(text);
+  return os.str();
+}
+
+// Seconds with a point whatever the locale, as the kairos executable reads them
+std::string seconds(double value)
+{
+  std::ostringstream os;
+  os.imbue(std::locale::classic());
+  os << value;
+  return os.str();
+}
+
 plansys2_msgs::msg::Plan to_msg(const kairos::Plan & plan)
 {
   plansys2_msgs::msg::Plan msg;
@@ -135,6 +167,8 @@ void KairosPlanSolver::configure(
   declare("threads", rclcpp::ParameterValue(1));
   declare("log_level", rclcpp::ParameterValue(std::string("warn")));
   declare("dump_dir", rclcpp::ParameterValue(std::string("")));
+  declare("isolated", rclcpp::ParameterValue(false));
+  declare("executable", rclcpp::ParameterValue(std::string("")));
 }
 
 std::optional<plansys2_msgs::msg::Plan> KairosPlanSolver::getPlan(
@@ -144,6 +178,20 @@ std::optional<plansys2_msgs::msg::Plan> KairosPlanSolver::getPlan(
   (void)node_namespace;
   cancel_requested_ = false;
   const auto logger = lc_node_->get_logger().get_child("kairos");
+
+  // Leave time to hand the plan over before the planner node deadline
+  using std::chrono::milliseconds;
+  const auto node_ms = solver_timeout.to_chrono<milliseconds>();
+  auto timeout = node_ms - std::max(kMinMargin, node_ms / 20);
+  const double param_timeout = lc_node_->get_parameter(param("timeout")).as_double();
+  if (param_timeout > 0.0) {
+    timeout = std::min(timeout, milliseconds(static_cast<int64_t>(param_timeout * 1000.0)));
+  }
+  timeout = std::max(timeout, milliseconds(1));
+
+  if (lc_node_->get_parameter(param("isolated")).as_bool()) {
+    return plan_isolated(domain, problem, solver_timeout, timeout);
+  }
 
   const auto parsed_domain = parse_domain(domain);
   if (!parsed_domain) {
@@ -156,16 +204,7 @@ std::optional<plansys2_msgs::msg::Plan> KairosPlanSolver::getPlan(
   }
 
   kairos::SearchOptions options;
-
-  // Leave time to hand the plan over before the planner node deadline
-  using std::chrono::milliseconds;
-  const auto node_ms = solver_timeout.to_chrono<milliseconds>();
-  auto timeout = node_ms - std::max(kMinMargin, node_ms / 20);
-  const double param_timeout = lc_node_->get_parameter(param("timeout")).as_double();
-  if (param_timeout > 0.0) {
-    timeout = std::min(timeout, milliseconds(static_cast<int64_t>(param_timeout * 1000.0)));
-  }
-  options.timeout = std::max(timeout, milliseconds(1));
+  options.timeout = timeout;
 
   options.anytime = lc_node_->get_parameter(param("anytime")).as_bool();
   const double no_improvement = lc_node_->get_parameter(param("no_improvement")).as_double();
@@ -265,6 +304,72 @@ std::optional<plansys2_msgs::msg::Plan> KairosPlanSolver::getPlan(
     result.plan->steps.size(), result.plan->makespan(), result.stats.first_plan_ms.value_or(0.0),
     result.stats.total_ms, static_cast<int>(reason.size()), reason.data());
   return to_msg(*result.plan);
+}
+
+std::optional<plansys2_msgs::msg::Plan> KairosPlanSolver::plan_isolated(
+  const std::string & domain, const std::string & problem,
+  const rclcpp::Duration & solver_timeout, std::chrono::milliseconds timeout)
+{
+  const auto logger = lc_node_->get_logger().get_child("kairos");
+  std::string folder = (std::filesystem::temp_directory_path() / "plansys2_kairos_XXXXXX").string();
+  if (mkdtemp(folder.data()) == nullptr) {
+    RCLCPP_ERROR(logger, "Cannot create a folder for Kairos: %s", std::strerror(errno));
+    return std::nullopt;
+  }
+  const std::filesystem::path run(folder);
+  const auto domain_path = run / "domain.pddl";
+  const auto problem_path = run / "problem.pddl";
+  const auto plan_path = run / "plan";
+
+  std::optional<plansys2_msgs::msg::Plan> plan;
+  if (!write_file(domain_path, domain) || !write_file(problem_path, problem)) {
+    RCLCPP_ERROR(logger, "Cannot write the domain and problem to %s", folder.c_str());
+  } else {
+    auto executable = lc_node_->get_parameter(param("executable")).as_string();
+    if (executable.empty()) {
+      executable = std::filesystem::exists(KAIROS_EXECUTABLE) ? KAIROS_EXECUTABLE : "kairos";
+    }
+    std::string command = shell_quoted(executable) + " solve " +
+      shell_quoted(domain_path.string()) + " " + shell_quoted(problem_path.string()) +
+      " --format popf --timeout " +
+      seconds(static_cast<double>(timeout.count()) / 1000.0);
+    if (lc_node_->get_parameter(param("anytime")).as_bool()) {
+      command += " --anytime";
+      const double no_improvement = lc_node_->get_parameter(param("no_improvement")).as_double();
+      if (no_improvement > 0.0) {
+        command += " --no-improvement " + seconds(no_improvement);
+      }
+    } else {
+      command += " --no-anytime";
+    }
+    command += " --search " + shell_quoted(lc_node_->get_parameter(param("search")).as_string());
+    command += " --engine " + shell_quoted(lc_node_->get_parameter(param("engine")).as_string());
+    const auto memory = lc_node_->get_parameter(param("memory_limit_mb")).as_int();
+    if (memory > 0) {
+      command += " --memory " + std::to_string(memory);
+    }
+    command += " --threads " +
+      std::to_string(std::max<int64_t>(1, lc_node_->get_parameter(param("threads")).as_int()));
+
+    // A crash or a hang of Kairos ends here, as an error of this plan
+    if (execute_planner(command, solver_timeout, plan_path.string())) {
+      std::ifstream in(plan_path);
+      const std::string text(
+        (std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+      if (text.find_first_not_of(" \t\r\n") == std::string::npos) {
+        RCLCPP_WARN(logger, "No plan (isolated)");
+      } else if (auto parsed = kairos::parse_plan(text)) {
+        plan = to_msg(*parsed);
+        RCLCPP_INFO(logger, "Plan with %zu actions (isolated)", plan->items.size());
+      } else {
+        log_diagnostics(logger, parsed.diagnostics(), text);
+      }
+    }
+  }
+
+  std::error_code error;
+  std::filesystem::remove_all(run, error);
+  return plan;
 }
 
 std::shared_ptr<const kairos::Domain> KairosPlanSolver::parse_domain(const std::string & domain)

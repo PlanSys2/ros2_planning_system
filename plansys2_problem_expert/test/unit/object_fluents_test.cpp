@@ -210,13 +210,15 @@ TEST(object_fluents, applied_and_undone_through_the_client)
       out << kDomain;
     }
     node->set_parameter({"model_file", domain_file});
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
     exe.add_node(node->get_node_base_interface());
     plansys2::testing::ExecutorThread spinner(exe);
     node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    auto client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto client_node = rclcpp::Node::make_shared("client_node");
+    plansys2::testing::NodeSpinner client_node_spinner(client_node);
+    auto client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
     ASSERT_TRUE(client->addProblem(kProblem));
 
     std::vector<plansys2::FactChange> changes;

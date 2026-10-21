@@ -41,10 +41,12 @@ TEST(test_3, test_3)
   auto planner_node = std::make_shared<plansys2::PlannerNode>();
   auto executor_node = std::make_shared<plansys2::ExecutorNode>();
 
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
-  auto planner_client = std::make_shared<plansys2::PlannerClient>();
-  auto executor_client = std::make_shared<plansys2::ExecutorClient>();
+  auto client_node = rclcpp::Node::make_shared("client_node");
+  plansys2::testing::NodeSpinner client_node_spinner(client_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(client_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
+  auto planner_client = std::make_shared<plansys2::PlannerClient>(client_node);
+  auto executor_client = std::make_shared<plansys2::ExecutorClient>(client_node);
 
   auto move_1 = plansys2_tests::TestAction::make_shared("move");
   auto move_2 = plansys2_tests::TestAction::make_shared("move");
@@ -63,7 +65,7 @@ TEST(test_3, test_3)
   domain_node->set_parameter({"model_file", pkgpath + "/test_3/pddl/test_3.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_3/pddl/test_3.pddl"});
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
 
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
@@ -216,5 +218,8 @@ int main(int argc, char ** argv)
   testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);
 
-  return RUN_ALL_TESTS();
+  // Before the process exits: Zenoh aborts if ROS is shut down by atexit
+  auto result = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return result;
 }

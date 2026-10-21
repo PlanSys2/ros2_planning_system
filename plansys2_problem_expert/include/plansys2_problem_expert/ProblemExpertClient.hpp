@@ -46,6 +46,8 @@
 #include "plansys2_msgs/srv/get_problem_metric.hpp"
 #include "plansys2_msgs/srv/clear_problem_knowledge.hpp"
 
+#include "plansys2_core/ClientNode.hpp"
+#include "plansys2_core/ServiceCall.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace plansys2
@@ -63,12 +65,31 @@ class ProblemExpertClient : public ProblemExpertInterface
 {
 public:
   /**
-   * @brief Constructor for the ProblemExpertClient.
-   *
-   * Initializes a ROS node and creates all the service clients needed to
-   * communicate with the ProblemExpert node.
+   * @brief Creates the client on a node it does not own: the node of a PlanSys2 component or of
+   * an application. It creates no node of its own.
    */
-  ProblemExpertClient();
+  explicit ProblemExpertClient(ClientNode::Interfaces node);
+
+  template<typename NodeT>
+  explicit ProblemExpertClient(const std::shared_ptr<NodeT> & node)
+  : ProblemExpertClient(ClientNode::Interfaces(*node)) {}
+
+  /**
+   * @brief Waits until its component is active, as every call does: false if ROS shuts down.
+   */
+  bool wait_active() {return active_->wait();}
+
+  /**
+   * @brief While interrupted, its calls give up at once instead of waiting: for the owner that
+   * stops a thread which may be in a call.
+   */
+  void interrupt(bool interrupted) {node_->interrupt(interrupted);}
+
+  /**
+   * @brief How long a call waits for its component to be active before it gives up (zero, the
+   * default: as long as it takes).
+   */
+  void set_max_wait(std::chrono::milliseconds max_wait) {active_->set_max_wait(max_wait);}
 
   /**
    * @brief Get all instances in the problem.
@@ -327,7 +348,11 @@ public:
    *
    * @return rclcpp::Time The timestamp when the problem was last updated.
    */
-  rclcpp::Time getUpdateTime() const {return update_time_;}
+  rclcpp::Time getUpdateTime() const
+  {
+    node_->serve();  // The notifications that came meanwhile
+    return update_time_;
+  }
 
   std::string cached_problem_;
   rclcpp::Time problem_ts_;
@@ -338,67 +363,69 @@ private:
   // Sends a request that changes the problem: true if the problem expert applied it
   template<typename ServiceT>
   bool call_change(
-    std::shared_ptr<rclcpp::Client<ServiceT>> client,
+    typename ServiceClient<ServiceT>::SharedPtr client,
     typename ServiceT::Request::SharedPtr request);
   // Problem messages stamped earlier than this are older than our last change
   rclcpp::Time cache_valid_since_ {0, 0, RCL_ROS_TIME};
 
-  rclcpp::Client<plansys2_msgs::srv::AddProblem>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::AddProblem>::SharedPtr
     add_problem_client_;
-  rclcpp::Client<plansys2_msgs::srv::SetContinuousEffect>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::SetContinuousEffect>::SharedPtr
     set_continuous_effect_client_;
-  rclcpp::Client<plansys2_msgs::srv::AddProblemGoal>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::AddProblemGoal>::SharedPtr
     add_problem_goal_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::AffectParam>::SharedPtr
     add_problem_instance_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::AffectNode>::SharedPtr
     add_problem_predicate_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::AffectNode>::SharedPtr
     add_problem_function_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetProblemGoal>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::GetProblemGoal>::SharedPtr
     get_problem_goal_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetProblemInstanceDetails>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::GetProblemInstanceDetails>::SharedPtr
     get_problem_instance_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetProblemInstances>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::GetProblemInstances>::SharedPtr
     get_problem_instances_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
     get_problem_predicate_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::GetStates>::SharedPtr
     get_problem_predicates_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::GetNodeDetails>::SharedPtr
     get_problem_function_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::GetStates>::SharedPtr
     get_problem_functions_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetProblem>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::GetProblem>::SharedPtr
     get_problem_client_;
-  rclcpp::Client<plansys2_msgs::srv::RemoveProblemGoal>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::RemoveProblemGoal>::SharedPtr
     remove_problem_goal_client_;
-  rclcpp::Client<plansys2_msgs::srv::SetProblemMetric>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::SetProblemMetric>::SharedPtr
     set_problem_metric_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetProblemMetric>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::GetProblemMetric>::SharedPtr
     get_problem_metric_client_;
-  rclcpp::Client<plansys2_msgs::srv::RemoveProblemMetric>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::RemoveProblemMetric>::SharedPtr
     remove_problem_metric_client_;
-  rclcpp::Client<plansys2_msgs::srv::ClearProblemKnowledge>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::ClearProblemKnowledge>::SharedPtr
     clear_problem_knowledge_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectParam>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::AffectParam>::SharedPtr
     remove_problem_instance_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::AffectNode>::SharedPtr
     remove_problem_predicate_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::AffectNode>::SharedPtr
     remove_problem_function_client_;
-  rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::ExistNode>::SharedPtr
     exist_problem_predicate_client_;
-  rclcpp::Client<plansys2_msgs::srv::ExistNode>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::ExistNode>::SharedPtr
     exist_problem_function_client_;
-  rclcpp::Client<plansys2_msgs::srv::AffectNode>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::AffectNode>::SharedPtr
     update_problem_function_client_;
-  rclcpp::Client<plansys2_msgs::srv::IsProblemGoalSatisfied>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::IsProblemGoalSatisfied>::SharedPtr
     is_problem_goal_satisfied_client_;
   rclcpp::Subscription<plansys2_msgs::msg::Problem>::SharedPtr problem_sub_;
   rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr update_problem_sub_;
 
-  rclcpp::Node::SharedPtr node_;
+  std::shared_ptr<ClientNode> node_;
+  // Its component: every call waits until it is active
+  std::shared_ptr<ActiveComponent> active_;
   rclcpp::Time update_time_;
 };
 

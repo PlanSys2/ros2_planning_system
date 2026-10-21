@@ -132,7 +132,7 @@ protected:
     client_node_ = rclcpp::Node::make_shared("goal_handling_client");
     action_client_ = rclcpp_action::create_client<ExecutePlan>(client_node_, "execute_plan");
 
-    exe_ = std::make_unique<rclcpp::executors::SingleThreadedExecutor>();
+    exe_ = std::make_unique<rclcpp::executors::MultiThreadedExecutor>();
     for (auto node : lifecycle_nodes()) {
       exe_->add_node(node->get_node_base_interface());
     }
@@ -151,7 +151,7 @@ protected:
       move_node_->trigger_transition(Transition::TRANSITION_CONFIGURE);
     }
 
-    problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
+    problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(client_node_);
     ASSERT_TRUE(problem_client_->addInstance(plansys2::Instance("r2d2", "robot")));
     for (const auto & zone : kZones) {
       ASSERT_TRUE(problem_client_->addInstance(plansys2::Instance(zone, "zone")));
@@ -272,7 +272,7 @@ protected:
   std::shared_ptr<MoveAction> move_node_;
   rclcpp::Node::SharedPtr client_node_;
   rclcpp_action::Client<ExecutePlan>::SharedPtr action_client_;
-  std::unique_ptr<rclcpp::executors::SingleThreadedExecutor> exe_;
+  std::unique_ptr<rclcpp::executors::MultiThreadedExecutor> exe_;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   std::string domain_ {"factory3.pddl"};

@@ -28,6 +28,7 @@
 #include <cmath>
 
 #include "plansys2_executor/ExecutorNode.hpp"
+#include "plansys2_core/ServiceCall.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
@@ -77,6 +78,8 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
   this->declare_parameter<std::string>("default_end_action_bt_xml_filename", "");
   this->declare_parameter<std::string>("bt_builder_plugin", "");
   this->declare_parameter<int>("action_time_precision", 3);
+  // Seconds a plan waits for a component that is not active before it fails (0: for ever)
+  this->declare_parameter<double>("component_timeout", 30.0);
   // STNBTBuilder: true starts each action as soon as its dependencies happened, as durations
   // are uncertain in robotics; false keeps the planned times as minimums
   this->declare_parameter<bool>("stn_relaxed_timing", true);
@@ -108,6 +111,9 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
   this->declare_parameter<bool>("enable_groot_monitoring", false);
   this->declare_parameter<int>("server_port", 1800);
 
+  // An ended goal keeps its result a minute: a client whose result was lost asks for it again
+  auto server_options = rcl_action_server_get_default_options();
+  server_options.result_timeout.nanoseconds = RCL_S_TO_NS(60);
   execute_plan_action_server_ = rclcpp_action::create_server<ExecutePlan>(
     this->get_node_base_interface(),
     this->get_node_clock_interface(),
@@ -116,37 +122,46 @@ ExecutorNode::ExecutorNode(const rclcpp::NodeOptions & options)
     "execute_plan",
     std::bind(&ExecutorNode::handle_goal, this, _1, _2),
     std::bind(&ExecutorNode::handle_cancel, this, _1),
-    std::bind(&ExecutorNode::handle_accepted, this, _1));
+    std::bind(&ExecutorNode::handle_accepted, this, _1),
+    server_options);
 
   get_ordered_sub_goals_service_ = create_service<plansys2_msgs::srv::GetOrderedSubGoals>(
     "executor/get_ordered_sub_goals",
-    std::bind(
-      &ExecutorNode::get_ordered_sub_goals_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetOrderedSubGoals>(
+      get_logger(),
+      std::bind(
+        &ExecutorNode::get_ordered_sub_goals_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   get_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
     "executor/get_plan",
-    std::bind(
-      &ExecutorNode::get_plan_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetPlan>(
+      get_logger(),
+      std::bind(
+        &ExecutorNode::get_plan_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   get_remaining_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
     "executor/get_remaining_plan",
-    std::bind(
-      &ExecutorNode::get_remaining_plan_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetPlan>(
+      get_logger(),
+      std::bind(
+        &ExecutorNode::get_remaining_plan_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   get_replanning_problem_service_ = create_service<plansys2_msgs::srv::GetProblem>(
     "executor/get_replanning_problem",
-    [this](
-      std::shared_ptr<rclcpp::Service<plansys2_msgs::srv::GetProblem>> service,
-      std::shared_ptr<rmw_request_id_t> header,
-      std::shared_ptr<plansys2_msgs::srv::GetProblem::Request>) {
-      get_replanning_problem_service_callback(service, header);
-    });
+    guarded_deferred<plansys2_msgs::srv::GetProblem>(
+      get_logger(),
+      [this](
+        std::shared_ptr<rclcpp::Service<plansys2_msgs::srv::GetProblem>> service,
+        std::shared_ptr<rmw_request_id_t> header,
+        std::shared_ptr<plansys2_msgs::srv::GetProblem::Request>) {
+        get_replanning_problem_service_callback(service, header);
+    }));
 }
 
 ExecutorNode::~ExecutorNode()
@@ -231,9 +246,16 @@ ExecutorNode::on_configure(const rclcpp_lifecycle::State & state)
   trace_ = std::make_shared<ExecutionTrace>(
     non_owning_this(), trace_pub_, get_parameter("log_execution_trace").as_bool());
 
-  domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
-  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
-  planner_client_ = std::make_shared<plansys2::PlannerClient>();
+  // On this node: the executor is one node, whatever it uses inside
+  domain_client_ = std::make_shared<plansys2::DomainExpertClient>(*this);
+  problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(*this);
+  planner_client_ = std::make_shared<plansys2::PlannerClient>(*this);
+  // A plan does not wait for ever for a component that is gone: it fails after this
+  const auto max_wait = std::chrono::milliseconds(
+    static_cast<int64_t>(1000.0 * get_parameter("component_timeout").as_double()));
+  domain_client_->set_max_wait(max_wait);
+  problem_client_->set_max_wait(max_wait);
+  planner_client_->set_max_wait(max_wait);
 
   // One actions_hub publisher and subscription for all the actions, kept between plans
   action_hub_ = ActionHub::get(non_owning_this());
@@ -390,8 +412,12 @@ ExecutorNode::get_plan_service_callback(
 {
   (void)request_header;
   (void)request;
-  if (executor_state_ == STATE_EXECUTING) {
-    std::lock_guard<std::mutex> lock(snapshot_mutex_);
+  std::lock_guard<std::mutex> lock(snapshot_mutex_);
+  if (starting_goal_) {
+    response->success = true;
+    response->plan = starting_plan_;
+  } else if (executor_state_ != STATE_IDLE) {
+    // Running, or ending (failed, cancelled...): the plan is the one of the goal until it ends
     response->success = true;
     response->plan = complete_plan_snapshot_;
   } else {
@@ -468,7 +494,7 @@ ExecutorNode::create_plan_runtime_info(PlanRuntineInfo & runtime_info)
       (*runtime_info.action_map)[index].duration_overrun_percentage = this->get_parameter(
         "action_timeouts." + action_name + ".duration_overrun_percentage").as_double();
     }
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
       get_logger(), "Action %s timeout percentage %f", action_name.c_str(),
       (*runtime_info.action_map)[index].duration_overrun_percentage);
   }
@@ -1339,7 +1365,32 @@ ExecutorNode::handle_accepted(const std::shared_ptr<GoalHandleExecutePlan> goal_
   }
   new_goal_handle_ = goal_handle;
   new_plan_received_ = true;
+  std::lock_guard<std::mutex> snapshot_lock(snapshot_mutex_);
+  starting_goal_ = goal_handle;
+  starting_plan_ = goal_handle->get_goal()->plan;
 }
+
+void
+ExecutorNode::starting_done(const std::shared_ptr<GoalHandleExecutePlan> & goal)
+{
+  std::lock_guard<std::mutex> lock(snapshot_mutex_);
+  if (starting_goal_ == goal) {
+    starting_goal_.reset();
+  }
+}
+
+namespace
+{
+// When it goes out of scope, however the start of a goal ended
+template<typename F>
+struct AtExit
+{
+  F f;
+  ~AtExit() {f();}
+};
+template<typename F>
+AtExit<F> at_exit(F f) {return AtExit<F>{f};}
+}  // namespace
 
 std::shared_ptr<ExecutorNode::GoalHandleExecutePlan>
 ExecutorNode::take_new_goal()
@@ -1414,6 +1465,7 @@ ExecutorNode::execution_step()
         running_changes_snapshot_.clear();
       }
       if (auto goal = take_new_goal()) {
+        auto started = at_exit([this, goal]() {starting_done(goal);});
         // A domain change before this plan started does not affect it
         domain_changed_ = false;
 
@@ -1554,6 +1606,7 @@ ExecutorNode::execution_step()
           executor_state_ = STATE_EXECUTING;
           break;
         }
+        auto started = at_exit([this, goal]() {starting_done(goal);});
 
         // The running goal is replaced by the new one
         result->result = plansys2_msgs::action::ExecutePlan::Result::PREEMPT;
@@ -1687,11 +1740,28 @@ ExecutorNode::stop_execution_thread()
 {
   node_running_ = false;
   if (execution_thread_.joinable()) {
+    // Its calls must not wait for a component that may be gone (or stopping too)
+    set_clients_interrupted(true);
     execution_thread_.join();
+    set_clients_interrupted(false);
   }
 
   // Nothing executes plans from now on: fail the goals in progress or waiting
   fail_current_goals();
+}
+
+void
+ExecutorNode::set_clients_interrupted(bool interrupted)
+{
+  if (domain_client_) {
+    domain_client_->interrupt(interrupted);
+  }
+  if (problem_client_) {
+    problem_client_->interrupt(interrupted);
+  }
+  if (planner_client_) {
+    planner_client_->interrupt(interrupted);
+  }
 }
 
 void
@@ -1727,6 +1797,8 @@ ExecutorNode::fail_current_goals()
     }
   }
   new_plan_received_ = false;
+  std::lock_guard<std::mutex> snapshot_lock(snapshot_mutex_);
+  starting_goal_.reset();
 }
 
 void ExecutorNode::add_groot_monitoring(BT::Tree * tree, uint16_t server_port)

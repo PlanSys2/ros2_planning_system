@@ -28,9 +28,11 @@
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_core/TestUtils.hpp"
+#include "plansys2_core/ServiceCall.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_msgs/msg/knowledge.hpp"
+#include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_problem_expert/ProblemExpert.hpp"
 #include "plansys2_problem_expert/ProblemExpertClient.hpp"
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
@@ -244,7 +246,7 @@ TEST_F(ProblemExpertNodeMisc, cleanup_and_function_topics)
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
   auto test_node = rclcpp::Node::make_shared("problem_expert_misc_test");
-  auto client = std::make_shared<plansys2::ProblemExpertClient>();
+  auto client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
   domain_node->set_parameter({"model_file", pddl("domain_simple.pddl")});
   problem_node->set_parameter({"model_file", pddl("domain_simple.pddl")});
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -261,7 +263,7 @@ TEST_F(ProblemExpertNodeMisc, cleanup_and_function_topics)
     "problem_expert/problem", rclcpp::QoS(100),
     [&](plansys2_msgs::msg::Problem::SharedPtr) {problems++;});
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
   exe.add_node(domain_node->get_node_base_interface());
   exe.add_node(problem_node->get_node_base_interface());
   exe.add_node(test_node);
@@ -293,14 +295,68 @@ TEST_F(ProblemExpertNodeMisc, cleanup_and_function_topics)
   EXPECT_TRUE(wait_for(knowledge, base_knowledge + 3));
   EXPECT_TRUE(wait_for(problems, base_problems + 3));
 
-  // Cleaned up, the knowledge goes and the services say they are not active
+  // Cleaned up, the knowledge goes and the services say they are not active (kNotActive, which
+  // a PlanSys2 client waits on: asked here as any node asks)
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_DEACTIVATE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CLEANUP);
-  EXPECT_FALSE(client->addInstance(plansys2::Instance("hall", "room")));
-  EXPECT_FALSE(client->getInstance("kitchen").has_value());
+  auto add = std::make_shared<plansys2_msgs::srv::AffectParam::Request>();
+  add->param.name = "hall";
+  add->param.type = "room";
+  auto added = plansys2::testing::call<plansys2_msgs::srv::AffectParam>(
+    test_node, "problem_expert/add_problem_instance", add);
+  ASSERT_NE(added, nullptr);
+  EXPECT_FALSE(added->success);
+  EXPECT_EQ(added->error_info, plansys2::kNotActive);
+  auto exist = std::make_shared<plansys2_msgs::srv::ExistNode::Request>();
+  exist->node.node_type = plansys2_msgs::msg::Node::PREDICATE;
+  exist->node.name = "robot_at";
+  auto existed = plansys2::testing::call<plansys2_msgs::srv::ExistNode>(
+    test_node, "problem_expert/exist_problem_predicate", exist);
+  ASSERT_NE(existed, nullptr);
+  EXPECT_FALSE(existed->exist);
+  EXPECT_EQ(existed->error_info, plansys2::kNotActive);
   // Configured again, it starts from nothing
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
   EXPECT_FALSE(client->getInstance("kitchen").has_value());
   EXPECT_TRUE(client->addInstance(plansys2::Instance("hall", "room")));
+}
+
+// Requests from hostile input (found fuzzing the services): the parser throws, and the
+// exception took down the process; now each is a failed answer and the node goes on
+TEST_F(ProblemExpertNodeMisc, hostile_requests_are_failed_answers)
+{
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto test_node = rclcpp::Node::make_shared("problem_expert_hostile_test");
+  auto client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  domain_node->set_parameter({"model_file", pddl("domain_simple.pddl")});
+  problem_node->set_parameter({"model_file", pddl("domain_simple.pddl")});
+  for (auto node : std::vector<rclcpp_lifecycle::LifecycleNode::SharedPtr>{
+    domain_node, problem_node})
+  {
+    node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+    node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
+  }
+  rclcpp::executors::MultiThreadedExecutor exe;
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(test_node);
+  plansys2::testing::ExecutorThread spinner(exe);
+
+  for (const char * expression : {"", "   ", "()", "(", ")", "(())", ","}) {
+    SCOPED_TRACE(std::string("[") + expression + "]");
+    for (const char * service : {
+      "problem_expert/get_problem_predicate", "problem_expert/get_problem_function"})
+    {
+      auto request = std::make_shared<plansys2_msgs::srv::GetNodeDetails::Request>();
+      request->expression = expression;
+      auto response = plansys2::testing::call<plansys2_msgs::srv::GetNodeDetails>(
+        test_node, service, request);
+      ASSERT_NE(response, nullptr) << service;
+      EXPECT_FALSE(response->success) << service;
+    }
+  }
+  // Still serving
+  EXPECT_TRUE(client->addInstance(plansys2::Instance("kitchen", "room")));
 }

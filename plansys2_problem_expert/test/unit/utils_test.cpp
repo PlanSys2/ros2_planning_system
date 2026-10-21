@@ -48,7 +48,8 @@ TEST(utils, evaluate_and)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   std::string expression = "(and (patrolled wp1) (patrolled wp2))";
   plansys2_msgs::msg::Tree goal;
@@ -83,7 +84,8 @@ TEST(utils, evaluate_or)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
@@ -119,7 +121,8 @@ TEST(utils, evaluate_not)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
@@ -162,7 +165,8 @@ TEST(utils, evaluate_predicate_use_state)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(test_tree, "(patrolled wp1)", false, plansys2_msgs::msg::Node::AND);
@@ -199,9 +203,10 @@ TEST(utils, evaluate_predicate_client)
     std::vector<plansys2::Predicate> predicates;
     std::vector<plansys2::Function> functions;
     auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
     std::string pkgpath =
       ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
@@ -215,7 +220,7 @@ TEST(utils, evaluate_predicate_client)
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -269,7 +274,8 @@ TEST(utils, evaluate_expression_ge)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(test_tree, "(>= (vx) 3.0)", false, plansys2_msgs::msg::Node::EXPRESSION);
@@ -302,7 +308,8 @@ TEST(utils, evaluate_expression_gt)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
@@ -331,7 +338,8 @@ TEST(utils, evaluate_expression_le)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
@@ -366,7 +374,8 @@ TEST(utils, evaluate_expression_lt)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
@@ -395,7 +404,8 @@ TEST(utils, evaluate_expression_multiply)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(test_tree, "(* (vx) 3.0)", false, plansys2_msgs::msg::Node::AND);
@@ -422,7 +432,8 @@ TEST(utils, evaluate_expression_divide)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(test_tree, "(/ (vx) 3.0)", false, plansys2_msgs::msg::Node::AND);
@@ -457,7 +468,8 @@ TEST(utils, evaluate_expression_add)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(test_tree, "(+ (vx) 3.0)", false, plansys2_msgs::msg::Node::AND);
@@ -484,7 +496,8 @@ TEST(utils, evaluate_expression_subtract)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(test_tree, "(- (vx) 3.0)", false, plansys2_msgs::msg::Node::AND);
@@ -511,7 +524,8 @@ TEST(utils, evaluate_expression_invalid)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   // Unknown expression type
   plansys2_msgs::msg::Tree test_tree;
@@ -527,9 +541,10 @@ TEST(utils, evaluate_expression_invalid_client)
 {
   {
     auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
     std::string pkgpath =
       ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
@@ -543,7 +558,7 @@ TEST(utils, evaluate_expression_invalid_client)
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -583,7 +598,8 @@ TEST(utils, evaluate_function_mod)
   std::vector<plansys2_msgs::msg::Node> functions_msg;
 
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(
@@ -664,9 +680,10 @@ TEST(utils, evaluate_function_mod_client)
 {
   {
     auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
     std::string pkgpath =
       ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
@@ -680,7 +697,7 @@ TEST(utils, evaluate_function_mod_client)
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -729,7 +746,9 @@ TEST(utils, evaluate_function_mod_client_precision)
   {
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto client_node = rclcpp::Node::make_shared("client_node");
+    plansys2::testing::NodeSpinner client_node_spinner(client_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
     std::string pkgpath =
       ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
@@ -740,7 +759,7 @@ TEST(utils, evaluate_function_mod_client_precision)
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
     plansys2::testing::ExecutorThread spinner(exe);
@@ -784,7 +803,8 @@ TEST(utils, evaluate_function_mod_invalid)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   // Unknown function modifier type
   plansys2_msgs::msg::Tree test_tree;
@@ -802,9 +822,10 @@ TEST(utils, evaluate_function_mod_invalid_client)
 {
   {
     auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
     auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
     std::string pkgpath =
       ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
@@ -818,7 +839,7 @@ TEST(utils, evaluate_function_mod_invalid_client)
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(domain_node->get_node_base_interface());
     exe.add_node(problem_node->get_node_base_interface());
@@ -851,7 +872,8 @@ TEST(utils, evaluate_number)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   plansys2_msgs::msg::Tree test_tree;
   parser::pddl::fromString(test_tree, "3.0", false, plansys2_msgs::msg::Node::EXPRESSION);
@@ -866,7 +888,8 @@ TEST(utils, evaluate_invalid)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   plansys2_msgs::msg::Tree test_tree;
   ASSERT_EQ(
@@ -886,7 +909,8 @@ TEST(utils, evaluate_exists)
   std::vector<plansys2::Predicate> predicates;
   std::vector<plansys2::Function> functions;
   auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
-  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
+  auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
   std::string expression = "(exists (?1 ?2) (and (robot_at rob1 ?1)(connected ?1 ?2)))";
   plansys2_msgs::msg::Tree goal;
@@ -915,6 +939,7 @@ TEST(utils, evaluate_exists_client)
     std::vector<plansys2::Predicate> predicates;
     std::vector<plansys2::Function> functions;
     auto test_node = rclcpp::Node::make_shared("test_problem_expert_node");
+    plansys2::testing::NodeSpinner test_node_spinner(test_node);
   // No domain_node here: this test never calls changeDomain(), and problem_node's
   // domain_expert/domain subscription only needs to be remapped to a name unused by
   // any other test in this binary, so a still-lingering transient_local publisher
@@ -925,7 +950,7 @@ TEST(utils, evaluate_exists_client)
     problem_node_options.arguments(
       {"--ros-args", "-r", "domain_expert/domain:=domain_expert/domain_evaluate_exists_client"});
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(problem_node_options);
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
     std::string pkgpath =
       ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
@@ -934,7 +959,7 @@ TEST(utils, evaluate_exists_client)
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
 
     exe.add_node(problem_node->get_node_base_interface());
 
@@ -997,8 +1022,9 @@ TEST(utils, get_subtrees)
 TEST(utils, get_action_from_string)
 {
   auto test_node = rclcpp::Node::make_shared("test_node");
+  plansys2::testing::NodeSpinner test_node_spinner(test_node);
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
-  auto domain_client = std::make_shared<plansys2::DomainExpertClient>();
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
 
   std::string pkgpath = ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
 
@@ -1007,7 +1033,7 @@ TEST(utils, get_action_from_string)
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-  rclcpp::executors::SingleThreadedExecutor exe;
+  rclcpp::executors::MultiThreadedExecutor exe;
 
   exe.add_node(domain_node->get_node_base_interface());
 
@@ -1516,7 +1542,9 @@ TEST(utils, evaluate_forall_client)
     problem_node_options.arguments(
       {"--ros-args", "-r", "domain_expert/domain:=domain_expert/domain_evaluate_forall_client"});
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(problem_node_options);
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto client_node = rclcpp::Node::make_shared("client_node");
+    plansys2::testing::NodeSpinner client_node_spinner(client_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
     std::string pkgpath =
       ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
@@ -1524,7 +1552,7 @@ TEST(utils, evaluate_forall_client)
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
 
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
     exe.add_node(problem_node->get_node_base_interface());
     plansys2::testing::ExecutorThread spinner(exe);
 
@@ -1705,13 +1733,15 @@ TEST(utils, apply_when_client_and_undo)
     problem_node_options.arguments(
       {"--ros-args", "-r", "domain_expert/domain:=domain_expert/domain_apply_when_client"});
     auto problem_node = std::make_shared<plansys2::ProblemExpertNode>(problem_node_options);
-    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>();
+    auto client_node = rclcpp::Node::make_shared("client_node");
+    plansys2::testing::NodeSpinner client_node_spinner(client_node);
+    auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
     const std::string pkgpath =
       ament_index_cpp::get_package_share_path("plansys2_problem_expert").string();
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_when.pddl"});
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
     problem_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE);
-    rclcpp::executors::SingleThreadedExecutor exe;
+    rclcpp::executors::MultiThreadedExecutor exe;
     exe.add_node(problem_node->get_node_base_interface());
     plansys2::testing::ExecutorThread spinner(exe);
 
@@ -1764,5 +1794,8 @@ int main(int argc, char ** argv)
   testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);
 
-  return RUN_ALL_TESTS();
+  // Before the process exits: Zenoh aborts if ROS is shut down by atexit
+  auto result = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return result;
 }

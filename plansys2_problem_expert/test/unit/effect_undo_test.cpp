@@ -52,7 +52,9 @@ protected:
     exe_.add_node(problem_node_->get_node_base_interface());
     spinner_ = std::make_unique<plansys2::testing::ExecutorThread>(exe_);
 
-    client_ = std::make_shared<plansys2::ProblemExpertClient>();
+    client_node_ = rclcpp::Node::make_shared("client_node");
+    client_node_spinner_ = std::make_unique<plansys2::testing::NodeSpinner>(client_node_);
+    client_ = std::make_shared<plansys2::ProblemExpertClient>(client_node_);
     for (const auto & robot : {"r1", "r2"}) {
       ASSERT_TRUE(client_->addInstance(plansys2::Instance(robot, "robot")));
     }
@@ -96,8 +98,10 @@ protected:
 
   std::shared_ptr<plansys2::DomainExpertNode> domain_node_;
   std::shared_ptr<plansys2::ProblemExpertNode> problem_node_;
+  rclcpp::Node::SharedPtr client_node_;  // The clients do not own it
+  std::unique_ptr<plansys2::testing::NodeSpinner> client_node_spinner_;
   std::shared_ptr<plansys2::ProblemExpertClient> client_;
-  rclcpp::executors::SingleThreadedExecutor exe_;
+  rclcpp::executors::MultiThreadedExecutor exe_;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
 };
 

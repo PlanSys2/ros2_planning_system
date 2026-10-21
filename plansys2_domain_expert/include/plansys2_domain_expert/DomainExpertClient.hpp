@@ -42,6 +42,8 @@
 #include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_msgs/srv/get_states.hpp"
 
+#include "plansys2_core/ClientNode.hpp"
+#include "plansys2_core/ServiceCall.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace plansys2
@@ -59,9 +61,31 @@ class DomainExpertClient : public DomainExpertInterface
 {
 public:
   /**
-   * @brief Construct a new DomainExpertClient object.
+   * @brief Creates the client on a node it does not own: the node of a PlanSys2 component or of
+   * an application. It creates no node of its own.
    */
-  DomainExpertClient();
+  explicit DomainExpertClient(ClientNode::Interfaces node);
+
+  template<typename NodeT>
+  explicit DomainExpertClient(const std::shared_ptr<NodeT> & node)
+  : DomainExpertClient(ClientNode::Interfaces(*node)) {}
+
+  /**
+   * @brief Waits until its component is active, as every call does: false if ROS shuts down.
+   */
+  bool wait_active() {return active_->wait();}
+
+  /**
+   * @brief While interrupted, its calls give up at once instead of waiting: for the owner that
+   * stops a thread which may be in a call.
+   */
+  void interrupt(bool interrupted) {node_->interrupt(interrupted);}
+
+  /**
+   * @brief How long a call waits for its component to be active before it gives up (zero, the
+   * default: as long as it takes).
+   */
+  void set_max_wait(std::chrono::milliseconds max_wait) {active_->set_max_wait(max_wait);}
 
   /**
    * @brief Get the name of the domain.
@@ -227,36 +251,38 @@ public:
   std::string cached_domain_;
 
 private:
-  rclcpp::Node::SharedPtr node_;
+  std::shared_ptr<ClientNode> node_;
+  // Its component: every call waits until it is active
+  std::shared_ptr<ActiveComponent> active_;
 
-  rclcpp::Client<plansys2_msgs::srv::ChangeDomain>::SharedPtr change_domain_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainName>::SharedPtr get_name_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainTypes>::SharedPtr get_types_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainConstants>::SharedPtr get_constants_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_predicates_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetStates>::SharedPtr get_functions_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::ChangeDomain>::SharedPtr change_domain_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomain>::SharedPtr get_domain_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainName>::SharedPtr get_name_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainTypes>::SharedPtr get_types_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainConstants>::SharedPtr get_constants_client_;
+  ServiceClient<plansys2_msgs::srv::GetStates>::SharedPtr get_predicates_client_;
+  ServiceClient<plansys2_msgs::srv::GetStates>::SharedPtr get_functions_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>::SharedPtr
     get_derived_predicates_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>::SharedPtr
     get_derived_predicate_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_actions_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_processes_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr get_process_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_events_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr get_event_details_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_actions_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_processes_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr get_process_details_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_events_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr get_event_details_client_;
 
   // The names, or one of them as an action, from these services
   std::vector<std::string> get_names(
-    rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr client);
+    ServiceClient<plansys2_msgs::srv::GetDomainActions>::SharedPtr client);
   plansys2_msgs::msg::Action::SharedPtr get_details(
-    rclcpp::Client<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr client,
+    ServiceClient<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr client,
     const std::string & name, const std::vector<std::string> & params);
-  rclcpp::Client<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_durative_actions_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr get_predicate_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetNodeDetails>::SharedPtr get_function_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr get_action_details_client_;
-  rclcpp::Client<plansys2_msgs::srv::GetDomainDurativeActionDetails>::SharedPtr
+  ServiceClient<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_durative_actions_client_;
+  ServiceClient<plansys2_msgs::srv::GetNodeDetails>::SharedPtr get_predicate_details_client_;
+  ServiceClient<plansys2_msgs::srv::GetNodeDetails>::SharedPtr get_function_details_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr get_action_details_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainDurativeActionDetails>::SharedPtr
     get_durative_action_details_client_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr domain_sub_;
 };

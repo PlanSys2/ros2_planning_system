@@ -36,6 +36,9 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+# The kairos executable for the isolated mode, installed with the library
+get_filename_component(KAIROS_PREFIX "${kairos_DIR}/../../.." ABSOLUTE)
+target_compile_definitions(${PROJECT_NAME} PRIVATE "KAIROS_EXECUTABLE=\"${KAIROS_PREFIX}/bin/kairos\"")
 
 pluginlib_export_plugin_description_file(plansys2_core plansys2_kairos_plan_solver_plugin.xml)
 

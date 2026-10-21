@@ -59,7 +59,7 @@ std::vector<std::string> tokenize(const std::string & text)
 
 bool is_number(const std::string & token)
 {
-  double value;
+  double value = 0.0;
   const auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), value);
   return ec == std::errc() && ptr == token.data() + token.size();
 }

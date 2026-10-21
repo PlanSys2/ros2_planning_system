@@ -27,72 +27,64 @@
 namespace plansys2
 {
 
-ProblemExpertClient::ProblemExpertClient()
+ProblemExpertClient::ProblemExpertClient(ClientNode::Interfaces node)
+: node_(std::make_shared<ClientNode>(node)),
+  active_(std::make_shared<ActiveComponent>(node_, "problem_expert"))
 {
-  node_ = rclcpp::Node::make_shared(unique_node_name("problem_expert_client"));
-
-  set_continuous_effect_client_ = node_->create_client<plansys2_msgs::srv::SetContinuousEffect>(
-    "problem_expert/set_continuous_effect");
-  add_problem_client_ = node_->create_client<plansys2_msgs::srv::AddProblem>(
-    "problem_expert/add_problem");
-  add_problem_goal_client_ = node_->create_client<plansys2_msgs::srv::AddProblemGoal>(
-    "problem_expert/add_problem_goal");
-  add_problem_instance_client_ = node_->create_client<plansys2_msgs::srv::AffectParam>(
-    "problem_expert/add_problem_instance");
-  add_problem_predicate_client_ = node_->create_client<plansys2_msgs::srv::AffectNode>(
-    "problem_expert/add_problem_predicate");
-  add_problem_function_client_ = node_->create_client<plansys2_msgs::srv::AffectNode>(
-    "problem_expert/add_problem_function");
-  get_problem_goal_client_ = node_->create_client<plansys2_msgs::srv::GetProblemGoal>(
-    "problem_expert/get_problem_goal");
+  namespace srv = plansys2_msgs::srv;
+  set_continuous_effect_client_ = std::make_shared<ServiceClient<srv::SetContinuousEffect>>(
+    node_, "problem_expert/set_continuous_effect", active_);
+  add_problem_client_ =
+    std::make_shared<ServiceClient<srv::AddProblem>>(node_, "problem_expert/add_problem", active_);
+  add_problem_goal_client_ = std::make_shared<ServiceClient<srv::AddProblemGoal>>(
+    node_, "problem_expert/add_problem_goal", active_);
+  add_problem_instance_client_ = std::make_shared<ServiceClient<srv::AffectParam>>(
+    node_, "problem_expert/add_problem_instance", active_);
+  add_problem_predicate_client_ = std::make_shared<ServiceClient<srv::AffectNode>>(
+    node_, "problem_expert/add_problem_predicate", active_);
+  add_problem_function_client_ = std::make_shared<ServiceClient<srv::AffectNode>>(
+    node_, "problem_expert/add_problem_function", active_);
+  get_problem_goal_client_ = std::make_shared<ServiceClient<srv::GetProblemGoal>>(
+    node_, "problem_expert/get_problem_goal", active_);
   get_problem_instance_details_client_ =
-    node_->create_client<plansys2_msgs::srv::GetProblemInstanceDetails>(
-    "problem_expert/get_problem_instance");
-  get_problem_instances_client_ = node_->create_client<plansys2_msgs::srv::GetProblemInstances>(
-    "problem_expert/get_problem_instances");
-  get_problem_predicate_details_client_ =
-    node_->create_client<plansys2_msgs::srv::GetNodeDetails>(
-    "problem_expert/get_problem_predicate");
-  get_problem_predicates_client_ = node_->create_client<plansys2_msgs::srv::GetStates>(
-    "problem_expert/get_problem_predicates");
-  get_problem_function_details_client_ =
-    node_->create_client<plansys2_msgs::srv::GetNodeDetails>(
-    "problem_expert/get_problem_function");
-  get_problem_functions_client_ = node_->create_client<plansys2_msgs::srv::GetStates>(
-    "problem_expert/get_problem_functions");
-  get_problem_client_ = node_->create_client<plansys2_msgs::srv::GetProblem>(
-    "problem_expert/get_problem");
-  remove_problem_goal_client_ = node_->create_client<plansys2_msgs::srv::RemoveProblemGoal>(
-    "problem_expert/remove_problem_goal");
-  set_problem_metric_client_ = node_->create_client<plansys2_msgs::srv::SetProblemMetric>(
-    "problem_expert/set_problem_metric");
-  get_problem_metric_client_ = node_->create_client<plansys2_msgs::srv::GetProblemMetric>(
-    "problem_expert/get_problem_metric");
-  remove_problem_metric_client_ = node_->create_client<plansys2_msgs::srv::RemoveProblemMetric>(
-    "problem_expert/remove_problem_metric");
-  clear_problem_knowledge_client_ = node_->create_client<plansys2_msgs::srv::ClearProblemKnowledge>(
-    "problem_expert/clear_problem_knowledge");
-  remove_problem_instance_client_ =
-    node_->create_client<plansys2_msgs::srv::AffectParam>(
-    "problem_expert/remove_problem_instance");
-  remove_problem_predicate_client_ =
-    node_->create_client<plansys2_msgs::srv::AffectNode>(
-    "problem_expert/remove_problem_predicate");
-  remove_problem_function_client_ =
-    node_->create_client<plansys2_msgs::srv::AffectNode>(
-    "problem_expert/remove_problem_function");
-  exist_problem_predicate_client_ =
-    node_->create_client<plansys2_msgs::srv::ExistNode>(
-    "problem_expert/exist_problem_predicate");
-  exist_problem_function_client_ =
-    node_->create_client<plansys2_msgs::srv::ExistNode>(
-    "problem_expert/exist_problem_function");
-  update_problem_function_client_ =
-    node_->create_client<plansys2_msgs::srv::AffectNode>(
-    "problem_expert/update_problem_function");
-  is_problem_goal_satisfied_client_ =
-    node_->create_client<plansys2_msgs::srv::IsProblemGoalSatisfied>(
-    "problem_expert/is_problem_goal_satisfied");
+    std::make_shared<ServiceClient<srv::GetProblemInstanceDetails>>(
+    node_, "problem_expert/get_problem_instance", active_);
+  get_problem_instances_client_ = std::make_shared<ServiceClient<srv::GetProblemInstances>>(
+    node_, "problem_expert/get_problem_instances", active_);
+  get_problem_predicate_details_client_ = std::make_shared<ServiceClient<srv::GetNodeDetails>>(
+    node_, "problem_expert/get_problem_predicate", active_);
+  get_problem_predicates_client_ = std::make_shared<ServiceClient<srv::GetStates>>(
+    node_, "problem_expert/get_problem_predicates", active_);
+  get_problem_function_details_client_ = std::make_shared<ServiceClient<srv::GetNodeDetails>>(
+    node_, "problem_expert/get_problem_function", active_);
+  get_problem_functions_client_ = std::make_shared<ServiceClient<srv::GetStates>>(
+    node_, "problem_expert/get_problem_functions", active_);
+  get_problem_client_ =
+    std::make_shared<ServiceClient<srv::GetProblem>>(node_, "problem_expert/get_problem", active_);
+  remove_problem_goal_client_ = std::make_shared<ServiceClient<srv::RemoveProblemGoal>>(
+    node_, "problem_expert/remove_problem_goal", active_);
+  set_problem_metric_client_ = std::make_shared<ServiceClient<srv::SetProblemMetric>>(
+    node_, "problem_expert/set_problem_metric", active_);
+  get_problem_metric_client_ = std::make_shared<ServiceClient<srv::GetProblemMetric>>(
+    node_, "problem_expert/get_problem_metric", active_);
+  remove_problem_metric_client_ = std::make_shared<ServiceClient<srv::RemoveProblemMetric>>(
+    node_, "problem_expert/remove_problem_metric", active_);
+  clear_problem_knowledge_client_ = std::make_shared<ServiceClient<srv::ClearProblemKnowledge>>(
+    node_, "problem_expert/clear_problem_knowledge", active_);
+  remove_problem_instance_client_ = std::make_shared<ServiceClient<srv::AffectParam>>(
+    node_, "problem_expert/remove_problem_instance", active_);
+  remove_problem_predicate_client_ = std::make_shared<ServiceClient<srv::AffectNode>>(
+    node_, "problem_expert/remove_problem_predicate", active_);
+  remove_problem_function_client_ = std::make_shared<ServiceClient<srv::AffectNode>>(
+    node_, "problem_expert/remove_problem_function", active_);
+  exist_problem_predicate_client_ = std::make_shared<ServiceClient<srv::ExistNode>>(
+    node_, "problem_expert/exist_problem_predicate", active_);
+  exist_problem_function_client_ = std::make_shared<ServiceClient<srv::ExistNode>>(
+    node_, "problem_expert/exist_problem_function", active_);
+  update_problem_function_client_ = std::make_shared<ServiceClient<srv::AffectNode>>(
+    node_, "problem_expert/update_problem_function", active_);
+  is_problem_goal_satisfied_client_ = std::make_shared<ServiceClient<srv::IsProblemGoalSatisfied>>(
+    node_, "problem_expert/is_problem_goal_satisfied", active_);
 
   problem_sub_ = node_->create_subscription<plansys2_msgs::msg::Problem>(
     "problem_expert/problem",
@@ -120,12 +112,12 @@ ProblemExpertClient::ProblemExpertClient()
 template<typename ServiceT>
 bool
 ProblemExpertClient::call_change(
-  std::shared_ptr<rclcpp::Client<ServiceT>> client,
+  typename ServiceClient<ServiceT>::SharedPtr client,
   typename ServiceT::Request::SharedPtr request)
 {
   invalidate_cache();
 
-  auto result = call_service<ServiceT>(node_, client, request);
+  auto result = client->call(request);
   if (!result) {
     return false;
   }
@@ -136,7 +128,7 @@ ProblemExpertClient::call_change(
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      client->get_service_name() << ": " << result->error_info);
+      client->name() << ": " << result->error_info);
     return false;
   }
 }
@@ -152,8 +144,7 @@ ProblemExpertClient::tryGetInstances()
 {
   auto request = std::make_shared<plansys2_msgs::srv::GetProblemInstances::Request>();
 
-  auto result = call_service<plansys2_msgs::srv::GetProblemInstances>(
-    node_, get_problem_instances_client_, request);
+  auto result = get_problem_instances_client_->call(request);
   if (!result) {
     return {};
   }
@@ -165,7 +156,7 @@ ProblemExpertClient::tryGetInstances()
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
       node_->get_namespace() <<
-        get_problem_instances_client_->get_service_name() << ": " <<
+        get_problem_instances_client_->name() << ": " <<
         result->error_info);
     return {};
   }
@@ -197,8 +188,7 @@ ProblemExpertClient::getInstance(const std::string & name)
 
   request->instance = name;
 
-  auto result = call_service<plansys2_msgs::srv::GetProblemInstanceDetails>(
-    node_, get_problem_instance_details_client_, request);
+  auto result = get_problem_instance_details_client_->call(request);
   if (!result) {
     return {};
   }
@@ -208,7 +198,7 @@ ProblemExpertClient::getInstance(const std::string & name)
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      get_problem_instance_details_client_->get_service_name() << ": " <<
+      get_problem_instance_details_client_->name() << ": " <<
         result->error_info);
     return {};
   }
@@ -225,8 +215,7 @@ ProblemExpertClient::tryGetPredicates()
 {
   auto request = std::make_shared<plansys2_msgs::srv::GetStates::Request>();
 
-  auto result = call_service<plansys2_msgs::srv::GetStates>(
-    node_, get_problem_predicates_client_, request);
+  auto result = get_problem_predicates_client_->call(request);
   if (!result) {
     return {};
   }
@@ -237,7 +226,7 @@ ProblemExpertClient::tryGetPredicates()
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      get_problem_predicates_client_->get_service_name() << ": " <<
+      get_problem_predicates_client_->name() << ": " <<
         result->error_info);
     return {};
   }
@@ -273,8 +262,7 @@ ProblemExpertClient::tryExistPredicate(const plansys2::Predicate & predicate)
   auto request = std::make_shared<plansys2_msgs::srv::ExistNode::Request>();
   request->node = predicate;
 
-  auto result = call_service<plansys2_msgs::srv::ExistNode>(
-    node_, exist_problem_predicate_client_, request);
+  auto result = exist_problem_predicate_client_->call(request);
   if (!result) {
     return {};
   }
@@ -289,8 +277,7 @@ ProblemExpertClient::getPredicate(const std::string & predicate)
 
   request->expression = predicate;
 
-  auto result = call_service<plansys2_msgs::srv::GetNodeDetails>(
-    node_, get_problem_predicate_details_client_, request);
+  auto result = get_problem_predicate_details_client_->call(request);
   if (!result) {
     return {};
   }
@@ -300,7 +287,7 @@ ProblemExpertClient::getPredicate(const std::string & predicate)
   } else {
     RCLCPP_DEBUG_STREAM(
       node_->get_logger(),
-      get_problem_predicate_details_client_->get_service_name() << ": " <<
+      get_problem_predicate_details_client_->name() << ": " <<
         result->error_info);
     return {};
   }
@@ -311,8 +298,7 @@ ProblemExpertClient::getFunctions()
 {
   auto request = std::make_shared<plansys2_msgs::srv::GetStates::Request>();
 
-  auto result = call_service<plansys2_msgs::srv::GetStates>(
-    node_, get_problem_functions_client_, request);
+  auto result = get_problem_functions_client_->call(request);
   if (!result) {
     return {};
   }
@@ -323,7 +309,7 @@ ProblemExpertClient::getFunctions()
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      get_problem_functions_client_->get_service_name() << ": " <<
+      get_problem_functions_client_->name() << ": " <<
         result->error_info);
     return {};
   }
@@ -359,8 +345,7 @@ ProblemExpertClient::tryExistFunction(const plansys2::Function & function)
   auto request = std::make_shared<plansys2_msgs::srv::ExistNode::Request>();
   request->node = function;
 
-  auto result = call_service<plansys2_msgs::srv::ExistNode>(
-    node_, exist_problem_function_client_, request);
+  auto result = exist_problem_function_client_->call(request);
   if (!result) {
     return {};
   }
@@ -383,8 +368,7 @@ ProblemExpertClient::getFunction(const std::string & function)
 
   request->expression = function;
 
-  auto result = call_service<plansys2_msgs::srv::GetNodeDetails>(
-    node_, get_problem_function_details_client_, request);
+  auto result = get_problem_function_details_client_->call(request);
   if (!result) {
     return {};
   }
@@ -394,7 +378,7 @@ ProblemExpertClient::getFunction(const std::string & function)
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      get_problem_function_details_client_->get_service_name() << ": " <<
+      get_problem_function_details_client_->name() << ": " <<
         result->error_info);
     return {};
   }
@@ -408,8 +392,7 @@ ProblemExpertClient::getGoal()
 
   auto request = std::make_shared<plansys2_msgs::srv::GetProblemGoal::Request>();
 
-  auto result = call_service<plansys2_msgs::srv::GetProblemGoal>(
-    node_, get_problem_goal_client_, request);
+  auto result = get_problem_goal_client_->call(request);
   if (!result) {
     return ret;
   }
@@ -419,7 +402,7 @@ ProblemExpertClient::getGoal()
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      get_problem_goal_client_->get_service_name() << ": " <<
+      get_problem_goal_client_->name() << ": " <<
         result->error_info);
   }
 
@@ -441,8 +424,7 @@ ProblemExpertClient::isGoalSatisfied(const plansys2::Goal & goal)
   auto request = std::make_shared<plansys2_msgs::srv::IsProblemGoalSatisfied::Request>();
   request->tree = goal;
 
-  auto result = call_service<plansys2_msgs::srv::IsProblemGoalSatisfied>(
-    node_, is_problem_goal_satisfied_client_, request);
+  auto result = is_problem_goal_satisfied_client_->call(request);
   if (!result) {
     return false;
   }
@@ -452,7 +434,7 @@ ProblemExpertClient::isGoalSatisfied(const plansys2::Goal & goal)
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      is_problem_goal_satisfied_client_->get_service_name() << ": " <<
+      is_problem_goal_satisfied_client_->name() << ": " <<
         result->error_info);
     return false;
   }
@@ -473,8 +455,7 @@ ProblemExpertClient::getMetric()
 
   auto request = std::make_shared<plansys2_msgs::srv::GetProblemMetric::Request>();
 
-  auto result = call_service<plansys2_msgs::srv::GetProblemMetric>(
-    node_, get_problem_metric_client_, request);
+  auto result = get_problem_metric_client_->call(request);
   if (!result) {
     return ret;
   }
@@ -484,7 +465,7 @@ ProblemExpertClient::getMetric()
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      get_problem_metric_client_->get_service_name() << ": " <<
+      get_problem_metric_client_->name() << ": " <<
         result->error_info);
   }
 
@@ -534,6 +515,7 @@ ProblemExpertClient::getProblemWithTimestamp(bool use_cache)
 std::string
 ProblemExpertClient::getProblem(bool use_cache)
 {
+  node_->serve();  // The problem published meanwhile
   if (use_cache && cached_problem_ != "") {
     return cached_problem_;
   } else {
@@ -546,8 +528,7 @@ ProblemExpertClient::getProblem()
 {
   auto request = std::make_shared<plansys2_msgs::srv::GetProblem::Request>();
 
-  auto result = call_service<plansys2_msgs::srv::GetProblem>(
-    node_, get_problem_client_, request);
+  auto result = get_problem_client_->call(request);
   if (!result) {
     return {};
   }
@@ -560,7 +541,7 @@ ProblemExpertClient::getProblem()
   } else {
     RCLCPP_ERROR_STREAM(
       node_->get_logger(),
-      get_problem_client_->get_service_name() << ": " <<
+      get_problem_client_->name() << ": " <<
         result->error_info);
     return {};
   }

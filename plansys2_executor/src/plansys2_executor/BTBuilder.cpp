@@ -18,6 +18,7 @@
 #include <iostream>
 #include <memory>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -271,8 +272,9 @@ BTBuilder::derived_names() const
 std::shared_ptr<plansys2::DomainExpertClient>
 BTBuilder::domain_client() const
 {
+  // The clients of its executor, on the executor's node: a builder makes no node
   if (!domain_client_) {
-    domain_client_ = std::make_shared<plansys2::DomainExpertClient>();
+    throw std::logic_error("BTBuilder without clients: call set_clients first");
   }
   return domain_client_;
 }
@@ -281,7 +283,7 @@ std::shared_ptr<plansys2::ProblemExpertClient>
 BTBuilder::problem_client() const
 {
   if (!problem_client_) {
-    problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
+    throw std::logic_error("BTBuilder without clients: call set_clients first");
   }
   return problem_client_;
 }

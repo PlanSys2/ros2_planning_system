@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "plansys2_planner/PlannerNode.hpp"
+#include "plansys2_core/ServiceCall.hpp"
 #include "plansys2_pddl_parser/Domain.hpp"
 #include "plansys2_pddl_parser/Instance.hpp"
 
@@ -134,24 +135,30 @@ PlannerNode::on_configure(const rclcpp_lifecycle::State & state)
 
   get_plan_service_ = create_service<plansys2_msgs::srv::GetPlan>(
     "planner/get_plan",
-    std::bind(
-      &PlannerNode::get_plan_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetPlan>(
+      get_logger(),
+      std::bind(
+        &PlannerNode::get_plan_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   get_plan_array_service_ = create_service<plansys2_msgs::srv::GetPlanArray>(
     "planner/get_plan_array",
-    std::bind(
-      &PlannerNode::get_plan_array_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::GetPlanArray>(
+      get_logger(),
+      std::bind(
+        &PlannerNode::get_plan_array_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   validate_domain_service_ = create_service<plansys2_msgs::srv::ValidateDomain>(
     "planner/validate_domain",
-    std::bind(
-      &PlannerNode::validate_domain_service_callback,
-      this, std::placeholders::_1, std::placeholders::_2,
-      std::placeholders::_3));
+    guarded<plansys2_msgs::srv::ValidateDomain>(
+      get_logger(),
+      std::bind(
+        &PlannerNode::validate_domain_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
 
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;

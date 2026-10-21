@@ -109,7 +109,7 @@ protected:
       executor_node_->set_parameter(param);
     }
 
-    exe_ = std::make_unique<rclcpp::executors::SingleThreadedExecutor>();
+    exe_ = std::make_unique<rclcpp::executors::MultiThreadedExecutor>();
     exe_->add_node(domain_node_->get_node_base_interface());
     exe_->add_node(problem_node_->get_node_base_interface());
     exe_->add_node(executor_node_->get_node_base_interface());
@@ -127,8 +127,10 @@ protected:
       node->trigger_transition(Transition::TRANSITION_ACTIVATE);
     }
 
-    problem_client_ = std::make_shared<plansys2::ProblemExpertClient>();
-    executor_client_ = std::make_shared<plansys2::ExecutorClient>();
+    client_node_ = rclcpp::Node::make_shared("client_node");
+    client_node_spinner_ = std::make_unique<plansys2::testing::NodeSpinner>(client_node_);
+    problem_client_ = std::make_shared<plansys2::ProblemExpertClient>(client_node_);
+    executor_client_ = std::make_shared<plansys2::ExecutorClient>(client_node_);
 
     ASSERT_TRUE(problem_client_->addInstance(plansys2::Instance("r2d2", "robot")));
     for (auto zone : {"wheels_zone", "steering_wheels_zone", "assembly_zone"}) {
@@ -177,8 +179,10 @@ protected:
   std::shared_ptr<plansys2::ProblemExpertNode> problem_node_;
   std::shared_ptr<plansys2::ExecutorNode> executor_node_;
   std::shared_ptr<QuickAction> move_node_;
-  std::unique_ptr<rclcpp::executors::SingleThreadedExecutor> exe_;
+  std::unique_ptr<rclcpp::executors::MultiThreadedExecutor> exe_;
   std::unique_ptr<plansys2::testing::ExecutorThread> spinner_;
+  rclcpp::Node::SharedPtr client_node_;  // The clients do not own it
+  std::unique_ptr<plansys2::testing::NodeSpinner> client_node_spinner_;
   std::shared_ptr<plansys2::ProblemExpertClient> problem_client_;
   std::shared_ptr<plansys2::ExecutorClient> executor_client_;
 };

@@ -305,6 +305,7 @@ ActionExecutor::start_dealing()
     std::to_string(node_->now().nanoseconds()) + ":" + std::to_string(requests++);
 
   current_performer_id_ = "";
+  failure_reason_.clear();
   state_ = DEALING;
   state_time_ = node_->now();
   completion_ = 0.0;
@@ -461,6 +462,10 @@ ActionExecutor::wait_timeout()
     RCLCPP_ERROR(
       node_->get_logger(), "Aborting %s. Timeout after requesting for %.0f seconds",
       action_.c_str(), kDealingTimeout);
+    // The reason the controller and the trace tell
+    failure_reason_ = "no performer took it in " +
+      std::to_string(static_cast<int>(kDealingTimeout)) + " s";
+    feedback_ = failure_reason_;
     state_ = FAILURE;
     waiting_timer_->cancel();
     return;
@@ -499,6 +504,9 @@ ActionExecutor::check_performer()
     RCLCPP_ERROR(
       node_->get_logger(), "Performer [%s] of %s is gone: the action fails",
       current_performer_id_.c_str(), action_.c_str());
+    // Its last feedback would be told as the reason ("running"): the reason is that it is gone
+    failure_reason_ = "its performer " + current_performer_id_ + " is gone";
+    feedback_ = failure_reason_;
     state_ = FAILURE;
     performer_check_->cancel();
   }

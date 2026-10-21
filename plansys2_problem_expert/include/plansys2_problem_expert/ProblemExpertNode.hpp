@@ -15,6 +15,7 @@
 #ifndef PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTNODE_HPP_
 #define PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTNODE_HPP_
 
+#include <atomic>
 #include <memory>
 #include <string>
 
@@ -524,6 +525,16 @@ private:
   rclcpp_lifecycle::LifecyclePublisher<plansys2_msgs::msg::Problem>::SharedPtr problem_pub_;
   // Applies the timed facts and the dynamics while active
   rclcpp::TimerBase::SharedPtr timed_facts_timer_;
+
+  // A change of the knowledge: told to who follows it, and saved to state_file
+  void notify_change();
+  // The state of the problem kept in state_file, if set: a restarted node comes back with it
+  void save_state();
+  bool load_state();
+  void remove_state();
+  std::string state_file_;
+  std::atomic<bool> state_dirty_ {false};
+  rclcpp::TimerBase::SharedPtr state_timer_;
   rclcpp::Time last_step_;
   rclcpp::Service<plansys2_msgs::srv::SetContinuousEffect>::SharedPtr
     set_continuous_effect_service_;
