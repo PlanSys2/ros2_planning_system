@@ -27,7 +27,7 @@
 #include <thread>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
@@ -46,8 +46,7 @@ namespace
 
 std::string pddl(const std::string & name)
 {
-  return (std::filesystem::path(ament_index_cpp::get_package_share_directory(
-      "plansys2_problem_expert")) / "pddl" /
+  return (plansys2::share_path("plansys2_problem_expert") / "pddl" /
          name).string();
 }
 

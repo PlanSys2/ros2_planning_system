@@ -25,7 +25,7 @@
 #include <string>
 #include <system_error>
 
-#include "ament_index_cpp/get_package_prefix.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "plansys2_msgs/msg/plan_item.hpp"
 #include "plansys2_popf_plan_solver/popf_plan_solver.hpp"
 #include "rclcpp/logging.hpp"
@@ -154,7 +154,7 @@ void POPFPlanSolver::configure(
 
   // Run popf directly: `ros2 run` added the CLI start-up to every plan (#441)
   try {
-    const std::filesystem::path prefix = ament_index_cpp::get_package_prefix("popf");
+    const std::filesystem::path prefix = plansys2::package_prefix("popf");
     popf_path_ = (prefix / "lib" / "popf" / "popf").string();
   } catch (const std::exception & e) {
     RCLCPP_WARN(

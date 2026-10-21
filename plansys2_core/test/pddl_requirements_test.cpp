@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "gtest/gtest.h"
 #include "plansys2_core/PddlRequirements.hpp"
 #include "plansys2_pddl_parser/PddlBank.hpp"
@@ -220,7 +220,7 @@ TEST(pddl_requirements, missing)
 TEST(pddl_requirements, the_bank)
 {
   const auto cases = parser::pddl::read_pddl_bank(
-    std::filesystem::path(ament_index_cpp::get_package_share_directory("plansys2_pddl_parser")) /
+    plansys2::share_path("plansys2_pddl_parser") /
     "bank");
   ASSERT_GE(cases.size(), 60u);
   for (const auto & task : cases) {

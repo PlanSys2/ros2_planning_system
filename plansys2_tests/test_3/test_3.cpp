@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 
 #include "gtest/gtest.h"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
@@ -60,7 +60,7 @@ TEST(test_3, test_3)
 
   auto execution_logger = plansys2_tests::ExecutionLogger::make_shared();
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_tests");
+  std::string pkgpath = plansys2::share_path("plansys2_tests").string();
 
   domain_node->set_parameter({"model_file", pkgpath + "/test_3/pddl/test_3.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/test_3/pddl/test_3.pddl"});

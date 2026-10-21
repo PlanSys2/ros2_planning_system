@@ -21,7 +21,7 @@
 #include <utility>
 #include <functional>
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 
 #include "gtest/gtest.h"
 
@@ -90,7 +90,7 @@ TEST(problem_expert_node, addget_instances)
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_2);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+      plansys2::share_path("plansys2_problem_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
@@ -232,7 +232,7 @@ TEST(problem_expert_node, addget_instances)
 /*
 TEST(problem_expert, add_assignments)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -352,7 +352,7 @@ TEST(problem_expert, add_assignments)
 
 TEST(problem_expert, addget_predicates)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -472,7 +472,7 @@ TEST(problem_expert, addget_predicates)
 
 TEST(problem_expert, addget_goals)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -514,7 +514,7 @@ TEST(problem_expert, addget_goals)
 
 TEST(problem_expert, get_probem)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   std::ifstream domain_ifs(pkgpath + "/pddl/domain_simple.pddl");
   std::string domain_str((
       std::istreambuf_iterator<char>(domain_ifs)),
@@ -590,7 +590,7 @@ TEST(problem_expert_node, addget_goal_is_satisfied)
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_2);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+      plansys2::share_path("plansys2_problem_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
@@ -700,7 +700,7 @@ TEST(problem_expert_node, reconcile_with_domain_preserves_and_prunes)
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node_2);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+      plansys2::share_path("plansys2_problem_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
@@ -798,7 +798,7 @@ TEST(problem_expert_node, reconcile_with_domain_full_replacement_prunes_everythi
     auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+      plansys2::share_path("plansys2_problem_expert").string();
 
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
@@ -852,7 +852,7 @@ TEST(problem_expert_node, add_problem_malformed_keeps_node_alive)
   plansys2::testing::NodeSpinner client_node_spinner(client_node);
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
 
@@ -910,7 +910,7 @@ TEST(problem_expert_node, add_problem_malformed_keeps_node_alive)
 // A problem_file that cannot be loaded makes configure fail instead of being ignored
 TEST(problem_expert_node, problem_file_that_cannot_be_loaded_fails_configure)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
 
   for (const std::string & file :
     {pkgpath + "/pddl/problem_malformed_truncated.pddl", pkgpath + "/pddl/does_not_exist.pddl"})
@@ -945,7 +945,7 @@ TEST(problem_expert_node, big_and_malformed_goals_keep_node_alive)
   plansys2::testing::NodeSpinner client_node_spinner(client_node);
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
 
@@ -1012,7 +1012,7 @@ TEST(problem_expert_node, add_problem_instance_rejects_invalid_names)
   plansys2::testing::NodeSpinner client_node_spinner(client_node);
   auto problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
   problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
   domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
@@ -1052,7 +1052,7 @@ struct NodesWithClient
     problem_client = std::make_shared<plansys2::ProblemExpertClient>(client_node);
 
     std::string pkgpath =
-      ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+      plansys2::share_path("plansys2_problem_expert").string();
     domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     problem_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
     domain_node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);

@@ -26,7 +26,7 @@
 #include <thread>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
@@ -112,7 +112,7 @@ protected:
   // The performer is left inactive, waiting for requests; or not even configured
   void start(int performer_ticks, bool configure_performer = true)
   {
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::string pkgpath = plansys2::share_path("plansys2_executor").string();
     domain_node_ = std::make_shared<plansys2::DomainExpertNode>();
     problem_node_ = std::make_shared<plansys2::ProblemExpertNode>();
     executor_node_ = std::make_shared<plansys2::ExecutorNode>();

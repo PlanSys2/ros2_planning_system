@@ -26,7 +26,7 @@
 #include <utility>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "gtest/gtest.h"
 #include "kairos/kairos.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
@@ -123,7 +123,7 @@ TEST_P(PlannerBankTest, each_task_goes_to_the_solvers_that_plan_with_it)
 {
   const auto & combination = GetParam();
   const auto cases = parser::pddl::read_pddl_bank(
-    std::filesystem::path(ament_index_cpp::get_package_share_directory("plansys2_pddl_parser")) /
+    plansys2::share_path("plansys2_pddl_parser") /
     "bank");
   ASSERT_GE(cases.size(), 60u);
 

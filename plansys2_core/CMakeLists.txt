@@ -16,6 +16,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(plansys2_pddl_parser REQUIRED)
 find_package(plansys2_msgs REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
   src/plansys2_core/Action.cpp
@@ -36,6 +37,7 @@ target_link_libraries(${PROJECT_NAME}
   plansys2_pddl_parser::plansys2_pddl_parser
   ${plansys2_msgs_TARGETS}
   ${lifecycle_msgs_TARGETS}
+  ament_index_cpp::ament_index_cpp
 )
 
 install(DIRECTORY include/
@@ -53,7 +55,6 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
   find_package(ament_cmake_gtest REQUIRED)
-  find_package(ament_index_cpp REQUIRED)
   find_package(ament_cmake_ros REQUIRED)
   find_package(std_msgs REQUIRED)
   add_subdirectory(test)
@@ -68,6 +69,7 @@ ament_export_dependencies(
   plansys2_pddl_parser
   plansys2_msgs
   lifecycle_msgs
+  ament_index_cpp
 )
 
 ament_package()

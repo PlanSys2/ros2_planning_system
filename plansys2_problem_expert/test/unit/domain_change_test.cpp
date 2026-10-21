@@ -20,7 +20,7 @@
 #include <string>
 #include <thread>
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/transition.hpp"
 
@@ -39,7 +39,7 @@ class DomainChangeTest : public ::testing::Test
 protected:
   void SetUp() override
   {
-    pkgpath_ = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+    pkgpath_ = plansys2::share_path("plansys2_problem_expert").string();
     simple_ = read("domain_simple.pddl");
     kitchen_ = read("domain_totally_different.pddl");
 
@@ -166,7 +166,7 @@ TEST_F(DomainChangeTest, same_domain_again_keeps_the_problem)
 // A problem expert that cannot take the domain makes the change fail, and nothing changes
 TEST(DomainChangeRejectedTest, domain_stays_if_the_problem_expert_rejects_it)
 {
-  std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_problem_expert");
+  std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
   auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
   domain_node->set_parameter({"model_file", pkgpath + "/pddl/domain_simple.pddl"});
   auto fake_problem_expert = rclcpp::Node::make_shared("fake_problem_expert");

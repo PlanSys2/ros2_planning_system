@@ -26,7 +26,7 @@
 #include <thread>
 #include <vector>
 
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "plansys2_core/PackagePaths.hpp"
 #include "gtest/gtest.h"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "plansys2_core/TestUtils.hpp"
@@ -90,7 +90,7 @@ protected:
   // Starts domain/problem experts, the executor (with extra parameters) and a performer
   void start(const std::vector<rclcpp::Parameter> & executor_params = {})
   {
-    std::string pkgpath = ament_index_cpp::get_package_share_directory("plansys2_executor");
+    std::string pkgpath = plansys2::share_path("plansys2_executor").string();
 
     domain_node_ = std::make_shared<plansys2::DomainExpertNode>();
     problem_node_ = std::make_shared<plansys2::ProblemExpertNode>();
