@@ -104,30 +104,33 @@ $(function(){ initResizable(false); });
 <code>#include &quot;lifecycle_msgs/msg/state.hpp&quot;</code><br />
 <code>#include &quot;lifecycle_msgs/srv/get_state.hpp&quot;</code><br />
 <code>#include &quot;rclcpp/rclcpp.hpp&quot;</code><br />
+<code>#include &quot;rclcpp/version.h&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for TestUtils.hpp:</div>
 <div class="dyncontent">
 <div class="center"><img src="TestUtils_8hpp__incl.png" border="0" usemap="#aplansys2__core_2include_2plansys2__core_2TestUtils_8hpp" alt=""/></div>
 <map name="aplansys2__core_2include_2plansys2__core_2TestUtils_8hpp" id="aplansys2__core_2include_2plansys2__core_2TestUtils_8hpp">
-<area shape="rect" title=" " alt="" coords="276,5,465,46"/>
+<area shape="rect" title=" " alt="" coords="316,5,505,46"/>
 <area shape="rect" title=" " alt="" coords="5,102,66,127"/>
-<area shape="poly" title=" " alt="" coords="275,47,180,68,79,97,75,98,73,93,77,91,178,63,274,41"/>
+<area shape="poly" title=" " alt="" coords="316,43,201,65,79,97,75,98,73,93,77,91,200,59,315,38"/>
 <area shape="rect" title=" " alt="" coords="90,102,157,127"/>
-<area shape="poly" title=" " alt="" coords="308,49,170,97,166,98,164,93,168,91,306,44"/>
+<area shape="poly" title=" " alt="" coords="331,49,170,97,166,98,164,93,168,91,329,44"/>
 <area shape="rect" title=" " alt="" coords="181,102,242,127"/>
-<area shape="poly" title=" " alt="" coords="335,49,248,96,246,91,333,44"/>
+<area shape="poly" title=" " alt="" coords="365,49,255,96,253,97,251,92,253,92,363,44"/>
 <area shape="rect" title=" " alt="" coords="266,102,320,127"/>
-<area shape="poly" title=" " alt="" coords="355,48,316,92,312,88,351,45"/>
+<area shape="poly" title=" " alt="" coords="385,49,323,94,320,90,382,44"/>
 <area shape="rect" title=" " alt="" coords="344,102,397,127"/>
-<area shape="poly" title=" " alt="" coords="373,47,373,86,368,86,368,47"/>
+<area shape="poly" title=" " alt="" coords="404,48,384,89,380,86,399,45"/>
 <area shape="rect" title=" " alt="" coords="422,102,479,127"/>
-<area shape="poly" title=" " alt="" coords="390,45,431,89,427,92,386,48"/>
+<area shape="poly" title=" " alt="" coords="422,45,441,86,436,89,417,48"/>
 <area shape="rect" title=" " alt="" coords="503,94,640,135"/>
-<area shape="poly" title=" " alt="" coords="417,44,513,85,511,90,415,49"/>
+<area shape="poly" title=" " alt="" coords="448,44,523,84,520,89,446,49"/>
 <area shape="rect" title=" " alt="" coords="664,94,794,135"/>
-<area shape="poly" title=" " alt="" coords="454,44,650,91,648,96,453,49"/>
+<area shape="poly" title=" " alt="" coords="484,44,650,89,649,94,482,49"/>
 <area shape="rect" title=" " alt="" coords="817,102,936,127"/>
-<area shape="poly" title=" " alt="" coords="465,36,626,59,807,91,821,95,819,100,806,97,625,64,465,41"/>
+<area shape="poly" title=" " alt="" coords="506,38,648,61,807,91,820,95,819,100,806,97,647,66,505,43"/>
+<area shape="rect" title=" " alt="" coords="961,102,1073,127"/>
+<area shape="poly" title=" " alt="" coords="506,32,710,54,830,70,949,91,963,94,962,100,948,97,829,76,710,59,505,37"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -281,6 +284,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a77b9ba26a0e3c03f694d02d7e0009f93"><td class="memTemplItemLeft" align="right" valign="top">ServiceT::Response::SharedPtr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceplansys2_1_1testing.html#a77b9ba26a0e3c03f694d02d7e0009f93">call</a> (const rclcpp::Node::SharedPtr &amp;spun_node, const std::string &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a>, typename ServiceT::Request::SharedPtr request, std::chrono::seconds timeout=std::chrono::seconds(5))</td></tr>
 <tr class="memdesc:a77b9ba26a0e3c03f694d02d7e0009f93"><td class="mdescLeft">&#160;</td><td class="mdescRight">A plain service call, as any ROS node makes it: what a server answers in any state.  <br /></td></tr>
 <tr class="separator:a77b9ba26a0e3c03f694d02d7e0009f93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a971d31662ed1bf263f35bee025070647" id="r_a971d31662ed1bf263f35bee025070647"><td class="memTemplParams" colspan="2">template&lt;typename NodeT &gt; </td></tr>
+<tr class="memitem:a971d31662ed1bf263f35bee025070647"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceplansys2_1_1testing.html#a971d31662ed1bf263f35bee025070647">has_service</a> (NodeT &amp;node, const std::string &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a>)</td></tr>
+<tr class="separator:a971d31662ed1bf263f35bee025070647"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63be55cd52d7ba70325b9a814ee11db0" id="r_a63be55cd52d7ba70325b9a814ee11db0"><td class="memTemplParams" colspan="2">template&lt;typename Condition &gt; </td></tr>
 <tr class="memitem:a63be55cd52d7ba70325b9a814ee11db0"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceplansys2_1_1testing.html#a63be55cd52d7ba70325b9a814ee11db0">wait_for</a> (Condition condition, std::chrono::nanoseconds timeout=std::chrono::seconds(10))</td></tr>
 <tr class="memdesc:a63be55cd52d7ba70325b9a814ee11db0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait, without spinning, until a condition holds.  <br /></td></tr>

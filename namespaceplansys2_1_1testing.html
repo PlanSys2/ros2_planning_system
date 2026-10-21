@@ -114,6 +114,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a77b9ba26a0e3c03f694d02d7e0009f93"><td class="memTemplItemLeft" align="right" valign="top">ServiceT::Response::SharedPtr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a77b9ba26a0e3c03f694d02d7e0009f93">call</a> (const rclcpp::Node::SharedPtr &amp;spun_node, const std::string &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a>, typename ServiceT::Request::SharedPtr request, std::chrono::seconds timeout=std::chrono::seconds(5))</td></tr>
 <tr class="memdesc:a77b9ba26a0e3c03f694d02d7e0009f93"><td class="mdescLeft">&#160;</td><td class="mdescRight">A plain service call, as any ROS node makes it: what a server answers in any state.  <br /></td></tr>
 <tr class="separator:a77b9ba26a0e3c03f694d02d7e0009f93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a971d31662ed1bf263f35bee025070647" id="r_a971d31662ed1bf263f35bee025070647"><td class="memTemplParams" colspan="2">template&lt;typename NodeT &gt; </td></tr>
+<tr class="memitem:a971d31662ed1bf263f35bee025070647"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a971d31662ed1bf263f35bee025070647">has_service</a> (NodeT &amp;node, const std::string &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a>)</td></tr>
+<tr class="separator:a971d31662ed1bf263f35bee025070647"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63be55cd52d7ba70325b9a814ee11db0" id="r_a63be55cd52d7ba70325b9a814ee11db0"><td class="memTemplParams" colspan="2">template&lt;typename Condition &gt; </td></tr>
 <tr class="memitem:a63be55cd52d7ba70325b9a814ee11db0"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a63be55cd52d7ba70325b9a814ee11db0">wait_for</a> (Condition condition, std::chrono::nanoseconds timeout=std::chrono::seconds(10))</td></tr>
 <tr class="memdesc:a63be55cd52d7ba70325b9a814ee11db0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait, without spinning, until a condition holds.  <br /></td></tr>
@@ -185,6 +188,29 @@ template&lt;typename ServiceT &gt; </div>
 
 <p>A plain service call, as any ROS node makes it: what a server answers in any state. </p>
 <p>PlanSys2 clients wait until their component is active; this one does not. </p><dl class="section return"><dt>Returns</dt><dd>The response, or nullptr without server or answer within timeout. </dd></dl>
+
+</div>
+</div>
+<a id="a971d31662ed1bf263f35bee025070647" name="a971d31662ed1bf263f35bee025070647"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a971d31662ed1bf263f35bee025070647">&#9670;&#160;</a></span>has_service()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename NodeT &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> has_service </td>
+          <td>(</td>
+          <td class="paramtype">NodeT &amp;</td>          <td class="paramname"><span class="paramname"><em>node</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

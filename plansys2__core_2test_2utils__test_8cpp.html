@@ -100,7 +100,7 @@ $(function(){ initResizable(false); });
 <code>#include &lt;string&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 <code>#include &quot;gtest/gtest.h&quot;</code><br />
-<code>#include &quot;ament_index_cpp/get_package_share_path.hpp&quot;</code><br />
+<code>#include &quot;<a class="el" href="PackagePaths_8hpp_source.html">plansys2_core/PackagePaths.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="PlanSolverBase_8hpp_source.html">plansys2_core/PlanSolverBase.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="plansys2__core_2include_2plansys2__core_2Utils_8hpp_source.html">plansys2_core/Utils.hpp</a>&quot;</code><br />
 <code>#include &quot;rclcpp/rclcpp.hpp&quot;</code><br />
@@ -110,46 +110,52 @@ Include dependency graph for utils_test.cpp:</div>
 <div class="dyncontent">
 <div class="center"><img src="plansys2__core_2test_2utils__test_8cpp__incl.png" border="0" usemap="#aplansys2__core_2test_2utils__test_8cpp" alt=""/></div>
 <map name="aplansys2__core_2test_2utils__test_8cpp" id="aplansys2__core_2test_2utils__test_8cpp">
-<area shape="rect" title=" " alt="" coords="505,5,636,46"/>
+<area shape="rect" title=" " alt="" coords="511,5,641,46"/>
 <area shape="rect" title=" " alt="" coords="5,102,72,127"/>
-<area shape="poly" title=" " alt="" coords="505,33,314,52,199,71,85,97,79,98,77,93,83,91,198,65,314,47,505,28"/>
-<area shape="rect" title=" " alt="" coords="96,102,176,127"/>
-<area shape="poly" title=" " alt="" coords="505,37,358,59,272,76,187,97,180,99,179,94,186,91,271,71,357,54,504,32"/>
-<area shape="rect" title=" " alt="" coords="199,102,264,127"/>
-<area shape="poly" title=" " alt="" coords="506,43,401,66,285,97,278,99,277,93,283,91,400,61,504,37"/>
-<area shape="rect" title=" " alt="" coords="542,190,596,216"/>
-<area shape="poly" title=" " alt="" coords="636,29,713,39,788,58,816,72,835,90,841,111,829,136,805,160,780,173,755,178,729,178,673,175,642,177,609,185,606,186,604,181,607,180,641,172,673,170,729,173,754,173,778,168,801,155,824,133,835,111,831,92,813,77,786,63,712,45,636,34"/>
-<area shape="rect" title=" " alt="" coords="291,190,348,216"/>
-<area shape="poly" title=" " alt="" coords="505,39,402,62,357,77,330,96,320,114,315,134,317,175,311,175,310,134,315,112,326,92,355,73,400,56,504,34"/>
-<area shape="rect" title=" " alt="" coords="524,102,617,127"/>
-<area shape="poly" title=" " alt="" coords="573,47,573,86,568,86,568,47"/>
-<area shape="rect" title=" " alt="" coords="642,94,814,135"/>
-<area shape="poly" title=" " alt="" coords="607,44,680,84,678,89,605,49"/>
-<area shape="rect" href="PlanSolverBase_8hpp.html" title=" " alt="" coords="889,94,1060,135"/>
-<area shape="poly" title=" " alt="" coords="637,38,874,89,873,94,636,44"/>
-<area shape="rect" title=" " alt="" coords="1167,190,1286,216"/>
-<area shape="poly" title=" " alt="" coords="636,23,725,26,836,36,956,57,1015,72,1073,92,1111,110,1147,133,1205,178,1201,182,1144,137,1109,115,1071,96,1014,77,955,62,835,41,725,32,636,29"/>
-<area shape="rect" title=" " alt="" coords="1310,183,1471,223"/>
-<area shape="poly" title=" " alt="" coords="636,27,733,32,856,44,992,63,1127,91,1185,109,1242,130,1339,173,1337,178,1240,135,1184,114,1126,97,991,68,855,49,733,38,636,32"/>
-<area shape="rect" href="plansys2__core_2include_2plansys2__core_2Utils_8hpp.html" title=" " alt="" coords="340,102,500,127"/>
-<area shape="poly" title=" " alt="" coords="538,49,455,96,453,91,535,44"/>
-<area shape="poly" title=" " alt="" coords="889,134,609,185,606,186,604,181,607,180,888,129"/>
-<area shape="rect" title=" " alt="" coords="620,190,681,216"/>
-<area shape="poly" title=" " alt="" coords="889,134,794,156,694,185,690,187,688,182,692,180,793,151,888,129"/>
-<area shape="rect" title=" " alt="" coords="705,190,772,216"/>
-<area shape="poly" title=" " alt="" coords="917,138,785,185,782,186,780,181,783,180,915,133"/>
-<area shape="rect" title=" " alt="" coords="796,190,862,216"/>
-<area shape="poly" title=" " alt="" coords="943,137,864,184,861,180,940,133"/>
-<area shape="rect" title=" " alt="" coords="887,190,926,216"/>
-<area shape="poly" title=" " alt="" coords="961,137,927,180,923,177,957,134"/>
-<area shape="rect" title=" " alt="" coords="950,190,1143,216"/>
-<area shape="poly" title=" " alt="" coords="993,133,1029,176,1025,180,989,137"/>
-<area shape="poly" title=" " alt="" coords="1033,133,1177,182,1176,187,1031,138"/>
-<area shape="poly" title=" " alt="" coords="1061,131,1295,179,1294,184,1060,136"/>
-<area shape="poly" title=" " alt="" coords="442,125,536,180,534,184,439,130"/>
-<area shape="poly" title=" " alt="" coords="408,130,347,182,343,178,404,126"/>
-<area shape="rect" title=" " alt="" coords="390,190,450,216"/>
-<area shape="poly" title=" " alt="" coords="422,128,422,174,417,174,417,128"/>
+<area shape="poly" title=" " alt="" coords="511,34,321,55,206,72,91,97,84,99,82,94,90,91,205,67,320,49,510,29"/>
+<area shape="rect" title=" " alt="" coords="41,190,121,216"/>
+<area shape="poly" title=" " alt="" coords="511,32,415,39,305,51,205,69,165,82,137,96,120,113,107,134,90,176,85,174,102,131,116,110,134,92,163,77,203,64,304,45,414,34,510,27"/>
+<area shape="rect" title=" " alt="" coords="147,102,212,127"/>
+<area shape="poly" title=" " alt="" coords="511,38,378,60,301,76,226,97,221,98,219,93,224,91,300,71,377,55,510,33"/>
+<area shape="rect" title=" " alt="" coords="700,190,753,216"/>
+<area shape="poly" title=" " alt="" coords="642,33,747,56,792,72,809,82,821,92,827,105,828,119,815,144,792,166,765,185,762,180,788,162,811,141,822,118,822,107,816,96,806,86,790,77,745,61,641,39"/>
+<area shape="rect" title=" " alt="" coords="534,190,591,216"/>
+<area shape="poly" title=" " alt="" coords="554,48,534,69,520,95,515,114,520,134,530,156,544,176,539,179,525,159,515,135,510,114,515,93,530,66,550,45"/>
+<area shape="rect" title=" " alt="" coords="529,102,622,127"/>
+<area shape="poly" title=" " alt="" coords="578,47,578,86,573,86,573,47"/>
+<area shape="rect" href="PackagePaths_8hpp.html" title=" " alt="" coords="236,102,454,127"/>
+<area shape="poly" title=" " alt="" coords="524,49,393,98,391,93,523,44"/>
+<area shape="rect" href="PlanSolverBase_8hpp.html" title=" " alt="" coords="1026,94,1198,135"/>
+<area shape="poly" title=" " alt="" coords="642,35,1011,94,1010,99,641,40"/>
+<area shape="rect" title=" " alt="" coords="1324,190,1444,216"/>
+<area shape="poly" title=" " alt="" coords="642,28,939,49,1097,68,1161,79,1210,91,1253,110,1294,133,1359,178,1356,182,1291,137,1251,115,1208,97,1160,84,1096,73,939,54,641,33"/>
+<area shape="rect" title=" " alt="" coords="1467,183,1628,223"/>
+<area shape="poly" title=" " alt="" coords="641,25,760,29,917,39,1092,59,1182,73,1268,91,1330,109,1391,130,1495,173,1492,178,1389,135,1329,114,1267,97,1181,79,1092,64,916,44,759,34,641,30"/>
+<area shape="rect" href="plansys2__core_2include_2plansys2__core_2Utils_8hpp.html" title=" " alt="" coords="647,102,806,127"/>
+<area shape="poly" title=" " alt="" coords="611,44,694,91,691,96,609,49"/>
+<area shape="poly" title=" " alt="" coords="305,130,133,185,128,187,126,182,131,180,304,125"/>
+<area shape="poly" title=" " alt="" coords="443,125,562,146,626,162,689,180,691,181,690,186,687,185,625,167,561,152,442,130"/>
+<area shape="rect" title=" " alt="" coords="365,183,509,223"/>
+<area shape="poly" title=" " alt="" coords="360,126,407,170,404,174,356,130"/>
+<area shape="rect" title=" " alt="" coords="144,183,341,223"/>
+<area shape="poly" title=" " alt="" coords="333,130,279,175,275,171,329,126"/>
+<area shape="poly" title=" " alt="" coords="1026,128,902,150,833,166,766,185,763,186,762,181,764,180,832,160,901,144,1025,123"/>
+<area shape="rect" title=" " alt="" coords="994,190,1054,216"/>
+<area shape="poly" title=" " alt="" coords="1094,137,1048,181,1045,178,1090,133"/>
+<area shape="rect" title=" " alt="" coords="1078,190,1146,216"/>
+<area shape="poly" title=" " alt="" coords="1114,135,1114,175,1109,175,1109,135"/>
+<area shape="rect" title=" " alt="" coords="1169,190,1236,216"/>
+<area shape="poly" title=" " alt="" coords="1134,133,1181,178,1177,181,1131,137"/>
+<area shape="rect" title=" " alt="" coords="1260,190,1300,216"/>
+<area shape="poly" title=" " alt="" coords="1155,133,1248,180,1246,185,1152,137"/>
+<area shape="rect" title=" " alt="" coords="777,190,969,216"/>
+<area shape="poly" title=" " alt="" coords="1059,138,922,187,920,182,1057,133"/>
+<area shape="poly" title=" " alt="" coords="1175,133,1332,182,1330,188,1173,138"/>
+<area shape="poly" title=" " alt="" coords="1199,130,1452,179,1451,184,1198,135"/>
+<area shape="poly" title=" " alt="" coords="729,128,729,174,724,174,724,128"/>
+<area shape="poly" title=" " alt="" coords="705,130,600,185,598,180,702,125"/>
+<area shape="rect" title=" " alt="" coords="615,190,675,216"/>
+<area shape="poly" title=" " alt="" coords="717,129,669,181,665,177,713,126"/>
 </map>
 </div>
 </div><table class="memberdecls">
