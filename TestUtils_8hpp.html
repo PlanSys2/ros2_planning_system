@@ -96,23 +96,38 @@ $(function(){ initResizable(false); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;atomic&gt;</code><br />
+<code>#include &lt;memory&gt;</code><br />
 <code>#include &lt;chrono&gt;</code><br />
+<code>#include &lt;future&gt;</code><br />
+<code>#include &lt;string&gt;</code><br />
 <code>#include &lt;thread&gt;</code><br />
+<code>#include &quot;lifecycle_msgs/msg/state.hpp&quot;</code><br />
+<code>#include &quot;lifecycle_msgs/srv/get_state.hpp&quot;</code><br />
 <code>#include &quot;rclcpp/rclcpp.hpp&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for TestUtils.hpp:</div>
 <div class="dyncontent">
 <div class="center"><img src="TestUtils_8hpp__incl.png" border="0" usemap="#aplansys2__core_2include_2plansys2__core_2TestUtils_8hpp" alt=""/></div>
 <map name="aplansys2__core_2include_2plansys2__core_2TestUtils_8hpp" id="aplansys2__core_2include_2plansys2__core_2TestUtils_8hpp">
-<area shape="rect" title=" " alt="" coords="66,5,256,46"/>
-<area shape="rect" title=" " alt="" coords="5,94,66,120"/>
-<area shape="poly" title=" " alt="" coords="131,49,69,88,66,83,128,44"/>
-<area shape="rect" title=" " alt="" coords="89,94,150,120"/>
-<area shape="poly" title=" " alt="" coords="153,48,135,81,131,79,148,45"/>
-<area shape="rect" title=" " alt="" coords="174,94,231,120"/>
-<area shape="poly" title=" " alt="" coords="173,45,191,79,186,81,169,48"/>
-<area shape="rect" title=" " alt="" coords="254,94,374,120"/>
-<area shape="poly" title=" " alt="" coords="200,44,279,84,276,89,198,49"/>
+<area shape="rect" title=" " alt="" coords="276,5,465,46"/>
+<area shape="rect" title=" " alt="" coords="5,102,66,127"/>
+<area shape="poly" title=" " alt="" coords="275,47,180,68,79,97,75,98,73,93,77,91,178,63,274,41"/>
+<area shape="rect" title=" " alt="" coords="90,102,157,127"/>
+<area shape="poly" title=" " alt="" coords="308,49,170,97,166,98,164,93,168,91,306,44"/>
+<area shape="rect" title=" " alt="" coords="181,102,242,127"/>
+<area shape="poly" title=" " alt="" coords="335,49,248,96,246,91,333,44"/>
+<area shape="rect" title=" " alt="" coords="266,102,320,127"/>
+<area shape="poly" title=" " alt="" coords="355,48,316,92,312,88,351,45"/>
+<area shape="rect" title=" " alt="" coords="344,102,397,127"/>
+<area shape="poly" title=" " alt="" coords="373,47,373,86,368,86,368,47"/>
+<area shape="rect" title=" " alt="" coords="422,102,479,127"/>
+<area shape="poly" title=" " alt="" coords="390,45,431,89,427,92,386,48"/>
+<area shape="rect" title=" " alt="" coords="503,94,640,135"/>
+<area shape="poly" title=" " alt="" coords="417,44,513,85,511,90,415,49"/>
+<area shape="rect" title=" " alt="" coords="664,94,794,135"/>
+<area shape="poly" title=" " alt="" coords="454,44,650,91,648,96,453,49"/>
+<area shape="rect" title=" " alt="" coords="817,102,936,127"/>
+<area shape="poly" title=" " alt="" coords="465,36,626,59,807,91,821,95,819,100,806,97,625,64,465,41"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -120,106 +135,121 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="TestUtils_8hpp__dep__incl.png" border="0" usemap="#aplansys2__core_2include_2plansys2__core_2TestUtils_8hppdep" alt=""/></div>
 <map name="aplansys2__core_2include_2plansys2__core_2TestUtils_8hppdep" id="aplansys2__core_2include_2plansys2__core_2TestUtils_8hppdep">
-<area shape="rect" title=" " alt="" coords="4432,5,4622,46"/>
+<area shape="rect" title=" " alt="" coords="5155,5,5344,46"/>
 <area shape="rect" href="bt__action__node__test_8cpp.html" title=" " alt="" coords="5,94,145,150"/>
-<area shape="poly" title=" " alt="" coords="4417,29,3544,29,2210,36,1527,44,916,56,438,73,270,84,158,97,146,99,144,94,157,91,269,79,438,68,915,51,1527,39,2210,31,3544,24,4417,24"/>
+<area shape="poly" title=" " alt="" coords="5140,30,4093,36,2474,49,942,69,415,82,248,89,158,97,146,99,144,94,157,91,247,84,415,77,942,64,2474,44,4093,31,5140,25"/>
 <area shape="rect" href="bt__action__test_8cpp.html" title=" " alt="" coords="169,94,309,150"/>
-<area shape="poly" title=" " alt="" coords="4417,29,3572,30,2291,37,1635,45,1049,57,591,74,429,85,322,97,310,99,308,94,321,91,429,79,591,69,1048,52,1635,40,2291,32,3572,25,4417,24"/>
-<area shape="rect" href="test__utils__test_8cpp.html" title=" " alt="" coords="333,102,465,142"/>
-<area shape="poly" title=" " alt="" coords="4417,29,3601,30,2368,37,1738,45,1175,57,736,74,581,85,478,97,450,104,449,98,477,91,580,79,736,69,1175,52,1738,40,2368,32,3601,25,4417,24"/>
-<area shape="rect" href="domain__expert__node__test_8cpp.html" title=" " alt="" coords="489,94,653,150"/>
-<area shape="poly" title=" " alt="" coords="4417,30,3634,33,2461,43,1862,51,1328,63,910,78,763,87,665,97,654,99,653,93,664,91,762,81,910,72,1327,57,1862,46,2461,37,3634,28,4417,25"/>
-<area shape="rect" href="action__execution__test_8cpp.html" title=" " alt="" coords="676,94,831,150"/>
-<area shape="poly" title=" " alt="" coords="4417,30,3667,33,2550,43,1981,51,1473,63,1077,78,936,87,843,97,832,99,831,93,843,91,936,81,1076,73,1472,58,1981,46,2549,38,3667,28,4417,25"/>
-<area shape="rect" href="action__executor__churn__test_8cpp.html" title=" " alt="" coords="855,94,1010,150"/>
-<area shape="poly" title=" " alt="" coords="4417,30,3699,34,2638,44,2099,53,1618,64,1243,79,1110,87,1022,97,1010,99,1010,93,1021,91,1110,82,1243,73,1618,59,2099,47,2638,39,3699,28,4417,25"/>
-<area shape="rect" href="action__hub__test_8cpp.html" title=" " alt="" coords="1033,102,1200,142"/>
-<area shape="poly" title=" " alt="" coords="4417,30,3734,35,2733,47,1772,67,1419,80,1294,88,1211,97,1178,104,1177,98,1211,91,1294,83,1419,75,1772,61,2732,41,3734,30,4417,25"/>
-<area shape="rect" href="action__protocol__test_8cpp.html" title=" " alt="" coords="1223,94,1378,150"/>
-<area shape="poly" title=" " alt="" coords="4417,30,3767,35,2822,47,1917,67,1586,80,1468,88,1390,97,1378,99,1378,94,1389,91,1468,83,1585,75,1917,61,2822,42,3767,30,4417,25"/>
-<area shape="rect" href="bt__node__test_8cpp.html" title=" " alt="" coords="1402,102,1556,142"/>
-<area shape="poly" title=" " alt="" coords="4417,30,3800,36,2911,48,2063,68,1752,81,1569,97,1538,103,1537,98,1568,91,1752,76,2063,63,2911,43,3800,31,4417,25"/>
-<area shape="rect" href="bt__node__test__charging_8cpp.html" title=" " alt="" coords="1580,102,1786,142"/>
-<area shape="poly" title=" " alt="" coords="4417,29,3893,30,3136,38,2738,46,2364,58,2041,75,1798,97,1758,104,1757,98,1797,91,2041,70,2364,53,2738,41,3136,33,3893,25,4417,24"/>
-<area shape="rect" href="execution__tree__test_8cpp.html" title=" " alt="" coords="1809,102,1997,142"/>
-<area shape="poly" title=" " alt="" coords="4417,29,3929,31,3233,39,2869,47,2527,59,2232,75,2010,97,1973,104,1972,98,2009,91,2232,70,2527,54,2869,42,3233,33,3929,25,4417,24"/>
-<area shape="rect" href="executor__bank__test_8cpp.html" title=" " alt="" coords="2021,102,2209,142"/>
-<area shape="poly" title=" " alt="" coords="4417,30,3967,32,3332,41,3001,50,2691,61,2424,77,2222,97,2185,104,2184,98,2221,91,2424,71,2691,56,3001,44,3332,36,3967,27,4417,24"/>
-<area shape="rect" href="executor__goal__handling__test_8cpp.html" title=" " alt="" coords="2233,94,2418,150"/>
-<area shape="poly" title=" " alt="" coords="4417,30,4003,34,3429,44,2853,64,2613,78,2431,97,2419,99,2418,93,2431,91,2612,73,2853,58,3429,38,4003,28,4417,25"/>
-<area shape="rect" href="executor__gone__test_8cpp.html" title=" " alt="" coords="2443,102,2630,142"/>
-<area shape="poly" title=" " alt="" coords="4417,31,4041,35,3528,46,3016,66,2803,80,2642,97,2606,103,2605,98,2641,91,2803,75,3016,61,3528,41,4041,30,4417,25"/>
-<area shape="rect" href="executor__rates__test_8cpp.html" title=" " alt="" coords="2654,102,2842,142"/>
-<area shape="poly" title=" " alt="" coords="4417,31,4080,37,3629,50,3182,69,2996,82,2855,97,2819,104,2818,98,2855,91,2996,76,3181,64,3629,44,4079,32,4417,26"/>
-<area shape="rect" href="executor__replan__test_8cpp.html" title=" " alt="" coords="2867,94,3022,150"/>
-<area shape="poly" title=" " alt="" coords="4417,31,4112,37,3713,49,3320,68,3158,81,3034,97,3023,99,3022,94,3033,91,3157,76,3320,63,3713,43,4112,32,4417,26"/>
-<area shape="rect" href="executor__stn__test_8cpp.html" title=" " alt="" coords="3045,102,3222,142"/>
-<area shape="poly" title=" " alt="" coords="4417,32,3809,54,3476,73,3339,84,3234,97,3200,103,3199,98,3233,91,3338,79,3476,67,3809,49,4417,27"/>
-<area shape="rect" href="executor__test_8cpp.html" title=" " alt="" coords="3246,102,3400,142"/>
-<area shape="poly" title=" " alt="" coords="4417,33,3895,55,3616,74,3501,85,3413,97,3383,104,3382,98,3412,91,3500,79,3615,68,3895,50,4417,28"/>
-<area shape="rect" href="plan__setup__errors__test_8cpp.html" title=" " alt="" coords="3424,94,3579,150"/>
-<area shape="poly" title=" " alt="" coords="4417,30,4255,34,4049,44,3820,64,3704,78,3591,97,3580,99,3579,94,3591,91,3704,73,3820,59,4048,39,4255,28,4417,25"/>
-<area shape="rect" href="sequential__bt__builder__test_8cpp.html" title=" " alt="" coords="3604,94,3776,150"/>
-<area shape="poly" title=" " alt="" coords="4417,34,4131,53,3960,71,3789,97,3777,99,3776,94,3788,91,3959,66,4131,48,4417,28"/>
-<area shape="rect" href="simple__btbuilder__tests_8cpp.html" title=" " alt="" coords="3800,94,3955,150"/>
-<area shape="poly" title=" " alt="" coords="4417,37,4208,58,4087,75,3968,97,3956,99,3955,94,3966,91,4086,70,4207,53,4417,32"/>
-<area shape="rect" href="stn__bank__test_8cpp.html" title=" " alt="" coords="3980,102,4136,142"/>
-<area shape="poly" title=" " alt="" coords="4418,46,4288,68,4149,97,4122,104,4121,98,4148,91,4287,63,4417,41"/>
-<area shape="rect" href="stn__btbuilder__tests_8cpp.html" title=" " alt="" coords="4160,102,4344,142"/>
-<area shape="poly" title=" " alt="" coords="4456,54,4311,103,4309,98,4454,49"/>
-<area shape="rect" href="fake__lifecycle__node_8hpp.html" title=" " alt="" coords="4368,94,4555,150"/>
-<area shape="poly" title=" " alt="" coords="4507,60,4483,95,4478,92,4503,57"/>
-<area shape="rect" href="lf__manager__test_8cpp.html" title=" " alt="" coords="4506,198,4678,253"/>
-<area shape="poly" title=" " alt="" coords="4552,58,4569,93,4585,148,4593,197,4587,198,4580,149,4565,95,4547,60"/>
-<area shape="rect" href="kairos__planner__node__test_8cpp.html" title=" " alt="" coords="4629,94,4777,150"/>
-<area shape="poly" title=" " alt="" coords="4578,51,4653,91,4651,96,4576,56"/>
-<area shape="rect" href="planner__client__test_8cpp.html" title=" " alt="" coords="4801,94,4949,150"/>
-<area shape="poly" title=" " alt="" coords="4622,48,4789,91,4802,95,4800,100,4788,97,4621,53"/>
-<area shape="rect" href="planner__node__errors__test_8cpp.html" title=" " alt="" coords="4973,94,5140,150"/>
-<area shape="poly" title=" " alt="" coords="4638,38,4791,60,4961,91,4973,94,4972,99,4960,97,4790,65,4637,43"/>
-<area shape="rect" href="planner__test_8cpp.html" title=" " alt="" coords="5164,102,5311,142"/>
-<area shape="poly" title=" " alt="" coords="4638,30,4876,50,5015,67,5153,91,5180,98,5179,103,5152,97,5014,73,4875,55,4637,35"/>
-<area shape="rect" href="popf__test_8cpp.html" title=" " alt="" coords="5335,94,5479,150"/>
-<area shape="poly" title=" " alt="" coords="4637,26,4776,31,4948,42,5136,62,5323,91,5335,94,5334,99,5323,97,5135,67,4947,48,4776,36,4637,31"/>
-<area shape="rect" href="check__in__expert__test_8cpp.html" title=" " alt="" coords="5503,94,5674,150"/>
-<area shape="poly" title=" " alt="" coords="4637,25,4804,29,5017,40,5254,59,5491,91,5503,94,5502,99,5491,97,5253,65,5017,45,4804,35,4637,30"/>
-<area shape="rect" href="client__no__answer__test_8cpp.html" title=" " alt="" coords="5697,94,5874,150"/>
-<area shape="poly" title=" " alt="" coords="4637,23,4835,25,5096,34,5390,55,5540,71,5686,91,5697,93,5696,99,5685,97,5539,76,5390,60,5096,40,4835,31,4637,29"/>
-<area shape="rect" href="domain__change__test_8cpp.html" title=" " alt="" coords="5898,94,6065,150"/>
-<area shape="poly" title=" " alt="" coords="4637,27,4917,34,5277,47,5630,66,5776,78,5887,91,5898,93,5897,99,5887,97,5776,83,5630,71,5277,52,4916,39,4637,32"/>
-<area shape="rect" href="dynamics__test_8cpp.html" title=" " alt="" coords="6090,102,6274,142"/>
-<area shape="poly" title=" " alt="" coords="4637,26,4952,33,5368,45,5778,65,5949,77,6078,91,6114,98,6113,104,6077,97,5948,82,5778,70,5368,51,4952,38,4637,31"/>
-<area shape="rect" href="effect__undo__test_8cpp.html" title=" " alt="" coords="6298,94,6465,150"/>
-<area shape="poly" title=" " alt="" coords="4637,25,4990,30,5466,41,5940,61,6137,74,6286,91,6298,93,6297,99,6285,97,6136,80,5940,66,5466,46,4990,35,4637,31"/>
-<area shape="rect" href="object__fluents__test_8cpp.html" title=" " alt="" coords="6490,94,6657,150"/>
-<area shape="poly" title=" " alt="" coords="4637,25,5025,28,5557,38,6089,58,6310,73,6478,91,6490,93,6489,99,6477,97,6310,78,6089,63,5556,43,5025,33,4637,30"/>
-<area shape="rect" href="problem__expert__misc__test_8cpp.html" title=" " alt="" coords="6682,94,6849,150"/>
-<area shape="poly" title=" " alt="" coords="4637,24,5059,27,5647,35,5952,44,6238,56,6484,71,6670,91,6682,93,6681,99,6669,97,6483,76,6238,61,5952,49,5647,41,5059,32,4637,30"/>
-<area shape="rect" href="problem__expert__node__test_8cpp.html" title=" " alt="" coords="6874,94,7041,150"/>
-<area shape="poly" title=" " alt="" coords="4637,24,5092,25,5736,33,6071,41,6386,53,6657,70,6862,91,6874,93,6873,99,6861,97,6657,75,6386,58,6071,46,5736,38,5092,30,4637,29"/>
-<area shape="rect" href="quantifier__test_8cpp.html" title=" " alt="" coords="7066,94,7233,150"/>
-<area shape="poly" title=" " alt="" coords="4637,24,5126,24,5825,30,6191,38,6535,51,6831,68,7054,91,7066,93,7065,99,7053,97,6830,73,6534,56,6191,44,5825,36,5126,29,4637,29"/>
-<area shape="rect" href="timed__facts__test_8cpp.html" title=" " alt="" coords="7258,94,7425,150"/>
-<area shape="poly" title=" " alt="" coords="4637,25,5209,32,6022,46,6795,65,7078,78,7246,91,7258,93,7257,99,7245,97,7078,83,6795,71,6022,51,5209,38,4637,31"/>
-<area shape="rect" href="plansys2__problem__expert_2test_2unit_2utils__test_8cpp.html" title=" " alt="" coords="7450,102,7617,142"/>
-<area shape="poly" title=" " alt="" coords="4637,25,5245,32,6119,44,6952,64,7257,77,7438,91,7472,98,7471,103,7437,97,7257,82,6952,70,6119,50,5245,37,4637,31"/>
-<area shape="rect" href="terminal__commands__test_8cpp.html" title=" " alt="" coords="7641,102,7837,142"/>
-<area shape="poly" title=" " alt="" coords="4637,25,5281,32,6215,45,7108,65,7436,77,7630,91,7668,98,7667,103,7629,97,7436,83,7108,70,6215,51,5281,37,4637,31"/>
-<area shape="rect" href="terminal__test_8cpp.html" title=" " alt="" coords="7861,102,8012,142"/>
-<area shape="poly" title=" " alt="" coords="4637,25,5321,29,6324,40,6833,49,7286,60,7640,74,7765,82,7849,91,7880,98,7879,104,7848,97,7765,88,7640,79,7286,65,6833,54,6324,45,5321,34,4637,30"/>
-<area shape="rect" href="test__1_8cpp.html" title=" " alt="" coords="8036,102,8170,142"/>
-<area shape="poly" title=" " alt="" coords="4637,24,5353,27,6412,36,6950,44,7430,56,7804,72,7937,81,8025,91,8053,98,8052,104,8024,97,7936,86,7804,77,7430,61,6950,50,6412,41,5353,32,4637,30"/>
-<area shape="rect" href="test__2_8cpp.html" title=" " alt="" coords="8194,102,8329,142"/>
-<area shape="poly" title=" " alt="" coords="4637,24,5382,26,6490,35,7055,44,7558,55,7951,71,8090,81,8182,91,8211,98,8210,104,8181,97,8089,86,7950,76,7558,61,7054,49,6490,41,5382,32,4637,30"/>
-<area shape="rect" href="test__3_8cpp.html" title=" " alt="" coords="8353,102,8488,142"/>
-<area shape="poly" title=" " alt="" coords="4637,24,5411,26,6569,34,7160,42,7687,54,8098,70,8244,80,8341,91,8369,98,8368,104,8340,97,8244,85,8098,76,7687,59,7160,48,6569,39,5411,31,4637,30"/>
-<area shape="rect" href="test__4_8cpp.html" title=" " alt="" coords="8512,102,8646,142"/>
-<area shape="poly" title=" " alt="" coords="4637,24,5439,25,6647,33,7264,41,7816,53,8246,69,8398,80,8499,91,8528,98,8527,104,8499,97,8398,85,8246,75,7816,58,7264,46,6647,38,5439,31,4637,30"/>
-<area shape="rect" href="test__5_8cpp.html" title=" " alt="" coords="8670,102,8805,142"/>
-<area shape="poly" title=" " alt="" coords="4637,24,5468,25,6726,32,7369,40,7945,52,8394,69,8553,79,8658,91,8687,98,8686,104,8657,97,8552,85,8393,74,7945,57,7369,45,6726,37,5468,30,4637,29"/>
-<area shape="rect" href="lf__manager__shutdown__test_8cpp.html" title=" " alt="" coords="4310,198,4482,253"/>
-<area shape="poly" title=" " alt="" coords="4438,165,4416,198,4412,196,4434,162"/>
-<area shape="poly" title=" " alt="" coords="4510,157,4559,195,4556,199,4507,162"/>
+<area shape="poly" title=" " alt="" coords="5140,30,4124,36,2558,50,1078,70,569,82,407,89,321,97,310,99,309,94,320,91,407,84,569,77,1078,64,2558,44,4124,31,5140,25"/>
+<area shape="rect" href="active__component__test_8cpp.html" title=" " alt="" coords="332,102,516,142"/>
+<area shape="poly" title=" " alt="" coords="5139,30,4204,31,2760,40,2018,48,1353,60,834,76,650,86,529,97,492,104,491,98,528,91,650,80,834,71,1353,55,2018,43,2760,35,4204,26,5139,24"/>
+<area shape="rect" href="client__node__test_8cpp.html" title=" " alt="" coords="540,102,684,142"/>
+<area shape="poly" title=" " alt="" coords="5140,29,4234,29,2843,35,2128,43,1489,55,990,73,814,84,697,97,667,104,666,98,696,91,813,79,990,67,1489,50,2128,38,2843,30,4234,24,5140,24"/>
+<area shape="rect" href="guarded__service__test_8cpp.html" title=" " alt="" coords="708,102,882,142"/>
+<area shape="poly" title=" " alt="" coords="5139,30,4269,32,2940,41,2259,49,1650,61,1174,77,1006,86,894,97,859,104,858,98,893,91,1005,81,1174,71,1650,56,2259,44,2940,35,4269,27,5139,24"/>
+<area shape="rect" href="service__client__test_8cpp.html" title=" " alt="" coords="905,102,1064,142"/>
+<area shape="poly" title=" " alt="" coords="5140,30,4302,32,3030,40,2380,49,1798,60,1344,76,1183,86,1077,97,1044,104,1043,98,1076,91,1183,80,1344,71,1798,55,2380,43,3030,35,4302,26,5140,24"/>
+<area shape="rect" href="test__utils__test_8cpp.html" title=" " alt="" coords="1088,102,1219,142"/>
+<area shape="poly" title=" " alt="" coords="5139,29,4329,30,3106,37,2482,45,1924,57,1489,74,1335,85,1233,97,1205,104,1204,98,1232,91,1334,79,1488,69,1924,52,2482,40,3106,32,4329,25,5139,24"/>
+<area shape="rect" href="domain__expert__node__test_8cpp.html" title=" " alt="" coords="1244,94,1407,150"/>
+<area shape="poly" title=" " alt="" coords="5139,30,4363,33,3200,43,2606,51,2076,63,1663,78,1516,87,1419,97,1408,99,1407,93,1419,91,1516,81,1663,73,2076,58,2606,46,3199,38,4363,28,5139,25"/>
+<area shape="rect" href="action__execution__test_8cpp.html" title=" " alt="" coords="1431,94,1586,150"/>
+<area shape="poly" title=" " alt="" coords="5139,30,4395,33,3288,43,2725,52,2221,63,1829,78,1690,87,1598,97,1586,99,1586,93,1597,91,1690,82,1829,73,2221,58,2724,46,3288,38,4395,28,5139,25"/>
+<area shape="rect" href="action__executor__churn__test_8cpp.html" title=" " alt="" coords="1610,94,1764,150"/>
+<area shape="poly" title=" " alt="" coords="5140,30,4428,34,3377,44,2843,53,2367,64,1995,79,1864,87,1777,97,1765,99,1764,93,1776,91,1864,82,1995,73,2367,59,2843,48,3377,39,4428,29,5140,25"/>
+<area shape="rect" href="action__hub__test_8cpp.html" title=" " alt="" coords="1788,102,1954,142"/>
+<area shape="poly" title=" " alt="" coords="5139,30,4462,35,3471,47,2521,67,2172,80,2048,88,1966,97,1933,103,1932,98,1965,91,2048,83,2171,75,2521,62,3471,42,4462,30,5139,25"/>
+<area shape="rect" href="action__protocol__test_8cpp.html" title=" " alt="" coords="1978,94,2132,150"/>
+<area shape="poly" title=" " alt="" coords="5139,30,4495,35,3560,47,2666,67,2338,80,2222,88,2145,97,2133,99,2132,94,2144,91,2221,83,2338,75,2666,62,3560,42,4495,30,5139,25"/>
+<area shape="rect" href="bt__node__test_8cpp.html" title=" " alt="" coords="2156,102,2311,142"/>
+<area shape="poly" title=" " alt="" coords="5140,30,4529,36,3650,48,2812,68,2505,81,2323,97,2292,103,2291,98,2323,91,2504,76,2812,63,3650,43,4529,31,5140,25"/>
+<area shape="rect" href="bt__node__test__charging_8cpp.html" title=" " alt="" coords="2335,102,2540,142"/>
+<area shape="poly" title=" " alt="" coords="5139,29,4621,31,3873,39,3480,47,3111,59,2793,75,2553,97,2513,104,2512,98,2552,91,2792,70,3111,53,3480,41,3873,33,4621,25,5139,24"/>
+<area shape="rect" href="execution__tree__test_8cpp.html" title=" " alt="" coords="2564,102,2751,142"/>
+<area shape="poly" title=" " alt="" coords="5140,29,4658,31,3971,39,3612,47,3275,59,2984,75,2765,97,2728,104,2727,98,2764,91,2984,70,3274,54,3612,42,3971,34,4658,26,5140,24"/>
+<area shape="rect" href="executor__bank__test_8cpp.html" title=" " alt="" coords="2776,102,2963,142"/>
+<area shape="poly" title=" " alt="" coords="5140,30,4695,32,4070,42,3744,50,3438,62,3175,77,2977,97,2940,104,2939,98,2976,91,3175,72,3438,56,3744,45,4069,36,4695,27,5140,24"/>
+<area shape="rect" href="executor__goal__handling__test_8cpp.html" title=" " alt="" coords="2988,94,3173,150"/>
+<area shape="poly" title=" " alt="" coords="5140,30,4732,34,4167,44,3600,64,3365,78,3186,97,3174,99,3173,93,3185,91,3364,73,3600,59,4167,39,4732,29,5140,25"/>
+<area shape="rect" href="executor__gone__test_8cpp.html" title=" " alt="" coords="3197,102,3385,142"/>
+<area shape="poly" title=" " alt="" coords="5140,31,4769,36,4266,47,3764,66,3555,80,3397,97,3361,103,3360,98,3396,91,3554,75,3763,61,4266,41,4769,30,5139,25"/>
+<area shape="rect" href="executor__lifecycle__test_8cpp.html" title=" " alt="" coords="3408,94,3563,150"/>
+<area shape="poly" title=" " alt="" coords="5140,31,4802,35,4350,46,3902,66,3716,80,3575,97,3564,99,3563,94,3575,91,3716,74,3902,60,4350,41,4802,30,5140,25"/>
+<area shape="rect" href="executor__rates__test_8cpp.html" title=" " alt="" coords="3588,102,3776,142"/>
+<area shape="poly" title=" " alt="" coords="5139,32,4451,52,4068,71,3909,83,3789,97,3753,103,3752,98,3788,91,3909,78,4068,66,4451,47,5139,27"/>
+<area shape="rect" href="executor__replan__test_8cpp.html" title=" " alt="" coords="3800,94,3955,150"/>
+<area shape="poly" title=" " alt="" coords="5139,32,4875,39,4537,52,4207,71,4071,83,3967,97,3956,99,3955,94,3967,91,4070,78,4207,66,4536,47,4874,34,5139,27"/>
+<area shape="rect" href="executor__stn__test_8cpp.html" title=" " alt="" coords="3978,102,4156,142"/>
+<area shape="poly" title=" " alt="" coords="5140,29,4954,32,4712,42,4440,62,4302,77,4167,97,4134,103,4133,98,4167,91,4302,72,4440,57,4711,37,4954,27,5140,24"/>
+<area shape="rect" href="executor__test_8cpp.html" title=" " alt="" coords="4179,102,4334,142"/>
+<area shape="poly" title=" " alt="" coords="5139,30,4983,34,4785,45,4565,65,4346,97,4317,103,4315,98,4345,91,4565,59,4784,40,4983,29,5139,25"/>
+<area shape="rect" href="plan__setup__errors__test_8cpp.html" title=" " alt="" coords="4358,94,4512,150"/>
+<area shape="poly" title=" " alt="" coords="5139,33,5013,40,4859,52,4692,70,4525,97,4513,99,4512,94,4524,91,4691,65,4859,46,5013,34,5139,28"/>
+<area shape="rect" href="sequential__bt__builder__test_8cpp.html" title=" " alt="" coords="4537,94,4709,150"/>
+<area shape="poly" title=" " alt="" coords="5140,39,4945,61,4722,97,4710,99,4709,94,4721,91,4944,56,5140,34"/>
+<area shape="rect" href="simple__btbuilder__tests_8cpp.html" title=" " alt="" coords="4734,94,4888,150"/>
+<area shape="poly" title=" " alt="" coords="5140,48,5024,70,4901,97,4889,100,4888,94,4900,91,5023,64,5139,43"/>
+<area shape="rect" href="stn__bank__test_8cpp.html" title=" " alt="" coords="4913,102,5069,142"/>
+<area shape="poly" title=" " alt="" coords="5182,54,5046,103,5044,98,5181,49"/>
+<area shape="rect" href="stn__btbuilder__tests_8cpp.html" title=" " alt="" coords="5094,102,5278,142"/>
+<area shape="poly" title=" " alt="" coords="5230,61,5201,103,5197,100,5226,58"/>
+<area shape="rect" href="fake__lifecycle__node_8hpp.html" title=" " alt="" coords="5352,94,5539,150"/>
+<area shape="poly" title=" " alt="" coords="5306,51,5390,91,5388,96,5303,56"/>
+<area shape="rect" href="lf__manager__shutdown__test_8cpp.html" title=" " alt="" coords="5261,198,5433,253"/>
+<area shape="poly" title=" " alt="" coords="5272,58,5292,93,5339,196,5334,198,5287,95,5268,61"/>
+<area shape="rect" href="lf__manager__test_8cpp.html" title=" " alt="" coords="5473,198,5645,253"/>
+<area shape="poly" title=" " alt="" coords="5360,35,5419,44,5475,56,5522,72,5553,92,5567,117,5572,145,5572,173,5569,198,5563,197,5567,173,5567,146,5562,119,5549,96,5520,77,5474,61,5418,49,5359,40"/>
+<area shape="rect" href="lf__supervisor__test_8cpp.html" title=" " alt="" coords="5613,94,5796,150"/>
+<area shape="poly" title=" " alt="" coords="5360,44,5596,91,5613,95,5612,101,5594,97,5359,50"/>
+<area shape="rect" href="kairos__planner__node__test_8cpp.html" title=" " alt="" coords="5820,94,5967,150"/>
+<area shape="poly" title=" " alt="" coords="5360,32,5569,53,5689,70,5808,91,5820,94,5819,100,5806,97,5688,75,5568,58,5360,37"/>
+<area shape="rect" href="planner__client__test_8cpp.html" title=" " alt="" coords="5992,94,6139,150"/>
+<area shape="poly" title=" " alt="" coords="5360,27,5487,34,5643,46,5811,64,5979,91,5992,94,5991,99,5979,97,5811,69,5642,51,5487,39,5360,33"/>
+<area shape="rect" href="planner__node__errors__test_8cpp.html" title=" " alt="" coords="6163,94,6331,150"/>
+<area shape="poly" title=" " alt="" coords="5360,26,5515,30,5713,41,5932,61,6151,91,6163,94,6162,99,6151,97,5932,66,5713,47,5515,36,5359,31"/>
+<area shape="rect" href="planner__test_8cpp.html" title=" " alt="" coords="6355,102,6502,142"/>
+<area shape="poly" title=" " alt="" coords="5360,28,5871,50,6145,68,6257,79,6343,91,6373,98,6371,103,6343,97,6257,84,6144,73,5871,55,5360,33"/>
+<area shape="rect" href="popf__test_8cpp.html" title=" " alt="" coords="6526,94,6669,150"/>
+<area shape="poly" title=" " alt="" coords="5360,27,5621,34,5954,46,6278,65,6412,77,6514,91,6526,94,6525,99,6513,97,6412,83,6278,71,5954,52,5621,39,5360,32"/>
+<area shape="rect" href="check__in__expert__test_8cpp.html" title=" " alt="" coords="6694,94,6864,150"/>
+<area shape="poly" title=" " alt="" coords="5360,26,5653,33,6034,46,6409,65,6564,77,6682,91,6694,93,6693,99,6681,97,6564,83,6408,70,6034,51,5653,39,5360,32"/>
+<area shape="rect" href="client__no__answer__test_8cpp.html" title=" " alt="" coords="6888,94,7065,150"/>
+<area shape="poly" title=" " alt="" coords="5360,26,5689,32,6127,44,6560,63,6740,76,6877,91,6888,93,6887,98,6876,97,6740,81,6560,68,6126,49,5689,37,5360,31"/>
+<area shape="rect" href="domain__change__test_8cpp.html" title=" " alt="" coords="7089,94,7256,150"/>
+<area shape="poly" title=" " alt="" coords="5360,25,5726,29,6222,40,6717,59,6922,74,7078,91,7089,93,7088,99,7077,97,6922,79,6717,65,6222,45,5726,34,5360,30"/>
+<area shape="rect" href="dynamics__test_8cpp.html" title=" " alt="" coords="7280,102,7464,142"/>
+<area shape="poly" title=" " alt="" coords="5360,25,5760,29,6312,39,6864,59,7094,73,7269,91,7304,98,7303,103,7268,97,7094,79,6864,64,6311,44,5760,34,5360,30"/>
+<area shape="rect" href="effect__undo__test_8cpp.html" title=" " alt="" coords="7489,94,7656,150"/>
+<area shape="poly" title=" " alt="" coords="5360,24,5796,26,6408,34,6727,43,7025,54,7282,70,7477,91,7489,93,7488,99,7476,97,7282,76,7025,60,6727,48,6408,40,5796,31,5360,30"/>
+<area shape="rect" href="object__fluents__test_8cpp.html" title=" " alt="" coords="7681,94,7848,150"/>
+<area shape="poly" title=" " alt="" coords="5360,24,5830,24,6498,32,6847,40,7174,52,7456,69,7669,91,7681,93,7680,99,7668,97,7455,74,7174,57,6847,45,6498,37,5830,30,5360,29"/>
+<area shape="rect" href="problem__expert__misc__test_8cpp.html" title=" " alt="" coords="7873,94,8040,150"/>
+<area shape="poly" title=" " alt="" coords="5360,26,6691,47,7430,66,7701,78,7861,91,7873,93,7872,99,7860,97,7700,83,7430,72,6691,52,5360,31"/>
+<area shape="rect" href="problem__expert__node__test_8cpp.html" title=" " alt="" coords="8065,94,8232,150"/>
+<area shape="poly" title=" " alt="" coords="5360,25,5948,32,6788,45,7587,65,7880,77,8053,91,8065,93,8064,99,8052,97,7879,83,7586,70,6788,51,5948,37,5360,31"/>
+<area shape="rect" href="problem__expert__state__test_8cpp.html" title=" " alt="" coords="8257,94,8424,150"/>
+<area shape="poly" title=" " alt="" coords="5360,25,5983,31,6883,44,7743,64,8058,76,8245,91,8257,93,8256,99,8244,97,8058,82,7743,69,6883,49,5983,37,5360,31"/>
+<area shape="rect" href="quantifier__test_8cpp.html" title=" " alt="" coords="8449,94,8616,150"/>
+<area shape="poly" title=" " alt="" coords="5360,25,6019,31,6980,43,7899,62,8237,76,8437,91,8449,93,8448,99,8436,97,8237,81,7899,68,6980,48,6019,36,5360,30"/>
+<area shape="rect" href="timed__facts__test_8cpp.html" title=" " alt="" coords="8641,94,8808,150"/>
+<area shape="poly" title=" " alt="" coords="5360,25,6054,30,7075,41,8056,61,8416,75,8544,83,8629,91,8641,93,8640,99,8628,97,8543,88,8416,80,8055,66,7075,47,6054,35,5360,30"/>
+<area shape="rect" href="plansys2__problem__expert_2test_2unit_2utils__test_8cpp.html" title=" " alt="" coords="8833,102,9000,142"/>
+<area shape="poly" title=" " alt="" coords="5360,25,6090,29,7171,40,7721,49,8212,60,8595,74,8730,82,8821,91,8855,98,8854,104,8820,97,8730,88,8594,79,8212,65,7721,54,7171,45,6090,34,5360,30"/>
+<area shape="rect" href="terminal__commands__test_8cpp.html" title=" " alt="" coords="9024,102,9219,142"/>
+<area shape="poly" title=" " alt="" coords="5360,25,6124,30,7266,41,8368,61,8773,75,8917,83,9013,91,9051,98,9050,104,9012,97,8917,88,8773,80,8367,67,7266,47,6124,35,5360,30"/>
+<area shape="rect" href="terminal__test_8cpp.html" title=" " alt="" coords="9243,102,9395,142"/>
+<area shape="poly" title=" " alt="" coords="5360,24,6164,26,7375,35,7993,43,8546,55,8977,71,9130,81,9231,91,9263,98,9262,104,9231,97,9129,86,8977,76,8546,61,7993,49,7375,41,6164,32,5360,30"/>
+<area shape="rect" href="test__1_8cpp.html" title=" " alt="" coords="9418,102,9553,142"/>
+<area shape="poly" title=" " alt="" coords="5360,24,6195,24,7462,31,8110,39,8689,51,9141,68,9301,79,9407,91,9436,98,9434,104,9407,97,9301,84,9141,74,8689,56,8110,44,7462,36,6195,30,5360,29"/>
+<area shape="rect" href="test__2_8cpp.html" title=" " alt="" coords="9577,102,9712,142"/>
+<area shape="poly" title=" " alt="" coords="5360,24,6224,24,7540,30,8214,38,8817,50,9288,68,9454,79,9565,91,9593,98,9592,104,9564,97,9454,84,9287,73,8817,56,8214,43,7540,36,6224,29,5360,29"/>
+<area shape="rect" href="test__3_8cpp.html" title=" " alt="" coords="9736,102,9870,142"/>
+<area shape="poly" title=" " alt="" coords="5360,24,6252,23,7618,29,8319,37,8946,49,9435,67,9609,78,9723,91,9752,98,9751,103,9723,97,9608,84,9435,72,8946,54,8318,42,7618,34,6252,29,5360,29"/>
+<area shape="rect" href="test__4_8cpp.html" title=" " alt="" coords="9894,102,10029,142"/>
+<area shape="poly" title=" " alt="" coords="5360,25,6321,32,7790,45,9174,65,9649,78,9801,84,9882,91,9911,98,9910,103,9881,97,9800,90,9649,83,9174,71,7790,50,6321,37,5360,30"/>
+<area shape="rect" href="test__5_8cpp.html" title=" " alt="" coords="10053,102,10188,142"/>
+<area shape="poly" title=" " alt="" coords="5360,25,6351,31,7871,45,9306,65,9799,77,9956,84,10041,91,10069,98,10068,103,10040,97,9956,89,9799,82,9306,70,7871,50,6350,37,5360,30"/>
+<area shape="poly" title=" " alt="" coords="5411,163,5375,199,5372,195,5407,159"/>
+<area shape="poly" title=" " alt="" coords="5489,158,5530,195,5527,199,5485,162"/>
 </map>
 </div>
 </div>
@@ -229,6 +259,9 @@ This graph shows which files directly or indirectly include this file:</div>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1testing_1_1ExecutorThread.html">ExecutorThread</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spins an executor in a thread of its own while it exists.  <a href="classplansys2_1_1testing_1_1ExecutorThread.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1testing_1_1NodeSpinner.html">NodeSpinner</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spins a node in a thread of its own while it exists: the node of some clients in a test, which get their answers from its executor (multi-threaded, as in plansys2_node).  <a href="classplansys2_1_1testing_1_1NodeSpinner.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
@@ -240,6 +273,14 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ab6535e71f80dea2fc3a93232dfc0ec4a" id="r_ab6535e71f80dea2fc3a93232dfc0ec4a"><td class="memTemplParams" colspan="2">template&lt;typename NodeT &gt; </td></tr>
+<tr class="memitem:ab6535e71f80dea2fc3a93232dfc0ec4a"><td class="memTemplItemLeft" align="right" valign="top">rclcpp::Service&lt; lifecycle_msgs::srv::GetState &gt;<a class="el" href="classrclcpp__action_1_1ClientGoalHandle_3_01test__msgs_1_1action_1_1Fibonacci_01_4_1_1SharedPtr.html">::SharedPtr</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceplansys2_1_1testing.html#ab6535e71f80dea2fc3a93232dfc0ec4a">active_state</a> (NodeT &amp;node, const std::string &amp;component)</td></tr>
+<tr class="memdesc:ab6535e71f80dea2fc3a93232dfc0ec4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">The lifecycle state of a fake component, active: PlanSys2 clients wait for it.  <br /></td></tr>
+<tr class="separator:ab6535e71f80dea2fc3a93232dfc0ec4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77b9ba26a0e3c03f694d02d7e0009f93" id="r_a77b9ba26a0e3c03f694d02d7e0009f93"><td class="memTemplParams" colspan="2">template&lt;typename ServiceT &gt; </td></tr>
+<tr class="memitem:a77b9ba26a0e3c03f694d02d7e0009f93"><td class="memTemplItemLeft" align="right" valign="top">ServiceT::Response::SharedPtr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceplansys2_1_1testing.html#a77b9ba26a0e3c03f694d02d7e0009f93">call</a> (const rclcpp::Node::SharedPtr &amp;spun_node, const std::string &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a>, typename ServiceT::Request::SharedPtr request, std::chrono::seconds timeout=std::chrono::seconds(5))</td></tr>
+<tr class="memdesc:a77b9ba26a0e3c03f694d02d7e0009f93"><td class="mdescLeft">&#160;</td><td class="mdescRight">A plain service call, as any ROS node makes it: what a server answers in any state.  <br /></td></tr>
+<tr class="separator:a77b9ba26a0e3c03f694d02d7e0009f93"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63be55cd52d7ba70325b9a814ee11db0" id="r_a63be55cd52d7ba70325b9a814ee11db0"><td class="memTemplParams" colspan="2">template&lt;typename Condition &gt; </td></tr>
 <tr class="memitem:a63be55cd52d7ba70325b9a814ee11db0"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceplansys2_1_1testing.html#a63be55cd52d7ba70325b9a814ee11db0">wait_for</a> (Condition condition, std::chrono::nanoseconds timeout=std::chrono::seconds(10))</td></tr>
 <tr class="memdesc:a63be55cd52d7ba70325b9a814ee11db0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait, without spinning, until a condition holds.  <br /></td></tr>

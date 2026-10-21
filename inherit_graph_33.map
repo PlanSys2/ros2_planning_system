@@ -1,3 +1,7 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$structstd_1_1hash_3_01plansys2_1_1ActionVariant_01_4.html" title=" " alt="" coords="5,5,212,31"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,46,86,72"/>
+<area shape="rect" id="Node000001" href="$structplansys2_1_1HasErrorInfo.html" title=" " alt="" coords="135,5,310,46"/>
+<area shape="poly" id="edge94_Node000000_Node000001" title=" " alt="" coords="100,46,134,40,135,45,101,51"/>
+<area shape="rect" id="Node000002" href="$structplansys2_1_1HasSuccess.html" title=" " alt="" coords="134,71,311,111"/>
+<area shape="poly" id="edge95_Node000000_Node000002" title=" " alt="" coords="101,66,134,72,133,78,100,72"/>
 </map>

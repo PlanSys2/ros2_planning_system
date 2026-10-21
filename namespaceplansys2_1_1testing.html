@@ -100,15 +100,94 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1testing_1_1ExecutorThread.html">ExecutorThread</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spins an executor in a thread of its own while it exists.  <a href="classplansys2_1_1testing_1_1ExecutorThread.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1testing_1_1NodeSpinner.html">NodeSpinner</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spins a node in a thread of its own while it exists: the node of some clients in a test, which get their answers from its executor (multi-threaded, as in plansys2_node).  <a href="classplansys2_1_1testing_1_1NodeSpinner.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ab6535e71f80dea2fc3a93232dfc0ec4a" id="r_ab6535e71f80dea2fc3a93232dfc0ec4a"><td class="memTemplParams" colspan="2">template&lt;typename NodeT &gt; </td></tr>
+<tr class="memitem:ab6535e71f80dea2fc3a93232dfc0ec4a"><td class="memTemplItemLeft" align="right" valign="top">rclcpp::Service&lt; lifecycle_msgs::srv::GetState &gt;<a class="el" href="classrclcpp__action_1_1ClientGoalHandle_3_01test__msgs_1_1action_1_1Fibonacci_01_4_1_1SharedPtr.html">::SharedPtr</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#ab6535e71f80dea2fc3a93232dfc0ec4a">active_state</a> (NodeT &amp;node, const std::string &amp;component)</td></tr>
+<tr class="memdesc:ab6535e71f80dea2fc3a93232dfc0ec4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">The lifecycle state of a fake component, active: PlanSys2 clients wait for it.  <br /></td></tr>
+<tr class="separator:ab6535e71f80dea2fc3a93232dfc0ec4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77b9ba26a0e3c03f694d02d7e0009f93" id="r_a77b9ba26a0e3c03f694d02d7e0009f93"><td class="memTemplParams" colspan="2">template&lt;typename ServiceT &gt; </td></tr>
+<tr class="memitem:a77b9ba26a0e3c03f694d02d7e0009f93"><td class="memTemplItemLeft" align="right" valign="top">ServiceT::Response::SharedPtr&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a77b9ba26a0e3c03f694d02d7e0009f93">call</a> (const rclcpp::Node::SharedPtr &amp;spun_node, const std::string &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a>, typename ServiceT::Request::SharedPtr request, std::chrono::seconds timeout=std::chrono::seconds(5))</td></tr>
+<tr class="memdesc:a77b9ba26a0e3c03f694d02d7e0009f93"><td class="mdescLeft">&#160;</td><td class="mdescRight">A plain service call, as any ROS node makes it: what a server answers in any state.  <br /></td></tr>
+<tr class="separator:a77b9ba26a0e3c03f694d02d7e0009f93"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63be55cd52d7ba70325b9a814ee11db0" id="r_a63be55cd52d7ba70325b9a814ee11db0"><td class="memTemplParams" colspan="2">template&lt;typename Condition &gt; </td></tr>
 <tr class="memitem:a63be55cd52d7ba70325b9a814ee11db0"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a63be55cd52d7ba70325b9a814ee11db0">wait_for</a> (Condition condition, std::chrono::nanoseconds timeout=std::chrono::seconds(10))</td></tr>
 <tr class="memdesc:a63be55cd52d7ba70325b9a814ee11db0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait, without spinning, until a condition holds.  <br /></td></tr>
 <tr class="separator:a63be55cd52d7ba70325b9a814ee11db0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="ab6535e71f80dea2fc3a93232dfc0ec4a" name="ab6535e71f80dea2fc3a93232dfc0ec4a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6535e71f80dea2fc3a93232dfc0ec4a">&#9670;&#160;</a></span>active_state()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename NodeT &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">rclcpp::Service&lt; lifecycle_msgs::srv::GetState &gt;<a class="el" href="classrclcpp__action_1_1ClientGoalHandle_3_01test__msgs_1_1action_1_1Fibonacci_01_4_1_1SharedPtr.html">::SharedPtr</a> active_state </td>
+          <td>(</td>
+          <td class="paramtype">NodeT &amp;</td>          <td class="paramname"><span class="paramname"><em>node</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>component</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The lifecycle state of a fake component, active: PlanSys2 clients wait for it. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">node</td><td>The node of the fake. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">component</td><td>Its name, as the clients call it (problem_expert, executor...). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a77b9ba26a0e3c03f694d02d7e0009f93" name="a77b9ba26a0e3c03f694d02d7e0009f93"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77b9ba26a0e3c03f694d02d7e0009f93">&#9670;&#160;</a></span>call()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename ServiceT &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">ServiceT::Response::SharedPtr call </td>
+          <td>(</td>
+          <td class="paramtype">const rclcpp::Node::SharedPtr &amp;</td>          <td class="paramname"><span class="paramname"><em>spun_node</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">typename ServiceT::Request::SharedPtr</td>          <td class="paramname"><span class="paramname"><em>request</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::chrono::seconds</td>          <td class="paramname"><span class="paramname"><em>timeout</em></span><span class="paramdefsep"> = </span><span class="paramdefval">std::chrono::seconds(5)</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A plain service call, as any ROS node makes it: what a server answers in any state. </p>
+<p>PlanSys2 clients wait until their component is active; this one does not. </p><dl class="section return"><dt>Returns</dt><dd>The response, or nullptr without server or answer within timeout. </dd></dl>
+
+</div>
+</div>
 <a id="a63be55cd52d7ba70325b9a814ee11db0" name="a63be55cd52d7ba70325b9a814ee11db0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a63be55cd52d7ba70325b9a814ee11db0">&#9670;&#160;</a></span>wait_for()</h2>
 

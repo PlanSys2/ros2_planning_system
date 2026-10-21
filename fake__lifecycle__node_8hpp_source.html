@@ -229,7 +229,7 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span> </div>
 <div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span><span class="keyword">private</span>:</div>
 <div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>  std::vector&lt;std::shared_ptr&lt;void&gt;&gt; keep_alive_;</div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>  rclcpp::executors::SingleThreadedExecutor exe_;</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>  rclcpp::executors::MultiThreadedExecutor exe_;</div>
 <div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>  std::unique_ptr&lt;plansys2::testing::ExecutorThread&gt; thread_;</div>
 <div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>};</div>
 </div>

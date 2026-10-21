@@ -126,7 +126,7 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keywordflow">return</span> convertFromJSON&lt;std::chrono::milliseconds&gt;(new_key);</div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  }</div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  <span class="keywordflow">return</span> std::chrono::milliseconds(std::stoul(key.data()));</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  <span class="keywordflow">return</span> std::chrono::milliseconds(std::stoul(std::string(key)));</div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>}</div>
 </div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>

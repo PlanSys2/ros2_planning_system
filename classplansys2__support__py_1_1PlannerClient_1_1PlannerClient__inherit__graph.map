@@ -1,7 +1,5 @@
 <map id="PlannerClient" name="PlannerClient">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,153,104,178"/>
-<area shape="rect" id="Node000002" href="$classplansys2__support__py_1_1ClientBase_1_1ClientBase.html" title=" " alt="" coords="12,79,97,105"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="57,120,57,152,52,152,52,120"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="28,5,81,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="57,46,57,79,52,79,52,46"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,79,104,105"/>
+<area shape="rect" id="Node000002" href="$classplansys2__support__py_1_1ClientBase_1_1ClientBase.html" title=" " alt="" coords="12,5,97,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="57,46,57,79,52,79,52,46"/>
 </map>

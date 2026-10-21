@@ -115,8 +115,8 @@ Collaboration diagram for PlannerErrorsTest:</div>
 <area shape="poly" title=" " alt="" coords="163,121,350,143,349,148,163,126"/>
 <area shape="rect" title=" " alt="" coords="68,175,148,200"/>
 <area shape="poly" title=" " alt="" coords="163,191,240,194,283,192,325,186,357,176,385,164,388,169,359,181,326,191,284,197,240,199,163,196"/>
-<area shape="rect" title=" " alt="" coords="27,224,189,250"/>
-<area shape="poly" title=" " alt="" coords="204,237,265,231,325,215,366,191,397,164,400,168,369,195,327,220,266,236,205,242"/>
+<area shape="rect" title=" " alt="" coords="31,224,185,250"/>
+<area shape="poly" title=" " alt="" coords="200,237,262,231,325,215,366,191,397,164,400,168,369,195,327,220,263,236,200,242"/>
 <area shape="rect" title=" " alt="" coords="21,274,195,314"/>
 <area shape="poly" title=" " alt="" coords="210,289,269,278,297,268,324,255,350,235,372,210,402,165,406,168,377,214,354,239,327,259,299,273,270,283,211,294"/>
 </map>
@@ -140,8 +140,8 @@ Protected Member Functions</h2></td></tr>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:a60f75bde2643e691124894fa411a9e41" id="r_a60f75bde2643e691124894fa411a9e41"><td class="memItemLeft" align="right" valign="top">rclcpp::Node::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a60f75bde2643e691124894fa411a9e41">client_node_</a></td></tr>
 <tr class="separator:a60f75bde2643e691124894fa411a9e41"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2d0042597f66ada8b05f65bf0a14c3e0" id="r_a2d0042597f66ada8b05f65bf0a14c3e0"><td class="memItemLeft" align="right" valign="top">rclcpp::executors::SingleThreadedExecutor&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2d0042597f66ada8b05f65bf0a14c3e0">exe_</a></td></tr>
-<tr class="separator:a2d0042597f66ada8b05f65bf0a14c3e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a873f21dba46c20e27063ed6bab4c354c" id="r_a873f21dba46c20e27063ed6bab4c354c"><td class="memItemLeft" align="right" valign="top">rclcpp::executors::MultiThreadedExecutor&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a873f21dba46c20e27063ed6bab4c354c">exe_</a></td></tr>
+<tr class="separator:a873f21dba46c20e27063ed6bab4c354c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae186d1a476506a469c6c1d3d689a4da" id="r_aae186d1a476506a469c6c1d3d689a4da"><td class="memItemLeft" align="right" valign="top">rclcpp::Client&lt; plansys2_msgs::srv::GetPlan &gt;<a class="el" href="classrclcpp__action_1_1ClientGoalHandle_3_01test__msgs_1_1action_1_1Fibonacci_01_4_1_1SharedPtr.html">::SharedPtr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aae186d1a476506a469c6c1d3d689a4da">get_plan_</a></td></tr>
 <tr class="separator:aae186d1a476506a469c6c1d3d689a4da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f6483a5f8d84a20b28e7719f191486d" id="r_a4f6483a5f8d84a20b28e7719f191486d"><td class="memItemLeft" align="right" valign="top">rclcpp::Client&lt; plansys2_msgs::srv::GetPlanArray &gt;<a class="el" href="classrclcpp__action_1_1ClientGoalHandle_3_01test__msgs_1_1action_1_1Fibonacci_01_4_1_1SharedPtr.html">::SharedPtr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4f6483a5f8d84a20b28e7719f191486d">get_plan_array_</a></td></tr>
@@ -312,8 +312,8 @@ template&lt;typename ServiceT &gt; </div>
 
 </div>
 </div>
-<a id="a2d0042597f66ada8b05f65bf0a14c3e0" name="a2d0042597f66ada8b05f65bf0a14c3e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2d0042597f66ada8b05f65bf0a14c3e0">&#9670;&#160;</a></span>exe_</h2>
+<a id="a873f21dba46c20e27063ed6bab4c354c" name="a873f21dba46c20e27063ed6bab4c354c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a873f21dba46c20e27063ed6bab4c354c">&#9670;&#160;</a></span>exe_</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -322,7 +322,7 @@ template&lt;typename ServiceT &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">rclcpp::executors::SingleThreadedExecutor exe_</td>
+          <td class="memname">rclcpp::executors::MultiThreadedExecutor exe_</td>
         </tr>
       </table>
   </td>

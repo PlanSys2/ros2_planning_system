@@ -190,12 +190,18 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7f8aa63e12dfef69711ba326dbfa0a14" id="r_a7f8aa63e12dfef69711ba326dbfa0a14"><td class="memItemLeft" align="right" valign="top">rclcpp::Time&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7f8aa63e12dfef69711ba326dbfa0a14">getUpdateTime</a> () const</td></tr>
 <tr class="memdesc:a7f8aa63e12dfef69711ba326dbfa0a14"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the timestamp of the last problem update.  <br /></td></tr>
 <tr class="separator:a7f8aa63e12dfef69711ba326dbfa0a14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd8b814baa2df99989e18299f09fe00a" id="r_afd8b814baa2df99989e18299f09fe00a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afd8b814baa2df99989e18299f09fe00a">interrupt</a> (<a class="el" href="classbool.html">bool</a> interrupted)</td></tr>
+<tr class="memdesc:afd8b814baa2df99989e18299f09fe00a"><td class="mdescLeft">&#160;</td><td class="mdescRight">While interrupted, its calls give up at once instead of waiting: for the owner that stops a thread which may be in a call.  <br /></td></tr>
+<tr class="separator:afd8b814baa2df99989e18299f09fe00a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90d093a6843c0f71f2a5f95eb1949afd" id="r_a90d093a6843c0f71f2a5f95eb1949afd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a90d093a6843c0f71f2a5f95eb1949afd">isGoalSatisfied</a> (const <a class="el" href="classplansys2_1_1Goal.html">plansys2::Goal</a> &amp;goal)</td></tr>
 <tr class="memdesc:a90d093a6843c0f71f2a5f95eb1949afd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a goal is satisfied in the current state.  <br /></td></tr>
 <tr class="separator:a90d093a6843c0f71f2a5f95eb1949afd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acaa82e1edcf7cc3b3858ba8f3b7ca637" id="r_acaa82e1edcf7cc3b3858ba8f3b7ca637"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acaa82e1edcf7cc3b3858ba8f3b7ca637">ProblemExpertClient</a> ()</td></tr>
-<tr class="memdesc:acaa82e1edcf7cc3b3858ba8f3b7ca637"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classplansys2_1_1ProblemExpertClient.html" title="Client implementation for accessing the ProblemExpert node services.">ProblemExpertClient</a>.  <br /></td></tr>
-<tr class="separator:acaa82e1edcf7cc3b3858ba8f3b7ca637"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed5de04057ab9705fce9e79cc5384beb" id="r_aed5de04057ab9705fce9e79cc5384beb"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aed5de04057ab9705fce9e79cc5384beb">ProblemExpertClient</a> (<a class="el" href="classplansys2_1_1ClientNode.html#ad4993c2aa71f7478f9e1ed427e3ccb00">ClientNode::Interfaces</a> node)</td></tr>
+<tr class="memdesc:aed5de04057ab9705fce9e79cc5384beb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates the client on a node it does not own: the node of a PlanSys2 component or of an application.  <br /></td></tr>
+<tr class="separator:aed5de04057ab9705fce9e79cc5384beb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ccfecdb5eda45538068abb569921c21" id="r_a8ccfecdb5eda45538068abb569921c21"><td class="memTemplParams" colspan="2">template&lt;typename NodeT &gt; </td></tr>
+<tr class="memitem:a8ccfecdb5eda45538068abb569921c21"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a8ccfecdb5eda45538068abb569921c21">ProblemExpertClient</a> (const std::shared_ptr&lt; NodeT &gt; &amp;node)</td></tr>
+<tr class="separator:a8ccfecdb5eda45538068abb569921c21"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac691ebc1a4a036e4ad98d45cb5e46ae4" id="r_ac691ebc1a4a036e4ad98d45cb5e46ae4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac691ebc1a4a036e4ad98d45cb5e46ae4">removeFunction</a> (const <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a179c04a7bc76bbe8ced8440a54c9f8e8">function</a>)</td></tr>
 <tr class="memdesc:ac691ebc1a4a036e4ad98d45cb5e46ae4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a function from the problem.  <br /></td></tr>
 <tr class="separator:ac691ebc1a4a036e4ad98d45cb5e46ae4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -205,6 +211,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7f3e3900f6b387bfe7ebcb4d33714b7d" id="r_a7f3e3900f6b387bfe7ebcb4d33714b7d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7f3e3900f6b387bfe7ebcb4d33714b7d">removePredicate</a> (const <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &amp;predicate)</td></tr>
 <tr class="memdesc:a7f3e3900f6b387bfe7ebcb4d33714b7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove a predicate from the problem.  <br /></td></tr>
 <tr class="separator:a7f3e3900f6b387bfe7ebcb4d33714b7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a30d3391db09eb203217a5c8bfa22c6" id="r_a2a30d3391db09eb203217a5c8bfa22c6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2a30d3391db09eb203217a5c8bfa22c6">set_max_wait</a> (std::chrono::milliseconds max_wait)</td></tr>
+<tr class="memdesc:a2a30d3391db09eb203217a5c8bfa22c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">How long a call waits for its component to be active before it gives up (zero, the default: as long as it takes).  <br /></td></tr>
+<tr class="separator:a2a30d3391db09eb203217a5c8bfa22c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ace1ae3d4400aad129592c13f0427ee" id="r_a7ace1ae3d4400aad129592c13f0427ee"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7ace1ae3d4400aad129592c13f0427ee">setContinuousEffect</a> (const std::string &amp;id, const <a class="el" href="classplansys2__msgs_1_1msg_1_1Tree.html">plansys2_msgs::msg::Tree</a> &amp;effects, <a class="el" href="classbool.html">bool</a> active)</td></tr>
 <tr class="memdesc:a7ace1ae3d4400aad129592c13f0427ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">The continuous effects of a running action, integrated by the problem expert while active (PDDL 2.1).  <br /></td></tr>
 <tr class="separator:a7ace1ae3d4400aad129592c13f0427ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -229,10 +238,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a181092c0c7050aac6f456054f8aa82f7" id="r_a181092c0c7050aac6f456054f8aa82f7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a181092c0c7050aac6f456054f8aa82f7">updateFunction</a> (const <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a179c04a7bc76bbe8ced8440a54c9f8e8">function</a>)</td></tr>
 <tr class="memdesc:a181092c0c7050aac6f456054f8aa82f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the value of an existing function.  <br /></td></tr>
 <tr class="separator:a181092c0c7050aac6f456054f8aa82f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0dfc9ce19298b52590ab23f39a172f17" id="r_a0dfc9ce19298b52590ab23f39a172f17"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0dfc9ce19298b52590ab23f39a172f17">wait_active</a> ()</td></tr>
+<tr class="memdesc:a0dfc9ce19298b52590ab23f39a172f17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waits until its component is active, as every call does: false if ROS shuts down.  <br /></td></tr>
+<tr class="separator:a0dfc9ce19298b52590ab23f39a172f17"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classplansys2_1_1ProblemExpertInterface"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pub_methods_classplansys2_1_1ProblemExpertInterface')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classplansys2_1_1ProblemExpertInterface.html">ProblemExpertInterface</a></td></tr>
 <tr class="memitem:afa93fecfc937c4dee499339add493573 inherit pub_methods_classplansys2_1_1ProblemExpertInterface" id="r_afa93fecfc937c4dee499339add493573"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1ProblemExpertInterface.html#afa93fecfc937c4dee499339add493573">ProblemExpertInterface</a> ()</td></tr>
 <tr class="memdesc:afa93fecfc937c4dee499339add493573 inherit pub_methods_classplansys2_1_1ProblemExpertInterface"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <br /></td></tr>
 <tr class="separator:afa93fecfc937c4dee499339add493573 inherit pub_methods_classplansys2_1_1ProblemExpertInterface"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a779945a9443e6b2e307f6e60186ed4df inherit pub_methods_classplansys2_1_1ProblemExpertInterface" id="r_a779945a9443e6b2e307f6e60186ed4df"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1ProblemExpertInterface.html#a779945a9443e6b2e307f6e60186ed4df">~ProblemExpertInterface</a> ()=default</td></tr>
+<tr class="memdesc:a779945a9443e6b2e307f6e60186ed4df inherit pub_methods_classplansys2_1_1ProblemExpertInterface"><td class="mdescLeft">&#160;</td><td class="mdescRight">Virtual destructor, as it is used through pointers to it.  <br /></td></tr>
+<tr class="separator:a779945a9443e6b2e307f6e60186ed4df inherit pub_methods_classplansys2_1_1ProblemExpertInterface"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -245,23 +260,58 @@ Public Attributes</h2></td></tr>
 <div class="textblock"><p>Client implementation for accessing the <a class="el" href="classplansys2_1_1ProblemExpert.html" title="Class that implements the ProblemExpertInterface to manage a PDDL problem.">ProblemExpert</a> node services. </p>
 <p>This class provides a client interface to interact with the <a class="el" href="classplansys2_1_1ProblemExpert.html" title="Class that implements the ProblemExpertInterface to manage a PDDL problem.">ProblemExpert</a> node, implementing the <a class="el" href="classplansys2_1_1ProblemExpertInterface.html" title="Interface for managing PDDL problem elements.">ProblemExpertInterface</a>. It allows managing PDDL problem elements such as instances, predicates, functions, and goals through ROS 2 services. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="acaa82e1edcf7cc3b3858ba8f3b7ca637" name="acaa82e1edcf7cc3b3858ba8f3b7ca637"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acaa82e1edcf7cc3b3858ba8f3b7ca637">&#9670;&#160;</a></span>ProblemExpertClient()</h2>
+<a id="aed5de04057ab9705fce9e79cc5384beb" name="aed5de04057ab9705fce9e79cc5384beb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aed5de04057ab9705fce9e79cc5384beb">&#9670;&#160;</a></span>ProblemExpertClient() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classplansys2_1_1ProblemExpertClient.html">ProblemExpertClient</a> </td>
           <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td class="paramtype"><a class="el" href="classplansys2_1_1ClientNode.html#ad4993c2aa71f7478f9e1ed427e3ccb00">ClientNode::Interfaces</a></td>          <td class="paramname"><span class="paramname"><em>node</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Constructor for the <a class="el" href="classplansys2_1_1ProblemExpertClient.html" title="Client implementation for accessing the ProblemExpert node services.">ProblemExpertClient</a>. </p>
-<p>Initializes a ROS node and creates all the service clients needed to communicate with the <a class="el" href="classplansys2_1_1ProblemExpert.html" title="Class that implements the ProblemExpertInterface to manage a PDDL problem.">ProblemExpert</a> node. </p>
+<p>Creates the client on a node it does not own: the node of a PlanSys2 component or of an application. </p>
+<p>It creates no node of its own. </p>
+
+</div>
+</div>
+<a id="a8ccfecdb5eda45538068abb569921c21" name="a8ccfecdb5eda45538068abb569921c21"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ccfecdb5eda45538068abb569921c21">&#9670;&#160;</a></span>ProblemExpertClient() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename NodeT &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classplansys2_1_1ProblemExpertClient.html">ProblemExpertClient</a> </td>
+          <td>(</td>
+          <td class="paramtype">const std::shared_ptr&lt; NodeT &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>node</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -932,6 +982,25 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="afd8b814baa2df99989e18299f09fe00a" name="afd8b814baa2df99989e18299f09fe00a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd8b814baa2df99989e18299f09fe00a">&#9670;&#160;</a></span>interrupt()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void interrupt </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classbool.html">bool</a></td>          <td class="paramname"><span class="paramname"><em>interrupted</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>While interrupted, its calls give up at once instead of waiting: for the owner that stops a thread which may be in a call. </p>
+
+</div>
+</div>
 <a id="a90d093a6843c0f71f2a5f95eb1949afd" name="a90d093a6843c0f71f2a5f95eb1949afd"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a90d093a6843c0f71f2a5f95eb1949afd">&#9670;&#160;</a></span>isGoalSatisfied()</h2>
 
@@ -1073,6 +1142,25 @@ Public Attributes</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>true if the predicate was successfully removed, false otherwise. </dd></dl>
 
 <p>Implements <a class="el" href="classplansys2_1_1ProblemExpertInterface.html#aaf1da791448cba48c8dda677953d01f8">ProblemExpertInterface</a>.</p>
+
+</div>
+</div>
+<a id="a2a30d3391db09eb203217a5c8bfa22c6" name="a2a30d3391db09eb203217a5c8bfa22c6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a30d3391db09eb203217a5c8bfa22c6">&#9670;&#160;</a></span>set_max_wait()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void set_max_wait </td>
+          <td>(</td>
+          <td class="paramtype">std::chrono::milliseconds</td>          <td class="paramname"><span class="paramname"><em>max_wait</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>How long a call waits for its component to be active before it gives up (zero, the default: as long as it takes). </p>
 
 </div>
 </div>
@@ -1310,6 +1398,25 @@ Public Attributes</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>true if the function was successfully updated, false otherwise. </dd></dl>
 
 <p>Implements <a class="el" href="classplansys2_1_1ProblemExpertInterface.html#ae13aa2f58abfb9668c8dd9de2537fd47">ProblemExpertInterface</a>.</p>
+
+</div>
+</div>
+<a id="a0dfc9ce19298b52590ab23f39a172f17" name="a0dfc9ce19298b52590ab23f39a172f17"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0dfc9ce19298b52590ab23f39a172f17">&#9670;&#160;</a></span>wait_active()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> wait_active </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Waits until its component is active, as every call does: false if ROS shuts down. </p>
 
 </div>
 </div>

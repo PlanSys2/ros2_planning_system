@@ -1,3 +1,5 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$structplansys2_1_1ProblemExpert_1_1TimedFact.html" title="A fact that changes at a time: a timed initial literal, or fluent if it is a function." alt="" coords="5,5,179,31"/>
+<area shape="rect" id="Node000000" href="$classplansys2_1_1PlannerInterface.html" title="Interface for planning components that generate action plans from PDDL domains and problems." alt="" coords="5,5,122,31"/>
+<area shape="rect" id="Node000001" href="$classplansys2_1_1PlannerClient.html" title="Client implementation of the PlannerInterface." alt="" coords="170,5,268,31"/>
+<area shape="poly" id="edge122_Node000000_Node000001" title=" " alt="" coords="137,16,169,16,169,21,137,21"/>
 </map>

@@ -18,12 +18,14 @@ var searchData=
   ['requests_5f_15',['requests_',['../classPartialProblemExpert.html#a3ff29ca84933f6d14153edb6e6f7ebc9',1,'PartialProblemExpert']]],
   ['requirements_16',['requirements',['../structplansys2_1_1Domain.html#a6646e0760d9927201618ed8ac4c44d04',1,'plansys2::Domain::requirements'],['../classparser_1_1pddl_1_1Domain.html#a929da6f2c372dc808ee28be28c228fef',1,'parser::pddl::Domain::requirements']]],
   ['result_5f_17',['result_',['../classplansys2_1_1BtActionNode.html#afee7065920d66bc200c65cb27c72c568',1,'plansys2::BtActionNode']]],
-  ['return_5ffailure_18',['return_failure',['../classplansys2__bt__tests_1_1OnFeedbackFail.html#aa8c606d6d002357ee13b09e5e8449798',1,'plansys2_bt_tests::OnFeedbackFail']]],
-  ['returntype_19',['returnType',['../classparser_1_1pddl_1_1Function.html#a30f0eb77494e95a86fe48db2c170684b',1,'parser::pddl::Function']]],
-  ['right_20',['right',['../classparser_1_1pddl_1_1Imply.html#af3fcd7b0016044a892c6d647d062937e',1,'parser::pddl::Imply']]],
-  ['roots_21',['roots',['../structplansys2_1_1ActionGraph.html#a31df302a7190ef6b6a6a101721967278',1,'plansys2::ActionGraph']]],
-  ['running_22',['RUNNING',['../namespacepython__solvers.html#af1758f1eef22c6a9ab0e6584be015128',1,'python_solvers']]],
-  ['running_5fchanges_5fsnapshot_5f_23',['running_changes_snapshot_',['../classplansys2_1_1ExecutorNode.html#a1d36cd1f5552f50a0b764c32cb8c4725',1,'plansys2::ExecutorNode']]],
-  ['runtime_5f_24',['runtime_',['../classMoveAction.html#a34633988207aabcad6fc42a7225dbbde',1,'MoveAction']]],
-  ['runtime_5finfo_5f_25',['runtime_info_',['../classplansys2_1_1ExecutorNode.html#a01e3aef2cf9e82a13d58903773e5c98b',1,'plansys2::ExecutorNode']]]
+  ['results_5fasked_18',['results_asked',['../classLossyExecutor.html#a85aefa120faa8a741b1ffa727b99d316',1,'LossyExecutor']]],
+  ['return_5ffailure_19',['return_failure',['../classplansys2__bt__tests_1_1OnFeedbackFail.html#aa8c606d6d002357ee13b09e5e8449798',1,'plansys2_bt_tests::OnFeedbackFail']]],
+  ['returntype_20',['returnType',['../classparser_1_1pddl_1_1Function.html#a30f0eb77494e95a86fe48db2c170684b',1,'parser::pddl::Function']]],
+  ['right_21',['right',['../classparser_1_1pddl_1_1Imply.html#af3fcd7b0016044a892c6d647d062937e',1,'parser::pddl::Imply']]],
+  ['roots_22',['roots',['../structplansys2_1_1ActionGraph.html#a31df302a7190ef6b6a6a101721967278',1,'plansys2::ActionGraph']]],
+  ['running_23',['RUNNING',['../namespacepython__solvers.html#af1758f1eef22c6a9ab0e6584be015128',1,'python_solvers']]],
+  ['running_5fchanges_5fsnapshot_5f_24',['running_changes_snapshot_',['../classplansys2_1_1ExecutorNode.html#a1d36cd1f5552f50a0b764c32cb8c4725',1,'plansys2::ExecutorNode']]],
+  ['runs_25',['runs',['../classSilentExecutor.html#a2dca8cc276a900920859f5bbe896fb16',1,'SilentExecutor']]],
+  ['runtime_5f_26',['runtime_',['../classMoveAction.html#a34633988207aabcad6fc42a7225dbbde',1,'MoveAction']]],
+  ['runtime_5finfo_5f_27',['runtime_info_',['../classplansys2_1_1ExecutorNode.html#a01e3aef2cf9e82a13d58903773e5c98b',1,'plansys2::ExecutorNode']]]
 ];

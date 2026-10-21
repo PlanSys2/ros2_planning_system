@@ -160,7 +160,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a12c176294b5c26ca4a74c32ed180a068 inherit pub_methods_classplansys2_1_1BTBuilder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decimals of the times in the action ids, as given to initialize.  <br /></td></tr>
 <tr class="separator:a12c176294b5c26ca4a74c32ed180a068 inherit pub_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed032a39047201205eae57040a67544a inherit pub_methods_classplansys2_1_1BTBuilder" id="r_aed032a39047201205eae57040a67544a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#aed032a39047201205eae57040a67544a">set_clients</a> (std::shared_ptr&lt; <a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &gt; <a class="el" href="classplansys2_1_1BTBuilder.html#ac112d607051000a90f75129505eb0177">domain_client</a>, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt; <a class="el" href="classplansys2_1_1BTBuilder.html#a00cf7b0ed017e96e8a59a3f03a563965">problem_client</a>)</td></tr>
-<tr class="memdesc:aed032a39047201205eae57040a67544a inherit pub_methods_classplansys2_1_1BTBuilder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the clients the builder uses, usually those of its executor.  <br /></td></tr>
+<tr class="memdesc:aed032a39047201205eae57040a67544a inherit pub_methods_classplansys2_1_1BTBuilder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the clients the builder uses: those of its executor, on the executor's node.  <br /></td></tr>
 <tr class="separator:aed032a39047201205eae57040a67544a inherit pub_methods_classplansys2_1_1BTBuilder"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a39c9d14b109758533b2614565f4a338b inherit pub_methods_classplansys2_1_1BTBuilder" id="r_a39c9d14b109758533b2614565f4a338b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1BTBuilder.html#a39c9d14b109758533b2614565f4a338b">set_initial_state</a> (std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt; predicates, std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt; functions)</td></tr>
 <tr class="memdesc:a39c9d14b109758533b2614565f4a338b inherit pub_methods_classplansys2_1_1BTBuilder"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the state the plan starts from, instead of the current one.  <br /></td></tr>
@@ -191,9 +191,9 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:ad29401fdb29fb3457034841c901d49ea" id="r_ad29401fdb29fb3457034841c901d49ea"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad29401fdb29fb3457034841c901d49ea">get_flow_dotgraph</a> (<a class="el" href="structplansys2_1_1ActionNode.html#a53392e5b02a1da5c9ccc4905dc4d160b">ActionNode::Ptr</a> node, std::set&lt; std::string &gt; &amp;edges)</td></tr>
 <tr class="memdesc:ad29401fdb29fb3457034841c901d49ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Collects edges for DOT graph visualization.  <br /></td></tr>
 <tr class="separator:ad29401fdb29fb3457034841c901d49ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a45381ece03ba1162e08ba4764efe9f07" id="r_a45381ece03ba1162e08ba4764efe9f07"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a45381ece03ba1162e08ba4764efe9f07">get_flow_tree</a> (<a class="el" href="structplansys2_1_1ActionNode.html#a53392e5b02a1da5c9ccc4905dc4d160b">ActionNode::Ptr</a> node, std::list&lt; std::string &gt; &amp;used_nodes, <a class="el" href="classint.html">int</a> level=0)</td></tr>
-<tr class="memdesc:a45381ece03ba1162e08ba4764efe9f07"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates the behavior tree XML for a node and its descendants.  <br /></td></tr>
-<tr class="separator:a45381ece03ba1162e08ba4764efe9f07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f7ea0b185e0cd34a5c9856c01590628" id="r_a8f7ea0b185e0cd34a5c9856c01590628"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8f7ea0b185e0cd34a5c9856c01590628">get_flow_tree</a> (<a class="el" href="structplansys2_1_1ActionNode.html#a53392e5b02a1da5c9ccc4905dc4d160b">ActionNode::Ptr</a> node, std::set&lt; std::string &gt; &amp;used_nodes, <a class="el" href="classint.html">int</a> level, <a class="el" href="classbool.html">bool</a> wrap, std::string &amp;out)</td></tr>
+<tr class="memdesc:a8f7ea0b185e0cd34a5c9856c01590628"><td class="mdescLeft">&#160;</td><td class="mdescRight">Appends the behavior tree XML of a node and what follows it.  <br /></td></tr>
+<tr class="separator:a8f7ea0b185e0cd34a5c9856c01590628"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc07bb5b4d7bae126c8da641157387f1" id="r_acc07bb5b4d7bae126c8da641157387f1"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::tuple&lt; uint32_t, uint32_t, uint32_t, std::string &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acc07bb5b4d7bae126c8da641157387f1">get_graph_tabular</a> (const <a class="el" href="structplansys2_1_1ActionGraph.html#af6cd0c1cfb253c14dadbb30a8101398d">plansys2::ActionGraph::Ptr</a> &amp;graph) const</td></tr>
 <tr class="memdesc:acc07bb5b4d7bae126c8da641157387f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the entire action graph in a tabular format.  <br /></td></tr>
 <tr class="separator:acc07bb5b4d7bae126c8da641157387f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -624,8 +624,8 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="a45381ece03ba1162e08ba4764efe9f07" name="a45381ece03ba1162e08ba4764efe9f07"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a45381ece03ba1162e08ba4764efe9f07">&#9670;&#160;</a></span>get_flow_tree()</h2>
+<a id="a8f7ea0b185e0cd34a5c9856c01590628" name="a8f7ea0b185e0cd34a5c9856c01590628"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f7ea0b185e0cd34a5c9856c01590628">&#9670;&#160;</a></span>get_flow_tree()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -634,19 +634,29 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::string get_flow_tree </td>
+          <td class="memname">void get_flow_tree </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structplansys2_1_1ActionNode.html#a53392e5b02a1da5c9ccc4905dc4d160b">ActionNode::Ptr</a></td>          <td class="paramname"><span class="paramname"><em>node</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::list&lt; std::string &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>used_nodes</em></span>, </td>
+          <td class="paramtype">std::set&lt; std::string &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>used_nodes</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classint.html">int</a></td>          <td class="paramname"><span class="paramname"><em>level</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;)</td>
+          <td class="paramtype"><a class="el" href="classint.html">int</a></td>          <td class="paramname"><span class="paramname"><em>level</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classbool.html">bool</a></td>          <td class="paramname"><span class="paramname"><em>wrap</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>out</em></span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -656,16 +666,17 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Generates the behavior tree XML for a node and its descendants. </p>
+<p>Appends the behavior tree XML of a node and what follows it. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">node</td><td>The node to process. </td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">used_nodes</td><td>List of nodes already processed. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">node</td><td>The node. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">used_nodes</td><td>The action ids already in the tree. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">level</td><td>Indentation level. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">wrap</td><td>Whether the node gets a Sequence of its own; without it, its content goes in the Sequence of its parent, as when it is the only way on. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">out</td><td>Where the XML is appended. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>std::string containing the behavior tree XML. </dd></dl>
 
 </div>
 </div>

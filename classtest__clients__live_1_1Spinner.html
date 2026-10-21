@@ -98,22 +98,22 @@ $(function(){ initResizable(false); });
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a051ad95558559d24bc0295da3cf0a5b5" id="r_a051ad95558559d24bc0295da3cf0a5b5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a051ad95558559d24bc0295da3cf0a5b5">__init__</a> (self, *nodes)</td></tr>
-<tr class="separator:a051ad95558559d24bc0295da3cf0a5b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60d85bcff4e064a2bc0fe43fde6eb682" id="r_a60d85bcff4e064a2bc0fe43fde6eb682"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a60d85bcff4e064a2bc0fe43fde6eb682">__init__</a> (self, *nodes, <a class="el" href="#a10dc5a794b998e68e49f378273ec7346">executor</a>=None)</td></tr>
+<tr class="separator:a60d85bcff4e064a2bc0fe43fde6eb682"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2f39781a0bb89a6705efdc8d4c527def" id="r_a2f39781a0bb89a6705efdc8d4c527def"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2f39781a0bb89a6705efdc8d4c527def">stop</a> (self)</td></tr>
 <tr class="separator:a2f39781a0bb89a6705efdc8d4c527def"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a10dc5a794b998e68e49f378273ec7346" id="r_a10dc5a794b998e68e49f378273ec7346"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a10dc5a794b998e68e49f378273ec7346">executor</a> = SingleThreadedExecutor()</td></tr>
+<tr class="memitem:a10dc5a794b998e68e49f378273ec7346" id="r_a10dc5a794b998e68e49f378273ec7346"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a10dc5a794b998e68e49f378273ec7346">executor</a> = executor or SingleThreadedExecutor()</td></tr>
 <tr class="separator:a10dc5a794b998e68e49f378273ec7346"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae3f5dd704a78b1b22fbf6672452aff3e" id="r_ae3f5dd704a78b1b22fbf6672452aff3e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae3f5dd704a78b1b22fbf6672452aff3e">thread</a> = threading.Thread(target=self.executor.spin, daemon=True)</td></tr>
 <tr class="separator:ae3f5dd704a78b1b22fbf6672452aff3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><pre class="fragment">Spins some nodes in a thread of their own.</pre> </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a051ad95558559d24bc0295da3cf0a5b5" name="a051ad95558559d24bc0295da3cf0a5b5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a051ad95558559d24bc0295da3cf0a5b5">&#9670;&#160;</a></span>__init__()</h2>
+<a id="a60d85bcff4e064a2bc0fe43fde6eb682" name="a60d85bcff4e064a2bc0fe43fde6eb682"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a60d85bcff4e064a2bc0fe43fde6eb682">&#9670;&#160;</a></span>__init__()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -126,7 +126,12 @@ Public Attributes</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">*</td>          <td class="paramname"><span class="paramname"><em>nodes</em></span>&#160;)</td>
+          <td class="paramtype">*</td>          <td class="paramname"><span class="paramname"><em>nodes</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>executor</em></span><span class="paramdefsep"> = </span><span class="paramdefval">None</span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -159,7 +164,7 @@ Public Attributes</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">executor = SingleThreadedExecutor()</td>
+          <td class="memname">executor = executor or SingleThreadedExecutor()</td>
         </tr>
       </table>
 </div><div class="memdoc">

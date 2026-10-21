@@ -95,63 +95,38 @@ $(function(){ initResizable(false); });
 </div><!--header-->
 <div class="contents">
 
-<p>Client node to manage the lifecycle of another ROS2 node.  
+<p>Asks a managed node for its lifecycle state and transitions.  
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="lifecycle__manager_8hpp_source.html">lifecycle_manager.hpp</a>&gt;</code></p>
-<div class="dynheader">
-Inheritance diagram for LifecycleServiceClient:</div>
-<div class="dyncontent">
-<div class="center"><img src="classplansys2_1_1LifecycleServiceClient__inherit__graph.png" border="0" usemap="#aLifecycleServiceClient_inherit__map" alt="Inheritance graph"/></div>
-<map name="aLifecycleServiceClient_inherit__map" id="aLifecycleServiceClient_inherit__map">
-<area shape="rect" title="Client node to manage the lifecycle of another ROS2 node." alt="" coords="5,79,156,105"/>
-<area shape="rect" title=" " alt="" coords="54,5,107,31"/>
-<area shape="poly" title=" " alt="" coords="83,46,83,79,78,79,78,46"/>
-</map>
-<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
-<div class="dynheader">
-Collaboration diagram for LifecycleServiceClient:</div>
-<div class="dyncontent">
-<div class="center"><img src="classplansys2_1_1LifecycleServiceClient__coll__graph.png" border="0" usemap="#aLifecycleServiceClient_coll__map" alt="Collaboration graph"/></div>
-<map name="aLifecycleServiceClient_coll__map" id="aLifecycleServiceClient_coll__map">
-<area shape="rect" title="Client node to manage the lifecycle of another ROS2 node." alt="" coords="5,79,156,105"/>
-<area shape="rect" title=" " alt="" coords="54,5,107,31"/>
-<area shape="poly" title=" " alt="" coords="83,46,83,79,78,79,78,46"/>
-</map>
-<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:aaf106582e61c120e4ec8e0086668f80d" id="r_aaf106582e61c120e4ec8e0086668f80d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aaf106582e61c120e4ec8e0086668f80d">change_state</a> (std::uint8_t transition, std::chrono::seconds time_out=std::chrono::seconds(3))</td></tr>
-<tr class="memdesc:aaf106582e61c120e4ec8e0086668f80d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Changes the state of the managed node.  <br /></td></tr>
+<tr class="memdesc:aaf106582e61c120e4ec8e0086668f80d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Triggers a transition of the managed node: whether it succeeded.  <br /></td></tr>
 <tr class="separator:aaf106582e61c120e4ec8e0086668f80d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a692393dfc6f8c69da72b52a11d14fe67" id="r_a692393dfc6f8c69da72b52a11d14fe67"><td class="memItemLeft" align="right" valign="top">rclcpp::Logger&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a692393dfc6f8c69da72b52a11d14fe67">get_logger</a> () const</td></tr>
+<tr class="separator:a692393dfc6f8c69da72b52a11d14fe67"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5d17e346d4d24e957d6af448572c11f6" id="r_a5d17e346d4d24e957d6af448572c11f6"><td class="memItemLeft" align="right" valign="top">unsigned <a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5d17e346d4d24e957d6af448572c11f6">get_state</a> (std::chrono::seconds time_out=std::chrono::seconds(3))</td></tr>
-<tr class="memdesc:a5d17e346d4d24e957d6af448572c11f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the current state of the managed node.  <br /></td></tr>
+<tr class="memdesc:a5d17e346d4d24e957d6af448572c11f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">The current state of the managed node, or PRIMARY_STATE_UNKNOWN without answer.  <br /></td></tr>
 <tr class="separator:a5d17e346d4d24e957d6af448572c11f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a02fd73d861ef2e4aabb38c0c9ff82947" id="r_a02fd73d861ef2e4aabb38c0c9ff82947"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a02fd73d861ef2e4aabb38c0c9ff82947">init</a> ()</td></tr>
-<tr class="memdesc:a02fd73d861ef2e4aabb38c0c9ff82947"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the service clients for lifecycle management.  <br /></td></tr>
-<tr class="separator:a02fd73d861ef2e4aabb38c0c9ff82947"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad675683ee4df5d9c83e228a79c6bb4d1" id="r_ad675683ee4df5d9c83e228a79c6bb4d1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad675683ee4df5d9c83e228a79c6bb4d1">LifecycleServiceClient</a> (const std::string &amp;node_name, const std::string &amp;managed_node)</td></tr>
-<tr class="memdesc:ad675683ee4df5d9c83e228a79c6bb4d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new <a class="el" href="classplansys2_1_1LifecycleServiceClient.html" title="Client node to manage the lifecycle of another ROS2 node.">LifecycleServiceClient</a> object.  <br /></td></tr>
-<tr class="separator:ad675683ee4df5d9c83e228a79c6bb4d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a936d35bac43701c2c7694e5e7ca46a40" id="r_a936d35bac43701c2c7694e5e7ca46a40"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a936d35bac43701c2c7694e5e7ca46a40">LifecycleServiceClient</a> (std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ClientNode.html">ClientNode</a> &gt; node, const std::string &amp;managed_node)</td></tr>
+<tr class="separator:a936d35bac43701c2c7694e5e7ca46a40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Client node to manage the lifecycle of another ROS2 node. </p>
-<p>Provides methods to query and change the state of a managed node using the lifecycle management services. </p>
+<div class="textblock"><p>Asks a managed node for its lifecycle state and transitions. </p>
+<p>It works on the node of the manager, which it does not own: it creates no node. Its calls wait for their answers serving only its own callbacks (<a class="el" href="classplansys2_1_1ClientNode.html" title="The node a PlanSys2 client works on, which it does not own: one of a component or of an application.">plansys2::ClientNode</a>). </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ad675683ee4df5d9c83e228a79c6bb4d1" name="ad675683ee4df5d9c83e228a79c6bb4d1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad675683ee4df5d9c83e228a79c6bb4d1">&#9670;&#160;</a></span>LifecycleServiceClient()</h2>
+<a id="a936d35bac43701c2c7694e5e7ca46a40" name="a936d35bac43701c2c7694e5e7ca46a40"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a936d35bac43701c2c7694e5e7ca46a40">&#9670;&#160;</a></span>LifecycleServiceClient()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classplansys2_1_1LifecycleServiceClient.html">LifecycleServiceClient</a> </td>
           <td>(</td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>node_name</em></span>, </td>
+          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ClientNode.html">ClientNode</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>node</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -159,18 +134,11 @@ Public Member Functions</h2></td></tr>
           <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>managed_node</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">explicit</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
-
-<p>Construct a new <a class="el" href="classplansys2_1_1LifecycleServiceClient.html" title="Client node to manage the lifecycle of another ROS2 node.">LifecycleServiceClient</a> object. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">node_name</td><td>Name for this client node. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">managed_node</td><td>Name of the node to be managed. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">node</td><td>The node of the manager. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">managed_node</td><td>The node whose lifecycle it manages. </td></tr>
   </table>
   </dd>
 </dl>
@@ -197,15 +165,24 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Changes the state of the managed node. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">transition</td><td>The transition ID to trigger. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">time_out</td><td>Timeout for the service call (default: 3 seconds). </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>true if the transition was successful, false otherwise. </dd></dl>
+<p>Triggers a transition of the managed node: whether it succeeded. </p>
+
+</div>
+</div>
+<a id="a692393dfc6f8c69da72b52a11d14fe67" name="a692393dfc6f8c69da72b52a11d14fe67"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a692393dfc6f8c69da72b52a11d14fe67">&#9670;&#160;</a></span>get_logger()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">rclcpp::Logger get_logger </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -224,33 +201,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Gets the current state of the managed node. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">time_out</td><td>Timeout for the service call (default: 3 seconds). </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>unsigned int The current state as defined in lifecycle_msgs::msg::State. </dd></dl>
-
-</div>
-</div>
-<a id="a02fd73d861ef2e4aabb38c0c9ff82947" name="a02fd73d861ef2e4aabb38c0c9ff82947"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a02fd73d861ef2e4aabb38c0c9ff82947">&#9670;&#160;</a></span>init()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void init </td>
-          <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Initializes the service clients for lifecycle management. </p>
+<p>The current state of the managed node, or PRIMARY_STATE_UNKNOWN without answer. </p>
 
 </div>
 </div>

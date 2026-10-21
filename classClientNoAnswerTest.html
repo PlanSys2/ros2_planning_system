@@ -106,17 +106,21 @@ Collaboration diagram for ClientNoAnswerTest:</div>
 <div class="dyncontent">
 <div class="center"><img src="classClientNoAnswerTest__coll__graph.png" border="0" usemap="#aClientNoAnswerTest_coll__map" alt="Collaboration graph"/></div>
 <map name="aClientNoAnswerTest_coll__map" id="aClientNoAnswerTest_coll__map">
-<area shape="rect" title=" " alt="" coords="284,128,425,154"/>
+<area shape="rect" title=" " alt="" coords="357,177,498,203"/>
 <area shape="rect" title=" " alt="" coords="71,5,118,31"/>
-<area shape="poly" title=" " alt="" coords="134,25,185,41,271,84,336,125,333,130,268,89,183,46,133,30"/>
+<area shape="poly" title=" " alt="" coords="134,17,177,21,229,30,283,46,334,71,364,95,389,124,422,175,417,178,385,127,360,99,331,75,281,51,228,35,177,26,134,22"/>
 <area shape="rect" title=" " alt="" coords="5,55,184,96"/>
-<area shape="poly" title=" " alt="" coords="194,98,301,125,299,130,192,103"/>
-<area shape="rect" title=" " alt="" coords="17,120,172,161"/>
-<area shape="poly" title=" " alt="" coords="188,138,283,138,283,144,188,144"/>
-<area shape="rect" title=" " alt="" coords="14,185,175,211"/>
-<area shape="poly" title=" " alt="" coords="171,179,292,152,293,157,172,184"/>
-<area shape="rect" title=" " alt="" coords="8,235,181,276"/>
-<area shape="poly" title=" " alt="" coords="167,227,183,221,259,191,330,152,332,156,261,196,185,226,169,232"/>
+<area shape="poly" title=" " alt="" coords="200,88,267,103,334,126,377,150,411,175,408,179,374,155,332,131,265,109,198,93"/>
+<area shape="rect" title=" " alt="" coords="55,120,134,146"/>
+<area shape="poly" title=" " alt="" coords="150,138,333,168,366,174,365,179,332,173,149,143"/>
+<area shape="rect" title=" " alt="" coords="15,170,174,210"/>
+<area shape="poly" title=" " alt="" coords="189,188,356,188,356,193,189,193"/>
+<area shape="rect" title=" " alt="" coords="17,235,172,276"/>
+<area shape="poly" title=" " alt="" coords="187,236,332,208,365,201,366,206,333,213,188,241"/>
+<area shape="rect" title=" " alt="" coords="18,300,171,326"/>
+<area shape="poly" title=" " alt="" coords="186,296,259,278,332,252,375,227,409,201,412,206,378,232,334,257,260,283,187,301"/>
+<area shape="rect" title=" " alt="" coords="8,350,181,390"/>
+<area shape="poly" title=" " alt="" coords="196,359,265,342,299,328,331,311,361,286,386,256,418,202,422,205,390,259,365,289,334,315,302,333,267,347,197,364"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -131,8 +135,12 @@ Protected Member Functions</h2></td></tr>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:a7faee960a103b78ac474a6d8f7d230a1" id="r_a7faee960a103b78ac474a6d8f7d230a1"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7faee960a103b78ac474a6d8f7d230a1">client_</a></td></tr>
 <tr class="separator:a7faee960a103b78ac474a6d8f7d230a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2d0042597f66ada8b05f65bf0a14c3e0" id="r_a2d0042597f66ada8b05f65bf0a14c3e0"><td class="memItemLeft" align="right" valign="top">rclcpp::executors::SingleThreadedExecutor&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2d0042597f66ada8b05f65bf0a14c3e0">exe_</a></td></tr>
-<tr class="separator:a2d0042597f66ada8b05f65bf0a14c3e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60f75bde2643e691124894fa411a9e41" id="r_a60f75bde2643e691124894fa411a9e41"><td class="memItemLeft" align="right" valign="top">rclcpp::Node::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a60f75bde2643e691124894fa411a9e41">client_node_</a></td></tr>
+<tr class="separator:a60f75bde2643e691124894fa411a9e41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94cc4d466b0daa9bf84e9a3ee5e555e2" id="r_a94cc4d466b0daa9bf84e9a3ee5e555e2"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classplansys2_1_1testing_1_1NodeSpinner.html">plansys2::testing::NodeSpinner</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a94cc4d466b0daa9bf84e9a3ee5e555e2">client_node_spinner_</a></td></tr>
+<tr class="separator:a94cc4d466b0daa9bf84e9a3ee5e555e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a873f21dba46c20e27063ed6bab4c354c" id="r_a873f21dba46c20e27063ed6bab4c354c"><td class="memItemLeft" align="right" valign="top">rclcpp::executors::MultiThreadedExecutor&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a873f21dba46c20e27063ed6bab4c354c">exe_</a></td></tr>
+<tr class="separator:a873f21dba46c20e27063ed6bab4c354c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2e29432a146b35a3b0ff922bd7a85186" id="r_a2e29432a146b35a3b0ff922bd7a85186"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classPartialProblemExpert.html">PartialProblemExpert</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2e29432a146b35a3b0ff922bd7a85186">server_</a></td></tr>
 <tr class="separator:a2e29432a146b35a3b0ff922bd7a85186"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab1db81ae0b03b925a76f4a62df83c67a" id="r_ab1db81ae0b03b925a76f4a62df83c67a"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classplansys2_1_1testing_1_1ExecutorThread.html">plansys2::testing::ExecutorThread</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab1db81ae0b03b925a76f4a62df83c67a">spinner_</a></td></tr>
@@ -212,8 +220,8 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a2d0042597f66ada8b05f65bf0a14c3e0" name="a2d0042597f66ada8b05f65bf0a14c3e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2d0042597f66ada8b05f65bf0a14c3e0">&#9670;&#160;</a></span>exe_</h2>
+<a id="a60f75bde2643e691124894fa411a9e41" name="a60f75bde2643e691124894fa411a9e41"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a60f75bde2643e691124894fa411a9e41">&#9670;&#160;</a></span>client_node_</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -222,7 +230,51 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">rclcpp::executors::SingleThreadedExecutor exe_</td>
+          <td class="memname">rclcpp::Node::SharedPtr client_node_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a94cc4d466b0daa9bf84e9a3ee5e555e2" name="a94cc4d466b0daa9bf84e9a3ee5e555e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94cc4d466b0daa9bf84e9a3ee5e555e2">&#9670;&#160;</a></span>client_node_spinner_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::unique_ptr&lt;<a class="el" href="classplansys2_1_1testing_1_1NodeSpinner.html">plansys2::testing::NodeSpinner</a>&gt; client_node_spinner_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a873f21dba46c20e27063ed6bab4c354c" name="a873f21dba46c20e27063ed6bab4c354c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a873f21dba46c20e27063ed6bab4c354c">&#9670;&#160;</a></span>exe_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">rclcpp::executors::MultiThreadedExecutor exe_</td>
         </tr>
       </table>
   </td>

@@ -108,84 +108,396 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="preprocessor">#ifndef PLANSYS2_CORE__SERVICECALL_HPP_</span></div>
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="preprocessor">#define PLANSYS2_CORE__SERVICECALL_HPP_</span></div>
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span> </div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#include &lt;chrono&gt;</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#include &lt;memory&gt;</span></div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#include &lt;stdexcept&gt;</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="preprocessor">#include &quot;rclcpp/rclcpp.hpp&quot;</span></div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a></div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>{</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> WaitT&gt;</div>
-<div class="foldopen" id="foldopen00036" data-start="{" data-end="}">
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno"><a class="line" href="namespaceplansys2.html#afc5accd46d42076f756e954b01f1a078">   36</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="namespaceplansys2.html#afc5accd46d42076f756e954b01f1a078">wait_for_server</a>(WaitT &amp;&amp; wait)</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>{</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  <span class="keywordflow">try</span> {</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keywordflow">return</span> wait();</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  } <span class="keywordflow">catch</span> (<span class="keyword">const</span> std::runtime_error &amp;) {</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>  }</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>}</div>
-</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> ClientT&gt;</div>
-<div class="foldopen" id="foldopen00049" data-start="{" data-end="}">
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="namespaceplansys2.html#a6ddd9578bd017c2295a8227664df276e">   49</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="namespaceplansys2.html#afc5accd46d42076f756e954b01f1a078">wait_for_server</a>(<span class="keyword">const</span> std::shared_ptr&lt;ClientT&gt; &amp; client, std::chrono::nanoseconds timeout)</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>{</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceplansys2.html#afc5accd46d42076f756e954b01f1a078">wait_for_server</a>([&amp;]() {<span class="keywordflow">return</span> client-&gt;wait_for_service(timeout);});</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#include &lt;atomic&gt;</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#include &lt;chrono&gt;</span></div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#include &lt;memory&gt;</span></div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#include &lt;mutex&gt;</span></div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="preprocessor">#include &lt;stdexcept&gt;</span></div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &lt;string&gt;</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &lt;thread&gt;</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#include &lt;type_traits&gt;</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &lt;utility&gt;</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &quot;lifecycle_msgs/msg/state.hpp&quot;</span></div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &quot;lifecycle_msgs/srv/get_state.hpp&quot;</span></div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">#include &quot;<a class="code" href="ClientNode_8hpp.html">plansys2_core/ClientNode.hpp</a>&quot;</span></div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &quot;rclcpp/rclcpp.hpp&quot;</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a></div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>{</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> WaitT&gt;</div>
+<div class="foldopen" id="foldopen00045" data-start="{" data-end="}">
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="namespaceplansys2.html#afc5accd46d42076f756e954b01f1a078">   45</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="namespaceplansys2.html#afc5accd46d42076f756e954b01f1a078">wait_for_server</a>(WaitT &amp;&amp; wait)</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>{</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  <span class="keywordflow">try</span> {</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <span class="keywordflow">return</span> wait();</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  } <span class="keywordflow">catch</span> (<span class="keyword">const</span> std::runtime_error &amp;) {</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  }</div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>}</div>
 </div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> ServiceT&gt;</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="keyword">typename</span> ServiceT::Response::SharedPtr</div>
-<div class="foldopen" id="foldopen00062" data-start="{" data-end="}">
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="namespaceplansys2.html#aa56499be025cb779ecafe600974c3d57">   62</a></span><a class="code hl_function" href="namespaceplansys2.html#aa56499be025cb779ecafe600974c3d57">call_service</a>(</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>  rclcpp::Node::SharedPtr node,</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  std::shared_ptr&lt;rclcpp::Client&lt;ServiceT&gt;&gt; client,</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  <span class="keyword">typename</span> ServiceT::Request::SharedPtr request,</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>  std::chrono::nanoseconds service_timeout = std::chrono::seconds(5),</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  std::chrono::nanoseconds response_timeout = std::chrono::seconds(1))</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>{</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  <span class="comment">// rclcpp shutting down throws from the graph while we wait: no answer, not the end of the</span></div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  <span class="comment">// process</span></div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  <span class="keywordflow">try</span> {</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keywordflow">if</span> (!client-&gt;wait_for_service(service_timeout)) {</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>      <span class="keywordflow">if</span> (rclcpp::ok()) {</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>        RCLCPP_ERROR_STREAM(</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>          node-&gt;get_logger(), client-&gt;get_service_name() &lt;&lt; <span class="stringliteral">&quot;: service not available&quot;</span>);</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>      }</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>      <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    }</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span> </div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    <span class="keyword">auto</span> future = client-&gt;async_send_request(request);</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    <span class="keywordflow">if</span> (rclcpp::spin_until_future_complete(node, future, response_timeout) !=</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>      rclcpp::FutureReturnCode::SUCCESS)</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    {</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>      <span class="comment">// Otherwise the late response would stay pending forever</span></div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>      client-&gt;remove_pending_request(future);</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>      <span class="keywordflow">if</span> (rclcpp::ok()) {</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>        RCLCPP_ERROR_STREAM(node-&gt;get_logger(), client-&gt;get_service_name() &lt;&lt; <span class="stringliteral">&quot;: no response&quot;</span>);</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>      }</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>      <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    }</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="keywordflow">return</span> future.get();</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>  } <span class="keywordflow">catch</span> (<span class="keyword">const</span> std::exception &amp; e) {</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <span class="keywordflow">if</span> (rclcpp::ok()) {</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>      RCLCPP_ERROR_STREAM(node-&gt;get_logger(), client-&gt;get_service_name() &lt;&lt; <span class="stringliteral">&quot;: &quot;</span> &lt;&lt; e.what());</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    }</div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>  }</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>}</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> ClientT&gt;</div>
+<div class="foldopen" id="foldopen00058" data-start="{" data-end="}">
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno"><a class="line" href="namespaceplansys2.html#a6ddd9578bd017c2295a8227664df276e">   58</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="namespaceplansys2.html#afc5accd46d42076f756e954b01f1a078">wait_for_server</a>(<span class="keyword">const</span> std::shared_ptr&lt;ClientT&gt; &amp; client, std::chrono::nanoseconds timeout)</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>{</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceplansys2.html#afc5accd46d42076f756e954b01f1a078">wait_for_server</a>([&amp;]() {<span class="keywordflow">return</span> client-&gt;wait_for_service(timeout);});</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>}</div>
 </div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span> </div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>}  <span class="comment">// namespace plansys2</span></div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span> </div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_CORE__SERVICECALL_HPP_</span></div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="comment">// What a component answers (error_info) to a request it does not take because it is not active</span></div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno"><a class="line" href="namespaceplansys2.html#a22e0f7da8dbf1eab1b7e88cd9f899aea">   64</a></span><span class="keyword">constexpr</span> <span class="keywordtype">char</span> <a class="code hl_variable" href="namespaceplansys2.html#a22e0f7da8dbf1eab1b7e88cd9f899aea">kNotActive</a>[] = <span class="stringliteral">&quot;Requesting service in non-active state&quot;</span>;</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="comment">// Whether a response says that its component is not active (responses without error_info never)</span></div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> ResponseT, <span class="keyword">typename</span> = <span class="keywordtype">void</span>&gt;</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno"><a class="line" href="structplansys2_1_1HasErrorInfo.html">   68</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structplansys2_1_1HasErrorInfo.html">HasErrorInfo</a> : std::false_type {};</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> ResponseT&gt;</div>
+<div class="foldopen" id="foldopen00070" data-start="{" data-end="};">
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="structplansys2_1_1HasErrorInfo_3_01ResponseT_00_01std_1_1void__t_3_01decltype_07std_1_1declval_32121f86f3a2e5a4b2cbf64aff77f20a1.html">   70</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structplansys2_1_1HasErrorInfo.html">HasErrorInfo</a>&lt;ResponseT, <a class="code hl_namespace" href="namespacestd.html">std</a>::void_t&lt;decltype(std::declval&lt;ResponseT&gt;().error_info)&gt;&gt;</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  : std::true_type {};</div>
+</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> ResponseT&gt;</div>
+<div class="foldopen" id="foldopen00074" data-start="{" data-end="}">
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno"><a class="line" href="namespaceplansys2.html#af044d2d645b9dce8c53317ce538fffcd">   74</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="namespaceplansys2.html#af044d2d645b9dce8c53317ce538fffcd">says_not_active</a>(<span class="keyword">const</span> ResponseT &amp; response)</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>{</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  <span class="keywordflow">if</span> <span class="keyword">constexpr</span> (<a class="code hl_struct" href="structplansys2_1_1HasErrorInfo.html">HasErrorInfo&lt;ResponseT&gt;::value</a>) {</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    <span class="keywordflow">return</span> response.error_info == <a class="code hl_variable" href="namespaceplansys2.html#a22e0f7da8dbf1eab1b7e88cd9f899aea">kNotActive</a>;</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  }</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>}</div>
+</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span><span class="comment">// Whether a response has a success field</span></div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> ResponseT, <span class="keyword">typename</span> = <span class="keywordtype">void</span>&gt;</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno"><a class="line" href="structplansys2_1_1HasSuccess.html">   85</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structplansys2_1_1HasSuccess.html">HasSuccess</a> : std::false_type {};</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> ResponseT&gt;</div>
+<div class="foldopen" id="foldopen00087" data-start="{" data-end="};">
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno"><a class="line" href="structplansys2_1_1HasSuccess_3_01ResponseT_00_01std_1_1void__t_3_01decltype_07std_1_1declval_3_037f824147a7fd2e6b7cf8dc83e732b8f.html">   87</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structplansys2_1_1HasSuccess.html">HasSuccess</a>&lt;ResponseT, <a class="code hl_namespace" href="namespacestd.html">std</a>::void_t&lt;decltype(std::declval&lt;ResponseT&gt;().success)&gt;&gt;</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>  : std::true_type {};</div>
+</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span><span class="comment">// A response that says the request failed, and why when it has error_info</span></div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> ResponseT&gt;</div>
+<div class="foldopen" id="foldopen00092" data-start="{" data-end="}">
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno"><a class="line" href="namespaceplansys2.html#a02c3e7ef338ab8348aeeca30f47da7c4">   92</a></span>ResponseT <a class="code hl_function" href="namespaceplansys2.html#a02c3e7ef338ab8348aeeca30f47da7c4">failed_response</a>(<span class="keyword">const</span> std::string &amp; error)</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>{</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>  ResponseT response;</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>  <span class="keywordflow">if</span> <span class="keyword">constexpr</span> (<a class="code hl_struct" href="structplansys2_1_1HasSuccess.html">HasSuccess&lt;ResponseT&gt;::value</a>) {</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    response.success = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>  }</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>  <span class="keywordflow">if</span> <span class="keyword">constexpr</span> (<a class="code hl_struct" href="structplansys2_1_1HasErrorInfo.html">HasErrorInfo&lt;ResponseT&gt;::value</a>) {</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    response.error_info = error;</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>  }</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>  <span class="keywordflow">return</span> response;</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>}</div>
+</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span> </div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> ServiceT, <span class="keyword">typename</span> CallbackT&gt;</div>
+<div class="foldopen" id="foldopen00110" data-start="{" data-end="}">
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno"><a class="line" href="namespaceplansys2.html#a87e55bce61d9354599f89c7b73894d70">  110</a></span><span class="keyword">auto</span> <a class="code hl_function" href="namespaceplansys2.html#a87e55bce61d9354599f89c7b73894d70">guarded</a>(<span class="keyword">const</span> rclcpp::Logger &amp; logger, CallbackT callback)</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>{</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>  <span class="keywordflow">return</span> [logger, callback = std::move(callback)](</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    <span class="keyword">const</span> std::shared_ptr&lt;rmw_request_id_t&gt; header,</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    <span class="keyword">const</span> std::shared_ptr&lt;typename ServiceT::Request&gt; request,</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    std::shared_ptr&lt;typename ServiceT::Response&gt; response) {</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>           <span class="keywordflow">try</span> {</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>             callback(header, request, response);</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>           } <span class="keywordflow">catch</span> (<span class="keyword">const</span> std::exception &amp; e) {</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>             RCLCPP_ERROR(logger, <span class="stringliteral">&quot;Request rejected: %s&quot;</span>, e.what());</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>             *response = <a class="code hl_function" href="namespaceplansys2.html#a02c3e7ef338ab8348aeeca30f47da7c4">failed_response&lt;typename ServiceT::Response&gt;</a>(e.what());</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>           }</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>         };</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>}</div>
+</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span> </div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> ServiceT, <span class="keyword">typename</span> CallbackT&gt;</div>
+<div class="foldopen" id="foldopen00129" data-start="{" data-end="}">
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno"><a class="line" href="namespaceplansys2.html#a4ef219ba746a5f7835e3cb93c9140b56">  129</a></span><span class="keyword">auto</span> <a class="code hl_function" href="namespaceplansys2.html#a4ef219ba746a5f7835e3cb93c9140b56">guarded_deferred</a>(<span class="keyword">const</span> rclcpp::Logger &amp; logger, CallbackT callback)</div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>{</div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>  <span class="keywordflow">return</span> [logger, callback = std::move(callback)](</div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>    <span class="keyword">const</span> std::shared_ptr&lt;rclcpp::Service&lt;ServiceT&gt;&gt; service,</div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>    <span class="keyword">const</span> std::shared_ptr&lt;rmw_request_id_t&gt; header,</div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>    <span class="keyword">const</span> std::shared_ptr&lt;typename ServiceT::Request&gt; request) {</div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>           <span class="keywordflow">try</span> {</div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>             callback(service, header, request);</div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>           } <span class="keywordflow">catch</span> (<span class="keyword">const</span> std::exception &amp; e) {</div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>             RCLCPP_ERROR(logger, <span class="stringliteral">&quot;Request rejected: %s&quot;</span>, e.what());</div>
+<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span>             <span class="keyword">auto</span> response = <a class="code hl_function" href="namespaceplansys2.html#a02c3e7ef338ab8348aeeca30f47da7c4">failed_response&lt;typename ServiceT::Response&gt;</a>(e.what());</div>
+<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>             service-&gt;send_response(*header, response);</div>
+<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>           }</div>
+<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>         };</div>
+<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span>}</div>
+</div>
+<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span> </div>
+<div class="foldopen" id="foldopen00152" data-start="{" data-end="};">
+<div class="line"><a id="l00152" name="l00152"></a><span class="lineno"><a class="line" href="classplansys2_1_1ActiveComponent.html">  152</a></span><span class="keyword">class </span><a class="code hl_class" href="classplansys2_1_1ActiveComponent.html">ActiveComponent</a></div>
+<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>{</div>
+<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span><span class="keyword">public</span>:</div>
+<div class="foldopen" id="foldopen00155" data-start="{" data-end="}">
+<div class="line"><a id="l00155" name="l00155"></a><span class="lineno"><a class="line" href="classplansys2_1_1ActiveComponent.html#a2bb8f7cee7ac966f37b4906ae2b1fa20">  155</a></span>  <a class="code hl_function" href="classplansys2_1_1ActiveComponent.html#a2bb8f7cee7ac966f37b4906ae2b1fa20">ActiveComponent</a>(std::shared_ptr&lt;ClientNode&gt; node, <span class="keyword">const</span> std::string &amp; <a class="code hl_function" href="classplansys2_1_1ActiveComponent.html#a8dcf9574e549b1f3170c3d3baee89abe">component</a>)</div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>  : node_(node), component_(<a class="code hl_function" href="classplansys2_1_1ActiveComponent.html#a8dcf9574e549b1f3170c3d3baee89abe">component</a>),</div>
+<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>    client_(node-&gt;create_client&lt;lifecycle_msgs::srv::<a class="code hl_typedef" href="active__component__test_8cpp.html#afa5880ce23f919c812f8a44ed4554454">GetState</a>&gt;(<a class="code hl_function" href="classplansys2_1_1ActiveComponent.html#a8dcf9574e549b1f3170c3d3baee89abe">component</a> + <span class="stringliteral">&quot;/get_state&quot;</span>))</div>
+<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>  {</div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>  }</div>
+</div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span> </div>
+<div class="foldopen" id="foldopen00165" data-start="{" data-end="}">
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno"><a class="line" href="classplansys2_1_1ActiveComponent.html#ab86f338cf229c8dd15d854493ff43ff6">  165</a></span>  <span class="keywordtype">bool</span> <a class="code hl_function" href="classplansys2_1_1ActiveComponent.html#ab86f338cf229c8dd15d854493ff43ff6">wait</a>()</div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>  {</div>
+<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>    <span class="keywordflow">if</span> (active_) {</div>
+<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>      <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>    }</div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>    <span class="comment">// One thread asks; the others find it active when they get the lock</span></div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>    std::lock_guard&lt;std::mutex&gt; lock(mutex_);</div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>    <span class="keyword">const</span> <span class="keyword">auto</span> since = std::chrono::steady_clock::now();</div>
+<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>    <span class="keyword">auto</span> last_log = since;</div>
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>    <span class="keywordflow">while</span> (!active_ &amp;&amp; node_-&gt;running()) {</div>
+<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>      <span class="comment">// Given up once: the calls after ask once, and do not wait again, until it is back</span></div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>      <span class="keyword">const</span> <span class="keyword">auto</span> limit = gave_up_ ? std::chrono::milliseconds(0) : max_wait_;</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>      <span class="keywordflow">if</span> (max_wait_.count() &gt; 0 &amp;&amp; std::chrono::steady_clock::now() - since &gt;= limit) {</div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>        <span class="keywordflow">if</span> (!gave_up_) {</div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>          RCLCPP_ERROR(</div>
+<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>            node_-&gt;get_logger(), <span class="stringliteral">&quot;%s is not active after %.0f s: giving up&quot;</span>, component_.c_str(),</div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>            std::chrono::duration&lt;double&gt;(max_wait_).count());</div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>        }</div>
+<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span>        gave_up_ = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>        <span class="comment">// Asked at most once a second meanwhile: each call fails at once</span></div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>        <span class="keyword">const</span> <span class="keyword">auto</span> now = std::chrono::steady_clock::now();</div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>        <span class="keywordflow">if</span> (now - last_ask_ &lt; std::chrono::seconds(1)) {</div>
+<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>          <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span>        }</div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>        last_ask_ = now;</div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>        <span class="keywordflow">if</span> (!ask()) {</div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>          <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>        }</div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>        active_ = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>        gave_up_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>        <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span>      }</div>
+<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>      <span class="comment">// At most one question every kPeriod, also when a wait ends at once (shutdown, no node)</span></div>
+<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>      <span class="keyword">const</span> <span class="keyword">auto</span> next = std::chrono::steady_clock::now() + kPeriod;</div>
+<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>      last_ask_ = std::chrono::steady_clock::now();</div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>      <span class="keywordflow">if</span> (ask()) {</div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>        active_ = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>        gave_up_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>        <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>      }</div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>      std::this_thread::sleep_until(next);</div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>      <span class="keywordflow">if</span> (std::chrono::steady_clock::now() - last_log &gt; kLogPeriod) {</div>
+<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>        RCLCPP_INFO(node_-&gt;get_logger(), <span class="stringliteral">&quot;Waiting for %s to be active...&quot;</span>, component_.c_str());</div>
+<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>        last_log = std::chrono::steady_clock::now();</div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>      }</div>
+<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span>    }</div>
+<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>    <span class="keywordflow">return</span> active_;</div>
+<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>  }</div>
+</div>
+<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span> </div>
+<div class="line"><a id="l00217" name="l00217"></a><span class="lineno"><a class="line" href="classplansys2_1_1ActiveComponent.html#a108b6981e4effea5d824f64bb10c72a7">  217</a></span>  <span class="keywordtype">void</span> <a class="code hl_function" href="classplansys2_1_1ActiveComponent.html#a108b6981e4effea5d824f64bb10c72a7">lost</a>() {active_ = <span class="keyword">false</span>;}</div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span> </div>
+<div class="line"><a id="l00222" name="l00222"></a><span class="lineno"><a class="line" href="classplansys2_1_1ActiveComponent.html#a2a30d3391db09eb203217a5c8bfa22c6">  222</a></span>  <span class="keywordtype">void</span> <a class="code hl_function" href="classplansys2_1_1ActiveComponent.html#a2a30d3391db09eb203217a5c8bfa22c6">set_max_wait</a>(std::chrono::milliseconds max_wait) {max_wait_ = max_wait;}</div>
+<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span> </div>
+<div class="line"><a id="l00224" name="l00224"></a><span class="lineno"><a class="line" href="classplansys2_1_1ActiveComponent.html#a8dcf9574e549b1f3170c3d3baee89abe">  224</a></span>  <span class="keyword">const</span> std::string &amp; <a class="code hl_function" href="classplansys2_1_1ActiveComponent.html#a8dcf9574e549b1f3170c3d3baee89abe">component</a>()<span class="keyword"> const </span>{<span class="keywordflow">return</span> component_;}</div>
+<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span> </div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span>  <span class="comment">// Whether it answers that it is active</span></div>
+<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span>  <span class="keywordtype">bool</span> ask()</div>
+<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span>  {</div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>    <span class="keywordflow">if</span> (!<a class="code hl_function" href="namespaceplansys2.html#afc5accd46d42076f756e954b01f1a078">wait_for_server</a>(client_, std::chrono::seconds(1))) {</div>
+<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>      <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>    }</div>
+<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span>    <span class="keywordflow">try</span> {</div>
+<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>      <span class="keyword">auto</span> future = client_-&gt;async_send_request(</div>
+<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span>        std::make_shared&lt;lifecycle_msgs::srv::GetState::Request&gt;());</div>
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>      <span class="keywordflow">if</span> (node_-&gt;wait(future, std::chrono::seconds(1)) == rclcpp::FutureReturnCode::SUCCESS) {</div>
+<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span>        <span class="keywordflow">return</span> future.get()-&gt;current_state.id == lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE;</div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>      }</div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>      <span class="comment">// A lost answer: a new client, discovered again (see ServiceClient)</span></div>
+<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>      client_-&gt;remove_pending_request(future);</div>
+<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span>      client_ = node_-&gt;create_client&lt;lifecycle_msgs::srv::GetState&gt;(component_ + <span class="stringliteral">&quot;/get_state&quot;</span>);</div>
+<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>    } <span class="keywordflow">catch</span> (<span class="keyword">const</span> std::runtime_error &amp;) {</div>
+<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>      <span class="comment">// ROS shutting down, or the node gone</span></div>
+<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span>    }</div>
+<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>  }</div>
+<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span> </div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>  <span class="keyword">static</span> <span class="keyword">constexpr</span> std::chrono::milliseconds kPeriod {500};</div>
+<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>  <span class="keyword">static</span> <span class="keyword">constexpr</span> std::chrono::seconds kLogPeriod {5};</div>
+<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>  std::shared_ptr&lt;ClientNode&gt; node_;</div>
+<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>  std::string component_;</div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>  std::chrono::milliseconds max_wait_ {0};</div>
+<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>  <span class="keywordtype">bool</span> gave_up_ {<span class="keyword">false</span>};</div>
+<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>  std::chrono::steady_clock::time_point last_ask_;</div>
+<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>  std::atomic&lt;bool&gt; active_ {<span class="keyword">false</span>};</div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>  std::mutex mutex_;</div>
+<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span>  rclcpp::Client&lt;lifecycle_msgs::srv::GetState&gt;::SharedPtr client_;</div>
+<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span>};</div>
+</div>
+<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span> </div>
+<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> ServiceT&gt;</div>
+<div class="foldopen" id="foldopen00275" data-start="{" data-end="};">
+<div class="line"><a id="l00275" name="l00275"></a><span class="lineno"><a class="line" href="classplansys2_1_1ServiceClient.html">  275</a></span><span class="keyword">class </span><a class="code hl_class" href="classplansys2_1_1ServiceClient.html">ServiceClient</a></div>
+<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>{</div>
+<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00278" name="l00278"></a><span class="lineno"><a class="line" href="classplansys2_1_1ServiceClient.html#abe351f7d4b66db3e6945a6949142e8f0">  278</a></span>  <span class="keyword">using </span><a class="code hl_typedef" href="classplansys2_1_1ServiceClient.html#abe351f7d4b66db3e6945a6949142e8f0">SharedPtr</a> = std::shared_ptr&lt;ServiceClient&lt;ServiceT&gt;&gt;;</div>
+<div class="line"><a id="l00279" name="l00279"></a><span class="lineno"><a class="line" href="classplansys2_1_1ServiceClient.html#a5327347c7479a3e210a896e443ff18d8">  279</a></span>  <span class="keyword">using </span><a class="code hl_typedef" href="classplansys2_1_1ServiceClient.html#a5327347c7479a3e210a896e443ff18d8">Response</a> = <span class="keyword">typename</span> ServiceT::Response::SharedPtr;</div>
+<div class="line"><a id="l00280" name="l00280"></a><span class="lineno"><a class="line" href="classplansys2_1_1ServiceClient.html#ab3376c8ac9550375bb5a7f3da8b56bbf">  280</a></span>  <span class="keyword">using </span><a class="code hl_typedef" href="classplansys2_1_1ServiceClient.html#ab3376c8ac9550375bb5a7f3da8b56bbf">Request</a> = <span class="keyword">typename</span> ServiceT::Request::SharedPtr;</div>
+<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span> </div>
+<div class="foldopen" id="foldopen00282" data-start="{" data-end="}">
+<div class="line"><a id="l00282" name="l00282"></a><span class="lineno"><a class="line" href="classplansys2_1_1ServiceClient.html#af6e65c2b4cb68afebce55c808d3b24f1">  282</a></span>  <a class="code hl_function" href="classplansys2_1_1ServiceClient.html#af6e65c2b4cb68afebce55c808d3b24f1">ServiceClient</a>(</div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>    std::shared_ptr&lt;ClientNode&gt; node, <span class="keyword">const</span> std::string &amp; <a class="code hl_function" href="classplansys2_1_1ServiceClient.html#a1d89c28bd42ba9a52da008bb69367171">name</a>,</div>
+<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span>    std::shared_ptr&lt;ActiveComponent&gt; active = <span class="keyword">nullptr</span>)</div>
+<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>  : node_(node), name_(<a class="code hl_function" href="classplansys2_1_1ServiceClient.html#a1d89c28bd42ba9a52da008bb69367171">name</a>), active_(active), client_(node-&gt;create_client&lt;ServiceT&gt;(<a class="code hl_function" href="classplansys2_1_1ServiceClient.html#a1d89c28bd42ba9a52da008bb69367171">name</a>))</div>
+<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span>  {</div>
+<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>  }</div>
+</div>
+<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span> </div>
+<div class="foldopen" id="foldopen00299" data-start="{" data-end="}">
+<div class="line"><a id="l00299" name="l00299"></a><span class="lineno"><a class="line" href="classplansys2_1_1ServiceClient.html#a033e77930d21e59161c16c2588fcf65c">  299</a></span>  <a class="code hl_typedef" href="classplansys2_1_1ServiceClient.html#a5327347c7479a3e210a896e443ff18d8">Response</a> <a class="code hl_function" href="classplansys2_1_1ServiceClient.html#a033e77930d21e59161c16c2588fcf65c">call</a>(</div>
+<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>    <span class="keyword">const</span> <a class="code hl_typedef" href="classplansys2_1_1ServiceClient.html#ab3376c8ac9550375bb5a7f3da8b56bbf">Request</a> &amp; request,</div>
+<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>    std::chrono::nanoseconds response_timeout = std::chrono::seconds(1),</div>
+<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>    <span class="keywordtype">int</span> attempts = 3,</div>
+<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>    std::chrono::nanoseconds service_timeout = std::chrono::seconds(5))</div>
+<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>  {</div>
+<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>    <span class="keywordtype">bool</span> waited_again = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span>    <span class="keywordtype">int</span> not_active_waits = 0;</div>
+<div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span>    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> attempt = 1; attempt &lt;= attempts &amp;&amp; node_-&gt;running(); attempt++) {</div>
+<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>      <span class="keywordflow">if</span> (active_ &amp;&amp; !active_-&gt;wait()) {</div>
+<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>        <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>      }</div>
+<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>      <span class="keyword">auto</span> client = current();</div>
+<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span>      <span class="keywordflow">if</span> (!<a class="code hl_function" href="namespaceplansys2.html#afc5accd46d42076f756e954b01f1a078">wait_for_server</a>(client, service_timeout)) {</div>
+<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span>        <span class="keywordflow">if</span> (active_ &amp;&amp; !waited_again &amp;&amp; node_-&gt;running()) {</div>
+<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span>          <span class="comment">// Gone (PlanSys2 stopped or restarted): back to waiting for it, once; active and still</span></div>
+<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>          <span class="comment">// without this service, it is an error</span></div>
+<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>          active_-&gt;lost();</div>
+<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>          waited_again = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>          attempt--;</div>
+<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>          <span class="keywordflow">continue</span>;</div>
+<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>        }</div>
+<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>        <span class="keywordflow">if</span> (node_-&gt;running()) {</div>
+<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>          RCLCPP_ERROR_STREAM(node_-&gt;get_logger(), <a class="code hl_function" href="classplansys2_1_1ServiceClient.html#a1d89c28bd42ba9a52da008bb69367171">name</a>() &lt;&lt; <span class="stringliteral">&quot;: service not available&quot;</span>);</div>
+<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>        }</div>
+<div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span>        <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span>      }</div>
+<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span>      <span class="keywordflow">try</span> {</div>
+<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>        <span class="keyword">auto</span> future = client-&gt;async_send_request(request);</div>
+<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>        <span class="keywordflow">if</span> (node_-&gt;wait(future, response_timeout) == rclcpp::FutureReturnCode::SUCCESS) {</div>
+<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>          <span class="keyword">auto</span> response = future.get();</div>
+<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>          <span class="keywordflow">if</span> (active_ &amp;&amp; <a class="code hl_function" href="namespaceplansys2.html#af044d2d645b9dce8c53317ce538fffcd">says_not_active</a>(*response) &amp;&amp; not_active_waits++ &lt; kNotActiveWaits) {</div>
+<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span>            <span class="comment">// Deactivated since it was seen active: wait for it again, and ask again</span></div>
+<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span>            active_-&gt;lost();</div>
+<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>            attempt--;</div>
+<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>            <span class="keywordflow">continue</span>;</div>
+<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>          }</div>
+<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>          <span class="keywordflow">return</span> response;</div>
+<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>        }</div>
+<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>        <span class="comment">// Otherwise the late answer would stay pending forever</span></div>
+<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>        client-&gt;remove_pending_request(future);</div>
+<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>      } <span class="keywordflow">catch</span> (<span class="keyword">const</span> std::exception &amp; e) {</div>
+<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>        <span class="comment">// rclcpp shutting down throws from the graph: no answer, not the end of the process</span></div>
+<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>        <span class="keywordflow">if</span> (node_-&gt;running()) {</div>
+<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>          RCLCPP_ERROR_STREAM(node_-&gt;get_logger(), <a class="code hl_function" href="classplansys2_1_1ServiceClient.html#a1d89c28bd42ba9a52da008bb69367171">name</a>() &lt;&lt; <span class="stringliteral">&quot;: &quot;</span> &lt;&lt; e.what());</div>
+<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>        }</div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>        <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>      }</div>
+<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>      <span class="keywordflow">if</span> (!node_-&gt;running()) {</div>
+<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>        <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>      }</div>
+<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span>      <span class="keywordflow">if</span> (!renew(client)) {</div>
+<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>        <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span>      }</div>
+<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span>      <span class="keywordflow">if</span> (attempt &lt; attempts) {</div>
+<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span>        RCLCPP_WARN_STREAM(</div>
+<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span>          node_-&gt;get_logger(), <a class="code hl_function" href="classplansys2_1_1ServiceClient.html#a1d89c28bd42ba9a52da008bb69367171">name</a>() &lt;&lt; <span class="stringliteral">&quot;: no response, sending it again with a new client (&quot;</span> &lt;&lt;</div>
+<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span>            attempt + 1 &lt;&lt; <span class="stringliteral">&quot;/&quot;</span> &lt;&lt; attempts &lt;&lt; <span class="stringliteral">&quot;)&quot;</span>);</div>
+<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span>      }</div>
+<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span>    }</div>
+<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span>    <span class="keywordflow">if</span> (active_) {</div>
+<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span>      active_-&gt;lost();  <span class="comment">// The next call checks that it is still active</span></div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>    }</div>
+<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>    <span class="keywordflow">if</span> (node_-&gt;running()) {</div>
+<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>      RCLCPP_ERROR_STREAM(node_-&gt;get_logger(), <a class="code hl_function" href="classplansys2_1_1ServiceClient.html#a1d89c28bd42ba9a52da008bb69367171">name</a>() &lt;&lt; <span class="stringliteral">&quot;: no response&quot;</span>);</div>
+<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span>    }</div>
+<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span>    <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>  }</div>
+</div>
+<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span> </div>
+<div class="foldopen" id="foldopen00371" data-start="{" data-end="}">
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno"><a class="line" href="classplansys2_1_1ServiceClient.html#ae857660eff047e91aad251f680927c43">  371</a></span>  <span class="keywordtype">bool</span> <a class="code hl_function" href="classplansys2_1_1ServiceClient.html#ae857660eff047e91aad251f680927c43">wait_for_service</a>(std::chrono::nanoseconds timeout)</div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>  {</div>
+<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceplansys2.html#afc5accd46d42076f756e954b01f1a078">wait_for_server</a>(current(), timeout);</div>
+<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>  }</div>
+</div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span> </div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno"><a class="line" href="classplansys2_1_1ServiceClient.html#ac0be27d99865c69881ab940066c6b4d0">  376</a></span>  <span class="keywordtype">bool</span> <a class="code hl_function" href="classplansys2_1_1ServiceClient.html#ac0be27d99865c69881ab940066c6b4d0">service_is_ready</a>()<span class="keyword"> const </span>{<span class="keywordflow">return</span> current()-&gt;service_is_ready();}</div>
+<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span> </div>
+<div class="line"><a id="l00378" name="l00378"></a><span class="lineno"><a class="line" href="classplansys2_1_1ServiceClient.html#a1d89c28bd42ba9a52da008bb69367171">  378</a></span>  std::string <a class="code hl_function" href="classplansys2_1_1ServiceClient.html#a1d89c28bd42ba9a52da008bb69367171">name</a>()<span class="keyword"> const </span>{<span class="keywordflow">return</span> current()-&gt;get_service_name();}</div>
+<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span> </div>
+<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span>  <span class="keyword">typename</span> rclcpp::Client&lt;ServiceT&gt;::SharedPtr current()<span class="keyword"> const</span></div>
+<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span><span class="keyword">  </span>{</div>
+<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span>    std::lock_guard&lt;std::mutex&gt; lock(mutex_);</div>
+<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span>    <span class="keywordflow">return</span> client_;</div>
+<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>  }</div>
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span> </div>
+<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>  <span class="comment">// A new client, unless another call already made one after this one failed</span></div>
+<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>  <span class="keywordtype">bool</span> renew(<span class="keyword">const</span> <span class="keyword">typename</span> rclcpp::Client&lt;ServiceT&gt;::SharedPtr &amp; failed)</div>
+<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>  {</div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>    std::lock_guard&lt;std::mutex&gt; lock(mutex_);</div>
+<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>    <span class="keywordflow">if</span> (client_ != failed) {</div>
+<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>      <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>    }</div>
+<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span>    <span class="keywordflow">try</span> {</div>
+<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>      client_ = node_-&gt;create_client&lt;ServiceT&gt;(name_);</div>
+<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>    } <span class="keywordflow">catch</span> (<span class="keyword">const</span> std::runtime_error &amp;) {</div>
+<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>      <span class="keywordflow">return</span> <span class="keyword">false</span>;  <span class="comment">// The node is gone</span></div>
+<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>    }</div>
+<div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span>    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span>  }</div>
+<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span> </div>
+<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>  <span class="comment">// A component that says it is active and answers that it is not, so many times: an error</span></div>
+<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span>  <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keywordtype">int</span> kNotActiveWaits = 3;</div>
+<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span>  std::shared_ptr&lt;ClientNode&gt; node_;</div>
+<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span>  std::string name_;</div>
+<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span>  std::shared_ptr&lt;ActiveComponent&gt; active_;</div>
+<div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span>  <span class="keyword">mutable</span> std::mutex mutex_;</div>
+<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span>  <span class="keyword">typename</span> rclcpp::Client&lt;ServiceT&gt;::SharedPtr client_;</div>
+<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span>};</div>
+</div>
+<div class="line"><a id="l00410" name="l00410"></a><span class="lineno">  410</span> </div>
+<div class="line"><a id="l00411" name="l00411"></a><span class="lineno">  411</span>}  <span class="comment">// namespace plansys2</span></div>
+<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span> </div>
+<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_CORE__SERVICECALL_HPP_</span></div>
+<div class="ttc" id="aClientNode_8hpp_html"><div class="ttname"><a href="ClientNode_8hpp.html">ClientNode.hpp</a></div></div>
+<div class="ttc" id="aactive__component__test_8cpp_html_afa5880ce23f919c812f8a44ed4554454"><div class="ttname"><a href="active__component__test_8cpp.html#afa5880ce23f919c812f8a44ed4554454">GetState</a></div><div class="ttdeci">lifecycle_msgs::srv::GetState GetState</div><div class="ttdef"><b>Definition</b> active_component_test.cpp:33</div></div>
+<div class="ttc" id="aclassplansys2_1_1ActiveComponent_html"><div class="ttname"><a href="classplansys2_1_1ActiveComponent.html">plansys2::ActiveComponent</a></div><div class="ttdoc">Whether a component of PlanSys2 is active, as its clients wait for it.</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:153</div></div>
+<div class="ttc" id="aclassplansys2_1_1ActiveComponent_html_a108b6981e4effea5d824f64bb10c72a7"><div class="ttname"><a href="classplansys2_1_1ActiveComponent.html#a108b6981e4effea5d824f64bb10c72a7">plansys2::ActiveComponent::lost</a></div><div class="ttdeci">void lost()</div><div class="ttdoc">A service of the component went or stopped answering: wait for it again.</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:217</div></div>
+<div class="ttc" id="aclassplansys2_1_1ActiveComponent_html_a2a30d3391db09eb203217a5c8bfa22c6"><div class="ttname"><a href="classplansys2_1_1ActiveComponent.html#a2a30d3391db09eb203217a5c8bfa22c6">plansys2::ActiveComponent::set_max_wait</a></div><div class="ttdeci">void set_max_wait(std::chrono::milliseconds max_wait)</div><div class="ttdoc">How long a wait goes on before it gives up: zero, the default, for ever.</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:222</div></div>
+<div class="ttc" id="aclassplansys2_1_1ActiveComponent_html_a2bb8f7cee7ac966f37b4906ae2b1fa20"><div class="ttname"><a href="classplansys2_1_1ActiveComponent.html#a2bb8f7cee7ac966f37b4906ae2b1fa20">plansys2::ActiveComponent::ActiveComponent</a></div><div class="ttdeci">ActiveComponent(std::shared_ptr&lt; ClientNode &gt; node, const std::string &amp;component)</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:155</div></div>
+<div class="ttc" id="aclassplansys2_1_1ActiveComponent_html_a8dcf9574e549b1f3170c3d3baee89abe"><div class="ttname"><a href="classplansys2_1_1ActiveComponent.html#a8dcf9574e549b1f3170c3d3baee89abe">plansys2::ActiveComponent::component</a></div><div class="ttdeci">const std::string &amp; component() const</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:224</div></div>
+<div class="ttc" id="aclassplansys2_1_1ActiveComponent_html_ab86f338cf229c8dd15d854493ff43ff6"><div class="ttname"><a href="classplansys2_1_1ActiveComponent.html#ab86f338cf229c8dd15d854493ff43ff6">plansys2::ActiveComponent::wait</a></div><div class="ttdeci">bool wait()</div><div class="ttdoc">Waits until the component is active: false only if ROS shuts down, or the client is interrupted,...</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:165</div></div>
+<div class="ttc" id="aclassplansys2_1_1ServiceClient_html"><div class="ttname"><a href="classplansys2_1_1ServiceClient.html">plansys2::ServiceClient</a></div><div class="ttdoc">A service client of a PlanSys2 client, which makes itself anew when an answer is lost.</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:276</div></div>
+<div class="ttc" id="aclassplansys2_1_1ServiceClient_html_a033e77930d21e59161c16c2588fcf65c"><div class="ttname"><a href="classplansys2_1_1ServiceClient.html#a033e77930d21e59161c16c2588fcf65c">plansys2::ServiceClient::call</a></div><div class="ttdeci">Response call(const Request &amp;request, std::chrono::nanoseconds response_timeout=std::chrono::seconds(1), int attempts=3, std::chrono::nanoseconds service_timeout=std::chrono::seconds(5))</div><div class="ttdoc">Calls the service.</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:299</div></div>
+<div class="ttc" id="aclassplansys2_1_1ServiceClient_html_a1d89c28bd42ba9a52da008bb69367171"><div class="ttname"><a href="classplansys2_1_1ServiceClient.html#a1d89c28bd42ba9a52da008bb69367171">plansys2::ServiceClient::name</a></div><div class="ttdeci">std::string name() const</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:378</div></div>
+<div class="ttc" id="aclassplansys2_1_1ServiceClient_html_a5327347c7479a3e210a896e443ff18d8"><div class="ttname"><a href="classplansys2_1_1ServiceClient.html#a5327347c7479a3e210a896e443ff18d8">plansys2::ServiceClient::Response</a></div><div class="ttdeci">typename ServiceT::Response::SharedPtr Response</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:279</div></div>
+<div class="ttc" id="aclassplansys2_1_1ServiceClient_html_ab3376c8ac9550375bb5a7f3da8b56bbf"><div class="ttname"><a href="classplansys2_1_1ServiceClient.html#ab3376c8ac9550375bb5a7f3da8b56bbf">plansys2::ServiceClient::Request</a></div><div class="ttdeci">typename ServiceT::Request::SharedPtr Request</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:280</div></div>
+<div class="ttc" id="aclassplansys2_1_1ServiceClient_html_abe351f7d4b66db3e6945a6949142e8f0"><div class="ttname"><a href="classplansys2_1_1ServiceClient.html#abe351f7d4b66db3e6945a6949142e8f0">plansys2::ServiceClient::SharedPtr</a></div><div class="ttdeci">std::shared_ptr&lt; ServiceClient&lt; ServiceT &gt; &gt; SharedPtr</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:278</div></div>
+<div class="ttc" id="aclassplansys2_1_1ServiceClient_html_ac0be27d99865c69881ab940066c6b4d0"><div class="ttname"><a href="classplansys2_1_1ServiceClient.html#ac0be27d99865c69881ab940066c6b4d0">plansys2::ServiceClient::service_is_ready</a></div><div class="ttdeci">bool service_is_ready() const</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:376</div></div>
+<div class="ttc" id="aclassplansys2_1_1ServiceClient_html_ae857660eff047e91aad251f680927c43"><div class="ttname"><a href="classplansys2_1_1ServiceClient.html#ae857660eff047e91aad251f680927c43">plansys2::ServiceClient::wait_for_service</a></div><div class="ttdeci">bool wait_for_service(std::chrono::nanoseconds timeout)</div><div class="ttdoc">Whether the server is there, waiting up to timeout for it.</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:371</div></div>
+<div class="ttc" id="aclassplansys2_1_1ServiceClient_html_af6e65c2b4cb68afebce55c808d3b24f1"><div class="ttname"><a href="classplansys2_1_1ServiceClient.html#af6e65c2b4cb68afebce55c808d3b24f1">plansys2::ServiceClient::ServiceClient</a></div><div class="ttdeci">ServiceClient(std::shared_ptr&lt; ClientNode &gt; node, const std::string &amp;name, std::shared_ptr&lt; ActiveComponent &gt; active=nullptr)</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:282</div></div>
 <div class="ttc" id="anamespaceplansys2_html"><div class="ttname"><a href="namespaceplansys2.html">plansys2</a></div><div class="ttdef"><b>Definition</b> BTAction.hpp:33</div></div>
-<div class="ttc" id="anamespaceplansys2_html_aa56499be025cb779ecafe600974c3d57"><div class="ttname"><a href="namespaceplansys2.html#aa56499be025cb779ecafe600974c3d57">plansys2::call_service</a></div><div class="ttdeci">ServiceT::Response::SharedPtr call_service(rclcpp::Node::SharedPtr node, std::shared_ptr&lt; rclcpp::Client&lt; ServiceT &gt; &gt; client, typename ServiceT::Request::SharedPtr request, std::chrono::nanoseconds service_timeout=std::chrono::seconds(5), std::chrono::nanoseconds response_timeout=std::chrono::seconds(1))</div><div class="ttdoc">Call a service spinning node until the response arrives.</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:62</div></div>
-<div class="ttc" id="anamespaceplansys2_html_afc5accd46d42076f756e954b01f1a078"><div class="ttname"><a href="namespaceplansys2.html#afc5accd46d42076f756e954b01f1a078">plansys2::wait_for_server</a></div><div class="ttdeci">bool wait_for_server(WaitT &amp;&amp;wait)</div><div class="ttdoc">Waits for the server of a client: wait is its wait_for_service or wait_for_action_server.</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:36</div></div>
+<div class="ttc" id="anamespaceplansys2_html_a02c3e7ef338ab8348aeeca30f47da7c4"><div class="ttname"><a href="namespaceplansys2.html#a02c3e7ef338ab8348aeeca30f47da7c4">plansys2::failed_response</a></div><div class="ttdeci">ResponseT failed_response(const std::string &amp;error)</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:92</div></div>
+<div class="ttc" id="anamespaceplansys2_html_a22e0f7da8dbf1eab1b7e88cd9f899aea"><div class="ttname"><a href="namespaceplansys2.html#a22e0f7da8dbf1eab1b7e88cd9f899aea">plansys2::kNotActive</a></div><div class="ttdeci">constexpr char kNotActive[]</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:64</div></div>
+<div class="ttc" id="anamespaceplansys2_html_a4ef219ba746a5f7835e3cb93c9140b56"><div class="ttname"><a href="namespaceplansys2.html#a4ef219ba746a5f7835e3cb93c9140b56">plansys2::guarded_deferred</a></div><div class="ttdeci">auto guarded_deferred(const rclcpp::Logger &amp;logger, CallbackT callback)</div><div class="ttdoc">As guarded(), for a callback that answers later with send_response.</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:129</div></div>
+<div class="ttc" id="anamespaceplansys2_html_a87e55bce61d9354599f89c7b73894d70"><div class="ttname"><a href="namespaceplansys2.html#a87e55bce61d9354599f89c7b73894d70">plansys2::guarded</a></div><div class="ttdeci">auto guarded(const rclcpp::Logger &amp;logger, CallbackT callback)</div><div class="ttdoc">A service callback that answers instead of letting an exception out: one from hostile input (the PDDL...</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:110</div></div>
+<div class="ttc" id="anamespaceplansys2_html_af044d2d645b9dce8c53317ce538fffcd"><div class="ttname"><a href="namespaceplansys2.html#af044d2d645b9dce8c53317ce538fffcd">plansys2::says_not_active</a></div><div class="ttdeci">bool says_not_active(const ResponseT &amp;response)</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:74</div></div>
+<div class="ttc" id="anamespaceplansys2_html_afc5accd46d42076f756e954b01f1a078"><div class="ttname"><a href="namespaceplansys2.html#afc5accd46d42076f756e954b01f1a078">plansys2::wait_for_server</a></div><div class="ttdeci">bool wait_for_server(WaitT &amp;&amp;wait)</div><div class="ttdoc">Waits for the server of a client: wait is its wait_for_service or wait_for_action_server.</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:45</div></div>
+<div class="ttc" id="anamespacestd_html"><div class="ttname"><a href="namespacestd.html">std</a></div><div class="ttdef"><b>Definition</b> JSONUtils.hpp:50</div></div>
+<div class="ttc" id="astructplansys2_1_1HasErrorInfo_html"><div class="ttname"><a href="structplansys2_1_1HasErrorInfo.html">plansys2::HasErrorInfo</a></div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:68</div></div>
+<div class="ttc" id="astructplansys2_1_1HasSuccess_html"><div class="ttname"><a href="structplansys2_1_1HasSuccess.html">plansys2::HasSuccess</a></div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:85</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -1,0 +1,13 @@
+<map id="LossyExecutor" name="LossyExecutor">
+<area shape="rect" id="Node000001" title=" " alt="" coords="190,184,297,210"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,85,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="53,45,72,103,89,133,112,158,129,170,149,179,191,189,189,194,147,184,127,175,108,162,85,136,67,105,48,47"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="109,5,189,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="149,46,152,102,160,132,174,158,187,172,204,181,202,186,184,176,170,162,155,134,147,103,144,47"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="217,5,265,31"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="244,47,246,184,241,184,239,47"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="289,5,404,31"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="338,47,313,101,278,162,258,185,254,182,273,158,308,98,333,44"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="428,5,524,31"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="467,46,432,105,407,136,377,162,338,181,298,192,297,187,337,176,374,158,403,132,428,102,462,44"/>
+</map>

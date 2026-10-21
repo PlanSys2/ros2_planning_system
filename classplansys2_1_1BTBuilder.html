@@ -160,7 +160,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a95418f6bc3d3bcc8168a949d5e072c49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Propagate temporal constraints through the graph.  <br /></td></tr>
 <tr class="separator:a95418f6bc3d3bcc8168a949d5e072c49"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed032a39047201205eae57040a67544a" id="r_aed032a39047201205eae57040a67544a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aed032a39047201205eae57040a67544a">set_clients</a> (std::shared_ptr&lt; <a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &gt; <a class="el" href="#ac112d607051000a90f75129505eb0177">domain_client</a>, std::shared_ptr&lt; <a class="el" href="classplansys2_1_1ProblemExpertClient.html">plansys2::ProblemExpertClient</a> &gt; <a class="el" href="#a00cf7b0ed017e96e8a59a3f03a563965">problem_client</a>)</td></tr>
-<tr class="memdesc:aed032a39047201205eae57040a67544a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the clients the builder uses, usually those of its executor.  <br /></td></tr>
+<tr class="memdesc:aed032a39047201205eae57040a67544a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the clients the builder uses: those of its executor, on the executor's node.  <br /></td></tr>
 <tr class="separator:aed032a39047201205eae57040a67544a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a39c9d14b109758533b2614565f4a338b" id="r_a39c9d14b109758533b2614565f4a338b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a39c9d14b109758533b2614565f4a338b">set_initial_state</a> (std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt; predicates, std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt; functions)</td></tr>
 <tr class="memdesc:a39c9d14b109758533b2614565f4a338b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the state the plan starts from, instead of the current one.  <br /></td></tr>
@@ -775,8 +775,8 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Set the clients the builder uses, usually those of its executor. </p>
-<p>Without them the builder creates its own clients, two more nodes for each plan: built and destroyed in the execution thread, they could abort the process when that happens during a shutdown.</p>
+<p>Set the clients the builder uses: those of its executor, on the executor's node. </p>
+<p>Required before building a tree: a builder makes no node of its own.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">domain_client</td><td>The domain expert client. </td></tr>

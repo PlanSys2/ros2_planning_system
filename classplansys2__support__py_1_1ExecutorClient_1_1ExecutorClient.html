@@ -92,7 +92,9 @@ $(function(){ initResizable(false); });
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
+<a href="#pro-static-attribs">Static Protected Attributes</a> &#124;
 <a href="classplansys2__support__py_1_1ExecutorClient_1_1ExecutorClient-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">ExecutorClient Class Reference</div></div>
 </div><!--header-->
@@ -102,10 +104,8 @@ Inheritance diagram for ExecutorClient:</div>
 <div class="dyncontent">
 <div class="center"><img src="classplansys2__support__py_1_1ExecutorClient_1_1ExecutorClient__inherit__graph.png" border="0" usemap="#aExecutorClient_inherit__map" alt="Inheritance graph"/></div>
 <map name="aExecutorClient_inherit__map" id="aExecutorClient_inherit__map">
-<area shape="rect" title=" " alt="" coords="5,153,110,178"/>
-<area shape="rect" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html" title=" " alt="" coords="15,79,100,105"/>
-<area shape="poly" title=" " alt="" coords="60,120,60,152,55,152,55,120"/>
-<area shape="rect" title=" " alt="" coords="31,5,84,31"/>
+<area shape="rect" title=" " alt="" coords="5,79,110,105"/>
+<area shape="rect" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html" title=" " alt="" coords="15,5,100,31"/>
 <area shape="poly" title=" " alt="" coords="60,46,60,79,55,79,55,46"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
@@ -114,34 +114,43 @@ Collaboration diagram for ExecutorClient:</div>
 <div class="dyncontent">
 <div class="center"><img src="classplansys2__support__py_1_1ExecutorClient_1_1ExecutorClient__coll__graph.png" border="0" usemap="#aExecutorClient_coll__map" alt="Collaboration graph"/></div>
 <map name="aExecutorClient_coll__map" id="aExecutorClient_coll__map">
-<area shape="rect" title=" " alt="" coords="382,213,486,238"/>
-<area shape="rect" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html" title=" " alt="" coords="59,94,143,120"/>
-<area shape="poly" title=" " alt="" coords="125,129,163,159,209,186,253,201,299,211,382,221,381,226,298,217,251,206,206,191,160,164,122,133"/>
-<area shape="rect" title=" " alt="" coords="5,5,58,31"/>
-<area shape="poly" title=" " alt="" coords="53,42,93,92,89,95,49,45"/>
-<area shape="rect" href="classint.html" title=" " alt="" coords="82,5,120,31"/>
-<area shape="poly" title=" " alt="" coords="104,47,104,94,98,94,98,47"/>
-<area shape="rect" title=" " alt="" coords="153,5,195,31"/>
-<area shape="poly" title=" " alt="" coords="164,46,147,72,121,95,117,91,143,68,160,43"/>
-<area shape="rect" title=" " alt="" coords="167,94,258,120"/>
-<area shape="poly" title=" " alt="" coords="215,135,219,163,225,176,233,187,257,199,295,208,382,219,381,224,294,214,256,204,230,191,220,178,214,164,209,136"/>
-<area shape="rect" href="classbool.html" title=" " alt="" coords="349,94,394,120"/>
-<area shape="poly" title=" " alt="" coords="368,135,368,162,375,187,386,200,401,210,398,214,383,204,370,190,362,162,363,135"/>
-<area shape="rect" title=" " alt="" coords="476,94,520,120"/>
-<area shape="poly" title=" " alt="" coords="494,135,485,162,471,190,450,214,446,210,467,187,480,160,489,133"/>
-<area shape="rect" title=" " alt="" coords="572,94,611,120"/>
-<area shape="poly" title=" " alt="" coords="589,135,578,164,559,191,525,211,488,222,486,217,522,206,555,187,573,162,584,133"/>
-<area shape="rect" title=" " alt="" coords="650,94,720,120"/>
-<area shape="poly" title=" " alt="" coords="683,136,673,165,653,191,624,204,581,214,487,224,486,219,580,208,622,199,650,187,668,162,678,134"/>
+<area shape="rect" title=" " alt="" coords="736,337,841,363"/>
+<area shape="rect" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html" title=" " alt="" coords="441,141,525,167"/>
+<area shape="poly" title=" " alt="" coords="508,176,585,241,634,278,687,311,744,334,742,339,685,315,631,283,581,246,505,180"/>
+<area shape="rect" href="classint.html" title=" " alt="" coords="5,5,44,31"/>
+<area shape="poly" title=" " alt="" coords="29,46,42,112,55,149,75,182,114,230,150,263,192,287,249,310,291,321,346,330,481,340,623,345,736,346,736,351,622,350,481,346,345,335,290,326,248,316,190,292,147,267,110,234,70,186,50,151,37,114,24,47"/>
+<area shape="poly" title=" " alt="" coords="41,42,65,73,81,87,98,98,126,106,162,112,248,115,336,116,404,121,456,138,454,143,403,127,336,121,248,121,161,117,125,112,96,102,78,91,62,76,37,45"/>
+<area shape="rect" title=" " alt="" coords="203,5,249,31"/>
+<area shape="poly" title=" " alt="" coords="222,47,217,77,216,113,222,149,237,183,268,220,299,247,331,265,365,276,442,291,537,310,643,332,736,343,736,348,642,337,536,316,441,296,363,281,329,270,296,251,264,224,232,185,217,151,211,113,212,77,217,46"/>
+<area shape="poly" title=" " alt="" coords="237,45,253,73,276,98,308,113,336,116,366,116,404,121,454,138,452,143,403,127,366,121,336,121,306,118,273,102,248,76,233,47"/>
+<area shape="rect" title=" " alt="" coords="476,5,528,31"/>
+<area shape="poly" title=" " alt="" coords="501,47,488,141,482,140,495,46"/>
+<area shape="rect" href="classbool.html" title=" " alt="" coords="649,5,694,31"/>
+<area shape="poly" title=" " alt="" coords="685,44,688,54,704,119,719,183,744,248,774,312,785,336,780,338,769,314,739,250,714,185,699,120,683,56,680,46"/>
+<area shape="poly" title=" " alt="" coords="653,44,643,57,628,81,610,102,569,127,527,144,525,139,567,122,607,98,624,77,639,53,649,41"/>
+<area shape="rect" title=" " alt="" coords="353,5,395,31"/>
+<area shape="poly" title=" " alt="" coords="376,46,380,73,391,98,416,122,447,138,444,143,413,127,387,102,375,75,371,47"/>
+<area shape="rect" title=" " alt="" coords="824,141,916,167"/>
+<area shape="poly" title=" " alt="" coords="826,177,807,191,792,209,781,243,779,279,788,336,783,337,774,279,776,242,788,207,803,187,823,173"/>
+<area shape="rect" title=" " alt="" coords="940,141,984,167"/>
+<area shape="poly" title=" " alt="" coords="957,182,920,314,902,328,883,338,842,349,841,343,881,333,900,324,916,312,952,181"/>
+<area shape="rect" title=" " alt="" coords="1021,141,1060,167"/>
+<area shape="poly" title=" " alt="" coords="1042,183,1034,256,1025,292,1013,315,984,330,939,340,841,350,841,344,939,335,982,325,1009,311,1020,290,1028,256,1037,182"/>
+<area shape="rect" title=" " alt="" coords="1099,141,1169,167"/>
+<area shape="poly" title=" " alt="" coords="1135,183,1127,257,1119,292,1106,315,1092,322,1068,328,998,337,841,349,841,343,997,332,1067,322,1090,317,1103,311,1114,290,1122,256,1130,182"/>
+<area shape="rect" title=" " alt="" coords="1252,141,1301,167"/>
+<area shape="poly" title=" " alt="" coords="1283,182,1284,213,1281,249,1271,285,1249,315,1227,325,1188,332,1076,343,841,351,841,345,1076,337,1187,327,1225,320,1246,311,1266,283,1276,248,1279,213,1278,182"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a7241d64508f7bb323b516f84103928c2" id="r_a7241d64508f7bb323b516f84103928c2"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7241d64508f7bb323b516f84103928c2">__init__</a> (self, str node_name='executor_client', str namespace='')</td></tr>
-<tr class="separator:a7241d64508f7bb323b516f84103928c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae4ad2125e56b27e534520ef4e7b62f3a" id="r_ae4ad2125e56b27e534520ef4e7b62f3a"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae4ad2125e56b27e534520ef4e7b62f3a">__init__</a> (self, Node <a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a82421745df708784e94d024833da92d8">node</a>)</td></tr>
+<tr class="separator:ae4ad2125e56b27e534520ef4e7b62f3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28b748dee4be79001b0c6f8932b0d57b" id="r_a28b748dee4be79001b0c6f8932b0d57b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a28b748dee4be79001b0c6f8932b0d57b">cancel_plan_execution</a> (self)</td></tr>
 <tr class="separator:a28b748dee4be79001b0c6f8932b0d57b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a39b68aa89e36b1da567f1d6f255cb5ae" id="r_a39b68aa89e36b1da567f1d6f255cb5ae"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a39b68aa89e36b1da567f1d6f255cb5ae">destroy</a> (self)</td></tr>
+<tr class="separator:a39b68aa89e36b1da567f1d6f255cb5ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a143d8a17e5242af46441636af8864f9d" id="r_a143d8a17e5242af46441636af8864f9d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a143d8a17e5242af46441636af8864f9d">execute_and_check_plan</a> (self, <a class="el" href="classbool.html">bool</a> verbose=True)</td></tr>
 <tr class="separator:a143d8a17e5242af46441636af8864f9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:affcf92cb9cb4eb3220f957f1f1ec4123" id="r_affcf92cb9cb4eb3220f957f1f1ec4123"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#affcf92cb9cb4eb3220f957f1f1ec4123">get_feedback</a> (self)</td></tr>
@@ -163,57 +172,126 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6e1e925e56bb599edc452ddf41a1462d" id="r_a6e1e925e56bb599edc452ddf41a1462d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6e1e925e56bb599edc452ddf41a1462d">start_plan_execution</a> (self, Plan plan, <a class="el" href="classbool.html">bool</a> verbose=False)</td></tr>
 <tr class="separator:a6e1e925e56bb599edc452ddf41a1462d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pub_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html">ClientBase</a></td></tr>
-<tr class="memitem:abb80de1ea2870ad23410bb810c23b703 inherit pub_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_abb80de1ea2870ad23410bb810c23b703"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#abb80de1ea2870ad23410bb810c23b703">destroy_node</a> (self)</td></tr>
-<tr class="separator:abb80de1ea2870ad23410bb810c23b703 inherit pub_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c278f575b7945c22e55ce4267481dac inherit pub_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a2c278f575b7945c22e55ce4267481dac"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a2c278f575b7945c22e55ce4267481dac">get_logger</a> (self)</td></tr>
+<tr class="separator:a2c278f575b7945c22e55ce4267481dac inherit pub_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82421745df708784e94d024833da92d8 inherit pub_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a82421745df708784e94d024833da92d8"><td class="memItemLeft" align="right" valign="top">Node&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a82421745df708784e94d024833da92d8">node</a> (self)</td></tr>
+<tr class="separator:a82421745df708784e94d024833da92d8 inherit pub_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cba32b3d8f25946b459a3e8ec4d505a inherit pub_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a8cba32b3d8f25946b459a3e8ec4d505a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a8cba32b3d8f25946b459a3e8ec4d505a">wait_active</a> (self)</td></tr>
+<tr class="separator:a8cba32b3d8f25946b459a3e8ec4d505a inherit pub_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a15437af134a213380b56ec74194df83e" id="r_a15437af134a213380b56ec74194df83e"><td class="memItemLeft" align="right" valign="top">list&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a15437af134a213380b56ec74194df83e">_feedback</a> = []</td></tr>
 <tr class="separator:a15437af134a213380b56ec74194df83e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88b3199acb7ebf867c17ef7fd18c0a4b" id="r_a88b3199acb7ebf867c17ef7fd18c0a4b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a88b3199acb7ebf867c17ef7fd18c0a4b">_plan_check</a></td></tr>
+<tr class="separator:a88b3199acb7ebf867c17ef7fd18c0a4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3397db1d27dbf5d6a461572ec5ab848c" id="r_a3397db1d27dbf5d6a461572ec5ab848c"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3397db1d27dbf5d6a461572ec5ab848c">_plan_check</a> = self._service_client(GetPlan, 'executor/<a class="el" href="#a2c170021d632b01eecf504e392b89994">get_plan</a>')</td></tr>
+<tr class="separator:a3397db1d27dbf5d6a461572ec5ab848c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc59895a76048db790c5576816f04d29" id="r_acc59895a76048db790c5576816f04d29"><td class="memItemLeft" align="right" valign="top">tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acc59895a76048db790c5576816f04d29">_result_check</a> = ExecutePlan.Result.PREEMPT:</td></tr>
+<tr class="separator:acc59895a76048db790c5576816f04d29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af22910fa4261c60001cd705c1ffa0861" id="r_af22910fa4261c60001cd705c1ffa0861"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af22910fa4261c60001cd705c1ffa0861">_result_check</a> = 1</td></tr>
+<tr class="separator:af22910fa4261c60001cd705c1ffa0861"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:a66fdacc5302f1e006e789f99fdddeb37" id="r_a66fdacc5302f1e006e789f99fdddeb37"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a66fdacc5302f1e006e789f99fdddeb37">_feedback_callback</a> (self, feedback_msg)</td></tr>
 <tr class="separator:a66fdacc5302f1e006e789f99fdddeb37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b6d2b5e0a5b84744c132e411aa5a03b" id="r_a3b6d2b5e0a5b84744c132e411aa5a03b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3b6d2b5e0a5b84744c132e411aa5a03b">_plan_not_running</a> (self)</td></tr>
+<tr class="separator:a3b6d2b5e0a5b84744c132e411aa5a03b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c4ba8c6aeca7a2eb7bdcc2f69baf3ac" id="r_a2c4ba8c6aeca7a2eb7bdcc2f69baf3ac"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2c4ba8c6aeca7a2eb7bdcc2f69baf3ac">_print_execution_result</a> (self, Any result_response)</td></tr>
 <tr class="separator:a2c4ba8c6aeca7a2eb7bdcc2f69baf3ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7dc2ef16de8731ec848a86139e2faa4d" id="r_a7dc2ef16de8731ec848a86139e2faa4d"><td class="memItemLeft" align="right" valign="top">Optional[<a class="el" href="classbool.html">bool</a>]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7dc2ef16de8731ec848a86139e2faa4d">_recover_result</a> (self)</td></tr>
+<tr class="separator:a7dc2ef16de8731ec848a86139e2faa4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html">ClientBase</a></td></tr>
-<tr class="memitem:a11e28aa78386f89bce16850b9821ae5d inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a11e28aa78386f89bce16850b9821ae5d"><td class="memItemLeft" align="right" valign="top">Optional[Any]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a11e28aa78386f89bce16850b9821ae5d">_create_and_call_service</a> (self, service_type, str service_name, request, float timeout_sec=10.0)</td></tr>
-<tr class="separator:a11e28aa78386f89bce16850b9821ae5d inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acdd8681ca73745ec20b88c07df5a0a92 inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_acdd8681ca73745ec20b88c07df5a0a92"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#acdd8681ca73745ec20b88c07df5a0a92">_ask_active</a> (self)</td></tr>
+<tr class="separator:acdd8681ca73745ec20b88c07df5a0a92 inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5157f08f190b6cdae550f70b3b3b778a inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a5157f08f190b6cdae550f70b3b3b778a"><td class="memItemLeft" align="right" valign="top">Optional[Any]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a5157f08f190b6cdae550f70b3b3b778a">_create_and_call_service</a> (self, service_type, str service_name, request, float timeout_sec=10.0, <a class="el" href="classint.html">int</a> attempts=<a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a84345596fe2afacb4b691c4fd95ed47c">_ATTEMPTS</a>)</td></tr>
+<tr class="separator:a5157f08f190b6cdae550f70b3b3b778a inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e523cdb568c3215ceead96702c803ac inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a3e523cdb568c3215ceead96702c803ac"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a3e523cdb568c3215ceead96702c803ac">_lost</a> (self)</td></tr>
+<tr class="separator:a3e523cdb568c3215ceead96702c803ac inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af86b67fdba7e5827458123fd0f3cebe5 inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_af86b67fdba7e5827458123fd0f3cebe5"><td class="memItemLeft" align="right" valign="top">Client&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#af86b67fdba7e5827458123fd0f3cebe5">_renew</a> (self, service_type, str service_name)</td></tr>
+<tr class="separator:af86b67fdba7e5827458123fd0f3cebe5 inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38087af1d867898bfc2a5bd846a01c08 inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a38087af1d867898bfc2a5bd846a01c08"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a38087af1d867898bfc2a5bd846a01c08">_serve</a> (self)</td></tr>
+<tr class="separator:a38087af1d867898bfc2a5bd846a01c08 inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a480683cc49b93767f46994de63b48d38 inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a480683cc49b93767f46994de63b48d38"><td class="memItemLeft" align="right" valign="top">Client&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a480683cc49b93767f46994de63b48d38">_service_client</a> (self, service_type, str service_name)</td></tr>
 <tr class="separator:a480683cc49b93767f46994de63b48d38 inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac48399bf37cf3e77118be8bf8dab13f7 inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_ac48399bf37cf3e77118be8bf8dab13f7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#ac48399bf37cf3e77118be8bf8dab13f7">_wait_for</a> (self, future, Optional[float] timeout_sec)</td></tr>
 <tr class="separator:ac48399bf37cf3e77118be8bf8dab13f7 inherit pro_methods_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-methods" name="pro-static-methods"></a>
+Static Protected Member Functions</h2></td></tr>
+<tr class="memitem:ac1997f47e68064ce2a07b7d9d1bc8eef" id="r_ac1997f47e68064ce2a07b7d9d1bc8eef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac1997f47e68064ce2a07b7d9d1bc8eef">_same_plan</a> (Plan a, Optional[Plan] b)</td></tr>
+<tr class="separator:ac1997f47e68064ce2a07b7d9d1bc8eef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:a946d9a4a2c5a0672d6c6e6b131b4ca77" id="r_a946d9a4a2c5a0672d6c6e6b131b4ca77"><td class="memItemLeft" align="right" valign="top">ActionClient&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a946d9a4a2c5a0672d6c6e6b131b4ca77">_execute_plan_action_client</a></td></tr>
-<tr class="separator:a946d9a4a2c5a0672d6c6e6b131b4ca77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9301b5bf3fae2ac85ac287458f91c015" id="r_a9301b5bf3fae2ac85ac287458f91c015"><td class="memItemLeft" align="right" valign="top">ActionClient&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9301b5bf3fae2ac85ac287458f91c015">_execute_plan_action_client</a></td></tr>
+<tr class="separator:a9301b5bf3fae2ac85ac287458f91c015"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac34af75791fa31d12f492e1760066fcd" id="r_ac34af75791fa31d12f492e1760066fcd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac34af75791fa31d12f492e1760066fcd">_executing_plan</a> = False</td></tr>
 <tr class="separator:ac34af75791fa31d12f492e1760066fcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad9fdc1089fdb62ab07d65943d7f7b95c" id="r_ad9fdc1089fdb62ab07d65943d7f7b95c"><td class="memItemLeft" align="right" valign="top">Any&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad9fdc1089fdb62ab07d65943d7f7b95c">_feedback</a> = None</td></tr>
 <tr class="separator:ad9fdc1089fdb62ab07d65943d7f7b95c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a628a6e863a5f90b7c7fa3262738a709e" id="r_a628a6e863a5f90b7c7fa3262738a709e"><td class="memItemLeft" align="right" valign="top">Optional[ClientGoalHandle[Any, Any, Any]]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a628a6e863a5f90b7c7fa3262738a709e">_goal_handle</a> = None</td></tr>
 <tr class="separator:a628a6e863a5f90b7c7fa3262738a709e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6861b627511829c73e231fdc7bf29b4" id="r_ac6861b627511829c73e231fdc7bf29b4"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac6861b627511829c73e231fdc7bf29b4">_last_plan_check</a> = 0.0</td></tr>
+<tr class="separator:ac6861b627511829c73e231fdc7bf29b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad728078f92d44a7616f218fab8033bd6" id="r_ad728078f92d44a7616f218fab8033bd6"><td class="memItemLeft" align="right" valign="top">Optional[float]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad728078f92d44a7616f218fab8033bd6">_not_running_since</a> = None</td></tr>
+<tr class="separator:ad728078f92d44a7616f218fab8033bd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98b700adee4a354df492163e8253b61d" id="r_a98b700adee4a354df492163e8253b61d"><td class="memItemLeft" align="right" valign="top">Optional[Any]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a98b700adee4a354df492163e8253b61d">_plan_check</a> = None</td></tr>
+<tr class="separator:a98b700adee4a354df492163e8253b61d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ed1c0f44c11558c7a726b88556ff6f2" id="r_a4ed1c0f44c11558c7a726b88556ff6f2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4ed1c0f44c11558c7a726b88556ff6f2">_recovering</a> = False</td></tr>
+<tr class="separator:a4ed1c0f44c11558c7a726b88556ff6f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aabb75a09e1479bed062ed2b6702f2f8c" id="r_aabb75a09e1479bed062ed2b6702f2f8c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aabb75a09e1479bed062ed2b6702f2f8c">_result_attempts</a> = 0</td></tr>
+<tr class="separator:aabb75a09e1479bed062ed2b6702f2f8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d6e32e3e6d33ac060bb6937d48cc36f" id="r_a0d6e32e3e6d33ac060bb6937d48cc36f"><td class="memItemLeft" align="right" valign="top">Optional[Any]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0d6e32e3e6d33ac060bb6937d48cc36f">_result_check</a> = None</td></tr>
+<tr class="separator:a0d6e32e3e6d33ac060bb6937d48cc36f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f8e59b5213860e5ba483036e1c09fd6" id="r_a5f8e59b5213860e5ba483036e1c09fd6"><td class="memItemLeft" align="right" valign="top">Optional[Future[GetResultServiceResponse[Any]]]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5f8e59b5213860e5ba483036e1c09fd6">_result_future</a> = None</td></tr>
 <tr class="separator:a5f8e59b5213860e5ba483036e1c09fd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a056e6f81dcf35dde81643c9a6076fd20" id="r_a056e6f81dcf35dde81643c9a6076fd20"><td class="memItemLeft" align="right" valign="top">Optional[Plan]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a056e6f81dcf35dde81643c9a6076fd20">_sent_plan</a> = None</td></tr>
+<tr class="separator:a056e6f81dcf35dde81643c9a6076fd20"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a192ed2ff98dac9693de76b2eb5bcb714" id="r_a192ed2ff98dac9693de76b2eb5bcb714"><td class="memItemLeft" align="right" valign="top">Optional[float]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a192ed2ff98dac9693de76b2eb5bcb714">_server_lost_since</a> = None</td></tr>
 <tr class="separator:a192ed2ff98dac9693de76b2eb5bcb714"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html">ClientBase</a></td></tr>
-<tr class="memitem:a64a156a43dcb520552da54ef657cb8cf inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a64a156a43dcb520552da54ef657cb8cf"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a64a156a43dcb520552da54ef657cb8cf">_calls_executor</a> = SingleThreadedExecutor(context=self.context)</td></tr>
-<tr class="separator:a64a156a43dcb520552da54ef657cb8cf inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af775f40ea0099532221e571a9000dfd0 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_af775f40ea0099532221e571a9000dfd0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#af775f40ea0099532221e571a9000dfd0">_calls_lock</a> = threading.Lock()</td></tr>
-<tr class="separator:af775f40ea0099532221e571a9000dfd0 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7de7a5f31299628ab94467ffcdfa1912 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a7de7a5f31299628ab94467ffcdfa1912"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a7de7a5f31299628ab94467ffcdfa1912">_calls_node</a></td></tr>
-<tr class="separator:a7de7a5f31299628ab94467ffcdfa1912 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf6261fa6a915445f7c09d64ba940e4e inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_aaf6261fa6a915445f7c09d64ba940e4e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#aaf6261fa6a915445f7c09d64ba940e4e">_active</a> = False</td></tr>
+<tr class="separator:aaf6261fa6a915445f7c09d64ba940e4e inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecd7493853a7f7c9c319705a434c0134 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_aecd7493853a7f7c9c319705a434c0134"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#aecd7493853a7f7c9c319705a434c0134">_active_lock</a> = threading.Lock()</td></tr>
+<tr class="separator:aecd7493853a7f7c9c319705a434c0134 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a373b178e9f328bd8c2c23da50d130e82 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a373b178e9f328bd8c2c23da50d130e82"><td class="memItemLeft" align="right" valign="top">Node&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a373b178e9f328bd8c2c23da50d130e82">_application_node</a> = <a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a82421745df708784e94d024833da92d8">node</a></td></tr>
+<tr class="separator:a373b178e9f328bd8c2c23da50d130e82 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4ef32f6b56ee2c0d65d02a6021b36c2 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_ad4ef32f6b56ee2c0d65d02a6021b36c2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#ad4ef32f6b56ee2c0d65d02a6021b36c2">_component</a> = component</td></tr>
+<tr class="separator:ad4ef32f6b56ee2c0d65d02a6021b36c2 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acce4777e84fe7450c2b873e43bafde85 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_acce4777e84fe7450c2b873e43bafde85"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#acce4777e84fe7450c2b873e43bafde85">_executor</a> = SingleThreadedExecutor(context=node.context)</td></tr>
+<tr class="separator:acce4777e84fe7450c2b873e43bafde85 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0776d56d1b171a43be89478555bf783e inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a0776d56d1b171a43be89478555bf783e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a0776d56d1b171a43be89478555bf783e">_group</a> = MutuallyExclusiveCallbackGroup()</td></tr>
+<tr class="separator:a0776d56d1b171a43be89478555bf783e inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ee02fbe97614acd157f25556ca3d441 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a9ee02fbe97614acd157f25556ca3d441"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a9ee02fbe97614acd157f25556ca3d441">_node</a></td></tr>
+<tr class="separator:a9ee02fbe97614acd157f25556ca3d441 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab966e44a64053cab5f1d69046b779d8 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_aab966e44a64053cab5f1d69046b779d8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#aab966e44a64053cab5f1d69046b779d8">_serve_lock</a> = threading.Lock()</td></tr>
+<tr class="separator:aab966e44a64053cab5f1d69046b779d8 inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7dda2afebf15ffbcc1c5bebc7311520a inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a7dda2afebf15ffbcc1c5bebc7311520a"><td class="memItemLeft" align="right" valign="top">dict&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a7dda2afebf15ffbcc1c5bebc7311520a">_service_clients</a> = {}</td></tr>
 <tr class="separator:a7dda2afebf15ffbcc1c5bebc7311520a inherit pro_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="inherited" name="inherited"></a>
-Additional Inherited Members</h2></td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-attribs" name="pro-static-attribs"></a>
+Static Protected Attributes</h2></td></tr>
+<tr class="memitem:a24f8a724b7f13900ca64ee994a89650b" id="r_a24f8a724b7f13900ca64ee994a89650b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a24f8a724b7f13900ca64ee994a89650b">_GOAL_ATTEMPTS</a> = 3</td></tr>
+<tr class="separator:a24f8a724b7f13900ca64ee994a89650b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a344997a3c4740923b76cd0621c4fcfb4" id="r_a344997a3c4740923b76cd0621c4fcfb4"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a344997a3c4740923b76cd0621c4fcfb4">_NOT_RUNNING_TOLERANCE</a> = 3.0</td></tr>
+<tr class="separator:a344997a3c4740923b76cd0621c4fcfb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab934707270111caf339b12def8559fb8" id="r_ab934707270111caf339b12def8559fb8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab934707270111caf339b12def8559fb8">_RESULT_ATTEMPTS</a> = 2</td></tr>
+<tr class="separator:ab934707270111caf339b12def8559fb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase')"><img src="closed.png" alt="-"/>&#160;Static Protected Attributes inherited from <a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html">ClientBase</a></td></tr>
-<tr class="memitem:a83852750be9a651f15936176472dd5c0 inherit pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a83852750be9a651f15936176472dd5c0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a83852750be9a651f15936176472dd5c0">_count</a> = 0</td></tr>
-<tr class="separator:a83852750be9a651f15936176472dd5c0 inherit pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84345596fe2afacb4b691c4fd95ed47c inherit pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a84345596fe2afacb4b691c4fd95ed47c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a84345596fe2afacb4b691c4fd95ed47c">_ATTEMPTS</a> = 3</td></tr>
+<tr class="separator:a84345596fe2afacb4b691c4fd95ed47c inherit pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0f9561d5f65bf9ab33c9da24b419697 inherit pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_aa0f9561d5f65bf9ab33c9da24b419697"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#aa0f9561d5f65bf9ab33c9da24b419697">_LOG_PERIOD</a> = 5.0</td></tr>
+<tr class="separator:aa0f9561d5f65bf9ab33c9da24b419697 inherit pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a41e0bb5f659843375bb76dd6be5ee8 inherit pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a7a41e0bb5f659843375bb76dd6be5ee8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a7a41e0bb5f659843375bb76dd6be5ee8">_NOT_ACTIVE_WAITS</a> = 3</td></tr>
+<tr class="separator:a7a41e0bb5f659843375bb76dd6be5ee8 inherit pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05ef80d44445756151e16e620c37ec46 inherit pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a05ef80d44445756151e16e620c37ec46"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a05ef80d44445756151e16e620c37ec46">_PERIOD</a> = 0.5</td></tr>
+<tr class="separator:a05ef80d44445756151e16e620c37ec46 inherit pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7eef72109bda187ddd053d94feb3c6bc inherit pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a7eef72109bda187ddd053d94feb3c6bc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classint.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a7eef72109bda187ddd053d94feb3c6bc">_SERVED_AT_ONCE</a> = 20</td></tr>
+<tr class="separator:a7eef72109bda187ddd053d94feb3c6bc inherit pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7433b650740057cbc2ef1c15b58911ed inherit pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase" id="r_a7433b650740057cbc2ef1c15b58911ed"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a7433b650740057cbc2ef1c15b58911ed">_SLICE</a> = 0.05</td></tr>
+<tr class="separator:a7433b650740057cbc2ef1c15b58911ed inherit pro_static_attribs_classplansys2__support__py_1_1ClientBase_1_1ClientBase"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><pre class="fragment">Executor client for PlanSys2.
@@ -221,8 +299,8 @@ Additional Inherited Members</h2></td></tr>
 This class provides convenient methods to interact with all Executor services
 in PlanSys2, wrapping the ROS2 service calls with proper error handling.
 </pre> </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a7241d64508f7bb323b516f84103928c2" name="a7241d64508f7bb323b516f84103928c2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7241d64508f7bb323b516f84103928c2">&#9670;&#160;</a></span>__init__()</h2>
+<a id="ae4ad2125e56b27e534520ef4e7b62f3a" name="ae4ad2125e56b27e534520ef4e7b62f3a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae4ad2125e56b27e534520ef4e7b62f3a">&#9670;&#160;</a></span>__init__()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -235,12 +313,7 @@ in PlanSys2, wrapping the ROS2 service calls with proper error handling.
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">str </td>          <td class="paramname"><span class="paramname"><em>node_name</em></span><span class="paramdefsep"> = </span><span class="paramdefval">'executor_client'</span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">str </td>          <td class="paramname"><span class="paramname"><em>namespace</em></span><span class="paramdefsep"> = </span><span class="paramdefval">''</span>&#160;)</td>
+          <td class="paramtype">Node</td>          <td class="paramname"><span class="paramname"><em>node</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -248,11 +321,9 @@ in PlanSys2, wrapping the ROS2 service calls with proper error handling.
 
 Parameters
 ----------
-node_name : str, optional
-    Name of the ROS2 node.
-namespace : str, optional
-    Namespace prefix for services.</pre> 
-<p>Reimplemented from <a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a2dc3883f420f0ed29f78d915b853af94">ClientBase</a>.</p>
+node : Node
+    The node of the application the client works for.</pre> 
+<p>Reimplemented from <a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a0941053bbed78dd20de8cf720b24f44b">ClientBase</a>.</p>
 
 </div>
 </div>
@@ -291,6 +362,31 @@ feedback_msg
     The feedback message from the action server.</pre> 
 </div>
 </div>
+<a id="a3b6d2b5e0a5b84744c132e411aa5a03b" name="a3b6d2b5e0a5b84744c132e411aa5a03b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b6d2b5e0a5b84744c132e411aa5a03b">&#9670;&#160;</a></span>_plan_not_running()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"> <a class="el" href="classbool.html">bool</a> _plan_not_running </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<pre class="fragment">Whether the executor has not run the plan sent for a while; asked without waiting.</pre> 
+</div>
+</div>
 <a id="a2c4ba8c6aeca7a2eb7bdcc2f69baf3ac" name="a2c4ba8c6aeca7a2eb7bdcc2f69baf3ac"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2c4ba8c6aeca7a2eb7bdcc2f69baf3ac">&#9670;&#160;</a></span>_print_execution_result()</h2>
 
@@ -325,6 +421,60 @@ result_response : Any
     The execution result response containing status and action information.</pre> 
 </div>
 </div>
+<a id="a7dc2ef16de8731ec848a86139e2faa4d" name="a7dc2ef16de8731ec848a86139e2faa4d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7dc2ef16de8731ec848a86139e2faa4d">&#9670;&#160;</a></span>_recover_result()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"> Optional[<a class="el" href="classbool.html">bool</a>] _recover_result </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<pre class="fragment">Ask for the result of our goal again, without waiting: None while pending.</pre> 
+</div>
+</div>
+<a id="ac1997f47e68064ce2a07b7d9d1bc8eef" name="ac1997f47e68064ce2a07b7d9d1bc8eef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac1997f47e68064ce2a07b7d9d1bc8eef">&#9670;&#160;</a></span>_same_plan()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"> <a class="el" href="classbool.html">bool</a> _same_plan </td>
+          <td>(</td>
+          <td class="paramtype">Plan</td>          <td class="paramname"><span class="paramname"><em>a</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Optional[Plan]</td>          <td class="paramname"><span class="paramname"><em>b</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<pre class="fragment">Whether two plans have the same actions at the same times.</pre> 
+</div>
+</div>
 <a id="a28b748dee4be79001b0c6f8932b0d57b" name="a28b748dee4be79001b0c6f8932b0d57b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a28b748dee4be79001b0c6f8932b0d57b">&#9670;&#160;</a></span>cancel_plan_execution()</h2>
 
@@ -346,6 +496,25 @@ Returns
 bool
     True if the executor accepted to cancel it; False if there was no plan running or
     the executor did not answer.</pre> 
+</div>
+</div>
+<a id="a39b68aa89e36b1da567f1d6f255cb5ae" name="a39b68aa89e36b1da567f1d6f255cb5ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a39b68aa89e36b1da567f1d6f255cb5ae">&#9670;&#160;</a></span>destroy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None destroy </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Destroy the client and its node; the node of the application is left as it was.</pre> 
+<p>Reimplemented from <a class="el" href="classplansys2__support__py_1_1ClientBase_1_1ClientBase.html#a39b68aa89e36b1da567f1d6f255cb5ae">ClientBase</a>.</p>
+
 </div>
 </div>
 <a id="a143d8a17e5242af46441636af8864f9d" name="a143d8a17e5242af46441636af8864f9d"></a>
@@ -611,8 +780,8 @@ bool
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="a946d9a4a2c5a0672d6c6e6b131b4ca77" name="a946d9a4a2c5a0672d6c6e6b131b4ca77"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a946d9a4a2c5a0672d6c6e6b131b4ca77">&#9670;&#160;</a></span>_execute_plan_action_client</h2>
+<a id="a9301b5bf3fae2ac85ac287458f91c015" name="a9301b5bf3fae2ac85ac287458f91c015"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9301b5bf3fae2ac85ac287458f91c015">&#9670;&#160;</a></span>_execute_plan_action_client</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -621,7 +790,7 @@ bool
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">ActionClient _execute_plan_action_client</td>
+          <td class="memname">_execute_plan_action_client</td>
         </tr>
       </table>
   </td>
@@ -631,10 +800,7 @@ bool
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">=  ActionClient(</div>
-<div class="line">            self._calls_node,</div>
-<div class="line">            ExecutePlan,</div>
-<div class="line">            <span class="stringliteral">&#39;execute_plan&#39;</span></div>
-<div class="line">        )</div>
+<div class="line">            self._node, ExecutePlan, <span class="stringliteral">&#39;execute_plan&#39;</span>, callback_group=self._group)</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -696,6 +862,28 @@ bool
 
 </div>
 </div>
+<a id="a24f8a724b7f13900ca64ee994a89650b" name="a24f8a724b7f13900ca64ee994a89650b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24f8a724b7f13900ca64ee994a89650b">&#9670;&#160;</a></span>_GOAL_ATTEMPTS</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classint.html">int</a> _GOAL_ATTEMPTS = 3</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a628a6e863a5f90b7c7fa3262738a709e" name="a628a6e863a5f90b7c7fa3262738a709e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a628a6e863a5f90b7c7fa3262738a709e">&#9670;&#160;</a></span>_goal_handle</h2>
 
@@ -718,6 +906,240 @@ bool
 
 </div>
 </div>
+<a id="ac6861b627511829c73e231fdc7bf29b4" name="ac6861b627511829c73e231fdc7bf29b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac6861b627511829c73e231fdc7bf29b4">&#9670;&#160;</a></span>_last_plan_check</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">float _last_plan_check = 0.0</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad728078f92d44a7616f218fab8033bd6" name="ad728078f92d44a7616f218fab8033bd6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad728078f92d44a7616f218fab8033bd6">&#9670;&#160;</a></span>_not_running_since</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Optional[float] _not_running_since = None</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a344997a3c4740923b76cd0621c4fcfb4" name="a344997a3c4740923b76cd0621c4fcfb4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a344997a3c4740923b76cd0621c4fcfb4">&#9670;&#160;</a></span>_NOT_RUNNING_TOLERANCE</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">float _NOT_RUNNING_TOLERANCE = 3.0</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a98b700adee4a354df492163e8253b61d" name="a98b700adee4a354df492163e8253b61d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a98b700adee4a354df492163e8253b61d">&#9670;&#160;</a></span>_plan_check <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Optional[Any] _plan_check = None</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a88b3199acb7ebf867c17ef7fd18c0a4b" name="a88b3199acb7ebf867c17ef7fd18c0a4b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a88b3199acb7ebf867c17ef7fd18c0a4b">&#9670;&#160;</a></span>_plan_check <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> _plan_check</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=  response <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span> <span class="keywordflow">and</span> response.success <span class="keywordflow">and</span> \</div>
+<div class="line">                self._same_plan(response.plan, self._sent_plan)</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a3397db1d27dbf5d6a461572ec5ab848c" name="a3397db1d27dbf5d6a461572ec5ab848c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3397db1d27dbf5d6a461572ec5ab848c">&#9670;&#160;</a></span>_plan_check <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">tuple _plan_check = self._service_client(GetPlan, 'executor/<a class="el" href="#a2c170021d632b01eecf504e392b89994">get_plan</a>')</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a4ed1c0f44c11558c7a726b88556ff6f2" name="a4ed1c0f44c11558c7a726b88556ff6f2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ed1c0f44c11558c7a726b88556ff6f2">&#9670;&#160;</a></span>_recovering</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> _recovering = False</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab934707270111caf339b12def8559fb8" name="ab934707270111caf339b12def8559fb8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab934707270111caf339b12def8559fb8">&#9670;&#160;</a></span>_RESULT_ATTEMPTS</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classint.html">int</a> _RESULT_ATTEMPTS = 2</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aabb75a09e1479bed062ed2b6702f2f8c" name="aabb75a09e1479bed062ed2b6702f2f8c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aabb75a09e1479bed062ed2b6702f2f8c">&#9670;&#160;</a></span>_result_attempts</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classint.html">int</a> _result_attempts = 0</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0d6e32e3e6d33ac060bb6937d48cc36f" name="a0d6e32e3e6d33ac060bb6937d48cc36f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d6e32e3e6d33ac060bb6937d48cc36f">&#9670;&#160;</a></span>_result_check <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Optional[Any] _result_check = None</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="acc59895a76048db790c5576816f04d29" name="acc59895a76048db790c5576816f04d29"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc59895a76048db790c5576816f04d29">&#9670;&#160;</a></span>_result_check <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">tuple _result_check = ExecutePlan.Result.PREEMPT:</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="af22910fa4261c60001cd705c1ffa0861" name="af22910fa4261c60001cd705c1ffa0861"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af22910fa4261c60001cd705c1ffa0861">&#9670;&#160;</a></span>_result_check <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classint.html">int</a> _result_check = 1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a5f8e59b5213860e5ba483036e1c09fd6" name="a5f8e59b5213860e5ba483036e1c09fd6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5f8e59b5213860e5ba483036e1c09fd6">&#9670;&#160;</a></span>_result_future</h2>
 
@@ -729,6 +1151,28 @@ bool
       <table class="memname">
         <tr>
           <td class="memname">_result_future = None</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a056e6f81dcf35dde81643c9a6076fd20" name="a056e6f81dcf35dde81643c9a6076fd20"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a056e6f81dcf35dde81643c9a6076fd20">&#9670;&#160;</a></span>_sent_plan</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Optional[Plan] _sent_plan = None</td>
         </tr>
       </table>
   </td>

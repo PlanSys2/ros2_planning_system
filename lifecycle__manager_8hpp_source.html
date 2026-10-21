@@ -118,64 +118,100 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#include &quot;lifecycle_msgs/srv/change_state.hpp&quot;</span></div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &quot;lifecycle_msgs/srv/get_state.hpp&quot;</span></div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &quot;rclcpp/rclcpp.hpp&quot;</span></div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">#include &quot;rcutils/logging_macros.h&quot;</span></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &quot;<a class="code" href="ClientNode_8hpp.html">plansys2_core/ClientNode.hpp</a>&quot;</span></div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &quot;<a class="code" href="ServiceCall_8hpp.html">plansys2_core/ServiceCall.hpp</a>&quot;</span></div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">#include &quot;rclcpp/rclcpp.hpp&quot;</span></div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a></div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>{</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="keyword">template</span>&lt;<span class="keyword">typename</span> FutureT, <span class="keyword">typename</span> WaitTimeT&gt;</div>
-<div class="foldopen" id="foldopen00045" data-start="{" data-end="}">
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="namespaceplansys2.html#a8e07ddf5b5b0e71f767a82424f50286b">   45</a></span>std::future_status <a class="code hl_function" href="namespaceplansys2.html#a8e07ddf5b5b0e71f767a82424f50286b">wait_for_result</a>(FutureT &amp; future, WaitTimeT time_to_wait)</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>{</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  <span class="keyword">auto</span> end = std::chrono::steady_clock::now() + time_to_wait;</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  std::chrono::milliseconds wait_period(100);</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  std::future_status status = std::future_status::timeout;</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>  <span class="keywordflow">do</span> {</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <span class="keyword">auto</span> now = std::chrono::steady_clock::now();</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keyword">auto</span> time_left = end - now;</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    <span class="keywordflow">if</span> (time_left &lt;= std::chrono::seconds(0)) {<span class="keywordflow">break</span>;}</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    status = future.wait_for((time_left &lt; wait_period) ? time_left : wait_period);</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>  } <span class="keywordflow">while</span> (rclcpp::ok() &amp;&amp; status != std::future_status::ready);</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  <span class="keywordflow">return</span> status;</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>}</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &quot;rcutils/logging_macros.h&quot;</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceplansys2.html">plansys2</a></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>{</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="keyword">class </span>LifecycleServiceClient</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>{</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  <a class="code hl_function" href="classplansys2_1_1LifecycleServiceClient.html#a936d35bac43701c2c7694e5e7ca46a40">LifecycleServiceClient</a>(std::shared_ptr&lt;ClientNode&gt; node, <span class="keyword">const</span> std::string &amp; managed_node);</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classplansys2_1_1LifecycleServiceClient.html#a5d17e346d4d24e957d6af448572c11f6">get_state</a>(std::chrono::seconds time_out = std::chrono::seconds(3));</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  <span class="keywordtype">bool</span> <a class="code hl_function" href="classplansys2_1_1LifecycleServiceClient.html#aaf106582e61c120e4ec8e0086668f80d">change_state</a>(</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    std::uint8_t transition, std::chrono::seconds time_out = std::chrono::seconds(3));</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno"><a class="line" href="classplansys2_1_1LifecycleServiceClient.html#a692393dfc6f8c69da72b52a11d14fe67">   64</a></span>  rclcpp::Logger <a class="code hl_function" href="classplansys2_1_1LifecycleServiceClient.html#a692393dfc6f8c69da72b52a11d14fe67">get_logger</a>()<span class="keyword"> const </span>{<span class="keywordflow">return</span> node_-&gt;get_logger();}</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  std::shared_ptr&lt;ClientNode&gt; node_;</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  std::string managed_node_;</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  <a class="code hl_typedef" href="classplansys2_1_1ServiceClient.html#abe351f7d4b66db3e6945a6949142e8f0">ServiceClient&lt;lifecycle_msgs::srv::GetState&gt;::SharedPtr</a> client_get_state_;</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  <a class="code hl_typedef" href="classplansys2_1_1ServiceClient.html#abe351f7d4b66db3e6945a6949142e8f0">ServiceClient&lt;lifecycle_msgs::srv::ChangeState&gt;::SharedPtr</a> client_change_state_;</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>};</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="keywordtype">bool</span></div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span><a class="code hl_function" href="namespaceplansys2.html#a906900bd315de77223070c04df473b24">startup_function</a>(</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>  <span class="keyword">const</span> std::map&lt;std::string, std::shared_ptr&lt;LifecycleServiceClient&gt;&gt; &amp; manager_nodes,</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>  std::chrono::seconds timeout);</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
+<div class="foldopen" id="foldopen00098" data-start="{" data-end="};">
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno"><a class="line" href="classplansys2_1_1Supervisor.html">   98</a></span><span class="keyword">class </span><a class="code hl_class" href="classplansys2_1_1Supervisor.html">Supervisor</a></div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>{</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span><span class="keyword">public</span>:</div>
+<div class="foldopen" id="foldopen00101" data-start="{" data-end="};">
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno"><a class="line" href="structplansys2_1_1Supervisor_1_1Options.html">  101</a></span>  <span class="keyword">struct </span><a class="code hl_struct" href="structplansys2_1_1Supervisor_1_1Options.html">Options</a></div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>  {</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno"><a class="line" href="structplansys2_1_1Supervisor_1_1Options.html#ace29791f2c08f0aa9b744b620ed1003b">  103</a></span>    std::chrono::milliseconds <a class="code hl_variable" href="structplansys2_1_1Supervisor_1_1Options.html#ace29791f2c08f0aa9b744b620ed1003b">lost_after</a> {3000};</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno"><a class="line" href="structplansys2_1_1Supervisor_1_1Options.html#a39fcafb366e7ea5c02d68f589ec5788a">  104</a></span>    std::chrono::milliseconds <a class="code hl_variable" href="structplansys2_1_1Supervisor_1_1Options.html#a39fcafb366e7ea5c02d68f589ec5788a">grace</a> {10000};</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno"><a class="line" href="structplansys2_1_1Supervisor_1_1Options.html#a7275cdf860aebe11e1e1fc734215064b">  105</a></span>    std::chrono::seconds <a class="code hl_variable" href="structplansys2_1_1Supervisor_1_1Options.html#a7275cdf860aebe11e1e1fc734215064b">transition_timeout</a> {5};</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>  };</div>
 </div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="keyword">class </span>LifecycleServiceClient : <span class="keyword">public</span> rclcpp::Node</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>{</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  <span class="keyword">explicit</span> <a class="code hl_function" href="classplansys2_1_1LifecycleServiceClient.html#ad675683ee4df5d9c83e228a79c6bb4d1">LifecycleServiceClient</a>(<span class="keyword">const</span> std::string &amp; node_name, <span class="keyword">const</span> std::string &amp; managed_node);</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span> </div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  <span class="keywordtype">void</span> <a class="code hl_function" href="classplansys2_1_1LifecycleServiceClient.html#a02fd73d861ef2e4aabb38c0c9ff82947">init</a>();</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>  <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classplansys2_1_1LifecycleServiceClient.html#a5d17e346d4d24e957d6af448572c11f6">get_state</a>(std::chrono::seconds time_out = std::chrono::seconds(3));</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>  <span class="keywordtype">bool</span> <a class="code hl_function" href="classplansys2_1_1LifecycleServiceClient.html#aaf106582e61c120e4ec8e0086668f80d">change_state</a>(</div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    std::uint8_t transition, std::chrono::seconds time_out = std::chrono::seconds(3));</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span> </div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>  std::shared_ptr&lt;rclcpp::Client&lt;lifecycle_msgs::srv::GetState&gt;&gt; client_get_state_;</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>  std::shared_ptr&lt;rclcpp::Client&lt;lifecycle_msgs::srv::ChangeState&gt;&gt; client_change_state_;</div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span> </div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>  std::string managed_node_;</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>};</div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span> </div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span><span class="keywordtype">bool</span></div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span><a class="code hl_function" href="namespaceplansys2.html#a906900bd315de77223070c04df473b24">startup_function</a>(</div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>  <span class="keyword">const</span> std::map&lt;std::string, std::shared_ptr&lt;LifecycleServiceClient&gt;&gt; &amp; manager_nodes,</div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>  std::chrono::seconds timeout);</div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span> </div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>}  <span class="comment">// namespace plansys2</span></div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span> </div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_LIFECYCLE_MANAGER__LIFECYCLE_MANAGER_HPP_</span></div>
-<div class="ttc" id="aclassplansys2_1_1LifecycleServiceClient_html_a02fd73d861ef2e4aabb38c0c9ff82947"><div class="ttname"><a href="classplansys2_1_1LifecycleServiceClient.html#a02fd73d861ef2e4aabb38c0c9ff82947">plansys2::LifecycleServiceClient::init</a></div><div class="ttdeci">void init()</div><div class="ttdoc">Initializes the service clients for lifecycle management.</div><div class="ttdef"><b>Definition</b> lifecycle_manager.cpp:56</div></div>
-<div class="ttc" id="aclassplansys2_1_1LifecycleServiceClient_html_a5d17e346d4d24e957d6af448572c11f6"><div class="ttname"><a href="classplansys2_1_1LifecycleServiceClient.html#a5d17e346d4d24e957d6af448572c11f6">plansys2::LifecycleServiceClient::get_state</a></div><div class="ttdeci">unsigned int get_state(std::chrono::seconds time_out=std::chrono::seconds(3))</div><div class="ttdoc">Gets the current state of the managed node.</div><div class="ttdef"><b>Definition</b> lifecycle_manager.cpp:70</div></div>
-<div class="ttc" id="aclassplansys2_1_1LifecycleServiceClient_html_aaf106582e61c120e4ec8e0086668f80d"><div class="ttname"><a href="classplansys2_1_1LifecycleServiceClient.html#aaf106582e61c120e4ec8e0086668f80d">plansys2::LifecycleServiceClient::change_state</a></div><div class="ttdeci">bool change_state(std::uint8_t transition, std::chrono::seconds time_out=std::chrono::seconds(3))</div><div class="ttdoc">Changes the state of the managed node.</div><div class="ttdef"><b>Definition</b> lifecycle_manager.cpp:111</div></div>
-<div class="ttc" id="aclassplansys2_1_1LifecycleServiceClient_html_ad675683ee4df5d9c83e228a79c6bb4d1"><div class="ttname"><a href="classplansys2_1_1LifecycleServiceClient.html#ad675683ee4df5d9c83e228a79c6bb4d1">plansys2::LifecycleServiceClient::LifecycleServiceClient</a></div><div class="ttdeci">LifecycleServiceClient(const std::string &amp;node_name, const std::string &amp;managed_node)</div><div class="ttdoc">Construct a new LifecycleServiceClient object.</div><div class="ttdef"><b>Definition</b> lifecycle_manager.cpp:50</div></div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span> </div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>  <a class="code hl_function" href="classplansys2_1_1Supervisor.html#a4d6baae3e0ab35875c519a52bef938b1">Supervisor</a>(</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>    <span class="keyword">const</span> std::map&lt;std::string, std::shared_ptr&lt;LifecycleServiceClient&gt;&gt; &amp; manager_nodes,</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>    <span class="keyword">const</span> Options &amp; options);</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span> </div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>  <span class="comment">// One look at every component, and what it needs</span></div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>  <span class="keywordtype">void</span> <a class="code hl_function" href="classplansys2_1_1Supervisor.html#ac6bf1a12c5c98ddec5b65e07fe74cabe">step</a>();</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span> </div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>  <span class="comment">// Whether the executor is deactivated because a component is gone</span></div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno"><a class="line" href="classplansys2_1_1Supervisor.html#a9007e3d2b6c1d65503571af5caf4e7cb">  116</a></span>  <span class="keywordtype">bool</span> <a class="code hl_function" href="classplansys2_1_1Supervisor.html#a9007e3d2b6c1d65503571af5caf4e7cb">degraded</a>()<span class="keyword"> const </span>{<span class="keywordflow">return</span> degraded_;}</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span> </div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>  <span class="keyword">struct </span>Watch</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>  {</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>    std::chrono::steady_clock::time_point last_seen;</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>    <span class="keywordtype">bool</span> lost {<span class="keyword">false</span>};</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> state {lifecycle_msgs::msg::State::PRIMARY_STATE_UNKNOWN};</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>  };</div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span> </div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>  <span class="keywordtype">void</span> bring_up(<span class="keyword">const</span> std::string &amp; <a class="code hl_variable" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a>);</div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span> </div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>  std::map&lt;std::string, std::shared_ptr&lt;LifecycleServiceClient&gt;&gt; nodes_;</div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>  Options options_;</div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>  std::map&lt;std::string, Watch&gt; watch_;</div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>  <span class="keywordtype">bool</span> degraded_ {<span class="keyword">false</span>};</div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>};</div>
+</div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span> </div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>}  <span class="comment">// namespace plansys2</span></div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span> </div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span><span class="preprocessor">#endif  </span><span class="comment">// PLANSYS2_LIFECYCLE_MANAGER__LIFECYCLE_MANAGER_HPP_</span></div>
+<div class="ttc" id="aClientNode_8hpp_html"><div class="ttname"><a href="ClientNode_8hpp.html">ClientNode.hpp</a></div></div>
+<div class="ttc" id="aServiceCall_8hpp_html"><div class="ttname"><a href="ServiceCall_8hpp.html">ServiceCall.hpp</a></div></div>
+<div class="ttc" id="aclassplansys2_1_1LifecycleServiceClient_html_a5d17e346d4d24e957d6af448572c11f6"><div class="ttname"><a href="classplansys2_1_1LifecycleServiceClient.html#a5d17e346d4d24e957d6af448572c11f6">plansys2::LifecycleServiceClient::get_state</a></div><div class="ttdeci">unsigned int get_state(std::chrono::seconds time_out=std::chrono::seconds(3))</div><div class="ttdoc">The current state of the managed node, or PRIMARY_STATE_UNKNOWN without answer.</div><div class="ttdef"><b>Definition</b> lifecycle_manager.cpp:47</div></div>
+<div class="ttc" id="aclassplansys2_1_1LifecycleServiceClient_html_a692393dfc6f8c69da72b52a11d14fe67"><div class="ttname"><a href="classplansys2_1_1LifecycleServiceClient.html#a692393dfc6f8c69da72b52a11d14fe67">plansys2::LifecycleServiceClient::get_logger</a></div><div class="ttdeci">rclcpp::Logger get_logger() const</div><div class="ttdef"><b>Definition</b> lifecycle_manager.hpp:64</div></div>
+<div class="ttc" id="aclassplansys2_1_1LifecycleServiceClient_html_a936d35bac43701c2c7694e5e7ca46a40"><div class="ttname"><a href="classplansys2_1_1LifecycleServiceClient.html#a936d35bac43701c2c7694e5e7ca46a40">plansys2::LifecycleServiceClient::LifecycleServiceClient</a></div><div class="ttdeci">LifecycleServiceClient(std::shared_ptr&lt; ClientNode &gt; node, const std::string &amp;managed_node)</div><div class="ttdef"><b>Definition</b> lifecycle_manager.cpp:36</div></div>
+<div class="ttc" id="aclassplansys2_1_1LifecycleServiceClient_html_aaf106582e61c120e4ec8e0086668f80d"><div class="ttname"><a href="classplansys2_1_1LifecycleServiceClient.html#aaf106582e61c120e4ec8e0086668f80d">plansys2::LifecycleServiceClient::change_state</a></div><div class="ttdeci">bool change_state(std::uint8_t transition, std::chrono::seconds time_out=std::chrono::seconds(3))</div><div class="ttdoc">Triggers a transition of the managed node: whether it succeeded.</div><div class="ttdef"><b>Definition</b> lifecycle_manager.cpp:63</div></div>
+<div class="ttc" id="aclassplansys2_1_1ServiceClient_html_abe351f7d4b66db3e6945a6949142e8f0"><div class="ttname"><a href="classplansys2_1_1ServiceClient.html#abe351f7d4b66db3e6945a6949142e8f0">plansys2::ServiceClient::SharedPtr</a></div><div class="ttdeci">std::shared_ptr&lt; ServiceClient&lt; ServiceT &gt; &gt; SharedPtr</div><div class="ttdef"><b>Definition</b> ServiceCall.hpp:278</div></div>
+<div class="ttc" id="aclassplansys2_1_1Supervisor_html"><div class="ttname"><a href="classplansys2_1_1Supervisor.html">plansys2::Supervisor</a></div><div class="ttdoc">Watches the components once they are up, and acts when one needs it.</div><div class="ttdef"><b>Definition</b> lifecycle_manager.hpp:99</div></div>
+<div class="ttc" id="aclassplansys2_1_1Supervisor_html_a4d6baae3e0ab35875c519a52bef938b1"><div class="ttname"><a href="classplansys2_1_1Supervisor.html#a4d6baae3e0ab35875c519a52bef938b1">plansys2::Supervisor::Supervisor</a></div><div class="ttdeci">Supervisor(const std::map&lt; std::string, std::shared_ptr&lt; LifecycleServiceClient &gt; &gt; &amp;manager_nodes, const Options &amp;options)</div><div class="ttdef"><b>Definition</b> lifecycle_manager.cpp:176</div></div>
+<div class="ttc" id="aclassplansys2_1_1Supervisor_html_a9007e3d2b6c1d65503571af5caf4e7cb"><div class="ttname"><a href="classplansys2_1_1Supervisor.html#a9007e3d2b6c1d65503571af5caf4e7cb">plansys2::Supervisor::degraded</a></div><div class="ttdeci">bool degraded() const</div><div class="ttdef"><b>Definition</b> lifecycle_manager.hpp:116</div></div>
+<div class="ttc" id="aclassplansys2_1_1Supervisor_html_ac6bf1a12c5c98ddec5b65e07fe74cabe"><div class="ttname"><a href="classplansys2_1_1Supervisor.html#ac6bf1a12c5c98ddec5b65e07fe74cabe">plansys2::Supervisor::step</a></div><div class="ttdeci">void step()</div><div class="ttdef"><b>Definition</b> lifecycle_manager.cpp:215</div></div>
 <div class="ttc" id="anamespaceplansys2_html"><div class="ttname"><a href="namespaceplansys2.html">plansys2</a></div><div class="ttdef"><b>Definition</b> BTAction.hpp:33</div></div>
-<div class="ttc" id="anamespaceplansys2_html_a8e07ddf5b5b0e71f767a82424f50286b"><div class="ttname"><a href="namespaceplansys2.html#a8e07ddf5b5b0e71f767a82424f50286b">plansys2::wait_for_result</a></div><div class="ttdeci">std::future_status wait_for_result(FutureT &amp;future, WaitTimeT time_to_wait)</div><div class="ttdoc">Waits for a future to be ready or until a timeout occurs.</div><div class="ttdef"><b>Definition</b> lifecycle_manager.hpp:45</div></div>
-<div class="ttc" id="anamespaceplansys2_html_a906900bd315de77223070c04df473b24"><div class="ttname"><a href="namespaceplansys2.html#a906900bd315de77223070c04df473b24">plansys2::startup_function</a></div><div class="ttdeci">bool startup_function(const std::map&lt; std::string, std::shared_ptr&lt; LifecycleServiceClient &gt; &gt; &amp;manager_nodes, std::chrono::seconds timeout)</div><div class="ttdoc">Starts up all managed nodes using their LifecycleServiceClient interfaces.</div><div class="ttdef"><b>Definition</b> lifecycle_manager.cpp:197</div></div>
+<div class="ttc" id="anamespaceplansys2_html_a906900bd315de77223070c04df473b24"><div class="ttname"><a href="namespaceplansys2.html#a906900bd315de77223070c04df473b24">plansys2::startup_function</a></div><div class="ttdeci">bool startup_function(const std::map&lt; std::string, std::shared_ptr&lt; LifecycleServiceClient &gt; &gt; &amp;manager_nodes, std::chrono::seconds timeout)</div><div class="ttdoc">Starts up all managed nodes using their LifecycleServiceClient interfaces.</div><div class="ttdef"><b>Definition</b> lifecycle_manager.cpp:130</div></div>
+<div class="ttc" id="aplansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp_html_a9b45b3e13bd9167aab02e17e08916231"><div class="ttname"><a href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a9b45b3e13bd9167aab02e17e08916231">name</a></div><div class="ttdeci">std::string name</div><div class="ttdef"><b>Definition</b> Utils.cpp:1444</div></div>
+<div class="ttc" id="astructplansys2_1_1Supervisor_1_1Options_html"><div class="ttname"><a href="structplansys2_1_1Supervisor_1_1Options.html">plansys2::Supervisor::Options</a></div><div class="ttdef"><b>Definition</b> lifecycle_manager.hpp:102</div></div>
+<div class="ttc" id="astructplansys2_1_1Supervisor_1_1Options_html_a39fcafb366e7ea5c02d68f589ec5788a"><div class="ttname"><a href="structplansys2_1_1Supervisor_1_1Options.html#a39fcafb366e7ea5c02d68f589ec5788a">plansys2::Supervisor::Options::grace</a></div><div class="ttdeci">std::chrono::milliseconds grace</div><div class="ttdef"><b>Definition</b> lifecycle_manager.hpp:104</div></div>
+<div class="ttc" id="astructplansys2_1_1Supervisor_1_1Options_html_a7275cdf860aebe11e1e1fc734215064b"><div class="ttname"><a href="structplansys2_1_1Supervisor_1_1Options.html#a7275cdf860aebe11e1e1fc734215064b">plansys2::Supervisor::Options::transition_timeout</a></div><div class="ttdeci">std::chrono::seconds transition_timeout</div><div class="ttdef"><b>Definition</b> lifecycle_manager.hpp:105</div></div>
+<div class="ttc" id="astructplansys2_1_1Supervisor_1_1Options_html_ace29791f2c08f0aa9b744b620ed1003b"><div class="ttname"><a href="structplansys2_1_1Supervisor_1_1Options.html#ace29791f2c08f0aa9b744b620ed1003b">plansys2::Supervisor::Options::lost_after</a></div><div class="ttdeci">std::chrono::milliseconds lost_after</div><div class="ttdef"><b>Definition</b> lifecycle_manager.hpp:103</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

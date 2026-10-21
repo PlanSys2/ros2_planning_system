@@ -1,9 +1,13 @@
 <map id="ClientBase" name="ClientBase">
-<area shape="rect" id="Node000001" title=" " alt="" coords="59,94,143,120"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,58,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="53,42,93,92,89,95,49,45"/>
-<area shape="rect" id="Node000003" href="$classint.html" title=" " alt="" coords="82,5,120,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="104,47,104,94,98,94,98,47"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="153,5,195,31"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="164,46,147,72,121,95,117,91,143,68,160,43"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="277,124,361,150"/>
+<area shape="rect" id="Node000002" href="$classint.html" title=" " alt="" coords="5,5,44,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="30,46,39,74,46,87,56,98,72,107,95,114,154,124,277,132,276,138,153,130,93,119,70,112,53,102,42,90,34,76,25,47"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="171,5,217,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="199,46,207,73,222,98,248,116,278,127,276,132,245,121,218,102,202,75,194,47"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="293,5,345,31"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="322,47,322,123,317,123,317,47"/>
+<area shape="rect" id="Node000005" href="$classbool.html" title=" " alt="" coords="434,5,479,31"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="455,47,447,76,429,102,397,122,362,133,361,128,395,117,425,98,442,73,450,46"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="511,5,554,31"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="531,47,522,76,502,102,478,114,441,123,362,134,361,129,440,118,476,109,499,98,517,73,526,45"/>
 </map>

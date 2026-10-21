@@ -170,9 +170,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af704ae61f2177a980bf10e15c267159d" id="r_af704ae61f2177a980bf10e15c267159d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af704ae61f2177a980bf10e15c267159d">PlannerNode</a> (const rclcpp::NodeOptions &amp;options=rclcpp::NodeOptions())</td></tr>
 <tr class="memdesc:af704ae61f2177a980bf10e15c267159d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for the <a class="el" href="classplansys2_1_1PlannerNode.html" title="ROS2 Lifecycle Node that manages the planning system and handles planning requests.">PlannerNode</a>.  <br /></td></tr>
 <tr class="separator:af704ae61f2177a980bf10e15c267159d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8dcf3c2d4e1341671290a76f6e6090c" id="r_ab8dcf3c2d4e1341671290a76f6e6090c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab8dcf3c2d4e1341671290a76f6e6090c">set_timeout</a> (rclcpp::Duration solver_timeout)</td></tr>
-<tr class="memdesc:ab8dcf3c2d4e1341671290a76f6e6090c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the timeout for plan solvers.  <br /></td></tr>
-<tr class="separator:ab8dcf3c2d4e1341671290a76f6e6090c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad6723178076846c41566ebd0dc223074" id="r_ad6723178076846c41566ebd0dc223074"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad6723178076846c41566ebd0dc223074">set_timeout</a> (const rclcpp::Duration &amp;solver_timeout)</td></tr>
+<tr class="memdesc:ad6723178076846c41566ebd0dc223074"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the timeout for plan solvers.  <br /></td></tr>
+<tr class="separator:ad6723178076846c41566ebd0dc223074"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3a0b566dd328562e2fea6bbb872a77a" id="r_ab3a0b566dd328562e2fea6bbb872a77a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab3a0b566dd328562e2fea6bbb872a77a">validate_domain_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::ValidateDomain::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::ValidateDomain::Response &gt; response)</td></tr>
 <tr class="memdesc:ab3a0b566dd328562e2fea6bbb872a77a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to validate a PDDL domain.  <br /></td></tr>
 <tr class="separator:ab3a0b566dd328562e2fea6bbb872a77a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -533,8 +533,8 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="ab8dcf3c2d4e1341671290a76f6e6090c" name="ab8dcf3c2d4e1341671290a76f6e6090c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab8dcf3c2d4e1341671290a76f6e6090c">&#9670;&#160;</a></span>set_timeout()</h2>
+<a id="ad6723178076846c41566ebd0dc223074" name="ad6723178076846c41566ebd0dc223074"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad6723178076846c41566ebd0dc223074">&#9670;&#160;</a></span>set_timeout()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -542,7 +542,7 @@ Protected Attributes</h2></td></tr>
         <tr>
           <td class="memname">void set_timeout </td>
           <td>(</td>
-          <td class="paramtype">rclcpp::Duration</td>          <td class="paramname"><span class="paramname"><em>solver_timeout</em></span></td><td>)</td>
+          <td class="paramtype">const rclcpp::Duration &amp;</td>          <td class="paramname"><span class="paramname"><em>solver_timeout</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>

@@ -1,0 +1,7 @@
+<map id="Supervisor::Options" name="Supervisor::Options">
+<area shape="rect" id="Node000001" title=" " alt="" coords="37,109,171,135"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,99,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="61,45,76,84,94,107,90,110,72,86,56,47"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="122,5,192,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="149,46,130,86,115,110,111,107,126,84,145,44"/>
+</map>
