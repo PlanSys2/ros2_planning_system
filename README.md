@@ -15,7 +15,7 @@
 <p align="center">
   <a href="https://codecov.io/gh/PlanSys2/ros2_planning_system"><img src="https://codecov.io/gh/PlanSys2/ros2_planning_system/branch/rolling/graph/badge.svg" alt="codecov"></a>
   <a href="https://docs.ros.org"><img src="https://img.shields.io/badge/ROS%202-Humble%20%7C%20Jazzy%20%7C%20Kilted%20%7C%20Lyrical%20%7C%20Rolling-22314E?logo=ros&logoColor=white" alt="ROS 2"></a>
-  <img src="https://img.shields.io/badge/C%2B%2B-23-00599C?logo=cplusplus&logoColor=white" alt="C++23">
+  <img src="https://img.shields.io/badge/C%2B%2B-20-00599C?logo=cplusplus&logoColor=white" alt="C++20">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue" alt="License"></a>
   <a href="https://plansys2.github.io"><img src="https://img.shields.io/badge/docs-plansys2.github.io-brightgreen" alt="Docs"></a>
   <a href="https://doi.org/10.1109/IROS51168.2021.9636544"><img src="https://img.shields.io/badge/paper-IROS%202021-b31b1b" alt="Paper"></a>
