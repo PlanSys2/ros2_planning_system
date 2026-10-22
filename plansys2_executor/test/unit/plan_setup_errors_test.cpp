@@ -287,3 +287,32 @@ int main(int argc, char ** argv)
   rclcpp::shutdown();
   return ret;
 }
+
+TEST_F(PlanSetupErrorsTest, cancel_after_the_plan_ended)
+{
+  start();
+  // A plan that fails as it is set up, cancelled once it has ended, before its result is read
+  ASSERT_TRUE(
+    executor_client_->start_plan_execution(make_plan({"(fly r2d2 wheels_zone assembly_zone)"})));
+  std::this_thread::sleep_for(2s);
+  executor_client_->cancel_plan_execution();
+
+  // Nothing runs: not in progress, at once and for good (#511)
+  EXPECT_FALSE(executor_client_->execute_and_check_plan());
+  std::this_thread::sleep_for(500ms);
+  EXPECT_FALSE(executor_client_->execute_and_check_plan());
+  expect_executor_still_works();
+}
+
+TEST_F(PlanSetupErrorsTest, nothing_runs_nothing_in_progress)
+{
+  start();
+  // Before any plan
+  EXPECT_FALSE(executor_client_->execute_and_check_plan());
+  // After a plan, once its end has been read
+  expect_executor_still_works();
+  EXPECT_FALSE(executor_client_->execute_and_check_plan());
+  // A cancel with nothing running changes nothing
+  executor_client_->cancel_plan_execution();
+  EXPECT_FALSE(executor_client_->execute_and_check_plan());
+}

@@ -139,7 +139,8 @@ target_compile_definitions(plan_setup_errors_test PUBLIC "PLUGINLIB__DISABLE_BOO
 target_link_libraries(plan_setup_errors_test ${PROJECT_NAME})
 foreach(scenario
     valid_plan empty_plan unknown_action unknown_action_among_valid_ones malformed_action
-    unknown_bt_builder_plugin malformed_action_bt_xml sequential_bt_builder)
+    unknown_bt_builder_plugin malformed_action_bt_xml sequential_bt_builder
+    cancel_after_the_plan_ended nothing_runs_nothing_in_progress)
   ament_add_ros_isolated_gtest_test(plan_setup_errors_test
     TEST_NAME plan_setup_errors_${scenario}
     ENV GTEST_FILTER=PlanSetupErrorsTest.${scenario} PLANSYS2_TEST_BT_BUILDER=SimpleBTBuilder

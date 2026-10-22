@@ -122,7 +122,9 @@ ExecutorClient::execute_and_check_plan()
       }
     }
     if (!available) {
-      return true;  // Plan not finished
+      // In progress only while a plan runs: not after a cancel, which drops a result that had
+      // come, nor before any plan (#511)
+      return executing_plan_;
     }
   } else {
     recovering_ = false;
