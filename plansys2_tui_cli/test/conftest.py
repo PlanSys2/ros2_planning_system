@@ -19,4 +19,5 @@ from plansys2_tui_cli.vendor import missing_requirements, use_system_textual
 
 collect_ignore = []
 if not use_system_textual() and missing_requirements():
-    collect_ignore = ['test_plan_log.py', 'test_plansys2_down.py', 'test_vendor.py']
+    collect_ignore = ['test_bt_tab.py', 'test_plan_log.py', 'test_plansys2_down.py',
+                      'test_vendor.py']
