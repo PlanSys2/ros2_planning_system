@@ -14,12 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""PlanSys2 Textual TUI: an overview in four quadrants and the plan log."""
+"""PlanSys2 Textual TUI: an overview in four quadrants, the plan log and the behavior tree."""
 
 from __future__ import annotations
 
 import atexit
 from collections import deque
+import functools
 import os
 import sys
 import threading
@@ -27,6 +28,9 @@ import threading
 import rclpy
 from rclpy.executors import ExternalShutdownException
 
+from ..controller import bt_tree
+from ..controller.bt_monitor import BTMonitor, BTSnapshot
+from ..controller.bt_monitor_client import parse_address
 from ..controller.ros_controllers import (
     ActionExecutionProcessor,
     ExecutionTraceProcessor,
@@ -49,8 +53,9 @@ if not use_system_textual():
 from textual.app import App, ComposeResult  # noqa: E402, I100
 from textual.containers import Horizontal, ScrollableContainer, Vertical  # noqa: E402
 from textual.widgets import (  # noqa: E402
-    Footer, Label, RichLog, Static, TabbedContent, TabPane,
+    Footer, Input, Label, RichLog, Static, TabbedContent, TabPane, Tree,
 )
+from rich.markup import escape  # noqa: E402, I100
 
 
 class PlanLog(RichLog):
@@ -70,7 +75,7 @@ class PlanLog(RichLog):
 
 class PlanSys2App(App):
     """
-    PlanSys2 TUI, in two tabs.
+    PlanSys2 TUI, in three tabs.
 
     Overview, in four quadrants:
 
@@ -86,6 +91,11 @@ class PlanSys2App(App):
 
     Plan log: what the executor does while a plan runs, and why
     (executor/execution_trace), one sentence per event.
+
+    Behavior tree: the tree that runs, node by node, from the monitor of BehaviorTree.CPP (the
+    executor with enable_groot_monitoring, or a BT action), at the address typed on its top
+    (port 1800, that of the executor, at first). Following, it opens
+    what runs or failed and closes what ended well.
     """
 
     CSS = """
@@ -153,12 +163,37 @@ class PlanSys2App(App):
         width: 100%;
         height: auto;
     }
+
+    #bt_bar {
+        height: 1;
+        background: $panel;
+    }
+
+    #bt_address {
+        width: 24;
+    }
+
+    #bt_header {
+        width: 1fr;
+        height: 1;
+        padding: 0 1;
+    }
+
+    #bt_tree {
+        border: round $primary;
+        height: 1fr;
+    }
     """
 
     BINDINGS = [
         ('1', "show_tab('overview')", 'Overview'),
         ('2', "show_tab('plan_log_tab')", 'Plan log'),
+        ('3', "show_tab('bt_tab')", 'Behavior tree'),
         ('c', 'clear_plan_log', 'Clear plan log'),
+        # The same key, the one shown that does what follows: Unfollow while following
+        ('f', 'follow(False)', 'Unfollow tree'),
+        ('f', 'follow(True)', 'Follow tree'),
+        ('p', 'edit_bt_address', 'Tree address'),
         ('q', 'quit', 'Quit'),
         ('ctrl+c', 'quit', 'Quit'),
     ]
@@ -166,8 +201,12 @@ class PlanSys2App(App):
     # The plan log keeps this many lines
     PLAN_LOG_LINES = 5000
 
+    # The last snapshot of the Behavior tree tab not drawn yet, and whether it follows the tree
+    _bt_snapshot: BTSnapshot | None = None
+    _bt_follow = True
+
     # ------------------------------------------------------------------
-    def __init__(self, **kwargs):
+    def __init__(self, bt_host: str = 'localhost', bt_port: int = 1800, **kwargs):
         super().__init__(**kwargs)
 
         rclpy.init(args=None)
@@ -192,6 +231,21 @@ class PlanSys2App(App):
         self._pending: dict = {}
         self._pending_events: list = []
         self._pending_lock = threading.Lock()
+
+        # Behavior tree tab: its monitor polls the tree publisher in a thread of its own
+        self._bt_host = bt_host
+        self._bt_port = bt_port
+        self._bt_monitor: BTMonitor | None = None
+        self._bt_header: Label | None = None
+        self._bt_tree: Tree | None = None
+        self._bt_nodes: dict = {}  # uid -> TreeNode of the widget
+        self._bt_drawn: dict = {}  # uid -> status its label shows
+        # Every monitor started has a generation: what an older one sends late is dropped
+        self._bt_generation = 0
+        self._bt_snapshot: BTSnapshot | None = None
+        self._bt_follow = True
+        # The nodes following opened at the last draw; None: lay the tree out again
+        self._bt_followed: set | None = None
 
         # ROS processors
         self._proc_exec = ActionExecutionProcessor(self.node, self._exec_cb)
@@ -255,6 +309,20 @@ class PlanSys2App(App):
                 self._plan_log.write('[dim]Waiting for a plan to run…[/dim]')
                 yield self._plan_log
 
+            # The tree that runs, from its publisher
+            with TabPane('Behavior tree', id='bt_tab'):
+                with Horizontal(id='bt_bar'):
+                    # Where the tree is: edited here, it changes at once (Enter)
+                    yield Input(value=f'{self._bt_host}:{self._bt_port}', id='bt_address',
+                                placeholder='host:port', compact=True)
+                    self._bt_header = Label(
+                        f'[dim]Connecting to tcp://{self._bt_host}:{self._bt_port}…[/dim]',
+                        id='bt_header')
+                    yield self._bt_header
+                self._bt_tree = Tree('(no tree)', id='bt_tree')
+                self._bt_tree.show_root = False
+                yield self._bt_tree
+
         yield Footer()
 
     def on_mount(self) -> None:
@@ -264,6 +332,7 @@ class PlanSys2App(App):
         self._ros_thread.start()
         self.set_interval(1.0, self._check_plansys2)
         self.set_interval(0.1, self._refresh_panels)
+        self._start_bt_monitor()
 
     def _refresh_panels(self) -> None:
         # The panels are drawn at most 10 times a second, not once per message
@@ -279,6 +348,10 @@ class PlanSys2App(App):
             self._plan_log_lines.extend(events)
             for text in events:
                 self._write_plan_log(text)
+        with self._pending_lock:
+            snapshot, self._bt_snapshot = self._bt_snapshot, None
+        if snapshot is not None:
+            self._draw_bt(snapshot)
 
     def action_show_tab(self, tab: str) -> None:
         self.query_one(TabbedContent).active = tab
@@ -287,6 +360,125 @@ class PlanSys2App(App):
         self._plan_log_lines.clear()
         if self._plan_log is not None:
             self._plan_log.clear()
+
+    def check_action(self, action: str, parameters: tuple) -> bool | None:
+        # Of the two bindings of the follow key, only the one that changes something
+        if action == 'follow':
+            return parameters[0] != self._bt_follow
+        return True
+
+    def action_follow(self, follow: bool) -> None:
+        self._bt_follow = follow
+        self._bt_followed = None
+        self.refresh_bindings()
+        self.notify('Following the tree' if follow else 'Not following the tree')
+
+    def action_edit_bt_address(self) -> None:
+        self.action_show_tab('bt_tab')
+        self.query_one('#bt_address', Input).focus()
+
+    # ------------------------------------------------------------------
+    # Behavior tree tab
+    # ------------------------------------------------------------------
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        if event.input.id != 'bt_address':
+            return
+        try:
+            host, port = parse_address(event.value, self._bt_host)
+        except ValueError as error:
+            self.notify(str(error), severity='error')
+            return
+        event.input.value = f'{host}:{port}'
+        if self._bt_tree is not None:
+            self._bt_tree.focus()
+        if (host, port) != (self._bt_host, self._bt_port):
+            self._bt_host, self._bt_port = host, port
+            self._start_bt_monitor()
+
+    def _start_bt_monitor(self) -> None:
+        # One monitor at a time: the one of the address before stops, and its tree goes
+        old = self._bt_monitor
+        with self._pending_lock:
+            self._bt_generation += 1
+            monitor = BTMonitor(self._bt_host, self._bt_port,
+                                functools.partial(self._bt_cb, self._bt_generation))
+            self._bt_monitor = monitor
+            self._bt_snapshot = None
+        if old is not None:
+            old.stop()
+        if self._bt_tree is not None:
+            self._bt_tree.clear()
+        self._bt_nodes = {}
+        self._bt_drawn = {}
+        self._bt_followed = None
+        if self._bt_header is not None:
+            self._bt_header.update(f'[dim]Connecting to {escape(monitor.address)}…[/dim]')
+        monitor.start()
+
+    def _bt_cb(self, generation: int, snapshot: BTSnapshot) -> None:
+        # From the thread of the monitor: the last one, drawn by _refresh_panels
+        with self._pending_lock:
+            if generation != self._bt_generation:
+                return  # Of a monitor stopped for another address, maybe the same one
+            if self._bt_snapshot is not None and self._bt_snapshot.new_tree:
+                snapshot.new_tree = True  # A new tree not drawn yet is still new
+            self._bt_snapshot = snapshot
+
+    def _draw_bt(self, snapshot: BTSnapshot) -> None:
+        if self._bt_tree is None or self._bt_header is None:
+            return
+        if snapshot.new_tree:
+            self._build_bt(snapshot.root)
+            self._bt_followed = None
+        for uid, tree_node in self._bt_nodes.items():
+            # Only the labels whose status changed: a big tree is not redrawn whole
+            status = snapshot.statuses.get(uid, bt_tree.IDLE)
+            if self._bt_drawn.get(uid) != status:
+                node, parent_name = tree_node.data
+                tree_node.set_label(bt_tree.node_label(node, status, parent_name))
+                self._bt_drawn[uid] = status
+        if self._bt_follow and snapshot.connected:
+            expand, collapse = bt_tree.follow(snapshot.root, snapshot.statuses)
+            to_expand, to_collapse = bt_tree.follow_changes(self._bt_followed, expand, collapse)
+            self._bt_followed = expand
+            for uid in to_expand:
+                if uid in self._bt_nodes:
+                    self._bt_nodes[uid].expand()
+            for uid in to_collapse:
+                if uid in self._bt_nodes:
+                    self._bt_nodes[uid].collapse()
+        follow = ' · following' if self._bt_follow else ' · [bold]not following[/bold]'
+        address, error = escape(snapshot.address), escape(snapshot.error)
+        if snapshot.connected:
+            text = (f'{address} · tree {snapshot.tree_id.hex()[:8]} · '
+                    f'{bt_tree.summary(snapshot.root, snapshot.statuses)}{follow}')
+        elif snapshot.root is not None:
+            text = (f'[bold red]{address}: {error}[/bold red] '
+                    f'[dim](last tree known)[/dim]')
+        else:
+            text = (f'[dim]{address}: {error or "waiting"}. Is '
+                    f'enable_groot_monitoring true there?[/dim]')
+        self._bt_header.update(text)
+
+    def _build_bt(self, root) -> None:
+        self._bt_tree.clear()
+        self._bt_nodes = {}
+        self._bt_drawn = {}
+
+        def add(parent, node, parent_name: str) -> None:
+            label = bt_tree.node_label(node, bt_tree.IDLE, parent_name)
+            data = (node, parent_name)
+            if node.children:
+                item = parent.add(label, data=data, expand=True)
+                for child in node.children:
+                    add(item, child, node.name)
+            else:
+                item = parent.add_leaf(label, data=data)
+            self._bt_nodes[node.uid] = item
+
+        if root is not None:
+            add(self._bt_tree.root, root, '')
+        self._bt_tree.root.expand()
 
     def _redraw_plan_log(self) -> None:
         if self._plan_log is None or not self._plan_log_lines:
@@ -378,6 +570,8 @@ class PlanSys2App(App):
     # Shutdown
     # ------------------------------------------------------------------
     def _ros_shutdown(self) -> None:
+        if self._bt_monitor is not None:
+            self._bt_monitor.stop()
         if rclpy.ok():
             try:
                 self.node.destroy_node()
