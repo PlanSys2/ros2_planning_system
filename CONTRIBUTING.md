@@ -59,3 +59,29 @@ Signed-off-by: Sofforus Jones <sjones@gmail.com>
 The DCO text can either be manually added to your commit body, or you can add either `-s` or `--signoff` to your usual Git commit commands. If you forget to add the sign-off you can also amend a previous commit with the sign-off by running `git commit --amend -s`. If you’ve pushed your changes to GitHub already you’ll need to force push your branch after this with `git push -f`.
 
 Note: The name and email address of the account you use to submit your PR must match the name and email address on the Signed-off-by line in your commit message.
+
+## Checking a Change Before the Pull Request
+
+The CI builds every package and runs its tests, the code style checks of `ament_lint` among them:
+`uncrustify` and `cpplint` for C++, `flake8` and `pep257` for Python, `lint_cmake`, `xmllint`
+and `copyright`. A pull request is easier to review when they pass on your machine first.
+
+Build and run the tests of the packages you changed:
+
+``` bash
+colcon build --packages-select <package>
+colcon test --packages-select <package> --parallel-workers 1
+colcon test-result --verbose
+```
+
+The checks can also run alone, in the directory of a package. `uncrustify` fixes the format
+itself:
+
+``` bash
+ament_uncrustify --reformat src include test
+ament_cpplint src include test
+ament_flake8 .
+```
+
+The format is the one of the newest `uncrustify` in the supported distributions; Humble's
+formats some code otherwise, so the CI does not check the format there.
