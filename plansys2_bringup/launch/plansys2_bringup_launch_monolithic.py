@@ -98,6 +98,16 @@ def generate_launch_description():
         description='Seconds for each lifecycle transition at startup',
     )
 
+    declare_enable_groot_monitoring_cmd = DeclareLaunchArgument(
+        'enable_groot_monitoring',
+        default_value='false',
+        description='Publish the behavior tree of the plan for Groot2')
+
+    declare_groot_port_cmd = DeclareLaunchArgument(
+        'groot_port',
+        default_value='1800',
+        description='Port of Groot2 (and the next one), one per executor')
+
     plansys2_node_cmd = Node(
         package='plansys2_bringup',
         executable='plansys2_node',
@@ -115,6 +125,8 @@ def generate_launch_description():
             'default_end_action_bt_xml_filename': end_action_bt_file,
             'bt_builder_plugin': bt_builder_plugin,
             'state_file': state_file,
+            'enable_groot_monitoring': LaunchConfiguration('enable_groot_monitoring'),
+            'server_port': LaunchConfiguration('groot_port'),
           },
           params_file
         ],
@@ -149,6 +161,8 @@ def generate_launch_description():
     ld.add_action(declare_params_file_cmd)
     ld.add_action(declare_use_real_time_cmd)
     ld.add_action(declare_startup_timeout_cmd)
+    ld.add_action(declare_enable_groot_monitoring_cmd)
+    ld.add_action(declare_groot_port_cmd)
 
     # Declare the launch options
     ld.add_action(plansys2_node_cmd)
