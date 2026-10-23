@@ -42,12 +42,14 @@ PARAMETERS = {
 }
 # Not the default either: the default parameters file set it, and won over the argument
 BUILDER = 'SimpleBTBuilder'
+# Groot2 monitoring of the plan, on a port that is not the default
+GROOT = {'enable_groot_monitoring': 'true', 'groot_port': '1850'}
 
 
 @pytest.mark.launch_test
 def generate_test_description():
     arguments = {'model_file': os.path.join(PDDL_DIR, 'domain_simple.pddl'),
-                 'bt_builder_plugin': BUILDER, **TEMPLATES}
+                 'bt_builder_plugin': BUILDER, **TEMPLATES, **GROOT}
     plansys2 = launch.actions.IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
             get_package_share_directory('plansys2_bringup'), 'launch',
@@ -68,16 +70,21 @@ class TestDistributedBtFiles(unittest.TestCase):
         cls.node.destroy_node()
         rclpy.shutdown()
 
-    def test_the_executor_gets_the_templates_and_the_builder(self):
+    def test_the_executor_gets_the_templates_the_builder_and_groot(self):
         client = self.node.create_client(GetParameters, '/executor/get_parameters')
         self.assertTrue(client.wait_for_service(timeout_sec=60.0))
         request = GetParameters.Request()
-        request.names = [PARAMETERS[argument] for argument in TEMPLATES] + ['bt_builder_plugin']
+        request.names = [PARAMETERS[argument] for argument in TEMPLATES] + [
+            'bt_builder_plugin', 'enable_groot_monitoring', 'server_port']
         deadline = time.monotonic() + 30.0
         values = None
         while values is None and time.monotonic() < deadline:
             future = client.call_async(request)
             rclpy.spin_until_future_complete(self.node, future, timeout_sec=5.0)
             if future.done() and future.result() is not None:
-                values = [v.string_value for v in future.result().values]
-        self.assertEqual(values, list(TEMPLATES.values()) + [BUILDER])
+                values = future.result().values
+        self.assertIsNotNone(values)
+        self.assertEqual(
+            [v.string_value for v in values[:4]], list(TEMPLATES.values()) + [BUILDER])
+        self.assertTrue(values[4].bool_value)
+        self.assertEqual(values[5].integer_value, 1850)

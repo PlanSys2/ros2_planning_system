@@ -124,6 +124,16 @@ def generate_launch_description():
             'params_file': params_file
         }.items())
 
+    declare_enable_groot_monitoring_cmd = DeclareLaunchArgument(
+        'enable_groot_monitoring',
+        default_value='false',
+        description='Publish the behavior tree of the plan for Groot2')
+
+    declare_groot_port_cmd = DeclareLaunchArgument(
+        'groot_port',
+        default_value='1800',
+        description='Port of Groot2 (and the next one), one per executor')
+
     executor_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(
             get_package_share_directory('plansys2_executor'),
@@ -138,6 +148,8 @@ def generate_launch_description():
             'start_action_bt_file': start_action_bt_file,
             'end_action_bt_file': end_action_bt_file,
             'bt_builder_plugin': bt_builder_plugin,
+            'enable_groot_monitoring': LaunchConfiguration('enable_groot_monitoring'),
+            'groot_port': LaunchConfiguration('groot_port'),
         }.items())
 
     lifecycle_manager_cmd = Node(
@@ -171,6 +183,8 @@ def generate_launch_description():
     ld.add_action(declare_start_action_bt_file_cmd)
     ld.add_action(declare_end_action_bt_file_cmd)
     ld.add_action(declare_bt_builder_plugin_cmd)
+    ld.add_action(declare_enable_groot_monitoring_cmd)
+    ld.add_action(declare_groot_port_cmd)
     ld.add_action(declare_namespace_cmd)
     ld.add_action(declare_params_file_cmd)
 

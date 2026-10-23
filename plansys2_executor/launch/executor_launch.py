@@ -63,6 +63,16 @@ def generate_launch_description():
         description='Behavior tree builder plugin.',
     )
 
+    declare_enable_groot_monitoring_cmd = DeclareLaunchArgument(
+        'enable_groot_monitoring',
+        default_value='false',
+        description='Publish the behavior tree of the plan for Groot2')
+
+    declare_groot_port_cmd = DeclareLaunchArgument(
+        'groot_port',
+        default_value='1800',
+        description='Port of Groot2 (and the next one), one per executor')
+
     # Specify the actions
     # Started again, 1 s later, if its process ends (not when the launch is stopped)
     declare_respawn_cmd = DeclareLaunchArgument(
@@ -82,6 +92,8 @@ def generate_launch_description():
           {'default_start_action_bt_xml_filename': start_action_bt_file},
           {'default_end_action_bt_xml_filename': end_action_bt_file},
           {'bt_builder_plugin': bt_builder_plugin},
+          {'enable_groot_monitoring': LaunchConfiguration('enable_groot_monitoring')},
+          {'server_port': LaunchConfiguration('groot_port')},
           params_file
         ])
 
@@ -93,6 +105,8 @@ def generate_launch_description():
     ld.add_action(declare_start_action_bt_file_cmd)
     ld.add_action(declare_end_action_bt_file_cmd)
     ld.add_action(declare_bt_builder_plugin_cmd)
+    ld.add_action(declare_enable_groot_monitoring_cmd)
+    ld.add_action(declare_groot_port_cmd)
 
     # Declare the launch options
     ld.add_action(declare_respawn_cmd)

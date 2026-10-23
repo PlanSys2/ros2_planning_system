@@ -47,6 +47,7 @@ if(BUILD_TESTING)
   add_launch_test(test/test_monolithic_real_time.py TIMEOUT 60)
   add_launch_test(test/test_bringup_problem_file.py TIMEOUT 300)
   add_launch_test(test/test_distributed_bt_files.py TIMEOUT 120)
+  add_launch_test(test/test_monolithic_groot.py TIMEOUT 120)
 endif()
 
 install(DIRECTORY launch params
