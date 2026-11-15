@@ -21,9 +21,10 @@ from unittest.mock import MagicMock, patch
 from client_mocks import always_active, no_wait
 from plansys2_msgs.msg import Metric
 from plansys2_msgs.msg import Node as PlanSys2Node
-from plansys2_msgs.msg import Param, Tree
+from plansys2_msgs.msg import Param, ProblemChange, Tree
 from plansys2_msgs.srv import (AddProblem, AddProblemGoal, AffectNode,
-                               AffectParam, ClearProblemKnowledge, ExistNode,
+                               AffectParam, ApplyProblemChanges,
+                               ClearProblemKnowledge, ExistNode,
                                GetNodeDetails, GetProblem, GetProblemGoal,
                                GetProblemInstanceDetails, GetProblemInstances,
                                GetProblemMetric, GetStates,
@@ -305,6 +306,32 @@ class TestProblemExpertClient(unittest.TestCase):
             result = self.client.add_problem_instance(instance)
 
         self.assertTrue(result)
+
+    @patch.object(Client, 'wait_for_service')
+    @patch.object(Client, 'call_async')
+    def test_apply_problem_changes(self, mock_call_async, mock_wait_for_service):
+        """Test changes made at once, and a failure, which made none."""
+        mock_wait_for_service.return_value = True
+        responses = [ApplyProblemChanges.Response(success=True),
+                     ApplyProblemChanges.Response(success=False, error_info='change 1: no')]
+        requests = []
+
+        def call(request):
+            requests.append(request)
+            future = MagicMock()
+            future.done.return_value = True
+            future.result.return_value = responses[len(requests) - 1]
+            return future
+        mock_call_async.side_effect = call
+
+        changes = [ProblemChange(type=ProblemChange.ADD_INSTANCE,
+                                 instance=Param(name='contact_7', type='contact')),
+                   ProblemChange(type=ProblemChange.ADD_PREDICATE, node=PlanSys2Node())]
+        with no_wait():
+            self.assertTrue(self.client.apply_problem_changes(changes))
+            self.assertFalse(self.client.apply_problem_changes(changes))
+        self.assertEqual([c.type for c in requests[0].changes],
+                         [ProblemChange.ADD_INSTANCE, ProblemChange.ADD_PREDICATE])
 
     @patch.object(Client, 'wait_for_service')
     @patch.object(Client, 'call_async')

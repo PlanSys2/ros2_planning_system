@@ -39,6 +39,10 @@ int main(int argc, char ** argv)
   options.grace = std::chrono::milliseconds(
     static_cast<int64_t>(1000.0 * main_node->declare_parameter("grace", 10.0)));
   options.transition_timeout = std::chrono::seconds(startup_timeout);
+  options.retry_after = std::chrono::milliseconds(
+    static_cast<int64_t>(1000.0 * main_node->declare_parameter("retry_after", 1.0)));
+  options.retry_max = std::chrono::milliseconds(
+    static_cast<int64_t>(1000.0 * main_node->declare_parameter("retry_max", 30.0)));
 
   // One node, the manager's: the four clients work on it
   auto client_node = std::make_shared<plansys2::ClientNode>(*main_node);

@@ -1,0 +1,6 @@
+# Applied in order, all or none, with a single notification. Instance removals go last
+plansys2_msgs/ProblemChange[] changes
+---
+bool success
+# The first change that could not be made, and why
+string error_info

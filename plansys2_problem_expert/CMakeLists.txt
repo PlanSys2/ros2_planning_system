@@ -19,6 +19,7 @@ find_package(plansys2_msgs REQUIRED)
 find_package(plansys2_domain_expert REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
+find_package(pluginlib REQUIRED)
 
 set(PROBLEM_EXPERT_SOURCES
   src/plansys2_problem_expert/ProblemExpert.cpp
@@ -41,6 +42,7 @@ target_link_libraries(${PROJECT_NAME}
   plansys2_pddl_parser::plansys2_pddl_parser
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
+  pluginlib::pluginlib
   ${std_msgs_TARGETS}
 )
 
@@ -103,6 +105,7 @@ ament_export_dependencies(
   plansys2_domain_expert
   std_msgs
   lifecycle_msgs
+  pluginlib
 )
 
 ament_package()

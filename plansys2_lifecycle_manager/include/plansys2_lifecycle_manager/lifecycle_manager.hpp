@@ -93,7 +93,8 @@ startup_function(
  * started again) is configured and activated. One that does not answer for lost_after is lost;
  * lost for longer than grace, the executor is deactivated, and the plans in course fail with
  * a clear result instead of waiting for it. When every component is active again, so is the
- * executor. A component deactivated by someone else is left as it is.
+ * executor. A component deactivated by someone else is left as it is. A component that cannot
+ * be configured is tried again, each time later (retry_after, doubled up to retry_max).
  */
 class Supervisor
 {
@@ -103,6 +104,9 @@ public:
     std::chrono::milliseconds lost_after {3000};
     std::chrono::milliseconds grace {10000};
     std::chrono::seconds transition_timeout {5};
+    // Delay before retrying a failed configure, doubled on each failure up to retry_max
+    std::chrono::milliseconds retry_after {1000};
+    std::chrono::milliseconds retry_max {30000};
   };
 
   Supervisor(
@@ -121,9 +125,12 @@ private:
     std::chrono::steady_clock::time_point last_seen;
     bool lost {false};
     unsigned int state {lifecycle_msgs::msg::State::PRIMARY_STATE_UNKNOWN};
+    unsigned int failed_configures {0};
+    std::chrono::steady_clock::time_point next_try {};
   };
 
-  void bring_up(const std::string & name);
+  // Returns whether it was configured
+  bool bring_up(const std::string & name, bool retry);
 
   std::map<std::string, std::shared_ptr<LifecycleServiceClient>> nodes_;
   Options options_;

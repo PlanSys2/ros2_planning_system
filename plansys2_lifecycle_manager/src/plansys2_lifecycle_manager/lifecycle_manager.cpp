@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
 #include <chrono>
 #include <memory>
 #include <string>
@@ -185,23 +186,25 @@ Supervisor::Supervisor(
   }
 }
 
-void
-Supervisor::bring_up(const std::string & name)
+bool
+Supervisor::bring_up(const std::string & name, bool retry)
 {
   using lifecycle_msgs::msg::State;
   using lifecycle_msgs::msg::Transition;
   auto & client = *nodes_.at(name);
-  RCLCPP_WARN(client.get_logger(), "%s started again: configuring and activating it", name.c_str());
+  if (!retry) {
+    RCLCPP_WARN(
+      client.get_logger(), "%s started again: configuring and activating it", name.c_str());
+  }
   if (!transition_to(
       client, name, Transition::TRANSITION_CONFIGURE, State::PRIMARY_STATE_INACTIVE,
       options_.transition_timeout))
   {
-    RCLCPP_ERROR(client.get_logger(), "%s could not be configured", name.c_str());
-    return;
+    return false;
   }
   // The executor waits, while it is deactivated for a component that is gone
   if (name == "executor" && degraded_) {
-    return;
+    return true;
   }
   if (!transition_to(
       client, name, Transition::TRANSITION_ACTIVATE, State::PRIMARY_STATE_ACTIVE,
@@ -209,6 +212,7 @@ Supervisor::bring_up(const std::string & name)
   {
     RCLCPP_ERROR(client.get_logger(), "%s could not be activated", name.c_str());
   }
+  return true;
 }
 
 void
@@ -242,8 +246,23 @@ Supervisor::step()
     watch.last_seen = now;
     watch.lost = false;
     if (state == State::PRIMARY_STATE_UNCONFIGURED) {
-      bring_up(name);
+      if (watch.failed_configures > 0 && now < watch.next_try) {
+        continue;
+      }
+      if (bring_up(name, watch.failed_configures > 0)) {
+        watch.failed_configures = 0;
+      } else {
+        const auto wait = std::min<std::chrono::milliseconds>(
+          options_.retry_max, options_.retry_after * (1 << std::min(watch.failed_configures, 10u)));
+        watch.failed_configures++;
+        watch.next_try = std::chrono::steady_clock::now() + wait;
+        RCLCPP_ERROR(
+          it->second->get_logger(), "%s could not be configured: trying again in %.1f s",
+          name.c_str(), std::chrono::duration<double>(wait).count());
+      }
       watch.state = it->second->get_state(std::chrono::seconds(1));
+    } else {
+      watch.failed_configures = 0;
     }
   }
 
@@ -286,7 +305,7 @@ Supervisor::step()
         *executor->second, "executor", Transition::TRANSITION_ACTIVATE,
         State::PRIMARY_STATE_ACTIVE, options_.transition_timeout);
     } else if (watch_["executor"].state == State::PRIMARY_STATE_UNCONFIGURED) {
-      bring_up("executor");
+      bring_up("executor", false);
     }
   }
 }

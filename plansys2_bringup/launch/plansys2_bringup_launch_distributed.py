@@ -19,10 +19,34 @@ import time
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import SetLaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+import yaml
+
+
+def with_state_updater(context):
+    """Add the state updater plugin to a copy of params_file, if state_updater_config is set."""
+    config = LaunchConfiguration('state_updater_config').perform(context)
+    if not config:
+        return []
+    params_file = LaunchConfiguration('params_file').perform(context)
+    params = {}
+    if params_file:
+        with open(params_file) as f:
+            params = yaml.safe_load(f) or {}
+    # The problem expert in any namespace
+    expert = params.setdefault('/**/problem_expert', {}).setdefault('ros__parameters', {})
+    expert['updater_plugins'] = ['state_updater']
+    expert['state_updater'] = {
+        'plugin': 'plansys2_state_updater/RulesUpdater', 'config_file': os.path.abspath(config)}
+    merged = tempfile.NamedTemporaryFile(
+        'w', prefix='plansys2_params_', suffix='.yaml', delete=False)
+    with merged:
+        yaml.safe_dump(params, merged)
+    return [SetLaunchConfiguration('params_file', merged.name)]
 
 
 def generate_launch_description():
@@ -59,6 +83,11 @@ def generate_launch_description():
         default_value=os.path.join(
             bringup_dir, 'params', 'plansys2_params.yaml'),
         description='Full path to the ROS2 parameters file to use for all launched nodes')
+
+    declare_state_updater_config_cmd = DeclareLaunchArgument(
+        'state_updater_config',
+        default_value='',
+        description='YAML with the rules of the state updater (empty: no state updater)')
 
     declare_action_bt_file_cmd = DeclareLaunchArgument(
         'action_bt_file',
@@ -187,6 +216,8 @@ def generate_launch_description():
     ld.add_action(declare_groot_port_cmd)
     ld.add_action(declare_namespace_cmd)
     ld.add_action(declare_params_file_cmd)
+    ld.add_action(declare_state_updater_config_cmd)
+    ld.add_action(OpaqueFunction(function=with_state_updater))
 
     # Declare the launch options
     ld.add_action(domain_expert_cmd)

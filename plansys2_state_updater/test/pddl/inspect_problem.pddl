@@ -1,0 +1,6 @@
+(define (problem state_updater_inspect_problem)
+  (:domain state_updater_inspect)
+  (:objects a1 - area)
+  (:init (= (energy) 100))
+  (:goal (and (inspected a1)))
+)

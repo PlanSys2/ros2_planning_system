@@ -24,6 +24,7 @@
 #include <map>
 #include <memory>
 
+#include "plansys2_msgs/msg/problem_change.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
 #include "plansys2_problem_expert/ProblemExpertInterface.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
@@ -158,6 +159,13 @@ public:
    * @return true if the function was successfully updated, false otherwise.
    */
   bool updateFunction(const plansys2::Function & function);
+
+  /**
+   * @brief Apply the changes in order, all or none: if one fails the earlier ones are rolled back.
+   * Instance removals go last, as they cannot be rolled back. error_info gets the first failure.
+   */
+  bool applyChanges(
+    const std::vector<plansys2_msgs::msg::ProblemChange> & changes, std::string & error_info);
 
   /**
    * @brief Get a specific function by its expression.
