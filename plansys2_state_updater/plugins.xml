@@ -1,0 +1,9 @@
+<library path="plansys2_state_updater_plugins">
+  <class name="plansys2_state_updater/MinOf" type="plansys2_state_updater::MinOf"
+    base_class_type="plansys2_state_updater::TransformPlugin">
+    <description>
+      The lowest of a list, of a field of its elements (args: field), not below args minimum:
+      the lowest cell of a battery.
+    </description>
+  </class>
+</library>

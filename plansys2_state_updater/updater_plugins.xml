@@ -1,0 +1,10 @@
+<library path="plansys2_state_updater">
+  <class name="plansys2_state_updater/RulesUpdater" type="plansys2_state_updater::RulesUpdater"
+    base_class_type="plansys2::ProblemUpdater">
+    <description>
+      Keeps the problem in sync with the sensors, by the YAML rules of its parameter config_file:
+      each rule reads a field of a topic of any type, transforms it, and writes facts of the
+      problem with a write policy.
+    </description>
+  </class>
+</library>
