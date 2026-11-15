@@ -16,6 +16,7 @@
 
 #include <optional>
 #include <algorithm>
+#include <functional>
 #include <stdexcept>
 #include <sstream>
 #include <string>
@@ -276,6 +277,100 @@ ProblemExpert::removeFunction(const plansys2::Function & function)
     i++;
   }
 
+  return true;
+}
+
+bool
+ProblemExpert::applyChanges(
+  const std::vector<plansys2_msgs::msg::ProblemChange> & changes, std::string & error_info)
+{
+  using Change = plansys2_msgs::msg::ProblemChange;
+  std::vector<std::function<void()>> undo;
+  std::vector<plansys2::Instance> removals;
+  auto fail = [&](size_t index, const std::string & why) {
+      for (auto it = undo.rbegin(); it != undo.rend(); ++it) {
+        (*it)();
+      }
+      error_info = "change " + std::to_string(index) + ": " + why + "; none was made";
+      return false;
+    };
+
+  for (size_t i = 0; i < changes.size(); i++) {
+    const auto & change = changes[i];
+    switch (change.type) {
+      case Change::ADD_INSTANCE: {
+          plansys2::Instance instance(change.instance);
+          const bool existed = existInstance(instance.name);
+          if (!addInstance(instance)) {
+            return fail(i, "instance " + instance.name + " - " + instance.type + " not valid");
+          }
+          if (!existed) {
+            undo.push_back([this, instance]() {removeInstance(instance);});
+          }
+          break;
+        }
+      case Change::REMOVE_INSTANCE:
+        if (existInstance(change.instance.name)) {
+          removals.push_back(plansys2::Instance(change.instance));
+        }
+        break;
+      case Change::ADD_PREDICATE: {
+          plansys2::Predicate predicate(change.node);
+          const bool existed = existPredicate(predicate);
+          if (!addPredicate(predicate)) {
+            return fail(i, "predicate " + parser::pddl::toString(change.node) + " not valid");
+          }
+          if (!existed) {
+            undo.push_back([this, predicate]() {removePredicate(predicate);});
+          }
+          break;
+        }
+      case Change::REMOVE_PREDICATE: {
+          plansys2::Predicate predicate(change.node);
+          if (existPredicate(predicate)) {
+            if (!removePredicate(predicate)) {
+              return fail(i, "predicate " + parser::pddl::toString(change.node) +
+                       " cannot be removed");
+            }
+            undo.push_back([this, predicate]() {addPredicate(predicate);});
+          }
+          break;
+        }
+      case Change::SET_FUNCTION: {
+          plansys2::Function function(change.node);
+          const auto before = getFunction(parser::pddl::toString(change.node));
+          if (before.has_value()) {
+            if (!updateFunction(function)) {
+              return fail(i, "function " + parser::pddl::toString(change.node) + " not valid");
+            }
+            undo.push_back([this, old = before.value()]() {updateFunction(old);});
+          } else {
+            if (!addFunction(function)) {
+              return fail(i, "function " + parser::pddl::toString(change.node) + " not valid");
+            }
+            undo.push_back([this, function]() {removeFunction(function);});
+          }
+          break;
+        }
+      case Change::REMOVE_FUNCTION: {
+          const auto before = getFunction(parser::pddl::toString(change.node));
+          if (before.has_value()) {
+            if (!removeFunction(before.value())) {
+              return fail(i, "function " + parser::pddl::toString(change.node) +
+                       " cannot be removed");
+            }
+            undo.push_back([this, old = before.value()]() {addFunction(old);});
+          }
+          break;
+        }
+      default:
+        return fail(i, "unknown type " + std::to_string(change.type));
+    }
+  }
+
+  for (const auto & instance : removals) {
+    removeInstance(instance);
+  }
   return true;
 }
 

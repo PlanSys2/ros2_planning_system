@@ -16,10 +16,15 @@
 #define PLANSYS2_PROBLEM_EXPERT__PROBLEMEXPERTNODE_HPP_
 
 #include <atomic>
+#include <functional>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "plansys2_problem_expert/ProblemExpert.hpp"
+#include "plansys2_problem_expert/ProblemUpdater.hpp"
+#include "pluginlib/class_loader.hpp"
 
 #include "std_msgs/msg/empty.hpp"
 #include "plansys2_msgs/srv/change_domain.hpp"
@@ -28,6 +33,7 @@
 #include "plansys2_msgs/msg/problem.hpp"
 #include "plansys2_msgs/srv/affect_node.hpp"
 #include "plansys2_msgs/srv/affect_param.hpp"
+#include "plansys2_msgs/srv/apply_problem_changes.hpp"
 #include "plansys2_msgs/srv/add_problem.hpp"
 #include "plansys2_msgs/srv/set_continuous_effect.hpp"
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
@@ -68,6 +74,10 @@ public:
    * Initializes the node, declares parameters, and creates service servers and publishers.
    */
   explicit ProblemExpertNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+
+  /// Lets tests create updaters without pluginlib
+  using UpdaterFactory = std::function<ProblemUpdater::Ptr(const std::string & type)>;
+  void set_updater_factory(UpdaterFactory factory) {updater_factory_ = std::move(factory);}
 
   using CallbackReturnT =
     rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
@@ -163,6 +173,14 @@ public:
     const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<plansys2_msgs::srv::AffectParam::Request> request,
     const std::shared_ptr<plansys2_msgs::srv::AffectParam::Response> response);
+
+  /**
+   * @brief Service callback to apply some changes, all or none, with a single notification.
+   */
+  void apply_changes_service_callback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<plansys2_msgs::srv::ApplyProblemChanges::Request> request,
+    const std::shared_ptr<plansys2_msgs::srv::ApplyProblemChanges::Response> response);
 
   /**
    * @brief Service callback to add a problem predicate.
@@ -458,6 +476,14 @@ private:
     const std::shared_ptr<plansys2_msgs::srv::ChangeDomain::Response> response);
 
   std::shared_ptr<ProblemExpert> problem_expert_;
+  std::shared_ptr<DomainExpert> domain_expert_;
+
+  // Loaded from updater_plugins
+  std::unique_ptr<pluginlib::ClassLoader<ProblemUpdater>> updater_loader_;
+  UpdaterFactory updater_factory_;
+  std::vector<std::pair<std::string, ProblemUpdater::Ptr>> updaters_;
+  bool load_updaters();
+  void unload_updaters();
 
   // domain_topic_callback(): true once the first (transient_local replay / baseline)
   // domain message has been seen, so every later message is known to be a genuine
@@ -475,6 +501,8 @@ private:
     add_problem_goal_service_;
   rclcpp::Service<plansys2_msgs::srv::AffectParam>::SharedPtr
     add_problem_instance_service_;
+  rclcpp::Service<plansys2_msgs::srv::ApplyProblemChanges>::SharedPtr
+    apply_changes_service_;
   rclcpp::Service<plansys2_msgs::srv::AffectNode>::SharedPtr
     add_problem_predicate_service_;
   rclcpp::Service<plansys2_msgs::srv::AffectNode>::SharedPtr

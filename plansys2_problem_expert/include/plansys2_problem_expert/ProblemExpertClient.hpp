@@ -28,6 +28,7 @@
 
 #include "plansys2_msgs/msg/problem.hpp"
 #include "plansys2_msgs/srv/add_problem.hpp"
+#include "plansys2_msgs/srv/apply_problem_changes.hpp"
 #include "plansys2_msgs/srv/set_continuous_effect.hpp"
 #include "plansys2_msgs/srv/add_problem_goal.hpp"
 #include "plansys2_msgs/srv/affect_node.hpp"
@@ -143,6 +144,11 @@ public:
    * @return The predicates, or std::nullopt if the problem expert does not answer.
    */
   std::optional<std::vector<plansys2::Predicate>> tryGetPredicates();
+
+  /**
+   * @brief Apply the changes all or none, with a single notification. Errors are logged.
+   */
+  bool applyChanges(const std::vector<plansys2_msgs::msg::ProblemChange> & changes);
 
   /**
    * @brief Add a new predicate to the problem.
@@ -376,6 +382,8 @@ private:
     add_problem_goal_client_;
   ServiceClient<plansys2_msgs::srv::AffectParam>::SharedPtr
     add_problem_instance_client_;
+  ServiceClient<plansys2_msgs::srv::ApplyProblemChanges>::SharedPtr
+    apply_changes_client_;
   ServiceClient<plansys2_msgs::srv::AffectNode>::SharedPtr
     add_problem_predicate_client_;
   ServiceClient<plansys2_msgs::srv::AffectNode>::SharedPtr

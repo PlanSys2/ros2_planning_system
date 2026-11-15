@@ -61,6 +61,8 @@ ProblemExpertNode::ProblemExpertNode(const rclcpp::NodeOptions & options)
   // except on the functions perception measures
   declare_parameter("simulate_dynamics", true);
   declare_parameter("measured_functions", std::vector<std::string>{});
+  // Each name has its class in <name>.plugin and its parameters under <name>
+  declare_parameter("updater_plugins", std::vector<std::string>{});
 
   set_continuous_effect_service_ = create_service<plansys2_msgs::srv::SetContinuousEffect>(
     "problem_expert/set_continuous_effect",
@@ -106,6 +108,15 @@ ProblemExpertNode::ProblemExpertNode(const rclcpp::NodeOptions & options)
       get_logger(),
       std::bind(
         &ProblemExpertNode::add_problem_instance_service_callback,
+        this, std::placeholders::_1, std::placeholders::_2,
+        std::placeholders::_3)));
+
+  apply_changes_service_ = create_service<plansys2_msgs::srv::ApplyProblemChanges>(
+    "problem_expert/apply_changes",
+    guarded<plansys2_msgs::srv::ApplyProblemChanges>(
+      get_logger(),
+      std::bind(
+        &ProblemExpertNode::apply_changes_service_callback,
         this, std::placeholders::_1, std::placeholders::_2,
         std::placeholders::_3)));
 
@@ -373,6 +384,7 @@ ProblemExpertNode::on_configure(const rclcpp_lifecycle::State & state)
     return CallbackReturnT::FAILURE;
   }
 
+  domain_expert_ = domain_expert;
   problem_expert_ = std::make_shared<ProblemExpert>(domain_expert);
   // Timed literals and fluents come by the time of the node, simulated or not
   problem_expert_->setClock([this]() {return now().seconds();});
@@ -424,8 +436,67 @@ ProblemExpertNode::on_configure(const rclcpp_lifecycle::State & state)
       });
   }
 
+  // After the problem is loaded: the updaters may check against it
+  if (!load_updaters()) {
+    unload_updaters();
+    return CallbackReturnT::FAILURE;
+  }
+
   RCLCPP_INFO(get_logger(), "[%s] Configured", get_name());
   return CallbackReturnT::SUCCESS;
+}
+
+bool
+ProblemExpertNode::load_updaters()
+{
+  const auto names = get_parameter("updater_plugins").as_string_array();
+  if (names.empty()) {
+    return true;
+  }
+  if (!updater_factory_) {
+    updater_loader_ = std::make_unique<pluginlib::ClassLoader<ProblemUpdater>>(
+      "plansys2_problem_expert", "plansys2::ProblemUpdater");
+    updater_factory_ = [this](const std::string & type) {
+        return updater_loader_->createSharedInstance(type);
+      };
+  }
+  ProblemAccess access;
+  access.problem = problem_expert_;
+  access.domain = domain_expert_;
+  access.notify = [this]() {notify_change();};
+  for (const auto & name : names) {
+    if (!has_parameter(name + ".plugin")) {
+      declare_parameter(name + ".plugin", "");
+    }
+    const auto type = get_parameter(name + ".plugin").as_string();
+    try {
+      auto updater = updater_factory_(type);
+      if (!updater->configure(shared_from_this(), name, access)) {
+        RCLCPP_ERROR(get_logger(), "Updater %s (%s) could not be configured", name.c_str(),
+          type.c_str());
+        return false;
+      }
+      updaters_.emplace_back(name, updater);
+      RCLCPP_INFO(get_logger(), "Updater %s (%s) configured", name.c_str(), type.c_str());
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(get_logger(), "Updater %s (%s): %s", name.c_str(), type.c_str(), e.what());
+      return false;
+    }
+  }
+  return true;
+}
+
+void
+ProblemExpertNode::unload_updaters()
+{
+  for (auto & [name, updater] : updaters_) {
+    try {
+      updater->cleanup();
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(get_logger(), "Updater %s, cleaning up: %s", name.c_str(), e.what());
+    }
+  }
+  updaters_.clear();
 }
 
 void
@@ -532,6 +603,17 @@ ProblemExpertNode::on_activate(const rclcpp_lifecycle::State & state)
         notify_change();
       }
     });
+  for (auto & [name, updater] : updaters_) {
+    try {
+      if (!updater->activate()) {
+        RCLCPP_ERROR(get_logger(), "Updater %s could not be activated", name.c_str());
+        return CallbackReturnT::FAILURE;
+      }
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(get_logger(), "Updater %s, activating: %s", name.c_str(), e.what());
+      return CallbackReturnT::FAILURE;
+    }
+  }
   RCLCPP_INFO(get_logger(), "[%s] Activated", get_name());
   return CallbackReturnT::SUCCESS;
 }
@@ -541,6 +623,13 @@ ProblemExpertNode::on_deactivate(const rclcpp_lifecycle::State & state)
 {
   (void)state;
   RCLCPP_INFO(get_logger(), "[%s] Deactivating...", get_name());
+  for (auto & [name, updater] : updaters_) {
+    try {
+      updater->deactivate();
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(get_logger(), "Updater %s, deactivating: %s", name.c_str(), e.what());
+    }
+  }
   timed_facts_timer_.reset();
   update_pub_->on_deactivate();
   knowledge_pub_->on_deactivate();
@@ -558,7 +647,9 @@ ProblemExpertNode::on_cleanup(const rclcpp_lifecycle::State & state)
   // Unconfigured: the knowledge goes, and the services answer that they are not active; it is
   // not kept either: cleaned up on purpose, it starts from nothing
   remove_state();
+  unload_updaters();
   problem_expert_.reset();
+  domain_expert_.reset();
   RCLCPP_INFO(get_logger(), "[%s] Cleaned up", get_name());
 
   return CallbackReturnT::SUCCESS;
@@ -569,6 +660,14 @@ ProblemExpertNode::on_shutdown(const rclcpp_lifecycle::State & state)
 {
   (void)state;
   RCLCPP_INFO(get_logger(), "[%s] Shutting down...", get_name());
+  for (auto & [name, updater] : updaters_) {
+    try {
+      updater->deactivate();
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(get_logger(), "Updater %s, deactivating: %s", name.c_str(), e.what());
+    }
+  }
+  unload_updaters();
   remove_state();  // Ended on purpose: a new start does not take it
   RCLCPP_INFO(get_logger(), "[%s] Shutted down", get_name());
 
@@ -650,6 +749,26 @@ ProblemExpertNode::add_problem_instance_service_callback(
       notify_change();
     } else {
       response->error_info = "Instance not valid";
+    }
+  }
+}
+
+void
+ProblemExpertNode::apply_changes_service_callback(
+  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<plansys2_msgs::srv::ApplyProblemChanges::Request> request,
+  const std::shared_ptr<plansys2_msgs::srv::ApplyProblemChanges::Response> response)
+{
+  (void)request_header;
+  if (problem_expert_ == nullptr) {
+    response->success = false;
+    response->error_info = plansys2::kNotActive;
+    RCLCPP_WARN(get_logger(), "%s", plansys2::kNotActive);
+  } else {
+    response->success = problem_expert_->applyChanges(request->changes, response->error_info);
+    // A single notification for the whole batch
+    if (response->success && !request->changes.empty()) {
+      notify_change();
     }
   }
 }
@@ -1000,6 +1119,14 @@ ProblemExpertNode::applyNewDomain(const std::string & domain)
   }
 
   notify_change();
+
+  for (auto & [name, updater] : updaters_) {
+    try {
+      updater->domain_changed();
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(get_logger(), "Updater %s, on the new domain: %s", name.c_str(), e.what());
+    }
+  }
 
   RCLCPP_INFO(get_logger(), "[%s] Reconciled problem knowledge with new domain", get_name());
   return true;

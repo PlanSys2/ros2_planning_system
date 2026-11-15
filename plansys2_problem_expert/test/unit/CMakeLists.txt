@@ -134,3 +134,15 @@ if(_tests)
   set_tests_properties(${_tests}
     PROPERTIES ENVIRONMENT "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST")
 endif()
+
+ament_add_gtest(apply_changes_test apply_changes_test.cpp TIMEOUT 60)
+target_link_libraries(apply_changes_test
+  ${PROJECT_NAME}
+  ament_index_cpp::ament_index_cpp
+)
+
+ament_add_ros_isolated_gtest(problem_updaters_test problem_updaters_test.cpp TIMEOUT 60)
+target_link_libraries(problem_updaters_test
+  ${PROJECT_NAME}
+  ament_index_cpp::ament_index_cpp
+)
