@@ -266,6 +266,19 @@ TEST_F(SupervisorTest, a_component_that_cannot_be_configured)
   EXPECT_TRUE(becomes("domain_expert", State::PRIMARY_STATE_ACTIVE));
 }
 
+TEST_F(SupervisorTest, a_component_that_cannot_be_configured_is_tried_each_time_later)
+{
+  kill("planner");
+  add("planner", true);
+  // With a 2 s timeout and retry_after 1 s doubling: tries at about 1, 4 and 8 s
+  std::this_thread::sleep_for(9s);
+  EXPECT_GE(nodes_["planner"]->configures.load(), 2);
+  EXPECT_LE(nodes_["planner"]->configures.load(), 3);
+  kill("planner");
+  add("planner");
+  EXPECT_TRUE(becomes("planner", State::PRIMARY_STATE_ACTIVE, 10s));
+}
+
 // All of PlanSys2 started again at once (or a startup that failed): each one is brought up,
 // the executor last
 TEST_F(SupervisorTest, everything_started_again_is_brought_up)
