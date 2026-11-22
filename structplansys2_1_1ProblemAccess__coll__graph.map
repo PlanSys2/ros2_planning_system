@@ -1,0 +1,9 @@
+<map id="ProblemAccess" name="ProblemAccess">
+<area shape="rect" id="Node000001" title=" " alt="" coords="247,78,360,104"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,150,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="165,48,257,75,255,80,164,53"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,71,150,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="165,88,246,88,246,94,165,94"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="18,136,137,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="145,129,249,102,250,107,147,134"/>
+</map>

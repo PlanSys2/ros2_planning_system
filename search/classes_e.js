@@ -25,10 +25,13 @@ var searchData=
   ['popfplansolver_22',['POPFPlanSolver',['../classplansys2_1_1POPFPlanSolver.html',1,'plansys2']]],
   ['predicate_23',['Predicate',['../classplansys2_1_1Predicate.html',1,'plansys2']]],
   ['preference_24',['Preference',['../classparser_1_1pddl_1_1Preference.html',1,'parser::pddl']]],
-  ['problemexpert_25',['ProblemExpert',['../classplansys2_1_1ProblemExpert.html',1,'plansys2']]],
-  ['problemexpertclient_26',['ProblemExpertClient',['../classplansys2_1_1ProblemExpertClient.html',1,'ProblemExpertClient'],['../classplansys2__support__py_1_1ProblemExpertClient_1_1ProblemExpertClient.html',1,'ProblemExpertClient']]],
-  ['problemexpertinterface_27',['ProblemExpertInterface',['../classplansys2_1_1ProblemExpertInterface.html',1,'plansys2']]],
-  ['problemexpertnode_28',['ProblemExpertNode',['../classplansys2_1_1ProblemExpertNode.html',1,'plansys2']]],
-  ['problemexpertnodemisc_29',['ProblemExpertNodeMisc',['../classProblemExpertNodeMisc.html',1,'']]],
-  ['problemexpertstatetest_30',['ProblemExpertStateTest',['../classProblemExpertStateTest.html',1,'']]]
+  ['problemaccess_25',['ProblemAccess',['../structplansys2_1_1ProblemAccess.html',1,'plansys2']]],
+  ['problemexpert_26',['ProblemExpert',['../classplansys2_1_1ProblemExpert.html',1,'plansys2']]],
+  ['problemexpertclient_27',['ProblemExpertClient',['../classplansys2_1_1ProblemExpertClient.html',1,'ProblemExpertClient'],['../classplansys2__support__py_1_1ProblemExpertClient_1_1ProblemExpertClient.html',1,'ProblemExpertClient']]],
+  ['problemexpertinterface_28',['ProblemExpertInterface',['../classplansys2_1_1ProblemExpertInterface.html',1,'plansys2']]],
+  ['problemexpertnode_29',['ProblemExpertNode',['../classplansys2_1_1ProblemExpertNode.html',1,'plansys2']]],
+  ['problemexpertnodemisc_30',['ProblemExpertNodeMisc',['../classProblemExpertNodeMisc.html',1,'']]],
+  ['problemexpertstatetest_31',['ProblemExpertStateTest',['../classProblemExpertStateTest.html',1,'']]],
+  ['problemupdater_32',['ProblemUpdater',['../classplansys2_1_1ProblemUpdater.html',1,'plansys2']]],
+  ['problemupdaters_33',['ProblemUpdaters',['../classProblemUpdaters.html',1,'']]]
 ];

@@ -117,7 +117,7 @@ Public Member Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Watches the components once they are up, and acts when one needs it. </p>
-<p>Each step asks the state of each component. One that comes back unconfigured (its process started again) is configured and activated. One that does not answer for lost_after is lost; lost for longer than grace, the executor is deactivated, and the plans in course fail with a clear result instead of waiting for it. When every component is active again, so is the executor. A component deactivated by someone else is left as it is. </p>
+<p>Each step asks the state of each component. One that comes back unconfigured (its process started again) is configured and activated. One that does not answer for lost_after is lost; lost for longer than grace, the executor is deactivated, and the plans in course fail with a clear result instead of waiting for it. When every component is active again, so is the executor. A component deactivated by someone else is left as it is. A component that cannot be configured is tried again, each time later (retry_after, doubled up to retry_max). </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a4d6baae3e0ab35875c519a52bef938b1" name="a4d6baae3e0ab35875c519a52bef938b1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4d6baae3e0ab35875c519a52bef938b1">&#9670;&#160;</a></span>Supervisor()</h2>

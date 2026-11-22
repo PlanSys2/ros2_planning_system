@@ -17,5 +17,6 @@ var searchData=
   ['apply_5fatend_5feffect_5fnode_2ecpp_14',['apply_atend_effect_node.cpp',['../apply__atend__effect__node_8cpp.html',1,'']]],
   ['apply_5fatend_5feffect_5fnode_2ehpp_15',['apply_atend_effect_node.hpp',['../apply__atend__effect__node_8hpp.html',1,'']]],
   ['apply_5fatstart_5feffect_5fnode_2ecpp_16',['apply_atstart_effect_node.cpp',['../apply__atstart__effect__node_8cpp.html',1,'']]],
-  ['apply_5fatstart_5feffect_5fnode_2ehpp_17',['apply_atstart_effect_node.hpp',['../apply__atstart__effect__node_8hpp.html',1,'']]]
+  ['apply_5fatstart_5feffect_5fnode_2ehpp_17',['apply_atstart_effect_node.hpp',['../apply__atstart__effect__node_8hpp.html',1,'']]],
+  ['apply_5fchanges_5ftest_2ecpp_18',['apply_changes_test.cpp',['../apply__changes__test_8cpp.html',1,'']]]
 ];

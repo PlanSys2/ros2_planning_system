@@ -139,6 +139,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a40846df3ba284c9282eaff8042d28571" id="r_a40846df3ba284c9282eaff8042d28571"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a40846df3ba284c9282eaff8042d28571">addProblem</a> (const std::string &amp;problem_str)</td></tr>
 <tr class="memdesc:a40846df3ba284c9282eaff8042d28571"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a complete PDDL problem from a string.  <br /></td></tr>
 <tr class="separator:a40846df3ba284c9282eaff8042d28571"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91bf06402d90830389a1eedc95f1997d" id="r_a91bf06402d90830389a1eedc95f1997d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a91bf06402d90830389a1eedc95f1997d">applyChanges</a> (const std::vector&lt; plansys2_msgs::msg::ProblemChange &gt; &amp;changes)</td></tr>
+<tr class="memdesc:a91bf06402d90830389a1eedc95f1997d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the changes all or none, with a single notification.  <br /></td></tr>
+<tr class="separator:a91bf06402d90830389a1eedc95f1997d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2c7ccb2f4b360cf8e2058429a4985f2" id="r_ab2c7ccb2f4b360cf8e2058429a4985f2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab2c7ccb2f4b360cf8e2058429a4985f2">clearGoal</a> ()</td></tr>
 <tr class="memdesc:ab2c7ccb2f4b360cf8e2058429a4985f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear the current goal from the problem.  <br /></td></tr>
 <tr class="separator:ab2c7ccb2f4b360cf8e2058429a4985f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -457,6 +460,26 @@ template&lt;typename NodeT &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>true if the problem was successfully added, false otherwise. </dd></dl>
 
 <p>Implements <a class="el" href="classplansys2_1_1ProblemExpertInterface.html#aad805242fae4614d497866986726a4af">ProblemExpertInterface</a>.</p>
+
+</div>
+</div>
+<a id="a91bf06402d90830389a1eedc95f1997d" name="a91bf06402d90830389a1eedc95f1997d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a91bf06402d90830389a1eedc95f1997d">&#9670;&#160;</a></span>applyChanges()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> applyChanges </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; plansys2_msgs::msg::ProblemChange &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>changes</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply the changes all or none, with a single notification. </p>
+<p>Errors are logged. </p>
 
 </div>
 </div>

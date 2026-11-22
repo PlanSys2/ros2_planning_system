@@ -36,6 +36,7 @@ var searchData=
   ['expect_5ffilled_33',['expect_filled',['../classProblemExpertStateTest.html#a66255335b53ca1a88f6e2541c2fe93a9',1,'ProblemExpertStateTest']]],
   ['expect_5fplan_5fsucceeds_34',['expect_plan_succeeds',['../classExecutorGoalHandlingTest.html#a25d0826ff057dc5fefb17c44bdee8d64',1,'ExecutorGoalHandlingTest::expect_plan_succeeds()'],['../classExecutorLifecycleTest.html#a25d0826ff057dc5fefb17c44bdee8d64',1,'ExecutorLifecycleTest::expect_plan_succeeds()']]],
   ['expectedtoken_35',['ExpectedToken',['../classparser_1_1pddl_1_1ExpectedToken.html#ac51283698f680206d79a01455cccf1b9',1,'parser::pddl::ExpectedToken']]],
-  ['exporttodot_36',['exportToDOT',['../classplansys2_1_1DerivedResolutionGraph.html#a4d06fe979322e83a067a6f07930eabe5',1,'plansys2::DerivedResolutionGraph']]],
-  ['extenddomain_37',['extendDomain',['../classplansys2_1_1DomainExpert.html#ad2aae4d733892d2f8b7f13798e8a2773',1,'plansys2::DomainExpert']]]
+  ['expert_36',['expert',['../classProblemUpdaters.html#aeba9885a0b7fd76e12e84d3171bae2f0',1,'ProblemUpdaters']]],
+  ['exporttodot_37',['exportToDOT',['../classplansys2_1_1DerivedResolutionGraph.html#a4d06fe979322e83a067a6f07930eabe5',1,'plansys2::DerivedResolutionGraph']]],
+  ['extenddomain_38',['extendDomain',['../classplansys2_1_1DomainExpert.html#ad2aae4d733892d2f8b7f13798e8a2773',1,'plansys2::DomainExpert']]]
 ];

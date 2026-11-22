@@ -125,6 +125,9 @@ Collaboration diagram for ProblemExpertNode:</div>
 Public Types</h2></td></tr>
 <tr class="memitem:a391b2d7620068e0fba4a812f869555a5" id="r_a391b2d7620068e0fba4a812f869555a5"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a391b2d7620068e0fba4a812f869555a5">CallbackReturnT</a></td></tr>
 <tr class="separator:a391b2d7620068e0fba4a812f869555a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ec4436d7b8fb4ff7c8a62add645fc7e" id="r_a3ec4436d7b8fb4ff7c8a62add645fc7e"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3ec4436d7b8fb4ff7c8a62add645fc7e">UpdaterFactory</a> = std::function&lt;<a class="el" href="classplansys2_1_1ProblemUpdater.html#a551e53f793693c1354f8be9484ec0128">ProblemUpdater::Ptr</a>(const std::string &amp; type)&gt;</td></tr>
+<tr class="memdesc:a3ec4436d7b8fb4ff7c8a62add645fc7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lets tests create updaters without pluginlib.  <br /></td></tr>
+<tr class="separator:a3ec4436d7b8fb4ff7c8a62add645fc7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -143,6 +146,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7c2ce51122af46837caa17fab971e3e0" id="r_a7c2ce51122af46837caa17fab971e3e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7c2ce51122af46837caa17fab971e3e0">add_problem_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::AddProblem::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::AddProblem::Response &gt; response)</td></tr>
 <tr class="memdesc:a7c2ce51122af46837caa17fab971e3e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to add a PDDL problem.  <br /></td></tr>
 <tr class="separator:a7c2ce51122af46837caa17fab971e3e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b703b8ce432bf5032bf76f86888779c" id="r_a2b703b8ce432bf5032bf76f86888779c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2b703b8ce432bf5032bf76f86888779c">apply_changes_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::ApplyProblemChanges::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::ApplyProblemChanges::Response &gt; response)</td></tr>
+<tr class="memdesc:a2b703b8ce432bf5032bf76f86888779c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to apply some changes, all or none, with a single notification.  <br /></td></tr>
+<tr class="separator:a2b703b8ce432bf5032bf76f86888779c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad43f610eb9f1708447daa5bcbb355579" id="r_ad43f610eb9f1708447daa5bcbb355579"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad43f610eb9f1708447daa5bcbb355579">clear_problem_knowledge_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::ClearProblemKnowledge::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::ClearProblemKnowledge::Response &gt; response)</td></tr>
 <tr class="memdesc:ad43f610eb9f1708447daa5bcbb355579"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to clear all problem knowledge.  <br /></td></tr>
 <tr class="separator:ad43f610eb9f1708447daa5bcbb355579"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -227,6 +233,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7ddcf447ef0a9a6239b55b3bc9b2c13a" id="r_a7ddcf447ef0a9a6239b55b3bc9b2c13a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7ddcf447ef0a9a6239b55b3bc9b2c13a">set_problem_metric_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::SetProblemMetric::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::SetProblemMetric::Response &gt; response)</td></tr>
 <tr class="memdesc:a7ddcf447ef0a9a6239b55b3bc9b2c13a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to set the problem metric.  <br /></td></tr>
 <tr class="separator:a7ddcf447ef0a9a6239b55b3bc9b2c13a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4bdc704c04697a0e8f569ab0d7e12a36" id="r_a4bdc704c04697a0e8f569ab0d7e12a36"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4bdc704c04697a0e8f569ab0d7e12a36">set_updater_factory</a> (<a class="el" href="#a3ec4436d7b8fb4ff7c8a62add645fc7e">UpdaterFactory</a> factory)</td></tr>
+<tr class="separator:a4bdc704c04697a0e8f569ab0d7e12a36"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2b64477760bed32a91e8ac33737c065" id="r_ab2b64477760bed32a91e8ac33737c065"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab2b64477760bed32a91e8ac33737c065">update_problem_function_service_callback</a> (const std::shared_ptr&lt; rmw_request_id_t &gt; request_header, const std::shared_ptr&lt; plansys2_msgs::srv::AffectNode::Request &gt; request, const std::shared_ptr&lt; plansys2_msgs::srv::AffectNode::Response &gt; response)</td></tr>
 <tr class="memdesc:ab2b64477760bed32a91e8ac33737c065"><td class="mdescLeft">&#160;</td><td class="mdescRight">Service callback to update a problem function's value.  <br /></td></tr>
 <tr class="separator:ab2b64477760bed32a91e8ac33737c065"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -249,6 +257,22 @@ Public Member Functions</h2></td></tr>
 <b>Initial value:</b><div class="fragment"><div class="line"> </div>
 <div class="line">    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn</div>
 </div><!-- fragment -->
+</div>
+</div>
+<a id="a3ec4436d7b8fb4ff7c8a62add645fc7e" name="a3ec4436d7b8fb4ff7c8a62add645fc7e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ec4436d7b8fb4ff7c8a62add645fc7e">&#9670;&#160;</a></span>UpdaterFactory</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="#a3ec4436d7b8fb4ff7c8a62add645fc7e">UpdaterFactory</a> = std::function&lt;<a class="el" href="classplansys2_1_1ProblemUpdater.html#a551e53f793693c1354f8be9484ec0128">ProblemUpdater::Ptr</a>(const std::string &amp; type)&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Lets tests create updaters without pluginlib. </p>
+
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
@@ -458,6 +482,34 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a2b703b8ce432bf5032bf76f86888779c" name="a2b703b8ce432bf5032bf76f86888779c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2b703b8ce432bf5032bf76f86888779c">&#9670;&#160;</a></span>apply_changes_service_callback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void apply_changes_service_callback </td>
+          <td>(</td>
+          <td class="paramtype">const std::shared_ptr&lt; rmw_request_id_t &gt;</td>          <td class="paramname"><span class="paramname"><em>request_header</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::shared_ptr&lt; plansys2_msgs::srv::ApplyProblemChanges::Request &gt;</td>          <td class="paramname"><span class="paramname"><em>request</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::shared_ptr&lt; plansys2_msgs::srv::ApplyProblemChanges::Response &gt;</td>          <td class="paramname"><span class="paramname"><em>response</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Service callback to apply some changes, all or none, with a single notification. </p>
 
 </div>
 </div>
@@ -1344,6 +1396,23 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a4bdc704c04697a0e8f569ab0d7e12a36" name="a4bdc704c04697a0e8f569ab0d7e12a36"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4bdc704c04697a0e8f569ab0d7e12a36">&#9670;&#160;</a></span>set_updater_factory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void set_updater_factory </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#a3ec4436d7b8fb4ff7c8a62add645fc7e">UpdaterFactory</a></td>          <td class="paramname"><span class="paramname"><em>factory</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

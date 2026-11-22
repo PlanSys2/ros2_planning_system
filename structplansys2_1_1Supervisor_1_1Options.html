@@ -101,11 +101,11 @@ Collaboration diagram for Supervisor::Options:</div>
 <div class="dyncontent">
 <div class="center"><img src="structplansys2_1_1Supervisor_1_1Options__coll__graph.png" border="0" usemap="#aSupervisor_1_1Options_coll__map" alt="Collaboration graph"/></div>
 <map name="aSupervisor_1_1Options_coll__map" id="aSupervisor_1_1Options_coll__map">
-<area shape="rect" title=" " alt="" coords="37,109,171,135"/>
+<area shape="rect" title=" " alt="" coords="37,139,171,165"/>
 <area shape="rect" title=" " alt="" coords="5,5,99,31"/>
-<area shape="poly" title=" " alt="" coords="61,45,76,84,94,107,90,110,72,86,56,47"/>
+<area shape="poly" title=" " alt="" coords="56,46,61,80,72,114,91,137,87,140,68,116,55,81,50,47"/>
 <area shape="rect" title=" " alt="" coords="122,5,192,31"/>
-<area shape="poly" title=" " alt="" coords="149,46,130,86,115,110,111,107,126,84,145,44"/>
+<area shape="poly" title=" " alt="" coords="154,46,145,80,130,116,116,140,111,137,126,114,139,78,149,45"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -115,6 +115,10 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a39fcafb366e7ea5c02d68f589ec5788a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace29791f2c08f0aa9b744b620ed1003b" id="r_ace29791f2c08f0aa9b744b620ed1003b"><td class="memItemLeft" align="right" valign="top">std::chrono::milliseconds&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ace29791f2c08f0aa9b744b620ed1003b">lost_after</a> {3000}</td></tr>
 <tr class="separator:ace29791f2c08f0aa9b744b620ed1003b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a404810164bd4ef79124990f3c88afaf8" id="r_a404810164bd4ef79124990f3c88afaf8"><td class="memItemLeft" align="right" valign="top">std::chrono::milliseconds&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a404810164bd4ef79124990f3c88afaf8">retry_after</a> {1000}</td></tr>
+<tr class="separator:a404810164bd4ef79124990f3c88afaf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a194f15380a5b3af06eab2cb07b448e59" id="r_a194f15380a5b3af06eab2cb07b448e59"><td class="memItemLeft" align="right" valign="top">std::chrono::milliseconds&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a194f15380a5b3af06eab2cb07b448e59">retry_max</a> {30000}</td></tr>
+<tr class="separator:a194f15380a5b3af06eab2cb07b448e59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7275cdf860aebe11e1e1fc734215064b" id="r_a7275cdf860aebe11e1e1fc734215064b"><td class="memItemLeft" align="right" valign="top">std::chrono::seconds&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7275cdf860aebe11e1e1fc734215064b">transition_timeout</a> {5}</td></tr>
 <tr class="separator:a7275cdf860aebe11e1e1fc734215064b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -141,6 +145,34 @@ Public Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">std::chrono::milliseconds lost_after {3000}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a404810164bd4ef79124990f3c88afaf8" name="a404810164bd4ef79124990f3c88afaf8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a404810164bd4ef79124990f3c88afaf8">&#9670;&#160;</a></span>retry_after</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::chrono::milliseconds retry_after {1000}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a194f15380a5b3af06eab2cb07b448e59" name="a194f15380a5b3af06eab2cb07b448e59"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a194f15380a5b3af06eab2cb07b448e59">&#9670;&#160;</a></span>retry_max</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::chrono::milliseconds retry_max {30000}</td>
         </tr>
       </table>
 </div><div class="memdoc">

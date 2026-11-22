@@ -101,13 +101,14 @@ var searchData=
   ['expect_5ffilled_98',['expect_filled',['../classProblemExpertStateTest.html#a66255335b53ca1a88f6e2541c2fe93a9',1,'ProblemExpertStateTest']]],
   ['expect_5fplan_5fsucceeds_99',['expect_plan_succeeds',['../classExecutorGoalHandlingTest.html#a25d0826ff057dc5fefb17c44bdee8d64',1,'ExecutorGoalHandlingTest::expect_plan_succeeds()'],['../classExecutorLifecycleTest.html#a25d0826ff057dc5fefb17c44bdee8d64',1,'ExecutorLifecycleTest::expect_plan_succeeds()']]],
   ['expectedtoken_100',['ExpectedToken',['../classparser_1_1pddl_1_1ExpectedToken.html',1,'ExpectedToken'],['../classparser_1_1pddl_1_1ExpectedToken.html#ac51283698f680206d79a01455cccf1b9',1,'parser::pddl::ExpectedToken::ExpectedToken()']]],
-  ['exporttodot_101',['exportToDOT',['../classplansys2_1_1DerivedResolutionGraph.html#a4d06fe979322e83a067a6f07930eabe5',1,'plansys2::DerivedResolutionGraph']]],
-  ['expression_102',['Expression',['../classparser_1_1pddl_1_1Expression.html',1,'parser::pddl']]],
-  ['expression_103',['expression',['../structplansys2_1_1ActionStamped.html#a5534b244f3be0fa83f7adf470ed793c1',1,'plansys2::ActionStamped']]],
-  ['expression_2ecpp_104',['Expression.cpp',['../Expression_8cpp.html',1,'']]],
-  ['expression_2ehpp_105',['Expression.hpp',['../Expression_8hpp.html',1,'']]],
-  ['expressions_20as_20trees_106',['Representing PDDL Expressions as Trees',['..//github/workspace/plansys2_msgs/README.md#autotoc_md19',1,'']]],
-  ['expressions_20with_20ros_20messages_107',['Representing PDDL Expressions with ROS Messages',['..//github/workspace/plansys2_msgs/README.md#autotoc_md20',1,'']]],
-  ['extenddomain_108',['extendDomain',['../classplansys2_1_1DomainExpert.html#ad2aae4d733892d2f8b7f13798e8a2773',1,'plansys2::DomainExpert']]],
-  ['extras_5frequire_109',['extras_require',['../namespacesetup.html#a87e252e9065f460e9aef5218a999f5d3',1,'setup']]]
+  ['expert_101',['expert',['../classProblemUpdaters.html#aeba9885a0b7fd76e12e84d3171bae2f0',1,'ProblemUpdaters']]],
+  ['exporttodot_102',['exportToDOT',['../classplansys2_1_1DerivedResolutionGraph.html#a4d06fe979322e83a067a6f07930eabe5',1,'plansys2::DerivedResolutionGraph']]],
+  ['expression_103',['Expression',['../classparser_1_1pddl_1_1Expression.html',1,'parser::pddl']]],
+  ['expression_104',['expression',['../structplansys2_1_1ActionStamped.html#a5534b244f3be0fa83f7adf470ed793c1',1,'plansys2::ActionStamped']]],
+  ['expression_2ecpp_105',['Expression.cpp',['../Expression_8cpp.html',1,'']]],
+  ['expression_2ehpp_106',['Expression.hpp',['../Expression_8hpp.html',1,'']]],
+  ['expressions_20as_20trees_107',['Representing PDDL Expressions as Trees',['..//github/workspace/plansys2_msgs/README.md#autotoc_md19',1,'']]],
+  ['expressions_20with_20ros_20messages_108',['Representing PDDL Expressions with ROS Messages',['..//github/workspace/plansys2_msgs/README.md#autotoc_md20',1,'']]],
+  ['extenddomain_109',['extendDomain',['../classplansys2_1_1DomainExpert.html#ad2aae4d733892d2f8b7f13798e8a2773',1,'plansys2::DomainExpert']]],
+  ['extras_5frequire_110',['extras_require',['../namespacesetup.html#a87e252e9065f460e9aef5218a999f5d3',1,'setup']]]
 ];

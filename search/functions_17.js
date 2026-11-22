@@ -34,8 +34,9 @@ var searchData=
   ['_7eplansolverbase_31',['~PlanSolverBase',['../classplansys2_1_1PlanSolverBase.html#add0faac665426f6b155750d49dcd6462',1,'plansys2::PlanSolverBase']]],
   ['_7epreference_32',['~Preference',['../classparser_1_1pddl_1_1Preference.html#a5bb91cbb55980dd3353eaa4315efe659',1,'parser::pddl::Preference']]],
   ['_7eproblemexpertinterface_33',['~ProblemExpertInterface',['../classplansys2_1_1ProblemExpertInterface.html#a779945a9443e6b2e307f6e60186ed4df',1,'plansys2::ProblemExpertInterface']]],
-  ['_7estringreader_34',['~Stringreader',['../classparser_1_1pddl_1_1Stringreader.html#a472c0e8db928bf4775b1981ea667f70e',1,'parser::pddl::Stringreader']]],
-  ['_7etemporalaction_35',['~TemporalAction',['../classparser_1_1pddl_1_1TemporalAction.html#a4d641ae7cfdcf60201c03b444157fe3b',1,'parser::pddl::TemporalAction']]],
-  ['_7etype_36',['~Type',['../classparser_1_1pddl_1_1Type.html#ae748371673274c11b73ec33c000153db',1,'parser::pddl::Type']]],
-  ['_7ewhen_37',['~When',['../classparser_1_1pddl_1_1When.html#a8aa1fc719b49067b4cc978d0bd26289b',1,'parser::pddl::When']]]
+  ['_7eproblemupdater_34',['~ProblemUpdater',['../classplansys2_1_1ProblemUpdater.html#aabf4586851df0b805887621456485dbc',1,'plansys2::ProblemUpdater']]],
+  ['_7estringreader_35',['~Stringreader',['../classparser_1_1pddl_1_1Stringreader.html#a472c0e8db928bf4775b1981ea667f70e',1,'parser::pddl::Stringreader']]],
+  ['_7etemporalaction_36',['~TemporalAction',['../classparser_1_1pddl_1_1TemporalAction.html#a4d641ae7cfdcf60201c03b444157fe3b',1,'parser::pddl::TemporalAction']]],
+  ['_7etype_37',['~Type',['../classparser_1_1pddl_1_1Type.html#ae748371673274c11b73ec33c000153db',1,'parser::pddl::Type']]],
+  ['_7ewhen_38',['~When',['../classparser_1_1pddl_1_1When.html#a8aa1fc719b49067b4cc978d0bd26289b',1,'parser::pddl::When']]]
 ];

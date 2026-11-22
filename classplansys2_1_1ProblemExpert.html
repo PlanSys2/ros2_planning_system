@@ -144,6 +144,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a4674525e16e3f36042169e6029591f39" id="r_a4674525e16e3f36042169e6029591f39"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4674525e16e3f36042169e6029591f39">addTimedFact</a> (const <a class="el" href="classplansys2__msgs_1_1msg_1_1Node.html">plansys2_msgs::msg::Node</a> &amp;fact, double delay, <a class="el" href="classbool.html">bool</a> <a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#aaff9ddb64f4101c1e351eb97f8061c2f">negated</a>=false)</td></tr>
 <tr class="memdesc:a4674525e16e3f36042169e6029591f39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule a fact: a predicate that starts or stops holding, or a function value.  <br /></td></tr>
 <tr class="separator:a4674525e16e3f36042169e6029591f39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4c5d795b8c42f1086773ba8a92beecf" id="r_ab4c5d795b8c42f1086773ba8a92beecf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab4c5d795b8c42f1086773ba8a92beecf">applyChanges</a> (const std::vector&lt; plansys2_msgs::msg::ProblemChange &gt; &amp;changes, std::string &amp;error_info)</td></tr>
+<tr class="memdesc:ab4c5d795b8c42f1086773ba8a92beecf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the changes in order, all or none: if one fails the earlier ones are rolled back.  <br /></td></tr>
+<tr class="separator:ab4c5d795b8c42f1086773ba8a92beecf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af855efdcc12a99e1b61f72d44dfb1936" id="r_af855efdcc12a99e1b61f72d44dfb1936"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af855efdcc12a99e1b61f72d44dfb1936">applyTimedFacts</a> ()</td></tr>
 <tr class="memdesc:af855efdcc12a99e1b61f72d44dfb1936"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the facts whose time has come.  <br /></td></tr>
 <tr class="separator:af855efdcc12a99e1b61f72d44dfb1936"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -496,6 +499,30 @@ Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>false if the fact is not valid in the domain, or a function is negated. </dd></dl>
+
+</div>
+</div>
+<a id="ab4c5d795b8c42f1086773ba8a92beecf" name="ab4c5d795b8c42f1086773ba8a92beecf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab4c5d795b8c42f1086773ba8a92beecf">&#9670;&#160;</a></span>applyChanges()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> applyChanges </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; plansys2_msgs::msg::ProblemChange &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>changes</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>error_info</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply the changes in order, all or none: if one fails the earlier ones are rolled back. </p>
+<p><a class="el" href="classplansys2_1_1Instance.html" title="Represents an instance (object) in the planning domain.">Instance</a> removals go last, as they cannot be rolled back. error_info gets the first failure. </p>
 
 </div>
 </div>

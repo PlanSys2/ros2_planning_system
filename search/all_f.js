@@ -50,8 +50,9 @@ var searchData=
   ['not_2ecpp_47',['Not.cpp',['../Not_8cpp.html',1,'']]],
   ['not_2ehpp_48',['Not.hpp',['../Not_8hpp.html',1,'']]],
   ['not_5factive_49',['NOT_ACTIVE',['../namespaceplansys2__support__py_1_1ClientBase.html#ac225478c9190b7076ae592edd546e737',1,'plansys2_support_py::ClientBase']]],
-  ['now_50',['now',['../classplansys2_1_1ClientNode.html#a48d9e4d08bbc7a98d8bbcf0de482bfa3',1,'plansys2::ClientNode']]],
-  ['number_5fto_5fstring_51',['number_to_string',['../classplansys2__support__py_1_1Parser_1_1Parser.html#a479de5a5619febd6e2515944802ae201',1,'plansys2_support_py::Parser::Parser']]],
-  ['numbertostring_52',['numberToString',['../namespaceparser_1_1pddl.html#a3b6e0bf57b8d9c07cf1f580f70c434bb',1,'parser::pddl']]],
-  ['numeric_53',['numeric',['../plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#aeb238e425886cae8f1db55e7790bd502',1,'Utils.cpp']]]
+  ['notify_50',['notify',['../structplansys2_1_1ProblemAccess.html#a649991f84aa7b14d8f642728992bc78d',1,'plansys2::ProblemAccess']]],
+  ['now_51',['now',['../classplansys2_1_1ClientNode.html#a48d9e4d08bbc7a98d8bbcf0de482bfa3',1,'plansys2::ClientNode']]],
+  ['number_5fto_5fstring_52',['number_to_string',['../classplansys2__support__py_1_1Parser_1_1Parser.html#a479de5a5619febd6e2515944802ae201',1,'plansys2_support_py::Parser::Parser']]],
+  ['numbertostring_53',['numberToString',['../namespaceparser_1_1pddl.html#a3b6e0bf57b8d9c07cf1f580f70c434bb',1,'parser::pddl']]],
+  ['numeric_54',['numeric',['../plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#aeb238e425886cae8f1db55e7790bd502',1,'Utils.cpp']]]
 ];
