@@ -1,0 +1,6 @@
+(define (problem state_updater_example_problem)
+  (:domain state_updater_example)
+  (:objects battery leak imu dvl - sensor wp1 wp2 wp3 - waypoint normal degraded lost - mode)
+  (:init (= (energy) 100) (mode_is normal))
+  (:goal (and))
+)

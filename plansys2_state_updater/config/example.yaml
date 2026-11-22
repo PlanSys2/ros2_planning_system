@@ -1,0 +1,69 @@
+# Example rules: each keeps one fact of the problem in sync with one field of a topic
+state_updater:
+  rules:
+    # Function, corrected only when 2 or more away from the model (#t); two readings a second
+    - name: battery
+      topic: /robot/battery
+      type: sensor_msgs/msg/BatteryState
+      field: percentage
+      transform: {linear: {scale: 100.0, round: 1}}
+      target: {function: "(energy)"}
+      policy: {mode: correct, min_change: 2.0, sample_period: 0.5, stale_after: 10.0,
+               on_stale: "(sensor_stale battery)"}
+
+    # Predicate with hysteresis: on below 25 %, off above 30 %
+    - name: low_battery
+      topic: /robot/battery
+      field: percentage
+      transform: {hysteresis: {on_below: 0.25, off_above: 0.30}}
+      target: {predicate: "(low_battery)"}
+
+    # Predicate held 2 s before it is written: a sensor glitch does not abort the action
+    - name: leak
+      topic: /robot/leak
+      type: std_msgs/msg/Bool
+      field: data
+      target: {predicate: "(leak_detected)"}
+      policy: {debounce: 2.0, stale_after: 5.0, on_stale: "(sensor_stale leak)"}
+
+    # Template: one fact per array entry; the names must be objects of the problem
+    - name: sensors
+      topic: /diagnostics
+      type: diagnostic_msgs/msg/DiagnosticArray
+      field: "status[*]"
+      transform: {compare: {field: level, op: "==", value: 0}}
+      target: {predicate: "(sensor_ok {name})"}
+      policy: {debounce: 1.0}
+
+    # Set: the waypoints in the list are reachable (ParameterValue just for its string list)
+    - name: reachable
+      topic: /reachable
+      type: rcl_interfaces/msg/ParameterValue
+      field: string_array_value
+      target: {set: "(reachable {})"}
+
+    # Enum: one mode holds at a time; lost after 5 s of silence
+    - name: mode
+      topic: /robot/mode
+      type: std_msgs/msg/Int32
+      field: data
+      transform: {map: {values: {2: normal, 3: degraded}, default: lost}}
+      target: {enum: "(mode_is {})", values: [normal, degraded, lost]}
+      policy: {debounce: 0.5, stale_after: 5.0, on_stale: {value: lost}}
+
+    # Instances: one object per sonar contact, removed 20 s after last seen unless in use
+    - name: contacts
+      topic: /sonar/contacts
+      type: diagnostic_msgs/msg/DiagnosticArray
+      field: "status[*]"
+      target:
+        instance: {name: "contact_{name}", type: contact}
+        facts: ["(contact_at {self} {hardware_id})"]
+      policy: {expire_after: 20.0, max_instances: 50}
+
+    # Object fluent: (location) takes a waypoint name
+    - name: location
+      topic: /robot/waypoint
+      type: std_msgs/msg/String
+      field: data
+      target: {function: "(location)"}

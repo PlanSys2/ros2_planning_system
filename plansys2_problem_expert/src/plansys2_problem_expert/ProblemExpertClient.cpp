@@ -40,6 +40,8 @@ ProblemExpertClient::ProblemExpertClient(ClientNode::Interfaces node)
     node_, "problem_expert/add_problem_goal", active_);
   add_problem_instance_client_ = std::make_shared<ServiceClient<srv::AffectParam>>(
     node_, "problem_expert/add_problem_instance", active_);
+  apply_changes_client_ = std::make_shared<ServiceClient<srv::ApplyProblemChanges>>(
+    node_, "problem_expert/apply_changes", active_);
   add_problem_predicate_client_ = std::make_shared<ServiceClient<srv::AffectNode>>(
     node_, "problem_expert/add_problem_predicate", active_);
   add_problem_function_client_ = std::make_shared<ServiceClient<srv::AffectNode>>(
@@ -230,6 +232,15 @@ ProblemExpertClient::tryGetPredicates()
         result->error_info);
     return {};
   }
+}
+
+bool
+ProblemExpertClient::applyChanges(const std::vector<plansys2_msgs::msg::ProblemChange> & changes)
+{
+  auto request = std::make_shared<plansys2_msgs::srv::ApplyProblemChanges::Request>();
+  request->changes = changes;
+
+  return call_change<plansys2_msgs::srv::ApplyProblemChanges>(apply_changes_client_, request);
 }
 
 bool

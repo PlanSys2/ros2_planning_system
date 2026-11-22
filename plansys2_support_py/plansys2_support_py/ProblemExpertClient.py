@@ -23,10 +23,11 @@ from typing import List, Optional, Union
 
 from plansys2_msgs.msg import Metric
 from plansys2_msgs.msg import Node as PlanSys2Node  # Avoid name conflict
-from plansys2_msgs.msg import Param, Tree
+from plansys2_msgs.msg import Param, ProblemChange, Tree
 # Problem Expert services
 from plansys2_msgs.srv import (AddProblem, AddProblemGoal, AffectNode,
-                               AffectParam, ClearProblemKnowledge, ExistNode,
+                               AffectParam, ApplyProblemChanges,
+                               ClearProblemKnowledge, ExistNode,
                                GetNodeDetails, GetProblem, GetProblemGoal,
                                GetProblemInstanceDetails, GetProblemInstances,
                                GetProblemMetric, GetStates,
@@ -136,6 +137,33 @@ class ProblemExpertClient(ClientBase):
         else:
             error_msg = response.error_info if response else 'Service call failed'
             self.get_logger().error(f'Failed to add problem instance {instance}: {error_msg}')
+            return False
+
+    def apply_problem_changes(self, changes: List[ProblemChange]) -> bool:
+        """
+        Apply the changes in order, all or none, with a single notification.
+
+        Parameters
+        ----------
+        changes : List[ProblemChange]
+            Instances, predicates and functions to add or remove.
+
+        Returns
+        -------
+        bool: True if all were made, False if none was (the error is logged).
+
+        """
+        service_name = 'problem_expert/apply_changes'
+        request = ApplyProblemChanges.Request()
+        request.changes = list(changes)
+
+        response = self._create_and_call_service(ApplyProblemChanges, service_name, request)
+        if response and response.success:
+            self.get_logger().debug(f'Successfully applied {len(changes)} problem changes')
+            return True
+        else:
+            error_msg = response.error_info if response else 'Service call failed'
+            self.get_logger().error(f'Failed to apply problem changes: {error_msg}')
             return False
 
     def add_problem_predicate(self, predicate: PlanSys2Node) -> bool:
