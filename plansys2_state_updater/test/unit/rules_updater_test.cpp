@@ -164,9 +164,9 @@ protected:
   template<typename Message>
   bool publish_until(
     const std::string & topic, const Message & message, const std::function<bool()> & done,
-    std::chrono::duration<double> timeout = 5s)
+    std::chrono::duration<double> timeout = 5s, const rclcpp::QoS & qos = rclcpp::QoS(10))
   {
-    auto publisher = io_->create_publisher<Message>(prefix() + topic, 10);
+    auto publisher = io_->create_publisher<Message>(prefix() + topic, qos);
     const auto end = std::chrono::steady_clock::now() + timeout;
     while (std::chrono::steady_clock::now() < end) {
       publisher->publish(message);
@@ -263,6 +263,42 @@ TEST_F(RulesUpdaterTest, writes_what_the_topics_say_and_what_there_was_before)
   EXPECT_TRUE(event.has_previous);
   EXPECT_DOUBLE_EQ(event.previous_value, 100.0);  // What the problem had: mode correct
   EXPECT_NEAR(event.value, 10.0, 1e-3);
+}
+
+TEST_F(RulesUpdaterTest, qos_follows_what_the_publishers_offer)
+{
+  auto reliability = [this]() {
+      for (const auto & endpoint : io_->get_subscriptions_info_by_topic(prefix() + "/leak")) {
+        if (endpoint.node_name() == "problem_expert") {
+          return endpoint.qos_profile().reliability();
+        }
+      }
+      return rclcpp::ReliabilityPolicy::Unknown;
+    };
+  // Without publishers, not subscribed yet; with a reliable one, reliable
+  EXPECT_EQ(reliability(), rclcpp::ReliabilityPolicy::Unknown);
+  auto reliable = io_->create_publisher<std_msgs::msg::Bool>(prefix() + "/leak", 10);
+  std_msgs::msg::Bool leak;
+  leak.data = true;
+  ASSERT_TRUE(
+    spin_until(
+      [&]() {
+        reliable->publish(leak);
+        return holds("(leak_detected)");
+      }));
+  EXPECT_EQ(reliability(), rclcpp::ReliabilityPolicy::Reliable);
+
+  // A best-effort one comes: it would not match a reliable subscription
+  leak.data = false;
+  ASSERT_TRUE(
+    publish_until(
+      "/leak", leak, [this]() {return !holds("(leak_detected)");}, 5s, rclcpp::SensorDataQoS()));
+  EXPECT_EQ(reliability(), rclcpp::ReliabilityPolicy::BestEffort);
+
+  // It goes: reliable again
+  ASSERT_TRUE(
+    spin_until(
+      [&]() {return reliability() == rclcpp::ReliabilityPolicy::Reliable;}, 5s));
 }
 
 TEST_F(RulesUpdaterTest, a_write_the_problem_refuses_is_tried_again)

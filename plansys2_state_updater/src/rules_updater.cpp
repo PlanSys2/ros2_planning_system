@@ -16,6 +16,7 @@
 
 #include <chrono>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <tuple>
@@ -24,6 +25,7 @@
 #include <vector>
 
 #include "pluginlib/class_list_macros.hpp"
+#include "rmw/qos_string_conversions.h"
 
 #include "plansys2_state_updater/domain_check.hpp"
 #include "plansys2_state_updater/domain_reader.hpp"
@@ -34,6 +36,29 @@ namespace plansys2_state_updater
 using plansys2_msgs::msg::StateUpdate;
 using std::placeholders::_1;
 using std::placeholders::_2;
+
+namespace
+{
+
+/// A resolved qos: no auto in it
+rclcpp::QoS
+to_ros(const Qos & qos)
+{
+  rclcpp::QoS out{rclcpp::KeepLast(qos.depth)};
+  if (qos.reliability == "best_effort") {
+    out.best_effort();
+  } else {
+    out.reliable();
+  }
+  if (qos.durability == "transient_local") {
+    out.transient_local();
+  } else {
+    out.durability_volatile();
+  }
+  return out;
+}
+
+}  // namespace
 
 rclcpp_lifecycle::LifecycleNode::SharedPtr
 RulesUpdater::node() const
@@ -95,6 +120,7 @@ RulesUpdater::configure(
     return false;
   }
   topics_ = engine_->topics();
+  qos_ = engine_->qos();
   status_pub_ = node->create_publisher<std_msgs::msg::String>(name_ + "/status", 10);
   // For missions to replan on: update_notify is also published by the dynamics
   events_pub_ = node->create_publisher<StateUpdate>(name_ + "/events", 100);
@@ -176,6 +202,9 @@ RulesUpdater::stop()
   active_ = false;
   subscriptions_.clear();
   waiting_logged_.clear();
+  resubscribe_.clear();
+  incompatible_logged_.clear();
+  taken_.clear();
   timer_.reset();
   if (writer_) {
     writer_->stop();
@@ -281,13 +310,64 @@ RulesUpdater::subscribe()
         e.what());
       continue;
     }
+    const auto taken = publishers_qos(topic);
+    if (!taken) {
+      if (waiting_logged_.insert(topic).second) {
+        RCLCPP_INFO(
+          logger(), "Waiting for a publisher of '%s', to take the qos it offers", topic.c_str());
+      }
+      continue;
+    }
+    rclcpp::SubscriptionOptions options;
+    options.event_callbacks.incompatible_qos_callback =
+      [this, topic](rclcpp::QOSRequestedIncompatibleQoSInfo & info) {
+        on_incompatible_qos(topic, info);
+      };
     // Default callback group: mutually exclusive with the problem expert services
-    subscriptions_[topic] = node->create_generic_subscription(
-      topic, type, rclcpp::SensorDataQoS(),
+    auto subscription = node->create_generic_subscription(
+      topic, type, to_ros(*taken),
       [this, topic](std::shared_ptr<const rclcpp::SerializedMessage> message) {
         on_message(topic, *message);
-      });
-    RCLCPP_INFO(logger(), "Subscribed to '%s' (%s)", topic.c_str(), type.c_str());
+      }, options);
+    subscriptions_[topic] = subscription;
+    taken_[topic] = *taken;
+    RCLCPP_INFO(
+      logger(), "Subscribed to '%s' (%s; %s)", topic.c_str(), type.c_str(),
+      taken->text().c_str());
+  }
+}
+
+std::optional<Qos>
+RulesUpdater::publishers_qos(const std::string & topic) const
+{
+  auto node = this->node();
+  std::vector<Offered> offered;
+  for (const auto & info : node->get_publishers_info_by_topic(
+      node->get_node_topics_interface()->resolve_topic_name(topic)))
+  {
+    const auto & qos = info.qos_profile();
+    offered.push_back(
+      {qos.reliability() == rclcpp::ReliabilityPolicy::Reliable,
+        qos.durability() == rclcpp::DurabilityPolicy::TransientLocal});
+  }
+  return resolve(qos_.at(topic), offered);
+}
+
+void
+RulesUpdater::follow_publishers()
+{
+  for (const auto & [topic, taken] : taken_) {
+    if (!subscriptions_.count(topic)) {
+      continue;
+    }
+    // A best-effort publisher that went: reliable again
+    const auto now = publishers_qos(topic);
+    if (now && *now != taken) {
+      RCLCPP_INFO(
+        logger(), "The publishers of '%s' now offer %s: subscribing again", topic.c_str(),
+        now->text().c_str());
+      resubscribe_.insert(topic);
+    }
   }
 }
 
@@ -310,11 +390,52 @@ RulesUpdater::on_message(const std::string & topic, const rclcpp::SerializedMess
 }
 
 void
+RulesUpdater::on_incompatible_qos(
+  const std::string & topic, const rclcpp::QOSRequestedIncompatibleQoSInfo & info)
+{
+  if (!active_ || !qos_.count(topic)) {
+    return;
+  }
+  const Qos & qos = qos_.at(topic);
+  const bool adapts =
+    (info.last_policy_kind == RMW_QOS_POLICY_RELIABILITY && qos.reliability == "auto") ||
+    (info.last_policy_kind == RMW_QOS_POLICY_DURABILITY && qos.durability == "auto");
+  if (adapts) {
+    // Its auto policies were taken from the publishers seen then; this one came later
+    if (resubscribe_.insert(topic).second) {
+      RCLCPP_INFO(
+        logger(), "A publisher of '%s' does not match its subscription: subscribing again",
+        topic.c_str());
+    }
+    return;
+  }
+  if (incompatible_logged_.insert(topic).second) {
+    const char * policy = rmw_qos_policy_kind_to_str(info.last_policy_kind);
+    RCLCPP_WARN(
+      logger(),
+      "A publisher of '%s' offers less %s than its rules ask for (%s): its messages do not "
+      "come. With qos %s: auto, they take what its publishers offer",
+      topic.c_str(), policy ? policy : "QoS", qos.text().c_str(), policy ? policy : "reliability");
+  }
+}
+
+void
 RulesUpdater::on_timer()
 {
   if (!active_ || !engine_ || !clock_ready()) {
     return;
   }
+  const auto wall = std::chrono::steady_clock::now();
+  if (wall - last_publishers_ >= std::chrono::seconds(1)) {
+    last_publishers_ = wall;
+    follow_publishers();
+  }
+  for (const auto & topic : resubscribe_) {
+    subscriptions_.erase(topic);
+    taken_.erase(topic);
+    incompatible_logged_.erase(topic);
+  }
+  resubscribe_.clear();
   if (subscriptions_.size() < topics_.size()) {
     subscribe();
   }
@@ -510,6 +631,9 @@ RulesUpdater::on_reload(
   if (active_) {
     subscriptions_.clear();
     waiting_logged_.clear();
+    resubscribe_.clear();
+    incompatible_logged_.clear();
+    taken_.clear();
   }
   // Unchanged rules keep their state
   std::set<std::string> kept;
@@ -519,6 +643,7 @@ RulesUpdater::on_reload(
   config_ = config;
   engine_ = std::move(engine);
   topics_ = engine_->topics();
+  qos_ = engine_->qos();
   invalid_.clear();  // Checked against the domain as it is now
   std::vector<std::string> unknown;
   if (active_) {

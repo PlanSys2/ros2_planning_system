@@ -75,9 +75,20 @@ Engine::Engine(
   // A fact is owned by one rule; a template owns its whole predicate
   std::map<std::pair<std::string, std::vector<std::string>>, std::string> exact;
   std::map<std::string, std::string> whole;
+  // One subscription per topic: the rules that give its qos must agree
+  std::map<std::string, std::pair<Qos, std::string>> qos_of;
   for (const auto & rule : rules_) {
     if (!names.insert(rule->name).second) {
       errors.push_back("two rules are called '" + rule->name + "'");
+    }
+    if (rule->qos) {
+      auto [it, first] = qos_of.emplace(rule->topic, std::make_pair(*rule->qos, rule->name));
+      if (!first && it->second.first != *rule->qos) {
+        errors.push_back(
+          "rules '" + it->second.second + "' and '" + rule->name + "' read '" + rule->topic +
+          "' with another qos (" + it->second.first.text() + "; " + rule->qos->text() +
+          "): a topic is subscribed once");
+      }
     }
     for (const auto & [fact, is_template] : rule->owned()) {
       const auto [name, params] = parse_fact(fact);
@@ -164,6 +175,20 @@ Engine::topics() const
     }
   }
   return topics;
+}
+
+std::map<std::string, Qos>
+Engine::qos() const
+{
+  std::map<std::string, Qos> qos;
+  for (const auto & rule : rules_) {
+    if (rule->qos) {
+      qos[rule->topic] = *rule->qos;
+    } else {
+      qos.emplace(rule->topic, Qos());
+    }
+  }
+  return qos;
 }
 
 void

@@ -129,6 +129,88 @@ RuleBase::parse_input(const YAML::Node & policy, std::vector<std::string> & erro
   }
 }
 
+std::string
+Qos::text() const
+{
+  return "reliability " + reliability + ", durability " + durability + ", depth " +
+         std::to_string(depth);
+}
+
+std::optional<Qos>
+resolve(const Qos & qos, const std::vector<Offered> & publishers)
+{
+  const bool adapts = qos.reliability == "auto" || qos.durability == "auto";
+  if (adapts && publishers.empty()) {
+    return std::nullopt;
+  }
+  Qos out = qos;
+  if (qos.reliability == "auto") {
+    const bool all = std::all_of(
+      publishers.begin(), publishers.end(), [](const Offered & p) {return p.reliable;});
+    out.reliability = all ? "reliable" : "best_effort";
+  }
+  if (qos.durability == "auto") {
+    const bool all = std::all_of(
+      publishers.begin(), publishers.end(), [](const Offered & p) {return p.transient_local;});
+    out.durability = all ? "transient_local" : "volatile";
+  }
+  return out;
+}
+
+void
+RuleBase::parse_qos(const YAML::Node & spec, std::vector<std::string> & errors)
+{
+  const YAML::Node given = spec["qos"];
+  if (!given || given.IsNull()) {
+    return;
+  }
+  if (!given.IsMap()) {
+    errors.push_back(
+      "qos is {reliability: auto|reliable|best_effort, "
+      "durability: auto|volatile|transient_local, depth: messages}");
+    return;
+  }
+  const std::vector<std::string> keys = {"reliability", "durability", "depth"};
+  std::vector<std::string> unknown;
+  for (const auto & item : given) {
+    const std::string key = item.first.Scalar();
+    if (std::find(keys.begin(), keys.end(), key) == keys.end()) {
+      unknown.push_back(key);
+    }
+  }
+  if (!unknown.empty()) {
+    errors.push_back("unknown qos keys " + listed(unknown) + ", known: " + listed(keys));
+  }
+  Qos result;
+  auto one_of = [&](const std::string & key, std::string & value,
+    const std::vector<std::string> & values) {
+      if (!given[key]) {
+        return;
+      }
+      const std::string text = scalar(given[key]);
+      if (std::find(values.begin(), values.end(), text) == values.end()) {
+        errors.push_back("qos " + key + " is one of " + listed(values) + ", not '" + text + "'");
+      } else {
+        value = text;
+      }
+    };
+  one_of("reliability", result.reliability, {"auto", "reliable", "best_effort"});
+  one_of("durability", result.durability, {"auto", "volatile", "transient_local"});
+  if (given["depth"]) {
+    Value depth;
+    try {
+      depth = from_yaml(given["depth"]);
+    } catch (const std::invalid_argument &) {
+    }
+    if (!depth.is_int() || depth.as_number() < 1) {
+      errors.push_back("qos depth is a number of messages, 1 or more");
+    } else {
+      result.depth = static_cast<size_t>(depth.as_number());
+    }
+  }
+  qos = result;
+}
+
 void
 RuleBase::check_input(
   double waits, const std::string & waits_name, std::vector<std::string> & errors) const
@@ -273,6 +355,7 @@ Rule::Rule(const YAML::Node & spec)
     errors.push_back("no topic");
   }
   msg_type = scalar(spec["type"]);  // Optional: else, discovered in the graph
+  parse_qos(spec, errors);
   // Optional: without it, the whole message (for a plugin)
   field = scalar(spec["field"]);
   try {

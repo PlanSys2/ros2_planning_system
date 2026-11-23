@@ -99,6 +99,7 @@ InstanceRule::InstanceRule(const YAML::Node & spec)
     errors.push_back("no topic");
   }
   msg_type = scalar(spec["type"]);
+  parse_qos(spec, errors);
   field = scalar(spec["field"]);
   try {
     path = parse_path(field);

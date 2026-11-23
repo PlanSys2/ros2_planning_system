@@ -150,6 +150,34 @@ public:
   bool contains(const std::string & fact) const;
 };
 
+/// How the topic of a rule is subscribed. "auto": what all its publishers offer
+struct Qos
+{
+  std::string reliability {"auto"};     // auto, reliable or best_effort
+  std::string durability {"volatile"};  // auto, volatile or transient_local
+  size_t depth {5};
+
+  bool operator==(const Qos & other) const
+  {
+    return reliability == other.reliability && durability == other.durability &&
+           depth == other.depth;
+  }
+  bool operator!=(const Qos & other) const {return !(*this == other);}
+  /// reliability auto, durability volatile, depth 5
+  std::string text() const;
+};
+
+/// What a publisher offers
+struct Offered
+{
+  bool reliable {true};
+  bool transient_local {false};
+};
+
+/// The qos to subscribe with, given the publishers of the topic: "auto" takes the most that all
+/// of them offer. Empty: "auto" with no publishers yet, nothing to take it from
+std::optional<Qos> resolve(const Qos & qos, const std::vector<Offered> & publishers);
+
 /// What every rule has: what it listens to, its warnings and its last error
 class RuleBase
 {
@@ -159,6 +187,7 @@ public:
   std::string name;
   std::string topic;
   std::string msg_type;  // Empty: seen in the graph
+  std::optional<Qos> qos;  // Empty: not given
   std::string field;
   Path path;
   std::vector<std::string> warnings;
@@ -191,6 +220,8 @@ public:
 protected:
   /// sample_period and stamp, from the policy
   void parse_input(const YAML::Node & policy, std::vector<std::string> & errors);
+  /// The qos of the rule, if given
+  void parse_qos(const YAML::Node & spec, std::vector<std::string> & errors);
   /// Each of them against the time that the rule waits for its messages (stale, expire)
   void check_input(
     double waits, const std::string & waits_name, std::vector<std::string> & errors) const;

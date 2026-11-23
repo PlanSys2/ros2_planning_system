@@ -420,3 +420,80 @@ TEST(configuration, warns_of_correct_without_min_change)
   ASSERT_EQ(e->rules()[0]->warnings.size(), 1u);
   EXPECT_TRUE(contains(e->rules()[0]->warnings[0], "without min_change"));
 }
+
+TEST(configuration, qos_of_each_topic)
+{
+  // Not given: auto reliability (what the publishers offer), volatile, depth 5
+  auto e = engine({battery(), leak(),
+        "{name: low, topic: /battery, field: percentage, target: {predicate: '(low)'}, "
+        "transform: {compare: {op: '<', value: 0.2}}, "
+        "qos: {reliability: best_effort, durability: transient_local, depth: 10}}",
+        contacts("{expire_after: 10.0}").substr(0, contacts().size() - 1) +
+        ", qos: {reliability: reliable}}"});
+  const auto qos = e->qos();
+  EXPECT_EQ(qos.at("/leak"), su::Qos());
+  EXPECT_EQ(qos.at("/leak").text(), "reliability auto, durability volatile, depth 5");
+  // battery gives none: it takes what low gives for the same topic
+  EXPECT_EQ(qos.at("/battery").text(), "reliability best_effort, durability transient_local, "
+    "depth 10");
+  EXPECT_EQ(qos.at("/sonar").reliability, "reliable");
+  EXPECT_EQ(qos.at("/sonar").durability, "volatile");
+}
+
+TEST(configuration, qos_errors)
+{
+  const std::vector<std::pair<std::string, std::string>> cases = {
+    {leak().substr(0, leak().size() - 1) + ", qos: reliable}", "qos is {reliability"},
+    {leak().substr(0, leak().size() - 1) + ", qos: {reliability: sometimes}}",
+      "qos reliability is one of ['auto', 'reliable', 'best_effort'], not 'sometimes'"},
+    {leak().substr(0, leak().size() - 1) + ", qos: {durability: forever}}",
+      "qos durability is one of"},
+    {leak().substr(0, leak().size() - 1) + ", qos: {depth: 0}}", "qos depth is a number"},
+    {leak().substr(0, leak().size() - 1) + ", qos: {depth: many}}", "qos depth is a number"},
+    {leak().substr(0, leak().size() - 1) + ", qos: {history: keep_all}}",
+      "unknown qos keys ['history']"},
+    {contacts().substr(0, contacts().size() - 1) + ", qos: {reliability: maybe}}",
+      "qos reliability is one of"},
+  };
+  for (const auto & [rule, error] : cases) {
+    const std::string text = config_error({rule});
+    EXPECT_TRUE(contains(text, error)) << rule << "\n  gives: " << text;
+  }
+}
+
+TEST(configuration, rules_of_a_topic_agree_on_its_qos)
+{
+  const std::string low =
+    "{name: low, topic: /battery, field: percentage, target: {predicate: '(low)'}, "
+    "transform: {compare: {op: '<', value: 0.2}}, qos: {reliability: reliable}}";
+  const std::string text = config_error(
+    {battery().substr(0, battery().size() - 1) + ", qos: {reliability: best_effort}}", low});
+  EXPECT_TRUE(contains(text, "rules 'battery' and 'low' read '/battery' with another qos"))
+    << text;
+  // The same qos, or none in one of them: one subscription
+  EXPECT_EQ(
+    config_error(
+      {battery().substr(0, battery().size() - 1) + ", qos: {reliability: reliable}}", low}), "");
+  EXPECT_EQ(config_error({battery(), low}), "");
+}
+
+TEST(configuration, auto_qos_takes_what_all_the_publishers_offer)
+{
+  const su::Qos given;  // reliability auto, durability volatile
+  EXPECT_FALSE(su::resolve(given, {}));
+  EXPECT_EQ(su::resolve(given, {{true, false}, {true, true}})->reliability, "reliable");
+  EXPECT_EQ(su::resolve(given, {{true, false}, {false, false}})->reliability, "best_effort");
+  EXPECT_EQ(su::resolve(given, {{true, true}})->durability, "volatile");
+
+  su::Qos durable;
+  durable.durability = "auto";
+  EXPECT_EQ(su::resolve(durable, {{true, true}, {true, true}})->durability, "transient_local");
+  EXPECT_EQ(su::resolve(durable, {{true, true}, {true, false}})->durability, "volatile");
+
+  // Given: as it is, with publishers or without them
+  su::Qos fixed;
+  fixed.reliability = "best_effort";
+  EXPECT_EQ(*su::resolve(fixed, {}), fixed);
+  EXPECT_EQ(*su::resolve(fixed, {{true, true}}), fixed);
+  EXPECT_EQ(su::resolve(fixed, {})->depth, 5u);
+}
