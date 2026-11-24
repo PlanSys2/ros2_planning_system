@@ -15,9 +15,12 @@
 #ifndef PLANSYS2_STATE_UPDATER__RULES_UPDATER_HPP_
 #define PLANSYS2_STATE_UPDATER__RULES_UPDATER_HPP_
 
+#include <atomic>
 #include <chrono>
+#include <deque>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <set>
 #include <string>
@@ -29,6 +32,7 @@
 #include "rclcpp/generic_subscription.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rclcpp_lifecycle/lifecycle_publisher.hpp"
+#include "rmw/qos_policy_kind.h"
 #include "std_msgs/msg/string.hpp"
 #include "std_srvs/srv/trigger.hpp"
 #include "yaml-cpp/yaml.h"
@@ -75,10 +79,20 @@ private:
   bool clock_ready();
   double seconds() const;
 
-  void on_message(const std::string & topic, const rclcpp::SerializedMessage & message);
+  using Received = std::shared_ptr<const rclcpp::SerializedMessage>;
+  // In the callback group of the subscriptions: they only put what comes in the inbox
+  void on_message(
+    const std::string & topic, std::shared_ptr<const rclcpp::SerializedMessage> message,
+    size_t depth);
+  void on_incompatible_qos(const std::string & topic, rmw_qos_policy_kind_t policy);
+  /// What waits in the inbox, in the order it came; the inbox is left empty
+  std::vector<std::pair<std::string, Received>> take_inbox();
+  /// Wakes up drain, in the callback group of the problem expert
+  void wake();
+  /// What the inbox holds: read, given to the rules and written to the problem at once
+  void drain();
   /// A publisher that offers less than the subscription asks for: with "auto", subscribed again
-  void on_incompatible_qos(
-    const std::string & topic, const rclcpp::QOSRequestedIncompatibleQoSInfo & info);
+  void incompatible_qos(const std::string & topic, rmw_qos_policy_kind_t policy);
   void on_timer();
   void write(const std::vector<Change> & changes);
   plansys2_msgs::msg::StateUpdate event(const Change & change, bool written) const;
@@ -97,7 +111,7 @@ private:
   std::unique_ptr<ProblemWriter> writer_;
   YAML::Node config_;
   std::unique_ptr<Engine> engine_;
-  bool active_ {false};
+  std::atomic<bool> active_ {false};
   bool started_ {false};
   // Rules that do not fit the domain since it changed, with the reason
   std::map<std::string, std::string> invalid_;
@@ -114,6 +128,21 @@ private:
   std::map<std::string, std::shared_ptr<MessageReader>> readers_;
   std::set<std::string> waiting_logged_;
   rclcpp::TimerBase::SharedPtr timer_;
+
+  // The subscriptions: a callback group of their own, so that they do not wait for the problem
+  // expert services, nor these for them
+  rclcpp::CallbackGroup::SharedPtr subscriptions_group_;
+  // What they received, handed to drain: at most the qos depth of each topic waits, the oldest
+  // goes
+  std::mutex inbox_mutex_;
+  std::deque<std::pair<std::string, Received>> inbox_;
+  std::map<std::string, size_t> inbox_count_;
+  // The incompatible qos events of the subscriptions, also handed over
+  std::mutex events_mutex_;
+  std::vector<std::pair<std::string, rmw_qos_policy_kind_t>> incompatible_;
+  // Fires once each time it is woken up
+  std::mutex wake_mutex_;
+  rclcpp::TimerBase::SharedPtr drain_timer_;
   double last_status_ {0.0};
   double last_resync_ {0.0};
 
