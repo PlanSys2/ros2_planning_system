@@ -37,7 +37,9 @@ struct ProblemAccess
 /// Plugin loaded by the problem expert (updater_plugins, class in <name>.plugin) that keeps the
 /// problem in sync with the world.
 /// Its callbacks share the node's mutually exclusive default callback group with the problem
-/// expert services, so they never run concurrently with them; they must not block.
+/// expert services, so they never run concurrently with them; they must not block. Callbacks in a
+/// callback group of its own must not touch the problem: they hand their data to one in the
+/// default group.
 class ProblemUpdater
 {
 public:
