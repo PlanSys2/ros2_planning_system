@@ -17,6 +17,7 @@ find_package(yaml-cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(rcpputils REQUIRED)
+find_package(rmw REQUIRED)
 find_package(rosidl_runtime_cpp REQUIRED)
 find_package(rosidl_typesupport_cpp REQUIRED)
 find_package(rosidl_typesupport_introspection_cpp REQUIRED)
@@ -70,6 +71,7 @@ target_link_libraries(${PROJECT_NAME}
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
   rcpputils::rcpputils
+  rmw::rmw
   rosidl_runtime_cpp::rosidl_runtime_cpp
   rosidl_typesupport_cpp::rosidl_typesupport_cpp
   rosidl_typesupport_introspection_cpp::rosidl_typesupport_introspection_cpp
@@ -127,6 +129,7 @@ ament_export_dependencies(
   rclcpp
   rclcpp_lifecycle
   rcpputils
+  rmw
   rosidl_typesupport_introspection_cpp
   std_srvs
   yaml_cpp_vendor

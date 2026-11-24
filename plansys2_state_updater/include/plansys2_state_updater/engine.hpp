@@ -74,6 +74,8 @@ public:
 
   /// The topics to subscribe, with their type if a rule gives it (empty: seen in the graph)
   std::map<std::string, std::string> topics() const;
+  /// The qos of each topic: what its rules give, else the defaults
+  std::map<std::string, Qos> qos() const;
 
   void start(double now);
 

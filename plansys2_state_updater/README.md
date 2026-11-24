@@ -97,6 +97,7 @@ state_updater:
       transform: {linear: {scale: 100.0}}    # optional
       target: {function: "(energy)"}         # or {predicate:}, {set:}, {enum:}, {instance:}
       policy: {mode: correct, min_change: 2.0}
+      qos: {reliability: auto}               # optional: see QoS
 ```
 
 See [config/example.yaml](config/example.yaml).
@@ -256,6 +257,36 @@ A function with continuous effects (`#t`) in the domain is either predicted by t
 corrected by a rule in mode `correct`, or listed in `measured_functions` of `problem_expert` and
 written by a rule in mode `write`. Mode `correct` on a measured function is rejected: there is no
 model to correct.
+
+### QoS
+
+How the topic of a rule is subscribed. A reading lost under load is a fact that is not
+updated, so the subscription is reliable whenever its publishers are:
+
+| Key | Values | Default |
+|---|---|---|
+| `reliability` | `auto`, `reliable`, `best_effort` | `auto` |
+| `durability` | `auto`, `volatile`, `transient_local` | `volatile` |
+| `depth` | messages kept (keep last) | `5` |
+
+`auto` takes the most that all the publishers of the topic offer: reliable if all of them are
+reliable, best effort if one of them is not, as most sensor drivers (`SensorDataQoS`), since a
+reliable subscription gets nothing from a best-effort publisher; transient local only if all of
+them are. The topic is subscribed when it has a publisher, and again when the publishers change
+what they offer: a best-effort one that comes, or goes. With `reliable` or `best_effort` the
+subscription is the one given, and a publisher that does not match it is warned of once.
+
+A topic is subscribed once for all its rules: the rules of a topic that give `qos` must give
+the same, and the ones that do not give it take it.
+
+```yaml
+- name: map_ready
+  topic: /map_ready                          # latched: the last message, also to late joiners
+  type: std_msgs/msg/Bool
+  field: data
+  target: {predicate: "(map_ready)"}
+  qos: {reliability: reliable, durability: transient_local, depth: 1}
+```
 
 ## A mission that replans
 
