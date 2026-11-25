@@ -18,6 +18,7 @@
 #include <unistd.h>
 
 #include <chrono>
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <functional>
@@ -299,6 +300,79 @@ TEST_F(RulesUpdaterTest, qos_follows_what_the_publishers_offer)
   ASSERT_TRUE(
     spin_until(
       [&]() {return reliability() == rclcpp::ReliabilityPolicy::Reliable;}, 5s));
+}
+
+TEST_F(RulesUpdaterTest, subscriptions_apart_from_the_problem_expert_services)
+{
+  std_msgs::msg::Bool leak;
+  leak.data = true;
+  ASSERT_TRUE(publish_until("/leak", leak, [this]() {return holds("(leak_detected)");}));
+  // The subscriptions, in a group of their own; the reload service, in the default one
+  const auto base = node_->get_node_base_interface();
+  const auto default_group = base->get_default_callback_group();
+  size_t subscriptions = 0, services = 0;
+  base->for_each_callback_group(
+    [&](rclcpp::CallbackGroup::SharedPtr group) {
+      const bool is_default = group == default_group;
+      group->collect_all_ptrs(
+        [&](const rclcpp::SubscriptionBase::SharedPtr & subscription) {
+          if (std::string(subscription->get_topic_name()).rfind(prefix(), 0) == 0) {
+            EXPECT_FALSE(is_default) << subscription->get_topic_name();
+            subscriptions++;
+          }
+        },
+        [&](const rclcpp::ServiceBase::SharedPtr & service) {
+          if (std::string(service->get_service_name()).find("state_updater/reload") !=
+          std::string::npos)
+          {
+            EXPECT_TRUE(is_default);
+            services++;
+          }
+        },
+        [](const rclcpp::ClientBase::SharedPtr &) {},
+        [](const rclcpp::TimerBase::SharedPtr &) {},
+        [](const rclcpp::Waitable::SharedPtr &) {});
+    });
+  EXPECT_EQ(subscriptions, 1u);
+  EXPECT_EQ(services, 1u);
+}
+
+TEST_F(RulesUpdaterTest, readings_that_wait_are_taken_in_their_order)
+{
+  // Several readings in the inbox at once: in their order, the last one stays
+  auto publisher = io_->create_publisher<std_msgs::msg::Float32>(prefix() + "/battery", 10);
+  ASSERT_TRUE(
+    spin_until(
+      [&]() {
+        std_msgs::msg::Float32 first;
+        first.data = 0.9f;
+        publisher->publish(first);
+        return std::abs(energy() - 90.0) < 1e-3;
+      }));
+  for (float value : {0.8f, 0.7f, 0.6f}) {
+    std_msgs::msg::Float32 battery;
+    battery.data = value;
+    publisher->publish(battery);
+  }
+  ASSERT_TRUE(spin_until([this]() {return std::abs(energy() - 60.0) < 1e-3;}));
+  // Each one against what the one before wrote
+  std::vector<std::pair<double, double>> writes;
+  auto collect = [&]() {
+      writes.clear();
+      for (const auto & event : events_of("battery")) {
+        if (event.written && event.value < 90.0 - 1e-3) {
+          writes.emplace_back(event.previous_value, event.value);
+        }
+      }
+      return writes.size() >= 3;
+    };
+  ASSERT_TRUE(spin_until(collect));
+  const std::vector<std::pair<double, double>> expected = {{90, 80}, {80, 70}, {70, 60}};
+  ASSERT_EQ(writes.size(), expected.size());
+  for (size_t i = 0; i < expected.size(); i++) {
+    EXPECT_NEAR(writes[i].first, expected[i].first, 1e-3);
+    EXPECT_NEAR(writes[i].second, expected[i].second, 1e-3);
+  }
 }
 
 TEST_F(RulesUpdaterTest, a_write_the_problem_refuses_is_tried_again)

@@ -15,6 +15,7 @@
 #include "plansys2_state_updater/rules_updater.hpp"
 
 #include <chrono>
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <set>
@@ -124,6 +125,10 @@ RulesUpdater::configure(
   status_pub_ = node->create_publisher<std_msgs::msg::String>(name_ + "/status", 10);
   // For missions to replan on: update_notify is also published by the dynamics
   events_pub_ = node->create_publisher<StateUpdate>(name_ + "/events", 100);
+  if (!subscriptions_group_) {
+    subscriptions_group_ = node->create_callback_group(
+      rclcpp::CallbackGroupType::MutuallyExclusive);
+  }
   // The old rules stay if the new ones are not valid
   reload_service_ = node->create_service<std_srvs::srv::Trigger>(
     name_ + "/reload", std::bind(&RulesUpdater::on_reload, this, _1, _2));
@@ -145,6 +150,12 @@ RulesUpdater::activate()
   writer_->start(node());
   status_pub_->on_activate();
   events_pub_->on_activate();
+  {
+    std::lock_guard<std::mutex> lock(wake_mutex_);
+    drain_timer_ = node()->create_wall_timer(
+      std::chrono::milliseconds(1), std::bind(&RulesUpdater::drain, this));
+    drain_timer_->cancel();
+  }
   active_ = true;
   subscribe();
   timer_ = node()->create_wall_timer(
@@ -200,7 +211,16 @@ void
 RulesUpdater::stop()
 {
   active_ = false;
+  {
+    std::lock_guard<std::mutex> lock(wake_mutex_);
+    drain_timer_.reset();
+  }
   subscriptions_.clear();
+  take_inbox();
+  {
+    std::lock_guard<std::mutex> lock(events_mutex_);
+    incompatible_.clear();
+  }
   waiting_logged_.clear();
   resubscribe_.clear();
   incompatible_logged_.clear();
@@ -319,15 +339,16 @@ RulesUpdater::subscribe()
       continue;
     }
     rclcpp::SubscriptionOptions options;
+    options.callback_group = subscriptions_group_;
     options.event_callbacks.incompatible_qos_callback =
       [this, topic](rclcpp::QOSRequestedIncompatibleQoSInfo & info) {
-        on_incompatible_qos(topic, info);
+        on_incompatible_qos(topic, info.last_policy_kind);
       };
-    // Default callback group: mutually exclusive with the problem expert services
+    const size_t depth = taken->depth;
     auto subscription = node->create_generic_subscription(
       topic, type, to_ros(*taken),
-      [this, topic](std::shared_ptr<const rclcpp::SerializedMessage> message) {
-        on_message(topic, *message);
+      [this, topic, depth](std::shared_ptr<const rclcpp::SerializedMessage> message) {
+        on_message(topic, message, depth);
       }, options);
     subscriptions_[topic] = subscription;
     taken_[topic] = *taken;
@@ -372,34 +393,118 @@ RulesUpdater::follow_publishers()
 }
 
 void
-RulesUpdater::on_message(const std::string & topic, const rclcpp::SerializedMessage & message)
+RulesUpdater::on_message(
+  const std::string & topic, std::shared_ptr<const rclcpp::SerializedMessage> message,
+  size_t depth)
 {
-  if (!active_ || !engine_ || !clock_ready()) {
+  if (!active_) {
     return;
   }
-  // Read lazily: only if a rule samples it now (sample_period)
-  std::vector<Change> changes;
-  try {
-    changes = engine_->receive(
-      topic, [&]() {return readers_.at(topic)->read(message);}, seconds());
-  } catch (const std::exception & e) {
-    RCLCPP_ERROR(logger(), "Cannot read a message of '%s': %s", topic.c_str(), e.what());
-    return;
+  bool was_empty;
+  {
+    std::lock_guard<std::mutex> lock(inbox_mutex_);
+    was_empty = inbox_.empty();
+    auto & count = inbox_count_[topic];
+    if (depth > 0 && count >= depth) {
+      for (auto it = inbox_.begin(); it != inbox_.end(); ++it) {
+        if (it->first == topic) {
+          inbox_.erase(it);
+          count--;
+          break;
+        }
+      }
+    }
+    inbox_.emplace_back(topic, std::move(message));
+    count++;
   }
-  write(changes);
+  if (was_empty) {
+    wake();
+  }
+}
+
+std::vector<std::pair<std::string, RulesUpdater::Received>>
+RulesUpdater::take_inbox()
+{
+  std::lock_guard<std::mutex> lock(inbox_mutex_);
+  std::vector<std::pair<std::string, Received>> entries(
+    std::make_move_iterator(inbox_.begin()), std::make_move_iterator(inbox_.end()));
+  inbox_.clear();
+  inbox_count_.clear();
+  return entries;
 }
 
 void
-RulesUpdater::on_incompatible_qos(
-  const std::string & topic, const rclcpp::QOSRequestedIncompatibleQoSInfo & info)
+RulesUpdater::on_incompatible_qos(const std::string & topic, rmw_qos_policy_kind_t policy)
 {
-  if (!active_ || !qos_.count(topic)) {
+  {
+    std::lock_guard<std::mutex> lock(events_mutex_);
+    incompatible_.emplace_back(topic, policy);
+  }
+  wake();
+}
+
+void
+RulesUpdater::wake()
+{
+  std::lock_guard<std::mutex> lock(wake_mutex_);
+  if (drain_timer_) {
+    drain_timer_->reset();
+  }
+}
+
+void
+RulesUpdater::drain()
+{
+  {
+    std::lock_guard<std::mutex> lock(wake_mutex_);
+    if (drain_timer_) {
+      drain_timer_->cancel();
+    }
+  }
+  std::vector<std::pair<std::string, rmw_qos_policy_kind_t>> events;
+  {
+    std::lock_guard<std::mutex> lock(events_mutex_);
+    events.swap(incompatible_);
+  }
+  for (const auto & [topic, policy] : events) {
+    incompatible_qos(topic, policy);
+  }
+  const auto entries = take_inbox();
+  if (entries.empty() || !active_ || !engine_ || !clock_ready()) {
+    return;
+  }
+  // One by one, as they came: each is compared with the problem the one before left
+  const double now = seconds();
+  for (const auto & entry : entries) {
+    const std::string & topic = entry.first;
+    auto reader = readers_.find(topic);
+    if (reader == readers_.end()) {
+      continue;
+    }
+    std::vector<Change> changes;
+    try {
+      // Read lazily: only if a rule samples it now (sample_period)
+      changes = engine_->receive(
+        topic, [&]() {return reader->second->read(*entry.second);}, now);
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(
+        logger(), "Cannot read a message of '%s': %s", topic.c_str(), e.what());
+      continue;
+    }
+    write(changes);
+  }
+}
+
+void
+RulesUpdater::incompatible_qos(const std::string & topic, rmw_qos_policy_kind_t policy)
+{
+  if (!active_ || !qos_.count(topic) || !subscriptions_.count(topic)) {
     return;
   }
   const Qos & qos = qos_.at(topic);
   const bool adapts =
-    (info.last_policy_kind == RMW_QOS_POLICY_RELIABILITY && qos.reliability == "auto") ||
-    (info.last_policy_kind == RMW_QOS_POLICY_DURABILITY && qos.durability == "auto");
+    (policy == RMW_QOS_POLICY_RELIABILITY && qos.reliability == "auto") ||
+    (policy == RMW_QOS_POLICY_DURABILITY && qos.durability == "auto");
   if (adapts) {
     // Its auto policies were taken from the publishers seen then; this one came later
     if (resubscribe_.insert(topic).second) {
@@ -410,12 +515,12 @@ RulesUpdater::on_incompatible_qos(
     return;
   }
   if (incompatible_logged_.insert(topic).second) {
-    const char * policy = rmw_qos_policy_kind_to_str(info.last_policy_kind);
+    const char * name = rmw_qos_policy_kind_to_str(policy);
     RCLCPP_WARN(
       logger(),
       "A publisher of '%s' offers less %s than its rules ask for (%s): its messages do not "
       "come. With qos %s: auto, they take what its publishers offer",
-      topic.c_str(), policy ? policy : "QoS", qos.text().c_str(), policy ? policy : "reliability");
+      topic.c_str(), name ? name : "QoS", qos.text().c_str(), name ? name : "reliability");
   }
 }
 
@@ -425,6 +530,7 @@ RulesUpdater::on_timer()
   if (!active_ || !engine_ || !clock_ready()) {
     return;
   }
+  drain();
   const auto wall = std::chrono::steady_clock::now();
   if (wall - last_publishers_ >= std::chrono::seconds(1)) {
     last_publishers_ = wall;
@@ -630,6 +736,7 @@ RulesUpdater::on_reload(
   }
   if (active_) {
     subscriptions_.clear();
+    take_inbox();
     waiting_logged_.clear();
     resubscribe_.clear();
     incompatible_logged_.clear();

@@ -29,9 +29,12 @@ problem_expert:
       retry_after: 5.0          # a change the problem did not take, tried again after this
 ```
 
-Its callbacks go in the callback group of the problem expert: never at the same time as its
-services, so the problem is never read half changed. If the rules are not valid, the problem
-expert does not configure, and says why.
+Its subscriptions go in a callback group of their own: they only put what they receive in an
+inbox (at most the `depth` of each topic), so a burst of readings does not make the problem
+expert services wait. The rules and the writes run in the callback group of the problem expert,
+never at the same time as its services, so the problem is never read half changed; the readings
+are taken in the order they came. If the rules are not valid, the problem expert does not
+configure, and says why.
 
 ### Plugins of your own
 
