@@ -127,7 +127,7 @@ Public Member Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Plugin loaded by the problem expert (updater_plugins, class in &lt;name&gt;.plugin) that keeps the problem in sync with the world. </p>
-<p>Its callbacks share the node's mutually exclusive default callback group with the problem expert services, so they never run concurrently with them; they must not block. </p>
+<p>Its callbacks share the node's mutually exclusive default callback group with the problem expert services, so they never run concurrently with them; they must not block. Callbacks in a callback group of its own must not touch the problem: they hand their data to one in the default group. </p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a551e53f793693c1354f8be9484ec0128" name="a551e53f793693c1354f8be9484ec0128"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a551e53f793693c1354f8be9484ec0128">&#9670;&#160;</a></span>Ptr</h2>
