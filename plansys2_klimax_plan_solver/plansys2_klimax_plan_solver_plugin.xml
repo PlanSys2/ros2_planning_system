@@ -1,0 +1,5 @@
+<library path="plansys2_klimax_plan_solver">
+  <class name="plansys2/KlimaxPlanSolver" type="plansys2::KlimaxPlanSolver" base_class_type="plansys2::PlanSolverBase">
+    <description>Klimax, a planner of hierarchical tasks (HTN) in HDDL, in-process</description>
+  </class>
+</library>

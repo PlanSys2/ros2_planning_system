@@ -7,6 +7,10 @@ repositories:
     type: git
     url: https://github.com/PlanSys2/kairos.git
     version: main
+  klimax:
+    type: git
+    url: https://github.com/PlanSys2/klimax.git
+    version: main
   popf:
     type: git
     url: https://github.com/fmrico/popf.git
