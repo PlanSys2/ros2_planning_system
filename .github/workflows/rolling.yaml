@@ -20,11 +20,10 @@ jobs:
       COLCON_DEFAULTS_PR: |
         {
           "test": {
-            "parallel-workers" : 4,
+            "parallel-workers" : 2,
             "ctest-args": ["-j4", "--repeat", "until-pass:2"]
           }
         }
-      # action-ros-ci 0.4 dropped colcon-mixin-name: the mixin goes in the defaults
       COLCON_DEFAULTS_COVERAGE: |
         {
           "build": {
@@ -35,7 +34,7 @@ jobs:
             "filter": ["*/build/*", "*/test/*", "*/plansys2_tests/*"]
           },
           "test": {
-            "parallel-workers" : 4,
+            "parallel-workers" : 2,
             "ctest-args": ["-j4", "--repeat", "until-pass:2"]
           }
         }
@@ -45,18 +44,30 @@ jobs:
       CCACHE_MAXSIZE: 1G
       CMAKE_C_COMPILER_LAUNCHER: ccache
       CMAKE_CXX_COMPILER_LAUNCHER: ccache
+      PACKAGES: plansys2_bringup plansys2_bt_actions plansys2_core plansys2_domain_expert plansys2_executor plansys2_kairos_plan_solver plansys2_lifecycle_manager plansys2_msgs plansys2_pddl_parser plansys2_planner plansys2_popf_plan_solver plansys2_problem_expert plansys2_state_updater plansys2_support_py plansys2_terminal plansys2_tests plansys2_tools plansys2_tui_cli
+      ROS_VERSION: 2
+      ROS_PYTHON_VERSION: 3
+      DEBIAN_FRONTEND: noninteractive
     container:
       image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-resolute-ros-rolling-ros-base:master
+    defaults:
+      run:
+        shell: bash
     steps:
-      # The ref under test: a pull request brings its own dependency_repos.repos
+      # The ref under test, as action-ros-ci took it, but in a fixed path: ccache finds the same
+      # paths in every run. A pull request brings its own dependency_repos.repos
       - name: Repo checkout
         uses: actions/checkout@v6
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: ros_ws/src/ros2_planning_system
       # The image can be older than the packages rosdep installs: upgrade it first so
       # all ROS packages come from the same sync (otherwise e.g. test_msgs fails to load)
       - name: Upgrade image and install popf deps
         run: |
           apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+          apt-get upgrade -y
           apt-get install -y libfl-dev ccache
           echo "CCACHE_DIR=$HOME/.ccache" >> "$GITHUB_ENV"
       - name: Restore ccache
@@ -86,14 +97,47 @@ jobs:
           ignore_errors = inconsistent,corrupt,empty,gcov,missing,mismatch,negative
           parallel = 0
           EOF
-      - name: build and test
-        uses: ros-tooling/action-ros-ci@0.4.8
-        with:
-          package-name: plansys2_bringup plansys2_bt_actions plansys2_core plansys2_domain_expert plansys2_executor plansys2_kairos_plan_solver plansys2_lifecycle_manager plansys2_msgs plansys2_pddl_parser plansys2_planner plansys2_popf_plan_solver plansys2_problem_expert plansys2_state_updater plansys2_support_py plansys2_terminal plansys2_tests plansys2_tools plansys2_tui_cli
-          target-ros2-distro: rolling
-          vcs-repo-file-url: ${GITHUB_WORKSPACE}/dependency_repos.repos
-          colcon-defaults: ${{ github.event_name == 'pull_request' && env.COLCON_DEFAULTS_PR || env.COLCON_DEFAULTS_COVERAGE }}
-          colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+      - name: Dependencies
+        working-directory: ros_ws
+        run: |
+          for _ in 1 2 3; do rosdep update --include-eol-distros && break; done
+          vcs import --force --recursive src/ --input src/ros2_planning_system/dependency_repos.repos
+          rosdep install -r --from-paths $(colcon list --paths-only --packages-up-to $PACKAGES) \
+            --ignore-src --rosdistro rolling -y \
+            --skip-keys "rti-connext-dds-5.3.1 rti-connext-dds-6.0.1 rti-connext-dds-7.3.0 rti-connext-dds-7.7.0"
+      - name: colcon defaults
+        env:
+          DEFAULTS: ${{ github.event_name == 'pull_request' && env.COLCON_DEFAULTS_PR || env.COLCON_DEFAULTS_COVERAGE }}
+        run: |
+          printf '%s' "$DEFAULTS" > /tmp/colcon_defaults.yaml
+          echo "COLCON_DEFAULTS_FILE=/tmp/colcon_defaults.yaml" >> "$GITHUB_ENV"
+          if [ "${{ github.event_name }}" != pull_request ]; then
+            colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+            colcon mixin update default
+          fi
+      - name: Build
+        working-directory: ros_ws
+        run: |
+          source /opt/ros/rolling/setup.sh
+          colcon build --packages-up-to $PACKAGES --event-handlers=console_cohesion+ --symlink-install
+      - name: Test
+        working-directory: ros_ws
+        run: |
+          source /opt/ros/rolling/setup.sh
+          if [ "${{ github.event_name }}" != pull_request ]; then
+            colcon lcov-result --initial || true
+          fi
+          colcon test --event-handlers=console_direct+ --packages-select $PACKAGES
+          colcon test-result --all || true
+          colcon test-result --verbose
+      - name: Coverage
+        working-directory: ros_ws
+        run: |
+          source /opt/ros/rolling/setup.sh
+          if [ "${{ github.event_name }}" != pull_request ]; then
+            colcon lcov-result --packages-select $PACKAGES --verbose || true
+          fi
+          colcon coveragepy-result --packages-select $PACKAGES --verbose --coverage-report-args " -m"
       - name: ccache statistics
         if: always()
         run: ccache --show-stats
