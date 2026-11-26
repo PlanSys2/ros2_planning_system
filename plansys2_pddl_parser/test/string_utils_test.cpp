@@ -14,8 +14,8 @@
 
 // String utilities of the parser: reading expressions into trees and writing them back
 
-#include <chrono>
 #include <clocale>
+#include <ctime>
 #include <limits>
 #include <string>
 #include <tuple>
@@ -586,11 +586,12 @@ TEST(StringUtils, reading_is_fast)
     goal += " (> (battery r" + std::to_string(i) + ") " + std::to_string(i) + ".5)";
   }
   goal += ")";
-  const auto start = std::chrono::steady_clock::now();
+  // CPU time: other processes running at the same time do not count
+  const auto start = std::clock();
   for (int i = 0; i < 200; i++) {
     auto tree = fromString(goal);
     ASSERT_EQ(tree.nodes.size(), 101u);
   }
-  const auto elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - start);
-  EXPECT_LT(elapsed.count(), 0.4);  // ~6 ms; 0.8 s with a regex per operator
+  const double elapsed = static_cast<double>(std::clock() - start) / CLOCKS_PER_SEC;
+  EXPECT_LT(elapsed, 0.4);  // ~6 ms; 0.8 s with a regex per operator
 }
