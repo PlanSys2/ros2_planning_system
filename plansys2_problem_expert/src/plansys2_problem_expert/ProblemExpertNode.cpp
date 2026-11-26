@@ -14,6 +14,7 @@
 
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 
+#include <algorithm>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -381,6 +382,23 @@ ProblemExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   if (!domain_expert->getParseError().empty()) {
     RCLCPP_ERROR(
       get_logger(), "PlanSys2 cannot read this domain: %s", domain_expert->getParseError().c_str());
+    return CallbackReturnT::FAILURE;
+  }
+
+  // HDDL mode, for hierarchical planning: a hierarchical domain in .hddl files, and an HDDL
+  // problem file if any. All or nothing, as the domain expert says
+  auto is_hddl = [](const std::string & file) {
+      return file.size() > 5 && file.compare(file.size() - 5, 5, ".hddl") == 0;
+    };
+  const bool hddl = std::all_of(model_files.begin(), model_files.end(), is_hddl);
+  const auto problem_file_name = get_parameter("problem_file").get_value<std::string>();
+  if (hddl != domain_expert->isHierarchical() ||
+    (!hddl && std::any_of(model_files.begin(), model_files.end(), is_hddl)) ||
+    (!problem_file_name.empty() && is_hddl(problem_file_name) != hddl))
+  {
+    RCLCPP_ERROR(
+      get_logger(), "HDDL mode needs a hierarchical domain (tasks and methods) in .hddl model "
+      "files and, if given, a .hddl problem file; PDDL mode, none of them");
     return CallbackReturnT::FAILURE;
   }
 

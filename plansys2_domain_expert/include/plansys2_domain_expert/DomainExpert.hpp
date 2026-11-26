@@ -213,6 +213,17 @@ public:
   const std::string & getParseError() const {return parse_error_;}
 
   /**
+   * @brief Whether the domain is hierarchical (HDDL): it has tasks or methods. PlanSys2 keeps
+   * them as written, for a planner of HDDL, and reads the rest as PDDL.
+   */
+  bool isHierarchical() const {return domains_.is_hierarchical();}
+
+  /**
+   * @brief The domain without its tasks and methods, if hierarchical: a PDDL domain.
+   */
+  std::string getActionDomain() const {return domains_.get_joint_domain(false);}
+
+  /**
    * @brief The actions and derived predicates that PlanSys2 cannot represent.
    *
    * @return One line for each, saying which and why; empty if there are none.

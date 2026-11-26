@@ -1512,3 +1512,42 @@ int main(int argc, char ** argv)
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
+
+// HDDL: the initial task network of a problem is kept for the planner, and written back
+TEST(problem_expert, hddl_task_network)
+{
+  const std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
+  auto read = [&](const std::string & name) {
+      std::ifstream file(pkgpath + "/pddl/" + name);
+      return std::string(
+        (std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    };
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(read("house.hddl"));
+  ASSERT_TRUE(domain_expert->isHierarchical());
+  plansys2::ProblemExpert problem_expert(domain_expert);
+  ASSERT_TRUE(problem_expert.addProblem(read("house_problem.hddl")));
+  EXPECT_EQ(problem_expert.getInstances().size(), 6u);
+  EXPECT_TRUE(
+    problem_expert.existPredicate(parser::pddl::fromStringPredicate("(item_at cup kitchen)")));
+  const std::string problem = problem_expert.getProblem();
+  EXPECT_NE(problem.find("(:htn"), std::string::npos) << problem;
+  EXPECT_NE(problem.find("(deliver cup bedroom)"), std::string::npos) << problem;
+  // The problem written reads back the same
+  plansys2::ProblemExpert again(domain_expert);
+  ASSERT_TRUE(again.addProblem(problem));
+  EXPECT_EQ(again.getProblem(), problem);
+  // A problem with no task network keeps the one before, as a goal; clearing the knowledge
+  // forgets it
+  ASSERT_TRUE(
+    problem_expert.addProblem(
+      "(define (problem more) (:domain house) (:objects pen - item hall - room)"
+      " (:init (item_at pen hall)))"));
+  EXPECT_NE(problem_expert.getProblem().find("(deliver cup bedroom)"), std::string::npos);
+  problem_expert.clearKnowledge();
+  EXPECT_EQ(problem_expert.getProblem().find("(:htn"), std::string::npos);
+
+  // A task network needs an HDDL domain
+  auto pddl = std::make_shared<plansys2::DomainExpert>(domain_expert->getActionDomain());
+  plansys2::ProblemExpert flat(pddl);
+  EXPECT_FALSE(flat.addProblem(read("house_problem.hddl")));
+}

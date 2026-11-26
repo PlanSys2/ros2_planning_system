@@ -39,6 +39,8 @@ struct Domain
   std::vector<std::string> derived_predicates;
   std::vector<std::string> actions;
   std::vector<std::string> happenings;  // PDDL+: processes and events
+  // HDDL: its tasks and methods, as written; PlanSys2 does not read them, the planner does
+  std::vector<std::string> hierarchy;
   std::string constraints;  // PDDL3: the condition of its (:constraints), empty if none
 };
 
@@ -67,9 +69,16 @@ public:
   /**
    * @brief Get a joint domain definition combining all added domains.
    *
+   * @param[in] hierarchy Whether to include the tasks and methods of HDDL domains, and their
+   *   requirements: without them, what is left is a PDDL domain.
    * @return std::string The combined domain definition.
    */
-  std::string get_joint_domain() const;
+  std::string get_joint_domain(bool hierarchy = true) const;
+
+  /**
+   * @brief Whether some domain added is hierarchical (HDDL): it has tasks or methods.
+   */
+  bool is_hierarchical() const;
 
   /**
    * @brief Get the list of parsed domains.
@@ -158,6 +167,7 @@ protected:
    * @return Each block.
    */
   std::vector<std::string> get_happenings(const std::string & domain);
+  std::vector<std::string> get_hierarchy(const std::string & domain);
 
   /**
    * @brief The condition of the (:constraints) of a domain, empty if it has none.

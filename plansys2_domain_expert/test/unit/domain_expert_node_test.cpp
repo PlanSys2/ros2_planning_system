@@ -725,3 +725,41 @@ int main(int argc, char ** argv)
 
   return RUN_ALL_TESTS();
 }
+
+// HDDL mode: a hierarchical domain in a .hddl file. Its tasks and methods are kept for the
+// planner; its actions are read as those of a PDDL domain
+TEST(domain_expert, hddl_mode)
+{
+  const std::string pkgpath = plansys2::share_path("plansys2_domain_expert").string();
+  const std::string tmp = std::filesystem::temp_directory_path() / "plansys2_hddl_mode";
+  std::filesystem::create_directories(tmp);
+  auto configure = [](const std::string & model_file) {
+      auto node = std::make_shared<plansys2::DomainExpertNode>();
+      node->set_parameter({"model_file", model_file});
+      node->trigger_transition(lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE);
+      return node;
+    };
+  {
+    auto node = configure(pkgpath + "/pddl/house.hddl");
+    ASSERT_EQ(node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
+  }
+  // The same domain in a .pddl file, or a PDDL domain in a .hddl file: one without the other
+  std::filesystem::copy_file(
+    pkgpath + "/pddl/house.hddl", tmp + "/house.pddl",
+    std::filesystem::copy_options::overwrite_existing);
+  std::filesystem::copy_file(
+    pkgpath + "/pddl/domain_simple.pddl", tmp + "/simple.hddl",
+    std::filesystem::copy_options::overwrite_existing);
+  EXPECT_EQ(
+    configure(tmp + "/house.pddl")->get_current_state().id(),
+    lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
+  EXPECT_EQ(
+    configure(tmp + "/simple.hddl")->get_current_state().id(),
+    lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
+  EXPECT_EQ(
+    configure(pkgpath + "/pddl/house.hddl:" + pkgpath + "/pddl/domain_simple.pddl")
+    ->get_current_state().id(),
+    lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
+  std::filesystem::remove_all(tmp);
+  plansys2::drain_ros(200ms);
+}

@@ -641,6 +641,7 @@ ProblemExpert::clearKnowledge()
   clearConstraints();
   timed_facts_.clear();
   continuous_effects_.clear();
+  htn_.clear();
 
   return true;
 }
@@ -1406,7 +1407,15 @@ ProblemExpert::getProblem()
 
   std::ostringstream stream;
   stream << problem;
-  return stream.str();
+  std::string text = stream.str();
+  if (!htn_.empty()) {
+    // HDDL: the initial task network, for the planner, before the last parenthesis
+    const auto last = text.find_last_of(')');
+    if (last != std::string::npos) {
+      text.insert(last, htn_ + "\n");
+    }
+  }
+  return text;
 }
 
 bool
@@ -1430,6 +1439,7 @@ ProblemExpert::addProblem(const std::string & problem_str)
   // the whole problem has been parsed
   parser::pddl::Domain domain(domain_expert_->getDomain());
   parser::pddl::Instance problem(domain);
+  std::string network;  // HDDL: its initial task network
   try {
     std::string lc_problem = problem_str;
     std::transform(
@@ -1449,6 +1459,11 @@ ProblemExpert::addProblem(const std::string & problem_str)
 
     domain.name = domain_name;
     problem.parse(lc_problem);
+    network = task_network(lc_problem);
+    if (!network.empty() && !domain_expert_->isHierarchical()) {
+      std::cerr << "An initial task network (:htn) needs an HDDL domain" << std::endl;
+      return false;
+    }
   } catch (const std::exception & ex) {
     std::cerr << "Error parsing problem: " << ex.what() << std::endl;
     return false;
@@ -1462,7 +1477,12 @@ ProblemExpert::addProblem(const std::string & problem_str)
   auto prev_metric = metric_;
   auto prev_constraints = constraints_;
   auto prev_timed_facts = timed_facts_;
+  auto prev_htn = htn_;
   try {
+    // Without :htn the task network set before is kept, as the goal
+    if (!network.empty()) {
+      htn_ = network;
+    }
     for (unsigned i = 0; i < domain.types.size(); ++i) {
       if (domain.types[i]->constants.size() ) {
         for (unsigned j = 0; j < domain.types[i]->constants.size(); ++j) {
@@ -1567,10 +1587,29 @@ ProblemExpert::addProblem(const std::string & problem_str)
     metric_ = prev_metric;
     constraints_ = prev_constraints;
     timed_facts_ = prev_timed_facts;
+    htn_ = prev_htn;
     return false;
   }
 
   return true;
+}
+
+std::string
+ProblemExpert::task_network(const std::string & problem)
+{
+  const auto start = problem.find("(:htn");
+  if (start == std::string::npos) {
+    return "";
+  }
+  int depth = 0;
+  for (size_t i = start; i < problem.size(); ++i) {
+    if (problem[i] == '(') {
+      ++depth;
+    } else if (problem[i] == ')' && --depth == 0) {
+      return problem.substr(start, i + 1 - start);
+    }
+  }
+  return "";
 }
 
 }  // namespace plansys2

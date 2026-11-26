@@ -117,14 +117,25 @@ DomainReader::add_domain(const std::string & domain)
   new_domain.derived_predicates = get_derived_predicates(lc_domain);
   new_domain.actions = get_actions(lc_domain);
   new_domain.happenings = get_happenings(lc_domain);
+  new_domain.hierarchy = get_hierarchy(lc_domain);
   new_domain.constraints = get_constraints(lc_domain);
 
   domains_.push_back(new_domain);
 }
 
-std::string
-DomainReader::get_joint_domain() const
+bool
+DomainReader::is_hierarchical() const
 {
+  return std::any_of(domains_.begin(), domains_.end(),
+           [](const Domain & d) {return !d.hierarchy.empty();});
+}
+
+std::string
+DomainReader::get_joint_domain(bool hierarchy) const
+{
+  static const std::set<std::string> hierarchical_requirements = {
+    ":hierarchy", ":htn", ":method-preconditions", ":htn-method-prec", ":method-constraints",
+    ":durative-methods"};
   std::string ret = "(define (domain ";
 
   for (size_t i = 0; i < domains_.size(); i++) {
@@ -143,7 +154,9 @@ DomainReader::get_joint_domain() const
     reqs_set.insert(reqs.begin(), reqs.end());
   }
   for (auto & req : reqs_set) {
-    ret += req + " ";
+    if (hierarchy || hierarchical_requirements.count(req) == 0) {
+      ret += req + " ";
+    }
   }
   ret += ")\n\n";
 
@@ -228,6 +241,14 @@ DomainReader::get_joint_domain() const
   for (auto & domain : domains_) {
     for (auto & happening : domain.happenings) {
       ret += happening + "\n";
+    }
+  }
+
+  for (auto & domain : domains_) {
+    for (auto & block : domain.hierarchy) {
+      if (hierarchy) {
+        ret += block + "\n";
+      }
     }
   }
 
@@ -504,6 +525,27 @@ DomainReader::get_happenings(const std::string & domain)
   auto ldomain = domain;
   while (true) {
     const auto pos = std::min(ldomain.find("(:process"), ldomain.find("(:event"));
+    if (pos == std::string::npos) {
+      break;
+    }
+    auto end_pos = get_end_block(ldomain, pos + 2);
+    if (end_pos == -1) {
+      break;
+    }
+    ret.push_back(substr_without_empty_lines(ldomain, pos, end_pos + 1));
+    ldomain = ldomain.substr(end_pos + 1);
+  }
+  return ret;
+}
+
+std::vector<std::string>
+DomainReader::get_hierarchy(const std::string & domain)
+{
+  std::vector<std::string> ret;
+  auto ldomain = domain;
+  while (true) {
+    const auto pos = std::min(
+      {ldomain.find("(:task"), ldomain.find("(:method"), ldomain.find("(:durative-method")});
     if (pos == std::string::npos) {
       break;
     }

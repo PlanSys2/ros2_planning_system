@@ -119,6 +119,21 @@ public:
     return s[c];
   }
 
+  // Past the rest of a block whose "(" and head have been read, its closing ")" included
+  void skipBlock()
+  {
+    for (int depth = 1; depth > 0; ) {
+      next();
+      const char ch = getChar();
+      if (ch == '(') {
+        ++depth;
+      } else if (ch == ')') {
+        --depth;
+      }
+      ++c;
+    }
+  }
+
   // print line and column
   void printLine() {std::cout << "Line " << r << ", column " << c + 1 << ": ";}
 

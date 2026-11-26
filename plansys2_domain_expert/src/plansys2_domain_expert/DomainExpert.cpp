@@ -35,7 +35,9 @@ std::vector<std::string> unread_blocks(const std::string & domain)
 {
   static const std::vector<std::string> read = {
     "domain", ":requirements", ":types", ":constants", ":predicates", ":functions", ":action",
-    ":durative-action", ":derived", ":process", ":event", ":constraints"};
+    ":durative-action", ":derived", ":process", ":event", ":constraints",
+    // HDDL: kept as written, for the planner
+    ":task", ":method", ":durative-method"};
   std::vector<std::string> ret;
   int depth = 0;
   for (size_t i = 0; i < domain.size(); i++) {

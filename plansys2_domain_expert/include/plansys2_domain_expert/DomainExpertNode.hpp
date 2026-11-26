@@ -359,6 +359,8 @@ private:
 
   // Validate domains here, with Kairos, instead of asking the planner node
   bool validate_locally_ = false;
+  // HDDL mode: the model files are .hddl, and the domain is hierarchical (tasks and methods)
+  bool hddl_ = false;
 };
 
 }  // namespace plansys2

@@ -99,6 +99,8 @@ public:
         parseMetric(f);
       } else if (t == "constraints") {
         d.parseConstraints(f, constraints, ts);
+      } else if (t == "htn") {
+        f.skipBlock();  // HDDL: the initial task network, for the planner
       } else {
         f.tokenExit(t);
       }

@@ -1,0 +1,18 @@
+(define (problem bring)
+  (:domain house)
+  (:objects
+    kitchen hall bedroom - room
+    tiago - robot
+    cup book - item)
+  (:htn
+    :parameters ()
+    :subtasks (and
+      (t1 (deliver cup bedroom))
+      (t2 (deliver book kitchen))))
+  (:init
+    (robot_at tiago hall)
+    (free tiago)
+    (item_at cup kitchen)
+    (item_at book bedroom)
+    (connected kitchen hall) (connected hall kitchen)
+    (connected hall bedroom) (connected bedroom hall)))

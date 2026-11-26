@@ -1185,3 +1185,37 @@ TEST(PDDLParserTestCase, numbers_keep_precision_in_text)
   parser::pddl::ValueExpression integer(2);
   ASSERT_EQ(integer.info(), "2");
 }
+
+// HDDL (hierarchical planning): tasks, methods and the initial task network are for the
+// planner. The parser reads what is PDDL in them and leaves the rest
+TEST(PDDLParserTestCase, hddl_blocks_are_left_to_the_planner)
+{
+  const std::string domain =
+    "(define (domain house) (:requirements :typing :hierarchy :method-preconditions)\n"
+    " (:types room robot)\n"
+    " (:predicates (at ?r - robot ?l - room) (connected ?a ?b - room))\n"
+    " (:task go :parameters (?r - robot ?to - room))\n"
+    " (:method go-there :parameters (?r - robot ?from ?to - room) :task (go ?r ?to)\n"
+    "  :precondition (and (at ?r ?from) (connected ?from ?to))\n"
+    "  :ordered-subtasks (and (move ?r ?from ?to)))  ; (a comment with a ')'\n"
+    " (:durative-method go-slowly :parameters (?r - robot ?to - room) :task (go ?r ?to)\n"
+    "  :subtasks ())\n"
+    " (:action move :parameters (?r - robot ?a ?b - room)\n"
+    "  :precondition (and (at ?r ?a) (connected ?a ?b))\n"
+    "  :effect (and (not (at ?r ?a)) (at ?r ?b))))";
+  parser::pddl::Domain d(domain);
+  EXPECT_EQ(d.actions.size(), 1u);
+  EXPECT_EQ(d.preds.size(), 2u);
+  EXPECT_NE(
+    std::find(d.requirements.begin(), d.requirements.end(), "hierarchy"), d.requirements.end());
+  const std::string problem =
+    "(define (problem p) (:domain house) (:objects kitchen hall - room r2d2 - robot)\n"
+    " (:htn :parameters () :ordered-subtasks (and (t1 (go r2d2 kitchen))))\n"
+    " (:init (at r2d2 hall) (connected hall kitchen)))";
+  parser::pddl::Instance i(d, problem);
+  EXPECT_EQ(i.init.size(), 2u);
+  // An unknown block is still an error
+  EXPECT_THROW(
+    parser::pddl::Domain("(define (domain x) (:requirements :strips) (:recipe r))"),
+    std::runtime_error);
+}
