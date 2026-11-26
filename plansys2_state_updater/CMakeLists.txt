@@ -110,11 +110,12 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_ros REQUIRED)
   add_subdirectory(test/unit)
 
   find_package(ament_cmake_pytest REQUIRED)
-  ament_add_pytest_test(state_updater_live test/test_state_updater_live.py TIMEOUT 600)
-  ament_add_pytest_test(state_updater_mission test/test_state_updater_mission.py TIMEOUT 300)
+  ament_add_ros_isolated_pytest_test(state_updater_live test/test_state_updater_live.py TIMEOUT 600)
+  ament_add_ros_isolated_pytest_test(state_updater_mission test/test_state_updater_mission.py TIMEOUT 300)
 endif()
 
 ament_export_include_directories("include/${PROJECT_NAME}")
