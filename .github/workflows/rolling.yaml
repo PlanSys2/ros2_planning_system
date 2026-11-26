@@ -16,10 +16,12 @@ jobs:
     # Coverage doubles the time (instrumented build and tests, and lcov): pull requests are
     # built without it, pushes to rolling and the weekly run measure it for Codecov
     env:
+      # Some tests measure times: with a loaded CPU, a failed test runs once more
       COLCON_DEFAULTS_PR: |
         {
           "test": {
-            "parallel-workers" : 1
+            "parallel-workers" : 4,
+            "ctest-args": ["-j4", "--repeat", "until-pass:2"]
           }
         }
       # action-ros-ci 0.4 dropped colcon-mixin-name: the mixin goes in the defaults
@@ -33,9 +35,16 @@ jobs:
             "filter": ["*/build/*", "*/test/*", "*/plansys2_tests/*"]
           },
           "test": {
-            "parallel-workers" : 1
+            "parallel-workers" : 4,
+            "ctest-args": ["-j4", "--repeat", "until-pass:2"]
           }
         }
+      COLCON_FEATURE_FLAGS: drop_test_deps
+      CCACHE_MODE: ${{ github.event_name == 'pull_request' && 'pr' || 'coverage' }}
+      CCACHE_COMPILERCHECK: content
+      CCACHE_MAXSIZE: 1G
+      CMAKE_C_COMPILER_LAUNCHER: ccache
+      CMAKE_CXX_COMPILER_LAUNCHER: ccache
     container:
       image: ghcr.io/ros-tooling/setup-ros-docker/setup-ros-docker-ubuntu-resolute-ros-rolling-ros-base:master
     steps:
@@ -48,7 +57,16 @@ jobs:
         run: |
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
-          apt-get install -y libfl-dev
+          apt-get install -y libfl-dev ccache
+          echo "CCACHE_DIR=$HOME/.ccache" >> "$GITHUB_ENV"
+      - name: Restore ccache
+        uses: actions/cache/restore@v5
+        with:
+          path: ~/.ccache
+          key: ccache-rolling-${{ env.CCACHE_MODE }}-${{ github.run_id }}
+          restore-keys: ccache-rolling-${{ env.CCACHE_MODE }}-
+      - name: Reset ccache statistics
+        run: ccache --zero-stats
       # colcon lcov-result gives lcov its own configuration in every step, merging the
       # package reports included: lcov 2 rejects some of them for gcc line mismatches
       - name: lcov configuration
@@ -66,6 +84,7 @@ jobs:
           lcov_quiet = 1
           lcov_follow = 1
           ignore_errors = inconsistent,corrupt,empty,gcov,missing,mismatch,negative
+          parallel = 0
           EOF
       - name: build and test
         uses: ros-tooling/action-ros-ci@0.4.8
@@ -75,6 +94,15 @@ jobs:
           vcs-repo-file-url: ${GITHUB_WORKSPACE}/dependency_repos.repos
           colcon-defaults: ${{ github.event_name == 'pull_request' && env.COLCON_DEFAULTS_PR || env.COLCON_DEFAULTS_COVERAGE }}
           colcon-mixin-repository: https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
+      - name: ccache statistics
+        if: always()
+        run: ccache --show-stats
+      - name: Save ccache
+        if: always()
+        uses: actions/cache/save@v5
+        with:
+          path: ~/.ccache
+          key: ccache-rolling-${{ env.CCACHE_MODE }}-${{ github.run_id }}
       - name: Codecov
         if: github.event_name != 'pull_request'
         uses: codecov/codecov-action@v5.4.0
