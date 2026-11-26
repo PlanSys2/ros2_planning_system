@@ -52,6 +52,7 @@ set(EXECUTOR_SOURCES
   src/plansys2_executor/behavior_tree/restore_atstart_effect_node.cpp
   src/plansys2_executor/behavior_tree/apply_atend_effect_node.cpp
   src/plansys2_executor/behavior_tree/stn_dependency.cpp
+  src/plansys2_executor/behavior_tree/check_method_precondition_node.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${EXECUTOR_SOURCES})
@@ -107,6 +108,7 @@ add_library(bt_builder_plugins SHARED
   src/plansys2_executor/bt_builder_plugins/simple_bt_builder.cpp
   src/plansys2_executor/bt_builder_plugins/stn_bt_builder.cpp
   src/plansys2_executor/bt_builder_plugins/sequential_bt_builder.cpp
+  src/plansys2_executor/bt_builder_plugins/htn_bt_builder.cpp
 )
 target_include_directories(bt_builder_plugins PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"

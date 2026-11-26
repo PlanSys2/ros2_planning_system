@@ -9,5 +9,8 @@
     <class type="plansys2::SequentialBTBuilder" base_class_type="plansys2::BTBuilder">
       <description></description>
     </class>
+    <class type="plansys2::HTNBTBuilder" base_class_type="plansys2::BTBuilder">
+      <description>The tree of a hierarchical (HTN) plan of HDDL: its tasks and methods</description>
+    </class>
   </library>
 </class_libraries>

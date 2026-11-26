@@ -55,3 +55,26 @@ executor:
       move:
         duration_overrun_percentage: 20.0
 ```
+
+- `~/bt_builder_plugin` [`string`, default `STNBTBuilder`]
+
+  - How the behavior tree of a plan is built: `STNBTBuilder`, `SimpleBTBuilder` and
+    `SequentialBTBuilder` for PDDL plans; `HTNBTBuilder` for hierarchical plans (HDDL mode, see
+    [plansys2_klimax_plan_solver](../plansys2_klimax_plan_solver/README.md)). The
+    `HTNBTBuilder` takes only plans with their decomposition (`Plan.tasks`), and the others only
+    plans without one: the other way round, the plan is not executed.
+
+## HTNBTBuilder
+
+The tree of a hierarchical plan is its decomposition, not a graph of its actions:
+
+- Every task is a `Sequence` named after the task and its method. It succeeds when all its
+  subtasks have, and fails, failing those above it, when one of them fails.
+- Its first node, `CheckMethodPrecondition`, checks the precondition of the method in the state
+  of when the task starts: if it does not hold, the decomposition no longer applies and the task
+  fails before any of its actions start. The execution trace says which task and why.
+- The subtasks run in the order the method gives them: a `Sequence` where it orders them all, a
+  `Parallel` where it does not.
+- The actions are the leaves (the action template, as in the other builders), each waiting
+  (`WaitAction`) for those that end before it starts in the plan: what the methods leave open is
+  done as the planner found it, at once where the plan has times that overlap.

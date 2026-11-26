@@ -39,6 +39,7 @@
 #include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_timeout_node.hpp"
+#include "plansys2_executor/behavior_tree/check_method_precondition_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/restore_atstart_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
@@ -312,10 +313,11 @@ ComputeBT::computeBTCallback(
     bt_builder->set_clients(domain_client_, problem_client_);
   }
 
-  if (bt_builder_plugin == "SimpleBTBuilder") {
-    bt_builder->initialize(action_bt_xml_, "", action_time_precision());
-  } else if (bt_builder_plugin == "STNBTBuilder") {
+  if (bt_builder_plugin == "STNBTBuilder") {
     bt_builder->initialize(start_action_bt_xml_, end_action_bt_xml_, action_time_precision());
+  } else {
+    // Every other builder takes the action template, as in the executor
+    bt_builder->initialize(action_bt_xml_, "", action_time_precision());
   }
 
   auto bt_xml_tree = bt_builder->get_tree(plan.value());
@@ -346,6 +348,7 @@ ComputeBT::computeBTCallback(
   factory.registerNodeType<RestoreAtStartEffect>("RestoreAtStartEffect");
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
+  factory.registerNodeType<CheckMethodPrecondition>("CheckMethodPrecondition");
 
   (*action_map)[":0"].at_start_effects_applied_time = now();
   (*action_map)[":0"].at_end_effects_applied_time = now();

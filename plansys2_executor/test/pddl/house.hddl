@@ -1,0 +1,53 @@
+; A robot that takes things from room to room
+(define (domain house)
+  (:requirements :typing :hierarchy :method-preconditions :negative-preconditions)
+  (:types room robot item)
+  (:predicates
+    (robot_at ?r - robot ?l - room)
+    (item_at ?i - item ?l - room)
+    (carries ?r - robot ?i - item)
+    (connected ?a ?b - room)
+    (free ?r - robot))
+
+  (:task deliver :parameters (?i - item ?to - room))
+  (:task go_to :parameters (?r - robot ?to - room))
+
+  (:method deliver_item
+    :parameters (?i - item ?from ?to - room ?r - robot)
+    :task (deliver ?i ?to)
+    :precondition (and (item_at ?i ?from) (free ?r))
+    :ordered-subtasks (and
+      (t1 (go_to ?r ?from))
+      (t2 (pick ?r ?i ?from))
+      (t3 (go_to ?r ?to))
+      (t4 (drop ?r ?i ?to))))
+
+  (:method go_arrived
+    :parameters (?r - robot ?to - room)
+    :task (go_to ?r ?to)
+    :precondition (robot_at ?r ?to)
+    :ordered-subtasks ())
+
+  (:method go_step
+    :parameters (?r - robot ?from ?mid ?to - room)
+    :task (go_to ?r ?to)
+    :precondition (and (robot_at ?r ?from) (connected ?from ?mid) (not (robot_at ?r ?to)))
+    :ordered-subtasks (and
+      (t1 (move ?r ?from ?mid))
+      (t2 (go_to ?r ?to))))
+
+  (:action move
+    :parameters (?r - robot ?from ?to - room)
+    :precondition (and (robot_at ?r ?from) (connected ?from ?to))
+    :effect (and (not (robot_at ?r ?from)) (robot_at ?r ?to)))
+
+  (:action pick
+    :parameters (?r - robot ?i - item ?l - room)
+    :precondition (and (robot_at ?r ?l) (item_at ?i ?l) (free ?r))
+    :effect (and (not (item_at ?i ?l)) (carries ?r ?i) (not (free ?r))))
+
+  (:action drop
+    :parameters (?r - robot ?i - item ?l - room)
+    :precondition (and (robot_at ?r ?l) (carries ?r ?i))
+    :effect (and (not (carries ?r ?i)) (item_at ?i ?l) (free ?r)))
+)

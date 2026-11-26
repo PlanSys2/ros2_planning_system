@@ -1,0 +1,288 @@
+// Copyright 2025 Intelligent Robotics Lab
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "plansys2_executor/bt_builder_plugins/htn_bt_builder.hpp"
+
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <optional>
+#include <sstream>
+#include <string>
+#include <vector>
+
+namespace plansys2
+{
+
+namespace
+{
+
+// The text of an XML attribute
+std::string escaped(const std::string & text)
+{
+  std::string out;
+  for (char c : text) {
+    switch (c) {
+      case '<': out += "&lt;"; break;
+      case '>': out += "&gt;"; break;
+      case '&': out += "&amp;"; break;
+      case '"': out += "&quot;"; break;
+      default: out += c;
+    }
+  }
+  return out;
+}
+
+bool is_item(const std::string & ref) {return ref.rfind("item:", 0) == 0;}
+
+size_t item_of(const std::string & ref) {return std::stoul(ref.substr(5));}
+
+}  // namespace
+
+void HTNBTBuilder::initialize(
+  const std::string & bt_action_1, const std::string & bt_action_2, int precision)
+{
+  (void)bt_action_2;
+  action_time_precision_ = precision;
+  bt_action_ = !bt_action_1.empty() ? bt_action_1 :
+    R""""(
+<Sequence name="ACTION_ID">
+WAIT_PREV_ACTIONS
+  <WaitAtStartReq action="ACTION_ID"/>
+  <ApplyAtStartEffect action="ACTION_ID"/>
+  <ReactiveSequence name="ACTION_ID">
+      <CheckOverAllReq action="ACTION_ID"/>
+      <ExecuteAction action="ACTION_ID"/>
+  </ReactiveSequence>
+  <CheckAtEndReq action="ACTION_ID"/>
+  <ApplyAtEndEffect action="ACTION_ID"/>
+</Sequence>
+)"""";
+}
+
+std::optional<std::vector<size_t>> HTNBTBuilder::total_order(
+  size_t subtasks, const std::vector<uint32_t> & ordering)
+{
+  std::vector<std::vector<size_t>> after(subtasks);
+  std::vector<size_t> pending(subtasks, 0);
+  for (size_t k = 0; k + 1 < ordering.size(); k += 2) {
+    if (ordering[k] >= subtasks || ordering[k + 1] >= subtasks) {
+      return std::nullopt;
+    }
+    after[ordering[k]].push_back(ordering[k + 1]);
+    ++pending[ordering[k + 1]];
+  }
+  // A total order is the one way to sort them: at each step a single subtask is free
+  std::vector<size_t> order;
+  std::vector<bool> done(subtasks, false);
+  while (order.size() < subtasks) {
+    std::optional<size_t> next;
+    for (size_t s = 0; s < subtasks; ++s) {
+      if (!done[s] && pending[s] == 0) {
+        if (next) {
+          return std::nullopt;  // two could go first
+        }
+        next = s;
+      }
+    }
+    if (!next) {
+      return std::nullopt;  // a cycle
+    }
+    done[*next] = true;
+    order.push_back(*next);
+    for (size_t b : after[*next]) {
+      --pending[b];
+    }
+  }
+  return order;
+}
+
+size_t HTNBTBuilder::first_action(const std::string & id) const
+{
+  size_t first = plan_.items.size();
+  const auto task = tasks_.find(id);
+  if (task == tasks_.end()) {
+    return first;
+  }
+  for (const auto & sub : task->second->subtasks) {
+    first = std::min(first, is_item(sub) ? item_of(sub) : first_action(sub));
+  }
+  return first;
+}
+
+std::string HTNBTBuilder::waits_xml(size_t item, int depth) const
+{
+  std::string out;
+  for (size_t before : waits_[item]) {
+    out += add_tabs(depth) + "<WaitAction action=\"" +
+      escaped(to_action_id(plan_.items[before], action_time_precision_)) + "\"/>\n";
+  }
+  return out;
+}
+
+std::string HTNBTBuilder::action_xml(size_t item, int depth) const
+{
+  std::string text = bt_action_;
+  replace(text, "ACTION_ID", escaped(to_action_id(plan_.items[item], action_time_precision_)));
+  replace(text, "WAIT_PREV_ACTIONS", waits_xml(item, 1));
+  std::string out;
+  std::istringstream lines(text);
+  for (std::string line; std::getline(lines, line); ) {
+    if (!line.empty()) {
+      out += add_tabs(depth) + line + "\n";
+    }
+  }
+  return out;
+}
+
+std::string HTNBTBuilder::task_xml(const std::string & id, int depth) const
+{
+  const plansys2_msgs::msg::PlanTask & task = *tasks_.at(id);
+  const std::string name = task.task.empty() ? "initial task network" :
+    task.task + " ← " + task.method;
+  std::string out = add_tabs(depth) + "<Sequence name=\"" + escaped(name) + "\">\n";
+  if (!task.precondition.empty()) {
+    // In the state of when the task starts: once what comes before its first action is done
+    const size_t first = first_action(id);
+    if (first < plan_.items.size()) {
+      out += waits_xml(first, depth + 1);
+    }
+    out += add_tabs(depth + 1) + "<CheckMethodPrecondition task=\"" + escaped(task.task) +
+      "\" method=\"" + escaped(task.method) + "\" precondition=\"" +
+      escaped(task.precondition) + "\"/>\n";
+  }
+  auto child = [&](const std::string & ref, int d) {
+      return is_item(ref) ? action_xml(item_of(ref), d) : task_xml(ref, d);
+    };
+  const auto order = total_order(task.subtasks.size(), task.ordering);
+  if (task.subtasks.empty()) {
+    out += add_tabs(depth + 1) + "<AlwaysSuccess/>\n";
+  } else if (order) {
+    // One after another, as the method orders them
+    for (size_t s : *order) {
+      out += child(task.subtasks[s], depth + 1);
+    }
+  } else {
+    // At once where the method does not order them: the actions wait for what the plan put
+    // before them
+    out += add_tabs(depth + 1) + "<Parallel success_count=\"" +
+      std::to_string(task.subtasks.size()) + "\" failure_count=\"1\">\n";
+    for (const auto & ref : task.subtasks) {
+      out += child(ref, depth + 2);
+    }
+    out += add_tabs(depth + 1) + "</Parallel>\n";
+  }
+  out += add_tabs(depth) + "</Sequence>\n";
+  return out;
+}
+
+std::string HTNBTBuilder::get_tree(const plansys2_msgs::msg::Plan & current_plan)
+{
+  plan_ = current_plan;
+  tasks_.clear();
+  if (plan_.tasks.empty()) {
+    std::cerr << "HTNBTBuilder: the plan has no decomposition: it needs an HDDL planner" <<
+      std::endl;
+    return "";
+  }
+  for (const auto & task : plan_.tasks) {
+    tasks_[task.id] = &task;
+  }
+  // Every subtask is a task of the plan or one of its actions
+  for (const auto & task : plan_.tasks) {
+    for (const auto & ref : task.subtasks) {
+      if (is_item(ref) ? item_of(ref) >= plan_.items.size() : tasks_.count(ref) == 0) {
+        std::cerr << "HTNBTBuilder: " << ref << " is not in the plan" << std::endl;
+        return "";
+      }
+    }
+  }
+  // Each action waits for those that end before it starts, but for the ones that end before
+  // another of those starts (that one waits for them already)
+  const size_t n = plan_.items.size();
+  constexpr double kSame = 1e-6;
+  waits_.assign(n, {});
+  for (size_t i = 0; i < n; ++i) {
+    const double start = plan_.items[i].time;
+    std::vector<size_t> before;
+    for (size_t j = 0; j < n; ++j) {
+      if (j != i && plan_.items[j].time + plan_.items[j].duration <= start + kSame &&
+        (plan_.items[j].time < start - kSame || j < i))
+      {
+        before.push_back(j);
+      }
+    }
+    for (size_t j : before) {
+      const double end = plan_.items[j].time + plan_.items[j].duration;
+      const bool implied = std::any_of(
+        before.begin(), before.end(), [&](size_t k) {
+          return k != j && plan_.items[k].time + kSame >= end &&
+                 (plan_.items[k].time > end + kSame || k > j);
+        });
+      if (!implied) {
+        waits_[i].push_back(j);
+      }
+    }
+  }
+  return std::string("<root BTCPP_format=\"4\" main_tree_to_execute=\"MainTree\">\n") +
+         add_tabs(1) + "<BehaviorTree ID=\"MainTree\">\n" +
+         task_xml(plan_.tasks.front().id, 2) +
+         add_tabs(1) + "</BehaviorTree>\n</root>\n";
+}
+
+std::string HTNBTBuilder::get_dotgraph(
+  std::shared_ptr<std::map<std::string, ActionExecutionInfo>> action_map, bool enable_legend,
+  bool enable_print_graph)
+{
+  (void)enable_legend;
+  // The decomposition: tasks as boxes with their method, actions coloured by their state
+  std::stringstream ss;
+  ss << "digraph plan {\n";
+  for (size_t t = 0; t < plan_.tasks.size(); ++t) {
+    const auto & task = plan_.tasks[t];
+    ss << "\"" << task.id << "\" [shape=box,label=\"" <<
+      (task.task.empty() ? std::string("initial task network") : task.task + "\\n" + task.method) <<
+      "\"];\n";
+    for (const auto & ref : task.subtasks) {
+      ss << "\"" << task.id << "\" -> \"" << ref << "\";\n";
+    }
+  }
+  for (size_t i = 0; i < plan_.items.size(); ++i) {
+    const auto id = to_action_id(plan_.items[i], action_time_precision_);
+    ss << "\"item:" << i << "\" [label=\"" << plan_.items[i].action << "\",style=filled";
+    auto status = ActionExecutor::IDLE;
+    if (action_map) {
+      auto it = action_map->find(id);
+      if (it != action_map->end() && it->second.action_executor) {
+        status = it->second.action_executor->get_internal_status();
+      }
+    }
+    switch (status) {
+      case ActionExecutor::RUNNING: ss << ",color=blue,fillcolor=skyblue"; break;
+      case ActionExecutor::SUCCESS: ss << ",color=green4,fillcolor=seagreen2"; break;
+      case ActionExecutor::FAILURE:
+      case ActionExecutor::CANCELLED: ss << ",color=red,fillcolor=pink"; break;
+      default: ss << ",color=yellow3,fillcolor=lightgoldenrod1"; break;
+    }
+    ss << "];\n";
+  }
+  ss << "}\n";
+  if (enable_print_graph) {
+    std::cout << ss.str() << std::endl;
+  }
+  return ss.str();
+}
+
+}  // namespace plansys2
