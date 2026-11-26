@@ -17,3 +17,6 @@ uint32[] ordering
 # What must hold when the method is applied (at its start, for a durative method), in PDDL with
 # the values of its parameters; empty if the method has no precondition
 string precondition
+# When the planner applied the method, in the time of the plan (that of Plan.items): its
+# precondition held once the actions that end by then had ended
+float64 applied

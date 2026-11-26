@@ -109,23 +109,37 @@ std::optional<std::vector<size_t>> HTNBTBuilder::total_order(
   return order;
 }
 
-size_t HTNBTBuilder::first_action(const std::string & id) const
+std::vector<size_t> HTNBTBuilder::ended_by(double time, size_t item) const
 {
-  size_t first = plan_.items.size();
-  const auto task = tasks_.find(id);
-  if (task == tasks_.end()) {
-    return first;
+  constexpr double kSame = 1e-6;
+  const size_t n = plan_.items.size();
+  auto end = [&](size_t j) {return plan_.items[j].time + plan_.items[j].duration;};
+  std::vector<size_t> before;
+  for (size_t j = 0; j < n; ++j) {
+    if (j != item && end(j) <= time + kSame &&
+      (item >= n || plan_.items[j].time < time - kSame || j < item))
+    {
+      before.push_back(j);
+    }
   }
-  for (const auto & sub : task->second->subtasks) {
-    first = std::min(first, is_item(sub) ? item_of(sub) : first_action(sub));
+  std::vector<size_t> out;
+  for (size_t j : before) {
+    const bool implied = std::any_of(
+      before.begin(), before.end(), [&](size_t k) {
+        return k != j && plan_.items[k].time + kSame >= end(j) &&
+               (plan_.items[k].time > end(j) + kSame || k > j);
+      });
+    if (!implied) {
+      out.push_back(j);
+    }
   }
-  return first;
+  return out;
 }
 
-std::string HTNBTBuilder::waits_xml(size_t item, int depth) const
+std::string HTNBTBuilder::waits_xml(const std::vector<size_t> & items, int depth) const
 {
   std::string out;
-  for (size_t before : waits_[item]) {
+  for (size_t before : items) {
     out += add_tabs(depth) + "<WaitAction action=\"" +
       escaped(to_action_id(plan_.items[before], action_time_precision_)) + "\"/>\n";
   }
@@ -136,7 +150,7 @@ std::string HTNBTBuilder::action_xml(size_t item, int depth) const
 {
   std::string text = bt_action_;
   replace(text, "ACTION_ID", escaped(to_action_id(plan_.items[item], action_time_precision_)));
-  replace(text, "WAIT_PREV_ACTIONS", waits_xml(item, 1));
+  replace(text, "WAIT_PREV_ACTIONS", waits_xml(waits_[item], 1));
   std::string out;
   std::istringstream lines(text);
   for (std::string line; std::getline(lines, line); ) {
@@ -154,11 +168,8 @@ std::string HTNBTBuilder::task_xml(const std::string & id, int depth) const
     task.task + " ← " + task.method;
   std::string out = add_tabs(depth) + "<Sequence name=\"" + escaped(name) + "\">\n";
   if (!task.precondition.empty()) {
-    // In the state of when the task starts: once what comes before its first action is done
-    const size_t first = first_action(id);
-    if (first < plan_.items.size()) {
-      out += waits_xml(first, depth + 1);
-    }
+    // In the state the plan applied the method in: once what ended by then has ended
+    out += waits_xml(ended_by(task.applied, plan_.items.size()), depth + 1);
     out += add_tabs(depth + 1) + "<CheckMethodPrecondition task=\"" + escaped(task.task) +
       "\" method=\"" + escaped(task.method) + "\" precondition=\"" +
       escaped(task.precondition) + "\"/>\n";
@@ -209,32 +220,10 @@ std::string HTNBTBuilder::get_tree(const plansys2_msgs::msg::Plan & current_plan
       }
     }
   }
-  // Each action waits for those that end before it starts, but for the ones that end before
-  // another of those starts (that one waits for them already)
-  const size_t n = plan_.items.size();
-  constexpr double kSame = 1e-6;
-  waits_.assign(n, {});
-  for (size_t i = 0; i < n; ++i) {
-    const double start = plan_.items[i].time;
-    std::vector<size_t> before;
-    for (size_t j = 0; j < n; ++j) {
-      if (j != i && plan_.items[j].time + plan_.items[j].duration <= start + kSame &&
-        (plan_.items[j].time < start - kSame || j < i))
-      {
-        before.push_back(j);
-      }
-    }
-    for (size_t j : before) {
-      const double end = plan_.items[j].time + plan_.items[j].duration;
-      const bool implied = std::any_of(
-        before.begin(), before.end(), [&](size_t k) {
-          return k != j && plan_.items[k].time + kSame >= end &&
-                 (plan_.items[k].time > end + kSame || k > j);
-        });
-      if (!implied) {
-        waits_[i].push_back(j);
-      }
-    }
+  // Each action waits for those that end before it starts
+  waits_.assign(plan_.items.size(), {});
+  for (size_t i = 0; i < plan_.items.size(); ++i) {
+    waits_[i] = ended_by(plan_.items[i].time, i);
   }
   return std::string("<root BTCPP_format=\"4\" main_tree_to_execute=\"MainTree\">\n") +
          add_tabs(1) + "<BehaviorTree ID=\"MainTree\">\n" +

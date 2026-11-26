@@ -34,9 +34,10 @@ namespace plansys2
  * The tree is the decomposition of the plan (Plan.tasks), not a graph of its actions:
  * - every task is a node, named after the task and its method, that succeeds when all of its
  *   subtasks have, and fails, and fails those above it, when one of them fails;
- * - before its subtasks run, the precondition of its method is checked in the state of then
- *   (CheckMethodPrecondition): if the world is no longer as when the plan was made, the task
- *   fails there, before any of its actions start;
+ * - the precondition of its method is checked (CheckMethodPrecondition) when the plan applied
+ *   it (PlanTask.applied: once the actions that end by then have ended), and before its
+ *   subtasks run: if the world is no longer as when the plan was made, the task fails there,
+ *   before any of its actions start;
  * - the subtasks of a method run in the order the method gives them: one after another where
  *   it orders them all, at once where it does not;
  * - the actions are the leaves (the action template of the executor), each waiting for those
@@ -69,9 +70,10 @@ public:
 protected:
   std::string task_xml(const std::string & id, int depth) const;
   std::string action_xml(size_t item, int depth) const;
-  std::string waits_xml(size_t item, int depth) const;
-  // The first action below a task, in the order of the plan (items.size() if none)
-  size_t first_action(const std::string & id) const;
+  std::string waits_xml(const std::vector<size_t> & items, int depth) const;
+  // The actions that end by `time`, but for those that end before another of them starts
+  // (that one waits for them already); `item` itself left out
+  std::vector<size_t> ended_by(double time, size_t item) const;
 
   std::string bt_action_;
   plansys2_msgs::msg::Plan plan_;

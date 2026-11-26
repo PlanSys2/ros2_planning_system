@@ -71,8 +71,9 @@ The tree of a hierarchical plan is its decomposition, not a graph of its actions
 - Every task is a `Sequence` named after the task and its method. It succeeds when all its
   subtasks have, and fails, failing those above it, when one of them fails.
 - Its first node, `CheckMethodPrecondition`, checks the precondition of the method in the state
-  of when the task starts: if it does not hold, the decomposition no longer applies and the task
-  fails before any of its actions start. The execution trace says which task and why.
+  where the plan applied it (`PlanTask.applied`): once the actions that ended before have ended.
+  If it does not hold, the decomposition no longer applies and the task fails before any of its
+  actions start. The execution trace says which task and why.
 - The subtasks run in the order the method gives them: a `Sequence` where it orders them all, a
   `Parallel` where it does not.
 - The actions are the leaves (the action template, as in the other builders), each waiting

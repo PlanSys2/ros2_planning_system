@@ -112,6 +112,10 @@ plansys2_msgs::msg::Plan to_msg(const klimax::SolveResult & result)
     }
     task.ordering = ordering(step.order);
     task.precondition = step.precondition;
+    // In the time of the items: in a sequential plan action i is at i, so after k of them is
+    // between k - 1 and k
+    task.applied = result.makespan ? step.applied_at.value_or(0.0) :
+      static_cast<double>(step.applied_after) - 0.5;
     msg.tasks.push_back(std::move(task));
   }
   msg.has_cost = result.cost.has_value();

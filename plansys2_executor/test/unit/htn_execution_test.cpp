@@ -59,9 +59,10 @@ plansys2_msgs::msg::PlanItem item(double time, const std::string & action, doubl
 plansys2_msgs::msg::PlanTask task(
   const std::string & id, const std::string & name, const std::string & method,
   const std::vector<std::string> & subtasks, const std::vector<uint32_t> & ordering = {},
-  const std::string & precondition = "")
+  const std::string & precondition = "", double applied = -0.5)
 {
   plansys2_msgs::msg::PlanTask t;
+  t.applied = applied;
   t.id = id;
   t.task = name;
   t.method = method;
@@ -81,7 +82,7 @@ plansys2_msgs::msg::Plan two_tasks()
   plan.tasks = {
     task("root", "", "", {"1", "2"}),
     task("1", "(deliver cup bedroom)", "m", {"item:0", "item:1"}, {0, 1}, "(free tiago)"),
-    task("2", "(deliver book kitchen)", "m", {"item:2", "item:3"}, {0, 1}, "(free tiago)")};
+    task("2", "(deliver book kitchen)", "m", {"item:2", "item:3"}, {0, 1}, "(free tiago)", 1.5)};
   return plan;
 }
 
@@ -98,16 +99,18 @@ plansys2_msgs::msg::Plan house_plan()
   for (size_t i = 0; i < actions.size(); ++i) {
     plan.items.push_back(item(static_cast<double>(i), actions[i]));
   }
+  // Each method applied once the actions before it have ended: `after` of them
   auto go = [](const std::string & id, const std::string & robot_at, const std::string & from,
-    const std::string & to, const std::vector<std::string> & subtasks) {
+    const std::string & to, const std::vector<std::string> & subtasks, int after) {
       return task(
         id, "(go_to tiago " + to + ")", "go_step", subtasks, {0, 1},
         "(and (robot_at tiago " + robot_at + ") (connected " + robot_at + " " + from +
-        ") (not (robot_at tiago " + to + ")))");
+        ") (not (robot_at tiago " + to + ")))", after - 0.5);
     };
-  auto arrived = [](const std::string & id, const std::string & to) {
-      return task(id, "(go_to tiago " + to + ")", "go_arrived", {}, {}, "(robot_at tiago " + to +
-               ")");
+  auto arrived = [](const std::string & id, const std::string & to, int after) {
+      return task(
+        id, "(go_to tiago " + to + ")", "go_arrived", {}, {}, "(robot_at tiago " + to + ")",
+        after - 0.5);
     };
   const std::vector<uint32_t> in_a_row = {0, 1, 1, 2, 2, 3};
   plan.tasks = {
@@ -115,16 +118,16 @@ plansys2_msgs::msg::Plan house_plan()
     task(
       "cup", "(deliver cup bedroom)", "deliver_item", {"g1", "item:7", "g2", "item:10"},
       in_a_row, "(and (item_at cup kitchen) (free tiago))"),
-    go("g1", "hall", "kitchen", "kitchen", {"item:0", "g1b"}), arrived("g1b", "kitchen"),
-    go("g2", "kitchen", "hall", "bedroom", {"item:8", "g2b"}),
-    go("g2b", "hall", "bedroom", "bedroom", {"item:9", "g2c"}), arrived("g2c", "bedroom"),
+    go("g1", "hall", "kitchen", "kitchen", {"item:0", "g1b"}, 0), arrived("g1b", "kitchen", 1),
+    go("g2", "kitchen", "hall", "bedroom", {"item:8", "g2b"}, 8),
+    go("g2b", "hall", "bedroom", "bedroom", {"item:9", "g2c"}, 9), arrived("g2c", "bedroom", 10),
     task(
       "book", "(deliver book kitchen)", "deliver_item", {"g3", "item:3", "g4", "item:6"},
       in_a_row, "(and (item_at book bedroom) (free tiago))"),
-    go("g3", "kitchen", "hall", "bedroom", {"item:1", "g3b"}),
-    go("g3b", "hall", "bedroom", "bedroom", {"item:2", "g3c"}), arrived("g3c", "bedroom"),
-    go("g4", "bedroom", "hall", "kitchen", {"item:4", "g4b"}),
-    go("g4b", "hall", "kitchen", "kitchen", {"item:5", "g4c"}), arrived("g4c", "kitchen")};
+    go("g3", "kitchen", "hall", "bedroom", {"item:1", "g3b"}, 1),
+    go("g3b", "hall", "bedroom", "bedroom", {"item:2", "g3c"}, 2), arrived("g3c", "bedroom", 3),
+    go("g4", "bedroom", "hall", "kitchen", {"item:4", "g4b"}, 4),
+    go("g4b", "hall", "kitchen", "kitchen", {"item:5", "g4c"}, 5), arrived("g4c", "kitchen", 6)};
   return plan;
 }
 
@@ -176,6 +179,7 @@ TEST(htn_bt_builder, the_tree_is_the_decomposition)
   // With times that overlap, the two picks start at once and wait for nothing; each drop
   // waits for what ends before it starts
   auto timed = two_tasks();
+  timed.tasks[2].applied = 0.0;  // both deliveries at the start
   timed.items = {
     item(0, "(pick tiago cup kitchen)", 2), item(2, "(drop tiago cup bedroom)", 2),
     item(0, "(pick tiago book bedroom)", 1), item(1, "(drop tiago book kitchen)", 1)};
@@ -186,6 +190,19 @@ TEST(htn_bt_builder, the_tree_is_the_decomposition)
   const auto starts = at_once.find("<WaitAtStartReq", book);
   ASSERT_NE(starts, std::string::npos) << at_once;
   EXPECT_EQ(at_once.substr(book, starts - book).find("<WaitAction"), std::string::npos) << at_once;
+
+  // A method with no subtasks, applied once an action has ended: its check waits for it, even
+  // where nothing orders it after that action (as a robot that has to be there already)
+  auto waiting = two_tasks();
+  waiting.tasks[0].subtasks.push_back("3");
+  waiting.tasks.push_back(
+    task("3", "(ready tiago)", "here", {}, {}, "(robot_at tiago bedroom)", 1.5));
+  const std::string ready = builder.get_tree(waiting);
+  const auto here = ready.find("task=\"(ready tiago)\"");
+  ASSERT_NE(here, std::string::npos) << ready;
+  const auto before = ready.rfind("<WaitAction action=\"(drop tiago cup bedroom):1000\"/>", here);
+  ASSERT_NE(before, std::string::npos) << ready;
+  EXPECT_GT(before, ready.find("<Sequence name=\"(ready tiago) \u2190 here\">")) << ready;
 
   // Not a hierarchical plan, or one whose decomposition names what is not in it
   EXPECT_TRUE(builder.get_tree(plansys2_msgs::msg::Plan()).empty());
