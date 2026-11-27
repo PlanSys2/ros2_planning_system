@@ -156,6 +156,14 @@ TEST(terminal_commands, malformed_commands)
       EXPECT_NE(out.find(expected), std::string::npos) << command << " -> " << out;
     };
 
+  // Tasks (HDDL): none, or what a task network does not hold, is said before asking anyone
+  usage("set tasks", "set tasks (:htn ...) | <task> <task> ...");
+  usage("set tasks (build car_1", "Not valid tasks");
+  usage(
+    "set tasks (:htn :subtasks (and (a (x)) (b (y))) :ordering (= (start a) (start b)))",
+    "Not valid tasks");
+  EXPECT_NE(terminal->run("help set").find("set tasks"), std::string::npos);
+
   for (const auto & command : {
     "set predicate (", "set predicate (robot_at r1", "set predicate robot_at r1)",
     "set predicate (robot_at r1) (robot_at r2)", "set predicate ((robot_at r1))",
@@ -182,7 +190,7 @@ TEST(terminal_commands, malformed_commands)
   usage("run foo", "run num_actions");
   usage("check", "check actors");
   usage("check foo", "check actors");
-  usage("get problem foo", "get problem [instances|predicates|functions|goal|metric]");
+  usage("get problem foo", "get problem [instances|predicates|functions|goal|tasks|metric]");
   usage("get model derived", "get model derived [predicate_name]");
   usage("remove function", "\t\tremove function [name]");
   usage("nothing", "Command not found");

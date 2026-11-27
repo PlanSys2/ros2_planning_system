@@ -128,14 +128,15 @@ char * completion_generator(const char * text, int state)
     "check", "source", "help", "?", "quit"};
   std::vector<std::string> vocabulary_check{"actors"};
   std::vector<std::string> vocabulary_set{
-    "instance", "predicate", "function", "goal", "metric"};
+    "instance", "predicate", "function", "goal", "tasks", "metric"};
   std::vector<std::string> vocabulary_get{"model", "problem", "domain", "plan"};
   std::vector<std::string> vocabulary_remove{
-    "instance", "predicate", "function", "goal", "metric"};
+    "instance", "predicate", "function", "goal", "tasks", "metric"};
   std::vector<std::string> vocabulary_run{"action", "num_actions", "plan-file"};
   std::vector<std::string> vocabulary_get_problem{
-    "instances", "predicates", "functions", "goal", "metric"};
+    "instances", "predicates", "functions", "goal", "tasks", "metric"};
   std::vector<std::string> vocabulary_get_model{"types", "predicates", "functions", "actions",
+    "tasks",
     "predicate", "function", "action", "derived", "deriveds"};
   // The help is initialized with all possible commands in the vocabulary
   std::vector<std::string> vocabulary_help(vocabulary);
@@ -546,6 +547,19 @@ Terminal::process_get_model(std::vector<std::string> & command, std::ostringstre
       for (const auto & durative_action : durative_actions) {
         os << "\t" << durative_action << " (durative action)" << std::endl;
       }
+    } else if (command[0] == "tasks") {
+      // HDDL: the tasks of the domain, with their parameters
+      auto tasks = domain_client_->getTasks();
+      os << "Tasks: " << tasks.size() << std::endl;
+      for (const auto & task : tasks) {
+        os << "\t" << task;
+        if (auto params = domain_client_->getTask(task)) {
+          for (const auto & param : *params) {
+            os << " " << param.name << " - " << param.type;
+          }
+        }
+        os << std::endl;
+      }
     } else if (command[0] == "predicate") {
       pop_front(command);
       process_get_model_predicate(command, os);
@@ -602,15 +616,19 @@ Terminal::process_get_problem(std::vector<std::string> & command, std::ostringst
     } else if (command[0] == "goal") {
       auto goal = problem_client_->getGoal();
       os << "Goal: " << parser::pddl::toString(goal) << std::endl;
+    } else if (command[0] == "tasks") {
+      auto network = problem_client_->getTaskNetwork();
+      os << "Tasks: " << (network.tasks.empty() ? "none" : parser::pddl::toString(network)) <<
+        std::endl;
     } else if (command[0] == "metric") {
       auto metric = parser::pddl::toString(problem_client_->getMetric());
       os << "Metric: " << (metric.empty() ? "none" : metric) << std::endl;
     } else {
-      os << "\tUsage: \n\t\tget problem [instances|predicates|functions|goal|metric]..." <<
+      os << "\tUsage: \n\t\tget problem [instances|predicates|functions|goal|tasks|metric]..." <<
         std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\tget problem [instances|predicates|functions|goal|metric]..." <<
+    os << "\tUsage: \n\t\tget problem [instances|predicates|functions|goal|tasks|metric]..." <<
       std::endl;
   }
 }
@@ -728,6 +746,32 @@ Terminal::process_set_goal(std::vector<std::string> & command, std::ostringstrea
 }
 
 void
+Terminal::process_set_tasks(std::vector<std::string> & command, std::ostringstream & os)
+{
+  std::string text;
+  for (const auto & token : command) {
+    text += " " + token;
+  }
+  // The ":htn" section, its parts, or tasks alone (in any order)
+  const auto first = text.find_first_not_of(' ');
+  if (first == std::string::npos) {
+    os << "\tUsage: \n\t\tset tasks (:htn ...) | <task> <task> ..." << std::endl;
+    return;
+  }
+  if (text[first] != ':' && text.compare(first, 5, "(:htn") != 0) {
+    text = ":subtasks (and" + text + ")";
+  }
+  try {
+    plansys2::TaskNetwork network(text);
+    if (!problem_client_->setTaskNetwork(network)) {
+      os << "Could not set the tasks [" << parser::pddl::toString(network) << "]" << std::endl;
+    }
+  } catch (const std::exception & e) {
+    os << "Not valid tasks: " << e.what() << std::endl;
+  }
+}
+
+void
 Terminal::process_set_metric(std::vector<std::string> & command, std::ostringstream & os)
 {
   std::string total_expr;
@@ -759,15 +803,18 @@ Terminal::process_set(std::vector<std::string> & command, std::ostringstream & o
     } else if (command[0] == "goal") {
       pop_front(command);
       process_set_goal(command, os);
+    } else if (command[0] == "tasks") {
+      pop_front(command);
+      process_set_tasks(command, os);
     } else if (command[0] == "metric") {
       pop_front(command);
       process_set_metric(command, os);
     } else {
-      os << "\tUsage: \n\t\tset [instance|predicate|function|goal|metric]..." <<
+      os << "\tUsage: \n\t\tset [instance|predicate|function|goal|tasks|metric]..." <<
         std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\tset [instance|predicate|function|goal|metric]..." <<
+    os << "\tUsage: \n\t\tset [instance|predicate|function|goal|tasks|metric]..." <<
       std::endl;
   }
 }
@@ -850,14 +897,16 @@ Terminal::process_remove(std::vector<std::string> & command, std::ostringstream 
       process_remove_function(command, os);
     } else if (command[0] == "goal") {
       problem_client_->clearGoal();
+    } else if (command[0] == "tasks") {
+      problem_client_->clearTaskNetwork();
     } else if (command[0] == "metric") {
       problem_client_->clearMetric();
     } else {
-      os << "\tUsage: \n\t\tremove [instance|predicate|function|goal|metric]..." <<
+      os << "\tUsage: \n\t\tremove [instance|predicate|function|goal|tasks|metric]..." <<
         std::endl;
     }
   } else {
-    os << "\tUsage: \n\t\tremove [instance|predicate|function|goal|metric]..." <<
+    os << "\tUsage: \n\t\tremove [instance|predicate|function|goal|tasks|metric]..." <<
       std::endl;
   }
 }
@@ -1099,12 +1148,13 @@ Terminal::process_help(std::vector<std::string> & command, std::ostringstream & 
     "\t set predicate <predicate>" << std::endl <<
     "\t set function (= <function> <value>)" << std::endl <<
     "\t set goal <goal_formula>" << std::endl <<
+    "\t set tasks (:htn ...) | <task> <task> ...  (HDDL)" << std::endl <<
     "\t set metric minimize|maximize <expression>" << std::endl;
   std::ostringstream cmd_get;
-  cmd_get << "\t get model   types | predicates | functions | actions |" << std::endl <<
+  cmd_get << "\t get model   types | predicates | functions | actions | tasks |" << std::endl <<
     "\t             predicate <predicate_name> | function <function_name> |" << std::endl <<
     "\t             action <action_name> | derived <predicate_name> | deriveds" << std::endl <<
-    "\t get problem  instances | predicates | functions | goal | metric" << std::endl <<
+    "\t get problem  instances | predicates | functions | goal | tasks | metric" << std::endl <<
     "\t get domain" << std::endl <<
     "\t get plan" << std::endl;
   std::ostringstream cmd_rem;
@@ -1112,6 +1162,7 @@ Terminal::process_help(std::vector<std::string> & command, std::ostringstream & 
     "\t remove predicate <predicate>" << std::endl <<
     "\t remove function <function>" << std::endl <<
     "\t remove goal" << std::endl <<
+    "\t remove tasks" << std::endl <<
     "\t remove metric" << std::endl;
 
   std::ostringstream cmd_run;

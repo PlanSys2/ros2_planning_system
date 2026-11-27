@@ -23,16 +23,18 @@ from typing import List, Optional, Union
 
 from plansys2_msgs.msg import Metric
 from plansys2_msgs.msg import Node as PlanSys2Node  # Avoid name conflict
-from plansys2_msgs.msg import Param, ProblemChange, Tree
+from plansys2_msgs.msg import Param, ProblemChange, TaskNetwork, Tree
 # Problem Expert services
 from plansys2_msgs.srv import (AddProblem, AddProblemGoal, AffectNode,
                                AffectParam, ApplyProblemChanges,
                                ClearProblemKnowledge, ExistNode,
                                GetNodeDetails, GetProblem, GetProblemGoal,
                                GetProblemInstanceDetails, GetProblemInstances,
-                               GetProblemMetric, GetStates,
-                               IsProblemGoalSatisfied, RemoveProblemGoal,
-                               RemoveProblemMetric, SetProblemMetric)
+                               GetProblemMetric, GetProblemTaskNetwork,
+                               GetStates, IsProblemGoalSatisfied,
+                               RemoveProblemGoal, RemoveProblemMetric,
+                               RemoveProblemTaskNetwork, SetProblemMetric,
+                               SetProblemTaskNetwork)
 from plansys2_support_py.ClientBase import ClientBase
 from plansys2_support_py.Parser import Parser
 from rclpy.node import Node
@@ -432,6 +434,78 @@ class ProblemExpertClient(ClientBase):
             error_msg = response.error_info if response else 'Service call failed'
             self.get_logger().error(f'Failed to remove the current problem goal: {error_msg}')
             return False
+
+    def set_problem_task_network(
+        self, network: Union[TaskNetwork, List[str]], ordered: bool = False
+    ) -> bool:
+        """
+        Set the initial task network of a hierarchical (HDDL) problem, as set goals do for PDDL.
+
+        Parameters
+        ----------
+        network : TaskNetwork or List[str]
+            The task network, or its tasks, "(name arg1 ...)": done in that order if `ordered`,
+            in any order (or at once) if not.
+        ordered : bool
+            With a list of tasks: each one after the one before.
+
+        Returns
+        -------
+        bool: True if it was set, False otherwise (a task not of the domain, wrong arguments...).
+
+        """
+        if not isinstance(network, TaskNetwork):
+            tasks = list(network)
+            network = TaskNetwork(tasks=tasks, ids=[''] * len(tasks))
+            if ordered:
+                for i in range(len(tasks) - 1):
+                    network.ordering.extend([i, i + 1])
+        service_name = 'problem_expert/set_problem_task_network'
+        request = SetProblemTaskNetwork.Request()
+        request.network = network
+        response = self._create_and_call_service(SetProblemTaskNetwork, service_name, request)
+        if response and response.success:
+            self.get_logger().debug(f'Successfully set the task network: {list(network.tasks)}')
+            return True
+        error_msg = response.error_info if response else 'Service call failed'
+        self.get_logger().error(f'Failed to set the task network: {error_msg}')
+        return False
+
+    def get_problem_task_network(self) -> Optional[TaskNetwork]:
+        """
+        Get the initial task network of a hierarchical (HDDL) problem.
+
+        Returns
+        -------
+        Optional[TaskNetwork]: The task network (empty if none is set), or None if failed.
+
+        """
+        service_name = 'problem_expert/get_problem_task_network'
+        request = GetProblemTaskNetwork.Request()
+        response = self._create_and_call_service(GetProblemTaskNetwork, service_name, request)
+        if response and response.success:
+            return response.network
+        error_msg = response.error_info if response else 'Service call failed'
+        self.get_logger().error(f'Failed to get the task network: {error_msg}')
+        return None
+
+    def remove_problem_task_network(self) -> bool:
+        """
+        Remove the initial task network from the problem.
+
+        Returns
+        -------
+        bool: True if successful, False otherwise.
+
+        """
+        service_name = 'problem_expert/remove_problem_task_network'
+        request = RemoveProblemTaskNetwork.Request()
+        response = self._create_and_call_service(RemoveProblemTaskNetwork, service_name, request)
+        if response and response.success:
+            return True
+        error_msg = response.error_info if response else 'Service call failed'
+        self.get_logger().error(f'Failed to remove the task network: {error_msg}')
+        return False
 
     def set_problem_metric(self, metric: Union[Metric, str]) -> bool:
         """
