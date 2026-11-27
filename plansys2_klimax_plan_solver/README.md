@@ -61,8 +61,10 @@ In that mode:
   its actions. The subtasks of a method run in the order the method gives them, at once where it
   does not order them.
 
-Not yet: replanning. `executor/get_replanning_problem` answers that it has no problem for a
-hierarchical plan: it would need the tasks still to do.
+Replanning: `executor/get_replanning_problem` gives, for a hierarchical plan, the problem of what
+is left. Its task network is the frontier of the plan's tree: the tasks of which no action has
+ended, whole; of those done in part, their subtasks; the actions still running, as tasks; each
+with the orderings of the methods above it. The actions that go on are kept in the new plan.
 
 ## Building
 
