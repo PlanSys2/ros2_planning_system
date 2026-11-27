@@ -23,6 +23,9 @@
 #include <string>
 #include <vector>
 
+#include "plansys2_pddl_parser/Utils.hpp"
+#include "plansys2_problem_expert/Utils.hpp"
+
 namespace plansys2
 {
 
@@ -161,15 +164,28 @@ std::string HTNBTBuilder::action_xml(size_t item, int depth) const
   return out;
 }
 
+bool HTNBTBuilder::holds_initially(const std::string & precondition) const
+{
+  auto predicates = initial_predicates();
+  auto functions = initial_functions();
+  return plansys2::check(parser::pddl::fromString(precondition), predicates, functions);
+}
+
 std::string HTNBTBuilder::task_xml(const std::string & id, int depth) const
 {
   const plansys2_msgs::msg::PlanTask & task = *tasks_.at(id);
   const std::string name = task.task.empty() ? "initial task network" :
     task.task + " ← " + task.method;
   std::string out = add_tabs(depth) + "<Sequence name=\"" + escaped(name) + "\">\n";
-  if (!task.precondition.empty()) {
+  const auto ended = ended_by(task.applied, plan_.items.size());
+  // On a replan, a method applied before anything of the new plan ends was applied in the
+  // state the planner started from: the one before the actions that go on began, which have
+  // changed it since. It is checked there, now, and not in the tree
+  const bool checked = !task.precondition.empty() && ended.empty() && has_initial_state() &&
+    holds_initially(task.precondition);
+  if (!task.precondition.empty() && !checked) {
     // In the state the plan applied the method in: once what ended by then has ended
-    out += waits_xml(ended_by(task.applied, plan_.items.size()), depth + 1);
+    out += waits_xml(ended, depth + 1);
     out += add_tabs(depth + 1) + "<CheckMethodPrecondition task=\"" + escaped(task.task) +
       "\" method=\"" + escaped(task.method) + "\" precondition=\"" +
       escaped(task.precondition) + "\"/>\n";

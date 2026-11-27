@@ -68,6 +68,8 @@ public:
     size_t subtasks, const std::vector<uint32_t> & ordering);
 
 protected:
+  // Whether a precondition holds in the state the plan starts from (initial_state)
+  bool holds_initially(const std::string & precondition) const;
   std::string task_xml(const std::string & id, int depth) const;
   std::string action_xml(size_t item, int depth) const;
   std::string waits_xml(const std::vector<size_t> & items, int depth) const;

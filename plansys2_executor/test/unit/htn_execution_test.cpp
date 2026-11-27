@@ -195,6 +195,26 @@ TEST(htn_bt_builder, total_order)
   EXPECT_FALSE(HTNBTBuilder::total_order(2, {0, 5}));
 }
 
+TEST(htn_bt_builder, on_a_replan_the_methods_applied_at_the_start_are_checked_there)
+{
+  // The state the new plan starts from: the one before the actions that go on began, which
+  // have changed the current one since
+  plansys2::HTNBTBuilder builder;
+  builder.initialize();
+  builder.set_initial_state({plansys2::Predicate("(free tiago)")}, {});
+  const std::string tree = builder.get_tree(two_tasks());
+  // The cup's method, applied at the start, holds there: checked, not in the tree. The book's,
+  // applied once the cup is dropped, at runtime
+  EXPECT_EQ(count(tree, "<CheckMethodPrecondition"), 1u) << tree;
+  EXPECT_NE(tree.find("<CheckMethodPrecondition task=\"(deliver book kitchen)\""),
+    std::string::npos) << tree;
+  // One that does not hold there stays, and fails its task at runtime
+  plansys2::HTNBTBuilder other;
+  other.initialize();
+  other.set_initial_state({}, {});
+  EXPECT_EQ(count(other.get_tree(two_tasks()), "<CheckMethodPrecondition"), 2u);
+}
+
 TEST(htn_bt_builder, the_tree_is_the_decomposition)
 {
   plansys2::HTNBTBuilder builder;
@@ -257,29 +277,43 @@ namespace
 class Performer : public plansys2::ActionExecutorClient
 {
 public:
-  Performer(const std::string & node_name, const std::string & action)
-  : ActionExecutorClient(node_name)
+  // Done in `ticks` of 20 ms
+  Performer(const std::string & node_name, const std::string & action, int ticks = 1)
+  : ActionExecutorClient(node_name), ticks_(ticks)
   {
     set_parameter({"action_name", action});
     set_parameter({"rate", 50.0});
   }
 
 private:
-  void do_work() override {finish(true, 1.0, "done");}
+  void do_work() override
+  {
+    if (++done_ < ticks_) {
+      send_feedback(static_cast<float>(done_) / static_cast<float>(ticks_), "going");
+      return;
+    }
+    done_ = 0;
+    finish(true, 1.0, "done");
+  }
+
+  int ticks_;
+  int done_ = 0;
 };
 
 // PlanSys2 in HDDL mode, and a performer per action of the house. The plan is given: no
 // planner of HDDL is needed
 struct House
 {
-  explicit House(const std::string & bt_builder = "HTNBTBuilder")
+  explicit House(
+    const std::string & bt_builder = "HTNBTBuilder", const std::string & domain = "house.hddl",
+    int move_ticks = 1)
   {
     const std::string pkg = plansys2::share_path("plansys2_executor").string();
     domain_node = std::make_shared<plansys2::DomainExpertNode>();
     problem_node = std::make_shared<plansys2::ProblemExpertNode>();
     executor_node = std::make_shared<plansys2::ExecutorNode>();
-    domain_node->set_parameter({"model_file", pkg + "/pddl/house.hddl"});
-    problem_node->set_parameter({"model_file", pkg + "/pddl/house.hddl"});
+    domain_node->set_parameter({"model_file", pkg + "/pddl/" + domain});
+    problem_node->set_parameter({"model_file", pkg + "/pddl/" + domain});
     problem_node->set_parameter({"problem_file", pkg + "/pddl/house_problem.hddl"});
     executor_node->set_parameter({"bt_builder_plugin", bt_builder});
     experts = {domain_node, problem_node, executor_node};
@@ -294,7 +328,8 @@ struct House
       });
     exe.add_node(listener);
     for (const std::string action : {"move", "pick", "drop"}) {
-      performers.push_back(std::make_shared<Performer>("htn_" + action, action));
+      performers.push_back(
+        std::make_shared<Performer>("htn_" + action, action, action == "move" ? move_ticks : 1));
       exe.add_node(performers.back()->get_node_base_interface());
     }
     spinner = std::make_unique<plansys2::testing::ExecutorThread>(exe);
@@ -387,6 +422,56 @@ TEST(htn_execution, a_plan_runs_by_its_decomposition)
     EXPECT_TRUE(
       house.problem_client->existPredicate(
         parser::pddl::fromStringPredicate("(item_at book kitchen)")));
+  }
+  plansys2::drain_ros(200ms);
+}
+
+TEST(htn_execution, a_new_plan_keeps_the_action_that_goes_on)
+{
+  {
+    // Moving takes half a second, and the robot leaves where it was as it starts
+    House house("HTNBTBuilder", "house_timed.hddl", 25);
+    ASSERT_TRUE(house.active());
+    // The house plan with times: each action two units after the one before, a move lasting
+    // one; each method applied between the actions it comes after and the next
+    auto plan = house_plan();
+    for (size_t i = 0; i < plan.items.size(); ++i) {
+      plan.items[i].time = 2.0f * static_cast<float>(i);
+      plan.items[i].duration = plan.items[i].action.rfind("(move", 0) == 0 ? 1.0f : 0.0f;
+    }
+    for (auto & task : plan.tasks) {
+      task.applied = 2.0 * task.applied + 0.5;
+    }
+    ASSERT_TRUE(house.executor_client->start_plan_execution(plan));
+    // While the first move runs, a new plan that starts with it, as one planned from the
+    // replanning problem would
+    ASSERT_TRUE(
+      plansys2::testing::wait_for(
+        [&]() {
+          std::lock_guard<std::mutex> lock(house.trace_mutex);
+          return std::any_of(
+            house.trace.begin(), house.trace.end(), [](const Event & e) {
+              return e.type == Event::START && e.action == "(move tiago hall kitchen):0";
+            });
+        }, 10s));
+    ASSERT_TRUE(house.executor_client->start_plan_execution(plan));
+    ASSERT_TRUE(
+      plansys2::testing::wait_for(
+        [&]() {return !house.executor_client->execute_and_check_plan();}, 30s));
+    auto result = house.executor_client->getResult();
+    ASSERT_TRUE(result.has_value());
+    EXPECT_EQ(result->result, Result::SUCCESS);
+    // The move went on, not started again, and no method was found not to apply: those applied
+    // at the start were checked where the plan began, before the move left the hall
+    size_t moves = 0;
+    for (const auto & event : house.events()) {
+      EXPECT_NE(event.type, Event::FAILURE) << event.action << ": " << event.detail;
+      moves += event.type == Event::START && event.action == "(move tiago hall kitchen):0";
+    }
+    EXPECT_EQ(moves, 1u);
+    EXPECT_TRUE(
+      house.problem_client->existPredicate(
+        parser::pddl::fromStringPredicate("(item_at cup bedroom)")));
   }
   plansys2::drain_ros(200ms);
 }
