@@ -224,6 +224,59 @@ ProblemExpertNode::ProblemExpertNode(const rclcpp::NodeOptions & options)
         this, std::placeholders::_1, std::placeholders::_2,
         std::placeholders::_3)));
 
+  // HDDL: the initial task network, as the goal is for PDDL
+  using SetNetwork = plansys2_msgs::srv::SetProblemTaskNetwork;
+  set_problem_task_network_service_ = create_service<SetNetwork>(
+    "problem_expert/set_problem_task_network",
+    guarded<SetNetwork>(
+      get_logger(),
+      [this](const std::shared_ptr<rmw_request_id_t>,
+      const std::shared_ptr<SetNetwork::Request> request,
+      const std::shared_ptr<SetNetwork::Response> response) {
+        if (problem_expert_ == nullptr) {
+          response->success = false;
+          response->error_info = plansys2::kNotActive;
+          return;
+        }
+        response->success = problem_expert_->setTaskNetwork(request->network);
+        if (response->success) {
+          notify_change();
+        } else {
+          response->error_info = "Task network not valid";
+        }
+      }));
+  using GetNetwork = plansys2_msgs::srv::GetProblemTaskNetwork;
+  get_problem_task_network_service_ = create_service<GetNetwork>(
+    "problem_expert/get_problem_task_network",
+    guarded<GetNetwork>(
+      get_logger(),
+      [this](const std::shared_ptr<rmw_request_id_t>, const std::shared_ptr<GetNetwork::Request>,
+      const std::shared_ptr<GetNetwork::Response> response) {
+        if (problem_expert_ == nullptr) {
+          response->success = false;
+          response->error_info = plansys2::kNotActive;
+          return;
+        }
+        response->success = true;
+        response->network = problem_expert_->getTaskNetwork();
+      }));
+  using RemoveNetwork = plansys2_msgs::srv::RemoveProblemTaskNetwork;
+  remove_problem_task_network_service_ = create_service<RemoveNetwork>(
+    "problem_expert/remove_problem_task_network",
+    guarded<RemoveNetwork>(
+      get_logger(),
+      [this](const std::shared_ptr<rmw_request_id_t>,
+      const std::shared_ptr<RemoveNetwork::Request>,
+      const std::shared_ptr<RemoveNetwork::Response> response) {
+        if (problem_expert_ == nullptr) {
+          response->success = false;
+          response->error_info = plansys2::kNotActive;
+          return;
+        }
+        response->success = problem_expert_->clearTaskNetwork();
+        notify_change();
+      }));
+
   set_problem_metric_service_ = create_service<plansys2_msgs::srv::SetProblemMetric>(
     "problem_expert/set_problem_metric",
     guarded<plansys2_msgs::srv::SetProblemMetric>(

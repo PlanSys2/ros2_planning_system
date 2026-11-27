@@ -16,12 +16,15 @@
 
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <charconv>
 #include <cmath>
 #include <functional>
 #include <iostream>
 #include <limits>
 #include <sstream>
+#include <stdexcept>
+#include <string>
 #include <utility>
 
 namespace parser
@@ -2050,6 +2053,199 @@ std::string toString(const plansys2_msgs::msg::Metric & metric)
   const std::string optimization =
     metric.optimization == plansys2_msgs::msg::Metric::MAXIMIZE ? "maximize" : "minimize";
   return optimization + " " + toString(metric.tree);
+}
+
+namespace
+{
+
+// A symbol, or a list of them
+struct SExpr
+{
+  std::string atom;
+  std::vector<SExpr> list;
+  bool is_list = false;
+};
+
+SExpr read_sexpr(const std::string & text, size_t & at)
+{
+  auto skip = [&]() {
+      while (at < text.size()) {
+        if (std::isspace(static_cast<unsigned char>(text[at]))) {
+          ++at;
+        } else if (text[at] == ';') {
+          while (at < text.size() && text[at] != '\n') {
+            ++at;
+          }
+        } else {
+          break;
+        }
+      }
+    };
+  skip();
+  if (at >= text.size()) {
+    throw std::runtime_error("the task network ends too early");
+  }
+  SExpr e;
+  if (text[at] == '(') {
+    e.is_list = true;
+    ++at;
+    for (skip(); at < text.size() && text[at] != ')'; skip()) {
+      e.list.push_back(read_sexpr(text, at));
+    }
+    if (at >= text.size()) {
+      throw std::runtime_error("a parenthesis of the task network is not closed");
+    }
+    ++at;
+    return e;
+  }
+  if (text[at] == ')') {
+    throw std::runtime_error("a parenthesis too many in the task network");
+  }
+  while (at < text.size() && !std::isspace(static_cast<unsigned char>(text[at])) &&
+    text[at] != '(' && text[at] != ')' && text[at] != ';')
+  {
+    e.atom += static_cast<char>(std::tolower(static_cast<unsigned char>(text[at++])));
+  }
+  return e;
+}
+
+std::string sexpr_text(const SExpr & e)
+{
+  if (!e.is_list) {
+    return e.atom;
+  }
+  std::string out = "(";
+  for (size_t i = 0; i < e.list.size(); ++i) {
+    out += (i ? " " : "") + sexpr_text(e.list[i]);
+  }
+  return out + ")";
+}
+
+// The parts of "(and a b ...)", or the one given
+std::vector<SExpr> conjuncts(const SExpr & e)
+{
+  if (e.is_list && !e.list.empty() && !e.list[0].is_list && e.list[0].atom == "and") {
+    return std::vector<SExpr>(e.list.begin() + 1, e.list.end());
+  }
+  if (e.is_list && e.list.empty()) {
+    return {};
+  }
+  return {e};
+}
+
+}  // namespace
+
+plansys2_msgs::msg::TaskNetwork taskNetworkFromString(const std::string & text)
+{
+  // Its sections: of "(:htn ...)", or given alone
+  std::vector<SExpr> items;
+  size_t at = 0;
+  const auto first = text.find_first_not_of(" \t\r\n");
+  if (first != std::string::npos && text.compare(first, 5, "(:htn") == 0) {
+    SExpr htn = read_sexpr(text, at);
+    items.assign(htn.list.begin() + 1, htn.list.end());
+  } else {
+    for (; text.find_first_not_of(" \t\r\n", at) != std::string::npos; ) {
+      items.push_back(read_sexpr(text, at));
+    }
+  }
+  plansys2_msgs::msg::TaskNetwork network;
+  std::vector<SExpr> ordering;
+  bool ordered = false;
+  for (size_t i = 0; i < items.size(); ++i) {
+    const std::string key = items[i].is_list ? "" : items[i].atom;
+    if (key.empty() || key[0] != ':' || i + 1 >= items.size()) {
+      throw std::runtime_error("the task network has no value for " + sexpr_text(items[i]));
+    }
+    const SExpr & value = items[++i];
+    const bool subtasks = key == ":subtasks" || key == ":tasks" ||
+      key == ":ordered-subtasks" || key == ":ordered-tasks";
+    if (key == ":parameters") {
+      if (!value.list.empty()) {
+        throw std::runtime_error("a task network with parameters is not supported");
+      }
+    } else if (subtasks) {
+      ordered = key.rfind(":ordered", 0) == 0;
+      for (const SExpr & t : conjuncts(value)) {
+        // (label (task args)) or (task args)
+        const bool labeled = t.is_list && t.list.size() == 2 && !t.list[0].is_list &&
+          t.list[1].is_list;
+        const SExpr & task = labeled ? t.list[1] : t;
+        if (!task.is_list || task.list.empty() || task.list[0].is_list) {
+          throw std::runtime_error("not a task: " + sexpr_text(t));
+        }
+        network.tasks.push_back(sexpr_text(task));
+        network.ids.push_back(labeled ? t.list[0].atom : "");
+      }
+    } else if (key == ":ordering" || key == ":order") {
+      ordering = conjuncts(value);
+    } else if (key == ":constraints") {
+      if (!conjuncts(value).empty()) {
+        throw std::runtime_error("a task network with constraints is not supported");
+      }
+    } else {
+      throw std::runtime_error("unknown section of a task network: " + key);
+    }
+  }
+  if (ordered) {
+    for (uint32_t i = 0; i + 1 < network.tasks.size(); ++i) {
+      network.ordering.push_back(i);
+      network.ordering.push_back(i + 1);
+    }
+  }
+  auto index = [&](const SExpr & label) -> uint32_t {
+      if (!label.is_list) {
+        for (size_t i = 0; i < network.ids.size(); ++i) {
+          if (network.ids[i] == label.atom) {
+            return static_cast<uint32_t>(i);
+          }
+        }
+      }
+      throw std::runtime_error(
+        "the ordering of the task network names " + sexpr_text(label) + ", not a task label: " +
+        "orderings between time points are not supported");
+    };
+  for (const SExpr & o : ordering) {
+    if (!o.is_list || o.list.size() != 3 || o.list[0].is_list ||
+      (o.list[0].atom != "<" && o.list[0].atom != ">"))
+    {
+      throw std::runtime_error("not an ordering of tasks: " + sexpr_text(o));
+    }
+    const uint32_t a = index(o.list[1]), b = index(o.list[2]);
+    network.ordering.push_back(o.list[0].atom == "<" ? a : b);
+    network.ordering.push_back(o.list[0].atom == "<" ? b : a);
+  }
+  return network;
+}
+
+std::string toString(const plansys2_msgs::msg::TaskNetwork & network)
+{
+  // A label for each task: its own, or "t" and its position (with "_" until it is unique)
+  std::vector<std::string> labels(network.tasks.size());
+  for (size_t i = 0; i < network.tasks.size(); ++i) {
+    labels[i] = i < network.ids.size() ? network.ids[i] : "";
+  }
+  for (size_t i = 0; i < labels.size(); ++i) {
+    if (labels[i].empty()) {
+      std::string label = "t" + std::to_string(i);
+      while (std::find(labels.begin(), labels.end(), label) != labels.end()) {
+        label += "_";
+      }
+      labels[i] = label;
+    }
+  }
+  std::string subtasks, ordering;
+  for (size_t i = 0; i < network.tasks.size(); ++i) {
+    subtasks += " (" + labels[i] + " " + network.tasks[i] + ")";
+  }
+  for (size_t k = 0; k + 1 < network.ordering.size(); k += 2) {
+    if (network.ordering[k] < labels.size() && network.ordering[k + 1] < labels.size()) {
+      ordering += " (< " + labels[network.ordering[k]] + " " + labels[network.ordering[k + 1]] +
+        ")";
+    }
+  }
+  return "(:htn :subtasks (and" + subtasks + ")" +
+         (ordering.empty() ? std::string() : " :ordering (and" + ordering + ")") + ")";
 }
 
 }  // namespace pddl

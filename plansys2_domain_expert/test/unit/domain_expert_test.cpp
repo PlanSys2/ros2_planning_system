@@ -846,4 +846,14 @@ TEST(domain_expert, hddl_domain)
   EXPECT_EQ(again.getDomain(), domain);
   // A PDDL domain is not
   EXPECT_FALSE(plansys2::DomainExpert(actions).isHierarchical());
+  // Its tasks, with their parameters and types
+  EXPECT_EQ(domain_expert.getTasks(), (std::vector<std::string>{"deliver", "go_to"}));
+  auto deliver = domain_expert.getTask("Deliver");
+  ASSERT_TRUE(deliver.has_value());
+  ASSERT_EQ(deliver->size(), 2u);
+  EXPECT_EQ((*deliver)[0].name, "?i");
+  EXPECT_EQ((*deliver)[0].type, "item");
+  EXPECT_EQ((*deliver)[1].type, "room");
+  EXPECT_FALSE(domain_expert.getTask("fly").has_value());
+  EXPECT_TRUE(plansys2::DomainExpert(actions).getTasks().empty());
 }

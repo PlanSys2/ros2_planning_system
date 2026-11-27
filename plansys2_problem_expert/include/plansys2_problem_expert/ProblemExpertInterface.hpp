@@ -192,6 +192,32 @@ public:
   virtual bool clearGoal() = 0;
 
   /**
+   * @brief The initial task network of a hierarchical (HDDL) problem: what is to be done, as
+   * tasks, as the goal is for PDDL.
+   *
+   * @return The task network; empty if none is set.
+   */
+  virtual plansys2::TaskNetwork getTaskNetwork() = 0;
+
+  /**
+   * @brief Set the initial task network, in place of the one set before.
+   *
+   * Each task must be a task or an action of the (HDDL) domain, with as many arguments as it has
+   * parameters, each an instance or a constant of its type; each ordering, between two of them.
+   *
+   * @param[in] network The task network.
+   * @return true if it was set, false otherwise (nothing changes then).
+   */
+  virtual bool setTaskNetwork(const plansys2::TaskNetwork & network) = 0;
+
+  /**
+   * @brief Clear the initial task network.
+   *
+   * @return true if it was cleared.
+   */
+  virtual bool clearTaskNetwork() = 0;
+
+  /**
    * @brief Get the metric of the problem: what the planner optimizes.
    *
    * @return plansys2::Metric The metric, with an empty tree if there is none.

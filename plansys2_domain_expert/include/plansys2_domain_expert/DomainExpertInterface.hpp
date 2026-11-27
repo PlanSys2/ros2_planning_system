@@ -22,6 +22,7 @@
 #include "plansys2_msgs/msg/action.hpp"
 #include "plansys2_msgs/msg/derived.hpp"
 #include "plansys2_msgs/msg/durative_action.hpp"
+#include "plansys2_msgs/msg/param.hpp"
 
 #include "plansys2_core/Types.hpp"
 
@@ -143,6 +144,23 @@ public:
    */
   virtual plansys2_msgs::msg::Action::SharedPtr getAction(
     const std::string & action, const std::vector<std::string> & params) = 0;
+
+  /**
+   * @brief The tasks of a hierarchical (HDDL) domain: what a task network is made of.
+   *
+   * @return Their names; none in a PDDL domain.
+   */
+  virtual std::vector<std::string> getTasks() = 0;
+
+  /**
+   * @brief The parameters of a task of a hierarchical (HDDL) domain.
+   *
+   * @param[in] task The name of the task.
+   * @return Its parameters, each with its type and the subtypes of that type; nullopt if the
+   *   domain has no such task.
+   */
+  virtual std::optional<std::vector<plansys2_msgs::msg::Param>> getTask(
+    const std::string & task) = 0;
 
   /**
    * @brief The processes of the domain (PDDL+): they act while their precondition holds.

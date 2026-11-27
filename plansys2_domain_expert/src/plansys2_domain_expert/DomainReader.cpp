@@ -123,6 +123,16 @@ DomainReader::add_domain(const std::string & domain)
   domains_.push_back(new_domain);
 }
 
+std::vector<std::string>
+DomainReader::get_hierarchy_blocks() const
+{
+  std::vector<std::string> ret;
+  for (const auto & d : domains_) {
+    ret.insert(ret.end(), d.hierarchy.begin(), d.hierarchy.end());
+  }
+  return ret;
+}
+
 bool
 DomainReader::is_hierarchical() const
 {

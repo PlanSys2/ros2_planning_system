@@ -172,6 +172,9 @@ public:
 
   std::vector<std::string> getActions();
 
+  std::vector<std::string> getTasks() override;
+  std::optional<std::vector<plansys2_msgs::msg::Param>> getTask(const std::string & task) override;
+
   /**
    * @brief Get the details of a regular action defined in the domain.
    *

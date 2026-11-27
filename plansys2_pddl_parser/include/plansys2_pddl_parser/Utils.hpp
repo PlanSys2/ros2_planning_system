@@ -26,6 +26,7 @@
 #include "plansys2_msgs/msg/metric.hpp"
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/param.hpp"
+#include "plansys2_msgs/msg/task_network.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
 
 namespace parser
@@ -282,6 +283,16 @@ plansys2_msgs::msg::Metric metricFromString(const std::string & metric);
 /// The metric as "minimize <expr>" or "maximize <expr>"; empty if there is no metric.
 std::string toString(const plansys2_msgs::msg::Metric & metric);
 
+
+/// @brief The initial task network of an HDDL problem, "(:htn ...)" (or its sections alone:
+/// ":subtasks (and (t1 (go r a)) ...) :ordering (and (< t1 t2))"): its tasks, their labels and
+/// their orderings. :tasks and the ordered forms too. Throws std::runtime_error if the text is not
+/// one, or says what a TaskNetwork does not hold (orderings between time points, constraints).
+plansys2_msgs::msg::TaskNetwork taskNetworkFromString(const std::string & network);
+
+/// @brief The task network as an HDDL ":htn" section; tasks without a label get one ("t" and
+/// their position).
+std::string toString(const plansys2_msgs::msg::TaskNetwork & network);
 
 }  // namespace pddl
 }  // namespace parser

@@ -135,6 +135,43 @@ DomainExpertNode::DomainExpertNode(const rclcpp::NodeOptions & options)
       &DomainExpertNode::get_domain_action_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3)));
+  // HDDL: the tasks of the domain, and the parameters of each
+  using Tasks = plansys2_msgs::srv::GetDomainTasks;
+  get_domain_tasks_service_ = create_service<Tasks>(
+    "domain_expert/get_domain_tasks",
+    guarded<Tasks>(
+      get_logger(),
+      [this](const std::shared_ptr<rmw_request_id_t>, const std::shared_ptr<Tasks::Request>,
+      const std::shared_ptr<Tasks::Response> response) {
+        if (domain_expert_ == nullptr) {
+          response->success = false;
+          response->error_info = plansys2::kNotActive;
+          return;
+        }
+        response->success = true;
+        response->tasks = domain_expert_->getTasks();
+      }));
+  using TaskDetails = plansys2_msgs::srv::GetDomainTaskDetails;
+  get_domain_task_details_service_ = create_service<TaskDetails>(
+    "domain_expert/get_domain_task_details",
+    guarded<TaskDetails>(
+      get_logger(),
+      [this](const std::shared_ptr<rmw_request_id_t>,
+      const std::shared_ptr<TaskDetails::Request> request,
+      const std::shared_ptr<TaskDetails::Response> response) {
+        if (domain_expert_ == nullptr) {
+          response->success = false;
+          response->error_info = plansys2::kNotActive;
+          return;
+        }
+        auto params = domain_expert_->getTask(request->task);
+        response->success = params.has_value();
+        if (params) {
+          response->parameters = *params;
+        } else {
+          response->error_info = "Task not found: " + request->task;
+        }
+      }));
   get_domain_durative_actions_service_ = create_service<plansys2_msgs::srv::GetDomainActions>(
     "domain_expert/get_domain_durative_actions",
     guarded<plansys2_msgs::srv::GetDomainActions>(

@@ -39,6 +39,8 @@
 #include "plansys2_msgs/srv/get_domain_action_details.hpp"
 #include "plansys2_msgs/srv/get_domain_derived_predicate_details.hpp"
 #include "plansys2_msgs/srv/get_domain_durative_action_details.hpp"
+#include "plansys2_msgs/srv/get_domain_task_details.hpp"
+#include "plansys2_msgs/srv/get_domain_tasks.hpp"
 #include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_msgs/srv/get_states.hpp"
 
@@ -185,6 +187,21 @@ public:
   std::vector<std::string> getActions();
 
   /**
+   * @brief The tasks of a hierarchical (HDDL) domain.
+   *
+   * @return Their names; none in a PDDL domain, or if the domain expert does not answer.
+   */
+  std::vector<std::string> getTasks() override;
+
+  /**
+   * @brief The parameters of a task of a hierarchical (HDDL) domain, with their types.
+   *
+   * @param[in] task The name of the task.
+   * @return nullopt if there is no such task, or the domain expert does not answer.
+   */
+  std::optional<std::vector<plansys2_msgs::msg::Param>> getTask(const std::string & task) override;
+
+  /**
    * @brief Get the details of a regular action defined in the domain.
    *
    * @param[in] action The name of the action.
@@ -267,6 +284,8 @@ private:
   ServiceClient<plansys2_msgs::srv::GetDomainDerivedPredicateDetails>::SharedPtr
     get_derived_predicate_details_client_;
   ServiceClient<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_actions_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainTasks>::SharedPtr get_tasks_client_;
+  ServiceClient<plansys2_msgs::srv::GetDomainTaskDetails>::SharedPtr get_task_details_client_;
   ServiceClient<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_processes_client_;
   ServiceClient<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr get_process_details_client_;
   ServiceClient<plansys2_msgs::srv::GetDomainActions>::SharedPtr get_events_client_;

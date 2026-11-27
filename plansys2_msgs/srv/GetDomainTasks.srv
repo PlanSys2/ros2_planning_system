@@ -1,0 +1,6 @@
+# The tasks of a hierarchical (HDDL) domain, by name; none in a PDDL domain
+std_msgs/Empty request
+---
+bool success
+string[] tasks
+string error_info

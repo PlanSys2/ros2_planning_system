@@ -15,6 +15,8 @@
 
 #include <optional>
 #include <algorithm>
+#include <cctype>
+#include <iterator>
 #include <string>
 #include <vector>
 #include <memory>
@@ -460,6 +462,89 @@ plansys2_msgs::msg::Action::SharedPtr
 DomainExpert::getEvent(const std::string & event, const std::vector<std::string> & params)
 {
   return happening(*domain_, domain_->events, event, params);
+}
+
+namespace
+{
+
+// "(:task name :parameters (?a ?b - t ?c))" as words, lowercase, parentheses apart
+std::vector<std::string> words_of(const std::string & block)
+{
+  std::vector<std::string> words;
+  std::string word;
+  for (char c : block) {
+    if (std::isspace(static_cast<unsigned char>(c)) || c == '(' || c == ')') {
+      if (!word.empty()) {
+        words.push_back(word);
+        word.clear();
+      }
+      if (c == '(' || c == ')') {
+        words.emplace_back(1, c);
+      }
+    } else {
+      word += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    }
+  }
+  if (!word.empty()) {
+    words.push_back(word);
+  }
+  return words;
+}
+
+}  // namespace
+
+std::vector<std::string>
+DomainExpert::getTasks()
+{
+  std::vector<std::string> ret;
+  for (const auto & block : domains_.get_hierarchy_blocks()) {
+    const auto w = words_of(block);
+    if (w.size() > 2 && w[1] == ":task") {
+      ret.push_back(w[2]);
+    }
+  }
+  return ret;
+}
+
+std::optional<std::vector<plansys2_msgs::msg::Param>>
+DomainExpert::getTask(const std::string & task)
+{
+  std::string name = task;
+  std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+  for (const auto & block : domains_.get_hierarchy_blocks()) {
+    const auto w = words_of(block);
+    if (w.size() < 3 || w[1] != ":task" || w[2] != name) {
+      continue;
+    }
+    // Its parameters: the names before "- type" get that type; untyped, "object"
+    std::vector<plansys2_msgs::msg::Param> params;
+    auto at = std::find(w.begin(), w.end(), ":parameters");
+    if (at != w.end() && std::next(at) != w.end() && *std::next(at) == "(") {
+      size_t untyped = 0;
+      for (auto i = std::next(at, 2); i != w.end() && *i != ")"; ++i) {
+        if (*i == "-" && std::next(i) != w.end()) {
+          const std::string type = *++i;
+          for (size_t k = params.size() - untyped; k < params.size(); ++k) {
+            params[k].type = type;
+          }
+          untyped = 0;
+        } else {
+          plansys2_msgs::msg::Param p;
+          p.name = *i;
+          params.push_back(p);
+          ++untyped;
+        }
+      }
+      for (size_t k = params.size() - untyped; k < params.size(); ++k) {
+        params[k].type = "object";
+      }
+    }
+    for (auto & p : params) {
+      p.sub_types = getSubTypes(p.type);
+    }
+    return params;
+  }
+  return std::nullopt;
 }
 
 std::vector<std::string>

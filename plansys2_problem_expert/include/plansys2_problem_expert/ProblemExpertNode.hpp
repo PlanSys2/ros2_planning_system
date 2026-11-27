@@ -47,6 +47,9 @@
 #include "plansys2_msgs/srv/get_states.hpp"
 #include "plansys2_msgs/srv/is_problem_goal_satisfied.hpp"
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
+#include "plansys2_msgs/srv/get_problem_task_network.hpp"
+#include "plansys2_msgs/srv/remove_problem_task_network.hpp"
+#include "plansys2_msgs/srv/set_problem_task_network.hpp"
 #include "plansys2_msgs/srv/remove_problem_metric.hpp"
 #include "plansys2_msgs/srv/set_problem_metric.hpp"
 #include "plansys2_msgs/srv/clear_problem_knowledge.hpp"
@@ -525,6 +528,12 @@ private:
     get_problem_service_;
   rclcpp::Service<plansys2_msgs::srv::IsProblemGoalSatisfied>::SharedPtr
     is_problem_goal_satisfied_service_;
+  rclcpp::Service<plansys2_msgs::srv::SetProblemTaskNetwork>::SharedPtr
+    set_problem_task_network_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetProblemTaskNetwork>::SharedPtr
+    get_problem_task_network_service_;
+  rclcpp::Service<plansys2_msgs::srv::RemoveProblemTaskNetwork>::SharedPtr
+    remove_problem_task_network_service_;
   rclcpp::Service<plansys2_msgs::srv::RemoveProblemGoal>::SharedPtr
     remove_problem_goal_service_;
   rclcpp::Service<plansys2_msgs::srv::SetProblemMetric>::SharedPtr

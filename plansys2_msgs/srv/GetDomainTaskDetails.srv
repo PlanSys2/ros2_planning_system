@@ -1,0 +1,6 @@
+# A task of a hierarchical (HDDL) domain: its parameters, with their types
+string task
+---
+bool success
+plansys2_msgs/Param[] parameters
+string error_info

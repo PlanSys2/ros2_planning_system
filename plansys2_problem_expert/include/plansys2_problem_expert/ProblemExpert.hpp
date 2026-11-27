@@ -205,6 +205,10 @@ public:
    */
   bool clearGoal();
 
+  plansys2::TaskNetwork getTaskNetwork() override;
+  bool setTaskNetwork(const plansys2::TaskNetwork & network) override;
+  bool clearTaskNetwork() override;
+
   /**
    * @brief Get the metric of the problem: what the planner optimizes.
    *

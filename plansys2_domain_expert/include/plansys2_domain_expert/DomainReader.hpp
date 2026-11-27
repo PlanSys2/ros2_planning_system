@@ -81,6 +81,11 @@ public:
   bool is_hierarchical() const;
 
   /**
+   * @brief The tasks and methods of the HDDL domains added, as written.
+   */
+  std::vector<std::string> get_hierarchy_blocks() const;
+
+  /**
    * @brief Get the list of parsed domains.
    *
    * @return std::vector<Domain> Vector containing all parsed domains.
