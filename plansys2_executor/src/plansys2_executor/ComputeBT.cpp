@@ -349,6 +349,7 @@ ComputeBT::computeBTCallback(
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
   factory.registerNodeType<CheckMethodPrecondition>("CheckMethodPrecondition");
+  factory.registerNodeType<WaitMethodCheck>("WaitMethodCheck");
 
   (*action_map)[":0"].at_start_effects_applied_time = now();
   (*action_map)[":0"].at_end_effects_applied_time = now();

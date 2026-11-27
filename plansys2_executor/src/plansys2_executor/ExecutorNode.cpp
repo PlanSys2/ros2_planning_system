@@ -599,6 +599,7 @@ ExecutorNode::get_tree_from_plan(
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
   factory.registerNodeType<CheckMethodPrecondition>("CheckMethodPrecondition");
+  factory.registerNodeType<WaitMethodCheck>("WaitMethodCheck");
 
   auto blackboard = BT::Blackboard::create();
 

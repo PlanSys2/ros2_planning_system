@@ -36,17 +36,17 @@ CheckMethodPrecondition::CheckMethodPrecondition(
 BT::NodeStatus
 CheckMethodPrecondition::tick()
 {
-  std::string task, method, precondition;
+  std::string task, method, precondition, id;
   getInput("task", task);
   getInput("method", method);
   getInput("precondition", precondition);
-  if (precondition.empty()) {
-    return BT::NodeStatus::SUCCESS;
-  }
-  if (!precondition_) {
+  getInput("id", id);
+  if (!precondition.empty() && !precondition_) {
     precondition_ = parser::pddl::fromString(precondition);
   }
-  if (check_in_expert(*precondition_, problem_client_)) {
+  if (precondition.empty() || check_in_expert(*precondition_, problem_client_)) {
+    // The actions after it in the plan may go on
+    config().blackboard->set(method_checked_key(id), true);
     return BT::NodeStatus::SUCCESS;
   }
   rclcpp_lifecycle::LifecycleNode::SharedPtr node;

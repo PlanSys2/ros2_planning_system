@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
 #include <optional>
@@ -31,6 +32,10 @@ namespace plansys2
 
 namespace
 {
+
+// The same time: the times of the items are float32 (2e-6 apart at 25 s, 6e-5 at 1000 s) and
+// the plan's happenings 0.001 apart
+constexpr double kSame = 5e-4;
 
 // The text of an XML attribute
 std::string escaped(const std::string & text)
@@ -114,9 +119,6 @@ std::optional<std::vector<size_t>> HTNBTBuilder::total_order(
 
 std::vector<size_t> HTNBTBuilder::ended_by(double time, size_t item) const
 {
-  // The same time: the times of the items are float32 (2e-6 apart at 25 s, 6e-5 at 1000 s) and
-  // the plan's happenings 0.001 apart
-  constexpr double kSame = 5e-4;
   const size_t n = plan_.items.size();
   auto end = [&](size_t j) {return plan_.items[j].time + plan_.items[j].duration;};
   std::vector<size_t> before;
@@ -155,12 +157,51 @@ std::string HTNBTBuilder::action_xml(size_t item, int depth) const
 {
   std::string text = bt_action_;
   replace(text, "ACTION_ID", escaped(to_action_id(plan_.items[item], action_time_precision_)));
-  replace(text, "WAIT_PREV_ACTIONS", waits_xml(waits_[item], 1));
+  std::string waits = waits_xml(waits_[item], 1);
+  for (const auto & id : checks_[item]) {
+    waits += add_tabs(1) + "<WaitMethodCheck id=\"" + escaped(id) + "\"/>\n";
+  }
+  replace(text, "WAIT_PREV_ACTIONS", waits);
   std::string out;
   std::istringstream lines(text);
   for (std::string line; std::getline(lines, line); ) {
     if (!line.empty()) {
       out += add_tabs(depth) + line + "\n";
+    }
+  }
+  return out;
+}
+
+bool HTNBTBuilder::checked_in_tree(const plansys2_msgs::msg::PlanTask & task) const
+{
+  if (task.precondition.empty()) {
+    return false;
+  }
+  // On a replan, a method applied before anything of the new plan ends was applied in the
+  // state the planner started from: the one before the actions that go on began, which have
+  // changed it since. It is checked there, when the tree is built: not in the tree if it holds
+  return !(ended_by(task.applied, plan_.items.size()).empty() && has_initial_state() &&
+         holds_initially(task.precondition));
+}
+
+std::vector<std::string> HTNBTBuilder::checks_before(size_t item) const
+{
+  // The methods applied before the action starts, and not after it ended (their check waits for
+  // it), whose check is in the tree. Not those applied before an action it waits for starts:
+  // that one waits for them
+  const auto & it = plan_.items[item];
+  const double start = it.time;
+  const double end = it.time + it.duration;
+  double latest = -std::numeric_limits<double>::infinity();
+  for (size_t j : waits_[item]) {
+    latest = std::max(latest, static_cast<double>(plan_.items[j].time));
+  }
+  std::vector<std::string> out;
+  for (const auto & task : plan_.tasks) {
+    if (task.applied <= start + kSame && end > task.applied + kSame &&
+      task.applied >= latest - kSame && checked_in_tree(task))
+    {
+      out.push_back(task.id);
     }
   }
   return out;
@@ -179,18 +220,12 @@ std::string HTNBTBuilder::task_xml(const std::string & id, int depth) const
   const std::string name = task.task.empty() ? "initial task network" :
     task.task + " ← " + task.method;
   std::string out = add_tabs(depth) + "<Sequence name=\"" + escaped(name) + "\">\n";
-  const auto ended = ended_by(task.applied, plan_.items.size());
-  // On a replan, a method applied before anything of the new plan ends was applied in the
-  // state the planner started from: the one before the actions that go on began, which have
-  // changed it since. It is checked there, now, and not in the tree
-  const bool checked = !task.precondition.empty() && ended.empty() && has_initial_state() &&
-    holds_initially(task.precondition);
-  if (!task.precondition.empty() && !checked) {
+  if (checked_in_tree(task)) {
     // In the state the plan applied the method in: once what ended by then has ended
-    out += waits_xml(ended, depth + 1);
+    out += waits_xml(ended_by(task.applied, plan_.items.size()), depth + 1);
     out += add_tabs(depth + 1) + "<CheckMethodPrecondition task=\"" + escaped(task.task) +
       "\" method=\"" + escaped(task.method) + "\" precondition=\"" +
-      escaped(task.precondition) + "\"/>\n";
+      escaped(task.precondition) + "\" id=\"" + escaped(task.id) + "\"/>\n";
   }
   auto child = [&](const std::string & ref, int d) {
       return is_item(ref) ? action_xml(item_of(ref), d) : task_xml(ref, d);
@@ -242,6 +277,11 @@ std::string HTNBTBuilder::get_tree(const plansys2_msgs::msg::Plan & current_plan
   waits_.assign(plan_.items.size(), {});
   for (size_t i = 0; i < plan_.items.size(); ++i) {
     waits_[i] = ended_by(plan_.items[i].time, i);
+  }
+  // And for the checks of the methods applied before it: what it changes could break them
+  checks_.assign(plan_.items.size(), {});
+  for (size_t i = 0; i < plan_.items.size(); ++i) {
+    checks_[i] = checks_before(i);
   }
   return std::string("<root BTCPP_format=\"4\" main_tree_to_execute=\"MainTree\">\n") +
          add_tabs(1) + "<BehaviorTree ID=\"MainTree\">\n" +

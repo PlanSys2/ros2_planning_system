@@ -68,6 +68,10 @@ public:
     size_t subtasks, const std::vector<uint32_t> & ordering);
 
 protected:
+  // Whether the method of a task is checked in the tree (CheckMethodPrecondition)
+  bool checked_in_tree(const plansys2_msgs::msg::PlanTask & task) const;
+  // The tasks whose method checks an action waits for (WaitMethodCheck)
+  std::vector<std::string> checks_before(size_t item) const;
   // Whether a precondition holds in the state the plan starts from (initial_state)
   bool holds_initially(const std::string & precondition) const;
   std::string task_xml(const std::string & id, int depth) const;
@@ -81,6 +85,7 @@ protected:
   plansys2_msgs::msg::Plan plan_;
   std::map<std::string, const plansys2_msgs::msg::PlanTask *> tasks_;
   std::vector<std::vector<size_t>> waits_;  // per item: the items it waits for
+  std::vector<std::vector<std::string>> checks_;  // per item: the method checks it waits for
 };
 
 }  // namespace plansys2

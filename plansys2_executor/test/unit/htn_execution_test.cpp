@@ -236,6 +236,33 @@ TEST(htn_bt_builder, a_method_applied_as_an_action_ends_waits_for_it)
   EXPECT_GT(wait, tree.find("<Sequence name=\"(ready tiago) \u2190 here\">")) << tree;
 }
 
+TEST(htn_bt_builder, actions_after_a_method_wait_for_its_check)
+{
+  // B's method is applied once the first move ends, with tiago in the kitchen; then A's second
+  // move takes tiago away. That move must not start before B's method is checked
+  plansys2_msgs::msg::Plan plan;
+  plan.items = {
+    item(0.0, "(move tiago hall kitchen)", 1.0), item(1.001, "(move tiago kitchen hall)", 1.0),
+    item(2.002, "(pick tiago cup kitchen)")};
+  plan.tasks = {
+    task("root", "", "", {"A", "B"}),
+    task("A", "(tour tiago)", "there_and_back", {"item:0", "item:1"}, {0, 1}),
+    task("B", "(fetch cup)", "take", {"item:2"}, {}, "(robot_at tiago kitchen)", 1.0)};
+  plansys2::HTNBTBuilder builder;
+  builder.initialize();
+  const std::string tree = builder.get_tree(plan);
+  EXPECT_NE(tree.find("<CheckMethodPrecondition task=\"(fetch cup)\" method=\"take\""),
+    std::string::npos) << tree;
+  EXPECT_NE(tree.find(" id=\"B\"/>"), std::string::npos) << tree;
+  // Only the move that starts after it waits: the pick waits for that move already
+  EXPECT_EQ(count(tree, "<WaitMethodCheck id=\"B\"/>"), 1u) << tree;
+  const auto wait = tree.find("<WaitMethodCheck id=\"B\"/>");
+  const auto second_move = tree.find("(move tiago kitchen hall)");
+  const auto pick = tree.find("(pick tiago cup kitchen)");
+  EXPECT_LT(second_move, wait) << tree;
+  EXPECT_LT(wait, pick) << tree;
+}
+
 TEST(htn_bt_builder, the_tree_is_the_decomposition)
 {
   plansys2::HTNBTBuilder builder;
