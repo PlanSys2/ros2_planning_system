@@ -215,6 +215,27 @@ TEST(htn_bt_builder, on_a_replan_the_methods_applied_at_the_start_are_checked_th
   EXPECT_EQ(count(other.get_tree(two_tasks()), "<CheckMethodPrecondition"), 2u);
 }
 
+TEST(htn_bt_builder, a_method_applied_as_an_action_ends_waits_for_it)
+{
+  // The times of the items are float32: 101.011 + 5 is a little later than the time, a double,
+  // at which the method was applied, the end of the move. It is the same time: the check waits
+  plansys2_msgs::msg::Plan plan;
+  plan.items = {
+    item(101.011, "(move tiago hall kitchen)", 5.0), item(106.012, "(pick tiago cup kitchen)")};
+  plan.tasks = {
+    task("root", "", "", {"1"}),
+    task("1", "(deliver cup bedroom)", "m", {"item:0", "2", "item:1"}, {0, 1, 1, 2}),
+    task("2", "(ready tiago)", "here", {}, {}, "(robot_at tiago kitchen)", 106.011)};
+  plansys2::HTNBTBuilder builder;
+  builder.initialize();
+  const std::string tree = builder.get_tree(plan);
+  const auto check = tree.find("<CheckMethodPrecondition task=\"(ready tiago)\"");
+  ASSERT_NE(check, std::string::npos) << tree;
+  const auto wait = tree.rfind("<WaitAction action=\"(move tiago hall kitchen)", check);
+  ASSERT_NE(wait, std::string::npos) << tree;
+  EXPECT_GT(wait, tree.find("<Sequence name=\"(ready tiago) \u2190 here\">")) << tree;
+}
+
 TEST(htn_bt_builder, the_tree_is_the_decomposition)
 {
   plansys2::HTNBTBuilder builder;

@@ -114,7 +114,9 @@ std::optional<std::vector<size_t>> HTNBTBuilder::total_order(
 
 std::vector<size_t> HTNBTBuilder::ended_by(double time, size_t item) const
 {
-  constexpr double kSame = 1e-6;
+  // The same time: the times of the items are float32 (2e-6 apart at 25 s, 6e-5 at 1000 s) and
+  // the plan's happenings 0.001 apart
+  constexpr double kSame = 5e-4;
   const size_t n = plan_.items.size();
   auto end = [&](size_t j) {return plan_.items[j].time + plan_.items[j].duration;};
   std::vector<size_t> before;
