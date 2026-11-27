@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The knowledge panel shows the goal, and the metric and constraints when it has them."""
+"""The knowledge panel shows the goal, and the tasks, metric and constraints when it has them."""
 
 import unittest
 
@@ -50,6 +50,24 @@ class TestKnowledgeText(unittest.TestCase):
         self.assertIn('Constraints', text)
         self.assertIn('(always (not (alarm)))', text)
         self.assertLess(text.index('Metric'), text.index('Constraints'))
+
+    def test_tasks_when_set(self):
+        msg = Knowledge()
+        msg.task_network.tasks = ['(build car_1)', '(build car_2)', '(patrol_wp r2d2 wp1)']
+        msg.task_network.ids = ['first', '', '']
+        msg.task_network.ordering = [0, 1]
+        text = KnowledgeProcessor.knowledge2text(msg)
+        self.assertIn('Tasks', text)
+        self.assertIn('(build car_2)', text)
+        # Their labels, as written or by position, and the orderings
+        self.assertIn('first', text)
+        self.assertIn('ordering: first < t1', text)
+        self.assertLess(text.index('Tasks'), text.index('Goal'))
+
+    def test_no_tasks_section_without_tasks(self):
+        msg = Knowledge()
+        msg.goal = '(and (robot_at r1 kitchen))'
+        self.assertNotIn('Tasks', KnowledgeProcessor.knowledge2text(msg))
 
 
 if __name__ == '__main__':

@@ -19,6 +19,7 @@
 #include <chrono>
 #include <fstream>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -30,6 +31,7 @@
 #include "plansys2_core/TestUtils.hpp"
 #include "plansys2_core/ServiceCall.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
+#include "plansys2_domain_expert/DomainExpertClient.hpp"
 #include "plansys2_domain_expert/DomainExpertNode.hpp"
 #include "plansys2_msgs/msg/knowledge.hpp"
 #include "plansys2_msgs/srv/get_node_details.hpp"
@@ -239,6 +241,71 @@ TEST_F(ProblemExpertNodeMisc, model_file_must_be_readable)
     configure(pddl("domain_simple.pddl") + ":/nonexistent/domain.pddl"),
     State::PRIMARY_STATE_UNCONFIGURED);
   EXPECT_EQ(configure(pddl("domain_simple.pddl")), State::PRIMARY_STATE_INACTIVE);
+}
+
+TEST_F(ProblemExpertNodeMisc, task_networks_through_the_node)
+{
+  // HDDL: the task network set, read and removed through the services, and published with the
+  // rest of the knowledge
+  auto domain_node = std::make_shared<plansys2::DomainExpertNode>();
+  auto problem_node = std::make_shared<plansys2::ProblemExpertNode>();
+  auto test_node = rclcpp::Node::make_shared("problem_expert_tasks_test");
+  auto client = std::make_shared<plansys2::ProblemExpertClient>(test_node);
+  auto domain_client = std::make_shared<plansys2::DomainExpertClient>(test_node);
+  domain_node->set_parameter({"model_file", pddl("house.hddl")});
+  problem_node->set_parameter({"model_file", pddl("house.hddl")});
+  problem_node->set_parameter({"problem_file", pddl("house_problem.hddl")});
+  for (auto transition : {lifecycle_msgs::msg::Transition::TRANSITION_CONFIGURE,
+      lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE})
+  {
+    domain_node->trigger_transition(transition);
+    problem_node->trigger_transition(transition);
+  }
+  std::mutex mutex;
+  plansys2_msgs::msg::Knowledge last;
+  auto knowledge_sub = test_node->create_subscription<plansys2_msgs::msg::Knowledge>(
+    "problem_expert/knowledge", rclcpp::QoS(100).transient_local(),
+    [&](plansys2_msgs::msg::Knowledge::SharedPtr msg) {
+      std::lock_guard<std::mutex> lock(mutex);
+      last = *msg;
+    });
+  rclcpp::executors::MultiThreadedExecutor exe;
+  exe.add_node(domain_node->get_node_base_interface());
+  exe.add_node(problem_node->get_node_base_interface());
+  exe.add_node(test_node);
+  plansys2::testing::ExecutorThread spinner(exe);
+
+  // The tasks of the domain, and the network of the problem file
+  EXPECT_EQ(domain_client->getTasks(), (std::vector<std::string>{"deliver", "go_to"}));
+  auto deliver = domain_client->getTask("deliver");
+  ASSERT_TRUE(deliver.has_value());
+  EXPECT_EQ((*deliver)[1].type, "room");
+  EXPECT_EQ(client->getTaskNetwork().tasks.size(), 2u);
+
+  plansys2::TaskNetwork tasks;
+  tasks.add("(deliver book kitchen)", tasks.add("(deliver cup bedroom)"));
+  ASSERT_TRUE(client->setTaskNetwork(tasks));
+  EXPECT_EQ(client->getTaskNetwork().ordering, (std::vector<uint32_t>{0, 1}));
+  EXPECT_NE(client->getProblem().find("(deliver book kitchen)"), std::string::npos);
+  EXPECT_TRUE(
+    plansys2::testing::wait_for(
+      [&]() {
+        std::lock_guard<std::mutex> lock(mutex);
+        return last.task_network.tasks == std::vector<std::string>{
+          "(deliver cup bedroom)", "(deliver book kitchen)"};
+      }));
+  plansys2::TaskNetwork wrong;
+  wrong.add("(deliver tiago bedroom)");
+  EXPECT_FALSE(client->setTaskNetwork(wrong));
+
+  ASSERT_TRUE(client->clearTaskNetwork());
+  EXPECT_TRUE(client->getTaskNetwork().tasks.empty());
+  EXPECT_TRUE(
+    plansys2::testing::wait_for(
+      [&]() {
+        std::lock_guard<std::mutex> lock(mutex);
+        return last.task_network.tasks.empty();
+      }));
 }
 
 TEST_F(ProblemExpertNodeMisc, cleanup_and_function_topics)

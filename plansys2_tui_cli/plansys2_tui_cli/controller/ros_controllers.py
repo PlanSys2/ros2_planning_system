@@ -375,7 +375,7 @@ class PlanMonitorProcessor:
 
 # ---------------------------------------------------------------------------
 # KnowledgeProcessor
-# Receives the problem expert knowledge (instances/predicates/functions/goal/metric).
+# Receives the problem expert knowledge (instances/predicates/functions/tasks/goal/metric).
 # ---------------------------------------------------------------------------
 class KnowledgeProcessor:
     """Subscribe to ``problem_expert/knowledge``."""
@@ -425,6 +425,22 @@ class KnowledgeProcessor:
         else:
             lines.append('  [dim](none)[/dim]')
         lines.append('')
+
+        # Tasks (HDDL), only when the problem has them: what is to be done, and in what order
+        network = getattr(msg, 'task_network', None)
+        if network is not None and network.tasks:
+            labels = [network.ids[i] if i < len(network.ids) and network.ids[i] else f't{i}'
+                      for i in range(len(network.tasks))]
+            lines.append('[bold underline]Tasks[/bold underline]')
+            for label, task in zip(labels, network.tasks):
+                lines.append(f'  [dim]{_e(label)}[/dim]  [magenta]{_e(task)}[/magenta]')
+            pairs = list(network.ordering)
+            orders = [f'{labels[pairs[k]]} < {labels[pairs[k + 1]]}'
+                      for k in range(0, len(pairs) - 1, 2)
+                      if pairs[k] < len(labels) and pairs[k + 1] < len(labels)]
+            if orders:
+                lines.append(f'  [dim]ordering: {_e(", ".join(orders))}[/dim]')
+            lines.append('')
 
         # Goal
         lines.append('[bold underline]Goal[/bold underline]')

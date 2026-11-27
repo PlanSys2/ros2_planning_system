@@ -1387,6 +1387,7 @@ ProblemExpertNode::get_knowledge_as_msg() const
   ret_msgs->goal = parser::pddl::toString(goal);
   ret_msgs->metric = parser::pddl::toString(problem_expert_->getMetric());
   ret_msgs->constraints = parser::pddl::toString(problem_expert_->getConstraints());
+  ret_msgs->task_network = problem_expert_->getTaskNetwork();
 
   return ret_msgs;
 }
