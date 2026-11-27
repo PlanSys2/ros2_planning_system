@@ -15,7 +15,7 @@
 // Derived predicates: recursive ones to a fixpoint, and a negated one only once complete
 
 #include <algorithm>
-#include <chrono>
+#include <ctime>
 #include <memory>
 #include <set>
 #include <string>
@@ -196,10 +196,10 @@ TEST(derived, a_long_corridor_is_quick)
     }
     auto rules = plansys2::make_derived_rules(derived, instances);
     std::vector<plansys2::Function> functions;
-    const auto start = std::chrono::steady_clock::now();
+    // CPU time: other processes running at the same time do not count
+    const auto start = std::clock();
     const auto result = plansys2::derive(rules, state, functions);
-    const double took =
-      std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+    const double took = static_cast<double>(std::clock() - start) / CLOCKS_PER_SEC;
     EXPECT_EQ(result.size(), state.size() + static_cast<size_t>(rooms * (rooms - 1) / 2));
     // Joined over the facts: 3.8 s for 40 rooms trying every pair of objects, 0.1 s for 20;
     // now 20 ms and 2 ms, and about 20 times that in a coverage build

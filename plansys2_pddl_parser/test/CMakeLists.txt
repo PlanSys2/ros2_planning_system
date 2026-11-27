@@ -1,4 +1,4 @@
-ament_add_gtest(pddl_parser_test pddl_parser_test.cpp TIMEOUT 120)
+ament_add_ros_isolated_gtest(pddl_parser_test pddl_parser_test.cpp TIMEOUT 120)
 target_link_libraries(pddl_parser_test
   ament_index_cpp::ament_index_cpp
   rclcpp::rclcpp

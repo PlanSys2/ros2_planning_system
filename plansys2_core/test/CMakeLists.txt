@@ -1,10 +1,10 @@
-ament_add_gtest(utils_test utils_test.cpp)
+ament_add_ros_isolated_gtest(utils_test utils_test.cpp)
 target_link_libraries(utils_test
   ${PROJECT_NAME}
   ament_index_cpp::ament_index_cpp
 )
 
-ament_add_gtest(plan_solver_base_test plan_solver_base_test.cpp TIMEOUT 120)
+ament_add_ros_isolated_gtest(plan_solver_base_test plan_solver_base_test.cpp TIMEOUT 120)
 target_link_libraries(plan_solver_base_test ${PROJECT_NAME})
 
 ament_add_ros_isolated_gtest(test_utils_test test_utils_test.cpp TIMEOUT 60)
