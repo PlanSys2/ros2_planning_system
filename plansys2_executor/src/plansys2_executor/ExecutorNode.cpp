@@ -31,6 +31,7 @@
 #include "plansys2_core/ServiceCall.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
+#include "plansys2_executor/RemainingTasks.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
 #include "plansys2_problem_expert/ProblemExpert.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
@@ -885,11 +886,22 @@ ExecutorNode::make_replanning_problem()
     // The problem of now, as a problem expert of its own, before what the running actions began
     auto domain = std::make_shared<plansys2::DomainExpert>(domain_client_->getDomain());
     plansys2::ProblemExpert problem(domain);
+    // A hierarchical plan: its task network is what is left of the running plan's tree
+    std::string network;
     if (domain->isHierarchical()) {
-      // Its task network would be the one of the problem, done in part by now
+      const auto & plan = runtime_info_.complete_plan;
+      std::vector<bool> ended(plan.items.size(), false);
+      for (size_t i = 0; i < plan.items.size() && runtime_info_.action_map; ++i) {
+        const auto found = runtime_info_.action_map->find(
+          BTBuilder::to_action_id(plan.items[i], action_time_precision()));
+        ended[i] = found != runtime_info_.action_map->end() && found->second.action_executor &&
+          found->second.action_executor->get_internal_status() == ActionExecutor::SUCCESS;
+      }
+      network = remaining_task_network(plan, ended);
+    }
+    if (domain->isHierarchical() && network.empty()) {
       response.success = false;
-      response.error_info = "no replanning problem for a hierarchical (HDDL) plan yet: it "
-        "needs the tasks still to do";
+      response.error_info = "no hierarchical plan running: no tasks left to say";
     } else if (!problem.addProblem(problem_client_->getProblem())) {
       response.success = false;
       response.error_info = "the problem of the problem expert cannot be read";
@@ -920,7 +932,8 @@ ExecutorNode::make_replanning_problem()
         }
         problem.updateFunction(function.value());
       }
-      response.problem = problem.getProblem();
+      response.problem = network.empty() ? problem.getProblem() :
+        with_task_network(problem.getProblem(), network);
       response.success = true;
     }
   } catch (const std::exception & e) {

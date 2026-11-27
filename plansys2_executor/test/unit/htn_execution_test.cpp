@@ -32,6 +32,7 @@
 #include "plansys2_executor/ActionExecutorClient.hpp"
 #include "plansys2_executor/ExecutorClient.hpp"
 #include "plansys2_executor/ExecutorNode.hpp"
+#include "plansys2_executor/RemainingTasks.hpp"
 #include "plansys2_executor/bt_builder_plugins/htn_bt_builder.hpp"
 #include "plansys2_msgs/msg/execution_event.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
@@ -141,6 +142,44 @@ size_t count(const std::string & text, const std::string & what)
 }
 
 }  // namespace
+
+TEST(htn_replanning, the_tasks_left_of_a_plan)
+{
+  const auto plan = house_plan();
+  // Nothing done: the tasks of the problem, whole
+  EXPECT_EQ(
+    plansys2::remaining_task_network(plan, std::vector<bool>(11, false)),
+    "(:htn :subtasks (and (t0 (deliver cup bedroom)) (t1 (deliver book kitchen))))");
+  // Four actions done: of each delivery, what is left, in the order of its method; the book's
+  // trip to the bedroom and its pick are done, and of the cup's, the first move
+  std::vector<bool> ended(11, false);
+  for (size_t i = 0; i < 4; ++i) {
+    ended[i] = true;
+  }
+  EXPECT_EQ(
+    plansys2::remaining_task_network(plan, ended),
+    "(:htn :subtasks (and (t0 (pick tiago cup kitchen)) (t1 (go_to tiago bedroom))"
+    " (t2 (drop tiago cup bedroom)) (t3 (go_to tiago kitchen)) (t4 (drop tiago book kitchen)))"
+    " :ordering (and (< t0 t1) (< t0 t2) (< t1 t2) (< t3 t4)))");
+  // All done: nothing left
+  EXPECT_EQ(
+    plansys2::remaining_task_network(plan, std::vector<bool>(11, true)),
+    "(:htn :subtasks (and))");
+  // A plan of PDDL has no tasks to say
+  EXPECT_EQ(plansys2::remaining_task_network(plansys2_msgs::msg::Plan(), {}), "");
+}
+
+TEST(htn_replanning, the_task_network_of_a_problem)
+{
+  EXPECT_EQ(
+    plansys2::with_task_network(
+      "(define (problem p) (:domain d) (:htn :subtasks (and (a (t x)))) (:init (f)))", "(:htn N)"),
+    "(define (problem p) (:domain d) (:htn N) (:init (f)))");
+  // Without one, it goes before :init
+  EXPECT_EQ(
+    plansys2::with_task_network("(define (problem p) (:domain d) (:init (f)))", "(:htn N)"),
+    "(define (problem p) (:domain d) (:htn N)\n(:init (f)))");
+}
 
 TEST(htn_bt_builder, total_order)
 {
