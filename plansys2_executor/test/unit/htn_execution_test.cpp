@@ -33,6 +33,7 @@
 #include "plansys2_executor/ExecutorClient.hpp"
 #include "plansys2_executor/ExecutorNode.hpp"
 #include "plansys2_executor/RemainingTasks.hpp"
+#include "plansys2_executor/behavior_tree/wait_action_node.hpp"
 #include "plansys2_executor/bt_builder_plugins/htn_bt_builder.hpp"
 #include "plansys2_msgs/msg/execution_event.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
@@ -234,6 +235,59 @@ TEST(htn_bt_builder, a_method_applied_as_an_action_ends_waits_for_it)
   const auto wait = tree.rfind("<WaitAction action=\"(move tiago hall kitchen)", check);
   ASSERT_NE(wait, std::string::npos) << tree;
   EXPECT_GT(wait, tree.find("<Sequence name=\"(ready tiago) \u2190 here\">")) << tree;
+}
+
+TEST(htn_bt_builder, a_method_applied_as_several_actions_end_waits_for_all)
+{
+  // The factory: three pieces brought at once, and the robot that brought one is then ready
+  plansys2_msgs::msg::Plan plan;
+  plan.items = {
+    item(0, "(transport r2d2 wheel_1 wheels_zone assembly_zone)", 5.0),
+    item(0, "(transport c3po body_car_1 body_car_zone assembly_zone)", 5.0),
+    item(0, "(transport bb8 steering_wheel_1 steering_wheels_zone assembly_zone)", 5.0),
+    item(5.001, "(assemble r2d2 assembly_zone wheel_1 body_car_1 steering_wheel_1 car_1)", 5.0)};
+  plan.tasks = {
+    task("root", "", "", {"1"}),
+    task("1", "(build car_1)", "build_car", {"2", "3", "4", "5", "item:3"},
+      {0, 4, 1, 4, 2, 4, 3, 4}, "", 0.0),
+    task("2", "(fetch wheel_1 assembly_zone)", "fetch_carry", {"item:0"}, {}, "", 0.0),
+    task("3", "(fetch body_car_1 assembly_zone)", "fetch_carry", {"item:1"}, {}, "", 0.0),
+    task("4", "(fetch steering_wheel_1 assembly_zone)", "fetch_carry", {"item:2"}, {}, "", 0.0),
+    task("5", "(ready r2d2 assembly_zone)", "ready_here", {}, {},
+      "(robot_at r2d2 assembly_zone)", 5.0)};
+  plansys2::HTNBTBuilder builder;
+  builder.initialize();
+  const std::string tree = builder.get_tree(plan);
+  const auto check = tree.find("<CheckMethodPrecondition task=\"(ready r2d2 assembly_zone)\"");
+  ASSERT_NE(check, std::string::npos) << tree;
+  const auto sequence = tree.rfind("<Sequence", check);
+  for (const char * robot : {"r2d2", "c3po", "bb8"}) {
+    const auto wait = tree.rfind(std::string("<WaitAction action=\"(transport ") + robot, check);
+    ASSERT_NE(wait, std::string::npos) << robot << "\n" << tree;
+    EXPECT_GT(wait, sequence) << robot << "\n" << tree;
+  }
+}
+
+// What waits for an action waits for its at end effects: its executor finishes before
+// ApplyAtEndEffect applies them, and a method checked in between did not see them
+TEST(htn_bt_builder, waiting_for_an_action_is_waiting_for_its_effects)
+{
+  auto node = rclcpp_lifecycle::LifecycleNode::make_shared("wait_for_effects");
+  const std::string id = "(transport r2d2 wheel_1 wheels_zone assembly_zone):0";
+  auto action_map = std::make_shared<std::map<std::string, plansys2::ActionExecutionInfo>>();
+  (*action_map)[id].action_executor = plansys2::ActionExecutor::make_shared(
+    "(transport r2d2 wheel_1 wheels_zone assembly_zone)", node);
+  (*action_map)[id].action_executor->set_internal_status(plansys2::ActionExecutor::SUCCESS);
+  auto blackboard = BT::Blackboard::create();
+  blackboard->set("action_map", action_map);
+  BT::BehaviorTreeFactory factory;
+  factory.registerNodeType<plansys2::WaitAction>("WaitAction");
+  auto tree = factory.createTreeFromText(
+    "<root BTCPP_format=\"4\"><BehaviorTree ID=\"MainTree\"><WaitAction action=\"" + id +
+    "\"/></BehaviorTree></root>", blackboard);
+  EXPECT_EQ(tree.tickOnce(), BT::NodeStatus::RUNNING);
+  (*action_map)[id].at_end_effects_applied = true;
+  EXPECT_EQ(tree.tickOnce(), BT::NodeStatus::SUCCESS);
 }
 
 TEST(htn_bt_builder, actions_after_a_method_wait_for_its_check)

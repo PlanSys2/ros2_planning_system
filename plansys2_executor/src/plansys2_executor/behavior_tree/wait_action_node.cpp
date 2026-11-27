@@ -81,8 +81,11 @@ WaitAction::tick()
     return BT::NodeStatus::RUNNING;  // Not started yet
   }
 
-  if ((*action_map_)[action].action_executor != nullptr &&
-    (*action_map_)[action].action_executor->is_finished())
+  // Ended: its at end effects applied, not only its executor finished (ApplyAtEndEffect may not
+  // have been ticked yet, and what waits for it would not see them)
+  const ActionExecutionInfo & info = (*action_map_)[action];
+  if (info.action_executor != nullptr && info.action_executor->is_finished() &&
+    info.at_end_effects_applied)
   {
     return BT::NodeStatus::SUCCESS;
   } else {
