@@ -137,6 +137,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a973dccd8986cd45e23f2712cba6082b8" id="r_a973dccd8986cd45e23f2712cba6082b8"><td class="memItemLeft" align="right" valign="top">plansys2_msgs::msg::Action::SharedPtr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a973dccd8986cd45e23f2712cba6082b8">getAction</a> (const std::string &amp;action, const std::vector&lt; std::string &gt; &amp;params={})</td></tr>
 <tr class="memdesc:a973dccd8986cd45e23f2712cba6082b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the details of a regular action defined in the domain.  <br /></td></tr>
 <tr class="separator:a973dccd8986cd45e23f2712cba6082b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae71b2bc72d7889171b1d4bb826026ac1" id="r_ae71b2bc72d7889171b1d4bb826026ac1"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae71b2bc72d7889171b1d4bb826026ac1">getActionDomain</a> () const</td></tr>
+<tr class="memdesc:ae71b2bc72d7889171b1d4bb826026ac1"><td class="mdescLeft">&#160;</td><td class="mdescRight">The domain without its tasks and methods, if hierarchical: a PDDL domain.  <br /></td></tr>
+<tr class="separator:ae71b2bc72d7889171b1d4bb826026ac1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa2188c288e969bccf67b273bc67e7c8a" id="r_aa2188c288e969bccf67b273bc67e7c8a"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa2188c288e969bccf67b273bc67e7c8a">getActions</a> ()</td></tr>
 <tr class="memdesc:aa2188c288e969bccf67b273bc67e7c8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the regular actions defined in the domain.  <br /></td></tr>
 <tr class="separator:aa2188c288e969bccf67b273bc67e7c8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -196,12 +199,21 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6bdb21d8c3c9f7036c7bdc6c0f8e2fc6" id="r_a6bdb21d8c3c9f7036c7bdc6c0f8e2fc6"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6bdb21d8c3c9f7036c7bdc6c0f8e2fc6">getSubTypes</a> (const std::string &amp;type)</td></tr>
 <tr class="memdesc:a6bdb21d8c3c9f7036c7bdc6c0f8e2fc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get every type below a given type: its children, their children, and so on.  <br /></td></tr>
 <tr class="separator:a6bdb21d8c3c9f7036c7bdc6c0f8e2fc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ecb3aa13e22b622f1f6e2c9ddccb525" id="r_a3ecb3aa13e22b622f1f6e2c9ddccb525"><td class="memItemLeft" align="right" valign="top">std::optional&lt; std::vector&lt; <a class="el" href="classplansys2__msgs_1_1msg_1_1Param.html">plansys2_msgs::msg::Param</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3ecb3aa13e22b622f1f6e2c9ddccb525">getTask</a> (const std::string &amp;<a class="el" href="RemainingTasks_8cpp.html#a427ef99d8b77e4cac03718a0a769f806">task</a>) override</td></tr>
+<tr class="memdesc:a3ecb3aa13e22b622f1f6e2c9ddccb525"><td class="mdescLeft">&#160;</td><td class="mdescRight">The parameters of a task of a hierarchical (HDDL) domain.  <br /></td></tr>
+<tr class="separator:a3ecb3aa13e22b622f1f6e2c9ddccb525"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9fcf79768cff1cd9f7962820ba74e4e3" id="r_a9fcf79768cff1cd9f7962820ba74e4e3"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9fcf79768cff1cd9f7962820ba74e4e3">getTasks</a> () override</td></tr>
+<tr class="memdesc:a9fcf79768cff1cd9f7962820ba74e4e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">The tasks of a hierarchical (HDDL) domain: what a task network is made of.  <br /></td></tr>
+<tr class="separator:a9fcf79768cff1cd9f7962820ba74e4e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada13d8932c5df931efa2bdaa0859fbab" id="r_ada13d8932c5df931efa2bdaa0859fbab"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ada13d8932c5df931efa2bdaa0859fbab">getTypes</a> ()</td></tr>
 <tr class="memdesc:ada13d8932c5df931efa2bdaa0859fbab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the types defined in the domain.  <br /></td></tr>
 <tr class="separator:ada13d8932c5df931efa2bdaa0859fbab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8d0d33349a22f7cce37f86841fb2d4ad" id="r_a8d0d33349a22f7cce37f86841fb2d4ad"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8d0d33349a22f7cce37f86841fb2d4ad">getUnsupported</a> ()</td></tr>
 <tr class="memdesc:a8d0d33349a22f7cce37f86841fb2d4ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">The actions and derived predicates that PlanSys2 cannot represent.  <br /></td></tr>
 <tr class="separator:a8d0d33349a22f7cce37f86841fb2d4ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04bff3dd09923f65c091a9bcde6191b5" id="r_a04bff3dd09923f65c091a9bcde6191b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a04bff3dd09923f65c091a9bcde6191b5">isHierarchical</a> () const</td></tr>
+<tr class="memdesc:a04bff3dd09923f65c091a9bcde6191b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the domain is hierarchical (HDDL): it has tasks or methods.  <br /></td></tr>
+<tr class="separator:a04bff3dd09923f65c091a9bcde6191b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classplansys2_1_1DomainExpertInterface"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pub_methods_classplansys2_1_1DomainExpertInterface')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classplansys2_1_1DomainExpertInterface.html">DomainExpertInterface</a></td></tr>
 <tr class="memitem:aab7274f690390d0d508082bfaf02c46a inherit pub_methods_classplansys2_1_1DomainExpertInterface" id="r_aab7274f690390d0d508082bfaf02c46a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classplansys2_1_1DomainExpertInterface.html#aab7274f690390d0d508082bfaf02c46a">DomainExpertInterface</a> ()</td></tr>
 <tr class="memdesc:aab7274f690390d0d508082bfaf02c46a inherit pub_methods_classplansys2_1_1DomainExpertInterface"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <br /></td></tr>
@@ -374,6 +386,25 @@ Public Member Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>plansys2_msgs::msg::Action object containing the action name, parameters, requirements, and effects. If the action does not exist, the returned value is nullptr. </dd></dl>
 
 <p>Implements <a class="el" href="classplansys2_1_1DomainExpertInterface.html#aad90aacfe7e42afa0c66bd71d5139a23">DomainExpertInterface</a>.</p>
+
+</div>
+</div>
+<a id="ae71b2bc72d7889171b1d4bb826026ac1" name="ae71b2bc72d7889171b1d4bb826026ac1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae71b2bc72d7889171b1d4bb826026ac1">&#9670;&#160;</a></span>getActionDomain()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string getActionDomain </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The domain without its tasks and methods, if hierarchical: a PDDL domain. </p>
 
 </div>
 </div>
@@ -1015,6 +1046,72 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a3ecb3aa13e22b622f1f6e2c9ddccb525" name="a3ecb3aa13e22b622f1f6e2c9ddccb525"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ecb3aa13e22b622f1f6e2c9ddccb525">&#9670;&#160;</a></span>getTask()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::optional&lt; std::vector&lt; <a class="el" href="classplansys2__msgs_1_1msg_1_1Param.html">plansys2_msgs::msg::Param</a> &gt; &gt; getTask </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>task</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The parameters of a task of a hierarchical (HDDL) domain. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">task</td><td>The name of the task. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Its parameters, each with its type and the subtypes of that type; nullopt if the domain has no such task. </dd></dl>
+
+<p>Implements <a class="el" href="classplansys2_1_1DomainExpertInterface.html#a2c7fae9cc70537f77eb40be4cd72f80b">DomainExpertInterface</a>.</p>
+
+</div>
+</div>
+<a id="a9fcf79768cff1cd9f7962820ba74e4e3" name="a9fcf79768cff1cd9f7962820ba74e4e3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9fcf79768cff1cd9f7962820ba74e4e3">&#9670;&#160;</a></span>getTasks()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::string &gt; getTasks </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The tasks of a hierarchical (HDDL) domain: what a task network is made of. </p>
+<dl class="section return"><dt>Returns</dt><dd>Their names; none in a PDDL domain. </dd></dl>
+
+<p>Implements <a class="el" href="classplansys2_1_1DomainExpertInterface.html#a89cd9b622b1fc356eaf887431b8e68e5">DomainExpertInterface</a>.</p>
+
+</div>
+</div>
 <a id="ada13d8932c5df931efa2bdaa0859fbab" name="ada13d8932c5df931efa2bdaa0859fbab"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ada13d8932c5df931efa2bdaa0859fbab">&#9670;&#160;</a></span>getTypes()</h2>
 
@@ -1062,6 +1159,26 @@ Public Member Functions</h2></td></tr>
 
 <p>The actions and derived predicates that PlanSys2 cannot represent. </p>
 <dl class="section return"><dt>Returns</dt><dd>One line for each, saying which and why; empty if there are none. </dd></dl>
+
+</div>
+</div>
+<a id="a04bff3dd09923f65c091a9bcde6191b5" name="a04bff3dd09923f65c091a9bcde6191b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a04bff3dd09923f65c091a9bcde6191b5">&#9670;&#160;</a></span>isHierarchical()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> isHierarchical </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Whether the domain is hierarchical (HDDL): it has tasks or methods. </p>
+<p>PlanSys2 keeps them as written, for a planner of HDDL, and reads the rest as PDDL. </p>
 
 </div>
 </div>

@@ -1,11 +1,11 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
 <area shape="rect" id="Node000000" href="$classplansys2__support__py_1_1ClientBase_1_1ClientBase.html" title=" " alt="" coords="5,80,90,106"/>
 <area shape="rect" id="Node000001" href="$classplansys2__support__py_1_1DomainExpertClient_1_1DomainExpertClient.html" title=" " alt="" coords="140,5,274,31"/>
-<area shape="poly" id="edge46_Node000000_Node000001" title=" " alt="" coords="81,69,137,40,163,29,165,34,139,45,84,74"/>
+<area shape="poly" id="edge49_Node000000_Node000001" title=" " alt="" coords="81,69,137,40,163,29,165,34,139,45,84,74"/>
 <area shape="rect" id="Node000002" href="$classplansys2__support__py_1_1ExecutorClient_1_1ExecutorClient.html" title=" " alt="" coords="155,55,259,80"/>
-<area shape="poly" id="edge47_Node000000_Node000002" title=" " alt="" coords="105,81,154,73,155,78,105,86"/>
+<area shape="poly" id="edge50_Node000000_Node000002" title=" " alt="" coords="105,81,154,73,155,78,105,86"/>
 <area shape="rect" id="Node000003" href="$classplansys2__support__py_1_1PlannerClient_1_1PlannerClient.html" title=" " alt="" coords="158,104,256,130"/>
-<area shape="poly" id="edge48_Node000000_Node000003" title=" " alt="" coords="106,99,158,107,157,112,105,104"/>
+<area shape="poly" id="edge51_Node000000_Node000003" title=" " alt="" coords="106,99,158,107,157,112,105,104"/>
 <area shape="rect" id="Node000004" href="$classplansys2__support__py_1_1ProblemExpertClient_1_1ProblemExpertClient.html" title=" " alt="" coords="138,153,276,179"/>
-<area shape="poly" id="edge49_Node000000_Node000004" title=" " alt="" coords="85,112,139,140,165,150,163,155,137,145,82,116"/>
+<area shape="poly" id="edge52_Node000000_Node000004" title=" " alt="" coords="85,112,139,140,165,150,163,155,137,145,82,116"/>
 </map>

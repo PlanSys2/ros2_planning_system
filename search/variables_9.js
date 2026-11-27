@@ -6,5 +6,7 @@ var searchData=
   ['init_3',['init',['../classparser_1_1pddl_1_1Instance.html#a46e53705de97d2798e4beba1b555cb7a',1,'parser::pddl::Instance']]],
   ['input_5farcs_4',['input_arcs',['../structplansys2_1_1Node.html#a7f34e76876dee022f326d7c83acb20c3',1,'plansys2::Node']]],
   ['install_5frequires_5',['install_requires',['../namespacesetup.html#a047d4e9f7b152e767f7bd459218fe1fd',1,'setup']]],
-  ['instances_6',['instances',['../classPartialProblemExpert.html#a5f5bca2fe69d8285ca333182fa3ef7e3',1,'PartialProblemExpert']]]
+  ['instances_6',['instances',['../classPartialProblemExpert.html#a5f5bca2fe69d8285ca333182fa3ef7e3',1,'PartialProblemExpert']]],
+  ['is_5flist_7',['is_list',['../plansys2__pddl__parser_2src_2plansys2__pddl__parser_2Utils_8cpp.html#a491c2dade2ed3aa8a551146de5cc2749',1,'Utils.cpp']]],
+  ['item_8',['item',['../RemainingTasks_8cpp.html#a02e491a383d28941868b142ff9f9e886',1,'RemainingTasks.cpp']]]
 ];

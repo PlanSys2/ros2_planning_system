@@ -122,9 +122,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7525b36a9dbf6f9d13033c28ea04db56" id="r_a7525b36a9dbf6f9d13033c28ea04db56"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structplansys2_1_1Domain.html">Domain</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7525b36a9dbf6f9d13033c28ea04db56">get_domains</a> ()</td></tr>
 <tr class="memdesc:a7525b36a9dbf6f9d13033c28ea04db56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the list of parsed domains.  <br /></td></tr>
 <tr class="separator:a7525b36a9dbf6f9d13033c28ea04db56"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac8882a54ac6eea9028e2d80cb1c4435d" id="r_ac8882a54ac6eea9028e2d80cb1c4435d"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac8882a54ac6eea9028e2d80cb1c4435d">get_joint_domain</a> () const</td></tr>
-<tr class="memdesc:ac8882a54ac6eea9028e2d80cb1c4435d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a joint domain definition combining all added domains.  <br /></td></tr>
-<tr class="separator:ac8882a54ac6eea9028e2d80cb1c4435d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3742a80631876906aa7284ee0f2317d7" id="r_a3742a80631876906aa7284ee0f2317d7"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3742a80631876906aa7284ee0f2317d7">get_hierarchy_blocks</a> () const</td></tr>
+<tr class="memdesc:a3742a80631876906aa7284ee0f2317d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">The tasks and methods of the HDDL domains added, as written.  <br /></td></tr>
+<tr class="separator:a3742a80631876906aa7284ee0f2317d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af94a11bd1b783aa56ad3020e04547790" id="r_af94a11bd1b783aa56ad3020e04547790"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af94a11bd1b783aa56ad3020e04547790">get_joint_domain</a> (<a class="el" href="classbool.html">bool</a> hierarchy=true) const</td></tr>
+<tr class="memdesc:af94a11bd1b783aa56ad3020e04547790"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a joint domain definition combining all added domains.  <br /></td></tr>
+<tr class="separator:af94a11bd1b783aa56ad3020e04547790"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6478e0ed1069fa7ed92f6f9f850309f" id="r_ac6478e0ed1069fa7ed92f6f9f850309f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac6478e0ed1069fa7ed92f6f9f850309f">is_hierarchical</a> () const</td></tr>
+<tr class="memdesc:ac6478e0ed1069fa7ed92f6f9f850309f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether some domain added is hierarchical (HDDL): it has tasks or methods.  <br /></td></tr>
+<tr class="separator:ac6478e0ed1069fa7ed92f6f9f850309f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -149,6 +155,8 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:ab437ed080e5d61bd4998b19a3326857d" id="r_ab437ed080e5d61bd4998b19a3326857d"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab437ed080e5d61bd4998b19a3326857d">get_happenings</a> (const std::string &amp;domain)</td></tr>
 <tr class="memdesc:ab437ed080e5d61bd4998b19a3326857d"><td class="mdescLeft">&#160;</td><td class="mdescRight">The processes and events (PDDL+) of a domain, as written.  <br /></td></tr>
 <tr class="separator:ab437ed080e5d61bd4998b19a3326857d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace5b62c24b447261e85cf34560cbf51a" id="r_ace5b62c24b447261e85cf34560cbf51a"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ace5b62c24b447261e85cf34560cbf51a">get_hierarchy</a> (const std::string &amp;domain)</td></tr>
+<tr class="separator:ace5b62c24b447261e85cf34560cbf51a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a73dd6c8adb53b3fb036fd1e1d9d843c1" id="r_a73dd6c8adb53b3fb036fd1e1d9d843c1"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a73dd6c8adb53b3fb036fd1e1d9d843c1">get_name</a> (std::string &amp;domain)</td></tr>
 <tr class="memdesc:a73dd6c8adb53b3fb036fd1e1d9d843c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract the name of the domain.  <br /></td></tr>
 <tr class="separator:a73dd6c8adb53b3fb036fd1e1d9d843c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -467,14 +475,39 @@ Protected Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ac8882a54ac6eea9028e2d80cb1c4435d" name="ac8882a54ac6eea9028e2d80cb1c4435d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac8882a54ac6eea9028e2d80cb1c4435d">&#9670;&#160;</a></span>get_joint_domain()</h2>
+<a id="ace5b62c24b447261e85cf34560cbf51a" name="ace5b62c24b447261e85cf34560cbf51a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ace5b62c24b447261e85cf34560cbf51a">&#9670;&#160;</a></span>get_hierarchy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::string &gt; get_hierarchy </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>domain</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3742a80631876906aa7284ee0f2317d7" name="a3742a80631876906aa7284ee0f2317d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3742a80631876906aa7284ee0f2317d7">&#9670;&#160;</a></span>get_hierarchy_blocks()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::string get_joint_domain </td>
+          <td class="memname">std::vector&lt; std::string &gt; get_hierarchy_blocks </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
@@ -482,7 +515,32 @@ Protected Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>The tasks and methods of the HDDL domains added, as written. </p>
+
+</div>
+</div>
+<a id="af94a11bd1b783aa56ad3020e04547790" name="af94a11bd1b783aa56ad3020e04547790"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af94a11bd1b783aa56ad3020e04547790">&#9670;&#160;</a></span>get_joint_domain()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string get_joint_domain </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classbool.html">bool</a></td>          <td class="paramname"><span class="paramname"><em>hierarchy</em></span><span class="paramdefsep"> = </span><span class="paramdefval">true</span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
 <p>Get a joint domain definition combining all added domains. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">hierarchy</td><td>Whether to include the tasks and methods of HDDL domains, and their requirements: without them, what is left is a PDDL domain. </td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="section return"><dt>Returns</dt><dd>std::string The combined domain definition. </dd></dl>
 
 </div>
@@ -620,6 +678,25 @@ Protected Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>std::string The types section. </dd></dl>
+
+</div>
+</div>
+<a id="ac6478e0ed1069fa7ed92f6f9f850309f" name="ac6478e0ed1069fa7ed92f6f9f850309f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac6478e0ed1069fa7ed92f6f9f850309f">&#9670;&#160;</a></span>is_hierarchical()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> is_hierarchical </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Whether some domain added is hierarchical (HDDL): it has tasks or methods. </p>
 
 </div>
 </div>

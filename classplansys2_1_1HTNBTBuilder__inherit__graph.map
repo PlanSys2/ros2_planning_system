@@ -1,0 +1,5 @@
+<map id="HTNBTBuilder" name="HTNBTBuilder">
+<area shape="rect" id="Node000001" title="The behavior tree of a hierarchical (HTN) plan, as HDDL executes it." alt="" coords="5,79,112,105"/>
+<area shape="rect" id="Node000002" href="$classplansys2_1_1BTBuilder.html" title="Interface for behavior tree builder implementations." alt="" coords="19,5,98,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="61,46,61,79,56,79,56,46"/>
+</map>

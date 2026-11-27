@@ -157,6 +157,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:af59dac0a4902ebea6428d6bd3e101737"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4283770b5fa4051a2e4a09c52679099b" id="r_a4283770b5fa4051a2e4a09c52679099b"><td class="memItemLeft" align="right" valign="top">Optional[List[PlanSys2Node]]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4283770b5fa4051a2e4a09c52679099b">get_domain_predicates</a> (self)</td></tr>
 <tr class="separator:a4283770b5fa4051a2e4a09c52679099b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affce10c0da04479d87f76f662bfb987f" id="r_affce10c0da04479d87f76f662bfb987f"><td class="memItemLeft" align="right" valign="top">Optional[List[Param]]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#affce10c0da04479d87f76f662bfb987f">get_domain_task_details</a> (self, str <a class="el" href="RemainingTasks_8cpp.html#a427ef99d8b77e4cac03718a0a769f806">task</a>)</td></tr>
+<tr class="separator:affce10c0da04479d87f76f662bfb987f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f2b10ba505199bd741bb3962296a705" id="r_a7f2b10ba505199bd741bb3962296a705"><td class="memItemLeft" align="right" valign="top">Optional[List[str]]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7f2b10ba505199bd741bb3962296a705">get_domain_tasks</a> (self)</td></tr>
+<tr class="separator:a7f2b10ba505199bd741bb3962296a705"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3588d0126089537a52973dfb6343f391" id="r_a3588d0126089537a52973dfb6343f391"><td class="memItemLeft" align="right" valign="top">Optional[List[str]]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3588d0126089537a52973dfb6343f391">get_domain_types</a> (self)</td></tr>
 <tr class="separator:a3588d0126089537a52973dfb6343f391"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a22dbecab8804452b19a24a4bdd407698" id="r_a22dbecab8804452b19a24a4bdd407698"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a22dbecab8804452b19a24a4bdd407698">print_domain_info</a> (self)</td></tr>
@@ -646,6 +650,54 @@ Returns
 -------
 Optional[List[PlanSys2Node]]
     List of predicate nodes or None if failed.</pre> 
+</div>
+</div>
+<a id="affce10c0da04479d87f76f662bfb987f" name="affce10c0da04479d87f76f662bfb987f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#affce10c0da04479d87f76f662bfb987f">&#9670;&#160;</a></span>get_domain_task_details()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> Optional[List[Param]] get_domain_task_details </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">str</td>          <td class="paramname"><span class="paramname"><em>task</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Get the parameters of a task of a hierarchical (HDDL) domain, with their types.
+
+Returns
+-------
+Optional[List[Param]]
+    Its parameters, or None if there is no such task or the call failed.</pre> 
+</div>
+</div>
+<a id="a7f2b10ba505199bd741bb3962296a705" name="a7f2b10ba505199bd741bb3962296a705"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f2b10ba505199bd741bb3962296a705">&#9670;&#160;</a></span>get_domain_tasks()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> Optional[List[str]] get_domain_tasks </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Get the tasks of a hierarchical (HDDL) domain.
+
+Returns
+-------
+Optional[List[str]]
+    Their names (none in a PDDL domain), or None if failed.</pre> 
 </div>
 </div>
 <a id="a3588d0126089537a52973dfb6343f391" name="a3588d0126089537a52973dfb6343f391"></a>

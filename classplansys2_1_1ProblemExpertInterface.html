@@ -135,6 +135,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8bf52f118a112502c249720968b3cb35" id="r_a8bf52f118a112502c249720968b3cb35"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8bf52f118a112502c249720968b3cb35">clearMetric</a> ()=0</td></tr>
 <tr class="memdesc:a8bf52f118a112502c249720968b3cb35"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove the metric of the problem.  <br /></td></tr>
 <tr class="separator:a8bf52f118a112502c249720968b3cb35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d524de722a318dbf0a55ca17921380c" id="r_a4d524de722a318dbf0a55ca17921380c"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4d524de722a318dbf0a55ca17921380c">clearTaskNetwork</a> ()=0</td></tr>
+<tr class="memdesc:a4d524de722a318dbf0a55ca17921380c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear the initial task network.  <br /></td></tr>
+<tr class="separator:a4d524de722a318dbf0a55ca17921380c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add9b4836b544d2809c25f40a9b449b75" id="r_add9b4836b544d2809c25f40a9b449b75"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#add9b4836b544d2809c25f40a9b449b75">existFunction</a> (const <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a179c04a7bc76bbe8ced8440a54c9f8e8">function</a>)=0</td></tr>
 <tr class="memdesc:add9b4836b544d2809c25f40a9b449b75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a function exists in the problem.  <br /></td></tr>
 <tr class="separator:add9b4836b544d2809c25f40a9b449b75"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,6 +171,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ab501e93214730fa2b8a69f0590752cf2" id="r_ab501e93214730fa2b8a69f0590752cf2"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab501e93214730fa2b8a69f0590752cf2">getProblem</a> ()=0</td></tr>
 <tr class="memdesc:ab501e93214730fa2b8a69f0590752cf2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the complete PDDL problem as a string.  <br /></td></tr>
 <tr class="separator:ab501e93214730fa2b8a69f0590752cf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2f62b47bd7862f08241b5b1a06d9ea8" id="r_aa2f62b47bd7862f08241b5b1a06d9ea8"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classplansys2_1_1TaskNetwork.html">plansys2::TaskNetwork</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa2f62b47bd7862f08241b5b1a06d9ea8">getTaskNetwork</a> ()=0</td></tr>
+<tr class="memdesc:aa2f62b47bd7862f08241b5b1a06d9ea8"><td class="mdescLeft">&#160;</td><td class="mdescRight">The initial task network of a hierarchical (HDDL) problem: what is to be done, as tasks, as the goal is for PDDL.  <br /></td></tr>
+<tr class="separator:aa2f62b47bd7862f08241b5b1a06d9ea8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a29895a2328b2942dd1b9a4941f7f09b7" id="r_a29895a2328b2942dd1b9a4941f7f09b7"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a29895a2328b2942dd1b9a4941f7f09b7">isGoalSatisfied</a> (const <a class="el" href="classplansys2_1_1Goal.html">plansys2::Goal</a> &amp;goal)=0</td></tr>
 <tr class="memdesc:a29895a2328b2942dd1b9a4941f7f09b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a goal is satisfied in the current state.  <br /></td></tr>
 <tr class="separator:a29895a2328b2942dd1b9a4941f7f09b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -189,6 +195,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ac6204f913709c8dede6761252cac7cd0" id="r_ac6204f913709c8dede6761252cac7cd0"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac6204f913709c8dede6761252cac7cd0">setMetric</a> (const <a class="el" href="classplansys2_1_1Metric.html">plansys2::Metric</a> &amp;metric)=0</td></tr>
 <tr class="memdesc:ac6204f913709c8dede6761252cac7cd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the metric of the problem.  <br /></td></tr>
 <tr class="separator:ac6204f913709c8dede6761252cac7cd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a396fcdb1ccf3e62492507a8d85f3d109" id="r_a396fcdb1ccf3e62492507a8d85f3d109"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a396fcdb1ccf3e62492507a8d85f3d109">setTaskNetwork</a> (const <a class="el" href="classplansys2_1_1TaskNetwork.html">plansys2::TaskNetwork</a> &amp;network)=0</td></tr>
+<tr class="memdesc:a396fcdb1ccf3e62492507a8d85f3d109"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the initial task network, in place of the one set before.  <br /></td></tr>
+<tr class="separator:a396fcdb1ccf3e62492507a8d85f3d109"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae13aa2f58abfb9668c8dd9de2537fd47" id="r_ae13aa2f58abfb9668c8dd9de2537fd47"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae13aa2f58abfb9668c8dd9de2537fd47">updateFunction</a> (const <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &amp;<a class="el" href="plansys2__problem__expert_2src_2plansys2__problem__expert_2Utils_8cpp.html#a179c04a7bc76bbe8ced8440a54c9f8e8">function</a>)=0</td></tr>
 <tr class="memdesc:ae13aa2f58abfb9668c8dd9de2537fd47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the value of an existing function.  <br /></td></tr>
 <tr class="separator:ae13aa2f58abfb9668c8dd9de2537fd47"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -478,6 +487,36 @@ Public Member Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>true if the metric was cleared. </dd></dl>
 
 <p>Implemented in <a class="el" href="classplansys2_1_1ProblemExpert.html#a8aa12d704f03f9cdb62ace16f76eae9a">ProblemExpert</a>, and <a class="el" href="classplansys2_1_1ProblemExpertClient.html#a8aa12d704f03f9cdb62ace16f76eae9a">ProblemExpertClient</a>.</p>
+
+</div>
+</div>
+<a id="a4d524de722a318dbf0a55ca17921380c" name="a4d524de722a318dbf0a55ca17921380c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d524de722a318dbf0a55ca17921380c">&#9670;&#160;</a></span>clearTaskNetwork()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="classbool.html">bool</a> clearTaskNetwork </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Clear the initial task network. </p>
+<dl class="section return"><dt>Returns</dt><dd>true if it was cleared. </dd></dl>
+
+<p>Implemented in <a class="el" href="classplansys2_1_1ProblemExpert.html#aeb468a9499c7710b56d2851a995d79ac">ProblemExpert</a>, and <a class="el" href="classplansys2_1_1ProblemExpertClient.html#aeb468a9499c7710b56d2851a995d79ac">ProblemExpertClient</a>.</p>
 
 </div>
 </div>
@@ -841,6 +880,36 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="aa2f62b47bd7862f08241b5b1a06d9ea8" name="aa2f62b47bd7862f08241b5b1a06d9ea8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2f62b47bd7862f08241b5b1a06d9ea8">&#9670;&#160;</a></span>getTaskNetwork()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="classplansys2_1_1TaskNetwork.html">plansys2::TaskNetwork</a> getTaskNetwork </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>The initial task network of a hierarchical (HDDL) problem: what is to be done, as tasks, as the goal is for PDDL. </p>
+<dl class="section return"><dt>Returns</dt><dd>The task network; empty if none is set. </dd></dl>
+
+<p>Implemented in <a class="el" href="classplansys2_1_1ProblemExpert.html#a87a939096a583d8702ad84ece6b3cc08">ProblemExpert</a>, and <a class="el" href="classplansys2_1_1ProblemExpertClient.html#a87a939096a583d8702ad84ece6b3cc08">ProblemExpertClient</a>.</p>
+
+</div>
+</div>
 <a id="a29895a2328b2942dd1b9a4941f7f09b7" name="a29895a2328b2942dd1b9a4941f7f09b7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a29895a2328b2942dd1b9a4941f7f09b7">&#9670;&#160;</a></span>isGoalSatisfied()</h2>
 
@@ -1054,6 +1123,43 @@ Public Member Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>true if the metric was valid and set, false otherwise. </dd></dl>
 
 <p>Implemented in <a class="el" href="classplansys2_1_1ProblemExpert.html#a23ad18c8dbb76bd9d76c0c443302c77e">ProblemExpert</a>, and <a class="el" href="classplansys2_1_1ProblemExpertClient.html#a23ad18c8dbb76bd9d76c0c443302c77e">ProblemExpertClient</a>.</p>
+
+</div>
+</div>
+<a id="a396fcdb1ccf3e62492507a8d85f3d109" name="a396fcdb1ccf3e62492507a8d85f3d109"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a396fcdb1ccf3e62492507a8d85f3d109">&#9670;&#160;</a></span>setTaskNetwork()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="el" href="classbool.html">bool</a> setTaskNetwork </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classplansys2_1_1TaskNetwork.html">plansys2::TaskNetwork</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>network</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set the initial task network, in place of the one set before. </p>
+<p>Each task must be a task or an action of the (HDDL) domain, with as many arguments as it has parameters, each an instance or a constant of its type; each ordering, between two of them.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">network</td><td>The task network. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if it was set, false otherwise (nothing changes then). </dd></dl>
+
+<p>Implemented in <a class="el" href="classplansys2_1_1ProblemExpert.html#af4c69ec692b1756010ff299a04876b22">ProblemExpert</a>, and <a class="el" href="classplansys2_1_1ProblemExpertClient.html#af4c69ec692b1756010ff299a04876b22">ProblemExpertClient</a>.</p>
 
 </div>
 </div>

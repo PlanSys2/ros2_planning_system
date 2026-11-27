@@ -108,19 +108,21 @@ Inheritance diagram for BTBuilder:</div>
 <div class="dyncontent">
 <div class="center"><img src="classplansys2_1_1BTBuilder__inherit__graph.png" border="0" usemap="#aBTBuilder_inherit__map" alt="Inheritance graph"/></div>
 <map name="aBTBuilder_inherit__map" id="aBTBuilder_inherit__map">
-<area shape="rect" title="Interface for behavior tree builder implementations." alt="" coords="166,5,244,31"/>
-<area shape="rect" href="classplansys2_1_1STNBTBuilder.html" title="Behavior tree builder that uses Simple Temporal Networks (STN) to manage temporal constraints." alt="" coords="5,79,111,105"/>
-<area shape="poly" title=" " alt="" coords="167,41,84,81,82,76,165,36"/>
-<area shape="rect" href="classplansys2_1_1SequentialBTBuilder.html" title=" " alt="" coords="135,79,274,105"/>
-<area shape="poly" title=" " alt="" coords="207,46,207,79,202,79,202,46"/>
-<area shape="rect" href="classplansys2_1_1SimpleBTBuilder.html" title="Simple implementation of a behavior tree builder." alt="" coords="320,79,438,105"/>
-<area shape="poly" title=" " alt="" coords="249,35,351,76,349,81,247,40"/>
-<area shape="rect" href="classSequentialBTBuilderTest.html" title=" " alt="" coords="101,153,266,178"/>
-<area shape="poly" title=" " alt="" coords="199,120,189,153,184,151,194,119"/>
-<area shape="rect" href="classDestructionProbeBTBuilder.html" title=" " alt="" coords="290,153,468,178"/>
-<area shape="poly" title=" " alt="" coords="382,120,382,152,377,152,377,120"/>
-<area shape="rect" href="classSimpleBTBuilderTest.html" title=" " alt="" coords="492,153,637,178"/>
-<area shape="poly" title=" " alt="" coords="426,108,534,150,532,155,424,113"/>
+<area shape="rect" title="Interface for behavior tree builder implementations." alt="" coords="222,5,300,31"/>
+<area shape="rect" href="classplansys2_1_1HTNBTBuilder.html" title="The behavior tree of a hierarchical (HTN) plan, as HDDL executes it." alt="" coords="5,79,112,105"/>
+<area shape="poly" title=" " alt="" coords="213,39,94,81,92,76,211,34"/>
+<area shape="rect" href="classplansys2_1_1STNBTBuilder.html" title="Behavior tree builder that uses Simple Temporal Networks (STN) to manage temporal constraints." alt="" coords="135,79,240,105"/>
+<area shape="poly" title=" " alt="" coords="240,44,202,80,198,77,236,40"/>
+<area shape="rect" href="classplansys2_1_1SequentialBTBuilder.html" title=" " alt="" coords="265,79,404,105"/>
+<area shape="poly" title=" " alt="" coords="286,40,324,77,320,80,282,44"/>
+<area shape="rect" href="classplansys2_1_1SimpleBTBuilder.html" title="Simple implementation of a behavior tree builder." alt="" coords="450,79,568,105"/>
+<area shape="poly" title=" " alt="" coords="316,32,467,76,466,81,314,38"/>
+<area shape="rect" href="classSequentialBTBuilderTest.html" title=" " alt="" coords="230,153,396,178"/>
+<area shape="poly" title=" " alt="" coords="329,120,319,153,314,151,324,119"/>
+<area shape="rect" href="classDestructionProbeBTBuilder.html" title=" " alt="" coords="420,153,598,178"/>
+<area shape="poly" title=" " alt="" coords="512,120,512,152,506,152,506,120"/>
+<area shape="rect" href="classSimpleBTBuilderTest.html" title=" " alt="" coords="622,153,767,178"/>
+<area shape="poly" title=" " alt="" coords="556,108,664,150,662,155,554,113"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <div class="dynheader">
@@ -173,13 +175,13 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a320215550b0cd381f3b61bba11cc0343" id="r_a320215550b0cd381f3b61bba11cc0343"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classplansys2_1_1ActionVariant.html">plansys2::ActionVariant</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a320215550b0cd381f3b61bba11cc0343">plan_item_action</a> (<a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &amp;<a class="el" href="#ac112d607051000a90f75129505eb0177">domain_client</a>, const std::vector&lt; std::string &gt; &amp;actions, const plansys2_msgs::msg::PlanItem &amp;item)</td></tr>
+<tr class="memitem:a320215550b0cd381f3b61bba11cc0343" id="r_a320215550b0cd381f3b61bba11cc0343"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classplansys2_1_1ActionVariant.html">plansys2::ActionVariant</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a320215550b0cd381f3b61bba11cc0343">plan_item_action</a> (<a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &amp;<a class="el" href="#ac112d607051000a90f75129505eb0177">domain_client</a>, const std::vector&lt; std::string &gt; &amp;actions, const plansys2_msgs::msg::PlanItem &amp;<a class="el" href="RemainingTasks_8cpp.html#a02e491a383d28941868b142ff9f9e886">item</a>)</td></tr>
 <tr class="memdesc:a320215550b0cd381f3b61bba11cc0343"><td class="mdescLeft">&#160;</td><td class="mdescRight">The action of a plan item, from the domain, with ?duration bound to its duration.  <br /></td></tr>
 <tr class="separator:a320215550b0cd381f3b61bba11cc0343"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf4d6255563bbd590a2458e8aab8ef4d" id="r_acf4d6255563bbd590a2458e8aab8ef4d"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acf4d6255563bbd590a2458e8aab8ef4d">to_action_id</a> (const <a class="el" href="structplansys2_1_1ActionStamped.html">ActionStamped</a> &amp;action, <a class="el" href="classint.html">int</a> precision)</td></tr>
 <tr class="memdesc:acf4d6255563bbd590a2458e8aab8ef4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a unique action identifier from an <a class="el" href="structplansys2_1_1ActionStamped.html" title="Representation of an action with its temporal information.">ActionStamped</a>.  <br /></td></tr>
 <tr class="separator:acf4d6255563bbd590a2458e8aab8ef4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab2fe3bab9056b7e2b92647f9c84918d9" id="r_ab2fe3bab9056b7e2b92647f9c84918d9"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab2fe3bab9056b7e2b92647f9c84918d9">to_action_id</a> (const plansys2_msgs::msg::PlanItem &amp;item, <a class="el" href="classint.html">int</a> precision)</td></tr>
+<tr class="memitem:ab2fe3bab9056b7e2b92647f9c84918d9" id="r_ab2fe3bab9056b7e2b92647f9c84918d9"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab2fe3bab9056b7e2b92647f9c84918d9">to_action_id</a> (const plansys2_msgs::msg::PlanItem &amp;<a class="el" href="RemainingTasks_8cpp.html#a02e491a383d28941868b142ff9f9e886">item</a>, <a class="el" href="classint.html">int</a> precision)</td></tr>
 <tr class="memdesc:ab2fe3bab9056b7e2b92647f9c84918d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a unique action identifier from a plan item.  <br /></td></tr>
 <tr class="separator:ab2fe3bab9056b7e2b92647f9c84918d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d3630c8b8c59781cdcca01ab4206b6b" id="r_a7d3630c8b8c59781cdcca01ab4206b6b"><td class="memItemLeft" align="right" valign="top">static int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7d3630c8b8c59781cdcca01ab4206b6b">to_int_time</a> (double time, <a class="el" href="classint.html">int</a> power)</td></tr>
@@ -197,6 +199,8 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a0a7955d755e1af6b2437b3e8ee457961"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac112d607051000a90f75129505eb0177" id="r_ac112d607051000a90f75129505eb0177"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classplansys2_1_1DomainExpertClient.html">plansys2::DomainExpertClient</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac112d607051000a90f75129505eb0177">domain_client</a> () const</td></tr>
 <tr class="separator:ac112d607051000a90f75129505eb0177"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f12d46dbc8ed61504c1bdc87cd8df59" id="r_a3f12d46dbc8ed61504c1bdc87cd8df59"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classbool.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3f12d46dbc8ed61504c1bdc87cd8df59">has_initial_state</a> () const</td></tr>
+<tr class="separator:a3f12d46dbc8ed61504c1bdc87cd8df59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c302ce42511d3764a74c002304658dd" id="r_a7c302ce42511d3764a74c002304658dd"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classplansys2_1_1Function.html">plansys2::Function</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7c302ce42511d3764a74c002304658dd">initial_functions</a> () const</td></tr>
 <tr class="separator:a7c302ce42511d3764a74c002304658dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae104da4196775d2e723b0032b0e3d23" id="r_aae104da4196775d2e723b0032b0e3d23"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classplansys2_1_1Predicate.html">plansys2::Predicate</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aae104da4196775d2e723b0032b0e3d23">initial_predicates</a> () const</td></tr>
@@ -409,7 +413,7 @@ Protected Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>std::string containing the DOT graph representation. </dd></dl>
 
-<p>Implemented in <a class="el" href="classplansys2_1_1SequentialBTBuilder.html#aa4ce2edee0722f745ac6f004b238048d">SequentialBTBuilder</a>, <a class="el" href="classplansys2_1_1SimpleBTBuilder.html#aa4ce2edee0722f745ac6f004b238048d">SimpleBTBuilder</a>, and <a class="el" href="classplansys2_1_1STNBTBuilder.html#aa4ce2edee0722f745ac6f004b238048d">STNBTBuilder</a>.</p>
+<p>Implemented in <a class="el" href="classplansys2_1_1HTNBTBuilder.html#ac0d1e89d89ae6f0828f898df4b065ba0">HTNBTBuilder</a>, <a class="el" href="classplansys2_1_1SequentialBTBuilder.html#aa4ce2edee0722f745ac6f004b238048d">SequentialBTBuilder</a>, <a class="el" href="classplansys2_1_1SimpleBTBuilder.html#aa4ce2edee0722f745ac6f004b238048d">SimpleBTBuilder</a>, and <a class="el" href="classplansys2_1_1STNBTBuilder.html#aa4ce2edee0722f745ac6f004b238048d">STNBTBuilder</a>.</p>
 
 </div>
 </div>
@@ -439,7 +443,7 @@ Protected Attributes</h2></td></tr>
 <p>Get the internal graph representation. </p>
 <dl class="section return"><dt>Returns</dt><dd>Shared pointer to the graph. </dd></dl>
 
-<p>Implemented in <a class="el" href="classplansys2_1_1SequentialBTBuilder.html#aaffc65581c958a264d0e675abf1af133">SequentialBTBuilder</a>, <a class="el" href="classplansys2_1_1SimpleBTBuilder.html#a42703b26f82a12655e40996b89b6bfab">SimpleBTBuilder</a>, and <a class="el" href="classplansys2_1_1STNBTBuilder.html#a42703b26f82a12655e40996b89b6bfab">STNBTBuilder</a>.</p>
+<p>Implemented in <a class="el" href="classplansys2_1_1HTNBTBuilder.html#ae93cb788847b62898896996db1b92ba8">HTNBTBuilder</a>, <a class="el" href="classplansys2_1_1SequentialBTBuilder.html#aaffc65581c958a264d0e675abf1af133">SequentialBTBuilder</a>, <a class="el" href="classplansys2_1_1SimpleBTBuilder.html#a42703b26f82a12655e40996b89b6bfab">SimpleBTBuilder</a>, and <a class="el" href="classplansys2_1_1STNBTBuilder.html#a42703b26f82a12655e40996b89b6bfab">STNBTBuilder</a>.</p>
 
 </div>
 </div>
@@ -475,7 +479,32 @@ Protected Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>std::string containing the behavior tree XML. </dd></dl>
 
-<p>Implemented in <a class="el" href="classplansys2_1_1SequentialBTBuilder.html#a02abf6923d2bc75d8db5acb42e043b80">SequentialBTBuilder</a>, <a class="el" href="classplansys2_1_1SimpleBTBuilder.html#a02abf6923d2bc75d8db5acb42e043b80">SimpleBTBuilder</a>, <a class="el" href="classplansys2_1_1STNBTBuilder.html#a02abf6923d2bc75d8db5acb42e043b80">STNBTBuilder</a>, <a class="el" href="classSequentialBTBuilderTest.html#a02abf6923d2bc75d8db5acb42e043b80">SequentialBTBuilderTest</a>, and <a class="el" href="classSimpleBTBuilderTest.html#a02abf6923d2bc75d8db5acb42e043b80">SimpleBTBuilderTest</a>.</p>
+<p>Implemented in <a class="el" href="classplansys2_1_1HTNBTBuilder.html#a0407bc14a69b16119a72d65d1b063404">HTNBTBuilder</a>, <a class="el" href="classplansys2_1_1SequentialBTBuilder.html#a02abf6923d2bc75d8db5acb42e043b80">SequentialBTBuilder</a>, <a class="el" href="classplansys2_1_1SimpleBTBuilder.html#a02abf6923d2bc75d8db5acb42e043b80">SimpleBTBuilder</a>, <a class="el" href="classplansys2_1_1STNBTBuilder.html#a02abf6923d2bc75d8db5acb42e043b80">STNBTBuilder</a>, <a class="el" href="classSequentialBTBuilderTest.html#a02abf6923d2bc75d8db5acb42e043b80">SequentialBTBuilderTest</a>, and <a class="el" href="classSimpleBTBuilderTest.html#a02abf6923d2bc75d8db5acb42e043b80">SimpleBTBuilderTest</a>.</p>
+
+</div>
+</div>
+<a id="a3f12d46dbc8ed61504c1bdc87cd8df59" name="a3f12d46dbc8ed61504c1bdc87cd8df59"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f12d46dbc8ed61504c1bdc87cd8df59">&#9670;&#160;</a></span>has_initial_state()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classbool.html">bool</a> has_initial_state </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -571,7 +600,7 @@ Protected Attributes</h2></td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classplansys2_1_1SequentialBTBuilder.html#af3cab6c02952c64f49b13ae060d402a6">SequentialBTBuilder</a>, <a class="el" href="classplansys2_1_1SimpleBTBuilder.html#af3cab6c02952c64f49b13ae060d402a6">SimpleBTBuilder</a>, and <a class="el" href="classplansys2_1_1STNBTBuilder.html#af3cab6c02952c64f49b13ae060d402a6">STNBTBuilder</a>.</p>
+<p>Implemented in <a class="el" href="classplansys2_1_1HTNBTBuilder.html#a0225b44e6d0bea45469d032fced40b86">HTNBTBuilder</a>, <a class="el" href="classplansys2_1_1SequentialBTBuilder.html#af3cab6c02952c64f49b13ae060d402a6">SequentialBTBuilder</a>, <a class="el" href="classplansys2_1_1SimpleBTBuilder.html#af3cab6c02952c64f49b13ae060d402a6">SimpleBTBuilder</a>, and <a class="el" href="classplansys2_1_1STNBTBuilder.html#af3cab6c02952c64f49b13ae060d402a6">STNBTBuilder</a>.</p>
 
 </div>
 </div>
@@ -677,7 +706,7 @@ Protected Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if propagation was successful, false if inconsistencies were found. </dd></dl>
 
-<p>Implemented in <a class="el" href="classplansys2_1_1SequentialBTBuilder.html#a291d62802a5f41e77c1ff7a74ef01084">SequentialBTBuilder</a>, <a class="el" href="classplansys2_1_1SimpleBTBuilder.html#acce6983df946e736e0d75b469bdb53ea">SimpleBTBuilder</a>, and <a class="el" href="classplansys2_1_1STNBTBuilder.html#ac195b7590b813224911b7851a1f9813d">STNBTBuilder</a>.</p>
+<p>Implemented in <a class="el" href="classplansys2_1_1HTNBTBuilder.html#a70559fc6fbefab28d860acf06a1c440e">HTNBTBuilder</a>, <a class="el" href="classplansys2_1_1SequentialBTBuilder.html#a291d62802a5f41e77c1ff7a74ef01084">SequentialBTBuilder</a>, <a class="el" href="classplansys2_1_1SimpleBTBuilder.html#acce6983df946e736e0d75b469bdb53ea">SimpleBTBuilder</a>, and <a class="el" href="classplansys2_1_1STNBTBuilder.html#ac195b7590b813224911b7851a1f9813d">STNBTBuilder</a>.</p>
 
 </div>
 </div>

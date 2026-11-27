@@ -1,0 +1,17 @@
+<map id="HTNBTBuilder" name="HTNBTBuilder">
+<area shape="rect" id="Node000001" title="The behavior tree of a hierarchical (HTN) plan, as HDDL executes it." alt="" coords="564,136,670,161"/>
+<area shape="rect" id="Node000002" href="$classplansys2_1_1BTBuilder.html" title="Interface for behavior tree builder implementations." alt="" coords="301,8,380,33"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="395,24,467,41,505,55,542,74,579,104,607,133,603,137,575,108,539,79,503,60,466,47,394,30"/>
+<area shape="rect" id="Node000003" href="$classint.html" title=" " alt="" coords="5,8,44,33"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="59,18,301,18,301,23,59,23"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="314,57,367,82"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="383,73,457,88,541,111,591,133,589,137,539,116,456,93,382,79"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="317,106,364,132"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="380,120,564,140,563,145,379,126"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="228,156,453,197"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="468,168,540,161,563,157,564,162,540,166,469,173"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="276,221,405,262"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="419,223,479,208,539,188,594,159,597,164,541,192,480,213,421,229"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="276,287,405,327"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="419,285,480,262,538,228,576,193,604,160,608,163,580,196,542,232,482,267,421,290"/>
+</map>

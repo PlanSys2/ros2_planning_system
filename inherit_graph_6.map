@@ -1,35 +1,39 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" title=" " alt="" coords="5,499,125,524"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,548,125,574"/>
 <area shape="rect" id="Node000001" href="$classplansys2_1_1BtActionNode.html" title=" " alt="" coords="177,96,352,137"/>
-<area shape="poly" id="edge6_Node000000_Node000001" title=" " alt="" coords="68,482,78,425,98,349,128,267,147,226,171,189,197,159,227,135,230,140,201,163,175,192,152,229,133,269,103,351,84,426,73,483"/>
+<area shape="poly" id="edge6_Node000000_Node000001" title=" " alt="" coords="66,532,75,467,93,378,124,281,145,233,170,189,197,159,226,136,230,140,200,163,175,192,150,236,129,283,98,380,80,468,71,533"/>
 <area shape="rect" id="Node000006" href="$classplansys2_1_1ApplyAtEndEffect.html" title="BehaviorTree node that applies the at&#45;end effects of a durative action." alt="" coords="204,203,325,228"/>
-<area shape="poly" id="edge11_Node000000_Node000006" title=" " alt="" coords="66,483,75,431,93,364,124,296,145,265,171,237,202,221,204,225,174,242,149,268,129,299,98,366,80,432,72,484"/>
+<area shape="poly" id="edge11_Node000000_Node000006" title=" " alt="" coords="64,532,70,471,87,392,100,350,118,309,142,271,171,238,186,227,202,220,204,225,188,232,174,241,146,274,123,312,105,352,92,393,76,472,70,533"/>
 <area shape="rect" id="Node000008" href="$classplansys2_1_1ApplyAtStartEffect.html" title="BehaviorTree node that applies the at&#45;start effects of a durative action." alt="" coords="201,252,328,278"/>
-<area shape="poly" id="edge13_Node000000_Node000008" title=" " alt="" coords="69,483,81,439,101,387,130,333,149,308,171,287,199,272,202,276,174,291,153,312,135,336,105,389,86,441,74,484"/>
+<area shape="poly" id="edge13_Node000000_Node000008" title=" " alt="" coords="66,532,75,480,93,414,124,346,145,314,171,287,199,271,202,276,174,291,149,318,129,348,98,416,80,481,72,533"/>
 <area shape="rect" id="Node000010" href="$classplansys2_1_1BtActionNode.html" title="Abstract class representing an action based BT node." alt="" coords="180,301,349,327"/>
-<area shape="poly" id="edge15_Node000000_Node000010" title=" " alt="" coords="73,483,87,449,108,410,136,370,171,336,190,325,193,330,174,340,140,373,113,412,92,452,78,485"/>
+<area shape="poly" id="edge15_Node000000_Node000010" title=" " alt="" coords="69,532,81,489,101,436,130,382,149,358,171,336,188,325,191,330,174,340,153,361,135,385,105,438,86,490,74,534"/>
 <area shape="rect" id="Node000011" href="$classplansys2_1_1BtServiceNode.html" title="Abstract class representing a service based BT node." alt="" coords="173,351,356,376"/>
-<area shape="poly" id="edge16_Node000000_Node000011" title=" " alt="" coords="80,484,117,434,142,407,171,385,193,375,196,379,174,390,146,411,121,437,84,487"/>
+<area shape="poly" id="edge16_Node000000_Node000011" title=" " alt="" coords="73,533,87,499,108,459,136,419,171,385,190,375,193,379,174,390,140,423,113,462,92,501,78,535"/>
 <area shape="rect" id="Node000012" href="$classplansys2_1_1CheckAction.html" title="BehaviorTree node that checks if an action can be executed." alt="" coords="217,400,312,426"/>
-<area shape="poly" id="edge17_Node000000_Node000012" title=" " alt="" coords="91,487,128,459,172,434,216,419,217,424,174,439,131,464,95,491"/>
+<area shape="poly" id="edge17_Node000000_Node000012" title=" " alt="" coords="80,533,117,483,142,457,171,435,193,424,215,417,217,422,195,429,174,439,146,461,121,486,84,536"/>
 <area shape="rect" id="Node000013" href="$classplansys2_1_1CheckAtEndReq.html" title="BehaviorTree node that checks the at&#45;end requirements of a durative action." alt="" coords="206,449,322,475"/>
-<area shape="poly" id="edge18_Node000000_Node000013" title=" " alt="" coords="134,492,209,473,210,478,136,497"/>
-<area shape="rect" id="Node000015" href="$classplansys2_1_1CheckOverAllReq.html" title="BehaviorTree node that checks the overall requirements of a durative action." alt="" coords="202,499,326,524"/>
-<area shape="poly" id="edge20_Node000000_Node000015" title=" " alt="" coords="140,509,202,509,202,514,140,514"/>
-<area shape="rect" id="Node000017" href="$classplansys2_1_1CheckTimeout.html" title="BehaviorTree node that checks if a given action has timed out." alt="" coords="212,548,317,574"/>
-<area shape="poly" id="edge22_Node000000_Node000017" title=" " alt="" coords="135,526,212,545,210,550,134,531"/>
-<area shape="rect" id="Node000018" href="$classplansys2_1_1ExecuteAction.html" title="BehaviorTree node that executes a given action." alt="" coords="212,597,316,623"/>
-<area shape="poly" id="edge23_Node000000_Node000018" title=" " alt="" coords="95,532,131,559,174,584,213,597,211,602,172,589,128,564,91,536"/>
-<area shape="rect" id="Node000020" href="$classplansys2_1_1RestoreAtStartEffect.html" title="BehaviorTree node that restores the at&#45;start effects of a durative action." alt="" coords="194,647,334,672"/>
-<area shape="poly" id="edge25_Node000000_Node000020" title=" " alt="" coords="84,536,121,586,146,612,174,633,196,644,193,648,171,638,142,616,117,589,80,539"/>
-<area shape="rect" id="Node000022" href="$classplansys2_1_1WaitAction.html" title="BehaviorTree node that waits for a specified action to complete." alt="" coords="222,696,306,722"/>
-<area shape="poly" id="edge27_Node000000_Node000022" title=" " alt="" coords="78,538,92,571,113,611,140,650,174,683,197,695,223,702,221,707,195,700,171,687,136,653,108,613,87,574,73,540"/>
-<area shape="rect" id="Node000024" href="$classplansys2_1_1WaitAtStartReq.html" title="BehaviorTree node that waits for the at&#45;start requirements of a specified action." alt="" coords="209,745,320,771"/>
-<area shape="poly" id="edge29_Node000000_Node000024" title=" " alt="" coords="74,539,86,582,105,634,135,687,153,711,174,732,191,742,209,749,207,754,188,747,171,736,149,715,130,690,101,636,81,584,69,540"/>
-<area shape="rect" id="Node000026" href="$classplansys2__bt__tests_1_1CloseGripper.html" title=" " alt="" coords="216,795,312,820"/>
-<area shape="poly" id="edge31_Node000000_Node000026" title=" " alt="" coords="72,539,80,591,98,657,129,724,149,755,174,781,194,794,217,801,215,806,192,799,171,786,145,758,124,727,93,659,75,592,66,540"/>
-<area shape="rect" id="Node000027" href="$classplansys2__bt__tests_1_1OpenGripper.html" title=" " alt="" coords="217,844,312,870"/>
-<area shape="poly" id="edge32_Node000000_Node000027" title=" " alt="" coords="70,540,76,600,92,679,105,720,123,761,146,798,174,831,194,844,218,851,216,856,192,849,171,835,142,801,118,763,100,722,87,680,70,601,64,540"/>
+<area shape="poly" id="edge18_Node000000_Node000013" title=" " alt="" coords="91,536,128,509,172,484,205,472,206,477,174,489,131,513,95,540"/>
+<area shape="rect" id="Node000015" href="$classplansys2_1_1CheckMethodPrecondition.html" title="BehaviorTree node of a hierarchical (HTN) plan: whether the precondition of the method that decompose..." alt="" coords="178,499,351,524"/>
+<area shape="poly" id="edge20_Node000000_Node000015" title=" " alt="" coords="134,541,209,522,210,528,136,546"/>
+<area shape="rect" id="Node000016" href="$classplansys2_1_1CheckOverAllReq.html" title="BehaviorTree node that checks the overall requirements of a durative action." alt="" coords="202,548,326,574"/>
+<area shape="poly" id="edge21_Node000000_Node000016" title=" " alt="" coords="140,558,202,558,202,564,140,564"/>
+<area shape="rect" id="Node000018" href="$classplansys2_1_1CheckTimeout.html" title="BehaviorTree node that checks if a given action has timed out." alt="" coords="212,597,317,623"/>
+<area shape="poly" id="edge23_Node000000_Node000018" title=" " alt="" coords="135,575,212,595,210,600,134,581"/>
+<area shape="rect" id="Node000019" href="$classplansys2_1_1ExecuteAction.html" title="BehaviorTree node that executes a given action." alt="" coords="212,647,316,672"/>
+<area shape="poly" id="edge24_Node000000_Node000019" title=" " alt="" coords="95,581,131,608,174,633,213,647,211,652,172,638,128,613,91,586"/>
+<area shape="rect" id="Node000021" href="$classplansys2_1_1RestoreAtStartEffect.html" title="BehaviorTree node that restores the at&#45;start effects of a durative action." alt="" coords="194,696,334,722"/>
+<area shape="poly" id="edge26_Node000000_Node000021" title=" " alt="" coords="84,585,121,635,146,661,174,683,196,693,193,698,171,687,142,665,117,639,80,588"/>
+<area shape="rect" id="Node000023" href="$classplansys2_1_1WaitAction.html" title="BehaviorTree node that waits for a specified action to complete." alt="" coords="222,745,306,771"/>
+<area shape="poly" id="edge28_Node000000_Node000023" title=" " alt="" coords="78,587,92,621,113,660,140,699,174,732,197,744,223,751,221,757,195,749,171,736,136,703,108,663,87,623,73,589"/>
+<area shape="rect" id="Node000025" href="$classplansys2_1_1WaitAtStartReq.html" title="BehaviorTree node that waits for the at&#45;start requirements of a specified action." alt="" coords="209,795,320,820"/>
+<area shape="poly" id="edge30_Node000000_Node000025" title=" " alt="" coords="74,588,86,631,105,684,135,737,153,761,174,781,191,792,209,798,207,803,188,796,171,786,149,764,130,740,101,686,81,633,69,590"/>
+<area shape="rect" id="Node000027" href="$classplansys2_1_1WaitMethodCheck.html" title="BehaviorTree node of a hierarchical (HTN) plan: RUNNING until the precondition of the method of task ..." alt="" coords="201,844,328,870"/>
+<area shape="poly" id="edge32_Node000000_Node000027" title=" " alt="" coords="72,589,80,641,98,706,129,774,149,804,174,831,202,846,199,851,171,835,145,807,124,776,93,708,75,642,66,590"/>
+<area shape="rect" id="Node000028" href="$classplansys2__bt__tests_1_1CloseGripper.html" title=" " alt="" coords="216,893,312,919"/>
+<area shape="poly" id="edge33_Node000000_Node000028" title=" " alt="" coords="70,589,76,650,92,728,105,770,123,810,146,848,174,880,194,893,217,900,215,905,192,898,171,884,142,851,118,813,100,772,87,730,70,651,64,590"/>
+<area shape="rect" id="Node000029" href="$classplansys2__bt__tests_1_1OpenGripper.html" title=" " alt="" coords="217,943,312,968"/>
+<area shape="poly" id="edge34_Node000000_Node000029" title=" " alt="" coords="68,589,71,658,85,750,99,799,117,846,142,891,174,930,194,943,217,950,216,955,192,947,171,933,138,894,113,849,94,800,80,751,66,659,63,590"/>
 <area shape="rect" id="Node000002" href="$classplansys2__bt__tests_1_1FailOnSecondTick.html" title=" " alt="" coords="423,5,551,31"/>
 <area shape="poly" id="edge7_Node000001_Node000002" title=" " alt="" coords="311,86,403,40,433,29,435,34,405,45,314,91"/>
 <area shape="rect" id="Node000003" href="$classplansys2__bt__tests_1_1Move.html" title=" " alt="" coords="460,55,514,80"/>
@@ -44,14 +48,14 @@
 <area shape="poly" id="edge14_Node000008_Node000009" title=" " alt="" coords="343,262,410,262,410,268,343,268"/>
 <area shape="rect" id="Node000014" href="$classCheckAtEndReqTest.html" title=" " alt="" coords="416,449,558,475"/>
 <area shape="poly" id="edge19_Node000013_Node000014" title=" " alt="" coords="338,460,415,460,415,465,338,465"/>
-<area shape="rect" id="Node000016" href="$classCheckOverAllReqTest.html" title=" " alt="" coords="412,499,562,524"/>
-<area shape="poly" id="edge21_Node000015_Node000016" title=" " alt="" coords="342,509,412,509,412,514,342,514"/>
-<area shape="rect" id="Node000019" href="$classExecuteActionTest.html" title=" " alt="" coords="422,597,552,623"/>
-<area shape="poly" id="edge24_Node000018_Node000019" title=" " alt="" coords="332,608,422,608,422,613,332,613"/>
-<area shape="rect" id="Node000021" href="$classRestoreAtStartEffectTest.html" title=" " alt="" coords="404,647,570,672"/>
-<area shape="poly" id="edge26_Node000020_Node000021" title=" " alt="" coords="350,657,404,657,404,662,350,662"/>
-<area shape="rect" id="Node000023" href="$classWaitActionTest.html" title=" " alt="" coords="432,696,542,722"/>
-<area shape="poly" id="edge28_Node000022_Node000023" title=" " alt="" coords="322,706,432,706,432,712,322,712"/>
-<area shape="rect" id="Node000025" href="$classWaitAtStartReqTest.html" title=" " alt="" coords="418,745,556,771"/>
-<area shape="poly" id="edge30_Node000024_Node000025" title=" " alt="" coords="336,756,418,756,418,761,336,761"/>
+<area shape="rect" id="Node000017" href="$classCheckOverAllReqTest.html" title=" " alt="" coords="412,548,562,574"/>
+<area shape="poly" id="edge22_Node000016_Node000017" title=" " alt="" coords="342,558,412,558,412,564,342,564"/>
+<area shape="rect" id="Node000020" href="$classExecuteActionTest.html" title=" " alt="" coords="422,647,552,672"/>
+<area shape="poly" id="edge25_Node000019_Node000020" title=" " alt="" coords="332,657,422,657,422,662,332,662"/>
+<area shape="rect" id="Node000022" href="$classRestoreAtStartEffectTest.html" title=" " alt="" coords="404,696,570,722"/>
+<area shape="poly" id="edge27_Node000021_Node000022" title=" " alt="" coords="350,706,404,706,404,712,350,712"/>
+<area shape="rect" id="Node000024" href="$classWaitActionTest.html" title=" " alt="" coords="432,745,542,771"/>
+<area shape="poly" id="edge29_Node000023_Node000024" title=" " alt="" coords="322,756,432,756,432,761,322,761"/>
+<area shape="rect" id="Node000026" href="$classWaitAtStartReqTest.html" title=" " alt="" coords="418,795,556,820"/>
+<area shape="poly" id="edge31_Node000025_Node000026" title=" " alt="" coords="336,805,418,805,418,810,336,810"/>
 </map>

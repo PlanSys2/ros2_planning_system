@@ -18,7 +18,7 @@ var searchData=
   ['bt_15',['BT',['../namespaceBT.html',1,'']]],
   ['bt_20node_20for_20calling_20ros2_20action_20servers_16',['BT node for calling ROS2 action servers',['..//github/workspace/plansys2_bt_actions/README.md#autotoc_md3',1,'']]],
   ['bt_5f_17',['bt_',['../classplansys2_1_1SimpleBTBuilder.html#a80a9603dda571df02f19de8f2774c784',1,'plansys2::SimpleBTBuilder']]],
-  ['bt_5faction_5f_18',['bt_action_',['../classplansys2_1_1SequentialBTBuilder.html#a4a039d8f9ca81ce2230be1271b00ad47',1,'plansys2::SequentialBTBuilder::bt_action_'],['../classplansys2_1_1SimpleBTBuilder.html#a4a039d8f9ca81ce2230be1271b00ad47',1,'plansys2::SimpleBTBuilder::bt_action_']]],
+  ['bt_5faction_5f_18',['bt_action_',['../classplansys2_1_1HTNBTBuilder.html#a4a039d8f9ca81ce2230be1271b00ad47',1,'plansys2::HTNBTBuilder::bt_action_'],['../classplansys2_1_1SequentialBTBuilder.html#a4a039d8f9ca81ce2230be1271b00ad47',1,'plansys2::SequentialBTBuilder::bt_action_'],['../classplansys2_1_1SimpleBTBuilder.html#a4a039d8f9ca81ce2230be1271b00ad47',1,'plansys2::SimpleBTBuilder::bt_action_']]],
   ['bt_5faction_5fnode_2ecpp_19',['bt_action_node.cpp',['../bt__action__node_8cpp.html',1,'']]],
   ['bt_5faction_5fnode_5ftest_2ecpp_20',['bt_action_node_test.cpp',['../bt__action__node__test_8cpp.html',1,'']]],
   ['bt_5faction_5ftest_2ecpp_21',['bt_action_test.cpp',['../bt__action__test_8cpp.html',1,'']]],
