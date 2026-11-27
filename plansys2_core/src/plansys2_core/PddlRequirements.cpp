@@ -16,6 +16,7 @@
 
 #include <cctype>
 #include <charconv>
+#include <algorithm>
 #include <set>
 #include <string>
 #include <vector>
@@ -206,6 +207,15 @@ std::set<std::string> pddl_requirements(const std::string & domain, const std::s
     if (!shown.count(requirement)) {
       needed.insert(requirement);
     }
+  }
+  // HDDL: tasks, methods or an initial task network need a planner of hierarchical tasks,
+  // declared or not
+  auto has = [](std::string text, const char * block) {
+      std::transform(text.begin(), text.end(), text.begin(), ::tolower);
+      return text.find(block) != std::string::npos;
+    };
+  if (has(domain, "(:task") || has(domain, "(:method") || has(problem, "(:htn")) {
+    needed.insert(":hierarchy");
   }
   return needed;
 }

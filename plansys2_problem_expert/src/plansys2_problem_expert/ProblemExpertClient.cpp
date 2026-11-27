@@ -65,6 +65,13 @@ ProblemExpertClient::ProblemExpertClient(ClientNode::Interfaces node)
     std::make_shared<ServiceClient<srv::GetProblem>>(node_, "problem_expert/get_problem", active_);
   remove_problem_goal_client_ = std::make_shared<ServiceClient<srv::RemoveProblemGoal>>(
     node_, "problem_expert/remove_problem_goal", active_);
+  set_problem_task_network_client_ = std::make_shared<ServiceClient<srv::SetProblemTaskNetwork>>(
+    node_, "problem_expert/set_problem_task_network", active_);
+  get_problem_task_network_client_ = std::make_shared<ServiceClient<srv::GetProblemTaskNetwork>>(
+    node_, "problem_expert/get_problem_task_network", active_);
+  remove_problem_task_network_client_ =
+    std::make_shared<ServiceClient<srv::RemoveProblemTaskNetwork>>(
+    node_, "problem_expert/remove_problem_task_network", active_);
   set_problem_metric_client_ = std::make_shared<ServiceClient<srv::SetProblemMetric>>(
     node_, "problem_expert/set_problem_metric", active_);
   get_problem_metric_client_ = std::make_shared<ServiceClient<srv::GetProblemMetric>>(
@@ -457,6 +464,39 @@ ProblemExpertClient::clearGoal()
   auto request = std::make_shared<plansys2_msgs::srv::RemoveProblemGoal::Request>();
 
   return call_change<plansys2_msgs::srv::RemoveProblemGoal>(remove_problem_goal_client_, request);
+}
+
+plansys2::TaskNetwork
+ProblemExpertClient::getTaskNetwork()
+{
+  auto request = std::make_shared<plansys2_msgs::srv::GetProblemTaskNetwork::Request>();
+  auto result = get_problem_task_network_client_->call(request);
+  if (!result) {
+    return {};
+  }
+  if (!result->success) {
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(), get_problem_task_network_client_->name() << ": " << result->error_info);
+    return {};
+  }
+  return result->network;
+}
+
+bool
+ProblemExpertClient::setTaskNetwork(const plansys2::TaskNetwork & network)
+{
+  auto request = std::make_shared<plansys2_msgs::srv::SetProblemTaskNetwork::Request>();
+  request->network = network;
+  return call_change<plansys2_msgs::srv::SetProblemTaskNetwork>(
+    set_problem_task_network_client_, request);
+}
+
+bool
+ProblemExpertClient::clearTaskNetwork()
+{
+  auto request = std::make_shared<plansys2_msgs::srv::RemoveProblemTaskNetwork::Request>();
+  return call_change<plansys2_msgs::srv::RemoveProblemTaskNetwork>(
+    remove_problem_task_network_client_, request);
 }
 
 plansys2::Metric

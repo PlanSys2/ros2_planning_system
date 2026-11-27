@@ -157,6 +157,8 @@ public:
       parseDerived(f);
     } else if (t == "constraints") {
       parseConstraints(f, constraints);
+    } else if (isHierarchicalBlock(t)) {
+      f.skipBlock();  // HDDL: for the planner, not read here
     } else {
       return false;  // Unknown block type
     }
@@ -203,6 +205,19 @@ public:
   }
 
   // Standard requirements without a flag: what they need is checked where it is used
+  //! Tasks and methods of HDDL, the language of hierarchical (HTN) planning
+  static bool isHierarchicalBlock(const std::string & t)
+  {
+    return t == "task" || t == "method" || t == "durative-method";
+  }
+
+  //! The requirements of HDDL 1.0 and 2.1
+  static bool isHierarchicalRequirement(const std::string & s)
+  {
+    return s == "hierarchy" || s == "htn" || s == "method-preconditions" ||
+           s == "htn-method-prec" || s == "method-constraints" || s == "durative-methods";
+  }
+
   static bool isStandardRequirement(const std::string & s)
   {
     return s == "duration-inequalities" || s == "continuous-effects" ||
@@ -243,7 +258,7 @@ public:
       existentialcond = true;
     } else if (s == "quantified-preconditions") {
       existentialcond = universal = true;
-    } else if (!isStandardRequirement(s)) {
+    } else if (!isStandardRequirement(s) && !isHierarchicalRequirement(s)) {
       return false;  // Unknown requirement
     }
     requirements.push_back(s);

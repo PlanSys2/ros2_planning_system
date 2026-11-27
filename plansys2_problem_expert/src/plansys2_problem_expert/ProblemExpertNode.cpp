@@ -14,6 +14,7 @@
 
 #include "plansys2_problem_expert/ProblemExpertNode.hpp"
 
+#include <algorithm>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -223,6 +224,59 @@ ProblemExpertNode::ProblemExpertNode(const rclcpp::NodeOptions & options)
         this, std::placeholders::_1, std::placeholders::_2,
         std::placeholders::_3)));
 
+  // HDDL: the initial task network, as the goal is for PDDL
+  using SetNetwork = plansys2_msgs::srv::SetProblemTaskNetwork;
+  set_problem_task_network_service_ = create_service<SetNetwork>(
+    "problem_expert/set_problem_task_network",
+    guarded<SetNetwork>(
+      get_logger(),
+      [this](const std::shared_ptr<rmw_request_id_t>,
+      const std::shared_ptr<SetNetwork::Request> request,
+      const std::shared_ptr<SetNetwork::Response> response) {
+        if (problem_expert_ == nullptr) {
+          response->success = false;
+          response->error_info = plansys2::kNotActive;
+          return;
+        }
+        response->success = problem_expert_->setTaskNetwork(request->network);
+        if (response->success) {
+          notify_change();
+        } else {
+          response->error_info = "Task network not valid";
+        }
+      }));
+  using GetNetwork = plansys2_msgs::srv::GetProblemTaskNetwork;
+  get_problem_task_network_service_ = create_service<GetNetwork>(
+    "problem_expert/get_problem_task_network",
+    guarded<GetNetwork>(
+      get_logger(),
+      [this](const std::shared_ptr<rmw_request_id_t>, const std::shared_ptr<GetNetwork::Request>,
+      const std::shared_ptr<GetNetwork::Response> response) {
+        if (problem_expert_ == nullptr) {
+          response->success = false;
+          response->error_info = plansys2::kNotActive;
+          return;
+        }
+        response->success = true;
+        response->network = problem_expert_->getTaskNetwork();
+      }));
+  using RemoveNetwork = plansys2_msgs::srv::RemoveProblemTaskNetwork;
+  remove_problem_task_network_service_ = create_service<RemoveNetwork>(
+    "problem_expert/remove_problem_task_network",
+    guarded<RemoveNetwork>(
+      get_logger(),
+      [this](const std::shared_ptr<rmw_request_id_t>,
+      const std::shared_ptr<RemoveNetwork::Request>,
+      const std::shared_ptr<RemoveNetwork::Response> response) {
+        if (problem_expert_ == nullptr) {
+          response->success = false;
+          response->error_info = plansys2::kNotActive;
+          return;
+        }
+        response->success = problem_expert_->clearTaskNetwork();
+        notify_change();
+      }));
+
   set_problem_metric_service_ = create_service<plansys2_msgs::srv::SetProblemMetric>(
     "problem_expert/set_problem_metric",
     guarded<plansys2_msgs::srv::SetProblemMetric>(
@@ -381,6 +435,23 @@ ProblemExpertNode::on_configure(const rclcpp_lifecycle::State & state)
   if (!domain_expert->getParseError().empty()) {
     RCLCPP_ERROR(
       get_logger(), "PlanSys2 cannot read this domain: %s", domain_expert->getParseError().c_str());
+    return CallbackReturnT::FAILURE;
+  }
+
+  // HDDL mode, for hierarchical planning: a hierarchical domain in .hddl files, and an HDDL
+  // problem file if any. All or nothing, as the domain expert says
+  auto is_hddl = [](const std::string & file) {
+      return file.size() > 5 && file.compare(file.size() - 5, 5, ".hddl") == 0;
+    };
+  const bool hddl = std::all_of(model_files.begin(), model_files.end(), is_hddl);
+  const auto problem_file_name = get_parameter("problem_file").get_value<std::string>();
+  if (hddl != domain_expert->isHierarchical() ||
+    (!hddl && std::any_of(model_files.begin(), model_files.end(), is_hddl)) ||
+    (!problem_file_name.empty() && is_hddl(problem_file_name) != hddl))
+  {
+    RCLCPP_ERROR(
+      get_logger(), "HDDL mode needs a hierarchical domain (tasks and methods) in .hddl model "
+      "files and, if given, a .hddl problem file; PDDL mode, none of them");
     return CallbackReturnT::FAILURE;
   }
 
@@ -1316,6 +1387,7 @@ ProblemExpertNode::get_knowledge_as_msg() const
   ret_msgs->goal = parser::pddl::toString(goal);
   ret_msgs->metric = parser::pddl::toString(problem_expert_->getMetric());
   ret_msgs->constraints = parser::pddl::toString(problem_expert_->getConstraints());
+  ret_msgs->task_network = problem_expert_->getTaskNetwork();
 
   return ret_msgs;
 }

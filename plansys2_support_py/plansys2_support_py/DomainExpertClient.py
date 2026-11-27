@@ -25,10 +25,12 @@ from plansys2_msgs.msg import Action as PlanSys2Action
 from plansys2_msgs.msg import Derived
 from plansys2_msgs.msg import DurativeAction as PlanSys2DurativeAction
 from plansys2_msgs.msg import Node as PlanSys2Node
+from plansys2_msgs.msg import Param
 from plansys2_msgs.srv import (ChangeDomain, GetDomain, GetDomainActionDetails,
                                GetDomainActions, GetDomainConstants,
                                GetDomainDerivedPredicateDetails,
                                GetDomainDurativeActionDetails, GetDomainName,
+                               GetDomainTaskDetails, GetDomainTasks,
                                GetDomainTypes, GetNodeDetails, GetStates)
 from plansys2_support_py.ClientBase import ClientBase
 from rclpy.node import Node
@@ -399,6 +401,45 @@ class DomainExpertClient(ClientBase):
             self.get_logger().error(
                 f'Failed to get function details for {function_name}: {error_msg}')
             return None
+
+    def get_domain_tasks(self) -> Optional[List[str]]:
+        """
+        Get the tasks of a hierarchical (HDDL) domain.
+
+        Returns
+        -------
+        Optional[List[str]]
+            Their names (none in a PDDL domain), or None if failed.
+
+        """
+        service_name = 'domain_expert/get_domain_tasks'
+        response = self._create_and_call_service(
+            GetDomainTasks, service_name, GetDomainTasks.Request())
+        if response and response.success:
+            return list(response.tasks)
+        error_msg = response.error_info if response else 'Service call failed'
+        self.get_logger().error(f'Failed to get domain tasks: {error_msg}')
+        return None
+
+    def get_domain_task_details(self, task: str) -> Optional[List[Param]]:
+        """
+        Get the parameters of a task of a hierarchical (HDDL) domain, with their types.
+
+        Returns
+        -------
+        Optional[List[Param]]
+            Its parameters, or None if there is no such task or the call failed.
+
+        """
+        service_name = 'domain_expert/get_domain_task_details'
+        request = GetDomainTaskDetails.Request()
+        request.task = task
+        response = self._create_and_call_service(GetDomainTaskDetails, service_name, request)
+        if response and response.success:
+            return list(response.parameters)
+        error_msg = response.error_info if response else 'Service call failed'
+        self.get_logger().error(f'Failed to get the task {task}: {error_msg}')
+        return None
 
     def get_domain_action_details(
         self, action_name: str, parameters: Optional[List[str]] = None

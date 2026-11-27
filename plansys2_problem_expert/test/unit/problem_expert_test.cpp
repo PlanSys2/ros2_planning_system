@@ -1512,3 +1512,107 @@ int main(int argc, char ** argv)
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
+
+// HDDL: the initial task network of a problem is kept for the planner, and written back
+TEST(problem_expert, hddl_task_network)
+{
+  const std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
+  auto read = [&](const std::string & name) {
+      std::ifstream file(pkgpath + "/pddl/" + name);
+      return std::string(
+        (std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    };
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(read("house.hddl"));
+  ASSERT_TRUE(domain_expert->isHierarchical());
+  plansys2::ProblemExpert problem_expert(domain_expert);
+  ASSERT_TRUE(problem_expert.addProblem(read("house_problem.hddl")));
+  EXPECT_EQ(problem_expert.getInstances().size(), 6u);
+  EXPECT_TRUE(
+    problem_expert.existPredicate(parser::pddl::fromStringPredicate("(item_at cup kitchen)")));
+  const std::string problem = problem_expert.getProblem();
+  EXPECT_NE(problem.find("(:htn"), std::string::npos) << problem;
+  EXPECT_NE(problem.find("(deliver cup bedroom)"), std::string::npos) << problem;
+  // The problem written reads back the same
+  plansys2::ProblemExpert again(domain_expert);
+  ASSERT_TRUE(again.addProblem(problem));
+  EXPECT_EQ(again.getProblem(), problem);
+  // A problem with no task network keeps the one before, as a goal; clearing the knowledge
+  // forgets it
+  ASSERT_TRUE(
+    problem_expert.addProblem(
+      "(define (problem more) (:domain house) (:objects pen - item hall - room)"
+      " (:init (item_at pen hall)))"));
+  EXPECT_NE(problem_expert.getProblem().find("(deliver cup bedroom)"), std::string::npos);
+  problem_expert.clearKnowledge();
+  EXPECT_EQ(problem_expert.getProblem().find("(:htn"), std::string::npos);
+
+  // A task network needs an HDDL domain
+  auto pddl = std::make_shared<plansys2::DomainExpert>(domain_expert->getActionDomain());
+  plansys2::ProblemExpert flat(pddl);
+  EXPECT_FALSE(flat.addProblem(read("house_problem.hddl")));
+}
+
+TEST(problem_expert, hddl_set_task_network)
+{
+  const std::string pkgpath = plansys2::share_path("plansys2_problem_expert").string();
+  auto read = [&](const std::string & name) {
+      std::ifstream file(pkgpath + "/pddl/" + name);
+      return std::string(
+        (std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    };
+  auto domain_expert = std::make_shared<plansys2::DomainExpert>(read("house.hddl"));
+  plansys2::ProblemExpert problem_expert(domain_expert);
+  ASSERT_TRUE(problem_expert.addProblem(read("house_problem.hddl")));
+
+  // The one of the problem file, as tasks
+  auto network = problem_expert.getTaskNetwork();
+  EXPECT_EQ(
+    network.tasks, (std::vector<std::string>{"(deliver cup bedroom)", "(deliver book kitchen)"}));
+  EXPECT_EQ(network.ids, (std::vector<std::string>{"t1", "t2"}));
+  EXPECT_TRUE(network.ordering.empty());
+
+  // Another, a task at a time: abstract tasks and actions, the second after the first
+  plansys2::TaskNetwork tasks;
+  const auto first = tasks.add("(go_to tiago kitchen)");
+  tasks.add("(Deliver Cup bedroom)", first);
+  tasks.add("(move tiago hall kitchen)");
+  ASSERT_TRUE(problem_expert.setTaskNetwork(tasks));
+  EXPECT_NE(
+    problem_expert.getProblem().find(
+      "(:htn :subtasks (and (t0 (go_to tiago kitchen)) (t1 (deliver cup bedroom))"
+      " (t2 (move tiago hall kitchen))) :ordering (and (< t0 t1)))"),
+    std::string::npos) << problem_expert.getProblem();
+  EXPECT_EQ(problem_expert.getTaskNetwork().tasks.size(), 3u);
+  // From its HDDL text too
+  ASSERT_TRUE(
+    problem_expert.setTaskNetwork(
+      plansys2::TaskNetwork(
+        "(:htn :ordered-subtasks (and (deliver book kitchen) (go_to tiago hall)))")));
+  EXPECT_EQ(problem_expert.getTaskNetwork().ordering, (std::vector<uint32_t>{0, 1}));
+
+  // What is not a task network of the problem leaves the one it has
+  auto rejected = [&](const std::string & task) {
+      plansys2::TaskNetwork wrong;
+      wrong.add(task);
+      return !problem_expert.setTaskNetwork(wrong);
+    };
+  EXPECT_TRUE(rejected("(fly tiago)"));               // no such task or action
+  EXPECT_TRUE(rejected("(deliver cup)"));             // an argument short
+  EXPECT_TRUE(rejected("(deliver tiago bedroom)"));   // a robot is not an item
+  EXPECT_TRUE(rejected("(deliver vase bedroom)"));    // no such object
+  plansys2::TaskNetwork unordered;
+  unordered.add("(deliver cup bedroom)");
+  unordered.ordering = {0, 3};
+  EXPECT_FALSE(problem_expert.setTaskNetwork(unordered));
+  EXPECT_EQ(problem_expert.getTaskNetwork().tasks[0], "(deliver book kitchen)");
+
+  // Cleared, the problem has none
+  ASSERT_TRUE(problem_expert.clearTaskNetwork());
+  EXPECT_TRUE(problem_expert.getTaskNetwork().tasks.empty());
+  EXPECT_EQ(problem_expert.getProblem().find("(:htn"), std::string::npos);
+
+  // A PDDL domain takes none
+  auto pddl = std::make_shared<plansys2::DomainExpert>(domain_expert->getActionDomain());
+  plansys2::ProblemExpert flat(pddl);
+  EXPECT_FALSE(flat.setTaskNetwork(tasks));
+}

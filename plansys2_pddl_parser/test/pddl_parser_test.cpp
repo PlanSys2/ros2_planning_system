@@ -1185,3 +1185,79 @@ TEST(PDDLParserTestCase, numbers_keep_precision_in_text)
   parser::pddl::ValueExpression integer(2);
   ASSERT_EQ(integer.info(), "2");
 }
+
+// HDDL (hierarchical planning): tasks, methods and the initial task network are for the
+// planner. The parser reads what is PDDL in them and leaves the rest
+TEST(PDDLParserTestCase, hddl_blocks_are_left_to_the_planner)
+{
+  const std::string domain =
+    "(define (domain house) (:requirements :typing :hierarchy :method-preconditions)\n"
+    " (:types room robot)\n"
+    " (:predicates (at ?r - robot ?l - room) (connected ?a ?b - room))\n"
+    " (:task go :parameters (?r - robot ?to - room))\n"
+    " (:method go-there :parameters (?r - robot ?from ?to - room) :task (go ?r ?to)\n"
+    "  :precondition (and (at ?r ?from) (connected ?from ?to))\n"
+    "  :ordered-subtasks (and (move ?r ?from ?to)))  ; (a comment with a ')'\n"
+    " (:durative-method go-slowly :parameters (?r - robot ?to - room) :task (go ?r ?to)\n"
+    "  :subtasks ())\n"
+    " (:action move :parameters (?r - robot ?a ?b - room)\n"
+    "  :precondition (and (at ?r ?a) (connected ?a ?b))\n"
+    "  :effect (and (not (at ?r ?a)) (at ?r ?b))))";
+  parser::pddl::Domain d(domain);
+  EXPECT_EQ(d.actions.size(), 1u);
+  EXPECT_EQ(d.preds.size(), 2u);
+  EXPECT_NE(
+    std::find(d.requirements.begin(), d.requirements.end(), "hierarchy"), d.requirements.end());
+  const std::string problem =
+    "(define (problem p) (:domain house) (:objects kitchen hall - room r2d2 - robot)\n"
+    " (:htn :parameters () :ordered-subtasks (and (t1 (go r2d2 kitchen))))\n"
+    " (:init (at r2d2 hall) (connected hall kitchen)))";
+  parser::pddl::Instance i(d, problem);
+  EXPECT_EQ(i.init.size(), 2u);
+  // An unknown block is still an error
+  EXPECT_THROW(
+    parser::pddl::Domain("(define (domain x) (:requirements :strips) (:recipe r))"),
+    std::runtime_error);
+}
+
+TEST(PDDLParserTestCase, task_networks)
+{
+  // Labels, a partial order and its text back
+  auto n = parser::pddl::taskNetworkFromString(
+    "(:htn :subtasks (and (t1 (Deliver cup bedroom)) (t2 (deliver book kitchen))\n"
+    "  (t3 (go_to tiago hall))) :ordering (and (< t1 t3) (> t3 t2)))");
+  ASSERT_EQ(n.tasks.size(), 3u);
+  EXPECT_EQ(n.tasks[0], "(deliver cup bedroom)");
+  EXPECT_EQ(n.ids[2], "t3");
+  EXPECT_EQ(n.ordering, (std::vector<uint32_t>{0, 2, 1, 2}));
+  EXPECT_EQ(
+    parser::pddl::toString(n),
+    "(:htn :subtasks (and (t1 (deliver cup bedroom)) (t2 (deliver book kitchen))"
+    " (t3 (go_to tiago hall))) :ordering (and (< t1 t3) (< t2 t3)))");
+  EXPECT_EQ(parser::pddl::taskNetworkFromString(parser::pddl::toString(n)), n);
+  // Ordered, without labels, and the sections alone
+  n = parser::pddl::taskNetworkFromString(":ordered-tasks (and (a x) (b y) (c z))");
+  EXPECT_EQ(n.ordering, (std::vector<uint32_t>{0, 1, 1, 2}));
+  EXPECT_EQ(
+    parser::pddl::toString(n),
+    "(:htn :subtasks (and (t0 (a x)) (t1 (b y)) (t2 (c z))) :ordering (and (< t0 t1) (< t1 t2)))");
+  // A single task, no ordering; and none at all
+  n = parser::pddl::taskNetworkFromString("(:htn :subtasks (build car_1))");
+  EXPECT_EQ(n.tasks, (std::vector<std::string>{"(build car_1)"}));
+  EXPECT_TRUE(n.ordering.empty());
+  EXPECT_TRUE(parser::pddl::taskNetworkFromString("(:htn :subtasks (and))").tasks.empty());
+  EXPECT_EQ(
+    parser::pddl::toString(plansys2_msgs::msg::TaskNetwork()), "(:htn :subtasks (and))");
+  // What it does not hold, or is not a task network
+  EXPECT_THROW(
+    parser::pddl::taskNetworkFromString(
+      "(:htn :subtasks (and (a (x)) (b (y))) :ordering (= (start a) (start b)))"),
+    std::runtime_error);
+  EXPECT_THROW(
+    parser::pddl::taskNetworkFromString("(:htn :subtasks (and (a (x))) :ordering (< a c))"),
+    std::runtime_error);
+  EXPECT_THROW(parser::pddl::taskNetworkFromString("(:htn :subtasks (and (a (x))"),
+    std::runtime_error);
+  EXPECT_THROW(parser::pddl::taskNetworkFromString("(:htn :subtasks (and 3))"),
+    std::runtime_error);
+}

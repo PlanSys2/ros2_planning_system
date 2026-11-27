@@ -49,6 +49,43 @@ def with_state_updater(context):
     return [SetLaunchConfiguration('params_file', merged.name)]
 
 
+def with_hddl_mode(context):
+    """
+    HDDL mode, for hierarchical (HTN) planning: model files .hddl and the HTNBTBuilder.
+
+    One without the other is an error. In HDDL mode the planner is Klimax, an HDDL planner, in a
+    copy of params_file.
+    """
+    model_files = LaunchConfiguration('model_file').perform(context).split(':')
+    hddl = [f.endswith('.hddl') for f in model_files if f]
+    builder = LaunchConfiguration('bt_builder_plugin').perform(context)
+    if any(hddl) and not all(hddl):
+        raise RuntimeError('The model files are both .hddl and not: HDDL mode takes only .hddl')
+    if any(hddl) != (builder == 'HTNBTBuilder'):
+        raise RuntimeError(
+            'HDDL mode needs both a .hddl model_file and bt_builder_plugin:=HTNBTBuilder; '
+            'model_file is %s and bt_builder_plugin is %s' % (
+                ':'.join(model_files), builder))
+    if not any(hddl):
+        return []
+    params_file = LaunchConfiguration('params_file').perform(context)
+    params = {}
+    if params_file:
+        with open(params_file) as f:
+            params = yaml.safe_load(f) or {}
+    # In every section of the planner the file has, and in one for any namespace
+    sections = [k for k in params if k == 'planner' or k.endswith('/planner')]
+    for section in sections + ['/**/planner']:
+        planner = params.setdefault(section, {}).setdefault('ros__parameters', {})
+        planner['plan_solver_plugins'] = ['KLIMAX']
+        planner['KLIMAX'] = {'plugin': 'plansys2/KlimaxPlanSolver'}
+    merged = tempfile.NamedTemporaryFile(
+        'w', prefix='plansys2_hddl_params_', suffix='.yaml', delete=False)
+    with merged:
+        yaml.safe_dump(params, merged)
+    return [SetLaunchConfiguration('params_file', merged.name)]
+
+
 def generate_launch_description():
     bringup_dir = get_package_share_directory('plansys2_bringup')
 
@@ -218,6 +255,7 @@ def generate_launch_description():
     ld.add_action(declare_params_file_cmd)
     ld.add_action(declare_state_updater_config_cmd)
     ld.add_action(OpaqueFunction(function=with_state_updater))
+    ld.add_action(OpaqueFunction(function=with_hddl_mode))
 
     # Declare the launch options
     ld.add_action(domain_expert_cmd)

@@ -680,6 +680,9 @@ TEST_F(STNNodesTest, wait_action_with_plain_ids_waits_for_the_action_to_finish)
   EXPECT_EQ(status("(unknown):5"), BT::NodeStatus::RUNNING);
   EXPECT_EQ(status(kLight), BT::NodeStatus::RUNNING);
   (*action_map_)[kLight].action_executor->set_internal_status(plansys2::ActionExecutor::SUCCESS);
+  // Finished, but its at end effects not yet applied: it has not ended
+  EXPECT_EQ(status(kLight), BT::NodeStatus::RUNNING);
+  (*action_map_)[kLight].at_end_effects_applied = true;
   EXPECT_EQ(status(kLight), BT::NodeStatus::SUCCESS);
   (*action_map_)[kLight].action_executor = nullptr;
   EXPECT_EQ(status(kLight), BT::NodeStatus::RUNNING);

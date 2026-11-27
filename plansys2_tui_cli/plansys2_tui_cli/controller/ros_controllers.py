@@ -264,51 +264,118 @@ class PlanMonitorProcessor:
         self._callback(self._plan, self._info)
 
     @staticmethod
+    def _info_of(item, info: dict):
+        """Return the execution info of a plan item, or None if it has not started."""
+        # action_full_name is "action:<time in ms>", rounded as the executor does
+        # Try exact key plus ±1 tolerance for floating-point differences.
+        action_str = item.action.strip()
+        time_int = math.floor(item.time * 1000 + 0.5)
+        for candidate in (time_int, time_int + 1, time_int - 1):
+            probe = f'{action_str}:{candidate}'
+            if probe in info:
+                return info[probe]
+        return None
+
+    @staticmethod
+    def _action_line(item, info: dict, prefix: str = '') -> str:
+        bar_len = 15
+        action_str = item.action.strip()
+        ainfo = PlanMonitorProcessor._info_of(item, info)
+        if ainfo is None:
+            empty_bar = '░' * bar_len
+            return f'[dim]{"PENDING":12} [{empty_bar}]   0%  {prefix}{_e(action_str)}[/dim]'
+        color = _INFO_STATUS_COLOR.get(ainfo.status, 'white')
+        status_label = _INFO_STATUS_LABEL.get(ainfo.status, str(ainfo.status))
+        pct = int(ainfo.completion * 100)
+        filled = int(bar_len * ainfo.completion)
+        bar = '█' * filled + '░' * (bar_len - filled)
+        return (
+            f'[{color}]{status_label:12}[/{color}] '
+            f'[{bar}] {pct:3d}%  '
+            f'{prefix}[bold]{_e(action_str)}[/bold]'
+        )
+
+    @staticmethod
     def plan2text(plan: Plan | None, info: dict) -> str:
         """Render plan + execution info to a Rich-markup string."""
         if plan is None:
             return '[dim]Waiting for plan…[/dim]'
         if not plan.items:
             return '[dim]Plan is empty.[/dim]'
+        if plan.tasks:
+            return PlanMonitorProcessor._hierarchy2text(plan, info)
+        return '\n'.join(
+            PlanMonitorProcessor._action_line(item, info) for item in plan.items)
+
+    @staticmethod
+    def _hierarchy2text(plan: Plan, info: dict) -> str:
+        """
+        Render a hierarchical (HDDL) plan as its decomposition.
+
+        Each task with its method and a state from those of its actions (failed if one failed,
+        done if all succeeded, running if one runs or some are done, pending if none started);
+        its subtasks below it.
+        """
+        tasks = {t.id: t for t in plan.tasks}
+
+        def item_index(ref: str):
+            return int(ref[5:]) if ref.startswith('item:') else None
+
+        def statuses(ref: str) -> list:
+            index = item_index(ref)
+            if index is not None:
+                ainfo = (PlanMonitorProcessor._info_of(plan.items[index], info)
+                         if index < len(plan.items) else None)
+                return [ainfo.status if ainfo else None]
+            task = tasks.get(ref)
+            return [s for sub in (task.subtasks if task else []) for s in statuses(sub)]
+
+        def task_state(ref: str) -> tuple:
+            found = statuses(ref)
+            if not found:
+                return '-', 'dim'  # nothing to do: its method's precondition, checked
+            if any(s in (ActionExecutionInfo.FAILED, ActionExecutionInfo.CANCELLED)
+                   for s in found):
+                return 'FAILED', 'bright_red'
+            if found and all(s == ActionExecutionInfo.SUCCEEDED for s in found):
+                return 'DONE', 'green'
+            if any(s is not None and s != ActionExecutionInfo.NOT_EXECUTED for s in found):
+                return 'RUNNING', 'yellow'
+            return 'PENDING', 'dim'
 
         lines = []
-        bar_len = 15
-        for item in plan.items:
-            action_str = item.action.strip()
 
-            # action_full_name is "action:<time in ms>", rounded as the executor does
-            # Try exact key plus ±1 tolerance for floating-point differences.
-            time_int = math.floor(item.time * 1000 + 0.5)
-            ainfo = None
-            for candidate in (time_int, time_int + 1, time_int - 1):
-                probe = f'{action_str}:{candidate}'
-                if probe in info:
-                    ainfo = info[probe]
-                    break
+        def add(ref: str, indent: str, last: bool, top: bool) -> None:
+            branch = '' if top else ('└─ ' if last else '├─ ')
+            index = item_index(ref)
+            if index is not None:
+                if index < len(plan.items):
+                    lines.append(PlanMonitorProcessor._action_line(
+                        plan.items[index], info, indent + branch))
+                return
+            task = tasks.get(ref)
+            if task is None:
+                return
+            label, color = task_state(ref)
+            name = f'{task.task} ← {task.method}' if task.task else 'initial task network'
+            if not task.subtasks and task.task:
+                name += '  (nothing to do)'
+            # Below the bars of the actions: "[███████████████] 100%  "
+            lines.append(f'[{color}]{label:12}[/{color}] {" " * 24}{indent}{branch}'
+                         f'[bold]{_e(name)}[/bold]')
+            below = indent + ('' if top else ('   ' if last else '│  '))
+            for k, sub in enumerate(task.subtasks):
+                add(sub, below, k == len(task.subtasks) - 1, False)
 
-            if ainfo is not None:
-                status_val = ainfo.status
-                color = _INFO_STATUS_COLOR.get(status_val, 'white')
-                status_label = _INFO_STATUS_LABEL.get(status_val, str(status_val))
-                pct = int(ainfo.completion * 100)
-                filled = int(bar_len * ainfo.completion)
-                bar = '█' * filled + '░' * (bar_len - filled)
-                lines.append(
-                    f'[{color}]{status_label:12}[/{color}] '
-                    f'[{bar}] {pct:3d}%  '
-                    f'[bold]{_e(action_str)}[/bold]'
-                )
-            else:
-                empty_bar = '░' * bar_len
-                lines.append(
-                    f'[dim]PENDING       [{empty_bar}]   0%  {_e(action_str)}[/dim]'
-                )
+        root = plan.tasks[0]
+        for k, sub in enumerate(root.subtasks):
+            add(sub, '', k == len(root.subtasks) - 1, True)
         return '\n'.join(lines)
 
 
 # ---------------------------------------------------------------------------
 # KnowledgeProcessor
-# Receives the problem expert knowledge (instances/predicates/functions/goal/metric).
+# Receives the problem expert knowledge (instances/predicates/functions/tasks/goal/metric).
 # ---------------------------------------------------------------------------
 class KnowledgeProcessor:
     """Subscribe to ``problem_expert/knowledge``."""
@@ -358,6 +425,22 @@ class KnowledgeProcessor:
         else:
             lines.append('  [dim](none)[/dim]')
         lines.append('')
+
+        # Tasks (HDDL), only when the problem has them: what is to be done, and in what order
+        network = getattr(msg, 'task_network', None)
+        if network is not None and network.tasks:
+            labels = [network.ids[i] if i < len(network.ids) and network.ids[i] else f't{i}'
+                      for i in range(len(network.tasks))]
+            lines.append('[bold underline]Tasks[/bold underline]')
+            for label, task in zip(labels, network.tasks):
+                lines.append(f'  [dim]{_e(label)}[/dim]  [magenta]{_e(task)}[/magenta]')
+            pairs = list(network.ordering)
+            orders = [f'{labels[pairs[k]]} < {labels[pairs[k + 1]]}'
+                      for k in range(0, len(pairs) - 1, 2)
+                      if pairs[k] < len(labels) and pairs[k + 1] < len(labels)]
+            if orders:
+                lines.append(f'  [dim]ordering: {_e(", ".join(orders))}[/dim]')
+            lines.append('')
 
         # Goal
         lines.append('[bold underline]Goal[/bold underline]')

@@ -1,0 +1,5 @@
+# Sets the initial task network of a hierarchical (HDDL) problem, in place of the one it had
+plansys2_msgs/TaskNetwork network
+---
+bool success
+string error_info

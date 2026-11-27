@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
 #include <future>
 #include <string>
 #include <memory>
@@ -134,6 +135,43 @@ DomainExpertNode::DomainExpertNode(const rclcpp::NodeOptions & options)
       &DomainExpertNode::get_domain_action_details_service_callback,
       this, std::placeholders::_1, std::placeholders::_2,
       std::placeholders::_3)));
+  // HDDL: the tasks of the domain, and the parameters of each
+  using Tasks = plansys2_msgs::srv::GetDomainTasks;
+  get_domain_tasks_service_ = create_service<Tasks>(
+    "domain_expert/get_domain_tasks",
+    guarded<Tasks>(
+      get_logger(),
+      [this](const std::shared_ptr<rmw_request_id_t>, const std::shared_ptr<Tasks::Request>,
+      const std::shared_ptr<Tasks::Response> response) {
+        if (domain_expert_ == nullptr) {
+          response->success = false;
+          response->error_info = plansys2::kNotActive;
+          return;
+        }
+        response->success = true;
+        response->tasks = domain_expert_->getTasks();
+      }));
+  using TaskDetails = plansys2_msgs::srv::GetDomainTaskDetails;
+  get_domain_task_details_service_ = create_service<TaskDetails>(
+    "domain_expert/get_domain_task_details",
+    guarded<TaskDetails>(
+      get_logger(),
+      [this](const std::shared_ptr<rmw_request_id_t>,
+      const std::shared_ptr<TaskDetails::Request> request,
+      const std::shared_ptr<TaskDetails::Response> response) {
+        if (domain_expert_ == nullptr) {
+          response->success = false;
+          response->error_info = plansys2::kNotActive;
+          return;
+        }
+        auto params = domain_expert_->getTask(request->task);
+        response->success = params.has_value();
+        if (params) {
+          response->parameters = *params;
+        } else {
+          response->error_info = "Task not found: " + request->task;
+        }
+      }));
   get_domain_durative_actions_service_ = create_service<plansys2_msgs::srv::GetDomainActions>(
     "domain_expert/get_domain_durative_actions",
     guarded<plansys2_msgs::srv::GetDomainActions>(
@@ -225,6 +263,22 @@ DomainExpertNode::on_configure(const rclcpp_lifecycle::State & state)
     get_parameter("validate_using_planner_node").get_value<bool>();
 
   auto model_files = tokenize(model_file, ":");
+
+  // HDDL mode, for hierarchical planning: every model file is .hddl. One or the other
+  auto is_hddl = [](const std::string & file) {
+      return file.size() > 5 && file.compare(file.size() - 5, 5, ".hddl") == 0;
+    };
+  const auto hddl_files =
+    static_cast<size_t>(std::count_if(model_files.begin(), model_files.end(), is_hddl));
+  if (hddl_files != 0 && hddl_files != model_files.size()) {
+    RCLCPP_ERROR(
+      get_logger(), "The model files are both .hddl and not: HDDL mode takes only .hddl files");
+    return CallbackReturnT::FAILURE;
+  }
+  hddl_ = hddl_files != 0;
+  if (hddl_) {
+    RCLCPP_INFO(get_logger(), "[%s] HDDL mode: hierarchical planning", get_name());
+  }
 
   if (validate_using_planner_node) {
     validate_domain_client_ = create_client<plansys2_msgs::srv::ValidateDomain>(
@@ -678,6 +732,13 @@ DomainExpertNode::validateDomain(
     error = "PlanSys2 cannot read this domain: " + candidate->getParseError();
     return false;
   }
+  if (candidate->isHierarchical() != hddl_) {
+    error = hddl_ ?
+      "The model file is .hddl, but the domain has no tasks or methods: give a PDDL domain in a "
+      ".pddl file" :
+      "The domain has tasks and methods (HDDL): give it in a .hddl file, with the HTNBTBuilder";
+    return false;
+  }
   const auto unsupported = candidate->getUnsupported();
   if (!unsupported.empty()) {
     error = "PlanSys2 cannot execute this domain:";
@@ -708,7 +769,8 @@ DomainExpertNode::validateDomain(
     // Kairos checks the PDDL as given (syntax, declarations, types, arities), with no
     // planner process, and says where each problem is. Not the text DomainExpert rebuilds:
     // its parser is lenient, e.g. it closes a missing parenthesis
-    const std::string & text = domain;
+    // Of an HDDL domain, the actions: Kairos does not read tasks and methods
+    const std::string text = hddl_ ? candidate->getActionDomain() : domain;
     const auto report = kairos::check_domain(text);
     for (const auto & d : report.diagnostics) {
       const auto message = kairos::to_string(d, text);

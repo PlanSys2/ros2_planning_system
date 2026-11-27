@@ -26,6 +26,7 @@
 #include "plansys2_msgs/msg/metric.hpp"
 #include "plansys2_msgs/msg/node.hpp"
 #include "plansys2_msgs/msg/param.hpp"
+#include "plansys2_msgs/msg/task_network.hpp"
 #include "plansys2_msgs/msg/tree.hpp"
 #include "plansys2_pddl_parser/Utils.hpp"
 
@@ -452,6 +453,63 @@ public:
   Goal(const plansys2_msgs::msg::Tree & goal)  // NOLINT(runtime/explicit)
   : plansys2_msgs::msg::Tree(goal)
   {
+  }
+};
+
+/**
+ * @class plansys2::TaskNetwork
+ * @brief The initial task network of a hierarchical (HDDL) problem: what is to be done, as
+ * tasks, as the goal is for PDDL.
+ *
+ * Inherits from plansys2_msgs::msg::TaskNetwork. Made from an HDDL ":htn" section, or a task at a
+ * time:
+ * @code
+ * plansys2::TaskNetwork network("(:htn :ordered-subtasks (and (build car_1) (build car_2)))");
+ * plansys2::TaskNetwork tasks;
+ * auto first = tasks.add("(patrol_wp r2d2 wp1)");
+ * tasks.add("(patrol_wp r2d2 wp2)", first);  // after the first
+ * @endcode
+ */
+class TaskNetwork : public plansys2_msgs::msg::TaskNetwork
+{
+public:
+  TaskNetwork()
+  : plansys2_msgs::msg::TaskNetwork() {}
+
+  /**
+   * @brief From an HDDL ":htn" section, or its subtasks and ordering alone.
+   * @throws std::runtime_error if it is not a task network that this type holds.
+   */
+  explicit TaskNetwork(const std::string & network)
+  : plansys2_msgs::msg::TaskNetwork(parser::pddl::taskNetworkFromString(network))
+  {
+  }
+
+  TaskNetwork(const plansys2_msgs::msg::TaskNetwork & network)  // NOLINT(runtime/explicit)
+  : plansys2_msgs::msg::TaskNetwork(network)
+  {
+  }
+
+  /**
+   * @brief Adds a task, "(name arg1 ...)", after those given (positions of tasks added before).
+   * @return Its position.
+   */
+  uint32_t add(const std::string & task, const std::vector<uint32_t> & after = {})
+  {
+    const auto position = static_cast<uint32_t>(tasks.size());
+    tasks.push_back(task);
+    ids.emplace_back();
+    for (uint32_t before : after) {
+      ordering.push_back(before);
+      ordering.push_back(position);
+    }
+    return position;
+  }
+
+  /// @brief Adds a task after one added before.
+  uint32_t add(const std::string & task, uint32_t after)
+  {
+    return add(task, std::vector<uint32_t>{after});
   }
 };
 

@@ -230,3 +230,24 @@ TEST(pddl_requirements, the_bank)
     }
   }
 }
+
+TEST(pddl_requirements, hierarchical_tasks_need_a_planner_of_them)
+{
+  // HDDL: a task, a method or an initial task network, declared or not
+  const std::string domain =
+    "(define (domain d) (:requirements :typing) (:predicates (p))"
+    " (:task t :parameters ())"
+    " (:method m :parameters () :task (t) :ordered-subtasks (a))"
+    " (:action a :parameters () :effect (p)))";
+  EXPECT_EQ(plansys2::pddl_requirements(domain), Set{":hierarchy"});
+  EXPECT_EQ(
+    plansys2::pddl_requirements(
+      "(define (domain d) (:requirements :strips :hierarchy) (:predicates (p)))"),
+    Set{":hierarchy"});
+  EXPECT_EQ(
+    plansys2::pddl_requirements(
+      action("(p)", "(p)"), "(define (problem x) (:domain d) (:htn :subtasks (a)) (:init))"),
+    Set{":hierarchy"});
+  // Not a PDDL planner's
+  EXPECT_FALSE(plansys2::known_pddl_requirements().count(":hierarchy"));
+}

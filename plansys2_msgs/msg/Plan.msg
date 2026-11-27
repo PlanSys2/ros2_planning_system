@@ -11,3 +11,7 @@ float64 end
 # The value of the problem metric for this plan, when the planner gives it
 bool has_cost
 float64 cost
+
+# A hierarchical (HTN, HDDL) plan: its decomposition, from the initial task network down to
+# the actions of `items`. Empty for PDDL plans
+plansys2_msgs/PlanTask[] tasks

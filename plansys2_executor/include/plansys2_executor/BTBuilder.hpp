@@ -332,6 +332,8 @@ protected:
   // The state the plan starts from: the one set, or that of the problem expert now
   std::vector<plansys2::Predicate> initial_predicates() const;
   std::vector<plansys2::Function> initial_functions() const;
+  // Whether the plan starts from a state given (a replan), not from the current one
+  bool has_initial_state() const {return initial_state_.has_value();}
 
   // Applies effects to a simulated state, whose derived predicates follow
   void apply_effects(

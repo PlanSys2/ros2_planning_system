@@ -31,6 +31,7 @@
 #include "plansys2_core/ServiceCall.hpp"
 #include "plansys2_executor/ActionExecutor.hpp"
 #include "plansys2_executor/BTBuilder.hpp"
+#include "plansys2_executor/RemainingTasks.hpp"
 #include "plansys2_problem_expert/Utils.hpp"
 #include "plansys2_problem_expert/ProblemExpert.hpp"
 #include "plansys2_domain_expert/DomainExpert.hpp"
@@ -54,6 +55,7 @@
 #include "plansys2_executor/behavior_tree/check_overall_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_atend_req_node.hpp"
 #include "plansys2_executor/behavior_tree/check_timeout_node.hpp"
+#include "plansys2_executor/behavior_tree/check_method_precondition_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atstart_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/restore_atstart_effect_node.hpp"
 #include "plansys2_executor/behavior_tree/apply_atend_effect_node.hpp"
@@ -518,6 +520,20 @@ ExecutorNode::get_tree_from_plan(
     bt_builder_plugin = "STNBTBuilder";
   }
 
+  // HDDL mode: a hierarchical plan (with its decomposition) and the HTNBTBuilder, one with
+  // the other
+  const bool hierarchical = !runtime_info.complete_plan.tasks.empty();
+  if (hierarchical != (bt_builder_plugin == "HTNBTBuilder")) {
+    if (report_errors) {
+      RCLCPP_ERROR(
+        get_logger(), hierarchical ?
+        "The plan is hierarchical (HDDL): its BT builder is the HTNBTBuilder, not %s" :
+        "The %s builds the tree of hierarchical (HDDL) plans, and this plan is not one",
+        bt_builder_plugin.c_str());
+    }
+    return false;
+  }
+
   std::shared_ptr<plansys2::BTBuilder> bt_builder;
   try {
     bt_builder = bt_builder_loader_.createSharedInstance("plansys2::" + bt_builder_plugin);
@@ -582,6 +598,8 @@ ExecutorNode::get_tree_from_plan(
   factory.registerNodeType<RestoreAtStartEffect>("RestoreAtStartEffect");
   factory.registerNodeType<ApplyAtEndEffect>("ApplyAtEndEffect");
   factory.registerNodeType<CheckTimeout>("CheckTimeout");
+  factory.registerNodeType<CheckMethodPrecondition>("CheckMethodPrecondition");
+  factory.registerNodeType<WaitMethodCheck>("WaitMethodCheck");
 
   auto blackboard = BT::Blackboard::create();
 
@@ -869,7 +887,23 @@ ExecutorNode::make_replanning_problem()
     // The problem of now, as a problem expert of its own, before what the running actions began
     auto domain = std::make_shared<plansys2::DomainExpert>(domain_client_->getDomain());
     plansys2::ProblemExpert problem(domain);
-    if (!problem.addProblem(problem_client_->getProblem())) {
+    // A hierarchical plan: its task network is what is left of the running plan's tree
+    std::string network;
+    if (domain->isHierarchical()) {
+      const auto & plan = runtime_info_.complete_plan;
+      std::vector<bool> ended(plan.items.size(), false);
+      for (size_t i = 0; i < plan.items.size() && runtime_info_.action_map; ++i) {
+        const auto found = runtime_info_.action_map->find(
+          BTBuilder::to_action_id(plan.items[i], action_time_precision()));
+        ended[i] = found != runtime_info_.action_map->end() && found->second.action_executor &&
+          found->second.action_executor->get_internal_status() == ActionExecutor::SUCCESS;
+      }
+      network = remaining_task_network(plan, ended);
+    }
+    if (domain->isHierarchical() && network.empty()) {
+      response.success = false;
+      response.error_info = "no hierarchical plan running: no tasks left to say";
+    } else if (!problem.addProblem(problem_client_->getProblem())) {
       response.success = false;
       response.error_info = "the problem of the problem expert cannot be read";
     } else {
@@ -899,7 +933,8 @@ ExecutorNode::make_replanning_problem()
         }
         problem.updateFunction(function.value());
       }
-      response.problem = problem.getProblem();
+      response.problem = network.empty() ? problem.getProblem() :
+        with_task_network(problem.getProblem(), network);
       response.success = true;
     }
   } catch (const std::exception & e) {

@@ -205,6 +205,10 @@ public:
    */
   bool clearGoal();
 
+  plansys2::TaskNetwork getTaskNetwork() override;
+  bool setTaskNetwork(const plansys2::TaskNetwork & network) override;
+  bool clearTaskNetwork() override;
+
   /**
    * @brief Get the metric of the problem: what the planner optimizes.
    *
@@ -501,6 +505,11 @@ private:
   std::vector<plansys2::Function> functions_;
   plansys2::Goal goal_;
   plansys2::Metric metric_;
+  // HDDL: the initial task network, "(:htn ...)" as written in the last problem that had one;
+  // kept for the planner, as PlanSys2 does not read it. Empty if none
+  std::string htn_;
+  // The "(:htn ...)" block of a problem text, or "" if it has none
+  static std::string task_network(const std::string & problem);
   plansys2_msgs::msg::Tree constraints_;
   std::vector<TimedFact> timed_facts_;
   std::map<std::string, plansys2_msgs::msg::Tree> continuous_effects_;

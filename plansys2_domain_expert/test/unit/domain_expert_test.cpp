@@ -818,3 +818,42 @@ int main(int argc, char ** argv)
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
+
+TEST(domain_expert, hddl_domain)
+{
+  const std::string pkgpath = plansys2::share_path("plansys2_domain_expert").string();
+  std::ifstream file(pkgpath + "/pddl/house.hddl");
+  const std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+  plansys2::DomainExpert domain_expert(text);
+  ASSERT_TRUE(domain_expert.getParseError().empty()) << domain_expert.getParseError();
+  EXPECT_TRUE(domain_expert.isHierarchical());
+  // Its actions, as any other
+  EXPECT_EQ(domain_expert.getActions(), (std::vector<std::string>{"move", "pick", "drop"}));
+  ASSERT_NE(domain_expert.getAction("pick"), nullptr);
+  // Its tasks and methods, kept as written for the planner; and the domain without them
+  const std::string domain = domain_expert.getDomain();
+  EXPECT_NE(domain.find("(:task deliver"), std::string::npos) << domain;
+  EXPECT_NE(domain.find("(:method go_step"), std::string::npos) << domain;
+  EXPECT_NE(domain.find(":hierarchy"), std::string::npos) << domain;
+  const std::string actions = domain_expert.getActionDomain();
+  EXPECT_EQ(actions.find("(:task"), std::string::npos) << actions;
+  EXPECT_EQ(actions.find("(:method"), std::string::npos) << actions;
+  EXPECT_EQ(actions.find(":hierarchy"), std::string::npos) << actions;
+  EXPECT_NE(actions.find("(:action pick"), std::string::npos) << actions;
+  // Read again, the same
+  plansys2::DomainExpert again(domain);
+  EXPECT_TRUE(again.getParseError().empty()) << again.getParseError();
+  EXPECT_EQ(again.getDomain(), domain);
+  // A PDDL domain is not
+  EXPECT_FALSE(plansys2::DomainExpert(actions).isHierarchical());
+  // Its tasks, with their parameters and types
+  EXPECT_EQ(domain_expert.getTasks(), (std::vector<std::string>{"deliver", "go_to"}));
+  auto deliver = domain_expert.getTask("Deliver");
+  ASSERT_TRUE(deliver.has_value());
+  ASSERT_EQ(deliver->size(), 2u);
+  EXPECT_EQ((*deliver)[0].name, "?i");
+  EXPECT_EQ((*deliver)[0].type, "item");
+  EXPECT_EQ((*deliver)[1].type, "room");
+  EXPECT_FALSE(domain_expert.getTask("fly").has_value());
+  EXPECT_TRUE(plansys2::DomainExpert(actions).getTasks().empty());
+}

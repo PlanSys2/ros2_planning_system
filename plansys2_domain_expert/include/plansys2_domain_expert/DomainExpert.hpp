@@ -172,6 +172,9 @@ public:
 
   std::vector<std::string> getActions();
 
+  std::vector<std::string> getTasks() override;
+  std::optional<std::vector<plansys2_msgs::msg::Param>> getTask(const std::string & task) override;
+
   /**
    * @brief Get the details of a regular action defined in the domain.
    *
@@ -211,6 +214,17 @@ public:
    * @return The error, or an empty string if it could.
    */
   const std::string & getParseError() const {return parse_error_;}
+
+  /**
+   * @brief Whether the domain is hierarchical (HDDL): it has tasks or methods. PlanSys2 keeps
+   * them as written, for a planner of HDDL, and reads the rest as PDDL.
+   */
+  bool isHierarchical() const {return domains_.is_hierarchical();}
+
+  /**
+   * @brief The domain without its tasks and methods, if hierarchical: a PDDL domain.
+   */
+  std::string getActionDomain() const {return domains_.get_joint_domain(false);}
 
   /**
    * @brief The actions and derived predicates that PlanSys2 cannot represent.

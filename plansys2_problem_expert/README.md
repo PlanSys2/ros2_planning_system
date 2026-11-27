@@ -29,12 +29,33 @@ Every update in the Problem, is notified publishing a `std_msgs::msg::Empty` in 
 - `/problem_expert/get_problem_instances` [[`plansys2_msgs::srv::GetProblemInstances`](../plansys2_msgs/srv/GetProblemInstances.srv)]
 - `/problem_expert/get_problem_predicate` [[`plansys2_msgs::srv::GetNodeDetails`](../plansys2_msgs/srv/GetNodeDetails.srv)]
 - `/problem_expert/get_problem_predicates` [[`plansys2_msgs::srv::GetStates`](../plansys2_msgs/srv/GetStates.srv)]
+- `/problem_expert/get_problem_task_network` [[`plansys2_msgs::srv::GetProblemTaskNetwork`](../plansys2_msgs/srv/GetProblemTaskNetwork.srv)]
 - `/problem_expert/is_problem_goal_satisfied` [[`plansys2_msgs::srv::IsProblemGoalSatisfied`](../plansys2_msgs/srv/IsProblemGoalSatisfied.srv)]
 - `/problem_expert/remove_problem_function` [[`plansys2_msgs::srv::AffectNode`](../plansys2_msgs/srv/AffectNode.srv)]
 - `/problem_expert/remove_problem_goal` [[`plansys2_msgs::srv::RemoveProblemGoal`](../plansys2_msgs/srv/RemoveProblemGoal.srv)]
 - `/problem_expert/remove_problem_instance` [[`plansys2_msgs::srv::AffectParam`](../plansys2_msgs/srv/AffectParam.srv)]
 - `/problem_expert/remove_problem_predicate` [[`plansys2_msgs::srv::AffectNode`](../plansys2_msgs/srv/AffectNode.srv)]
+- `/problem_expert/remove_problem_task_network` [[`plansys2_msgs::srv::RemoveProblemTaskNetwork`](../plansys2_msgs/srv/RemoveProblemTaskNetwork.srv)]
+- `/problem_expert/set_problem_task_network` [[`plansys2_msgs::srv::SetProblemTaskNetwork`](../plansys2_msgs/srv/SetProblemTaskNetwork.srv)]
 - `/problem_expert/update_problem_function` [[`plansys2_msgs::srv::AffectNode`](../plansys2_msgs/srv/AffectNode.srv)]
+
+## Task networks (HDDL)
+
+In a hierarchical (HDDL) problem, what is to be done is a task network, as the goal is what is to
+hold in PDDL. `ProblemExpertClient::setTaskNetwork` sets it, in place of the one before: each task
+must be a task or an action of the domain, with arguments of its types. `plansys2::TaskNetwork`
+is made from an HDDL `:htn` section, or a task at a time:
+
+```cpp
+plansys2::TaskNetwork tasks;
+auto first = tasks.add("(build car_1)");
+tasks.add("(build car_2)", first);  // after the first
+problem_expert->setTaskNetwork(tasks);
+```
+
+`getTaskNetwork` and `clearTaskNetwork` read and remove it; in Python, `set_problem_task_network`
+takes the message or a list of tasks. The problem written for the planner (`getProblem`) has it as
+its `:htn` section.
 
 ## Published topics
 

@@ -29,6 +29,8 @@
 #include "plansys2_msgs/srv/get_domain_action_details.hpp"
 #include "plansys2_msgs/srv/get_domain_derived_predicate_details.hpp"
 #include "plansys2_msgs/srv/get_domain_durative_action_details.hpp"
+#include "plansys2_msgs/srv/get_domain_task_details.hpp"
+#include "plansys2_msgs/srv/get_domain_tasks.hpp"
 #include "plansys2_msgs/srv/get_domain.hpp"
 #include "plansys2_msgs/srv/get_node_details.hpp"
 #include "plansys2_msgs/srv/get_states.hpp"
@@ -324,6 +326,9 @@ private:
     get_domain_event_details_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainActionDetails>::SharedPtr
     get_domain_action_details_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetDomainTasks>::SharedPtr get_domain_tasks_service_;
+  rclcpp::Service<plansys2_msgs::srv::GetDomainTaskDetails>::SharedPtr
+    get_domain_task_details_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainActions>::SharedPtr
     get_domain_durative_actions_service_;
   rclcpp::Service<plansys2_msgs::srv::GetDomainDurativeActionDetails>::SharedPtr
@@ -359,6 +364,8 @@ private:
 
   // Validate domains here, with Kairos, instead of asking the planner node
   bool validate_locally_ = false;
+  // HDDL mode: the model files are .hddl, and the domain is hierarchical (tasks and methods)
+  bool hddl_ = false;
 };
 
 }  // namespace plansys2

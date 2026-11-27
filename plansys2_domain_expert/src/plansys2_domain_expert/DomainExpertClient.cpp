@@ -53,6 +53,10 @@ DomainExpertClient::DomainExpertClient(ClientNode::Interfaces node)
     node_, "domain_expert/get_domain_derived_predicate_details", active_);
   get_actions_client_ = std::make_shared<ServiceClient<srv::GetDomainActions>>(
     node_, "domain_expert/get_domain_actions", active_);
+  get_tasks_client_ = std::make_shared<ServiceClient<srv::GetDomainTasks>>(
+    node_, "domain_expert/get_domain_tasks", active_);
+  get_task_details_client_ = std::make_shared<ServiceClient<srv::GetDomainTaskDetails>>(
+    node_, "domain_expert/get_domain_task_details", active_);
   get_durative_actions_client_ = std::make_shared<ServiceClient<srv::GetDomainActions>>(
     node_, "domain_expert/get_domain_durative_actions", active_);
   get_predicate_details_client_ = std::make_shared<ServiceClient<srv::GetNodeDetails>>(
@@ -368,6 +372,34 @@ DomainExpertClient::getActions()
   }
 
   return ret;
+}
+
+std::vector<std::string>
+DomainExpertClient::getTasks()
+{
+  auto request = std::make_shared<plansys2_msgs::srv::GetDomainTasks::Request>();
+  auto response = get_tasks_client_->call(request, std::chrono::seconds(1));
+  if (!response || !response->success) {
+    return {};
+  }
+  return response->tasks;
+}
+
+std::optional<std::vector<plansys2_msgs::msg::Param>>
+DomainExpertClient::getTask(const std::string & task)
+{
+  auto request = std::make_shared<plansys2_msgs::srv::GetDomainTaskDetails::Request>();
+  request->task = task;
+  auto response = get_task_details_client_->call(request, std::chrono::seconds(1));
+  if (!response) {
+    return std::nullopt;
+  }
+  if (!response->success) {
+    RCLCPP_ERROR_STREAM(
+      node_->get_logger(), get_task_details_client_->name() << ": " << response->error_info);
+    return std::nullopt;
+  }
+  return response->parameters;
 }
 
 plansys2_msgs::msg::Action::SharedPtr

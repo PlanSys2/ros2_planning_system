@@ -22,6 +22,7 @@
   <exec_depend>plansys2_pddl_parser</exec_depend>
   <exec_depend>plansys2_planner</exec_depend>
   <exec_depend>plansys2_kairos_plan_solver</exec_depend>
+  <exec_depend>plansys2_klimax_plan_solver</exec_depend>
   <exec_depend>plansys2_popf_plan_solver</exec_depend>
   <exec_depend>plansys2_problem_expert</exec_depend>
   <exec_depend>plansys2_support_py</exec_depend>

@@ -254,3 +254,7 @@ if(_tests)
   set_tests_properties(${_tests}
     PROPERTIES ENVIRONMENT "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST")
 endif()
+
+ament_add_ros_isolated_gtest(htn_execution_test htn_execution_test.cpp TIMEOUT 120)
+target_compile_definitions(htn_execution_test PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
+target_link_libraries(htn_execution_test ${PROJECT_NAME} bt_builder_plugins)

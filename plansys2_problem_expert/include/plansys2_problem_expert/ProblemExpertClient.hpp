@@ -42,6 +42,9 @@
 #include "plansys2_msgs/srv/get_states.hpp"
 #include "plansys2_msgs/srv/is_problem_goal_satisfied.hpp"
 #include "plansys2_msgs/srv/remove_problem_goal.hpp"
+#include "plansys2_msgs/srv/get_problem_task_network.hpp"
+#include "plansys2_msgs/srv/remove_problem_task_network.hpp"
+#include "plansys2_msgs/srv/set_problem_task_network.hpp"
 #include "plansys2_msgs/srv/remove_problem_metric.hpp"
 #include "plansys2_msgs/srv/set_problem_metric.hpp"
 #include "plansys2_msgs/srv/get_problem_metric.hpp"
@@ -278,6 +281,36 @@ public:
   bool clearGoal();
 
   /**
+   * @brief Get the initial task network of a hierarchical (HDDL) problem.
+   *
+   * @return plansys2::TaskNetwork The task network; empty if none is set.
+   */
+  plansys2::TaskNetwork getTaskNetwork() override;
+
+  /**
+   * @brief Set the initial task network of a hierarchical (HDDL) problem: what is to be done,
+   * as tasks, as setGoal() says what is to hold for PDDL.
+   *
+   * @code
+   * plansys2::TaskNetwork tasks;
+   * auto first = tasks.add("(patrol_wp r2d2 wp1)");
+   * tasks.add("(patrol_wp r2d2 wp2)", first);
+   * problem_client->setTaskNetwork(tasks);
+   * @endcode
+   *
+   * @param[in] network The task network.
+   * @return true if it was set, false otherwise (a task not of the domain, wrong arguments...).
+   */
+  bool setTaskNetwork(const plansys2::TaskNetwork & network) override;
+
+  /**
+   * @brief Clear the initial task network.
+   *
+   * @return true if it was cleared.
+   */
+  bool clearTaskNetwork() override;
+
+  /**
    * @brief Get the metric of the problem: what the planner optimizes.
    *
    * @return plansys2::Metric The metric, with an empty tree if there is none.
@@ -380,6 +413,12 @@ private:
     set_continuous_effect_client_;
   ServiceClient<plansys2_msgs::srv::AddProblemGoal>::SharedPtr
     add_problem_goal_client_;
+  ServiceClient<plansys2_msgs::srv::SetProblemTaskNetwork>::SharedPtr
+    set_problem_task_network_client_;
+  ServiceClient<plansys2_msgs::srv::GetProblemTaskNetwork>::SharedPtr
+    get_problem_task_network_client_;
+  ServiceClient<plansys2_msgs::srv::RemoveProblemTaskNetwork>::SharedPtr
+    remove_problem_task_network_client_;
   ServiceClient<plansys2_msgs::srv::AffectParam>::SharedPtr
     add_problem_instance_client_;
   ServiceClient<plansys2_msgs::srv::ApplyProblemChanges>::SharedPtr
